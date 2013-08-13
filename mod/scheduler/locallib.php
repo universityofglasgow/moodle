@@ -42,8 +42,12 @@ function scheduler_usertime($date, $local=0) {
     if ($date == 0) {
         return '';
     } else {
-        if (!$timeformat = get_user_preferences('calendar_timeformat')) {
-            $timeformat = get_string('strftimetime');
+        $timeformat = get_user_preferences('calendar_timeformat');//get user config
+        if(empty($timeformat)){
+            $timeformat = get_config(NULL,'calendar_site_timeformat');//get calendar config	if above not exist
+        }
+        if(empty($timeformat)){
+            $timeformat = get_string('strftimetime');//get locale default format if both above not exist
         }
         return userdate($date, $timeformat);    
     }
@@ -768,11 +772,11 @@ function scheduler_get_mail_variables ($scheduler, $slot, $attendant, $attendee)
     }
     if ($attendant) {
         $vars['ATTENDANT']     = fullname($attendant);
-        $vars['ATTENDANT_URL'] = $CFG->wwwroot.'/user/view.php?id='.$attendant->id;
+        $vars['ATTENDANT_URL'] = $CFG->wwwroot.'/user/view.php?id='.$attendant->id.'&course='.$scheduler->course;
     }
     if ($attendee) {
         $vars['ATTENDEE']     = fullname($attendee);
-        $vars['ATTENDEE_URL'] = $CFG->wwwroot.'/user/view.php?id='.$attendee->id;
+        $vars['ATTENDEE_URL'] = $CFG->wwwroot.'/user/view.php?id='.$attendee->id.'&course='.$scheduler->course;
     }
     
     return $vars;

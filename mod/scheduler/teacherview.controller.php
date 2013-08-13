@@ -64,7 +64,7 @@ switch ($action) {
             // for other scheduler, we check independently of exclusivity. Any slot here conflicts
             // for this scheduler, we check against exclusivity. Any complete slot here conflicts
             $conflictsRemote = scheduler_get_conflicts($scheduler->id, $data->starttime, $data->starttime + $data->duration * 60, $data->teacherid, 0, SCHEDULER_OTHERS, false);
-            $conflictsLocal = scheduler_get_conflicts($scheduler->id, $data->starttime, $data->starttime + $data->duration * 60, $data->teacherid, 0, SCHEDULER_SELF);
+            $conflictsLocal = scheduler_get_conflicts($scheduler->id, $data->starttime, $data->starttime + $data->duration * 60, $data->teacherid, 0, SCHEDULER_SELF, true);
             if (!$conflictsRemote) $conflictsRemote = array();
             if (!$conflictsLocal) $conflictsLocal = array();
             $conflicts = $conflictsRemote + $conflictsLocal;
@@ -183,8 +183,8 @@ switch ($action) {
             echo $OUTPUT->heading(get_string('slotupdated','scheduler'));
         }
         
+        $DB->delete_records('scheduler_appointment', array('slotid'=>$slot->id)); // cleanup old appointments
         if($appointments){
-            $DB->delete_records('scheduler_appointment', array('slotid'=>$slot->id)); // cleanup old appointments
             foreach ($appointments as $appointment){ // insert updated
                 $appointment->slotid = $slot->id; // now we know !!
                 $DB->insert_record('scheduler_appointment', $appointment);
@@ -259,7 +259,7 @@ switch ($action) {
                     (($dayofweek == 0) && ($data->sunday == 1))){
                 $noslotsallowed = false;
                 $data->starttime = make_timestamp($eventdate['year'], $eventdate['mon'], $eventdate['mday'], $data->starthour, $data->startminute);
-                $conflicts = scheduler_get_conflicts($scheduler->id, $data->starttime, $data->starttime + $data->duration * 60, $data->teacherid, false, SCHEDULER_ALL);
+                $conflicts = scheduler_get_conflicts($scheduler->id, $data->starttime, $data->starttime + $data->duration * 60, $data->teacherid, 0, SCHEDULER_ALL, false);
                 if (!$data->forcewhenoverlap){
                     if ($conflicts){
                         unset($erroritem);
@@ -323,7 +323,7 @@ switch ($action) {
                 // echo " generating from " .userdate($slot->starttime)." till ".userdate($data->timeend). " ";
                 // echo " generating on " . ($data->timeend - $slot->starttime) / 60;
                 while ($slot->starttime <= $data->timeend - $data->duration * 60) {
-                    $conflicts = scheduler_get_conflicts($scheduler->id, $data->timestart, $data->timestart + $data->duration * 60, $data->teacherid, false, SCHEDULER_ALL);
+                    $conflicts = scheduler_get_conflicts($scheduler->id, $data->timestart, $data->timestart + $data->duration * 60, $data->teacherid, 0, SCHEDULER_ALL, false);
                     if ($conflicts) {
                         if (!$data->forcewhenoverlap){
                             print_string('conflictingslots', 'scheduler');
@@ -427,7 +427,7 @@ switch ($action) {
                     $student = $DB->get_record('user', array('id'=>$oldstudent->studentid));
                     $teacher = $DB->get_record('user', array('id'=>$slot->teacherid));
                     
-                    $vars = scheduler_get_mail_variables($scheduler,$slot,$teacher,$student);
+                    $vars = scheduler_get_mail_variables($scheduler, $slot, $teacher, $student);
                     scheduler_send_email_from_template($student, $teacher, $COURSE, 'cancelledbyteacher', 'teachercancelled', $vars, 'scheduler');
                 }
             }
