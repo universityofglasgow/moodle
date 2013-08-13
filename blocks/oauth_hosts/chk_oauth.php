@@ -1,9 +1,6 @@
 <?php
 
-if (file_exists($CFG->dirroot . '/mod/basiclti/OAuth.php'))
-    require_once($CFG->dirroot . '/mod/basiclti/OAuth.php');
-else
-    require_once('OAuth.php');
+require_once($CFG->dirroot . '/mod/lti/OAuth.php');
 
 function boh_checkOAuthRequest($frombrowser = true) {
     $store = new boh_OAuthDataStore();

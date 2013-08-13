@@ -38,6 +38,11 @@ class oauth_setting_configtextarea extends admin_setting_configtextarea {
 
     function config_write($name, $value) {
         global $DB;
+
+        // Bodge to stop this killing install
+        if (during_initial_install()) {
+            return false;
+        }
         $hostlist = explode("\n", $value);
         $hostobs = array();
         $hosturls = array();
@@ -74,7 +79,9 @@ class oauth_setting_configtextarea extends admin_setting_configtextarea {
             }
         }
         // now update the database without breaking anything...
-        $chosts = $DB->get_records('block_oauth_peerserver');
+        if (!$chosts = $DB->get_records('block_oauth_peerserver')) {
+            return false;
+        }
         foreach ($chosts as $h) {
             if (array_key_exists($h->oauth_url, $hosturls)) {
                 $hostobs[$hosturls[$h->oauth_url]]->id = $h->id;
