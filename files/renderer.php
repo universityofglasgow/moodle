@@ -303,9 +303,9 @@ class core_files_renderer extends plugin_renderer_base {
      */
     private function fm_js_template_mkdir() {
         $rv = '
-<div class="filemanager fp-mkdir-dlg">
+<div class="filemanager fp-mkdir-dlg" role="dialog" aria-live="assertive" aria-labelledby="fp-mkdir-dlg-title">
     <div class="fp-mkdir-dlg-text">
-        <label>' . get_string('newfoldername', 'repository') . '</label><br/>
+        <label id="fp-mkdir-dlg-title">' . get_string('newfoldername', 'repository') . '</label><br/>
         <input type="text" />
     </div>
     <button class="{!}fp-dlg-butcreate">'.get_string('makeafolder').'</button>
@@ -802,8 +802,8 @@ class core_files_renderer extends plugin_renderer_base {
      */
     private function fp_js_template_message() {
         $rv = '
-<div class="file-picker fp-msg">
-    <p class="{!}fp-msg-text"></p>
+<div class="file-picker fp-msg" role="alertdialog" aria-live="assertive" aria-labelledby="fp-msg-labelledby">
+    <p class="{!}fp-msg-text" id="fp-msg-labelledby"></p>
     <button class="{!}fp-msg-butok">'.get_string('ok').'</button>
 </div>';
         return preg_replace('/\{\!\}/', '', $rv);

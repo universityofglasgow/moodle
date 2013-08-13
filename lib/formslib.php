@@ -1063,11 +1063,9 @@ abstract class moodleform {
                             $params = array_merge(array($realelementname), $params);
                             call_user_func_array(array(&$mform, 'addRule'), $params);
                             break;
-                        case 'type' :
-                            //Type should be set only once
-                            if (!isset($mform->_types[$elementname])) {
-                                $mform->setType($elementname, $params);
-                            }
+
+                        case 'type':
+                            $mform->setType($realelementname, $params);
                             break;
                     }
                 }
@@ -1228,6 +1226,37 @@ abstract class moodleform {
                 array('hideadvanced', 'form')
             )
         );
+    }
+
+    /**
+     * Used by tests to simulate submitted form data submission from the user.
+     *
+     * For form fields where no data is submitted the default for that field as set by set_data or setDefault will be passed to
+     * get_data.
+     *
+     * This method sets $_POST or $_GET and $_FILES with the data supplied. Our unit test code empties all these
+     * global arrays after each test.
+     *
+     * @param array  $simulatedsubmitteddata       An associative array of form values (same format as $_POST).
+     * @param array  $simulatedsubmittedfiles      An associative array of files uploaded (same format as $_FILES). Can be omitted.
+     * @param string $method                       'post' or 'get', defaults to 'post'.
+     * @param null   $formidentifier               the default is to use the class name for this class but you may need to provide
+     *                                              a different value here for some forms that are used more than once on the
+     *                                              same page.
+     */
+    public static function mock_submit($simulatedsubmitteddata, $simulatedsubmittedfiles = array(), $method = 'post',
+                                       $formidentifier = null) {
+        $_FILES = $simulatedsubmittedfiles;
+        if ($formidentifier === null) {
+            $formidentifier = get_called_class();
+        }
+        $simulatedsubmitteddata['_qf__'.$formidentifier] = 1;
+        $simulatedsubmitteddata['sesskey'] = sesskey();
+        if (strtolower($method) === 'get') {
+            $_GET = $simulatedsubmitteddata;
+        } else {
+            $_POST = $simulatedsubmitteddata;
+        }
     }
 }
 
@@ -2126,12 +2155,21 @@ function validate_' . $this->_formName . '(frm) {
      * is checked. If $condition is something else (like "eq" for equals) then it is checked to see if the value
      * of the $dependentOn element is $condition (such as equal) to $value.
      *
+     * When working with multiple selects, the dependentOn has to be the real name of the select, meaning that
+     * it will most likely end up with '[]'. Also, the value should be an array of required values, or a string
+     * containing the values separated by pipes: array('red', 'blue') or 'red|blue'.
+     *
      * @param string $elementName the name of the element which will be disabled
      * @param string $dependentOn the name of the element whose state will be checked for condition
      * @param string $condition the condition to check
      * @param mixed $value used in conjunction with condition.
      */
-    function disabledIf($elementName, $dependentOn, $condition = 'notchecked', $value='1'){
+    function disabledIf($elementName, $dependentOn, $condition = 'notchecked', $value='1') {
+        // Multiple selects allow for a multiple selection, we transform the array to string here as
+        // an array cannot be used as a key in an associative array.
+        if (is_array($value)) {
+            $value = implode('|', $value);
+        }
         if (!array_key_exists($dependentOn, $this->_dependencies)) {
             $this->_dependencies[$dependentOn] = array();
         }

@@ -1515,7 +1515,7 @@ function forum_print_recent_activity($course, $viewfullnames, $timestart) {
                     $modinfo->groups = groups_get_user_groups($course->id); // load all my groups and cache it in modinfo
                 }
 
-                if (!array_key_exists($post->groupid, $modinfo->groups[0])) {
+                if (!in_array($post->groupid, $modinfo->get_groups($cm->groupingid))) {
                     continue;
                 }
             }
@@ -3715,7 +3715,7 @@ function forum_print_discussion_header(&$post, $forum, $group=-1, $datestring=""
     echo "</td>\n";
 
     // User name
-    $fullname = fullname($post, has_capability('moodle/site:viewfullnames', $modcontext));
+    $fullname = fullname($postuser, has_capability('moodle/site:viewfullnames', $modcontext));
     echo '<td class="author">';
     echo '<a href="'.$CFG->wwwroot.'/user/view.php?id='.$post->userid.'&amp;course='.$forum->course.'">'.$fullname.'</a>';
     echo "</td>\n";
@@ -6010,12 +6010,10 @@ function forum_get_recent_mod_activity(&$activities, &$index, $timestart, $cours
     }
 
     if ($groupid) {
-        $groupselect = "AND gm.groupid = ?";
-        $groupjoin   = "JOIN {groups_members} gm ON  gm.userid=u.id";
+        $groupselect = "AND d.groupid = ?";
         $params[] = $groupid;
     } else {
         $groupselect = "";
-        $groupjoin   = "";
     }
 
     if (!$posts = $DB->get_records_sql("SELECT p.*, f.type AS forumtype, d.forum, d.groupid,
@@ -6025,7 +6023,6 @@ function forum_get_recent_mod_activity(&$activities, &$index, $timestart, $cours
                                               JOIN {forum_discussions} d ON d.id = p.discussion
                                               JOIN {forum} f             ON f.id = d.forum
                                               JOIN {user} u              ON u.id = p.userid
-                                              $groupjoin
                                         WHERE p.created > ? AND f.id = ?
                                               $userselect $groupselect
                                      ORDER BY p.id ASC", $params)) { // order by initial posting date
@@ -6061,7 +6058,7 @@ function forum_get_recent_mod_activity(&$activities, &$index, $timestart, $cours
                     continue;
                 }
 
-                if (!array_key_exists($post->groupid, $modinfo->groups[0])) {
+                if (!in_array($post->groupid, $modinfo->get_groups($cm->groupingid))) {
                     continue;
                 }
             }
@@ -6741,7 +6738,11 @@ function forum_tp_count_forum_unread_posts($cm, $course) {
         $modinfo->groups = groups_get_user_groups($course->id, $USER->id);
     }
 
-    $mygroups = $modinfo->groups[$cm->groupingid];
+    if (array_key_exists($cm->groupingid, $modinfo->groups)) {
+        $mygroups = $modinfo->groups[$cm->groupingid];
+    } else {
+        $mygroups = false; // Will be set below
+    }
 
     // add all groups posts
     if (empty($mygroups)) {

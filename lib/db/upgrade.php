@@ -1719,5 +1719,54 @@ function xmldb_main_upgrade($oldversion) {
         upgrade_main_savepoint(true, 2012120303.09);
     }
 
+    if ($oldversion < 2012120304.01) {
+        // Fix incorrect cc-nc url. Unfortunately the license 'plugins' do
+        // not give a mechanism to do this.
+
+        $sql = "UPDATE {license}
+                   SET source = :url, version = :newversion
+                 WHERE shortname = :shortname AND version = :oldversion";
+
+        $params = array(
+            'url' => 'http://creativecommons.org/licenses/by-nc/3.0/',
+            'shortname' => 'cc-nc',
+            'newversion' => '2013051500',
+            'oldversion' => '2010033100'
+        );
+
+        $DB->execute($sql, $params);
+
+        // Main savepoint reached.
+        upgrade_main_savepoint(true, 2012120304.01);
+    }
+
+    if ($oldversion < 2012120304.06) {
+        // Clean up old tokens which haven't been deleted.
+        $DB->execute("DELETE FROM {user_private_key} WHERE NOT EXISTS
+                         (SELECT 'x' FROM {user} WHERE deleted = 0 AND id = userid)");
+
+        // Main savepoint reached.
+        upgrade_main_savepoint(true, 2012120304.06);
+    }
+
+    if ($oldversion < 2012120305.01) {
+
+        // Remove orphan repository instances.
+        if ($DB->get_dbfamily() === 'mysql') {
+            $sql = "DELETE {repository_instances} FROM {repository_instances}
+                    LEFT JOIN {context} ON {context}.id = {repository_instances}.contextid
+                    WHERE {context}.id IS NULL";
+        } else {
+            $sql = "DELETE FROM {repository_instances}
+                    WHERE NOT EXISTS (
+                        SELECT 'x' FROM {context}
+                        WHERE {context}.id = {repository_instances}.contextid)";
+        }
+        $DB->execute($sql);
+
+        // Main savepoint reached.
+        upgrade_main_savepoint(true, 2012120305.01);
+    }
+
     return true;
 }
