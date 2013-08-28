@@ -152,10 +152,16 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
     protected function external_enrolments( $codes=null, $userid=null ) {
         global $CFG, $DB;
 
+        // codes and userid can't both be null
+        if (!$codes && !$userid) {
+            $this->error( 'A value must be supplied for codes or userid in external_enrolments' );
+            return false;
+        }
+
         // connect to external db 
         if (!$extdb = $this->db_init()) {
-            mtrace('Error while communicating with external enrolment database');
-            return 1;
+            $this->error('Error while communicating with external enrolment database');
+            return false;
         }
 
         // get connection details
@@ -191,7 +197,8 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
             $rs->Close();
         }
         else {
-            mtrace('Error reading from the UofG enrolment table');
+            $msg = $extdb->ErrorMsg();
+            $this->error('Error executing query in UofG enrolment table "'.$msg.'" - '.$sql);
             return false;
         }
 
@@ -210,12 +217,12 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
 
         // connect to external db 
         if (!$extdb = $this->db_init()) {
-            mtrace('Error while communicating with external enrolment database');
+            $this->error('Error while communicating with external enrolment database');
             return false;
         }
 
         // get connection details
-        $table            = $this->get_config('codesenroltable');
+        $table = $this->get_config('codesenroltable');
 
         // if table not defined then we can't do anything
         if (empty($table)) {
@@ -233,7 +240,11 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
                 $data = (object)$row;
             }
             $rs->Close();
-        }    
+        } else {
+            $msg = $extdb->ErrorMsg();
+            $this->error('Error executing query in UofG enrolment table "'.$msg.'" - '.$sql);
+            return false;
+        }
         
         $extdb->Close();
         return $data;
@@ -250,7 +261,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
 
         // connect to external db 
         if (!$extdb = $this->db_init()) {
-            mtrace('Error while communicating with external enrolment database');
+            $this->error('Error while communicating with external enrolment database');
             return false;
         }
 
@@ -360,7 +371,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         // from here on in the username will be the uid (if it
         // exists). This is the definitive GUID
         if (!empty($newuser->uid)) {
-            $username = $newuser->uid;
+            $username = trim(textlib::strtolower($newuser->uid);
             $newuser->username = $username;
         }
 
@@ -511,6 +522,9 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
 
         // get the external data for these codes
         $enrolments = $this->external_enrolments( $codes );
+        if ($enrolments===false) {
+            return false;
+        }
 
         // iterate over the enrolments and deal
         foreach ($enrolments as $enrolment) {
@@ -579,6 +593,11 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
     public function course_updated($inserted, $course, $data) {
         global $DB;
 
+        // if course is not visible we don't do anything
+        if (!$course->visible) {
+            return true;
+        }
+
         // make sure we have config
         $this->load_config();
 
@@ -596,7 +615,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         // add the users to the course
         $this->enrol_course_users( $course, $instance );
 
-        return TRUE;
+        return true;
     }
 
     /**
@@ -740,6 +759,19 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         $newaverage = ($oldaverage + $lastcourseprocessed - $startcourseindex)/2;
         set_config( 'average', $newaverage, 'enrol_gudatabase' );
         mtrace( 'enrol_gudatabase: completed, processed courses = ' . ($lastcourseprocessed - $startcourseindex) );
+    }
+
+    /**
+     * Handle error messages appropriately
+     * for cli or web based operation
+     * @param string $message message to display/log
+     */
+    function error($message) {
+        if (defined('CLI_SCRIPT')) {
+            mtrace($message);
+        } else {
+            error_log($message);
+        }
     }
 }
 

@@ -47,9 +47,6 @@ function guid_ldapsearch( $ldaphost,$ldapdn, $filter ) {
         return false;
     }
 
-    // settings
-    //ldap_set_option( $dv,LDAP_OPT_SIZELIMIT, 26 );
-
     // search
     if (!$search = @ldap_search($dv, $ldapdn, $filter)) {
         debugging( 'ldap search failed for filter "'.$filter.'" '.ldap_error( $dv ) );
@@ -164,6 +161,11 @@ function print_results( $results, $url ) {
             }
             $guid = $result['uid'];
 
+            // Possible (but rare) multiple uids
+            if (is_array($guid)) {
+                $guid = $result['cn'];
+            }
+
             // modify guid in url
             $url->param( 'guid', $guid );
 
@@ -179,6 +181,7 @@ function print_results( $results, $url ) {
             else {
                 $username = $guid;
             }
+            if ($username) {
             $table->add_data( array(
                 $username,
                 $result['givenname'],
@@ -186,6 +189,7 @@ function print_results( $results, $url ) {
                 $mail,
                 '<a href="'.$url->out(true, array('sesskey'=>sesskey())).'">'.
                 get_string('more','report_guid').'</a>' ) );
+            }
         }
         echo "<div class=\"generalbox\">Number of results = ".count($results)."</div>";
         $table->print_html();
@@ -227,6 +231,9 @@ function print_single( $results ) {
 
     // do they have a moodle account?
     $username = $result['uid'];
+    if (is_array($username)) {
+        $username = $result['cn'];
+    }
     if ($user = $DB->get_record( 'user', array('username'=>strtolower($username)) )) {
         $displayname = "<a href=\"{$CFG->wwwroot}/user/view.php?id={$user->id}&amp;course=1\">$fullname</a>";
         $create = '';
@@ -254,13 +261,21 @@ function print_single( $results ) {
     $enrolments = get_all_enrolments( $username );
     if (!empty($enrolments)) {
         print_enrolments( $enrolments, $fullname, $username );
+    } else if ($enrolments===false) {
+        echo '<p class="alert alert-error">' . get_string('noguenrol', 'report_guid') . '</p>';
+    } else {
+        echo '<p class="alert">' . get_string('noenrolments', 'report_guid') . '</p>';
     }
 
-    // find mycampus enrolment data
-    $gudatabase = enrol_get_plugin('gudatabase');
-    $courses = $gudatabase->get_user_courses( $username );
-    if (!empty($courses)) {
-        print_mycampus($courses, $username);
+    if ($enrolments !== false) {
+        // find mycampus enrolment data
+        $gudatabase = enrol_get_plugin('gudatabase');
+        $courses = $gudatabase->get_user_courses( $username );
+        if (!empty($courses)) {
+            print_mycampus($courses, $username);
+        } else {
+            echo '<p class="alert">' . get_string('nomycampus', 'report_guid') . '</p>';
+        }
     }
 }
 
@@ -400,7 +415,7 @@ function array_prettyprint( $rows ) {
 function createUserFromLdap( $result ) {
     global $DB;
 
-    $user = create_user_record( $result['uid'], 'not cached', 'guid' ); 
+    $user = create_user_record( strtolower($result['uid']), 'not cached', 'guid' ); 
     $user->firstname = $result['givenname'];
     $user->lastname = $result['sn'];
     $user->city = 'Glasgow';
