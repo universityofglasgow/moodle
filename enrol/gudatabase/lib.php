@@ -371,7 +371,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         // from here on in the username will be the uid (if it
         // exists). This is the definitive GUID
         if (!empty($newuser->uid)) {
-            $username = trim(textlib::strtolower($newuser->uid);
+            $username = trim(textlib::strtolower($newuser->uid));
             $newuser->username = $username;
         }
 
@@ -772,6 +772,16 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         } else {
             error_log($message);
         }
+    }
+
+    /**
+     * Automatic enrol sync executed during restore.
+     * TODO: This needs to do something or justify why not
+     * @param stdClass $course course record
+     */
+    public function restore_sync_course($course) {
+        // TODO: certainly not this (in database enrol)
+        //$this->sync_enrolments(false, $course->id);
     }
 }
 
