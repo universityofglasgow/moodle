@@ -47,6 +47,22 @@ $PAGE->set_pagelayout('login');
 $errormsg = '';
 $errorcode = 0;
 
+// UNIVERSITY OF GLASGOW - DIRTY HACK ALERT
+// CHECK IF LOGGED IN ALREADY
+if (isloggedin() and !isguestuser()) {
+    $urltogo = optional_param('urltogo', '', PARAM_URL);
+    $username = optional_param('username', '', PARAM_USERNAME);
+
+    // username has to match (i.e. from form)
+    if (strtolower($USER->username) == strtolower(trim($username))) {
+        if ($urltogo) {
+            redirect($urltogo);
+        } else {
+            redirect($CFG->wwwroot);
+        }
+    } 
+}
+
 // login page requested session test
 if ($testsession) {
     if ($testsession == $USER->id) {
@@ -198,6 +214,9 @@ if ($frm and isset($frm->username)) {                             // Login WITH 
 
         } else if (isset($SESSION->wantsurl) and (strpos($SESSION->wantsurl, $CFG->wwwroot) === 0 or strpos($SESSION->wantsurl, str_replace('http://', 'https://', $CFG->wwwroot)) === 0)) {
             $urltogo = $SESSION->wantsurl;    /// Because it's an address in this site
+            unset($SESSION->wantsurl);
+        } else if (isset($frm->urltogo) and (strpos($frm->urltogo, $CFG->wwwroot) === 0 or strpos($frm->urltogo, str_replace('http://', 'https://', $CFG->wwwroot)) === 0)) {
+            $urltogo = $frm->urltogo;
             unset($SESSION->wantsurl);
 
         } else {
