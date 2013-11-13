@@ -93,11 +93,45 @@ class report_anonymous {
     /**
      * sort users using callback
      */
-    public static function sort_users($users) {
+    public static function sort_users($users, $onname=false) {
         uasort($users, function($a, $b) {
-            return strcasecmp($a->idnumber, $b->idnumber);
+            global $onname;
+            if ($onname) {
+                return strcasecmp(fullname($a), fullname($b));
+            } else {
+                return strcasecmp($a->idnumber, $b->idnumber);
+            }    
         });
         return $users;
     }
+    
+    /** 
+     * Get the list of potential users for the turnitintool activity
+     * @param object $context current role context
+     * @return array list of users
+     */
+    public static function get_turnitintool_users($context) {
+        return get_enrolled_users($context, "mod/turnitintool:submit");
+    }    
 
+    /** 
+     * get list of users who have not submitted
+     * @param int $ttid turnitintool id
+     * @param int $partid part
+     * @param array $users list of user objects
+     * @return array list of user objects not submitted
+     */
+    public static function get_turnitintool_notsubmitted($ttid, $partid, $users) {
+        global $DB;
+
+        $notsubusers = array();
+        foreach ($users as $user) {
+            if (!$DB->get_record('turnitintool_submissions', array('userid'=>$user->id, 'turnitintoolid'=>$ttid, 'submission_part'=>$partid))) {
+                $notsubusers[$user->id] = $user;
+            }
+        }
+
+        return $notsubusers;
+    }    
+    
 }

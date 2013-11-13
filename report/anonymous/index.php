@@ -92,11 +92,23 @@ if ($mod) {
         $assignment = $DB->get_record('assign', array('id'=>$assignid));
         $allusers = report_anonymous::get_assign_users($context);
         $notsubmittedusers = report_anonymous::get_assign_notsubmitted($assignid, $allusers);
-        $notsubmittedusers = report_anonymous::sort_users($notsubmittedusers);
+        $notsubmittedusers = report_anonymous::sort_users($notsubmittedusers, $reveal);
         if (has_capability('report/anonymous:shownames', $context)) {
             $output->reveal_link($fullurl, $reveal);
         }
-        $output->report_assign($assignment, $allusers, $notsubmittedusers, $reveal);
+        $output->report_assign($id, $assignment, $allusers, $notsubmittedusers, $reveal);
+        $output->back_button($url);
+    } else {
+        $part = $DB->get_record('turnitintool_parts', array('id'=>$partid));
+        $turnitintool = $DB->get_record('turnitintool', array('id'=>$part->turnitintoolid));
+        $allusers = report_anonymous::get_turnitintool_users($context);
+        $notsubmittedusers = report_anonymous::get_turnitintool_notsubmitted($part->turnitintoolid, $partid, $allusers);
+        $notsubmittedusers = report_anonymous::sort_users($notsubmittedusers, $reveal);  
+        if (has_capability('report/anonymous:shownames', $context)) {
+            $output->reveal_link($fullurl, $reveal);
+        }
+        $output->report_turnitintool($id, $part, $allusers, $notsubmittedusers, $reveal);
+        $output->back_button($url);        
     }
 } else {
 

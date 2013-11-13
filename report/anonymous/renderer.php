@@ -18,6 +18,11 @@ class report_anonymous_renderer extends plugin_renderer_base {
         echo "</ul>";
     }
 
+    /**
+     * List all turnitintool activities and parts (for selection)
+     * @param moodle_url $url
+     * @param array $tts list of parts
+     */
     public function list_turnitintool($url, $tts) {
         echo "<h3>" . get_string('anonymoustts', 'report_anonymous') . "</h3>";
         if (empty($tts)) {
@@ -41,10 +46,13 @@ class report_anonymous_renderer extends plugin_renderer_base {
 
     /**
      * List of assignment users
+     * @param int $courseid course id
+     * @param object $assignment assignment
      * @param array $ausers all assignment users
      * @param array $anotusers all assignment users who did not submit
+     * @param boolean $reveal Display full names or not
      */
-    public function report_assign($assignment, $ausers, $anotusers, $reveal) {
+    public function report_assign($courseid, $assignment, $ausers, $anotusers, $reveal) {
         echo "<h3>" . get_string('assignnotsubmit', 'report_anonymous', $assignment->name) . "</h3>";
 
         // keep a track of records with no idnumber
@@ -52,7 +60,7 @@ class report_anonymous_renderer extends plugin_renderer_base {
         echo "<ul>";
         foreach ($anotusers as $u) {
             if ($reveal) {
-                $userurl = new moodle_url('/user/view.php', array('id'=>$u->id));
+                $userurl = new moodle_url('/user/view.php', array('id'=>$u->id, 'course'=>$courseid));
                 echo "<li>";
                 echo "<a href=\"$userurl\">".fullname($u)."</a>";
                 echo "</li>";
@@ -65,9 +73,50 @@ class report_anonymous_renderer extends plugin_renderer_base {
         echo "</ul>";
         echo "<strong>" . get_string('totalassignusers', 'report_anonymous', count($ausers)) . "</strong><br />";
         echo "<strong>" . get_string('totalnotassignusers', 'report_anonymous', count($anotusers)) . "</strong><br />";
-        echo "<strong>" . get_string('totalnoid', 'report_anonymous', count($noids)) . "</strong><br />";
+        if (!$reveal && count($noids)) {
+            echo "<strong>" . get_string('totalnoid', 'report_anonymous', count($noids)) . "</strong><br />";
+        }
     }
 
+    /**
+     * List of turnitintool users
+     * @param int $coursid courseid
+     * @param object $part turnitin part
+     * @param array $ausers all turnitin users
+     * @param array $anotusers all turnitin users who did not submit
+     * @param boolean $reveal Show names or not
+     */
+    public function report_turnitintool($courseid, $part, $ausers, $anotusers, $reveal) {
+        echo "<h3>" . get_string('ttnotsubmit', 'report_anonymous', $part->partname) . "</h3>";
+
+        // keep a track of records with no idnumber
+        $noids = array();
+        echo "<ul>";
+        foreach ($anotusers as $u) {
+            if ($reveal) {
+                $userurl = new moodle_url('/user/view.php', array('id'=>$u->id, 'course'=>$courseid));
+                echo "<li>";
+                echo "<a href=\"$userurl\">".fullname($u)."</a>";
+                echo "</li>";
+            } else if ($u->idnumber) {
+                echo "<li>{$u->idnumber}</li>";
+            } else {
+                $noids[$u->id] = $u;
+            }
+        }
+        echo "</ul>";
+        echo "<strong>" . get_string('totalttusers', 'report_anonymous', count($ausers)) . "</strong><br />";
+        echo "<strong>" . get_string('totalnotttusers', 'report_anonymous', count($anotusers)) . "</strong><br />";
+        if (!$reveal && count($noids)) {
+            echo "<strong>" . get_string('totalnoid', 'report_anonymous', count($noids)) . "</strong><br />";
+        }
+    }    
+    
+    /**
+     * Display the hide/show link for revealing names
+     * @param moodle_url $url
+     * @param boolean $reveal on/off
+     */
     public function reveal_link($url, $reveal) {
         if ($reveal) {
             $url->params(array('reveal'=>0));
@@ -76,7 +125,13 @@ class report_anonymous_renderer extends plugin_renderer_base {
             $url->params(array('reveal'=>1));
             $text = get_string('clickshownames', 'report_anonymous');
         }
-        echo "<div><a class=\"button\" href=\"$url\">$text</a></div>";
+        echo "<div><a class=\"btn\" href=\"$url\">$text</a></div>";
+    }
+    
+    public function back_button($url) {
+        echo "<div style=\"margin-top: 20px;\">";
+        echo "<a class=\"btn\" href=\"$url\">" . get_string('backtolist', 'report_anonymous') . "</a>";
+        echo "</div>";
     }
 
 }
