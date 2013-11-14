@@ -110,6 +110,11 @@ if ($mod) {
         $allusers = report_anonymous::get_turnitintool_users($context);
         $notsubmittedusers = report_anonymous::get_turnitintool_notsubmitted($part->turnitintoolid, $partid, $allusers);
         $notsubmittedusers = report_anonymous::sort_users($notsubmittedusers, $reveal);  
+        if ($export) {
+            $filename = "anonymous_{$turnitintool->name}_{$part->partname}.xls";
+            report_anonymous::export($notsubmittedusers, $reveal, $filename);
+            die;
+        }        
         $output->actions($context, $fullurl, $reveal);
         $output->report_turnitintool($id, $part, $allusers, $notsubmittedusers, $reveal);
         $output->back_button($url);        
