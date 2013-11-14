@@ -134,4 +134,42 @@ class report_anonymous {
         return $notsubusers;
     }    
     
+    public static function export($users, $reveal, $filename) {
+        global $CFG;
+        require_once($CFG->dirroot.'/lib/excellib.class.php');
+        
+        $workbook = new MoodleExcelWorkbook("-");
+        // Sending HTTP headers
+        $workbook->send($filename);
+        // Adding the worksheet
+        $myxls = $workbook->add_worksheet(get_string('workbook', 'report_anonymous'));
+        
+        // headers
+        $myxls->write_string(0, 0, '#');
+        $myxls->write_string(0, 1, get_string('idnumber'));
+        if ($reveal) {
+            $myxls->write_string(0, 2, get_string('username'));
+            $myxls->write_string(0, 3, get_string('fullname'));
+            $myxls->write_string(0, 4, get_string('email'));
+        }
+        
+        // add some data
+        $row = 1;
+        foreach ($users as $user) {
+            $myxls->write_number($row, 0, $row);
+            if ($user->idnumber) {
+                $myxls->write_string($row, 1, $user->idnumber);
+            } else {
+                $myxls->write_string($row, 1, '-');
+            }    
+            if ($reveal) {
+                $myxls->write_string($row, 2, $user->username);
+                $myxls->write_string($row, 3, fullname($user));
+                $myxls->write_string($row, 4, $user->email);
+            }
+            $row++;
+        }
+        $workbook->close();
+    }
+    
 }

@@ -32,6 +32,7 @@ $mod = optional_param('mod', '', PARAM_ALPHA);
 $assignid = optional_param('assign', 0, PARAM_INT);
 $partid = optional_param('part', 0, PARAM_INT);
 $reveal = optional_param('reveal', 0, PARAM_INT);
+$export = optional_param('export', 0, PARAM_INT);
 
 $url = new moodle_url('/report/anonymous/index.php', array('id'=>$id));
 $fullurl = new moodle_url('/report/anonymous/index.php', array(
@@ -64,9 +65,11 @@ if (!$capmods || !has_capability('report/anonymous:view', $context)) {
 // log
 add_to_log($course->id, "course", "report anonymous", "report/anonymous/index.php?id=$course->id", $course->id);
 
-$PAGE->set_title($course->shortname .': '. get_string('pluginname', 'report_anonymous'));
-$PAGE->set_heading($course->fullname);
-echo $OUTPUT->header();
+if (!$export) {
+    $PAGE->set_title($course->shortname .': '. get_string('pluginname', 'report_anonymous'));
+    $PAGE->set_heading($course->fullname);
+    echo $OUTPUT->header();
+}
 
 // Get assignments with 'blind' marking
 if ($capassign) {
@@ -93,9 +96,12 @@ if ($mod) {
         $allusers = report_anonymous::get_assign_users($context);
         $notsubmittedusers = report_anonymous::get_assign_notsubmitted($assignid, $allusers);
         $notsubmittedusers = report_anonymous::sort_users($notsubmittedusers, $reveal);
-        if (has_capability('report/anonymous:shownames', $context)) {
-            $output->reveal_link($fullurl, $reveal);
+        if ($export) {
+            $filename = "anonymous_{$assignment->name}.xls";
+            report_anonymous::export($notsubmittedusers, $reveal, $filename);
+            die;
         }
+        $output->actions($context, $fullurl, $reveal);
         $output->report_assign($id, $assignment, $allusers, $notsubmittedusers, $reveal);
         $output->back_button($url);
     } else {
@@ -104,9 +110,7 @@ if ($mod) {
         $allusers = report_anonymous::get_turnitintool_users($context);
         $notsubmittedusers = report_anonymous::get_turnitintool_notsubmitted($part->turnitintoolid, $partid, $allusers);
         $notsubmittedusers = report_anonymous::sort_users($notsubmittedusers, $reveal);  
-        if (has_capability('report/anonymous:shownames', $context)) {
-            $output->reveal_link($fullurl, $reveal);
-        }
+        $output->actions($context, $fullurl, $reveal);
         $output->report_turnitintool($id, $part, $allusers, $notsubmittedusers, $reveal);
         $output->back_button($url);        
     }

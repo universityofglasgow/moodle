@@ -22,6 +22,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+$string['anonymous:export'] = 'Export user lists to Excel';
 $string['anonymous:view'] = 'View course anonymous submission report';
 $string['anonymous:shownames'] = 'All (non-anonymised) view of submitters';
 $string['anonymousassignments'] = 'Anonymous Assignments';
@@ -30,6 +31,7 @@ $string['assignnotsubmit'] = 'Users who have not submitted to assignment "{$a}"'
 $string['backtolist'] = 'Back to list of activities';
 $string['clickhidenames'] = 'Click to <b>hide</b> names';
 $string['clickshownames'] = 'Click to <b>reveal</b> names';
+$string['export'] = 'Export to Excel';
 $string['noassignments'] = 'There are no anonymous assignments in this course';
 $string['nocapability'] = 'You do not have the required capabiltities to view this report';
 $string['notallowed'] = 'You do not have permission to view the selected activity';
@@ -41,3 +43,4 @@ $string['totalnoid'] = 'Number of users who have no idnumber = {$a}';
 $string['totalnotttusers'] = 'Number of users who have not submitted = {$a}';
 $string['totalttusers'] = 'Number of users eligible to submit turnitin part = {$a}';
 $string['ttnotsubmit'] = 'Users who have not submitted to Turnitin Part "{$a}"';
+$string['workbook'] = 'Anonymous Report Export';

@@ -5,7 +5,7 @@ class report_anonymous_renderer extends plugin_renderer_base {
     public function list_assign($url, $assignments) {
         echo "<h3>" . get_string('anonymousassignments', 'report_anonymous') . "</h3>";
         if (empty($assignments)) {
-            echo "<div class=\"alert-warning\">" . get_string('noassignments', 'report_anonymous') . "</div>";
+            echo "<div class=\"alert alert-warning\">" . get_string('noassignments', 'report_anonymous') . "</div>";
             return;
         }
         echo "<ul>";
@@ -26,7 +26,7 @@ class report_anonymous_renderer extends plugin_renderer_base {
     public function list_turnitintool($url, $tts) {
         echo "<h3>" . get_string('anonymoustts', 'report_anonymous') . "</h3>";
         if (empty($tts)) {
-            echo "<div class=\"alert-warning\">" . get_string('notts', 'report_anonymous') . "</div>";
+            echo "<div class=\"alert alert-warning\">" . get_string('notts', 'report_anonymous') . "</div>";
             return;
         }
         echo "<ul>";
@@ -71,10 +71,10 @@ class report_anonymous_renderer extends plugin_renderer_base {
             }
         }
         echo "</ul>";
-        echo "<strong>" . get_string('totalassignusers', 'report_anonymous', count($ausers)) . "</strong><br />";
-        echo "<strong>" . get_string('totalnotassignusers', 'report_anonymous', count($anotusers)) . "</strong><br />";
+        echo "<p><strong>" . get_string('totalassignusers', 'report_anonymous', count($ausers)) . "</strong></p>";
+        echo "<p><strong>" . get_string('totalnotassignusers', 'report_anonymous', count($anotusers)) . "</strong></p>";
         if (!$reveal && count($noids)) {
-            echo "<strong>" . get_string('totalnoid', 'report_anonymous', count($noids)) . "</strong><br />";
+            echo "<p><strong>" . get_string('totalnoid', 'report_anonymous', count($noids)) . "</strong></p>";
         }
     }
 
@@ -113,19 +113,30 @@ class report_anonymous_renderer extends plugin_renderer_base {
     }    
     
     /**
-     * Display the hide/show link for revealing names
+     * Display the additional actions some capabilities allow
      * @param moodle_url $url
      * @param boolean $reveal on/off
      */
-    public function reveal_link($url, $reveal) {
-        if ($reveal) {
-            $url->params(array('reveal'=>0));
-            $text = get_string('clickhidenames', 'report_anonymous');
-        } else {
-            $url->params(array('reveal'=>1));
-            $text = get_string('clickshownames', 'report_anonymous');
+    public function actions($context, $url, $reveal) {
+        echo "<div>";
+        if (has_capability('report/anonymous:shownames', $context)) {
+            $showurl = clone($url);
+            if ($reveal) {
+                $showurl->params(array('reveal'=>0));
+                $text = get_string('clickhidenames', 'report_anonymous');
+            } else {
+                $showurl->params(array('reveal'=>1));
+                $text = get_string('clickshownames', 'report_anonymous');
+            }
+            echo "<a class=\"btn\" href=\"$showurl\">$text</a>";
         }
-        echo "<div><a class=\"btn\" href=\"$url\">$text</a></div>";
+        
+        if (has_capability('report/anonymous:export', $context)) {
+            $url->params(array('export'=>1));        
+            $text = get_string('export', 'report_anonymous');
+            echo "<a class=\"btn\" href=\"$url\">$text</a>";
+        }
+        echo "</div>";
     }
     
     public function back_button($url) {
