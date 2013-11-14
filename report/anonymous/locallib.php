@@ -94,8 +94,7 @@ class report_anonymous {
      * sort users using callback
      */
     public static function sort_users($users, $onname=false) {
-        uasort($users, function($a, $b) {
-            global $onname;
+        uasort($users, function($a, $b) use ($onname) {
             if ($onname) {
                 return strcasecmp(fullname($a), fullname($b));
             } else {
