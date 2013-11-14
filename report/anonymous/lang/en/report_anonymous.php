@@ -28,6 +28,7 @@ $string['anonymous:shownames'] = 'All (non-anonymised) view of submitters';
 $string['anonymousassignments'] = 'Anonymous Assignments';
 $string['anonymoustts'] = 'Anonymous Turnitintool submissions';
 $string['assignnotsubmit'] = 'Users who have not submitted to assignment "{$a}"';
+$string['asterisk'] = 'these users have no id number in their profile.';
 $string['backtolist'] = 'Back to list of activities';
 $string['clickhidenames'] = 'Click to <b>hide</b> names';
 $string['clickshownames'] = 'Click to <b>reveal</b> names';

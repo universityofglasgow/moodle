@@ -58,11 +58,16 @@ class report_anonymous_renderer extends plugin_renderer_base {
         // keep a track of records with no idnumber
         $noids = array();
         echo "<ul>";
+        $idmessage = false;        
         foreach ($anotusers as $u) {
             if ($reveal) {
                 $userurl = new moodle_url('/user/view.php', array('id'=>$u->id, 'course'=>$courseid));
                 echo "<li>";
                 echo "<a href=\"$userurl\">".fullname($u)."</a>";
+                if (!$u->idnumber) {
+                    echo "&nbsp;<strong>*</strong>";
+                    $idmessage = true;
+                }                
                 echo "</li>";
             } else if ($u->idnumber) {
                 echo "<li>{$u->idnumber}</li>";
@@ -71,6 +76,9 @@ class report_anonymous_renderer extends plugin_renderer_base {
             }
         }
         echo "</ul>";
+        if ($idmessage) {
+            echo "<p><i><strong>*</strong> " . get_string('asterisk', 'report_anonymous') . "</i></p>";
+        }        
         echo "<p><strong>" . get_string('totalassignusers', 'report_anonymous', count($ausers)) . "</strong></p>";
         echo "<p><strong>" . get_string('totalnotassignusers', 'report_anonymous', count($anotusers)) . "</strong></p>";
         if (!$reveal && count($noids)) {
@@ -91,12 +99,17 @@ class report_anonymous_renderer extends plugin_renderer_base {
 
         // keep a track of records with no idnumber
         $noids = array();
+        $idmessage = false;
         echo "<ul>";
         foreach ($anotusers as $u) {
             if ($reveal) {
                 $userurl = new moodle_url('/user/view.php', array('id'=>$u->id, 'course'=>$courseid));
                 echo "<li>";
                 echo "<a href=\"$userurl\">".fullname($u)."</a>";
+                if (!$u->idnumber) {
+                    echo "&nbsp;<strong>*</strong>";
+                    $idmessage = true;
+                }
                 echo "</li>";
             } else if ($u->idnumber) {
                 echo "<li>{$u->idnumber}</li>";
@@ -105,6 +118,9 @@ class report_anonymous_renderer extends plugin_renderer_base {
             }
         }
         echo "</ul>";
+        if ($idmessage) {
+            echo "<p><i><strong>*</strong> " . get_string('asterisk', 'report_anonymous') . "</i></p>";
+        }
         echo "<strong>" . get_string('totalttusers', 'report_anonymous', count($ausers)) . "</strong><br />";
         echo "<strong>" . get_string('totalnotttusers', 'report_anonymous', count($anotusers)) . "</strong><br />";
         if (!$reveal && count($noids)) {
