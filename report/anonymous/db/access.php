@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Capabilities
+ * Capabilities.
  *
  * @package    report_anonymous
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -44,7 +44,7 @@ $capabilities = array(
         'archetypes' => array(
         ),
     ),
-    
+
     'report/anonymous:export' => array(
         'riskbitmask' => RISK_PERSONAL,
         'captype' => 'read',
@@ -52,9 +52,9 @@ $capabilities = array(
         'archetypes' => array(
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW            
+            'manager' => CAP_ALLOW
         ),
-    ),    
+    ),
 );
 
 

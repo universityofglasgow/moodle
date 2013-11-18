@@ -24,9 +24,8 @@
 
 require(dirname(__FILE__).'/../../config.php');
 require_once(dirname(__FILE__).'/locallib.php');
-//require_once($CFG->dirroot.'/lib/tablelib.php');
 
-// parameters
+// Parameters.
 $id = required_param('id', PARAM_INT);
 $mod = optional_param('mod', '', PARAM_ALPHA);
 $assignid = optional_param('assign', 0, PARAM_INT);
@@ -43,7 +42,7 @@ $fullurl = new moodle_url('/report/anonymous/index.php', array(
     'reveal'=>$reveal,
 ));
 
-// page setup
+// Page setup.
 $PAGE->set_url($url);
 $PAGE->set_pagelayout('admin');
 
@@ -51,7 +50,7 @@ if (!$course = $DB->get_record('course', array('id'=>$id))) {
     print_error('invalidcourse');
 }
 
-// security
+// Security.
 require_login($course);
 $output = $PAGE->get_renderer('report_anonymous');
 $context = get_context_instance(CONTEXT_COURSE, $course->id);
@@ -62,7 +61,7 @@ if (!$capmods || !has_capability('report/anonymous:view', $context)) {
     notice(get_string('nocapability', 'report_anonymous'));
 }
 
-// log
+// Log.
 add_to_log($course->id, "course", "report anonymous", "report/anonymous/index.php?id=$course->id", $course->id);
 
 if (!$export) {
@@ -71,26 +70,26 @@ if (!$export) {
     echo $OUTPUT->header();
 }
 
-// Get assignments with 'blind' marking
+// Get assignments with 'blind' marking.
 if ($capassign) {
     $assignments = report_anonymous::get_assignments($id);
 } else {
     $assignments = array();
 }
 
-// get turnitintool submissions with 'anon' marking
+// Get turnitintool submissions with 'anon' marking.
 if ($captt) {
     $tts = report_anonymous::get_tts($id);
 } else {
     $tts = array();
 }
 
-// has a link been submitted?
+// Has a link been submitted?
 if ($mod) {
     if (!report_anonymous::allowed_to_view($mod, $assignid, $partid, $assignments, $tts)) {
         notice(get_string('notallowed', 'report_anonymous'), $url);
     }
-   
+
     if ($mod=='assign') {
         $assignment = $DB->get_record('assign', array('id'=>$assignid));
         $allusers = report_anonymous::get_assign_users($context);
@@ -109,19 +108,19 @@ if ($mod) {
         $turnitintool = $DB->get_record('turnitintool', array('id'=>$part->turnitintoolid));
         $allusers = report_anonymous::get_turnitintool_users($context);
         $notsubmittedusers = report_anonymous::get_turnitintool_notsubmitted($part->turnitintoolid, $partid, $allusers);
-        $notsubmittedusers = report_anonymous::sort_users($notsubmittedusers, $reveal);  
+        $notsubmittedusers = report_anonymous::sort_users($notsubmittedusers, $reveal);
         if ($export) {
             $filename = "anonymous_{$turnitintool->name}_{$part->partname}.xls";
             report_anonymous::export($notsubmittedusers, $reveal, $filename);
             die;
-        }        
+        }
         $output->actions($context, $fullurl, $reveal);
         $output->report_turnitintool($id, $part, $allusers, $notsubmittedusers, $reveal);
-        $output->back_button($url);        
+        $output->back_button($url);
     }
 } else {
 
-    // list of activities to select
+    // List of activities to select.
     $output->list_assign($fullurl, $assignments);
     $output->list_turnitintool($fullurl, $tts);
 }

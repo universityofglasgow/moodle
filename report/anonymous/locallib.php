@@ -1,11 +1,34 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * This file contains functions used by the participation report
+ *
+ * @package    report
+ * @subpackage anonymous
+ * @copyright  2013 Howard Miller
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 class report_anonymous {
 
     /**
      * get blind assignments for this course
      * @param int $id course id
-     * @return array 
+     * @return array
      */
     public static function get_assignments($id) {
         global $DB;
@@ -18,13 +41,13 @@ class report_anonymous {
      * Get anonymous turnitin assignments and the
      * parts that go with them
      * @param int $id course id
-     * @return array 
+     * @return array
      */
     public static function get_tts($id) {
         global $DB;
 
         $tts = $DB->get_records('turnitintool', array('anon'=>1, 'course'=>$id));
-        foreach ($tts as $id=>$tt) {
+        foreach ($tts as $id => $tt) {
             $parts = $DB->get_records('turnitintool_parts', array('turnitintoolid'=>$id, 'deleted'=>0));
             $tts[$id]->parts = $parts;
         }
@@ -56,7 +79,7 @@ class report_anonymous {
         return false;
     }
 
-    /** 
+    /**
      * Get the list of potential users for the assignment activity
      * @param object $context current role context
      * @return array list of users
@@ -71,7 +94,7 @@ class report_anonymous {
         }
     }
 
-    /** 
+    /**
      * get list of users who have not submitted
      * @param int $assignid assignment id
      * @param array $users list of user objects
@@ -99,21 +122,21 @@ class report_anonymous {
                 return strcasecmp(fullname($a), fullname($b));
             } else {
                 return strcasecmp($a->idnumber, $b->idnumber);
-            }    
+            }
         });
         return $users;
     }
-    
-    /** 
+
+    /**
      * Get the list of potential users for the turnitintool activity
      * @param object $context current role context
      * @return array list of users
      */
     public static function get_turnitintool_users($context) {
         return get_enrolled_users($context, "mod/turnitintool:submit");
-    }    
+    }
 
-    /** 
+    /**
      * get list of users who have not submitted
      * @param int $ttid turnitintool id
      * @param int $partid part
@@ -125,25 +148,26 @@ class report_anonymous {
 
         $notsubusers = array();
         foreach ($users as $user) {
-            if (!$DB->get_record('turnitintool_submissions', array('userid'=>$user->id, 'turnitintoolid'=>$ttid, 'submission_part'=>$partid))) {
+            if (!$DB->get_record('turnitintool_submissions',
+                    array('userid'=>$user->id, 'turnitintoolid'=>$ttid, 'submission_part'=>$partid))) {
                 $notsubusers[$user->id] = $user;
             }
         }
 
         return $notsubusers;
-    }    
-    
+    }
+
     public static function export($users, $reveal, $filename) {
         global $CFG;
         require_once($CFG->dirroot.'/lib/excellib.class.php');
-        
+
         $workbook = new MoodleExcelWorkbook("-");
-        // Sending HTTP headers
+        // Sending HTTP headers.
         $workbook->send($filename);
-        // Adding the worksheet
+        // Adding the worksheet.
         $myxls = $workbook->add_worksheet(get_string('workbook', 'report_anonymous'));
-        
-        // headers
+
+        // Headers.
         $myxls->write_string(0, 0, '#');
         $myxls->write_string(0, 1, get_string('idnumber'));
         if ($reveal) {
@@ -151,8 +175,8 @@ class report_anonymous {
             $myxls->write_string(0, 3, get_string('fullname'));
             $myxls->write_string(0, 4, get_string('email'));
         }
-        
-        // add some data
+
+        // Add some data.
         $row = 1;
         foreach ($users as $user) {
             $myxls->write_number($row, 0, $row);
@@ -160,7 +184,7 @@ class report_anonymous {
                 $myxls->write_string($row, 1, $user->idnumber);
             } else {
                 $myxls->write_string($row, 1, '-');
-            }    
+            }
             if ($reveal) {
                 $myxls->write_string($row, 2, $user->username);
                 $myxls->write_string($row, 3, fullname($user));
@@ -170,5 +194,5 @@ class report_anonymous {
         }
         $workbook->close();
     }
-    
+
 }

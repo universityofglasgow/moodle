@@ -35,11 +35,12 @@ defined('MOODLE_INTERNAL') || die;
 function report_anonymous_extend_navigation_course($navigation, $course, $context) {
     global $CFG, $OUTPUT;
 
-    // Must have rights to view this course and to see one of the 'assignment' types
+    // Must have rights to view this course and to see one of the 'assignment' types.
     $capmods = has_capability('mod/turnitintool:grade', $context) || has_capability('mod/assign:grade', $context);
     if (has_capability('report/anonymous:view', $context) && $capmods) {
         $url = new moodle_url('/report/anonymous/index.php', array('id'=>$course->id));
-        $navigation->add(get_string('pluginname', 'report_anonymous'), $url, navigation_node::TYPE_SETTING, null, null, new pix_icon('i/report', ''));
+        $navigation->add(get_string('pluginname', 'report_anonymous'), $url,
+            navigation_node::TYPE_SETTING, null, null, new pix_icon('i/report', ''));
     }
 }
 
