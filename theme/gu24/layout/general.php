@@ -211,7 +211,7 @@ if ($hasfootnote) { ?>
 <?php echo $OUTPUT->standard_end_of_body_html() ?>
 
 </div>
-<?php if ($PAGE->bodyid !== "page-mod-turnitintool--view") { ?>
+<?php if ($PAGE->bodyid !== "page-mod-turnitintool--view" && $PAGE->bodyid !== "page-mod-recordingsbn-view") { ?>
 <!--[if lt IE 9]>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 <![endif]-->
