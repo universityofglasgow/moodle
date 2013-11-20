@@ -118,6 +118,7 @@ class report_tiigrade {
         $myxls->write_string( 0, $i, get_string('grade'));
         $myxls->write_string( 0, $i+1, get_string('similarity', 'report_tiigrade'));
         $myxls->write_string( 0, $i+2, get_string('date'));
+        $myxls->write_string( 0, $i+3, get_string('title', 'report_tiigrade'));
 
         // Add some data.
         $row = 1;
@@ -140,6 +141,7 @@ class report_tiigrade {
             $myxls->write_number($row, $i, $submission->submission_grade);
             $myxls->write_number($row, $i+1, $submission->submission_score);
             $myxls->write_string($row, $i+2, date('d/M/Y H:i', $submission->submission_modified));
+            $myxls->write_string($row, $i+3, $submission->submission_title);
             $row++;
         }
         $workbook->close();

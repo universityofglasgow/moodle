@@ -37,6 +37,7 @@ $string['pluginname'] = 'Turnitintool grades';
 $string['similarity'] = 'Similarity';
 $string['tiiactivities'] = 'Turnitintool activities';
 $string['tiisubmissions'] = 'Turnitintool submissions';
+$string['title'] = 'Title';
 $string['totalnoid'] = 'Total users with empty id field = {$a}';
 $string['totalsubmissions'] = 'Total submissions in part = {$a}';
 $string['totalusers'] = 'Total users in part = {$a}';
