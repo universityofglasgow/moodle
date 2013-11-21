@@ -19,8 +19,8 @@ function bigbluebuttonbn_supports($feature) {
     switch($feature) {
         case FEATURE_IDNUMBER:                return true;
         case FEATURE_GROUPS:                  return true;
-        case FEATURE_GROUPINGS:               return false;
-        case FEATURE_GROUPMEMBERSONLY:        return false;
+        case FEATURE_GROUPINGS:               return true;
+        case FEATURE_GROUPMEMBERSONLY:        return true;
         case FEATURE_MOD_INTRO:               return false;
         case FEATURE_COMPLETION_TRACKS_VIEWS: return true;
         case FEATURE_GRADE_HAS_GRADE:         return false;
@@ -46,9 +46,9 @@ function bigbluebuttonbn_add_instance($bigbluebuttonbn) {
 
     $bigbluebuttonbn->timecreated = time();
 
-    $bigbluebuttonbn->moderatorpass = bigbluebuttonbn_rand_string( 16 );
-    $bigbluebuttonbn->viewerpass = bigbluebuttonbn_rand_string( 16 );
-    $bigbluebuttonbn->meetingid = bigbluebuttonbn_rand_string( 16 );
+    $bigbluebuttonbn->moderatorpass = bigbluebuttonbn_rand_string();
+    $bigbluebuttonbn->viewerpass = bigbluebuttonbn_rand_string();
+    $bigbluebuttonbn->meetingid = bigbluebuttonbn_rand_string();
 
     if (! isset($bigbluebuttonbn->newwindow))   $bigbluebuttonbn->newwindow = 0;
     if (! isset($bigbluebuttonbn->wait))        $bigbluebuttonbn->wait = 0;
@@ -57,7 +57,7 @@ function bigbluebuttonbn_add_instance($bigbluebuttonbn) {
     $returnid = $DB->insert_record('bigbluebuttonbn', $bigbluebuttonbn);
     
     if (isset($bigbluebuttonbn->timeavailable) && $bigbluebuttonbn->timeavailable ){
-        $event = NULL;
+        $event = new stdClass();
         $event->name        = $bigbluebuttonbn->name;
         $event->courseid    = $bigbluebuttonbn->course;
         $event->groupid     = 0;
@@ -97,7 +97,7 @@ function bigbluebuttonbn_update_instance($bigbluebuttonbn) {
     if (! isset($bigbluebuttonbn->wait))        $bigbluebuttonbn->wait = 0;
     if (! isset($bigbluebuttonbn->record))      $bigbluebuttonbn->record = 0;
 
-    $DB->update_record('bigbluebuttonbn', $bigbluebuttonbn);
+    $returnid = $DB->update_record('bigbluebuttonbn', $bigbluebuttonbn);
     
     if (isset($bigbluebuttonbn->timeavailable) && $bigbluebuttonbn->timeavailable ){
         $event = new stdClass();
@@ -131,7 +131,7 @@ function bigbluebuttonbn_update_instance($bigbluebuttonbn) {
         
     }
     
-    return true;
+    return $returnid;
 }
 
 /**
@@ -339,17 +339,17 @@ function bigbluebuttonbn_get_coursemodule_info($coursemodule) {
     if (! $bigbluebuttonbn = $DB->get_record('bigbluebuttonbn', array('id'=>$coursemodule->instance), 'id, name, newwindow')) {
         return NULL;
     }
-
-    $info = new stdClass();
-    $info->name  = $bigbluebuttonbn->name;
+    
+    $info = new cached_cm_info();
+    $info->name = $bigbluebuttonbn->name;
     
     if ( $bigbluebuttonbn->newwindow == 1 ){
-        $info->extra = "onclick=\"window.open('"."$CFG->wwwroot/mod/bigbluebuttonbn/view.php?id=$coursemodule->id&amp;redirect=1"."'); return false;\"";
-    } else {
-        //$info->extra = format_module_intro('bigbluebuttonbn', $bigbluebuttonbn, $coursemodule->id, false);
+        $fullurl = "$CFG->wwwroot/mod/bigbluebuttonbn/view.php?id=$coursemodule->id&amp;redirect=1";
+        $info->onclick = "window.open('$fullurl'); return false;";
     }
-
+    
     return $info;
+
 }
 
 ?>

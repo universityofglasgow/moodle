@@ -17,15 +17,8 @@ require_once(dirname(__FILE__).'/lib.php');
 require_once($CFG->dirroot.'/lib/filelib.php');
 
 
-function bigbluebuttonbn_rand_string($len, $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
-{
-    $string = '';
-    for ($i = 0; $i < $len; $i++)
-    {
-        $pos = rand(0, strlen($chars)-1);
-        $string .= $chars{$pos};
-    }
-    return (sha1($string));
+function bigbluebuttonbn_rand_string() {
+    return md5(uniqid(rand(), true));
 }
 
 function bigbluebuttonbn_log(array $bbbsession, $event) {
@@ -199,7 +192,7 @@ function bigbluebuttonbn_getRecordingsArray($meetingID, $URL, $SALT ) {
             
         }
 
-        usort($recordings, bigbluebuttonbn_recordingBuildSorter('startTime'));
+        usort($recordings, 'bigbluebuttonbn_recordingBuildSorter');
 
         return $recordings;
 
@@ -210,12 +203,10 @@ function bigbluebuttonbn_getRecordingsArray($meetingID, $URL, $SALT ) {
     }
 }
 
-function bigbluebuttonbn_recordingBuildSorter($key){
-    return function ($a, $b) use ($key){
-        if( $a[$key] < $b[$key]) return -1;
-        else if( $a[$key] == $b[$key]) return 0;
-        else return 1;
-    };
+function bigbluebuttonbn_recordingBuildSorter($a, $b){
+    if( $a['startTime'] < $b['startTime']) return -1;
+    else if( $a['startTime'] == $b['startTime']) return 0;
+    else return 1;
 }
 
 function bigbluebuttonbn_doDeleteRecordings( $recordIDs, $URL, $SALT ) {

@@ -44,7 +44,6 @@ $PAGE->set_url('/mod/bigbluebuttonbn/index.php', array('id'=>$id));
 $PAGE->navbar->add($strbigbluebuttonbns, "index.php?id=$course->id");
 $PAGE->set_title($strbigbluebuttonbns);
 $PAGE->set_heading($course->fullname);
-echo $OUTPUT->header();
 
 /// Get all the appropriate data
 if (! $bigbluebuttonbns = get_all_instances_in_course('bigbluebuttonbn', $course)) {
@@ -98,6 +97,7 @@ foreach ($bigbluebuttonbns as $bigbluebuttonbn) {
     $cm = get_coursemodule_from_id('bigbluebuttonbn', $bigbluebuttonbn->coursemodule, 0, false, MUST_EXIST);
 
     if ( groups_get_activity_groupmode($cm) > 0 ){
+        $table->data[] = displayBigBlueButtonRooms($url, $salt, $moderator, $course, $bigbluebuttonbn, (object) array('id'=>0, 'name'=>get_string('allparticipants')));
         $groups = groups_get_activity_allowed_groups($cm);
         if( isset($groups)) {
             foreach( $groups as $group){
@@ -110,11 +110,17 @@ foreach ($bigbluebuttonbns as $bigbluebuttonbn) {
     
 }
 
+echo $OUTPUT->header();
 
+echo $OUTPUT->heading(get_string('index_heading', 'bigbluebuttonbn'));
+echo html_writer::table($table);
+
+echo $OUTPUT->footer();
+
+
+/// Functions
 function displayBigBlueButtonRooms($url, $salt, $moderator, $course, $bigbluebuttonbn, $groupObj = null ){
     $joinURL = null;
-    $user = null;
-    $result = null;
     $group = "-";
     $users = "-";
     $running = "-";
@@ -223,9 +229,5 @@ function displayBigBlueButtonRooms($url, $salt, $moderator, $course, $bigbluebut
     }
 
 }
-
-echo $OUTPUT->heading(get_string('index_heading', 'bigbluebuttonbn'));
-echo html_writer::table($table);
-echo $OUTPUT->footer();
 
 ?>
