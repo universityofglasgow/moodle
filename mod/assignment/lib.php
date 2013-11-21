@@ -2369,13 +2369,6 @@ class assignment_base {
                 assignment_reset_gradebook($data->courseid, $this->type);
             }
         }
-
-        /// updating dates - shift may be negative too
-        if ($data->timeshift) {
-            shift_course_mod_dates('assignment', array('timedue', 'timeavailable'), $data->timeshift, $data->courseid);
-            $status[] = array('component'=>$componentstr, 'item'=>get_string('datechanged').': '.$typestr, 'error'=>false);
-        }
-
         return $status;
     }
 
@@ -3888,6 +3881,16 @@ function assignment_reset_userdata($data) {
         $status = array_merge($status, $ass->reset_userdata($data));
     }
 
+    // Updating dates - shift may be negative too.
+    if ($data->timeshift) {
+        shift_course_mod_dates('assignment',
+                                array('timedue', 'timeavailable'),
+                                $data->timeshift,
+                                $data->courseid);
+        $status[] = array('component' => get_string('modulenameplural', 'assignment'),
+                          'item' => get_string('datechanged'),
+                          'error' => false);
+    }
     return $status;
 }
 
@@ -3948,7 +3951,12 @@ function assignment_extend_settings_navigation(settings_navigation $settings, na
     global $PAGE, $DB, $USER, $CFG;
 
     $assignmentrow = $DB->get_record("assignment", array("id" => $PAGE->cm->instance));
-    require_once "$CFG->dirroot/mod/assignment/type/$assignmentrow->assignmenttype/assignment.class.php";
+
+    $classfile = "$CFG->dirroot/mod/assignment/type/$assignmentrow->assignmenttype/assignment.class.php";
+    if (!file_exists($classfile)) {
+        return;
+    }
+    require_once($classfile);
 
     $assignmentclass = 'assignment_'.$assignmentrow->assignmenttype;
     $assignmentinstance = new $assignmentclass($PAGE->cm->id, $assignmentrow, $PAGE->cm, $PAGE->course);

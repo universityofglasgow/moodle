@@ -3144,12 +3144,22 @@ class navbar extends navigation_node {
      * @return array
      */
     private function get_course_categories() {
+        global $CFG;
+
+        require_once($CFG->dirroot.'/course/lib.php');
         $categories = array();
+        $cap = 'moodle/category:viewhiddencategories';
         foreach ($this->page->categories as $category) {
+            if (!$category->visible && !has_capability($cap, get_category_or_system_context($category->parent))) {
+                continue;
+            }
             $url = new moodle_url('/course/category.php', array('id' => $category->id));
             $name = format_string($category->name, true, array('context' => context_coursecat::instance($category->id)));
-            $categories[] = navigation_node::create($name, $url, self::TYPE_CATEGORY, null, $category->id);
-            $id = $category->parent;
+            $categorynode = navigation_node::create($name, $url, self::TYPE_CATEGORY, null, $category->id);
+            if (!$category->visible) {
+                $categorynode->hidden = true;
+            }
+            $categories[] = $categorynode;
         }
         if (is_enrolled(context_course::instance($this->page->course->id))) {
             $courses = $this->page->navigation->get('mycourses');
@@ -3776,7 +3786,7 @@ class settings_navigation extends navigation_node {
             require_once($file);
         }
 
-        $modulenode = $this->add(get_string('pluginadministration', $this->page->activityname));
+        $modulenode = $this->add(get_string('pluginadministration', $this->page->activityname), null, self::TYPE_SETTING, null, 'modulesettings');
         $modulenode->force_open();
 
         // Settings for the module
@@ -4157,7 +4167,7 @@ class settings_navigation extends navigation_node {
     protected function load_block_settings() {
         global $CFG;
 
-        $blocknode = $this->add(print_context_name($this->context));
+        $blocknode = $this->add(print_context_name($this->context), null, self::TYPE_SETTING, null, 'blocksettings');
         $blocknode->force_open();
 
         // Assign local roles

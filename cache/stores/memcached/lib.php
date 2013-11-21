@@ -141,6 +141,7 @@ class cachestore_memcached extends cache_store implements cache_is_configurable 
             }
             $this->connection->addServers($this->servers);
         }
+        // Test the connection to the pool of servers.
         $this->isready = @$this->connection->set("ping", 'ping', 1);
     }
 
@@ -373,7 +374,12 @@ class cachestore_memcached extends cache_store implements cache_is_configurable 
         $lines = explode("\n", $data->servers);
         $servers = array();
         foreach ($lines as $line) {
-            $line = trim($line, ':');
+            // Trim surrounding colons and default whitespace.
+            $line = trim(trim($line), ":");
+            // Skip blank lines.
+            if ($line === '') {
+                continue;
+            }
             $servers[] = explode(':', $line, 3);
         }
         return array(

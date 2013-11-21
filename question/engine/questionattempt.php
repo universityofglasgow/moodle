@@ -916,7 +916,7 @@ class question_attempt {
      * @param array $postdata (optional, only inteded for testing use) take the
      *      data from this array, instead of from $_POST. At the moment, this
      *      behaves as if there were no files.
-     * @param string $text optional reponse text.
+     * @param string $text optional response text.
      * @return question_file_saver that can be used to save the files later.
      */
     protected function process_response_files($name, $draftidname, $postdata = null, $text = null) {
@@ -957,7 +957,7 @@ class question_attempt {
      * that it is valid or cleaning it in any way.
      * @return array name => value.
      */
-    protected function get_all_submitted_qt_vars($postdata) {
+    public function get_all_submitted_qt_vars($postdata) {
         if (is_null($postdata)) {
             $postdata = $_POST;
         }
@@ -966,7 +966,7 @@ class question_attempt {
         $prefixlen = strlen($this->get_field_prefix());
 
         $submitteddata = array();
-        foreach ($_POST as $name => $value) {
+        foreach ($postdata as $name => $value) {
             if (preg_match($pattern, $name)) {
                 $submitteddata[substr($name, $prefixlen)] = $value;
             }
