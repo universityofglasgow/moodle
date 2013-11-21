@@ -1,16 +1,41 @@
 <?php
-if (!defined('MOODLE_INTERNAL')) {
-    die('Direct access to this script is forbidden.');    ///  It must be included from a Moodle page
-}
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * Version information
+ *
+ * @package    mod
+ * @subpackage choicegroup
+ * @copyright  2013 Université de Lausanne
+ * @author     Nicolas Dunand <Nicolas.Dunand@unil.ch>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+defined('MOODLE_INTERNAL') || die();
 
 require_once ($CFG->dirroot.'/course/moodleform_mod.php');
 
 class mod_choicegroup_mod_form extends moodleform_mod {
 
     function definition() {
-        global $CFG, $CHOICEGROUP_SHOWRESULTS, $CHOICEGROUP_PUBLISH, $CHOICEGROUP_DISPLAY, $DB, $COURSE;
+        global $CFG, $CHOICEGROUP_SHOWRESULTS, $CHOICEGROUP_PUBLISH, $CHOICEGROUP_DISPLAY, $DB, $COURSE, $PAGE;
 
         $mform    =& $this->_form;
+
+        $PAGE->requires->js_init_call('M.mod_choicegroup.init');
 
 //-------------------------------------------------------------------------------
         $mform->addElement('header', 'general', get_string('general', 'form'));
@@ -32,15 +57,20 @@ class mod_choicegroup_mod_form extends moodleform_mod {
             $groups[$group->id] = $group->name;
         }
 
+        if (count($db_groups) < 2) {
+            print_error('pleasesetgroups', 'choicegroup');
+        }
+
         $repeatarray = array();
         $repeatarray[] = $mform->createElement('header', '', get_string('option','choicegroup').' {no}');
         $repeatarray[] = $mform->createElement('select', 'option', get_string('option','choicegroup'), $groups);
-        $repeatarray[] = $mform->createElement('text', 'limit', get_string('limit','choicegroup'));
+        $repeatarray[] = $mform->createElement('text', 'limit', get_string('limit','choicegroup'), array('class' => 'mod-choicegroup-limit-input'));
         $repeatarray[] = $mform->createElement('hidden', 'optionid', 0);
 
 //-------------------------------------------------------------------------------
         $mform->addElement('header', 'miscellaneoussettingshdr', get_string('miscellaneoussettings', 'form'));
-
+       $mform->addElement('checkbox', 'multipleenrollmentspossible', get_string('multipleenrollmentspossible', 'choicegroup'));
+        
         $mform->addElement('select', 'showresults', get_string("publish", "choicegroup"), $CHOICEGROUP_SHOWRESULTS);
         $mform->setDefault('showresults', CHOICEGROUP_SHOWRESULTS_DEFAULT);
 
@@ -53,33 +83,45 @@ class mod_choicegroup_mod_form extends moodleform_mod {
         $mform->addElement('selectyesno', 'showunanswered', get_string("showunanswered", "choicegroup"));
 
         $menuoptions = array();
-        $menuoptions[1] = get_string('enable');
         $menuoptions[0] = get_string('disable');
+        $menuoptions[1] = get_string('enable');
         $mform->addElement('select', 'limitanswers', get_string('limitanswers', 'choicegroup'), $menuoptions);
         $mform->addHelpButton('limitanswers', 'limitanswers', 'choicegroup');
 
+        $mform->addElement('text', 'generallimitation', get_string('generallimitation', 'choicegroup'), array('size' => '6'));
+        $mform->setType('generallimitation', PARAM_INT);
+        $mform->disabledIf('generallimitation', 'limitanswers', 'neq', 1);
+        $mform->addRule('generallimitation', get_string('error'), 'numeric', 'extraruledata', 'client', false, false);
+        $mform->setDefault('generallimitation', 0);
+        $mform->addElement('button', 'setlimit', get_string('applytoallgroups', 'choicegroup'));
+        $mform->disabledIf('setlimit', 'limitanswers', 'neq', 1);
 
-        if ($this->_instance){
-            $repeatno = $DB->count_records('choicegroup_options', array('choicegroupid'=>$this->_instance));
-            $repeatno += 2;
-        } else {
-            $repeatno = 5;
-        }
-
+        $repeatno = count($db_groups);
         $repeateloptions = array();
         $repeateloptions['limit']['default'] = 0;
         $repeateloptions['limit']['disabledif'] = array('limitanswers', 'eq', 0);
         $repeateloptions['limit']['rule'] = 'numeric';
+        $repeateloptions['limit']['type'] = PARAM_INT;
 
         $repeateloptions['option']['helpbutton'] = array('choicegroupoptions', 'choicegroup');
-        $mform->setType('option', PARAM_CLEANHTML);
+//        $mform->setType('option', PARAM_CLEANHTML);
 
         $mform->setType('optionid', PARAM_INT);
 
-        $this->repeat_elements($repeatarray, $repeatno,
-                    $repeateloptions, 'option_repeats', 'option_add_fields', 3);
+        $this->repeat_elements($repeatarray, $repeatno, $repeateloptions, 'option_repeats', 'option_add_fields', 3);
 
+        // Remove "Add Fields" button as there are always enough fields
+        $mform->removeElement('option_add_fields');
 
+        // If this groupchoice activity is newly created, fill the groupchoice fields
+        // with all available groups in this course
+        if(!$this->_instance) {
+            $counter = 0;
+            foreach($db_groups as &$i) {
+                $mform->getElement('option['.$counter.']')->setSelected($i->id);
+                $counter++;
+            }
+        }
 
 
 //-------------------------------------------------------------------------------
@@ -132,10 +174,16 @@ class mod_choicegroup_mod_form extends moodleform_mod {
                 $choicegroups++;
             }
         }
-
-        if ($choicegroups < 2) {
-           $errors['option[0]'] = get_string('fillinatleastoneoption', 'choicegroup');
-           $errors['option[1]'] = get_string('fillinatleastoneoption', 'choicegroup');
+        
+        if (array_key_exists('multipleenrollmentspossible', $data) && $data['multipleenrollmentspossible'] === '1') {
+            if ($choicegroups < 1) {
+                $errors['option[0]'] = get_string('fillinatleastoneoption', 'choicegroup');
+            }
+        } else {
+            if ($choicegroups < 2) {
+                $errors['option[0]'] = get_string('fillinatleasttwooptions', 'choicegroup');
+                $errors['option[1]'] = get_string('fillinatleasttwooptions', 'choicegroup');
+            }
         }
 
         $groups_selected = array();

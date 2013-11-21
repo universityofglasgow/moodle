@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -16,14 +15,19 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Moodle renderer used to display special elements of the lesson module
+ * Version information
  *
- * @package   Choicegroup
- * @copyright 2012 Nicolas Dunand
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- **/
-define ('DISPLAY_HORIZONTAL_LAYOUT', 0);
-define ('DISPLAY_VERTICAL_LAYOUT', 1);
+ * @package    mod
+ * @subpackage choicegroup
+ * @copyright  2013 Université de Lausanne
+ * @author     Nicolas Dunand <Nicolas.Dunand@unil.ch>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+defined('MOODLE_INTERNAL') || die();
+
+define ('CHOICEGROUP_DISPLAY_HORIZONTAL_LAYOUT', 0);
+define ('CHOICEGROUP_DISPLAY_VERTICAL_LAYOUT', 1);
 
 class mod_choicegroup_renderer extends plugin_renderer_base {
 
@@ -34,7 +38,7 @@ class mod_choicegroup_renderer extends plugin_renderer_base {
      * @param bool $vertical
      * @return string
      */
-    public function display_options($options, $coursemoduleid, $vertical = true, $publish = false, $limitanswers = false, $showresults = false, $current = false, $choicegroupopen = false, $disabled = false) {
+    public function display_options($options, $coursemoduleid, $vertical = true, $publish = false, $limitanswers = false, $showresults = false, $current = false, $choicegroupopen = false, $disabled = false, $multipleenrollmentspossible = false) {
         global $DB, $PAGE, $course;
 
         $PAGE->requires->js('/mod/choicegroup/javascript.js');
@@ -48,7 +52,12 @@ class mod_choicegroup_renderer extends plugin_renderer_base {
 
         $html .= html_writer::start_tag('tr');
         $html .= html_writer::tag('th', get_string('choice', 'choicegroup'));
-        $html .= html_writer::tag('th', get_string('group'));
+
+        $group = get_string('group');
+        $group .= html_writer::tag('a', get_string('showdescription', 'choicegroup'), array('class' => 'choicegroup-descriptiondisplay choicegroup-descriptionshow', 'href' => '#'));
+        $group .= html_writer::tag('a', get_string('hidedescription', 'choicegroup'), array('class' => 'choicegroup-descriptiondisplay choicegroup-descriptionhide hidden', 'href' => '#'));
+        $html .= html_writer::tag('th', $group);
+
         if ( $showresults == CHOICEGROUP_SHOWRESULTS_ALWAYS or
         ($showresults == CHOICEGROUP_SHOWRESULTS_AFTER_ANSWER and $current) or
         ($showresults == CHOICEGROUP_SHOWRESULTS_AFTER_CLOSE and !$choicegroupopen)) {
@@ -67,6 +76,11 @@ class mod_choicegroup_renderer extends plugin_renderer_base {
         $html .= html_writer::end_tag('tr');
 
         $availableoption = count($options['options']);
+        if ($multipleenrollmentspossible == 1) {
+            $i=0;
+            $answer_to_groupid_mappings = '';
+        }
+        $initiallyHideSubmitButton = false;
         foreach ($options['options'] as $option) {
             $group = $DB->get_record('groups', array('id' => $option->groupid, 'courseid' => $course->id));
             if (!$group) {
@@ -83,10 +97,21 @@ class mod_choicegroup_renderer extends plugin_renderer_base {
             }
             $html .= html_writer::start_tag('tr', array('class'=>'option'));
             $html .= html_writer::start_tag('td', array());
-            $option->attributes->name = 'answer';
-            $option->attributes->type = 'radio';
+            
+            if ($multipleenrollmentspossible == 1) {
+                $option->attributes->name = 'answer_'.$i;
+                $option->attributes->type = 'checkbox';
+                $answer_to_groupid_mappings .= '<input type="hidden" name="answer_'.$i.'_groupid" value="'.$option->groupid.'">';
+                $i++;
+            } else {
+                $option->attributes->name = 'answer';
+                $option->attributes->type = 'radio';
+                if (array_key_exists('attributes', $option) && array_key_exists('checked', $option->attributes) && $option->attributes->checked == true) {
+                    $initiallyHideSubmitButton = true;
+                }
+            }
 
-            $labeltext = $group->name;
+            $labeltext = html_writer::tag('label', $group->name, array('for' => 'choiceid_' . $option->attributes->value));
             $group_members = $DB->get_records('groups_members', array('groupid' => $group->id));
             $group_members_names = array();
             foreach ($group_members as $group_member) {
@@ -99,10 +124,13 @@ class mod_choicegroup_renderer extends plugin_renderer_base {
                 $option->attributes->disabled=true;
                 $availableoption--;
             }
+            $labeltext .= html_writer::tag('div', $group->description, array('class' => 'choicegroups-descriptions hidden'));
             if ($disabled) {
                 $option->attributes->disabled=true;
             }
-            $html .= html_writer::empty_tag('input', (array)$option->attributes);
+            $attributes = (array) $option->attributes;
+            $attributes['id'] = 'choiceid_' . $option->attributes->value;
+            $html .= html_writer::empty_tag('input', $attributes);
             $html .= html_writer::end_tag('td');
             $html .= html_writer::tag('td', $labeltext, array('for'=>$option->attributes->name));
 
@@ -121,6 +149,9 @@ class mod_choicegroup_renderer extends plugin_renderer_base {
             $html .= html_writer::end_tag('tr');
         }
         $html .= html_writer::end_tag('table');
+        if ($multipleenrollmentspossible == 1) {
+            $html .= '<input type="hidden" name="number_of_groups" value="'.$i.'">' . $answer_to_groupid_mappings;
+        }
         $html .= html_writer::tag('div', '', array('class'=>'clearfloat'));
         $html .= html_writer::empty_tag('input', array('type'=>'hidden', 'name'=>'sesskey', 'value'=>sesskey()));
         $html .= html_writer::empty_tag('input', array('type'=>'hidden', 'name'=>'id', 'value'=>$coursemoduleid));
@@ -130,13 +161,13 @@ class mod_choicegroup_renderer extends plugin_renderer_base {
                $html .= html_writer::tag('td', get_string('choicegroupfull', 'choicegroup'));
             } else {
                 if (!$disabled) {
-                    $html .= html_writer::empty_tag('input', array('type'=>'submit', 'value'=>get_string('savemychoicegroup','choicegroup'), 'class'=>'button'));
+                    $html .= html_writer::empty_tag('input', array('type'=>'submit', 'value'=>get_string('savemychoicegroup','choicegroup'), 'class'=>'button', 'style' => $initiallyHideSubmitButton?'display: none':''));
                 }
             }
 
-            if (!empty($options['allowupdate']) && ($options['allowupdate'])) {
+            if (!empty($options['allowupdate']) && ($options['allowupdate']) && !($multipleenrollmentspossible == 1)) {
                 $url = new moodle_url('view.php', array('id'=>$coursemoduleid, 'action'=>'delchoicegroup', 'sesskey'=>sesskey()));
-                $html .= html_writer::link($url, get_string('removemychoicegroup','choicegroup'));
+                $html .= ' ' . html_writer::link($url, get_string('removemychoicegroup','choicegroup'));
             }
         } else {
             $html .= html_writer::tag('td', get_string('havetologin', 'choicegroup'));
@@ -164,7 +195,7 @@ class mod_choicegroup_renderer extends plugin_renderer_base {
         if ($forcepublish) {  //CHOICEGROUP_PUBLISH_NAMES
             return $this->display_publish_name_vertical($choicegroups);
         } else { //CHOICEGROUP_PUBLISH_ANONYMOUS';
-            if ($displaylayout == DISPLAY_HORIZONTAL_LAYOUT) {
+            if ($displaylayout == CHOICEGROUP_DISPLAY_HORIZONTAL_LAYOUT) {
                 return $this->display_publish_anonymous_horizontal($choicegroups);
             }
             return $this->display_publish_anonymous_vertical($choicegroups);
@@ -373,7 +404,6 @@ class mod_choicegroup_renderer extends plugin_renderer_base {
 
         return $html;
     }
-
 
 }
 

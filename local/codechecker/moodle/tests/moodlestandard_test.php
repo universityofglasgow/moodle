@@ -194,4 +194,70 @@ class moodlestandard_testcase extends local_codechecker_testcase {
         // Let's do all the hard work!
         $this->verify_cs_results();
     }
+
+    /**
+     * Test operator spacing standards
+     */
+    public function test_moodle_operator_spacing() {
+
+        // Define the standard, sniff and fixture to use.
+        $this->set_standard('moodle');
+        $this->set_sniff('Squiz_Sniffs_WhiteSpace_OperatorSpacingSniff');
+        $this->set_fixture(__DIR__ . '/fixtures/squiz_whitespace_operatorspacing.php');
+
+        // Define expected results (errors and warnings). Format, array of:
+        //   - line => number of problems,  or
+        //   - line => array of contents for message / source problem matching.
+        //   - line => string of contents for message / source problem matching (only 1).
+        $this->set_errors(array(
+                               5 => 0,
+                               6 => 'Expected 1 space before',
+                               7 => 'Expected 1 space after',
+                               8 => array('Expected 1 space before', 'Expected 1 space after'),
+                               9 => 0,
+                               10 => 'Expected 1 space after "=>"; 3 found',
+                               11 => 0,
+                               12 => 0,
+                               13 => 'Expected 1 space before',
+                               14 => 'Expected 1 space after',
+                               15 => array('Expected 1 space before', 'Expected 1 space after'),
+                               16 => 0,
+                               17 => 'Expected 1 space after "="; 2 found',
+                               18 => 0,
+                               19 => 0,
+                               20 => 0,
+                               21 => 'Expected 1 space before',
+                               22 => 'Expected 1 space after',
+                               23 => array('Expected 1 space before', 'Expected 1 space after'),
+                               24 => 0,
+                               25 => 'Expected 1 space after "+"; 2 found',
+                               26 => 'Expected 1 space before "+"; 2 found',
+                               27 => 0,
+                               28 => 'Expected 1 space before',
+                               29 => 'Expected 1 space after',
+                               30 => array('Expected 1 space before', 'Expected 1 space after'),
+                               31 => 0,
+                               32 => 'Expected 1 space after "-"; 2 found',
+                               33 => 'Expected 1 space before "-"; 2 found',
+                               34 => 0,
+                               35 => 'Expected 1 space before',
+                               36 => 'Expected 1 space after',
+                               37 => array('Expected 1 space before', 'Expected 1 space after'),
+                               38 => 0,
+                               39 => 'Expected 1 space after "*"; 2 found',
+                               40 => 'Expected 1 space before "*"; 2 found',
+                               41 => 0,
+                               42 => 'Expected 1 space before',
+                               43 => 'Expected 1 space after',
+                               44 => array('Expected 1 space before', 'Expected 1 space after'),
+                               45 => 0,
+                               46 => 'Expected 1 space after "/"; 2 found',
+                               47 => 'Expected 1 space before "/"; 2 found',
+
+                          ));
+        $this->set_warnings(array());
+
+        // Let's do all the hard work!
+        $this->verify_cs_results();
+    }
 }

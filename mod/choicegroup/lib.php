@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -16,10 +15,16 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package   mod-choicegroup
- * @copyright 1999 onwards Martin Dougiamas  {@link http://moodle.com}
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * Version information
+ *
+ * @package    mod
+ * @subpackage choicegroup
+ * @copyright  2013 Université de Lausanne
+ * @author     Nicolas Dunand <Nicolas.Dunand@unil.ch>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+defined('MOODLE_INTERNAL') || die();
 
 /** @global int $CHOICEGROUP_COLUMN_HEIGHT */
 global $CHOICEGROUP_COLUMN_HEIGHT;
@@ -72,7 +77,6 @@ require_once($CFG->dirroot.'/group/lib.php');
  * @return object|null
  */
 function choicegroup_user_outline($course, $user, $mod, $choicegroup) {
-    global $DB;
     if ($groupmembership = choicegroup_get_user_answer($choicegroup, $user)) { // if user has answered
         $result = new stdClass();
         $result->info = "'".format_string($groupmembership->name)."'";
@@ -85,7 +89,7 @@ function choicegroup_user_outline($course, $user, $mod, $choicegroup) {
 /**
  *
  */
-function choicegroup_get_user_answer($choicegroup, $user) {
+function choicegroup_get_user_answer($choicegroup, $user, $returnArray = FALSE) {
     global $DB, $choicegroup_groups;
 
     if (is_numeric($user)) {
@@ -95,8 +99,12 @@ function choicegroup_get_user_answer($choicegroup, $user) {
         $userid = $user->id;
     }
 
+    if (!isset($choicegroup_groups)) {
+        $choicegroup_groups = choicegroup_get_groups($choicegroup);
+    }
+
     $groups = $choicegroup_groups;
-    
+
     $groupids = array();
     foreach ($groups as $group) {
         if (is_numeric($group->id)) {
@@ -104,16 +112,26 @@ function choicegroup_get_user_answer($choicegroup, $user) {
         }
     }
     if ($groupids) {
-        $groupidsstr = implode(', ', $groupids);
-        $groupmembership = $DB->get_record_sql('SELECT * FROM {groups_members} WHERE `userid` = ? AND `groupid` IN (?)', array($userid, $groupidsstr));
-        if ($groupmembership) {
-            $group = $DB->get_record('groups', array('id' => $option->groupid));
+        $params1 = array($userid);
+        list($insql, $params2) = $DB->get_in_or_equal($groupids);
+        $params = array_merge($params1, $params2);
+        $groupmemberships = $DB->get_records_sql('SELECT * FROM {groups_members} WHERE userid = ? AND groupid '.$insql, $params);
+        $groups = array();
+        foreach ($groupmemberships as $groupmembership) {
+            $group = $DB->get_record('groups', array('id' => $groupmembership->groupid));
             $group->timeuseradded = $groupmembership->timeadded;
-            return $group;
+            $groups[] = $group;
+        }
+        if (count($groups) > 0) {
+            if ($returnArray === TRUE) {
+                return $groups;
+            } else {
+                return $groups[0];
+            }
         }
     }
     return false;
-    
+
 }
 
 /**
@@ -125,7 +143,6 @@ function choicegroup_get_user_answer($choicegroup, $user) {
  * @return string|void
  */
 function choicegroup_user_complete($course, $user, $mod, $choicegroup) {
-    global $DB;
     if ($groupmembership = choicegroup_get_user_answer($choicegroup, $user)) { // if user has answered
         $result = new stdClass();
         $result->info = "'".format_string($groupmembership->name)."'";
@@ -195,6 +212,10 @@ function choicegroup_update_instance($choicegroup) {
         $choicegroup->timeopen = 0;
         $choicegroup->timeclose = 0;
     }
+    
+    if (empty($choicegroup->multipleenrollmentspossible)) {
+        $choicegroup->multipleenrollmentspossible = 0;
+    }
 
     //update, delete or insert answers
     foreach ($choicegroup->option as $key => $value) {
@@ -233,13 +254,12 @@ function choicegroup_update_instance($choicegroup) {
  * @return array
  */
 function choicegroup_prepare_options($choicegroup, $user, $coursemodule, $allresponses) {
-    global $DB;
 
     $cdisplay = array('options'=>array());
 
     $cdisplay['limitanswers'] = true;
     $context = get_context_instance(CONTEXT_MODULE, $coursemodule->id);
-    $answer = choicegroup_get_user_answer($choicegroup, $user);
+    $answers = choicegroup_get_user_answer($choicegroup, $user, TRUE);
 
     foreach ($choicegroup->option as $optionid => $text) {
         if (isset($text)) { //make sure there are no dud entries in the db with blank text values.
@@ -255,8 +275,12 @@ function choicegroup_prepare_options($choicegroup, $user, $coursemodule, $allres
             } else {
                 $option->countanswers = 0;
             }
-            if ($answer && $text == $answer->id) {
-                $option->attributes->checked = true;
+            if (is_array($answers)) {
+                foreach($answers as $answer) {
+                    if ($answer && $text == $answer->id) {
+                        $option->attributes->checked = true;
+                    }
+                }
             }
             if ( $choicegroup->limitanswers && ($option->countanswers >= $option->maxanswers) && empty($option->attributes->checked)) {
                 $option->attributes->disabled = true;
@@ -267,7 +291,7 @@ function choicegroup_prepare_options($choicegroup, $user, $coursemodule, $allres
 
     $cdisplay['hascapability'] = is_enrolled($context, NULL, 'mod/choicegroup:choose'); //only enrolled users are allowed to make a choicegroup
 
-    if ($choicegroup->allowupdate && $answer) {
+    if ($choicegroup->allowupdate && is_array($answers)) {
         $cdisplay['allowupdate'] = true;
     }
 
@@ -289,6 +313,10 @@ function choicegroup_user_submit_response($formanswer, $choicegroup, $userid, $c
     $selected_option = $DB->get_record('choicegroup_options', array('id' => $formanswer));
 
     $current = choicegroup_get_user_answer($choicegroup, $userid);
+    if ($current) {
+        $currentgroup = $DB->get_record('groups', array('id' => $current->id), 'id,name', MUST_EXIST);
+    }
+    $selectedgroup = $DB->get_record('groups', array('id' => $selected_option->groupid), 'id,name', MUST_EXIST);
     $context = get_context_instance(CONTEXT_MODULE, $cm->id);
 
     $countanswers=0;
@@ -301,16 +329,22 @@ function choicegroup_user_submit_response($formanswer, $choicegroup, $userid, $c
     if (!($choicegroup->limitanswers && ($countanswers >= $maxans) )) {
         groups_add_member($selected_option->groupid, $userid);
         if ($current) {
-            groups_remove_member($current->id, $userid);
-            add_to_log($course->id, "choicegroup", "choose again", "view.php?id=$cm->id", $choicegroup->id, $cm->id);
+            if (!($choicegroup->multipleenrollmentspossible == 1)) {
+                if ($selected_option->groupid != $current->id) {
+                    if (groups_is_member($current->id, $userid)) {
+                        groups_remove_member($current->id, $userid);
+                        add_to_log($course->id, "choicegroup", "remove choice", "view.php?id=$cm->id", $currentgroup->name, $cm->id);
+                    }
+                }
+            }
+            add_to_log($course->id, "choicegroup", "choose again", "view.php?id=$cm->id", $selectedgroup->name, $cm->id);
         } else {
-            add_to_log($course->id, "choicegroup", "choose again", "view.php?id=$cm->id", $choicegroup->id, $cm->id);
             // Update completion state
             $completion = new completion_info($course);
             if ($completion->is_enabled($cm) && $choicegroup->completionsubmit) {
                 $completion->update_state($cm, COMPLETION_COMPLETE);
             }
-            add_to_log($course->id, "choicegroup", "choose", "view.php?id=$cm->id", $choicegroup->id, $cm->id);
+            add_to_log($course->id, "choicegroup", "choose", "view.php?id=$cm->id", $selectedgroup->name, $cm->id);
         }
     } else {
         if (!$current || !($current->id==$selected_option->groupid)) { //check to see if current choicegroup already selected - if not display error
@@ -320,21 +354,23 @@ function choicegroup_user_submit_response($formanswer, $choicegroup, $userid, $c
 }
 
 /**
+ * @param object $choicegroup
  * @param array $user
  * @param object $cm
  * @return void Output is echo'd
  */
-function choicegroup_show_reportlink($user, $cm) {
+function choicegroup_show_reportlink($choicegroup, $user, $cm) {
     $responsecount =0;
     foreach($user as $optionid => $userlist) {
         if ($optionid) {
             $responsecount += count($userlist);
         }
     }
-
-    echo '<div class="reportlink">';
-    echo "<a href=\"report.php?id=$cm->id\">".get_string("viewallresponses", "choicegroup", $responsecount)."</a>";
-    echo '</div>';
+    echo '<div class="reportlink"><a href="report.php?id='.$cm->id.'">'.get_string("viewallresponses", "choicegroup", $responsecount);
+    if ($choicegroup->multipleenrollmentspossible == 1) {
+        echo ' ' . get_string("byparticipants", "choicegroup", count($userlist));
+    }
+    echo '</a></div>';
 }
 
 /**
@@ -348,7 +384,7 @@ function choicegroup_show_reportlink($user, $cm) {
  * @return object
  */
 function prepare_choicegroup_show_results($choicegroup, $course, $cm, $allresponses, $forcepublish=false) {
-    global $CFG, $CHOICEGROUP_COLUMN_HEIGHT, $FULLSCRIPT, $PAGE, $OUTPUT, $DB;
+    global $CFG, $FULLSCRIPT, $PAGE, $OUTPUT;
 
     $display = clone($choicegroup);
     $display->coursemoduleid = $cm->id;
@@ -535,7 +571,7 @@ function prepare_choicegroup_show_results($choicegroup, $course, $cm, $allrespon
  * @return bool
  */
 function choicegroup_delete_responses($userids, $choicegroup, $cm, $course) {
-    global $DB, $CFG;
+    global $CFG;
     require_once($CFG->libdir.'/completionlib.php');
 
     if(!is_array($userids) || empty($userids)) {
@@ -551,7 +587,11 @@ function choicegroup_delete_responses($userids, $choicegroup, $cm, $course) {
     $completion = new completion_info($course);
     foreach($userids as $userid) {
         if ($current = choicegroup_get_user_answer($choicegroup, $userid)) {
-            groups_remove_member($current->id, $userid);
+            $currentgroup = $DB->get_record('groups', array('id' => $current->id), 'id,name', MUST_EXIST);
+            if (groups_is_member($current->id, $userid)) {
+                groups_remove_member($current->id, $userid);
+                add_to_log($course->id, "choicegroup", "remove choice", "view.php?id=$cm->id", $currentgroup->name, $cm->id);
+            }
             // Update completion state
             if ($completion->is_enabled($cm) && $choicegroup->completionsubmit) {
                 $completion->update_state($cm, COMPLETION_INCOMPLETE, $userid);
@@ -617,6 +657,7 @@ function choicegroup_get_option_text($choicegroup, $id) {
  * @return array
  */
 function choicegroup_get_groups($choicegroup) {
+    global $DB;
 
     if (is_numeric($choicegroup)) {
         $choicegroupid = $choicegroup;
@@ -624,7 +665,6 @@ function choicegroup_get_groups($choicegroup) {
     else {
         $choicegroupid = $choicegroup->id;
     }
-    global $DB;
     $groups = array();
 
     $options = $DB->get_records('choicegroup_options', array('choicegroupid' => $choicegroupid));
@@ -702,21 +742,31 @@ function choicegroup_reset_course_form_defaults($course) {
  * @return array
  */
 function choicegroup_get_response_data($choicegroup, $cm) {
-    global $CFG, $USER, $DB;
-
+    global $CFG;
     $context = get_context_instance(CONTEXT_MODULE, $cm->id);
-
-/// Initialise the returned array, which is a matrix:  $allresponses[responseid][userid] = responseobject
+    /// Initialise the returned array, which is a matrix:  $allresponses[responseid][userid] = responseobject
     $allresponses = array();
 
-/// First get all the users who have access here
-/// To start with we assume they are all "unanswered" then move them later
-    $allresponses[0] = get_enrolled_users($context, 'mod/choicegroup:choose', 0, user_picture::fields('u', array('idnumber')), 'u.lastname ASC,u.firstname ASC');
+    /// First get all the users who have access here
+    /// To start with we assume they are all "unanswered" then move them later
+    $allresponses[0] = get_enrolled_users($context, 'mod/choicegroup:choose', 0, user_picture::fields('u',        array('idnumber')), 'u.lastname ASC,u.firstname ASC');
+
+    if ($allresponses[0]) {
+        // if groupmembersonly used, remove users who are not in any group
+        if (!empty($CFG->enablegroupmembersonly) and $cm->groupmembersonly) {
+            if ($groupingusers = groups_get_grouping_members($cm->groupingid, 'u.id', 'u.id')) {
+                $allresponses[0] = array_intersect_key($allresponses[0], $groupingusers);
+            }
+        }
+    }
 
     foreach ($allresponses[0] as $user) {
-        if ($current = choicegroup_get_user_answer($choicegroup, $user)) {
-            $allresponses[$current->id][$user->id] = clone($allresponses[0][$user->id]);
-            $allresponses[$current->id][$user->id]->timemodified = $current->timeuseradded;
+        $currentAnswers = choicegroup_get_user_answer($choicegroup, $user, TRUE);
+        if ($currentAnswers != false) {
+            foreach ($currentAnswers as $current) {
+                $allresponses[$current->id][$user->id] = clone($allresponses[0][$user->id]);
+                $allresponses[$current->id][$user->id]->timemodified = $current->timeuseradded;
+            }
             unset($allresponses[0][$user->id]);   // Remove from unanswered column
         }
     }
@@ -775,9 +825,10 @@ function choicegroup_extend_settings_navigation(settings_navigation $settings, n
         if ($groupmode) {
             groups_get_activity_group($PAGE->cm, true);
         }
-        // We only actually need the choicegroup id here
-        $choicegroup = new stdClass;
-        $choicegroup->id = $PAGE->cm->instance;
+        if (!$choicegroup = choicegroup_get_choicegroup($PAGE->cm->instance)) {
+            print_error('invalidcoursemodule');
+            return false;
+        }
         $allresponses = choicegroup_get_response_data($choicegroup, $PAGE->cm, $groupmode);   // Big function, approx 6 SQL calls per user
 
         $responsecount =0;
@@ -786,7 +837,11 @@ function choicegroup_extend_settings_navigation(settings_navigation $settings, n
                 $responsecount += count($userlist);
             }
         }
-        $choicegroupnode->add(get_string("viewallresponses", "choicegroup", $responsecount), new moodle_url('/mod/choicegroup/report.php', array('id'=>$PAGE->cm->id)));
+        $viewallresponsestext = get_string("viewallresponses", "choicegroup", $responsecount);
+        if ($choicegroup->multipleenrollmentspossible == 1) {
+            $viewallresponsestext .= ' ' . get_string("byparticipants", "choicegroup", count($userlist));
+        }
+        $choicegroupnode->add($viewallresponsestext, new moodle_url('/mod/choicegroup/report.php', array('id'=>$PAGE->cm->id)));
     }
 }
 
@@ -801,11 +856,10 @@ function choicegroup_extend_settings_navigation(settings_navigation $settings, n
  * @return bool True if completed, false if not, $type if conditions not set.
  */
 function choicegroup_get_completion_state($course, $cm, $userid, $type) {
-    global $CFG,$DB;
+    global $DB;
 
     // Get choicegroup details
-    $choicegroup = $DB->get_record('choicegroup', array('id'=>$cm->instance), '*',
-            MUST_EXIST);
+    $choicegroup = $DB->get_record('choicegroup', array('id'=>$cm->instance), '*', MUST_EXIST);
 
     // If completion option is enabled, evaluate it and return true/false
     if($choicegroup->completionsubmit) {
@@ -828,3 +882,4 @@ function choicegroup_page_type_list($pagetype, $parentcontext, $currentcontext) 
     $module_pagetype = array('mod-choicegroup-*'=>get_string('page-mod-choicegroup-x', 'choice'));
     return $module_pagetype;
 }
+
