@@ -31,6 +31,11 @@ $partid = optional_param('part', 0, PARAM_INT);
 $reveal = optional_param('reveal', 0, PARAM_INT);
 $export = optional_param('export', 0, PARAM_INT);
 
+// Paranoia
+if (!has_capability('report/tiigrade:shownames', $context)) {
+    $reveal = 0;
+}
+
 $url = new moodle_url('/report/tiigrade/index.php', array('id'=>$id));
 $fullurl = new moodle_url('/report/tiigrade/index.php', array(
     'id'=>$id,
