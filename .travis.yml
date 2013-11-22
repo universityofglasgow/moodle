@@ -19,7 +19,7 @@ before_script:
  - mkdir -m777 $HOME/moodledata
  - php admin/tool/phpunit/cli/init.php
 
- notifications:
+notifications:
   email:
     - david.scotson@gla.ac.uk
     - howard.miller@gla.ac.uk
