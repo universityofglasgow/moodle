@@ -31,11 +31,6 @@ $partid = optional_param('part', 0, PARAM_INT);
 $reveal = optional_param('reveal', 0, PARAM_INT);
 $export = optional_param('export', 0, PARAM_INT);
 
-// Paranoia
-if (!has_capability('report/tiigrade:shownames', $context)) {
-    $reveal = 0;
-}
-
 $url = new moodle_url('/report/tiigrade/index.php', array('id'=>$id));
 $fullurl = new moodle_url('/report/tiigrade/index.php', array(
     'id'=>$id,
@@ -58,6 +53,11 @@ $context = get_context_instance(CONTEXT_COURSE, $course->id);
 $captt = has_capability('mod/turnitintool:grade', $context);
 if (!$captt || !has_capability('report/tiigrade:view', $context)) {
     notice(get_string('nocapability', 'report_tiigrade'));
+}
+
+// Paranoia
+if (!has_capability('report/tiigrade:shownames', $context)) {
+    $reveal = 0;
 }
 
 // Log.
