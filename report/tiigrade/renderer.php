@@ -84,7 +84,10 @@ class report_tiigrade_renderer extends plugin_renderer_base {
 
         foreach ($submissions as $submission) {
             $u = $submission->user;
-            $idnumber = !empty($u->idnumber) ? $u->idnumber : '-';
+            if (!$u) {
+                continue;
+            }
+            $idnumber = !empty($u->idnumber) ? $u->idnumber : '<i>('.$u->username.')</i>';
             $grade = $submission->submission_grade ? $submission->submission_grade : '-';
             $similarity = $submission->submission_score ? $submission->submission_score : '-';
             $datestamp = date('d/M/Y', $submission->submission_modified);

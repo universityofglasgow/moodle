@@ -87,8 +87,12 @@ class report_tiigrade {
             return array();
         }
         foreach ($submissions as $id => $submission) {
-            $user = $DB->get_record('user', array('id'=>$submission->userid));
-            $submissions[$id]->user = $user;
+            if ($submission->userid) {
+                $user = $DB->get_record('user', array('id'=>$submission->userid));
+                $submissions[$id]->user = $user;
+            } else {
+                $submissions[$id]->user = null;
+            }
         }
 
         return $submissions;
@@ -124,6 +128,9 @@ class report_tiigrade {
         $row = 1;
         foreach ($submissions as $submission) {
             $user = $submission->user;
+            if (!$user) {
+                continue;
+            }
             $myxls->write_number($row, 0, $row);
             if ($user->idnumber) {
                 $myxls->write_string($row, 1, $user->idnumber);
