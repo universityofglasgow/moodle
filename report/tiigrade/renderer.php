@@ -82,6 +82,7 @@ class report_tiigrade_renderer extends plugin_renderer_base {
             );
         }
 
+        $count = 0;
         foreach ($submissions as $submission) {
             $u = $submission->user;
             if (!$u) {
@@ -111,9 +112,10 @@ class report_tiigrade_renderer extends plugin_renderer_base {
                 );
             }
             $table->data[] = $row;
+            $count++;
         }
         echo  html_writer::table($table);
-        echo "<strong>" . get_string('totalsubmissions', 'report_tiigrade', count($submissions)) . "</strong><br />";
+        echo "<strong>" . get_string('totalsubmissions', 'report_tiigrade', $count) . "</strong><br />";
     }
 
     /**
