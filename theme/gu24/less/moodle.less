@@ -17,6 +17,7 @@ table[border=1] td {border: 1px solid;}
 .navbar .logininfo a {
     color: #fff;
 }
+
 @navbarInverseText:                      #fff;
 @navbarInverseLinkColor:                 #fff;
 @navbarInverseLinkColorHover:            #fff;
@@ -26,6 +27,78 @@ table[border=1] td {border: 1px solid;}
 
 @linkColor: @glasgowBlue;
 
-.feedback_items label {
+// miscelleneous workarounds
+
+.feedback_items label,
+.quizsavegradesform .invisiblefieldset > label,
+.buttons > .singlebutton,
+.que .notanswered:empty,
+.que .incorrect:empty,
+.que .correct:empty {
     display: inline-block;
+}
+
+.ie8 .section .activity .activityinstance img.activityicon {
+    max-width: none;
+}
+
+@media print {
+    a[href^="http://moodle2.gla.ac.uk"]:after {
+        content:"";
+    }
+}
+
+.que.multichoice .answer .specificfeedback {
+    background-color: inherit;
+}
+
+.course-content ul.section{
+    margin: 0;
+    margin-left: 1em;
+}
+
+.course-content ul.topics li.section-summary {
+    padding-bottom: 0;
+}
+.course-content .section-summary .section-title {
+    margin: 0 0 5px;
+}
+
+.feedback_item_textfield input[type="text"] {
+    width: auto;
+}
+
+li.activity.label {
+    font-weight: inherit;
+}
+
+.course-content .single-section .section-navigation .title,
+h3.section-title,
+h3.sectionname {
+    font-size: 17.5px;
+}
+
+.block_course_overview .content h2.title {
+    font-size: 24.5px;
+}
+
+.block_course_overview .coursebox {
+    padding: 0 5px 0;
+}
+
+.uploadtable .r1:nth-child(5) .c0 {
+    vertical-align: top;
+}
+
+.path-mod-feedback img[height="5"] {
+    height: 15px;
+}
+
+.feedback_complete_cancel {
+    display: none;
+}
+
+.path-grade-report th.hidden {
+    display: table-cell;
+    visibility: visible;
 }
