@@ -18,3 +18,8 @@ before_script:
  - sh -c "if [ '$DB' = 'pgsql' ]; then sed -i s/\'username\'/\'postgres\'/ config.php; fi"
  - mkdir -m777 $HOME/moodledata
  - php admin/tool/phpunit/cli/init.php
+
+ notifications:
+  email:
+    - david.scotson@gla.ac.uk
+    - howard.miller@gla.ac.uk
