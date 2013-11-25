@@ -157,7 +157,7 @@ class report_anonymous {
         return $notsubusers;
     }
 
-    public static function export($users, $reveal, $filename) {
+    public static function export($users, $reveal, $filename, $activityname, $partname) {
         global $CFG;
         require_once($CFG->dirroot.'/lib/excellib.class.php');
 
@@ -167,17 +167,23 @@ class report_anonymous {
         // Adding the worksheet.
         $myxls = $workbook->add_worksheet(get_string('workbook', 'report_anonymous'));
 
+        // titles
+        $myxls->write_string(0, 0, get_string('turnitinname', 'report_anonymous'));
+        $myxls->write_string(0, 1, $activityname);
+        $myxls->write_string(1, 0, get_string('partname', 'report_anonymous'));
+        $myxls->write_string(1, 1, $partname);
+
         // Headers.
-        $myxls->write_string(0, 0, '#');
-        $myxls->write_string(0, 1, get_string('idnumber'));
+        $myxls->write_string(3, 0, '#');
+        $myxls->write_string(3, 1, get_string('idnumber'));
+        $myxls->write_string(3, 2, get_string('email'));
         if ($reveal) {
-            $myxls->write_string(0, 2, get_string('username'));
-            $myxls->write_string(0, 3, get_string('fullname'));
-            $myxls->write_string(0, 4, get_string('email'));
+            $myxls->write_string(3, 4, get_string('username'));
+            $myxls->write_string(3, 5, get_string('fullname'));
         }
 
         // Add some data.
-        $row = 1;
+        $row = 4;
         foreach ($users as $user) {
             $myxls->write_number($row, 0, $row);
             if ($user->idnumber) {
@@ -185,10 +191,10 @@ class report_anonymous {
             } else {
                 $myxls->write_string($row, 1, '-');
             }
+            $myxls->write_string($row, 2, $user->email);
             if ($reveal) {
-                $myxls->write_string($row, 2, $user->username);
-                $myxls->write_string($row, 3, fullname($user));
-                $myxls->write_string($row, 4, $user->email);
+                $myxls->write_string($row, 3, $user->username);
+                $myxls->write_string($row, 4, fullname($user));
             }
             $row++;
         }

@@ -111,7 +111,7 @@ if ($mod) {
         $notsubmittedusers = report_anonymous::sort_users($notsubmittedusers, $reveal);
         if ($export) {
             $filename = "anonymous_{$turnitintool->name}_{$part->partname}.xls";
-            report_anonymous::export($notsubmittedusers, $reveal, $filename);
+            report_anonymous::export($notsubmittedusers, $reveal, $filename, $turnitintool->name, $part->partname);
             die;
         }
         $output->actions($context, $fullurl, $reveal);

@@ -157,6 +157,7 @@ class report_anonymous_renderer extends plugin_renderer_base {
      * @param boolean $reveal on/off
      */
     public function actions($context, $url, $reveal) {
+        echo "<div class=\"alert\">".get_string('help', 'report_anonymous')."</div>";
         echo "<div>";
         if (has_capability('report/anonymous:shownames', $context)) {
             $showurl = clone($url);
