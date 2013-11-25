@@ -82,9 +82,13 @@ class report_tiigrade_renderer extends plugin_renderer_base {
             );
         }
 
+        $count = 0;
         foreach ($submissions as $submission) {
             $u = $submission->user;
-            $idnumber = $u->idnumber ? $u->idnumber : '-';
+            if (!$u) {
+                continue;
+            }
+            $idnumber = !empty($u->idnumber) ? $u->idnumber : '<i>('.$u->username.')</i>';
             $grade = $submission->submission_grade ? $submission->submission_grade : '-';
             $similarity = $submission->submission_score ? $submission->submission_score : '-';
             $datestamp = date('d/M/Y', $submission->submission_modified);
@@ -108,9 +112,10 @@ class report_tiigrade_renderer extends plugin_renderer_base {
                 );
             }
             $table->data[] = $row;
+            $count++;
         }
         echo  html_writer::table($table);
-        echo "<strong>" . get_string('totalsubmissions', 'report_tiigrade', count($submissions)) . "</strong><br />";
+        echo "<strong>" . get_string('totalsubmissions', 'report_tiigrade', $count) . "</strong><br />";
     }
 
     /**

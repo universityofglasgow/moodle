@@ -213,12 +213,12 @@ if ($hasfootnote) { ?>
 </div>
 <?php if ($PAGE->bodyid !== "page-mod-turnitintool--view" && $PAGE->bodyid !== "page-mod-recordingsbn-view") { ?>
 <!--[if lt IE 9]>
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="//code.jquery.com/jquery-1.10.2.min.js"></script>
 <![endif]-->
 <!--[if gte IE 9]><!-->
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+    <script src="//code.jquery.com/jquery-2.0.3.min.js"></script>
 <!--<![endif]-->
 <?php } ?>
-<script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/js/bootstrap.min.js"></script>
+<script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/js/bootstrap.min.js"></script>
 </body>
 </html>
