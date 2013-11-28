@@ -2695,6 +2695,8 @@ table[border=1] td{border:1px solid}
 .navbar .brand{padding:5px 20px}
 .navbar .logininfo a{color:#fff}
 .feedback_items label,.quizsavegradesform .invisiblefieldset>label,.buttons>.singlebutton,.que .notanswered:empty,.que .incorrect:empty,.que .correct:empty{display:inline-block}
+.section .activity.modtype_label .activityinstance{display:none}
+.modtype_label .no-overflow>p:last-child{margin-bottom:0}
 .ie8 .section .activity .activityinstance img.activityicon{max-width:none}
 @media print{a[href^="http://moodle2.gla.ac.uk"]:after{content:""}
 }
