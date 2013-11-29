@@ -1,4 +1,5 @@
-.dir-ltr,.mdl-left,.dir-rtl .mdl-right{text-align:left}
+.dir-ltr,.mdl-left{text-align:left}
+.mdl-right{text-align:right}
 #add,#remove,.centerpara,.mdl-align{text-align:center}
 a.dimmed,a.dimmed:link,a.dimmed:visited,a.dimmed_text,a.dimmed_text:link,a.dimmed_text:visited,.dimmed_text,.dimmed_text a,.dimmed_text a:link,.dimmed_text a:visited,.usersuspended,.usersuspended a,.usersuspended a:link,.usersuspended a:visited,.dimmed_category,.dimmed_category a{color:#999}
 .activity.label .dimmed_text{opacity:.5;filter:alpha(opacity=50)}
@@ -29,8 +30,8 @@ img.iconlarge{width:24px;height:24px;vertical-align:middle}
 img.iconsort{padding-left:.3em;margin-bottom:.15em;vertical-align:text-bottom}
 img.icontoggle{width:50px;height:17px;vertical-align:middle}
 img.iconkbhelp{width:49px;height:17px}
-img.icon-pre,.dir-rtl img.icon-post{padding-right:3px;padding-left:0}
-img.icon-post,.dir-rtl img.icon-pre{padding-right:0;padding-left:3px}
+img.icon-pre{padding-right:3px;padding-left:0}
+img.icon-post{padding-right:0;padding-left:3px}
 .categorybox .category{font-size:1.2em;font-weight:bold}
 .boxaligncenter{margin-right:auto;margin-left:auto}
 .boxalignright{margin-right:0;margin-left:auto}
@@ -221,10 +222,7 @@ h2.tag-heading,div#tag-description,div#tag-blogs,body.tag .managelink{padding:5p
 #page-enrol-users .enrol_user_buttons .enrolusersbutton{display:inline;margin-left:1em}
 #page-enrol-users .enrol_user_buttons .enrolusersbutton div,#page-enrol-users .enrol_user_buttons .enrolusersbutton form{display:inline}
 #page-enrol-users .enrol_user_buttons .enrolusersbutton input{padding-right:6px;padding-left:6px}
-#page-enrol-users.dir-rtl .col_userdetails .subfield_picture{float:right}
 #page-enrol-users .user-enroller-panel .uep-search-results .user .details{width:237px}
-#page-admin-roles-define.dir-rtl #rolesform .felement{margin-right:180px}
-#page-message-edit.dir-rtl table.generaltable th.c0{text-align:right}
 .corelightbox{position:absolute;top:0;left:0;width:100%;height:100%;text-align:center;background-color:#CCC}
 .corelightbox img{position:fixed;top:50%;left:50%}
 .mod-indent-1{margin-left:30px}
@@ -287,7 +285,6 @@ audio.mediaplugin_html5audio{width:300px}
 .moodle-dialogue .moodle-dialogue-bd .content-lightbox{top:0;left:0;width:100%;height:100%;padding:10% 0;text-align:center;background-color:white;opacity:.75;filter:alpha(opacity=75)}
 .moodle-dialogue .tooltiptext{max-height:300px}
 .moodle-dialogue-base .moodle-dialogue.moodle-dialogue-tooltip{z-index:3001}
-#page-question-edit.dir-rtl a.container-close{right:auto;left:6px}
 .chooserdialoguebody,.choosertitle{display:none}
 .moodle-dialogue.chooserdialogue .moodle-dialogue-content .moodle-dialogue-ft{margin:0}
 .chooserdialogue .moodle-dialogue-wrap .moodle-dialogue-bd{padding:0;background:#f2f2f2;border-bottom-right-radius:10px;border-bottom-left-radius:10px}
@@ -397,7 +394,6 @@ img.iconsmall{padding:.3em;margin:0}
 .path-admin .roleassigntable #buttonscell #assignoptions{font-size:10.5px}
 .path-admin .roleassigntable #removeselect_wrapper,.path-admin .roleassigntable #addselect_wrapper{width:100%}
 .path-admin table.rolecap tr.rolecap th{font-weight:normal;text-align:left}
-.path-admin.dir-rtl table.rolecap tr.rolecap th{text-align:right}
 .path-admin .rolecap .hiddenrow{display:none}
 .path-admin #defineroletable .rolecap .inherit,.path-admin #defineroletable .rolecap .allow,.path-admin #defineroletable .rolecap .prevent,.path-admin #defineroletable .rolecap .prohibit{min-width:3.5em;padding:0;text-align:center}
 .path-admin .rolecap .cap-name,.path-admin .rolecap .note{display:block;font-size:10.5px;font-weight:normal;white-space:nowrap}
@@ -493,6 +489,7 @@ img.iconsmall{padding:.3em;margin:0}
 .path-calendar .maincalendar .controls{width:98%;margin:10px auto}
 .path-calendar .maincalendar .eventlist .event{width:100%;margin-bottom:10px;border-collapse:separate;border-spacing:0;border-style:solid;border-width:1px}
 .path-calendar .maincalendar .eventlist .event .topic .name{float:left}
+.path-calendar .maincalendar .eventlist .event .topic .date{float:right}
 .path-calendar .maincalendar .eventlist .event .subscription,.path-calendar .maincalendar .eventlist .event .course{float:left;clear:left}
 .path-calendar .maincalendar .eventlist .event .side{width:32px}
 .path-calendar .maincalendar .eventlist .event .commands a{margin:0 3px}
@@ -512,7 +509,8 @@ img.iconsmall{padding:.3em;margin:0}
 .block .calendar_filters li span img{padding:0 .2em}
 .block .calendar_filters .eventname{padding-left:.2em}
 .block .content h3.eventskey{margin-top:.5em}
-@media(min-width:768px){#page-calender-view .container fluid{min-width:1024px}
+@media(min-width:768px){
+#page-calender-view .container fluid{min-width:1024px}
 }
 .section_add_menus{text-align:right}
 .section_add_menus .horizontal div,.section_add_menus .horizontal form{display:inline}
@@ -881,7 +879,6 @@ table#user-grades td.cat,table#user-grades td.course{font-weight:700}
 .path-grade-report-grader #overDiv .intersection{font-size:10.5px;font-weight:400;color:#000;background-color:#ABF}
 .path-grade-report-grader #overDiv .intersectioncaption{font-weight:700;color:#CCF;background-color:#56C}
 .path-grade-report-grader div.gradeparent,table#user-grades td.ajax{text-align:left}
-.path-grade-report-grader.dir-rtl table#user-grades td.ajax{text-align:right}
 table#user-grades td,table#user-grades th{text-align:right}
 table#user-grades .courseitem{text-align:right;white-space:nowrap}
 table#user-grades th.category,table#user-grades th#studentheader,table#user-grades th.user{text-align:left}
@@ -907,7 +904,6 @@ table#user-grades .datesubmitted{font-size:10.5px}
 .path-grade-report-grader .left_scroller{float:left;clear:none}
 .path-grade-report-grader .left_scroller #fixed_column .heading th.header,.path-grade-report-grader .left_scroller #fixed_column td,.path-grade-report-grader .left_scroller #fixed_column th{height:4em}
 .path-grade-report-grader .left_scroller #fixed_column td.controls{height:2em}
-.path-grade-report-grader.dir-rtl .left_scroller{float:right}
 .path-grade-report-grader .right_scroller{width:auto;overflow-x:scroll;clear:none}
 .path-grade-report-grader .right_scroller tr.heading_name_row th,.path-grade-report-grader .right_scroller table#user-grades td.grade{height:4em}
 .path-grade-report-grader .right_scroller .path-grade-report-grader .left_scroller .topleft,.path-grade-report-grader .right_scroller tr.avg td,.path-grade-report-grader .right_scroller tr.groupavg,.path-grade-report-grader .right_scroller tr.controls_row,.path-grade-report-grader .right_scroller div.right_scroller tr{height:2em}
@@ -1129,7 +1125,6 @@ a#hidebankcmd{color:#005288}
 #userselector_options p{margin:.2em 0;text-align:left}
 #page-user-profile .messagebox{margin-right:auto;margin-left:auto;text-align:center}
 #page-course-view-weeks .messagebox{margin-right:auto;margin-left:auto;text-align:center}
-#page-my-index.dir-rtl .block h3.main{text-align:right}
 th,td{border-width:0}
 #helppopupbox{padding:8px 35px 8px 14px;margin-bottom:20px;color:#c09853;color:#3a87ad;text-shadow:0 1px 0 rgba(255,255,255,0.5);background-color:#fcf8e3;background-color:#d9edf7;border:1px solid #fbeed5;border-color:#bce8f1;border-radius:4px;box-shadow:0 3px 7px rgba(0,0,0,0.3)}
 #helppopupbox h1{font-size:108%}
@@ -1166,7 +1161,8 @@ label,select,button,input[type="button"],input[type="reset"],input[type="submit"
 input[type="search"]{-webkit-box-sizing:content-box;-moz-box-sizing:content-box;box-sizing:content-box;-webkit-appearance:textfield}
 input[type="search"]::-webkit-search-decoration,input[type="search"]::-webkit-search-cancel-button{-webkit-appearance:none}
 textarea{overflow:auto;vertical-align:top}
-@media print{*{color:#000!important;text-shadow:none!important;background:transparent!important;box-shadow:none!important}
+@media print{
+*{color:#000!important;text-shadow:none!important;background:transparent!important;box-shadow:none!important}
 a,a:visited{text-decoration:underline}
 a[href]:after{content:" (" attr(href) ")"}
 abbr[title]:after{content:" (" attr(title) ")"}
@@ -2200,8 +2196,6 @@ table#form td.submit:after,.form-buttons:after,.path-admin .buttons:after,#fitem
 .form-item .form-setting .form-checkbox.defaultsnext{display:inline-block;margin-top:5px}
 #adminsettings h3.main{display:block;width:100%;padding:0;margin-bottom:20px;font-size:21px;line-height:40px;color:#333;border:0;border-bottom:1px solid #e5e5e5}
 .mform legend a,.mform legend a:hover{color:#333;text-decoration:none}
-#page-admin-setting-enrolsettingsflatfile.dir-rtl .informationbox{text-align:left;direction:ltr}
-#page-admin-grade-edit-scale-edit.dir-rtl .error input#id_name{margin-right:170px}
 #installform #id_wwwroot,#installform #id_dirroot,#installform #id_dataroot,#installform #id_dbhost,#installform #id_dbname,#installform #id_dbuser,#installform #id_dbpass,#installform #id_prefix{direction:ltr}
 .mdl-right>label{display:inline-block}
 input[type="radio"]+label,input[type="checkbox"]+label{display:inline;padding-left:.2em}
@@ -2320,21 +2314,25 @@ input.fp-btn-choose{padding:2px 10px;font-size:11.9px;border-radius:3px}
 .visible-tablet{display:none!important}
 .hidden-desktop{display:none!important}
 .visible-desktop{display:inherit!important}
-@media(min-width:768px) and (max-width:979px){.hidden-desktop{display:inherit!important}
+@media(min-width:768px) and (max-width:979px){
+.hidden-desktop{display:inherit!important}
 .visible-desktop{display:none!important}
 .visible-tablet{display:inherit!important}
 .hidden-tablet{display:none!important}
 }
-@media(max-width:767px){.hidden-desktop{display:inherit!important}
+@media(max-width:767px){
+.hidden-desktop{display:inherit!important}
 .visible-desktop{display:none!important}
 .visible-phone{display:inherit!important}
 .hidden-phone{display:none!important}
 }
 .visible-print{display:none!important}
-@media print{.visible-print{display:inherit!important}
+@media print{
+.visible-print{display:inherit!important}
 .hidden-print{display:none!important}
 }
-@media(min-width:1200px){.row{margin-left:-30px;*zoom:1}
+@media(min-width:1200px){
+.row{margin-left:-30px;*zoom:1}
 .row:before,.row:after{display:table;line-height:0;content:""}
 .row:after{clear:both}
 [class*="span"]{float:left;min-height:1px;margin-left:30px}
@@ -2423,7 +2421,8 @@ input.span1,textarea.span1,.uneditable-input.span1{width:56px}
 .thumbnails>li{margin-left:30px}
 .row-fluid .thumbnails{margin-left:0}
 }
-@media(min-width:768px) and (max-width:979px){.row{margin-left:-20px;*zoom:1}
+@media(min-width:768px) and (max-width:979px){
+.row{margin-left:-20px;*zoom:1}
 .row:before,.row:after{display:table;line-height:0;content:""}
 .row:after{clear:both}
 [class*="span"]{float:left;min-height:1px;margin-left:20px}
@@ -2509,7 +2508,8 @@ input.span3,textarea.span3,.uneditable-input.span3{width:152px}
 input.span2,textarea.span2,.uneditable-input.span2{width:90px}
 input.span1,textarea.span1,.uneditable-input.span1{width:28px}
 }
-@media(max-width:767px){body{padding-right:20px;padding-left:20px}
+@media(max-width:767px){
+body{padding-right:20px;padding-left:20px}
 .navbar-fixed-top,.navbar-fixed-bottom,.navbar-static-top{margin-right:-20px;margin-left:-20px}
 .container-fluid{padding:0}
 .dl-horizontal dt{float:none;width:auto;clear:none;text-align:left}
@@ -2528,7 +2528,8 @@ input.span1,textarea.span1,.uneditable-input.span1{width:28px}
 .modal.fade{top:-100px}
 .modal.fade.in{top:20px}
 }
-@media(max-width:480px){.nav-collapse{-webkit-transform:translate3d(0,0,0)}
+@media(max-width:480px){
+.nav-collapse{-webkit-transform:translate3d(0,0,0)}
 .page-header h1 small{display:block;line-height:20px}
 input[type="checkbox"],input[type="radio"]{border:1px solid #ccc}
 .form-horizontal .control-label{float:none;width:auto;padding-top:0;text-align:left}
@@ -2541,7 +2542,8 @@ input[type="checkbox"],input[type="radio"]{border:1px solid #ccc}
 .modal-header .close{padding:10px;margin:-10px}
 .carousel-caption{position:static}
 }
-@media(max-width:979px){body{padding-top:0}
+@media(max-width:979px){
+body{padding-top:0}
 .navbar-fixed-top,.navbar-fixed-bottom{position:static}
 .navbar-fixed-top{margin-bottom:20px}
 .navbar-fixed-bottom{margin-top:20px}
@@ -2573,25 +2575,31 @@ input[type="checkbox"],input[type="radio"]{border:1px solid #ccc}
 .navbar .btn-navbar{display:block}
 .navbar-static .navbar-inner{padding-right:10px;padding-left:10px}
 }
-@media(min-width:980px){.nav-collapse.collapse{height:auto!important;overflow:visible!important}
+@media(min-width:980px){
+.nav-collapse.collapse{height:auto!important;overflow:visible!important}
 }
-@media(min-width:980px){.dir-rtl .navbar .logininfo{float:left}
+@media(min-width:980px){
 .form-item .form-label,.mform .fitem div.fitemtitle,.userprofile dl.list dt,.form-horizontal .control-label{width:245px}
 .form-item .form-setting,.form-item .form-description,.mform .fitem .felement,#page-mod-forum-search .c1,.mform .fdescription.required,.userprofile dl.list dd,.form-horizontal .controls{margin-left:265px}
 .path-admin .buttons,.form-buttons{padding-left:265px}
 }
-@media(min-width:1200px){.loginbox.twocolumns .loginpanel{margin-left:0}
+@media(min-width:1200px){
+.loginbox.twocolumns .loginpanel{margin-left:0}
 .loginbox.twocolumns .loginpanel,.loginbox.twocolumns .signuppanel{width:48.717948717948715%;*width:48.664757228587014%}
 }
-@media(min-width:980px){.loginbox.twocolumns .loginpanel{margin-left:0}
+@media(min-width:980px){
+.loginbox.twocolumns .loginpanel{margin-left:0}
 .loginbox.twocolumns .loginpanel,.loginbox.twocolumns .signuppanel{width:48.617948717948715%;*width:48.664757228587014%}
 }
-@media(min-width:768px) and (max-width:979px){.loginbox.twocolumns .loginpanel{margin-left:0}
+@media(min-width:768px) and (max-width:979px){
+.loginbox.twocolumns .loginpanel{margin-left:0}
 .loginbox.twocolumns .loginpanel,.loginbox.twocolumns .signuppanel{width:48.61878453038674%;*width:48.56559304102504%}
 }
-@media(max-width:767px){.loginbox.twocolumns .loginpanel,.loginbox.twocolumns .signuppanel{display:block;float:none;width:100%;margin-left:0;-webkit-box-sizing:border-box;-moz-box-sizing:border-box;box-sizing:border-box}
+@media(max-width:767px){
+.loginbox.twocolumns .loginpanel,.loginbox.twocolumns .signuppanel{display:block;float:none;width:100%;margin-left:0;-webkit-box-sizing:border-box;-moz-box-sizing:border-box;box-sizing:border-box}
 }
-@media(max-width:480px){.tabtree>ul{border:0}
+@media(max-width:480px){
+.tabtree>ul{border:0}
 .tabtree>ul>li{float:none}
 .tabtree>ul>li>a{border:1px solid #ddd;border-radius:0}
 .tabtree>ul>li.first>a{border-top-right-radius:4px;border-top-left-radius:4px}
@@ -2616,11 +2624,14 @@ input[type="checkbox"],input[type="radio"]{border:1px solid #ccc}
 .path-mod-choice .horizontal .choices .option{display:block}
 .path-mod-forum .forumsearch #search{width:120px}
 }
-@media(min-width:768px){.row-fluid .desktop-first-column{margin-left:0}
+@media(min-width:768px){
+.row-fluid .desktop-first-column{margin-left:0}
 }
-@media(max-width:767px){.row-fluid .desktop-first-column{clear:right}
+@media(max-width:767px){
+.row-fluid .desktop-first-column{clear:right}
 }
-@media(max-width:767px){.form-item .form-label,.mform .fitem div.fitemtitle{float:none;width:auto;padding-top:0;text-align:left}
+@media(max-width:767px){
+.form-item .form-label,.mform .fitem div.fitemtitle{float:none;width:auto;padding-top:0;text-align:left}
 .form-item .form-label label{display:inline-block;margin-right:.5em}
 .form-item .form-setting .form-checkbox{margin-top:0}
 .form-label span.form-shortname{display:inline-block}
@@ -2628,17 +2639,20 @@ input[type="checkbox"],input[type="radio"]{border:1px solid #ccc}
 table#form td.submit,.form-buttons,#fitem_id_submitbutton,.fp-content-center form+div,#fgroup_id_buttonar,.form-horizontal .form-actions,.fitem_fsubmit .felement.fsubmit{padding-right:10px;padding-left:10px}
 #helppopupbox{left:0!important;width:auto!important}
 }
-@media(min-width:768px) and (max-width:979px){.block_calendar_month .content,.block .minicalendar td{padding-right:0;padding-left:0}
+@media(min-width:768px) and (max-width:979px){
+.block_calendar_month .content,.block .minicalendar td{padding-right:0;padding-left:0}
 .form-item .form-label,.mform .fitem div.fitemtitle,.userprofile dl.list dt,.form-horizontal .control-label{width:200px}
 .form-item .form-setting,.form-item .form-description,.mform .fitem .felement,#page-mod-forum-search .c1,.mform .fdescription.required,.userprofile dl.list dd,.form-horizontal .controls{margin-left:220px}
 .path-admin .buttons,.form-buttons{padding-left:220px}
 }
-@media(max-width:979px){.nav-collapse{height:0}
+@media(max-width:979px){
+.nav-collapse{height:0}
 .nav-collapse .nav>li>a{color:#333}
 .nav-collapse .nav>li>a:hover,.nav-collapse .nav>li>a:focus,.nav-collapse .dropdown-menu a:hover,.nav-collapse .dropdown-menu a:focus,.nav-collapse .dropdown-submenu a:focus,.nav-collapse .dropdown-submenu a:hover,.nav-collapse .dropdown-submenu a:active,.nav-collapse .dropdown-menu>li>a:hover,.nav-collapse .dropdown-menu>li>a:focus{color:#333;background-image:none}
 .nav-collapse.active{height:auto}
 }
-@media(max-width:768px){#filesskin .yui3-panel,#filesskin .file-picker.fp-generallayout{left:0;width:100%}
+@media(max-width:768px){
+#filesskin .yui3-panel,#filesskin .file-picker.fp-generallayout{left:0;width:100%}
 .userprofile dl.list dt{float:none;width:auto;clear:none;text-align:left}
 .userprofile dl.list dd{margin-left:0}
 .section .side,.editing_move{display:none}
@@ -2695,8 +2709,11 @@ table[border=1] td{border:1px solid}
 .navbar .brand{padding:5px 20px}
 .navbar .logininfo a{color:#fff}
 .feedback_items label,.quizsavegradesform .invisiblefieldset>label,.buttons>.singlebutton,.que .notanswered:empty,.que .incorrect:empty,.que .correct:empty{display:inline-block}
+.section .activity.modtype_label .activityinstance{display:none}
+.modtype_label .no-overflow>p:last-child{margin-bottom:0}
 .ie8 .section .activity .activityinstance img.activityicon{max-width:none}
-@media print{a[href^="http://moodle2.gla.ac.uk"]:after{content:""}
+@media print{
+a[href^="http://moodle2.gla.ac.uk"]:after{content:""}
 }
 .que.multichoice .answer .specificfeedback{background-color:inherit}
 .course-content ul.section{margin:0;margin-left:1em}
