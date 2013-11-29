@@ -317,7 +317,7 @@ body.jsenabled .formlisting{display:block}
 .formtable tbody th{font-weight:normal;text-align:right}
 .path-admin #assignrole{width:60%;margin-right:auto;margin-left:auto}
 .path-admin .admintable .leftalign{text-align:left}
-.environmenttable p.warn{color:#c09853;background-color:#fcf8e3}
+.environmenttable p.warn{color:#8a6d3b;background-color:#fcf8e3}
 .environmenttable .error,.environmenttable span.warn,.environmenttable .ok{display:inline-block;padding:2px 4px;font-size:11.844px;font-weight:bold;line-height:14px;color:#fff;text-shadow:0 -1px 0 rgba(0,0,0,0.25);white-space:nowrap;vertical-align:baseline;background-color:#999;border-radius:3px}
 .environmenttable .error:empty,.environmenttable span.warn:empty,.environmenttable .ok:empty{display:none}
 .environmenttable .error-important,.environmenttable span.warn-important,.environmenttable .ok-important{background-color:#b94a48}
@@ -352,13 +352,13 @@ body.jsenabled .formlisting{display:block}
 .statusok-inverse,.statuswarning-inverse,.statusserious-inverse,.statuscritical-inverse{background-color:#333}
 .statusok-inverse[href],.statuswarning-inverse[href],.statusserious-inverse[href],.statuscritical-inverse[href]{background-color:#1a1a1a}
 .statusok{background-color:#468847}
-.statuswarning{background-color:#c09853}
+.statuswarning{background-color:#8a6d3b}
 .statusserious{background-color:#f89406}
 .statuscritical{background-color:#b94a48}
 #page-admin-report-capability-index #capabilitysearch{width:30em}
 #page-admin-report-backups-index .backup-error,#page-admin-report-backups-index .backup-unfinished{color:#b94a48}
 #page-admin-report-backups-index .backup-skipped,#page-admin-report-backups-index .backup-ok{color:#468847}
-#page-admin-report-backups-index .backup-warning{color:#c09853}
+#page-admin-report-backups-index .backup-warning{color:#8a6d3b}
 #page-admin-qtypes .disabled,#page-admin-qbehaviours .disabled{color:#999}
 #page-admin-qtypes #qtypes div,#page-admin-qtypes #qtypes form,#page-admin-qbehaviours #qbehaviours div,#page-admin-qbehaviours #qbehaviours form{display:inline}
 #page-admin-qtypes #qtypes img.spacer,#page-admin-qbehaviours #qbehaviours img.spacer{width:16px}
@@ -375,7 +375,7 @@ img.iconsmall{padding:.3em;margin:0}
 #page-admin-roles-override .cell.c1,#page-admin-roles-assign .cell.c3,#page-admin-roles-assign .cell.c1{padding-top:.75em}
 #page-admin-roles-override .overridenotice,#page-admin-roles-define .definenotice{margin:1em 10% 2em 10%;text-align:left}
 #notice{width:60%;min-width:220px;margin:auto}
-#page-admin-index .releasenoteslink,#page-admin-index .adminwarning,#page-admin-index .maturitywarning,#page-admin-index .maturityinfo{width:60%;min-width:220px;padding:8px 35px 8px 14px;margin:auto;margin-bottom:20px;color:#c09853;text-shadow:0 1px 0 rgba(255,255,255,0.5);background-color:#fcf8e3;border:1px solid #fbeed5;border-radius:4px}
+#page-admin-index .releasenoteslink,#page-admin-index .adminwarning,#page-admin-index .maturitywarning,#page-admin-index .maturityinfo{width:60%;min-width:220px;padding:8px 35px 8px 14px;margin:auto;margin-bottom:20px;color:#8a6d3b;text-shadow:0 1px 0 rgba(255,255,255,0.5);background-color:#fcf8e3;border:1px solid #fbeed5;border-radius:4px}
 #page-admin-index .maturitywarning,#page-admin-index .adminwarning.maturityinfo.maturity50{color:#b94a48;background-color:#f2dede;border-color:#eed3d7}
 #page-admin-index .adminwarning.availableupdatesinfo,#page-admin-index .releasenoteslink{color:#3a87ad;background-color:#d9edf7;border-color:#bce8f1}
 #page-admin-index .adminwarning.availableupdatesinfo .moodleupdateinfo span{display:block}
@@ -466,7 +466,7 @@ img.iconsmall{padding:.3em;margin:0}
 #core-cache-store-summaries .default-store td{font-style:italic;color:#333}
 #core-cache-rescan-definitions,#core-cache-mode-mappings .edit-link,#core-cache-lock-summary .new-instance{margin-top:.5em;text-align:center}
 .tinymcesubplugins img.icon{padding-top:0;padding-bottom:0}
-#page-admin-roles-assign div.box.generalbox{padding:8px 35px 8px 14px;margin-bottom:20px;color:#c09853;color:#b94a48;text-shadow:0 1px 0 rgba(255,255,255,0.5);background-color:#fcf8e3;background-color:#f2dede;border:1px solid #fbeed5;border-color:#eed3d7;border-radius:4px}
+#page-admin-roles-assign div.box.generalbox{padding:8px 35px 8px 14px;margin-bottom:20px;color:#8a6d3b;color:#b94a48;text-shadow:0 1px 0 rgba(255,255,255,0.5);background-color:#fcf8e3;background-color:#f2dede;border:1px solid #fbeed5;border-color:#eed3d7;border-radius:4px}
 .calendartable{width:100%}
 .calendartable th,.calendartable td{width:14%;text-align:center;vertical-align:top;border:0}
 .calendar_event_course{background-color:#ffd3bd}
@@ -1019,7 +1019,7 @@ table.message .searchresults td{padding:5px}
 .que .info .questionflag.editable{cursor:pointer}
 .que .info .editquestion img,.que .info .questionflag img,.que .info .questionflag input{vertical-align:bottom}
 .que .content{margin:0 0 0 8.5em}
-.que .formulation,.que .outcome,.que .comment,.que .history{padding:8px 35px 8px 14px;margin-bottom:20px;color:#c09853;text-shadow:0 1px 0 rgba(255,255,255,0.5);background-color:#fcf8e3;border:1px solid #fbeed5;border-radius:4px}
+.que .formulation,.que .outcome,.que .comment,.que .history{padding:8px 35px 8px 14px;margin-bottom:20px;color:#8a6d3b;text-shadow:0 1px 0 rgba(255,255,255,0.5);background-color:#fcf8e3;border:1px solid #fbeed5;border-radius:4px}
 .que .formulation{color:#3a87ad;color:#333;background-color:#d9edf7;border-color:#bce8f1}
 .que .comment{color:#468847;background-color:#dff0d8;border-color:#d6e9c6}
 .que .history{color:#333;background:#eee}
@@ -1126,7 +1126,7 @@ a#hidebankcmd{color:#005288}
 #page-user-profile .messagebox{margin-right:auto;margin-left:auto;text-align:center}
 #page-course-view-weeks .messagebox{margin-right:auto;margin-left:auto;text-align:center}
 th,td{border-width:0}
-#helppopupbox{padding:8px 35px 8px 14px;margin-bottom:20px;color:#c09853;color:#3a87ad;text-shadow:0 1px 0 rgba(255,255,255,0.5);background-color:#fcf8e3;background-color:#d9edf7;border:1px solid #fbeed5;border-color:#bce8f1;border-radius:4px;box-shadow:0 3px 7px rgba(0,0,0,0.3)}
+#helppopupbox{padding:8px 35px 8px 14px;margin-bottom:20px;color:#8a6d3b;color:#3a87ad;text-shadow:0 1px 0 rgba(255,255,255,0.5);background-color:#fcf8e3;background-color:#d9edf7;border:1px solid #fbeed5;border-color:#bce8f1;border-radius:4px;box-shadow:0 3px 7px rgba(0,0,0,0.3)}
 #helppopupbox h1{font-size:108%}
 .coursebox .name{float:none;width:auto}
 /*!
@@ -1268,8 +1268,8 @@ em{font-style:italic}
 cite{font-style:normal}
 .muted{color:#999}
 a.muted:hover,a.muted:focus{color:#808080}
-.text-warning{color:#c09853}
-a.text-warning:hover,a.text-warning:focus{color:#a47e3c}
+.text-warning{color:#8a6d3b}
+a.text-warning:hover,a.text-warning:focus{color:#66512c}
 .text-error{color:#b94a48}
 a.text-error:hover,a.text-error:focus{color:#953b39}
 .text-info{color:#3a87ad}
@@ -1385,11 +1385,11 @@ input.span1,textarea.span1,.uneditable-input.span1{width:46px}
 .controls-row .checkbox[class*="span"],.controls-row .radio[class*="span"]{padding-top:5px}
 input[disabled],select[disabled],textarea[disabled],input[readonly],select[readonly],textarea[readonly]{cursor:not-allowed;background-color:#eee}
 input[type="radio"][disabled],input[type="checkbox"][disabled],input[type="radio"][readonly],input[type="checkbox"][readonly]{background-color:transparent}
-.control-group.warning .control-label,.control-group.warning .help-block,.control-group.warning .help-inline{color:#c09853}
-.control-group.warning .checkbox,.control-group.warning .radio,.control-group.warning input,.control-group.warning select,.control-group.warning textarea{color:#c09853}
-.control-group.warning input,.control-group.warning select,.control-group.warning textarea{border-color:#c09853;box-shadow:inset 0 1px 1px rgba(0,0,0,0.075)}
-.control-group.warning input:focus,.control-group.warning select:focus,.control-group.warning textarea:focus{border-color:#a47e3c;box-shadow:inset 0 1px 1px rgba(0,0,0,0.075),0 0 6px #dbc59e}
-.control-group.warning .input-prepend .add-on,.control-group.warning .input-append .add-on{color:#c09853;background-color:#fcf8e3;border-color:#c09853}
+.control-group.warning .control-label,.control-group.warning .help-block,.control-group.warning .help-inline{color:#8a6d3b}
+.control-group.warning .checkbox,.control-group.warning .radio,.control-group.warning input,.control-group.warning select,.control-group.warning textarea{color:#8a6d3b}
+.control-group.warning input,.control-group.warning select,.control-group.warning textarea{border-color:#8a6d3b;box-shadow:inset 0 1px 1px rgba(0,0,0,0.075)}
+.control-group.warning input:focus,.control-group.warning select:focus,.control-group.warning textarea:focus{border-color:#66512c;box-shadow:inset 0 1px 1px rgba(0,0,0,0.075),0 0 6px #c0a16b}
+.control-group.warning .input-prepend .add-on,.control-group.warning .input-append .add-on{color:#8a6d3b;background-color:#fcf8e3;border-color:#8a6d3b}
 .control-group.error .control-label,.control-group.error .help-block,.control-group.error .help-inline{color:#b94a48}
 .control-group.error .checkbox,.control-group.error .radio,.control-group.error input,.control-group.error select,.control-group.error textarea{color:#b94a48}
 .control-group.error input,.control-group.error select,.control-group.error textarea{border-color:#b94a48;box-shadow:inset 0 1px 1px rgba(0,0,0,0.075)}
@@ -1766,7 +1766,7 @@ button.btn.btn-mini,input[type="submit"].btn.btn-mini{*padding-top:1px;*padding-
 .btn-group-vertical>.btn-large:first-child{border-radius:6px 6px 0 0}
 .btn-group-vertical>.btn-large:last-child{border-radius:0 0 6px 6px}
 .alert{padding:8px 35px 8px 14px;margin-bottom:20px;text-shadow:0 1px 0 rgba(255,255,255,0.5);background-color:#fcf8e3;border:1px solid #fbeed5;border-radius:4px}
-.alert,.alert h4{color:#c09853}
+.alert,.alert h4{color:#8a6d3b}
 .alert h4{margin:0}
 .alert .close{position:relative;top:-2px;right:-21px;line-height:20px}
 .alert-success{color:#468847;background-color:#dff0d8;border-color:#d6e9c6}
@@ -2715,7 +2715,8 @@ table[border=1] td{border:1px solid}
 @media print{
 a[href^="http://moodle2.gla.ac.uk"]:after{content:""}
 }
-.que.multichoice .answer .specificfeedback{background-color:inherit}
+.que.multichoice .answer .correct .specificfeedback,.que.multichoice .answer .incorrect .specificfeedback,.que.multichoice .answer .partiallycorrect .specificfeedback{background-color:inherit}
+.que.multichoice .answer .specificfeedback{white-space:normal}
 .course-content ul.section{margin:0;margin-left:1em}
 .course-content ul.topics li.section-summary{padding-bottom:0}
 .course-content .section-summary .section-title{margin:0 0 5px}
