@@ -297,63 +297,6 @@ $yesno = array(get_string('no'), get_string('yes'));
 </tr>
 <tr>
     <td colspan="2">
-        <h4><?php print_string('forcechangepassword', 'auth') ?></h4>
-    </td>
-</tr>
-<tr valign="top" class="required">
-    <td align="right" valign="top">
-        <label for="menuforcechangepassword"><?php print_string('forcechangepassword', 'auth') ?></label>
-    </td>
-    <td>
-        <?php echo html_writer::select($yesno, 'forcechangepassword', $config->forcechangepassword, false); ?>
-    </td>
-    <td align="left" valign="top">
-        <p><?php print_string('forcechangepasswordfirst_help', 'auth') ?></p>
-    </td>
-</tr>
-<tr valign="top" class="required">
-    <td align="right" valign="top">
-        <label for="menustdchangepassword"><?php print_string('stdchangepassword', 'auth') ?></label>
-    </td>
-    <td>
-        <?php echo html_writer::select($yesno, 'stdchangepassword', $config->stdchangepassword, false); ?>
-    </td>
-    <td align="left" valign="top">
-        <p><?php print_string('stdchangepassword_expl', 'auth') ?></p>
-        <p><?php print_string('stdchangepassword_explldap', 'auth') ?></p>
-    </td>
-</tr>
-<tr valign="top" class="required">
-    <td align="right">
-        <label for="menupasstype"><?php print_string('auth_ldap_passtype_key', 'auth_ldap') ?></label>
-    </td>
-    <td>
-        <?php
-            $passtype = array();
-            $passtype['plaintext'] = get_string('plaintext', 'auth');
-            $passtype['md5']       = get_string('md5', 'auth');
-            $passtype['sha1']      = get_string('sha1', 'auth');
-            echo html_writer::select($passtype, 'passtype', $config->passtype, false);
-        ?>
-    </td>
-    <td>
-        <?php print_string('auth_ldap_passtype', 'auth_ldap') ?>
-    </td>
-</tr>
-<tr valign="top">
-    <td align="right">
-        <label for="changepasswordurl"><?php print_string('auth_ldap_changepasswordurl_key', 'auth_ldap') ?></label>
-    </td>
-    <td>
-        <input name="changepasswordurl" id="changepasswordurl" type="text" value="<?php echo $config->changepasswordurl ?>" />
-        <?php if (isset($err['changepasswordurl'])) { echo $OUTPUT->error_text($err['changepasswordurl']); } ?>
-    </td>
-    <td>
-        <?php print_string('changepasswordhelp', 'auth') ?>
-    </td>
-</tr>
-<tr>
-    <td colspan="2">
         <h4><?php print_string('auth_ldap_passwdexpire_settings', 'auth_ldap') ?></h4>
     </td>
 </tr>
@@ -423,34 +366,6 @@ $yesno = array(get_string('no'), get_string('yes'));
 </tr>
 <tr>
     <td colspan="2">
-        <h4><?php print_string('auth_user_create', 'auth') ?></h4>
-    </td>
-</tr>
-<tr valign="top">
-    <td align="right">
-        <label for="menuauth_user_create"><?php print_string('auth_ldap_auth_user_create_key', 'auth_ldap') ?></label>
-    </td>
-    <td>
-        <?php echo html_writer::select($yesno, 'auth_user_create', $config->auth_user_create, false); ?>
-    </td>
-    <td>
-        <?php print_string('auth_user_creation', 'auth'); ?>
-    </td>
-</tr>
-<tr valign="top" class="required">
-    <td align="right">
-        <label for="create_context"><?php print_string('auth_ldap_create_context_key', 'auth_ldap') ?></label>
-    </td>
-    <td>
-        <input name="create_context" id="create_context" type="text" size="30" value="<?php echo $config->create_context?>" />
-        <?php if (isset($err['create_context'])) { echo $OUTPUT->error_text($err['create_context']); } ?>
-    </td>
-    <td>
-        <?php print_string('auth_ldap_create_context', 'auth_ldap') ?>
-    </td>
-</tr>
-<tr>
-    <td colspan="2">
         <h4><?php print_string('coursecreators') ?></h4>
     </td>
 </tr>
@@ -486,60 +401,6 @@ $yesno = array(get_string('no'), get_string('yes'));
     </td>
     <td>
         <?php print_string('auth_remove_user', 'auth') ?>
-    </td>
-</tr>
-<tr>
-    <td colspan="2">
-        <h4><?php print_string('auth_ntlmsso', 'auth_ldap') ?></h4>
-    </td>
-</tr>
-<tr valign="top">
-    <td align="right">
-        <label for="menuntlmsso_enabled"><?php print_string('auth_ntlmsso_enabled_key', 'auth_ldap') ?></label>
-    </td>
-    <td>
-        <?php echo html_writer::select($yesno, 'ntlmsso_enabled', $config->ntlmsso_enabled, false); ?>
-    </td>
-    <td>
-        <?php print_string('auth_ntlmsso_enabled', 'auth_ldap') ?>
-    </td>
-</tr>
-<tr valign="top">
-    <td align="right">
-        <label for="ntlmsso_subnet"><?php print_string('auth_ntlmsso_subnet_key', 'auth_ldap') ?></label>
-    </td>
-    <td>
-        <input name="ntlmsso_subnet" id="ntlmsso_subnet" type="text" size="30" value="<?php p($config->ntlmsso_subnet) ?>" />
-    </td>
-    <td>
-        <?php print_string('auth_ntlmsso_subnet', 'auth_ldap') ?>
-    </td>
-</tr>
-<tr valign="top">
-    <td align="right">
-        <label for="menuntlmsso_ie_fastpath"><?php print_string('auth_ntlmsso_ie_fastpath_key', 'auth_ldap') ?></label>
-    </td>
-    <td>
-        <?php echo html_writer::select($yesno, 'ntlmsso_ie_fastpath', $config->ntlmsso_ie_fastpath, false); ?>
-    </td>
-    <td>
-    <?php print_string('auth_ntlmsso_ie_fastpath', 'auth_ldap') ?>
-    </td>
-</tr>
-<tr valign="top">
-    <td align="right">
-        <label for="menuntlmsso_type"><?php print_string('auth_ntlmsso_type_key', 'auth_ldap')?></label>
-    </td>
-    <td>
-        <?php
-            $types = array();
-            $types['ntlm'] = 'NTLM';
-            $types['kerberos'] = 'Kerberos';
-            echo html_writer::select($types, 'ntlmsso_type', $config->ntlmsso_type, false);
-        ?>
-    </td>
-    <td>
-        <?php print_string('auth_ntlmsso_type','auth_ldap') ?>
     </td>
 </tr>
 <tr>

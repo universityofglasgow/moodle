@@ -240,11 +240,6 @@ class auth_plugin_guid extends auth_plugin_ldap {
             }
         }
 
-        // Modify the lastname to have correct case.
-        if (!empty($result['lastname'])) {
-            $result['lastname'] = ucfirst(strtolower($result['lastname']));
-        }
-
         $this->ldap_close();
         $result['dn'] = $user_dn;
         $result['uid'] = $uid;
@@ -272,7 +267,7 @@ class auth_plugin_guid extends auth_plugin_ldap {
         }
 
         // If the user doesn't have an email address
-        // and $this->gu_email exists we can use that but
+        // and $SESSION->gu_email exists we can use that but
         // we must hide their email address too (privacy)
         // if the gu_email is set then there is no 'mail' field
         // in GUID and we can safely use it to update the record every time.
@@ -330,6 +325,18 @@ class auth_plugin_guid extends auth_plugin_ldap {
         parent::process_config($config);
 
         return true;
+    }
+
+    /**
+     * A chance to validate form data, and last chance to do stuff
+     * before it is inserted in config_plugin
+     * (We just want to avoid ntlm checks in LDAP)
+     *
+     * @param object object with submitted configuration settings (without system magic quotes)
+     * @param array $err array of error messages (passed by reference)
+     */
+    public function validate_form($form, &$err) {
+        return;
     }
 
 }
