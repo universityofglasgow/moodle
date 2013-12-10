@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -18,7 +17,7 @@
 /**
  * GUID Enrolment sync
  *
- * @package    gusync
+ * @package    local_gusync
  * @copyright  2012 Howard miller
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -26,7 +25,7 @@
 
 defined('MOODLE_INTERNAL') || die;
 
-if ($hassiteconfig) { // needs condition or error on login page
+if ($hassiteconfig) {
     $settings = new admin_settingpage(
             'local_gusync', get_string('pluginname', 'local_gusync'));
     $ADMIN->add('localplugins', $settings);
@@ -52,5 +51,13 @@ if ($hassiteconfig) { // needs condition or error on login page
     $settings->add(new admin_setting_configtext(
             'local_gusync/dbname', get_string('dbname', 'local_gusync'),
             get_string('configdbname', 'local_gusync'), '', PARAM_RAW));
+
+    $settings->add(new admin_setting_configtext(
+            'local_gusync/timelimit', get_string('timelimit', 'local_gusync'),
+            get_string('configtimelimit', 'local_gusync'), 30, PARAM_INT));
+
+    $settings->add(new admin_setting_configcheckbox(
+            'local_gusync/testing', get_string('testing', 'local_gusync'),
+            get_string('configtesting', 'local_gusync'), 1));
 
 }

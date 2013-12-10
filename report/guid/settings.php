@@ -25,8 +25,7 @@
 
 defined('MOODLE_INTERNAL') || die;
 
-$ADMIN->add('reports', new admin_externalpage('reportguid', get_string('guid', 'report_guid'), 
+$ADMIN->add('reports', new admin_externalpage('reportguid', get_string('guid', 'report_guid'),
     "$CFG->wwwroot/report/guid/index.php", 'report/guid:view'));
 
-// no report settings
 $settings = null;

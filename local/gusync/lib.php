@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -18,14 +17,10 @@
 /**
  * GUID Enrolment sync
  *
- * @package    gusync
+ * @package    local_gusync
  * @copyright  2012 Howard miller
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-// how many seconds can this run for on every
-// cron invocation
-define( 'LOCAL_GUSYNC_MAXTIME', 10 );
 
 /**
  * gusync cron script
@@ -34,75 +29,79 @@ function local_gusync_cron() {
     global $CFG;
     global $DB;
 
-    // get the start time, we'll limit
-    // how long this runs for
+    // Get the start time, we'll limit
+    // how long this runs for.
     $starttime = time();
 
-    // get plugin config
+    // Get plugin config.
     $config = get_config( 'local_gusync' );
-  
-    // are we set up?
+
+    // Are we set up?
     if (empty($config->dbhost)) {
         mtrace( 'gusync: not configured' );
         return false;
     }
 
-    // attempt to connect to external db
-    if (!$extdb=local_gusync_dbinit($config)) {
+    // Testing mode warning.
+    if ($config->testing) {
+        mtrace( 'gusync: running in testing mode' );
+    }
+
+    // Attempt to connect to external db.
+    if (!$extdb = local_gusync_dbinit($config)) {
         mtrace( 'gusync: unable to connect to external database' );
         return false;
     }
 
-    // get the last course index we processed
+    // Get the last course index we processed.
     if (empty($config->startcourseindex)) {
         $startcourseindex = 0;
-    }
-    else {
+    } else {
         $startcourseindex = $config->startcourseindex;
     }
     mtrace( "gusync: starting at course index $startcourseindex" );
 
-    // get the basics of all visible courses
+    // Get the basics of all visible courses
     // don't load the whole course records!!
     $courses = $DB->get_records( 'course', array(), '', 'id' );
 
-    // convert courses to simple array
+    // Convert courses to simple array.
     $courses = array_values( $courses );
-    $highestindex = count($courses)-1;
+    $highestindex = count($courses) - 1;
     mtrace( "gusync: highest course index is $highestindex" );
+    mtrace( "gusync: configured time limit is {$config->timelimit} seconds" );
 
-    // count the courses processed
+    // Count the courses processed.
     $processcount = 0;
 
-    // process from current index to (potentially) the end
-    for ($i=$startcourseindex; $i<=$highestindex; $i++) {
+    // Process from current index to (potentially) the end.
+    for ($i = $startcourseindex; $i <= $highestindex; $i++) {
         $course = $courses[$i];
-        local_gusync_processcourse( $extdb, $course->id );
+        local_gusync_processcourse( $extdb, $course->id, $config->testing );
         $lastcourseprocessed = $i;
         $processcount++;
-        
-        // if we've used too much time then bail out
+
+        // If we've used too much time then bail out.
         $elapsedtime = time() - $starttime;
-        if ($elapsedtime > LOCAL_GUSYNC_MAXTIME) {
+        if ($elapsedtime > $config->timelimit) {
             break;
         }
     }
 
-    // set new value of index
+    // Set new value of index.
     if ($lastcourseprocessed >= $highestindex) {
         set_config( 'startcourseindex', 0, 'local_gusync' );
-    }
-    else {
-        set_config( 'startcourseindex', $lastcourseprocessed+1, 'local_gusync' );
+    } else {
+        set_config( 'startcourseindex', $lastcourseprocessed + 1, 'local_gusync' );
     }
 
-    // create very poor average course process
+    // Create very poor average course process.
     $oldaverage = empty($config->average) ? 0 : $config->average;
-    $newaverage = ($oldaverage + $lastcourseprocessed - $startcourseindex)/2;
-    set_config( 'average', $newaverage, 'local_gusync' );  
+    $newaverage = ($oldaverage + $lastcourseprocessed - $startcourseindex) / 2;
+    set_config( 'average', $newaverage, 'local_gusync' );
     mtrace( 'gusync: completed, processed courses = ' . $processcount );
 
-    // done with engines
+    // Done with engines.
     $extdb->Close();
     return true;
 }
@@ -112,29 +111,29 @@ function local_gusync_cron() {
  * @param object $extdb
  * @param int $id course id
  */
-function local_gusync_processcourse( $extdb, $id ) {
+function local_gusync_processcourse( $extdb, $id, $testing ) {
     global $CFG;
     global $DB;
     global $SITE;
 
-    // site name
+    // Site name.
     $sitename = $SITE->shortname;
 
-    // get complete course
-    $course = $DB->get_record( 'course', array('id'=>$id));
+    // Get complete course.
+    $course = $DB->get_record( 'course', array('id' => $id));
     mtrace( 'local_gusync: processing course ' . $course->shortname );
 
-    // add users from visible courses and take them
-    // from hidden ones (too)
+    // Add users from visible courses and take them
+    // from hidden ones (too).
     $visible = $course->visible;
 
-    // try to find existing record
+    // Try to find existing record.
     $coursesql = "select * from moodlecourses where ";
     $coursesql .= "courseid = $id and site='$sitename' ";
-    $extcourse = local_gusync_query( $extdb, $coursesql, TRUE );
+    $extcourse = local_gusync_query( $extdb, $coursesql, true );
 
-    // update/insert
-    if (empty($extcourse))  {
+    // Update/insert.
+    if (empty($extcourse)) {
         $sql = "insert into moodlecourses ";
         $sql .= "set site='$sitename', ";
         $sql .= "wwwroot='" . addslashes($CFG->wwwroot) . "', ";
@@ -142,8 +141,7 @@ function local_gusync_processcourse( $extdb, $id ) {
         $sql .= "shortname='" . addslashes($course->shortname) . "', ";
         $sql .= "name='" . addslashes($course->fullname) . "', ";
         $sql .= "startdate={$course->startdate} ";
-    }
-    else {
+    } else {
         $sql = "update moodlecourses ";
         $sql .= "set site='$sitename', ";
         $sql .= "wwwroot='" . addslashes($CFG->wwwroot) . "', ";
@@ -153,73 +151,75 @@ function local_gusync_processcourse( $extdb, $id ) {
         $sql .= "startdate={$course->startdate} ";
         $sql .= "where id={$extcourse->id}";
     }
-    local_gusync_query( $extdb, $sql );
+    if (!$testing) {
+        local_gusync_query( $extdb, $sql );
+    }
 
-    // reload course object with final data
-    $extcourse = local_gusync_query( $extdb, $coursesql, TRUE );
+    // Reload course object with final data.
+    $extcourse = local_gusync_query( $extdb, $coursesql, true );
 
-    // if not visible then just throw everybody out regardless
+    // If not visible then just throw everybody out regardless.
     if (!$visible) {
         $sql = 'delete from moodleenrolments ';
         $sql .= "where moodlecoursesid={$extcourse->id}";
-        local_gusync_query( $extdb, $sql );
+        if (!$testing) {
+            local_gusync_query( $extdb, $sql );
+        }
         mtrace( 'local_gusync: all users removed for hidden course ' . $course->shortname );
         return;
     }
 
-    // get list of enrolments for this course
+    // Get list of enrolments for this course.
     $users = local_gusync_getusers( $course );
 
-    // create list of GUIDs for later deletion checking
+    // Create list of GUIDs for later deletion checking.
     $guids = array();
 
-    // loop through users, adding updating enrol table
+    // Loop through users, adding updating enrol table.
     if (!empty($users)) {
         foreach ($users as $user) {
             $guid = $user->username;
             $guids[ $guid ] = $guid;
 
-            // get lastaccess for this user
-            if ($lastaccess = $DB->get_record('user_lastaccess', array('userid'=>$user->id, 'courseid'=>$id))) {
+            // Get lastaccess for this user.
+            if ($lastaccess = $DB->get_record('user_lastaccess', array('userid' => $user->id, 'courseid' => $id))) {
                 $timeaccess = $lastaccess->timeaccess;
-            }
-            else {
+            } else {
                 $timeaccess = 0;
             }
-    
-            // try to find existing record
+
+            // Try to find existing record.
             $enrolsql = "select * from moodleenrolments ";
             $enrolsql .= "where guid='$guid' and moodlecoursesid={$extcourse->id} ";
-            $extenrol = local_gusync_query( $extdb, $enrolsql, TRUE );
+            $extenrol = local_gusync_query( $extdb, $enrolsql, true );
 
-            // update/insert
+            // Update/insert.
             if (empty($extenrol)) {
                 $sql = "insert into moodleenrolments ";
                 $sql .= "set guid='$guid', ";
                 $sql .= "moodlecoursesid={$extcourse->id}, ";
                 $sql .= "timestart = {$user->timemodified}, ";
-                $sql .= "timelastaccess = $timeaccess ";    
-            }
-            else {
+                $sql .= "timelastaccess = $timeaccess ";
+            } else {
                 $sql = "update moodleenrolments ";
                 $sql .= "set guid='$guid', ";
                 $sql .= "moodlecoursesid={$extcourse->id}, ";
                 $sql .= "timestart = {$user->timemodified}, ";
-                $sql .= "timelastaccess = $timeaccess ";    
+                $sql .= "timelastaccess = $timeaccess ";
                 $sql .= "where id={$extenrol->id} ";
             }
             local_gusync_query( $extdb, $sql );
         }
     }
 
-    // now we need to find any users that are in the external table
-    // but NOT enrolled in the course
+    // Now we need to find any users that are in the external table
+    // but NOT enrolled in the course.
 
-    // get complete list
+    // Get complete list.
     $sql = "select id,guid from moodleenrolments where moodlecoursesid={$extcourse->id}";
     $enrolments = local_gusync_query( $extdb, $sql );
 
-    // run through and find any NOT in the $users list
+    // Run through and find any NOT in the $users list.
     $deleteusers = array();
     if (!empty($enrolments)) {
         foreach ($enrolments as $enrolment) {
@@ -227,14 +227,16 @@ function local_gusync_processcourse( $extdb, $id ) {
             if (empty($guids[$guid])) {
                 $deleteusers[ $enrolment->id ] = $enrolment->id;
             }
-        } 
+        }
     }
 
-    // delete sql
-    if (count($deleteusers)>0) {
+    // Delete sql.
+    if (count($deleteusers) > 0) {
         $list = implode(',', $deleteusers);
         $sql = "delete from moodleenrolments where id in ($list) ";
-        local_gusync_query( $extdb, $sql );
+        if (!$this->config->testing) {
+            local_gusync_query( $extdb, $sql );
+        }
     }
 }
 
@@ -246,15 +248,15 @@ function local_gusync_processcourse( $extdb, $id ) {
 function local_gusync_getusers( $course ) {
     global $DB;
 
-    // get active enrolments on this course
+    // Get active enrolments on this course.
     $instances = enrol_get_instances( $course->id, true );
 
-    // nothing to do?
+    // Nothing to do?
     if (empty($instances)) {
         return false;
     }
 
-    // get the (guid) users in these instances
+    // Get the (guid) users in these instances.
     $users = array();
     foreach ($instances as $instance) {
         $sql = "select distinct u.id as id, username, ue.timemodified as timemodified, auth ";
@@ -263,13 +265,13 @@ function local_gusync_getusers( $course ) {
         $sql .= "and auth = ? ";
         $enrolments = $DB->get_records_sql( $sql, array($instance->id, 'guid') );
 
-        // any?
+        // Any?
         if (empty($enrolments)) {
             continue;
         }
 
-        // add users indexing by username (we don't care how enrolled)
-        foreach ($enrolments as $guid=>$enrolment) {
+        // Add users indexing by username (we don't care how enrolled).
+        foreach ($enrolments as $guid => $enrolment) {
             $users[$guid] = $enrolment;
         }
     }
@@ -287,17 +289,17 @@ function local_gusync_dbinit($config) {
 
     require_once($CFG->libdir.'/adodb/adodb.inc.php');
 
-    // Connect to the external database (forcing new connection)
+    // Connect to the external database (forcing new connection).
     $extdb = ADONewConnection('mysqli');
 
-    // the dbtype my contain the new connection URL, so make sure we are not connected yet
+    // The dbtype my contain the new connection URL, so make sure we are not connected yet.
     if (!$extdb->IsConnected()) {
         $result = $extdb->Connect(
-            $config->dbhost, 
-            $config->dbuser, 
-            $config->dbpass, 
-            $config->dbname, 
-            TRUE
+            $config->dbhost,
+            $config->dbuser,
+            $config->dbpass,
+            $config->dbname,
+            true
         );
         if (!$result) {
             return null;
@@ -315,15 +317,15 @@ function local_gusync_dbinit($config) {
  * @param boolean $singlerecord
  * @return mixes rows or false
  */
-function local_gusync_query( $extdb, $sql, $singlerecord=FALSE ) {
+function local_gusync_query( $extdb, $sql, $singlerecord=false ) {
 
-    // attempt to execute the sql
+    // Attempt to execute the sql.
     if (!$rs = $extdb->Execute($sql)) {
         mtrace( 'gusync: failed to execute ' . $sql . " (Error is '" . $extdb->ErrorMsg() . "')" );
         return false;
     }
 
-    // return data
+    // Return data.
     $results = array();
     if (!$rs->EOF) {
         while ($fields = $rs->FetchRow()) {
@@ -331,12 +333,12 @@ function local_gusync_query( $extdb, $sql, $singlerecord=FALSE ) {
         }
     }
 
-    // check if results obtained
+    // Check if results obtained.
     if (empty($results)) {
-        return FALSE;
+        return false;
     }
 
-    // return only the first record if required
+    // Return only the first record if required.
     if ($singlerecord) {
         return $results[0];
     }
@@ -344,7 +346,7 @@ function local_gusync_query( $extdb, $sql, $singlerecord=FALSE ) {
     return $results;
 }
 
-// EVENT HANDLER(S)
+// EVENT HANDLER(S).
 
 /**
  * Catch course_deleted event
@@ -353,41 +355,45 @@ function local_gusync_query( $extdb, $sql, $singlerecord=FALSE ) {
 function local_gusync_course_deleted($course) {
     global $SITE;
 
-    // site name
+    // Site name.
     $sitename = $SITE->shortname;
 
-    // get plugin config
+    // Get plugin config.
     $config = get_config( 'local_gusync' );
 
-    // are we set up?
+    // Are we set up?
     if (empty($config->dbhost)) {
         mtrace( 'local_gusync: not configured' );
-        return FALSE;
+        return false;
     }
 
-    // attempt to connect to external db
-    if (!$extdb=local_gusync_dbinit($config)) {
+    // Attempt to connect to external db.
+    if (!$extdb = local_gusync_dbinit($config)) {
         mtrace( 'local_gusync: unable to connect to external database' );
-        return FALSE;
+        return false;
     }
 
-    // try to find existing course record
+    // Try to find existing course record.
     $coursesql = "select * from moodlecourses where ";
     $coursesql .= "courseid = {$course->id} and site='$sitename' ";
-    $extcourse = local_gusync_query( $extdb, $coursesql, TRUE );
+    $extcourse = local_gusync_query( $extdb, $coursesql, true );
 
     if (!empty($extcourse)) {
-        
-        // delete all the users for this course
-        $sql = 'delete from moodleenrolments where moodlecoursesid = ' . $extcourse->id;
-        local_gusync_query( $extdb, $sql );
 
-        // delete the course
+        // Delete all the users for this course.
+        $sql = 'delete from moodleenrolments where moodlecoursesid = ' . $extcourse->id;
+        if (!$config->testing) {
+            local_gusync_query( $extdb, $sql );
+        }
+
+        // Delete the course.
         $sql = 'delete from moodlecourses where id = ' . $extcourse->id;
-        local_gusync_query( $extdb, $sql );
+        if (!$config->testing) {
+            local_gusync_query( $extdb, $sql );
+        }
     }
 
     $extdb->Close();
-    return TRUE;
+    return true;
 }
 
