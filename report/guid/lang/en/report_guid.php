@@ -51,6 +51,7 @@ $string['mycampus'] = 'MyCampus enrolments';
 $string['multipleresults'] = 'Error - unexpected multiple results';
 $string['noemail'] = '(Cannot create Moodle account - no email)';
 $string['noenrolments'] = 'No Moodle enrolment data found for this user';
+$string['nogudatabase'] = 'gudatabase enrolment plugin is not configured (needed for MyCampus results)';
 $string['noguenrol'] = 'GUSYNC local plugin is not configured (needed for enrolment results)';
 $string['nomycampus'] = 'No MyCampus data for this user';
 $string['noresults'] = 'No results for this search';

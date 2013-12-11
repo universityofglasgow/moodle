@@ -38,18 +38,18 @@ function local_gusync_cron() {
 
     // Are we set up?
     if (empty($config->dbhost)) {
-        mtrace( 'gusync: not configured' );
+        mtrace( 'local_gusync: not configured' );
         return false;
     }
 
     // Testing mode warning.
     if ($config->testing) {
-        mtrace( 'gusync: running in testing mode' );
+        mtrace( 'local_gusync: running in testing mode' );
     }
 
     // Attempt to connect to external db.
     if (!$extdb = local_gusync_dbinit($config)) {
-        mtrace( 'gusync: unable to connect to external database' );
+        mtrace( 'local_gusync: unable to connect to external database' );
         return false;
     }
 
@@ -59,7 +59,7 @@ function local_gusync_cron() {
     } else {
         $startcourseindex = $config->startcourseindex;
     }
-    mtrace( "gusync: starting at course index $startcourseindex" );
+    mtrace( "local_gusync: starting at course index $startcourseindex" );
 
     // Get the basics of all visible courses
     // don't load the whole course records!!
@@ -68,8 +68,8 @@ function local_gusync_cron() {
     // Convert courses to simple array.
     $courses = array_values( $courses );
     $highestindex = count($courses) - 1;
-    mtrace( "gusync: highest course index is $highestindex" );
-    mtrace( "gusync: configured time limit is {$config->timelimit} seconds" );
+    mtrace( "local_gusync: highest course index is $highestindex" );
+    mtrace( "local_gusync: configured time limit is {$config->timelimit} seconds" );
 
     // Count the courses processed.
     $processcount = 0;
@@ -99,7 +99,9 @@ function local_gusync_cron() {
     $oldaverage = empty($config->average) ? 0 : $config->average;
     $newaverage = ($oldaverage + $lastcourseprocessed - $startcourseindex) / 2;
     set_config( 'average', $newaverage, 'local_gusync' );
-    mtrace( 'gusync: completed, processed courses = ' . $processcount );
+    mtrace( 'local_gusync: completed, processed courses = ' . $processcount );
+    $elapsedtime = time() - $starttime;
+    mtrace( "local_gusync: actual elapsed time was $elapsedtime seconds" );
 
     // Done with engines.
     $extdb->Close();
@@ -157,6 +159,12 @@ function local_gusync_processcourse( $extdb, $id, $testing ) {
 
     // Reload course object with final data.
     $extcourse = local_gusync_query( $extdb, $coursesql, true );
+
+    // If we are 'testing' then it's possible this is still empty
+    if ($testing && empty($extcourse)) {
+        mtrace('local_gusync: course data does not exist and not written in testing mode (warning)');
+        return;
+    }
 
     // If not visible then just throw everybody out regardless.
     if (!$visible) {
@@ -234,7 +242,7 @@ function local_gusync_processcourse( $extdb, $id, $testing ) {
     if (count($deleteusers) > 0) {
         $list = implode(',', $deleteusers);
         $sql = "delete from moodleenrolments where id in ($list) ";
-        if (!$this->config->testing) {
+        if (!$testing) {
             local_gusync_query( $extdb, $sql );
         }
     }
@@ -302,6 +310,7 @@ function local_gusync_dbinit($config) {
             true
         );
         if (!$result) {
+            echo "<pre>".$extdb->ErrorMsg()."</pre>";
             return null;
         }
     }
@@ -321,7 +330,7 @@ function local_gusync_query( $extdb, $sql, $singlerecord=false ) {
 
     // Attempt to execute the sql.
     if (!$rs = $extdb->Execute($sql)) {
-        mtrace( 'gusync: failed to execute ' . $sql . " (Error is '" . $extdb->ErrorMsg() . "')" );
+        mtrace( 'local_gusync: failed to execute ' . $sql . " (Error is '" . $extdb->ErrorMsg() . "')" );
         return false;
     }
 
@@ -335,7 +344,7 @@ function local_gusync_query( $extdb, $sql, $singlerecord=false ) {
 
     // Check if results obtained.
     if (empty($results)) {
-        return false;
+        return array();
     }
 
     // Return only the first record if required.

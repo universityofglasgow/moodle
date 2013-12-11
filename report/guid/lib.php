@@ -288,12 +288,17 @@ function print_single( $results ) {
     if ($enrolments !== false) {
 
         // Find mycampus enrolment data.
-        $gudatabase = enrol_get_plugin('gudatabase');
-        $courses = $gudatabase->get_user_courses( $username );
-        if (!empty($courses)) {
-            print_mycampus($courses, $username);
+        $gudatabase_config = get_config('enrol_gudatabase');
+        if (empty($gudatabase_config->dbhost)) {
+            echo '<p class="alert alert-error">' . get_string('nogudatabase', 'report_guid') . '</p>';
         } else {
-            echo '<p class="alert">' . get_string('nomycampus', 'report_guid') . '</p>';
+            $gudatabase = enrol_get_plugin('gudatabase');
+            $courses = $gudatabase->get_user_courses( $username );
+            if (!empty($courses)) {
+                print_mycampus($courses, $username);
+            } else {
+                echo '<p class="alert">' . get_string('nomycampus', 'report_guid') . '</p>';
+            }
         }
     }
 }
@@ -334,7 +339,7 @@ function get_all_enrolments( $guid ) {
 
     $extdb->Close();
     if (count($enrolments) == 0) {
-        return false;
+        return array();
     } else {
         return $enrolments;
     }
@@ -358,7 +363,7 @@ function print_enrolments( $enrolments, $name, $guid ) {
         if ($newsite != $oldsite) {
             $sitelink = $enrolment->wwwroot;
             echo "<p>&nbsp;</p>";
-            echo "<h3>".get_string('enrolmentsonsite', 'report_guenrol', "<a href=\"$sitelink\">$newsite</a>")."</h3>";
+            echo "<h3>".get_string('enrolmentsonsite', 'report_guid', "<a href=\"$sitelink\">$newsite</a>")."</h3>";
             $profilelink = $enrolment->wwwroot . '/user/view.php?id=' . $guid;
             $oldsite = $newsite;
         }
@@ -393,7 +398,9 @@ function print_mycampus($courses, $guid) {
     // Run through the courses.
     foreach ($courses as $course) {
         echo "<p><strong>{$course->courses}</strong> ";
-        echo "'{$course->name}' in '{$course->ou}' ";
+        if ($course->name != '-') {
+            echo "'{$course->name}' in '{$course->ou}' ";
+        }
 
         // Check for username discrepancy.
         if ($course->UserName != $guid) {

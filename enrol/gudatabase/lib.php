@@ -539,7 +539,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
                 }
             }
 
-            // Enroll user into course.
+            // Enrol user into course.
             $this->enrol_user( $instance, $user->id, $defaultrole, 0, 0, ENROL_USER_ACTIVE );
 
             // Cache enrolment.
@@ -718,6 +718,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         $courses = array_values( $courses );
         $highestindex = count($courses) - 1;
         mtrace( "enrol_gudatabase: highest course index is $highestindex" );
+        mtrace( "enrol_gudatabase: configured time limit is {$config->timelimit} seconds" );
 
         // Process from current index to (potentially) the end.
         for ($i = $startcourseindex; $i <= $highestindex; $i++) {
@@ -725,8 +726,12 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
 
             // Avoid site and front page.
             if ($course->id > 1) {
-                mtrace( "enrol_gudatbase: updating enrolments for course '{$course->fullname}'" );
+                $updatestart = microtime(true);
+                mtrace( "enrol_gudatabase: updating enrolments for course '{$course->shortname}'" );
                 $this->course_updated(false, $course, null);
+                $updateend = microtime(true);
+                $updatetime = number_format($updateend - $updatestart, 4);
+                mtrace( "enrol_gudatabase: --- course {$course->shortname} took $updatetime seconds to update");
             }
             $lastcourseprocessed = $i;
 
@@ -750,7 +755,9 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         $oldaverage = empty($config->average) ? 0 : $config->average;
         $newaverage = ($oldaverage + $lastcourseprocessed - $startcourseindex) / 2;
         set_config( 'average', $newaverage, 'enrol_gudatabase' );
+        $elapsedtime = time() - $starttime;
         mtrace( 'enrol_gudatabase: completed, processed courses = ' . ($lastcourseprocessed - $startcourseindex) );
+        mtrace( "enrol_gudatabase: actual elapsed time was $elapsedtime seconds" );
     }
 
     /**
@@ -772,7 +779,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
      * @param stdClass $course course record
      */
     public function restore_sync_course($course) {
-        // TODO: certainly not this (in database enrol).
+        $this->course_updated(false, $course, null);
     }
 }
 
