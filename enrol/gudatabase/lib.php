@@ -442,13 +442,13 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
                 $coursecode->coursename = $coursedata->Crse_name;
                 $coursecode->subjectname = $coursedata->ou_name;
                 $coursecode->subjectnumber = $coursedata->ou_cd;
-                $coursecode->timeadded = time();
 
                 // Is there already a record for this combination.
                 if ($record = $DB->get_record( 'enrol_gudatabase_codes', array('code' => $code, 'courseid' => $course->id))) {
                     $coursecode->id = $record->id;
                     $DB->update_record( 'enrol_gudatabase_codes', $coursecode );
                 } else {
+                    $coursecode->timeadded = time();
                     $DB->insert_record( 'enrol_gudatabase_codes', $coursecode );
                 }
             }
