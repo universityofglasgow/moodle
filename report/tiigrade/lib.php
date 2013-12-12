@@ -37,7 +37,7 @@ function report_tiigrade_extend_navigation_course($navigation, $course, $context
 
     // Must have rights to view this course and to see one of the 'assignment' types.
     $captii = has_capability('mod/turnitintool:grade', $context);
-    if (has_capability('report/anonymous:view', $context) && $captii) {
+    if (has_capability('report/tiigrade:view', $context) && $captii) {
         $url = new moodle_url('/report/tiigrade/index.php', array('id' => $course->id));
         $navigation->add(get_string('pluginname', 'report_tiigrade'), $url,
             navigation_node::TYPE_SETTING, null, null, new pix_icon('i/report', ''));
