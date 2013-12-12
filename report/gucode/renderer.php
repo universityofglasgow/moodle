@@ -26,6 +26,8 @@
 class report_gucode_renderer extends plugin_renderer_base {
 
     public function print_table($courses) {
+        global $CFG;
+
         if (!$courses) {
             echo '<div class="alert">'.get_string('nocourses', 'report_gucode').'</div>';
             return;
@@ -43,7 +45,7 @@ class report_gucode_renderer extends plugin_renderer_base {
             $row[] = "<a href=\"$courselink\">{$course->coursename}</a>";
             $row[] = $course->subjectname;
             $row[] = $course->subjectnumber;
-            $row[] = date('d/m/Y H:m', $course->timeadded);
+            $row[] = userdate($course->timeadded, get_string('strftimedatetimeshort'), $CFG->timezone);
             $table->data[] = $row;
         }
         echo html_writer::table($table);
