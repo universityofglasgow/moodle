@@ -33,7 +33,7 @@ class report_anonymous_renderer extends plugin_renderer_base {
         }
         echo "<ul>";
         foreach ($assignments as $assignment) {
-            $url->params(array('mod'=>'assign', 'assign'=>$assignment->id));
+            $url->params(array('mod' => 'assign', 'assign' => $assignment->id));
             echo "<li><a href=\"$url\">";
             echo $assignment->name;
             echo "</a></li>";
@@ -57,7 +57,7 @@ class report_anonymous_renderer extends plugin_renderer_base {
             echo "<li>" . $tt->name;
             echo "<ul>";
             foreach ($tt->parts as $part) {
-                $url->params(array('mod'=>'turnitintool', 'part'=>$part->id));
+                $url->params(array('mod' => 'turnitintool', 'part' => $part->id));
                 echo "<li><a href=\"$url\">";
                 echo $part->partname;
                 echo "</a></li>";
@@ -84,7 +84,7 @@ class report_anonymous_renderer extends plugin_renderer_base {
         $idmessage = false;
         foreach ($anotusers as $u) {
             if ($reveal) {
-                $userurl = new moodle_url('/user/view.php', array('id'=>$u->id, 'course'=>$courseid));
+                $userurl = new moodle_url('/user/view.php', array('id' => $u->id, 'course' => $courseid));
                 echo "<li>";
                 echo "<a href=\"$userurl\">".fullname($u)."</a>";
                 if (!$u->idnumber) {
@@ -126,7 +126,7 @@ class report_anonymous_renderer extends plugin_renderer_base {
         echo "<ul>";
         foreach ($anotusers as $u) {
             if ($reveal) {
-                $userurl = new moodle_url('/user/view.php', array('id'=>$u->id, 'course'=>$courseid));
+                $userurl = new moodle_url('/user/view.php', array('id' => $u->id, 'course' => $courseid));
                 echo "<li>";
                 echo "<a href=\"$userurl\">".fullname($u)."</a>";
                 if (!$u->idnumber) {
@@ -162,17 +162,17 @@ class report_anonymous_renderer extends plugin_renderer_base {
         if (has_capability('report/anonymous:shownames', $context)) {
             $showurl = clone($url);
             if ($reveal) {
-                $showurl->params(array('reveal'=>0));
+                $showurl->params(array('reveal' => 0));
                 $text = get_string('clickhidenames', 'report_anonymous');
             } else {
-                $showurl->params(array('reveal'=>1));
+                $showurl->params(array('reveal' => 1));
                 $text = get_string('clickshownames', 'report_anonymous');
             }
             echo "<a class=\"btn\" href=\"$showurl\">$text</a>";
         }
 
         if (has_capability('report/anonymous:export', $context)) {
-            $url->params(array('export'=>1));
+            $url->params(array('export' => 1));
             $text = get_string('export', 'report_anonymous');
             echo "<a class=\"btn\" href=\"$url\">$text</a>";
         }

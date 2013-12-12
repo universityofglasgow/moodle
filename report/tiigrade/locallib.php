@@ -34,9 +34,9 @@ class report_tiigrade {
     public static function get_tts($id) {
         global $DB;
 
-        $tts = $DB->get_records('turnitintool', array('course'=>$id));
+        $tts = $DB->get_records('turnitintool', array('course' => $id));
         foreach ($tts as $id => $tt) {
-            $parts = $DB->get_records('turnitintool_parts', array('turnitintoolid'=>$id, 'deleted'=>0));
+            $parts = $DB->get_records('turnitintool_parts', array('turnitintoolid' => $id, 'deleted' => 0));
             $tts[$id]->parts = $parts;
         }
 
@@ -82,13 +82,13 @@ class report_tiigrade {
     public static function get_submissions($partid) {
         global $DB;
 
-        // get the list of submissions for this part
-        if (!$submissions = $DB->get_records('turnitintool_submissions', array('submission_part'=>$partid))) {
+        // Get the list of submissions for this part.
+        if (!$submissions = $DB->get_records('turnitintool_submissions', array('submission_part' => $partid))) {
             return array();
         }
         foreach ($submissions as $id => $submission) {
             if ($submission->userid) {
-                $user = $DB->get_record('user', array('id'=>$submission->userid));
+                $user = $DB->get_record('user', array('id' => $submission->userid));
                 $submissions[$id]->user = $user;
             } else {
                 $submissions[$id]->user = null;
@@ -120,9 +120,9 @@ class report_tiigrade {
             $i = 6;
         }
         $myxls->write_string( 0, $i, get_string('grade'));
-        $myxls->write_string( 0, $i+1, get_string('similarity', 'report_tiigrade'));
-        $myxls->write_string( 0, $i+2, get_string('date'));
-        $myxls->write_string( 0, $i+3, get_string('title', 'report_tiigrade'));
+        $myxls->write_string( 0, $i + 1, get_string('similarity', 'report_tiigrade'));
+        $myxls->write_string( 0, $i + 2, get_string('date'));
+        $myxls->write_string( 0, $i + 3, get_string('title', 'report_tiigrade'));
 
         // Add some data.
         $row = 1;
@@ -146,9 +146,9 @@ class report_tiigrade {
                 $i = 6;
             }
             $myxls->write_number($row, $i, $submission->submission_grade);
-            $myxls->write_number($row, $i+1, $submission->submission_score);
-            $myxls->write_string($row, $i+2, date('d/M/Y H:i', $submission->submission_modified));
-            $myxls->write_string($row, $i+3, $submission->submission_title);
+            $myxls->write_number($row, $i + 1, $submission->submission_score);
+            $myxls->write_string($row, $i + 2, date('d/M/Y H:i', $submission->submission_modified));
+            $myxls->write_string($row, $i + 3, $submission->submission_title);
             $row++;
         }
         $workbook->close();

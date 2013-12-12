@@ -41,7 +41,7 @@ class report_tiigrade_renderer extends plugin_renderer_base {
             echo "<li>" . $tt->name;
             echo "<ul>";
             foreach ($tt->parts as $part) {
-                $url->params(array('part'=>$part->id));
+                $url->params(array('part' => $part->id));
                 echo "<li><a href=\"$url\">";
                 echo $part->partname;
                 echo "</a></li>";
@@ -61,7 +61,7 @@ class report_tiigrade_renderer extends plugin_renderer_base {
     public function report($courseid, $part, $submissions, $reveal) {
         echo "<h3>" . get_string('tiisubmissions', 'report_tiigrade', $part->partname) . "</h3>";
 
-        // set up table
+        // Set up table.
         $table = new html_table();
         if ($reveal) {
             $table->head = array(
@@ -93,7 +93,7 @@ class report_tiigrade_renderer extends plugin_renderer_base {
             $similarity = $submission->submission_score ? $submission->submission_score : '-';
             $datestamp = date('d/M/Y', $submission->submission_modified);
             if ($reveal) {
-                $userurl = new moodle_url('/user/view.php', array('id'=>$u->id, 'course'=>$courseid));
+                $userurl = new moodle_url('/user/view.php', array('id' => $u->id, 'course' => $courseid));
                 $row = array(
                     $idnumber,
                     $submission->submission_objectid,
@@ -128,16 +128,16 @@ class report_tiigrade_renderer extends plugin_renderer_base {
         if (has_capability('report/tiigrade:shownames', $context) && $anonymous) {
             $showurl = clone($url);
             if ($reveal) {
-                $showurl->params(array('reveal'=>0));
+                $showurl->params(array('reveal' => 0));
                 $text = get_string('clickhidenames', 'report_tiigrade');
             } else {
-                $showurl->params(array('reveal'=>1));
+                $showurl->params(array('reveal' => 1));
                 $text = get_string('clickshownames', 'report_tiigrade');
             }
             echo "<a class=\"btn\" href=\"$showurl\">$text</a>";
         }
 
-        $url->params(array('export'=>1));
+        $url->params(array('export' => 1));
         $text = get_string('export', 'report_tiigrade');
         echo "<a class=\"btn\" href=\"$url\">$text</a>";
         echo "</div>";

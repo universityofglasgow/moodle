@@ -31,18 +31,18 @@ $partid = optional_param('part', 0, PARAM_INT);
 $reveal = optional_param('reveal', 0, PARAM_INT);
 $export = optional_param('export', 0, PARAM_INT);
 
-$url = new moodle_url('/report/tiigrade/index.php', array('id'=>$id));
+$url = new moodle_url('/report/tiigrade/index.php', array('id' => $id));
 $fullurl = new moodle_url('/report/tiigrade/index.php', array(
-    'id'=>$id,
-    'part'=>$partid,
-    'reveal'=>$reveal,
+    'id' => $id,
+    'part' => $partid,
+    'reveal' => $reveal,
 ));
 
 // Page setup.
 $PAGE->set_url($url);
 $PAGE->set_pagelayout('admin');
 
-if (!$course = $DB->get_record('course', array('id'=>$id))) {
+if (!$course = $DB->get_record('course', array('id' => $id))) {
     print_error('invalidcourse');
 }
 
@@ -55,7 +55,7 @@ if (!$captt || !has_capability('report/tiigrade:view', $context)) {
     notice(get_string('nocapability', 'report_tiigrade'));
 }
 
-// Paranoia
+// Paranoia.
 if (!has_capability('report/tiigrade:shownames', $context)) {
     $reveal = 0;
 }
@@ -79,11 +79,11 @@ if ($partid) {
     }
 
     // Get activity/part info.
-    $part = $DB->get_record('turnitintool_parts', array('id'=>$partid));
-    $turnitintool = $DB->get_record('turnitintool', array('id'=>$part->turnitintoolid));
+    $part = $DB->get_record('turnitintool_parts', array('id' => $partid));
+    $turnitintool = $DB->get_record('turnitintool', array('id' => $part->turnitintoolid));
 
-    // Can we view user data
-    $anonymous = $turnitintool->anon && (time()<$part->dtpost);
+    // Can we view user data.
+    $anonymous = $turnitintool->anon && (time() < $part->dtpost);
     $showuserdata = !$anonymous;
     if (has_capability('report/tiigrade:shownames', $context) && $anonymous) {
         $showuserdata = $reveal;

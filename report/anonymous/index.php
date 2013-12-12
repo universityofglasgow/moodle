@@ -33,20 +33,20 @@ $partid = optional_param('part', 0, PARAM_INT);
 $reveal = optional_param('reveal', 0, PARAM_INT);
 $export = optional_param('export', 0, PARAM_INT);
 
-$url = new moodle_url('/report/anonymous/index.php', array('id'=>$id));
+$url = new moodle_url('/report/anonymous/index.php', array('id' => $id));
 $fullurl = new moodle_url('/report/anonymous/index.php', array(
-    'id'=>$id,
-    'mod'=>$mod,
-    'assign'=>$assignid,
-    'part'=>$partid,
-    'reveal'=>$reveal,
+    'id' => $id,
+    'mod' => $mod,
+    'assign' => $assignid,
+    'part' => $partid,
+    'reveal' => $reveal,
 ));
 
 // Page setup.
 $PAGE->set_url($url);
 $PAGE->set_pagelayout('admin');
 
-if (!$course = $DB->get_record('course', array('id'=>$id))) {
+if (!$course = $DB->get_record('course', array('id' => $id))) {
     print_error('invalidcourse');
 }
 
@@ -90,8 +90,8 @@ if ($mod) {
         notice(get_string('notallowed', 'report_anonymous'), $url);
     }
 
-    if ($mod=='assign') {
-        $assignment = $DB->get_record('assign', array('id'=>$assignid));
+    if ($mod == 'assign') {
+        $assignment = $DB->get_record('assign', array('id' => $assignid));
         $allusers = report_anonymous::get_assign_users($context);
         $notsubmittedusers = report_anonymous::get_assign_notsubmitted($assignid, $allusers);
         $notsubmittedusers = report_anonymous::sort_users($notsubmittedusers, $reveal);
@@ -104,8 +104,8 @@ if ($mod) {
         $output->report_assign($id, $assignment, $allusers, $notsubmittedusers, $reveal);
         $output->back_button($url);
     } else {
-        $part = $DB->get_record('turnitintool_parts', array('id'=>$partid));
-        $turnitintool = $DB->get_record('turnitintool', array('id'=>$part->turnitintoolid));
+        $part = $DB->get_record('turnitintool_parts', array('id' => $partid));
+        $turnitintool = $DB->get_record('turnitintool', array('id' => $part->turnitintoolid));
         $allusers = report_anonymous::get_turnitintool_users($context);
         $notsubmittedusers = report_anonymous::get_turnitintool_notsubmitted($part->turnitintoolid, $partid, $allusers);
         $notsubmittedusers = report_anonymous::sort_users($notsubmittedusers, $reveal);

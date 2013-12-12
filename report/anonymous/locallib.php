@@ -33,7 +33,7 @@ class report_anonymous {
     public static function get_assignments($id) {
         global $DB;
 
-        $assignments = $DB->get_records('assign', array('blindmarking'=>1, 'course'=>$id));
+        $assignments = $DB->get_records('assign', array('blindmarking' => 1, 'course' => $id));
         return $assignments;
     }
 
@@ -46,9 +46,9 @@ class report_anonymous {
     public static function get_tts($id) {
         global $DB;
 
-        $tts = $DB->get_records('turnitintool', array('anon'=>1, 'course'=>$id));
+        $tts = $DB->get_records('turnitintool', array('anon' => 1, 'course' => $id));
         foreach ($tts as $id => $tt) {
-            $parts = $DB->get_records('turnitintool_parts', array('turnitintoolid'=>$id, 'deleted'=>0));
+            $parts = $DB->get_records('turnitintool_parts', array('turnitintoolid' => $id, 'deleted' => 0));
             $tts[$id]->parts = $parts;
         }
 
@@ -66,9 +66,9 @@ class report_anonymous {
      * @return boolean true if ok
      */
     public static function allowed_to_view($mod, $assignid, $partid, $assignments, $tts) {
-        if ($mod=='assign') {
+        if ($mod == 'assign') {
             return array_key_exists($assignid, $assignments);
-        } else if ($mod=='turnitintool') {
+        } else if ($mod == 'turnitintool') {
             foreach ($tts as $tt) {
                 if (array_key_exists($partid, $tt->parts)) {
                     return true;
@@ -105,7 +105,7 @@ class report_anonymous {
 
         $notsubusers = array();
         foreach ($users as $user) {
-            if (!$DB->get_record('assign_submission', array('userid'=>$user->id, 'assignment'=>$assignid))) {
+            if (!$DB->get_record('assign_submission', array('userid' => $user->id, 'assignment' => $assignid))) {
                 $notsubusers[$user->id] = $user;
             }
         }
@@ -149,7 +149,7 @@ class report_anonymous {
         $notsubusers = array();
         foreach ($users as $user) {
             if (!$DB->get_record('turnitintool_submissions',
-                    array('userid'=>$user->id, 'turnitintoolid'=>$ttid, 'submission_part'=>$partid))) {
+                    array('userid' => $user->id, 'turnitintoolid' => $ttid, 'submission_part' => $partid))) {
                 $notsubusers[$user->id] = $user;
             }
         }
@@ -167,7 +167,7 @@ class report_anonymous {
         // Adding the worksheet.
         $myxls = $workbook->add_worksheet(get_string('workbook', 'report_anonymous'));
 
-        // titles
+        // Titles.
         $myxls->write_string(0, 0, get_string('turnitinname', 'report_anonymous'));
         $myxls->write_string(0, 1, $activityname);
         $myxls->write_string(1, 0, get_string('partname', 'report_anonymous'));
