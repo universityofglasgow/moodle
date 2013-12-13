@@ -25,26 +25,27 @@
 require(dirname(__FILE__).'/../../config.php');
 require_once($CFG->dirroot.'/lib/tablelib.php');
 
-// parameters
-$id = required_param('id', PARAM_INT); // course id.
-$codeid	= optional_param('codeid', 0, PARAM_INT);
+// Parameters.
+$id = required_param('id', PARAM_INT); // Course id.
+$codeid = optional_param('codeid', 0, PARAM_INT);
+$action = optional_param('action', '', PARAM_ALPHA);
 
-$url = new moodle_url('/report/guenrol/index.php', array('id'=>$id));
+$url = new moodle_url('/report/guenrol/index.php', array('id' => $id));
 
-// page setip
+// Page setup.
 $PAGE->set_url($url);
 $PAGE->set_pagelayout('admin');
 
-if (!$course = $DB->get_record('course', array('id'=>$id))) {
+if (!$course = $DB->get_record('course', array('id' => $id))) {
     print_error('invalidcourse');
 }
 
-// security
+// Security.
 require_login($course);
 $context = get_context_instance(CONTEXT_COURSE, $course->id);
 require_capability('report/guenrol:view', $context);
 
-// log
+// Log.
 add_to_log($course->id, "course", "report guenrol", "report/guenrol/index.php?id=$course->id", $course->id);
 
 $PAGE->set_title($course->shortname .': '. get_string('pluginname', 'report_guenrol'));
@@ -52,21 +53,31 @@ $PAGE->set_heading($course->fullname);
 echo $OUTPUT->header();
 echo $OUTPUT->heading( get_string('title', 'report_guenrol') . ' : ' . $course->fullname );
 
-// get the codes for this course
-$codes = $DB->get_records( 'enrol_gudatabase_codes', array('courseid'=>$id));
+// Re-sync the codes
+if ($action=='sync') {
+    $gudatabase = enrol_get_plugin('gudatabase');
+    $gudatabase->course_updated(false, $course, null);
+}
 
-// if codeid=0 we will just show the list of possible codes
+// Get the codes for this course.
+$codes = $DB->get_records( 'enrol_gudatabase_codes', array('courseid' => $id));
+
+// If codeid=0 we will just show the list of possible codes.
 if (empty($codeid)) {
+
+    // Sync link.
+    $synclink = new moodle_url('/report/guenrol/index.php', array('id' => $id, 'action' => 'sync'));
+    echo "<div><a class=\"btn\" href=\"$synclink\">" . get_string('synccourse', 'report_guenrol') . "</a></div>";
+
     if (empty($codes)) {
-        echo "<p>There are no automatic enrolment codes defined in this course</p>";
-    }
-    else {
+        echo '<div class="alert">' . get_string('nocodes', 'report_guenrol') . '</div>';
+    } else {
         echo "<p>" . get_string('listofcodes', 'report_guenrol') . "</p>";
         echo '<ul id="guenrol_codes">';
         foreach ($codes as $code) {
-            
-            // establish link for detailed display
-            $link = new moodle_url('/report/guenrol/index.php', array('id'=>$id, 'codeid'=>$code->id));
+
+            // Establish link for detailed display.
+            $link = new moodle_url('/report/guenrol/index.php', array('id' => $id, 'codeid' => $code->id));
             echo "<li><a href=\"$link\">";
             echo "<strong>{$code->code}</strong></a> ";
             echo "\"{$code->coursename}\" ";
@@ -74,88 +85,87 @@ if (empty($codeid)) {
             echo "</li>";
         }
 
-        // if there is more than 1 show aggregated
-        if (count($codes)>1) {
-            $link = new moodle_url('/report/guenrol/index.php', array('id'=>$id, 'codeid'=>-1));
+        // If there is more than 1 show aggregated.
+        if (count($codes) > 1) {
+            $link = new moodle_url('/report/guenrol/index.php', array('id' => $id, 'codeid' => -1));
             echo "<li><a href=\"$link\">";
             echo "<strong>" . get_string('showall', 'report_guenrol') . "</strong></a> ";
             echo "</li>";
         }
         echo '</ul>';
 
-        // dropdown to get sort order
+        // Dropdown to get sort order.
     }
-}
-else {
+} else {
 
-    // get enrolment info
-    if ($codeid>-1) {
+    // Get enrolment info.
+    if ($codeid > -1) {
         $selectedcode = $codes[ $codeid ];
-    }
-    else {
-        $selectedcode = NULL;
+    } else {
+        $selectedcode = null;
     }
 
-    // get users
-    if ($codeid>-1) {
+    // Get users.
+    if ($codeid > -1) {
         $codename = $codes[$codeid]->code;
         $coursename = $codes[$codeid]->coursename;
         $subjectname = $codes[$codeid]->subjectname;
-        $users = $DB->get_records('enrol_gudatabase_users', array('courseid'=>$id, 'code'=>$codename));
-    }
-    else {
+        $users = $DB->get_records('enrol_gudatabase_users', array('courseid' => $id, 'code' => $codename));
+    } else {
         $users = array();
         foreach ($codes as $code) {
-            $codeusers = $DB->get_records('enrol_gudatabase_users', array('courseid'=>$id, 'code'=>$code->code));
+            $codeusers = $DB->get_records('enrol_gudatabase_users', array('courseid' => $id, 'code' => $code->code));
             $users = array_merge($users, $codeusers);
-        }    
+        }
     }
 
-    // convert to unique userid table based on code
+    // Convert to unique userid table based on code.
     $uniqueusers = array();
     foreach ($users as $user) {
         if (empty($uniqueusers[ $user->userid ])) {
-            $moodleuser = $DB->get_record('user', array('id'=>$user->userid));
+            $moodleuser = $DB->get_record('user', array('id' => $user->userid));
             $uniqueusers[ $user->userid ] = $user;
-	    $uniqueusers[ $user->userid ]->firstname = $moodleuser->firstname;
+            $uniqueusers[ $user->userid ]->firstname = $moodleuser->firstname;
             $uniqueusers[ $user->userid ]->lastname = $moodleuser->lastname;
             $uniqueusers[ $user->userid ]->fullname = fullname( $moodleuser );
             $uniqueusers[ $user->userid ]->deleted = $moodleuser->deleted;
             $uniqueusers[ $user->userid ]->username = $moodleuser->username;
-        }
-        else {
+        } else {
             $uniqueusers[ $user->userid]->code .= ", {$user->code}";
         }
     }
 
-    // sort
+    // Sort.
     usort( $uniqueusers, 'report_guenrol_sort' );
 
-    // some information
-    if ($codeid>-1) {
-        echo "<p>Enrolments relating to code <strong>$codename</strong>. ";
-        echo "Course '$coursename' in '$subjectname'</p>";
-    }
-    else {
-        echo "<p>Users for the following coursecodes:<p>";
+    // Some information.
+    if ($codeid > -1) {
+        echo "<p>" . get_string('enrolmentscode', 'report_guenrol', $codename) . ' ';
+        echo get_string('coursename', 'report_guenrol', $coursename) . ' ';
+        echo get_string('subjectname', 'report_guenrol', $subjectname) .'</p>';
+
+    } else {
+        echo "<p>" . get_string('usercodes', 'report_guenrol') . "<p>";
         echo "<ul>";
         foreach ($codes as $code) {
-            echo "<li><strong>{$code->code}</strong> Course '{$code->coursename}' in '{$code->subjectname}'</li>";
+            echo "<li><strong>{$code->code}</strong> ";
+            echo get_string('coursename', 'report_guenrol', $code->coursename) . ' ';
+            echo get_string('subjectname', 'report_guenrol', $code->subjectname) . '</li>';
         }
         echo "</ul>";
     }
 
-    // list users
+    // List users.
     echo "<ul id=\"guenrol_users\">";
     foreach ($uniqueusers as $user) {
 
-        // be sure not to show deleted accounts
+        // Be sure not to show deleted accounts.
         if ($user->deleted) {
             continue;
         }
 
-        // display user (profile) link and data
-        $link = new moodle_url( '/user/profile.php', array('id'=>$user->userid));
+        // Display user (profile) link and data.
+        $link = new moodle_url( '/user/profile.php', array('id' => $user->userid));
         echo "<li>";
         echo "<a href=\"$link\"><strong>{$user->username}</strong></a> ";
         echo $user->fullname;
@@ -163,14 +173,12 @@ else {
         echo "</li>";
     }
     echo "</ul>";
-    echo "<p>Total number of users of this code: " . count($users) . "</p>";
+    echo "<p>" . get_string('totalcodeusers', 'report_guenrol', count($users)) . "</p>";
 }
 
 echo $OUTPUT->footer();
 
-function bbb() { }
-
-// callback function for sort
+// Callback function for sort.
 function report_guenrol_sort( $a, $b ) {
     $afirstname = strtolower( $a->firstname );
     $alastname = strtolower( $a->lastname );
@@ -180,12 +188,10 @@ function report_guenrol_sort( $a, $b ) {
     if ($alastname == $blastname) {
         if ($afirstname == $bfirstname) {
             return 0;
-        }
-        else {
+        } else {
             return ($afirstname < $bfirstname) ? -1 : 1;
         }
-    }
-    else {
+    } else {
         return ($alastname < $blastname) ? -1 : 1;
     }
 }

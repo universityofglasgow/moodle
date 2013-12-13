@@ -22,10 +22,17 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+$string['coursename'] = 'Course \'{$a}\'.';
+$string['enrolmentscode'] = 'Enrolments for code <strong>{$a}</strong>.';
 $string['guenrol:view'] = 'View course participation report';
 $string['listofcodes'] = 'The following automatic enrolment codes have been set (in the Course Settings) for this course. Click on the code for the current student list:';
+$string['nocodes'] = 'There are no automatic enrolment codes defined in this course';
 $string['page-report-guenrol-x'] = 'Any participation report';
 $string['page-report-guenrol-index'] = 'Course participation report';
 $string['pluginname'] = 'UofG enrolment status';
 $string['showall'] = 'Show all enrolments';
+$string['subjectname'] = 'Subject \'{$a}\'.';
+$string['synccourse'] = 'Re-sync course enrolments (may take a little time)';
 $string['title'] = 'Automatic enrolment status';
+$string['totalcodeusers'] = 'Total number of users of this code is {$a}';
+$string['usercodes'] = 'Users for the following course codes';

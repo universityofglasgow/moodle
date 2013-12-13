@@ -23,6 +23,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+define('GLA_COURSE_CODE_URL', 'http://www.gla.ac.uk/coursecatalogue/course/?code=');
+
 class report_gucode_renderer extends plugin_renderer_base {
 
     public function print_table($courses) {
@@ -40,7 +42,8 @@ class report_gucode_renderer extends plugin_renderer_base {
         $table->head[] = get_string('added', 'report_gucode');
         foreach ($courses as $course) {
             $row = array();
-            $row[] = $course->code;
+            $codelink = GLA_COURSE_CODE_URL . $course->code;
+            $row[] = "<a href=\"$codelink\">$course->code</a>";
             $courselink = new moodle_url('/course/view.php', array('id' => $course->courseid));
             $row[] = "<a href=\"$courselink\">{$course->coursename}</a>";
             $row[] = $course->subjectname;

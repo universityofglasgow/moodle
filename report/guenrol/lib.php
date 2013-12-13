@@ -35,8 +35,9 @@ defined('MOODLE_INTERNAL') || die;
 function report_guenrol_extend_navigation_course($navigation, $course, $context) {
     global $CFG, $OUTPUT;
     if (has_capability('report/guenrol:view', $context)) {
-        $url = new moodle_url('/report/guenrol/index.php', array('id'=>$course->id));
-        $navigation->add(get_string('pluginname', 'report_guenrol'), $url, navigation_node::TYPE_SETTING, null, null, new pix_icon('i/report', ''));
+        $url = new moodle_url('/report/guenrol/index.php', array('id' => $course->id));
+        $navigation->add(get_string('pluginname', 'report_guenrol'), $url,
+                navigation_node::TYPE_SETTING, null, null, new pix_icon('i/report', ''));
     }
 }
 
