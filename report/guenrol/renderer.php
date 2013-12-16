@@ -118,6 +118,8 @@ class report_guenrol_renderer extends plugin_renderer_base {
     }
 
     public function removed($id) {
+        global $OUTPUT;
+
         echo '<p class="alert alert-info">' . get_string('removeddone', 'report_guenrol') . '</p>';
         $url = new moodle_url('/report/guenrol/index.php', array('id' => $id));
         echo $OUTPUT->continue_button($url);
