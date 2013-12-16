@@ -19,8 +19,10 @@ class report_guenrol_renderer extends plugin_renderer_base {
                 $link = new moodle_url('/report/guenrol/index.php', array('id' => $id, 'codeid' => $code->id));
                 echo "<li><a href=\"$link\">";
                 echo "<strong>{$code->code}</strong></a> ";
-                echo "\"{$code->coursename}\" ";
-                echo "({$code->subjectname}) ";
+                if ($code->coursename != '-') {
+                    echo "\"{$code->coursename}\" ";
+                    echo "({$code->subjectname}) ";
+                }
                 echo "</li>";
             }
 
@@ -43,16 +45,22 @@ class report_guenrol_renderer extends plugin_renderer_base {
     public function code_info($codes, $codeid, $codename, $coursename, $subjectname) {
         if ($codeid > -1) {
             echo "<p>" . get_string('enrolmentscode', 'report_guenrol', $codename) . ' ';
-            echo get_string('coursename', 'report_guenrol', $coursename) . ' ';
-            echo get_string('subjectname', 'report_guenrol', $subjectname) .'</p>';
+            if ($coursename != '-') {
+                echo get_string('coursename', 'report_guenrol', $coursename) . ' ';
+                echo get_string('subjectname', 'report_guenrol', $subjectname);
+            }
+            echo '</p>';
 
         } else {
             echo "<p>" . get_string('usercodes', 'report_guenrol') . "<p>";
             echo "<ul>";
             foreach ($codes as $code) {
                 echo "<li><strong>{$code->code}</strong> ";
-                echo get_string('coursename', 'report_guenrol', $code->coursename) . ' ';
-                echo get_string('subjectname', 'report_guenrol', $code->subjectname) . '</li>';
+                if ($code->coursename != '-') {
+                    echo get_string('coursename', 'report_guenrol', $code->coursename) . ' ';
+                    echo get_string('subjectname', 'report_guenrol', $code->subjectname);
+                }
+                echo '</li>';
             }
             echo "</ul>";
         }

@@ -244,7 +244,20 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         } else {
             $msg = $extdb->ErrorMsg();
             $this->error('Error executing query in UofG enrolment table "'.$msg.'" - '.$sql);
+
             return false;
+        }
+
+        if (!$data && (strpos($code, '*') !== false)) {
+            $enrolments = $this->external_enrolments(array($code));
+            if ($enrolments) {
+                $data = new stdClass();
+                $data->Crse_cd_Subject = '-';
+                $data->Crse_cd_nbr = 0;
+                $data->Crse_name = '-';
+                $data->ou_name = '-';
+                $data->ou_cd = 0;
+            }
         }
 
         $extdb->Close();
