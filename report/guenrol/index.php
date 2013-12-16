@@ -44,6 +44,7 @@ if (!$course = $DB->get_record('course', array('id' => $id))) {
 require_login($course);
 $context = get_context_instance(CONTEXT_COURSE, $course->id);
 require_capability('report/guenrol:view', $context);
+$output = $PAGE->get_renderer('report_guenrol');;
 
 // Log.
 add_to_log($course->id, "course", "report guenrol", "report/guenrol/index.php?id=$course->id", $course->id);
@@ -62,40 +63,52 @@ if ($action=='sync') {
 // Get the codes for this course.
 $codes = $DB->get_records( 'enrol_gudatabase_codes', array('courseid' => $id));
 
-// If codeid=0 we will just show the list of possible codes.
-if (empty($codeid)) {
+// convert to simple array
+$simplecodes = array();
+foreach ($codes as $code) {
+   $simplecodes[] = $code->code; 
+}
 
-    // Sync link.
-    $synclink = new moodle_url('/report/guenrol/index.php', array('id' => $id, 'action' => 'sync'));
-    echo "<div><a class=\"btn\" href=\"$synclink\">" . get_string('synccourse', 'report_guenrol') . "</a></div>";
+// If action is 'removed'...
+if (($action=='removed') || ($action=='unenrol')) {
 
-    if (empty($codes)) {
-        echo '<div class="alert">' . get_string('nocodes', 'report_guenrol') . '</div>';
-    } else {
-        echo "<p>" . get_string('listofcodes', 'report_guenrol') . "</p>";
-        echo '<ul id="guenrol_codes">';
-        foreach ($codes as $code) {
+    // Get the gudatabase enrolments in this course.
+    $sql = 'SELECT u.id, u.username, u.firstname, u.lastname, u.deleted, e.id AS instance from {user} u ';
+    $sql .= 'JOIN {user_enrolments} ue ON (ue.userid=u.id) ';
+    $sql .= 'JOIN {enrol} e ON (ue.enrolid=e.id) ';
+    $sql .= 'WHERE e.courseid=? AND e.enrol=? ';
+    $sql .= 'ORDER BY lastname, firstname ';
+    $users = $DB->get_records_sql($sql, array($id, 'gudatabase'));
 
-            // Establish link for detailed display.
-            $link = new moodle_url('/report/guenrol/index.php', array('id' => $id, 'codeid' => $code->id));
-            echo "<li><a href=\"$link\">";
-            echo "<strong>{$code->code}</strong></a> ";
-            echo "\"{$code->coursename}\" ";
-            echo "({$code->subjectname}) ";
-            echo "</li>";
-        }
-
-        // If there is more than 1 show aggregated.
-        if (count($codes) > 1) {
-            $link = new moodle_url('/report/guenrol/index.php', array('id' => $id, 'codeid' => -1));
-            echo "<li><a href=\"$link\">";
-            echo "<strong>" . get_string('showall', 'report_guenrol') . "</strong></a> ";
-            echo "</li>";
-        }
-        echo '</ul>';
-
-        // Dropdown to get sort order.
+    // Get all the users who are supposed to be in this course
+    // and change to ids (for comparison).
+    $gudatabase = enrol_get_plugin('gudatabase');
+    $codeusers = $gudatabase->external_enrolments($simplecodes);
+    $usernames = array();
+    foreach ($codeusers as $codeuser) {
+        $usernames[$codeuser->UserName] = $codeuser;
     }
+
+    // compare
+    $removed = array();
+    foreach ($users as $user) {
+        if (empty($usernames[$user->username])) {
+            $removed[$user->id] = $user;
+        }
+    }
+
+    // Display or unenrol
+    if ($action=='removed') {
+        $output->list_removed_users($id, $removed);
+    } else {
+        foreach ($removed as $remove) {
+            $instance = $DB->get_record('enrol', array('id' => $remove->instance));
+            $gudatabase->unenrol_user($instance, $remove->id);
+        }
+        $output->removed($id);
+    }
+} else if (empty($codeid)) {
+    $output->menu($id, $codes);
 } else {
 
     // Get enrolment info.
@@ -117,6 +130,9 @@ if (empty($codeid)) {
             $codeusers = $DB->get_records('enrol_gudatabase_users', array('courseid' => $id, 'code' => $code->code));
             $users = array_merge($users, $codeusers);
         }
+        $codename = '';
+        $coursename = '';
+        $subjectname = '';
     }
 
     // Convert to unique userid table based on code.
@@ -139,41 +155,10 @@ if (empty($codeid)) {
     usort( $uniqueusers, 'report_guenrol_sort' );
 
     // Some information.
-    if ($codeid > -1) {
-        echo "<p>" . get_string('enrolmentscode', 'report_guenrol', $codename) . ' ';
-        echo get_string('coursename', 'report_guenrol', $coursename) . ' ';
-        echo get_string('subjectname', 'report_guenrol', $subjectname) .'</p>';
-
-    } else {
-        echo "<p>" . get_string('usercodes', 'report_guenrol') . "<p>";
-        echo "<ul>";
-        foreach ($codes as $code) {
-            echo "<li><strong>{$code->code}</strong> ";
-            echo get_string('coursename', 'report_guenrol', $code->coursename) . ' ';
-            echo get_string('subjectname', 'report_guenrol', $code->subjectname) . '</li>';
-        }
-        echo "</ul>";
-    }
+    $output->code_info($codes, $codeid, $codename, $coursename, $subjectname);
 
     // List users.
-    echo "<ul id=\"guenrol_users\">";
-    foreach ($uniqueusers as $user) {
-
-        // Be sure not to show deleted accounts.
-        if ($user->deleted) {
-            continue;
-        }
-
-        // Display user (profile) link and data.
-        $link = new moodle_url( '/user/profile.php', array('id' => $user->userid));
-        echo "<li>";
-        echo "<a href=\"$link\"><strong>{$user->username}</strong></a> ";
-        echo $user->fullname;
-        echo " <small>({$user->code})</small>";
-        echo "</li>";
-    }
-    echo "</ul>";
-    echo "<p>" . get_string('totalcodeusers', 'report_guenrol', count($users)) . "</p>";
+    $output->list_users($uniqueusers);
 }
 
 echo $OUTPUT->footer();

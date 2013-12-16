@@ -152,7 +152,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
      * @param string $userid user id
      * @return array 
      */
-    protected function external_enrolments( $codes=null, $userid=null ) {
+    public function external_enrolments( $codes=null, $userid=null ) {
         global $CFG, $DB;
 
         // Codes and userid can't both be null.
