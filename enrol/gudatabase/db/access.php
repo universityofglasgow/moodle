@@ -45,6 +45,14 @@ $capabilities = array(
             'teacher' => CAP_ALLOW,
         )
     ),
+
+    /* Unenrol self - watch out for data loss. */
+    'enrol/gudatabase:unenrolself' => array(
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_COURSE,
+        'archetypes' => array(
+        )
+    ),
 );
 
 

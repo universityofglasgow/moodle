@@ -138,7 +138,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
      * @param string $code (list of) course codes
      * @return array array of course codes
      */
-    private function split_code( $code ) {
+    public function split_code( $code ) {
 
         // Split on comma or space.
         $codes = preg_split("/[\s,]+/", $code, null, PREG_SPLIT_NO_EMPTY );
