@@ -88,9 +88,13 @@ class report_guenrol_renderer extends plugin_renderer_base {
     }
 
     public function list_removed_users($id, $users) {
+        global $OUTPUT;
+
         echo "<h3>" . get_string('removedusers', 'report_guenrol') . "</h3>";
         if (!$users) {
             echo '<p class="alert alert-warning">' . get_string('noremovedusers', 'report_guenrol') . '</p>';
+            $url = new moodle_url('/report/guenrol/index.php', array('id' => $id));
+            echo $OUTPUT->continue_button($url);
             return;
         }
 
