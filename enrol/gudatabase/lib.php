@@ -339,7 +339,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         foreach ($courses as $course) {
             $code = $course->courses;
             if ($coursedata = $this->external_coursedata( $code )) {
-                $course->name = $coursedata->Crse_name;
+                $course->name = fix_utf8($coursedata->Crse_name);
                 $course->ou = $coursedata->ou_name;
             } else {
                 $course->name = '-';
@@ -452,8 +452,8 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
                 // COCK UP: these codes can contain letters at the end
                 // but we'll just strip them off for now.
                 $coursecode->coursenumber = clean_param($coursedata->Crse_cd_nbr, PARAM_INT);
-                $coursecode->coursename = $coursedata->Crse_name;
-                $coursecode->subjectname = $coursedata->ou_name;
+                $coursecode->coursename = fix_utf8($coursedata->Crse_name);
+                $coursecode->subjectname = fix_utf8($coursedata->ou_name);
                 $coursecode->subjectnumber = $coursedata->ou_cd;
 
                 // Is there already a record for this combination.
