@@ -24,12 +24,10 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 class theme_elegance_core_renderer_maintenance extends core_renderer_maintenance {
 
-    /*
-     * This renders a notification message.
-     * Uses bootstrap compatible html.
-     */
     public function notification($message, $classes = 'notifyproblem') {
         $message = clean_text($message);
 

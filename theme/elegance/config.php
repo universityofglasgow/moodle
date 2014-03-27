@@ -20,54 +20,18 @@
  *
  * @package    theme_elegance
  * @copyright  2014 Julian Ridden http://moodleman.net
- * @authors    Julian Ridden -  Bootstrap 3 work by Bas Brands, David Scotson
+ * @authors    Julian Ridden - Bootstrap 3 work by Bas Brands and David Scotson.
+ *                           - Contributions by Gareth J Barnard.
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
- 
-if (!empty($THEME->settings->enablecategoryicon)) {
-     $enablecategoryicon = $THEME->settings->enablecategoryicon;
-} else {
-     $enablecategoryicon = '0';
-}
- 
-if (!empty($THEME->settings->enablecustomlogin)) {
-     $enablecustomlogin = $THEME->settings->enablecustomlogin;
-} else {
-     $enablecustomlogin = '0';
-}
 
-if (!empty($THEME->settings->tiles)) {
-     $tiles = $THEME->settings->tiles;
-} else {
-     $tiles = '0';
-}
- 
 $THEME->doctype = 'html5';
+
 $THEME->yuicssmodules = array();
+
 $THEME->name = 'elegance';
+
 $THEME->parents = array();
-
-if ($enablecategoryicon == '1') {
-	$categorysheet='categories';
-} else {
-	$categorysheet='';
-}
-
-if ($enablecustomlogin == '1') {
-	$loginlayout='login.php';
-	$loginsheet='login1';
-} else {
-	$loginlayout='default.php';
-	$loginsheet='login2';
-}
-
-if ($tiles == '1') {
-	$tilessheet ='coursetiles';
-} else {
-	$tilessheet ='';
-}
-	
-$THEME->sheets = array('moodle', 'font-awesome.min', 'elegance', $categorysheet , $tilessheet, $loginsheet, ' nprogress');
 
 $THEME->supportscssoptimisation = false;
 
@@ -75,7 +39,8 @@ $THEME->editor_sheets = array('editor');
 
 $THEME->plugins_exclude_sheets = array(
     'block' => array(
-        'html'
+        'html',
+        'search_forums'
     ),
     'tool' => array(
         'customlang'
@@ -84,7 +49,31 @@ $THEME->plugins_exclude_sheets = array(
 
 $THEME->rendererfactory = 'theme_overridden_renderer_factory';
 
-$THEME->csspostprocess = 'theme_elegance_process_css';
+if ((!empty($THEME->settings->enablecategoryicon)) && ($THEME->settings->enablecategoryicon == '1')) {
+	$categorysheet='categories';
+} else {
+	$categorysheet='';
+}
+
+if ((!empty($THEME->settings->enablecustomlogin)) && ($THEME->settings->enablecustomlogin == '1')) {
+	$loginlayout='login.php';
+  $loginsheet='login1';
+} else {
+  $loginlayout='default.php';
+  $loginsheet='login2';
+}
+
+if ((!empty($THEME->settings->tiles)) && ($THEME->settings->tiles == '1')) {
+	$tilessheet ='coursetiles';
+} else {
+	$tilessheet ='';
+}
+
+if ('ltr' === get_string('thisdirection', 'langconfig')) {
+    $THEME->sheets = array('moodle', 'font-awesome.min', $categorysheet , $tilessheet, $loginsheet, ' nprogress', 'elegance');
+} else {
+    $THEME->sheets = array('moodle-rtl', 'tinymce-rtl', 'yui2-rtl', 'forms-rtl', 'font-awesome.min', $categorysheet , $tilessheet, $loginsheet, ' nprogress', 'elegance');
+}
 
 $THEME->layouts = array(
     // Most backwards compatible layout without the blocks - this is the layout used by default.
@@ -115,6 +104,7 @@ $THEME->layouts = array(
         'file' => 'default.php',
         'regions' => array('side-post'),
         'defaultregion' => 'side-post',
+        'options' => array('usereader' => true),
     ),
     // The site home page.
     'frontpage' => array(
@@ -188,6 +178,7 @@ $THEME->layouts = array(
         'file' => 'default.php',
         'regions' => array('side-post'),
         'defaultregion' => 'side-post',
+        'options' => array('usereader' => true),
     ),
     // The pagelayout used for safebrowser and securewindow.
     'secure' => array(
@@ -197,10 +188,13 @@ $THEME->layouts = array(
     ),
 );
 
+$THEME->csspostprocess = 'theme_elegance_process_css';
+
 $THEME->javascripts = array(
 );
 
 $THEME->javascripts_footer = array(
+    'fitvid', 'blocks','reader'
 );
 
 if (core_useragent::is_ie() && !core_useragent::check_ie_version('9.0')) {
@@ -209,8 +203,3 @@ if (core_useragent::is_ie() && !core_useragent::check_ie_version('9.0')) {
 }
 
 $THEME->hidefromselector = false;
-
-$THEME->blockrtlmanipulations = array(
-    'side-pre' => 'side-post',
-    'side-post' => 'side-pre'
-);

@@ -3,8 +3,6 @@
 
 // Old Moodle stuff from base theme.
 // Massive, needs broken up.
-@import "moodle/variables";
-@import "moodle/mixins";
 @import "moodle/core";
 @import "moodle/admin";
 @import "moodle/calendar";
@@ -14,6 +12,10 @@
 @import "moodle/question";
 @import "moodle/user";
 @import "moodle/userprofile";
+@import "moodle/login";
+@import "moodle/tags";
+@import "moodle/badges";
+@import "moodle/enrolment";
 @import "moodle/new";
 
 
@@ -22,16 +24,6 @@
 
 // Override Bootstrap defaults.
 @import "moodle/bootstrapoverride";
-
-// Set image location.
-@iconSpritePath:          ~"[[pix:theme|glyphicons-halflings]]";
-@iconWhiteSpritePath:     ~"[[pix:theme|glyphicons-halflings-white]]";
-
-// Increase form label width.
-@horizontalComponentOffset: 200px;
-// On Wider screens.
-@horizontalComponentOffset980: 220px;
-@horizontalComponentOffset1200: 265px;
 
 // Roll back nameclashes.
 @import "moodle/undo";
@@ -45,9 +37,13 @@
 @import "moodle/backup-restore";
 @import "moodle/tables";
 @import "moodle/buttons";
+@import "moodle/navs";
+@import "moodle/reader";
 
 @import "bootswatch/custom-variables.less";
 @import "bootswatch/custom-bootswatch.less";
+
+@icon-font-path: "[[font:theme|";
 
 // Anything below this line is considered expendable,
 // so it doesn't matter if it doesn't show up in ie < 9
@@ -61,4 +57,3 @@
 @import "moodle/responsive";
 
 @import "moodle/debug";
-@import "moodle/expendable";
