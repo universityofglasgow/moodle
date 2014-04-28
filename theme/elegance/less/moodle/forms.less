@@ -1,0 +1,324 @@
+// Basic mforms layout, used in resources, user profile etc.
+.mform {
+    .fcontainer,
+    fieldset {
+        .fitem {
+            &:extend(.form-group);
+            &:extend(.form-horizontal .form-group);
+            .fitemtitle {
+                 .make-md-column(4);
+                 .make-lg-column(3);
+                label {
+                    .form-horizontal .control-label;
+                }
+
+            }
+            .felement {
+                .make-md-column(8);
+                .make-lg-column(9);
+                select,
+                input[type="text"],
+                input[type="password"] {
+                    .form-control;
+                }
+            }
+            select[multiple], select[size] {
+                height: auto;
+            }
+            .felement.fdate_selector,
+            .felement.fdate_time_selector {
+                select {
+                    width: auto;
+                    display: inline-block;
+                    min-width: 60px;
+                }
+                select[size],
+                select[multiple] {
+                    height: auto;
+                }
+                label {
+                    display: inline-block;
+                }
+            }
+        }
+    }
+    fieldset.hidden {
+            &:extend(.form-group);
+            &:extend(.form-horizontal .form-group);
+            > div {
+                .make-md-column(8);
+                .make-md-column-offset(4);
+                .make-lg-column(9);
+                .make-lg-column-offset(3);
+            }
+    }
+}
+
+.mform fieldset.hidden .fitem_actionbuttons .felement {
+    padding-left: 10px;
+}
+
+.mform fieldset .advancedbutton {
+    text-align: right;
+}
+
+.jsenabled .mform .containsadvancedelements .advanced {
+    display: none;
+}
+
+.mform .containsadvancedelements .advanced.show {
+    display: block;
+}
+
+.mform fieldset.group {
+    margin-bottom: 0
+}
+
+.mform span.error {
+    color: @state-danger-text;
+}
+
+.mform fieldset.error {
+    border: 1px solid @state-danger-border;
+}
+
+.mform fieldset.collapsible legend a.fheader {
+    padding: 0 5px 0 20px;
+    margin-left: -20px;
+    background-image: url([[pix:t/expanded]]);
+    background-repeat: no-repeat;
+    background-position: left;
+}
+
+.mform fieldset.collapsed legend a.fheader {
+    background-image: url([[pix:t/collapsed]]);
+}
+
+.jsenabled .mform .collapsed .fcontainer {
+    display: none;
+}
+
+// These are for javascript hide/show, not actual links
+.mform legend a,
+.mform legend a:hover {
+    color: @legend-color;
+    text-decoration: none;
+}
+
+.mform label .req,
+.mform label .adv {
+    cursor: help;
+}
+
+.mform .iconhelp {
+    margin-left: 4px;
+    margin-right: -16px;
+}
+
+// Basic admin forms layout.
+
+.form-item {
+    &:extend(.form-group);
+    &:extend(.form-horizontal .form-group);
+    .form-label {
+        .make-md-column(4);
+        label {
+            .form-horizontal .control-label;
+        }
+    }
+    .form-setting {
+        .make-md-column(8);
+        select,
+        input[type="text"],
+        input[type="password"] {
+            .form-control;
+        }
+        select[size],
+        select[multiple] {
+            height: auto;
+        }
+        .form-group {
+            margin-bottom: 0;
+            // name clash with Bootstrap form-group
+        }
+    }
+    .form-description {
+        .make-md-column(8);
+        .make-md-column-offset(4);
+        clear: left;
+        margin-bottom: 0;
+    }
+}
+
+.path-admin .buttons,
+.form-buttons {
+    .make-md-column(8);
+    .make-md-column-offset(4);
+    margin-left: -15px; // There's no row container, needs negative margin at small sizes
+    margin-bottom: 15px;
+    .form-submit {
+        margin-left: 0;
+    }
+}
+
+.form-defaultinfo,
+.form-label .form-shortname {
+    .text-muted;
+    font-size: @font-size-small;
+}
+
+#adminsettings h3 {
+    &:extend(legend);
+}
+
+.form-setting .form-checkbox input {
+    margin-top: 12px;
+}
+
+.form-setting .form-multicheckbox ul {
+    &:extend(.list-unstyled);
+}
+
+// Shared styles
+
+.form-checkbox + label,
+.form-multicheckbox label,
+.unmask label {
+    &:extend(.checkbox label);
+    padding-left: 0.3em;
+    padding-right: 0.3em;
+}
+
+// At this width and above the form label stacks beside the control
+@media (min-width: @screen-md-min) {
+    .mform .fitemtitle,
+    .form-label {
+        text-align: right;
+        .form-shortname {
+            display: block;
+        }
+    }
+    .form-setting .form-multicheckbox,
+    .fitem_fcheckbox .fcheckbox {
+        padding-top: 8px;
+    }
+    fieldset.hidden > div {
+        margin-left: -20px;
+    }
+    .form-buttons .form-submit {
+        margin-left: -5px;
+    }
+    .form-item .form-setting input[type="text"],
+    .form-item .form-setting input[type="password"],
+    .form-item .form-setting select,
+    .mform .fcontainer .fitem .felement input[type="text"],
+    .mform .fcontainer .fitem .felement input[type="password"],
+    .mform .fcontainer .fitem .felement select {
+        width: auto;
+        min-width: 500px;
+    }
+}
+
+.mform .felement.fstatic,
+.form-item .form-description {
+    .help-block;
+    margin-bottom: 0;
+    p:last-child {
+        margin-bottom: 0;
+    }
+}
+
+// despite crazy name, roughly equivalent to bootstrap's .form-inline
+.invisiblefieldset {
+    display: inline;
+    margin: 0;
+    padding: 0;
+    border-width: 0;
+}
+
+input[type="radio"],
+input[type="checkbox"] {
+    margin: 0 4px;
+}
+/*
+.mform .fitem fieldset.fgroup label {
+    // see .felement.fdate_selector above
+    display: inline;
+    float: none;
+    width: auto;
+}
+.mform ul.file-list {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+.mform .ftags label.accesshide {
+    display: block;
+    position: static;
+}
+.mform .ftags select {
+    margin-bottom: 0.7em;
+    min-width: 22em;
+}
+.mform .helplink img {
+    margin: 0 .45em;
+    padding: 0;
+}
+
+form input[type="text"] {
+   .form-control;
+   display: inline-block;
+   width: auto;
+   height: auto;
+}
+
+.loginpanel .error,
+.singleselect label {
+    margin-right: .3em;
+}
+#portfolio-add-button {
+    display: inline;
+}
+
+
+#page-grade-edit-outcome-course .courseoutcomes {
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+}
+#page-grade-edit-outcome-course .courseoutcomes td {
+    text-align:center;
+}
+
+// Checkbox labels. Bootstrap puts the associated checkbox inside the label.
+// Moodle puts it beside the label, so we need to make it inline-block
+// to keep it on the same horizontal level.
+input[type="radio"] + label,
+input[type="checkbox"] + label {
+    display: inline;
+    padding-left: 0.2em;
+}
+input[type="radio"],
+input[type="checkbox"] {
+    margin-top: -4px; // Dodgy hack, must be better way.
+    margin-right: 7px;
+}
+.singleselect {
+    display: inline-block;
+    form,
+    select{
+        margin: 0;
+    }
+}
+.felement.ffilepicker {
+    margin-top: 5px;
+}
+div#dateselector-calendar-panel {
+    z-index: 3100; // Set higher than the z-index of the filemanager - see MDL-39047.
+}
+
+fieldset.coursesearchbox label {
+    display: inline;
+}
+*/
+
