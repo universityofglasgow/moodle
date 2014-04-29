@@ -3970,7 +3970,9 @@ class assign {
      * @return bool
      */
     protected function gradebook_item_update($submission=null, $grade=null) {
+        global $CFG;
 
+        require_once($CFG->dirroot.'/mod/assign/lib.php');
         // Do not push grade to gradebook if blind marking is active as
         // the gradebook would reveal the students.
         if ($this->is_blind_marking()) {
@@ -4914,7 +4916,10 @@ class assign {
                 $this->update_user_flags($flags);
             }
             $this->update_grade($grade);
-            $this->notify_grade_modified($grade);
+            // Allow teachers to skip sending notifications.
+            if (optional_param('sendstudentnotifications', true, PARAM_BOOL)) {
+                $this->notify_grade_modified($grade);
+            }
 
             // Save outcomes.
             if ($CFG->enableoutcomes) {
@@ -5708,6 +5713,8 @@ class assign {
                 $mform->setDefault('addattempt', 0);
             }
         }
+        $mform->addElement('selectyesno', 'sendstudentnotifications', get_string('sendstudentnotifications', 'assign'));
+        $mform->setDefault('sendstudentnotifications', 1);
 
         $mform->addElement('hidden', 'action', 'submitgrade');
         $mform->setType('action', PARAM_ALPHA);
@@ -6204,7 +6211,11 @@ class assign {
             }
         }
         $this->update_grade($grade);
-        $this->notify_grade_modified($grade);
+        // Note the default if not provided for this option is true (e.g. webservices).
+        // This is for backwards compatibility.
+        if (!isset($formdata->sendstudentnotifications) || $formdata->sendstudentnotifications) {
+            $this->notify_grade_modified($grade);
+        }
 
         $addtolog = $this->add_to_log('grade submission', $this->format_grade_for_log($grade), '', true);
         $params = array(
