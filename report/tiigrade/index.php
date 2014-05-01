@@ -49,7 +49,7 @@ if (!$course = $DB->get_record('course', array('id' => $id))) {
 // Security.
 require_login($course);
 $output = $PAGE->get_renderer('report_tiigrade');
-$context = get_context_instance(CONTEXT_COURSE, $course->id);
+$context = context_course::instance($course->id);
 $captt = has_capability('mod/turnitintool:grade', $context);
 if (!$captt || !has_capability('report/tiigrade:view', $context)) {
     notice(get_string('nocapability', 'report_tiigrade'));

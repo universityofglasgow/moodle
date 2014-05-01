@@ -53,7 +53,7 @@ if (!$course = $DB->get_record('course', array('id' => $id))) {
 // Security.
 require_login($course);
 $output = $PAGE->get_renderer('report_anonymous');
-$context = get_context_instance(CONTEXT_COURSE, $course->id);
+$context = context_course::instance($course->id);
 $captt = has_capability('mod/turnitintool:grade', $context);
 $capassign = has_capability('mod/assign:grade', $context);
 $capmods = $captt || $capassign;
