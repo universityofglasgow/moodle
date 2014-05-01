@@ -65,12 +65,13 @@ if (($action == 'create') and confirm_sesskey()) {
 $linkback = new moodle_url( '/report/guid/index.php' );
 
 // Form.
-$mform = new guidreport_form(null, null, 'get');
+$mform = new guidreport_form();
 $mform->display();
 
 // Link to upload script.
 echo $OUTPUT->box_start();
-echo "<p><a href=\"{$CFG->wwwroot}/report/guid/upload.php\">".get_string('uploadguid', 'report_guid')."</a></p>";
+$upload = new moodle_url('/report/guid/upload.php');
+echo "<p><a href=\"$upload\">".get_string('uploadguid', 'report_guid')."</a></p>";
 echo $OUTPUT->box_end();
 
 if ($mform->is_cancelled()) {

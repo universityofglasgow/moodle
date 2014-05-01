@@ -34,7 +34,7 @@ class gucode_form extends moodleform {
         $mform =& $this->_form;
 
         // Main part.
-        $mform->addElement('html', '<div>'.get_string('instructions', 'report_gucode' ) );
+        $mform->addElement('html', '<div>'.get_string('instructions', 'report_gucode' ).'</div>' );
         $mform->addElement('text', 'code', get_string('code', 'report_gucode') );
         $mform->setType('code', PARAM_ALPHANUM);
 
