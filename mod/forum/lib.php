@@ -4652,8 +4652,8 @@ function forum_trigger_content_uploaded_event($post, $cm, $name) {
         'objectid' => $post->id,
         'other' => array(
             'content' => $post->message,
-            'discussionid' => $post->discussion,
             'pathnamehashes' => array_keys($files),
+            'discussionid' => $post->discussion,
             'triggeredfrom' => $name,
         )
     );
@@ -4839,6 +4839,7 @@ function forum_subscribe($userid, $forumid) {
     $cm = get_coursemodule_from_instance('forum', $forumid);
     $params = array(
         'context' => context_module::instance($cm->id),
+        'objectid' => $result,
         'relateduserid' => $userid,
         'other' => array('forumid' => $forumid),
 
@@ -4860,17 +4861,22 @@ function forum_unsubscribe($userid, $forumid) {
     global $DB;
 
     $DB->delete_records('forum_digests', array('userid' => $userid, 'forum' => $forumid));
-    $DB->delete_records('forum_subscriptions', array('userid' => $userid, 'forum' => $forumid));
 
-    $cm = get_coursemodule_from_instance('forum', $forumid);
-    $params = array(
-        'context' => context_module::instance($cm->id),
-        'relateduserid' => $userid,
-        'other' => array('forumid' => $forumid),
+    if ($forumsubscription = $DB->get_record('forum_subscriptions', array('userid' => $userid, 'forum' => $forumid))) {
+        $DB->delete_records('forum_subscriptions', array('id' => $forumsubscription->id));
 
-    );
-    $event = \mod_forum\event\subscription_deleted::create($params);
-    $event->trigger();
+        $cm = get_coursemodule_from_instance('forum', $forumid);
+        $params = array(
+            'context' => context_module::instance($cm->id),
+            'objectid' => $forumsubscription->id,
+            'relateduserid' => $userid,
+            'other' => array('forumid' => $forumid),
+
+        );
+        $event = \mod_forum\event\subscription_deleted::create($params);
+        $event->add_record_snapshot('forum_subscriptions', $forumsubscription);
+        $event->trigger();
+    }
 
     return true;
 }

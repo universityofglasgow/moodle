@@ -29,8 +29,12 @@ defined('MOODLE_INTERNAL') || die();
  * Course user report viewed event class.
  *
  * Class for event to be triggered when a course user report is viewed.
- * @property-read array $other Extra information about the event.
- *     -string mode: Mode is used to show the user different data.
+ *
+ * @property-read array $other {
+ *      Extra information about the event.
+ *
+ *      - string mode: Mode is used to show the user different data.
+ * }
  *
  * @package    core
  * @since      Moodle 2.7
@@ -55,7 +59,8 @@ class course_user_report_viewed extends \core\event\base {
      * @return string
      */
     public function get_description() {
-        return "A user with the id '$this->userid' viewed the user report in the course '$this->courseid' for user '$this->relateduserid'";
+        return "The user with id '$this->userid' viewed the user report for the course with id '$this->courseid' " .
+            "for user with id '$this->relateduserid'.";
     }
 
     /**
@@ -101,12 +106,12 @@ class course_user_report_viewed extends \core\event\base {
         }
 
         if (empty($this->relateduserid)) {
-            throw new \coding_exception('relateduserid needs to be set.');
+            throw new \coding_exception('The \'relateduserid\' must be set.');
         }
 
         // Make sure this class is never used without proper object details.
         if (!isset($this->other['mode'])) {
-            throw new \coding_exception('mode needs to be set in $other.');
+            throw new \coding_exception('The \'mode\' value must be set in other.');
         }
     }
 }

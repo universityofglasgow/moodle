@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * mod_book chapter deleted event.
+ * The mod_book chapter deleted event.
  *
  * @package    mod_book
  * @copyright  2013 Frédéric Massart
@@ -26,7 +26,7 @@ namespace mod_book\event;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * mod_book chapter deleted event class.
+ * The mod_book chapter deleted event class.
  *
  * @package    mod_book
  * @since      Moodle 2.6
@@ -62,7 +62,8 @@ class chapter_deleted extends \core\event\base {
      * @return string
      */
     public function get_description() {
-        return "The chapter $this->objectid of the book " . $this->contextinstanceid . " has been deleted.";
+        return "The user with id '$this->userid' deleted the chapter with id '$this->objectid' for the book with the " .
+            "course module id '$this->contextinstanceid'.";
     }
 
     /**
@@ -81,7 +82,7 @@ class chapter_deleted extends \core\event\base {
      * @return string
      */
     public static function get_name() {
-        return get_string('event_chapter_deleted', 'mod_book');
+        return get_string('eventchapterdeleted', 'mod_book');
     }
 
     /**
