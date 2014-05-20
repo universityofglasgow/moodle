@@ -229,7 +229,7 @@ class turnitintooltwo_view {
         $receipt .= html_writer::tag('span', html_writer::tag('p', $digitalreceipt["extract"]), array('class' => 'extract_text'));
 
         $icon = $OUTPUT->box($OUTPUT->pix_icon('icon', get_string('turnitin', 'turnitintooltwo'),
-                                                    'mod_turnitintooltwo'), 'center');
+                                                    'mod_turnitintooltwo'), 'centered_div');
         $output = $OUTPUT->box($icon.$receipt, 'generalbox', 'digital_receipt');
 
         return $output;
@@ -292,6 +292,8 @@ class turnitintooltwo_view {
         $eulaaccepted = false;
         if ($userid == $USER->id) {
             $user = new turnitintooltwo_user($userid, "Learner");
+            $coursedata = $turnitintooltwoassignment->get_course_data($turnitintooltwoassignment->turnitintooltwo->course);
+            $user->join_user_to_class($coursedata->turnitin_cid);
             $eulaaccepted = $user->get_accepted_user_agreement();
         }
 
@@ -554,7 +556,7 @@ class turnitintooltwo_view {
                                     ($j == 8 && $origreportenabled && $grademarkenabled)) {
                             $cells[$j]->attributes['class'] = "raw_data";
                         } else {
-                            $cells[$j]->attributes['class'] = "center";
+                            $cells[$j]->attributes['class'] = "centered_cell";
                         }
 
                         if ((count($submission) == 14 && $j == 9) || (count($submission) == 13 && $j == 8)) {
@@ -661,9 +663,9 @@ class turnitintooltwo_view {
         $cells[0] = new html_table_cell($links.$turnitintooltwoassignment->turnitintooltwo->name." (".$textfield.") ");
 
         // Allow start date field to be editable if a tutor is logged in.
-        $datefield = date('d M Y - H:i', $partdetails[$partid]->dtstart);
+        $datefield = userdate($partdetails[$partid]->dtstart, '%d %h %Y - %H:%M');
         if ($istutor) {
-            $datefield = html_writer::link('#', date('d M Y - H:i', $partdetails[$partid]->dtstart),
+            $datefield = html_writer::link('#', $datefield,
                                             array('class' => 'editable_date editable_date_'.$partid,
                                                 'data-pk' => $partid, 'data-name' => 'dtstart', 'id' => 'date_start_'.$partid,
                                                 'data-params' => "{ 'assignment': ".
@@ -674,9 +676,9 @@ class turnitintooltwo_view {
         $cells[1]->attributes['class'] = 'data';
 
         // Allow due date field to be editable if a tutor is logged in.
-        $datefield = date('d M Y - H:i', $partdetails[$partid]->dtdue);
+        $datefield = userdate($partdetails[$partid]->dtdue, '%d %h %Y - %H:%M');
         if ($istutor) {
-            $datefield = html_writer::link('#', date('d M Y - H:i', $partdetails[$partid]->dtdue),
+            $datefield = html_writer::link('#', $datefield,
                                             array('class' => 'editable_date editable_date_'.$partid,
                                                 'data-pk' => $partid, 'data-name' => 'dtdue', 'id' => 'date_due_'.$partid,
                                                 'data-params' => "{ 'assignment': ".
@@ -687,9 +689,9 @@ class turnitintooltwo_view {
         $cells[2]->attributes['class'] = 'data';
 
         // Allow post date field to be editable if a tutor is logged in.
-        $datefield = date('d M Y - H:i', $partdetails[$partid]->dtpost);
+        $datefield = userdate($partdetails[$partid]->dtpost, '%d %h %Y - %H:%M');
         if ($istutor) {
-            $datefield = html_writer::link('#', date('d M Y - H:i', $partdetails[$partid]->dtpost),
+            $datefield = html_writer::link('#', $datefield,
                                             array('class' => 'editable_date editable_date_'.$partid,
                                                 'data-pk' => $partid, 'data-name' => 'dtpost', 'id' => 'date_post_'.$partid,
                                                 'data-params' => "{ 'assignment': ".
@@ -1039,8 +1041,12 @@ class turnitintooltwo_view {
         }
 
         // Show Originality score with link to open document viewer.
-        if (!empty($submission->id) && !empty($submission->submission_objectid) && (($istutor) ||
-                                (!$istutor && $turnitintooltwoassignment->turnitintooltwo->studentreports))) {
+        if ( !empty($submission->id) && is_null($submission->submission_score) && $submission->submission_orcapable == 0 ) {
+            // Don't show if there is no OR score and submission is not OR capable
+            $rawscore = -1;
+            $score = '--';
+        } else if (!empty($submission->id) && !empty($submission->submission_objectid) &&
+                ($istutor || $turnitintooltwoassignment->turnitintooltwo->studentreports)) {
             $score = $OUTPUT->box_start('row_score origreport_open', 'origreport_'.$submission->submission_objectid.
                                                                                     '_'.$partid.'_'.$submission->userid);
             // Show score.
@@ -1068,7 +1074,8 @@ class turnitintooltwo_view {
         if ($config->usegrademark && $turnitintooltwoassignment->turnitintooltwo->usegrademark) {
             if (isset($submission->submission_objectid) && ($istutor || (!$istutor && $parts[$partid]->dtpost < time()))) {
                 $submissiongrade = (!empty($submission->submission_grade)) ? $submission->submission_grade : '';
-                if (empty($submissiongrade) || ($submission->submission_gmimaged == 0 && !$istutor)) {
+
+                if (empty($submission->submission_grade) || ($submission->submission_gmimaged == 0 && !$istutor)) {
                     $submissiongrade = "--";
                 }
 
@@ -1085,6 +1092,14 @@ class turnitintooltwo_view {
                 // Put in div placeholder for DV launch form.
                 $grade .= $OUTPUT->box('', 'launch_form', 'grademark_form_'.$submission->submission_objectid);
                 $rawgrade = ($submissiongrade == "--") ? -1 : $submissiongrade;
+
+            } else if (!isset($submission->submission_objectid) && empty($submission->id) && $istutor ) {
+                // Allow nothing submission if no submission has been made and this is a tutor
+                $grade = $OUTPUT->box(get_string('submitnothingwarning', 'turnitintooltwo'),'nothingsubmit_warning', '');
+                $grade .= $OUTPUT->box($OUTPUT->pix_icon('icon-edit-grey',
+                                        get_string('submitnothing', 'turnitintooltwo'), 'mod_turnitintooltwo'),
+                                        'submit_nothing', 'submitnothing_0_'.$partid.'_'.$submission->userid);
+                $rawgrade = -1;
             } else {
                 $rawgrade = -1;
                 $grade = $OUTPUT->box('--', '');
@@ -1106,10 +1121,7 @@ class turnitintooltwo_view {
                     } else if ($turnitintooltwoassignment->turnitintooltwo->grade < 0) { // Scale.
                         $scale = $DB->get_record('scale', array('id' => $turnitintooltwoassignment->turnitintooltwo->grade * -1));
                         $scalearray = explode(",", $scale->scale);
-
-                        $overallgrade = round($useroverallgrades[$submission->userid] /
-                                                    -$turnitintooltwoassignment->turnitintooltwo->grade);
-                        $overallgrade = $scalearray[$overallgrade - 1];
+                        $overallgrade = $scalearray[$useroverallgrades[$submission->userid] - 1];
                     } else {
                         $overallgrade = round($useroverallgrades[$submission->userid] /
                                                     $turnitintooltwoassignment->turnitintooltwo->grade * 100, 1).'%';
@@ -1162,7 +1174,7 @@ class turnitintooltwo_view {
         }
 
         // Download submission in original format.
-        if (!empty($submission->submission_objectid) && !empty($submission->id)) {
+        if (!empty($submission->submission_objectid) && !empty($submission->id) && !$submission->submission_acceptnothing) {
             $download = $OUTPUT->box($OUTPUT->pix_icon('file-download', get_string('downloadsubmission', 'turnitintooltwo'),
                                         'mod_turnitintooltwo'), 'download_original_open',
                                         'downloadoriginal_'.$submission->submission_objectid."_".$partid."_".$submission->userid);
@@ -1525,7 +1537,7 @@ class turnitintooltwo_view {
 
             if ($course->format == "weeks" || $course->format == "topics") {
                 $cells[$course->format] = new html_table_cell($turnitintooltwoassignment->turnitintooltwo->section);
-                $cells[$course->format]->attributes["class"] = "center";
+                $cells[$course->format]->attributes["class"] = "centered_cell";
             }
 
             // Show links dimmed if the mod is hidden.
@@ -1536,10 +1548,10 @@ class turnitintooltwo_view {
             $cells["name"] = new html_table_cell(html_writer::link($linkurl, $turnitintooltwo->name, $attributes));
             $cells["start_date"] = new html_table_cell(userdate($turnitintooltwoassignment->get_start_date(),
                                                             get_string('strftimedatetimeshort', 'langconfig')));
-            $cells["start_date"]->attributes["class"] = "center";
+            $cells["start_date"]->attributes["class"] = "centered_cell";
 
             $cells["number_of_parts"] = new html_table_cell(count($turnitintooltwoassignment->get_parts()));
-            $cells["number_of_parts"]->attributes["class"] = "center";
+            $cells["number_of_parts"]->attributes["class"] = "centered_cell";
 
             if (has_capability('mod/turnitintooltwo:grade', context_module::instance($cm->id))) {
                 $noofsubmissions = $turnitintooltwoassignment->count_submissions($cm, 0);
@@ -1548,7 +1560,7 @@ class turnitintooltwo_view {
                                                         $turnitintooltwoassignment->turnitintooltwo->id));
             }
             $cells["submissions"] = new html_table_cell(html_writer::link($linkurl, $noofsubmissions, $attributes));
-            $cells["submissions"]->attributes["class"] = "center";
+            $cells["submissions"]->attributes["class"] = "centered_cell";
 
             $rows[$i] = new html_table_row($cells);
             $i++;

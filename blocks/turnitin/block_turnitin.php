@@ -14,13 +14,6 @@ class block_turnitin extends block_base {
 			return $this->content;
 		}
 
-		// Check that turnitintooltwo module is installed
-        $modules = $DB->get_record('modules', array('name' => 'turnitintooltwo'));
-        $installed = ($modules) ? true : false;
-        if ($installed == false) {
-         	return false;
-        }
-
 		$output = '';
 
 		if (!empty($USER->id)) {
@@ -33,7 +26,7 @@ class block_turnitin extends block_base {
         	$PAGE->requires->css($cssurl);
 
 	        $output .= html_writer::script('var site_root = "'.$CFG->wwwroot.'";');
-	        $output .= $OUTPUT->box($OUTPUT->pix_icon('loader', '', 'mod_turnitintooltwo'), 'center', 'block_loading');
+	        $output .= $OUTPUT->box($OUTPUT->pix_icon('loader', '', 'mod_turnitintooltwo'), 'centered_cell', 'block_loading');
 	        $output .= html_writer::link($CFG->wwwroot.'/mod/turnitintooltwo/extras.php?cmd=courses',
 	        							html_writer::tag('noscript', get_string('coursestomigrate', 'mod_turnitintooltwo', '')), array('id' => 'block_migrate_content'));
         }

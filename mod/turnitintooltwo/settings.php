@@ -75,6 +75,9 @@ if ($ADMIN->fulltree) {
 
     $ynoptions = array(0 => get_string('no'), 1 => get_string('yes'));
 
+    $settings->add(new admin_setting_configselect('turnitintooltwo/enablediagnostic', get_string('turnitindiagnostic', 'turnitintooltwo'),
+                       get_string('turnitindiagnostic_desc', 'turnitintooltwo'), 0, $ynoptions));
+
     $settings->add(new admin_setting_configselect('turnitintooltwo/usegrademark',
                                                     get_string('turnitinusegrademark', 'turnitintooltwo'),
                                                     get_string('turnitinusegrademark_desc', 'turnitintooltwo'),
@@ -211,6 +214,10 @@ if ($ADMIN->fulltree) {
 
     $settings->add(new admin_setting_configselect('turnitintooltwo/default_studentreports',
                                                     get_string('studentreports', 'turnitintooltwo'),
+                                                    '', 0, $ynoptions ));
+
+    $settings->add(new admin_setting_configselect('turnitintooltwo/default_allownonor',
+                                                    get_string('allownonor', 'turnitintooltwo'),
                                                     '', 0, $ynoptions ));
 
     $settings->add(new admin_setting_configselect('turnitintooltwo/default_allowlate',
