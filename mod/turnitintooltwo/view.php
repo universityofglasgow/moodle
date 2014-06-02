@@ -91,10 +91,7 @@ $turnitintooltwoview->load_page_components();
 $turnitintooltwoassignment = new turnitintooltwo_assignment($turnitintooltwo->id, $turnitintooltwo);
 // For use when submitting.
 $turnitintooltwofileuploadoptions = array('maxbytes' => $turnitintooltwoassignment->turnitintooltwo->maxfilesize,
-                                            'subdirs' => false, 'maxfiles' => 1,
-                                            'accepted_types' => array('.doc', '.docx', '.rtf', '.txt', '.pdf', '.htm',
-                                                                        '.html', '.odt', '.eps', '.ps', '.wpd', '.hwp',
-                                                                        '.ppt', '.pptx', '.ppsx', '.pps'));
+                                            'subdirs' => false, 'maxfiles' => 1, 'accepted_types' => '*');
 
 if (!$parts = $turnitintooltwoassignment->get_parts()) {
     turnitintooltwo_print_error('partgeterror', 'turnitintooltwo', null, null, __FILE__, __LINE__);
@@ -382,6 +379,10 @@ switch ($do) {
 
     case "rubricview":
         if (has_capability('mod/turnitintooltwo:submit', context_module::instance($cm->id))) {
+            $user = new turnitintooltwo_user($USER->id, "Learner");
+            $course = $turnitintooltwoassignment->get_course_data($turnitintooltwoassignment->turnitintooltwo->course);
+            $user->join_user_to_class($course->turnitin_cid);
+            
             echo html_writer::tag("div", $turnitintooltwoview->output_lti_form_launch('rubric_view', 'Learner',
                                                     $parts[$part]->tiiassignid), array("class" => "launch_form"));
         }
@@ -480,11 +481,17 @@ echo html_writer::end_tag("div");
 echo $OUTPUT->footer();
 
 // This comment is here as it is useful for product support.
-$module = $DB->get_record('modules', array('name' => 'turnitintooltwo'));
+if ($CFG->branch >= 26) {
+    $module = $DB->get_record('config_plugins', array('plugin' => 'mod_turnitintooltwo', 'name' => 'version'));
+    $version = $module->value;
+} else {
+    $module = $DB->get_record('modules', array('name' => 'turnitintooltwo'));
+    $version = $module->version;
+}
 $partsstring = "(";
 foreach ($parts as $part) {
     $partsstring .= ($partsstring != "(") ? " | " : "";
     $partsstring .= $part->partname.': '.$part->tiiassignid;
 }
 $partsstring .= ")";
-echo '<!-- Turnitin Moodle Direct Version: '.$module->version.' - '.$partsstring.' -->';
+echo '<!-- Turnitin Moodle Direct Version: '.$version.' - '.$partsstring.' -->';

@@ -57,7 +57,7 @@ class turnitinplugin_view {
         $elements[] = array('html', get_string('tiiexplain', 'turnitintooltwo'));
 
         $elements[] = array('checkbox', 'turnitin_use', get_string('useturnitin', 'turnitintooltwo'));
-        $elements[] = array('html', get_string('pp_configuredesc', 'turnitintooltwo'));
+        $elements[] = array('html', get_string('pp_configuredesc', 'turnitintooltwo', $CFG->wwwroot));
 
         $elements[] = array('hidden', 'action', 'config');
         $customdata["elements"] = $elements;
@@ -156,6 +156,17 @@ class turnitinplugin_view {
         $mform->addElement('select', 'use_turnitin', get_string("useturnitin", "turnitintooltwo"), $options);
         $mform->addElement('select', 'plagiarism_show_student_report', get_string("studentreports", "turnitintooltwo"), $options);
         $mform->addHelpButton('plagiarism_show_student_report', 'studentreports', 'turnitintooltwo');
+
+        if ($mform->elementExists('submissiondrafts') || $location == 'defaults') {
+            $tiidraftoptions = array(0 => get_string("submitondraft", "turnitintooltwo"), 
+                                     1 => get_string("submitonfinal", "turnitintooltwo"));
+
+            $mform->addElement('select', 'plagiarism_draft_submit', get_string("draftsubmit", "turnitintooltwo"), $tiidraftoptions);
+            $mform->disabledIf('plagiarism_draft_submit', 'submissiondrafts', 'eq', 0);
+        }
+
+        $mform->addElement('select', 'plagiarism_allow_non_or_submissions', get_string("allownonor", "turnitintooltwo"), $options);
+        $mform->addHelpButton('plagiarism_allow_non_or_submissions', 'allownonor', 'turnitintooltwo');
 
         $suboptions = array(0 => get_string('norepository', 'turnitintooltwo'),
                             1 => get_string('standardrepository', 'turnitintooltwo'));
@@ -281,7 +292,7 @@ class turnitinplugin_view {
         $cells["module"] = new html_table_cell(get_string('module', 'turnitintooltwo'));
         $cells["file"] = new html_table_cell(get_string('file'));
         $cells["delete"] = new html_table_cell('&nbsp;');
-        $cells["delete"]->attributes['class'] = 'center';
+        $cells["delete"]->attributes['class'] = 'centered_cell';
 
         $table = new html_table();
         $table->id = "ppErrors";
@@ -294,7 +305,7 @@ class turnitinplugin_view {
             $cells = array();
             $cells["id"] = new html_table_cell(get_string('semptytable', 'turnitintooltwo'));
             $cells["id"]->colspan = 7;
-            $cells["id"]->attributes['class'] = 'center';
+            $cells["id"]->attributes['class'] = 'centered_cell';
             $rows[0] = new html_table_row($cells);
         } else {
             foreach ($files as $k => $v) {
@@ -334,7 +345,7 @@ class turnitinplugin_view {
                                             '/plagiarism/turnitin/settings.php?do=errors&action=deletefile&id='.$k,
                                             $OUTPUT->pix_icon('delete', get_string('deletesubmission', 'turnitintooltwo'),
                                                 'mod_turnitintooltwo'), $attributes));
-                    $cells["delete"]->attributes['class'] = 'center';
+                    $cells["delete"]->attributes['class'] = 'centered_cell';
 
                     $rows[$i] = new html_table_row($cells);
                     $i++;
@@ -345,7 +356,7 @@ class turnitinplugin_view {
                 $cells = array();
                 $cells["id"] = new html_table_cell(get_string('semptytable', 'turnitintooltwo'));
                 $cells["id"]->colspan = 7;
-                $cells["id"]->attributes['class'] = 'center';
+                $cells["id"]->attributes['class'] = 'centered_cell';
                 $rows[0] = new html_table_row($cells);
             }
         }

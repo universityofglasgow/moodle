@@ -338,7 +338,8 @@ class turnitintooltwo_assignment {
         $turnitincall = $turnitincomms->initialise_api();
 
         $class = new TiiClass();
-        $class->setTitle($course->fullname." (Moodle ".$coursetype.")");
+        // Need to truncate the moodle class title to be compatible with a Turnitin class (max length 100)
+        $class->setTitle( mb_strlen( $course->fullname ) > 80 ? mb_substr( $course->fullname, 0, 80 ) . "..." : $course->fullname . " (Moodle " . $coursetype . ")" );
 
         try {
             $response = $turnitincall->createClass($class);
@@ -391,7 +392,8 @@ class turnitintooltwo_assignment {
 
         $class = new TiiClass();
         $class->setClassId($course->turnitin_cid);
-        $class->setTitle($course->fullname . " (Moodle ".$coursetype.")");
+        // Need to truncate the moodle class title to be compatible with a Turnitin class (max length 100)
+        $class->setTitle( mb_strlen( $course->fullname ) > 80 ? mb_substr( $course->fullname, 0, 80 ) . "..." : $course->fullname . " (Moodle " . $coursetype . ")" );
 
         try {
             $turnitincall->updateClass($class);
@@ -642,6 +644,7 @@ class turnitintooltwo_assignment {
             $assignment->setSmallMatchExclusionType($this->turnitintooltwo->excludetype);
             $assignment->setSmallMatchExclusionThreshold((int)$this->turnitintooltwo->excludevalue);
             $assignment->setAnonymousMarking($this->turnitintooltwo->anon);
+            $assignment->setAllowNonOrSubmissions($this->turnitintooltwo->allownonor);
             $assignment->setLateSubmissionsAllowed($this->turnitintooltwo->allowlate);
             if ($config->userepository) {
                 $assignment->setInstitutionCheck((isset($this->turnitintooltwo->institution_check)) ?
@@ -771,7 +774,7 @@ class turnitintooltwo_assignment {
     /**
      * Edit Assignment on Turnitin
      *
-     * @param object $assignment add assignment instance
+     * @param object $assignment edit assignment instance
      */
     public function edit_tii_assignment($assignment) {
         // Initialise Comms Object.
@@ -1043,7 +1046,7 @@ class turnitintooltwo_assignment {
                         $setmethod = "setFeedbackReleaseDate";
                         break;
                 }
-
+                $fieldvalue = userdate($fieldvalue, '%s');
                 $assignment->$setmethod(gmdate("Y-m-d\TH:i:s\Z", $fieldvalue));
                 break;
         }
@@ -1509,8 +1512,8 @@ class turnitintooltwo_assignment {
                     $assignmentdetails->rubric = $readassignment->getRubricId();
                     $assignmentdetails->excludebiblio = $readassignment->getBibliographyExcluded();
                     $assignmentdetails->excludequoted = $readassignment->getQuotedExcluded();
-                    $assignmentdetails->excludevalue = $readassignment->getSmallMatchExclusionType();
-                    $assignmentdetails->excludetype = $readassignment->getSmallMatchExclusionThreshold();
+                    $assignmentdetails->excludetype = $readassignment->getSmallMatchExclusionType();
+                    $assignmentdetails->excludevalue = $readassignment->getSmallMatchExclusionThreshold();
                     $assignmentdetails->erater = $readassignment->getErater();
                     $assignmentdetails->erater_handbook = $readassignment->getEraterHandbook();
                     $assignmentdetails->erater_dictionary = $readassignment->getEraterSpellingDictionary();
@@ -1634,7 +1637,7 @@ class turnitintooltwo_assignment {
             if (is_null($overallgrade)) {
                 return "--";
             }
-            return (!is_nan($overallgrade) AND !is_null($overallgrade)) ? number_format($overallgrade, 1) : '--';
+            return (!is_nan($overallgrade) AND !is_null($overallgrade)) ? number_format($overallgrade, 2) : '--';
         }
     }
 

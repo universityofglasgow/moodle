@@ -85,10 +85,8 @@ switch ($action) {
 
         switch ($cm->modname) {
             case "forum":
-                $istutor = has_capability('mod/'.$cm->modname.':rate', $context);
-                break;
             case "workshop":
-                $istutor = has_capability('mod/'.$cm->modname.':switchphase', $context);
+                $istutor = has_capability('plagiarism/turnitin:viewfullreport', $context);
                 break;
             default:
                 $istutor = has_capability('mod/'.$cm->modname.':grade', $context);
@@ -138,10 +136,8 @@ switch ($action) {
     case "peermarkmanager":
         switch ($cm->modname) {
             case "forum":
-                $istutor = has_capability('mod/'.$cm->modname.':rate', $context);
-                break;
             case "workshop":
-                $istutor = has_capability('mod/'.$cm->modname.':switchphase', $context);
+                $istutor = has_capability('plagiarism/turnitin:viewfullreport', $context);
                 break;
             default:
                 $istutor = has_capability('mod/'.$cm->modname.':grade', $context);
@@ -185,6 +181,10 @@ switch ($action) {
                                                 has_capability('mod/'.$cm->modname.':submit', $context);
         if ($isstudent) {
             $tiiassignment = $DB->get_record('plagiarism_turnitin_config', array('cm' => $cm->id, 'name' => 'turnitin_assignid'));
+            
+            $user = new turnitintooltwo_user($USER->id, "Learner");
+            $coursedata = turnitintooltwo_assignment::get_course_data($cm->course, 'PP');
+            $user->join_user_to_class($coursedata->turnitin_cid);
 
             echo html_writer::tag("div", turnitintooltwo_view::output_lti_form_launch('rubric_view',
                                                         'Learner', $tiiassignment->value),
@@ -198,10 +198,8 @@ switch ($action) {
     case "peermarkreviews":
         switch ($cm->modname) {
             case "forum":
-                $istutor = has_capability('mod/'.$cm->modname.':rate', $context);
-                break;
             case "workshop":
-                $istutor = has_capability('mod/'.$cm->modname.':switchphase', $context);
+                $istutor = has_capability('plagiarism/turnitin:viewfullreport', $context);
                 break;
             default:
                 $istutor = has_capability('mod/'.$cm->modname.':grade', $context);

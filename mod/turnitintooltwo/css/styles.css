@@ -4,6 +4,15 @@
     Author     : John McGettrick
 */
 
+.submit_nothing img {
+    padding-right: 8px;
+    cursor: pointer;
+}
+
+.nothingsubmit_warning {
+    display: none;
+}
+
 .row_score, .row_peermark_manager, .row_peermark_reviews {
     float:right;
 }
@@ -204,15 +213,15 @@ td a.editable-click {
     padding-right:8px;
 }
 
-.student_read, .center {
+.student_read, .centered_cell, .centered_div {
     text-align:center !important;
 }
 
-.left {
+.enrolledMembers .left, .submissionsDataTable .left, .partDetails .left {
     text-align:left;
 }
 
-.right {
+.submissionsDataTable .right, #courseBrowserTable .right {
     text-align:right;
 }
 

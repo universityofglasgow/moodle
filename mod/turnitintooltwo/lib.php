@@ -79,42 +79,50 @@ function turnitintooltwo_admin_config() {
 function turnitintooltwo_activitylog($string, $activity) {
     global $CFG;
 
-    // We only keep 10 log files, delete any additional files.
-    $prefix = "activitylog_";
-
-    $dirpath = $CFG->tempdir."/turnitintooltwo/logs";
-    if (!file_exists($dirpath)) {
-        mkdir($dirpath, 0777, true);
+    static $config;
+    if (empty($config)) {
+        $config = turnitintooltwo_admin_config();
     }
-    $dir = opendir($dirpath);
-    $files = array();
-    while ($entry = readdir($dir)) {
-        if (substr(basename($entry), 0, 1) != "." AND substr_count(basename($entry), $prefix) > 0) {
-            $files[] = basename($entry);
+
+    if ($config->enablediagnostic) {
+        // We only keep 10 log files, delete any additional files.
+        $prefix = "activitylog_";
+
+        $dirpath = $CFG->tempdir."/turnitintooltwo/logs";
+        if (!file_exists($dirpath)) {
+            mkdir($dirpath, 0777, true);
         }
-    }
-    sort($files);
-    for ($i = 0; $i < count($files) - 10; $i++) {
-        unlink($dirpath."/".$files[$i]);
-    }
+        $dir = opendir($dirpath);
+        $files = array();
+        while ($entry = readdir($dir)) {
+            if (substr(basename($entry), 0, 1) != "." AND substr_count(basename($entry), $prefix) > 0) {
+                $files[] = basename($entry);
+            }
+        }
+        sort($files);
+        for ($i = 0; $i < count($files) - 10; $i++) {
+            unlink($dirpath."/".$files[$i]);
+        }
 
-    // Write to log file.
-    $filepath = $dirpath."/".$prefix.gmdate('Y-m-d', time()).".txt";
-    $file = fopen($filepath, 'a');
-    $output = date('Y-m-d H:i:s O')." (".$activity.")"." - ".$string."\r\n";
-    fwrite($file, $output);
-    fclose($file);
+        // Write to log file.
+        $filepath = $dirpath."/".$prefix.gmdate('Y-m-d', time()).".txt";
+        $file = fopen($filepath, 'a');
+        $output = date('Y-m-d H:i:s O')." (".$activity.")"." - ".$string."\r\n";
+        fwrite($file, $output);
+        fclose($file);
+    }
 }
 
 /**
- * Not used but needed for instance name update via quick update on the course home page
+ * Needed for instance name update via quick update on the course home page
  *
  * @param  stdClass  $turnitintooltwo
  * @param  integer $userid
  * @param  boolean $nullifnone
  */
 function turnitintooltwo_update_grades($turnitintooltwo, $userid = 0, $nullifnone = true) {
-
+    $turnitintooltwoassignment = new turnitintooltwo_assignment($turnitintooltwo->id);
+    $turnitintooltwoassignment->edit_moodle_assignment();
 }
 
 /**
@@ -222,6 +230,11 @@ function turnitintooltwo_duplicate_recycle($courseid, $action) {
     $partsarray = array();
     $error = false;
 
+    $turnitintooltwouser = new turnitintooltwo_user($USER->id, "Instructor");
+    $turnitintooltwouser->set_user_values_from_tii();
+    $instructorrubrics = $turnitintooltwouser->get_instructor_rubrics();
+
+
     if (!$turnitintooltwos = $DB->get_records('turnitintooltwo', array('course' => $courseid))) {
         turnitintooltwo_print_error('assigngeterror', 'turnitintooltwo', null, null, __FILE__, __LINE__);
         exit();
@@ -256,6 +269,10 @@ function turnitintooltwo_duplicate_recycle($courseid, $action) {
         // Create a new class to use with new parts.
         $tmpassignment = new turnitintooltwo_assignment(0, '', '');
         $newcourse = $tmpassignment->create_tii_course($currentcourse, $USER->id);
+
+        // Join Instructor to class.
+        $turnitintooltwouser->join_user_to_class($newcourse->turnitin_cid);
+        
         $currentcourse->turnitin_cid = $newcourse->turnitin_cid;
         $currentcourse->turnitin_ctl = $newcourse->turnitin_ctl;
     }
@@ -284,8 +301,11 @@ function turnitintooltwo_duplicate_recycle($courseid, $action) {
             $assignment->setClassId($currentcourse->turnitin_cid);
             $assignment->setAuthorOriginalityAccess($turnitintooltwoassignment->turnitintooltwo->studentreports);
 
-            $assignment->setRubricId((!empty($turnitintooltwoassignment->turnitintooltwo->rubric)) ?
-                            $turnitintooltwoassignment->turnitintooltwo->rubric : '');
+            $rubric_id = (!empty($turnitintooltwoassignment->turnitintooltwo->rubric)) ?
+                            $turnitintooltwoassignment->turnitintooltwo->rubric : '';
+            $rubric_id = (!empty($rubric_id) && array_key_exists($rubric_id, $instructorrubrics)) ? $rubric_id : '';
+
+            $assignment->setRubricId();
             $assignment->setSubmitPapersTo($turnitintooltwoassignment->turnitintooltwo->submitpapersto);
             $assignment->setResubmissionRule($turnitintooltwoassignment->turnitintooltwo->reportgenspeed);
             $assignment->setBibliographyExcluded($turnitintooltwoassignment->turnitintooltwo->excludebiblio);
@@ -305,6 +325,7 @@ function turnitintooltwo_duplicate_recycle($courseid, $action) {
             $assignment->setInternetCheck($turnitintooltwoassignment->turnitintooltwo->internetcheck);
             $assignment->setPublicationsCheck($turnitintooltwoassignment->turnitintooltwo->journalcheck);
             $assignment->setTranslatedMatching($turnitintooltwoassignment->turnitintooltwo->transmatch);
+            $assignment->setAllowNonOrSubmissions($turnitintooltwoassignment->turnitintooltwo->allownonor);
 
             // Erater settings.
             $assignment->setErater((isset($turnitintooltwoassignment->turnitintooltwo->erater)) ?
@@ -522,7 +543,7 @@ function turnitintooltwo_updateavailable($module) {
         $ch = curl_init();
 
         // Set the url, number of POST vars, POST data.
-        curl_setopt($ch, CURLOPT_URL, "https://www.turnitin.com/static/resources/files/moodledirect_latest.xml");
+        curl_setopt($ch, CURLOPT_URL, "https://www.turnitin.com/static/resources/files/moodledirect2_latest.xml");
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
@@ -559,6 +580,7 @@ function turnitintooltwo_updateavailable($module) {
  */
 function turnitintooltwo_get_assignments_from_tii($courseid, $returnformat = "json") {
     global $DB;
+
     $return = array();
     if ($returnformat == "json") {
         $return["aaData"] = array();
@@ -642,6 +664,8 @@ function turnitintooltwo_get_assignments_from_tii($courseid, $returnformat = "js
 function turnitintooltwo_get_courses_from_tii($integrationids, $coursetitle, $courseintegration,
                                                 $courseenddate = null, $requestsource = "mod") {
     global $CFG, $DB, $OUTPUT, $USER;
+    set_time_limit(0);
+
     $_SESSION["stored_tii_courses"] = array();
     $return = array();
     $return["aaData"] = array();

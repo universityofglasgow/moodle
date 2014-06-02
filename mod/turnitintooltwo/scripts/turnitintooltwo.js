@@ -18,6 +18,19 @@ jQuery(document).ready(function($) {
         $("#id_submissionfile").parent().parent().hide();
     }
 
+    $('.submit_nothing').live('click', function() {
+        if ( $(this).hasClass("disabled") ) return;
+        $(this).addClass('disabled');
+        var part_id = $(this).prop('id').split('_')[2];
+        var student_id = $(this).prop('id').split('_')[3];
+        var message = $('.nothingsubmit_warning').first().html().replace(/<br>/g, "\n");
+        var cookieseen = $.cookie('submitnothingaccept');
+        if ( cookieseen || confirm( message ) ) {
+            submitNothing(student_id, part_id);
+        }
+        return;
+    });
+
     // Configure submit paper form elements depending on what submission type is selected
     $("#id_submissiontype").live('change', function() {
         if ($("#id_submissiontype").val() == 1) {
@@ -181,7 +194,7 @@ jQuery(document).ready(function($) {
             "bProcessing": true,
             "sAjaxSource": "ajax.php",
             "aoColumnDefs": [
-                {"bSortable": false, "sClass": "center", "aTargets": [0]},
+                {"bSortable": false, "sClass": "centered_cell", "aTargets": [0]},
                 {"sClass": "left", "aTargets": [1]}
             ],
             "oLanguage": dataTablesLang,
@@ -553,7 +566,8 @@ jQuery(document).ready(function($) {
 
     // Get the rubrics belonging to a user from Turnitin and refresh menu accordingly
     function refreshRubricSelect() {
-        var currentRubric = $('#id_rubric').val();
+        var rubricElementId = ($('#id_rubric').length) ? '#id_rubric' : '#id_plagiarism_rubric';
+        var currentRubric = $(rubricElementId).val();
         $.ajax({
             "dataType": 'json',
             "type": "POST",
@@ -561,15 +575,15 @@ jQuery(document).ready(function($) {
             "data": {action: "refresh_rubric_select", assignment: $('input[name="instance"]').val(),
                         modulename: $('input[name="modulename"]').val(), course: $('input[name="course"]').val()},
             success: function(data) {
-                $('#id_rubric').empty();
+                $($(rubricElementId)).empty();
                 var options = data;
                 $.each(options, function(i, val) {
-                    $('#id_rubric').append($('<option>', {
+                    $($(rubricElementId)).append($('<option>', {
                         value: i,
                         text : val
                     }));
                 });
-                $('#id_rubric option[value="'+currentRubric+'"]').attr("selected","selected");
+                $(rubricElementId+' option[value="'+currentRubric+'"]').attr("selected","selected");
             }
         });
     }
@@ -788,7 +802,10 @@ jQuery(document).ready(function($) {
 
         $(identifier).click(function() {
             var idStr = $(this).attr("id").split("_");
-            openDV(idStr[0], idStr[1], idStr[2], idStr[3]);
+            // Don't open OR DV if score is pending.
+            if (!$(this).children('.score_colour').hasClass('score_colour_')) {
+                openDV(idStr[0], idStr[1], idStr[2], idStr[3]);
+            }
         });
     }
 
@@ -838,6 +855,7 @@ jQuery(document).ready(function($) {
                         $("#"+dvtype+"_form_"+submission_id).children("form").on("submit", function(event) {
                             dvWindow = window.open('', 'dv_'+submission_id);
                             dvWindow.document.write('<frameset><frame id="dvWindow" name="dvWindow"></frame></frameset>');
+                            dvWindow.document.close();
                             $(dvWindow).bind('beforeunload', function() {
                                 refreshInboxRow(dvtype, submission_id, part_id, user_id);
                             });
@@ -848,6 +866,30 @@ jQuery(document).ready(function($) {
                 }
             });
         }
+    }
+
+    // Initiate a nothing submission
+    function submitNothing( user_id, part_id ) {
+        $("#submitnothing_0_"+part_id+"_"+user_id+" img").attr('src','pix/loader.gif');
+        $.ajax({
+            type: "POST",
+            url: "ajax.php",
+            dataType: "json",
+            data: {action: "submit_nothing", assignment: $('#assignment_id').html(),
+                    part: part_id, user: user_id, sesskey: M.cfg.sesskey},
+            success: function(data) {
+                eval(data);
+                $.cookie( 'submitnothingaccept', true, { expires: 365 } );
+            },
+            error: function(data) {
+                $("#submitnothing_0_"+part_id+"_"+user_id+" img").attr('src','pix/icon-edit-grey.png');
+                $("#submitnothing_0_"+part_id+"_"+user_id).removeClass('disabled');
+                alert( data.responseText );
+            },
+            complete: function() {
+                refreshInboxRow( 'submitnothing', 0, part_id, user_id );
+            }
+        });
     }
 
     // Refresh a row in the inbox after a submission has been made or DV closed
@@ -867,7 +909,6 @@ jQuery(document).ready(function($) {
                 } else {
                     link = link+"_"+data.submission_id;
                 }
-
                 $("#"+link+"_"+part_id+'_'+user_id).parent().parent().children().each(function() {
                     i++;
                     $(this).html(data.row[i]);
