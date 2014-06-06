@@ -65,7 +65,6 @@
             <head>
                 <title><?php echo $OUTPUT->page_title(); ?></title>
                 <link rel="shortcut icon" href="<?php echo $OUTPUT->favicon(); ?>" />
-                <link href='//fonts.googleapis.com/css?family=Roboto:400,300,700' rel='stylesheet' type='text/css'>
                 <?php echo $OUTPUT->standard_head_html() ?>
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
             </head>
@@ -121,27 +120,6 @@
 			<div id="heading"><?php echo $OUTPUT->page_heading(); ?></div>
             <?php
             echo $OUTPUT->course_content_header();
-            ?>
-
-			<div class="block block_dashboardcourses" role="complementary">
-				<div class="header">
-					<div class="title">
-						<?php
-						echo '<div id="allcourses" class="btn"><a href="'.$CFG->wwwroot.'/course/">All Courses</a></div>';
-   						?>
-   						<h2 >My Courses</h2>
-					</div>
-				</div>
-				<div class="content">
-					<div class="mycourseboxes">
-						<?php
-							echo $OUTPUT->mycourses($CFG,$sidebar);
-						?>
-					</div>
-				</div>
-			</div>
-
-			<?php
 			echo $OUTPUT->main_content();
 			echo $OUTPUT->course_content_footer();
 			?>

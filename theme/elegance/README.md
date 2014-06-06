@@ -1,30 +1,35 @@
 The "Elegance" Moodle Theme
 ======================
 
-The idea of this theme, as usual with my themes, is to make the site look as little like Moodle as possible. In this specific instance, it would be used on sites where Moodle would potentially serve as a company homepage rather than just a course list.
+The idea of this theme, as usual with my themes, is to make the site look as little like Moodle as possible. Based on the original theme design by Aaron Marr at Falmouth University I’ve created a clean and minimal theme built on Bootstrap3 with many options to allow users to customise the theme to meet their branding needs without changing code.
 
 Cool things to know about the theme.
- - It is a 2 column theme. (please don't ask for it to be made into 3)
- - It is built upon the Bootstrap 3 framework
- - It provides a dropdown menu for users with links set by the admin
- - The slider on the frontpage of the site is completely customisable through theme settings
- - The Theme uses [Google web fonts](http://www.google.com/fonts/) to give it that extra bit of shazam!
- - It is HIGHLY customisable with colors and images
- - Has a page loading indicator built into the header
- - Has a gorgeous new Login screen with background slideshow options
- - It changes course display by using "resource tiles" rather than links
- - If using the "one section per page" option it provides a cleaner navigation in the footer
- - The theme has a customised MyMoodle page to look more visually appealing.
- - The frontpage consists of spaces to create quick links and Marketing info all set through theme settings
- - Social Network icons appear at the footer of the page dynamically based on theme settings
- - Videos are resized dynamically to fit available screen space. A max-width can be set in the settings if needed.
+ - It's not dead yet.
 
 See the theme in Action
 ========================
 
 A video showing many of the core features is available for viewing at [https://vimeo.com/channels/moodleman/87749717](https://vimeo.com/channels/moodleman/87749717)
 
-If you would like to see it in action, head to this year's iMoot site at [http://2014.imoot.org](http://2014.imoot.org)
+If you would like to see it in action, head to the 2014 iMoot site at [http://2014.imoot.org](http://2014.imoot.org)
+
+New in 2.7.0.03
+========================
+- FIX: now compatible with Moodle 2.6
+
+New in 2.7.0.02
+========================
+- FIX: fix broken call to missing method
+
+New in 2.7.0.01
+========================
+- FIX: update theme_boostrap components
+- FIX: import all existing pull requests from moodleman/elegance
+- NEW: now a child theme & dependency of theme_bootstrap
+
+New in 2.7.0.00
+========================
+- NEW: complete new fork from moodleman's original
 
 New in 2.6.2
 ========================
@@ -47,12 +52,18 @@ New in 2.6.1
 - NEW: Click on block title to toggle hide and show
 
 
+Contributors (no particular order...)
+==================
+- [Aaron Marr](https://github.com/aaronmarruk)
+- [Julian Ridden](https://github.com/moodleman)
+- [Gareth J Barnard](https://github.com/gjb2048)
+- [mpuusaar](https://github.com/mpuusaar)
+- [Danny Wahl](http://www.iyware.com)
+- anyone else that's filed a bug or griped on the forums :)
+
 Documentation
 =============
-
-As always, documentation is a work in progress. Available documentation is available at http://docs.moodle.org/26/en/Elegance_theme
-
-If you have questions you can post them in the official discussion moodle.org forum at https://moodle.org/mod/forum/discuss.php?d=231970
+If you have questions you can post them in the official discussion moodle.org forum at https://moodle.org/mod/forum/discuss.php?d=259978
 
 Licenses & Authors
 ==================
@@ -82,6 +93,11 @@ Bootstrap 3 for Moodle conversion
 Author: Bas Brands
 URL: https://github.com/bmbrands/theme_bootstrap
 License: MIT/GPL2 Licensedc
+
+Original Design Reference
+------------
+Author: Aaron Marr 
+URL: http://learningspace.falmouth.ac.uk/
 
 Course Tiles idea and initial coding
 ------------

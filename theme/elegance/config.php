@@ -31,7 +31,7 @@ $THEME->yuicssmodules = array();
 
 $THEME->name = 'elegance';
 
-$THEME->parents = array();
+$THEME->parents = array('bootstrap');
 
 $THEME->supportscssoptimisation = false;
 
@@ -46,6 +46,23 @@ $THEME->plugins_exclude_sheets = array(
         'customlang'
     ),
 );
+if ('ltr' === get_string('thisdirection', 'langconfig')) {
+    $THEME->parents_exclude_sheets = array(
+        'bootstrap'=>array( 
+            'custom',
+            'moodle-rtl',
+            'forms-rtl',
+            'yui2-rtl'
+        )
+    );
+} else {
+    $THEME->parents_exclude_sheets = array(
+        'bootstrap'=>array( 
+            'custom',
+            'moodle'
+        )
+    );
+}
 
 $THEME->rendererfactory = 'theme_overridden_renderer_factory';
 
@@ -70,9 +87,9 @@ if ((!empty($THEME->settings->tiles)) && ($THEME->settings->tiles == '1')) {
 }
 
 if ('ltr' === get_string('thisdirection', 'langconfig')) {
-    $THEME->sheets = array('moodle', 'font-awesome.min', $categorysheet , $tilessheet, $loginsheet, ' nprogress', 'elegance');
+    $THEME->sheets = array('font-awesome', 'google-fonts', $categorysheet , $tilessheet, $loginsheet, ' nprogress', 'elegance');
 } else {
-    $THEME->sheets = array('moodle-rtl', 'tinymce-rtl', 'yui2-rtl', 'forms-rtl', 'font-awesome.min', $categorysheet , $tilessheet, $loginsheet, ' nprogress', 'elegance');
+    $THEME->sheets = array('tinymce-rtl', 'font-awesome', 'google-fonts', $categorysheet , $tilessheet, $loginsheet, ' nprogress', 'elegance');
 }
 
 $THEME->layouts = array(
@@ -104,7 +121,6 @@ $THEME->layouts = array(
         'file' => 'default.php',
         'regions' => array('side-post'),
         'defaultregion' => 'side-post',
-        'options' => array('usereader' => true),
     ),
     // The site home page.
     'frontpage' => array(
@@ -178,7 +194,6 @@ $THEME->layouts = array(
         'file' => 'default.php',
         'regions' => array('side-post'),
         'defaultregion' => 'side-post',
-        'options' => array('usereader' => true),
     ),
     // The pagelayout used for safebrowser and securewindow.
     'secure' => array(

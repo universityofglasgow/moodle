@@ -101,6 +101,14 @@ defined('MOODLE_INTERNAL') || die;
     $setting = new admin_setting_configtext($name, $title, $description, $default);
     $temp->add($setting);
 
+    // Show old messages.
+    $name = 'theme_elegance/showoldmessages';
+    $title = get_string('showoldmessages', 'theme_elegance');
+    $description = get_string('showoldmessagesdesc', 'theme_elegance');
+    $default = '0';
+    $setting = new admin_setting_configcheckbox($name, $title, $description, $default);
+    $temp->add($setting);
+
     // Custom CSS file.
     $name = 'theme_elegance/customcss';
     $title = get_string('customcss', 'theme_elegance');
@@ -1078,7 +1086,8 @@ defined('MOODLE_INTERNAL') || die;
     	'f081'=>'fa-twitter-square',
     	'f082'=>'fa-facebook-square',
     	'f083'=>'fa-camera-retro',
-    	'f084'=>'fa-key',		'f085'=>'fa-cogs',
+    	'f084'=>'fa-key',
+		'f085'=>'fa-cogs',
 		'f086'=>'fa-comments',
     	'f087'=>'fa-thumbs-o-up',
     	'f088'=>'fa-thumbs-o-down',
@@ -1505,7 +1514,8 @@ defined('MOODLE_INTERNAL') || die;
     	'f081'=>'fa-twitter-square',
     	'f082'=>'fa-facebook-square',
     	'f083'=>'fa-camera-retro',
-    	'f084'=>'fa-key',		'f085'=>'fa-cogs',
+    	'f084'=>'fa-key',
+		'f085'=>'fa-cogs',
 		'f086'=>'fa-comments',
     	'f087'=>'fa-thumbs-o-up',
     	'f088'=>'fa-thumbs-o-down',
