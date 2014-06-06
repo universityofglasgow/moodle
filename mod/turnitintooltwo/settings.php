@@ -36,7 +36,10 @@ if ($ADMIN->fulltree) {
                     html_writer::tag('link', '', array("rel" => "stylesheet", "type" => "text/css",
                                                 "href" => $CFG->wwwroot."/mod/turnitintooltwo/css/styles.css"));
 
-    $upgrade = turnitintooltwo_updateavailable($module);
+    // UNIVERSITY OF GLASGOW BODGE... this shouldn't be here
+    //$upgrade = turnitintooltwo_updateavailable($module);
+    $upgrade = null;
+
     $upgradeavailable = (is_null($upgrade)) ?
                             '' : " - ".html_writer::link($upgrade, get_string("upgradeavailable", "turnitintooltwo"));
 
