@@ -34,9 +34,9 @@ class report_tiigrade {
     public static function get_tts($id) {
         global $DB;
 
-        $tts = $DB->get_records('turnitintool', array('course' => $id));
+        $tts = $DB->get_records('turnitintooltwo', array('course' => $id));
         foreach ($tts as $id => $tt) {
-            $parts = $DB->get_records('turnitintool_parts', array('turnitintoolid' => $id, 'deleted' => 0));
+            $parts = $DB->get_records('turnitintooltwo_parts', array('turnitintooltwoid' => $id, 'deleted' => 0));
             $tts[$id]->parts = $parts;
         }
 
@@ -83,7 +83,7 @@ class report_tiigrade {
         global $DB;
 
         // Get the list of submissions for this part.
-        if (!$submissions = $DB->get_records('turnitintool_submissions', array('submission_part' => $partid))) {
+        if (!$submissions = $DB->get_records('turnitintooltwo_submissions', array('submission_part' => $partid))) {
             return array();
         }
         foreach ($submissions as $id => $submission) {

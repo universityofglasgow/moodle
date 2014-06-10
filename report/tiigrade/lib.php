@@ -35,8 +35,13 @@ defined('MOODLE_INTERNAL') || die;
 function report_tiigrade_extend_navigation_course($navigation, $course, $context) {
     global $CFG, $OUTPUT;
 
+    // is tt2 even installed?
+    if (!file_exists($CFG->dirroot . '/mod/turnitintooltwo/version.php')) {
+        return;
+    }
+
     // Must have rights to view this course and to see one of the 'assignment' types.
-    $captii = has_capability('mod/turnitintool:grade', $context);
+    $captii = has_capability('mod/turnitintooltwo:grade', $context);
     if (has_capability('report/tiigrade:view', $context) && $captii) {
         $url = new moodle_url('/report/tiigrade/index.php', array('id' => $course->id));
         $navigation->add(get_string('pluginname', 'report_tiigrade'), $url,

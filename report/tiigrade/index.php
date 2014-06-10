@@ -48,6 +48,12 @@ if (!$course = $DB->get_record('course', array('id' => $id))) {
 
 // Security.
 require_login($course);
+
+// is tt2 installed
+if (!file_exists($CFG->dirroot . '/mod/turnitintooltwo/version.php')) {
+    notice(get_string('noturnitintooltwo', 'report_tiigrade'));
+}
+
 $output = $PAGE->get_renderer('report_tiigrade');
 $context = get_context_instance(CONTEXT_COURSE, $course->id);
 $captt = has_capability('mod/turnitintool:grade', $context);

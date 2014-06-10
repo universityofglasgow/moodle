@@ -32,6 +32,7 @@ $string['export'] = 'Export to Excel';
 $string['nocapability'] = 'You do not have the required capabiltities to view this report';
 $string['notallowed'] = 'You do not have permission to view the selected activity';
 $string['notts'] = 'No Turnitintool activities (or parts)';
+$string['noturnitintooltwo'] = 'The turnitintool is not installed';
 $string['paperid'] = 'Paper ID';
 $string['pluginname'] = 'Turnitintool grades';
 $string['similarity'] = 'Similarity';
