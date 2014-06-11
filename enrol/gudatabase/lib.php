@@ -794,5 +794,121 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
     public function restore_sync_course($course) {
         $this->course_updated(false, $course, null);
     }
+
+    /**
+     * Test plugin settings, print info to output.
+     */
+    public function test_settings() {
+        global $CFG, $OUTPUT;
+
+        // NOTE: this is not localised intentionally, admins are supposed to understand English at least a bit...
+
+        raise_memory_limit(MEMORY_HUGE);
+
+        $this->load_config();
+
+        $enroltable = $this->get_config('remoteenroltable');
+        $codestable = $this->get_config('codesenroltable');
+        $classlisttable = $this->get_config('classlisttable');
+
+        if (empty($enroltable)) {
+            echo $OUTPUT->notification('External enrolment table not specified.', 'notifyproblem');
+            return;
+        }
+
+        if (empty($codestable)) {
+            echo $OUTPUT->notification('Remote codes table not specified.', 'notifyproblem');
+        }
+
+        if (empty($classlisttable)) {
+            echo $OUTPUT->notification('Class list table not specified.', 'notifyproblem');
+        }
+
+        $olddebug = $CFG->debug;
+        $olddisplay = ini_get('display_errors');
+        ini_set('display_errors', '1');
+        $CFG->debug = DEBUG_DEVELOPER;
+        $olddebugdb = $this->config->debugdb;
+        $this->config->debugdb = 1;
+        error_reporting($CFG->debug);
+
+        $adodb = $this->db_init();
+
+        if (!$adodb or !$adodb->IsConnected()) {
+            $this->config->debugdb = $olddebugdb;
+            $CFG->debug = $olddebug;
+            ini_set('display_errors', $olddisplay);
+            error_reporting($CFG->debug);
+            ob_end_flush();
+
+            echo $OUTPUT->notification('Cannot connect the database.', 'notifyproblem');
+            return;
+        }
+
+        if (!empty($enroltable)) {
+            $rs = $adodb->Execute("SELECT *
+                                     FROM $enroltable");
+            if (!$rs) {
+                echo $OUTPUT->notification('Can not read external enrol table.', 'notifyproblem');
+
+            } else if ($rs->EOF) {
+                echo $OUTPUT->notification('External enrol table is empty.', 'notifyproblem');
+                $rs->Close();
+
+            } else {
+                $fields_obj = $rs->FetchObj();
+                $columns = array_keys((array)$fields_obj);
+
+                echo $OUTPUT->notification('External enrolment table contains following columns:<br />'.implode(', ', $columns), 'notifysuccess');
+                $rs->Close();
+            }
+        }
+
+        if (!empty($codestable)) {
+            $rs = $adodb->Execute("SELECT *
+                                     FROM $codestable");
+            if (!$rs) {
+                echo $OUTPUT->notification('Can not read remote codes table.', 'notifyproblem');
+
+            } else if ($rs->EOF) {
+                echo $OUTPUT->notification('Remote codes table is empty.', 'notifyproblem');
+                $rs->Close();
+
+            } else {
+                $fields_obj = $rs->FetchObj();
+                $columns = array_keys((array)$fields_obj);
+
+                echo $OUTPUT->notification('Remote codes table contains following columns:<br />'.implode(', ', $columns), 'notifysuccess');
+                $rs->Close();
+            }
+        }
+
+        if (!empty($classlisttable)) {
+            $rs = $adodb->Execute("SELECT *
+                                     FROM $classlisttable");
+            if (!$rs) {
+                echo $OUTPUT->notification('Can not read class list table.', 'notifyproblem');
+
+            } else if ($rs->EOF) {
+                echo $OUTPUT->notification('Class list table is empty.', 'notifyproblem');
+                $rs->Close();
+
+            } else {
+                $fields_obj = $rs->FetchObj();
+                $columns = array_keys((array)$fields_obj);
+
+                echo $OUTPUT->notification('Class list table contains following columns:<br />'.implode(', ', $columns), 'notifysuccess');
+                $rs->Close();
+            }
+        }
+
+        $adodb->Close();
+
+        $this->config->debugdb = $olddebugdb;
+        $CFG->debug = $olddebug;
+        ini_set('display_errors', $olddisplay);
+        error_reporting($CFG->debug);
+        ob_end_flush();
+    }
 }
 

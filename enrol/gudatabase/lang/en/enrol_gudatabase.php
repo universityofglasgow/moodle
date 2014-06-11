@@ -24,6 +24,8 @@
 
 $string['cannotunenrol'] = 'You are not permitted to unenrol yourself from this course. You must unenrol in MyCampus first and then wait at
     least 24 hours before trying again.';
+$string['classlisttable'] = 'Class list table';
+$string['classlisttable_desc'] = 'Table containing information about group enrolments within courses';
 $string['codesenroltable'] = 'Remote codes table';
 $string['codesenroltable_desc'] = 'Table containing information about course codes';
 $string['displayaverage'] = 'Approx mean courses process each cron = {$a}';
@@ -32,6 +34,7 @@ $string['gudatabase:unenrol'] = 'Unenrol users from gudatabase';
 $string['gudatabase:unenrolself'] = 'Can unenrol self if not in external database';
 $string['pluginname'] = 'UofG Enrolment database';
 $string['pluginname_desc'] = 'You can use an external database (of nearly any kind) to control your enrolments. It is assumed your external database contains at least a field containing a course ID, and a field containing a user ID. These are compared against fields that you choose in the local course and user tables.';
+$string['settingsclasslist'] = 'Class list table';
 $string['settingsheadercodes'] = 'Remote codes table';
 $string['timelimit'] = 'Cron time limit';
 $string['timelimit_desc'] = 'Maximum time that cron process may run for';

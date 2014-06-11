@@ -146,4 +146,10 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configtext('enrol_gudatabase/timelimit',
         get_string('timelimit', 'enrol_gudatabase'), get_string('timelimit_desc', 'enrol_gudatabase'), 30));
 
+    $settings->add(new admin_setting_heading('enrol_gudatabase_classlistheader',
+        get_string('settingsclasslist', 'enrol_gudatabase'), ''));
+
+    $settings->add(new admin_setting_configtext('enrol_gudatabase/classlisttable',
+        get_string('classlisttable', 'enrol_gudatabase'), get_string('classlisttable_desc', 'enrol_gudatabase'), ''));
+
 }
