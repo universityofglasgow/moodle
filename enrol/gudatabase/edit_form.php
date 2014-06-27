@@ -51,6 +51,10 @@ class enrol_gudatabase_edit_form extends moodleform {
         $mform->setDefault('enrolperiod', $plugin->get_config('enrolperiod'));
         $mform->addHelpButton('enrolperiod', 'defaultperiod', 'enrol_gudatabase');
 
+        $mform->addElement('date_time_selector', 'enrolenddate', get_string('enrolenddate', 'enrol_gudatabase'), array('optional' => true));
+        $mform->setDefault('enrolenddate', 0);
+        $mform->addHelpButton('enrolenddate', 'enrolenddate', 'enrol_gudatabase');
+
         $roles = array(0 => get_string('unenrol', 'enrol_gudatabase')) + $roles;
         $mform->addElement('select', 'expireroleid', get_string('expirerole', 'enrol_gudatabase'), $roles);
         $mform->setDefault('expireroleid', $plugin->get_config('expireroleid'));

@@ -26,6 +26,18 @@
 defined('MOODLE_INTERNAL') || die();
 
 $capabilities = array(
+
+    /* Add or edit enrol-gudatabase instance in course. */
+    'enrol/gudatabase:config' => array(
+
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_COURSE,
+        'archetypes' => array(
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW,
+        )
+    ),
+
     /* This is used only when sync suspends users instead of full unenrolment */
     'enrol/gudatabase:unenrol' => array(
 

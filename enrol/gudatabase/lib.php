@@ -37,6 +37,9 @@ require_once( $CFG->dirroot . '/enrol/database/lib.php' );
  */
 class enrol_gudatabase_plugin extends enrol_database_plugin {
 
+    // need to store this for error function
+    protected $trace;
+
     /**
      * Is it possible to delete enrol instance via standard UI?
      *
@@ -505,6 +508,64 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
     }
 
     /**
+     * Check if user is enrolled (already)
+     * @param object $instance
+     * @param int $userid
+     * @return boolean
+     */
+    private function is_user_enrolled($instance, $userid) {
+        global $DB;
+  
+        if ($ue = $DB->get_record('user_enrolments', array('enrolid'=>$instance->id, 'userid'=>$userid))) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * work out end time from enrolperiod and enrolenddate
+     * - if neither are defined return 0
+     * - if one is defined return that one
+     * - if both are defined return earliest
+     */
+    private function end_date($instance) {
+
+        // enrolperiod time end
+        if ($instance->enrolperiod) {
+            $period_timeend = $time() + $instance->enrolperiod;
+        } else {
+            $period_timeend = 0;
+        }
+
+        // enrolenddate time end
+        if ($instance->enrolenddate) {
+
+            // if in the past - forget it
+            if ($instance->enrolenddate < time()) {
+                $enddate_timeend = 0;
+            } else {
+                $enddate_timeend = $instance->enrolenddate;
+            }
+        }
+
+        // which to return
+        if ($enddate_timeend && $period_timeend) {
+            if ($period_timeend < $enddate_timeend) {
+                return $period_timeend;
+            } else {
+                return $enddate_timeend;
+            }
+        } else {
+            if ($period_timeend) {
+                return $period_timeend;
+            } else {
+                return $enddata_timeend;
+            }
+        }
+    }
+
+    /**
      * Get enrollments for given course
      * and add users
      * @parm object $course 
@@ -513,6 +574,11 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
      */
     public function enrol_course_users( $course, $instance ) {
         global $CFG, $DB;
+
+        // is the plugin enabled for this instance?
+        if ($instance->status != ENROL_INSTANCE_ENABLED) {
+            return true;
+        }
 
         // First need to get a list of possible course codes
         // we will aggregate single code from course shortname
@@ -552,8 +618,20 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
                 }
             }
 
-            // Enrol user into course.
-            $this->enrol_user( $instance, $user->id, $defaultrole, 0, 0, ENROL_USER_ACTIVE );
+            // Enrolment period
+            $timestart = time();
+            $timeend = $this->end_date($instance);
+
+            // role to use (existing instances will not have a 'roleid')
+            if (empty($instance->roleid)) {
+                $instance->roleid = $defaultrole;
+                $DB->update_record('enrol', $instance);
+            }
+
+            // Enrol user into course (if not already).
+            if (!$this->is_user_enrolled($instance, $user->id)) {
+                $this->enrol_user( $instance, $user->id, $instance->roleid, $timestart, $timeend, ENROL_USER_ACTIVE );
+            }
 
             // Cache enrolment.
             $this->cache_user_enrolment( $course, $user, $enrolment->courses );
@@ -584,7 +662,10 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
 
         // If we didn't find it then add it.
         if (!$found) {
-            $instanceid = $this->add_instance($course);
+            $data = array();
+            $data['roleid'] = $this->get_config('defaultrole');
+            $data['customint1'] = 0;
+            $instanceid = $this->add_instance($course, $data);
         }
 
         return $instanceid;
@@ -684,8 +765,25 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
                 // Get the instance of the enrolment plugin.
                 $instance = $DB->get_record('enrol', array('id' => $instanceid));
 
-                // Enroll user into course.
-                $this->enrol_user( $instance, $user->id, $defaultrole, 0, 0, ENROL_USER_ACTIVE );
+                // Enrolment period
+                $timestart = time();
+                $timeend = $this->end_date($instance);
+                if ($instance->enrolperiod) {
+                    $timeend = $timestart + $instance->enrolperiod;
+                } else {
+                    $timeend = 0;
+                }
+
+                // role to use (existing instances will not have a 'roleid')
+                if (empty($instance->roleid)) {
+                    $instance->roleid = $defaultrole;
+                    $DB->update_record('enrol', $instance);
+                }
+
+                // Enrol user into course (if not already).
+                if (!$this->is_user_enrolled($instance, $user->id)) {
+                    $this->enrol_user( $instance, $user->id, $instance->roleid, $timestart, $timeend, ENROL_USER_ACTIVE );
+                }
 
                 // Cache enrolment.
                 $this->cache_user_enrolment( $course, $user, $code->code );
@@ -696,11 +794,58 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
     }
 
     /**
+     * Returns edit icons for the page with list of instances
+     * @param stdClass $instance
+     * @return array
+     */
+    public function get_action_icons(stdClass $instance) {
+        global $OUTPUT;
+
+        if ($instance->enrol !== 'gudatabase') {
+            throw new coding_exception('invalid enrol instance!');
+        }
+        $context = context_course::instance($instance->courseid);
+
+        $icons = array();
+
+        if (has_capability('enrol/gudatabase:config', $context)) {
+            $editlink = new moodle_url("/enrol/gudatabase/edit.php", array('courseid'=>$instance->courseid, 'id'=>$instance->id));
+            $icons[] = $OUTPUT->action_icon($editlink, new pix_icon('t/edit', get_string('edit'), 'core',
+                array('class' => 'iconsmall')));
+        }
+
+        return $icons;
+    }
+
+    /**
+     * Sets up navigation entries.
+     *
+     * @param stdClass $instancesnode
+     * @param stdClass $instance
+     * @return void
+     */
+    public function add_course_navigation($instancesnode, stdClass $instance) {
+        if ($instance->enrol !== 'gudatabase') {
+             throw new coding_exception('Invalid enrol instance type!');
+        }
+
+        $context = context_course::instance($instance->courseid);
+        if (has_capability('enrol/gudatabase:config', $context)) {
+            $managelink = new moodle_url('/enrol/gudatabase/edit.php', array('courseid'=>$instance->courseid, 'id'=>$instance->id));
+            $instancesnode->add($this->get_instance_name($instance), $managelink, navigation_node::TYPE_SETTING);
+        }
+    }
+
+    /**
      * cron service to update course enrolments
      */
     public function cron() {
         global $CFG;
         global $DB;
+
+        // trace
+        $trace = new text_progress_trace();
+        $this->trace = trace;
 
         // Get the start time, we'll limit
         // how long this runs for.
@@ -711,7 +856,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
 
         // Are we set up?
         if (empty($config->dbhost)) {
-            mtrace( 'enrol_gudatabase: not configured' );
+            $trace->output( 'enrol_gudatabase: not configured' );
             return false;
         }
 
@@ -721,7 +866,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         } else {
             $startcourseindex = $config->startcourseindex;
         }
-        mtrace( "enrol_gudatabase: starting at course index $startcourseindex" );
+        $trace->output( "enrol_gudatabase: starting at course index $startcourseindex" );
 
         // Get the basics of all visible courses
         // don't load the whole course records!!
@@ -730,8 +875,8 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         // Convert courses to simple array.
         $courses = array_values( $courses );
         $highestindex = count($courses) - 1;
-        mtrace( "enrol_gudatabase: highest course index is $highestindex" );
-        mtrace( "enrol_gudatabase: configured time limit is {$config->timelimit} seconds" );
+        $trace->output( "enrol_gudatabase: highest course index is $highestindex" );
+        $trace->output( "enrol_gudatabase: configured time limit is {$config->timelimit} seconds" );
 
         // Process from current index to (potentially) the end.
         for ($i = $startcourseindex; $i <= $highestindex; $i++) {
@@ -740,11 +885,14 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
             // Avoid site and front page.
             if ($course->id > 1) {
                 $updatestart = microtime(true);
-                mtrace( "enrol_gudatabase: updating enrolments for course '{$course->shortname}'" );
+                $trace->output( "enrol_gudatabase: updating enrolments for course '{$course->shortname}'" );
                 $this->course_updated(false, $course, null);
                 $updateend = microtime(true);
                 $updatetime = number_format($updateend - $updatestart, 4);
-                mtrace( "enrol_gudatabase: --- course {$course->shortname} took $updatetime seconds to update");
+
+                // process expired users
+                $this->process_expirations($trace, $course->id);
+                $trace->output( "enrol_gudatabase: --- course {$course->shortname} took $updatetime seconds to update");
             }
             $lastcourseprocessed = $i;
 
@@ -762,15 +910,15 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
             $nextcoursetoprocess = $lastcourseprocessed + 1;
         }
         set_config( 'startcourseindex', $nextcoursetoprocess, 'enrol_gudatabase' );
-        mtrace( "enrol_gudatabase: next course index to process is $nextcoursetoprocess" );
+        $trace->output( "enrol_gudatabase: next course index to process is $nextcoursetoprocess" );
 
         // Create very poor average course process.
         $oldaverage = empty($config->average) ? 0 : $config->average;
         $newaverage = ($oldaverage + $lastcourseprocessed - $startcourseindex) / 2;
         set_config( 'average', $newaverage, 'enrol_gudatabase' );
         $elapsedtime = time() - $starttime;
-        mtrace( 'enrol_gudatabase: completed, processed courses = ' . ($lastcourseprocessed - $startcourseindex) );
-        mtrace( "enrol_gudatabase: actual elapsed time was $elapsedtime seconds" );
+        $trace->output( 'enrol_gudatabase: completed, processed courses = ' . ($lastcourseprocessed - $startcourseindex) );
+        $trace->output( "enrol_gudatabase: actual elapsed time was $elapsedtime seconds" );
     }
 
     /**
@@ -780,7 +928,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
      */
     private function error($message) {
         if (defined('CLI_SCRIPT')) {
-            mtrace($message);
+            $this->trace->output($message);
         } else {
             error($message);
         }
@@ -793,6 +941,90 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
      */
     public function restore_sync_course($course) {
         $this->course_updated(false, $course, null);
+    }
+
+    /**
+     * Do any enrolments need expiration processing.
+     *
+     * Plugins that want to call this functionality must implement 'expiredaction' config setting.
+     *
+     * @param progress_trace $trace
+     * @param int $courseid one course, empty mean all
+     * @return bool true if any data processed, false if not
+     */
+    public function process_expirations(progress_trace $trace, $courseid = null) {
+        global $DB;
+
+        $name = $this->get_name();
+        if (!enrol_is_enabled($name)) {
+            $trace->finished();
+            return false;
+        }
+
+        $processed = false;
+        $params = array();
+        $coursesql = "";
+        if ($courseid) {
+            $coursesql = "AND e.courseid = :courseid";
+        }
+
+        $instances = array();
+        $sql = "SELECT ue.*, e.courseid, c.id AS contextid
+                  FROM {user_enrolments} ue
+                  JOIN {enrol} e ON (e.id = ue.enrolid AND e.enrol = :enrol)
+                  JOIN {context} c ON (c.instanceid = e.courseid AND c.contextlevel = :courselevel)
+                 WHERE ue.timeend > 0 AND ue.timeend < :now $coursesql";
+        $params = array('now'=>time(), 'courselevel'=>CONTEXT_COURSE, 'enrol'=>$name, 'courseid'=>$courseid);
+
+        $rs = $DB->get_recordset_sql($sql, $params);
+        foreach ($rs as $ue) {
+            if (!$processed) {
+                $trace->output("enrol_gudatabase: Starting processing of enrol_$name expirations...");
+                $processed = true;
+            }
+            if (empty($instances[$ue->enrolid])) {
+                $instances[$ue->enrolid] = $DB->get_record('enrol', array('id'=>$ue->enrolid));
+            }
+            $instance = $instances[$ue->enrolid];
+
+            // depending on customint1 (target roleid) we will just remove them or
+            // change their role
+            if (!$instance->customint1) {
+
+                // Let's just guess what extra roles are supposed to be removed.
+                if ($instance->roleid) {
+                    role_unassign($instance->roleid, $ue->userid, $ue->contextid);
+                }
+
+                // The unenrol cleans up all subcontexts if this is the only course enrolment for this user.
+                $this->unenrol_user($instance, $ue->userid);
+                $trace->output("enrol_gudatabase: Unenrolling expired user $ue->userid from course $instance->courseid", 1);
+           } else {
+
+               // swap role
+               if ($instance->roleid) {
+                    role_assign($instance->customint1, $ue->userid, $ue->contextid);
+                    role_unassign($instance->roleid, $ue->userid, $ue->contextid);
+
+                    // enrolment now has no time limit
+                    $this->update_user_enrol($instance, $ue->userid, null, 0, 0);
+
+                    // set their 
+                    $trace->output("enrol_gudatabase: Moving role for expired user $ue->userid from course $instance->courseid", 1);
+               }
+           }
+        }
+        $rs->close();
+        unset($instances);
+
+        if ($processed) {
+            $trace->output("enrol_gudatabase: ...finished processing of enrol_$name expirations");
+        } else {
+            $trace->output("enrol_gudatabase: No expired enrol_$name enrolments detected");
+        }
+        $trace->finished();
+
+        return $processed;
     }
 
     /**

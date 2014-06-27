@@ -56,8 +56,10 @@ if ($instances = $DB->get_records('enrol', array('courseid'=>$course->id, 'enrol
     if ($instance->notifyall and $instance->expirynotify) {
         $instance->expirynotify = 2;
     }
-    unset($instance->notifyall);
+    unset($instance->notifyall); 
 
+    // just to make form (code) more readable
+    $instance->expireroleid = $instance->customint1;
 } else {
     require_capability('moodle/course:enrolconfig', $context);
     // No instance yet, we have to add new instance.
@@ -76,7 +78,8 @@ if ($mform->is_cancelled()) {
     if ($instance->id) {
         $instance->roleid          = $data->roleid;
         $instance->enrolperiod     = $data->enrolperiod;
-        $instance->expiryroleid    = $data->expiryroleid;
+        $instance->enrolenddate    = $data->enrolenddate;
+        $instance->customint1      = $data->expireroleid;
         $instance->timemodified    = time();
 
         $DB->update_record('enrol', $instance);
@@ -93,7 +96,8 @@ if ($mform->is_cancelled()) {
             'status'          => $data->status,
             'roleid'          => $data->roleid,
             'enrolperiod'     => $data->enrolperiod,
-            'expireroleid'    => $data->expireroleid,
+            'enrolenddate'    => $data->enrolenddate,
+            'customint1'      => $data->expireroleid,
             'expirythreshold' => $data->expirythreshold);
         $plugin->add_instance($course, $fields);
     }
