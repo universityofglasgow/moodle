@@ -547,6 +547,8 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
             } else {
                 $enddate_timeend = $instance->enrolenddate;
             }
+        } else {
+            $enddate_timeend = 0;
         }
 
         // which to return
@@ -560,7 +562,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
             if ($period_timeend) {
                 return $period_timeend;
             } else {
-                return $enddata_timeend;
+                return $enddate_timeend;
             }
         }
     }
