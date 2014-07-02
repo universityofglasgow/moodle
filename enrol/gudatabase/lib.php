@@ -27,6 +27,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once( $CFG->dirroot . '/group/lib.php' );
+
 // We inherit from vanilla database plugin.
 require_once( $CFG->dirroot . '/enrol/database/lib.php' );
 
@@ -210,6 +212,91 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         return $enrolments;
     }
 
+    /**
+     * Get list of classes for given code
+     * @param string $code
+     * @param return array
+     */
+    public function external_classes($code) {
+        global $CFG, $DB;
+
+        // Connect to external db.
+        if (!$extdb = $this->db_init()) {
+            $this->error('Error while communicating with external enrolment database');
+            return false;
+        }
+
+        // get table name from plugin config
+        $table = $this->get_config('classlisttable');
+
+        $sql = "select ClassGroupDesc from $table where ";
+        $sql .= "concat(SubjectCode, CourseCatCode) = '$code' ";
+        $sql .= "group by ClassGroupDesc";
+
+        // Read the data from external db.
+        $classes = array();
+        if ($rs = $extdb->Execute($sql)) {
+            if (!$rs->EOF) {
+                while ($row = $rs->FetchRow()) {
+                    $class = (object)$row;
+                    $classname = $class->ClassGroupDesc;
+                    $classes[$classname] = $classname;
+                }
+            }
+            $rs->Close();
+        } else {
+            $msg = $extdb->ErrorMsg();
+            $this->error('Error executing query in UofG enrolment table "'.$msg.'" - '.$sql);
+            return false;
+        }
+
+        $extdb->Close();
+        return $classes;
+    }
+
+    /**
+     * Get list of users for given class
+     * @param string $code
+     * @param string $class 'lecture', 'fieldwork' etc.
+     * @param return array
+     */
+    public function external_class_users($code, $class) {
+        global $CFG, $DB;
+
+        // Connect to external db.
+        if (!$extdb = $this->db_init()) {
+            $this->error('Error while communicating with external enrolment database');
+            return false;
+        }
+
+        // get table name from plugin config
+        $table = $this->get_config('classlisttable');
+
+        $sql = "select matricno, ClassGroupCode from $table where ";
+        $sql .= "concat(SubjectCode, CourseCatCode) = '$code' ";
+        $sql .= "and ClassGroupDesc = '$class' ";
+
+        // Read the data from external db.
+        $matrics = array();
+        if ($rs = $extdb->Execute($sql)) {
+            if (!$rs->EOF) {
+                while ($row = $rs->FetchRow()) {
+                    $class = (object)$row;
+                    $matricno = $class->matricno;
+                    $groupcode = $class->ClassGroupCode;
+                    $matricnos[$matricno] = $groupcode;
+                }
+            }
+            $rs->Close();
+        } else {
+            $msg = $extdb->ErrorMsg();
+            $this->error('Error executing query in UofG enrolment table "'.$msg.'" - '.$sql);
+            return false;
+        }
+
+        $extdb->Close();
+        return $matricnos;
+    }
     /**
      * get course information from
      * external database
@@ -421,10 +508,6 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         $user = get_complete_user_data('id', $newuser->id);
         update_internal_user_password($user, '');
 
-        // Fetch full user record for the event, the complete user data contains too much info
-        // and we want to be consistent with other places that trigger this event.
-        events_trigger('user_created', $DB->get_record('user', array('id' => $user->id)));
-
         return $user;
     }
 
@@ -435,9 +518,13 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
      * NB: we will check it exists here too
      * @param object $course
      * @param array $codes list of codes
+     * @return array list of 'real' codes
      */
     public function save_codes( $course, $codes ) {
         global $CFG, $DB;
+
+        // track codes that are deemed to exist
+        $realcodes = array();
 
         // Run through codes finding data.
         foreach ($codes as $code) {
@@ -445,6 +532,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
 
             // It's possible (and ok) that nothing is found.
             if (!empty($coursedata)) {
+                $realcodes[] = $code;
 
                 // Create data record.
                 $coursecode = new stdClass;
@@ -480,6 +568,8 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
                 }
             }
         }
+
+        return $realcodes;
     }
 
     /**
@@ -568,6 +658,29 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
     }
 
     /**
+     * Get the list of (legacy) codes for the given course
+     * @param object $course course object
+     * @return array list of codes
+     */
+    public function get_codes($course, $instance) {
+        $shortname = $course->shortname;
+        $idnumber = $course->idnumber;
+        $codes = $this->split_code( $idnumber );
+        $codes[] = clean_param( $shortname, PARAM_ALPHANUM );
+
+        // add codes from customtext1
+        $morecodes = $instance->customtext1;
+        $morecodes = str_replace("\n\r", "\n", $morecodes);
+        $mcodes = explode("\n", $morecodes);
+        foreach ($mcodes as $index => $mcode) {
+            $mcodes[$index] = clean_param( trim($mcode), PARAM_ALPHANUM );
+        }
+        $codes = array_merge($codes, $mcodes);
+        $verified_codes = $this->save_codes($course, $codes);
+        return $verified_codes;
+    }
+
+    /**
      * Get enrollments for given course
      * and add users
      * @parm object $course 
@@ -585,13 +698,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         // First need to get a list of possible course codes
         // we will aggregate single code from course shortname
         // and (possible) list from idnumber.
-        $shortname = $course->shortname;
-        $idnumber = $course->idnumber;
-        $codes = $this->split_code( $idnumber );
-        $codes[] = clean_param( $shortname, PARAM_ALPHANUM );
-
-        // Cache the codes against the course.
-        $this->save_codes( $course, $codes );
+        $codes = $this->get_codes($course, $instance);
 
         // Find the default role .
         $defaultrole = $this->get_config('defaultrole');
@@ -706,6 +813,105 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         $this->enrol_course_users( $course, $instance );
 
         return true;
+    }
+
+    /**
+     * Create a new grop (nicked from group/groups.php)
+     * @param string $name
+     * @param object $course
+     * @return object new group
+     */
+    private function create_group($name, $course) {
+        global $DB;
+
+        $group = new stdClass();
+        $group->courseid = $course->id;
+        $group->name = $name;
+        $group->idnumber = '';
+        $group->description = '';
+        $group->descriptionformat = 1;
+        $group->enrolmentkey = '';
+        $group->picture = 0;
+        $group->hidepicture = 0;
+        $group->timecreated = time();
+        $group->timemodified = time();
+        $groupid = $DB->insert_record('groups', $group);
+        $group->id = $groupid;
+
+        // Invalidate the grouping cache for the course
+        cache_helper::invalidate_by_definition('core', 'groupdata', array(), array($course->id));
+
+        // Trigger group event.
+        $context = context_course::instance($course->id);
+        $params = array(
+            'context' => $context,
+            'objectid' => $groupid
+        );
+        $event = \core\event\group_created::create($params);
+        $event->add_record_snapshot('groups', $group);
+        $event->trigger();
+
+        return $group;
+    }
+
+    /**
+     * Convert array of matricno/groupcode data returned
+     * from database into a groupcode->array(matricnos) format
+     */
+    private function convert_matricnos($matricnos) {
+        $classgroups = array();
+        foreach ($matricnos as $matricno => $classgroupcode) {
+            if (!isset($classgroups[$classgroupcode])) {
+                $classgroups[$classgroupcode] = array();
+            }
+            $classgroups[$classgroupcode][] = $matricno;
+        }
+
+        return $classgroups;
+    }
+
+    /**
+     * sync the auto-groups for a given course
+     * @param object $course
+     * @param object $instance
+     */
+    public function sync_groups($course, $instance) {
+        global $DB;
+
+        // get group settings from instance
+        // nothing to do if this doesn't work
+        if (!$selectedgroups = unserialize($instance->customtext2)) {
+            return false;
+        }
+
+        // run through selected groups and classes
+        foreach ($selectedgroups as $code => $selectedgroup) {
+            foreach ($selectedgroup as $class => $enabled) {
+                if ($enabled) {
+                    $groupbasename = "{$code} {$class}";
+                    $matricnos = $this->external_class_users($code, $class);
+                    $classgroups = $this->convert_matricnos($matricnos);
+ 
+                    foreach ($classgroups as $classgroupcode => $memberids) {
+                        $groupname = "$groupbasename $classgroupcode";
+
+                        // see if group exists, if not create it
+                        if (!$groupid = groups_get_group_by_name($course->id, $groupname)) {
+                            $group = $this->create_group($groupname, $course);
+                        } else {
+                            $group = groups_get_group($groupid);
+                        }
+
+                        // find all the users for this group combination
+                        foreach ($memberids as $memberid) {
+                            if ($user = $DB->get_record('user', array('idnumber'=>$memberid))) {
+                                groups_add_member($group, $user);
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     /**

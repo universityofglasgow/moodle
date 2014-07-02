@@ -23,10 +23,13 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require('../../config.php');
-require_once('edit_form.php');
+require(dirname(__FILE__) . '/../../config.php');
+require_once(dirname(__FILE__) . '/edit_form.php');
+require_once(dirname(__FILE__) . '/codes_form.php');
+require_once(dirname(__FILE__) . '/groups_form.php');
 
 $courseid = required_param('courseid', PARAM_INT);
+$tab = optional_param('tab', 'config', PARAM_ALPHA);
 
 $course = $DB->get_record('course', array('id'=>$courseid), '*', MUST_EXIST);
 $context = context_course::instance($course->id, MUST_EXIST);
@@ -34,8 +37,9 @@ $context = context_course::instance($course->id, MUST_EXIST);
 require_login($course);
 require_capability('enrol/gudatabase:config', $context);
 
-$PAGE->set_url('/enrol/gudatabase/edit.php', array('courseid'=>$course->id));
+$PAGE->set_url('/enrol/gudatabase/edit.php', array('courseid'=>$course->id, 'tab'=>$tab));
 $PAGE->set_pagelayout('admin');
+$output = $PAGE->get_renderer('enrol_gudatabase');
 
 $return = new moodle_url('/enrol/instances.php', array('id'=>$course->id));
 if (!enrol_is_enabled('gudatabase')) {
@@ -69,40 +73,108 @@ if ($instances = $DB->get_records('enrol', array('courseid'=>$course->id, 'enrol
     $instance->courseid        = $course->id;
 }
 
-$mform = new enrol_gudatabase_edit_form(null, array($instance, $plugin, $context));
+// check which tab is active and what action to take
+if ($tab=='config') {
+    $mform = new enrol_gudatabase_edit_form(null, array($instance, $plugin, $context));
 
-if ($mform->is_cancelled()) {
-    redirect($return);
+    if ($mform->is_cancelled()) {
+        redirect($return);
 
-} else if ($data = $mform->get_data()) {
-    if ($instance->id) {
-        $instance->roleid          = $data->roleid;
-        $instance->enrolperiod     = $data->enrolperiod;
-        $instance->enrolenddate    = $data->enrolenddate;
-        $instance->customint1      = $data->expireroleid;
-        $instance->timemodified    = time();
+    } else if ($data = $mform->get_data()) {
+        if ($instance->id) {
+            $instance->roleid          = $data->roleid;
+            $instance->enrolperiod     = $data->enrolperiod;
+            $instance->enrolenddate    = $data->enrolenddate;
+            $instance->customint1      = $data->expireroleid;
+            $instance->timemodified    = time();
 
-        $DB->update_record('enrol', $instance);
+            $DB->update_record('enrol', $instance);
 
-        // Use standard API to update instance status.
-        if ($instance->status != $data->status) {
-            $instance = $DB->get_record('enrol', array('id'=>$instance->id));
-            $plugin->update_status($instance, $data->status);
-            $context->mark_dirty();
+            // Use standard API to update instance status.
+            if ($instance->status != $data->status) {
+                $instance = $DB->get_record('enrol', array('id'=>$instance->id));
+                $plugin->update_status($instance, $data->status);
+                $context->mark_dirty();
+            }
+
+        } else {
+            $fields = array(
+                'status'          => $data->status,
+                'roleid'          => $data->roleid,
+                'enrolperiod'     => $data->enrolperiod,
+                'enrolenddate'    => $data->enrolenddate,
+                'customint1'      => $data->expireroleid,
+                'expirythreshold' => $data->expirythreshold);
+            $plugin->add_instance($course, $fields);
         }
 
-    } else {
-        $fields = array(
-            'status'          => $data->status,
-            'roleid'          => $data->roleid,
-            'enrolperiod'     => $data->enrolperiod,
-            'enrolenddate'    => $data->enrolenddate,
-            'customint1'      => $data->expireroleid,
-            'expirythreshold' => $data->expirythreshold);
-        $plugin->add_instance($course, $fields);
+        $plugin->enrol_course_users( $course, $instance );
+        $plugin->sync_groups($course, $instance);
+
+        redirect($return);
+    }
+} else if ($tab=='codes') {
+
+    // get list of codes
+    $codes = $plugin->get_codes($course, $instance);
+
+    // create form
+    if (!$instance->customtext1) {
+        $instance->customtext1 = '';
+    }
+    $instance->tab = $tab;
+    $cform = new enrol_gudatabase_codes_form(null, $instance);
+
+    // process codes form
+    if ($cform->is_cancelled()) {
+        redirect($return);
+    } else if ($data = $cform->get_data()) {
+        $instance->customtext1 = $data->customtext1;
+        $DB->update_record('enrol', $instance);
     }
 
-    redirect($return);
+    $plugin->enrol_course_users( $course, $instance );
+    $plugin->sync_groups($course, $instance);
+
+} else if ($tab=='groups') {
+
+    // get (serialised) group configuration
+    if (!$groups = unserialize($instance->customtext2)) {
+        $groups = array();
+    }
+
+    // get current codes
+    $codes = $plugin->get_codes($course, $instance);
+
+    // loop through to get current classes
+    $codeclasses = array();
+    foreach ($codes as $code) {
+        $classes = $plugin->external_classes($code);
+        $codeclasses[$code] = $classes;
+    }
+
+    // form stuff
+    $instance->tab = $tab;
+    $gform = new enrol_gudatabase_groups_form(null, array($instance, $codeclasses, $groups));
+
+    // process form
+    if ($gform->is_cancelled()) {
+        redirect($return);
+    } else if ($data = $gform->get_data()) {
+        $groups = array();
+        foreach ($codeclasses as $code => $codeclass) {
+            $groups[$code] = array();
+            foreach ($codeclass as $class) {
+                $selector = "{$code}_{$class}";
+                $groups[$code][$class] = $data->$selector == 1;
+            }
+        }
+        $instance->customtext2 = serialize($groups);
+        $DB->update_record('enrol', $instance);        
+    }
+
+    $plugin->enrol_course_users( $course, $instance );
+    $plugin->sync_groups($course, $instance);
 }
 
 $PAGE->set_title(get_string('pluginname', 'enrol_manual'));
@@ -110,5 +182,13 @@ $PAGE->set_heading($course->fullname);
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('pluginname', 'enrol_gudatabase'));
-$mform->display();
+echo $output->print_tabs($courseid, $tab);
+if ($tab=='config') {
+    $mform->display();
+} else if ($tab=='codes') {
+    echo $output->print_codes($course->id, $codes);
+    $cform->display();
+} else if ($tab=='groups') {
+    $gform->display();
+}
 echo $OUTPUT->footer();
