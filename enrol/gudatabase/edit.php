@@ -129,12 +129,15 @@ if ($tab=='config') {
     if ($cform->is_cancelled()) {
         redirect($return);
     } else if ($data = $cform->get_data()) {
-        $instance->customtext1 = $data->customtext1;
+        $instance->customtext1 = strtoupper($data->customtext1);
         $DB->update_record('enrol', $instance);
     }
 
     $plugin->enrol_course_users( $course, $instance );
     $plugin->sync_groups($course, $instance);
+
+    // reflect any changes we just did
+    $codes = $plugin->get_codes($course, $instance);
 
 } else if ($tab=='groups') {
 
