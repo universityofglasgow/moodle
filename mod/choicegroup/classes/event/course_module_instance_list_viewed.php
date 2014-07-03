@@ -15,24 +15,25 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version information for the drag-and-drop markers question type.
+ * The mod_forum instance list viewed event.
  *
- * @package    qtype_ddmarker
- * @copyright  2012 The Open University
- * @author     Jamie Pratt <me@jamiep.org>
+ * @package    mod_forum
+ * @copyright  2014 Dan Poltawski <dan@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace mod_choicegroup\event;
+
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2014060300;
-$plugin->requires  = 2013051400;
-$plugin->cron      = 0;
-$plugin->component = 'qtype_ddmarker';
-$plugin->maturity  = MATURITY_STABLE;
-$plugin->release   = '1.6 for Moodle 2.5+';
-
-$plugin->dependencies = array(
-    'qtype_gapselect'     => 2014010800,
-    'qtype_ddimageortext' => 2014010800,
-);
+/**
+ * The mod_forum instance list viewed event class.
+ *
+ * @package    mod_forum
+ * @since      Moodle 2.7
+ * @copyright  2014 Dan Poltawski <dan@moodle.com>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class course_module_instance_list_viewed extends \core\event\course_module_instance_list_viewed {
+    // No need for any code here as everything is handled by the parent class.
+}
