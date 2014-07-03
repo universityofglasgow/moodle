@@ -700,6 +700,11 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         // and (possible) list from idnumber.
         $codes = $this->get_codes($course, $instance);
 
+        // if there are none, we have nothing to do
+        if (!$codes) {
+            return false;
+        }
+
         // Find the default role .
         $defaultrole = $this->get_config('defaultrole');
 
@@ -1053,7 +1058,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
 
         // trace
         $trace = new text_progress_trace();
-        $this->trace = trace;
+        $this->trace = $trace;
 
         // Get the start time, we'll limit
         // how long this runs for.
@@ -1092,9 +1097,13 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
 
             // Avoid site and front page.
             if ($course->id > 1) {
+                $instanceid = $this->check_instance($course);
+                $instance = $DB->get_record('enrol', array('id'=>$instanceid), '*', MUST_EXIST);
                 $updatestart = microtime(true);
                 $trace->output( "enrol_gudatabase: updating enrolments for course '{$course->shortname}'" );
                 $this->course_updated(false, $course, null);
+                $trace->output( "enrol_gudatabase: updating groups for course '{$course->shortname}'" );
+                $this->sync_groups($course, $instance);
                 $updateend = microtime(true);
                 $updatetime = number_format($updateend - $updatestart, 4);
 
@@ -1135,7 +1144,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
      * @param string $message message to display/log
      */
     private function error($message) {
-        if (defined('CLI_SCRIPT')) {
+        if (defined('CLI_SCRIPT') and CLI_SCRIPT) {
             $this->trace->output($message);
         } else {
             error($message);

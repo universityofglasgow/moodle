@@ -41,6 +41,8 @@ class enrol_gudatabase_codes_form extends moodleform {
         $mform->addElement('hidden', 'tab');
         $mform->setType('tab', PARAM_ALPHA);
 
+        $mform->addElement('html', '<div class="alert alert-danger">' . get_string('savewarning', 'enrol_gudatabase') . '</div>');
+
         $this->add_action_buttons();
 
         $this->set_data($instance);

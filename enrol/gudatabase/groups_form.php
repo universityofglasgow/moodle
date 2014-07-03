@@ -29,10 +29,17 @@ class enrol_gudatabase_groups_form extends moodleform {
     function definition() {
         $mform = $this->_form;
 
-        list($instance, $codeclasses, $groups) = $this->_customdata;
+        list($instance, $codeclasses, $coursedescriptions, $groups) = $this->_customdata;
+
+        if ($coursedescriptions) {
+            $mform->addElement('html', '<div class="alert alert-info">' . get_string('groupsinstruction', 'enrol_gudatabase') . '</div>');
+        } else {
+            $mform->addElement('html', '<div class="alert alert-warning">' . get_string('nolegacycodes', 'enrol_gudatabase') . '</div>');
+        }
 
         foreach ($codeclasses as $code => $classes) {
-            $mform->addElement('html', "<h3>$code</h3>");
+            $description = $coursedescriptions[$code];
+            $mform->addElement('html', "<h3>$code ($description)</h3>");
             foreach ($classes as $class) {
                 $selector = "{$code}_{$class}";
                 $mform->addElement('advcheckbox', $selector, $class, '');
@@ -46,7 +53,11 @@ class enrol_gudatabase_groups_form extends moodleform {
         $mform->addElement('hidden', 'tab');
         $mform->setType('tab', PARAM_ALPHA);
 
-        $this->add_action_buttons();
+        if ($coursedescriptions) {
+            $mform->addElement('html', '<div class="alert alert-danger">' . get_string('savewarning', 'enrol_gudatabase') . '</div>');
+            $this->add_action_buttons();
+        }
+
 
         $this->set_data($instance);
     }

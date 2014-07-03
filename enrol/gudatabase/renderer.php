@@ -1,4 +1,24 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * @package    enrol_gudatabase
+ * @copyright  2013-2014 Howard Miller
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 class enrol_gudatabase_renderer extends plugin_renderer_base {
 
@@ -28,29 +48,42 @@ class enrol_gudatabase_renderer extends plugin_renderer_base {
     }
 
     /**
+     * Get course description for code
+     * @param int $courseid
+     * @param string $code
+     * @return string
+     */
+    public function courseinfo($courseid, $code) {
+        global $DB;
+
+        if ($codeinfo = $DB->get_record('enrol_gudatabase_codes', array('courseid'=>$courseid, 'code'=>$code))) {
+            $courseinfo = "{$codeinfo->subjectname} > {$codeinfo->coursename}";
+        } else {
+            $courseinfo = get_string('nocourseinfo', 'enrol_gudatabase');
+        }
+
+        return $courseinfo;
+    }
+
+    /**
      * Print legacy codes
      */
     public function print_codes($courseid, $codes) {
         global $DB;
 
-        $html = '<div class="alert alert-info">';
+        $html = '';
         if ($codes) {
+            $html .= '<div class="alert alert-info">';
             $html .= "<p><b>" . get_string('legacycodes', 'enrol_gudatabase') . "</b></p>";
             $html .= "<ul>";
             foreach ($codes as $code) {
-                if ($codeinfo = $DB->get_record('enrol_gudatabase_codes', array('courseid'=>$courseid, 'code'=>$code))) {
-                    $courseinfo = "{$codeinfo->subjectname} > {$codeinfo->coursename}";
-                } else {
-                    $courseinfo = get_string('nocourseinfo', 'enrol_gudatabase');
-                }
-	$html .= "<li><b>$code</b>&nbsp;&nbsp;&nbsp; ($courseinfo)</li>";
+                $courseinfo = $this->courseinfo($courseid, $code);
+                $html .= "<li><b>$code</b>&nbsp;&nbsp;&nbsp; ($courseinfo)</li>";
             }
-            $html .= "</ul>";
+            $html .= "</ul></div>";
         } else {
-            $html .= '<p class="alert alert-warning">' . get_string('nolegacycodes', 'enrol_gudatabase') . '</p>';
+            $html .= '<div class="alert alert-warning">' . get_string('nolegacycodes', 'enrol_gudatabase') . '</div>';
         }
-
-        $html .= '</div>';
 
         return $html;
     }

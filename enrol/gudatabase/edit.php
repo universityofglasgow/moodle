@@ -148,14 +148,16 @@ if ($tab=='config') {
 
     // loop through to get current classes
     $codeclasses = array();
+    $coursedescriptions = array();
     foreach ($codes as $code) {
         $classes = $plugin->external_classes($code);
         $codeclasses[$code] = $classes;
+        $coursedescriptions[$code] = $output->courseinfo($course->id, $code);
     }
 
     // form stuff
     $instance->tab = $tab;
-    $gform = new enrol_gudatabase_groups_form(null, array($instance, $codeclasses, $groups));
+    $gform = new enrol_gudatabase_groups_form(null, array($instance, $codeclasses, $coursedescriptions, $groups));
 
     // process form
     if ($gform->is_cancelled()) {
