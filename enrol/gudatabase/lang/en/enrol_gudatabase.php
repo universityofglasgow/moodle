@@ -52,6 +52,7 @@ $string['pluginname_desc'] = 'You can use an external database (of nearly any ki
 $string['savewarning'] = 'Saving this page will update all enrolments and groups for this course. It could take several minutes. Please be patient.';
 $string['settingsclasslist'] = 'Class list table';
 $string['settingsheadercodes'] = 'Remote codes table';
+$string['scheduledname'] = 'Synchronise guenrolments';
 $string['status'] = 'Enable existing enrolments';
 $string['status_desc'] = 'Enable gudatabase method in new courses.';
 $string['status_help'] = 'If disabled all existing gudatabase enrolments are suspended and new users can not enrol.';

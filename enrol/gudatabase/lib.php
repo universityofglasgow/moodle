@@ -213,6 +213,14 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
     }
 
     /**
+     * split code into alpha and numeric bits
+     */
+    private function decode_code($code) {
+        preg_match( '/^([[:alpha:]]+)(.+)/ ', $code, $matches );
+        return array($matches[1], $matches[2]);
+    }
+
+    /**
      * Get list of classes for given code
      * @param string $code
      * @param return array
@@ -229,8 +237,10 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         // get table name from plugin config
         $table = $this->get_config('classlisttable');
 
+        list($subjectcode, $catcode) = $this->decode_code($code);
+
         $sql = "select ClassGroupDesc from $table where ";
-        $sql .= "concat(SubjectCode, CourseCatCode) = '$code' ";
+        $sql .= "SubjectCode = '$subjectcode' and CourseCatCode = '$catcode' ";
         $sql .= "group by ClassGroupDesc";
 
         // Read the data from external db.
@@ -272,8 +282,10 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         // get table name from plugin config
         $table = $this->get_config('classlisttable');
 
+        list($subjectcode, $coursecatcode) = $this->decode_code($code);        
+
         $sql = "select matricno, ClassGroupCode from $table where ";
-        $sql .= "concat(SubjectCode, CourseCatCode) = '$code' ";
+        $sql .= "SubjectCode = '$subjectcode' and CourseCatCode = '$coursecatcode' ";
         $sql .= "and ClassGroupDesc = '$class' ";
 
         // Read the data from external db.
@@ -1052,7 +1064,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
     /**
      * cron service to update course enrolments
      */
-    public function cron() {
+    public function scheduled() {
         global $CFG;
         global $DB;
 
