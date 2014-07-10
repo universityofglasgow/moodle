@@ -17,7 +17,7 @@
 /**
  * This plugin is used to access equella repositories.
  *
- * @since 2.3
+ * @since Moodle 2.3
  * @package    repository_equella
  * @copyright  2012 Dongsheng Cai {@link http://dongsheng.org}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -30,7 +30,7 @@ require_once($CFG->dirroot . '/repository/lib.php');
 /**
  * repository_equella class implements equella_client
  *
- * @since 2.3
+ * @since Moodle 2.3
  * @package    repository_equella
  * @copyright  2012 Dongsheng Cai {@link http://dongsheng.org}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -191,7 +191,7 @@ class repository_equella extends repository {
     }
 
     public function sync_reference(stored_file $file) {
-        global $USER;
+        global $USER, $CFG;
         if ($file->get_referencelastsync() + DAYSECS > time() || !$this->connection_result()) {
             // Synchronise not more often than once a day.
             // if we had several unsuccessfull attempts to connect to server - do not try any more.

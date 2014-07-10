@@ -283,6 +283,38 @@ class behat_general extends behat_base {
     }
 
     /**
+     * Sets the focus and takes away the focus from an element, generating blur JS event.
+     *
+     * @When /^I take focus off "(?P<element_string>(?:[^"]|\\")*)" "(?P<selector_string>[^"]*)"$/
+     * @param string $element Element we look for
+     * @param string $selectortype The type of what we look for
+     */
+    public function i_take_focus_off_field($element, $selectortype) {
+        if (!$this->running_javascript()) {
+            throw new ExpectationException('Can\'t take focus off from "' . $element . '" in non-js mode', $this->getSession());
+        }
+        // Gets the node based on the requested selector type and locator.
+        $node = $this->get_selected_node($selectortype, $element);
+        $this->ensure_node_is_visible($node);
+
+        // Ensure element is focused before taking it off.
+        $node->focus();
+        $node->blur();
+    }
+
+    /**
+     * Clicks the specified element and confirms the expected dialogue.
+     *
+     * @When /^I click on "(?P<element_string>(?:[^"]|\\")*)" "(?P<selector_string>[^"]*)" confirming the dialogue$/
+     * @throws ElementNotFoundException Thrown by behat_base::find
+     * @param string $link
+     */
+    public function i_click_on_confirming_the_dialogue($element, $selectortype) {
+        $this->i_click_on($element, $selectortype);
+        $this->accept_currently_displayed_alert_dialog();
+    }
+
+    /**
      * Click on the element of the specified type which is located inside the second element.
      *
      * @When /^I click on "(?P<element_string>(?:[^"]|\\")*)" "(?P<selector_string>[^"]*)" in the "(?P<element_container_string>(?:[^"]|\\")*)" "(?P<text_selector_string>[^"]*)"$/

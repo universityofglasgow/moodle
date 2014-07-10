@@ -84,6 +84,13 @@ function quiz_remove_slot($quiz, $slotnumber) {
         $DB->set_field('quiz_slots', 'slot', $i - 1,
                 array('quizid' => $quiz->id, 'slot' => $i));
     }
+
+    $qtype = $DB->get_field('question', 'qtype', array('id' => $slot->questionid));
+    if ($qtype === 'random') {
+        // This function automatically checks if the question is in use, and won't delete if it is.
+        question_delete_question($slot->questionid);
+    }
+
     $trans->allow_commit();
 }
 
@@ -213,7 +220,7 @@ function quiz_add_random_questions($quiz, $addonpage, $categoryid, $number,
                         SELECT *
                           FROM {quiz_slots}
                          WHERE questionid = q.id)
-            ORDER BY id", array($category->id, $includesubcategories))) {
+            ORDER BY id", array($category->id, ($includesubcategories ? '1' : '0')))) {
         // Take as many of these as needed.
         while (($existingquestion = array_shift($existingquestions)) && $number > 0) {
             quiz_add_quiz_question($existingquestion->id, $quiz, $addonpage);
@@ -228,7 +235,7 @@ function quiz_add_random_questions($quiz, $addonpage, $categoryid, $number,
     // More random questions are needed, create them.
     for ($i = 0; $i < $number; $i += 1) {
         $form = new stdClass();
-        $form->questiontext = array('text' => $includesubcategories, 'format' => 0);
+        $form->questiontext = array('text' => ($includesubcategories ? '1' : '0'), 'format' => 0);
         $form->category = $category->id . ',' . $category->contextid;
         $form->defaultmark = 1;
         $form->hidden = 1;
@@ -817,7 +824,7 @@ function quiz_print_singlequestion($question, $returnurl, $quiz) {
  * @param object $quiz The quiz in the context of which the question is being displayed
  * @param bool $quiz_qbanktool Indicate to this function if the question bank window open
  */
-function quiz_print_randomquestion(&$question, &$pageurl, &$quiz, $quiz_qbanktool) {
+function quiz_print_randomquestion($question, $pageurl, $quiz, $quiz_qbanktool) {
     global $DB, $OUTPUT;
     echo '<div class="quiz_randomquestion">';
 
@@ -875,8 +882,8 @@ function quiz_print_randomquestion(&$question, &$pageurl, &$quiz, $quiz_qbanktoo
 
         // Then list them.
         echo '<ul>';
-        foreach ($questionstoshow as $question) {
-            echo '<li>' . quiz_question_tostring($question, true) . '</li>';
+        foreach ($questionstoshow as $subquestion) {
+            echo '<li>' . quiz_question_tostring($subquestion, true) . '</li>';
         }
 
         // Finally display the total number.
@@ -1214,25 +1221,10 @@ class quiz_question_bank_view extends question_bank_view {
         echo $OUTPUT->box_end();
     }
 
-    /**
-     * Display the form with options for which questions are displayed and how they are displayed.
-     * This differs from parent display_options_form only in that it does not have the checkbox to show the question text.
-     * @param bool $showquestiontext Display the text of the question within the list. (Currently ignored)
-     */
-    protected function display_options_form($showquestiontext) {
-        global $PAGE;
-        echo html_writer::start_tag('form', array('method' => 'get',
-                'action' => new moodle_url('/mod/quiz/edit.php'), 'id' => 'displayoptions'));
-        echo html_writer::start_div();
-        foreach ($this->searchconditions as $searchcondition) {
-            echo $searchcondition->display_options($this);
-        }
-        $this->display_advanced_search_form();
-        $go = html_writer::empty_tag('input', array('type' => 'submit', 'value' => get_string('go')));
-        echo html_writer::tag('noscript', html_writer::tag('div', $go), array('class' => 'inline'));
-        echo html_writer::end_div();
-        echo html_writer::end_tag('form');
-        $PAGE->requires->yui_module('moodle-question-searchform', 'M.question.searchform.init');
+    protected function display_options_form($showquestiontext, $scriptpath = '/mod/quiz/edit.php',
+            $showtextoption = false) {
+        // Overridden just to change the default values of the arguments.
+        parent::display_options_form($showquestiontext, $scriptpath, $showtextoption);
     }
 
     protected function print_category_info($category) {

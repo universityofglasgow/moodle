@@ -2174,7 +2174,7 @@ function userdate($date, $format = '', $timezone = 99, $fixday = true, $fixhour 
  * @param string $format strftime format.
  * @param int|float $tz the numerical timezone, typically returned by {@link get_user_timezone_offset()}.
  * @return string the formatted date/time.
- * @since 2.3.3
+ * @since Moodle 2.3.3
  */
 function date_format_string($date, $format, $tz = 99) {
     global $CFG;
@@ -4029,7 +4029,7 @@ function create_user_record($username, $password, $auth = 'manual') {
     $newuser->timemodified = $newuser->timecreated;
     $newuser->mnethostid = $CFG->mnet_localhost_id;
 
-    $newuser->id = user_create_user($newuser, false);
+    $newuser->id = user_create_user($newuser, false, false);
 
     // Save user profile data.
     profile_save_data($newuser);
@@ -4040,6 +4040,9 @@ function create_user_record($username, $password, $auth = 'manual') {
     }
     // Set the password.
     update_internal_user_password($user, $password);
+
+    // Trigger event.
+    \core\event\user_created::create_from_userid($newuser->id)->trigger();
 
     return $user;
 }
@@ -4111,10 +4114,13 @@ function update_user_record_by_id($id) {
         if ($newuser) {
             $newuser['id'] = $oldinfo->id;
             $newuser['timemodified'] = time();
-            user_update_user((object) $newuser, false);
+            user_update_user((object) $newuser, false, false);
 
             // Save user profile data.
             profile_save_data((object) $newuser);
+
+            // Trigger event.
+            \core\event\user_updated::create_from_userid($newuser['id'])->trigger();
         }
     }
 
@@ -4273,7 +4279,8 @@ function delete_user(stdClass $user) {
     $updateuser->picture      = 0;
     $updateuser->timemodified = time();
 
-    user_update_user($updateuser, false);
+    // Don't trigger update event, as user is being deleted.
+    user_update_user($updateuser, false, false);
 
     // Now do a final accesslib cleanup - removes all role assignments in user context and context itself.
     context_helper::delete_instance(CONTEXT_USER, $user->id);
@@ -4710,9 +4717,13 @@ function hash_internal_user_password($password, $fasthash = false) {
  *
  * @param stdClass $user User object (password property may be updated).
  * @param string $password Plain text password.
+ * @param bool $fasthash If true, use a low cost factor when generating the hash
+ *                       This is much faster to generate but makes the hash
+ *                       less secure. It is used when lots of hashes need to
+ *                       be generated quickly.
  * @return bool Always returns true.
  */
-function update_internal_user_password($user, $password) {
+function update_internal_user_password($user, $password, $fasthash = false) {
     global $CFG, $DB;
     require_once($CFG->libdir.'/password_compat/lib/password.php');
 
@@ -4721,25 +4732,26 @@ function update_internal_user_password($user, $password) {
     if ($authplugin->prevent_local_passwords()) {
         $hashedpassword = AUTH_PASSWORD_NOT_CACHED;
     } else {
-        $hashedpassword = hash_internal_user_password($password);
+        $hashedpassword = hash_internal_user_password($password, $fasthash);
     }
 
     // If verification fails then it means the password has changed.
-    $passwordchanged = !password_verify($password, $user->password);
-    $algorithmchanged = password_needs_rehash($user->password, PASSWORD_DEFAULT);
+    if (isset($user->password)) {
+        // While creating new user, password in unset in $user object, to avoid
+        // saving it with user_create()
+        $passwordchanged = !password_verify($password, $user->password);
+        $algorithmchanged = password_needs_rehash($user->password, PASSWORD_DEFAULT);
+    } else {
+        $passwordchanged = true;
+    }
 
     if ($passwordchanged || $algorithmchanged) {
         $DB->set_field('user', 'password',  $hashedpassword, array('id' => $user->id));
         $user->password = $hashedpassword;
 
         // Trigger event.
-        $event = \core\event\user_updated::create(array(
-            'objectid' => $user->id,
-            'relateduserid' => $user->id,
-            'context' => context_user::instance($user->id)
-        ));
-        $event->add_record_snapshot('user', $user);
-        $event->trigger();
+        $user = $DB->get_record('user', array('id' => $user->id));
+        \core\event\user_password_updated::create_from_user($user)->trigger();
     }
 
     return true;
@@ -5166,7 +5178,6 @@ function remove_course_contents($courseid, $showfeedback = true, array $options 
     // This array stores the tables that need to be cleared, as
     // table_name => column_name that contains the course id.
     $tablestoclear = array(
-        'log' => 'course',               // Course logs (NOTE: this might be changed in the future).
         'backup_courses' => 'courseid',  // Scheduled backup stuff.
         'user_lastaccess' => 'courseid', // User access info.
     );
@@ -5313,11 +5324,6 @@ function reset_course_userdata($data) {
         $DB->execute($updatesql, array($data->timeshift, $data->courseid));
 
         $status[] = array('component' => $componentstr, 'item' => get_string('datechanged'), 'error' => false);
-    }
-
-    if (!empty($data->reset_logs)) {
-        $DB->delete_records('log', array('course' => $data->courseid));
-        $status[] = array('component' => $componentstr, 'item' => get_string('deletelogs'), 'error' => false);
     }
 
     if (!empty($data->reset_events)) {
@@ -5796,6 +5802,14 @@ function email_to_user($user, $from, $subject, $messagetext, $messagehtml = '', 
         $mail->Sender = $supportuser->email;
     }
 
+    if (!empty($CFG->emailonlyfromnoreplyaddress)) {
+        $usetrueaddress = false;
+        if (empty($replyto) && $from->maildisplay) {
+            $replyto = $from->email;
+            $replytoname = fullname($from);
+        }
+    }
+
     if (is_string($from)) { // So we can pass whatever we want if there is need.
         $mail->From     = $CFG->noreplyaddress;
         $mail->FromName = $from;
@@ -5967,18 +5981,7 @@ function setnew_password_and_mail($user, $fasthash = false) {
 
     $newpassword = generate_password();
 
-    $hashedpassword = hash_internal_user_password($newpassword, $fasthash);
-    $DB->set_field('user', 'password', $hashedpassword, array('id' => $user->id));
-    $user->password = $hashedpassword;
-
-    // Trigger event.
-    $event = \core\event\user_updated::create(array(
-        'objectid' => $user->id,
-        'relateduserid' => $user->id,
-        'context' => context_user::instance($user->id)
-    ));
-    $event->add_record_snapshot('user', $user);
-    $event->trigger();
+    update_internal_user_password($user, $newpassword, $fasthash);
 
     $a = new stdClass();
     $a->firstname   = fullname($user, true);

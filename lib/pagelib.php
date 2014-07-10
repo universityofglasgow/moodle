@@ -642,7 +642,7 @@ class moodle_page {
     /**
      * Returns an array of minipulations or false if there are none to make.
      *
-     * @since 2.5.1 2.6
+     * @since Moodle 2.5.1 2.6
      * @return bool|array
      */
     protected function magic_get_blockmanipulations() {
@@ -965,7 +965,11 @@ class moodle_page {
             } else {
                 // We do not want devs to do weird switching of context levels on the fly because we might have used
                 // the context already such as in text filter in page title.
-                debugging("Coding problem: unsupported modification of PAGE->context from {$current} to {$context->contextlevel}");
+                // This is explicitly allowed for webservices though which may
+                // call "external_api::validate_context on many contexts in a single request.
+                if (!WS_SERVER) {
+                    debugging("Coding problem: unsupported modification of PAGE->context from {$current} to {$context->contextlevel}");
+                }
             }
         }
 
@@ -1906,7 +1910,7 @@ class moodle_page {
     /**
      * Returns the block region having made any required theme manipulations.
      *
-     * @since 2.5.1 2.6
+     * @since Moodle 2.5.1 2.6
      * @param string $region
      * @return string
      */
