@@ -36,6 +36,9 @@ class report_anonymous_renderer extends plugin_renderer_base {
             $url->params(array('mod' => 'assign', 'assign' => $assignment->id));
             echo "<li><a href=\"$url\">";
             echo $assignment->name;
+            if ($assignment->blindmarking) {
+                echo ' (' . get_string('anonymous', 'report_anonymous') . ')';
+            }
             echo "</a></li>";
         }
         echo "</ul>";

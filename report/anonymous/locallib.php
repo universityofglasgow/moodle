@@ -33,26 +33,8 @@ class report_anonymous {
     public static function get_assignments($id) {
         global $DB;
 
-        $assignments = $DB->get_records('assign', array('blindmarking' => 1, 'course' => $id));
+        $assignments = $DB->get_records('assign', array('course' => $id));
         return $assignments;
-    }
-
-    /**
-     * Get anonymous turnitin assignments and the
-     * parts that go with them
-     * @param int $id course id
-     * @return array
-     */
-    public static function get_tts($id) {
-        global $DB;
-
-        $tts = $DB->get_records('turnitintool', array('anon' => 1, 'course' => $id));
-        foreach ($tts as $id => $tt) {
-            $parts = $DB->get_records('turnitintool_parts', array('turnitintoolid' => $id, 'deleted' => 0));
-            $tts[$id]->parts = $parts;
-        }
-
-        return $tts;
     }
 
     /**
@@ -62,21 +44,10 @@ class report_anonymous {
      * @param int $assignid assignment id
      * @param int $partid turnitintool part id
      * @param array $assignments list of valid assignments
-     * @param array $tts list of valid tts
      * @return boolean true if ok
      */
-    public static function allowed_to_view($mod, $assignid, $partid, $assignments, $tts) {
-        if ($mod == 'assign') {
-            return array_key_exists($assignid, $assignments);
-        } else if ($mod == 'turnitintool') {
-            foreach ($tts as $tt) {
-                if (array_key_exists($partid, $tt->parts)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-        return false;
+    public static function allowed_to_view($mod, $assignid, $partid, $assignments) {
+        return array_key_exists($assignid, $assignments);
     }
 
     /**
@@ -128,15 +99,6 @@ class report_anonymous {
     }
 
     /**
-     * Get the list of potential users for the turnitintool activity
-     * @param object $context current role context
-     * @return array list of users
-     */
-    public static function get_turnitintool_users($context) {
-        return get_enrolled_users($context, "mod/turnitintool:submit");
-    }
-
-    /**
      * get list of users who have not submitted
      * @param int $ttid turnitintool id
      * @param int $partid part
@@ -157,7 +119,7 @@ class report_anonymous {
         return $notsubusers;
     }
 
-    public static function export($users, $reveal, $filename, $activityname, $partname) {
+    public static function export($users, $reveal, $filename, $activityname) {
         global $CFG;
         require_once($CFG->dirroot.'/lib/excellib.class.php');
 
@@ -168,18 +130,16 @@ class report_anonymous {
         $myxls = $workbook->add_worksheet(get_string('workbook', 'report_anonymous'));
 
         // Titles.
-        $myxls->write_string(0, 0, get_string('turnitinname', 'report_anonymous'));
+        $myxls->write_string(0, 0, get_string('assignmentname', 'report_anonymous'));
         $myxls->write_string(0, 1, $activityname);
-        $myxls->write_string(1, 0, get_string('partname', 'report_anonymous'));
-        $myxls->write_string(1, 1, $partname);
 
         // Headers.
         $myxls->write_string(3, 0, '#');
         $myxls->write_string(3, 1, get_string('idnumber'));
         $myxls->write_string(3, 2, get_string('email'));
         if ($reveal) {
-            $myxls->write_string(3, 4, get_string('username'));
-            $myxls->write_string(3, 5, get_string('fullname'));
+            $myxls->write_string(3, 3, get_string('username'));
+            $myxls->write_string(3, 4, get_string('fullname'));
         }
 
         // Add some data.

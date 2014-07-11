@@ -22,18 +22,20 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+$string['anonymous'] = 'Anonymous';
 $string['anonymous:export'] = 'Export user lists to Excel';
 $string['anonymous:view'] = 'View course anonymous submission report';
 $string['anonymous:shownames'] = 'All (non-anonymised) view of submitters';
 $string['anonymousassignments'] = 'Anonymous Assignments';
 $string['anonymoustts'] = 'Anonymous Turnitintool submissions';
+$string['assignmentname'] = 'Assignment name';
 $string['assignnotsubmit'] = 'Users who have not submitted to assignment "{$a}"';
 $string['asterisk'] = 'these users have no id number in their profile.';
 $string['backtolist'] = 'Back to list of activities';
 $string['clickhidenames'] = 'Click to <b>hide</b> names';
 $string['clickshownames'] = 'Click to <b>reveal</b> names';
 $string['export'] = 'Export to Excel';
-$string['help'] = 'List of user ids who have not submitted to the chosen assignment or Turnitin part.';
+$string['help'] = 'List of user ids who have not submitted to the chosen Assignment.';
 $string['noassignments'] = 'There are no anonymous assignments in this course';
 $string['nocapability'] = 'You do not have the required capabiltities to view this report';
 $string['notallowed'] = 'You do not have permission to view the selected activity';
