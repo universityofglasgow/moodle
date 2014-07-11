@@ -1,3 +1,17 @@
+Changes in version 2.3.1 (20140707) - San Fermín release!
+---------------------------------------------------------
+- MDLSITE-2800: Upgrade to CS 1.5.3.
+    - Exclude the DefaultTimezoneRequired sniff properly.
+    - Upgrade the PHPCompatibility standard to current version.
+- CONTRIB-4146: Forbid the use of some functions/operators.
+    - extract().
+    - eval() - no matter we are aware of few places where they are ok to be used.
+    - goto and goto labels.
+    - preg_replace() with /e modifier.
+    - backticks shell execution.
+    - backticks within strings.
+- MDLSITE-3150: Forbid use of AS keyword for table aliasing.
+
 Changes in version 2.3.0 (20140217)
 ------------------------------------
 - CONTRIB-4876: Upgrade to CS 1.5.2.
