@@ -78,7 +78,7 @@ function theme_elegance_get_nav_links($course, $sections, $sectionno) {
   return $links;
 }
 
-function bootstrap3_grid($hassidepost) {
+function theme_elegance_bootstrap3_grid($hassidepost) {
 
         $regions = array('content' => 'col-sm-8 col-md-9');
         $regions['pre'] = 'empty';
@@ -292,10 +292,11 @@ function theme_elegance_process_css($css, $theme) {
  * @return string The parsed CSS
  */
 function theme_elegance_set_logo($css, $logo) {
+    global $OUTPUT;
     $tag = '[[setting:logo]]';
     $replacement = $logo;
     if (is_null($replacement)) {
-        $replacement = '';
+        $replacement = $OUTPUT->pix_url('bg/logo', 'theme');
     }
 
     $css = str_replace($tag, $replacement, $css);
@@ -493,7 +494,7 @@ function theme_elegance_set_bodybg($css, $bodybg, $setting) {
     $replacement = $bodybg;
     if (is_null($replacement)) {
         // Get default image from themes 'bg' folder of the name in $setting.
-        $replacement = $OUTPUT->pix_url('', 'theme');
+        $replacement = $OUTPUT->pix_url('bg/body', 'theme');
     }
     $css = str_replace($tag, $replacement, $css);
     return $css;
@@ -665,19 +666,10 @@ function theme_elegance_set_videowidth($css, $videowidth) {
 
 function theme_elegance_page_init(moodle_page $page) {
     $page->requires->jquery();
-    $page->requires->jquery_plugin('bootstrap', 'theme_elegance');
     $page->requires->jquery_plugin('fitvids', 'theme_elegance');
     $page->requires->jquery_plugin('nprogress', 'theme_elegance');
     $page->requires->jquery_plugin('unslider', 'theme_elegance');
     $page->requires->jquery_plugin('eventswipe', 'theme_elegance');
-    $page->requires->jquery_plugin('alert', 'theme_elegance');
     $page->requires->jquery_plugin('backstretch', 'theme_elegance');
-    $page->requires->jquery_plugin('carousel', 'theme_elegance');
-    $page->requires->jquery_plugin('collapse', 'theme_elegance');
-    $page->requires->jquery_plugin('modal', 'theme_elegance');
-    $page->requires->jquery_plugin('scrollspy', 'theme_elegance');
-    $page->requires->jquery_plugin('tab', 'theme_elegance');
-    $page->requires->jquery_plugin('tooltip', 'theme_elegance');
-    $page->requires->jquery_plugin('transition', 'theme_elegance');
     $page->requires->jquery_plugin('modernizr', 'theme_elegance');
 }

@@ -93,7 +93,7 @@ if ($show_instructions) {
     $columns = 'onecolumn';
 }
 
-$regions = bootstrap3_grid($hassidepost);
+$regions = theme_elegance_bootstrap3_grid($hassidepost);
 $PAGE->set_popup_notification_allowed(false);
 $PAGE->requires->jquery();
 
@@ -301,12 +301,8 @@ echo $OUTPUT->doctype() ?>
 
                 <form action="<?php echo $CFG->httpswwwroot; ?>/login/index.php" method="post" id="login" <?php echo $autocomplete; ?> >
                     <div class="inputarea">
-                        <div>
-                            <input type="text" name="username" placeholder="<?php echo get_string('username'); ?>" autocomplete="off"/>
-                        </div>
-                        <div>
-                            <input type="password" name="password" id="password" placeholder="<?php echo get_string('password'); ?>"  value="" <?php echo $autocomplete; ?> />
-                        </div>
+                        <input type="text" name="username" placeholder="<?php echo get_string('username'); ?>" autocomplete="off"/>
+                        <input type="password" name="password" id="password" placeholder="<?php echo get_string('password'); ?>"  value="" <?php echo $autocomplete; ?> />
                         <?php
                         if (!right_to_left()) { ?>
                             <button class="icon-submit fa fa-angle-right"></button>
@@ -389,7 +385,7 @@ echo $OUTPUT->doctype() ?>
     </div>
 </div>
 
-<footer id="page-footer" class="footer-fixed-bottom hidden-sm hidden-xs">
+<footer id="page-footer" class="hidden-sm hidden-xs">
 	<?php require_once(dirname(__FILE__).'/includes/footer.php'); ?>
 </footer>
 

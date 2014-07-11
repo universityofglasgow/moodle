@@ -29,26 +29,7 @@ $string['choosereadme'] = '
 <div class="well">
 <h2>Elegance Theme</h2>
 <p><img class=img-polaroid src="elegance/pix/screenshot.jpg" /></p>
-</div>
-<div class="well">
-<h3>About</h3>
 <p>Elegance is a 2 column, clean and highly customisable theme built on the Bootstrap 3 framework.</p>
-<h3>Theme Credits</h3>
-<p>Author: Julian (Moodleman) Ridden<br>
-Contact: julian@moodleman.net<br>
-Website: <a href="http://moodleman.net">www.moodleman.net</a>
-</p>
-<p>Supportng Author: Bas Brands (for the Bootstrap 3 work)<br>
-Contact: bas@sonsbeekmedia.nl<br>
-Website: <a href="http://www.basbrands.nl">www.basbrands.nl</a>
-</p>
-<h3>Report a bug:</h3>
-<p><a href="http://tracker.moodle.org">http://tracker.moodle.org</a></p>
-<h3>Donate if you can</h3>
-<p>Elegance, and all my themes, will always be free to the Moodle community. However the time it is taking to ceate and maintain these is inscreasing with every release. If you like this theme and the support I provide in the forums I would like to encourage you to donate with the button below. This is in no way required to use this theme.</p>
-
-<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=KNV2ZPHCYTB8E" class="btn btn-lrg btn-info">Donate AUD$15</a>
-
 </div></div>';
 
 $string['pluginname'] = 'Elegance';
@@ -65,30 +46,30 @@ $string['customcss'] = 'Custom CSS';
 $string['customcssdesc'] = 'Whatever CSS rules you add to this textarea will be reflected in every page, making for easier customization of this theme.';
 
 $string['frontpagecontent'] = 'Frontpage Content';
-$string['frontpagecontentdesc'] = 'This location appears as a higlight under the slideshw on the frontpage';
+$string['frontpagecontentdesc'] = 'This location appears as a highlight under the slideshow on the frontpage.';
 
 $string['footnote'] = 'Footnote';
 $string['footnotedesc'] = 'Whatever you add to this textarea will be displayed in the footer throughout your Moodle site.';
 
-$string['invert'] = 'Invert navbar';
+$string['invert'] = 'Invert Navbar';
 $string['invertdesc'] = 'Swaps text and background for the navbar at the top of the page between black and white.';
 
-$string['fluidwidth'] = 'Fluid width theme';
-$string['fluidwidth_desc'] = 'Enable this option to allow using your full screen';
+$string['fluidwidth'] = 'Fluid Width Theme';
+$string['fluidwidthdesc'] = 'Enable this option to allow using your full screen.';
 
 $string['fonticons'] = 'Use Icon Font';
-$string['fonticonsdesc'] = 'Enable this option to use the Glyphicon Icon Font';
+$string['fonticonsdesc'] = 'Enable this option to use the Glyphicon icon font.';
 
-$string['transparency'] = 'Content trasparency';
-$string['transparencydesc'] = 'Want to see more of your background show through? This setting changes the transparency of Moodle content and blocks';
+$string['transparency'] = 'Content Transparency';
+$string['transparencydesc'] = 'Want to see more of your background show through? This setting changes the transparency of Moodle content and blocks.';
 
 $string['region-side-post'] = 'Right';
 $string['region-side-pre'] = 'Left';
 
-$string['showoldmessages'] = 'Show old messages';
-$string['showoldmessagesdesc'] = 'Show old messages on the message menu';
+$string['showoldmessages'] = 'Show Old Messages';
+$string['showoldmessagesdesc'] = 'Show old messages on the message menu.';
 
-$string['visibleadminonly'] = 'Blocks moved into the area below will only be seen by admins';
+$string['visibleadminonly'] = 'Blocks moved into the area below will only be seen by admins.';
 
 $string['backtotop'] = 'Back to top';
 $string['nextsection'] = 'Next Section';
@@ -100,12 +81,9 @@ $string['copyrightdesc'] = 'The name of your organisation.';
 /* General */
 $string['geneicsettings'] = 'General Settings';
 
-$string['tiles'] = 'Tile Course resources';
-$string['tilesdesc'] = 'Displayes resources and activities as tiles in a course';
-
 $string['videowidth'] = 'Set Max Video Width';
-$string['videowidthdesc'] = 'Tis theme dynamically sizes embedded video. By default they go 100% width. You can override this here.<br>
-<strong>Important Note:</strong> Remember to add a % or px after your number or it won\'t work';
+$string['videowidthdesc'] = 'This theme dynamically sizes embedded video. By default they go 100% width. You can override this here.<br>
+<strong>Important Note:</strong> Remember to add a % or px after your number or it won\'t work.';
 
 $string['alwaysdisplay'] = 'Always Show';
 $string['displaybeforelogin'] = 'Show before login only';
@@ -115,38 +93,38 @@ $string['dontdisplay'] = 'Never Show';
 /* User Menu */
 
 $string['usermenusettings'] = 'User Menu';
-$string['usermenusettingssub'] = 'Options for logged in users';
-$string['usermenusettingsdesc'] = 'Determine which links show in the logged in user menu';
+$string['usermenusettingssub'] = 'Options for logged in users.';
+$string['usermenusettingsdesc'] = 'Determine which links show in the logged in user menu.';
 
 $string['enablemy'] = 'My Dashboard';
-$string['enablemydesc'] = 'Display a link to the MyMoodle page';
+$string['enablemydesc'] = 'Display a link to the My Moodle page.';
 
 $string['enableprofile'] = 'User Profile';
-$string['enableprofiledesc'] = 'Display a link to the users profile';
+$string['enableprofiledesc'] = 'Display a link to the users profile.';
 
 $string['enableeditprofile'] = 'Edit Profile';
-$string['enableeditprofiledesc'] = 'Display a link to edit the users profile';
+$string['enableeditprofiledesc'] = 'Display a link to edit the users profile.';
 
 $string['enablebadges'] = 'Badges';
-$string['enablebadgesdesc'] = 'Display a link to the users badges';
+$string['enablebadgesdesc'] = 'Display a link to the users badges.';
 
 $string['enablecalendar'] = 'User Calendar';
-$string['enablecalendardesc'] = 'Display a link to the users calendar';
+$string['enablecalendardesc'] = 'Display a link to the users calendar.';
 
 $string['enableprivatefiles'] = 'Private Files';
-$string['enableprivatefilesdesc'] = 'Display a link to the users private files';
+$string['enableprivatefilesdesc'] = 'Display a link to the users private files.';
 
-$string['usermenulinks'] = '# of Custom Links';
+$string['usermenulinks'] = 'Number of Custom Links';
 $string['usermenulinksdesc'] = 'Set how many extra links you would like to add for your users.<br>You will need to save the settings for the new link options to appear.';
 
 $string['customlinkindicator'] = 'Custom Link Number ';
-$string['customlinkindicatordesc'] = 'Set up this custom link';
+$string['customlinkindicatordesc'] = 'Set up this custom link.';
 
 $string['customlinkicon'] = 'Link Icon';
-$string['customlinkicondesc'] = 'Name of the icon you wish to use next to your link.<br> List is <a href="http://fortawesome.github.io/Font-Awesome/cheatsheet/" target="_new">here</a>.  Just enter what is after the "fa-".';
+$string['customlinkicondesc'] = 'Name of the icon you wish to use next to your link.<br> List is <a href="http://fontawesome.github.io/Font-Awesome/cheatsheet/" target="_new">here</a>.  Just enter what is after the "fa-".';
 
 $string['customlinkname'] = 'Link Name';
-$string['customlinknamedesc'] = 'Name shown to users for your link';
+$string['customlinknamedesc'] = 'Name shown to users for your link.';
 
 $string['customlinkurl'] = 'Link Destination URL';
 $string['customlinkurldesc'] = 'The full or relative path for your destination URL.';
@@ -155,7 +133,7 @@ $string['customlinkurldesc'] = 'The full or relative path for your destination U
 /* Colors and Logos */
 
 $string['colorsettings'] = 'Logos & Colours';
-$string['colorsettingssub'] = 'Change your look and feel';
+$string['colorsettingssub'] = 'Change your look and feel.';
 $string['colorsettingsdesc'] = 'Upload your logos and change the theme colours with these settings.';
 
 $string['logo'] = 'Logo';
@@ -163,19 +141,19 @@ $string['logodesc'] = 'Please upload your custom logo here if you want to add it
 As space in the navbar is limited, your logo should be no more than 30px high.';
 
 $string['headerbg'] = 'Header Background';
-$string['headerbgdesc'] = 'If you want to replace the standard background you can upload your own here.<br>
+$string['headerbgdesc'] = 'If you want to replace the default background you can upload your own here.<br>
 Recomended size is 110px high by 1600 wide. The image will tile if smaller.<br>
 <strong>Cool Tip</strong>: If your image uses transparency the theme colour will show through.';
 
 $string['bodybg'] = 'Background Image';
-$string['bodybgdesc'] = 'If you want to replace the standard background you can upload your own here.<br>
+$string['bodybgdesc'] = 'If you want to replace the default background you can upload your own here.<br>
 <strong>Cool Tip</strong>: You can use this to show through Moodle content using the transparency option below.';
 
 $string['bodycolor'] = 'Background Colour';
-$string['bodycolordesc'] = 'If no image is uploaded Moodle will then default to this colour';
+$string['bodycolordesc'] = 'If no image is uploaded Moodle will then default to this colour.';
 
 $string['themecolor'] = 'Theme Colour';
-$string['themecolordesc'] = 'Set your theme "highlght" colour. This is also used for links.';
+$string['themecolordesc'] = 'Set your theme "highlight" colour. This is also used for links.';
 
 $string['fontcolor'] = 'Font Colour';
 $string['fontcolordesc'] = 'Set the main font colour used throughout the site.';
@@ -186,37 +164,37 @@ $string['headingcolordesc'] = 'Set the colour used for the majority of Headings 
 /* Banners */
 
 $string['bannersettings'] = 'Slideshow Settings';
-$string['bannersettingssub'] = 'These settings control the slideshow that appears on the Moodle frontpage';
-$string['bannersettingsdesc'] = 'Enable and determine settings for each slide below';
+$string['bannersettingssub'] = 'These settings control the slideshow that appears on the Moodle Frontpage.';
+$string['bannersettingsdesc'] = 'Enable and determine settings for each slide below.';
 
 
 $string['bannerindicator'] = 'Slide Number ';
-$string['bannerindicatordesc'] = 'Set up this slide';
+$string['bannerindicatordesc'] = 'Set up this slide.';
 
 $string['slidespeed'] = 'Slide Duration ';
-$string['slidespeeddesc'] = 'Set how long the slide appears in milliseconds';
+$string['slidespeeddesc'] = 'Set how long the slide appears in milliseconds.';
 
 
 $string['slidenumber'] = 'Number of slides ';
-$string['slidenumberdesc'] = 'Number of slide options will not change until you hit save after changing this number';
+$string['slidenumberdesc'] = 'Number of slide options will not change until you hit save after changing this number.';
 
 $string['enablebanner'] = 'Enable this Slide';
-$string['enablebannerdesc'] = 'Will you be using this slide';
+$string['enablebannerdesc'] = 'Will you be using this slide?';
 
 $string['bannertitle'] = 'Slide Title';
-$string['bannertitledesc'] = 'Name of this slide';
+$string['bannertitledesc'] = 'Name of this slide.';
 
 $string['bannertext'] = 'Slide Text';
-$string['bannertextdesc'] = 'Text to display on the slide';
+$string['bannertextdesc'] = 'Text to display on the slide.';
 
 $string['bannerlinktext'] = 'URL Name';
-$string['bannerlinktextdesc'] = 'Text to display when showing link';
+$string['bannerlinktextdesc'] = 'Text to display when showing link.';
 
 $string['bannerlinkurl'] = 'URL Address';
-$string['bannerlinkurldesc'] = 'Address slide links to';
+$string['bannerlinkurldesc'] = 'Address slide links to.';
 
 $string['bannerimage'] = 'Slide Image';
-$string['bannerimagedesc'] = 'Large image to go behind the slide text';
+$string['bannerimagedesc'] = 'Large image to go behind the slide text.';
 
 $string['bannercolor'] = 'Slide Colour';
 $string['bannercolordesc'] = 'Don\'t want to use an image? Specify a background colour instead';
@@ -227,27 +205,27 @@ $string['loginsettingssub'] = 'Custom Login Screen Settings';
 $string['loginsettingsdesc'] = 'The custom version has a background slideshow you can customise images for as well as a cleaner look.';
 
 $string['enablecustomlogin'] = 'Use Custom Login';
-$string['enablecustomlogindesc'] = 'When enabled this will use the theme augmented version of the login screen. Removing the tick wil revert to the Moodle default version.<br>The augmented version allows you to upload backgrund slides to really add pizzaz to your page design.';
+$string['enablecustomlogindesc'] = 'When enabled this will use the theme augmented version of the login screen. Removing the tick will revert to the Moodle default version.<br>The augmented version allows you to upload background images to really add pizzaz to your page design.';
 
 $string['loginbgumber'] = 'Background Number';
-$string['loginbgumberdesc'] = 'How many backgrounds should revolve when the login page loads';
+$string['loginbgumberdesc'] = 'How many backgrounds should revolve when the login page loads?';
 
 $string['loginimage'] = 'Background Image';
-$string['loginimagedesc'] = 'The ideal size for background images is 1200x800 pixels';
+$string['loginimagedesc'] = 'The ideal size for background images is 1200x800 pixels.';
 
 /* Marketing Spots */
 $string['marketingheading'] = 'Marketing Spots';
 $string['marketinginfodesc'] = 'Enter the settings for your marketing spot.';
-$string['marketingheadingsub'] = 'Three locations on the front page to add information and links';
+$string['marketingheadingsub'] = 'Three locations on the front page to add information and links.';
 $string['marketingheight'] = 'Height of Marketing Images';
-$string['marketingheightdesc'] = 'If you want to display images in the Marketing boxes you can specify their hight here.';
+$string['marketingheightdesc'] = 'If you want to display images in the Marketing boxes you can specify their height here.';
 $string['marketingdesc'] = 'This theme provides the option of enabling three "marketing" or "ad" spots just under the slideshow.  These allow you to easily identify core information to your users and provide direct links.';
 
 $string['togglemarketing'] = 'Marketing Spot display';
 $string['togglemarketingdesc'] = 'Choose if you wish to hide or show the three Marketing Spots.';
 
 $string['marketingtitleicon'] = 'Heading Icon';
-$string['marketingtitleicondesc'] = 'Name of the icon you wish to use in the heading for the marketing spots. List is <a href="http://fortawesome.github.io/Font-Awesome/cheatsheet/" target="_new">here</a>.  Just enter what is after the "fa-".';
+$string['marketingtitleicondesc'] = 'Name of the icon you wish to use in the heading for the marketing spots. List is <a href="http://fontawesome.github.io/Font-Awesome/cheatsheet/" target="_new">here</a>.  Just enter what is after the "fa-".';
 
 
 $string['marketing1'] = 'Marketing Spot One';
@@ -256,11 +234,11 @@ $string['marketing3'] = 'Marketing Spot Three';
 $string['marketing4'] = 'Marketing Spot Four';
 
 $string['marketingtitle'] = 'Title';
-$string['marketingtitledesc'] = 'Title to show in this marketing spot';
+$string['marketingtitledesc'] = 'Title to show in this marketing spot.';
 $string['marketingicon'] = 'Icon';
-$string['marketingicondesc'] = 'Name of the icon you wish to use. List is <a href="http://fortawesome.github.io/Font-Awesome/cheatsheet/" target="_new">here</a>.  Just enter what is after the "fa-".';
+$string['marketingicondesc'] = 'Name of the icon you wish to use. List is <a href="http://fontawesome.github.io/Font-Awesome/cheatsheet/" target="_new">here</a>.  Just enter what is after the "fa-".';
 $string['marketingimage'] = 'Image';
-$string['marketingimagedesc'] = 'This provides the option of displaying an image above the text in the marketing spot';
+$string['marketingimagedesc'] = 'This provides the option of displaying an image above the text in the marketing spot.';
 $string['marketingcontent'] = 'Content';
 $string['marketingcontentdesc'] = 'Content to display in the marketing box. Keep it short and sweet.';
 $string['marketingbuttontext'] = 'Link Text';
@@ -271,28 +249,28 @@ $string['marketingbuttonurldesc'] = 'URL the button will point to.';
 
 /* Quick Links */
 $string['quicklinksheading'] = 'Quick links';
-$string['quicklinksheadingdesc'] = 'Enter the settings for your front page Quick Links';
-$string['quicklinksheadingsub'] = 'Locations on the front page to add information and links';
+$string['quicklinksheadingdesc'] = 'Enter the settings for your Frontpage Quick Links.';
+$string['quicklinksheadingsub'] = 'Locations on the front page to add information and links.';
 $string['quicklinksdesc'] = 'This theme provides the option of enabling "Quick Link" spots.  These allow you to create locations that link to any URL of your choice.';
 
-$string['togglequicklinks'] = 'Quick Links display';
-$string['togglequicklinksdesc'] = 'Choose if you wish to hide or show the Quick Links area';
+$string['togglequicklinks'] = 'Quick Links Display';
+$string['togglequicklinksdesc'] = 'Choose if you wish to hide or show the Quick Links area.';
 
 $string['quicklinksicon'] = 'Heading Icon';
-$string['quicklinksicondesc'] = 'Name of the icon you wish to use in the heading for the Quick Links spots. List is <a href="http://fortawesome.github.io/Font-Awesome/cheatsheet/" target="_new">here</a>.  Just enter what is after the "fa-".';
+$string['quicklinksicondesc'] = 'Name of the icon you wish to use in the heading for the Quick Links spots. List is <a href="http://fontawesome.github.io/Font-Awesome/cheatsheet/" target="_new">here</a>.  Just enter what is after the "fa-".';
 
 $string['quicklinks'] = 'Quick Link Number ';
 
 $string['quicklinksnumber'] = 'Number of Links';
-$string['quicklinksnumberdesc'] = 'How many quick links to you want to display on the front page.';
+$string['quicklinksnumberdesc'] = 'How many quick links to you want to display on the Frontpage.';
 
 $string['quicklinkstitle'] = 'Area heading';
-$string['quicklinkstitledesc'] = 'The name associated with the Quick Links area on the front page.';
+$string['quicklinkstitledesc'] = 'The name associated with the Quick Links area on the Frontpage.';
 
 $string['quicklinkicon'] = 'Icon';
-$string['quicklinkicondesc'] = 'Name of the icon you wish to use. List is <a href="http://fortawesome.github.io/Font-Awesome/cheatsheet/" target="_new">here</a>.  Just enter what is after the "fa-".';
+$string['quicklinkicondesc'] = 'Name of the icon you wish to use. List is <a href="http://fontawesome.github.io/Font-Awesome/cheatsheet/" target="_new">here</a>.  Just enter what is after the "fa-".';
 $string['quicklinkiconcolor'] = 'Quick Link Colour';
-$string['quicklinkiconcolordesc'] = 'Background colour behind the Quick Link icon';
+$string['quicklinkiconcolordesc'] = 'Background colour behind the Quick Link icon.';
 $string['quicklinkbuttontext'] = 'Link Text';
 $string['quicklinkbuttontextdesc'] = 'Text to appear on the button.';
 $string['quicklinkbuttoncolor'] = 'Button Colour';
@@ -303,7 +281,7 @@ $string['quicklinkbuttonurldesc'] = 'URL the button will point to.';
 
 /* Social Networks */
 $string['socialheading'] = 'Social Networking';
-$string['socialheadingsub'] = 'Engage your users with Social Networking';
+$string['socialheadingsub'] = 'Engage your users with social networking.';
 $string['socialdesc'] = 'Provide direct links to the core social networks that promote your brand.  These will appear in the header of every page.';
 $string['socialnetworks'] = 'Social Networks';
 
@@ -352,27 +330,19 @@ $string['blogdesc'] = 'Enter the URL of your institution blog. (i.e http://www.m
 
 /* Category Icons */
 $string['categoryiconheading'] = 'Category Icons';
-$string['categoryiconheadingsub'] = 'Use icons to represent your categories';
-$string['categoryicondesc'] = 'If enabled this will allow you to set icons for each category of course.';
-
-
-$string['categorynumber'] = 'Number of Categories ';
-$string['categorynumberdesc'] = 'Number of category icons will not change until you hit save after changing this number';
+$string['categoryiconheadingsub'] = 'Use icons to represent your categories.';
+$string['categoryiconheadingdesc'] = 'If enabled this will allow you to set icons for each course category.';
 
 $string['defaultcategoryicon'] = 'Default Category Icons';
-$string['defaultcategoryicondesc'] = 'Set a default category icon';
+$string['defaultcategoryicondesc'] = 'If you do not enter a value in any of your categories below then this default value will be used.  This is an easy way to quickly change many category icons.';
 
 $string['categoryiconinfo'] = 'Set Custom Category Icons';
-$string['categoryiconinfodesc'] = 'Each icon is set by "category ID". You get these by looking at the URL or each category.';
+$string['categoryiconinfodesc'] = 'Each icon is set by "category ID". You get these by looking at the URL or each category. List is <a href="http://fontawesome.github.io/Font-Awesome/cheatsheet/">here</a>.  Just enter what is after the "fa-".';
 
-$string['enablecategoryicon'] = 'Turn on icons';
-$string['enablecategoryicondesc'] = 'If ticked this will enable the category icon funcionality.';
+$string['enablecategoryicon'] = 'Enable Category Icons';
+$string['enablecategoryicondesc'] = 'If enabled you will be able to select category icons after clicking "Save changes".';
 
-$string['categoryicon'] = 'Category';
-$string['categoryicondesc'] = 'categoryid=';
-
-$string['subtitle'] = 'Subtitle';
-$string['subtitle_desc'] = 'Optionally select a subtitle for the Moodle homepage';
+$string['categoryicondesc'] = 'Select the icon to use for the category ';
 
 /* Social Networks Icon Descriptions */
 $string['socialnetworksicondescriptionblog'] = 'Read our Blog';

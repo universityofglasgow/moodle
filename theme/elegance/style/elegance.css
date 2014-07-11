@@ -973,16 +973,6 @@ border-bottom-color: #888;
 	align-content: center;
 }
 
-.footer-fixed-bottom {
- 	bottom: 0;
- 	display: block;
- 	left: 0;
-	 margin-bottom: 0;
- 	position: fixed;
- 	right: 0;
- 	z-index: 1030;
-}
-
 /* @group Social Buttons */
 
 
@@ -1874,18 +1864,16 @@ blockquote>.icon-quote-left{
 }
 
 .course-content .current{
-	margin-left: -20px !important;
-	margin-right: -20px !important;
-	margin-top: -20px !important;
-	padding-top: 20px !important;
-	padding-left: 20px !important;
-	padding-right: 20px !important;
-	color: #388f9d !important;
-	background-color: #EFF5F7 !important;
-	border: 2px solid #75ccda !important;
-	-webkit-border-radius: 4px !important;
-	-moz-border-radius: 4px !important;
-	border-radius: 4px !important;
+	color: #388f9d;
+	background-color: #EFF5F7;
+	border: 2px solid #75ccda;
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+	border-radius: 4px;
+}
+
+.course-content ul li.section.main.current {
+    border-bottom-color: #75ccda;
 }
 
 .course-content .single-section .section-navigation .title,
@@ -2289,6 +2277,7 @@ img.profilepicture
 
 .nav-tabs, .nav-pills {
     text-align:center;
+    margin: 0;
 }
 
 .nav>.disabled>a {
@@ -2889,6 +2878,37 @@ table#user-grades th.userreport.c1 {
 
 /* @end */
 
+/* @group Quiz */
+
+/* add space below nav tabs and questions */
+#page-mod-quiz-edit #region-main .nav {
+    padding-bottom: 10px;
+}
+
+/* adust the width of the container on question bank */
+.questionbankwindow .container {
+    padding: 0;
+}
+
+#page-mod-quiz-edit div.container div.generalbox {
+    padding: 0;
+}
+
+#page-mod-quiz-edit div.questionbank .categoryquestionscontainer {
+    margin: 0;
+}
+
+/* fix quiz question label controls */
+#page-mod-quiz-edit #quizquestions .questioncontentcontainer label {
+    display: block;
+}
+
+#page-mod-quiz-edit .questioncontainer input[type="text"] {
+    height: inherit;
+}
+
+/* @end */
+
 /* @group Fixes */
 
 /* to lower the checkbox so it is completely visible */
@@ -2897,43 +2917,6 @@ radio input[type="radio"],
 .checkbox input[type="checkbox"], 
 .checkbox-inline input[type="checkbox"] {
     margin-top: 5px;
-}
-
-/* to left-adjust the table columns and content*/
-table#categoryquestions {
-    display: inline;
-}
-
-#categoryquestions .header {
-  text-align: left;
-}
-
-/* to correct the repository list width for the earlier inline statement */
-#page-mod-quiz-edit div.container div.generalbox {
-    overflow: auto;
-}
-
-/* to correct table width of grade report */
-.gradetreebox {
-    overflow:auto;
-}
-
-/* to correct the repository list width  */
-#page-mod-quiz-edit div.container div.generalbox {
-    overflow: hidden;
-}
-
-/* to reposition question bank */
-#page-mod-quiz-edit div.quizcontents {
-	width: 100%;
-}
-
-.questionbankwindow.block {
- 	width: 100%;
-}
-
-#page-mod-quiz-edit .modulespecificbuttonscontainer {
-    width: 400px;
 }
 
 /* @end */
