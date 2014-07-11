@@ -24,12 +24,15 @@
 
 $string['tiigrade:view'] = 'View course anonymous submission report';
 $string['tiigrade:shownames'] = 'All (non-anonymised) view of submitters';
+$string['assignmentplagiarism'] = 'Assignment (plagiarism) activities';
 $string['asterisk'] = 'these users have no id number in their profile.';
 $string['backtolist'] = 'Back to list of activities';
 $string['clickhidenames'] = 'Click to <b>hide</b> names';
 $string['clickshownames'] = 'Click to <b>reveal</b> names';
 $string['export'] = 'Export to Excel';
+$string['noassign'] = 'No assignments';
 $string['nocapability'] = 'You do not have the required capabiltities to view this report';
+$string['nosubmissions'] = 'No submissions for this activity';
 $string['notallowed'] = 'You do not have permission to view the selected activity';
 $string['notts'] = 'No Turnitintool activities (or parts)';
 $string['noturnitintooltwo'] = 'The turnitintool is not installed';

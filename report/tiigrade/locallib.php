@@ -26,37 +26,32 @@
 class report_tiigrade {
 
     /**
-     * Get anonymous turnitin assignments and the
+     * Get assignments
      * parts that go with them
      * @param int $id course id
      * @return array
      */
-    public static function get_tts($id) {
+    public static function get_assignments($id) {
         global $DB;
 
-        $tts = $DB->get_records('turnitintooltwo', array('course' => $id));
-        foreach ($tts as $id => $tt) {
-            $parts = $DB->get_records('turnitintooltwo_parts', array('turnitintooltwoid' => $id, 'deleted' => 0));
-            $tts[$id]->parts = $parts;
-        }
+        $assignments = $DB->get_records('assign', array('course' => $id));
 
-        return $tts;
+        return $assignments;
     }
 
     /**
      * can the user view the data submitted
      * some checks
-     * @param int $partid turnitintool part id
-     * @param array $tts list of valid tts
+     * @param int $assignid
+     * @param array $assignments valid assignments
      * @return boolean true if ok
      */
-    public static function allowed_to_view($partid, $tts) {
-        foreach ($tts as $tt) {
-            if (array_key_exists($partid, $tt->parts)) {
-                return true;
-            }
+    public static function allowed_to_view($assignid, $assignments) {
+        if (array_key_exists($assignid, $assignments)) {
+            return true;
+        } else {
+            return false;
         }
-        return false;
     }
 
     /**
@@ -76,14 +71,13 @@ class report_tiigrade {
     /**
      * Get the list of submissions and their user data
      *
-     * @param object $context current role context
      * @return array list of users
      */
-    public static function get_submissions($partid) {
+    public static function get_submissions($cmid) {
         global $DB;
 
         // Get the list of submissions for this part.
-        if (!$submissions = $DB->get_records('turnitintooltwo_submissions', array('submission_part' => $partid))) {
+        if (!$submissions = $DB->get_records('plagiarism_turnitin_files', array('cm' => $cmid))) {
             return array();
         }
         foreach ($submissions as $id => $submission) {
@@ -122,7 +116,6 @@ class report_tiigrade {
         $myxls->write_string( 0, $i, get_string('grade'));
         $myxls->write_string( 0, $i + 1, get_string('similarity', 'report_tiigrade'));
         $myxls->write_string( 0, $i + 2, get_string('date'));
-        $myxls->write_string( 0, $i + 3, get_string('title', 'report_tiigrade'));
 
         // Add some data.
         $row = 1;
@@ -137,7 +130,7 @@ class report_tiigrade {
             } else {
                 $myxls->write_string($row, 1, '-');
             }
-            $myxls->write_string($row, 2, $submission->submission_objectid);
+            $myxls->write_string($row, 2, $submission->externalid);
             $i = 3;
             if ($reveal) {
                 $myxls->write_string($row, 3, $user->firstname);
@@ -145,10 +138,9 @@ class report_tiigrade {
                 $myxls->write_string($row, 5, $user->email);
                 $i = 6;
             }
-            $myxls->write_number($row, $i, $submission->submission_grade);
-            $myxls->write_number($row, $i + 1, $submission->submission_score);
-            $myxls->write_string($row, $i + 2, date('d/M/Y H:i', $submission->submission_modified));
-            $myxls->write_string($row, $i + 3, $submission->submission_title);
+            $myxls->write_number($row, $i, $submission->grade);
+            $myxls->write_number($row, $i + 1, $submission->similarityscore);
+            $myxls->write_string($row, $i + 2, date('d/M/Y H:i', $submission->lastmodified));
             $row++;
         }
         $workbook->close();

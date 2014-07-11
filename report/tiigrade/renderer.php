@@ -26,27 +26,22 @@
 class report_tiigrade_renderer extends plugin_renderer_base {
 
     /**
-     * List all turnitintool activities and parts (for selection)
+     * List all assignments activities (for selection)
      * @param moodle_url $url
-     * @param array $tts list of parts
+     * @param array $assignments list of assignments
      */
-    public function list_turnitintool($url, $tts) {
-        echo "<h3>" . get_string('tiiactivities', 'report_tiigrade') . "</h3>";
-        if (empty($tts)) {
-            echo "<div class=\"alert alert-warning\">" . get_string('notts', 'report_tiigrade') . "</div>";
+    public function list_assignments($url, $assignments) {
+        echo "<h3>" . get_string('assignmentplagiarism', 'report_tiigrade') . "</h3>";
+        if (empty($assignments)) {
+            echo "<div class=\"alert alert-warning\">" . get_string('noassign', 'report_tiigrade') . "</div>";
             return;
         }
         echo "<ul>";
-        foreach ($tts as $tt) {
-            echo "<li>" . $tt->name;
-            echo "<ul>";
-            foreach ($tt->parts as $part) {
-                $url->params(array('part' => $part->id));
-                echo "<li><a href=\"$url\">";
-                echo $part->partname;
-                echo "</a></li>";
-            }
-            echo "</ul></li>";
+        foreach ($assignments as $assignment) {
+            $url->params(array('assign' => $assignment->id));
+            echo "<li><a href=\"$url\">";
+            echo $assignment->name;
+            echo "</a></li>";
         }
         echo "</ul>";
     }
@@ -54,12 +49,11 @@ class report_tiigrade_renderer extends plugin_renderer_base {
     /**
      * List of turnitintool users
      * @param int $coursid courseid
-     * @param object $part turnitin part
      * @param array $submissions
      * @param boolean $reveal Show names or not
      */
-    public function report($courseid, $part, $submissions, $reveal) {
-        echo "<h3>" . get_string('tiisubmissions', 'report_tiigrade', $part->partname) . "</h3>";
+    public function report($courseid, $assignment, $submissions, $reveal) {
+        echo "<h3>" . get_string('tiisubmissions', 'report_tiigrade', $assignment->name) . "</h3>";
 
         // Set up table.
         $table = new html_table();
@@ -89,14 +83,14 @@ class report_tiigrade_renderer extends plugin_renderer_base {
                 continue;
             }
             $idnumber = !empty($u->idnumber) ? $u->idnumber : '<i>('.$u->username.')</i>';
-            $grade = $submission->submission_grade ? $submission->submission_grade : '-';
-            $similarity = $submission->submission_score ? $submission->submission_score : '-';
-            $datestamp = date('d/M/Y', $submission->submission_modified);
+            $grade = $submission->grade ? $submission->grade : '-';
+            $similarity = $submission->similarityscore ? $submission->similarityscore : '-';
+            $datestamp = date('d/M/Y', $submission->lastmodified);
             if ($reveal) {
                 $userurl = new moodle_url('/user/view.php', array('id' => $u->id, 'course' => $courseid));
                 $row = array(
                     $idnumber,
-                    $submission->submission_objectid,
+                    $submission->externalid,
                     "<a href=\"$userurl\">".fullname($u)."</a>",
                     $grade,
                     $similarity,
@@ -105,7 +99,7 @@ class report_tiigrade_renderer extends plugin_renderer_base {
             } else {
                 $row = array(
                     $idnumber,
-                    $submission->submission_objectid,
+                    $submission->externalid,
                     $grade,
                     $similarity,
                     $datestamp,
@@ -147,6 +141,10 @@ class report_tiigrade_renderer extends plugin_renderer_base {
         echo "<div style=\"margin-top: 20px;\">";
         echo "<a class=\"btn\" href=\"$url\">" . get_string('backtolist', 'report_tiigrade') . "</a>";
         echo "</div>";
+    }
+
+    public function nosubmissions() {
+        echo '<div class="alert alert-warning">' . get_string('nosubmissions', 'report_tiigrade') . '</div>';
     }
 
 }
