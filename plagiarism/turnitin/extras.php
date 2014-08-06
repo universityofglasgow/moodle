@@ -1,8 +1,4 @@
 <?php
-@error_reporting(1023);  // NOT FOR PRODUCTION SERVERS!
-@ini_set('display_errors', '1'); // NOT FOR PRODUCTION SERVERS!
-$CFG->debug = 38911;  // DEBUG_DEVELOPER // NOT FOR PRODUCTION SERVERS!
-$CFG->debugdisplay = true;   // NOT FOR PRODUCTION SERVERS!
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -51,8 +47,12 @@ switch ($cmd) {
     case "useragreement":
 		$cssurl = new moodle_url($CFG->wwwroot.'/mod/turnitintooltwo/css/styles_pp.css');
         $PAGE->requires->css($cssurl);
-    	$jsurl = new moodle_url($CFG->wwwroot.'/mod/turnitintooltwo/scripts/plagiarism_plugin.js');
-        $PAGE->requires->js($jsurl);
+        if ($CFG->branch <= 25) {
+            $jsurl = new moodle_url($CFG->wwwroot.'/mod/turnitintooltwo/jquery/plagiarism_plugin.js');
+            $PAGE->requires->js($jsurl);
+        } else {
+            $PAGE->requires->jquery_plugin('turnitintooltwo-plagiarism_plugin', 'mod_turnitintooltwo');
+        }
 
         $output .= html_writer::tag('span', $cmid, array('class' => 'cmid'));
     	$user = new turnitintooltwo_user($USER->id, "Learner");
@@ -90,5 +90,3 @@ if ($cmd == 'courses') {
 echo $output;
 
 echo $OUTPUT->footer();
-
-?>
