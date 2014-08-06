@@ -674,8 +674,8 @@ class core_renderer extends renderer_base {
                         $a->attempts = $count;
                         $loggedinas .= get_string('failedloginattempts', '', $a);
                         if (file_exists("$CFG->dirroot/report/log/index.php") and has_capability('report/log:view', context_system::instance())) {
-                            $loggedinas .= html_writer::link(new moodle_url('/report/log/index.php', array('chooselog' => 1,
-                                    'id' => 0 , 'modid' => 'site_errors')), '(' . get_string('logs') . ')');
+                            $loggedinas .= ' ('.html_writer::link(new moodle_url('/report/log/index.php', array('chooselog' => 1,
+                                    'id' => 0 , 'modid' => 'site_errors')), get_string('logs')).')';
                         }
                         $loggedinas .= '</div>';
                     }
@@ -1921,7 +1921,7 @@ class core_renderer extends renderer_base {
     public function doc_link($path, $text = '', $forcepopup = false) {
         global $CFG;
 
-        $icon = $this->pix_icon('docs', $text, 'moodle', array('class'=>'iconhelp icon-pre'));
+        $icon = $this->pix_icon('docs', '', 'moodle', array('class'=>'iconhelp icon-pre', 'role'=>'presentation'));
 
         $url = new moodle_url(get_docs_url($path));
 

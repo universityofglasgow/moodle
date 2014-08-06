@@ -1329,6 +1329,8 @@ function html_is_blank($string) {
  *
  * A NULL value will delete the entry.
  *
+ * NOTE: this function is called from lib/db/upgrade.php
+ *
  * @param string $name the key to set
  * @param string $value the value to set (without magic quotes)
  * @param string $plugin (optional) the plugin scope, default null
@@ -1398,6 +1400,8 @@ function set_config($name, $value, $plugin=null) {
  *
  * If called with 2 parameters it will return a string single
  * value or false if the value is not found.
+ *
+ * NOTE: this function is called from lib/db/upgrade.php
  *
  * @static string|false $siteidentifier The site identifier is not cached. We use this static cache so
  *     that we need only fetch it once per request.
@@ -1484,6 +1488,8 @@ function get_config($plugin, $name = null) {
 
 /**
  * Removes a key from global configuration.
+ *
+ * NOTE: this function is called from lib/db/upgrade.php
  *
  * @param string $name the key to set
  * @param string $plugin (optional) the plugin scope
@@ -8743,17 +8749,19 @@ function message_popup_window() {
 
     // A quick query to check whether the user has new messages.
     $messagecount = $DB->count_records('message', array('useridto' => $USER->id));
-    if ($messagecount<1) {
+    if ($messagecount < 1) {
         return;
     }
 
-    // Got unread messages so now do another query that joins with the user table.
+    // There are unread messages so now do a more complex but slower query.
     $namefields = get_all_user_name_fields(true, 'u');
-    $messagesql = "SELECT m.id, m.smallmessage, m.fullmessageformat, m.notification, $namefields
+    $messagesql = "SELECT m.id, m.smallmessage, m.fullmessageformat, m.notification, m.useridto, m.useridfrom, $namefields, c.blocked
                      FROM {message} m
                      JOIN {message_working} mw ON m.id=mw.unreadmessageid
                      JOIN {message_processors} p ON mw.processorid=p.id
                      JOIN {user} u ON m.useridfrom=u.id
+                     LEFT JOIN {message_contacts} c ON c.contactid = m.useridfrom
+                                                   AND c.userid = m.useridto
                     WHERE m.useridto = :userid
                       AND p.name='popup'";
 
@@ -8766,46 +8774,18 @@ function message_popup_window() {
 
     $messageusers = $DB->get_records_sql($messagesql, array('userid' => $USER->id, 'lastpopuptime' => $USER->message_lastpopup));
 
-    // If we have new messages to notify the user about.
-    if (!empty($messageusers)) {
-
-        $strmessages = '';
-        if (count($messageusers)>1) {
-            $strmessages = get_string('unreadnewmessages', 'message', count($messageusers));
+    $validmessages = 0;
+    foreach($messageusers as $message) {
+        if ($message->blocked) {
+            // Message is from a user who has since been blocked so just mark it read.
+            message_mark_message_read($message, time());
         } else {
-            $messageusers = reset($messageusers);
-
-            // Show who the message is from if its not a notification.
-            if (!$messageusers->notification) {
-                $strmessages = get_string('unreadnewmessage', 'message', fullname($messageusers) );
-            }
-
-            // Try to display the small version of the message.
-            $smallmessage = null;
-            if (!empty($messageusers->smallmessage)) {
-                // Display the first 200 chars of the message in the popup.
-                $smallmessage = null;
-                if (core_text::strlen($messageusers->smallmessage) > 200) {
-                    $smallmessage = core_text::substr($messageusers->smallmessage, 0, 200).'...';
-                } else {
-                    $smallmessage = $messageusers->smallmessage;
-                }
-
-                // Prevent html symbols being displayed.
-                if ($messageusers->fullmessageformat == FORMAT_HTML) {
-                    $smallmessage = html_to_text($smallmessage);
-                } else {
-                    $smallmessage = s($smallmessage);
-                }
-            } else if ($messageusers->notification) {
-                // Its a notification with no smallmessage so just say they have a notification.
-                $smallmessage = get_string('unreadnewnotification', 'message');
-            }
-            if (!empty($smallmessage)) {
-                $strmessages .= '<div id="usermessage">'.s($smallmessage).'</div>';
-            }
+            $validmessages++;
         }
+    }
 
+    if ($validmessages > 0) {
+        $strmessages = get_string('unreadnewmessages', 'message', $validmessages);
         $strgomessage = get_string('gotomessages', 'message');
         $strstaymessage = get_string('ignore', 'admin');
 
