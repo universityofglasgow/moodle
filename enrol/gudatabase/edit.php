@@ -131,10 +131,11 @@ if ($tab=='config') {
     } else if ($data = $cform->get_data()) {
         $instance->customtext1 = strtoupper($data->customtext1);
         $DB->update_record('enrol', $instance);
-    }
 
-    $plugin->enrol_course_users( $course, $instance );
-    $plugin->sync_groups($course, $instance);
+        // Update enrolments and groups (slow).
+        $plugin->enrol_course_users( $course, $instance );
+        $plugin->sync_groups($course, $instance);
+    }
 
     // reflect any changes we just did
     $codes = $plugin->get_codes($course, $instance);
@@ -176,10 +177,11 @@ if ($tab=='config') {
         }
         $instance->customtext2 = serialize($groups);
         $DB->update_record('enrol', $instance);        
-    }
 
-    $plugin->enrol_course_users( $course, $instance );
-    $plugin->sync_groups($course, $instance);
+        // Update enrolments and groups
+        $plugin->enrol_course_users( $course, $instance );
+        $plugin->sync_groups($course, $instance);
+    }
 }
 
 $PAGE->set_title(get_string('pluginname', 'enrol_manual'));
