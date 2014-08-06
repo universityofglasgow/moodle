@@ -984,6 +984,11 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
                     continue;
                 }
 
+                // if course is not visible then do not enrol
+                if (!$course->visible) {
+                    continue;
+                }
+
                 // Make sure it has this enrolment plugin.
                 $instanceid = $this->check_instance( $course );
 
