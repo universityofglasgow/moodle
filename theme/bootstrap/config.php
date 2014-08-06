@@ -28,8 +28,8 @@ $THEME->doctype = 'html5';
 $THEME->yuicssmodules = array();
 $THEME->name = 'bootstrap';
 $THEME->parents = array();
-$THEME->sheets = array('moodle', 'custom');
-
+$THEME->sheets = array('moodle');
+$THEME->enable_dock = true;
 $THEME->supportscssoptimisation = false;
 
 $THEME->editor_sheets = array('editor');

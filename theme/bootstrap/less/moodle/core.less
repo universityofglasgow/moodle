@@ -53,34 +53,67 @@
     }
 }
 
-.has_dock.used-region-side-post.empty-region-side-pre {
-    #region-main {
-        .make-sm-column(9);
-        .make-lg-column(8);
-        .make-sm-column-push(0);
-        .make-lg-column-push(0);
-    }
-    #block-region-side-post {
-        .make-sm-column(3);
-        .make-lg-column(2);
-        min-height: 100px;
-    }
-    #block-region-side-pre {
-        display: none;
-    }
-}
-.has_dock.empty-region-side-post.empty-region-side-pre {
-    #region-main {
+.has_dock {
+    &.empty-region-side-pre #region-main, &.empty-region-side-post #region-main {
         .make-sm-column(12);
         .make-lg-column(12);
         .make-sm-column-push(0);
         .make-lg-column-push(0);
     }
-    #block-region-side-post {
+
+    &.empty-region-side-pre.used-region-side-post #region-main,
+    &.empty-region-side-post.used-region-side-pre #region-main {
+        .make-sm-column(9);
+        .make-lg-column(10);
+    }
+
+    &.empty-region-side-pre #block-region-side-pre {
         display: none;
     }
-    #block-region-side-pre {
+
+    &.empty-region-side-post #block-region-side-post {
         display: none;
+    }
+}
+
+.has_dock.dir-ltr {
+    &.empty-region-side-pre.used-region-side-post #region-main {
+        .make-sm-column-push(0);
+        .make-lg-column-push(0);
+    }
+
+    &.empty-region-side-post.used-region-side-pre #region-main {
+        .make-sm-column-push(3);
+        .make-lg-column-push(2);
+    }
+
+    &.empty-region-side-post.used-region-side-pre #block-region-side-pre {
+        .make-sm-column-pull(9);
+        .make-lg-column-pull(10);
+    }
+}
+
+.has_dock.dir-rtl {
+    &.empty-region-side-pre.used-region-side-post #region-main {
+        .make-sm-column-push(3);
+        .make-lg-column-push(2);
+    }
+
+    &.empty-region-side-post.used-region-side-pre #region-main {
+        .make-sm-column-push(0);
+        .make-lg-column-push(0);
+    }
+
+    // Negate the push applied when transitioning from three columns.
+	// LTR does not have this vice-versa issue as no 'push' for post.
+    &.empty-region-side-post.used-region-side-pre #block-region-side-pre {
+        .make-sm-column-push(0);
+        .make-lg-column-push(0);
+    }
+
+    &.empty-region-side-pre.used-region-side-post #block-region-side-post {
+        .make-sm-column-pull(9);
+        .make-lg-column-pull(10);
     }
 }
 
@@ -1260,8 +1293,8 @@ body.jsenabled .formlisting {
 }
 
 .moodle-actionmenu[data-enhanced].show  {
-
     position: relative;
+    display: inline-block !important; // Override 'show' class in Bootstrap utilities.less.
 
     .menu {
         .dropdown-menu;
@@ -1301,7 +1334,7 @@ body.jsenabled .formlisting {
         &.align-br-bl {bottom: 100%;right: 100%;}
         /** bottom right of button **/
         &.align-tl-br {top: 100%;left:100%;}
-        &.align-tr-br {top: 100% !important;right: 0;margin-top: 4px;}
+        &.align-tr-br {top: 100% !important;right: 0;left: inherit;margin-top: 4px;}
         &.align-bl-br {bottom: 100%;left:100%;}
         &.align-br-br {bottom: 100%;right: 0;}
         /** top left of button **/

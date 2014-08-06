@@ -115,6 +115,14 @@ function theme_elegance_process_css($css, $theme) {
     }
     $css = theme_elegance_set_customcss($css, $customcss);
 
+    // Set custom Moodle Mobile CSS.
+    if (!empty($theme->settings->moodlemobilecss)) {
+        $moodlemobilecss = $theme->settings->moodlemobilecss;
+    } else {
+        $moodlemobilecss = null;
+    }
+    $css = theme_elegance_set_moodlemobilecss($css, $moodlemobilecss);
+
     // Set the theme main color.
     if (!empty($theme->settings->themecolor)) {
         $themecolor = $theme->settings->themecolor;
@@ -146,25 +154,6 @@ function theme_elegance_process_css($css, $theme) {
         $headingcolor = null;
     }
     $css = theme_elegance_set_headingcolor($css, $headingcolor);
-
-    // Set the Defaut Category Icon.
-    if (!empty($theme->settings->defaultcategoryicon)) {
-        $defaultcategoryicon = $theme->settings->defaultcategoryicon;
-    } else {
-        $defaultcategoryicon = null;
-    }
-    $css = theme_elegance_set_defaultcategoryicon($css, $defaultcategoryicon);
-
-    // Set Category Icons.
-    foreach (range(1, 20) as $categorynumber) {
-        $categoryicon = $defaultcategoryicon;
-        if (!empty($theme->settings->usecategoryicon)) {
-            if (!empty($theme->settings->{'categoryicon' . $categorynumber})) {
-                $categoryicon = $theme->settings->{'categoryicon' . $categorynumber};
-            }
-        }
-        $css = theme_elegance_set_categoryicon($css, $categoryicon, $categorynumber);
-    }
 
     // Set the Video Max width.
     if (!empty($theme->settings->videowidth)) {
@@ -424,6 +413,25 @@ function theme_elegance_set_customcss($css, $customcss) {
 }
 
 /**
+ * Adds any custom Moodle Mobile CSS to the CSS before it is cached.
+ *
+ * @param string $css The original CSS.
+ * @param string $moodlemobilecss The custom CSS to add.
+ * @return string The CSS which now contains our custom Moodle Mobile CSS.
+ */
+function theme_elegance_set_moodlemobilecss($css, $moodlemobilecss) {
+    $tag = '[[setting:moodlemobilecss]]';
+    $replacement = $moodlemobilecss;
+    if (is_null($replacement)) {
+        $replacement = '';
+    }
+
+    $css = str_replace($tag, $replacement, $css);
+
+    return $css;
+}
+
+/**
  * Returns an object containing HTML for the areas affected by settings.
  *
  * @param renderer_base $output Pass in $OUTPUT.
@@ -495,27 +503,6 @@ function theme_elegance_set_bodybg($css, $bodybg, $setting) {
     if (is_null($replacement)) {
         // Get default image from themes 'bg' folder of the name in $setting.
         $replacement = $OUTPUT->pix_url('bg/body', 'theme');
-    }
-    $css = str_replace($tag, $replacement, $css);
-    return $css;
-}
-
-function theme_elegance_set_defaultcategoryicon($css, $defaultcategoryicon) {
-    $tag = '[[setting:defaultcategoryicon]]';
-    $replacement = $defaultcategoryicon;
-    if (is_null($replacement)) {
-        $replacement = 'f07c';
-    }
-    $css = str_replace($tag, $replacement, $css);
-    return $css;
-}
-
-function theme_elegance_set_categoryicon($css, $categoryicon, $categorynumber) {
-    $tag = '[[setting:categoryicon' . $categorynumber . ']]';
-    $replacement = $categoryicon;
-
-    if (is_null($replacement)) {
-        $replacement = 'f07c';
     }
     $css = str_replace($tag, $replacement, $css);
     return $css;

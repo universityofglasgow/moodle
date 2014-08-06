@@ -224,9 +224,11 @@ module.exports = function(grunt) {
             moodle: {
                 options: {
                     compress: false,
+                    strictMath: true,
+                    outputSourceFiles: true,
                     sourceMap: true,
                     sourceMapRootpath: '/theme/' + THEMEDIR,
-                    sourceMapFilename: 'sourcemap-moodle.json'
+                    sourceMapFilename: 'style/moodle.css'
                 },
                 src: 'less/moodle.less',
                 dest: 'style/moodle.css'
@@ -235,12 +237,58 @@ module.exports = function(grunt) {
             editor: {
                 options: {
                     compress: false,
+                    strictMath: true,
+                    outputSourceFiles: true,
                     sourceMap: true,
                     sourceMapRootpath: '/theme/' + THEMEDIR,
-                    sourceMapFilename: 'sourcemap-editor.json'
+                    sourceMapFilename: 'style/editor.css'
                 },
                 src: 'less/editor.less',
                 dest: 'style/editor.css'
+            }
+        },
+        autoprefixer: {
+          options: {
+            browsers: [
+              'Android 2.3',
+              'Android >= 4',
+              'Chrome >= 20',
+              'Firefox >= 24', // Firefox 24 is the latest ESR
+              'Explorer >= 8',
+              'iOS >= 6',
+              'Opera >= 12',
+              'Safari >= 6'
+            ]
+          },
+          core: {
+            options: {
+              map: true
+            },
+            src: ['style/moodle.css', 'style/moodle-rtl.css', 'style/editor.css'],
+          },
+        },
+        cssmin: {
+            options: {
+                compatibility: 'ie8',
+                keepSpecialComments: '*',
+                noAdvanced: true
+            }, 
+            core: {
+                files: {
+                    'style/moodle_min.css': 'style/moodle.css',
+                    'style/editor_min.css': 'style/editor.css'
+                }
+            }
+        },
+        csscomb: {
+            options: {
+                config: 'less/bootstrap3/.csscomb.json'
+            },
+            dist: {
+                expand: true,
+                cwd: 'style/',
+                src: ['moodle.css', 'editor.css'],
+                dest: 'style/'
             }
         },
         exec: {
@@ -260,7 +308,8 @@ module.exports = function(grunt) {
             files: ["less/**/*.less"],
             tasks: ["compile"],
             options: {
-                spawn: false
+                spawn: false,
+                livereload: true
             }
         },
         cssflip: {
@@ -270,11 +319,17 @@ module.exports = function(grunt) {
             }
         },
         copy: {
-            svg: {
+            svg_core: {
                  expand: true,
                  cwd: 'pix_core_originals/',
                  src: '**',
                  dest: 'pix_core/',
+            },
+            svg_plugins: {
+                 expand: true,
+                 cwd: 'pix_plugins_originals/',
+                 src: '**',
+                 dest: 'pix_plugins/',
             }
         },
         replace: {
@@ -304,8 +359,16 @@ module.exports = function(grunt) {
                         to: '[[pix:y/lp_rtl]]'
                     }]
             },
-            svg_colors: {
+            svg_colors_core: {
                 src: 'pix_core/**/*.svg',
+                    overwrite: true,
+                    replacements: [{
+                        from: '#999',
+                        to: svgcolor
+                    }]
+            },
+            svg_colors_plugins: {
+                src: 'pix_plugins/**/*.svg',
                     overwrite: true,
                     replacements: [{
                         from: '#999',
@@ -327,6 +390,14 @@ module.exports = function(grunt) {
                     }, {
                         from: 'glyphicons-halflings-regular.woff',
                         to: 'glyphicons-halflings-regular.woff]]',
+                    }]
+            },
+            sourcemap: {
+                src: ['style/moodle.css', 'style/moodle-rtl.css', 'style/editor.css'],
+                    overwrite: true,
+                    replacements: [{
+                        from: 'sourceMappingURL=',
+                        to: 'sourceMappingURL=/theme/'+ THEMEDIR + '/style/'
                     }]
             }
         }
@@ -400,19 +471,22 @@ module.exports = function(grunt) {
     };
 
     // Load contrib tasks.
+    grunt.loadNpmTasks("grunt-autoprefixer");
     grunt.loadNpmTasks("grunt-contrib-less");
     grunt.loadNpmTasks("grunt-contrib-watch");
     grunt.loadNpmTasks("grunt-exec");
     grunt.loadNpmTasks("grunt-text-replace");
     grunt.loadNpmTasks("grunt-css-flip");
     grunt.loadNpmTasks('grunt-contrib-copy');
+    grunt.loadNpmTasks('grunt-contrib-cssmin');
+    grunt.loadNpmTasks('grunt-csscomb');
 
     // Register tasks.
     grunt.registerTask("default", ["watch"]);
     grunt.registerTask("decache", ["exec:decache"]);
 
     grunt.registerTask("bootswatch", _bootswatch);
-    grunt.registerTask("compile", ["less", "replace:font_fix", "cssflip", "replace:rtl_images", "decache"]);
+    grunt.registerTask("compile", ["less", "replace:font_fix", "cssflip", "replace:rtl_images", "autoprefixer", 'csscomb', 'cssmin', "replace:sourcemap", "decache"]);
     grunt.registerTask("swatch", ["bootswatch", "svg", "compile"]);
-    grunt.registerTask("svg", ["copy:svg", "replace:svg_colors"]);
+    grunt.registerTask("svg", ["copy:svg_core", "copy:svg_plugins", "replace:svg_colors_core", "replace:svg_colors_plugins"]);
 };
