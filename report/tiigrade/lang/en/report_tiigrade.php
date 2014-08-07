@@ -27,6 +27,7 @@ $string['tiigrade:shownames'] = 'All (non-anonymised) view of submitters';
 $string['assignmentplagiarism'] = 'Assignment (plagiarism) activities';
 $string['asterisk'] = 'these users have no id number in their profile.';
 $string['backtolist'] = 'Back to list of activities';
+$string['blindid'] = 'Blind marking ID';
 $string['clickhidenames'] = 'Click to <b>hide</b> names';
 $string['clickshownames'] = 'Click to <b>reveal</b> names';
 $string['export'] = 'Export to Excel';

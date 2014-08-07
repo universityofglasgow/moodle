@@ -60,6 +60,7 @@ class report_tiigrade_renderer extends plugin_renderer_base {
         if ($reveal) {
             $table->head = array(
                 get_string('idnumber'),
+                get_string('blindid', 'report_tiigrade'),
                 get_string('paperid', 'report_tiigrade'),
                 get_string('username'),
                 get_string('grade'),
@@ -69,6 +70,7 @@ class report_tiigrade_renderer extends plugin_renderer_base {
         } else {
             $table->head = array(
                 get_string('idnumber'),
+                get_string('blindid', 'report_tiigrade'),
                 get_string('paperid', 'report_tiigrade'),
                 get_string('grade'),
                 get_string('similarity', 'report_tiigrade'),
@@ -83,6 +85,7 @@ class report_tiigrade_renderer extends plugin_renderer_base {
                 continue;
             }
             $idnumber = !empty($u->idnumber) ? $u->idnumber : '<i>('.$u->username.')</i>';
+            $blindid = !empty($u->blindid) ? $u->blindid : '-';
             $grade = $submission->grade ? $submission->grade : '-';
             $similarity = $submission->similarityscore ? $submission->similarityscore : '-';
             $datestamp = date('d/M/Y', $submission->lastmodified);
@@ -90,6 +93,7 @@ class report_tiigrade_renderer extends plugin_renderer_base {
                 $userurl = new moodle_url('/user/view.php', array('id' => $u->id, 'course' => $courseid));
                 $row = array(
                     $idnumber,
+                    $blindid,
                     $submission->externalid,
                     "<a href=\"$userurl\">".fullname($u)."</a>",
                     $grade,
@@ -99,6 +103,7 @@ class report_tiigrade_renderer extends plugin_renderer_base {
             } else {
                 $row = array(
                     $idnumber,
+                    $blindid,
                     $submission->externalid,
                     $grade,
                     $similarity,

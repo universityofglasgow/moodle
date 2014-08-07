@@ -95,7 +95,7 @@ if ($assignid) {
     $module = $DB->get_record('modules', array('name' => 'assign'), '*', MUST_EXIST);
     $cm = $DB->get_record('course_modules', array('module' => $module->id, 'instance' => $assignment->id), '*', MUST_EXIST);
 
-    $submissions = report_tiigrade::get_submissions($cm->id);
+    $submissions = report_tiigrade::get_submissions($cm->id, $assignment->id);
     if (!$submissions) {
         $output->nosubmissions();
         $output->back_button($url);

@@ -73,7 +73,7 @@ class report_tiigrade {
      *
      * @return array list of users
      */
-    public static function get_submissions($cmid) {
+    public static function get_submissions($cmid, $assignid) {
         global $DB;
 
         // Get the list of submissions for this part.
@@ -83,6 +83,11 @@ class report_tiigrade {
         foreach ($submissions as $id => $submission) {
             if ($submission->userid) {
                 $user = $DB->get_record('user', array('id' => $submission->userid));
+                if ($mapping = $DB->get_record('assign_user_mapping', array('userid' => $user->id, 'assignment' => $assignid))) {
+                    $user->blindid = $mapping->id;
+                } else {
+                    $user->blindid = null;
+                }
                 $submissions[$id]->user = $user;
             } else {
                 $submissions[$id]->user = null;
@@ -105,13 +110,14 @@ class report_tiigrade {
         // Headers.
         $myxls->write_string(0, 0, '#');
         $myxls->write_string(0, 1, get_string('idnumber'));
-        $myxls->write_string(0, 2,  get_string('paperid', 'report_tiigrade'));
-        $i = 3;
+        $myxls->write_string(0, 2, get_string('blindid', 'report_tiigrade'));
+        $myxls->write_string(0, 3,  get_string('paperid', 'report_tiigrade'));
+        $i = 4;
         if ($reveal) {
-            $myxls->write_string(0, 3, get_string('firstname'));
-            $myxls->write_string(0, 4, get_string('lastname'));
-            $myxls->write_string(0, 5, get_string('email'));
-            $i = 6;
+            $myxls->write_string(0, 4, get_string('firstname'));
+            $myxls->write_string(0, 5, get_string('lastname'));
+            $myxls->write_string(0, 6, get_string('email'));
+            $i = 7;
         }
         $myxls->write_string( 0, $i, get_string('grade'));
         $myxls->write_string( 0, $i + 1, get_string('similarity', 'report_tiigrade'));
@@ -130,13 +136,18 @@ class report_tiigrade {
             } else {
                 $myxls->write_string($row, 1, '-');
             }
-            $myxls->write_string($row, 2, $submission->externalid);
-            $i = 3;
+            if ($user->blindid) {
+                $myxls->write_string($row, 2, $user->blindid);
+            } else {
+                $myxls->write_string($row, 2, '-');
+            }
+            $myxls->write_string($row, 3, $submission->externalid);
+            $i = 4;
             if ($reveal) {
-                $myxls->write_string($row, 3, $user->firstname);
-                $myxls->write_string($row, 4, $user->lastname);
-                $myxls->write_string($row, 5, $user->email);
-                $i = 6;
+                $myxls->write_string($row, 4, $user->firstname);
+                $myxls->write_string($row, 5, $user->lastname);
+                $myxls->write_string($row, 6, $user->email);
+                $i = 7;
             }
             $myxls->write_number($row, $i, $submission->grade);
             $myxls->write_number($row, $i + 1, $submission->similarityscore);
