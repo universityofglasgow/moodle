@@ -464,7 +464,7 @@ class guidreport_form extends moodleform {
         $mform =& $this->_form;
 
         // Main part.
-        $mform->addElement('html', '<div>'.get_string('instructions', 'report_guid' ) );
+        $mform->addElement('html', '<p class="alert">'.get_string('instructions', 'report_guid' ).'</p>' );
         $mform->addElement('text', 'firstname', get_string('firstname', 'report_guid' ) );
         $mform->setType('firstname', PARAM_RAW);
         $mform->addElement('text', 'lastname', get_string('lastname', 'report_guid' ) );
@@ -475,7 +475,7 @@ class guidreport_form extends moodleform {
         $mform->setType('guid', PARAM_ALPHANUM);
 
         // Action buttons.
-        $this->add_action_buttons(true, get_string('search', 'report_guid'));
+        $this->add_action_buttons(false, get_string('search', 'report_guid'));
     }
 }
 
@@ -489,11 +489,11 @@ class guidreportupload_form extends moodleform {
 
         // File upload.
         $mform->addElement('header', 'guidupload', get_string('uploadheader', 'report_guid' ) );
-        $mform->addElement('html', '<div>'.get_string('uploadinstructions', 'report_guid' ).'</div>' );
+        $mform->addElement('html', '<div class="alert">'.get_string('uploadinstructions', 'report_guid' ).'</div>' );
         $mform->addElement('filepicker', 'csvfile', get_string('csvfile', 'report_guid' ) );
 
         // Action buttons.
-        $this->add_action_buttons(true, get_string('submitfile', 'report_guid'));
+        $this->add_action_buttons(false, get_string('submitfile', 'report_guid'));
     }
 
 }

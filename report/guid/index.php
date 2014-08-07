@@ -27,6 +27,8 @@ require_once($CFG->libdir . '/adminlib.php');
 require_once($CFG->libdir . '/formslib.php');
 require_once(dirname(__FILE__).'/lib.php');
 
+require_login();
+
 // Configuration.
 $ldaphost = 'dv-srv1.gla.ac.uk'; // Data vault LDAP host.
 $dn = 'o=Gla'; // Base dn for search.
@@ -69,9 +71,7 @@ $mform = new guidreport_form(null, null, 'get');
 $mform->display();
 
 // Link to upload script.
-echo $OUTPUT->box_start();
-echo "<p><a href=\"{$CFG->wwwroot}/report/guid/upload.php\">".get_string('uploadguid', 'report_guid')."</a></p>";
-echo $OUTPUT->box_end();
+echo "<p><a class=\"btn btn-primary\" href=\"{$CFG->wwwroot}/report/guid/upload.php\">".get_string('uploadguid', 'report_guid')."</a></p>";
 
 if ($mform->is_cancelled()) {
     redirect( "index.php" );
@@ -105,3 +105,4 @@ if ($mform->is_cancelled()) {
 }
 
 echo $OUTPUT->footer();
+
