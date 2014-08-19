@@ -142,6 +142,18 @@ class report_tiigrade_renderer extends plugin_renderer_base {
         echo "</div>";
     }
 
+    public function reveal_button($url, $reveal) {
+        echo "<div>";
+        if ($reveal) {
+            $url->params(array('reveal' => 0)); 
+            echo '<a class="btn" href="'.$url.'">'.get_string('hidenames', 'report_tiigrade').'</a>';
+        } else {
+            $url->params(array('reveal' => 1)); 
+            echo '<a class="btn" href="'.$url.'">'.get_string('shownames', 'report_tiigrade').'</a>';
+        }        
+        echo "</div>";
+    }
+
     public function back_button($url) {
         echo "<div style=\"margin-top: 20px;\">";
         echo "<a class=\"btn\" href=\"$url\">" . get_string('backtolist', 'report_tiigrade') . "</a>";

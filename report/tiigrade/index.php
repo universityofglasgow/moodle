@@ -85,7 +85,12 @@ if ($assignid) {
     $assignment = $assignments[$assignid];
 
     // Can we view user data.
-    $anonymous = $assignment->blindmarking && (time() < $assignment->cutoffdate);
+    // hide if blind marking or before cut off date. Cut off date will be 0
+    // if it isn't used. 
+    $anonymous = $assignment->blindmarking;
+    if ($assignment->cutoffdate) {
+        $anonymous = $anonymous && (time() < $assignment->cutoffdate);
+    }
     $showuserdata = !$anonymous;
     if (has_capability('report/tiigrade:shownames', $context) && $anonymous) {
         $showuserdata = $reveal;
