@@ -687,7 +687,9 @@ class turnitintooltwo_view {
         $cells[0] = new html_table_cell($links.$turnitintooltwoassignment->turnitintooltwo->name." (".$textfield.") ");
 
         // Allow start date field to be editable if a tutor is logged in.
-        $datefield = userdate($partdetails[$partid]->dtstart, '%d %h %Y - %H:%M');
+        $datefield = ($CFG->ostype == 'WINDOWS') ? 
+                        userdate($partdetails[$partid]->dtstart, '%d %b %Y - %H:%M') : 
+                        userdate($partdetails[$partid]->dtstart, '%d %h %Y - %H:%M');
         if ($istutor) {
             $datefield = html_writer::link('#', $datefield,
                                             array('class' => 'editable_date editable_date_'.$partid,
@@ -700,7 +702,9 @@ class turnitintooltwo_view {
         $cells[1]->attributes['class'] = 'data';
 
         // Allow due date field to be editable if a tutor is logged in.
-        $datefield = userdate($partdetails[$partid]->dtdue, '%d %h %Y - %H:%M');
+        $datefield = ($CFG->ostype == 'WINDOWS') ? 
+                        userdate($partdetails[$partid]->dtdue, '%d %b %Y - %H:%M') : 
+                        userdate($partdetails[$partid]->dtdue, '%d %h %Y - %H:%M');
         if ($istutor) {
             $datefield = html_writer::link('#', $datefield,
                                             array('class' => 'editable_date editable_date_'.$partid,
@@ -713,7 +717,9 @@ class turnitintooltwo_view {
         $cells[2]->attributes['class'] = 'data';
 
         // Allow post date field to be editable if a tutor is logged in.
-        $datefield = userdate($partdetails[$partid]->dtpost, '%d %h %Y - %H:%M');
+        $datefield = ($CFG->ostype == 'WINDOWS') ? 
+                        userdate($partdetails[$partid]->dtpost, '%d %b %Y - %H:%M') : 
+                        userdate($partdetails[$partid]->dtpost, '%d %h %Y - %H:%M');
         if ($istutor) {
             $datefield = html_writer::link('#', $datefield,
                                             array('class' => 'editable_date editable_date_'.$partid,
@@ -821,8 +827,11 @@ class turnitintooltwo_view {
         // Show summary box.
         if (!empty($turnitintooltwoassignment->turnitintooltwo->intro)) {
             $cells = array();
+
+            $intro_text = format_module_intro('turnitintooltwo', $turnitintooltwoassignment->turnitintooltwo, $cm->id);
+
             $intro = html_writer::tag('div', get_string("turnitintooltwointro", "turnitintooltwo").": ".
-                        $turnitintooltwoassignment->turnitintooltwo->intro, array("class" => "introduction"));
+                        $intro_text, array("class" => "introduction"));
 
             $cells[0] = new html_table_cell($intro);
             $cells[0]->attributes['class'] = 'introduction_cell';
@@ -1367,7 +1376,7 @@ class turnitintooltwo_view {
      * @return output form
      */
     public static function output_dv_launch_form($type, $submissionid, $userid, $userrole,
-                                                $buttonstring = "Submit", $ltireturn = false) {
+                                                $buttonstring = "Submit", $ltireturn = false, $context = 'TT') {
         // Initialise Comms Object.
         $turnitincomms = new turnitintooltwo_comms();
         $turnitincall = $turnitincomms->initialise_api();
@@ -1384,6 +1393,9 @@ class turnitintooltwo_view {
         switch ($type) {
             case "useragreement":
                 $ltifunction = "outputUserAgreementForm";
+                if ( $context == 'PP' ) {
+                    $lti->setFormTarget("");
+                }
                 break;
 
             case "downloadoriginal":
