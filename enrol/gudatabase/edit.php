@@ -71,10 +71,13 @@ if ($instances = $DB->get_records('enrol', array('courseid'=>$course->id, 'enrol
     $instance = new stdClass();
     $instance->id              = null;
     $instance->courseid        = $course->id;
+    $instance->customtext1     = '';
+    $instance->customtext2     = '';
 }
 
 // check which tab is active and what action to take
-if ($tab=='config') {
+// only show config tab if new instance
+if (($tab=='config') || !$instance->id) {
     $mform = new enrol_gudatabase_edit_form(null, array($instance, $plugin, $context));
 
     if ($mform->is_cancelled()) {
@@ -82,6 +85,7 @@ if ($tab=='config') {
 
     } else if ($data = $mform->get_data()) {
         if ($instance->id) {
+            $instance->status          = $data->status;
             $instance->roleid          = $data->roleid;
             $instance->enrolperiod     = $data->enrolperiod;
             $instance->enrolenddate    = $data->enrolenddate;
@@ -104,8 +108,9 @@ if ($tab=='config') {
                 'enrolperiod'     => $data->enrolperiod,
                 'enrolenddate'    => $data->enrolenddate,
                 'customint1'      => $data->expireroleid,
-                'expirythreshold' => $data->expirythreshold);
-            $plugin->add_instance($course, $fields);
+            );
+            $newid = $plugin->add_instance($course, $fields);
+            $instance = $DB->get_record('enrol', array('id' => $newid));
         }
 
         $plugin->enrol_course_users( $course, $instance );
@@ -119,7 +124,7 @@ if ($tab=='config') {
     $codes = $plugin->get_codes($course, $instance);
 
     // create form
-    if (!$instance->customtext1) {
+    if (empty($instance->customtext1)) {
         $instance->customtext1 = '';
     }
     $instance->tab = $tab;
@@ -143,6 +148,9 @@ if ($tab=='config') {
 } else if ($tab=='groups') {
 
     // get (serialised) group configuration
+    if (empty($instance->customtext2)) {
+        $instance->customtext2 = '';
+    }
     if (!$groups = unserialize($instance->customtext2)) {
         $groups = array();
     }
@@ -176,6 +184,9 @@ if ($tab=='config') {
             }
         }
         $instance->customtext2 = serialize($groups);
+
+        // Set creating course groups
+        $instance->customint2 = $data->coursegroups;
         $DB->update_record('enrol', $instance);        
 
         // Update enrolments and groups
@@ -189,8 +200,10 @@ $PAGE->set_heading($course->fullname);
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('pluginname', 'enrol_gudatabase'));
-echo $output->print_tabs($courseid, $tab);
-if ($tab=='config') {
+if ($instance->id) {
+    echo $output->print_tabs($courseid, $tab);
+}
+if (($tab=='config') || !$instance->id) {
     $mform->display();
 } else if ($tab=='codes') {
     echo $output->print_codes($course->id, $codes);

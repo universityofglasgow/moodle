@@ -32,6 +32,8 @@ $string['codes'] = 'Codes';
 $string['codesenroltable'] = 'Remote codes table';
 $string['codesenroltable_desc'] = 'Table containing information about course codes';
 $string['config'] = 'Configuration';
+$string['coursegroups'] = 'Course groups';
+$string['coursegroups_help'] = 'When this box is ticked, groups will be created for each course code defined in the course (filled with those users).';
 $string['defaultperiod'] = 'Default enrolment period';
 $string['defaultperiod_help'] = 'Set the default duration for enrolments';
 $string['displayaverage'] = 'Approx mean courses process each cron = {$a}';

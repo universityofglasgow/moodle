@@ -37,6 +37,12 @@ class enrol_gudatabase_groups_form extends moodleform {
             $mform->addElement('html', '<div class="alert alert-warning">' . get_string('nolegacycodes', 'enrol_gudatabase') . '</div>');
         }
 
+        if ($coursedescriptions) {
+            $mform->addElement('advcheckbox', 'coursegroups', get_string('coursegroups', 'enrol_gudatabase'), '');
+            $mform->setDefault('coursegroups', $instance->customint2);
+            $mform->addHelpButton('coursegroups', 'coursegroups', 'enrol_gudatabase');
+        }
+
         foreach ($codeclasses as $code => $classes) {
             $description = $coursedescriptions[$code];
             $mform->addElement('html', "<h3>$code ($description)</h3>");

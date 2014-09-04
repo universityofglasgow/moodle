@@ -120,6 +120,27 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         return $actions;
     }
 
+    /**
+     * Returns link to page which may be used to add new instance of enrolment plugin in course.
+     * @param int $courseid
+     * @return moodle_url page url
+     */
+    public function get_newinstance_link($courseid) {
+        global $DB;
+
+        $context = context_course::instance($courseid, MUST_EXIST);
+        if (!has_capability('moodle/course:enrolconfig', $context) or !has_capability('enrol/gudatabase:config', $context)) {
+            return NULL;
+        }
+
+        // Do not permit multiple instances
+        if ($DB->record_exists('enrol', array('courseid'=>$courseid, 'enrol'=>'gudatabase'))) {
+            return NULL;
+        }
+
+        return new moodle_url('/enrol/gudatabase/edit.php', array('courseid'=>$courseid));
+    }
+
     /** 
      * synchronise enrollments for particular course
      * @param object $course
@@ -681,7 +702,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         $codes[] = clean_param( $shortname, PARAM_ALPHANUM );
 
         // add codes from customtext1
-        $morecodes = $instance->customtext1;
+        $morecodes = isset($instance->customtext1) ? $instance->customtext1 : '';
         $morecodes = str_replace("\n\r", "\n", $morecodes);
         $mcodes = explode("\n", $morecodes);
         foreach ($mcodes as $index => $mcode) {
@@ -899,6 +920,31 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         // nothing to do if this doesn't work
         if (!$selectedgroups = unserialize($instance->customtext2)) {
             return false;
+        }
+
+        // synchronise course groups
+        if ($instance->customint2) {
+            $codes = $this->get_codes($course, $instance);
+            if ($codes) {
+                foreach ($codes as $code) {
+
+                    // see if group exists, if not create it
+                    $groupname = $code;
+                    if (!$groupid = groups_get_group_by_name($course->id, $groupname)) {
+                        $group = $this->create_group($groupname, $course);
+                    } else {
+                        $group = groups_get_group($groupid);
+                    }
+
+                    // get enrolments
+                    $enrolments = $this->external_enrolments(array($code));
+                    foreach ($enrolments as $enrolment) {
+                        if ($user = $DB->get_record('user', array('idnumber' => $enrolment->matric_no))) {
+                            groups_add_member($group, $user);
+                        }
+                    }
+                }
+            }
         }
 
         // run through selected groups and classes
