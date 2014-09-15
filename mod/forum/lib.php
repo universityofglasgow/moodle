@@ -581,6 +581,7 @@ function forum_cron() {
             $errorcount[$pid] = 0;
         }
     }
+var_dump($users); die;
 
     if ($users && $posts) {
 
