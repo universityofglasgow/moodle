@@ -656,7 +656,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
 
         // enrolperiod time end
         if ($instance->enrolperiod) {
-            $period_timeend = $time() + $instance->enrolperiod;
+            $period_timeend = time() + $instance->enrolperiod;
         } else {
             $period_timeend = 0;
         }
