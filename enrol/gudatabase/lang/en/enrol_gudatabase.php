@@ -55,6 +55,7 @@ $string['savewarning'] = 'Saving this page will update all enrolments and groups
 $string['settingsclasslist'] = 'Class list table';
 $string['settingsheadercodes'] = 'Remote codes table';
 $string['scheduledname'] = 'Synchronise guenrolments';
+$string['starcode'] = 'Full year psuedo-code';
 $string['status'] = 'Enable existing enrolments';
 $string['status_desc'] = 'Enable gudatabase method in new courses.';
 $string['status_help'] = 'If disabled all existing gudatabase enrolments are suspended and new users can not enrol.';

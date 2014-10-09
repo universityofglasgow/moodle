@@ -706,7 +706,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         $morecodes = str_replace("\n\r", "\n", $morecodes);
         $mcodes = explode("\n", $morecodes);
         foreach ($mcodes as $index => $mcode) {
-            $mcodes[$index] = clean_param( trim($mcode), PARAM_ALPHANUM );
+            $mcodes[$index] = clean_param( trim($mcode), PARAM_TEXT );
         }
         $codes = array_merge($codes, $mcodes);
         $verified_codes = $this->save_codes($course, $codes);

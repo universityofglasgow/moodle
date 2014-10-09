@@ -56,7 +56,9 @@ class enrol_gudatabase_renderer extends plugin_renderer_base {
     public function courseinfo($courseid, $code) {
         global $DB;
 
-        if ($codeinfo = $DB->get_record('enrol_gudatabase_codes', array('courseid'=>$courseid, 'code'=>$code))) {
+        if (substr($code, -1)=='*') {
+            $courseinfo = get_string('starcode', 'enrol_gudatabase');
+        } else if ($codeinfo = $DB->get_record('enrol_gudatabase_codes', array('courseid'=>$courseid, 'code'=>$code))) {
             $courseinfo = "{$codeinfo->subjectname} > {$codeinfo->coursename}";
         } else {
             $courseinfo = get_string('nocourseinfo', 'enrol_gudatabase');
