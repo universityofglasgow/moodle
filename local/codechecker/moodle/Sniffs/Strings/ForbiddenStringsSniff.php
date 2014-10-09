@@ -22,7 +22,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-class Moodle_Sniffs_Strings_ForbiddenStringsSniff implements PHP_CodeSniffer_Sniff {
+class moodle_Sniffs_Strings_ForbiddenStringsSniff implements PHP_CodeSniffer_Sniff {
 
     /**
      * Returns an array of tokens this test wants to listen for.
@@ -63,7 +63,7 @@ class Moodle_Sniffs_Strings_ForbiddenStringsSniff implements PHP_CodeSniffer_Sni
         $tokens = $phpcsFile->getTokens();
         $token = $tokens[$stackPtr];
         $text = trim($token['content'], "'\"");
-        if (preg_match('~\b(FROM|JOIN)\b.*\{\w+\}.(?!\))*\bAS\b~im', $text)) {
+        if (preg_match('~\b(FROM|JOIN)\b.*\{\w+\}\s*\bAS\b~im', $text)) {
             $error = 'The use of the AS keyword to alias tables is bad for cross-db';
             $phpcsFile->addError($error, $stackPtr, 'Found');
         }
@@ -81,15 +81,22 @@ class Moodle_Sniffs_Strings_ForbiddenStringsSniff implements PHP_CodeSniffer_Sni
     protected function process_regexp_separator_e(PHP_CodeSniffer_File $phpcsFile, $stackPtr) {
         $tokens = $phpcsFile->getTokens();
         $token = $tokens[$stackPtr];
-        $text = trim($token['content'], "'\"");
+        $text = trim($token['content'], " '\"\t\n");
         if (@preg_match($text, '') !== false) {
             // Regular expression found. Look for used separator (1st char).
             $separator = substr($text, 0, 1);
-            $parts = preg_split('~' . $separator . '~', $text);
-            $modifiers = end($parts);
-            if (strpos($modifiers, 'e') !== false) {
-                $error = 'The use of the /e modifier in regular expressions is forbidden';
-                $phpcsFile->addError($error, $stackPtr, 'Found');
+            // Get rid of separator.
+            $text = trim($text, $separator);
+            $parts = preg_split('~' . preg_quote($separator, '~') . '~', $text);
+            // Need exactly 2 parts.
+            if (isset($parts[1]) && !isset($parts[2])) {
+                $modifiers = $parts[1];
+                if (preg_match('~[imsxeADSUXJu]+~', $modifiers) !== false) { // Only when modifiers are valid.
+                    if (strpos($modifiers, 'e') !== false) {
+                        $error = 'The use of the /e modifier in regular expressions is forbidden';
+                        $phpcsFile->addError($error, $stackPtr, 'Found');
+                    }
+                }
             }
         }
     }

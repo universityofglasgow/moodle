@@ -21,4 +21,10 @@ $text = "Just a warning `here` too";
 
 // Let's mix the 3 above together for fun.
 $sqlregexptick = '@SELECT * FROM {table} AS t WHERE `column` = :param@mes';
+
+// These should not being caught as /e regexp.
+$this->pix_url('<div tabindex="0" class="file-picker fp-generallayout" role="dialog" aria-live="assertive">');
+$regexp = preg_replace('/test/me0', 'ignore anything having invalid (not "imsxeADSUXJu") modifiers');
+echo '       <div class="fp-restrictions">';
+
 // Fair enough.
