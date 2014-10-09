@@ -75,7 +75,8 @@ class mod_choicegroup_mod_form extends moodleform_mod {
                 $groupings[$grouping->id]->name = $grouping->name;
             }
 
-            $db_groupings_groups = $DB->get_records('groupings_groups');
+            list($sqlin, $inparams) = $DB->get_in_or_equal(array_keys($groupings));
+            $db_groupings_groups = $DB->get_records_select('groupings_groups', 'groupingid '.$sqlin, $inparams);
 
             foreach ($db_groupings_groups as $grouping_group_link) {
                 $groupings[$grouping_group_link->groupingid]->linkedGroupsIDs[] =  $grouping_group_link->groupid;
@@ -133,7 +134,7 @@ class mod_choicegroup_mod_form extends moodleform_mod {
 		$mform->addElement('html','<select id="availablegroups" name="availableGroups" multiple size=10 style="width:200px">');
 		foreach ($groupings as $groupingID => $grouping) {
 			// find all linked groups to this grouping
-			if (count($grouping->linkedGroupsIDs) > 1) { // grouping has more than 2 items, thus we should display it (otherwise it would be clearer to display only that single group alone)
+			if (isset($grouping->linkedGroupsIDs) && count($grouping->linkedGroupsIDs) > 1) { // grouping has more than 2 items, thus we should display it (otherwise it would be clearer to display only that single group alone)
 				$mform->addElement('html', '<option value="'.$groupingID.'" style="font-weight: bold" class="grouping">'.get_string('char_bullet_expanded', 'choicegroup').$grouping->name.'</option>');
 				foreach ($grouping->linkedGroupsIDs as $linkedGroupID) {
 					$mform->addElement('html', '<option value="'.$linkedGroupID.'" class="group nested">&nbsp;&nbsp;&nbsp;&nbsp;'.$groups[$linkedGroupID]->name.'</option>');
