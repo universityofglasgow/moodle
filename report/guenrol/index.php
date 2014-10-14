@@ -42,12 +42,12 @@ if (!$course = $DB->get_record('course', array('id' => $id))) {
 
 // Security.
 require_login($course);
-$context = get_context_instance(CONTEXT_COURSE, $course->id);
+$context = context_course::instance($course->id);
 require_capability('report/guenrol:view', $context);
 $output = $PAGE->get_renderer('report_guenrol');;
 
-// Log.
-add_to_log($course->id, "course", "report guenrol", "report/guenrol/index.php?id=$course->id", $course->id);
+// Log. (deprecated and PITA to replace)
+// add_to_log($course->id, "course", "report guenrol", "report/guenrol/index.php?id=$course->id", $course->id);
 
 $PAGE->set_title($course->shortname .': '. get_string('pluginname', 'report_guenrol'));
 $PAGE->set_heading($course->fullname);
@@ -73,7 +73,7 @@ foreach ($codes as $code) {
 if (($action=='removed') || ($action=='unenrol')) {
 
     // Get the gudatabase enrolments in this course.
-    $sql = 'SELECT u.id, u.username, u.firstname, u.lastname, u.deleted, e.id AS instance from {user} u ';
+    $sql = 'SELECT u.*, e.id AS instance from {user} u ';
     $sql .= 'JOIN {user_enrolments} ue ON (ue.userid=u.id) ';
     $sql .= 'JOIN {enrol} e ON (ue.enrolid=e.id) ';
     $sql .= 'WHERE e.courseid=? AND e.enrol=? ';

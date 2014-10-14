@@ -406,3 +406,10 @@ function local_gusync_course_deleted($course) {
     return true;
 }
 
+
+function local_gusync_extends_settings_navigation(settings_navigation $nav, context $context) {
+    $nav->add('Fred is great');
+}
+
+
+
