@@ -35,6 +35,9 @@ class enrol_gudatabase_codes_form extends moodleform {
         $mform->addHelpButton('customtext1', 'codelist', 'enrol_gudatabase');
         $mform->setType('customtext1', PARAM_TEXT);
 
+        $mform->addElement('hidden', 'id');
+        $mform->setType('id', PARAM_INT);
+
         $mform->addElement('hidden', 'courseid');
         $mform->setType('courseid', PARAM_INT);
 

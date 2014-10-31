@@ -27,21 +27,21 @@ class enrol_gudatabase_renderer extends plugin_renderer_base {
      * @param int $courseid
      * @param string $selected selected tab
      */
-    public function print_tabs($courseid, $selected) {
+    public function print_tabs($courseid, $instanceid, $selected) {
         $rows = array();
         $rows[] = new tabobject(
             'config',
-            new moodle_url('/enrol/gudatabase/edit.php', array('courseid' => $courseid, 'tab' => 'config')),
+            new moodle_url('/enrol/gudatabase/edit.php', array('courseid' => $courseid, 'id' => $instanceid, 'tab' => 'config')),
             get_string('config', 'enrol_gudatabase')
         );
         $rows[] = new tabobject(
             'codes',
-            new moodle_url('/enrol/gudatabase/edit.php', array('courseid' => $courseid, 'tab' => 'codes')),
+            new moodle_url('/enrol/gudatabase/edit.php', array('courseid' => $courseid, 'id' => $instanceid, 'tab' => 'codes')),
             get_string('codes', 'enrol_gudatabase')
         );
         $rows[] = new tabobject(
             'groups',
-            new moodle_url('/enrol/gudatabase/edit.php', array('courseid' => $courseid, 'tab' => 'groups')),
+            new moodle_url('/enrol/gudatabase/edit.php', array('courseid' => $courseid, 'id' => $instanceid, 'tab' => 'groups')),
             get_string('groups', 'enrol_gudatabase')
         );
         return $this->output->tabtree($rows, $selected) . '<p></p>';
@@ -70,13 +70,17 @@ class enrol_gudatabase_renderer extends plugin_renderer_base {
     /**
      * Print legacy codes
      */
-    public function print_codes($courseid, $codes) {
+    public function print_codes($courseid, $codes, $settingcodes=false) {
         global $DB;
 
         $html = '';
         if ($codes) {
             $html .= '<div class="alert alert-info">';
-            $html .= "<p><b>" . get_string('legacycodes', 'enrol_gudatabase') . "</b></p>";
+            if ($settingcodes) {
+                $html .= "<p><b>" . get_string('legacycodes', 'enrol_gudatabase') . "</b></p>";
+            } else {
+                $html .= "<p><b>" . get_string('codesdefined', 'enrol_gudatabase') . "</b></p>";
+            }
             $html .= "<ul>";
             foreach ($codes as $code) {
                 $courseinfo = $this->courseinfo($courseid, $code);

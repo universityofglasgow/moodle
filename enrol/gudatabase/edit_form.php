@@ -31,11 +31,22 @@ class enrol_gudatabase_edit_form extends moodleform {
 
         list($instance, $plugin, $context) = $this->_customdata;
 
+        $mform->addElement('text', 'name', get_string('custominstancename', 'enrol'));
+        $mform->setType('name', PARAM_TEXT);
+
         $options = array(ENROL_INSTANCE_ENABLED  => get_string('yes'),
                          ENROL_INSTANCE_DISABLED => get_string('no'));
         $mform->addElement('select', 'status', get_string('status', 'enrol_gudatabase'), $options);
         $mform->addHelpButton('status', 'status', 'enrol_gudatabase');
         $mform->setDefault('status', $plugin->get_config('status'));
+
+        $options = array(
+            0 => get_string('no'),
+            1 => get_string('yes'),
+        );
+        $mform->addElement('select', 'customint3', get_string('settingscodes', 'enrol_gudatabase'), $options);
+        $mform->addHelpButton('customint3', 'settingscodes', 'enrol_gudatabase');
+        $mform->setDefault('customint3', 0);
 
         if ($instance->id) {
             $roles = get_default_enrol_roles($context, $instance->roleid);
@@ -58,11 +69,18 @@ class enrol_gudatabase_edit_form extends moodleform {
         $mform->setDefault('expireroleid', $plugin->get_config('expireroleid'));
         $mform->addHelpButton('expireroleid', 'expirerole', 'enrol_gudatabase');
 
+        $mform->addElement('hidden', 'id');
+        $mform->setType('id', PARAM_INT);
+
         $mform->addElement('hidden', 'courseid');
         $mform->setType('courseid', PARAM_INT);
 
         if (enrol_accessing_via_instance($instance)) {
             $mform->addElement('static', 'selfwarn', get_string('instanceeditselfwarning', 'core_enrol'), get_string('instanceeditselfwarningtext', 'core_enrol'));
+        }
+
+        if (empty($instance->id)) {
+            $mform->addElement('html', '<div class="alert alert-info">' . get_string('newwarning', 'enrol_gudatabase') . '</div>');
         }
 
         $mform->addElement('html', '<div class="alert alert-danger">' . get_string('savewarning', 'enrol_gudatabase') . '</div>');

@@ -100,6 +100,28 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
     }
 
     /**
+     * Returns localised name of enrol instance
+     *
+     * @param stdClass $instance (null is accepted too)
+     * @return string
+     */
+    public function get_instance_name($instance) {
+        global $DB;
+
+        if (empty($instance->name)) {
+            if (!empty($instance->roleid) and $role = $DB->get_record('role', array('id'=>$instance->roleid))) {
+                $role = ' (' . role_get_name($role, context_course::instance($instance->courseid, IGNORE_MISSING)) . ')';
+            } else {
+                $role = '';
+            }
+            $enrol = $this->get_name();
+            return get_string('pluginname', 'enrol_'.$enrol) . $role;
+        } else {
+            return format_string($instance->name);
+        }
+    }
+
+    /**
      * Gets an array of the user enrolment actions
      *
      * @param course_enrolment_manager $manager
@@ -133,11 +155,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
             return NULL;
         }
 
-        // Do not permit multiple instances
-        if ($DB->record_exists('enrol', array('courseid'=>$courseid, 'enrol'=>'gudatabase'))) {
-            return NULL;
-        }
-
+        // Multiple instances supported - different roles
         return new moodle_url('/enrol/gudatabase/edit.php', array('courseid'=>$courseid));
     }
 
@@ -696,10 +714,16 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
      * @return array list of codes
      */
     public function get_codes($course, $instance) {
-        $shortname = $course->shortname;
-        $idnumber = $course->idnumber;
-        $codes = $this->split_code( $idnumber );
-        $codes[] = clean_param( $shortname, PARAM_ALPHANUM );
+
+        // if customint3 is false then no settings codes
+        if ($instance->customint3) {
+            $shortname = $course->shortname;
+            $idnumber = $course->idnumber;
+            $codes = $this->split_code( $idnumber );
+            $codes[] = clean_param( $shortname, PARAM_ALPHANUM );
+        } else {
+            $codes = array();
+        }
 
         // add codes from customtext1
         $morecodes = isset($instance->customtext1) ? $instance->customtext1 : '';
@@ -788,7 +812,23 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
     }
 
     /**
-     * check if course has instance of this plugin
+     * Add new instance of gudatabaseenrol plugin when there isn't one already
+     * using appropriate defaults. 
+     * @param object $course
+     * @param array instance fields
+     * @return int id of new instance, null if can not be created
+     */
+    public function add_first_instance($course, array $fields = NULL) {
+
+        $fields['roleid'] = $this->get_config('defaultrole');
+        $fields['customint1'] = 0; // expiry role
+        $fields['customint2'] = 0; // course code groups
+        $fields['customint3'] = 1; // honour settings codes
+        return $this->add_instance($course, $fields);
+    }
+
+    /**
+     * check if course has at least one instance of this plugin
      * add if not
      * @param object $course
      * @return int instanceid
@@ -809,10 +849,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
 
         // If we didn't find it then add it.
         if (!$found) {
-            $data = array();
-            $data['roleid'] = $this->get_config('defaultrole');
-            $data['customint1'] = 0;
-            $instanceid = $this->add_instance($course, $data);
+            $instanceid = $this->add_first_instance($course, $data);
         }
 
         return $instanceid;
@@ -839,22 +876,23 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
 
         // We want all our new courses to have this plugin.
         if ($inserted) {
-            $instanceid = $this->add_instance($course);
-        } else {
-            $instanceid = $this->check_instance( $course );
+            $instanceid = $this->add_first_instance($course);
         }
 
-        // Get the instance of the enrolment plugin.
-        $instance = $DB->get_record('enrol', array('id' => $instanceid));
+        // Get the instances of the enrolment plugin.
+        $instances = $DB->get_records('enrol', array('courseid' => $course->id, 'enrol' => 'gudatabase'));
 
         // Add the users to the course.
-        $this->enrol_course_users( $course, $instance );
+        foreach ($instances as $instance) {
+            $this->enrol_course_users($course, $instance);
+            $this->sync_groups($course, $instance);
+        }
 
         return true;
     }
 
     /**
-     * Create a new grop (nicked from group/groups.php)
+     * Create a new group (nicked from group/groups.php)
      * @param string $name
      * @param object $course
      * @return object new group
@@ -915,6 +953,11 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
      */
     public function sync_groups($course, $instance) {
         global $DB;
+
+        // Shall we?
+        if ($instance->status != ENROL_INSTANCE_ENABLED) {
+            return false;
+        }
 
         // get group settings from instance
         // nothing to do if this doesn't work
@@ -979,7 +1022,6 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
 
     /**
      * synchronise enrollments when user logs in
-     * TODO: this needs to actually do something.
      *
      * @param object $user user record
      * @return void
@@ -1038,31 +1080,45 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
                 // Make sure it has this enrolment plugin.
                 $instanceid = $this->check_instance( $course );
 
-                // Get the instance of the enrolment plugin.
-                $instance = $DB->get_record('enrol', array('id' => $instanceid));
+                // Get the instances of the enrolment plugin.
+                $instances = $DB->get_records('enrol', array('courseid' => $courseid, 'enrol' => 'gudatabase'));
+                foreach ($instances as $instance) {
+                    if ($instance->status != ENROL_INSTANCE_ENABLED) {
+                        continue;
+                    }
 
-                // Enrolment period
-                $timestart = time();
-                $timeend = $this->end_date($instance);
-                if ($instance->enrolperiod) {
-                    $timeend = $timestart + $instance->enrolperiod;
-                } else {
-                    $timeend = 0;
+                    // Now need to confirm that this instance is the one that defined this code
+                    $instcodes = $this->get_codes($course, $instance);
+                    if (empty($instcodes) || !in_array($code->code, $instcodes)) {
+                        continue;
+                    }
+                
+                    // Enrolment period
+                    $timestart = time();
+                    $timeend = $this->end_date($instance);
+                    if ($instance->enrolperiod) {
+                        $timeend = $timestart + $instance->enrolperiod;
+                    } else {
+                        $timeend = 0;
+                    }
+
+                    // role to use (existing instances will not have a 'roleid')
+                    if (empty($instance->roleid)) {
+                        $instance->roleid = $defaultrole;
+                        $DB->update_record('enrol', $instance);
+                    }
+
+                    // Enrol user into course (if not already).
+                    if (!$this->is_user_enrolled($instance, $user->id)) {
+                        $this->enrol_user( $instance, $user->id, $instance->roleid, $timestart, $timeend, ENROL_USER_ACTIVE );
+                    }
+
+                    // Cache enrolment.
+                    $this->cache_user_enrolment( $course, $user, $code->code );
+
+                    // sync the courses groups
+                    $this->sync_groups($course, $instance);
                 }
-
-                // role to use (existing instances will not have a 'roleid')
-                if (empty($instance->roleid)) {
-                    $instance->roleid = $defaultrole;
-                    $DB->update_record('enrol', $instance);
-                }
-
-                // Enrol user into course (if not already).
-                if (!$this->is_user_enrolled($instance, $user->id)) {
-                    $this->enrol_user( $instance, $user->id, $instance->roleid, $timestart, $timeend, ENROL_USER_ACTIVE );
-                }
-
-                // Cache enrolment.
-                $this->cache_user_enrolment( $course, $user, $code->code );
             }
         }
 
@@ -1161,12 +1217,16 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
             // Avoid site and front page.
             if ($course->id > 1) {
                 $instanceid = $this->check_instance($course);
-                $instance = $DB->get_record('enrol', array('id'=>$instanceid), '*', MUST_EXIST);
                 $updatestart = microtime(true);
                 $trace->output( "enrol_gudatabase: updating enrolments for course '{$course->shortname}'" );
                 $this->course_updated(false, $course, null);
-                $trace->output( "enrol_gudatabase: updating groups for course '{$course->shortname}'" );
-                $this->sync_groups($course, $instance);
+                //$trace->output( "enrol_gudatabase: updating groups for course '{$course->shortname}'" );
+                //$instances = $DB->get_records('enrol', array('courseid' => $course->id, 'enrol' => 'gudatabase'));
+                //foreach ($instances as $instance) {
+                //    $name = $this->get_instance_name($instance);
+                //    $trace->output("enrol_gudatabase: processing groups for instance $name");
+                //    $this->sync_groups($course, $instance);
+                //}
                 $updateend = microtime(true);
                 $updatetime = number_format($updateend - $updatestart, 4);
 

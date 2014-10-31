@@ -29,6 +29,7 @@ require_once(dirname(__FILE__) . '/codes_form.php');
 require_once(dirname(__FILE__) . '/groups_form.php');
 
 $courseid = required_param('courseid', PARAM_INT);
+$instanceid = optional_param('id', 0, PARAM_INT);
 $tab = optional_param('tab', 'config', PARAM_ALPHA);
 
 $course = $DB->get_record('course', array('id'=>$courseid), '*', MUST_EXIST);
@@ -37,7 +38,7 @@ $context = context_course::instance($course->id, MUST_EXIST);
 require_login($course);
 require_capability('enrol/gudatabase:config', $context);
 
-$PAGE->set_url('/enrol/gudatabase/edit.php', array('courseid'=>$course->id, 'tab'=>$tab));
+$PAGE->set_url('/enrol/gudatabase/edit.php', array('courseid' => $course->id, 'id' => $instanceid, 'tab' => $tab));
 $PAGE->set_pagelayout('admin');
 $output = $PAGE->get_renderer('enrol_gudatabase');
 
@@ -48,14 +49,9 @@ if (!enrol_is_enabled('gudatabase')) {
 
 $plugin = enrol_get_plugin('gudatabase');
 
-if ($instances = $DB->get_records('enrol', array('courseid'=>$course->id, 'enrol'=>'gudatabase'), 'id ASC')) {
-    $instance = array_shift($instances);
-    if ($instances) {
-        // Oh - we allow only one instance per course!!
-        foreach ($instances as $del) {
-            $plugin->delete_instance($del);
-        }
-    }
+if ($instanceid) {
+    $instance = $DB->get_record('enrol', array('courseid'=>$course->id, 'enrol'=>'gudatabase', 'id'=>$instanceid), '*', MUST_EXIST);
+
     // Merge these two settings to one value for the single selection element.
     if ($instance->notifyall and $instance->expirynotify) {
         $instance->expirynotify = 2;
@@ -71,8 +67,12 @@ if ($instances = $DB->get_records('enrol', array('courseid'=>$course->id, 'enrol
     $instance = new stdClass();
     $instance->id              = null;
     $instance->courseid        = $course->id;
+    $instance->roleid          = $plugin->get_config('defaultrole');
     $instance->customtext1     = '';
     $instance->customtext2     = '';
+    $instance->customint1      = 0;
+    $instance->customint2      = 0;
+    $instance->customint3      = 0;
 }
 
 // check which tab is active and what action to take
@@ -84,30 +84,35 @@ if (($tab=='config') || !$instance->id) {
         redirect($return);
 
     } else if ($data = $mform->get_data()) {
-        if ($instance->id) {
+        if ($instanceid) {
+            $instance->name            = $data->name;
             $instance->status          = $data->status;
             $instance->roleid          = $data->roleid;
             $instance->enrolperiod     = $data->enrolperiod;
             $instance->enrolenddate    = $data->enrolenddate;
             $instance->customint1      = $data->expireroleid;
+            $instance->customint3      = $data->customint3;
             $instance->timemodified    = time();
 
             $DB->update_record('enrol', $instance);
 
             // Use standard API to update instance status.
             if ($instance->status != $data->status) {
-                $instance = $DB->get_record('enrol', array('id'=>$instance->id));
+                $instance = $DB->get_record('enrol', array('id' => $instance->id));
                 $plugin->update_status($instance, $data->status);
                 $context->mark_dirty();
             }
 
         } else {
             $fields = array(
+                'name'            => $data->name,
                 'status'          => $data->status,
                 'roleid'          => $data->roleid,
                 'enrolperiod'     => $data->enrolperiod,
                 'enrolenddate'    => $data->enrolenddate,
                 'customint1'      => $data->expireroleid,
+                'customint3'      => $data->customint3,
+                'timemodified'    => time(),
             );
             $newid = $plugin->add_instance($course, $fields);
             $instance = $DB->get_record('enrol', array('id' => $newid));
@@ -201,12 +206,12 @@ $PAGE->set_heading($course->fullname);
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('pluginname', 'enrol_gudatabase'));
 if ($instance->id) {
-    echo $output->print_tabs($courseid, $tab);
+    echo $output->print_tabs($courseid, $instance->id, $tab);
 }
 if (($tab=='config') || !$instance->id) {
     $mform->display();
 } else if ($tab=='codes') {
-    echo $output->print_codes($course->id, $codes);
+    echo $output->print_codes($course->id, $codes, $instance->customint3);
     $cform->display();
 } else if ($tab=='groups') {
     $gform->display();
