@@ -3330,6 +3330,7 @@ EDITOR.prototype = {
         }
         this.dialogue.centerDialogue();
         this.dialogue.show();
+        drawingcanvas.on('windowresize', this.resize, this);
     },
 
     /**
@@ -3685,6 +3686,7 @@ EDITOR.prototype = {
      * @method edit_start
      */
     edit_start : function(e) {
+        e.preventDefault();
         var canvas = Y.one(SELECTOR.DRAWINGCANVAS),
             offset = canvas.getXY(),
             scrolltop = canvas.get('docScrollY'),
@@ -3754,6 +3756,7 @@ EDITOR.prototype = {
      * @method edit_move
      */
     edit_move : function(e) {
+        e.preventDefault();
         var bounds = this.get_canvas_bounds(),
             canvas = Y.one(SELECTOR.DRAWINGCANVAS),
             clientpoint = new M.assignfeedback_editpdf.point(e.clientX + canvas.get('docScrollX'),
@@ -3832,6 +3835,16 @@ EDITOR.prototype = {
         this.currentedit.start = false;
         this.currentedit.end = false;
         this.currentedit.path = [];
+    },
+
+    /**
+     * Resize the dialogue window when the browser is resized.
+     * @public
+     * @method resize
+     */
+    resize : function() {
+        this.dialogue.centerDialogue();
+        return true;
     },
 
     /**
@@ -4122,6 +4135,7 @@ M.assignfeedback_editpdf.editor.init = M.assignfeedback_editpdf.editor.init || f
         "graphics",
         "json",
         "event-move",
+        "event-resize",
         "querystring-stringify-simple",
         "moodle-core-notification-dialog",
         "moodle-core-notification-exception",

@@ -130,9 +130,8 @@ function message_print_contact_selector($countunreadtotal, $viewing, $user1, $us
         }
     }
 
-    // Only show the search button if we're viewing our own messages.
-    // Search isn't currently able to deal with user A wanting to search user B's messages.
-    if ($showactionlinks) {
+    // Only show the search button if we're viewing our own contacts.
+    if ($viewing == MESSAGE_VIEW_CONTACTS && $user2 == null) {
         echo html_writer::start_tag('form', array('action' => 'index.php','method' => 'GET'));
         echo html_writer::start_tag('fieldset');
         $managebuttonclass = 'visible';
@@ -2375,11 +2374,18 @@ function message_mark_message_read($message, $timeread, $messageworkingempty=fal
 
     $DB->delete_records('message', array('id' => $messageid));
 
+    // Get the context for the user who received the message.
+    $context = context_user::instance($message->useridto, IGNORE_MISSING);
+    // If the user no longer exists the context value will be false, in this case use the system context.
+    if ($context === false) {
+        $context = context_system::instance();
+    }
+
     // Trigger event for reading a message.
     $event = \core\event\message_viewed::create(array(
         'objectid' => $messagereadid,
         'userid' => $message->useridto, // Using the user who read the message as they are the ones performing the action.
-        'context'  => context_user::instance($message->useridto),
+        'context' => $context,
         'relateduserid' => $message->useridfrom,
         'other' => array(
             'messageid' => $messageid

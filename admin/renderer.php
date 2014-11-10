@@ -1039,19 +1039,28 @@ class core_admin_renderer extends plugin_renderer_base {
         }
 
         foreach ($plugin->get_other_required_plugins() as $component => $requiredversion) {
-            $ok = true;
             $otherplugin = $pluginman->get_plugin_info($component);
+            $actions = array();
 
             if (is_null($otherplugin)) {
-                $ok = false;
-            } else if ($requiredversion != ANY_VERSION and $otherplugin->versiondisk < $requiredversion) {
-                $ok = false;
-            }
+                // The required plugin is not installed.
+                $class = 'requires-failed requires-missing';
+                $installurl = new moodle_url('https://moodle.org/plugins/view.php', array('plugin' => $component));
+                $uploadurl = new moodle_url('/admin/tool/installaddon/');
+                $actions[] = html_writer::link($installurl, get_string('dependencyinstall', 'core_plugin'));
+                $actions[] = html_writer::link($uploadurl, get_string('dependencyupload', 'core_plugin'));
 
-            if ($ok) {
-                $class = 'requires-ok';
+            } else if ($requiredversion != ANY_VERSION and $otherplugin->versiondisk < $requiredversion) {
+                // The required plugin is installed but needs to be updated.
+                $class = 'requires-failed requires-outdated';
+                if (!$otherplugin->is_standard()) {
+                    $updateurl = new moodle_url($this->page->url, array('sesskey' => sesskey(), 'fetchupdates' => 1));
+                    $actions[] = html_writer::link($updateurl, get_string('checkforupdates', 'core_plugin'));
+                }
+
             } else {
-                $class = 'requires-failed';
+                // Already installed plugin with sufficient version.
+                $class = 'requires-ok';
             }
 
             if ($requiredversion != ANY_VERSION) {
@@ -1059,11 +1068,11 @@ class core_admin_renderer extends plugin_renderer_base {
             } else {
                 $str = 'otherplugin';
             }
-            $componenturl = new moodle_url('https://moodle.org/plugins/view.php?plugin='.$component);
-            $componenturl = html_writer::tag('a', $component, array('href' => $componenturl->out()));
+
             $requires[] = html_writer::tag('li',
-                    get_string($str, 'core_plugin',
-                            array('component' => $componenturl, 'version' => $requiredversion)),
+                    html_writer::div(get_string($str, 'core_plugin',
+                            array('component' => $component, 'version' => $requiredversion)), 'component').
+                    html_writer::div(implode(' | ', $actions), 'actions'),
                     array('class' => $class));
         }
 
@@ -1385,7 +1394,7 @@ class core_admin_renderer extends plugin_renderer_base {
      * configuration and how it suits Moodle needs.
      *
      * @param boolean $result final result of the check (true/false)
-     * @param array $environment_results array of results gathered
+     * @param environment_results[] $environment_results array of results gathered
      * @return string HTML to output.
      */
     public function environment_check_table($result, $environment_results) {
@@ -1397,9 +1406,10 @@ class core_admin_renderer extends plugin_renderer_base {
             get_string('name'),
             get_string('info'),
             get_string('report'),
+            get_string('plugin'),
             get_string('status'),
         );
-        $servertable->colclasses = array('centeralign name', 'centeralign info', 'leftalign report', 'centeralign status');
+        $servertable->colclasses = array('centeralign name', 'centeralign info', 'leftalign report', 'leftalign plugin', 'centeralign status');
         $servertable->attributes['class'] = 'admintable environmenttable generaltable';
         $servertable->id = 'serverstatus';
 
@@ -1409,9 +1419,10 @@ class core_admin_renderer extends plugin_renderer_base {
         $othertable->head  = array(
             get_string('info'),
             get_string('report'),
+            get_string('plugin'),
             get_string('status'),
         );
-        $othertable->colclasses = array('aligncenter info', 'alignleft report', 'aligncenter status');
+        $othertable->colclasses = array('aligncenter info', 'alignleft report', 'alignleft plugin', 'aligncenter status');
         $othertable->attributes['class'] = 'admintable environmenttable generaltable';
         $othertable->id = 'otherserverstatus';
 
@@ -1427,6 +1438,7 @@ class core_admin_renderer extends plugin_renderer_base {
                 $type = $environment_result->getPart();
                 $info = $environment_result->getInfo();
                 $status = $environment_result->getStatus();
+                $plugin = $environment_result->getPluginName();
                 $error_code = $environment_result->getErrorCode();
                 // Process Report field
                 $rec = new stdClass();
@@ -1503,7 +1515,8 @@ class core_admin_renderer extends plugin_renderer_base {
                 if (!empty($info)){
                    $linkparts[] = $info;
                 }
-                if (empty($CFG->docroot)) {
+                // Plugin environments do not have docs pages yet.
+                if (empty($CFG->docroot) or $environment_result->plugin) {
                     $report = get_string($stringtouse, 'admin', $rec);
                 } else {
                     $report = $this->doc_link(join($linkparts, '/'), get_string($stringtouse, 'admin', $rec));
@@ -1529,9 +1542,9 @@ class core_admin_renderer extends plugin_renderer_base {
 
                 // Add the row to the table
                 if ($environment_result->getPart() == 'custom_check'){
-                    $otherdata[$messagetype][] = array ($info, $report, $status);
+                    $otherdata[$messagetype][] = array ($info, $report, $plugin, $status);
                 } else {
-                    $serverdata[$messagetype][] = array ($type, $info, $report, $status);
+                    $serverdata[$messagetype][] = array ($type, $info, $report, $plugin, $status);
                 }
             }
         }

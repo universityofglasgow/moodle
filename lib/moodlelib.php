@@ -1168,10 +1168,11 @@ function clean_param($param, $type) {
 
         case PARAM_USERNAME:
             $param = fix_utf8($param);
-            $param = str_replace(" " , "", $param);
+            $param = trim($param);
             // Convert uppercase to lowercase MDL-16919.
             $param = core_text::strtolower($param);
             if (empty($CFG->extendedusernamechars)) {
+                $param = str_replace(" " , "", $param);
                 // Regular expression, eliminate all chars EXCEPT:
                 // alphanum, dash (-), underscore (_), at sign (@) and period (.) characters.
                 $param = preg_replace('/[^-\.@_a-z0-9]/', '', $param);
@@ -4734,6 +4735,9 @@ function update_internal_user_password($user, $password, $fasthash = false) {
     require_once($CFG->libdir.'/password_compat/lib/password.php');
 
     // Figure out what the hashed password should be.
+    if (!isset($user->auth)) {
+        $user->auth = $DB->get_field('user', 'auth', array('id' => $user->id));
+    }
     $authplugin = get_auth_plugin($user->auth);
     if ($authplugin->prevent_local_passwords()) {
         $hashedpassword = AUTH_PASSWORD_NOT_CACHED;
@@ -4741,13 +4745,19 @@ function update_internal_user_password($user, $password, $fasthash = false) {
         $hashedpassword = hash_internal_user_password($password, $fasthash);
     }
 
-    // If verification fails then it means the password has changed.
-    if (isset($user->password)) {
-        // While creating new user, password in unset in $user object, to avoid
-        // saving it with user_create()
+    $algorithmchanged = false;
+
+    if ($hashedpassword === AUTH_PASSWORD_NOT_CACHED) {
+        // Password is not cached, update it if not set to AUTH_PASSWORD_NOT_CACHED.
+        $passwordchanged = ($user->password !== $hashedpassword);
+
+    } else if (isset($user->password)) {
+        // If verification fails then it means the password has changed.
         $passwordchanged = !password_verify($password, $user->password);
         $algorithmchanged = password_needs_rehash($user->password, PASSWORD_DEFAULT);
     } else {
+        // While creating new user, password in unset in $user object, to avoid
+        // saving it with user_create()
         $passwordchanged = true;
     }
 
@@ -5703,7 +5713,7 @@ function get_mailer($action='get') {
  * @param string $subject plain text subject line of the email
  * @param string $messagetext plain text version of the message
  * @param string $messagehtml complete html version of the message (optional)
- * @param string $attachment a file on the filesystem, relative to $CFG->dataroot
+ * @param string $attachment a file on the filesystem, either relative to $CFG->dataroot or a full path to a file in $CFG->tempdir
  * @param string $attachname the name of the file (extension indicates MIME)
  * @param bool $usetrueaddress determines whether $from email address should
  *          be sent out. Will be overruled by user profile setting for maildisplay
@@ -5875,7 +5885,21 @@ function email_to_user($user, $from, $subject, $messagetext, $messagehtml = '', 
         } else {
             require_once($CFG->libdir.'/filelib.php');
             $mimetype = mimeinfo('type', $attachname);
-            $mail->addAttachment($CFG->dataroot .'/'. $attachment, $attachname, 'base64', $mimetype);
+
+            $attachmentpath = $attachment;
+
+            // Before doing the comparison, make sure that the paths are correct (Windows uses slashes in the other direction).
+            $attachpath = str_replace('\\', '/', $attachmentpath);
+            // Make sure both variables are normalised before comparing.
+            $temppath = str_replace('\\', '/', $CFG->tempdir);
+
+            // If the attachment is a full path to a file in the tempdir, use it as is,
+            // otherwise assume it is a relative path from the dataroot (for backwards compatibility reasons).
+            if (strpos($attachpath, $temppath) !== 0) {
+                $attachmentpath = $CFG->dataroot . '/' . $attachmentpath;
+            }
+
+            $mail->addAttachment($attachmentpath, $attachname, 'base64', $mimetype);
         }
     }
 
@@ -8595,7 +8619,8 @@ function getremoteaddr($default='0.0.0.0') {
     }
     if (!($variablestoskip & GETREMOTEADDR_SKIP_HTTP_X_FORWARDED_FOR)) {
         if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-            $address = cleanremoteaddr($_SERVER['HTTP_X_FORWARDED_FOR']);
+            $hdr = explode(",", $_SERVER['HTTP_X_FORWARDED_FOR']);
+            $address = cleanremoteaddr($hdr[0]);
             return $address ? $address : $default;
         }
     }
@@ -8754,8 +8779,7 @@ function message_popup_window() {
     }
 
     // There are unread messages so now do a more complex but slower query.
-    $namefields = get_all_user_name_fields(true, 'u');
-    $messagesql = "SELECT m.id, m.smallmessage, m.fullmessageformat, m.notification, m.useridto, m.useridfrom, $namefields, c.blocked
+    $messagesql = "SELECT m.id, c.blocked
                      FROM {message} m
                      JOIN {message_working} mw ON m.id=mw.unreadmessageid
                      JOIN {message_processors} p ON mw.processorid=p.id
@@ -8772,13 +8796,15 @@ function message_popup_window() {
         $messagesql .= 'AND m.timecreated > :lastpopuptime';
     }
 
-    $messageusers = $DB->get_records_sql($messagesql, array('userid' => $USER->id, 'lastpopuptime' => $USER->message_lastpopup));
+    $waitingmessages = $DB->get_records_sql($messagesql, array('userid' => $USER->id, 'lastpopuptime' => $USER->message_lastpopup));
 
     $validmessages = 0;
-    foreach($messageusers as $message) {
-        if ($message->blocked) {
+    foreach ($waitingmessages as $messageinfo) {
+        if ($messageinfo->blocked) {
             // Message is from a user who has since been blocked so just mark it read.
-            message_mark_message_read($message, time());
+            // Get the full message to mark as read.
+            $messageobject = $DB->get_record('message', array('id' => $messageinfo->id));
+            message_mark_message_read($messageobject, time());
         } else {
             $validmessages++;
         }

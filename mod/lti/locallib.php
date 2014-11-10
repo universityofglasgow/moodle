@@ -153,7 +153,10 @@ function lti_view($instance) {
     $requestparams = lti_build_request($instance, $typeconfig, $course);
 
     $launchcontainer = lti_get_launch_container($instance, $typeconfig);
-    $returnurlparams = array('course' => $course->id, 'launch_container' => $launchcontainer, 'instanceid' => $instance->id);
+    $returnurlparams = array('course' => $course->id,
+                             'launch_container' => $launchcontainer,
+                             'instanceid' => $instance->id,
+                             'sesskey' => sesskey());
 
     if ( $orgid ) {
         $requestparams["tool_consumer_instance_guid"] = $orgid;
@@ -226,7 +229,7 @@ function lti_build_sourcedid($instanceid, $userid, $launchid = null, $servicesal
  * This function builds the request that must be sent to the tool producer
  *
  * @param object    $instance       Basic LTI instance object
- * @param object    $typeconfig     Basic LTI tool configuration
+ * @param array     $typeconfig     Basic LTI tool configuration
  * @param object    $course         Course object
  *
  * @return array    $request        Request details
@@ -240,10 +243,19 @@ function lti_build_request($instance, $typeconfig, $course) {
 
     $role = lti_get_ims_role($USER, $instance->cmid, $instance->course);
 
+    $intro = '';
+    if (!empty($instance->cmid)) {
+        $intro = format_module_intro('lti', $instance, $instance->cmid);
+        $intro = html_to_text($intro, 0, false);
+
+        // This may look weird, but this is required for new lines
+        // so we generate the same OAuth signature as the tool provider.
+        $intro = str_replace("\n", "\r\n", $intro);
+    }
     $requestparams = array(
         'resource_link_id' => $instance->id,
         'resource_link_title' => $instance->name,
-        'resource_link_description' => $instance->intro,
+        'resource_link_description' => $intro,
         'user_id' => $USER->id,
         'roles' => $role,
         'context_id' => $course->id,
