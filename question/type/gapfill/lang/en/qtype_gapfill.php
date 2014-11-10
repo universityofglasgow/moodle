@@ -41,7 +41,7 @@ $string['displaygapfill'] = 'gapfill';
 $string['displaydropdown'] = 'dropdown';
 $string['displaydragdrop'] = 'dragdrop';
 
-$string['pluginname']="Gapfill question type";
+$string['pluginname']="Gapfill";
 $string['pluginname_help'] = 'Place the words to be completed within square brackets e.g. The [cat] sat on the [mat].  If mat or rug are acceptable use [mat|rug]. Dropdown and Dragdrop modes allows for a shuffled list of answers to be displayed which can include optional wrong/distractor answers.';
 
 $string['pluginname_link']='question/type/gapfill';
@@ -58,5 +58,10 @@ $string['wronganswers_help']='List of incorrect words designed to distract from 
 $string['yougotnrightcount'] = 'Your number of correctly filled in gaps is {$a->num}.';
 $string['duplicatepartialcredit'] = 'Credit is partial because you have duplicate answers';
 $string['disableregex'] = 'Disable Regex';
-$string['disableregex']='Disable Regex';
 $string['disableregex_help'] = 'Disable regular expression processing and perform a standard string comparison. This can be useful for html quesitons where the angle brackets (&lt; and &gt;) should be treated literally and maths where symbols such as * should be seen literally rather than as expressions';
+$string['disableregexset_text']='Disable regular expression processing of responses';
+$string['fixedgapsize']='Fixed Gap Size';
+$string['fixedgapsize_help'] = 'When attempting the question all gaps will be set to the same size as the largest gap. This removes gap size as a clue to the correct answer, e.g. if the gaps are [red] and [yellow] it would be clear that the yellow went in the biggest gap';
+$string['fixedgapsizeset_text']='Sets the size of every gap to that of the biggest gap';
+$string['delimitset']='Delimit Chars';
+$string['delimitset_text']='Sets the delimiters for gaps, so you could add % % for The %cat% sat on the %mat%';

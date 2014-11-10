@@ -1,10 +1,9 @@
 .que.gapfill span.draggable.answers{
     cursor: pointer;
-    border:solid .5px;
+    border:solid 1px;
     padding-left:4px;
     padding-right:4px;
     background:white;
-    /* font-size:48pt;*/
      z-index: 3;
     -moz-box-shadow: 3px 3px 4px #000;
     -webkit-box-shadow: 3px 3px 4px #000;
@@ -21,10 +20,10 @@ dragged into the answer fields */
     display: inline-block;
     margin:1px;
     cursor: pointer;
-    border:solid .5px;
+    border:solid 1px;
     padding:1px;
     background:white;
-     z-index: 3;
+    z-index: 3;
     -moz-box-shadow: 3px 3px 4px #000;
     -webkit-box-shadow: 3px 3px 4px #000;
     box-shadow: 3px 3px 4px #000;
@@ -54,6 +53,14 @@ dragged into the answer fields */
 .gapfilltable td{
    border:solid;
    border-width:thin;
+}
+
+.gapfillfirstcol {
+    background-color:#BCBBBB;
+}
+
+.gapfillcol{
+    background-color: lightgray;
 }
 .gapfilltable th{
    border:solid;

@@ -15,7 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Gapfill question definition class.
+ * Gapfill question definition class. This class is mainly about
+ * what happens at runtime, when the quesiton is part of a quiz
  *
  * @package    qtype
  * @subpackage gapfill
@@ -37,12 +38,15 @@ class qtype_gapfill_question extends question_graded_automatically_with_countbac
     public $correctfeedback;
     public $noduplicates;
     public $disableregex;
+    public $fixedgapsize;
+    public $maxgapsize;
     public $partiallycorrectfeedback = '';
     public $incorrectfeedback = '';
     public $correctfeedbackformat;
     public $partiallycorrectfeedbackformat;
     public $incorrectfeedbackformat;
     public $fraction;
+    public $gapcount;
     /* wronganswers is used, but needs a name change to distractors at some point */
     public $wronganswers;
 
@@ -51,6 +55,9 @@ class qtype_gapfill_question extends question_graded_automatically_with_countbac
 
     /** @var array of question_answer. */
     public $answers = array();
+     /* checks for gaps that get a mark for being left black i.e. [!!]*/
+    public $blankregex = "/!.*!/";
+
 
     /* the characters indicating a field to fill i.e. [cat] creates
      * a field where the correct answer is cat
@@ -94,7 +101,6 @@ class qtype_gapfill_question extends question_graded_automatically_with_countbac
             }
         }
         $this->allanswers = $temp;
-
         shuffle($this->allanswers);
         $step->set_qt_var('_allanswers', serialize($this->allanswers));
     }
@@ -131,15 +137,19 @@ class qtype_gapfill_question extends question_graded_automatically_with_countbac
     }
 
     public function is_complete_response(array $response) {
-        /* checks that none of of the gaps is blanks */
-        foreach ($this->answers as $key => $value) {
-            $ans = array_shift($response);
-            if ($ans == "") {
-
-                return false;
+        $gapsfilled = 0;
+        $iscomplete = true;
+        foreach ($this->answers as $key => $rightanswer) {
+            $answergiven = array_shift($response);
+            if ((!($answergiven == "")) || (preg_match($this->blankregex, $rightanswer->answer))) {
+                $gapsfilled++;
             }
         }
-        return true;
+
+        if ($gapsfilled < $this->gapcount) {
+            $iscomplete = false;
+        }
+        return $iscomplete;
     }
 
     public function get_validation_error(array $response) {
@@ -194,7 +204,9 @@ class qtype_gapfill_question extends question_graded_automatically_with_countbac
             $answergiven = strtolower($answergiven);
             $rightanswer = strtolower($rightanswer);
         }
-        if ($this->compare_response_with_answer($answergiven, $rightanswer, $this->casesensitive, $this->disableregex)) {
+        if ($this->compare_response_with_answer($answergiven, $rightanswer, $this->disableregex)) {
+            return true;
+        } else if (($answergiven == "") && (preg_match($this->blankregex, $rightanswer))) {
             return true;
         } else {
             return false;
@@ -212,20 +224,20 @@ class qtype_gapfill_question extends question_graded_automatically_with_countbac
     public function get_num_parts_right(array $response) {
         $numright = 0;
         foreach ($this->places as $place => $notused) {
+            $rightanswer = $this->get_right_choice_for($place);
+            $answergiven = $response[$this->field($place)];
             if (!array_key_exists($this->field($place), $response)) {
                 continue;
             }
-            $answergiven = $response[$this->field($place)];
-            $rightanswer = $this->get_right_choice_for($place);
             if (!$this->casesensitive == 1) {
                 $answergiven = strtolower($answergiven);
                 $rightanswer = strtolower($rightanswer);
             }
-            if ($this->compare_response_with_answer($answergiven, $rightanswer, $this->casesensitive, $this->disableregex)) {
-                $numright+=1;
+            if ($this->compare_response_with_answer($answergiven, $rightanswer, $this->disableregex)) {
+                $numright++;
             }
         }
-        return array($numright, count($this->places));
+        return $numright;
     }
 
     /**
@@ -245,7 +257,7 @@ class qtype_gapfill_question extends question_graded_automatically_with_countbac
                 $answergiven = strtolower($answergiven);
                 $rightanswer = strtolower($rightanswer);
             }
-            if (!$this->compare_response_with_answer($answergiven, $rightanswer, $this->casesensitive, $this->disableregex)) {
+            if (!$this->compare_response_with_answer($answergiven, $rightanswer, $this->disableregex)) {
                 $response[$this->field($place)] = '';
             }
         }
@@ -256,13 +268,17 @@ class qtype_gapfill_question extends question_graded_automatically_with_countbac
         if ($this->noduplicates == 1) {
             /*
              * find unique values then keeping the same
-             * keys blank rest of the values
+             * keys but nonanswer in any duplicate non !! gaps
              */
             $au = array_unique($response);
-            foreach ($response as $key => $value) {
-                $response[$key] = '';
+            /*Hash of flatted answer values is is guaranteed
+             not to to be an answer for any gap*/
+            $nonanswer=hash('ripemd160',implode(' ', $this->places));
+            foreach ($response as $key => $value) {    
+                $response[$key] = $nonanswer;
             }
-            return array_merge($response, $au);
+            $response= array_merge($response, $au);
+            return $response;
         } else {
             return $response;
         }
@@ -270,18 +286,19 @@ class qtype_gapfill_question extends question_graded_automatically_with_countbac
 
     public function grade_response(array $response) {
         $response = $this->discard_duplicates($response);
-        list($right, $total) = $this->get_num_parts_right($response);
-        $this->fraction = $right / $total;
+        $right = $this->get_num_parts_right($response);
+        $this->fraction = $right / $this->gapcount;
         $grade = array($this->fraction, question_state::graded_state_for_fraction($this->fraction));
         return $grade;
     }
 
     // Required by the interface question_automatically_gradable_with_countback.
     public function compute_final_grade($responses, $totaltries) {
-        // Only applies in interactive mode.
-        $responses[0] = $this->discard_duplicates($responses[0]);
+        if ($this->noduplicates == 1) {
+            $responses[0] = $this->discard_duplicates($responses[0]);
+        }
         $totalscore = 0;
-        foreach ($this->places as $place => $notused) {
+        foreach (array_keys($this->places) as $place) {
             $fieldname = $this->field($place);
             $lastwrongindex = -1;
             $finallyright = false;
@@ -292,18 +309,19 @@ class qtype_gapfill_question extends question_graded_automatically_with_countbac
                     continue;
                 }
                 $resp = $response[$fieldname];
-                if (!$this->compare_response_with_answer($resp, $rcfp, $this->casesensitive, $this->disableregex)) {
+                if (!$this->compare_response_with_answer($resp, $rcfp, $this->disableregex)) {
                     $lastwrongindex = $i;
                     $finallyright = false;
                 } else {
                     $finallyright = true;
                 }
             }
+
             if ($finallyright) {
                 $totalscore += max(0, 1 - ($lastwrongindex + 1) * $this->penalty);
             }
         }
-        return $totalscore / count($this->places);
+        return $totalscore / $this->gapcount;
     }
 
     public function check_file_access($qa, $options, $component, $filearea, $args, $forcedownload) {
@@ -317,7 +335,7 @@ class qtype_gapfill_question extends question_graded_automatically_with_countbac
         }
     }
 
-    public function compare_response_with_answer($answergiven, $answer, $casesensitive, $disableregex = false) {
+    public function compare_response_with_answer($answergiven, $answer, $disableregex = false) {
         /* converts things like &lt; into < */
         $answer = htmlspecialchars_decode($answer);
         $answergiven = htmlspecialchars_decode($answergiven);
@@ -329,6 +347,8 @@ class qtype_gapfill_question extends question_graded_automatically_with_countbac
              */
             if (strcmp(trim($answergiven), trim($answer)) == 0) {
                 return true;
+            } else if (preg_match($this->blankregex, $answer) && $answergiven == "") {
+                return true;
             } else {
                 return false;
             }
@@ -337,11 +357,13 @@ class qtype_gapfill_question extends question_graded_automatically_with_countbac
         $regexp = '/^' . $pattern . '$/u';
 
         // Make the match insensitive if requested to, not sure this is necessary.
-        if (!$casesensitive) {
+        if (!$this->casesensitive) {
             $regexp .= 'i';
         }
         /* the @ is to suppress warnings, e.g. someone forgot to turn off regex matching */
         if (@preg_match($regexp, trim($answergiven))) {
+            return true;
+        } else if (preg_match($this->blankregex, $answer) && $answergiven == "") {
             return true;
         } else {
             return false;
@@ -352,7 +374,7 @@ class qtype_gapfill_question extends question_graded_automatically_with_countbac
         $marked_gaps = array();
         $question = $qa->get_question();
         $correct_gaps = array();
-        foreach ($question->textfragments as $place => $fragment) {
+        foreach ($question->textfragments as $place => $notused) {
             if ($place < 1) {
                 continue;
             }
@@ -376,7 +398,6 @@ class qtype_gapfill_question extends question_graded_automatically_with_countbac
         $arr_unique = array_unique($correct_gaps);
         $arr_duplicates = array_diff_assoc($correct_gaps, $arr_unique);
         foreach ($marked_gaps as $fieldname => $gap) {
-
             if (in_array($gap['value'], $arr_duplicates)) {
                 $marked_gaps[$fieldname]['duplicate'] = 'true';
             } else {

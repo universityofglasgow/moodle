@@ -41,14 +41,15 @@ class qtype_gapfill_renderer extends qtype_with_combined_feedback_renderer {
             $PAGE->requires->js('/question/type/gapfill/jquery/jquery.ui.touch-punch.min.js');
             $PAGE->requires->js('/question/type/gapfill/dragdrop.js');
         }
-
         $seranswers = $qa->get_step(0)->get_qt_var('_allanswers');
         $this->allanswers = unserialize($seranswers);
         $output = '';
         if ($question->answerdisplay == "dragdrop") {
             $ddclass = " draggable answers ";
-            foreach ($this->allanswers as $value) {
-                $output.= '<span class="' . $ddclass . '">' . $value . "</span>&nbsp;";
+            foreach ($this->allanswers as $potentialanswer) {
+                if (!preg_match($question->blankregex, trim($potentialanswer))) {
+                    $output.= '<span class="' . $ddclass . '">' . $potentialanswer . "</span>&nbsp;";
+                }
             }
             $output.="<br/><br/>";
         }
@@ -62,7 +63,6 @@ class qtype_gapfill_renderer extends qtype_with_combined_feedback_renderer {
             $output .= $question->format_text($fragment, $question->questiontextformat,
                     $qa, 'question', 'questiontext', $question->id);
         }
-
         $output.="<br/>";
 
         if ($qa->get_state() == question_state::$invalid) {
@@ -73,16 +73,17 @@ class qtype_gapfill_renderer extends qtype_with_combined_feedback_renderer {
     }
 
     public function embedded_element(question_attempt $qa, $place, question_display_options $options, $marked_gaps) {
-
         /* fraction is the mark associated with this field, always 1 or 0 for this question type */
         $question = $qa->get_question();
         $fieldname = $question->field($place);
         $currentanswer = $qa->get_last_qt_var($fieldname);
         $currentanswer = htmlspecialchars_decode($currentanswer);
-
         $rightanswer = $question->get_right_choice_for($place);
-
-        $size = strlen(htmlspecialchars_decode($rightanswer));
+        if ($question->fixedgapsize == 1) {
+            $size = $question->maxgapsize;
+        } else {
+            $size = $this->get_width($rightanswer);
+        }
 
         /* $options->correctness is really about it being ready to mark, */
         $feedbackimage = "";
@@ -93,10 +94,13 @@ class qtype_gapfill_renderer extends qtype_with_combined_feedback_renderer {
             $response = $qa->get_last_qt_data();
             if ($fraction == 1) {
                 array_push($this->correct_responses, $response[$fieldname]);
-                $feedbackimage = $this->feedback_image($fraction);
-                /* sets the field background to green or yellow if fraction is 1 */
-                $inputclass = $this->get_input_class($marked_gaps, $qa, $fraction, $fieldname);
-            } else {
+                /* if the gap contains !! or  the response is (a correct) non blank */
+                if (!preg_match($question->blankregex, $rightanswer) || ($response[$fieldname] <> '')) {
+                    $feedbackimage = $this->feedback_image($fraction);
+                    /* sets the field background to green or yellow if fraction is 1 */
+                    $inputclass = $this->get_input_class($marked_gaps, $qa, $fraction, $fieldname);
+                }
+            } else if ($fraction == 0) {
                 /* set background to red and image to cross if fraction is 0  */
                 $feedbackimage = $this->feedback_image($fraction);
                 $inputclass = $this->feedback_class($fraction);
@@ -111,9 +115,9 @@ class qtype_gapfill_renderer extends qtype_with_combined_feedback_renderer {
             'name' => $inputname,
             'value' => $currentanswer,
             'id' => $inputname,
-            'size' => $size + 1,
-            'class' => 'droppable ' . $inputclass
-                /* 'style'=> 'width:'.(($size*10)).'px' */
+            'size' => $size,
+            'class' => 'droppable ' . $inputclass,
+            'style' => 'height:1.2em;'
         );
 
         /* When previewing after a quiz is complete */
@@ -194,6 +198,19 @@ class qtype_gapfill_renderer extends qtype_with_combined_feedback_renderer {
         // Make the key and value the same in the array.
         $selectoptions = array_combine($this->allanswers, $this->allanswers);
         return $selectoptions;
+    }
+
+    public function get_width($rightanswer) {
+        $rightanswer = htmlspecialchars_decode($rightanswer);
+        $words = explode("|", $rightanswer);
+        $lengthtotal = 0;
+        foreach ($words as $word) {
+            $lengthtotal = $lengthtotal + strlen($word);
+        }
+        /* divide the sum of the length of the words
+         * by the count of words, i.e. get the average
+         */
+        return $lengthtotal / count($rightanswer);
     }
 
     /* overriding base class method purely to return a string yougotnrightcount

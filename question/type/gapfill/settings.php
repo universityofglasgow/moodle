@@ -24,5 +24,13 @@ defined('MOODLE_INTERNAL') || die;
 
 if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configcheckbox('qtype_gapfill/disableregex',
-        get_string('disableregex', 'qtype_gapfill'), "", 0));
+        get_string('disableregex', 'qtype_gapfill'),
+        get_string('disableregexset_text', 'qtype_gapfill'), 0));
+    $settings->add(new admin_setting_configcheckbox('qtype_gapfill/fixedgapsize',
+        get_string('fixedgapsize', 'qtype_gapfill'),
+        get_string('fixedgapsizeset_text', 'qtype_gapfill') , 0));
+    $settings->add(new admin_setting_configtextarea('qtype_gapfill/delimitchars',
+         get_string('delimitset','qtype_gapfill'),
+         get_string('delimitset_text','qtype_gapfill'),
+         "[ ],{ },# #,@ @", PARAM_RAW, 20, 3));
 }
