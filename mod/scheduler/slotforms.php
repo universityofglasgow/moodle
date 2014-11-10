@@ -24,7 +24,7 @@ abstract class scheduler_slotform_base extends moodleform {
     protected $usergroups;
     protected $has_duration = false;
 
-    public function __construct($action, $scheduler, $cm, $usergroups, $customdata=null) {
+    public function __construct($action, scheduler_instance $scheduler, $cm, $usergroups, $customdata=null) {
         $this->scheduler = $scheduler;
         $this->cm = $cm;
         $this->context = context_module::instance($cm->id);
@@ -48,21 +48,16 @@ abstract class scheduler_slotform_base extends moodleform {
         $mform->setDefault('exclusivity', 1);
         $mform->addHelpButton('exclusivity', 'exclusivity', 'scheduler');
 
-        // reuse the slot?
-        $mform->addElement('selectyesno', 'reuse', get_string('reuse', 'scheduler'));
-        $mform->setDefault('reuse', 1);
-        $mform->addHelpButton('reuse', 'reuse', 'scheduler');
-
         // location of the appointment
         $mform->addElement('text', 'appointmentlocation', get_string('location', 'scheduler'), array('size'=>'30'));
-        $mform->setType('appointmentlocation', PARAM_NOTAGS);
-        $mform->addRule('appointmentlocation', get_string('error'), 'maxlength', 50);
-        $mform->setDefault('appointmentlocation', scheduler_get_last_location($this->scheduler));
+        $mform->setType('appointmentlocation', PARAM_TEXT);
+        $mform->addRule('appointmentlocation', get_string('error'), 'maxlength', 255);
+        $mform->setDefault('appointmentlocation', $this->scheduler->get_last_location($USER));
         $mform->addHelpButton('appointmentlocation', 'location', 'scheduler');
 
         // Choose the teacher (if allowed)
         if (has_capability('mod/scheduler:canscheduletootherteachers', $this->context)) {
-            $teachername = s(scheduler_get_teacher_name($this->scheduler));
+            $teachername = s($this->scheduler->get_teacher_name());
             $teachers = scheduler_get_attendants($this->cm->id);
             $teachersmenu = array();
             if ($teachers) {
@@ -121,7 +116,7 @@ class scheduler_editslot_form extends scheduler_slotform_base {
 
     protected function definition() {
 
-        global $DB;
+        global $DB, $output;
 
         $mform = $this->_form;
         $this->slotid = 0;
@@ -155,7 +150,7 @@ class scheduler_editslot_form extends scheduler_slotform_base {
 
         // Slot comments
         $mform->addElement('editor', 'notes', get_string('comments', 'scheduler'), array('rows' => 3, 'columns' => 60), array('collapsed' => true));
-        $mform->setType('notes', PARAM_RAW);
+        $mform->setType('notes', PARAM_RAW); // must be PARAM_RAW for rich text editor content
 
         // Appointments
 
@@ -164,16 +159,16 @@ class scheduler_editslot_form extends scheduler_slotform_base {
         $repeatarray[] = $mform->createElement('header', 'appointhead', get_string('appointmentno', 'scheduler', '{no}'));
 
         // Choose student
-        $students = scheduler_get_possible_attendees($this->cm, $this->usergroups);
+        $students = $this->scheduler->get_possible_attendees($this->usergroups);
         $studentsmenu = array('0' => get_string('choosedots'));
         if ($students) {
             foreach ($students as $astudent) {
-                if ($this->scheduler->schedulermode == 'oneonly' && scheduler_has_slot($astudent->id, $this->scheduler, true, false, $this->slotid)) {
+/*                if ($this->scheduler->schedulermode == 'oneonly' && scheduler_has_slot($astudent->id, $this->scheduler, true, false, $this->slotid)) {
                     continue;
                 }
                 if ($this->scheduler->schedulermode == 'onetime' && scheduler_has_slot($astudent->id, $this->scheduler, true, true, $this->slotid)) {
                     continue;
-                }
+                }*/
                 $studentsmenu[$astudent->id] = fullname($astudent);
             }
         }
@@ -185,7 +180,7 @@ class scheduler_editslot_form extends scheduler_slotform_base {
 
         // Grade
         if ($this->scheduler->scale != 0) {
-            $gradechoices = scheduler_get_grading_choices($this->scheduler);
+            $gradechoices = $output->grading_choices($this->scheduler);
             $grouparray[] = $mform->createElement('static', 'attendedlabel', '', get_string('grade', 'scheduler'));
             $grouparray[] = $mform->createElement('select', 'grade', '', $gradechoices);
         }
@@ -193,7 +188,7 @@ class scheduler_editslot_form extends scheduler_slotform_base {
         $repeatarray[] = $mform->createElement('group', 'studgroup', get_string('student', 'scheduler'), $grouparray, null, false);
 
         // Appointment notes
-        $repeatarray[] = $mform->createElement('editor', 'appointmentnote', get_string('appointmentnotes', 'scheduler'), 
+        $repeatarray[] = $mform->createElement('editor', 'appointmentnote', get_string('appointmentnotes', 'scheduler'),
                           array('rows' => 3, 'columns' => 60), array('collapsed' => true));
 
         if (isset($this->_customdata['repeats'])) {
@@ -222,11 +217,6 @@ class scheduler_editslot_form extends scheduler_slotform_base {
     public function validation($data, $files) {
         $errors = parent::validation($data, $files);
 
-        // Avoid slots starting in the past (too far)
-        if ($data['starttime'] < (time() - DAYSECS * 10)) {
-            $errors['starttime'] = get_string('startpast', 'scheduler');
-        }
-
         // Check number of appointments vs exclusivity
         $numappointments = 0;
         for ($i = 0; $i < $data['appointment_repeats']; $i++) {
@@ -236,6 +226,11 @@ class scheduler_editslot_form extends scheduler_slotform_base {
         }
         if ($data['exclusivity'] > 0 && $numappointments > $data['exclusivity']) {
             $errors['exclusivity'] = get_string('exclusivityoverload', 'scheduler', $numappointments);
+        }
+
+        // Avoid empty slots starting in the past
+        if ($numappointments == 0 && $data['starttime'] < time()) {
+            $errors['starttime'] = get_string('startpast', 'scheduler');
         }
 
         // Check whether students have been selected several times
@@ -316,8 +311,8 @@ class scheduler_addsession_form extends scheduler_slotform_base {
         $mform->addElement('date_selector', 'rangestart', get_string('date', 'scheduler'));
         $mform->setDefault('rangestart', time());
 
-        $mform->addElement('date_selector', 'rangeend', get_string('enddate', 'scheduler'));
-        $mform->setDefault('rangeend', time());
+        $mform->addElement('date_selector', 'rangeend', get_string('enddate', 'scheduler'),
+                            array('optional'  => true) );
 
         // Weekdays selection
         $weekdays = array('monday', 'tuesday', 'wednesday', 'thursday', 'friday');
@@ -359,6 +354,7 @@ class scheduler_addsession_form extends scheduler_slotform_base {
 
         // Force when overlap?
         $mform->addElement('selectyesno', 'forcewhenoverlap', get_string('forcewhenoverlap', 'scheduler'));
+        $mform->addHelpButton('forcewhenoverlap', 'forcewhenoverlap', 'scheduler');
 
         // Common fields
         $this->add_base_fields();
@@ -401,9 +397,12 @@ class scheduler_addsession_form extends scheduler_slotform_base {
         $errors = parent::validation($data, $files);
 
         // Range is negative
-        $fordays = ($data['rangeend'] - $data['rangestart']) / DAYSECS;
-        if ($fordays < 0) {
-            $errors['rangeend'] = get_string('negativerange', 'scheduler');
+        $fordays = 0;
+        if ($data['rangeend'] > 0) {
+            $fordays = ($data['rangeend'] - $data['rangestart']) / DAYSECS;
+            if ($fordays < 0) {
+                $errors['rangeend'] = get_string('negativerange', 'scheduler');
+            }
         }
 
         // Time range is negative
@@ -431,7 +430,6 @@ class scheduler_addsession_form extends scheduler_slotform_base {
         $slot = new stdClass();
         $slot->appointmentlocation = $data->appointmentlocation;
         $slot->exclusivity = $data->exclusivity;
-        $slot->reuse = $data->reuse;
         $slot->duration = $data->duration;
         $slot->schedulerid = $scheduler->id;
         $slot->timemodified = time();
