@@ -24,7 +24,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
  
-include_once($CFG->dirroot . "/theme/bootstrap/renderers/core_renderer.php");
 
 class theme_elegance_core_renderer extends theme_bootstrap_core_renderer {
 
@@ -420,11 +419,9 @@ class theme_elegance_core_renderer extends theme_bootstrap_core_renderer {
             't/down' => 'arrow-down',
             't/edit' => 'edit',
             't/editstring' => 'tag',
-            't/hide' => 'eye-open',
             't/left' => 'arrow-left',
             't/move' => 'resize-vertical',
             't/right' => 'arrow-right',
-            't/show' => 'eye-close',
             't/switch_minus' => 'minus-sign',
             't/switch_plus' => 'plus-sign',
             't/up' => 'arrow-up',
