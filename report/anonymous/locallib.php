@@ -98,27 +98,6 @@ class report_anonymous {
         return $users;
     }
 
-    /**
-     * get list of users who have not submitted
-     * @param int $ttid turnitintool id
-     * @param int $partid part
-     * @param array $users list of user objects
-     * @return array list of user objects not submitted
-     */
-    public static function get_turnitintool_notsubmitted($ttid, $partid, $users) {
-        global $DB;
-
-        $notsubusers = array();
-        foreach ($users as $user) {
-            if (!$DB->get_record('turnitintool_submissions',
-                    array('userid' => $user->id, 'turnitintoolid' => $ttid, 'submission_part' => $partid))) {
-                $notsubusers[$user->id] = $user;
-            }
-        }
-
-        return $notsubusers;
-    }
-
     public static function export($users, $reveal, $filename, $activityname) {
         global $CFG;
         require_once($CFG->dirroot.'/lib/excellib.class.php');
