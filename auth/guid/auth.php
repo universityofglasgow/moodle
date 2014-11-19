@@ -38,6 +38,9 @@ class auth_plugin_guid extends auth_plugin_ldap {
         $this->authtype = 'guid';
         $this->errorlogtag = '[AUTH GUID]';
         $this->init_plugin($this->authtype);
+
+        // stops notice when it isn't defined
+        $this->config->start_tls = false;
     }
 
     /**
