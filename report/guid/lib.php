@@ -275,6 +275,12 @@ function print_single( $results ) {
     echo "<p><strong>".get_string( 'resultfor', 'report_guid')." $displayname</strong> $create ($username)</p>\n";
     array_prettyprint( $result );
 
+    // if we have a $user object, synchronise their enrolments
+    if ($user) {
+        $plugin = enrol_get_plugin('gudatabase');
+        $plugin->sync_user_enrolments($user);
+    }
+
     // Check for entries in enrollments.
     $enrolments = get_all_enrolments( $username );
     if (!empty($enrolments)) {
