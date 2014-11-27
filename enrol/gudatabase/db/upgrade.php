@@ -29,5 +29,32 @@ function xmldb_enrol_gudatabase_upgrade($oldversion) {
 
     $dbman = $DB->get_manager();
 
+    // Create new table for groups
+    if ($oldversion < 2014080604) {
+
+        // Define table enrol_gudatabase_groups to be created.
+        $table = new xmldb_table('enrol_gudatabase_groups');
+
+        // Adding fields to table enrol_gudatabase_groups.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('originalname', XMLDB_TYPE_CHAR, '100', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('groupid', XMLDB_TYPE_INTEGER, '11', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('courseid', XMLDB_TYPE_INTEGER, '11', null, XMLDB_NOTNULL, null, null);
+
+        // Adding keys to table enrol_gudatabase_groups.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+
+        // Adding indexes to table enrol_gudatabase_groups.
+        $table->add_index('enrol_gudatabase_coursename_idx', XMLDB_INDEX_UNIQUE, array('originalname', 'courseid'));
+
+        // Conditionally launch create table for enrol_gudatabase_groups.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Gudatabase savepoint reached.
+        upgrade_plugin_savepoint(true, 2014080604, 'enrol', 'gudatabase');
+    }
+
     return true;
 }
