@@ -28,11 +28,7 @@ $THEME->doctype = 'html5';
 $THEME->yuicssmodules = array();
 $THEME->name = 'bootstrap';
 $THEME->parents = array();
-if ('ltr' === get_string('thisdirection', 'langconfig')) {
-    $THEME->sheets = array('moodle');
-} else {
-    $THEME->sheets = array('moodle-rtl');
-}
+$THEME->sheets = array('moodle');
 $THEME->enable_dock = true;
 $THEME->supportscssoptimisation = false;
 

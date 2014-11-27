@@ -9,10 +9,11 @@
     .panel;
     .panel-default;
     .userprofilebox {
+        .make-row();
         .profilepicture {
-            float: left;
+            .make-md-column(2);
             a {
-                display: inline-block;
+                display: block;
                 margin: 10px;
                 img {
                     .img-rounded;
@@ -20,23 +21,14 @@
             }
         }
         .descriptionbox {
+            .make-md-column(10);
             .description {
                 margin: 10px;
-            }
-            .list {
-                margin: 0 10px;
             }
         }
     }
     .fullprofilelink {
         text-align: center;
         margin: 10px;
-    }
-    .messagebox {
-        margin: 10px;
-        a {
-            .btn;
-            .btn-default;
-        }
     }
 }
