@@ -1483,4 +1483,3 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         ob_end_flush();
     }
 }
-

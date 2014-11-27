@@ -29,6 +29,7 @@ require_once(dirname(__FILE__) . '/codes_form.php');
 require_once(dirname(__FILE__) . '/groups_form.php');
 
 $courseid = required_param('courseid', PARAM_INT);
+$sync = optional_param('sync', 0, PARAM_INT);
 $instanceid = optional_param('id', 0, PARAM_INT);
 $tab = optional_param('tab', 'config', PARAM_ALPHA);
 
@@ -38,6 +39,21 @@ $context = context_course::instance($course->id, MUST_EXIST);
 require_login($course);
 require_capability('enrol/gudatabase:config', $context);
 
+// Get the enrolment plugin.
+$plugin = enrol_get_plugin('gudatabase');
+
+// If sync, just do that and get out. This has to work for all instances.
+if ($sync) {
+    if ($instances = $DB->get_records('enrol', array('courseid' => $courseid, 'enrol' => 'gudatabase'))) {
+        foreach( $instances as $instance) {
+            $plugin->enrol_course_users($course, $instance);
+            $plugin->sync_groups($course, $instance);
+        }
+    }
+    redirect(new moodle_url('/course/view.php', array('id' => $courseid)));
+    die;
+}
+
 $PAGE->set_url('/enrol/gudatabase/edit.php', array('courseid' => $course->id, 'id' => $instanceid, 'tab' => $tab));
 $PAGE->set_pagelayout('admin');
 $output = $PAGE->get_renderer('enrol_gudatabase');
@@ -46,8 +62,6 @@ $return = new moodle_url('/enrol/instances.php', array('id'=>$course->id));
 if (!enrol_is_enabled('gudatabase')) {
     redirect($return);
 }
-
-$plugin = enrol_get_plugin('gudatabase');
 
 if ($instanceid) {
     $instance = $DB->get_record('enrol', array('courseid'=>$course->id, 'enrol'=>'gudatabase', 'id'=>$instanceid), '*', MUST_EXIST);
