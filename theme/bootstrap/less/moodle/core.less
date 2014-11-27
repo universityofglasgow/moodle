@@ -105,7 +105,7 @@
     }
 
     // Negate the push applied when transitioning from three columns.
-	// LTR does not have this vice-versa issue as no 'push' for post.
+    // LTR does not have this vice-versa issue as no 'push' for post.
     &.empty-region-side-post.used-region-side-pre #block-region-side-pre {
         .make-sm-column-push(0);
         .make-lg-column-push(0);
@@ -182,6 +182,9 @@ a.disabled {
 .notifytiny li,
 .notifytiny td {
     font-size: 100%;
+}
+.highlight { // MDL-41506.
+    background: @state-info-bg;
 }
 .reportlink {
     text-align: right;
@@ -874,7 +877,7 @@ body#page-lib-editor-tinymce-plugins-moodlemedia-preview {
 .moodle-dialogue-base .moodle-dialogue-wrap .moodle-dialogue-hd,
 .moodle-dialogue-base .moodle-dialogue-wrap .moodle-dialogue-hd.yui3-widget-hd {
     margin: 0;
-    padding: 5px;
+    padding: 2px 5px;
     font-size: 12px;
     font-weight: normal;
     letter-spacing: 1px;
@@ -1256,13 +1259,13 @@ body.jsenabled .formlisting {
             .opacity(.5);
         }
         .toggle-display.textmenu {
-            .btn;
-            .btn-default;
-            .btn-sm;
-            display: block;
-            margin-left: 4px;
-            padding-left: 4px;
-            padding-right: 4px;
+            // .btn;
+            // .btn-default;
+            // .btn-sm;
+            // display: block;
+            // margin-left: 4px;
+            // padding-left: 4px;
+            // padding-right: 4px;
 
             .iconsmall {
                 margin: 4px 4px 4px 0px;
@@ -1294,7 +1297,6 @@ body.jsenabled .formlisting {
 
 .moodle-actionmenu[data-enhanced].show  {
     position: relative;
-    display: inline-block !important; // Override 'show' class in Bootstrap utilities.less.
 
     .menu {
         .dropdown-menu;
