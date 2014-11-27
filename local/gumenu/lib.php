@@ -80,7 +80,7 @@ function local_gumenu_extends_settings_navigation(settings_navigation $nav, cont
             'text' => get_string('enrolsync', 'local_gumenu'),
             'shorttext' => 'uofgsync',
             'type' => navigation_node::TYPE_CUSTOM,
-            'action' => new moodle_url('/enrol/gudatabase/edit.php', array('id' => $courseid, 'sync' => 1)),
+            'action' => new moodle_url('/enrol/gudatabase/edit.php', array('courseid' => $courseid, 'sync' => 1)),
             'key' => 'uofgsync',
         );
         $uofgnode->add_node(new navigation_node($props));
