@@ -75,7 +75,7 @@ if ($assignid) {
     }
     $users = report_anonymous::get_assign_users($context);
     $submissions = report_anonymous::get_submissions($assignid, $users);
-    $submissions = report_anonymous::sort_submissions($submissions, $reveal);
+    $submissions = report_anonymous::sort_submissions($submissions, $reveal || (!$assignment->blindmarking));
     if ($export) {
         $filename = "anonymous_{$assignment->name}.xls";
         report_anonymous::export($assignment, $submissions, $reveal, $filename);
