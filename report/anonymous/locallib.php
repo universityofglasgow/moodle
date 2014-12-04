@@ -40,13 +40,11 @@ class report_anonymous {
     /**
      * can the user view the data submitted
      * some checks
-     * @param string $mod which module (turnitintool or assign)
      * @param int $assignid assignment id
-     * @param int $partid turnitintool part id
      * @param array $assignments list of valid assignments
      * @return boolean true if ok
      */
-    public static function allowed_to_view($mod, $assignid, $partid, $assignments) {
+    public static function allowed_to_view($assignid, $assignments) {
         return array_key_exists($assignid, $assignments);
     }
 
@@ -56,49 +54,58 @@ class report_anonymous {
      * @return array list of users
      */
     public static function get_assign_users($context) {
-        $idsonly = false;
         $currentgroup = null;
-        if ($idsonly) {
-            return get_enrolled_users($context, "mod/assign:submit", $currentgroup, 'u.id');
-        } else {
-            return get_enrolled_users($context, "mod/assign:submit", $currentgroup);
-        }
+        return get_enrolled_users($context, "mod/assign:submit", $currentgroup);
     }
 
     /**
-     * get list of users who have not submitted
+     * get the user's submissions (or null for none)
      * @param int $assignid assignment id
      * @param array $users list of user objects
-     * @return array list of user objects not submitted
+     * @return array list of submissions indexed by user (null where not submitted)
      */
-    public static function get_assign_notsubmitted($assignid, $users) {
+    public static function get_submissions($assignid, $users) {
         global $DB;
 
-        $notsubusers = array();
+        $submissions = array();
         foreach ($users as $user) {
-            if (!$DB->get_record('assign_submission', array('userid' => $user->id, 'assignment' => $assignid))) {
-                $notsubusers[$user->id] = $user;
+            $instance = new stdClass;
+          
+            // Check if this user has a participant number
+            if ($mapping = $DB->get_record('assign_user_mapping', array('assignment' => $assignid, 'userid' => $user->id))) {
+                $user->participantid = $mapping->id;
+            } else {
+                $user->participantid = '-';
             }
+            $instance->user = $user;
+            if ($submission = $DB->get_record('assign_submission', array('userid' => $user->id, 'assignment' => $assignid))) {
+                $instance->submission = $submission;
+            } else {
+                $instance->submission = null;
+            }
+            $submissions[] = $instance;
         }
 
-        return $notsubusers;
+        return $submissions;
     }
 
     /**
      * sort users using callback
      */
-    public static function sort_users($users, $onname=false) {
-        uasort($users, function($a, $b) use ($onname) {
-            if ($onname) {
-                return strcasecmp(fullname($a), fullname($b));
+    public static function sort_submissions($submissions, $onname=false) {
+        uasort($submissions, function($a, $b) use ($onname) {
+            if ((!$a->submission) xor (!$b->submission)) {
+                return ($a->submission) ? 1 : -1;
+            } else if ($onname) {
+                return strcasecmp(fullname($a->user), fullname($b->user));
             } else {
-                return strcasecmp($a->idnumber, $b->idnumber);
+                return strcasecmp($a->user->idnumber, $b->user->idnumber);
             }
         });
-        return $users;
+        return $submissions;
     }
 
-    public static function export($users, $reveal, $filename, $activityname) {
+    public static function export($assignment, $submissions, $reveal, $filename) {
         global $CFG;
         require_once($CFG->dirroot.'/lib/excellib.class.php');
 
@@ -110,7 +117,7 @@ class report_anonymous {
 
         // Titles.
         $myxls->write_string(0, 0, get_string('assignmentname', 'report_anonymous'));
-        $myxls->write_string(0, 1, $activityname);
+        $myxls->write_string(0, 1, $assignment->name);
 
         // Headers.
         $myxls->write_string(3, 0, '#');
@@ -120,21 +127,29 @@ class report_anonymous {
             $myxls->write_string(3, 3, get_string('username'));
             $myxls->write_string(3, 4, get_string('fullname'));
         }
+        $myxls->write_string(3, 5, get_string('submitted', 'report_anonymous'));
+        $myxls->write_string(3, 6, get_string('participantnumber', 'report_anonymous'));
 
         // Add some data.
         $row = 4;
-        foreach ($users as $user) {
+        foreach ($submissions as $s) {
             $myxls->write_number($row, 0, $row);
-            if ($user->idnumber) {
-                $myxls->write_string($row, 1, $user->idnumber);
+            if ($s->user->idnumber) {
+                $myxls->write_string($row, 1, $s->user->idnumber);
             } else {
                 $myxls->write_string($row, 1, '-');
             }
-            $myxls->write_string($row, 2, $user->email);
-            if ($reveal) {
-                $myxls->write_string($row, 3, $user->username);
-                $myxls->write_string($row, 4, fullname($user));
+            $myxls->write_string($row, 2, $s->user->email);
+            if ($reveal || !$assignment->blindmarking) {
+                $myxls->write_string($row, 3, $s->user->username);
+                $myxls->write_string($row, 4, fullname($s->user));
             }
+            if ($s->submission) {
+                $myxls->write_string($row, 5, userdate($s->submission->timemodified));
+            } else {
+                $myxls->write_string($row, 5, get_string('no'));
+            }
+            $myxls->write_string($row, 6, $s->user->participantid);
             $row++;
         }
         $workbook->close();

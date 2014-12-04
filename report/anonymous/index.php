@@ -24,40 +24,33 @@
 
 require(dirname(__FILE__).'/../../config.php');
 require_once(dirname(__FILE__).'/locallib.php');
+require_once($CFG->dirroot . '/mod/assign/locallib.php');
 
 // Parameters.
 $id = required_param('id', PARAM_INT);
-$mod = optional_param('mod', '', PARAM_ALPHA);
 $assignid = optional_param('assign', 0, PARAM_INT);
-$partid = optional_param('part', 0, PARAM_INT);
 $reveal = optional_param('reveal', 0, PARAM_INT);
 $export = optional_param('export', 0, PARAM_INT);
 
 $url = new moodle_url('/report/anonymous/index.php', array('id' => $id));
 $fullurl = new moodle_url('/report/anonymous/index.php', array(
     'id' => $id,
-    'mod' => $mod,
     'assign' => $assignid,
-    'part' => $partid,
     'reveal' => $reveal,
 ));
 
 // Page setup.
-$PAGE->set_url($url);
+$PAGE->set_url($fullurl);
 $PAGE->set_pagelayout('admin');
 
-if (!$course = $DB->get_record('course', array('id' => $id))) {
-    print_error('invalidcourse');
-}
+$course = $DB->get_record('course', array('id' => $id), '*', MUST_EXIST);
 
 // Security.
 require_login($course);
 $output = $PAGE->get_renderer('report_anonymous');
 $context = context_course::instance($course->id);
-$capassign = has_capability('mod/assign:grade', $context);
-if (!$capassign || !has_capability('report/anonymous:view', $context)) {
-    notice(get_string('nocapability', 'report_anonymous'));
-}
+require_capability('mod/assign:grade', $context);
+require_capability('report/anonymous:view', $context);
 
 if (!$export) {
     $PAGE->set_title($course->shortname .': '. get_string('pluginname', 'report_anonymous'));
@@ -65,30 +58,31 @@ if (!$export) {
     echo $OUTPUT->header();
 }
 
-// Get assignments with 'blind' marking.
-if ($capassign) {
-    $assignments = report_anonymous::get_assignments($id);
-} else {
-    $assignments = array();
-}
+// Get assignments
+$assignments = report_anonymous::get_assignments($id);
 
 // Has a link been submitted?
-if ($mod) {
-    if (!report_anonymous::allowed_to_view($mod, $assignid, $partid, $assignments)) {
+if ($assignid) {
+    if (!report_anonymous::allowed_to_view($assignid, $assignments)) {
         notice(get_string('notallowed', 'report_anonymous'), $url);
     }
 
-    $assignment = $DB->get_record('assign', array('id' => $assignid));
-    $allusers = report_anonymous::get_assign_users($context);
-    $notsubmittedusers = report_anonymous::get_assign_notsubmitted($assignid, $allusers);
-    $notsubmittedusers = report_anonymous::sort_users($notsubmittedusers, $reveal);
+    $assignment = $DB->get_record('assign', array('id' => $assignid), '*', MUST_EXIST);
+
+    // allocate ids if required
+    if ($assignment->blindmarking) {
+        assign::allocate_unique_ids($assignid);
+    }
+    $users = report_anonymous::get_assign_users($context);
+    $submissions = report_anonymous::get_submissions($assignid, $users);
+    $submissions = report_anonymous::sort_submissions($submissions, $reveal);
     if ($export) {
         $filename = "anonymous_{$assignment->name}.xls";
-        report_anonymous::export($notsubmittedusers, $reveal, $filename, $assignment->name);
+        report_anonymous::export($assignment, $submissions, $reveal, $filename);
         die;
     }
-    $output->actions($context, $fullurl, $reveal);
-    $output->report_assign($id, $assignment, $allusers, $notsubmittedusers, $reveal);
+    $output->actions($context, $fullurl, $reveal, $assignment);
+    $output->report($id, $assignment, $submissions, $reveal);
     $output->back_button($url);
 } else {
 

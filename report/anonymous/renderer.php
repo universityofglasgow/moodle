@@ -27,6 +27,7 @@ class report_anonymous_renderer extends plugin_renderer_base {
 
     public function list_assign($url, $assignments) {
         echo "<h3>" . get_string('anonymousassignments', 'report_anonymous') . "</h3>";
+        echo '<div class="alert alert-info">' . get_string('selectassignment', 'report_anonymous') . '</div>';
         if (empty($assignments)) {
             echo "<div class=\"alert alert-warning\">" . get_string('noassignments', 'report_anonymous') . "</div>";
             return;
@@ -45,113 +46,61 @@ class report_anonymous_renderer extends plugin_renderer_base {
     }
 
     /**
-     * List all turnitintool activities and parts (for selection)
-     * @param moodle_url $url
-     * @param array $tts list of parts
-     */
-    public function list_turnitintool($url, $tts) {
-        echo "<h3>" . get_string('anonymoustts', 'report_anonymous') . "</h3>";
-        if (empty($tts)) {
-            echo "<div class=\"alert alert-warning\">" . get_string('notts', 'report_anonymous') . "</div>";
-            return;
-        }
-        echo "<ul>";
-        foreach ($tts as $tt) {
-            echo "<li>" . $tt->name;
-            echo "<ul>";
-            foreach ($tt->parts as $part) {
-                $url->params(array('mod' => 'turnitintool', 'part' => $part->id));
-                echo "<li><a href=\"$url\">";
-                echo $part->partname;
-                echo "</a></li>";
-            }
-            echo "</ul></li>";
-        }
-        echo "</ul>";
-    }
-
-    /**
      * List of assignment users
      * @param int $courseid course id
      * @param object $assignment assignment
-     * @param array $ausers all assignment users
-     * @param array $anotusers all assignment users who did not submit
+     * @param array $submissions list of submissions/users
      * @param boolean $reveal Display full names or not
      */
-    public function report_assign($courseid, $assignment, $ausers, $anotusers, $reveal) {
-        echo "<h3>" . get_string('assignnotsubmit', 'report_anonymous', $assignment->name) . "</h3>";
+    public function report($courseid, $assignment, $submissions, $reveal) {
+        echo '<div class="alert alert-primary">' . get_string('assignnotsubmit', 'report_anonymous', $assignment->name) . '</div>';
 
         // Keep a track of records with no idnumber.
-        $noids = array();
-        echo "<ul>";
-        $idmessage = false;
-        foreach ($anotusers as $u) {
-            if ($reveal) {
-                $userurl = new moodle_url('/user/view.php', array('id' => $u->id, 'course' => $courseid));
-                echo "<li>";
-                echo "<a href=\"$userurl\">".fullname($u)."</a>";
-                if (!$u->idnumber) {
-                    echo "&nbsp;<strong>*</strong>";
-                    $idmessage = true;
-                }
-                echo "</li>";
-            } else if ($u->idnumber) {
-                echo "<li>{$u->idnumber}</li>";
-            } else {
-                $noids[$u->id] = $u;
-            }
-        }
-        echo "</ul>";
-        if ($idmessage) {
-            echo "<p><i><strong>*</strong> " . get_string('asterisk', 'report_anonymous') . "</i></p>";
-        }
-        echo "<p><strong>" . get_string('totalassignusers', 'report_anonymous', count($ausers)) . "</strong></p>";
-        echo "<p><strong>" . get_string('totalnotassignusers', 'report_anonymous', count($anotusers)) . "</strong></p>";
-        if (!$reveal && count($noids)) {
-            echo "<p><strong>" . get_string('totalnoid', 'report_anonymous', count($noids)) . "</strong></p>";
-        }
-    }
+        $table = new html_table();
+        $table->head = array(
+           get_string('idnumber', 'report_anonymous'),
+           get_string('participantnumber', 'report_anonymous'),
+           get_string('submitted', 'report_anonymous'),
+           get_string('name', 'report_anonymous'),
+        );
+        $nosubmitcount = 0;
+        foreach ($submissions as $s) {
+            $line = array();
 
-    /**
-     * List of turnitintool users
-     * @param int $coursid courseid
-     * @param object $part turnitin part
-     * @param array $ausers all turnitin users
-     * @param array $anotusers all turnitin users who did not submit
-     * @param boolean $reveal Show names or not
-     */
-    public function report_turnitintool($courseid, $part, $ausers, $anotusers, $reveal) {
-        echo "<h3>" . get_string('ttnotsubmit', 'report_anonymous', $part->partname) . "</h3>";
-
-        // Keep a track of records with no idnumber.
-        $noids = array();
-        $idmessage = false;
-        echo "<ul>";
-        foreach ($anotusers as $u) {
-            if ($reveal) {
-                $userurl = new moodle_url('/user/view.php', array('id' => $u->id, 'course' => $courseid));
-                echo "<li>";
-                echo "<a href=\"$userurl\">".fullname($u)."</a>";
-                if (!$u->idnumber) {
-                    echo "&nbsp;<strong>*</strong>";
-                    $idmessage = true;
-                }
-                echo "</li>";
-            } else if ($u->idnumber) {
-                echo "<li>{$u->idnumber}</li>";
+            // Matric/ID Number
+            if ($s->user->idnumber) {
+                $line[] = $s->user->idnumber;
             } else {
-                $noids[$u->id] = $u;
+                $line[] = '-';
             }
+
+            // Participant number
+            $line[] = $s->user->participantid;
+
+            // Submitted
+            if ($s->submission) {
+                $line[] = userdate($s->submission->timemodified);
+            } else {
+                $line[] = get_string('no');
+                $nosubmitcount++;
+            }
+
+            // Name
+            if ($reveal || !$assignment->blindmarking) {
+                $userurl = new moodle_url('/user/view.php', array('id' => $s->user->id, 'course' => $courseid));
+                $line[] = "<a href=\"$userurl\">".fullname($s->user)."</a>";
+            } else {
+                $line[] = get_string('hidden', 'report_anonymous');
+            }
+            $table->data[] = $line;
         }
-        echo "</ul>";
-        if ($idmessage) {
-            echo "<p><i><strong>*</strong> " . get_string('asterisk', 'report_anonymous') . "</i></p>";
-        }
-        echo "<strong>" . get_string('totalttusers', 'report_anonymous', count($ausers)) . "</strong><br />";
-        echo "<strong>" . get_string('totalnotttusers', 'report_anonymous', count($anotusers)) . "</strong><br />";
-        if (!$reveal && count($noids)) {
-            echo "<strong>" . get_string('totalnoid', 'report_anonymous', count($noids)) . "</strong><br />";
-        }
+        echo html_writer::table($table);
+
+        // Totals.
+        echo '<ul>';
+        echo "<li><strong>" . get_string('totalassignusers', 'report_anonymous', count($submissions)) . "</strong></li>";
+        echo "<li><strong>" . get_string('totalnotassignusers', 'report_anonymous', $nosubmitcount) . "</strong></li>";
+        echo '</ul>';
     }
 
     /**
@@ -159,10 +108,9 @@ class report_anonymous_renderer extends plugin_renderer_base {
      * @param moodle_url $url
      * @param boolean $reveal on/off
      */
-    public function actions($context, $url, $reveal) {
-        echo "<div class=\"alert\">".get_string('help', 'report_anonymous')."</div>";
+    public function actions($context, $url, $reveal, $assignment) {
         echo "<div>";
-        if (has_capability('report/anonymous:shownames', $context)) {
+        if (has_capability('report/anonymous:shownames', $context) && $assignment->blindmarking) {
             $showurl = clone($url);
             if ($reveal) {
                 $showurl->params(array('reveal' => 0));
