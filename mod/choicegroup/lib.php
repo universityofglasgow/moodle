@@ -47,6 +47,10 @@ define('CHOICEGROUP_SHOWRESULTS_DEFAULT',      '3');
 define('CHOICEGROUP_DISPLAY_HORIZONTAL',  '0');
 define('CHOICEGROUP_DISPLAY_VERTICAL',    '1');
 
+define('CHOICEGROUP_SORTGROUPS_SYSTEMDEFAULT',    '0');
+define('CHOICEGROUP_SORTGROUPS_CREATEDATE',    '1');
+define('CHOICEGROUP_SORTGROUPS_NAME',    '2');
+
 /** @global array $CHOICEGROUP_PUBLISH */
 global $CHOICEGROUP_PUBLISH;
 $CHOICEGROUP_PUBLISH = array (CHOICEGROUP_PUBLISH_ANONYMOUS  => get_string('publishanonymous', 'choicegroup'),
@@ -761,15 +765,43 @@ function choicegroup_get_choicegroup($choicegroupid) {
     global $DB;
 
     if ($choicegroup = $DB->get_record("choicegroup", array("id" => $choicegroupid))) {
-        if ($options = $DB->get_records("choicegroup_options", array("choicegroupid" => $choicegroupid), "id")) {
-            foreach ($options as $option) {
-                $choicegroup->option[$option->id] = $option->groupid;
-                $choicegroup->maxanswers[$option->id] = $option->maxanswers;
-            }
-            return $choicegroup;
+        $sortcolumn = choicegroup_get_sort_column($choicegroup);
+
+        $sql = "SELECT grp_o.id, grp_o.groupid, grp_o.maxanswers FROM {groups} grp
+            INNER JOIN {choicegroup_options} grp_o on grp.id = grp_o.groupid
+            WHERE grp_o.choicegroupid = :choicegroupid
+            ORDER BY $sortcolumn ASC";
+
+        $params = array(
+            'choicegroupid' => $choicegroupid
+        );
+        $options = $DB->get_records_sql($sql, $params);
+
+        foreach ($options as $option) {
+            $choicegroup->option[$option->id] = $option->groupid;
+            $choicegroup->maxanswers[$option->id] = $option->maxanswers;
         }
+
+        return $choicegroup;
     }
     return false;
+}
+
+function choicegroup_get_sort_column($choicegroup) {
+    if ($choicegroup->sortgroupsby == CHOICEGROUP_SORTGROUPS_SYSTEMDEFAULT) {
+        $sortcolumn = get_config('choicegroup', 'sortgroupsby');
+    } else {
+        $sortcolumn = $choicegroup->sortgroupsby;
+    }
+
+    switch ($sortcolumn) {
+        case CHOICEGROUP_SORTGROUPS_CREATEDATE:
+            return 'timecreated';
+        case CHOICEGROUP_SORTGROUPS_NAME:
+            return 'name';
+        default:
+            return 'timecreated';
+    }
 }
 
 /**
@@ -817,37 +849,35 @@ function choicegroup_reset_course_form_defaults($course) {
  * @return array
  */
 function choicegroup_get_response_data($choicegroup, $cm) {
-    global $CFG, $context, $choicegrop_users;
-
-    /// Initialise the returned array, which is a matrix:  $allresponses[responseid][userid] = responseobject
+    // Initialise the returned array, which is a matrix:  $allresponses[responseid][userid] = responseobject.
     static $allresponses = array();
 
     if (count($allresponses)) {
         return $allresponses;
     }
 
-    /// First get all the users who have access here
-    /// To start with we assume they are all "unanswered" then move them later
-    $choicegrop_users = get_enrolled_users($context, 'mod/choicegroup:choose', 0, user_picture::fields('u', array('idnumber')), 'u.lastname ASC,u.firstname ASC');
-    $allresponses[0] = $choicegrop_users;
-
-    if ($allresponses[0]) {
-        // if groupmembersonly used, remove users who are not in any group
-        if (!empty($CFG->enablegroupmembersonly) and $cm->groupmembersonly) {
-            if ($groupingusers = groups_get_grouping_members($cm->groupingid, 'u.id', 'u.id')) {
-                $allresponses[0] = array_intersect_key($allresponses[0], $groupingusers);
-            }
-        }
+    // First get all the users who have access here.
+    // To start with we assume they are all "unanswered" then move them later.
+    $ctx = \context_module::instance($cm->id);
+    $users = get_enrolled_users($ctx, 'mod/choicegroup:choose', 0, user_picture::fields('u', array('idnumber')), 'u.lastname ASC,u.firstname ASC');
+    if ($users) {
+        $modinfo = get_fast_modinfo($cm->course);
+        $cminfo = $modinfo->get_cm($cm->id);
+        $availability = new \core_availability\info_module($cminfo);
+        $users = $availability->filter_user_list($users);
     }
 
+    $allresponses[0] = $users;
     foreach ($allresponses[0] as $user) {
-        $currentAnswers = choicegroup_get_user_answer($choicegroup, $user, TRUE);
-        if ($currentAnswers != false) {
-            foreach ($currentAnswers as $current) {
-                $allresponses[$current->id][$user->id] = clone($allresponses[0][$user->id]);
+        $currentanswers = choicegroup_get_user_answer($choicegroup, $user, true);
+        if ($currentanswers != false) {
+            foreach ($currentanswers as $current) {
+                $allresponses[$current->id][$user->id] = clone $allresponses[0][$user->id];
                 $allresponses[$current->id][$user->id]->timemodified = $current->timeuseradded;
             }
-            unset($allresponses[0][$user->id]);   // Remove from unanswered column
+
+            // Remove from unanswered column.
+            unset($allresponses[0][$user->id]);
         }
     }
     return $allresponses;
@@ -971,3 +1001,10 @@ function choicegroup_page_type_list($pagetype, $parentcontext, $currentcontext) 
     return $module_pagetype;
 }
 
+
+function choicegroup_get_sort_options() {
+    return array (
+        CHOICEGROUP_SORTGROUPS_CREATEDATE => get_string('createdate', 'choicegroup'),
+        CHOICEGROUP_SORTGROUPS_NAME => get_string('name', 'choicegroup')
+    );
+}

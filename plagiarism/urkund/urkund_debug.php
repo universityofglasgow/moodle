@@ -122,7 +122,8 @@ if (!empty($a->countheld)) {
     }
 }
 // Now show files in an error state.
-$sqlallfiles = "SELECT t.*, u.firstname, u.lastname, m.name as moduletype, ".
+$userfields = get_all_user_name_fields(true, 'u');
+$sqlallfiles = "SELECT t.*, ".$userfields.", m.name as moduletype, ".
         "cm.course as courseid, cm.instance as cminstance FROM ".
         "{plagiarism_urkund_files} t, {user} u, {modules} m, {course_modules} cm ".
         "WHERE m.id=cm.module AND cm.id=t.cm AND t.userid=u.id ".
@@ -151,13 +152,14 @@ $count = $DB->count_records_sql($sqlcount);
 
 $urkundfiles = $DB->get_records_sql($sqlallfiles.$orderby, null, $page * $limit, $limit);
 
-$table->define_columns(array('id', 'name', 'module', 'identifier', 'status', 'action'));
+$table->define_columns(array('id', 'name', 'module', 'identifier', 'status', 'attempts', 'action'));
 
 $table->define_headers(array(get_string('id', 'plagiarism_urkund'),
                        get_string('user'),
                        get_string('module', 'plagiarism_urkund'),
                        get_string('identifier', 'plagiarism_urkund'),
-                       get_string('status', 'plagiarism_urkund'), ''));
+                       get_string('status', 'plagiarism_urkund'),
+                       get_string('attempts', 'plagiarism_urkund'),''));
 $table->define_baseurl('urkund_debug.php');
 $table->sortable(true);
 $table->no_sorting('file', 'action');
@@ -188,9 +190,9 @@ foreach ($urkundfiles as $tf) {
     $cmurl = new moodle_url($CFG->wwwroot.'/mod/'.$tf->moduletype.'/view.php', array('id' => $tf->cm));
     $cmlink = html_writer::link($cmurl, shorten_text($coursemodule->name, 40, true), array('title' => $coursemodule->name));
     if ($table->is_downloading()) {
-        $row = array($tf->id, $tf->userid, $tf->cm .' '. $tf->moduletype, $tf->identifier, $tf->statuscode);
+        $row = array($tf->id, $tf->userid, $tf->cm .' '. $tf->moduletype, $tf->identifier, $tf->statuscode, $tf->attempt, $tf->errorresponse);
     } else {
-        $row = array($tf->id, $user, $cmlink, $tf->identifier, $tf->statuscode, $reset);
+        $row = array($tf->id, $user, $cmlink, $tf->identifier, $tf->statuscode, $tf->attempt, $reset);
     }
 
     $table->add_data($row);

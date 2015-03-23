@@ -2,12 +2,10 @@
 /**
  * Library calls for Moodle and BigBlueButton.
  * 
- * Authors:
- *    Fred Dixon  (ffdixon [at] blindsidenetworks [dt] com)
- *    Jesus Federico  (jesus [at] blindsidenetworks [dt] com)    
- * 
  * @package   mod_bigbluebuttonbn
- * @copyright 2010-2012 Blindside Networks 
+ * @author    Fred Dixon  (ffdixon [at] blindsidenetworks [dt] com)
+ * @author    Jesus Federico  (jesus [at] blindsidenetworks [dt] com)
+ * @copyright 2010-2014 Blindside Networks Inc.
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v2 or later
  */
 
@@ -50,9 +48,10 @@ function bigbluebuttonbn_add_instance($bigbluebuttonbn) {
     $bigbluebuttonbn->viewerpass = bigbluebuttonbn_rand_string();
     $bigbluebuttonbn->meetingid = bigbluebuttonbn_rand_string();
 
-    if (! isset($bigbluebuttonbn->newwindow))   $bigbluebuttonbn->newwindow = 0;
-    if (! isset($bigbluebuttonbn->wait))        $bigbluebuttonbn->wait = 0;
-    if (! isset($bigbluebuttonbn->record))      $bigbluebuttonbn->record = 0;
+    if (! isset($bigbluebuttonbn->newwindow))     $bigbluebuttonbn->newwindow = 0;
+    if (! isset($bigbluebuttonbn->wait))          $bigbluebuttonbn->wait = 0;
+    if (! isset($bigbluebuttonbn->record))        $bigbluebuttonbn->record = 0;
+    if (! isset($bigbluebuttonbn->allmoderators)) $bigbluebuttonbn->allmoderators = 0;
 
     $returnid = $DB->insert_record('bigbluebuttonbn', $bigbluebuttonbn);
     
@@ -93,9 +92,10 @@ function bigbluebuttonbn_update_instance($bigbluebuttonbn) {
     $bigbluebuttonbn->timemodified = time();
     $bigbluebuttonbn->id = $bigbluebuttonbn->instance;
 
-    if (! isset($bigbluebuttonbn->newwindow))   $bigbluebuttonbn->newwindow = 0;
-    if (! isset($bigbluebuttonbn->wait))        $bigbluebuttonbn->wait = 0;
-    if (! isset($bigbluebuttonbn->record))      $bigbluebuttonbn->record = 0;
+    if (! isset($bigbluebuttonbn->newwindow))     $bigbluebuttonbn->newwindow = 0;
+    if (! isset($bigbluebuttonbn->wait))          $bigbluebuttonbn->wait = 0;
+    if (! isset($bigbluebuttonbn->record))        $bigbluebuttonbn->record = 0;
+    if (! isset($bigbluebuttonbn->allmoderators)) $bigbluebuttonbn->allmoderators = 0;
 
     $returnid = $DB->update_record('bigbluebuttonbn', $bigbluebuttonbn);
     

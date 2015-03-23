@@ -32,6 +32,7 @@ if (!defined('MOODLE_INTERNAL')) {
 // Get global class.
 global $CFG;
 require_once($CFG->dirroot.'/plagiarism/lib.php');
+require_once($CFG->dirroot . '/lib/filelib.php');
 
 // There is a new URKUND API - The Integration Service - we only currently use this to verify the receiver address.
 // If we convert the existing calls to send file/get score we should move this to a config setting.
@@ -73,7 +74,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
      *
      * @return mixed - false if not enabled, or returns an array of relevant settings.
      */
-    public function get_settings() {
+    static public function get_settings() {
         static $plagiarismsettings;
         if (!empty($plagiarismsettings) || $plagiarismsettings === false) {
             return $plagiarismsettings;
@@ -403,6 +404,12 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         } else { // Add plagiarism settings as hidden vars.
             foreach ($plagiarismelements as $element) {
                 $mform->addElement('hidden', $element);
+                $mform->setType('use_urkund', PARAM_INT);
+                $mform->setType('urkund_show_student_score', PARAM_INT);
+                $mform->setType('urkund_show_student_report', PARAM_INT);
+                $mform->setType('urkund_draft_submit', PARAM_INT);
+                $mform->setType('urkund_receiver', PARAM_TEXT);
+                $mform->setType('urkund_studentemail', PARAM_INT);
             }
         }
         // Now set defaults.
@@ -425,12 +432,14 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         $mform->addRule('urkund_receiver', get_string('receivernotvalid', 'plagiarism_urkund'), 'urkundvalidatereceiver');
 
         // Now add JS to validate receiver indicator using Ajax.
-        $jsmodule = array(
-            'name' => 'plagiarism_urkund',
-            'fullpath' => '/plagiarism/urkund/checkreceiver.js',
-            'requires' => array('json'),
-        );
-        $PAGE->requires->js_init_call('M.plagiarism_urkund.init', array($context->instanceid), true, $jsmodule);
+        if (has_capability('plagiarism/urkund:enable', $context)) {
+            $jsmodule = array(
+                'name' => 'plagiarism_urkund',
+                'fullpath' => '/plagiarism/urkund/checkreceiver.js',
+                'requires' => array('json'),
+            );
+            $PAGE->requires->js_init_call('M.plagiarism_urkund.init', array($context->instanceid), true, $jsmodule);
+        }
     }
 
     /**
@@ -473,11 +482,11 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
      *
      */
     public function cron() {
-        global $CFG, $DB;
+        global $CFG;
         // Do any scheduled task stuff.
         urkund_update_allowed_filetypes();
         // Weird hack to include filelib correctly before allowing use in event_handler.
-        require_once("$CFG->dirroot/mod/assignment/lib.php");
+        require_once($CFG->libdir.'/filelib.php');
         if ($plagiarismsettings = $this->get_settings()) {
             urkund_get_scores($plagiarismsettings);
         }
@@ -540,6 +549,8 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                     }
                 } else if ($eventdata->modulename == 'assign') {
                     require_once("$CFG->dirroot/mod/assign/locallib.php");
+                    require_once("$CFG->dirroot/mod/assign/submission/file/locallib.php");
+
                     $modulecontext = context_module::instance($eventdata->cmid);
                     $fs = get_file_storage();
                     if ($files = $fs->get_area_files($modulecontext->id, 'assignsubmission_file',
@@ -591,6 +602,47 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                 } else if ($efile->get_filename() === '.') {
                     // This 'file' is actually a directory - nothing to submit.
                     continue;
+                }
+                // Check if assign group submission is being used.
+                if ($eventdata->modulename == 'assign') {
+                    require_once("$CFG->dirroot/mod/assign/locallib.php");
+                    $modulecontext = context_module::instance($eventdata->cmid);
+                    $assign = new assign($modulecontext, false, false);
+                    if (!empty($assign->get_instance()->teamsubmission)) {
+                        $mygroups = groups_get_user_groups($assign->get_course()->id, $eventdata->userid);
+                        if (count($mygroups) == 1) {
+                            $groupid = reset($mygroups)[0];
+                            // Only users with single groups are supported - otherwise just use the normal userid on this record.
+                            // Get all users from this group.
+                            $userids = array();
+                            $users = groups_get_members($groupid, 'u.id');
+                            foreach ($users as $u) {
+                                $userids[] = $u->id;
+                            }
+                            // Find the earliest plagiarism record for this cm with any of these users.
+                            $sql ='cm = ? AND userid IN ('.implode(',', $userids).')';
+                            $previousfiles = $DB->get_records_select('plagiarism_urkund_files', $sql, array($eventdata->cmid), 'id');
+                            $sanitycheckusers = 10; // Search through this number of users to find a valid previous submission.
+                            $i = 0;
+                            foreach ($previousfiles as $pf) {
+                                if ($pf->userid == $eventdata->userid) {
+                                    break; // The submission comes from this user so break.
+                                }
+                                // Sanity Check to make sure the user isn't in multiple groups.
+                                $pfgroups = groups_get_user_groups($assign->get_course()->id, $pf->userid);
+                                if (count($pfgroups) == 1) {
+                                    // This user made the first valid submission so use their id when sending the file.
+                                    $eventdata->userid = $pf->userid;
+                                    break;
+                                }
+                                if ($i >= $sanitycheckusers) {
+                                    // don't cause a massive loop here and break at a sensible limit.
+                                    break;
+                                }
+                                $i++;
+                            }
+                        }
+                    }
                 }
 
                 $sendresult = urkund_send_file($cmid, $eventdata->userid, $efile, $plagiarismsettings);
@@ -869,11 +921,13 @@ function urkund_check_attempt_timeout($plagiarismfile) {
     }
     // Now calculate wait time.
     $i = 0;
+    $delay = 0;
     while ($i < $plagiarismfile->attempt) {
-        if ($wait > $maxsubmissiondelay) {
-            $wait = $maxsubmissiondelay;
+        $delay = $submissiondelay * pow(2,$i);
+        if ($delay > $maxsubmissiondelay) {
+            $delay = $maxsubmissiondelay;
         }
-        $wait = $wait * $plagiarismfile->attempt;
+        $wait += $delay;
         $i++;
     }
     $wait = (int)$wait * 60;
@@ -1151,6 +1205,12 @@ function urkund_update_allowed_filetypes() {
     $configvars = get_config('plagiarism_urkund');
     $now = time();
     $wait = (int)URKUND_FILETYPE_URL_UPDATE * 60 * 60;
+
+    if (!isset($configvars->lastupdatedfiletypes)) {
+        // First time this has run.
+        $configvars->lastupdatedfiletypes = 0;
+    }
+
     $timetocheck = (int)($configvars->lastupdatedfiletypes + $wait);
 
     if (empty($configvars->lastupdatedfiletypes) ||

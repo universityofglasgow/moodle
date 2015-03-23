@@ -55,7 +55,7 @@ class qtype_gapfill_question extends question_graded_automatically_with_countbac
 
     /** @var array of question_answer. */
     public $answers = array();
-     /* checks for gaps that get a mark for being left black i.e. [!!]*/
+    /* checks for gaps that get a mark for being left black i.e. [!!] */
     public $blankregex = "/!.*!/";
 
 
@@ -105,6 +105,17 @@ class qtype_gapfill_question extends question_graded_automatically_with_countbac
         $step->set_qt_var('_allanswers', serialize($this->allanswers));
     }
 
+    /* get the length the correct answer and if the | is used
+     * the length of the longest of the correct answers
+     */
+
+    public function get_size($answer) {
+        $answer = htmlspecialchars_decode($answer);
+        $words = explode("|", $answer);
+        $maxlen = max(array_map('strlen', $words));
+        return $maxlen;
+    }
+
     /**
      * @param int $key stem number
      * @return string the question-type variable name.
@@ -124,14 +135,14 @@ class qtype_gapfill_question extends question_graded_automatically_with_countbac
 
     /**
      * @param array $response  as might be passed to {@link grade_response()}
-     * @return string 
-     * Value returned will be written to responsesummary field of 
+     * @return string
+     * Value returned will be written to responsesummary field of
      * the question_attempts table
      */
     public function summarise_response(array $response) {
         $summary = "";
         foreach ($response as $key => $value) {
-            $summary.=" " . $value . " ";
+            $summary .= " " . $value . " ";
         }
         return $summary;
     }
@@ -159,7 +170,7 @@ class qtype_gapfill_question extends question_graded_automatically_with_countbac
     }
 
     /**
-     * What is the correct value for the field 
+     * What is the correct value for the field
      */
     public function get_right_choice_for($place) {
         return $this->places[$place];
@@ -179,13 +190,18 @@ class qtype_gapfill_question extends question_graded_automatically_with_countbac
         }
     }
 
+     /* A question is gradable if at least one gap response is not blank */
     public function is_gradable_response(array $response) {
-        /* are there any fields still left blank */
-        return $this->is_complete_response($response);
+        foreach ($response as $key => $answergiven) {
+            if (($answergiven !== "")) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
-     * @return question_answer an answer that 
+     * @return question_answer an answer that
      * contains the a response that would get full marks.
      * used in preview mode
      */
@@ -216,7 +232,7 @@ class qtype_gapfill_question extends question_graded_automatically_with_countbac
     /**
      *
      * @param array $response Passed in from the submitted form
-     * @return array 
+     * @return array
      *
      * Find count of correct answers, used for displaying marks
      * for question. Compares answergiven with right/correct answer
@@ -241,7 +257,7 @@ class qtype_gapfill_question extends question_graded_automatically_with_countbac
     }
 
     /**
-     * Given a response, rest the parts that are wrong. Relevent in 
+     * Given a response, rest the parts that are wrong. Relevent in
      * interactive with multiple tries
      * @param array $response a response
      * @return array a cleaned up response with the wrong bits reset.
@@ -271,13 +287,13 @@ class qtype_gapfill_question extends question_graded_automatically_with_countbac
              * keys but nonanswer in any duplicate non !! gaps
              */
             $au = array_unique($response);
-            /*Hash of flatted answer values is is guaranteed
-             not to to be an answer for any gap*/
-            $nonanswer=hash('ripemd160',implode(' ', $this->places));
-            foreach ($response as $key => $value) {    
+            /* Hash of flatted answer values is is guaranteed
+              not to to be an answer for any gap */
+            $nonanswer = hash('ripemd160', implode(' ', $this->places));
+            foreach ($response as $key => $value) {
                 $response[$key] = $nonanswer;
             }
-            $response= array_merge($response, $au);
+            $response = array_merge($response, $au);
             return $response;
         } else {
             return $response;
@@ -370,41 +386,41 @@ class qtype_gapfill_question extends question_graded_automatically_with_countbac
         }
     }
 
-    public function get_marked_gaps(question_attempt $qa, question_display_options $options) {
-        $marked_gaps = array();
+    public function get_markedgaps(question_attempt $qa, question_display_options $options) {
+        $markedgaps = array();
         $question = $qa->get_question();
-        $correct_gaps = array();
+        $correctgaps = array();
         foreach ($question->textfragments as $place => $notused) {
             if ($place < 1) {
                 continue;
             }
             $fieldname = $question->field($place);
             $rightanswer = $question->get_right_choice_for($place);
-            if (($options->correctness) or ($options->numpartscorrect)) {
+            if (($options->correctness) or ( $options->numpartscorrect)) {
                 $response = $qa->get_last_qt_data();
 
                 if (array_key_exists($fieldname, $response)) {
                     if ($question->is_correct_response($response[$fieldname], $rightanswer)) {
-                        $marked_gaps[$fieldname]['value'] = $response[$fieldname];
-                        $marked_gaps[$fieldname]['fraction'] = 1;
-                        $correct_gaps[] = $response[$fieldname];
+                        $markedgaps[$fieldname]['value'] = $response[$fieldname];
+                        $markedgaps[$fieldname]['fraction'] = 1;
+                        $correctgaps[] = $response[$fieldname];
                     } else {
-                        $marked_gaps[$fieldname]['value'] = $response[$fieldname];
-                        $marked_gaps[$fieldname]['fraction'] = 0;
+                        $markedgaps[$fieldname]['value'] = $response[$fieldname];
+                        $markedgaps[$fieldname]['fraction'] = 0;
                     }
                 }
             }
         }
-        $arr_unique = array_unique($correct_gaps);
-        $arr_duplicates = array_diff_assoc($correct_gaps, $arr_unique);
-        foreach ($marked_gaps as $fieldname => $gap) {
-            if (in_array($gap['value'], $arr_duplicates)) {
-                $marked_gaps[$fieldname]['duplicate'] = 'true';
+        $arrunique = array_unique($correctgaps);
+        $arrduplicates = array_diff_assoc($correctgaps, $arrunique);
+        foreach ($markedgaps as $fieldname => $gap) {
+            if (in_array($gap['value'], $arrduplicates)) {
+                $markedgaps[$fieldname]['duplicate'] = 'true';
             } else {
-                $marked_gaps[$fieldname]['duplicate'] = 'false';
+                $markedgaps[$fieldname]['duplicate'] = 'false';
             }
         }
-        return $marked_gaps;
+        return $markedgaps;
     }
 
 }

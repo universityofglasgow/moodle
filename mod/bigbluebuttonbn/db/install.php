@@ -5,7 +5,9 @@
  * lib.php/modulename_install() post installation hook and partially defaults.php
  *
  * @package   mod_bigbluebuttonbn
- * @copyright 2010 Blindside Networks
+ * @author    Fred Dixon  (ffdixon [at] blindsidenetworks [dt] com)
+ * @author    Jesus Federico  (jesus [at] blindsidenetworks [dt] com)
+ * @copyright 2010-2014 Blindside Networks Inc.
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v2 or later
  */
 
