@@ -39,8 +39,10 @@ class enrol_self_edit_form extends moodleform {
 
         $mform->addElement('header', 'header', get_string('pluginname', 'enrol_self'));
 
-        $mform->addElement('text', 'name', get_string('custominstancename', 'enrol'));
+        $nameattribs = array('size' => '20', 'maxlength' => '255');
+        $mform->addElement('text', 'name', get_string('custominstancename', 'enrol'), $nameattribs);
         $mform->setType('name', PARAM_TEXT);
+        $mform->addRule('name', get_string('maximumchars', '', 255), 'maxlength', 255, 'server');
 
         $options = array(ENROL_INSTANCE_ENABLED  => get_string('yes'),
                          ENROL_INSTANCE_DISABLED => get_string('no'));
@@ -52,11 +54,13 @@ class enrol_self_edit_form extends moodleform {
         $mform->addHelpButton('customint6', 'newenrols', 'enrol_self');
         $mform->disabledIf('customint6', 'status', 'eq', ENROL_INSTANCE_DISABLED);
 
-        $mform->addElement('passwordunmask', 'password', get_string('password', 'enrol_self'));
+        $passattribs = array('size' => '20', 'maxlength' => '50');
+        $mform->addElement('passwordunmask', 'password', get_string('password', 'enrol_self'), $passattribs);
         $mform->addHelpButton('password', 'password', 'enrol_self');
         if (empty($instance->id) and $plugin->get_config('requirepassword')) {
             $mform->addRule('password', get_string('required'), 'required', null, 'client');
         }
+        $mform->addRule('password', get_string('maximumchars', '', 50), 'maxlength', 50, 'server');
 
         $options = array(1 => get_string('yes'),
                          0 => get_string('no'));
@@ -106,7 +110,7 @@ class enrol_self_edit_form extends moodleform {
         $mform->setType('customint3', PARAM_INT);
 
         $cohorts = array(0 => get_string('no'));
-        $allcohorts = cohort_get_available_cohorts($context);
+        $allcohorts = cohort_get_available_cohorts($context, 0, 0, 0);
         if ($instance->customint5 && !isset($allcohorts[$instance->customint5]) &&
                 ($c = $DB->get_record('cohort', array('id' => $instance->customint5), 'id, name, idnumber, contextid, visible', IGNORE_MISSING))) {
             // Current cohort was not found because current user can not see it. Still keep it.

@@ -547,7 +547,8 @@ class backup_enrolments_structure_step extends backup_structure_step {
 
         $enrol->annotate_ids('role', 'roleid');
 
-        //TODO: let plugins annotate custom fields too and add more children
+        // Add enrol plugin structure.
+        $this->add_plugin_structure('enrol', $enrol, false);
 
         return $enrolments;
     }
@@ -1848,6 +1849,47 @@ class backup_activity_grade_items_to_ids extends backup_execution_step {
     }
 }
 
+
+/**
+ * This step allows enrol plugins to annotate custom fields.
+ *
+ * @package   core_backup
+ * @copyright 2014 University of Wisconsin
+ * @author    Matt Petro
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class backup_enrolments_execution_step extends backup_execution_step {
+
+    /**
+     * Function that will contain all the code to be executed.
+     */
+    protected function define_execution() {
+        global $DB;
+
+        $plugins = enrol_get_plugins(true);
+        $enrols = $DB->get_records('enrol', array(
+                'courseid' => $this->task->get_courseid()));
+
+        // Allow each enrol plugin to add annotations.
+        foreach ($enrols as $enrol) {
+            if (isset($plugins[$enrol->enrol])) {
+                $plugins[$enrol->enrol]->backup_annotate_custom_fields($this, $enrol);
+            }
+        }
+    }
+
+    /**
+     * Annotate a single name/id pair.
+     * This can be called from {@link enrol_plugin::backup_annotate_custom_fields()}.
+     *
+     * @param string $itemname
+     * @param int $itemid
+     */
+    public function annotate_id($itemname, $itemid) {
+        backup_structure_dbops::insert_backup_ids_record($this->get_backupid(), $itemname, $itemid);
+    }
+}
+
 /**
  * This step will annotate all the groups and groupings belonging to the course
  */
@@ -2326,7 +2368,8 @@ class backup_course_completion_structure_step extends backup_structure_step {
         $cc = new backup_nested_element('course_completion');
 
         $criteria = new backup_nested_element('course_completion_criteria', array('id'), array(
-            'course','criteriatype', 'module', 'moduleinstance', 'courseinstanceshortname', 'enrolperiod', 'timeend', 'gradepass', 'role'
+            'course', 'criteriatype', 'module', 'moduleinstance', 'courseinstanceshortname', 'enrolperiod',
+            'timeend', 'gradepass', 'role', 'roleshortname'
         ));
 
         $criteriacompletions = new backup_nested_element('course_completion_crit_completions');
@@ -2349,12 +2392,15 @@ class backup_course_completion_structure_step extends backup_structure_step {
         $cc->add_child($coursecompletions);
         $cc->add_child($aggregatemethod);
 
-        // We need to get the courseinstances shortname rather than an ID for restore
-        $criteria->set_source_sql("SELECT ccc.*, c.shortname AS courseinstanceshortname
-                                   FROM {course_completion_criteria} ccc
-                                   LEFT JOIN {course} c ON c.id = ccc.courseinstance
-                                   WHERE ccc.course = ?", array(backup::VAR_COURSEID));
-
+        // We need some extra data for the restore.
+        // - courseinstances shortname rather than an ID.
+        // - roleshortname in case restoring on a different site.
+        $sourcesql = "SELECT ccc.*, c.shortname AS courseinstanceshortname, r.shortname AS roleshortname
+                        FROM {course_completion_criteria} ccc
+                   LEFT JOIN {course} c ON c.id = ccc.courseinstance
+                   LEFT JOIN {role} r ON r.id = ccc.role
+                       WHERE ccc.course = ?";
+        $criteria->set_source_sql($sourcesql, array(backup::VAR_COURSEID));
 
         $aggregatemethod->set_source_table('course_completion_aggr_methd', array('course' => backup::VAR_COURSEID));
 
