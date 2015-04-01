@@ -26,6 +26,8 @@
 class report_anonymous_renderer extends plugin_renderer_base {
 
     public function list_assign($url, $assignments) {
+        global $OUTPUT;
+
         echo "<h3>" . get_string('anonymousassignments', 'report_anonymous') . "</h3>";
         echo '<div class="alert alert-info">' . get_string('selectassignment', 'report_anonymous') . '</div>';
         if (empty($assignments)) {
@@ -40,9 +42,25 @@ class report_anonymous_renderer extends plugin_renderer_base {
             if ($assignment->blindmarking) {
                 echo ' (' . get_string('anonymous', 'report_anonymous') . ')';
             }
+            if ($assignment->urkundenabled) {
+                echo '&nbsp;<img src="' . $OUTPUT->pix_url('urkund', 'report_anonymous') . '" />';
+            }
             echo "</a></li>";
         }
         echo "</ul>";
+    }
+
+    /**
+     * Limit urkund filename
+     * @param string $filename
+     * @return string HTML snippet
+     */
+    private function urkund_filename($filename) {
+        $original = $filename;
+        if (strlen($filename) > 25) {
+            $filename = substr($filename, 0, 25) . '...';
+        }
+        return '<span class="urkundtt" title="'.$original.'">'.$filename.'</span>';
     }
 
     /**
@@ -51,9 +69,13 @@ class report_anonymous_renderer extends plugin_renderer_base {
      * @param object $assignment assignment
      * @param array $submissions list of submissions/users
      * @param boolean $reveal Display full names or not
+     * @param boolean $urkund Is Urkund used in this assignment?
      */
-    public function report($courseid, $assignment, $submissions, $reveal) {
+    public function report($courseid, $assignment, $submissions, $reveal, $urkund) {
         echo '<div class="alert alert-primary">' . get_string('assignnotsubmit', 'report_anonymous', $assignment->name) . '</div>';
+
+        // Pager
+        $this->pagercontrols();
 
         // Keep a track of records with no idnumber.
         $table = new html_table();
@@ -63,6 +85,17 @@ class report_anonymous_renderer extends plugin_renderer_base {
            get_string('submitted', 'report_anonymous'),
            get_string('name', 'report_anonymous'),
         );
+        if ($urkund) {
+            $table->head[] = get_string('urkundfile', 'report_anonymous');
+            $table->head[] = get_string('urkundstatus', 'report_anonymous');
+            $table->head[] = get_string('urkundscore', 'report_anonymous');
+        }
+        $table->colclasses = array(
+            null,
+            null,
+            'anonymous-date',
+        );
+        $table->id = 'anonymous_table';
         $nosubmitcount = 0;
         foreach ($submissions as $s) {
             $line = array();
@@ -79,7 +112,7 @@ class report_anonymous_renderer extends plugin_renderer_base {
 
             // Submitted
             if ($s->submission) {
-                $line[] = userdate($s->submission->timemodified);
+                $line[] = date('d/m/Y', $s->submission->timemodified);
             } else {
                 $line[] = get_string('no');
                 $nosubmitcount++;
@@ -92,6 +125,13 @@ class report_anonymous_renderer extends plugin_renderer_base {
             } else {
                 $line[] = get_string('hidden', 'report_anonymous');
             }
+
+            if ($urkund) {
+                $line[] = isset($s->urkundfilename) ? $this->urkund_filename($s->urkundfilename) : '-';
+                $line[] = isset($s->urkundstatus) ? $s->urkundstatus : '-';
+                $line[] = isset($s->urkundscore) ? $s->urkundscore : '-';
+            }
+      
             $table->data[] = $line;
         }
         echo html_writer::table($table);
@@ -134,6 +174,29 @@ class report_anonymous_renderer extends plugin_renderer_base {
         echo "<div style=\"margin-top: 20px;\">";
         echo "<a class=\"btn\" href=\"$url\">" . get_string('backtolist', 'report_anonymous') . "</a>";
         echo "</div>";
+    }
+
+    /**
+     * Display controls for jquery-pager.
+     */
+    public function pagercontrols() {
+        global $OUTPUT;
+
+        echo '<div id="anonymous_pager" class="anonymous_pager">';
+        echo '  <form>';
+        echo '    <img src="' . $OUTPUT->pix_url('first', 'report_anonymous') . '" class="first"/>';
+        echo '    <img src="' . $OUTPUT->pix_url('prev', 'report_anonymous') . '" class="prev"/>';
+        echo '    <span class="pagedisplay"></span>';
+        echo '    <img src="' . $OUTPUT->pix_url('next', 'report_anonymous') . '" class="next"/>';
+        echo '    <img src="' . $OUTPUT->pix_url('last', 'report_anonymous') . '" class="last"/>';
+        echo '    <select class="pagesize">';
+        echo '      <option value="10">10</option>';
+        echo '      <option value="20">20</option>';
+        echo '      <option value="30">30</option>';
+        echo '      <option value="40">40</option>';
+        echo '    </select>';
+        echo '  </form>';
+        echo '</div>';
     }
 
 }

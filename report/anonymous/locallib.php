@@ -34,6 +34,12 @@ class report_anonymous {
         global $DB;
 
         $assignments = $DB->get_records('assign', array('course' => $id));
+
+        // add URKUND status
+        foreach ($assignments as $assignment) {
+            $assignment->urkundenabled = self::urkund_enabled($assignment->id);
+        }
+
         return $assignments;
     }
 
@@ -67,6 +73,9 @@ class report_anonymous {
     public static function get_submissions($assignid, $users) {
         global $DB;
 
+        // Is Urkund in use
+        $urkund = self::urkund_enabled($assignid);
+
         $submissions = array();
         foreach ($users as $user) {
             $instance = new stdClass;
@@ -83,10 +92,85 @@ class report_anonymous {
             } else {
                 $instance->submission = null;
             }
-            $submissions[] = $instance;
+
+            // check for urkund files
+            if ($urkund) {
+                $files = self::urkund_files($assignid, $user->id);
+                if (!empty($files)) {
+                    foreach ($files as $file) {
+                        $urkundinstance = clone $instance;
+                        $urkundinstance->urkundstatus = self::urkund_status($file->statuscode);
+                        $urkundinstance->urkundfilename = $file->filename;
+                        $urkundinstance->urkundscore = $file->similarityscore;
+                        $submissions[] = $urkundinstance;
+                    }
+                } else {
+                    $submissions[] = $instance;
+                }
+            } else {
+                $submissions[] = $instance;
+            }
         }
 
         return $submissions;
+    }
+
+    /**
+     * Is Urkund enabled on this assignment
+     * @param int $assignmentid
+     * @return boolean
+     */
+    public static function urkund_enabled($assignmentid) {
+        global $DB;
+        
+        $cm = get_coursemodule_from_instance('assign', $assignmentid);
+        if ($urkund = $DB->get_record('plagiarism_urkund_config', array('cm' => $cm->id, 'name' => 'use_urkund'))) {
+            if ($urkund->value) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** 
+     * Get Urkund status, filename and similarity
+     * @param int $assignmentid
+     * @param int $userid
+     * @return array of files or false
+     */
+    public static function urkund_files($assignmentid, $userid) {
+        global $DB;
+
+        $cm = get_coursemodule_from_instance('assign', $assignmentid);
+        if ($files = $DB->get_records('plagiarism_urkund_files', array('cm' => $cm->id, 'userid' => $userid))) {
+            return $files;
+        }
+        return false;
+    }
+
+    /**
+     * Translate Urkund status code
+     * @param string $statuscode
+     * @return string 
+     */
+    public static function urkund_status($statuscode) {
+        $codes = array(
+            '200' => get_string('statusprocessed', 'report_anonymous'),
+            '202' => get_string('statusaccepted', 'report_anonymous'),
+            '202-old' => get_string('statusacceptedold', 'report_anonymous'),
+            '400' => get_string('statusbadrequest', 'report_anonymous'),
+            '404' => get_string('statusnotfound', 'report_anonymous'),
+            '410' => get_string('statusgone', 'report_anonymous'),
+            '415' => get_string('statusunsupported', 'report_anonymous'),
+            '413' => get_string('statustoolarge', 'report_anonymous'),
+            '444' => get_string('statusnoreceiver', 'report_anonymous'),
+            '613' => get_string('statusinvalid', 'report_anonymous'),
+        );
+        if (isset($codes[$statuscode])) {
+            return $codes[$statuscode];
+        } else {
+            return get_string('statusunknown', 'report_anonymous', $statuscode);
+        }
     }
 
     /**
@@ -105,7 +189,7 @@ class report_anonymous {
         return $submissions;
     }
 
-    public static function export($assignment, $submissions, $reveal, $filename) {
+    public static function export($assignment, $submissions, $reveal, $filename, $urkund) {
         global $CFG;
         require_once($CFG->dirroot.'/lib/excellib.class.php');
 
@@ -129,6 +213,12 @@ class report_anonymous {
         }
         $myxls->write_string(3, 5, get_string('submitted', 'report_anonymous'));
         $myxls->write_string(3, 6, get_string('participantnumber', 'report_anonymous'));
+        if ($urkund) {
+            $myxls->write_string(3, 7, get_string('urkundfile', 'report_anonymous'));
+            $myxls->write_string(3, 8, get_string('urkundstatus', 'report_anonymous'));
+            $myxls->write_string(3, 9, get_string('urkundscore', 'report_anonymous'));
+
+        }
 
         // Add some data.
         $row = 4;
@@ -150,6 +240,17 @@ class report_anonymous {
                 $myxls->write_string($row, 5, get_string('no'));
             }
             $myxls->write_string($row, 6, $s->user->participantid);
+            if ($urkund) {
+                if (isset($s->urkundfilename)) {
+                    $myxls->write_string($row, 7, $s->urkundfilename);
+                }
+                if (isset($s->urkundstatus)) {
+                    $myxls->write_string($row, 8, $s->urkundstatus);
+                }
+                if (isset($s->urkundscore)) {
+                    $myxls->write_string($row, 9, $s->urkundscore);
+                }
+            }
             $row++;
         }
         $workbook->close();

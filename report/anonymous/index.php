@@ -55,6 +55,14 @@ require_capability('report/anonymous:view', $context);
 if (!$export) {
     $PAGE->set_title($course->shortname .': '. get_string('pluginname', 'report_anonymous'));
     $PAGE->set_heading($course->fullname);
+
+    // Jquery stuff.
+    $PAGE->requires->jquery();
+    $PAGE->requires->js('/report/anonymous/jquery/tablesorter/jquery.tablesorter.js');
+    $PAGE->requires->js('/report/anonymous/jquery/tablesorter/jquery.tablesorter.widgets.js');
+    $PAGE->requires->js('/report/anonymous/jquery/pager/jquery.tablesorter.pager.js');
+    $PAGE->requires->js('/report/anonymous/jquery/anonymous.js');
+
     echo $OUTPUT->header();
 }
 
@@ -68,6 +76,7 @@ if ($assignid) {
     }
 
     $assignment = $DB->get_record('assign', array('id' => $assignid), '*', MUST_EXIST);
+    $urkund = report_anonymous::urkund_enabled($assignid);
 
     // allocate ids if required
     if ($assignment->blindmarking) {
@@ -78,11 +87,11 @@ if ($assignid) {
     $submissions = report_anonymous::sort_submissions($submissions, $reveal || (!$assignment->blindmarking));
     if ($export) {
         $filename = "anonymous_{$assignment->name}.xls";
-        report_anonymous::export($assignment, $submissions, $reveal, $filename);
+        report_anonymous::export($assignment, $submissions, $reveal, $filename, $urkund);
         die;
     }
     $output->actions($context, $fullurl, $reveal, $assignment);
-    $output->report($id, $assignment, $submissions, $reveal);
+    $output->report($id, $assignment, $submissions, $reveal, $urkund);
     $output->back_button($url);
 } else {
 
