@@ -131,6 +131,7 @@ echo $OUTPUT->doctype() ?>
 
 <?php echo $OUTPUT->standard_end_of_body_html() ?>
 
+<!--
 <script>
     $('body').show();
     $('.version').text(NProgress.version);
@@ -142,6 +143,7 @@ echo $OUTPUT->doctype() ?>
     $("#b-inc").click(function() { NProgress.inc(); });
     $("#b-100").click(function() { NProgress.done(); });
 </script>
+-->
 
 <script type="text/javascript">
 jQuery(document).ready(function() {
