@@ -29,7 +29,7 @@ $hascopyright = (empty($PAGE->theme->settings->copyright)) ? false : $PAGE->them
 $hasfootnote = (empty($PAGE->theme->settings->footnote)) ? false : $PAGE->theme->settings->footnote;
 $hastiles = (!empty($PAGE->theme->settings->tiles));
 $haslogo = (empty($PAGE->theme->settings->logo)) ? false : $PAGE->theme->settings->logo;
-$invert = (!empty($PAGE->theme->settings->invert)) ? true : $PAGE->theme->settings->invert;
+//$invert = (!empty($PAGE->theme->settings->invert)) ? true : $PAGE->theme->settings->invert;
 $fluid = (!empty($PAGE->layout_options['fluid']));
 $sidebar = "RIGHT";
 
@@ -37,12 +37,6 @@ if ($haslogo) {
     $logo = '<div id="logo"></div>';
 } else {
     $logo = $SITE->shortname;
-}
-
-if ($invert) {
-  $navbartype = 'navbar-inverse';
-} else {
-  $navbartype = 'navbar-default';
 }
 
 $container = 'container';
@@ -56,7 +50,7 @@ if ($fluid) {
 
 $knownregionpost = $PAGE->blocks->is_known_region('side-post');
 
-$regions = theme_elegance_bootstrap3_grid($hassidepost);
+$regions = theme_gu28_bootstrap3_grid($hassidepost);
 $PAGE->set_popup_notification_allowed(false);
 $PAGE->requires->jquery();
 
