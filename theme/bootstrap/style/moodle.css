@@ -6516,6 +6516,9 @@ div[role="main"] ul,
 div[role="main"] ol {
   padding: 0 20px;
 }
+pre {
+  white-space: pre-wrap;
+}
 /* some very targetted corrections to roll back nameclashes between
  * Moodle and Bootstrap like .row, .label, .content, .controls
  *
@@ -6630,10 +6633,13 @@ img.icon.hide {
 .atto_image_size input[type="text"] {
   width: auto;
 }
+.pagelayout-admin .show {
+  display: inline !important;
+}
 div[role="main"] ul,
 div[role="main"] ol {
   padding-left: 20px;
-  overflow: hidden;
+  overflow: visible;
 }
 div[role="main"] ul.section,
 div[role="main"] ol.section,
@@ -9552,7 +9558,8 @@ span.editinstructions {
 .coursebox .content .summary,
 .coursebox .content .courseimage,
 .coursebox .content .coursefile,
-.coursebox .content .teachers {
+.coursebox .content .teachers,
+.coursebox .content .visitlink {
   padding: 0;
   margin: 3px 5px;
 }
@@ -12626,6 +12633,7 @@ body.path-question-type .mform fieldset.hidden {
 .formulation input[type="text"],
 .formulation select {
   width: auto;
+  vertical-align: baseline;
 }
 .path-mod-quiz input[size] {
   width: auto;
@@ -14540,6 +14548,7 @@ textarea.mform .fitem .felement input[type="password"] {
 }
 .mform span.error {
   color: #a94442;
+  background-color: #f2dede;
 }
 .mform fieldset.error {
   border: 1px solid #ebccd1;
@@ -17439,6 +17448,20 @@ fieldset[disabled] #page-grade-grading-manage .actions .action {
   margin-right: 5px;
   margin-left: 12px;
 }
+.mform.gradingform_rubric_editform .fitem .felement .hiddenelement {
+  display: none;
+}
+.mform.gradingform_rubric_editform .fitem .felement .pseudotablink {
+  position: relative;
+  float: right;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: 0;
+  color: transparent;
+  background-color: transparent;
+  border: 0 solid;
+}
 #rubric-rubric.gradingform_rubric #rubric-criteria {
   margin-bottom: 1em;
 }
@@ -17487,12 +17510,13 @@ fieldset[disabled] #page-grade-grading-manage .actions .action {
   background-color: #ddd;
 }
 #rubric-rubric.gradingform_rubric #rubric-criteria .criterion .scorevalue input {
+  display: inline;
   float: none;
-  width: 2em;
+  width: 3em;
 }
 #rubric-rubric.gradingform_rubric #rubric-criteria .criterion .scorevalue input.hiddenelement,
 #rubric-rubric.gradingform_rubric #rubric-criteria .criterion .scorevalue input.pseudotablink {
-  width: 0;
+  width: 0 !important;
 }
 #rubric-rubric.gradingform_rubric #rubric-criteria .criterion .addlevel {
   vertical-align: middle;
