@@ -1,0 +1,126 @@
+Release 3.3 (2014-12-15)
+- Fix: Thanks to Tim Lock export_data.php & reset_data.php are only executable from CLI
+       If you want to run behat acceptance tests please comment the line "define('CLI_SCRIPT', true);" in the file lib/gismo/server/side/export_data.php
+- Fix: Thanks to Tim Lock updated all $_REQUEST/$_GET/$_POST to optional_param/required_param
+- Fix: Thanks to Tim Lock solved problems on Postgre for different queries
+- Fix: Solved bug on charts teacher@resources-access:resources-details
+
+Release 3.3 (2014-12-03)
+- New: Moved data exporter from cron to scheduled tasks
+- New: Added Behat tests thanks to Corbière Alain, to run block_gismo tests use:
+  vendor/bin/behat --config /path/to/your/CFG_behat_dataroot/behat/behat.yml  --tags @block_gismo --format html --out results.html 
+- Fix: Thanks to Tim Lock corrected a problem on a query with mdl_ forced in table names
+- Fix: Thanks to Tim Lock Fix up some page context warnings
+- Fix: Thanks to Tim Lock Upping the max execution time is fine for the CRON but during unit tests there is code that fails if the max execution time isn't 0. (MDL-38989)
+- Fix: Moved the main classes in the classes directory
+- Fix: Wiki/Forum/Chat charts modified "Write" in "Write & Update" events (it will sum them)
+- Fix: Added global $CFG to function FetchStartDateAndTime thanks to Nadav Kavalerchik
+- Fix: Changed all get_context_instance calls to context_*::instance thanks to Nadav Kavalerchik
+- Fix: Updated version and requires moodle 2.7.x
+- Fix: Updated all queries in exporter_data.php and ajax.php from log table to logstore_standard
+
+MOODLE_27 on master branch (2014-10-28)
+
+Release 3.2 (2013-10-15)
+- New: Added books to resources list
+- New: Reorganised resources list by type
+- New: Added completion menu (all completion charts will go in this menu)
+- New: Added resources completion chart
+- New: Added quizzes completion chart
+- New: Added wikis completion chart
+- New: Added assignments completion chart
+- New: Added assignments 2.2 completion chart
+- New: Added chats completion chart
+- New: Added forums completion chart
+- Reorganised gismo main page
+- Fix: Solved some minor bugs and translation of missing strings
+- Fix: Solved bug on assignments student view
+- Fix: Solved bug on completion charts (Thanks to Dečman Mitja)
+- Fix: Solved bug on lang strings to upload on AMOS (lang.moodle.org)
+- Thanks to Saad Saleem for the help on the completion charts
+- Thanks to Mitsuhiro Yoshida for japanese translation
+- Thanks to Elisabetta Frick and Alain Corbière for french translation
+- Thanks to Riccardo Mazza for italian translation
+- Thanks to Anna Pico Schwendener for german translation
+- Thanks to Dečman Mitja for testing completion charts
+
+Release 3.1.2 (2013-09-30)
+- Thanks to Mitsuhiro Yoshida for japanese translation
+- Thanks to Nadav Kavalerchik for hebrew translation
+- Fix: Added capability block/gismo:trackteacher to Manager role
+- Thanks to Corbière Alain for the following fix:
+  Inconsistency of color choices on forums,wiki,chat charts
+  Before: grey = write & red = read
+  Now: red = write & grey = read
+
+Release 3.1.1 (2013-06-18)
+- Fix: Removed actions "delete post", "update post" and "delete discussion" from the write counter in forum views
+
+Release 3.1 (2013-06-10)
+- Update: compatible with Moodle 2.3.x & 2.4.x & 2.5.x
+- Update: jquery 1.10.0
+- Update: jquery-ui 1.10.3
+- Update: jqplot 1.0.8r1250
+- Fix: Renamed capabilities track-user in trackuser & track-teacher in trackteacher
+- Fix: Renamed Assignment in Assignment 2.2
+- Fix: Solved wiki error on user details
+- Fix: Manual export data fixed some minor bugs
+- Fix: Solved bug on sum of accesses in some charts if gismo exporter run more then once a day
+- Fix: Removed course 1 (sitehome) from gismo data exporter
+- Fix: Solved overlay problem of menu on Chrome
+- New: Added a new chart for new assignment type (available since moodle 2.3)
+- New: Created block settings page
+- New Setting: it's now possible to protect with a password the page for manual export -> lib/gismo/server_side/export_data.php. It can be modified in gismo block settings
+- New Setting: records_limit can be modified in gismo block settings
+- New Setting: run_inf & run_sup can be modified in gismo block settings (run gismo exporter from - until)
+- New Setting: hours_from_last_run can be modified in gismo block settings (run gismo exporter only after X hours)
+- New Setting: debug mode -> print debug messages during export can be modified in gismo block settings
+- New Setting: admin can select if gismo cron has to export data for all courses or only for courses with a block gismo instance (gismo report tool link will be available next "data exporter" execution) 
+- New Setting: admin can select if they want to enable students to see reports via gismo block
+
+Release 3.0.1 beta (2012-05-18)
+- Interface localized with Moodle native approach
+
+Release 3.0.0 beta (2011-11-25)
+- Update: jquery 1.6.4
+- Update: jquery-ui 1.8.16
+- Update: jqplot 1.0.0b2.r1012
+- Fix: assignment scale support
+- Fix: assignments waiting for evaluation appear in a different way from those who do not have any evaluation
+- Fix: quiz grade format set according to the one chosen by the teacher (number of decimals)
+- Fix: memory leaks on client side
+- Fix: chart Y axis better scale
+- Fix: checkbox list + header status consistency
+- Fix: PostgresSQL is now supported
+- New: compatible with Moodle 2.0 or newer
+- New: chats, forums and wikis analysis
+- New: export charts as image
+
+========================= WARNING =========================
+
+Wikis analysis are currently broken due to a moodle bug.
+Further details: http://tracker.moodle.org/browse/MDL-26674
+Seems to be resolved from Moodle version 2.1.6 and 2.2.3 on...
+
+===========================================================
+
+
+Release 2.0.2 (2010-11-30)
+- Update: jquery 1.4.4
+- Update: jquery-ui 1.8.6
+- Fix: assignments without grade are displayed correctly
+- New: option to show/hide hidden items (resources / activities)
+
+
+Release 2.0.1 (2010-09-03)
+- Update: jquery 1.4.2
+- Update: jquery-ui 1.8.4
+- New: remove unsupported analysis from the menu
+- New: display message while processing data to build a new chart 
+- Fix: exporter memory bug
+- Fix: time line start date and end date are now set according to logs 
+- Fix: removed hours & minutes from timeline labels
+
+
+Release 2.0.0 (2010-05-11)
+- First stable release
