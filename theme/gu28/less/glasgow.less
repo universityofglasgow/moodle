@@ -10,3 +10,58 @@
     width: 200px;
     height: 60px;
 }
+
+// Put back the alert stuff that Bootstrap took away
+.alert {
+padding: 8px 35px 8px 18px;
+margin-bottom: 20px;
+text-shadow: none;
+background-color: fade(@gu_sunshine, 20%);
+border: 2px solid fade(@gu_sunshine, 50%);
+-webkit-border-radius: 5px;
+-moz-border-radius: 5px;
+border-radius: 5px;
+font-size: 18px;
+font-weight: 400;
+font-family: 'Roboto', sans-serif;
+}
+
+.alert>.icon-calendar,
+.alert>.icon-exclamation-sign,
+.alert>.icon-comment,
+blockquote>.icon-quote-left{
+        margin-right: 10px;
+        font-size: 27px;
+        float: left;
+        position: relative;
+}
+
+.alert>span{
+        padding-left: 37px;
+        display: block;
+}
+
+.alert-success {
+        color: @gu_forest;
+        background-color: fade(@gu_forest, 20%);
+        border: 2px solid fade(@gu_forest, 50%);
+}
+
+.alert-info {
+        color: @gu_sandstone;
+        background-color: fade(@gu_sandstone, 20%);
+        border: 2px solid fade(@gu_sandstone, 50%);
+}
+
+.alert-danger, .alert-error {
+        color: @gu_burgundy;
+        background-color: fade(@gu_burgundy, 20%);
+        border: 2px solid fade(@gu_burgundy, 50%);
+}
+
+.alert-warning {
+        color: @gu_rust;
+        background-color: fade(@gu_rust, 20%);
+        border: 2px solid fade(@gu_rust, 50%);
+}
+

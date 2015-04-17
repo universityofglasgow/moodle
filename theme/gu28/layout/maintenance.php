@@ -24,7 +24,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$regions = theme_elegance_bootstrap3_grid(false, false);
+$regions = theme_gu28_bootstrap3_grid(false, false);
 
 echo $OUTPUT->doctype() ?>
 <html <?php echo $OUTPUT->htmlattributes(); ?>>
@@ -63,6 +63,7 @@ echo $OUTPUT->doctype() ?>
     </div>
 </section>
 
+<!--
 <script>
     $('body').show();
     $('.version').text(NProgress.version);
@@ -74,5 +75,7 @@ echo $OUTPUT->doctype() ?>
     $("#b-inc").click(function() { NProgress.inc(); });
     $("#b-100").click(function() { NProgress.done(); });
 </script>
+-->
+
 </body>
 </html>
