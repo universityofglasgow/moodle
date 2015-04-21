@@ -23,20 +23,22 @@
  */
 
 
+$string['cachedef_instagram'] = 'Instagram media links';
 $string['choosereadme'] = '
 <p>gu28 for University of Glasgow</p>
 ';
-
 $string['configtitle'] = 'gu28';
-
+$string['customless'] = 'Custom Less';
+$string['customlessdesc'] = 'Whatever Less rules you add to this textarea will be reflected in every page, making for easier customization of this theme.';
+$string['instagramclientid'] = 'Instagram client id';
+$string['instagramclientiddesc'] = 'Instagram client id from registered application';
+$string['instagramreload'] = 'Invalidate Instagram cache for gu28 theme';
+$string['instagramuser'] = 'Instagram user name';
+$string['instagramuserdesc'] = 'Instagram user name to pull random images for login page';
 $string['logo'] = 'Logo';
 $string['logodesc'] = 'Please upload your custom logo here if you want to add it to the header.<br>
 If the height of your logo is more than 75px add the following CSS rule to the Custom CSS box below.<br>
 a.logo {height: 100px;} or whatever height in pixels the logo is.';
-
 $string['pluginname'] = 'gu28';
-$string['customcss'] = 'Custom CSS';
-$string['customcssdesc'] = 'Whatever CSS rules you add to this textarea will be reflected in every page, making for easier customization of this theme.';
-
 $string['region-side-post'] = 'Right';
 $string['region-side-pre'] = 'Left';

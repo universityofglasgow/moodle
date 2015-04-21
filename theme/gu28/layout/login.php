@@ -52,7 +52,6 @@ $hasfootnote = (empty($PAGE->theme->settings->footnote)) ? false : $PAGE->theme-
 $hasltiles = (!empty($PAGE->theme->settings->tiles));
 
 $haslogo = (empty($PAGE->theme->settings->logo)) ? false : $PAGE->theme->settings->logo;
-$invert = (!empty($PAGE->theme->settings->invert)) ? true : $PAGE->theme->settings->invert;
 $fluid = (!empty($PAGE->layout_options['fluid']));
 
  if ($haslogo) {
@@ -60,12 +59,6 @@ $fluid = (!empty($PAGE->layout_options['fluid']));
  } else {
  	$logo = $SITE->shortname;
  }
-
-if ($invert) {
-  $navbartype = 'navbar-inverse';
-} else {
-  $navbartype = 'navbar-default';
-}
 
 $container = 'container';
 if (isset($PAGE->theme->settings->fluidwidth) && ($PAGE->theme->settings->fluidwidth == true)) {
@@ -93,7 +86,7 @@ if ($show_instructions) {
     $columns = 'onecolumn';
 }
 
-$regions = theme_elegance_bootstrap3_grid($hassidepost);
+$regions = theme_gu28_bootstrap3_grid($hassidepost);
 $PAGE->set_popup_notification_allowed(false);
 $PAGE->requires->jquery();
 
@@ -224,27 +217,6 @@ if ($frm and isset($frm->username)) {                             // Login WITH 
     }
 }
 
-$hasloginbg1image = (!empty($PAGE->theme->settings->loginimage1));
-if ($hasloginbg1image) {
-    $loginbg1 = $PAGE->theme->setting_file_url('loginimage1', 'loginimage1');
-}
-$hasloginbg2image = (!empty($PAGE->theme->settings->loginimage2));
-if ($hasloginbg2image) {
-    $loginbg2 = $PAGE->theme->setting_file_url('loginimage2', 'loginimage2');
-}
-$hasloginbg3image = (!empty($PAGE->theme->settings->loginimage3));
-if ($hasloginbg3image) {
-    $loginbg3 = $PAGE->theme->setting_file_url('loginimage3', 'loginimage3');
-}
-$hasloginbg4image = (!empty($PAGE->theme->settings->loginimage4));
-if ($hasloginbg4image) {
-    $loginbg4 = $PAGE->theme->setting_file_url('loginimage4', 'loginimage4');
-}
-$hasloginbg5image = (!empty($PAGE->theme->settings->loginimage5));
-if ($hasloginbg5image) {
-    $loginbg5 = $PAGE->theme->setting_file_url('loginimage5', 'loginimage5');
-}
-
 echo $OUTPUT->doctype() ?>
 <html <?php echo $OUTPUT->htmlattributes(); ?>>
 <head>
@@ -264,6 +236,12 @@ echo $OUTPUT->doctype() ?>
     <div id="page">
         <div id="page-content" class="<?php echo $container; ?>">
             <div id="region-main" class="row">
+
+                <div id="login_images">
+                    <?php $images = theme_gu28_instagram_images($PAGE->theme); ?>
+                    <img src="<?php echo $images[1]; ?>" /> 
+                </div>
+
                 <div class="loginpanel col-md-4 col-md-offset-1 col-sd-6 col-sd-offset-0">
                     <?php
                     if(isset($_POST['username']) || isset($_POST['password'])){
@@ -363,41 +341,6 @@ echo $OUTPUT->doctype() ?>
 <footer id="page-footer" class="hidden-sm hidden-xs">
 	<?php require_once(dirname(__FILE__).'/includes/footer.php'); ?>
 </footer>
-
-<!--
-<script>
-    $('body').show();
-    $('.version').text(NProgress.version);
-    NProgress.start();
-    setTimeout(function() { NProgress.done(); $('.fade').removeClass('out'); }, 1000);
-
-    $("#b-0").click(function() { NProgress.start(); });
-    $("#b-40").click(function() { NProgress.set(0.4); });
-    $("#b-inc").click(function() { NProgress.inc(); });
-    $("#b-100").click(function() { NProgress.done(); });
-</script>
-
-<script>
-    $('body').show();
-    $('.version').text(NProgress.version);
-    NProgress.start();
-    setTimeout(function() { NProgress.done(); $('.fade').removeClass('out'); }, 1000);
-
-    $("#b-0").click(function() { NProgress.start(); });
-    $("#b-40").click(function() { NProgress.set(0.4); });
-    $("#b-inc").click(function() { NProgress.inc(); });
-    $("#b-100").click(function() { NProgress.done(); });
-
-
-    $.backstretch([
-      <?php if ($hasloginbg1image) { echo '"'.$loginbg1.'",'; } ?>
-      <?php if ($hasloginbg2image) { echo '"'.$loginbg2.'",'; } ?>
-      <?php if ($hasloginbg3image) { echo '"'.$loginbg3.'",'; } ?>
-      <?php if ($hasloginbg4image) { echo '"'.$loginbg4.'",'; } ?>
-      <?php if ($hasloginbg5image) { echo '"'.$loginbg5.'"'; } ?>
-  ], {duration: 3000, fade: 750});
-</script>
--->
 
 </body>
 </html>

@@ -22,47 +22,22 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-function theme_gu28_process_css($css, $theme) {
+require_once($CFG->libdir . '/filelib.php');
 
-    // Set the background image for the logo.
-    $logo = $theme->setting_file_url('logo', 'logo');
-    $css = theme_gu28_set_logo($css, $logo);
+define('INSTAGRAM_API', 'https://api.instagram.com/v1/');
 
-    // Set custom CSS.
-    if (!empty($theme->settings->customcss)) {
-        $customcss = $theme->settings->customcss;
+/**
+ * Return any extra less rules to be added
+ * @param stdClass $theme
+ * @return string
+ */
+function theme_gu28_extra_less($theme) {
+    if (!empty($theme->settings->customless)) {
+        $customless = $theme->settings->customless;
     } else {
-        $customcss = null;
+        $customless = null;
     }
-    $css = theme_gu28_set_customcss($css, $customcss);
-
-    return $css;
-}
-
-
-function theme_gu28_set_logo($css, $logo) {
-    $logotag = '[[setting:logo]]';
-    $logoheight = '[[logoheight]]';
-    $logowidth = '[[logowidth]]';
-    $logodisplay = '[[logodisplay]]';
-    $width = '0';
-    $height = '0';
-    $display = 'none';
-    $replacement = $logo;
-    if (is_null($replacement)) {
-        $replacement = '';
-    } else {
-        $dimensions = getimagesize('http:'.$logo);
-        $width = $dimensions[0] . 'px';
-        $height = $dimensions[1] . 'px';
-        $display = 'block';
-    }
-    $css = str_replace($logotag, $replacement, $css);
-    $css = str_replace($logoheight, $height, $css);
-    $css = str_replace($logowidth, $width, $css);
-    $css = str_replace($logodisplay, $display, $css);
-
-    return $css;
+    return $customless;
 }
 
 /**
@@ -86,25 +61,6 @@ function theme_gu28_pluginfile($course, $cm, $context, $filearea, $args, $forced
     }
 }
 
-/**
- * Adds any custom CSS to the CSS before it is cached.
- *
- * @param string $css The original CSS.
- * @param string $customcss The custom CSS to add.
- * @return string The CSS which now contains our custom CSS.
- */
-function theme_gu28_set_customcss($css, $customcss) {
-    $tag = '[[setting:customcss]]';
-    $replacement = $customcss;
-    if (is_null($replacement)) {
-        $replacement = '';
-    }
-
-    $css = str_replace($tag, $replacement, $css);
-
-    return $css;
-}
-
 function theme_gu28_bootstrap3_grid($hassidepost) {
 
         $regions = array('content' => 'col-sm-8 col-md-9');
@@ -112,4 +68,89 @@ function theme_gu28_bootstrap3_grid($hassidepost) {
         $regions['post'] = 'col-sm-4 col-md-3';
 
        return $regions;
+}
+
+/**
+ * Populate array (and cache) with Instagram links
+ */
+function theme_gu28_populate_instagram($theme) {
+
+    // Settings
+    $instagramuser = $theme->settings->instagramuser;
+    $instagramclientid = $theme->settings->instagramclientid; 
+
+    // Get user id
+    $c = new curl(array('proxy' => true));
+    if (!$struserdata = $c->get(INSTAGRAM_API . "/users/search?q=$instagramuser&client_id=$instagramclientid")) {
+        return false;
+    }
+
+    // Probably returned more than one match
+    $userdata = json_decode($struserdata);
+    $users = $userdata->data;
+    $userid = null;
+    foreach ($users as $user) {
+        if ($user->username == $instagramuser) {
+            $userid = $user->id;
+        }
+    }
+    if (!$userid) {
+        return false;
+    }
+
+    // Now have enough to get some links
+    $nexturl = INSTAGRAM_API . "/users/$userid/media/recent?client_id=$instagramclientid";
+    $images = array();
+    do {
+        if (!$strmedia = $c->get($nexturl)) {
+            return $images;
+        }
+        $mediadata = json_decode($strmedia);
+        $items = $mediadata->data;
+        if (isset($mediadata->pagination->next_url)) {
+            $nexturl = $mediadata->pagination->next_url;
+        } else {
+            $nexturl = null;
+        }
+        foreach ($items as $item) {
+            $type = $item->type;
+            if ($type != 'image') {
+                continue;
+            }
+            $url = $item->images->standard_resolution->url;
+            $images[] = $url;
+        }
+    } while ($nexturl);
+
+    return $images;
+}
+
+/**
+ * Get the instagram links
+ */
+function theme_gu28_instagram_images($theme) {
+
+    // Image links stored in application cache
+    $cache = cache::make('theme_gu28', 'instagram');
+
+    // Images are just in a single array with key 1
+    if (!$images = $cache->get(1)) {
+        $images = theme_gu28_populate_instagram($theme);
+        if (!empty($images)) {
+            $cache->set(1, $images);
+        }
+    }
+
+    // Did we get anything
+    if (empty($images)) {
+        return '';
+    }
+    if (count($images) < 7) {
+        return '';
+    }
+
+    // Randomise the images (only return first few).
+    shuffle($images);
+
+    return array_slice($images, 0, 7);
 }

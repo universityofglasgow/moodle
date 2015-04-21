@@ -25,18 +25,30 @@ defined('MOODLE_INTERNAL') || die;
 
 if ($ADMIN->fulltree) {
 
-    // Logo file setting.
-    $name = 'theme_gu28/logo';
-    $title = get_string('logo', 'theme_gu28');
-    $description = get_string('logodesc', 'theme_gu28');
-    $setting = new admin_setting_configstoredfile($name, $title, $description, 'logo');
-    $setting->set_updatedcallback('theme_reset_all_caches');
-    $settings->add($setting);
+    // Instagram user name
+    $settings->add(
+        new admin_setting_configtext(
+            'theme_gu28/instagramuser',
+            get_string('instagramuser', 'theme_gu28'),
+            get_string('instagramuserdesc', 'theme_gu28'),
+            'uniglasgow'
+        )
+    );
 
-    // Custom CSS file.
-    $name = 'theme_gu28/customcss';
-    $title = get_string('customcss', 'theme_gu28');
-    $description = get_string('customcssdesc', 'theme_gu28');
+    // Instagram client id
+    $settings->add(
+        new admin_setting_configtext(
+            'theme_gu28/instagramclientid',
+            get_string('instagramclientid', 'theme_gu28'),
+            get_string('instagramclientiddesc', 'theme_gu28'),
+            ''
+        )
+    );
+
+    // Custom Less file.
+    $name = 'theme_gu28/customless';
+    $title = get_string('customless', 'theme_gu28');
+    $description = get_string('customlessdesc', 'theme_gu28');
     $default = '';
     $setting = new admin_setting_configtextarea($name, $title, $description, $default);
     $setting->set_updatedcallback('theme_reset_all_caches');
