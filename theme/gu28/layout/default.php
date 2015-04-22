@@ -123,7 +123,6 @@ echo $OUTPUT->doctype() ?>
     $("#b-inc").click(function() { NProgress.inc(); });
     $("#b-100").click(function() { NProgress.done(); });
 </script>
--->
 
 <script type="text/javascript">
 jQuery(document).ready(function() {
@@ -145,5 +144,6 @@ jQuery(document).ready(function() {
 });
 </script>
  <a href="#top" class="back-to-top"><i class="fa fa-angle-up "></i></a>
+-->
 </body>
 </html>
