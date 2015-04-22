@@ -29,7 +29,8 @@ $hascopyright = (empty($PAGE->theme->settings->copyright)) ? false : $PAGE->them
 $hasfootnote = (empty($PAGE->theme->settings->footnote)) ? false : $PAGE->theme->settings->footnote;
 $hastiles = (!empty($PAGE->theme->settings->tiles));
 $haslogo = (empty($PAGE->theme->settings->logo)) ? false : $PAGE->theme->settings->logo;
-$fluid = (!empty($PAGE->layout_options['fluid']));
+//$fluid = (!empty($PAGE->layout_options['fluid']));
+$fluid = true;
 
 if ($haslogo) {
     $logo = '<div id="logo"></div>';
@@ -68,7 +69,7 @@ echo $OUTPUT->doctype() ?>
 <?php require(dirname(__FILE__) . '/includes/navbar.php'); ?>
 
 <header id="moodleheader" class="clearfix">
-    <div id="page-navbar" class="container">
+    <div id="page-navbar" class="container-fluid">
         <nav class="breadcrumb-nav" role="navigation" aria-label="breadcrumb"><?php echo $OUTPUT->navbar(); ?></nav>
         <div class="breadcrumb-button"><?php echo $OUTPUT->page_heading_button(); ?></div>
     </div>

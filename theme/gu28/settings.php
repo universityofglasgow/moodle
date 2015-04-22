@@ -25,6 +25,16 @@ defined('MOODLE_INTERNAL') || die;
 
 if ($ADMIN->fulltree) {
 
+    // Display instagram pictures on login page
+    $settings->add(
+        new admin_setting_configcheckbox(
+            'theme_gu28/instagramdisplay',
+            get_string('instagramdisplay', 'theme_gu28'),
+            get_string('instagramdisplaydesc', 'theme_gu28'),
+            1
+        )
+    );
+
     // Instagram user name
     $settings->add(
         new admin_setting_configtext(

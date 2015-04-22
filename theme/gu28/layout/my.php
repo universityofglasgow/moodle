@@ -30,7 +30,8 @@ $hasfootnote = (empty($PAGE->theme->settings->footnote)) ? false : $PAGE->theme-
 $hastiles = (!empty($PAGE->theme->settings->tiles));
 $haslogo = (empty($PAGE->theme->settings->logo)) ? false : $PAGE->theme->settings->logo;
 //$invert = (!empty($PAGE->theme->settings->invert)) ? true : $PAGE->theme->settings->invert;
-$fluid = (!empty($PAGE->layout_options['fluid']));
+//$fluid = (!empty($PAGE->layout_options['fluid']));
+$fluid = true;
 $sidebar = "RIGHT";
 
 if ($haslogo) {
@@ -70,7 +71,7 @@ echo $OUTPUT->doctype() ?>
 <?php require(dirname(__FILE__) . '/includes/navbar.php'); ?>
 
 <header id="moodleheader" class="clearfix">
-    <div id="page-navbar" class="container">
+    <div id="page-navbar" class="container-fluid">
         <nav class="breadcrumb-nav" role="navigation" aria-label="breadcrumb"><?php echo $OUTPUT->navbar(); ?></nav>
         <div class="breadcrumb-button"><?php echo $OUTPUT->page_heading_button(); ?></div>
     </div>

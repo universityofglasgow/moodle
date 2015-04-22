@@ -9,6 +9,7 @@
             <span class="icon-bar"></span>
         </button>
         <a class="navbar-brand" href="<?php echo $CFG->wwwroot;?>"><div id="logo"></div></a>
+        <div id="moodle-logo"></div>
     </div>
 
     <div id="moodle-navbar" class="navbar-collapse collapse">

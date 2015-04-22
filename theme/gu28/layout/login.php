@@ -52,13 +52,16 @@ $hasfootnote = (empty($PAGE->theme->settings->footnote)) ? false : $PAGE->theme-
 $hasltiles = (!empty($PAGE->theme->settings->tiles));
 
 $haslogo = (empty($PAGE->theme->settings->logo)) ? false : $PAGE->theme->settings->logo;
-$fluid = (!empty($PAGE->layout_options['fluid']));
+//$fluid = (!empty($PAGE->layout_options['fluid']));
+$fluid = true;
 
- if ($haslogo) {
- 	$logo = '<div id="logo"></div>';
- } else {
- 	$logo = $SITE->shortname;
- }
+// Instagram stuff
+$instagramdisplay = (empty($PAGE->theme->settings->instagramdisplay)) ? false : $PAGE->theme->settings->instagramdisplay;
+if ($instagramdisplay) {
+    $images = theme_gu28_instagram_images($PAGE->theme);
+} else {
+    $images = null;
+}
 
 $container = 'container';
 if (isset($PAGE->theme->settings->fluidwidth) && ($PAGE->theme->settings->fluidwidth == true)) {
@@ -237,10 +240,28 @@ echo $OUTPUT->doctype() ?>
         <div id="page-content" class="<?php echo $container; ?>">
             <div id="region-main" class="row">
 
-                <div id="login_images">
-                    <?php $images = theme_gu28_instagram_images($PAGE->theme); ?>
-                    <img src="<?php echo $images[1]; ?>" /> 
+                <?php if ($images) { ?>
+                <div id="login_images" class="container-fluid">
+                    <div class="row">
+                        <div class="col-md-2 col-md-offset-1">
+                            <img class="instafluff" src="<?php echo $images[1]; ?>" /> 
+                        </div>
+                        <div class="col-md-2">
+                            <img class="instafluff" src="<?php echo $images[2]; ?>" /> 
+                        </div>
+                        <div class="col-md-2">
+                            <img class="instafluff" src="<?php echo $images[3]; ?>" /> 
+                        </div>
+                        <div class="col-md-2">
+                            <img class="instafluff" src="<?php echo $images[4]; ?>" /> 
+                        </div>
+                        <div class="col-md-2">
+                            <img class="instafluff" src="<?php echo $images[5]; ?>" /> 
+                        </div>
+                        <div class="col-md-1"></div>
+                    </div>
                 </div>
+                <?php } ?>
 
                 <div class="loginpanel col-md-4 col-md-offset-1 col-sd-6 col-sd-offset-0">
                     <?php
