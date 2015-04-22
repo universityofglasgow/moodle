@@ -55,6 +55,36 @@ if ($ADMIN->fulltree) {
         )
     );
 
+    // Twitter
+    $settings->add(
+        new admin_setting_configtext(
+            'theme_gu28/twitter',
+            get_string('twitter', 'theme_gu28'),
+            get_string('twitterdesc', 'theme_gu28'),
+           ''
+        )
+    );
+
+    // Facebook
+    $settings->add(
+        new admin_setting_configtext(
+            'theme_gu28/facebook',
+            get_string('facebook', 'theme_gu28'),
+            get_string('facebookdesc', 'theme_gu28'),
+           ''
+        )
+    );
+
+    // Instagram
+    $settings->add(
+        new admin_setting_configtext(
+            'theme_gu28/instagram',
+            get_string('instagram', 'theme_gu28'),
+            get_string('instagramdesc', 'theme_gu28'),
+           ''
+        )
+    );
+
     // Custom Less file.
     $name = 'theme_gu28/customless';
     $title = get_string('customless', 'theme_gu28');
