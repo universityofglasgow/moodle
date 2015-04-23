@@ -244,6 +244,10 @@ can be really useful in visualising the issue along with any files you consider 
 
 Version Information
 ===================
+Version 2.8.2.2
+  1.  Added print media styles.
+  2.  Version information to no longer have the date as will work better.
+
 27th January 2015 Version 2.8.2.1
   1.  Refix issue #4 - No block drag and drop icon when blockeditingmenu is false - activity editing menu no longer shows.
 
