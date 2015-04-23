@@ -18,8 +18,8 @@
  * The Elegance theme is built upon  Bootstrapbase 3 (non-core).
  *
  * @package    theme
- * @subpackage theme_elegance
- * @author     Julian (@moodleman) Ridden
+ * @subpackage theme_gu28
+ * @author     Howard Miller
  * @author     Based on code originally written by G J Bernard, Mary Evans, Bas Brands, Stuart Lamour and David Scotson.
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -32,15 +32,6 @@ $knownregionpost = $PAGE->blocks->is_known_region('side-post');
 $regions = theme_gu28_bootstrap3_grid();
 $PAGE->set_popup_notification_allowed(false);
 $PAGE->requires->jquery();
-
-// Instagram stuff
-$instagramdisplay = (empty($PAGE->theme->settings->instagramdisplay)) ? false : $PAGE->theme->settings->instagramdisplay;
-if ($instagramdisplay) {
-    $images = theme_gu28_instagram_images($PAGE->theme);
-} else {
-    $images = null;
-}
-
 
 echo $OUTPUT->doctype() ?>
 <html <?php echo $OUTPUT->htmlattributes(); ?>>
@@ -77,31 +68,7 @@ echo $OUTPUT->doctype() ?>
         </header>
     
         <div id="page-content" class="row">
-<!--            <div id="region-main" class="<?php echo $regions['content']; ?>"> -->
-
-                <?php if ($images) { ?>
-                <div id="login_images" class="container-fluid">
-                    <div class="row">
-                        <div class="col-md-2 col-md-offset-1">
-                            <img class="instafluff" src="<?php echo $images[1]; ?>" /> 
-                        </div>
-                        <div class="col-md-2">
-                            <img class="instafluff" src="<?php echo $images[2]; ?>" /> 
-                        </div>
-                        <div class="col-md-2">
-                            <img class="instafluff" src="<?php echo $images[3]; ?>" /> 
-                        </div>
-                        <div class="col-md-2">
-                            <img class="instafluff" src="<?php echo $images[4]; ?>" /> 
-                        </div>
-                        <div class="col-md-2">
-                            <img class="instafluff" src="<?php echo $images[5]; ?>" /> 
-                        </div>
-                        <div class="col-md-1"></div>
-                    </div>
-                </div>
-                <?php } ?>
-
+            <div id="region-main" class="col-md-12">
                 <?php
                 echo $OUTPUT->course_content_header();
                 echo $OUTPUT->main_content();
@@ -109,11 +76,7 @@ echo $OUTPUT->doctype() ?>
                 ?>
             </div>
     
-            <?php
-            if ($knownregionpost) {
-                echo $OUTPUT->blocks('side-post', $regions['post']);
-            }?>
-<!--        </div>-->
+        </div>
     
     </div>
 </section>
@@ -124,6 +87,39 @@ echo $OUTPUT->doctype() ?>
 
 <?php echo $OUTPUT->standard_end_of_body_html() ?>
 
+<!--
+<script>
+    $('body').show();
+    $('.version').text(NProgress.version);
+    NProgress.start();
+    setTimeout(function() { NProgress.done(); $('.fade').removeClass('out'); }, 1000);
+
+    $("#b-0").click(function() { NProgress.start(); });
+    $("#b-40").click(function() { NProgress.set(0.4); });
+    $("#b-inc").click(function() { NProgress.inc(); });
+    $("#b-100").click(function() { NProgress.done(); });
+</script>
+
+<script type="text/javascript">
+jQuery(document).ready(function() {
+    var offset = 220;
+    var duration = 500;
+    jQuery(window).scroll(function() {
+        if (jQuery(this).scrollTop() > offset) {
+            jQuery('.back-to-top').fadeIn(duration);
+        } else {
+            jQuery('.back-to-top').fadeOut(duration);
+        }
+    });
+
+    jQuery('.back-to-top').click(function(event) {
+        event.preventDefault();
+        jQuery('html, body').animate({scrollTop: 0}, duration);
+        return false;
+    })
+});
+</script>
  <a href="#top" class="back-to-top"><i class="fa fa-angle-up "></i></a>
+-->
 </body>
 </html>

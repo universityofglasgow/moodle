@@ -61,13 +61,13 @@ function theme_gu28_pluginfile($course, $cm, $context, $filearea, $args, $forced
     }
 }
 
-function theme_gu28_bootstrap3_grid($hassidepost) {
+function theme_gu28_bootstrap3_grid() {
 
-        $regions = array('content' => 'col-sm-8 col-md-9');
-        $regions['pre'] = 'empty';
-        $regions['post'] = 'col-sm-4 col-md-3';
+    $regions = array('content' => 'col-sm-8 col-md-9');
+    $regions['pre'] = 'empty';
+    $regions['post'] = 'col-sm-4 col-md-3';
 
-       return $regions;
+    return $regions;
 }
 
 /**

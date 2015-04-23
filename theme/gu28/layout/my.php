@@ -24,34 +24,12 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$hassidepost = $PAGE->blocks->region_has_content('side-post', $OUTPUT);
-$hascopyright = (empty($PAGE->theme->settings->copyright)) ? false : $PAGE->theme->settings->copyright;
-$hasfootnote = (empty($PAGE->theme->settings->footnote)) ? false : $PAGE->theme->settings->footnote;
-$hastiles = (!empty($PAGE->theme->settings->tiles));
-$haslogo = (empty($PAGE->theme->settings->logo)) ? false : $PAGE->theme->settings->logo;
-//$invert = (!empty($PAGE->theme->settings->invert)) ? true : $PAGE->theme->settings->invert;
-//$fluid = (!empty($PAGE->layout_options['fluid']));
 $fluid = true;
-$sidebar = "RIGHT";
-
-if ($haslogo) {
-    $logo = '<div id="logo"></div>';
-} else {
-    $logo = $SITE->shortname;
-}
-
-$container = 'container';
-if (isset($PAGE->theme->settings->fluidwidth) && ($PAGE->theme->settings->fluidwidth == true)) {
-    $container = 'container-fluid';
-}
-if ($fluid) {
-    $container = 'container-fluid';
-}
-
+$container = 'container-fluid';
 
 $knownregionpost = $PAGE->blocks->is_known_region('side-post');
 
-$regions = theme_gu28_bootstrap3_grid($hassidepost);
+$regions = theme_gu28_bootstrap3_grid();
 $PAGE->set_popup_notification_allowed(false);
 $PAGE->requires->jquery();
 
@@ -111,40 +89,6 @@ echo $OUTPUT->doctype() ?>
 </footer>
 
 <?php echo $OUTPUT->standard_end_of_body_html() ?>
-
-<!--
-<script>
-    $('body').show();
-    $('.version').text(NProgress.version);
-    NProgress.start();
-    setTimeout(function() { NProgress.done(); $('.fade').removeClass('out'); }, 1000);
-
-    $("#b-0").click(function() { NProgress.start(); });
-    $("#b-40").click(function() { NProgress.set(0.4); });
-    $("#b-inc").click(function() { NProgress.inc(); });
-    $("#b-100").click(function() { NProgress.done(); });
-</script>
--->
-
-<script type="text/javascript">
-jQuery(document).ready(function() {
-    var offset = 220;
-    var duration = 500;
-    jQuery(window).scroll(function() {
-        if (jQuery(this).scrollTop() > offset) {
-            jQuery('.back-to-top').fadeIn(duration);
-        } else {
-            jQuery('.back-to-top').fadeOut(duration);
-        }
-    });
-
-    jQuery('.back-to-top').click(function(event) {
-        event.preventDefault();
-        jQuery('html, body').animate({scrollTop: 0}, duration);
-        return false;
-    })
-});
-</script>
  <a href="#top" class="back-to-top"><i class="fa fa-angle-up "></i></a>
 </body>
 </html>
