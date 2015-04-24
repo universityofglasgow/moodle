@@ -16,7 +16,7 @@
 
 require_once('../../../config.php');
 require_login();
-require_capability('moodle/site:config', get_context_instance(CONTEXT_SYSTEM));
+require_capability('moodle/site:config', context_system::instance());
 
 function adminer_object() {
     // required to run any plugin
@@ -26,7 +26,14 @@ function adminer_object() {
 
         public function credentials() {
             global $CFG;
-            return array($CFG->dbhost, $CFG->dbuser, $CFG->dbpass);
+
+            if(!empty($CFG->dboptions['dbport'])) {
+                return array($CFG->dbhost.':'.$CFG->dboptions['dbport'],
+                             $CFG->dbuser,
+                             $CFG->dbpass);
+            } else {
+                return array($CFG->dbhost, $CFG->dbuser, $CFG->dbpass);
+            }
         }
 
         public function loginForm() {
