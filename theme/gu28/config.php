@@ -72,7 +72,7 @@ $THEME->layouts = array(
     // The site home page.
     'frontpage' => array(
         'file' => 'default.php',
-        'regions' => array('side-post','side-middle','hidden-dock'),
+        'regions' => array('side-post'),
         'defaultregion' => 'side-post',
         'options' => array('nonavbar'=>false),
     ),
