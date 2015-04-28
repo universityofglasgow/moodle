@@ -32,3 +32,23 @@ changes in 2012060301
 
 changes in 2012091801
 - added support for MSSQL 2008 R2
+
+changes in 2013031601
+- it is based on adminer-3.6.4-dev
+- it uses the context_system class since moodle 2.2
+
+changes in 2013061301
+- it is based on adminer-3.7.1-dev
+    look here: https://github.com/vrana/adminer/blob/master/changes.txt
+
+changes in 2014011601
+- it is based on adminer-4.0.2
+    now it doesn't use deprecated ereg functions anymore
+    for more infos see here: https://github.com/vrana/adminer/blob/master/changes.txt
+
+changes in 2014011602
+- ports other than default port are supported now - thanks to Ian Tasker
+
+changes in 2014111800
+- it is based on adminer-4.1.0
+    for more infos see here: https://github.com/vrana/adminer/blob/master/changes.txt
