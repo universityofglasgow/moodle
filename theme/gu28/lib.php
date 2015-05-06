@@ -24,8 +24,6 @@
 
 require_once($CFG->libdir . '/filelib.php');
 
-define('INSTAGRAM_API', 'https://api.instagram.com/v1/');
-
 /**
  * Return any extra less rules to be added
  * @param stdClass $theme
@@ -78,10 +76,12 @@ function theme_gu28_populate_instagram($theme) {
     // Settings
     $instagramuser = $theme->settings->instagramuser;
     $instagramclientid = $theme->settings->instagramclientid; 
+    $instagramapi = $theme->settings->instagramapi;
 
     // Get user id
     $c = new curl(array('proxy' => true));
-    if (!$struserdata = $c->get(INSTAGRAM_API . "/users/search?q=$instagramuser&client_id=$instagramclientid")) {
+    $url = $instagramapi . "users/search?q=$instagramuser&client_id=$instagramclientid";
+    if (!$struserdata = $c->get($url)) {
         return false;
     }
 
@@ -102,7 +102,7 @@ function theme_gu28_populate_instagram($theme) {
     }
 
     // Now have enough to get some links
-    $nexturl = INSTAGRAM_API . "/users/$userid/media/recent?client_id=$instagramclientid";
+    $nexturl = $instagramapi . "users/$userid/media/recent?client_id=$instagramclientid";
     $images = array();
     do {
         if (!$strmedia = $c->get($nexturl)) {
