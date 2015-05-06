@@ -87,6 +87,7 @@ function theme_gu28_populate_instagram($theme) {
 
     // Probably returned more than one match
     if (!$userdata = json_decode($struserdata)) {
+        error_log('INSTAGRAM ERROR - ' . $userdata);
         return false;
     }
     $users = $userdata->data;
