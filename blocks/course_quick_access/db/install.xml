@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="blocks/quick_course_access/db" VERSION="2012042308" COMMENT="XMLDB file for Moodle blocks/quick_course_access"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
+>
+<TABLES>
+	<TABLE NAME="block_qacategory" COMMENT="Stores a user created category and its settings" NEXT="block_qacategory_course">
+		<FIELDS>
+			<FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="userid"/>
+			<FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="name"/>
+			<FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" PREVIOUS="userid" NEXT="visible"/>
+			<FIELD NAME="visible" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="false" DEFAULT="1" SEQUENCE="false" PREVIOUS="name" NEXT="opened"/>
+			<FIELD NAME="opened" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="false" DEFAULT="1" SEQUENCE="false" PREVIOUS="visible" NEXT="position"/>
+			<FIELD NAME="position" TYPE="int" LENGTH="3" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="opened"/>
+		</FIELDS>
+		<KEYS>
+			<KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+		</KEYS>
+		<INDEXES>
+			<INDEX NAME="userid" UNIQUE="false" FIELDS="userid"/>
+		</INDEXES>
+	</TABLE>
+	<TABLE NAME="block_qacategory_course" COMMENT="Stores which user-category contains which courses" PREVIOUS="block_qacategory">
+		<FIELDS>
+			<FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="userid"/>
+			<FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="catid"/>
+			<FIELD NAME="catid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="userid" NEXT="courseid"/>
+			<FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="catid"/>
+		</FIELDS>
+		<KEYS>
+			<KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+		</KEYS>
+		<INDEXES>
+			<INDEX NAME="userid" UNIQUE="false" FIELDS="userid" NEXT="catid"/>
+			<INDEX NAME="catid" UNIQUE="false" FIELDS="catid" PREVIOUS="userid" NEXT="courseid"/>
+			<INDEX NAME="courseid" UNIQUE="false" FIELDS="courseid" PREVIOUS="catid"/>
+		</INDEXES>
+	</TABLE>
+</TABLES>
+</XMLDB>
