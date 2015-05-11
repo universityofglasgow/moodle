@@ -947,6 +947,87 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
     }
 
     /**
+     * Clean up local groups. This is run before we sync the groups.
+     * Need to make sure that groups referenced in local groups table
+     * actually exist - i.e., they have not been deleted out from underneath us.
+     * @param int $courseid
+     */
+    private function clean_up_groups($courseid) {
+        global $DB;
+
+        if ($groups = $DB->get_records('enrol_gudatabase_groups', array('courseid' => $courseid))) {
+            foreach ($groups as $group) {
+                if (!$DB->get_record('groups', array('id' => $group->groupid))) {
+                    $DB->delete_records('enrol_gudatabase_groups', array('id' => $group->id));
+                }
+            }
+        }
+    }
+
+    /** 
+     * Get group id given default name and course id
+     * Could have been changed, so we keep them in our own table
+     * (It's possible a group isn't in this table - yet - as it may have been created
+     * before this feature was added)
+     * @param string $originalname - the name we would have called it when created
+     * @param int $courseid
+     * @return int groupid (from groups table) or false if group does not exist
+     */
+    private function get_local_groupid($originalname, $courseid) {
+        global $DB;
+
+        // Is the group in the local table?
+        if ($enrolgroup = $DB->get_record('enrol_gudatabase_groups', array('originalname' => $originalname, 'courseid' => $courseid))) {
+            return $enrolgroup->groupid;
+        } else {
+
+            // The group name might exist in the course even if not in our table!
+            if ($groupid = groups_get_group_by_name($courseid, $originalname)) {
+
+                // In which case save it
+                $enrolgroup = new stdClass;
+                $enrolgroup->originalname = $originalname;
+                $enrolgroup->courseid = $courseid;
+                $enrolgroup->groupid = $groupid;
+                $DB->insert_record('enrol_gudatabase_groups', $enrolgroup);
+                return $groupid; 
+            } else {
+
+                // It's not in the course (by name) nor in our table so the group doesn't exist
+                return false;
+            }
+        }
+    }
+
+    /**
+     * Check if a user is already in a group in the same 'set'
+     * @param int $courseid 
+     * @param object $user user in question
+     * @param string $basename Fixed part of (default) group name
+     * @param array $classgroups List of groups 
+     * @return boolean true if in group
+     */
+    private function is_in_any_classgroup($courseid, $user, $basename, $classgroups) {
+
+        foreach ($classgroups as $classgroupcode => $memberids) {
+            $groupname = "$basename $classgroupcode";
+
+            // see if group exists, if not just continue
+            if (!$groupid = $this->get_local_groupid($groupname, $courseid)) {
+                continue;
+            } else {
+
+                // If user is in the group then good enough
+                if (groups_is_member($groupid, $user->id)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * sync the auto-groups for a given course
      * @param object $course
      * @param object $instance
@@ -958,6 +1039,9 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         if ($instance->status != ENROL_INSTANCE_ENABLED) {
             return false;
         }
+
+        // Make sure local group table is clean.
+        $this->clean_up_groups($course->id);
 
         // get group settings from instance
         // nothing to do if this doesn't work
@@ -973,8 +1057,11 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
 
                     // see if group exists, if not create it
                     $groupname = $code;
-                    if (!$groupid = groups_get_group_by_name($course->id, $groupname)) {
+                    if (!$groupid = $this->get_local_groupid($groupname, $course->id)) {
                         $group = $this->create_group($groupname, $course);
+                        
+                        // when creating a group also add to local group list
+                        $this->get_local_groupid($groupname, $course->id);
                     } else {
                         $group = groups_get_group($groupid);
                     }
@@ -1002,8 +1089,11 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
                         $groupname = "$groupbasename $classgroupcode";
 
                         // see if group exists, if not create it
-                        if (!$groupid = groups_get_group_by_name($course->id, $groupname)) {
+                        if (!$groupid = $this->get_local_groupid($groupname, $course->id)) {
                             $group = $this->create_group($groupname, $course);
+                        
+                            // when creating a group also add to local group list
+                            $this->get_local_groupid($groupname, $course->id);
                         } else {
                             $group = groups_get_group($groupid);
                         }
@@ -1011,7 +1101,11 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
                         // find all the users for this group combination
                         foreach ($memberids as $memberid) {
                             if ($user = $DB->get_record('user', array('idnumber'=>$memberid))) {
-                                groups_add_member($group, $user);
+
+                                // if this user is already in any classgroup then nothing to do
+                                if (!$this->is_in_any_classgroup($course->id, $user, $groupbasename, $classgroups)) {
+                                    groups_add_member($group, $user);
+                                }
                             }
                         }
                     }
