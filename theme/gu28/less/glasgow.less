@@ -5,6 +5,18 @@
     height: 80px;
 }
 
+.navbar-nav > li > a {
+    color: #fff;
+}
+
+.navbar-nav > li > a:hover {
+    background-color: fade(@gu_university_blue, 30%);
+}
+
+.navbar-brand {
+    padding: 9px 15px;
+}
+
 #logo {
     background-image: url([[pix:theme|logo]]);
     background-repeat: no-repeat;
@@ -14,7 +26,7 @@
 }
 
 #moodle-logo {
-    background-image: url([[pix:theme|moodle40]]);
+    background-image: url([[pix:theme|moodle42]]);
     background-repeat: no-repeat;
     width: 200px;
     height: 40px;
@@ -206,4 +218,15 @@ ul.socials {
     padding: 0px;
     margin: 0px;
     margin-top: 8px;
+}
+
+// Side Blocks
+.block .header .title h2 {
+    font-style: normal;
+    font-weight: 300;
+    font-size: 24px;
+}
+
+.block .header {
+    background-color: fade(@gu_aquamarine, 50%);
 }
