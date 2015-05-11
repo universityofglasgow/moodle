@@ -62,8 +62,8 @@ class auth_plugin_guid extends auth_plugin_ldap {
             return false;
         }
 
-        $extusername = textlib::convert($username, 'utf-8', $this->config->ldapencoding);
-        $extpassword = textlib::convert($password, 'utf-8', $this->config->ldapencoding);
+        $extusername = core_text::convert($username, 'utf-8', $this->config->ldapencoding);
+        $extpassword = core_text::convert($password, 'utf-8', $this->config->ldapencoding);
 
         $ldapconnection = $this->ldap_connect();
         $ldap_user_dn = $this->ldap_find_userdn($ldapconnection, $extusername);
@@ -115,7 +115,7 @@ class auth_plugin_guid extends auth_plugin_ldap {
         set_time_limit(2 * 60);
 
         // Make sure username is utf-8.
-        $extusername = textlib::convert($username, 'utf-8', $this->config->ldapencoding);
+        $extusername = core_text::convert($username, 'utf-8', $this->config->ldapencoding);
 
         // Find user in ldap
         // we first attempt to find using the username (fast). If that fails,
@@ -209,9 +209,9 @@ class auth_plugin_guid extends auth_plugin_ldap {
                     continue;
                 }
                 if (is_array($entry[$value])) {
-                    $newval = textlib::convert($entry[$value][0], $this->config->ldapencoding, 'utf-8');
+                    $newval = core_text::convert($entry[$value][0], $this->config->ldapencoding, 'utf-8');
                 } else {
-                    $newval = textlib::convert($entry[$value], $this->config->ldapencoding, 'utf-8');
+                    $newval = core_text::convert($entry[$value], $this->config->ldapencoding, 'utf-8');
                 }
                 if (!empty($newval)) {
                     $ldapval = $newval;
