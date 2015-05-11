@@ -50,6 +50,9 @@ class core_messageinbound_testcase extends advanced_testcase {
             $messagedata->html = '';
 
             list($message, $format) = test_handler::remove_quoted_text($messagedata);
+            list ($message, $expectedplain) = preg_replace("#\r\n#", "\n", array($message, $expectedplain));
+
+            // Normalise line endings on both strings.
             $this->assertEquals($expectedplain, $message);
             $this->assertEquals(FORMAT_PLAIN, $format);
         }
@@ -60,6 +63,9 @@ class core_messageinbound_testcase extends advanced_testcase {
             $messagedata->html = $mime->getPart($htmlpartid)->getContents();
 
             list($message, $format) = test_handler::remove_quoted_text($messagedata);
+
+            // Normalise line endings on both strings.
+            list ($message, $expectedhtml) = preg_replace("#\r\n#", "\n", array($message, $expectedhtml));
             $this->assertEquals($expectedhtml, $message);
             $this->assertEquals(FORMAT_PLAIN, $format);
         }
@@ -103,6 +109,8 @@ class core_messageinbound_testcase extends advanced_testcase {
 
     protected function read_test_file(\SplFileInfo $file, $fixturesdir) {
         // Break on the --[TOKEN]-- tags in the file.
+        $content = file_get_contents($file->getRealPath());
+        $content = preg_replace("#\r\n#", "\n", $content);
         $tokens = preg_split('#(?:^|\n*)----([A-Z]+)----\n#', file_get_contents($file->getRealPath()),
                 null, PREG_SPLIT_DELIM_CAPTURE);
         $sections = array(

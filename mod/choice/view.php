@@ -178,7 +178,7 @@ if (!$choiceformshown) {
     } else if (!is_enrolled($context)) {
         // Only people enrolled can make a choice
         $SESSION->wantsurl = qualified_me();
-        $SESSION->enrolcancel = (!empty($_SERVER['HTTP_REFERER'])) ? $_SERVER['HTTP_REFERER'] : '';
+        $SESSION->enrolcancel = clean_param($_SERVER['HTTP_REFERER'], PARAM_LOCALURL);
 
         $coursecontext = context_course::instance($course->id);
         $courseshortname = format_string($course->shortname, true, array('context' => $coursecontext));
@@ -186,9 +186,7 @@ if (!$choiceformshown) {
         echo $OUTPUT->box_start('generalbox', 'notice');
         echo '<p align="center">'. get_string('notenrolledchoose', 'choice') .'</p>';
         echo $OUTPUT->container_start('continuebutton');
-        echo $OUTPUT->single_button(new moodle_url('/enrol/index.php?',
-                                                   array('id' => $course->id, 'returnurl' => $PAGE->url)),
-                                    get_string('enrolme', 'core_enrol', $courseshortname));
+        echo $OUTPUT->single_button(new moodle_url('/enrol/index.php?', array('id'=>$course->id)), get_string('enrolme', 'core_enrol', $courseshortname));
         echo $OUTPUT->container_end();
         echo $OUTPUT->box_end();
 

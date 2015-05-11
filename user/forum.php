@@ -40,17 +40,27 @@ $forumform = new user_edit_forum_form(null, array('userid' => $user->id));
 
 $forumform->set_data($user);
 
-if ($data = $forumform->get_data()) {
+$redirect = new moodle_url("/user/preferences.php", array('userid' => $user->id));
+if ($forumform->is_cancelled()) {
+    redirect($redirect);
+} else if ($data = $forumform->get_data()) {
 
     $user->maildigest = $data->maildigest;
     $user->autosubscribe = $data->autosubscribe;
     $user->trackforums = $data->trackforums;
 
     user_update_user($user, false, false);
+
     // Trigger event.
     \core\event\user_updated::create_from_userid($user->id)->trigger();
 
-    redirect("$CFG->wwwroot/user/preferences.php?userid=$user->id");
+    if ($USER->id == $user->id) {
+        $USER->maildigest = $data->maildigest;
+        $USER->autosubscribe = $data->autosubscribe;
+        $USER->trackforums = $data->trackforums;
+    }
+
+    redirect($redirect);
 }
 
 // Display page header.
