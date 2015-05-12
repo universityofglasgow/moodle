@@ -371,6 +371,8 @@ function upgrade_stale_php_files_present() {
     global $CFG;
 
     $someexamplesofremovedfiles = array(
+        // Removed in 2.8.
+        '/course/delete_category_form.php',
         // Removed in 2.7.
         '/admin/tool/qeupgradehelper/version.php',
         // Removed in 2.6.
@@ -2241,6 +2243,38 @@ function check_slasharguments(environment_results $result){
         $result->setInfo('slasharguments');
         $result->setStatus(false);
         return $result;
+    }
+
+    return null;
+}
+
+/**
+ * This function verifies if the database has tables using innoDB Antelope row format.
+ *
+ * @param environment_results $result
+ * @return environment_results|null updated results object, or null if no Antelope table has been found.
+ */
+function check_database_tables_row_format(environment_results $result) {
+    global $DB;
+
+    if ($DB->get_dbfamily() == 'mysql') {
+        $generator = $DB->get_manager()->generator;
+
+        foreach ($DB->get_tables(false) as $table) {
+            $columns = $DB->get_columns($table, false);
+            $size = $generator->guess_antolope_row_size($columns);
+            $format = $DB->get_row_format($table);
+
+            if ($size <= $generator::ANTELOPE_MAX_ROW_SIZE) {
+                continue;
+            }
+
+            if ($format === 'Compact' or $format === 'Redundant') {
+                $result->setInfo('unsupported_db_table_row_format');
+                $result->setStatus(false);
+                return $result;
+            }
+        }
     }
 
     return null;
