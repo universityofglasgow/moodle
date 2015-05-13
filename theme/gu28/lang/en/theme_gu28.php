@@ -22,7 +22,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-
+$string['breadcrumbreplace'] = 'Breadcrumb replacement strings';
+$string['breadcrumbreplacedesc'] = 'Alternate breadcrumb search and replace strings';
 $string['cachedef_instagram'] = 'Instagram media links';
 $string['choosereadme'] = '
 <p>gu28 for University of Glasgow</p>
