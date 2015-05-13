@@ -72,7 +72,7 @@ if ($ADMIN->fulltree) {
             'theme_gu28/twitter',
             get_string('twitter', 'theme_gu28'),
             get_string('twitterdesc', 'theme_gu28'),
-           ''
+            ''
         )
     );
 
@@ -82,7 +82,7 @@ if ($ADMIN->fulltree) {
             'theme_gu28/facebook',
             get_string('facebook', 'theme_gu28'),
             get_string('facebookdesc', 'theme_gu28'),
-           ''
+            ''
         )
     );
 
@@ -92,7 +92,17 @@ if ($ADMIN->fulltree) {
             'theme_gu28/instagram',
             get_string('instagram', 'theme_gu28'),
             get_string('instagramdesc', 'theme_gu28'),
-           ''
+            ''
+        )
+    );
+
+    // Breadcrumb replacement strings
+    $settings->add(
+        new admin_setting_configtextarea(
+            'theme_gu28/breadcrumbreplace',
+            get_string('breadcrumbreplace', 'theme_gu28'),
+            get_string('breadcrumbreplacedesc', 'theme_gu28'),
+            ''
         )
     );
 
