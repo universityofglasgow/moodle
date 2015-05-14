@@ -80,22 +80,13 @@ echo $OUTPUT->doctype() ?>
 <!--            <div id="region-main" class="<?php echo $regions['content']; ?>"> -->
 
                 <?php if ($images) { ?>
-                <div id="login_images" class="container-fluid">
+                <div id="login_layout" class="container-fluid">
                     <div class="row">
-                        <div class="col-md-2 col-md-offset-1">
+                        <div class="col-md-5 col-md-offset-1">
                             <img class="instafluff" src="<?php echo $images[1]; ?>" /> 
                         </div>
-                        <div class="col-md-2">
-                            <img class="instafluff" src="<?php echo $images[2]; ?>" /> 
-                        </div>
-                        <div class="col-md-2">
-                            <img class="instafluff" src="<?php echo $images[3]; ?>" /> 
-                        </div>
-                        <div class="col-md-2">
-                            <img class="instafluff" src="<?php echo $images[4]; ?>" /> 
-                        </div>
-                        <div class="col-md-2">
-                            <img class="instafluff" src="<?php echo $images[5]; ?>" /> 
+                        <div class="col-md-5">
+                            <?php echo $OUTPUT->main_content(); ?>
                         </div>
                         <div class="col-md-1"></div>
                     </div>
@@ -103,16 +94,10 @@ echo $OUTPUT->doctype() ?>
                 <?php } ?>
 
                 <?php
-                echo $OUTPUT->course_content_header();
-                echo $OUTPUT->main_content();
-                echo $OUTPUT->course_content_footer();
+                //echo $OUTPUT->main_content();
                 ?>
             </div>
     
-            <?php
-            if ($knownregionpost) {
-                echo $OUTPUT->blocks('side-post', $regions['post']);
-            }?>
 <!--        </div>-->
     
     </div>
