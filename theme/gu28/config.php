@@ -98,7 +98,7 @@ $THEME->layouts = array(
     'login' => array(
     	'file' => 'login.php',
         'regions' => array(),
-        'options' => array('langmenu'=>true, 'nonavbar'=>false),
+        'options' => array('langmenu'=>false, 'nonavbar'=>false),
     ),
     // No blocks and minimal footer - used for legacy frame layouts only!
     'frametop' => array(

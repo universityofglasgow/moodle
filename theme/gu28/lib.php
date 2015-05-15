@@ -90,6 +90,9 @@ function theme_gu28_populate_instagram($theme) {
         error_log('INSTAGRAM ERROR - ' . $userdata);
         return false;
     }
+    if (!isset($userdata->data)) {
+        return false;
+    }
     $users = $userdata->data;
     $userid = null;
     foreach ($users as $user) {
