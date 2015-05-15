@@ -79,19 +79,19 @@ echo $OUTPUT->doctype() ?>
         <div id="page-content" class="row">
 <!--            <div id="region-main" class="<?php echo $regions['content']; ?>"> -->
 
-                <?php if ($images) { ?>
                 <div id="login_layout" class="container-fluid">
                     <div class="row">
                         <div class="col-md-5 col-md-offset-1">
-                            <img class="instafluff" src="<?php echo $images[1]; ?>" /> 
+                            <img class="instafluff" src="<?php if ($images) {echo $images[1];} ?>" /> 
                         </div>
                         <div class="col-md-5">
-                            <?php echo $OUTPUT->main_content(); ?>
+<?php 
+  echo $OUTPUT->main_content(); 
+?>
                         </div>
                         <div class="col-md-1"></div>
                     </div>
                 </div>
-                <?php } ?>
 
                 <?php
                 //echo $OUTPUT->main_content();
