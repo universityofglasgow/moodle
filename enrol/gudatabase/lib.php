@@ -503,7 +503,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         global $CFG, $DB;
 
         // Just in case check text case.
-        $username = trim(textlib::strtolower($username));
+        $username = trim(core_text::strtolower($username));
 
         // We will be using 'guid' ldap plugin only.
         $authplugin = get_auth_plugin('guid');
@@ -522,7 +522,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         // From here on in the username will be the uid (if it
         // exists). This is the definitive GUID.
         if (!empty($newuser->uid)) {
-            $username = trim(textlib::strtolower($newuser->uid));
+            $username = trim(core_text::strtolower($newuser->uid));
             $newuser->username = $username;
         }
 
