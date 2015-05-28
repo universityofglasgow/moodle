@@ -24,48 +24,6 @@
 defined('MOODLE_INTERNAL') || die;
 
 if ($ADMIN->fulltree) {
-
-    // Display instagram pictures on login page
-    $settings->add(
-        new admin_setting_configcheckbox(
-            'theme_gu28/instagramdisplay',
-            get_string('instagramdisplay', 'theme_gu28'),
-            get_string('instagramdisplaydesc', 'theme_gu28'),
-            1
-        )
-    );
-
-    // Instagram upi URL
-    $settings->add(
-        new admin_setting_configtext(
-            'theme_gu28/instagramapi',
-            get_string('instagramapi', 'theme_gu28'),
-            get_string('instagramapidesc', 'theme_gu28'),
-            'https://api.instagram.com/v1/'
-        )
-    );
-
-
-    // Instagram user name
-    $settings->add(
-        new admin_setting_configtext(
-            'theme_gu28/instagramuser',
-            get_string('instagramuser', 'theme_gu28'),
-            get_string('instagramuserdesc', 'theme_gu28'),
-            'uniglasgow'
-        )
-    );
-
-    // Instagram client id
-    $settings->add(
-        new admin_setting_configtext(
-            'theme_gu28/instagramclientid',
-            get_string('instagramclientid', 'theme_gu28'),
-            get_string('instagramclientiddesc', 'theme_gu28'),
-            ''
-        )
-    );
-
     // Twitter
     $settings->add(
         new admin_setting_configtext(

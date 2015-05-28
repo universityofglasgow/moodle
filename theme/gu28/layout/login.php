@@ -33,14 +33,8 @@ $regions = theme_gu28_bootstrap3_grid();
 $PAGE->set_popup_notification_allowed(false);
 $PAGE->requires->jquery();
 
-// Instagram stuff
-$instagramdisplay = (empty($PAGE->theme->settings->instagramdisplay)) ? false : $PAGE->theme->settings->instagramdisplay;
-if ($instagramdisplay) {
-    $images = theme_gu28_instagram_images($PAGE->theme);
-} else {
-    $images = null;
-}
-
+// Cheesey image for login page
+$guimage = theme_gu28_crap_image($PAGE->theme);
 
 echo $OUTPUT->doctype() ?>
 <html <?php echo $OUTPUT->htmlattributes(); ?>>
@@ -82,7 +76,7 @@ echo $OUTPUT->doctype() ?>
                 <div id="login_layout" class="container-fluid">
                     <div class="row">
                         <div class="col-md-5 col-md-offset-1">
-                            <img class="instafluff" src="<?php if ($images) {echo $images[1];} ?>" /> 
+                            <img class="instafluff" src="<?php echo $OUTPUT->pix_url($guimage, 'theme'); ?>" /> 
                         </div>
                         <div class="col-md-5">
 <?php 
