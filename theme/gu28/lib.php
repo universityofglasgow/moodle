@@ -83,3 +83,4 @@ function theme_gu28_crap_image($theme) {
 
     return 'gucrap/' . $images[0]['filename'];
 }
+

@@ -44,6 +44,8 @@ $string['instagramapidesc'] = 'Base URL (with / on the end) of API';
 $string['instagramreload'] = 'Invalidate Instagram cache for gu28 theme';
 $string['instagramuser'] = 'Instagram user name';
 $string['instagramuserdesc'] = 'Instagram user name to pull random images for login page';
+$string['loginslogan'] = 'Login slogan';
+$string['loginslogandesc'] = 'Slogan to display on login page';
 $string['logo'] = 'Logo';
 $string['logodesc'] = 'Please upload your custom logo here if you want to add it to the header.<br>
 If the height of your logo is more than 75px add the following CSS rule to the Custom CSS box below.<br>

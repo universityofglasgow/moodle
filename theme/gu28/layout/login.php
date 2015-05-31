@@ -35,6 +35,7 @@ $PAGE->requires->jquery();
 
 // Cheesey image for login page
 $guimage = theme_gu28_crap_image($PAGE->theme);
+$loginslogan = empty($PAGE->theme->settings->loginslogan) ? '' : $PAGE->theme->settings->loginslogan;
 
 echo $OUTPUT->doctype() ?>
 <html <?php echo $OUTPUT->htmlattributes(); ?>>
@@ -75,21 +76,27 @@ echo $OUTPUT->doctype() ?>
 
                 <div id="login_layout" class="container-fluid">
                     <div class="row">
-                        <div class="col-md-5 col-md-offset-1">
-                            <img class="instafluff" src="<?php echo $OUTPUT->pix_url($guimage, 'theme'); ?>" /> 
+                        <div class="col-md-1">
                         </div>
                         <div class="col-md-5">
-<?php 
-  echo $OUTPUT->main_content(); 
-?>
+                            <div class="row">
+                                <div class="col-md-4 sloganbox">
+                                    <?php echo $loginslogan; ?>
+                                </div>
+                                <div class="col-md-8">
+                                    <img class="instafluff" src="<?php echo $OUTPUT->pix_url($guimage, 'theme'); ?>" /> 
+                                </div>
+                            </div>
                         </div>
-                        <div class="col-md-1"></div>
+                        <div class="col-md-5">
+                            <?php 
+                                echo $OUTPUT->main_content(); 
+                            ?>
+                        </div>
+                        <div class="col-md-1">
+                        </div>
                     </div>
                 </div>
-
-                <?php
-                //echo $OUTPUT->main_content();
-                ?>
             </div>
     
 <!--        </div>-->
