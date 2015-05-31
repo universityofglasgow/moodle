@@ -64,6 +64,15 @@ if ($ADMIN->fulltree) {
         )
     );
 
+    // Login page slogan.
+    $settings->add(
+        new admin_setting_configtextarea(
+            'theme_gu28/loginslogan',
+            get_string('loginslogan', 'theme_gu28'),
+            get_string('loginslogandesc', 'theme_gu28'),
+            ''
+        )
+    );
     // Custom Less file.
     $name = 'theme_gu28/customless';
     $title = get_string('customless', 'theme_gu28');
