@@ -105,15 +105,27 @@ blockquote>.icon-quote-left{
         border: 2px solid fade(@gu_rust, 50%);
 }
 
-.instafluff {
-    
+.guimage {
+    width: 400px;
+    height: 400px;
+    float: left;
 }
+
+.gufluff {
+    width: 600px;
+    float: right;
+    }
 
 .sloganbox {
     background-color: @gu_university_blue;
     color: #fff; 
     font-size: 28px;
     font-face: helvetica, sans-serif;
+    width: 200px;
+    height: 400px;
+    float: left;
+    text-align: right;
+    padding: 15px;
 }
 
 // Login things
@@ -127,14 +139,18 @@ blockquote>.icon-quote-left{
 }
 
 @media (max-width: 1100px) {
-    .instafluff {
+    .gufluff {
         display: none;
     }
 }
 
 .loginbox.onecolumn {
     width: 90%;
+    height: 400px;
+    max-width: 400px;
     left: 0;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 // social network icons

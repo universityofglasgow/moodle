@@ -76,24 +76,18 @@ echo $OUTPUT->doctype() ?>
 
                 <div id="login_layout" class="container-fluid">
                     <div class="row">
-                        <div class="col-md-1">
-                        </div>
-                        <div class="col-md-5">
-                            <div class="row">
-                                <div class="col-md-4 sloganbox">
+                        <div class="col-md-7">
+                            <div class="gufluff">
+                                <div class="sloganbox">
                                     <?php echo $loginslogan; ?>
                                 </div>
-                                <div class="col-md-8">
-                                    <img class="instafluff" src="<?php echo $OUTPUT->pix_url($guimage, 'theme'); ?>" /> 
-                                </div>
+                                <img class="guimage" src="<?php echo $OUTPUT->pix_url($guimage, 'theme'); ?>" /> 
                             </div>
                         </div>
                         <div class="col-md-5">
                             <?php 
                                 echo $OUTPUT->main_content(); 
                             ?>
-                        </div>
-                        <div class="col-md-1">
                         </div>
                     </div>
                 </div>
