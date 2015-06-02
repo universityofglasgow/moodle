@@ -84,3 +84,15 @@ function theme_gu28_crap_image($theme) {
     return 'gucrap/' . $images[0]['filename'];
 }
 
+/**
+ * Get the slogan to go with the crappy image
+ */
+function theme_gu28_crap_slogan($theme) {
+    $loginslogan = empty($theme->settings->loginslogan) ? '' : $theme->settings->loginslogan; 
+  
+    // substitute <br /> for newlines
+    $slogan = str_replace(PHP_EOL, '<br />', $loginslogan);
+
+    return $slogan;
+}
+

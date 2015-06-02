@@ -35,7 +35,7 @@ $PAGE->requires->jquery();
 
 // Cheesey image for login page
 $guimage = theme_gu28_crap_image($PAGE->theme);
-$loginslogan = empty($PAGE->theme->settings->loginslogan) ? '' : $PAGE->theme->settings->loginslogan;
+$loginslogan = theme_gu28_crap_slogan($PAGE->theme);
 
 echo $OUTPUT->doctype() ?>
 <html <?php echo $OUTPUT->htmlattributes(); ?>>
