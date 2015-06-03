@@ -76,7 +76,7 @@ echo $OUTPUT->doctype() ?>
 
                 <div id="login_layout" class="container-fluid">
                     <div class="row">
-                        <div class="col-md-7">
+                        <div class="col-lg-7 col-md-2">
                             <div class="gufluff">
                                 <div class="sloganbox">
                                     <?php echo $loginslogan; ?>
@@ -84,7 +84,7 @@ echo $OUTPUT->doctype() ?>
                                 <img class="guimage" src="<?php echo $OUTPUT->pix_url($guimage, 'theme'); ?>" /> 
                             </div>
                         </div>
-                        <div class="col-md-5">
+                        <div class="col-lg-5 col-md-11">
                             <?php 
                                 echo $OUTPUT->main_content(); 
                             ?>
