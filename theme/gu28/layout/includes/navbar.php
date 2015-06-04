@@ -1,5 +1,5 @@
 
-<nav role="navigation" class="navbar">
+<nav role="navigation" class="navbar navbar-default">
     <div class="<?php echo $container; ?>">
     <div class="navbar-header">
         <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#moodle-navbar">
