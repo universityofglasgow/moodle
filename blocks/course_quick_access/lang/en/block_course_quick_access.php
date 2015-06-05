@@ -28,6 +28,7 @@
 $string['pluginname'] = 'Course quick access';
 
 // ===== Block ====
+$string['course_quick_access:addinstance'] = 'Add instance of course_quick_access';
 $string['usernotenrolledincourses'] = 'Not enrolled in courses';
 $string['coursenotcategorized'] = 'Not assigned courses';
 
