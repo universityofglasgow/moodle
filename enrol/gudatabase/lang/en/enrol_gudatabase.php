@@ -44,6 +44,7 @@ $string['expirerole'] = 'Action after period';
 $string['expirerole_help'] = 'After period expires (if set) switch to this role or unenrol completely';
 $string['groups'] = 'Groups';
 $string['groupsinstruction'] = 'Select the classes for which you require groups to be created. Note, students will only ever be <b>added</b> to groups';
+$string['gudatabase:config'] = 'Configure gudatabase plugin';
 $string['gudatabase:manage'] = 'Manage gudatabase plugin';
 $string['gudatabase:unenrol'] = 'Unenrol users from gudatabase';
 $string['gudatabase:unenrolself'] = 'Can unenrol self if not in external database';
