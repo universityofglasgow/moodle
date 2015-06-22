@@ -50,6 +50,8 @@
  *                                 when your theme is not in the
  *                                 standard location.
  *
+ * grunt amd     Create the Asynchronous Module Definition JavaScript files.  See: MDL-49046.
+ *               Done here as core Gruntfile.js currently *nix only.
  *
  *
  *
@@ -83,16 +85,6 @@
  * grunt replace:font_fix    Correct the format for the Moodle font
  *                           loader to pick up the Glyphicon font.
  *
- * grunt replace:svg_colours Change the colour of the SVGs in pix_core by
- *                           text replacing #999 with a new hex colour.
- *                           Note this requires the SVGs to be #999 to
- *                           start with or the replace will do nothing
- *                           so should usually be preceded by copying
- *                           a fresh set of the original SVGs.
- *
- *                           Options:
- *
- *                           --svgcolour=<hexcolour> Hex colour to use for SVGs
  *
  * grunt cssflip    Create moodle-rtl.css by flipping the direction styles
  *                  in moodle.css.
@@ -111,6 +103,7 @@ module.exports = function(grunt) {
 
     // Theme Bootstrap constants.
     var LESSDIR         = 'less',
+        BOOTSWATCHDIR   = path.join(LESSDIR, 'bootswatch'),
         THEMEDIR        = path.basename(path.resolve('.'));
 
     // PHP strings for exec task.
@@ -124,6 +117,7 @@ module.exports = function(grunt) {
         moodleroot = path.resolve(dirrootopt);
     }
 
+    var PWD = process.cwd();
     configfile = path.join(moodleroot, 'config.php');
 
     decachephp += 'define(\'CLI_SCRIPT\', true);';
@@ -283,34 +277,25 @@ module.exports = function(grunt) {
                     }]
             }
         },
-        svgmin: {                       // Task
-            options: {                  // Configuration that will be passed directly to SVGO
-                plugins: [{
-                    removeViewBox: false
-                }, {
-                    removeUselessStrokeAndFill: false
-                }, {
-                    convertPathData: { 
-                        straightCurves: false // advanced SVGO plugin option
-                   }
-                }]
-            },
-            dist: {                     // Target
-                files: [{               // Dictionary of files
-                    expand: true,       // Enable dynamic expansion.
-                    cwd: 'pix_core',     // Src matches are relative to this path.
-                    src: ['**/*.svg'],  // Actual pattern(s) to match.
-                    dest: 'pix_core/',       // Destination path prefix.
-                    ext: '.svg'     // Dest filepaths will have this extension.
-                    // ie: optimise img/src/branding/logo.svg and store it in img/branding/logo.min.svg
-                }, {               // Dictionary of files
-                    expand: true,       // Enable dynamic expansion.
-                    cwd: 'pix_plugins',     // Src matches are relative to this path.
-                    src: ['**/*.svg'],  // Actual pattern(s) to match.
-                    dest: 'pix_plugins/',       // Destination path prefix.
-                    ext: '.svg'     // Dest filepaths will have this extension.
-                    // ie: optimise img/src/branding/logo.svg and store it in img/branding/logo.min.svg
-                }]
+        jshint: {
+            options: {jshintrc: moodleroot + '/.jshintrc'},
+            files: ['**/amd/src/*.js']
+        },
+        uglify: {
+            dynamic_mappings: {
+                files: grunt.file.expandMapping(
+                    ['**/src/*.js', '!**/node_modules/**'],
+                    '',
+                    {
+                        cwd: PWD,
+                        rename: function(destBase, destPath) {
+                            destPath = destPath.replace('src', 'build');
+                            destPath = destPath.replace('.js', '.min.js');
+                            destPath = path.resolve(PWD, destPath);
+                            return destPath;
+                        }
+                    }
+                )
             }
         }
     });
@@ -326,12 +311,15 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-contrib-cssmin');
     grunt.loadNpmTasks('grunt-csscomb');
-    grunt.loadNpmTasks('grunt-svgmin');
+
+    // Load core tasks.
+    grunt.loadNpmTasks('grunt-contrib-uglify');
+    grunt.loadNpmTasks('grunt-contrib-jshint');
 
     // Register tasks.
     grunt.registerTask("default", ["watch"]);
     grunt.registerTask("decache", ["exec:decache"]);
 
     grunt.registerTask("compile", ["less", "replace:font_fix", "cssflip", "replace:rtl_images", "autoprefixer", 'csscomb', 'cssmin', "replace:sourcemap", "decache"]);
-    grunt.registerTask("svg", ["copy:svg", "replace:svg_colours", "svgmin"]);
+    grunt.registerTask("amd", ["jshint", "uglify", "decache"]);
 };

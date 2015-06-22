@@ -1,5 +1,5 @@
 <?php
-// This file is part of The Bootstrap 3 Moodle theme
+// This file is part of The Bootstrap Moodle theme
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -29,6 +29,5 @@ require_once('renderers/admin_renderer.php');
 require_once('renderers/course_renderer.php');
 require_once('renderers/course_format_renderer.php');
 require_once('renderers/course_management.php');
-require_once('renderers/files_renderer.php');
 require_once('renderers/block_settings_renderer.php');
 require_once('renderers/enrol_renderer.php');

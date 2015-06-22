@@ -1,5 +1,5 @@
 <?php
-// This file is part of The Bootstrap 3 Moodle theme
+// This file is part of The Bootstrap Moodle theme
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -81,13 +81,13 @@ echo $OUTPUT->doctype() ?>
         </div>
 
         <?php
-        if ($knownregionpre) {
-            echo $OUTPUT->blocks('side-pre', $regions['pre']);
-        }?>
+if ($knownregionpre) {
+    echo $OUTPUT->blocks('side-pre', $regions['pre']);
+}?>
         <?php
-        if ($knownregionpost) {
-            echo $OUTPUT->blocks('side-post', $regions['post']);
-        }?>
+if ($knownregionpost) {
+    echo $OUTPUT->blocks('side-post', $regions['post']);
+}?>
     </div>
 
     <footer id="page-footer">
