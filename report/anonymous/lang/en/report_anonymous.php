@@ -27,7 +27,6 @@ $string['anonymous:export'] = 'Export user lists to Excel';
 $string['anonymous:view'] = 'View course anonymous submission report';
 $string['anonymous:shownames'] = 'All (non-anonymised) view of submitters';
 $string['anonymousassignments'] = 'Assignments';
-$string['anonymoustts'] = 'Anonymous Turnitintool submissions';
 $string['assignmentname'] = 'Assignment name';
 $string['assignnotsubmit'] = 'Assignment report <b>"{$a}"</b>';
 $string['asterisk'] = 'these users have no id number in their profile.';
@@ -44,7 +43,7 @@ $string['nocapability'] = 'You do not have the required capabiltities to view th
 $string['notallowed'] = 'You do not have permission to view the selected activity';
 $string['participantnumber'] = 'Participant';
 $string['partname'] = 'Part name:';
-$string['pluginname'] = 'Submission report';
+$string['pluginname'] = 'Assignment submission report';
 $string['selectassignment'] = 'Select assignment to view submission report';
 $string['statusaccepted'] = 'Accepted';
 $string['statusacceptedold'] = 'Accepted (old)';
@@ -64,9 +63,7 @@ $string['totalassignusers'] = 'Number of users eligible to submit assignment = {
 $string['totalnotassignusers'] = 'Number of users who have not submitted = {$a}';
 $string['totalnoid'] = 'Number of users who have no idnumber = {$a}';
 $string['totalnotttusers'] = 'Number of users who have not submitted = {$a}';
-$string['totalttusers'] = 'Number of users eligible to submit turnitin part = {$a}';
-$string['ttnotsubmit'] = 'Users who have not submitted to Turnitin Part "{$a}"';
 $string['urkundfile'] = 'Urkund file';
 $string['urkundscore'] = 'Urkund score';
 $string['urkundstatus'] = 'Urkund status';
-$string['workbook'] = 'Anonymous Report Export';
+$string['workbook'] = 'Assignment submission report export';

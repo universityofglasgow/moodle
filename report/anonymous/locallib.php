@@ -207,13 +207,13 @@ class report_anonymous {
         // Headers.
         $myxls->write_string(3, 0, '#');
         $myxls->write_string(3, 1, get_string('idnumber'));
-        $myxls->write_string(3, 2, get_string('email'));
+        $myxls->write_string(3, 2, get_string('participantnumber', 'report_anonymous'));
+        $myxls->write_string(3, 3, get_string('email'));
         if ($reveal) {
-            $myxls->write_string(3, 3, get_string('username'));
-            $myxls->write_string(3, 4, get_string('fullname'));
+            $myxls->write_string(3, 4, get_string('username'));
+            $myxls->write_string(3, 5, get_string('fullname'));
         }
-        $myxls->write_string(3, 5, get_string('submitted', 'report_anonymous'));
-        $myxls->write_string(3, 6, get_string('participantnumber', 'report_anonymous'));
+        $myxls->write_string(3, 6, get_string('submitted', 'report_anonymous'));
         if ($urkund) {
             $myxls->write_string(3, 7, get_string('urkundfile', 'report_anonymous'));
             $myxls->write_string(3, 8, get_string('urkundstatus', 'report_anonymous'));
@@ -230,17 +230,17 @@ class report_anonymous {
             } else {
                 $myxls->write_string($row, 1, '-');
             }
-            $myxls->write_string($row, 2, $s->user->email);
+            $myxls->write_string($row, 2, $s->user->participantid);
+            $myxls->write_string($row, 3, $s->user->email);
             if ($reveal || !$assignment->blindmarking) {
-                $myxls->write_string($row, 3, $s->user->username);
-                $myxls->write_string($row, 4, fullname($s->user));
+                $myxls->write_string($row, 4, $s->user->username);
+                $myxls->write_string($row, 5, fullname($s->user));
             }
             if ($s->submission) {
-                $myxls->write_string($row, 5, userdate($s->submission->timemodified));
+                $myxls->write_string($row, 6, userdate($s->submission->timemodified));
             } else {
-                $myxls->write_string($row, 5, get_string('no'));
+                $myxls->write_string($row, 6, get_string('no'));
             }
-            $myxls->write_string($row, 6, $s->user->participantid);
             if ($urkund) {
                 if (isset($s->urkundfilename)) {
                     $myxls->write_string($row, 7, $s->urkundfilename);
