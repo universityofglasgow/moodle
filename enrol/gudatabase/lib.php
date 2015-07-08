@@ -159,6 +159,22 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         return new moodle_url('/enrol/gudatabase/edit.php', array('courseid'=>$courseid));
     }
 
+    /**
+     * Check if this appears to be configured
+     * @return boolean
+     */
+    public function is_configured() {
+        if (!$this->get_config('dbtype') or
+                !$this->get_config('dbhost') or
+                !$this->get_config('remoteenroltable') or
+                !$this->get_config('remotecoursefield') or
+                !$this->get_config('remoteuserfield')) {
+            return false;
+        } else {
+
+        }
+    }
+
     /** 
      * synchronise enrollments for particular course
      * @param object $course
@@ -166,12 +182,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
     public function sync_course_enrolments($course) {
         global $CFG, $DB;
 
-        // Check that plugin is vaguely configured.
-        if (!$this->get_config('dbtype') or
-                !$this->get_config('dbhost') or
-                !$this->get_config('remoteenroltable') or
-                !$this->get_config('remotecoursefield') or
-                !$this->get_config('remoteuserfield')) {
+        if (!$this->is_configured()) {
             return false;
         }
     }
