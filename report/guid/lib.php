@@ -42,6 +42,9 @@ function report_guid_settings() {
     if (empty($config->user_attribute)) {
         $config->user_attribute = 'cn';
     }
+    $config->field_map_firstname = strtolower($config->field_map_firstname);
+    $config->field_map_lastname = strtolower($config->field_map_lastname);
+    $config->field_map_email = strtolower($config->field_map_email);
 
     return $config;
 }
@@ -159,6 +162,8 @@ function report_guid_print_results( $results, $url ) {
 
     global $CFG, $DB;
 
+    $config = report_guid_settings();
+
     // Check there are some.
     if (empty($results)) {
         echo "<div class=\"generalbox\">".get_string('noresults', 'report_guid')."</div>";
@@ -202,12 +207,8 @@ function report_guid_print_results( $results, $url ) {
             if (($colnum < $firstcol) || ($colnum > $lastcol)) {
                 continue;
             }
-            $guid = $result['uid'];
+            $guid = $result[$config->user_attribute];
 
-            // Possible (but rare) multiple uids.
-            if (is_array($guid)) {
-                $guid = $result['cn'];
-            }
 
             // Modify guid in url.
             $url->param( 'guid', $guid );
@@ -226,8 +227,8 @@ function report_guid_print_results( $results, $url ) {
             if ($username) {
                 $table->add_data( array(
                     $username,
-                    $result['givenname'],
-                    $result['sn'],
+                    $result[$config->field_map_firstname],
+                    $result[$config->field_map_lastname],
                     $mail,
                     '<a href="'.$url->out(true, array('sesskey' => sesskey())).'">'.
                     get_string('more', 'report_guid').'</a>' )
@@ -467,9 +468,10 @@ function report_guid_array_prettyprint( $rows ) {
 function report_guid_create_user_from_ldap($result) {
     global $DB;
 
-    $user = create_user_record( strtolower($result['uid']), 'not cached', 'guid' );
-    $user->firstname = $result['givenname'];
-    $user->lastname = $result['sn'];
+    $config = report_guid_settings();
+    $user = create_user_record( strtolower($config->user_attribute), 'not cached', 'guid' );
+    $user->firstname = $result[$config->field_map_firstname];
+    $user->lastname = $result[$config->field_map_lastname];
     $user->city = 'Glasgow';
     $user->country = 'GB';
     $mailinfo = report_guid_get_email( $result );
