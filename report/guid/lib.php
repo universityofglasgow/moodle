@@ -24,7 +24,30 @@
 
 require_once("{$CFG->libdir}/formslib.php");
 
-function build_filter( $firstname, $lastname, $guid, $email ) {
+/**
+ * Get all the settings from the GUID auth plugin
+ */
+function report_guid_settings() {
+    $auth = get_auth_plugin('guid');
+    $config = $auth->config;
+    if (empty($config->field_map_firstname)) {
+        $config->field_map_firstname = 'givenName';
+    }
+    if (empty($config->field_map_lastname)) {
+        $config->field_map_lastname = 'sn';
+    }
+    if (empty($config->field_map_email)) {
+        $config->field_map_email = 'mail';
+    }
+    if (empty($config->user_attribute)) {
+        $config->user_attribute = 'cn';
+    }
+
+    return $config;
+}
+
+function report_guid_build_filter($firstname, $lastname, $guid, $email) {
+    $config = report_guid_settings();
 
     // LDAP filter doesn't like escaped characters.
     $lastname = stripslashes( $lastname );
@@ -32,30 +55,30 @@ function build_filter( $firstname, $lastname, $guid, $email ) {
 
     // If the GUID is supplied then we don't care about anything else.
     if (!empty($guid)) {
-        return "uid=$guid";
+        return $config->user_attribute . "=$guid";
     }
 
     // If the email is supplied then we don't care about name.
     if (!empty($email)) {
-        return "mail=$email";
+        return $config->field_map_email . "=$email";
     }
 
     // Otherwise we'll take the name.
     if (empty($firstname) and !empty($lastname)) {
-        return "sn=$lastname";
+        return $config->field_map_lastname . "=$lastname";
     }
     if (!empty($firstname) and empty($lastname)) {
-        return "givenname=$firstname";
+        return $config->field_map_firstname . "=$firstname";
     }
     if (!empty($firstname) and !empty($lastname)) {
-        return "(&(sn=$lastname)(givenname=$firstname))";
+        return "(&({$config->field_map_lastname}=$lastname)({$config->field_map_firstname}=$firstname))";
     }
 
     // Everything must have been empty.
     return false;
 }
 
-function guid_ldapsearch( $ldaphost, $ldapdn, $filter ) {
+function report_guid_ldapsearch( $ldaphost, $ldapdn, $filter ) {
 
     // Connect to host.
     if (!$dv = ldap_connect( $ldaphost )) {
@@ -98,12 +121,12 @@ function guid_ldapsearch( $ldaphost, $ldapdn, $filter ) {
     }
 
     // Unravel results.
-    $results = cleanup_entry( $results );
+    $results = report_guid_cleanup_entry( $results );
 
     return $results;
 }
 
-function cleanup_entry( $entry ) {
+function report_guid_cleanup_entry( $entry ) {
     $retentry = array();
     for ($i = 0; $i < $entry['count']; $i++) {
         if (is_array($entry[$i])) {
@@ -112,9 +135,9 @@ function cleanup_entry( $entry ) {
             // This condition should be superfluous so just take the recursive call
             // adapted to your situation in order to increase perf..
             if ( !empty($subtree['dn']) && !isset($retentry[$subtree['dn']])) {
-                $retentry[$subtree['dn']] = cleanup_entry($subtree);
+                $retentry[$subtree['dn']] = report_guid_cleanup_entry($subtree);
             } else {
-                $retentry[] = cleanup_entry($subtree);
+                $retentry[] = report_guid_cleanup_entry($subtree);
             }
         } else {
             $attribute = $entry[$i];
@@ -130,7 +153,7 @@ function cleanup_entry( $entry ) {
     return $retentry;
 }
 
-function print_results( $results, $url ) {
+function report_guid_print_results( $results, $url ) {
     // Basic idea is to print as abbreviated list unless there is
     // only one.
 
@@ -189,7 +212,7 @@ function print_results( $results, $url ) {
             // Modify guid in url.
             $url->param( 'guid', $guid );
 
-            $mailinfo = get_email( $result );
+            $mailinfo = report_guid_get_email( $result );
             $mail = $mailinfo['mail'];
             if (!$mailinfo['primary']) {
                 $mail = "<i>$mail</i>";
@@ -220,11 +243,11 @@ function print_results( $results, $url ) {
         }
 
     } else {
-        print_single( $results );
+        report_guid_print_single( $results );
     }
 }
 
-function get_email( $result ) {
+function report_guid_get_email($result) {
 
     // Try to find an email address to use.
     if (!empty($result['mail'])) {
@@ -237,23 +260,22 @@ function get_email( $result ) {
     return array( 'primary' => true, 'mail' => '' );
 }
 
-function print_single( $results ) {
+function report_guid_print_single($results) {
     global $OUTPUT;
 
     // Just print a single result.
     global $CFG, $USER, $DB;
 
+    $config = report_guid_settings();
+
     $result = array_shift( $results );
     $fullname = ucwords(strtolower($result['givenname'].' '.$result['sn']));
 
     // Do they have an email.
-    $mailinfo = get_email( $result );
+    $mailinfo = report_guid_get_email($result);
 
     // Do they have a moodle account?
-    $username = $result['uid'];
-    if (is_array($username)) {
-        $username = $result['cn'];
-    }
+    $username = $result[$config->user_attribute];
     if ($user = $DB->get_record( 'user', array('username' => strtolower($username)) )) {
         $displayname = "<a href=\"{$CFG->wwwroot}/user/view.php?id={$user->id}&amp;course=1\">$fullname</a>";
         $create = '';
@@ -273,18 +295,22 @@ function print_single( $results ) {
         echo $OUTPUT->user_picture( $user, array('size' => 100) );
     }
     echo "<p><strong>".get_string( 'resultfor', 'report_guid')." $displayname</strong> $create ($username)</p>\n";
-    array_prettyprint( $result );
+    report_guid_array_prettyprint( $result );
 
     // if we have a $user object, synchronise their enrolments
     if ($user) {
-        $plugin = enrol_get_plugin('gudatabase');
-        $plugin->sync_user_enrolments($user);
+        $gudatabase = enrol_get_plugin('gudatabase');
+        if ($gudatabase->is_configured()) {
+            $gudatabase->sync_user_enrolments($user);
+        } else {
+            echo '<p class="alert alert-error">' . get_string('nogudatabase', 'report_guid') . '</p>';
+        }
     }
 
     // Check for entries in enrollments.
-    $enrolments = get_all_enrolments( $username );
+    $enrolments = report_guid_get_all_enrolments( $username );
     if (!empty($enrolments)) {
-        print_enrolments( $enrolments, $fullname, $username );
+        report_guid_print_enrolments( $enrolments, $fullname, $username );
     } else if ($enrolments === false) {
         echo '<p class="alert alert-error">' . get_string('noguenrol', 'report_guid') . '</p>';
     } else {
@@ -294,14 +320,13 @@ function print_single( $results ) {
     if ($enrolments !== false) {
 
         // Find mycampus enrolment data.
-        $gudatabase_config = get_config('enrol_gudatabase');
-        if (empty($gudatabase_config->dbhost)) {
+        $gudatabase = enrol_get_plugin('gudatabase');
+        if (!$gudatabase->is_configured()) {
             echo '<p class="alert alert-error">' . get_string('nogudatabase', 'report_guid') . '</p>';
         } else {
-            $gudatabase = enrol_get_plugin('gudatabase');
             $courses = $gudatabase->get_user_courses( $username );
             if (!empty($courses)) {
-                print_mycampus($courses, $username);
+                report_guid_print_mycampus($courses, $username);
             } else {
                 echo '<p class="alert">' . get_string('nomycampus', 'report_guid') . '</p>';
             }
@@ -313,11 +338,11 @@ function print_single( $results ) {
  * go and find enrollments across all Moodles
  * from external enrollment tables
  */
-function get_all_enrolments( $guid ) {
+function report_guid_get_all_enrolments( $guid ) {
     global $CFG;
 
     // Get plugin config for local_gusync.
-    $config = get_config( 'local_gusync' );
+    $config = get_config('local_gusync');
 
     // Is that plugin configured?
     if (empty($config->dbhost)) {
@@ -354,7 +379,7 @@ function get_all_enrolments( $guid ) {
 /**
  * print enrolments 
  */
-function print_enrolments( $enrolments, $name, $guid ) {
+function report_guid_print_enrolments( $enrolments, $name, $guid ) {
     global $OUTPUT;
 
     echo $OUTPUT->box_start();
@@ -388,7 +413,7 @@ function print_enrolments( $enrolments, $name, $guid ) {
 /**
  * print MyCampus data
  */
-function print_mycampus($courses, $guid) {
+function report_guid_print_mycampus($courses, $guid) {
     global $OUTPUT;
 
     // Normalise.
@@ -424,12 +449,12 @@ function print_mycampus($courses, $guid) {
     echo $OUTPUT->box_end();
 }
 
-function array_prettyprint( $rows ) {
+function report_guid_array_prettyprint( $rows ) {
     echo "<ul>\n";
     foreach ($rows as $name => $row) {
         if (is_array( $row )) {
             echo "<li><strong>$name:</strong>";
-            array_prettyprint( $row );
+            report_guid_array_prettyprint( $row );
             echo "</li>\n";
         } else {
             echo "<li><strong>$name</strong> => $row</li>\n";
@@ -439,7 +464,7 @@ function array_prettyprint( $rows ) {
 }
 
 // Create new Moodle user.
-function create_user_from_ldap( $result ) {
+function report_guid_create_user_from_ldap($result) {
     global $DB;
 
     $user = create_user_record( strtolower($result['uid']), 'not cached', 'guid' );

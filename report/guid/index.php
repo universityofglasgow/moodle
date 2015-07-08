@@ -76,12 +76,12 @@ echo "<p><a class=\"btn btn-primary\" href=\"{$CFG->wwwroot}/report/guid/upload.
 if ($mform->is_cancelled()) {
     redirect( "index.php" );
 } else if ($data = $mform->get_data()) {
-    if (!$filter = build_filter( $data->firstname, $data->lastname, $data->guid, $data->email )) {
+    if (!$filter = report_guid_build_filter( $data->firstname, $data->lastname, $data->guid, $data->email )) {
         notice(get_string('filtererror', 'report_guid'), $linkback );
         echo $OUTPUT->footer();
         die;
     }
-    $result = guid_ldapsearch( $ldaphost, $dn, $filter );
+    $result = report_guid_ldapsearch( $ldaphost, $dn, $filter );
     if (is_string( $result )) {
         notice(get_string('searcherror', 'report_guid', $result), $linkback );
         die;
@@ -101,7 +101,7 @@ if ($mform->is_cancelled()) {
             'submitbutton' => $data->submitbutton,
             '_qf__guidreport_form' => 1,
         ));
-    print_results( $result, $url );
+    report_guid_print_results( $result, $url );
 }
 
 echo $OUTPUT->footer();
