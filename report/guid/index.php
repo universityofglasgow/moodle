@@ -40,6 +40,8 @@ $email = optional_param('email', '', PARAM_CLEAN);
 $guid = optional_param('guid', '', PARAM_ALPHANUM);
 $action = optional_param('action', '', PARAM_ALPHA);
 
+$config = report_guid_settings();
+
 
 // Start the page.
 admin_externalpage_setup('reportguid', '', null, '', array('pagelayout' => 'report'));
@@ -56,8 +58,8 @@ if (!function_exists( 'ldap_connect' )) {
 if (($action == 'create') and confirm_sesskey()) {
     if (!empty($USER->report_guid_ldap)) {
         $result = $USER->report_guid_ldap;
-        if ($guid == $result['uid']) {
-            $user = create_user_from_ldap($result);
+        if ($guid == $result[$config->user_attribute]) {
+            $user = report_guid_create_user_from_ldap($result);
             notice(get_string('usercreated', 'report_guid', fullname($user)));
         }
     }
@@ -87,7 +89,7 @@ if ($mform->is_cancelled()) {
         die;
     }
     if ($result === false) {
-        echo "<p><b>" . get_string('ldapsearcherror', 'report_guid') . "</b></p>\n";
+        echo '<p class="alert alert-error">' . get_string('ldapsearcherror', 'report_guid') . '</p>\n';
         echo $OUTPUT->footer();
         die;
     }

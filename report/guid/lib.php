@@ -472,7 +472,7 @@ function report_guid_create_user_from_ldap($result) {
     $user->lastname = $result['sn'];
     $user->city = 'Glasgow';
     $user->country = 'GB';
-    $mailinfo = get_email( $result );
+    $mailinfo = report_guid_get_email( $result );
     $user->email = $mailinfo['mail'];
     if (!empty( $user->email )) {
         $DB->update_record( 'user', $user );
