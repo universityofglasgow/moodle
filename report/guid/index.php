@@ -30,8 +30,9 @@ require_once(dirname(__FILE__).'/lib.php');
 require_login();
 
 // Configuration.
-$ldaphost = 'dv-srv1.gla.ac.uk'; // Data vault LDAP host.
-$dn = 'o=Gla'; // Base dn for search.
+$config = report_guid_settings();
+$ldaphost = $config->host_url;
+$dn = $config->contexts;
 
 // Get paramters.
 $firstname = optional_param('firstname', '', PARAM_TEXT);
@@ -39,8 +40,6 @@ $lastname = optional_param('lastname', '', PARAM_TEXT);
 $email = optional_param('email', '', PARAM_CLEAN);
 $guid = optional_param('guid', '', PARAM_ALPHANUM);
 $action = optional_param('action', '', PARAM_ALPHA);
-
-$config = report_guid_settings();
 
 
 // Start the page.

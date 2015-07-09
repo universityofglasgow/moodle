@@ -30,6 +30,9 @@ require_once("{$CFG->libdir}/formslib.php");
 function report_guid_settings() {
     $auth = get_auth_plugin('guid');
     $config = $auth->config;
+    if (empty($config->host_url) || empty($config->contexts)) {
+        debugging('host_url and contexts must be defined in enrol_guid settings');
+    }
     if (empty($config->field_map_firstname)) {
         $config->field_map_firstname = 'givenName';
     }

@@ -28,9 +28,10 @@ require_once($CFG->libdir . '/formslib.php');
 require_once($CFG->libdir . '/csvlib.class.php');
 require_once(dirname(__FILE__).'/lib.php');
 
-// LDAP server settings.
-$ldaphost = 'dv-srv1.gla.ac.uk';
-$dn = 'o=Gla';
+// Configuration.
+$config = report_guid_settings();
+$ldaphost = $config->host_url;
+$dn = $config->contexts;
 
 // Start the page.
 admin_externalpage_setup('reportguid', '', null, '', array('pagelayout' => 'report'));
@@ -76,6 +77,9 @@ if ($mform->is_cancelled()) {
     $errorcount = 0;
     $existscount = 0;
 
+    // configuration
+    $config = report_guid_settings();
+
     // Iterate over lines in csv.
     $cir->init();
     while ($line = $cir->next()) {
@@ -103,7 +107,7 @@ if ($mform->is_cancelled()) {
         if (!$user = $DB->get_record( 'user', array('username' => strtolower($guid)) )) {
 
             // Need to find them in ldap.
-            $result = guid_ldapsearch( $ldaphost, $dn, "uid=$guid" );
+            $result = report_guid_ldapsearch( $ldaphost, $dn, "{$config->user_attribute}=$guid" );
             if (empty($result)) {
                 echo "<span class=\"label label-warning\">".get_string('nouser', 'report_guid')."</span> ";
                 $errorcount++;
@@ -119,7 +123,7 @@ if ($mform->is_cancelled()) {
 
             // Create account.
             $result = array_shift( $result );
-            $user = create_user_from_ldap( $result );
+            $user = report_guid_create_user_from_ldap( $result );
             $link = new moodle_url( '/user/view.php', array('id' => $user->id) );
             echo "<span class=\"label label-success\">".
                 get_string('accountcreated', 'report_guid', "<a href=\"$link\">" . fullname($user) . "</a>") . "</span>";
