@@ -88,6 +88,9 @@ function user_create_user($user, $updatepassword = true, $triggerevent = true) {
     if (!isset($user->trackforums)) {
         $user->trackforums = $CFG->defaultpreference_trackforums;
     }
+    if (!isset($user->lang)) {
+        $user->lang = $CFG->lang;
+    }
 
     $user->timecreated = time();
     $user->timemodified = $user->timecreated;
@@ -332,8 +335,17 @@ function user_get_user_details($user, $course = null, array $userfields = array(
             $newfield = 'profile_field_'.$field->datatype;
             $formfield = new $newfield($field->id, $user->id);
             if ($formfield->is_visible() and !$formfield->is_empty()) {
+
+                // We only use display_data in fields that require text formatting.
+                if ($field->datatype == 'text' or $field->datatype == 'textarea') {
+                    $fieldvalue = $formfield->display_data();
+                } else {
+                    // Cases: datetime, checkbox and menu.
+                    $fieldvalue = $formfield->data;
+                }
+
                 $userdetails['customfields'][] =
-                    array('name' => $formfield->field->name, 'value' => $formfield->data,
+                    array('name' => $formfield->field->name, 'value' => $fieldvalue,
                         'type' => $field->datatype, 'shortname' => $formfield->field->shortname);
             }
         }

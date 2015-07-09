@@ -482,4 +482,263 @@ class core_upgradelib_testcase extends advanced_testcase {
         // Restore value.
         $CFG->grade_minmaxtouse = $initialminmax;
     }
+
+    public function test_upgrade_extra_credit_weightoverride() {
+        global $DB, $CFG;
+
+        $this->resetAfterTest(true);
+
+        $c = array();
+        $a = array();
+        $gi = array();
+        for ($i=0; $i<5; $i++) {
+            $c[$i] = $this->getDataGenerator()->create_course();
+            $a[$i] = array();
+            $gi[$i] = array();
+            for ($j=0;$j<3;$j++) {
+                $a[$i][$j] = $this->getDataGenerator()->create_module('assign', array('course' => $c[$i], 'grade' => 100));
+                $giparams = array('itemtype' => 'mod', 'itemmodule' => 'assign', 'iteminstance' => $a[$i][$j]->id,
+                    'courseid' => $c[$i]->id, 'itemnumber' => 0);
+                $gi[$i][$j] = grade_item::fetch($giparams);
+            }
+        }
+
+        // Case 1: Course $c[0] has aggregation method different from natural.
+        $coursecategory = grade_category::fetch_course_category($c[0]->id);
+        $coursecategory->aggregation = GRADE_AGGREGATE_WEIGHTED_MEAN;
+        $coursecategory->update();
+        $gi[0][1]->aggregationcoef = 1;
+        $gi[0][1]->update();
+        $gi[0][2]->weightoverride = 1;
+        $gi[0][2]->update();
+
+        // Case 2: Course $c[1] has neither extra credits nor overrides
+
+        // Case 3: Course $c[2] has extra credits but no overrides
+        $gi[2][1]->aggregationcoef = 1;
+        $gi[2][1]->update();
+
+        // Case 4: Course $c[3] has no extra credits and has overrides
+        $gi[3][2]->weightoverride = 1;
+        $gi[3][2]->update();
+
+        // Case 5: Course $c[4] has both extra credits and overrides
+        $gi[4][1]->aggregationcoef = 1;
+        $gi[4][1]->update();
+        $gi[4][2]->weightoverride = 1;
+        $gi[4][2]->update();
+
+        // Run the upgrade script and make sure only course $c[4] was marked as needed to be fixed.
+        upgrade_extra_credit_weightoverride();
+
+        $this->assertTrue(empty($CFG->{'gradebook_calculations_freeze_' . $c[0]->id}));
+        $this->assertTrue(empty($CFG->{'gradebook_calculations_freeze_' . $c[1]->id}));
+        $this->assertTrue(empty($CFG->{'gradebook_calculations_freeze_' . $c[2]->id}));
+        $this->assertTrue(empty($CFG->{'gradebook_calculations_freeze_' . $c[3]->id}));
+        $this->assertEquals(20150619, $CFG->{'gradebook_calculations_freeze_' . $c[4]->id});
+
+        set_config('gradebook_calculations_freeze_' . $c[4]->id, null);
+
+        // Run the upgrade script for a single course only.
+        upgrade_extra_credit_weightoverride($c[0]->id);
+        $this->assertTrue(empty($CFG->{'gradebook_calculations_freeze_' . $c[0]->id}));
+        upgrade_extra_credit_weightoverride($c[4]->id);
+        $this->assertEquals(20150619, $CFG->{'gradebook_calculations_freeze_' . $c[4]->id});
+    }
+
+    /**
+     * Test the upgrade function for flagging courses with calculated grade item problems.
+     */
+    public function test_upgrade_calculated_grade_items_freeze() {
+        global $DB, $CFG;
+        $this->resetAfterTest();
+
+        // Create a user.
+        $user = $this->getDataGenerator()->create_user();
+
+        // Create a couple of courses.
+        $course1 = $this->getDataGenerator()->create_course();
+        $course2 = $this->getDataGenerator()->create_course();
+        $course3 = $this->getDataGenerator()->create_course();
+
+        // Enrol the user in the courses.
+        $studentrole = $DB->get_record('role', array('shortname' => 'student'));
+        $maninstance1 = $DB->get_record('enrol', array('courseid' => $course1->id, 'enrol' => 'manual'), '*', MUST_EXIST);
+        $maninstance2 = $DB->get_record('enrol', array('courseid' => $course2->id, 'enrol' => 'manual'), '*', MUST_EXIST);
+        $maninstance3 = $DB->get_record('enrol', array('courseid' => $course3->id, 'enrol' => 'manual'), '*', MUST_EXIST);
+        $manual = enrol_get_plugin('manual');
+        $manual->enrol_user($maninstance1, $user->id, $studentrole->id);
+        $manual->enrol_user($maninstance2, $user->id, $studentrole->id);
+        $manual->enrol_user($maninstance3, $user->id, $studentrole->id);
+
+        // To create the data we need we freeze the grade book to use the old behaviour.
+        set_config('gradebook_calculations_freeze_' . $course1->id, 20150627);
+        set_config('gradebook_calculations_freeze_' . $course2->id, 20150627);
+        set_config('gradebook_calculations_freeze_' . $course3->id, 20150627);
+        $CFG->grade_minmaxtouse = 2;
+
+        // Creating a category for a grade item.
+        $gradecategory = new grade_category();
+        $gradecategory->fullname = 'calculated grade category';
+        $gradecategory->courseid = $course1->id;
+        $gradecategory->insert();
+        $gradecategoryid = $gradecategory->id;
+
+        // This is a manual grade item.
+        $gradeitem = new grade_item();
+        $gradeitem->itemname = 'grade item one';
+        $gradeitem->itemtype = 'manual';
+        $gradeitem->categoryid = $gradecategoryid;
+        $gradeitem->courseid = $course1->id;
+        $gradeitem->idnumber = 'gi1';
+        $gradeitem->insert();
+
+        // Changing the category into a calculated grade category.
+        $gradecategoryitem = grade_item::fetch(array('iteminstance' => $gradecategory->id));
+        $gradecategoryitem->calculation = '=##gi' . $gradeitem->id . '##/2';
+        $gradecategoryitem->update();
+
+        // Setting a grade for the student.
+        $grade = $gradeitem->get_grade($user->id, true);
+        $grade->finalgrade = 50;
+        $grade->update();
+        // Creating all the grade_grade items.
+        grade_regrade_final_grades($course1->id);
+        // Updating the grade category to a new grade max and min.
+        $gradecategoryitem->grademax = 50;
+        $gradecategoryitem->grademin = 5;
+        $gradecategoryitem->update();
+
+        // Different manual grade item for course 2. We are creating a course with a calculated grade item that has a grade max of
+        // 50. The grade_grade will have a rawgrademax of 100 regardless.
+        $gradeitem = new grade_item();
+        $gradeitem->itemname = 'grade item one';
+        $gradeitem->itemtype = 'manual';
+        $gradeitem->courseid = $course2->id;
+        $gradeitem->idnumber = 'gi1';
+        $gradeitem->grademax = 25;
+        $gradeitem->insert();
+
+        // Calculated grade item for course 2.
+        $calculatedgradeitem = new grade_item();
+        $calculatedgradeitem->itemname = 'calculated grade';
+        $calculatedgradeitem->itemtype = 'manual';
+        $calculatedgradeitem->courseid = $course2->id;
+        $calculatedgradeitem->calculation = '=##gi' . $gradeitem->id . '##*2';
+        $calculatedgradeitem->grademax = 50;
+        $calculatedgradeitem->insert();
+
+        // Assigning a grade for the user.
+        $grade = $gradeitem->get_grade($user->id, true);
+        $grade->finalgrade = 10;
+        $grade->update();
+
+        // Setting all of the grade_grade items.
+        grade_regrade_final_grades($course2->id);
+
+        // Different manual grade item for course 3. We are creating a course with a calculated grade item that has a grade max of
+        // 50. The grade_grade will have a rawgrademax of 100 regardless.
+        $gradeitem = new grade_item();
+        $gradeitem->itemname = 'grade item one';
+        $gradeitem->itemtype = 'manual';
+        $gradeitem->courseid = $course3->id;
+        $gradeitem->idnumber = 'gi1';
+        $gradeitem->grademax = 25;
+        $gradeitem->insert();
+
+        // Calculated grade item for course 2.
+        $calculatedgradeitem = new grade_item();
+        $calculatedgradeitem->itemname = 'calculated grade';
+        $calculatedgradeitem->itemtype = 'manual';
+        $calculatedgradeitem->courseid = $course3->id;
+        $calculatedgradeitem->calculation = '=##gi' . $gradeitem->id . '##*2';
+        $calculatedgradeitem->grademax = 50;
+        $calculatedgradeitem->insert();
+
+        // Assigning a grade for the user.
+        $grade = $gradeitem->get_grade($user->id, true);
+        $grade->finalgrade = 10;
+        $grade->update();
+
+        // Setting all of the grade_grade items.
+        grade_regrade_final_grades($course3->id);
+        // Need to do this first before changing the other courses, otherwise they will be flagged too early.
+        set_config('gradebook_calculations_freeze_' . $course3->id, null);
+        upgrade_calculated_grade_items($course3->id);
+        $this->assertEquals(20150627, $CFG->{'gradebook_calculations_freeze_' . $course3->id});
+
+        // Change the setting back to null.
+        set_config('gradebook_calculations_freeze_' . $course1->id, null);
+        set_config('gradebook_calculations_freeze_' . $course2->id, null);
+        // Run the upgrade.
+        upgrade_calculated_grade_items();
+        // The setting should be set again after the upgrade.
+        $this->assertEquals(20150627, $CFG->{'gradebook_calculations_freeze_' . $course1->id});
+        $this->assertEquals(20150627, $CFG->{'gradebook_calculations_freeze_' . $course2->id});
+    }
+
+    function test_upgrade_calculated_grade_items_regrade() {
+        global $DB, $CFG;
+        $this->resetAfterTest();
+
+        // Create a user.
+        $user = $this->getDataGenerator()->create_user();
+
+        // Create a course.
+        $course = $this->getDataGenerator()->create_course();
+
+        // Enrol the user in the course.
+        $studentrole = $DB->get_record('role', array('shortname' => 'student'));
+        $maninstance1 = $DB->get_record('enrol', array('courseid' => $course->id, 'enrol' => 'manual'), '*', MUST_EXIST);
+        $manual = enrol_get_plugin('manual');
+        $manual->enrol_user($maninstance1, $user->id, $studentrole->id);
+
+        set_config('upgrade_calculatedgradeitemsonlyregrade', 1);
+
+        // Creating a category for a grade item.
+        $gradecategory = new grade_category();
+        $gradecategory->fullname = 'calculated grade category';
+        $gradecategory->courseid = $course->id;
+        $gradecategory->insert();
+        $gradecategoryid = $gradecategory->id;
+
+        // This is a manual grade item.
+        $gradeitem = new grade_item();
+        $gradeitem->itemname = 'grade item one';
+        $gradeitem->itemtype = 'manual';
+        $gradeitem->categoryid = $gradecategoryid;
+        $gradeitem->courseid = $course->id;
+        $gradeitem->idnumber = 'gi1';
+        $gradeitem->insert();
+
+        // Changing the category into a calculated grade category.
+        $gradecategoryitem = grade_item::fetch(array('iteminstance' => $gradecategory->id));
+        $gradecategoryitem->calculation = '=##gi' . $gradeitem->id . '##/2';
+        $gradecategoryitem->grademax = 50;
+        $gradecategoryitem->grademin = 15;
+        $gradecategoryitem->update();
+
+        // Setting a grade for the student.
+        $grade = $gradeitem->get_grade($user->id, true);
+        $grade->finalgrade = 50;
+        $grade->update();
+
+        grade_regrade_final_grades($course->id);
+        $grade = grade_grade::fetch(array('itemid' => $gradecategoryitem->id, 'userid' => $user->id));
+        $grade->rawgrademax = 100;
+        $grade->rawgrademin = 0;
+        $grade->update();
+        $this->assertNotEquals($gradecategoryitem->grademax, $grade->rawgrademax);
+        $this->assertNotEquals($gradecategoryitem->grademin, $grade->rawgrademin);
+
+        // This is the function that we are testing. If we comment out this line, then the test fails because the grade items
+        // are not flagged for regrading.
+        upgrade_calculated_grade_items();
+        grade_regrade_final_grades($course->id);
+
+        $grade = grade_grade::fetch(array('itemid' => $gradecategoryitem->id, 'userid' => $user->id));
+
+        $this->assertEquals($gradecategoryitem->grademax, $grade->rawgrademax);
+        $this->assertEquals($gradecategoryitem->grademin, $grade->rawgrademin);
+    }
 }
