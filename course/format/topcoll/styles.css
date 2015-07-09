@@ -29,6 +29,8 @@
 */
 .course-content ul.ctopics {
     margin: 0px;
+    padding-left: 0px;
+    padding-right: 0px;
 }
 
 .course-content ul.ctlayout {
@@ -98,11 +100,6 @@
 .course-content ul.ctopics li.section .content .toggle a.tc-large {
     padding-left: 32px; /* The 32px allows the arrow to be with the text next to it. */
     padding-right: 32px;
-}
-
-body.ie7 .course-content ul.ctopics li.section .content .toggle a {
-    padding-top: 7px;
-    padding-bottom: 7px;
 }
 
 /* CONTRIB-4106 */
@@ -723,10 +720,6 @@ body.jsenabled .toggledsection.sectionopen {
 /* -- Size of the spacer row -- */
 .section .spacer {
     height:0.5em;
-}
-
-body.ie7 .course-content ul.ctopics li.section .right .spacer {
-    height:0.0em;
 }
 
 /* Toggle all */

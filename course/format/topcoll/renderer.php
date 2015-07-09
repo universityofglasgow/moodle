@@ -91,12 +91,12 @@ class format_topcoll_renderer extends format_section_renderer_base {
         if ($this->tcsettings['layoutcolumnorientation'] == 1) {
             $style .= 'width:' . $this->tccolumnwidth . '%;';  // Vertical columns.
         } else {
-            $style .= 'width:100%;';  // Horizontal columns.
+            $style .= 'width: 100%;';  // Horizontal columns.
         }
         if ($this->mobiletheme === false) {
             $classes .= ' ctlayout';
         }
-        $style .= ' padding:' . $this->tccolumnpadding . 'px;';
+        $style .= ' padding-left: ' . $this->tccolumnpadding . 'px; padding-right: ' . $this->tccolumnpadding . 'px;';
         $attributes = array('class' => $classes);
         $attributes['style'] = $style;
         return html_writer::start_tag('ul', $attributes);
@@ -275,7 +275,7 @@ class format_topcoll_renderer extends format_section_renderer_base {
             'aria-label' => $title
         );
         if ($this->tcsettings['layoutcolumnorientation'] == 2) { // Horizontal column layout.
-            $liattributes['style'] = 'width:' . $this->tccolumnwidth . '%;';
+            $liattributes['style'] = 'width: ' . $this->tccolumnwidth . '%;';
         }
         $o .= html_writer::start_tag('li', $liattributes);
 
@@ -339,7 +339,7 @@ class format_topcoll_renderer extends format_section_renderer_base {
             'aria-label' => $this->courseformat->get_topcoll_section_name($course, $section, false)
         );
         if ($this->tcsettings['layoutcolumnorientation'] == 2) { // Horizontal column layout.
-            $liattributes['style'] = 'width:' . $this->tccolumnwidth . '%;';
+            $liattributes['style'] = 'width: ' . $this->tccolumnwidth . '%;';
         }
         $o .= html_writer::start_tag('li', $liattributes);
 
@@ -475,7 +475,7 @@ class format_topcoll_renderer extends format_section_renderer_base {
             'aria-label' => $this->courseformat->get_topcoll_section_name($course, $section, false)
         );
         if ($this->tcsettings['layoutcolumnorientation'] == 2) { // Horizontal column layout.
-            $liattributes['style'] = 'width:' . $this->tccolumnwidth . '%;';
+            $liattributes['style'] = 'width: ' . $this->tccolumnwidth . '%;';
         }
 
         $o .= html_writer::start_tag('li', $liattributes);
@@ -621,11 +621,12 @@ class format_topcoll_renderer extends format_section_renderer_base {
 
                 $this->tccolumnwidth = 100 / $this->tcsettings['layoutcolumns'];
                 if ($this->tcsettings['layoutcolumnorientation'] == 2) { // Horizontal column layout.
-                    $this->tccolumnwidth -= 1;
+                    $this->tccolumnwidth -= 0.5;
+                    $this->tccolumnpadding = 0; // In 'px'.
                 } else {
                     $this->tccolumnwidth -= 0.2;
-                }
-                $this->tccolumnpadding = 0; // In 'px'.
+                    $this->tccolumnpadding = 0; // In 'px'.
+            }
             } else if ($this->tcsettings['layoutcolumns'] < 1) {
                 // Distributed default in plugin settings (and reset in database) or database has been changed incorrectly.
                 $this->tcsettings['layoutcolumns'] = 1;

@@ -23,7 +23,7 @@ if ($id) {
     $course     = $DB->get_record('course', array('id' => $bigbluebuttonbn->course), '*', MUST_EXIST);
     $cm         = get_coursemodule_from_instance('bigbluebuttonbn', $bigbluebuttonbn->id, $course->id, false, MUST_EXIST);
 } else {
-    error('You must specify a course_module ID or an instance ID');
+    print_error('You must specify a course_module ID or an instance ID');
 }
 
 require_login($course, true, $cm);
@@ -68,5 +68,3 @@ if ( $bigbluebuttonbn->newwindow == 1 ){
     else
         header('Location: '.$CFG->wwwroot.'/course/view.php?id='.$bigbluebuttonbn->course );
 }
-    
-?>

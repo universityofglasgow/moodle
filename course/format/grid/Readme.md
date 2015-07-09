@@ -4,20 +4,24 @@ A topics based format that uses a grid of user selectable images to pop up a lig
 
 Required version of Moodle
 ==========================
-This version works with Moodle version 2014111000.00 release 2.8 (Build: 20141110) and above within the 2.8 branch until the
+This version works with Moodle version 2015051100.00 2.9 (Build: 20150511) and above within the 2.9 branch until the
 next release.
 
 Please ensure that your hardware and software complies with 'Requirements' in 'Installing Moodle' on
-'docs.moodle.org/28/en/Installing_Moodle' / 'docs.moodle.org/dev/Moodle_2.8_release_notes'.
+'docs.moodle.org/29/en/Installing_Moodle'.
 
 Free Software
 =============
 The Grid format is 'free' software under the terms of the GNU GPLv3 License, please see 'COPYING.txt'.
 
-It can be obtained for free from:
-https://moodle.org/plugins/view.php?plugin=format_grid
-and
-https://github.com/gjb2048/moodle-courseformat_grid/releases
+The primary source for downloading this branch of the format is https://moodle.org/plugins/view.php?plugin=format_grid
+with 'Select Moodle version:' set at 'Moodle 2.9'.
+
+The secondary source is a tagged version with the v2.9 prefix on https://github.com/gjb2048/moodle-courseformat_grid/tags
+
+If you download from the development area - https://github.com/gjb2048/moodle-courseformat_grid/ - consider that
+the code is unstable and not for use in production environments.  This is because I develop the next version in stages
+and use GitHub as a means of backup.  Therefore the code is not finished, subject to alteration and requires testing.
 
 You have all the rights granted to you by the GPLv3 license.  If you are unsure about anything, then the
 FAQ - http://www.gnu.org/licenses/gpl-faq.html - is a good place to look.
@@ -32,7 +36,8 @@ Supporting Grid development
 ===========================
 If you find Grid useful and beneficial, please consider donating by:
 
-PayPal - Please contact me via my 'Moodle profile' (above) for details as I am an individual and therefore am unable to have 'donation' / 'buy me now' buttons under their terms.
+PayPal - Please contact me via my 'Moodle profile' (above) for details as I am an individual and therefore am unable to have
+'donation' / 'buy me now' buttons under their terms.
 
 Flattr - https://flattr.com/profile/gjb2048
 
@@ -246,6 +251,31 @@ Known Issues
 
 History
 =============
+Version 2.9.1.
+  1. First stable version for Moodle 2.9.
+
+Version 2.9.0.4.
+  1. Optimise styles.
+
+Version 2.9.0.3.
+  1. Fix 'showavailability', ref: https://moodle.org/mod/forum/discuss.php?d=315452.
+
+Version 2.9.0.2.
+  1. Added the capability to delete a section.
+  2. Fixed 'Pointless try...catch block in setup_displayed_image() (lib.php)' - #15.
+  3. Add option to fit content popup to window size - #16 - thanks to Anthony Kuske - https://github.com/antriver.
+  4. Tidied up, added reset options and improved #16.
+  5. Optimised 'absolute' positioning of shadebox in light of #16.
+
+Version 2.9.0.1.
+  1.  First 'release candidate' version for Moodle 2.9.
+  2.  Note: Need to seriously think about using AMD and transitioning to using jQuery instead of YUI as AJAX is possible in jQuery,
+            but almost certainly not in the first instance as YUI is still supported in core.  Modularisation is do-able in AMD
+            with parameters required: https://docs.moodle.org/dev/Javascript_Modules.
+
+3rd April 2015 Version 2.8.2.2
+  1. Fixed 'importing of grid icons.' - #11 - patch gratefully received from Tim Lock.
+
 25th February 2015 Version 2.8.2.1
   1. Fixed 'Arrows still show when editing is on.' - #13.
 

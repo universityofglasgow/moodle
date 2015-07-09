@@ -63,18 +63,13 @@ M.format_grid.init = function(Y, the_editing_on, the_section_redirect, the_num_s
     this.section_redirect = the_section_redirect;
     this.selected_section = null;
     this.num_sections = parseInt(the_num_sections);
-    //console.log("the_num_sections parameter: " + the_num_sections);
-    //console.log("SSA parameter: " + the_shadebox_shown_array);
-    //this.shadebox_shown_array = JSON.parse(the_shadebox_shown_array);
     this.shadebox_shown_array = the_shadebox_shown_array;
     Y.use('json-parse', function (Y) {
         M.format_grid.shadebox_shown_array = Y.JSON.parse(M.format_grid.shadebox_shown_array);
     });
-    //console.log("SSA var: " + this.shadebox_shown_array);
 
     if (this.num_sections > 0) {
         this.set_selected_section(this.num_sections, true, true);  // Section 0 can be in the grid.
-        //console.log("init() - selected section no: " + this.selected_section_no);
     } else {
         this.selected_section_no = -1;
     }
@@ -106,10 +101,11 @@ M.format_grid.init = function(Y, the_editing_on, the_section_redirect, the_num_s
             document.getElementById("gridshadebox_right").style.display = "";
         }
         // Remove href link from icon anchors so they don't compete with JavaScript onlick calls.
-        var icon_links = getElementsByClassName(document.getElementById("gridiconcontainer"), "a", "gridicon_link");
-        for(var i = 0; i < icon_links.length; i++) {
-            icon_links[i].href = "#";
-        }
+        var gridiconcontainer = Y.one("#gridiconcontainer");
+        var icon_links = gridiconcontainer.all("a.gridicon_link");
+        icon_links.each(function (node) {
+            node.setAttribute("href", "#");
+        });
 
         M.format_grid.shadebox.initialize_shadebox();
         M.format_grid.shadebox.update_shadebox();
@@ -317,14 +313,10 @@ M.format_grid.shadebox.initialize_shadebox = function() {
         top = mainregionDOM.offsetTop + mainregionDOM.clientTop + 15;
     }
 
-    /* This is added here as not editing and JS is on to move the content from
-       below the grid icons and into the shade box. */
-    var content = document.getElementById('gridshadebox_content');
-    content.style.position = 'absolute';
-    content.style.width = '90%';
-    content.style.top = '' + top + 'px';
-    content.style.left = '5%';
-    content.style.zIndex = '1';
+    var gridshadebox_content = M.format_grid.ourYUI.one('#gridshadebox_content');
+    if (gridshadebox_content.hasClass('absolute')) {
+        gridshadebox_content.setStyle('top', '' + top + 'px');
+    }
 };
 
 /**
@@ -403,4 +395,4 @@ M.format_grid.shadebox.get_page_height = function() {
     }
 
     return pageHeight;
-};
+};

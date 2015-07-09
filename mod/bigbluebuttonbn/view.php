@@ -111,6 +111,7 @@ if( !isset($bbbsession['welcome']) || $bbbsession['welcome'] == '') {
     $bbbsession['welcome'] = get_string('mod_form_field_welcome_default', 'bigbluebuttonbn'); 
 }
 
+$bbbsession['userlimit'] = intval($bigbluebuttonbn->userlimit);
 $bbbsession['voicebridge'] = $bigbluebuttonbn->voicebridge;
 $bbbsession['description'] = $bigbluebuttonbn->description;
 $bbbsession['flag']['wait'] = $bigbluebuttonbn->wait;
@@ -213,9 +214,17 @@ $bigbluebuttonbn_view = '';
 if (!$bigbluebuttonbn->timeavailable ) {
     if (!$bigbluebuttonbn->timedue || time() <= $bigbluebuttonbn->timedue){
         //GO JOINING
-        groups_print_activity_menu($cm, $CFG->wwwroot.'/mod/bigbluebuttonbn/view.php?id='.$cm->id);
-        $bigbluebuttonbn_view = 'join';
-        $joining = bigbluebuttonbn_view_joining( $bbbsession, $context, $bigbluebuttonbn );
+        if( bigbluebuttonbn_is_user_limit_reached( $bbbsession ) ){
+            if (!$bigbluebuttonbn->newwindow) {
+                print_error( 'view_error_userlimit_reached', 'bigbluebuttonbn', $CFG->wwwroot.'/course/view.php?id='.$course->id );
+            } else {
+                print_error( 'view_error_userlimit_reached', 'bigbluebuttonbn', $CFG->wwwroot.'/mod/bigbluebuttonbn/view_end.php?id='.$cm->id );
+            }
+        } else {
+            groups_print_activity_menu($cm, $CFG->wwwroot.'/mod/bigbluebuttonbn/view.php?id='.$cm->id);
+            $bigbluebuttonbn_view = 'join';
+            $joining = bigbluebuttonbn_view_joining( $bbbsession, $context, $bigbluebuttonbn );
+        }
 
     } else {
         //CALLING AFTER
@@ -240,9 +249,17 @@ if (!$bigbluebuttonbn->timeavailable ) {
 
 } else if (!$bigbluebuttonbn->timedue || time() <= $bigbluebuttonbn->timedue ) {
     //GO JOINING
-    groups_print_activity_menu($cm, $CFG->wwwroot.'/mod/bigbluebuttonbn/view.php?id='.$cm->id);
-    $bigbluebuttonbn_view = 'join';
-    $joining = bigbluebuttonbn_view_joining( $bbbsession, $context, $bigbluebuttonbn );
+    if( bigbluebuttonbn_is_user_limit_reached( $bbbsession ) ){
+        if (!$bigbluebuttonbn->newwindow) {
+            print_error( 'view_error_userlimit_reached', 'bigbluebuttonbn', $CFG->wwwroot.'/course/view.php?id='.$course->id );
+        } else {
+            print_error( 'view_error_userlimit_reached', 'bigbluebuttonbn', $CFG->wwwroot.'/mod/bigbluebuttonbn/view_end.php?id='.$cm->id );
+        }
+    } else {
+        groups_print_activity_menu($cm, $CFG->wwwroot.'/mod/bigbluebuttonbn/view.php?id='.$cm->id);
+        $bigbluebuttonbn_view = 'join';
+        $joining = bigbluebuttonbn_view_joining( $bbbsession, $context, $bigbluebuttonbn );
+    }
 
 } else {
     //CALLING AFTER
@@ -418,7 +435,6 @@ function bigbluebuttonbn_view_before( $bbbsession ){
     echo '</table>';
 }
 
-
 function bigbluebuttonbn_view_after( $bbbsession ){
 
     $recordingsArray = bigbluebuttonbn_getRecordingsArray($bbbsession['meetingid'], $bbbsession['url'], $bbbsession['salt']);
@@ -440,5 +456,13 @@ function bigbluebuttonbn_view_after( $bbbsession ){
     }
 }
 
+function bigbluebuttonbn_is_user_limit_reached( $bbbsession ){
+    if( $bbbsession['userlimit'] == 0 )
+        return false;
 
-?>
+    $meetingInfo = bigbluebuttonbn_getMeetingInfoArray( $bbbsession['meetingid'], $bbbsession['modPW'], $bbbsession['url'], $bbbsession['salt'] );
+    if( $meetingInfo['returncode'] == 'FAILED' || $meetingInfo['participantCount'] < $bbbsession['userlimit'])
+        return false;
+
+    return true;
+}

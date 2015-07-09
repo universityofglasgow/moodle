@@ -125,7 +125,17 @@ class format_grid_renderer extends format_section_renderer_base {
         echo html_writer::end_tag('div');
         echo html_writer::start_tag('div', array('id' => 'gridshadebox'));
         echo html_writer::tag('div', '', array('id' => 'gridshadebox_overlay', 'style' => 'display: none;'));
-        echo html_writer::start_tag('div', array('id' => 'gridshadebox_content', 'class' => 'hide_content',
+
+        $gridshadeboxcontentclasses = array('hide_content');
+        if (!$editing) {
+            if ($this->settings['fitsectioncontainertowindow'] == 2) {
+                 $gridshadeboxcontentclasses[] = 'fit_to_window';
+            } else {
+                 $gridshadeboxcontentclasses[] = 'absolute';
+            }
+        }
+
+        echo html_writer::start_tag('div', array('id' => 'gridshadebox_content', 'class' => implode(' ', $gridshadeboxcontentclasses),
             'role' => 'region',
             'aria-label' => get_string('shadeboxcontent', 'format_grid')));
 
@@ -149,7 +159,7 @@ class format_grid_renderer extends format_section_renderer_base {
         // Only show the arrows if there is more than one box shown.
         if (($course->numsections > 1) || (($course->numsections == 1) && (!$this->topic0_at_top))) {
             echo html_writer::start_tag('div', array('id' => 'gridshadebox_left',
-                'class' => 'gridshadebox_left_area',
+                'class' => 'gridshadebox_area gridshadebox_left_area',
                 'style' => 'display: none;',
                 'role' => 'link',
                 'aria-label' => get_string('previoussection', 'format_grid')));
@@ -157,7 +167,7 @@ class format_grid_renderer extends format_section_renderer_base {
                 'src' => $this->output->pix_url('fa-arrow-circle-left-w', 'format_grid')));
             echo html_writer::end_tag('div');
             echo html_writer::start_tag('div', array('id' => 'gridshadebox_right',
-                'class' => 'gridshadebox_right_area',
+                'class' => 'gridshadebox_area gridshadebox_right_area',
                 'style' => 'display: none;',
                 'role' => 'link',
                 'aria-label' => get_string('nextsection', 'format_grid')));
@@ -356,8 +366,9 @@ class format_grid_renderer extends format_section_renderer_base {
             $thissection = $modinfo->get_section_info($section);
 
             // Check if section is visible to user.
-            $showsection = $hascapvishidsect || ($thissection->visible && ($thissection->available ||
-                    $thissection->showavailability || !$course->hiddensections));
+            $showsection = $hascapvishidsect || ($thissection->uservisible ||
+                    ($thissection->visible && !$thissection->available &&
+                    !empty($thissection->availableinfo)));
 
             if ($showsection) {
                 // We now know the value for the grid shade box shown array.

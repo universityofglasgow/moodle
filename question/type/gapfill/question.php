@@ -190,7 +190,8 @@ class qtype_gapfill_question extends question_graded_automatically_with_countbac
         }
     }
 
-     /* A question is gradable if at least one gap response is not blank */
+    /* A question is gradable if at least one gap response is not blank */
+
     public function is_gradable_response(array $response) {
         foreach ($response as $key => $answergiven) {
             if (($answergiven !== "")) {
@@ -217,9 +218,10 @@ class qtype_gapfill_question extends question_graded_automatically_with_countbac
 
     public function is_correct_response($answergiven, $rightanswer) {
         if (!$this->casesensitive == 1) {
-            $answergiven = strtolower($answergiven);
-            $rightanswer = strtolower($rightanswer);
+            $answergiven = mb_strtolower($answergiven);
+            $rightanswer = mb_strtolower($rightanswer);
         }
+
         if ($this->compare_response_with_answer($answergiven, $rightanswer, $this->disableregex)) {
             return true;
         } else if (($answergiven == "") && (preg_match($this->blankregex, $rightanswer))) {
@@ -246,8 +248,8 @@ class qtype_gapfill_question extends question_graded_automatically_with_countbac
                 continue;
             }
             if (!$this->casesensitive == 1) {
-                $answergiven = strtolower($answergiven);
-                $rightanswer = strtolower($rightanswer);
+                $answergiven = mb_strtolower($answergiven);
+                $rightanswer = mb_strtolower($rightanswer);
             }
             if ($this->compare_response_with_answer($answergiven, $rightanswer, $this->disableregex)) {
                 $numright++;
@@ -270,8 +272,8 @@ class qtype_gapfill_question extends question_graded_automatically_with_countbac
             $answergiven = $response[$this->field($place)];
             $rightanswer = $this->get_right_choice_for($place);
             if (!$this->casesensitive == 1) {
-                $answergiven = strtolower($answergiven);
-                $rightanswer = strtolower($rightanswer);
+                $answergiven = mb_strtolower($answergiven);
+                $rightanswer = mb_strtolower($rightanswer);
             }
             if (!$this->compare_response_with_answer($answergiven, $rightanswer, $this->disableregex)) {
                 $response[$this->field($place)] = '';
@@ -352,14 +354,16 @@ class qtype_gapfill_question extends question_graded_automatically_with_countbac
     }
 
     public function compare_response_with_answer($answergiven, $answer, $disableregex = false) {
+
         /* converts things like &lt; into < */
         $answer = htmlspecialchars_decode($answer);
         $answergiven = htmlspecialchars_decode($answergiven);
+
         /* useful with questions containing html code or math symbols */
         if ($disableregex == true) {
             /* strcmp is case sensitive. If case sensitive is off both string and
              * pattern will come into function already converted to lower case with
-             * strtolower
+             * mb_strtolower
              */
             if (strcmp(trim($answergiven), trim($answer)) == 0) {
                 return true;
@@ -369,8 +373,18 @@ class qtype_gapfill_question extends question_graded_automatically_with_countbac
                 return false;
             }
         }
+
         $pattern = str_replace('/', '\/', $answer);
-        $regexp = '/^' . $pattern . '$/u';
+        $regexp = "";
+        /* if the gap contains | then only match complete words
+         * this is to avoid a situation where [cat|dog]
+         * would match catty or bigcat and adog and doggy
+         */
+        if (strpos($pattern, "|")) {
+            $regexp = '/\b(' . $pattern . ')\b/u';
+        } else {
+            $regexp = '/^' . $pattern . '$/u';
+        }
 
         // Make the match insensitive if requested to, not sure this is necessary.
         if (!$this->casesensitive) {

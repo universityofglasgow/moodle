@@ -105,6 +105,9 @@ $string['defaultcurrentselectedimagecontainercolour_desc'] = 'The default curren
 $string['defaultcoursedisplay'] = 'Course display default';
 $string['defaultcoursedisplay_desc'] = "Either show all the sections on a single page or section zero and the chosen section on page.";
 
+$string['defaultfitsectioncontainertowindow'] = 'Fit section container to window by default';
+$string['defaultfitsectioncontainertowindow_desc'] = 'The default setting for \'Fit section container to window\'.';
+
 $string['defaultnewactivity'] = 'Show new activity notification image default';
 $string['defaultnewactivity_desc'] = "Show the new activity notification image when a new activity or resource are added to a section default.";
 
@@ -130,6 +133,9 @@ $string['setcurrentselectedimagecontainercolour_help'] = 'Set the current select
 $string['setnewactivity'] = 'Show new activity notification image';
 $string['setnewactivity_help'] = "Show the new activity notification image when a new activity or resource are added to a section.";
 
+$string['setfitsectioncontainertowindow'] = 'Fit the section popup to the window';
+$string['setfitsectioncontainertowindow_help'] = 'If enabled, the popup box with the contents of the section will fit to the size of the window and will scroll inside if necessary.  If disabled, the entire page will scroll instead.';
+
 $string['colourrule'] = "Please enter a valid RGB colour, six hexadecimal digits.";
 
 // Reset.
@@ -151,6 +157,10 @@ $string['resetnewactivity'] = 'New activity';
 $string['resetnewactivity_help'] = 'Resets the new activity notification image to the default value so it will be the same as a course the first time it is in the Grid format.';
 $string['resetallnewactivity'] = 'New activities';
 $string['resetallnewactivity_help'] = 'Resets the new activity notification images to the default value for all courses so it will be the same as a course the first time it is in the Grid format.';
+$string['resetfitpopup'] = 'Fit section popup to the window';
+$string['resetfitpopup_help'] = 'Resets the \'Fit section popup to the window\' to the default value so it will be the same as a course the first time it is in the Grid format.';
+$string['resetallfitpopup'] = 'Fit section popups to the window';
+$string['resetallfitpopup_help'] = 'Resets the \'Fit section popup to the window\' to the default value for all courses so it will be the same as a course the first time it is in the Grid format.';
 
 // Capabilities.
 $string['grid:changeimagecontainersize'] = 'Change or reset the image container size';
