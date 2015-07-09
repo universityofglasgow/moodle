@@ -171,7 +171,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
                 !$this->get_config('remoteuserfield')) {
             return false;
         } else {
-
+            return true;
         }
     }
 
