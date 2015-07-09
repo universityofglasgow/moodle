@@ -469,7 +469,7 @@ function report_guid_create_user_from_ldap($result) {
     global $DB;
 
     $config = report_guid_settings();
-    $user = create_user_record( strtolower($config->user_attribute), 'not cached', 'guid' );
+    $user = create_user_record( strtolower($result[$config->user_attribute]), 'not cached', 'guid' );
     $user->firstname = $result[$config->field_map_firstname];
     $user->lastname = $result[$config->field_map_lastname];
     $user->city = 'Glasgow';
