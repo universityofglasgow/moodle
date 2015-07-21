@@ -854,8 +854,8 @@ class format_grid extends format_base {
             }
         }
 
+        $data = (array) $data;
         if ($oldcourse !== null) {
-            $data = (array) $data;
             $oldcourse = (array) $oldcourse;
             $options = $this->course_format_options();
 
@@ -933,8 +933,8 @@ class format_grid extends format_base {
         }
 
         if (parent::delete_section($section, $forcedeleteifnotempty)) {
-            $context = context_course::instance($this->courseid);
-            $this->delete_image($section->id, $context->id);
+            $coursecontext = context_course::instance($this->courseid);
+            $this->delete_image($section->id, $coursecontext->id);
             return true;
         }
         return false;
@@ -1452,10 +1452,13 @@ class format_grid extends format_base {
                 $DB->set_field('format_grid_icon', 'displayedimageindex', $sectionimage->displayedimageindex,
                         array('sectionid' => $sectionimage->sectionid));
             } else {
+                error_log(get_string('cannotconvertuploadedimagetodisplayedimage', 'format_grid').' ConxID: '.$contextid.' CID: '.$this->courseid.' SID: '.$sectionimage->sectionid.' DIX: '.$sectionimage->displayedimageindex.' IMG: '.$sectionimage->newimage.' - Please send this information along with a dump of the \'grid_icon\', \'course_section\' and \'files\' DB tables to the developer.  Also look in the moodledata \'filedir\' folder for the \'file\' with the \'contenthash\' from the \'files\' table where the \'itemid\' is the same as the \'SID\' and \'component\' is \'course\' and \'filearea\' is \'section\' and see if it exists.');
                 print_error('cannotconvertuploadedimagetodisplayedimage', 'format_grid',
                         $CFG->wwwroot . "/course/view.php?id=" . $this->courseid);
             }
         } else {
+            error_log(get_string('cannotfinduploadedimage', 'format_grid').' ConxID: '.$contextid.' CID: '.$this->courseid.' SID: '.$sectionimage->sectionid.' DIX: '.$sectionimage->displayedimageindex.' IMG: '.$sectionimage->newimage.' - Please send this information along with a dump of the \'grid_icon\', \'course_section\' and \'files\' DB tables to the developer.  Also look in the moodledata \'filedir\' folder for the \'file\' with the \'contenthash\' from the \'files\' table where the \'itemid\' is the same as the \'SID\' and \'component\' is \'course\' and \'filearea\' is \'section\' and see if it exists.');
+            $DB->set_field('format_grid_icon', 'image', null, array('sectionid' => $sectionimage->sectionid));
             print_error('cannotfinduploadedimage', 'format_grid', $CFG->wwwroot . "/course/view.php?id=" . $this->courseid);
         }
 
@@ -1488,17 +1491,16 @@ class format_grid extends format_base {
 
         if (is_array($sectionimages)) {
             global $DB;
-            $context = context_course::instance($this->courseid);
-            $contextid = $context->id;
+            $coursecontext = context_course::instance($this->courseid);
             $fs = get_file_storage();
             $gridimagepath = $this->get_image_path();
 
             foreach ($sectionimages as $sectionimage) {
                 // Delete the image.
-                if ($file = $fs->get_file($contextid, 'course', 'section', $sectionimage->sectionid, '/', $sectionimage->image)) {
+                if ($file = $fs->get_file($coursecontext->id, 'course', 'section', $sectionimage->sectionid, '/', $sectionimage->image)) {
                     $file->delete();
                     // Delete the displayed image.
-                    if ($file = $fs->get_file($contextid, 'course', 'section', $sectionimage->sectionid, $gridimagepath,
+                    if ($file = $fs->get_file($coursecontext->id, 'course', 'section', $sectionimage->sectionid, $gridimagepath,
                             $sectionimage->displayedimageindex . '_' . $sectionimage->image)) {
                         $file->delete();
                     }
@@ -1514,15 +1516,14 @@ class format_grid extends format_base {
         if (is_array($sectionimages)) {
             global $DB;
 
-            $context = context_course::instance($this->courseid);
-            $contextid = $context->id;
+            $coursecontext = context_course::instance($this->courseid);
             $fs = get_file_storage();
             $gridimagepath = $this->get_image_path();
             $t = $DB->start_delegated_transaction();
 
             foreach ($sectionimages as $sectionimage) {
                 // Delete the displayed image.
-                if ($file = $fs->get_file($contextid, 'course', 'section', $sectionimage->sectionid, $gridimagepath,
+                if ($file = $fs->get_file($coursecontext->id, 'course', 'section', $sectionimage->sectionid, $gridimagepath,
                         $sectionimage->displayedimageindex . '_' . $sectionimage->image)) {
                     $file->delete();
                     $DB->set_field('format_grid_icon', 'displayedimageindex', 0, array('sectionid' => $sectionimage->sectionid));
@@ -1545,13 +1546,12 @@ class format_grid extends format_base {
         $sectionimages = $us->get_images($courseid);
         if (is_array($sectionimages)) {
             $coursecontext = context_course::instance($courseid);
-            $contextid = $coursecontext->id;
 
             $t = $DB->start_delegated_transaction();
             foreach ($sectionimages as $sectionimage) {
                 if ($sectionimage->displayedimageindex > 0) {
                     $sectionimage->newimage = $sectionimage->image;
-                    $sectionimage = $us->setup_displayed_image($sectionimage, $contextid, $settings);
+                    $sectionimage = $us->setup_displayed_image($sectionimage, $coursecontext->id, $settings);
 
                     if (self::is_developer_debug()) {
                         error_log('update_displayed_images: Updated displayed image in course id: ' . $courseid . ' for section ' .

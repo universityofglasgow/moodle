@@ -49,9 +49,9 @@ if ($week = optional_param('week', 0, PARAM_INT)) { // Weeks old section paramet
 }
 // End backwards-compatible aliasing..
 
-$context = context_course::instance($course->id);
+$coursecontext = context_course::instance($course->id);
 
-if (($marker >= 0) && has_capability('moodle/course:setcurrentsection', $context) && confirm_sesskey()) {
+if (($marker >= 0) && has_capability('moodle/course:setcurrentsection', $coursecontext) && confirm_sesskey()) {
     $course->marker = $marker;
     course_set_marker($course->id, $marker);
 }

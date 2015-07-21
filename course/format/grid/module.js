@@ -133,7 +133,7 @@ M.format_grid.icon_click = function(e) {
 
 /**
  * Toggles the shade box on / off.
- * Called when the user clicks on a grid icon or presses the Esc or Enter keys - see 'gridkeys.js'.
+ * Called when the user clicks on a grid icon or presses the Esc or Space keys - see 'gridkeys.js'.
  * @param {Object} e Event object.
  */
 M.format_grid.icon_toggle = function(e) {
@@ -151,7 +151,7 @@ M.format_grid.icon_toggle = function(e) {
             this.shadebox.toggle_shadebox();
         } else {
             //console.log("Shadebox was closed");
-            this.icon_change_shown();
+            this.change_shown();
             this.shadebox.toggle_shadebox();
         }
     } //else {
@@ -161,7 +161,7 @@ M.format_grid.icon_toggle = function(e) {
 
 /**
  * Called when the user clicks on the left arrow on the shade box or when they press the left
- * cursor key or Shift-TAB on the keyboard - see 'gridkeys.js'.
+ * cursor key on the keyboard - see 'gridkeys.js'.
  * Moves to the previous visible section - looping to the last if the current is the first.
  * @param {Object} e Event object.
  */
@@ -172,7 +172,7 @@ M.format_grid.arrow_left = function(e) {
 
 /**
  * Called when the user clicks on the right arrow on the shade box or when they press the right
- * cursor key or TAB on the keyboard - see 'gridkeys.js'.
+ * cursor key on the keyboard - see 'gridkeys.js'.
  * Moves to the next visible section - looping to the first if the current is the last.
  * @param {Object} e Event object.
  */
@@ -191,7 +191,7 @@ M.format_grid.change_selected_section = function(increase_section) {
         this.set_selected_section(this.selected_section_no, increase_section, false);
         //console.log("Selected section no is now: " + this.selected_section_no);
         if (M.format_grid.shadebox.shadebox_open == true) {
-            this.icon_change_shown();
+            this.change_shown();
         }
     } //else {
         //console.log("Grid format:change_selected_section() - no selected section to show.");
@@ -201,13 +201,24 @@ M.format_grid.change_selected_section = function(increase_section) {
 /**
  * Changes the shown section within the shade box to the new one defined in 'selected_section_no'.
  */
-M.format_grid.icon_change_shown = function() {
+M.format_grid.change_shown = function() {
     "use strict";
     // Make the selected section visible, scroll to it and hide all other sections.
     if(this.selected_section != null) {
         this.selected_section.addClass('hide_section');
     }
     this.selected_section = this.ourYUI.one("#section-" + this.selected_section_no);
+
+    // Focus on the first element in the shade box.
+    //this.selected_section.focus();
+    //document.getElementById("section-" + this.selected_section_no).focus();
+    //document.querySelectorAll("section-" + this.selected_section_no + " a:first-of-type")[0].focus();
+    var firstactivity = document.getElementById("section-" + this.selected_section_no).getElementsByTagName('a')[0];
+    if (firstactivity) {
+        //console.log("First activity: " + firstactivity);
+        firstactivity.focus();
+    }
+    console.log("Active element: " + document.activeElement);
 
     this.selected_section.removeClass('hide_section');
 };

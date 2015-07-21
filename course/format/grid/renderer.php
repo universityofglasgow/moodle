@@ -90,9 +90,9 @@ class format_grid_renderer extends format_section_renderer_base {
         global $PAGE;
 
         $summarystatus = $this->courseformat->get_summary_visibility($course->id);
-        $context = context_course::instance($course->id);
+        $coursecontext = context_course::instance($course->id);
         $editing = $PAGE->user_is_editing();
-        $hascapvishidsect = has_capability('moodle/course:viewhiddensections', $context);
+        $hascapvishidsect = has_capability('moodle/course:viewhiddensections', $coursecontext);
 
         if ($editing) {
             $streditsummary = get_string('editsummary');
@@ -120,7 +120,7 @@ class format_grid_renderer extends format_section_renderer_base {
             'aria-label' => get_string('gridimagecontainer', 'format_grid')));
         echo html_writer::start_tag('ul', array('class' => 'gridicons'));
         // Print all of the image containers.
-        $this->make_block_icon_topics($context->id, $modinfo, $course, $editing, $hascapvishidsect, $urlpicedit);
+        $this->make_block_icon_topics($coursecontext->id, $modinfo, $course, $editing, $hascapvishidsect, $urlpicedit);
         echo html_writer::end_tag('ul');
         echo html_writer::end_tag('div');
         echo html_writer::start_tag('div', array('id' => 'gridshadebox'));
@@ -591,7 +591,7 @@ class format_grid_renderer extends format_section_renderer_base {
      */
     private function make_block_topics($course, $sections, $modinfo, $editing, $hascapvishidsect, $streditsummary,
             $urlpicedit, $onsectionpage) {
-        $context = context_course::instance($course->id);
+        $coursecontext = context_course::instance($course->id);
         unset($sections[0]);
         for ($section = 1; $section <= $course->numsections; $section++) {
             $thissection = $modinfo->get_section_info($section);
@@ -644,8 +644,8 @@ class format_grid_renderer extends format_section_renderer_base {
                 }
                 echo html_writer::end_tag('div');
 
-                echo $this->section_availability_message($thissection,has_capability('moodle/course:viewhiddensections',
-                        $context));
+                echo $this->section_availability_message($thissection, has_capability('moodle/course:viewhiddensections',
+                        $coursecontext));
 
                 echo $this->courserenderer->course_section_cm_list($course, $thissection, 0);
                 echo $this->courserenderer->course_section_add_cm_control($course, $thissection->section, 0);
@@ -654,7 +654,7 @@ class format_grid_renderer extends format_section_renderer_base {
                 echo html_writer::tag('p', get_string('hidden_topic', 'format_grid'));
 
                 echo $this->section_availability_message($thissection, has_capability('moodle/course:viewhiddensections',
-                        $context));
+                        $coursecontext));
             }
 
             echo html_writer::end_tag('div');

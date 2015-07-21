@@ -10,7 +10,8 @@ var keys = {
         left     : 37,
         up       : 38,
         right    : 39,
-        down     : 40
+        down     : 40,
+        space    : 32
     };
 
 Y.Object.each(keys, function (keyCode, name) {
@@ -77,6 +78,12 @@ M.format_grid.gridkeys = {
         Y.on('esc', function (e) {
             e.preventDefault();
             Y.log("Esc pressed");
+            Y.log("Selected section no: " + M.format_grid.selected_section_no);
+            M.format_grid.icon_toggle(e);
+        });
+        Y.on('space', function (e) {
+            e.preventDefault();
+            Y.log("Space pressed");
             Y.log("Selected section no: " + M.format_grid.selected_section_no);
             M.format_grid.icon_toggle(e);
         });
