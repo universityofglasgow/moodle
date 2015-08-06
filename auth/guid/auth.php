@@ -255,7 +255,7 @@ class auth_plugin_guid extends auth_plugin_ldap {
         // we're just going to use this to make sure that 'city' and
         // 'country' are set to something. If not we'll go for
         // 'Glasgow' and 'GB'.
-        global $SESSION, $CFG, $SITE, $DB;
+        global $SESSION, $CFG, $SITE, $DB, $OUTPUT;
 
         // Check city.
         if (empty($user->city)) {
@@ -288,7 +288,7 @@ class auth_plugin_guid extends auth_plugin_ldap {
 
         // If still no email then message.
         if (empty($user->email)) {
-            print_header(strip_tags($SITE->fullname), $SITE->fullname, 'home');
+            echo $OUTPUT->header(strip_tags($SITE->fullname), $SITE->fullname, 'home');
             notice(get_string('noemail', 'auth_guid'), $CFG->wwwroot);
         }
     }
