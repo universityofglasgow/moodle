@@ -44,8 +44,8 @@ $string['instagramapidesc'] = 'Base URL (with / on the end) of API';
 $string['instagramreload'] = 'Invalidate Instagram cache for gu28 theme';
 $string['instagramuser'] = 'Instagram user name';
 $string['instagramuserdesc'] = 'Instagram user name to pull random images for login page';
-$string['loginslogan'] = 'Login slogan';
-$string['loginslogandesc'] = 'Slogan to display on login page';
+$string['loginslogan'] = 'Login slogans';
+$string['loginslogandesc'] = 'Slogans to display on login page. One per line';
 $string['logo'] = 'Logo';
 $string['logodesc'] = 'Please upload your custom logo here if you want to add it to the header.<br>
 If the height of your logo is more than 75px add the following CSS rule to the Custom CSS box below.<br>
@@ -53,6 +53,8 @@ a.logo {height: 100px;} or whatever height in pixels the logo is.';
 $string['pluginname'] = 'gu28';
 $string['region-side-post'] = 'Right';
 $string['region-side-pre'] = 'Left';
+$string['sloganhighlight'] = 'Slogan highlights';
+$string['sloganhighlightdesc'] = 'Words highlighted in slogan';
 $string['socialnetworksicondescriptiontwitter'] = 'Follow us on Twitter';
 $string['socialnetworksicondescriptionfacebook'] = 'Like us on Facebook';
 $string['socialnetworksicondescriptioninstagram'] = 'Find us on Instagram';

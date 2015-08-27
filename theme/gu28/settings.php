@@ -73,6 +73,17 @@ if ($ADMIN->fulltree) {
             ''
         )
     );
+
+    // Slogan highlight.
+    $settings->add(
+        new admin_setting_configtext(
+            'theme_gu28/sloganhighlight',
+            get_string('sloganhighlight', 'theme_gu28'),
+            get_string('sloganhighlightdesc', 'theme_gu28'),
+            ''
+        )
+    );
+
     // Custom Less file.
     $name = 'theme_gu28/customless';
     $title = get_string('customless', 'theme_gu28');

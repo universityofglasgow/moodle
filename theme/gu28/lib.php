@@ -89,9 +89,21 @@ function theme_gu28_crap_image($theme) {
  */
 function theme_gu28_crap_slogan($theme) {
     $loginslogan = empty($theme->settings->loginslogan) ? '' : $theme->settings->loginslogan; 
-  
-    // substitute <br /> for newlines
-    $slogan = str_replace(PHP_EOL, '<br />', $loginslogan);
+    $sloganhighlight = empty($theme->settings->sloganhighlight) ? '' : $theme->settings->sloganhighlight;
+    if (!$loginslogan) {
+        return '';
+    }
+ 
+    // split up by new lines
+    $slogans = explode(PHP_EOL, $loginslogan); 
+
+    // pick random slogan
+    shuffle($slogans);
+    $slogan = $slogans[0];
+ 
+    // add bold tags and split each word onto new line
+    $slogan = str_replace($sloganhighlight, '<b>'.$sloganhighlight.'</b>', $slogan);
+    $slogan = preg_replace('/\s+/', '<br />', $slogan);
 
     return $slogan;
 }
