@@ -41,6 +41,7 @@ echo $OUTPUT->doctype() ?>
 <html <?php echo $OUTPUT->htmlattributes(); ?>>
 <head>
     <title><?php echo $OUTPUT->page_title(); ?></title>
+    <link href='https://fonts.googleapis.com/css?family=Yantramanav:400,100,300,500,700,900' rel='stylesheet' type='text/css'>
     <link rel="shortcut icon" href="<?php echo $OUTPUT->favicon(); ?>" />
     <?php echo $OUTPUT->standard_head_html() ?>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -71,30 +72,21 @@ echo $OUTPUT->doctype() ?>
             </div>
         </header>
     
-        <div id="page-content" class="row">
-<!--            <div id="region-main" class="<?php echo $regions['content']; ?>"> -->
-
+        <div id="page-content" class="rowxx">
                 <div id="login_layout" class="container-fluid">
-                    <div class="row">
-                        <div class="col-lg-7 col-md-2">
-                            <div class="gufluff">
-                                <div class="sloganbox">
-                                    <?php echo $loginslogan; ?>
-                                </div>
-                                <img class="guimage" src="<?php echo $OUTPUT->pix_url($guimage, 'theme'); ?>" /> 
+                        <div class="gufluff">
+                            <div class="sloganbox">
+                                <?php echo $loginslogan; ?>
                             </div>
+                            <img class="guimage" src="<?php echo $OUTPUT->pix_url($guimage, 'theme'); ?>" /> 
                         </div>
-                        <div class="col-lg-5 col-md-11">
+                        <div class="gulogin">
                             <?php 
                                 echo $OUTPUT->main_content(); 
                             ?>
                         </div>
-                    </div>
                 </div>
             </div>
-    
-<!--        </div>-->
-    
     </div>
 </section>
 
