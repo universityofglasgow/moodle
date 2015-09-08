@@ -1,0 +1,27 @@
+
+.mod_groupselect .mygroup,
+#page-mod-groupselect-view .me {
+  font-weight: bold;
+}
+
+.mod_groupselect .membershidden {
+  color:#AAAAAA;
+}
+
+.mod_groupselect .maxlimitreached {
+  color:#AAAAAA;
+}
+
+.mod_groupselect .export_url {
+    background-color: yellow;
+    color: red;
+}
+
+.mod_groupselect .edit, .text_to_html, td {
+  /*word-wrap:break-word !important;*/
+  word-break: break-all !important;
+}
+
+table.sortable th:not(.sorttable_sorted):not(.sorttable_sorted_reverse):not(.sorttable_nosort):after { 
+    content: " \25B4\25BE" 
+}
