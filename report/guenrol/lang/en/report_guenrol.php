@@ -25,9 +25,12 @@
 $string['coursename'] = 'Course \'{$a}\'.';
 $string['enrolmentscode'] = 'Enrolments for code <strong>{$a}</strong>.';
 $string['guenrol:view'] = 'View course participation report';
+$string['lastupdate'] = 'Course last synchronised at {$a}';
 $string['listofcodes'] = 'The following automatic enrolment codes have been set (in the Course Settings) for this course. Click on the code for the current student list:';
+$string['never'] = 'never';
 $string['nocodes'] = 'There are no automatic enrolment codes defined in this course';
 $string['noremovedusers'] = 'There are no users that should not be here (according to MyCampus feed)';
+$string['notvisible'] = 'This course is hidden and automatic enrolment is disabled';
 $string['page-report-guenrol-x'] = 'Any participation report';
 $string['page-report-guenrol-index'] = 'Course participation report';
 $string['pluginname'] = 'UofG enrolment status';

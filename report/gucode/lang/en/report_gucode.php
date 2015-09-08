@@ -26,9 +26,13 @@ $string['added'] = 'Added';
 $string['code'] = 'Course Code';
 $string['gucode:view'] = 'View UofG Course Code report';
 $string['heading'] = 'UofG Course Code Search';
+$string['hidden'] = 'hidden';
 $string['instructions'] = 'Enter the UofG Course Code';
+$string['isvisible'] = 'Visible?';
+$string['missing'] = 'missing';
 $string['nocourses'] = 'No courses match the supplied code';
 $string['number'] = 'Number';
 $string['pluginname'] = 'UofG Course Code';
 $string['subject'] = 'Subject';
+$string['visible'] = 'visible';
 

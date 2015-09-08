@@ -49,6 +49,7 @@ if ($mform->is_cancelled()) {
         $sql = 'select * from {enrol_gudatabase_codes} where '.
                 $DB->sql_like('code', '?', false);
         $courses = $DB->get_records_sql($sql, array('%'.$code.'%'));
+        $courses = report_gucodes_visible($courses);
         $output->print_table($courses);
     }
 }

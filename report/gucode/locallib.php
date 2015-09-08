@@ -43,3 +43,22 @@ class gucode_form extends moodleform {
     }
 }
 
+/** 
+ * Add visible to courses found
+ */
+function report_gucodes_visible($courses) {
+    global $DB;
+
+    foreach ($courses as $codecourse) {
+        if ($course = $DB->get_record('course', array('id' => $codecourse->courseid))) {
+            $codecourse->visible = $course->visible ? get_string('visible', 'report_gucode') : get_string('hidden', 'report_gucode');
+            $codecourse->missing = 0;
+        } else {
+            $codecourse->visible = get_string('missing', 'report_gucode');
+            $codecourse->missing = 1;
+        }
+    }
+
+    return $courses;
+}
+

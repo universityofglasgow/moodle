@@ -40,15 +40,17 @@ class report_gucode_renderer extends plugin_renderer_base {
         $table->head[] = get_string('subject', 'report_gucode');
         $table->head[] = get_string('number', 'report_gucode');
         $table->head[] = get_string('added', 'report_gucode');
+        $table->head[] = get_string('isvisible', 'report_gucode');
         foreach ($courses as $course) {
             $row = array();
             $codelink = GLA_COURSE_CODE_URL . $course->code;
             $row[] = "<a href=\"$codelink\">$course->code</a>";
             $courselink = new moodle_url('/course/view.php', array('id' => $course->courseid));
-            $row[] = "<a href=\"$courselink\">{$course->coursename}</a>";
+            $row[] = $course->missing ? $course->coursename : "<a href=\"$courselink\">{$course->coursename}</a>";
             $row[] = $course->subjectname;
             $row[] = $course->subjectnumber;
             $row[] = userdate($course->timeadded, get_string('strftimedatetimeshort'), $CFG->timezone);
+            $row[] = $course->visible;
             $table->data[] = $row;
         }
         echo html_writer::table($table);

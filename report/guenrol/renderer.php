@@ -2,11 +2,15 @@
 
 class report_guenrol_renderer extends plugin_renderer_base {
 
-    public function menu($id, $codes) {
+    public function menu($id, $codes, $visible, $lastupdate) {
 
-        // Sync link.
-        $synclink = new moodle_url('/report/guenrol/index.php', array('id' => $id, 'action' => 'sync'));
-        echo "<div><a class=\"btn\" href=\"$synclink\">" . get_string('synccourse', 'report_guenrol') . "</a></div>";
+        // Warn if course not visible
+        if (!$visible) {
+            echo '<div class="alert alert-danger">' . get_string('notvisible', 'report_guenrol') . '</div>';
+        }
+
+        // last update
+        echo '<div class="alert alert-info">' . get_string('lastupdate', 'report_guenrol', $lastupdate) . '</div>';
 
         if (empty($codes)) {
             echo '<div class="alert">' . get_string('nocodes', 'report_guenrol') . '</div>';

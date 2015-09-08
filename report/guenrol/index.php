@@ -54,10 +54,12 @@ $PAGE->set_heading($course->fullname);
 echo $OUTPUT->header();
 echo $OUTPUT->heading( get_string('title', 'report_guenrol') . ' : ' . $course->fullname );
 
-// Re-sync the codes
-if ($action=='sync') {
-    $gudatabase = enrol_get_plugin('gudatabase');
-    $gudatabase->course_updated(false, $course, null);
+// get the last time the course was synced
+$sql = "select max(timeupdated) as updated from {enrol_gudatabase_users} where courseid=?";
+if ($updated = $DB->get_record_sql($sql, array($id))) {
+    $lastupdate = userdate($updated->updated);
+} else {
+    $lastupdate = get_string('never', 'report_guenrol');
 }
 
 // Get the codes for this course.
@@ -108,7 +110,7 @@ if (($action=='removed') || ($action=='unenrol')) {
         $output->removed($id);
     }
 } else if (empty($codeid)) {
-    $output->menu($id, $codes);
+    $output->menu($id, $codes, $course->visible, $lastupdate);
 } else {
 
     // Get enrolment info.
