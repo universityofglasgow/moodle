@@ -860,7 +860,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
 
         // If we didn't find it then add it.
         if (!$found) {
-            $instanceid = $this->add_first_instance($course, $data);
+            $instanceid = $this->add_first_instance($course);
         }
 
         return $instanceid;
