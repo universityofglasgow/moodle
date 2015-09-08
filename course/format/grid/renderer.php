@@ -208,7 +208,7 @@ class format_grid_renderer extends format_section_renderer_base {
             $course->numsections,
             json_encode($this->shadeboxshownarray)));
         // Initialise the key control functionality...
-        $PAGE->requires->yui_module('moodle-format_grid-gridkeys', 'M.format_grid.gridkeys.init', null, null, true);
+        $PAGE->requires->yui_module('moodle-format_grid-gridkeys', 'M.format_grid.gridkeys.init', array(array('editing' => $PAGE->user_is_editing())), null, true);
     }
 
     /**

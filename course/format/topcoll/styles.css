@@ -38,6 +38,11 @@
     vertical-align: top;
 }
 
+.course-content ul.ctopics li.section.main .left, .course-content ul.ctopics li.section.main .right {
+    /* Fix for Bootstrap V3 based themes in less/moodle/course.less . */
+    display: block;
+}
+
 .course-content ul.ctopics li.section.main, .course-content ul.ctopics li.tcsection {
     list-style: none;
     margin: 4px 1px 1px 1px;
@@ -55,8 +60,13 @@
 }
 
 .course-content ul.ctopics li.section.main .content, .course-content ul.ctopics li.tcsection .content {
-    margin: 0 0px; /* Override default for tablets / mobiles.  When have sides, set in format.php. */
+    /* Default for non tablets / mobiles.  If the language file has 'topcollsidewidth' for the current language, then will be set in format.php. */
+    margin: 0 40px;
     padding: 0px;
+}
+
+.course-content ul.ctopics.ctportable li.section.main .content, .course-content ul.ctopics.ctportable li.tcsection .content {
+    margin: 0 0px; /* Override default for tablets / mobiles.  When have sides, set in format.php. */
 }
 
 .course-content ul.ctopics li .content .sectionhead h3 {
@@ -517,6 +527,10 @@ body#page-admin-setting-formatsettingtopcoll select#id_s_format_topcoll_defaultt
     background-image: url([[pix:format_topcoll|eye_hide]]);
 }
 
+body#page-admin-setting-formatsettingtopcoll select#id_s_format_topcoll_defaulttoggleiconset option[value="groundsignal"], body.format-topcoll select#id_toggleiconset option[value="groundsignal"] {
+    background-image: url([[pix:format_topcoll|ground_signal_off]]);
+}
+
 body#page-admin-setting-formatsettingtopcoll select#id_s_format_topcoll_defaulttoggleiconset option[value="led"], body.format-topcoll select#id_toggleiconset option[value="led"] {
     background-image: url([[pix:format_topcoll|led_off]]);
 }
@@ -552,17 +566,12 @@ body#page-admin-setting-formatsettingtopcoll select#id_s_format_topcoll_defaultt
 body#page-admin-setting-formatsettingtopcoll select#id_s_format_topcoll_defaulttoggleiconset option, body.format-topcoll select#id_toggleiconset option {
     background-color: transparent;
     background-repeat: no-repeat;
-    background-position: 45px 45%; /* Position the icon roughly to the right of the selection text. */
+    background-position: right center; /* Position the icon to the right of the selection text. */
     padding: 3px 20px 3px 3px; /* The 20px allows the image to be on the right and the text next to it. */
 }
 
 body#page-admin-setting-formatsettingtopcoll.lang-en_ar select#id_s_format_topcoll_defaulttoggleiconset option, body.format-topcoll.lang-en_ar select#id_toggleiconset option {
     background-position: 220px 45%; /* Pirate strings are longer. */
-}
-
-/* MyMobile */
-#mymobile .course-content ul.ctopics li.tcsection .content, #mymobile .course-content ul.ctopics li.section.main .content {
-    margin: 0;
 }
 
 /* Display instructions */
@@ -576,7 +585,7 @@ body#page-admin-setting-formatsettingtopcoll.lang-en_ar select#id_s_format_topco
 }
 
 .course-content ul.ctopics li.section.main .side, .course-content ul.ctopics li.tcsection .side {
-    width: 40px; /* Default used in editing mode. */
+    width: 40px; /* Default used in editing mode or when not defined in the language file. */
     text-align: center;
     padding: 0px;
 }
@@ -604,6 +613,11 @@ body#page-admin-setting-formatsettingtopcoll.lang-en_ar select#id_s_format_topco
 .course-content ul.ctopics li.section .right a {
     display: block;  /* So that section_right_content() does not implode with 'br's and get too many when the up arrow is removed by JS. */
 }
+
+.course-content ul.ctopics li.section .right a img.hide{
+    display: inline;  /* CONTRIB-5817 - Align the eye icon. */
+}
+
 .course-content ul.ctopics li.section .left .section-handle img.icon {
     padding: 0;
     vertical-align: baseline;
@@ -643,24 +657,24 @@ body.format-topcoll .course-content ul.ctopics li.section .summary.summaryalways
     padding-top: 10px;
 }
 
-body.format-topcoll.editing .section .activity .contentwithoutlink, body.format-topcoll.editing .section .activity .activityinstance {
+body.format-topcoll.editing ul.ctopics .section .activity .contentwithoutlink, body.format-topcoll.editing ul.ctopics .section .activity .activityinstance {
     padding-right: 0px;
     display: inline;
 }
 
-body.format-topcoll.editing.dir-rtl .section .activity .contentwithoutlink, body.format-topcoll.editing.dir-rtl .section .activity .activityinstance {
+body.format-topcoll.editing.dir-rtl ul.ctopics .section .activity .contentwithoutlink, body.format-topcoll.editing.dir-rtl ul.ctopics .section .activity .activityinstance {
     padding-left: 0px;
 }
 
-body.format-topcoll.editing .section .activity .actions {
+body.format-topcoll.editing ul.ctopics .section .activity .actions {
     position: relative;
 }
 
-body.format-topcoll.editing #region-main .moodle-actionmenu ul.menubar {
+body.format-topcoll.editing #region-main ul.ctopics .moodle-actionmenu ul.menubar {
     display: none;
 }
 
-body.format-topcoll.editing.jsenabled #region-main .moodle-actionmenu[data-enhance] ul.menubar {
+body.format-topcoll.editing.jsenabled #region-main ul.ctopics .moodle-actionmenu[data-enhance] ul.menubar {
     display: inline-block;
 }
 
@@ -689,19 +703,19 @@ body.format-topcoll.editing.jsenabled #region-main .moodle-actionmenu[data-enhan
 }
 
 /* -- For centring the 'Topic / Week / Day x' text -- */
-.course-content ul.ctopics li.section .right span.cps_centre {
+.course-content ul.ctopics li.section .right span.cps_centre, .dir-rtl .course-content ul.ctopics li.section .left span.cps_centre {
     text-align: center;
     font-size: 0.7em;
+}
+
+.dir-rtl .course-content ul.ctopics li.section .right span.cps_centre {
+    font-size: 14px;
 }
 
 /* -- Toggle text -- */
 .course-content ul.ctopics li.section .content .toggle a, .course-content ul.ctopics li.section .content.sectionhidden {
     text-decoration: none;
     font-weight: bold;
-}
-
-#mymobile .course-content ul.ctopics li.section .content .toggle a {
-    font-weight: normal; /* So not blurred on mobile devices. */
 }
 
 .course-content ul.ctopics li.section .content .toggledsection {

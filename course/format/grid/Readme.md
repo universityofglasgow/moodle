@@ -251,6 +251,9 @@ Known Issues
 
 History
 =============
+Version 2.9.1.3.
+  1. Fix CONTRIB-5881 - Renaming of items not allowing spacebar.
+
 Version 2.9.1.2.
   1. Fixed coding fault when restoring a course from backup file.
   2. Attempt self repair if grid image not in the files table.

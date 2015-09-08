@@ -35,10 +35,10 @@
 // English American Translation of Collapsed Topics Course Format.
 
 // Used in format.php.
-$string['topcollsidewidth']='28px';
+$string['topcollsidewidthlang'] = 'en_us-28px';
 
 // Colour enhancement - Moodle Tracker CONTRIB-3529.
-$string['setcolour'] = 'Set color';
+$string['setcolour'] = 'Color';
 $string['colourrule'] = "Please enter a valid RGB color, a '#' and then six hexadecimal digits.";
 $string['resetcolour'] = 'Color';
 $string['resetallcolour'] = 'Colors';

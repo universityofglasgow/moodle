@@ -74,19 +74,22 @@ YUI.add('moodle-format_grid-gridkeys', function (Y, NAME) {
 M.format_grid = M.format_grid || {};
 M.format_grid.gridkeys = M.format_grid.gridkeys || {};
 M.format_grid.gridkeys = {
-    init: function() {
-        Y.on('esc', function (e) {
-            e.preventDefault();
-            Y.log("Esc pressed");
-            Y.log("Selected section no: " + M.format_grid.selected_section_no);
-            M.format_grid.icon_toggle(e);
-        });
-        Y.on('space', function (e) {
-            e.preventDefault();
-            Y.log("Space pressed");
-            Y.log("Selected section no: " + M.format_grid.selected_section_no);
-            M.format_grid.icon_toggle(e);
-        });
+    init: function(params) {
+        //console.log(JSON.stringify(params));
+        if (!params.editing) {
+            Y.on('esc', function (e) {
+                e.preventDefault();
+                Y.log("Esc pressed");
+                Y.log("Selected section no: " + M.format_grid.selected_section_no);
+                M.format_grid.icon_toggle(e);
+            });
+            Y.on('space', function (e) {
+                e.preventDefault();
+                Y.log("Space pressed");
+                Y.log("Selected section no: " + M.format_grid.selected_section_no);
+                M.format_grid.icon_toggle(e);
+            });
+        }
         Y.on('left', function (e) {
             e.preventDefault();
             Y.log("Left pressed");
