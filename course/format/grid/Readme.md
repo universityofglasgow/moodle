@@ -251,6 +251,12 @@ Known Issues
 
 History
 =============
+Version 2.9.1.4.
+  1. Improved RTL support thanks to Nadav Kavalerchik.
+  2. Delete format_grid_icon record when a section is deleted.
+  3. Update language string for 'cannotfinduploadedimage'.
+  4. Improved accessibility control by finally completing CONTRIB-3240 to use tab / shift tab, enter / shift enter controls.
+
 Version 2.9.1.3.
   1. Fix CONTRIB-5881 - Renaming of items not allowing spacebar.
 

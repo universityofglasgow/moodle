@@ -45,6 +45,8 @@ M.format_grid = M.format_grid || {
     shadebox_shown_array: null,
     // DOM reference to the #gridshadebox_content element.
     shadebox_content: null,
+    // Right to left languages.
+    rtl: false
 };
 
 /**
@@ -55,8 +57,9 @@ M.format_grid = M.format_grid || {
  * @param {Integer} the_num_sections the number of sections in the course.
  * @param {Array} the_shadebox_shown_array States what sections are not shown (value of 1) and which are (value of 2)
  *                                         index is the section no.
+ * @param {Boolean} the_rtl True if a right to left language.
  */
-M.format_grid.init = function(Y, the_editing_on, the_section_redirect, the_num_sections, the_shadebox_shown_array) {
+M.format_grid.init = function(Y, the_editing_on, the_section_redirect, the_num_sections, the_shadebox_shown_array, the_rtl) {
     "use strict";
     this.ourYUI = Y;
     this.editing_on = the_editing_on;
@@ -64,6 +67,7 @@ M.format_grid.init = function(Y, the_editing_on, the_section_redirect, the_num_s
     this.selected_section = null;
     this.num_sections = parseInt(the_num_sections);
     this.shadebox_shown_array = the_shadebox_shown_array;
+    this.rtl = the_rtl;
     Y.use('json-parse', function (Y) {
         M.format_grid.shadebox_shown_array = Y.JSON.parse(M.format_grid.shadebox_shown_array);
     });
@@ -132,6 +136,20 @@ M.format_grid.icon_click = function(e) {
 };
 
 /**
+ * Called when the user tabs and the item is a grid icon, set up in the init() method.
+ */
+M.format_grid.tab = function(index) {
+    "use strict";
+    this.ourYUI.log('M.format_grid.tab: ' + index);
+    var previous_no = this.selected_section_no;
+    this.selected_section_no = index;
+    this.update_selected_background(previous_no);
+    if (M.format_grid.shadebox.shadebox_open == true) {
+         this.change_shown();
+    }
+};
+
+/**
  * Toggles the shade box on / off.
  * Called when the user clicks on a grid icon or presses the Esc or Space keys - see 'gridkeys.js'.
  * @param {Object} e Event object.
@@ -167,7 +185,11 @@ M.format_grid.icon_toggle = function(e) {
  */
 M.format_grid.arrow_left = function(e) {
     "use strict";
-    this.change_selected_section(false);
+    if (this.rtl) {
+        this.change_selected_section(true);
+    } else {
+        this.change_selected_section(false);
+    }
 };
 
 /**
@@ -178,7 +200,11 @@ M.format_grid.arrow_left = function(e) {
  */
 M.format_grid.arrow_right = function(e) {
     "use strict";
-    this.change_selected_section(true);
+    if (this.rtl) {
+        this.change_selected_section(false);
+    } else {
+        this.change_selected_section(true);
+    }
 };
 
 /**
@@ -218,7 +244,7 @@ M.format_grid.change_shown = function() {
         //console.log("First activity: " + firstactivity);
         firstactivity.focus();
     }
-    console.log("Active element: " + document.activeElement);
+    //console.log("Active element: " + document.activeElement);
 
     this.selected_section.removeClass('hide_section');
 };
