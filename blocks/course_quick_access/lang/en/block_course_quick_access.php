@@ -29,6 +29,7 @@ $string['pluginname'] = 'Course quick access';
 
 // ===== Block ====
 $string['course_quick_access:addinstance'] = 'Add instance of course_quick_access';
+$string['course_quick_access:myaddinstance'] = 'Add a new course_quick_access block to Dashboard';
 $string['usernotenrolledincourses'] = 'Not enrolled in courses';
 $string['coursenotcategorized'] = 'Not assigned courses';
 

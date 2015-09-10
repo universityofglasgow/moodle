@@ -25,6 +25,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$plugin->version = 2015042800;
+$plugin->version = 2015042801;
 $plugin->requires = 2013111800;
 $plugin->component = 'block_course_quick_access';
