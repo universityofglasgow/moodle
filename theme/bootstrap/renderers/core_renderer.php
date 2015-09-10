@@ -27,7 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 class theme_bootstrap_core_renderer extends core_renderer {
 
     public function notification($message, $classes = 'notifyproblem') {
-        $message = clean_text($message);
+        //$message = clean_text($message);
 
         if ($classes == 'notifyproblem') {
             return html_writer::div($message, 'alert alert-danger');
@@ -282,13 +282,5 @@ class theme_bootstrap_core_renderer extends core_renderer {
             return html_writer::div($contents, 'alert alert-danger', $attributes);
         }
         return parent::box($contents, $classes, $id, $attributes);
-    }
-
-    public function content_zoom() {
-        $zoomin = html_writer::span(get_string('fullscreen', 'theme_bootstrap'), 'zoomin');
-        $zoomout = html_writer::span(get_string('closefullscreen', 'theme_bootstrap'), 'zoomout');
-        $content = html_writer::link('#',  $zoomin . $zoomout,
-            array('class' => 'btn btn-default pull-right moodlezoom'));
-        return $content;
     }
 }

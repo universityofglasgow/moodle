@@ -6521,12 +6521,23 @@ button.close {
   margin-left: 10px;
   border-radius: 6px 0 6px 6px;
 }
-div[role="main"] ul,
-div[role="main"] ol {
-  padding: 0 20px;
-}
 pre {
   white-space: pre-wrap;
+}
+.progress .bar {
+  float: left;
+  width: 0;
+  height: 100%;
+  font-size: 12px;
+  line-height: 20px;
+  color: #fff;
+  text-align: center;
+  background-color: #337ab7;
+  -webkit-box-shadow: inset 0 -1px 0 rgba(0, 0, 0, .15);
+          box-shadow: inset 0 -1px 0 rgba(0, 0, 0, .15);
+  -webkit-transition: width .6s ease;
+       -o-transition: width .6s ease;
+          transition: width .6s ease;
 }
 /* some very targetted corrections to roll back nameclashes between
  * Moodle and Bootstrap like .row, .label, .content, .controls
@@ -6644,20 +6655,6 @@ img.icon.hide {
 }
 .pagelayout-admin .show {
   display: inline !important;
-}
-div[role="main"] ul,
-div[role="main"] ol {
-  padding-left: 20px;
-  overflow: visible;
-}
-div[role="main"] ul.section,
-div[role="main"] ol.section,
-div[role="main"] ul.weeks,
-div[role="main"] ol.weeks,
-div[role="main"] ul.topics,
-div[role="main"] ol.topics {
-  padding: 0;
-  overflow: visible;
 }
 /** core.less */
 /** Page layout CSS starts **/
@@ -7205,6 +7202,11 @@ form.popupform div {
 .action-icon img.smallicon {
   margin: 0 .3em;
   vertical-align: text-bottom;
+}
+.smallicon {
+  -webkit-box-sizing: initial;
+     -moz-box-sizing: initial;
+          box-sizing: initial;
 }
 .no-overflow {
   margin-bottom: 15px;
@@ -7877,7 +7879,7 @@ body#page-lib-editor-tinymce-plugins-moodlemedia-preview {
 }
 /* Center the submit buttons within the area */
 .choosercontainer #chooseform .submitbuttons {
-  margin: .7em 0;
+  padding: .7em 0;
   text-align: center;
 }
 .choosercontainer #chooseform .submitbuttons input {
@@ -8642,7 +8644,7 @@ textarea.path-admin .roleassigntable input[type="text"] {
   border: 1px solid #000;
   border-top-width: 0;
 }
-#page-admin-index #notice .checkforupdates {
+#page-admin-index .alert .singlebutton {
   text-align: center;
 }
 #plugins-check-info {
@@ -11274,6 +11276,9 @@ textarea.box.message .message_form input[type="text"] {
   padding-right: 15px;
   padding-left: 15px;
 }
+.box.message .contactselector .singleselect select {
+  width: 100%;
+}
 @media (min-width: 992px) {
   .box.message .contactselector {
     float: left;
@@ -11388,16 +11393,29 @@ textarea.box.message .contactselector form#usergroupform fieldset select {
   margin: 0;
   list-style: none;
 }
-.box.message .contactselector .message-contacts .pix,
-.box.message .contactselector .message-contacts .link,
+.box.message .contactselector .message-contacts {
+  position: relative;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #ddd;
+}
+.box.message .contactselector .message-contacts li:nth-child(odd) {
+  background-color: #f9f9f9;
+}
+.box.message .contactselector .message-contacts li {
+  padding: 5px 0;
+  line-height: 26px;
+  border-top: 1px solid #ddd;
+}
 .box.message .contactselector .message-contacts .contact {
-  display: inline-block;
+  margin: 0 24% 0 25px;
+  text-align: left;
 }
 .box.message .contactselector .message-contacts .link {
   float: right !important;
 }
 .box.message .contactselector .message-contacts .pix {
-  margin-right: 5px;
+  position: absolute;
+  left: 0;
 }
 .box.message .messagearea {
   position: relative;
@@ -11710,29 +11728,21 @@ textarea.box.message .contactselector form#usergroupform fieldset select {
 }
 .box.message .messagearea .messagehistory #message_user_pictures .box.user {
   position: relative;
+  float: left;
+  width: 41.66666667%;
   min-height: 1px;
   padding-right: 15px;
   padding-left: 15px;
   text-align: center;
-}
-@media (min-width: 992px) {
-  .box.message .messagearea .messagehistory #message_user_pictures .box.user {
-    float: left;
-    width: 41.66666667%;
-  }
 }
 .box.message .messagearea .messagehistory #message_user_pictures .box.between {
   position: relative;
+  float: left;
+  width: 16.66666667%;
   min-height: 1px;
   padding-right: 15px;
   padding-left: 15px;
   text-align: center;
-}
-@media (min-width: 992px) {
-  .box.message .messagearea .messagehistory #message_user_pictures .box.between {
-    float: left;
-    width: 16.66666667%;
-  }
 }
 .box.message .messagearea .messagehistory .messagehistorytype {
   color: #fff;
@@ -12816,10 +12826,6 @@ body.path-question-type .mform fieldset.hidden {
   margin-left: 0;
   list-style: none;
 }
-#page-user-profile .node_category .contentnode,
-.path-user .node_category .contentnode {
-  margin-left: -20px;
-}
 .usermenu {
   float: right;
 }
@@ -12917,13 +12923,19 @@ fieldset[disabled] .userprofile .header-button-group .btn.active {
     margin-left: 180px;
   }
 }
-.userprofile dl,
+.userprofile dd,
+.userprofile dt {
+  margin-left: 0;
+}
 .userprofile ul {
-  margin: 0;
+  margin-left: 10px;
+}
+.userprofile ul > li ul {
+  margin-left: 0;
 }
 #page-user-profile .node_category li,
 .path-user .node_category li {
-  list-style-type: square;
+  list-style-type: none;
 }
 #page-user-profile .node_category li.contentnode,
 .path-user .node_category li.contentnode {
@@ -13612,20 +13624,6 @@ ol {
   margin: 0 2px;
   vertical-align: baseline;
 }
-.block .header .commands {
-  clear: both;
-  text-align: right;
-}
-.block .header .commands > a {
-  margin: 0 3px;
-}
-.block .header .commands .icon img {
-  width: 12px;
-  height: 12px;
-}
-.block .header .commands img.actionmenu {
-  width: auto;
-}
 .block .content {
   padding: 4px 14px;
   word-wrap: break-word;
@@ -13698,6 +13696,20 @@ fieldset[disabled] .block .singleselect select {
 }
 textarea.block .singleselect select {
   height: auto;
+}
+.editing .block .header .commands {
+  clear: both;
+  text-align: right;
+}
+.editing .block .header .commands > a {
+  margin: 0 3px;
+}
+.editing .block .header .commands .icon img {
+  width: 12px;
+  height: 12px;
+}
+.editing .block .header .commands img.actionmenu {
+  width: auto;
 }
 .block.list_block .unlist > li > .column {
   display: inline-block;
@@ -16223,7 +16235,7 @@ input.fp-btn-choose {
   width: 237px;
 }
 /* responsive.less */
-@media (max-width: 873px) {
+@media (max-width: 767px) {
   .file-picker .fp-repo-area {
     float: none;
     width: 100%;
