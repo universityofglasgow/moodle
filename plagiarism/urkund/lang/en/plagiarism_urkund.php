@@ -23,8 +23,7 @@
  */
 
 $string['pluginname'] = 'URKUND plagiarism plugin';
-$string['studentdisclosuredefault']  = 'All files uploaded will be submitted to the plagiarism detection service URKUND,
-If you wish to prevent your document from being used as a source for analysis outside this site by other organisations you can use the opt-out link provided after the report has been generated.';
+$string['studentdisclosuredefault']  = 'All files uploaded will be submitted to the plagiarism detection service URKUND';
 $string['studentdisclosure'] = 'Student Disclosure';
 $string['studentdisclosure_help'] = 'This text will be displayed to all students on the file upload page.';
 $string['urkundexplain'] = 'For more information on this plugin see: <a href="http://www.urkund.com/int/en/" target="_blank">http://www.urkund.com/int/en/</a>';
@@ -67,11 +66,7 @@ $string['urkund_studentemail'] = 'Send Student email';
 $string['urkund_studentemail_help'] = 'This will send an e-mail to the student when a file has been processed to let them know that a report is available, the e-mail also includes the opt-out link.';
 $string['studentemailsubject'] = 'File processed by URKUND';
 $string['studentemailcontent'] = 'The file you submitted to {$a->modulename} in {$a->coursename} has now been processed by the Plagiarism tool URKUND.
-{$a->modulelink}
-
-If you wish to prevent your document from being used as a source for analysis outside this site by other organisations you can use this link to opt-out:.
-{$a->optoutlink}';
-
+{$a->modulelink}';
 $string['filereset'] = 'A file has been reset for re-submission to URKUND';
 $string['noreceiver'] = 'No receiver address was specified';
 $string['urkund:enable'] = 'Allow the teacher to enable/disable URKUND inside an activity';

@@ -160,7 +160,9 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                 $output .= get_string('similarity', 'plagiarism_urkund') . ':';
                 $output .= '<span class="' . $rank . '">' . $results['score'] . '%</span>';
             }
-            if (!empty($results['optoutlink'])) {
+            // UNIVERSITY OF GLASGOW HACK: Remove opt-out link
+            //if (!empty($results['optoutlink'])) {
+            if (false) {
                 // Display opt-out link.
                 $output .= '&nbsp;<span class"plagiarismoptout">' .
                         '<a href="' . $results['optoutlink'] . '" target="_blank">' .
