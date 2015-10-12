@@ -74,14 +74,14 @@ function theme_gu28_bootstrap3_grid() {
 function theme_gu28_crap_image($theme) {
     global $CFG;
 
-    $files = glob($CFG->dirroot . '/theme/gu28/pix/gucrap/*.*');
+    $files = glob($CFG->dirroot . '/theme/gu28/pix/gucrop/*.*');
     $images = array();
     foreach ($files as $file) {
         $images[] = pathinfo($file);
     }
     shuffle($images);
 
-    return 'gucrap/' . $images[0]['filename'];
+    return 'gucrop/' . $images[0]['filename'];
 }
 
 /**
