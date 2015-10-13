@@ -25,4 +25,5 @@ $string['author'] = 'Author';
 $string['coursefile:view'] = 'View course file report';
 $string['filename'] = 'File name';
 $string['filesize'] = 'File size';
+$string['filesum'] = 'Total file size is $a';
 $string['pluginname'] = 'Course file report';

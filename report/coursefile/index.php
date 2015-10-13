@@ -22,10 +22,11 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+global $CFG;
 require(dirname(__FILE__).'/../../config.php');
 
 // Parameters.
-$id = required_param('id', PARAM_INT);
+$id = required_param('id', PARAM_RAW);
 
 $url = new moodle_url('/report/coursefile/index.php', array('id' => $id));
 
@@ -41,14 +42,16 @@ $output = $PAGE->get_renderer('report_coursefile');
 $context = context_course::instance($course->id);
 require_capability('report/coursefile:view', $context);
 
-$PAGE->set_title($course->shortname .': '. get_string('pluginname', 'report_coursefile'));
+$PAGE->set_title($course->shortnames .': '. get_string('pluginname', 'report_coursefile'));
 $PAGE->set_heading($course->fullname);
 
 // Get data
 $calc = new report_coursefile_calc();
 $files = $calc::get_filelist($context);
+$filesum = $calc::get_filesum();
 
 echo $OUTPUT->header();
-$output->filetable($files);
+echo $output->filetable($files);
+echo $output->filesum($filesum);
 echo $OUTPUT->footer();
 

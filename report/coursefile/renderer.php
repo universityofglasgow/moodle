@@ -35,6 +35,7 @@ class report_coursefile_renderer extends plugin_renderer_base {
             get_string('filename', 'report_coursefile'),
             get_string('filesize', 'report_coursefile'),
             get_string('author', 'report_coursefile'),
+            get_string('type', 'report_coursefile'),
         );
 
         foreach ($files as $file) {
@@ -42,10 +43,17 @@ class report_coursefile_renderer extends plugin_renderer_base {
                 $file->filename,
                 $this->human_filesize($file->filesize),
                 $file->author,
+                $file->mimetype,
             );
             $table->data[] = $line;
         }
         echo html_writer::table($table);
+
+        return true;
+    }
+
+    public function filesum($filesum) {
+        echo "<p>" . get_string('filesum', 'report_coursefile', $this->human_filesize($filesum)) . "</p>";
     }
 
 }
