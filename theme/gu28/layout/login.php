@@ -73,12 +73,14 @@ echo $OUTPUT->doctype() ?>
         </header>
     
         <div id="page-content" class="rowxx">
-                <div id="login_layout" class="container-fluid">
+                <div id="login_layout">
                         <div class="gufluff">
                             <div class="sloganbox">
                                 <?php echo $loginslogan; ?>
                             </div>
-                            <img class="guimage" src="<?php echo $OUTPUT->pix_url($guimage, 'theme'); ?>" /> 
+                            <div class="guimgbox">
+                                <img class="guimage" src="<?php echo $OUTPUT->pix_url($guimage, 'theme'); ?>" /> 
+                            </div>
                         </div>
                         <div class="gulogin">
                             <?php 

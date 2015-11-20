@@ -121,38 +121,53 @@ blockquote>.icon-quote-left{
 .guimage {
     width: 600px;
     height: 400px;
+}
+
+div.guimgbox {
+    position:absolute;
+    top:0;
+    right:0;
+    z-index:-1;
+    width:600px;
+    height:400px;
     float: left;
 }
 
-.gufluff {
-    width: 800px;
-    float: left;
-    }
+div.gufluff {
+    position:relative;
+    width:42%;
+    min-width:600px;
+    height:400px;
+    float:left;   
+}
 
-.sloganbox {
-    font-family: 'Yantramanav', sans-serif;
-    font-weight: 100;
-    background-color: @gu_university_blue;
-    color: #fff; 
-    font-size: 40px;
-    line-height: 95%;
-    width: 200px;
-    height: 400px;
-    float: left;
-    text-align: left;
-    padding: 40px 5px;
+div.sloganbox {
+    position:absolute;
+    top:0;
+    left:0;
+    z-index:0;
+    font-family:'Yantramanav',sans-serif;
+    font-weight:100;
+    background-color:#003865;
+    color:#fff;
+    font-size:40px;
+    line-height:95%;
+    width:200px;
+    height:400px;
+    text-align:left;
+    padding:40px 5px
 }
 
 .gulogin {
-    width: 400px;
-    height: 400px;
-    float: left;
-    margin-left: 10px;
+    width:400px;
+    height:400px;
+    margin-left:10px;
+    overflow:hidden;
+    float:left;
 }
 
-// Login things
 #login_images {
-    margin-bottom: 20px;
+    margin-bottom:20px
 }
 
 #login_layout {
@@ -167,21 +182,6 @@ blockquote>.icon-quote-left{
     #moodle-logo {
         display: none;
     } 
-}
-
-@media (max-width: 1305px) {
-
-    .gufluff {
-        width: 600px;
-    }
-
-    .gulogin {
-        width: 300px;
-    }
-
-    .guimage {
-        width: 400px;
-    }
 }
 
 @media (max-width: 1023px) {
