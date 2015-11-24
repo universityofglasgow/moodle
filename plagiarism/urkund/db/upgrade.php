@@ -60,5 +60,29 @@ function xmldb_plagiarism_urkund_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2015052100, 'plagiarism', 'urkund');
     }
 
+    if ($oldversion < 2015102800) {
+        // Set new opt-out setting as true by default.
+        set_config('urkund_optout', 1, 'plagiarism');
+
+        upgrade_plugin_savepoint(true, 2015102800, 'plagiarism', 'urkund');
+    }
+    if ($oldversion < 2015112400) {
+        global $OUTPUT;
+        // Check to make sure no events are still in the queue as these will be deleted/ignored.
+         $sql = "SELECT count(*) FROM {events_queue_handlers} qh
+                   JOIN {events_handlers} eh ON qh.handlerid = eh.id
+                  WHERE eh.component = 'plagiarism_urkund' AND
+                        (eh.eventname = 'assessable_file_uploaded' OR
+                         eh.eventname = 'assessable_content_uploaded' OR
+                         eh.eventname = 'assessable_submitted')";
+        $countevents = $DB->count_records_sql($sql);
+        if (!empty($countevents)) {
+            echo $OUTPUT->notification(get_string('cannotupgradeunprocesseddata', 'plagiarism_urkund'));
+            return false;
+        }
+
+        upgrade_plugin_savepoint(true, 2015112400, 'plagiarism', 'urkund');
+    }
+
     return true;
 }

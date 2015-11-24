@@ -30,11 +30,6 @@ require_once($CFG->libdir.'/plagiarismlib.php');
 require_once($CFG->dirroot.'/plagiarism/urkund/lib.php');
 require_once('urkund_form.php');
 
-require_login();
-admin_externalpage_setup('plagiarismurkund');
-
-$context = context_system::instance();
-
 $id = optional_param('id', 0, PARAM_INT);
 $resetuser = optional_param('reset', 0, PARAM_INT);
 $delete = optional_param('delete', 0, PARAM_INT);
@@ -42,18 +37,25 @@ $page = optional_param('page', 0, PARAM_INT);
 $sort = optional_param('tsort', '', PARAM_ALPHA);
 $dir = optional_param('dir', '', PARAM_ALPHA);
 $download = optional_param('download', '', PARAM_ALPHA);
+$showall = optional_param('showall', 0, PARAM_INT);
+$resetall = optional_param('resetall', '', PARAM_ALPHANUMEXT);
+$confirm = optional_param('confirm', 0, PARAM_INT);
+
+require_login();
+
+$url = new moodle_url('/plagiarism/urkund/urkund_debug.php', array('showall' => $showall));
+admin_externalpage_setup('plagiarismurkund', '', array(), $url);
+
+$context = context_system::instance();
 
 $exportfilename = 'UrkundDebugOutput.csv';
 
-$limit = 20;
+$limit = 30;
+
 $baseurl = new moodle_url('urkund_debug.php', array('page' => $page, 'sort' => $sort));
 
-$table = new flexible_table('urkundfiles');
 
-// Get list of Events in queue.
-$a = new stdClass();
-$a->countallevents = $DB->count_records('events_queue_handlers');
-$a->countheld = $DB->count_records_select('events_queue_handlers', 'status > 0');
+$table = new flexible_table('urkundfiles');
 
 if (!$table->is_downloading($download, $exportfilename)) {
     echo $OUTPUT->header();
@@ -61,20 +63,59 @@ if (!$table->is_downloading($download, $exportfilename)) {
 
     require_once('urkund_tabs.php');
 
+    if (!empty($resetall) && confirm_sesskey()) {
+        // Check to see if there are any files in this state.
+        if (!$confirm) {
+            // Show confirmation message.
+            $confirmurl = $baseurl;
+            $confirmurl->params(array('resetall' => $resetall, 'confirm' => 1));
+            echo $OUTPUT->confirm(get_string('confirmresetall', 'plagiarism_urkund', $resetall), $baseurl, $confirmurl);
+            echo $OUTPUT->footer();
+            exit;
+
+        } else {
+            $files = $DB->get_records('plagiarism_urkund_files', array('statuscode' => $resetall));
+            $i = 0;
+            $plagiarismsettings = plagiarism_plugin_urkund::get_settings();
+            foreach ($files as $plagiarismfile) {
+                if ($resetall == '202') {
+                    $file = urkund_get_score($plagiarismsettings, $plagiarismfile, true);
+                    // Reset attempts as this was a manual check.
+                    $file->attempt = $file->attempt - 1;
+                    $DB->update_record('plagiarism_urkund_files', $file);
+                    if ($file->statuscode == URKUND_STATUSCODE_ACCEPTED) {
+                        $response = get_string('scorenotavailableyet', 'plagiarism_urkund');
+                    } else if ($file->statuscode == URKUND_STATUSCODE_PROCESSED) {
+                        $response = get_string('scoreavailable', 'plagiarism_urkund');
+                    } else {
+                        $response = get_string('unknownwarning', 'plagiarism_urkund');
+                        if (debugging()) {
+                            urkund_pretty_print($file);
+                        }
+                    }
+                    echo "<p>";
+                    echo "id:".$file->id.' '. $response;
+                    echo "</p>";
+                } else {
+                    urkund_reset_file($plagiarismfile, $plagiarismsettings);
+                }
+
+                $i++;
+            }
+            if (!empty($i)) {
+                echo $OUTPUT->notification(get_string('filesresubmitted', 'plagiarism_urkund', $i), 'notifysuccess');
+            }
+        }
+    }
+
+
     $lastcron = $DB->get_field_sql('SELECT MAX(lastcron) FROM {modules}');
     if ($lastcron < time() - 3600 * 0.5) { // Check if run in last 30min.
         echo $OUTPUT->box(get_string('cronwarning', 'plagiarism_urkund'), 'generalbox admin warning');
     }
 
-    $warning = '';
-    if (!empty($a->countallevents)) {
-        $warning = ' warning';
-    }
-
-    echo $OUTPUT->box(get_string('waitingevents', 'plagiarism_urkund', $a), 'generalbox admin'.$warning)."<br/>";
-
     if ($resetuser == 1 && $id && confirm_sesskey()) {
-        if (urkund_reset_file($id)) {
+        if (urkund_reset_file($id, $plagiarismsettings)) {
             echo $OUTPUT->notification(get_string('fileresubmitted', 'plagiarism_urkund'));
         }
     } else if ($resetuser == 2 && $id && confirm_sesskey()) {
@@ -89,7 +130,7 @@ if (!$table->is_downloading($download, $exportfilename)) {
             echo $OUTPUT->notification(get_string('scoreavailable', 'plagiarism_urkund'));
         } else {
             echo $OUTPUT->notification(get_string('unknownwarning', 'plagiarism_urkund'));
-            print_object($file);
+            urkund_pretty_print($file);
         }
 
     }
@@ -98,27 +139,6 @@ if (!$table->is_downloading($download, $exportfilename)) {
         $DB->delete_records('plagiarism_urkund_files', array('id' => $id));
         echo $OUTPUT->notification(get_string('filedeleted', 'plagiarism_urkund'));
 
-    }
-}
-$heldevents = array();
-if (!empty($a->countheld)) {
-    if (!$table->is_downloading()) {
-        echo $OUTPUT->heading(get_string('heldevents', 'plagiarism_urkund'));
-        echo $OUTPUT->box(get_string('heldeventsdescription', 'plagiarism_urkund'));
-    }
-    $sql = "SELECT qh.id, qh.status, qh.timemodified, eq.eventdata, eq.stackdump, eq.userid, eh.eventname,
-                       eh.component, eh.handlerfile, eh.handlerfunction
-                  FROM {events_queue_handlers} qh
-                  JOIN {events_queue} eq ON eq.id = qh.queuedeventid
-                  JOIN {events_handlers} eh ON eh.id = qh.handlerid
-                 WHERE qh.status > 0";
-    $heldevents = $DB->get_records_sql($sql);
-    if (!$table->is_downloading()) {
-        foreach ($heldevents as $e) {
-            $e->eventdata = unserialize(base64_decode($e->eventdata));
-            // Using print_object here as the data won't display nicely in a table and it's more useful in copy/paste, screenshot.
-            print_object($e);
-        }
     }
 }
 // Now show files in an error state.
@@ -149,8 +169,13 @@ if (!empty($sort)) {
 }
 
 $count = $DB->count_records_sql($sqlcount);
+if ($showall or $table->is_downloading()) {
+    $urkundfiles = $DB->get_records_sql($sqlallfiles.$orderby, null);
+} else {
+    $urkundfiles = $DB->get_records_sql($sqlallfiles.$orderby, null, $page * $limit, $limit);
+    $table->pagesize($limit, $count);
+}
 
-$urkundfiles = $DB->get_records_sql($sqlallfiles.$orderby, null, $page * $limit, $limit);
 
 $table->define_columns(array('id', 'name', 'module', 'identifier', 'status', 'attempts', 'action'));
 
@@ -159,7 +184,7 @@ $table->define_headers(array(get_string('id', 'plagiarism_urkund'),
                        get_string('module', 'plagiarism_urkund'),
                        get_string('identifier', 'plagiarism_urkund'),
                        get_string('status', 'plagiarism_urkund'),
-                       get_string('attempts', 'plagiarism_urkund'),''));
+                       get_string('attempts', 'plagiarism_urkund'), ''));
 $table->define_baseurl('urkund_debug.php');
 $table->sortable(true);
 $table->no_sorting('file', 'action');
@@ -190,7 +215,8 @@ foreach ($urkundfiles as $tf) {
     $cmurl = new moodle_url($CFG->wwwroot.'/mod/'.$tf->moduletype.'/view.php', array('id' => $tf->cm));
     $cmlink = html_writer::link($cmurl, shorten_text($coursemodule->name, 40, true), array('title' => $coursemodule->name));
     if ($table->is_downloading()) {
-        $row = array($tf->id, $tf->userid, $tf->cm .' '. $tf->moduletype, $tf->identifier, $tf->statuscode, $tf->attempt, $tf->errorresponse);
+        $row = array($tf->id, $tf->userid, $tf->cm .' '. $tf->moduletype, $tf->identifier, $tf->statuscode,
+                     $tf->attempt, $tf->errorresponse);
     } else {
         $row = array($tf->id, $user, $cmlink, $tf->identifier, $tf->statuscode, $tf->attempt, $reset);
     }
@@ -222,7 +248,6 @@ if ($table->is_downloading()) {
         $table->add_data(array());
         foreach ($heldevents as $e) {
             $e->eventdata = unserialize(base64_decode($e->eventdata));
-            // Using print_object here as the data won't display nicely in a table and it's more useful in copy/paste, screenshots.
             $table->add_data(array('heldevent', $e->status, $e->component, $e->eventname, var_export($e, true)));
         }
     }
@@ -234,5 +259,48 @@ if (!$table->is_downloading()) {
 }
 $table->finish_output();
 if (!$table->is_downloading()) {
+    if (!$showall && $count >= $limit) {
+        $url = $PAGE->url;
+        $url->param('showall', 1);
+        echo $OUTPUT->single_button($url, get_string('showall', 'plagiarism_urkund'), 'get');
+    }
+    $sql = "SELECT DISTINCT statuscode FROM {plagiarism_urkund_files} WHERE statuscode <> 'Analyzed' ORDER BY statuscode";
+    $errortypes = $DB->get_records_sql($sql);
+    // Display reset buttons.
+    echo '<div class="urkundresetbuttons">';
+    foreach ($errortypes as $type) {
+        $url->param('resetall', $type->statuscode);
+        $url->param('sesskey', sesskey());
+        if ($type->statuscode == '202') {
+            $buttonstr = get_string('getallscores', 'plagiarism_urkund');
+        } else {
+            $buttonstr = get_string('resubmitall', 'plagiarism_urkund', $type->statuscode);
+        }
+        echo $OUTPUT->single_button($url, $buttonstr, 'get');
+    }
+
+    echo "</div>";
     echo $OUTPUT->footer();
+}
+
+function urkund_pretty_print($arr) {
+    if (is_object($arr)) {
+        $arr = (array) $arr;
+    }
+    $retstr = '<table class="generaltable">';
+    $retstr .= '<tr><th width=20%>Key</th><th width=80%>Value</th></tr>';
+    if (is_array($arr)) {
+        foreach ($arr as $key => $val) {
+            if (is_object($val)) {
+                $val = (array) $val;
+            }
+            if (is_array($val)) {
+                $retstr .= '<tr><td>' . $key . '</td><td>' . pretty_print($val) . '</td></tr>';
+            } else {
+                $retstr .= '<tt><td>' . $key . '</td><td>' . ($val == '' ? '""' : $val) . '</td></tr>';
+            }
+        }
+    }
+    $retstr .= '</table>';
+    return $retstr;
 }

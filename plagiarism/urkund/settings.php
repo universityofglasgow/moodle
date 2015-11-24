@@ -52,17 +52,18 @@ if (($data = $mform->get_data()) && confirm_sesskey()) {
     if (!isset($data->urkund_enable_mod_assign)) {
         $data->urkund_enable_mod_assign = 0;
     }
-    if (!isset($data->urkund_enable_mod_assignment)) {
-        $data->urkund_enable_mod_assignment = 0;
-    }
     if (!isset($data->urkund_enable_mod_forum)) {
         $data->urkund_enable_mod_forum = 0;
     }
     if (!isset($data->urkund_enable_mod_workshop)) {
         $data->urkund_enable_mod_workshop = 0;
     }
+    if (!isset($data->urkund_optout)) {
+        $data->urkund_optout = 0;
+    }
     foreach ($data as $field => $value) {
         if (strpos($field, 'urkund') === 0) {
+            $value = trim($value); // Strip trailing spaces to help prevent copy/paste issues with uasername/password
             if ($field == 'urkund_api') { // Strip trailing slash from api.
                 $value = rtrim($value, '/');
             }
@@ -97,19 +98,6 @@ if (($data = $mform->get_data()) && confirm_sesskey()) {
     } else {
         echo $OUTPUT->notification(get_string('savedconfigsuccess', 'plagiarism_urkund'), 'notifysuccess');
     }
-}
-
-$invalidhandlers = urkund_check_event_handlers();
-if (!empty($invalidhandlers)) {
-    echo $OUTPUT->notification("There are invalid event handlers - these MUST be fixed. Please use the correct procedure to uninstall any components listed in the table below.<br>
-The existence of these events may cause this plugin to function incorrectly.");
-    $table = new html_table();
-    $table->head = array('eventname', 'plugin', 'handlerfile');
-    foreach ($invalidhandlers as $handler) {
-        $table->data[] = array($handler->eventname, $handler->component, $handler->handlerfile);
-    }
-    echo html_writer::table($table);
-
 }
 
 $plagiarismsettings = (array)get_config('plagiarism');

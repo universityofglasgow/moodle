@@ -55,7 +55,10 @@ M.plagiarism_urkund.init = function(Y, contextid) {
                         // Remove error from form
                         parentdiv.removeClass('error');
                         // Remove error span
-                        parentdiv.one('.error').remove();
+                        var existingerror = parentdiv.one('.error');
+                        if (existingerror) {
+                            existingerror.remove();
+                        }
                     } else {
                         if (existing) {
                             existing.replace(invalid);
@@ -64,19 +67,21 @@ M.plagiarism_urkund.init = function(Y, contextid) {
                         }
                     }
                 },
+                /*jshint unused: vars */
                 failure: function(tid, response) {
                     receiver.insert(invalid, 'after');
                 }
             }
         };
-        Y.io(url, config)
-    }
+        Y.io(url, config);
+    };
 
     var receiver = Y.one('#id_urkund_receiver');
     // Validate existing content.
     check_urkund_receiver(Y, receiver, contextid);
     // Validate on change.
+    /*jshint unused: vars */
     receiver.on('change', function(e) {
         check_urkund_receiver(Y, receiver, contextid);
-    })
-}
+    });
+};

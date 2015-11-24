@@ -38,12 +38,9 @@ require_once($CFG->dirroot . '/lib/filelib.php');
 // If we convert the existing calls to send file/get score we should move this to a config setting.
 define('URKUND_INTEGRATION_SERVICE', 'https://secure.urkund.com/api');
 
-define('URKUND_MAX_SUBMISSION_ATTEMPTS', 6); // Maximum number of times to try and send a submission to URKUND.
-define('URKUND_MAX_SUBMISSION_DELAY', 60); // Maximum time to wait between submissions (defined in minutes).
-define('URKUND_SUBMISSION_DELAY', 15); // Initial delay, doubled each time a check is made until the max_submission_delay is met.
-define('URKUND_MAX_STATUS_ATTEMPTS', 10); // Maximum number of times to try and obtain the status of a submission.
-define('URKUND_MAX_STATUS_DELAY', 1440); // Maximum time to wait between checks (defined in minutes).
-define('URKUND_STATUS_DELAY', 30); // Initial delay, doubled each time a check is made until the max_status_delay is met.
+define('URKUND_MAX_STATUS_ATTEMPTS', 17); // Maximum number of times to try and obtain the status of a submission.
+define('URKUND_MAX_STATUS_DELAY', 2880); // Maximum time to wait between checks (defined in minutes).
+define('URKUND_STATUS_DELAY', 5); // Initial delay, doubled each time a check is made until the max_status_delay is met.
 define('URKUND_STATUSCODE_PROCESSED', '200');
 define('URKUND_STATUSCODE_ACCEPTED', '202');
 define('URKUND_STATUSCODE_ACCEPTED_OLD', '202-old'); // File submitted before we changed the way the identifiers were stored.
@@ -67,6 +64,11 @@ define('PLAGIARISM_URKUND_SHOW_CLOSED', 2);
 define('PLAGIARISM_URKUND_DRAFTSUBMIT_IMMEDIATE', 0);
 define('PLAGIARISM_URKUND_DRAFTSUBMIT_FINAL', 1);
 
+// Used by content type restriction form - inline-text vs file attachments.
+define('PLAGIARISM_URKUND_RESTRICTCONTENTNO', 0);
+define('PLAGIARISM_URKUND_RESTRICTCONTENTFILES', 1);
+define('PLAGIARISM_URKUND_RESTRICTCONTENTTEXT', 2);
+
 
 class plagiarism_plugin_urkund extends plagiarism_plugin {
     /**
@@ -84,7 +86,8 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         if (isset($plagiarismsettings['urkund_use']) && $plagiarismsettings['urkund_use']) {
             // Now check to make sure required settings are set!
             if (empty($plagiarismsettings['urkund_api'])) {
-                error("URKUND API URL not set!");
+                debugging("URKUND API URL not set!");
+                return false;
             }
             return $plagiarismsettings;
         } else {
@@ -99,7 +102,8 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
      */
     public function config_options() {
         return array('use_urkund', 'urkund_show_student_score', 'urkund_show_student_report',
-                     'urkund_draft_submit', 'urkund_receiver', 'urkund_studentemail');
+                     'urkund_draft_submit', 'urkund_receiver', 'urkund_studentemail', 'urkund_allowallfile',
+                     'urkund_selectfiletypes', 'urkund_restrictcontent');
     }
     /**
      * Hook to allow plagiarism specific information to be displayed beside a submission.
@@ -108,24 +112,51 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
      *
      */
     public function get_links($linkarray) {
-        global $COURSE, $OUTPUT, $CFG;
+        global $COURSE, $OUTPUT, $CFG, $DB;
+        static $plagiarismvalues = array();
+
         $cmid = $linkarray['cmid'];
         $userid = $linkarray['userid'];
-        if (!empty($linkarray['content'])) {
+
+        if (empty($plagiarismvalues[$cmid])) {
+            $plagiarismvalues[$cmid] = $DB->get_records_menu('plagiarism_urkund_config', array('cm' => $cmid), '', 'name,value');
+        }
+        $plagiarismsettings = $this->get_settings();
+        if (!empty($plagiarismsettings['urkund_wordcount'])) {
+            $wordcount = $plagiarismsettings['urkund_wordcount'];
+        } else {
+            // Set a sensible default if we can't find one.
+            $wordcount = 50;
+        }
+
+        $showcontent = true;
+        $showfiles = true;
+        if (!empty($plagiarismvalues[$cmid]['urkund_restrictcontent'])) {
+            if ($plagiarismvalues[$cmid]['urkund_restrictcontent'] == PLAGIARISM_URKUND_RESTRICTCONTENTFILES) {
+                $showcontent = false;
+            } else if ($plagiarismvalues[$cmid]['urkund_restrictcontent'] == PLAGIARISM_URKUND_RESTRICTCONTENTTEXT) {
+                $showfiles = false;
+            }
+        }
+
+        if (!empty($linkarray['content']) && $showcontent && str_word_count($linkarray['content']) > $wordcount) {
             $filename = "content-" . $COURSE->id . "-" . $cmid . "-". $userid . ".htm";
             $filepath = $CFG->tempdir."/urkund/" . $filename;
             $file = new stdclass();
             $file->type = "tempurkund";
             $file->filename = $filename;
             $file->timestamp = time();
-            $file->identifier = sha1($linkarray['content']);
+            $file->identifier = sha1(plagiarism_urkund_format_temp_content($linkarray['content']));
+            $file->oldidentifier = sha1($linkarray['content']);
             $file->filepath = $filepath;
-        } else if (!empty($linkarray['file'])) {
+        } else if (!empty($linkarray['file']) && $showfiles) {
             $file = new stdclass();
             $file->filename = $linkarray['file']->get_filename();
             $file->timestamp = time();
             $file->identifier = $linkarray['file']->get_contenthash();
             $file->filepath = $linkarray['file']->get_filepath();
+        } else {
+            return '';
         }
         $results = $this->get_file_results($cmid, $userid, $file);
         if (empty($results)) {
@@ -160,11 +191,9 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                 $output .= get_string('similarity', 'plagiarism_urkund') . ':';
                 $output .= '<span class="' . $rank . '">' . $results['score'] . '%</span>';
             }
-            // UNIVERSITY OF GLASGOW HACK: Remove opt-out link
-            //if (!empty($results['optoutlink'])) {
-            if (false) {
+            if (!empty($results['optoutlink'])) {
                 // Display opt-out link.
-                $output .= '&nbsp;<span class"plagiarismoptout">' .
+                $output .= '&nbsp;<span class="plagiarismoptout">' .
                         '<a href="' . $results['optoutlink'] . '" target="_blank">' .
                         get_string('optout', 'plagiarism_urkund') .
                         '</a></span>';
@@ -279,11 +308,16 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             // User is not permitted to see any details.
             return false;
         }
+        $params = array($cmid, $userid, $filehash);
+        $extrasql = '';
+        if (!empty($file->oldidentifier)) {
+            $extrasql = ' OR identifier = ?';
+            $params[] = $file->oldidentifier;
+        }
         $plagiarismfile = $DB->get_record_sql(
                     "SELECT * FROM {plagiarism_urkund_files}
                     WHERE cm = ? AND userid = ? AND " .
-                    "identifier = ?",
-                    array($cmid, $userid, $filehash));
+                    "(identifier = ? ".$extrasql.")", $params);
         if (empty($plagiarismfile)) {
             // No record of that submitted file.
             return false;
@@ -320,7 +354,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             if ($viewreport) {
                 $results['reporturl'] = $plagiarismfile->reporturl;
             }
-            if (!empty($plagiarismfile->optout) && $selfreport) {
+            if (!empty($plagiarismsettings['urkund_optout']) && !empty($plagiarismfile->optout) && $selfreport) {
                 $results['optoutlink'] = $plagiarismfile->optout;
             }
             $results['renamed'] = $previouslysubmitted;
@@ -345,7 +379,11 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                 $newelement = new stdClass();
                 $newelement->cm = $data->coursemodule;
                 $newelement->name = $element;
-                $newelement->value = (isset($data->$element) ? $data->$element : 0);
+                if (isset($data->$element) && is_array($data->$element)) {
+                    $newelement->value = implode(',', $data->$element);
+                } else {
+                    $newelement->value = (isset($data->$element) ? $data->$element : 0);
+                }
                 if (isset($existingelements[$element])) {
                     $newelement->id = $existingelements[$element];
                     $DB->update_record('plagiarism_urkund_config', $newelement);
@@ -403,6 +441,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             if ($DB->record_exists('plagiarism_urkund_files', array('cm' => $cmid, 'statuscode' => 'pending'))) {
                 $mform->disabledIf('urkund_receiver', 'use_urkund');
             }
+            $mform->disabledIf('urkund_selectfiletypes', 'urkund_allowallfile', 'eq', 1);
         } else { // Add plagiarism settings as hidden vars.
             foreach ($plagiarismelements as $element) {
                 $mform->addElement('hidden', $element);
@@ -442,6 +481,24 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             );
             $PAGE->requires->js_init_call('M.plagiarism_urkund.init', array($context->instanceid), true, $jsmodule);
         }
+
+        // Now set some fields as advanced options.
+        $mform->setAdvanced('urkund_allowallfile');
+        $mform->setAdvanced('urkund_selectfiletypes');
+
+        // Now handle content restriction settings.
+
+        if ($modulename == 'mod_assign' && $mform->elementExists("submissionplugins")) { // This should be mod_assign
+            // I can't see a way to check if a particular checkbox exists
+            // elementExists on the checkbox name doesn't work.
+            $mform->disabledIf('urkund_restrictcontent', 'assignsubmission_onlinetext_enabled');
+            $mform->setAdvanced('urkund_restrictcontent');
+        } else if ($modulename != 'mod_forum') {
+            // Forum doesn't need any changes but all other modules should disable this.
+            $mform->setDefault('urkund_restrictcontent', 0);
+            $mform->hardFreeze('urkund_restrictcontent');
+            $mform->setAdvanced('urkund_restrictcontent');
+        }
     }
 
     /**
@@ -468,48 +525,17 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
     }
 
     /**
-     * Hook to allow status of submitted files to be updated - called on grading/report pages.
-     *
-     * @param object $course - full Course object
-     * @param object $cm - full cm object
-     * @return string
-     */
-    public function update_status($course, $cm) {
-        // Called at top of submissions/grading pages - allows printing of admin style links or updating status.
-        return '';
-    }
-
-    /**
-     * Called by admin/cron.php.
-     *
-     */
-    public function cron() {
-        global $CFG;
-        // Do any scheduled task stuff.
-        urkund_update_allowed_filetypes();
-        // Weird hack to include filelib correctly before allowing use in event_handler.
-        require_once($CFG->libdir.'/filelib.php');
-        if ($plagiarismsettings = $this->get_settings()) {
-            urkund_get_scores($plagiarismsettings);
-        }
-    }
-    /**
-     * Generic handler function for all events - triggers sending of files.
+     * Generic handler function for all events - queues files for sending.
      * @return boolean
      */
     public function event_handler($eventdata) {
         global $DB, $CFG;
 
-        $supportedevents = urkund_supported_events();
-        if (!in_array($eventdata->eventtype, $supportedevents)) {
-            return true; // Don't need to handle this event.
-        }
-
         $plagiarismsettings = $this->get_settings();
         if (!$plagiarismsettings) {
             return true;
         }
-        $cmid = (!empty($eventdata->cm->id)) ? $eventdata->cm->id : $eventdata->cmid;
+        $cmid = $eventdata['contextinstanceid'];
         $plagiarismvalues = $DB->get_records_menu('plagiarism_urkund_config', array('cm' => $cmid), '', 'name, value');
         if (empty($plagiarismvalues['use_urkund'])) {
             // Urkund not in use for this cm - return.
@@ -517,59 +543,59 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         }
 
         // Check if the module associated with this event still exists.
-        if (!$DB->record_exists('course_modules', array('id' => $eventdata->cmid))) {
+        if (!$DB->record_exists('course_modules', array('id' => $cmid))) {
             return true;
         }
 
-        if ($eventdata->eventtype == 'files_done' ||
-            $eventdata->eventtype == 'content_done' ||
-            ($eventdata->eventtype == 'assessable_submitted' && $eventdata->params['submission_editable'] == false)) {
+        // Check to see if restrictcontent is in use.
+        $showcontent = true;
+        $showfiles = true;
+        if (!empty($plagiarismvalues[$cmid]['urkund_restrictcontent'])) {
+            if ($plagiarismvalues['urkund_restrictcontent'] == PLAGIARISM_URKUND_RESTRICTCONTENTFILES) {
+                $showcontent = false;
+            } else if ($plagiarismvalues['urkund_restrictcontent'] == PLAGIARISM_URKUND_RESTRICTCONTENTTEXT) {
+                $showfiles = false;
+            }
+        }
+
+        if (!empty($plagiarismsettings['urkund_wordcount'])) {
+            $wordcount = $plagiarismsettings['urkund_wordcount'];
+        } else {
+            // Set a sensible default if we can't find one.
+            $wordcount = 50;
+        }
+
+        if ($eventdata['eventtype'] == 'assessable_submitted' && empty($eventdata['other']['submission_editable'])) {
             // Assignment-specific functionality:
             // This is a 'finalize' event. No files from this event itself,
             // but need to check if files from previous events need to be submitted for processing.
-            mtrace("finalise");
             $result = true;
             if (isset($plagiarismvalues['urkund_draft_submit']) &&
                 $plagiarismvalues['urkund_draft_submit'] == PLAGIARISM_URKUND_DRAFTSUBMIT_FINAL) {
                 // Any files attached to previous events were not submitted.
                 // These files are now finalized, and should be submitted for processing.
-                if ($eventdata->modulename == 'assignment') {
-                    // Hack to include filelib so that file_storage class is available.
-                    require_once("$CFG->dirroot/mod/assignment/lib.php");
-                    // We need to get a list of files attached to this assignment and put them in an array, so that
-                    // we can submit each of them for processing.
-                    $assignmentbase = new assignment_base($cmid);
-                    $submission = $assignmentbase->get_submission($eventdata->userid);
-                    $modulecontext = context_module::instance($eventdata->cmid);
-                    $fs = get_file_storage();
-                    if ($files = $fs->get_area_files($modulecontext->id, 'mod_assignment', 'submission', $submission->id,
-                                                     "timemodified", false)) {
-                        foreach ($files as $file) {
-                            $sendresult = urkund_send_file($cmid, $eventdata->userid, $file, $plagiarismsettings);
-                            $result = $result && $sendresult;
-                        }
-                    }
-                } else if ($eventdata->modulename == 'assign') {
-                    require_once("$CFG->dirroot/mod/assign/locallib.php");
-                    require_once("$CFG->dirroot/mod/assign/submission/file/locallib.php");
+                require_once("$CFG->dirroot/mod/assign/locallib.php");
+                require_once("$CFG->dirroot/mod/assign/submission/file/locallib.php");
 
-                    $modulecontext = context_module::instance($eventdata->cmid);
+                $modulecontext = context_module::instance($cmid);
+
+                if ($showfiles) { // If we should be handling files.
                     $fs = get_file_storage();
                     if ($files = $fs->get_area_files($modulecontext->id, 'assignsubmission_file',
-                                                     ASSIGNSUBMISSION_FILE_FILEAREA, $eventdata->itemid, "id", false)) {
+                        ASSIGNSUBMISSION_FILE_FILEAREA, $eventdata['objectid'], "id", false)) {
                         foreach ($files as $file) {
-                            $sendresult = urkund_send_file($cmid, $eventdata->userid, $file, $plagiarismsettings);
-                            $result = $result && $sendresult;
+                            urkund_queue_file($cmid, $eventdata['userid'], $file);
                         }
                     }
-                    $submission = $DB->get_record('assignsubmission_onlinetext', array('submission' => $eventdata->itemid));
-                    if (!empty($submission)) {
-                        $eventdata->content = trim(format_text($submission->onlinetext, $submission->onlineformat,
-                                                               array('context' => $modulecontext)));
-                        $file = urkund_create_temp_file($cmid, $eventdata);
-                        $sendresult = urkund_send_file($cmid, $eventdata->userid, $file, $plagiarismsettings);
-                        $result = $result && $sendresult;
-                        unlink($file->filepath); // Delete temp file.
+                }
+
+                if ($showcontent) { // If we should be handling in-line text.
+                    $submission = $DB->get_record('assignsubmission_onlinetext', array('submission' => $eventdata['objectid']));
+                    if (!empty($submission) && str_word_count($submission->onlinetext) > $wordcount) {
+                        $content = trim(format_text($submission->onlinetext, $submission->onlineformat,
+                            array('context' => $modulecontext)));
+                        $file = urkund_create_temp_file($cmid, $eventdata['courseid'], $eventdata['userid'], $content);
+                        urkund_queue_file($cmid, $eventdata['userid'], $file);
                     }
                 }
             }
@@ -585,16 +611,15 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
 
         // Text is attached.
         $result = true;
-        if (!empty($eventdata->content)) {
-            $file = urkund_create_temp_file($cmid, $eventdata);
-            $sendresult = urkund_send_file($cmid, $eventdata->userid, $file, $plagiarismsettings);
-            $result = $result && $sendresult;
-            unlink($file->filepath); // Delete temp file.
+        if (!empty($eventdata['other']['content']) && $showcontent && str_word_count($eventdata['other']['content']) > $wordcount) {
+
+            $file = urkund_create_temp_file($cmid, $eventdata['courseid'], $eventdata['userid'], $eventdata['other']['content']);
+            urkund_queue_file($cmid, $eventdata['userid'], $file);
         }
 
         // Normal situation: 1 or more assessable files attached to event, ready to be checked.
-        if (!empty($eventdata->pathnamehashes)) {
-            foreach ($eventdata->pathnamehashes as $hash) {
+        if (!empty($eventdata['other']['pathnamehashes']) && $showfiles) {
+            foreach ($eventdata['other']['pathnamehashes'] as $hash) {
                 $fs = get_file_storage();
                 $efile = $fs->get_file_by_hash($hash);
 
@@ -606,12 +631,13 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                     continue;
                 }
                 // Check if assign group submission is being used.
-                if ($eventdata->modulename == 'assign') {
+                if ($eventdata['component'] == 'assignsubmission_file'
+                    || $eventdata['component'] == 'assignsubmission_onlinetext') {
                     require_once("$CFG->dirroot/mod/assign/locallib.php");
-                    $modulecontext = context_module::instance($eventdata->cmid);
+                    $modulecontext = context_module::instance($cmid);
                     $assign = new assign($modulecontext, false, false);
                     if (!empty($assign->get_instance()->teamsubmission)) {
-                        $mygroups = groups_get_user_groups($assign->get_course()->id, $eventdata->userid);
+                        $mygroups = groups_get_user_groups($assign->get_course()->id, $eventdata['userid']);
                         if (count($mygroups) == 1) {
                             $groupid = reset($mygroups)[0];
                             // Only users with single groups are supported - otherwise just use the normal userid on this record.
@@ -621,34 +647,36 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                             foreach ($users as $u) {
                                 $userids[] = $u->id;
                             }
-                            // Find the earliest plagiarism record for this cm with any of these users.
-                            $sql ='cm = ? AND userid IN ('.implode(',', $userids).')';
-                            $previousfiles = $DB->get_records_select('plagiarism_urkund_files', $sql, array($eventdata->cmid), 'id');
-                            $sanitycheckusers = 10; // Search through this number of users to find a valid previous submission.
-                            $i = 0;
-                            foreach ($previousfiles as $pf) {
-                                if ($pf->userid == $eventdata->userid) {
-                                    break; // The submission comes from this user so break.
+                            if (!empty($userids)) {
+                                // Find the earliest plagiarism record for this cm with any of these users.
+                                $sql = 'cm = ? AND userid IN ('.implode(',', $userids).')';
+                                $previousfiles = $DB->get_records_select('plagiarism_urkund_files', $sql,
+                                                                         array($cmid), 'id');
+                                $sanitycheckusers = 10; // Search through this number of users to find a valid previous submission.
+                                $i = 0;
+                                foreach ($previousfiles as $pf) {
+                                    if ($pf->userid == $eventdata['userid']) {
+                                        break; // The submission comes from this user so break.
+                                    }
+                                    // Sanity Check to make sure the user isn't in multiple groups.
+                                    $pfgroups = groups_get_user_groups($assign->get_course()->id, $pf->userid);
+                                    if (count($pfgroups) == 1) {
+                                        // This user made the first valid submission so use their id when sending the file.
+                                        $eventdata['userid'] = $pf->userid;
+                                        break;
+                                    }
+                                    if ($i >= $sanitycheckusers) {
+                                        // Don't cause a massive loop here and break at a sensible limit.
+                                        break;
+                                    }
+                                    $i++;
                                 }
-                                // Sanity Check to make sure the user isn't in multiple groups.
-                                $pfgroups = groups_get_user_groups($assign->get_course()->id, $pf->userid);
-                                if (count($pfgroups) == 1) {
-                                    // This user made the first valid submission so use their id when sending the file.
-                                    $eventdata->userid = $pf->userid;
-                                    break;
-                                }
-                                if ($i >= $sanitycheckusers) {
-                                    // don't cause a massive loop here and break at a sensible limit.
-                                    break;
-                                }
-                                $i++;
                             }
                         }
                     }
                 }
 
-                $sendresult = urkund_send_file($cmid, $eventdata->userid, $efile, $plagiarismsettings);
-                $result = $result && $sendresult;
+                urkund_queue_file($cmid, $eventdata['userid'], $efile);
             }
         }
         return $result;
@@ -706,93 +734,40 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         }
         return false;
     }
+    public function cron() {
+        // Core lib requires this function to be defined.
+        return;
+    }
 }
 
-function urkund_create_temp_file($cmid, $eventdata) {
+function urkund_create_temp_file($cmid, $courseid, $userid, $filecontent) {
     global $CFG;
     if (!check_dir_exists($CFG->tempdir."/urkund", true, true)) {
         mkdir($CFG->tempdir."/urkund", 0700);
     }
-    $filename = "content-" . $eventdata->courseid . "-" . $cmid . "-" . $eventdata->userid . ".htm";
+    $filename = "content-" . $courseid . "-" . $cmid . "-" . $userid ."-". random_string(8).".htm";
     $filepath = $CFG->tempdir."/urkund/" . $filename;
     $fd = fopen($filepath, 'wb');   // Create if not exist, write binary.
 
     // Write html and body tags as it seems that Urkund doesn't works well without them.
-    $content = '<html>' .
-               '<head>' .
-               '<meta charset="UTF-8">' .
-               '</head>' .
-               '<body>' .
-               $eventdata->content .
-               '</body></html>';
+    $content = plagiarism_urkund_format_temp_content($filecontent);
 
     fwrite($fd, $content);
     fclose($fd);
-    $file = new stdclass();
-    $file->type = "tempurkund";
-    $file->filename = $filename;
-    $file->timestamp = time();
-    $file->identifier = sha1($eventdata->content);
-    $file->filepath = $filepath;
-    return $file;
+
+    return $filepath;
 }
 
-function urkund_event_file_uploaded($eventdata) {
-    $eventdata->eventtype = 'file_uploaded';
-    $urkund = new plagiarism_plugin_urkund();
-    return $urkund->event_handler($eventdata);
-}
-function urkund_event_files_done($eventdata) {
-    $eventdata->eventtype = 'files_done';
-    $urkund = new plagiarism_plugin_urkund();
-    return $urkund->event_handler($eventdata);
-}
+// Helper function used to add extra html around file contents.
+function plagiarism_urkund_format_temp_content($content) {
+    return '<html>' .
+           '<head>' .
+           '<meta charset="UTF-8">' .
+           '</head>' .
+           '<body>' .
+           $content .
+           '</body></html>';
 
-function urkund_event_content_uploaded($eventdata) {
-    $eventdata->eventtype = 'content_uploaded';
-    $urkund = new plagiarism_plugin_urkund();
-    return $urkund->event_handler($eventdata);
-}
-
-function urkund_event_content_done($eventdata) {
-    $eventdata->eventtype = 'content_done';
-    $urkund = new plagiarism_plugin_urkund();
-    return $urkund->event_handler($eventdata);
-}
-
-function urkund_event_assessable_submitted($eventdata) {
-    $eventdata->eventtype = 'assessable_submitted';
-    $urkund = new plagiarism_plugin_urkund();
-    return $urkund->event_handler($eventdata);
-}
-
-function urkund_event_mod_created($eventdata) {
-    $result = true;
-        // A new module has been created - this is a generic event that is called for all module types
-        // make sure you check the type of module before handling if needed.
-
-    return $result;
-}
-
-function urkund_event_mod_updated($eventdata) {
-    $result = true;
-        // A module has been updated - this is a generic event that is called for all module types
-        // make sure you check the type of module before handling if needed.
-
-    return $result;
-}
-
-function urkund_event_mod_deleted($eventdata) {
-    $result = true;
-        // A module has been deleted - this is a generic event that is called for all module types
-        // make sure you check the type of module before handling if needed.
-
-    return $result;
-}
-
-function urkund_supported_events() {
-    $supportedevents = array('file_uploaded', 'files_done', 'content_uploaded', 'content_done', 'assessable_submitted');
-    return $supportedevents;
 }
 
 /**
@@ -827,6 +802,25 @@ function urkund_get_form_elements($mform) {
     }
     $mform->addElement('select', 'urkund_studentemail', get_string("urkund_studentemail", "plagiarism_urkund"), $ynoptions);
     $mform->addHelpButton('urkund_studentemail', 'urkund_studentemail', 'plagiarism_urkund');
+
+    $filetypes = urkund_default_allowed_file_types(true);
+
+    $supportedfiles = array();
+    foreach ($filetypes as $ext => $mime) {
+        $supportedfiles[$ext] = $ext;
+    }
+    $mform->addElement('select', 'urkund_allowallfile', get_string('allowallsupportedfiles', 'plagiarism_urkund'), $ynoptions);
+    $mform->addHelpButton('urkund_allowallfile', 'allowallsupportedfiles', 'plagiarism_urkund');
+    $mform->addElement('select', 'urkund_selectfiletypes', get_string('restrictfiles', 'plagiarism_urkund'),
+                       $supportedfiles, array('multiple' => true));
+
+    $contentoptions = array(PLAGIARISM_URKUND_RESTRICTCONTENTNO => get_string('restrictcontentno', 'plagiarism_urkund'),
+                            PLAGIARISM_URKUND_RESTRICTCONTENTFILES => get_string('restrictcontentfiles', 'plagiarism_urkund'),
+                            PLAGIARISM_URKUND_RESTRICTCONTENTTEXT => get_string('restrictcontenttext', 'plagiarism_urkund'));
+
+    $mform->addElement('select', 'urkund_restrictcontent', get_string('restrictcontent', 'plagiarism_urkund'), $contentoptions);
+    $mform->addHelpButton('urkund_restrictcontent', 'restrictcontent', 'plagiarism_urkund');
+
 }
 
 /**
@@ -840,7 +834,14 @@ function urkund_get_form_elements($mform) {
 function urkund_get_plagiarism_file($cmid, $userid, $file) {
     global $DB;
 
-    $filehash = (!empty($file->identifier)) ? $file->identifier : $file->get_contenthash();
+    if (is_string($file)) { // This is a local file path.
+        $filehash = $file;
+        $filename = basename($file);
+    } else {
+        $filehash = (!empty($file->identifier)) ? $file->identifier : $file->get_contenthash();
+        $filename = (!empty($file->filename)) ? $file->filename : $file->get_filename();
+    }
+
     // Now update or insert record into urkund_files.
     $plagiarismfile = $DB->get_record_sql(
                                 "SELECT * FROM {plagiarism_urkund_files}
@@ -854,7 +855,7 @@ function urkund_get_plagiarism_file($cmid, $userid, $file) {
         $plagiarismfile->cm = $cmid;
         $plagiarismfile->userid = $userid;
         $plagiarismfile->identifier = $filehash;
-        $plagiarismfile->filename = (!empty($file->filename)) ? $file->filename : $file->get_filename();
+        $plagiarismfile->filename = $filename;
         $plagiarismfile->statuscode = 'pending';
         $plagiarismfile->attempt = 0;
         $plagiarismfile->timesubmitted = time();
@@ -865,15 +866,30 @@ function urkund_get_plagiarism_file($cmid, $userid, $file) {
         return $plagiarismfile;
     }
 }
-function urkund_send_file($cmid, $userid, $file, $plagiarismsettings) {
+
+/**
+ * Queue file for sending to URKUND
+ *
+ * @param int $cmid - course module id
+ * @param int $userid - user id
+ * @param varied $file string if path to temp file or full Moodle file object.
+ * @return boolean
+ */
+function urkund_queue_file($cmid, $userid, $file) {
     global $DB;
     $plagiarismfile = urkund_get_plagiarism_file($cmid, $userid, $file);
+    $plagiarismvalues = $DB->get_records_menu('plagiarism_urkund_config', array('cm' => $cmid), '', 'name, value');
 
     // Check if $plagiarismfile actually needs to be submitted.
     if ($plagiarismfile->statuscode <> 'pending') {
-        return true;
+        return '';
     }
-    $filename = (!empty($file->filename)) ? $file->filename : $file->get_filename();
+    if (is_string($file)) {
+        $filename = basename($file);
+    } else {
+        $filename = (!empty($file->filename)) ? $file->filename : $file->get_filename();
+    }
+
     if ($plagiarismfile->filename !== $filename) {
         // This is a file that was previously submitted and not sent to urkund but the filename has changed so fix it.
         $plagiarismfile->filename = $filename;
@@ -884,13 +900,34 @@ function urkund_send_file($cmid, $userid, $file, $plagiarismsettings) {
     if (empty($mimetype)) {
         $plagiarismfile->statuscode = URKUND_STATUSCODE_UNSUPPORTED;
         $DB->update_record('plagiarism_urkund_files', $plagiarismfile);
-        return true;
+        return '';
     }
-    // Increment attempt number.
-    $plagiarismfile->attempt = $plagiarismfile->attempt++;
-    $DB->update_record('plagiarism_urkund_files', $plagiarismfile);
 
-    return urkund_send_file_to_urkund($plagiarismfile, $plagiarismsettings, $file);
+    // Check to see if configured to only send certain file-types and if this file matches.
+    if (empty($plagiarismvalues['urkund_allowallfile'])) {
+        $allowedtypes = explode(',', $plagiarismvalues['urkund_selectfiletypes']);
+
+        $pathinfo = pathinfo($filename);
+        if (!empty($pathinfo['extension'])) {
+            $ext = strtolower($pathinfo['extension']);
+            if (!in_array($ext, $allowedtypes)) {
+                // This file is not allowed, delete it from the table.
+                $DB->delete_records('plagiarism_urkund_files', array('id' => $plagiarismfile->id));
+                debugging("File submitted to cm:".$cmid. " with an extension ". $ext.
+                       " This assignment is configured to ignore this filetype, ".
+                       "only files of type:".$plagiarismvalues['urkund_selectfiletypes']. " are accepted");
+                return '';
+            }
+        } else {
+            // No path found - this shouldn't happen but ignore this file.
+            debugging("Could not obtain the extension for a file submitted to cm:".$cmid. " with the filename ". $filename.
+                   "only files of type:".$plagiarismvalues['urkund_selectfiletypes']. " are accepted");
+            $DB->delete_records('plagiarism_urkund_files', array('id' => $plagiarismfile->id));
+            return '';
+        }
+    }
+
+    return $plagiarismfile;
 }
 // Function to check timesubmitted and attempt to see if we need to delay an API check.
 // also checks max attempts to see if it has exceeded.
@@ -900,32 +937,29 @@ function urkund_check_attempt_timeout($plagiarismfile) {
     if (empty($plagiarismfile->attempt) && $plagiarismfile->statuscode == 'pending') {
         return true;
     }
-    $now = time();
-    // Set some initial defaults.
-    $submissiondelay = 15;
-    $maxsubmissiondelay = 60;
-    $maxattempts = 4;
-    if ($plagiarismfile->statuscode == 'pending') {
-        $submissiondelay = URKUND_SUBMISSION_DELAY; // Initial delay,doubled each time a check is made until the max delay is met.
-        $maxsubmissiondelay = URKUND_MAX_SUBMISSION_DELAY; // Maximum time to wait between submissions
-        $maxattempts = URKUND_MAX_SUBMISSION_ATTEMPTS; // Maximum number of times to try and send a submission.
-    } else if ($plagiarismfile->statuscode == URKUND_STATUSCODE_ACCEPTED) {
-        $submissiondelay = URKUND_STATUS_DELAY; // Initial delay, doubled each time a check is made until the max delay is met.
-        $maxsubmissiondelay = URKUND_MAX_STATUS_DELAY; // Maximum time to wait between checks
-        $maxattempts = URKUND_MAX_STATUS_ATTEMPTS; // Maximum number of times to try and send a submission.
-    }
-    $wait = $submissiondelay;
+
     // Check if we have exceeded the max attempts.
-    if ($plagiarismfile->attempt > $maxattempts) {
+    if ($plagiarismfile->attempt > URKUND_MAX_STATUS_ATTEMPTS) {
         $plagiarismfile->statuscode = 'timeout';
         $DB->update_record('plagiarism_urkund_files', $plagiarismfile);
         return true; // Return true to cancel the event.
     }
+
+    $now = time();
+    $submissiondelay = URKUND_STATUS_DELAY; // Initial delay, doubled each time a check is made until the max delay is met.
+    $maxsubmissiondelay = URKUND_MAX_STATUS_DELAY; // Maximum time to wait between checks.
+
     // Now calculate wait time.
     $i = 0;
     $delay = 0;
+    $wait = 0;
     while ($i < $plagiarismfile->attempt) {
-        $delay = $submissiondelay * pow(2,$i);
+        if ($plagiarismfile->attempt > 12) {
+            // If we haven't got the score by now something is not working, increase delay time a bit.
+            $delay = $submissiondelay * pow(1.4, $i);
+        } else {
+            $delay = $submissiondelay * pow(1.2, $i);
+        }
         if ($delay > $maxsubmissiondelay) {
             $delay = $maxsubmissiondelay;
         }
@@ -959,7 +993,7 @@ function urkund_send_file_to_urkund($plagiarismfile, $plagiarismsettings, $file)
         $DB->update_record('plagiarism_urkund_files', $plagiarismfile);
         return true;
     }
-    mtrace("sendfile".$plagiarismfile->id);
+    mtrace("URKUND fileid:".$plagiarismfile->id. ' sent for processing');
     $useremail = $DB->get_field('user', 'email', array('id' => $plagiarismfile->userid));
     // Get url of api.
     $url = urkund_get_url($plagiarismsettings['urkund_api'], $plagiarismfile);
@@ -995,15 +1029,17 @@ function urkund_send_file_to_urkund($plagiarismfile, $plagiarismsettings, $file)
                 $plagiarismfile->errorresponse = $response;
             }
             $plagiarismfile->statuscode = $status;
+            mtrace("URKUND fileid:".$plagiarismfile->id. ' returned status: '.$status);
             $DB->update_record('plagiarism_urkund_files', $plagiarismfile);
             return true;
         }
     }
+    mtrace("fileid:".$plagiarismfile->id. ' returned error: '.$response);
     // Invalid response returned - increment attempt value and return false to allow this to be called again.
     $plagiarismfile->statuscode = URKUND_STATUSCODE_INVALID_RESPONSE;
     $plagiarismfile->errorresponse = $response;
     $DB->update_record('plagiarism_urkund_files', $plagiarismfile);
-    return true;
+    return false;
 }
 
 // Function to check for the allowed file types, returns the mimetype that URKUND expects.
@@ -1014,16 +1050,7 @@ function urkund_check_file_type($filename, $checkdb = true) {
         return '';
     }
     $ext = strtolower($pathinfo['extension']);
-    $filetypes = array('doc'  => 'application/msword',
-                       'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                       'sxw'  => 'application/vnd.sun.xml.writer',
-                       'pdf'  => 'application/pdf',
-                       'txt'  => 'text/plain',
-                       'rtf'  => 'application/rtf',
-                       'html' => 'text/html',
-                       'htm'  => 'text/html',
-                       'wps'  => 'application/vnd.ms-works',
-                       'odt'  => 'application/vnd.oasis.opendocument.text');
+    $filetypes = urkund_default_allowed_file_types();
 
     if (!empty($filetypes[$ext])) {
         return $filetypes[$ext];
@@ -1034,6 +1061,40 @@ function urkund_check_file_type($filename, $checkdb = true) {
     } else {
         return false;
     }
+}
+
+/**
+ * Used to obtain allowed file types
+ *
+ * @param object $plagiarismsettings - from a call to plagiarism_get_settings.
+ *
+ */
+
+function urkund_default_allowed_file_types($checkdb = false) {
+    global $DB;
+    $filetypes = array('doc'  => 'application/msword',
+        'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'sxw'  => 'application/vnd.sun.xml.writer',
+        'pdf'  => 'application/pdf',
+        'txt'  => 'text/plain',
+        'rtf'  => 'application/rtf',
+        'html' => 'text/html',
+        'htm'  => 'text/html',
+        'wps'  => 'application/vnd.ms-works',
+        'odt'  => 'application/vnd.oasis.opendocument.text');
+
+    if ($checkdb) {
+        // Get all filetypes from db as well.
+        $sql = 'SELECT name, value FROM {config_plugins} WHERE plugin = :plugin AND ' . $DB->sql_like('name', ':name');
+        $types = $DB->get_records_sql($sql, array('name' => 'ext_%', 'plugin' => 'plagiarism_urkund'));
+        foreach ($types as $type) {
+            $ext = strtolower(str_replace('ext_', '', $type->name));
+            $filetypes[$ext] = $type->value;
+        }
+    }
+
+    return $filetypes;
+
 }
 
 /**
@@ -1132,7 +1193,7 @@ function urkund_get_score($plagiarismsettings, $plagiarismfile, $force = false) 
 
 function urkund_get_url($baseurl, $plagiarismfile) {
     // Get url of api.
-    global $DB;
+    global $DB, $CFG;
     $receiver = $DB->get_field('plagiarism_urkund_config', 'value', array('cm' => $plagiarismfile->cm,
                                                                           'name' => 'urkund_receiver'));
     if (empty($receiver)) {
@@ -1144,9 +1205,15 @@ function urkund_get_url($baseurl, $plagiarismfile) {
     // Then the course module id of this plugin,
     // Then the id from the plagiarism_files table,
     // Then the full contenthash of the file.
+    if (strpos($plagiarismfile->identifier, $CFG->tempdir) === false) {
+        $identifier = $plagiarismfile->identifier;
+    } else {
+        // In-line text files temporarily use the identifier field as the filepath.
+        $identifier = sha1(file_get_contents($plagiarismfile->identifier));
+    }
 
     $siteid = substr(md5(get_site_identifier()), 0, 8);
-    $urkundid = $siteid.'_'.$plagiarismfile->cm.'_'.$plagiarismfile->id.'_'.$plagiarismfile->identifier;
+    $urkundid = $siteid.'_'.$plagiarismfile->cm.'_'.$plagiarismfile->id.'_'.$identifier;
 
     return $baseurl.'/' .trim($receiver).'/'.$urkundid;
 }
@@ -1249,27 +1316,6 @@ function urkund_update_allowed_filetypes() {
     }
 }
 
-// Function to check for invalid event_handlers.
-function urkund_check_event_handlers() {
-    global $DB, $CFG;
-    $invalidhandlers = array();
-    $eventhandlers = $DB->get_records('events_handlers');
-    foreach ($eventhandlers as $handler) {
-        $function = unserialize($handler->handlerfunction);
-
-        if (is_callable($function)) { // This function is fine.
-            continue;
-        } else if (file_exists($CFG->dirroot.$handler->handlerfile)) {
-            include_once($CFG->dirroot.$handler->handlerfile);
-            if (is_callable($function)) { // This function is fine.
-                continue;
-            }
-        }
-        $invalidhandlers[] = $handler; // This function can't be found.
-    }
-    return $invalidhandlers;
-}
-
 // Old function to get url using old method of generating an indentifier.
 // This function should only be used if the file is known to have been
 // generated using old code.
@@ -1285,33 +1331,53 @@ function old_urkund_get_url($baseurl, $plagiarismfile) {
     '_'.$plagiarismfile->cm.'_'.$plagiarismfile->id;
 }
 
-function urkund_reset_file($id) {
-    global $DB, $CFG;
-    $plagiarismfile = $DB->get_record('plagiarism_urkund_files', array('id' => $id), '*', MUST_EXIST);
+// The $file can be id or full record.
+function urkund_reset_file($file, $plagiarismsettings = null) {
+    global $DB;
+    if (is_int($file)) {
+        $plagiarismfile = $DB->get_record('plagiarism_urkund_files', array('id' => $file), '*', MUST_EXIST);
+    } else {
+        $plagiarismfile = $file;
+    }
+
     if ($plagiarismfile->statuscode == 'Analyzed' ||
-        $plagiarismfile->statuscode == URKUND_STATUSCODE_ACCEPTED) { // Sanity Check.
+        $plagiarismfile->statuscode == URKUND_STATUSCODE_ACCEPTED) {
+        // This function is for re-sending files, this file has already been sent.
         return true;
     }
-    // Set some new values.
-    $plagiarismfile->statuscode = 'pending';
-    $plagiarismfile->attempt = 0;
-    $plagiarismfile->timesubmitted = time();
+
+    if (empty($plagiarismsettings)) {
+        $plagiarismsettings = plagiarism_plugin_urkund::get_settings();
+    }
+
+    // Get file object for this submission.
+    $fileobject = plagiarism_urkund_get_file_object($plagiarismfile);
+    if (!empty($fileobject)) {
+        // Set some new values.
+        $plagiarismfile->statuscode = 'pending';
+        $plagiarismfile->attempt = 0;
+        $plagiarismfile->timesubmitted = time();
+        $DB->update_record('plagiarism_urkund_files', $plagiarismfile); // Update before trying to send again.
+
+        $plagiarismfile = urkund_queue_file($plagiarismfile->cm, $plagiarismfile->userid, $fileobject);
+        if (!empty($plagiarismfile)) {
+            // Send this file now.
+            urkund_send_file_to_urkund($plagiarismfile, $plagiarismsettings, $file);
+        }
+        return true;
+    }
+    mtrace("id:".$plagiarismfile->id. " no files found with this record");
+    return false;
+}
+
+// Helper function used to get file record for given identifier.
+function plagiarism_urkund_get_file_object($plagiarismfile) {
+    global $CFG, $DB;
 
     $cm = get_coursemodule_from_id('', $plagiarismfile->cm);
     $modulecontext = context_module::instance($plagiarismfile->cm);
     $fs = get_file_storage();
-    if ($cm->modname == 'assignment') {
-        $submission = $DB->get_record('assignment_submissions', array('assignment' => $cm->instance,
-                                                                      'userid' => $plagiarismfile->userid));
-        $files = $fs->get_area_files($modulecontext->id, 'mod_assignment', 'submission', $submission->id);
-        foreach ($files as $file) {
-            if ($file->get_contenthash() == $plagiarismfile->identifier) {
-                $DB->update_record('plagiarism_urkund_files', $plagiarismfile); // Update before trying to send again.
-                return urkund_send_file($plagiarismfile->cm, $plagiarismfile->userid, $file,
-                                        plagiarism_plugin_urkund::get_settings());
-            }
-        }
-    } else if ($cm->modname == 'assign') {
+    if ($cm->modname == 'assign') {
         require_once($CFG->dirroot.'/mod/assign/locallib.php');
         $assign = new assign($modulecontext, null, null);
         $submissionplugins = $assign->get_submission_plugins();
@@ -1333,9 +1399,7 @@ function urkund_reset_file($id) {
                     );
                     foreach ($files as $file) {
                         if ($file->get_contenthash() == $plagiarismfile->identifier) {
-                            $DB->update_record('plagiarism_urkund_files', $plagiarismfile); // Update before trying to send again.
-                            return urkund_send_file($plagiarismfile->cm, $plagiarismfile->userid, $file,
-                                                    plagiarism_plugin_urkund::get_settings());
+                            return $file;
                         }
                     }
                 }
@@ -1353,9 +1417,7 @@ function urkund_reset_file($id) {
             $files = $fs->get_area_files($workshop->context->id, 'mod_workshop', 'submission_attachment', $submission->id);
             foreach ($files as $file) {
                 if ($file->get_contenthash() == $plagiarismfile->identifier) {
-                    $DB->update_record('plagiarism_urkund_files', $plagiarismfile); // Update before trying to send again.
-                    return urkund_send_file($plagiarismfile->cm, $plagiarismfile->userid, $file,
-                                            plagiarism_plugin_urkund::get_settings());
+                    return $file;
                 }
             }
         }
@@ -1367,12 +1429,61 @@ function urkund_reset_file($id) {
             $files = $fs->get_area_files($modulecontext->id, 'mod_forum', 'attachment', $post->id, "timemodified", false);
             foreach ($files as $file) {
                 if ($file->get_contenthash() == $plagiarismfile->identifier) {
-                    $DB->update_record('plagiarism_urkund_files', $plagiarismfile); // Update before trying to send again.
-                    return urkund_send_file($plagiarismfile->cm, $plagiarismfile->userid, $file,
-                                            plagiarism_plugin_urkund::get_settings());
+                    return $file;
                 }
             }
         }
+    }
+}
 
+// Function called by scheduled tasks
+// Responsible for sending queued files.
+function plagiarism_urkund_send_files() {
+    global $DB, $CFG;
+
+    $plagiarismsettings = plagiarism_plugin_urkund::get_settings();
+    if (!empty($plagiarismsettings)) {
+        // Get all files in a pending state.
+        $plagiarismfiles = $DB->get_records("plagiarism_urkund_files", array("statuscode" => "pending"));
+        foreach ($plagiarismfiles as $pf) {
+            $textfile = false;
+            if (strpos($pf->identifier, $CFG->tempdir) === false) {
+                $file = plagiarism_urkund_get_file_object($pf);
+            } else {
+                // This is a stored text file in temp dir.
+                $textfile = true;
+                $file = new stdclass();
+                if (file_exists($pf->identifier)) {
+                    $file->type = "tempurkund";
+                    $file->filename = basename($pf->identifier);
+                    $file->timestamp = time();
+                    $file->identifier = sha1(file_get_contents($pf->identifier));
+                    $file->filepath = $pf->identifier;
+
+                    // Sanity check to see if the Sha1 for this file has already been sent to urkund using a different record.
+                    if ($DB->record_exists('plagiarism_urkund_files', array('identifier' => $file->identifier,
+                                                                            'cm' => $pf->cm,
+                                                                            'userid' => $pf->userid))) {
+                        // This file has already been sent and multiple records for this file were created
+                        // Delete plagiarism record and file.
+                        $DB->delete_records('plagiarism_urkund_files', array('id' => $pf->id));
+                        debugging("This file has been duplicated, deleting the duplicate record. Identifier:".$file->identifier);
+                        unlink($pf->identifier); // Delete temp file as we don't need it anymore.
+                        continue;
+                    }
+                }
+            }
+            if (!empty($file)) {
+                $success = urkund_send_file_to_urkund($pf, $plagiarismsettings, $file);
+                if ($success && $textfile) {
+                    // Text files temporarily use the filepath in the identifier field - convert this to contenthash.
+                    $plagiarismfile = $DB->get_record('plagiarism_urkund_files', array('id' => $pf->id));
+                    $plagiarismfile->identifier = sha1(file_get_contents($pf->identifier));
+                    $DB->update_record('plagiarism_urkund_files', $plagiarismfile);
+
+                    unlink($pf->identifier); // Delete temp file as we don't need it anymore.
+                }
+            }
+        }
     }
 }
