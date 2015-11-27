@@ -23,20 +23,21 @@
  */
 
 defined('MOODLE_INTERNAL') || die();
+global $CFG;
 
 if (!isset($plugin)) {
     // Avoid warning message in M2.5 and below.
     $plugin = new stdClass();
 }
 // Used by M2.6 and above.
-$plugin->version = 2015050901;  // The current module version (Date: YYYYMMDDXX)
+$plugin->version = 2015110800;  // The current module version (Date: YYYYMMDDXX)
 $plugin->cron = 60;          // Period for cron to check this module (secs).
 $plugin->maturity = MATURITY_STABLE;
-$plugin->release = '2.x (Build: 2015050901)';
+$plugin->release = '2.x (Build: 2015110800)';
 $plugin->requires = 2010112400;
 $plugin->component = 'mod_checklist';
 
-if (isset($module)) {
+if ($CFG->branch < 26) {
     // Used by M2.5 and below.
     $module->version = $plugin->version;
     $module->cron = $plugin->cron;

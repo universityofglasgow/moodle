@@ -126,9 +126,9 @@ class theme_bootstrap_core_renderer extends core_renderer {
             );
 
             $usermenu->add(
-                'divider',
+                '#######',
                 new moodle_url('/'),
-                'divider'
+                '#######'
             );
 
             $usermenu->add(
@@ -159,9 +159,9 @@ class theme_bootstrap_core_renderer extends core_renderer {
             );
         
             $usermenu->add(
-                'divider',
+                '#######',
                 new moodle_url('/'),
-                'divider'
+                '#######'
             );
 
             $usermenu->add(
@@ -231,7 +231,7 @@ class theme_bootstrap_core_renderer extends core_renderer {
             $content = '<li>';
             // The node doesn't have children so produce a final menuitem.
             $class = $menunode->get_title();
-            if ($class == 'divider') {
+            if (preg_match("/^#+$/", $menunode->get_text())) {
                 $content = '<li class="divider" role="presentation">';
             } else  {
                 $content = '<li>';

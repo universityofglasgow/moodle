@@ -124,10 +124,16 @@ class autoupdate {
                 return array('course_module', 'viewed');
                 break;
             case 'forum':
-                return array('post', 'created');
+                return array(
+                    array('post', 'created'),
+                    array('discussion', 'created'),
+                );
                 break;
             case 'glossary':
                 return array('entry', 'created');
+                break;
+            case 'hotpot':
+                return array('attempt', 'submitted');
                 break;
             case 'imscp':
                 return array('course_module', 'viewed');
@@ -323,24 +329,57 @@ class autoupdate {
         $entries = self::$reader->get_events_select($select, $params, 'timecreated ASC', 0, 0);
         $ret = array();
         foreach ($entries as $entry) {
-            $module = self::get_module_from_component($entry->component);
-            if (!$module) {
-                continue;
-            }
-            $wantedaction = self::get_log_action_new($module);
-            if (!$wantedaction) {
-                continue;
-            }
-            if ($entry->target == $wantedaction[0] && $entry->action == $wantedaction[1]) {
-                $ret[] = (object)array(
-                    'course' => $entry->courseid,
-                    'module' => $module,
-                    'cmid' => $entry->contextinstanceid,
-                    'userid' => $entry->userid,
-                );
+            $info = self::get_entry_info($entry);
+            if ($info) {
+                $ret[] = $info;
             }
         }
 
         return $ret;
+    }
+
+    protected static function get_entry_info($entry) {
+        $module = self::get_module_from_component($entry->component);
+        if ($module) {
+            $wantedaction = self::get_log_action_new($module);
+            if ($wantedaction) {
+                if (!is_array($wantedaction[0])) {
+                    // Most activities only have a single 'complete' action, but to support those with more
+                    // than one (forum!), wrap those with just one action in an array.
+                    $wantedaction = array($wantedaction);
+                }
+                foreach ($wantedaction as $candidate) {
+                    list($target, $action) = $candidate;
+                    if ($entry->target == $target && $entry->action == $action) {
+                        return (object) array(
+                            'course' => $entry->courseid,
+                            'module' => $module,
+                            'cmid' => $entry->contextinstanceid,
+                            'userid' => $entry->userid,
+                        );
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    public static function update_from_event(\core\event\base $event) {
+        global $CFG;
+        require_once($CFG->dirroot.'/mod/checklist/autoupdate.php');
+        if ($event->target == 'course_module_completion' && $event->action == 'updated') {
+            // Update from a completion change event.
+            $comp = $event->get_record_snapshot('course_modules_completion', $event->objectid);
+            // Update any relevant checklists.
+            checklist_completion_autoupdate($comp->coursemoduleid, $comp->userid, $comp->completionstate);
+        } else {
+            // Check if this is an action that counts as 'completing' an activity (when completion is off).
+            $info = self::get_entry_info($event);
+            if (!$info) {
+                return;
+            }
+            // Update any relevant checklists.
+            checklist_autoupdate_internal($info->course, $info->module, $info->cmid, $info->userid);
+        }
     }
 }

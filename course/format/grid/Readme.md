@@ -251,6 +251,10 @@ Known Issues
 
 History
 =============
+Version 2.9.1.5.
+  1. Do not halt on missing icon error (see: https://moodle.org/mod/forum/discuss.php?d=316768) but just
+     continue and allow errors to be stored in the php.log file.
+
 Version 2.9.1.4.
   1. Improved RTL support thanks to Nadav Kavalerchik.
   2. Delete format_grid_icon record when a section is deleted.

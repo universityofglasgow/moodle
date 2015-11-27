@@ -14,14 +14,19 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * Update checklists when events occur
+ *
+ * @package   mod_checklist
+ * @copyright 2015 Davo Smith, Synergy Learning
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version = 2014111000;
-$plugin->requires = 2014111000;
-$plugin->component = 'assignfeedback_mahara';
-$plugin->maturity = MATURITY_STABLE;
-$plugin->release = '1.0-mdl2.8';
-
-$plugin->dependencies = array(
-    'assignsubmission_mahara' => 2015021000
+$observers = array(
+    array(
+        'eventname' => '*',
+        'callback' => '\mod_checklist\local\autoupdate::update_from_event'
+    )
 );
