@@ -290,11 +290,12 @@ class data_field_base {     // Base class for Database Field Types (see field/*/
         $str = '<div title="' . s($this->field->description) . '">';
         $str .= '<label for="field_'.$this->field->id.'"><span class="accesshide">'.$this->field->name.'</span>';
         if ($this->field->required) {
-            $str .= html_writer::img($OUTPUT->pix_url('req'), get_string('requiredelement', 'form'),
+            $image = html_writer::img($OUTPUT->pix_url('req'), get_string('requiredelement', 'form'),
                                      array('class' => 'req', 'title' => get_string('requiredelement', 'form')));
+            $str .= html_writer::div($image, 'inline-req');
         }
-        $str .= '</label><input class="basefieldinput" type="text" name="field_'.$this->field->id.'" id="field_'.$this->field->id;
-        $str .= '" value="'.s($content).'" />';
+        $str .= '</label><input class="basefieldinput mod-data-input" type="text" name="field_'.$this->field->id.'"';
+        $str .= ' id="field_' . $this->field->id . '" value="'.s($content).'" />';
         $str .= '</div>';
 
         return $str;
@@ -909,6 +910,11 @@ function data_add_instance($data, $mform = null) {
         $data->assessed = 0;
     }
 
+    if (empty($data->ratingtime) || empty($data->assessed)) {
+        $data->assesstimestart  = 0;
+        $data->assesstimefinish = 0;
+    }
+
     $data->timemodified = time();
 
     $data->id = $DB->insert_record('data', $data);
@@ -1512,6 +1518,58 @@ function data_rating_validate($params) {
     }
 
     return true;
+}
+
+/**
+ * Can the current user see ratings for a given itemid?
+ *
+ * @param array $params submitted data
+ *            contextid => int contextid [required]
+ *            component => The component for this module - should always be mod_data [required]
+ *            ratingarea => object the context in which the rated items exists [required]
+ *            itemid => int the ID of the object being rated [required]
+ *            scaleid => int scale id [optional]
+ * @return bool
+ * @throws coding_exception
+ * @throws rating_exception
+ */
+function mod_data_rating_can_see_item_ratings($params) {
+    global $DB;
+
+    // Check the component is mod_data.
+    if (!isset($params['component']) || $params['component'] != 'mod_data') {
+        throw new rating_exception('invalidcomponent');
+    }
+
+    // Check the ratingarea is entry (the only rating area in data).
+    if (!isset($params['ratingarea']) || $params['ratingarea'] != 'entry') {
+        throw new rating_exception('invalidratingarea');
+    }
+
+    if (!isset($params['itemid'])) {
+        throw new rating_exception('invaliditemid');
+    }
+
+    $datasql = "SELECT d.id as dataid, d.course, r.groupid
+                  FROM {data_records} r
+                  JOIN {data} d ON r.dataid = d.id
+                 WHERE r.id = :itemid";
+    $dataparams = array('itemid' => $params['itemid']);
+    if (!$info = $DB->get_record_sql($datasql, $dataparams)) {
+        // Item doesn't exist.
+        throw new rating_exception('invaliditemid');
+    }
+
+    // User can see ratings of all participants.
+    if ($info->groupid == 0) {
+        return true;
+    }
+
+    $course = $DB->get_record('course', array('id' => $info->course), '*', MUST_EXIST);
+    $cm = get_coursemodule_from_instance('data', $info->dataid, $course->id, false, MUST_EXIST);
+
+    // Make sure groups allow this user to see the item they're rating.
+    return groups_group_visible($info->groupid, $course, $cm);
 }
 
 
@@ -3781,6 +3839,7 @@ function data_process_submission(stdClass $mod, $fields, stdClass $datarecord) {
     // Empty form checking - you can't submit an empty form.
     $emptyform = true;
     $requiredfieldsfilled = true;
+    $fieldsvalidated = true;
 
     // Store the notifications.
     $result->generalnotifications = array();
@@ -3818,6 +3877,14 @@ function data_process_submission(stdClass $mod, $fields, stdClass $datarecord) {
 
         $field = data_get_field($fieldrecord, $mod);
         if (isset($submitteddata[$fieldrecord->id])) {
+            // Field validation check.
+            if (method_exists($field, 'field_validation')) {
+                $errormessage = $field->field_validation($submitteddata[$fieldrecord->id]);
+                if ($errormessage) {
+                    $result->fieldnotifications[$field->field->name][] = $errormessage;
+                    $fieldsvalidated = false;
+                }
+            }
             foreach ($submitteddata[$fieldrecord->id] as $fieldname => $value) {
                 if ($field->notemptyfield($value->value, $value->fieldname)) {
                     // The field has content and the form is not empty.
@@ -3849,7 +3916,7 @@ function data_process_submission(stdClass $mod, $fields, stdClass $datarecord) {
         $result->generalnotifications[] = get_string('emptyaddform', 'data');
     }
 
-    $result->validated = $requiredfieldsfilled && !$emptyform;
+    $result->validated = $requiredfieldsfilled && !$emptyform && $fieldsvalidated;
 
     return $result;
 }

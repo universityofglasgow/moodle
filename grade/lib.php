@@ -308,6 +308,7 @@ class graded_users_iterator {
                     $grades[$grade_item->id] =
                         new grade_grade(array('userid'=>$user->id, 'itemid'=>$grade_item->id), false);
                 }
+                $grades[$grade_item->id]->grade_item = $grade_item;
             }
         }
 
@@ -2887,6 +2888,12 @@ abstract class grade_helper {
                 continue;
             }
 
+            // Singleview doesn't doesn't accomodate for all cap combos yet, so this is hardcoded..
+            if ($plugin === 'singleview' && !has_all_capabilities(array('moodle/grade:viewall',
+                    'moodle/grade:edit'), $context)) {
+                continue;
+            }
+
             $pluginstr = get_string('pluginname', 'gradereport_'.$plugin);
             $url = new moodle_url('/grade/report/'.$plugin.'/index.php', array('id'=>$courseid));
             $gradereports[$plugin] = new grade_plugin_info($plugin, $url, $pluginstr);
@@ -3149,9 +3156,6 @@ abstract class grade_helper {
                                                     JOIN {user_info_category} c ON f.categoryid=c.id
                                                     WHERE f.shortname $wherefields
                                                     ORDER BY c.sortorder ASC, f.sortorder ASC", $whereparams);
-            if (!is_array($customfields)) {
-                continue;
-            }
 
             foreach ($customfields as $field) {
                 // Make sure we can display this custom field

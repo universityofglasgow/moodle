@@ -590,7 +590,8 @@ class grade_report_grader extends grade_report {
 
         $showuserimage = $this->get_pref('showuserimage');
         $canseeuserreport = has_capability('gradereport/'.$CFG->grade_profilereport.':view', $this->context);
-        $canseesingleview = has_capability('gradereport/singleview:view', $this->context);
+        $canseesingleview = has_all_capabilities(array('gradereport/singleview:view', 'moodle/grade:viewall',
+            'moodle/grade:edit'), $this->context);
         $hasuserreportcell = $canseeuserreport || $canseesingleview;
 
         $strfeedback  = $this->get_lang_string("feedback");
@@ -745,7 +746,8 @@ class grade_report_grader extends grade_report {
             'cfg'       => array('ajaxenabled'=>false),
             'items'     => array(),
             'users'     => array(),
-            'feedback'  => array()
+            'feedback'  => array(),
+            'grades'    => array()
         );
         $jsscales = array();
 
@@ -836,7 +838,9 @@ class grade_report_grader extends grade_report {
                     }
 
                     $singleview = '';
-                    if (has_capability('gradereport/singleview:view', $this->context)) {
+                    if (has_all_capabilities(array('gradereport/singleview:view', 'moodle/grade:viewall',
+                        'moodle/grade:edit'), $this->context)) {
+
                         $url = new moodle_url('/grade/report/singleview/index.php', array(
                             'id' => $this->course->id,
                             'item' => 'grade',
@@ -998,6 +1002,14 @@ class grade_report_grader extends grade_report {
                 } else if ($USER->gradeediting[$this->courseid]) {
 
                     if ($item->scaleid && !empty($scalesarray[$item->scaleid])) {
+                        $itemcell->attributes['class'] .= ' grade_type_scale';
+                    } else if ($item->gradetype == GRADE_TYPE_VALUE) {
+                        $itemcell->attributes['class'] .= ' grade_type_value';
+                    } else if ($item->gradetype == GRADE_TYPE_TEXT) {
+                        $itemcell->attributes['class'] .= ' grade_type_text';
+                    }
+
+                    if ($item->scaleid && !empty($scalesarray[$item->scaleid])) {
                         $scale = $scalesarray[$item->scaleid];
                         $gradeval = (int)$gradeval; // scales use only integers
                         $scales = explode(",", $scale->scale);
@@ -1066,16 +1078,16 @@ class grade_report_grader extends grade_report {
 
                     if ($item->scaleid && !empty($scalesarray[$item->scaleid])) {
                         $itemcell->attributes['class'] .= ' grade_type_scale';
-                    } else if ($item->gradetype != GRADE_TYPE_TEXT) {
+                    } else if ($item->gradetype == GRADE_TYPE_VALUE) {
+                        $itemcell->attributes['class'] .= ' grade_type_value';
+                    } else if ($item->gradetype == GRADE_TYPE_TEXT) {
                         $itemcell->attributes['class'] .= ' grade_type_text';
                     }
 
-                    if ($enableajax) {
-                        $canoverride = true;
-                        if ($item->is_category_item() || $item->is_course_item()) {
-                            $canoverride = (bool) get_config('moodle', 'grade_overridecat');
-                        }
-                        if ($canoverride) {
+                    // Only allow edting if the grade is editable (not locked, not in a unoverridable category, etc).
+                    if ($enableajax && $grade->is_editable()) {
+                        // If a grade item is type text, and we don't have show quick feedback on, it can't be edited.
+                        if ($item->gradetype != GRADE_TYPE_TEXT || $showquickfeedback) {
                             $itemcell->attributes['class'] .= ' clickable';
                         }
                     }
@@ -1097,6 +1109,14 @@ class grade_report_grader extends grade_report {
                     }
                 }
 
+                // Enable keyboard navigation if the grade is editable (not locked, not in a unoverridable category, etc).
+                if ($enableajax && $grade->is_editable()) {
+                    // If a grade item is type text, and we don't have show quick feedback on, it can't be edited.
+                    if ($item->gradetype != GRADE_TYPE_TEXT || $showquickfeedback) {
+                        $itemcell->attributes['class'] .= ' gbnavigable';
+                    }
+                }
+
                 if (!empty($this->gradeserror[$item->id][$userid])) {
                     $itemcell->text .= $this->gradeserror[$item->id][$userid];
                 }
@@ -1110,7 +1130,8 @@ class grade_report_grader extends grade_report {
             $jsarguments['cfg']['ajaxenabled'] = true;
             $jsarguments['cfg']['scales'] = array();
             foreach ($jsscales as $scale) {
-                $jsarguments['cfg']['scales'][$scale->id] = explode(',', $scale->scale);
+                // Trim the scale values, as they may have a space that is ommitted from values later.
+                $jsarguments['cfg']['scales'][$scale->id] = array_map('trim', explode(',', $scale->scale));
             }
             $jsarguments['cfg']['feedbacktrunclength'] =  $this->feedback_trunc_length;
 

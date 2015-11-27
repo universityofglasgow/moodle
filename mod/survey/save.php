@@ -54,14 +54,6 @@
         print_error('invalidsurveyid', 'survey');
     }
 
-    $params = array(
-        'context' => $context,
-        'courseid' => $course->id,
-        'other' => array('surveyid' => $survey->id)
-    );
-    $event = \mod_survey\event\response_submitted::create($params);
-    $event->trigger();
-
     $strsurveysaved = get_string('surveysaved', 'survey');
 
     $PAGE->set_title($strsurveysaved);
@@ -70,7 +62,7 @@
     echo $OUTPUT->heading($survey->name);
 
     if (survey_already_done($survey->id, $USER->id)) {
-        notice(get_string("alreadysubmitted", "survey"), clean_param($_SERVER["HTTP_REFERER"], PARAM_LOCALURL));
+        notice(get_string("alreadysubmitted", "survey"), get_local_referer(false));
         exit;
     }
 
@@ -120,6 +112,14 @@
             $DB->insert_record("survey_answers", $newdata);
         }
     }
+
+    $params = array(
+        'context' => $context,
+        'courseid' => $course->id,
+        'other' => array('surveyid' => $survey->id)
+    );
+    $event = \mod_survey\event\response_submitted::create($params);
+    $event->trigger();
 
 // Print the page and finish up.
 

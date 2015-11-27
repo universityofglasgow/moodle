@@ -225,6 +225,30 @@ class mod_assign_lib_testcase extends mod_assign_base_testcase {
         $sink->close();
     }
 
+    /** Make sure blind marking shows participant \d+ not fullname when assign_print_recent_activity is triggered. */
+    public function test_print_recent_activity_fullname_blind_marking() {
+        // Submitting an assignment generates a notification in blind marking.
+        $this->preventResetByRollback();
+        $sink = $this->redirectMessages();
+
+        $this->setUser($this->editingteachers[0]);
+        $assign = $this->create_instance(array('blindmarking' => 1));
+
+        $data = new stdClass();
+        $data->userid = $this->students[0]->id;
+        $notices = array();
+        $this->setUser($this->students[0]);
+        $assign->submit_for_grading($data, $notices);
+
+        $this->setUser($this->editingteachers[0]);
+        $uniqueid = $assign->get_uniqueid_for_user($data->userid);
+        $expectedstr = preg_quote(get_string('participant', 'mod_assign'), '/') . '.*' . $uniqueid;
+        $this->expectOutputRegex("/{$expectedstr}/");
+        assign_print_recent_activity($this->course, false, time() - 3600);
+
+        $sink->close();
+    }
+
     public function test_assign_get_recent_mod_activity() {
         // Submitting an assignment generates a notification.
         $this->preventResetByRollback();
@@ -301,6 +325,45 @@ class mod_assign_lib_testcase extends mod_assign_base_testcase {
         $result = assign_get_completion_state($this->course, $assign->get_course_module(), $this->students[0]->id, false);
 
         $this->assertTrue($result);
+    }
+
+    /**
+     * Tests for mod_assign_refresh_events.
+     */
+    public function test_assign_refresh_events() {
+        global $DB;
+        $duedate = time();
+        $this->setAdminUser();
+
+        $assign = $this->create_instance(array('duedate' => $duedate));
+
+        // Normal case, with existing course.
+        $this->assertTrue(assign_refresh_events($this->course->id));
+
+        $instance = $assign->get_instance();
+        $eventparams = array('modulename' => 'assign', 'instance' => $instance->id);
+        $event = $DB->get_record('event', $eventparams, '*', MUST_EXIST);
+        $this->assertEquals($event->timestart, $duedate);
+
+        // In case the course ID is passed as a numeric string.
+        $this->assertTrue(assign_refresh_events('' . $this->course->id));
+
+        // Course ID not provided.
+        $this->assertTrue(assign_refresh_events());
+
+        $eventparams = array('modulename' => 'assign');
+        $events = $DB->get_records('event', $eventparams);
+        foreach ($events as $event) {
+            if ($event->modulename === 'assign' && $event->instance === $instance->id) {
+                $this->assertEquals($event->timestart, $duedate);
+            }
+        }
+
+        // Non-existing course ID.
+        $this->assertFalse(assign_refresh_events(-1));
+
+        // Invalid course ID.
+        $this->assertFalse(assign_refresh_events('aaa'));
     }
 
 }

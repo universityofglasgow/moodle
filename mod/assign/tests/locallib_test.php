@@ -778,6 +778,8 @@ class mod_assign_locallib_testcase extends mod_assign_base_testcase {
         $plugin = $assign1->get_submission_plugin_by_type('onlinetext');
         $plugin->save($submission, $data);
 
+        // Wait 1 second so the submission and grade do not have the same timemodified.
+        sleep(1);
         // Simulate adding a grade.
         $this->setUser($this->teachers[0]);
         $data = new stdClass();
@@ -2141,7 +2143,7 @@ Anchor link 2:<a title=\"bananas\" href=\"../logo-240x60.gif\">Link text</a>
         $pagination = array('userid'=>$this->students[0]->id,
                             'rownum'=>0,
                             'last'=>true,
-                            'useridlistid'=>time(),
+                            'useridlistid' => $assign->get_useridlist_key_id(),
                             'attemptnumber'=>0);
         $formparams = array($assign, $data, $pagination);
         $mform = new mod_assign_grade_form(null, $formparams);
@@ -2278,6 +2280,79 @@ Anchor link 2:<a title=\"bananas\" href=\"../logo-240x60.gif\">Link text</a>
         $output = $assign->get_renderer()->render($gradingtable);
         $this->assertEquals(false, strpos($output, get_string('hiddenuser', 'assign')));
         $this->assertEquals(true, strpos($output, fullname($student)));    //students full name doesn't appear.
+    }
+
+    /**
+     * Testing get_shared_group_members
+     */
+    public function test_get_shared_group_members() {
+        $this->create_extra_users();
+        $this->setAdminUser();
+
+        // Force create an assignment with SEPARATEGROUPS.
+        $data = new stdClass();
+        $data->courseid = $this->course->id;
+        $data->name = 'Grouping';
+        $groupingid = groups_create_grouping($data);
+        groups_assign_grouping($groupingid, $this->groups[0]->id);
+        groups_assign_grouping($groupingid, $this->groups[1]->id);
+        $assign = $this->create_instance(array('groupingid' => $groupingid, 'groupmode' => SEPARATEGROUPS));
+        $cm = $assign->get_course_module();
+
+        // Add the capability to access allgroups.
+        $roleid = create_role('Access all groups role', 'accessallgroupsrole', '');
+        assign_capability('moodle/site:accessallgroups', CAP_ALLOW, $roleid, $assign->get_context()->id);
+        role_assign($roleid, $this->extrastudents[3]->id, $assign->get_context()->id);
+        accesslib_clear_all_caches_for_unit_testing();
+
+        // Get shared group members for students 0 and 1.
+        $groupmembers = array();
+        $groupmembers[0] = $assign->get_shared_group_members($cm, $this->students[0]->id);
+        $groupmembers[1] = $assign->get_shared_group_members($cm, $this->students[1]->id);
+
+        // They should share groups with extrastudents 0 and 1.
+        $this->assertTrue(in_array($this->extrastudents[0]->id, $groupmembers[0]));
+        $this->assertFalse(in_array($this->extrastudents[0]->id, $groupmembers[1]));
+        $this->assertTrue(in_array($this->extrastudents[1]->id, $groupmembers[1]));
+        $this->assertFalse(in_array($this->extrastudents[1]->id, $groupmembers[0]));
+
+        // Lists of group members for students and extrastudents should be the same.
+        $this->assertEquals($groupmembers[0], $assign->get_shared_group_members($cm, $this->extrastudents[0]->id));
+        $this->assertEquals($groupmembers[1], $assign->get_shared_group_members($cm, $this->extrastudents[1]->id));
+
+        // Get all group members for extrastudent 3 wich can access all groups.
+        $allgroupmembers = $assign->get_shared_group_members($cm, $this->extrastudents[3]->id);
+
+        // Extrastudent 3 should see students 0 and 1, extrastudent 0 and 1.
+        $this->assertTrue(in_array($this->students[0]->id, $allgroupmembers));
+        $this->assertTrue(in_array($this->students[1]->id, $allgroupmembers));
+        $this->assertTrue(in_array($this->extrastudents[0]->id, $allgroupmembers));
+        $this->assertTrue(in_array($this->extrastudents[1]->id , $allgroupmembers));
+    }
+
+    /**
+     * Test that the useridlist cache will retive the correct values
+     * when using assign::get_useridlist_key and assign::get_useridlist_key_id.
+     */
+    public function test_useridlist_cache() {
+        // Create an assignment object, we will use this to test the key generation functions.
+        $course = self::getDataGenerator()->create_course();
+        $assign = self::getDataGenerator()->create_module('assign', array('course' => $course->id));
+        list($courserecord, $cm) = get_course_and_cm_from_instance($assign->id, 'assign');
+        $context = context_module::instance($cm->id);
+        $assign = new assign($context, $cm, $courserecord);
+        // Create the cache.
+        $cache = cache::make_from_params(cache_store::MODE_SESSION, 'mod_assign', 'useridlist');
+        // Create an entry that we will insert into the cache.
+        $entry = array(0 => '5', 1 => '6325', 2 => '67783');
+        // Insert the value into the cache.
+        $cache->set($assign->get_useridlist_key(), $entry);
+        // Now test we can retrive the entry.
+        $this->assertEquals($entry, $cache->get($assign->get_useridlist_key()));
+        $useridlistid = clean_param($assign->get_useridlist_key_id(), PARAM_ALPHANUM);
+        $this->assertEquals($entry, $cache->get($assign->get_useridlist_key($useridlistid)));
+        // Check it will not retrive anything on an invalid key.
+        $this->assertFalse($cache->get($assign->get_useridlist_key('notvalid')));
     }
 }
 

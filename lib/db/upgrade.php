@@ -4440,5 +4440,35 @@ function xmldb_main_upgrade($oldversion) {
         upgrade_main_savepoint(true, 2015051100.10);
     }
 
+    if ($oldversion < 2015051101.07) {
+
+        // Define field importtype to be added to grade_import_values.
+        $table = new xmldb_table('grade_import_values');
+        $field = new xmldb_field('importonlyfeedback', XMLDB_TYPE_INTEGER, '1', null, null, null, '0', 'importer');
+
+        // Conditionally launch add field importtype.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Main savepoint reached.
+        upgrade_main_savepoint(true, 2015051101.07);
+    }
+
+    if ($oldversion < 2015051102.03) {
+
+        // Define index notification (not unique) to be added to message_read.
+        $table = new xmldb_table('message_read');
+        $index = new xmldb_index('notificationtimeread', XMLDB_INDEX_NOTUNIQUE, array('notification', 'timeread'));
+
+        // Conditionally launch add index notification.
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Main savepoint reached.
+        upgrade_main_savepoint(true, 2015051102.03);
+    }
+
     return true;
 }

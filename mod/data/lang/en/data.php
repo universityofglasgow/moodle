@@ -207,6 +207,7 @@ $string['invalidurl'] = 'The URL you just entered is not valid';
 $string['jstemplate'] = 'Javascript template';
 $string['latitude'] = 'Latitude';
 $string['latlong'] = 'Latitude/longitude';
+$string['latlongboth'] = 'Both latitude and longitude are required.';
 $string['latlongdownloadallhint'] = 'Download link for all entries as KML';
 $string['latlongkmllabelling'] = 'How to label items in KML files (Google Earth)';
 $string['latlonglinkservicesdisplayed'] = 'Link-out services to display';

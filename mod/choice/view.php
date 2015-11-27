@@ -34,7 +34,10 @@ $strchoices = get_string('modulenameplural', 'choice');
 
 $context = context_module::instance($cm->id);
 
-if ($action == 'delchoice' and confirm_sesskey() and is_enrolled($context, NULL, 'mod/choice:choose') and $choice->allowupdate) {
+list($choiceavailable, $warnings) = choice_get_availability_status($choice);
+
+if ($action == 'delchoice' and confirm_sesskey() and is_enrolled($context, NULL, 'mod/choice:choose') and $choice->allowupdate
+        and $choiceavailable) {
     $answercount = $DB->count_records('choice_answers', array('choiceid' => $choice->id, 'userid' => $USER->id));
     if ($answercount > 0) {
         $DB->delete_records('choice_answers', array('choiceid' => $choice->id, 'userid' => $USER->id));
@@ -69,6 +72,11 @@ if (data_submitted() && is_enrolled($context, NULL, 'mod/choice:choose') && conf
         $answer = optional_param_array('answer', array(), PARAM_INT);
     } else {
         $answer = optional_param('answer', '', PARAM_INT);
+    }
+
+    if (!$choiceavailable) {
+        $reason = current(array_keys($warnings));
+        throw new moodle_exception($reason, 'choice', '', $warnings[$reason]);
     }
 
     if ($answer) {
@@ -178,7 +186,7 @@ if (!$choiceformshown) {
     } else if (!is_enrolled($context)) {
         // Only people enrolled can make a choice
         $SESSION->wantsurl = qualified_me();
-        $SESSION->enrolcancel = clean_param($_SERVER['HTTP_REFERER'], PARAM_LOCALURL);
+        $SESSION->enrolcancel = get_local_referer(false);
 
         $coursecontext = context_course::instance($course->id);
         $courseshortname = format_string($course->shortname, true, array('context' => $coursecontext));

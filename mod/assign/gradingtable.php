@@ -198,7 +198,7 @@ class assign_grading_table extends table_sql implements renderable {
             } else if ($filter == ASSIGN_FILTER_REQUIRE_GRADING) {
                 $where .= ' AND (s.timemodified IS NOT NULL AND
                                  s.status = :submitted AND
-                                 (s.timemodified > g.timemodified OR g.timemodified IS NULL))';
+                                 (s.timemodified >= g.timemodified OR g.timemodified IS NULL OR g.grade IS NULL))';
                 $params['submitted'] = ASSIGN_SUBMISSION_STATUS_SUBMITTED;
 
             } else if (strpos($filter, ASSIGN_FILTER_SINGLE_USER) === 0) {
@@ -402,8 +402,6 @@ class assign_grading_table extends table_sql implements renderable {
         foreach ($extrauserfields as $extrafield) {
              $this->column_class($extrafield, $extrafield);
         }
-        // We require at least one unique column for the sort.
-        $this->sortable(true, 'userid');
         $this->no_sorting('recordid');
         $this->no_sorting('finalgrade');
         $this->no_sorting('userid');
@@ -823,7 +821,8 @@ class assign_grading_table extends table_sql implements renderable {
                                             'mod_assign');
             $urlparams = array('id' => $this->assignment->get_course_module()->id,
                                'rownum'=>$this->rownum,
-                               'action'=>'grade');
+                               'action' => 'grade',
+                               'useridlistid' => $this->assignment->get_useridlist_key_id());
             $url = new moodle_url('/mod/assign/view.php', $urlparams);
             $link = $this->output->action_link($url, $icon);
             $grade .= $link . $separator;
@@ -967,7 +966,7 @@ class assign_grading_table extends table_sql implements renderable {
         }
 
         if ($this->is_downloading()) {
-            $o = strip_tags(str_replace('</div>', "\n", $o));
+            $o = strip_tags(rtrim(str_replace('</div>', ' - ', $o), '- '));
         }
 
         return $o;
@@ -988,7 +987,8 @@ class assign_grading_table extends table_sql implements renderable {
 
         $urlparams = array('id'=>$this->assignment->get_course_module()->id,
                            'rownum'=>$this->rownum,
-                           'action'=>'grade');
+                           'action' => 'grade',
+                           'useridlistid' => $this->assignment->get_useridlist_key_id());
         $url = new moodle_url('/mod/assign/view.php', $urlparams);
         $noimage = null;
 
@@ -1369,6 +1369,16 @@ class assign_grading_table extends table_sql implements renderable {
     }
 
     /**
+     * Always return a valid sort - even if the userid column is missing.
+     * @return array column name => SORT_... constant.
+     */
+    public function get_sort_columns() {
+        $result = parent::get_sort_columns();
+        $result = array_merge($result, array('userid' => SORT_ASC));
+        return $result;
+    }
+
+    /**
      * Override the table show_hide_link to not show for select column.
      *
      * @param string $column the column name, index into various names.
@@ -1380,5 +1390,17 @@ class assign_grading_table extends table_sql implements renderable {
             return parent::show_hide_link($column, $index);
         }
         return '';
+    }
+
+    /**
+     * Overides setup to ensure it will only run a single time.
+     */
+    public function setup() {
+        // Check if the setup function has been called before, we should not run it twice.
+        // If we do the sortorder of the table will be broken.
+        if (!empty($this->setup)) {
+            return;
+        }
+        parent::setup();
     }
 }

@@ -35,11 +35,12 @@ defined('MOODLE_INTERNAL') || die();
  * @return bool
  */
 function core_myprofile_navigation(core_user\output\myprofile\tree $tree, $user, $iscurrentuser, $course) {
-    global $CFG, $USER, $DB;
+    global $CFG, $USER, $DB, $PAGE;
 
     $usercontext = context_user::instance($user->id, MUST_EXIST);
     $systemcontext = context_system::instance();
-    $context = !empty($course) ? context_course::instance($course->id) : $systemcontext;
+    $courseorusercontext = !empty($course) ? context_course::instance($course->id) : $usercontext;
+    $courseorsystemcontext = !empty($course) ? context_course::instance($course->id) : $systemcontext;
     $courseid = !empty($course) ? $course->id : SITEID;
 
     $contactcategory = new core_user\output\myprofile\category('contact', get_string('userdetails'));
@@ -62,7 +63,7 @@ function core_myprofile_navigation(core_user\output\myprofile\tree $tree, $user,
     // Full profile node.
     if (!empty($course)) {
         if (empty($CFG->forceloginforprofiles) || $iscurrentuser ||
-            has_capability('moodle/user:viewdetails', context_user::instance($user->id))
+            has_capability('moodle/user:viewdetails', $usercontext)
             || has_coursecontact_role($user->id)) {
             $url = new moodle_url('/user/profile.php', array('id' => $user->id));
             $node = new core_user\output\myprofile\node('miscellaneous', 'fullprofile', get_string('fullprofile'), null, $url);
@@ -101,8 +102,8 @@ function core_myprofile_navigation(core_user\output\myprofile\tree $tree, $user,
         }
     }
 
-    // Preference page. Only visible by administrators.
-    if (!$iscurrentuser && is_siteadmin()) {
+    // Preference page.
+    if (!$iscurrentuser && $PAGE->settingsnav->can_view_user_preferences($user->id)) {
         $url = new moodle_url('/user/preferences.php', array('userid' => $user->id));
         $title = get_string('preferences', 'moodle');
         $node = new core_user\output\myprofile\node('administration', 'preferences', $title, null, $url);
@@ -112,7 +113,7 @@ function core_myprofile_navigation(core_user\output\myprofile\tree $tree, $user,
     // Login as ...
     if (!$user->deleted && !$iscurrentuser &&
                 !\core\session\manager::is_loggedinas() && has_capability('moodle/user:loginas',
-                $context) && !is_siteadmin($user->id)) {
+                $courseorsystemcontext) && !is_siteadmin($user->id)) {
         $url = new moodle_url('/course/loginas.php',
                 array('id' => $courseid, 'user' => $user->id, 'sesskey' => sesskey()));
         $node = new  core_user\output\myprofile\node('administration', 'loginas', get_string('loginas'), null, $url);
@@ -120,12 +121,12 @@ function core_myprofile_navigation(core_user\output\myprofile\tree $tree, $user,
     }
 
     // Contact details.
-    if (has_capability('moodle/user:viewhiddendetails', $usercontext)) {
+    if (has_capability('moodle/user:viewhiddendetails', $courseorusercontext)) {
         $hiddenfields = array();
     } else {
         $hiddenfields = array_flip(explode(',', $CFG->hiddenuserfields));
     }
-    if (has_capability('moodle/site:viewuseridentity', $context)) {
+    if (has_capability('moodle/site:viewuseridentity', $courseorusercontext)) {
         $identityfields = array_flip(explode(',', $CFG->showuseridentity));
     } else {
         $identityfields = array();
@@ -151,7 +152,8 @@ function core_myprofile_navigation(core_user\output\myprofile\tree $tree, $user,
 
     if (isset($identityfields['email']) and ($iscurrentuser
                                              or $user->maildisplay == 1
-                                             or has_capability('moodle/course:useremail', $usercontext)
+                                             or has_capability('moodle/course:useremail', $courseorusercontext)
+                                             or has_capability('moodle/site:viewuseridentity', $courseorusercontext)
                                              or ($user->maildisplay == 2 and enrol_sharing_course($user, $USER)))) {
         $node = new core_user\output\myprofile\node('contact', 'email', get_string('email'), null, null,
             obfuscate_mailto($user->email, ''));
@@ -192,13 +194,13 @@ function core_myprofile_navigation(core_user\output\myprofile\tree $tree, $user,
 
     if (isset($identityfields['department']) && $user->department) {
         $node = new core_user\output\myprofile\node('contact', 'department', get_string('department'), null, null,
-            $user->institution);
+            $user->department);
         $tree->add_node($node);
     }
 
     if (isset($identityfields['idnumber']) && $user->idnumber) {
         $node = new core_user\output\myprofile\node('contact', 'idnumber', get_string('idnumber'), null, null,
-            $user->institution);
+            $user->idnumber);
         $tree->add_node($node);
     }
 
@@ -283,7 +285,7 @@ function core_myprofile_navigation(core_user\output\myprofile\tree $tree, $user,
 
         // Show groups this user is in.
         if (!isset($hiddenfields['groups']) && !empty($course)) {
-            $accessallgroups = has_capability('moodle/site:accessallgroups', $context);
+            $accessallgroups = has_capability('moodle/site:accessallgroups', $courseorsystemcontext);
             if ($usergroups = groups_get_all_groups($course->id, $user->id)) {
                 $groupstr = '';
                 foreach ($usergroups as $group) {
@@ -373,7 +375,7 @@ function core_myprofile_navigation(core_user\output\myprofile\tree $tree, $user,
                     $newfield = 'profile_field_'.$field->datatype;
                     $formfield = new $newfield($field->id, $user->id);
                     if ($formfield->is_visible() and !$formfield->is_empty()) {
-                        $node = new core_user\output\myprofile\node('contact', $formfield->field->shortname,
+                        $node = new core_user\output\myprofile\node('contact', 'custom_field_' . $formfield->field->shortname,
                             format_string($formfield->field->name), null, null, $formfield->display_data());
                         $tree->add_node($node);
                     }

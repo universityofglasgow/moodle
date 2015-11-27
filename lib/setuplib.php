@@ -165,6 +165,24 @@ class require_login_exception extends moodle_exception {
 }
 
 /**
+ * Session timeout exception.
+ *
+ * This exception is thrown from require_login()
+ *
+ * @package    core_access
+ * @copyright  2015 Andrew Nicols <andrew@nicols.co.uk>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class require_login_session_timeout_exception extends require_login_exception {
+    /**
+     * Constructor
+     */
+    public function __construct() {
+        moodle_exception::__construct('sessionerroruser', 'error');
+    }
+}
+
+/**
  * Web service parameter exception class
  * @deprecated since Moodle 2.2 - use moodle exception instead
  * This exception must be thrown to the web service client when a web service parameter is invalid
@@ -932,6 +950,29 @@ function setup_get_remote_url() {
     if (stripos($_SERVER['SERVER_SOFTWARE'], 'apache') !== false) {
         //Apache server
         $rurl['fullpath'] = $_SERVER['REQUEST_URI'];
+
+        // Fixing a known issue with:
+        // - Apache versions lesser than 2.4.11
+        // - PHP deployed in Apache as PHP-FPM via mod_proxy_fcgi
+        // - PHP versions lesser than 5.6.3 and 5.5.18.
+        if (isset($_SERVER['PATH_INFO']) && (php_sapi_name() === 'fpm-fcgi') && isset($_SERVER['SCRIPT_NAME'])) {
+            $pathinfodec = rawurldecode($_SERVER['PATH_INFO']);
+            $lenneedle = strlen($pathinfodec);
+            // Checks whether SCRIPT_NAME ends with PATH_INFO, URL-decoded.
+            if (substr($_SERVER['SCRIPT_NAME'], -$lenneedle) === $pathinfodec) {
+                // This is the "Apache 2.4.10- running PHP-FPM via mod_proxy_fcgi" fingerprint,
+                // at least on CentOS 7 (Apache/2.4.6 PHP/5.4.16) and Ubuntu 14.04 (Apache/2.4.7 PHP/5.5.9)
+                // => SCRIPT_NAME contains 'slash arguments' data too, which is wrongly exposed via PATH_INFO as URL-encoded.
+                // Fix both $_SERVER['PATH_INFO'] and $_SERVER['SCRIPT_NAME'].
+                $lenhaystack = strlen($_SERVER['SCRIPT_NAME']);
+                $pos = $lenhaystack - $lenneedle;
+                // Here $pos is greater than 0 but let's double check it.
+                if ($pos > 0) {
+                    $_SERVER['PATH_INFO'] = $pathinfodec;
+                    $_SERVER['SCRIPT_NAME'] = substr($_SERVER['SCRIPT_NAME'], 0, $pos);
+                }
+            }
+        }
 
     } else if (stripos($_SERVER['SERVER_SOFTWARE'], 'iis') !== false) {
         //IIS - needs a lot of tweaking to make it work

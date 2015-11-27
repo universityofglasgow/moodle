@@ -362,6 +362,12 @@ function lti_build_request($instance, $typeconfig, $course, $typeid = null, $isl
         'context_label' => $course->shortname,
         'context_title' => $course->fullname,
     );
+    if (!empty($instance->id)) {
+        $requestparams['resource_link_id'] = $instance->id;
+    }
+    if (!empty($instance->resource_link_id)) {
+        $requestparams['resource_link_id'] = $instance->resource_link_id;
+    }
     if ($course->format == 'site') {
         $requestparams['context_type'] = 'Group';
     } else {
@@ -370,7 +376,7 @@ function lti_build_request($instance, $typeconfig, $course, $typeid = null, $isl
     }
     $placementsecret = $instance->servicesalt;
 
-    if ( isset($placementsecret) && ($islti2 ||
+    if ( !empty($instance->id) && isset($placementsecret) && ($islti2 ||
          $typeconfig['acceptgrades'] == LTI_SETTING_ALWAYS ||
          ($typeconfig['acceptgrades'] == LTI_SETTING_DELEGATE && $instance->instructorchoiceacceptgrades == LTI_SETTING_ALWAYS))) {
 
@@ -952,10 +958,19 @@ function lti_get_type_config($typeid) {
            UNION ALL
               SELECT 'toolurl' AS name, " . $DB->sql_compare_text('baseurl', 1333) . " AS value
                 FROM {lti_types}
-               WHERE id = :typeid2";
+               WHERE id = :typeid2
+           UNION ALL
+              SELECT 'icon' AS name, " . $DB->sql_compare_text('icon', 1333) . " AS value
+                FROM {lti_types}
+               WHERE id = :typeid3
+           UNION ALL
+              SELECT 'secureicon' AS name, " . $DB->sql_compare_text('secureicon', 1333) . " AS value
+                FROM {lti_types}
+               WHERE id = :typeid4";
 
     $typeconfig = array();
-    $configs = $DB->get_records_sql($query, array('typeid1' => $typeid, 'typeid2' => $typeid));
+    $configs = $DB->get_records_sql($query,
+        array('typeid1' => $typeid, 'typeid2' => $typeid, 'typeid3' => $typeid, 'typeid4' => $typeid));
 
     if (!empty($configs)) {
         foreach ($configs as $config) {
@@ -1283,6 +1298,10 @@ function lti_get_type_type_config($id) {
 
     $type->lti_parameters = $basicltitype->parameter;
 
+    $type->lti_icon = $basicltitype->icon;
+
+    $type->lti_secureicon = $basicltitype->secureicon;
+
     if (isset($config['resourcekey'])) {
         $type->lti_resourcekey = $config['resourcekey'];
     }
@@ -1362,6 +1381,13 @@ function lti_prepare_type_for_save($type, $config) {
     $type->coursevisible = !empty($config->lti_coursevisible) ? $config->lti_coursevisible : 0;
     $config->lti_coursevisible = $type->coursevisible;
 
+    if (isset($config->lti_icon)) {
+        $type->icon = $config->lti_icon;
+    }
+    if (isset($config->lti_secureicon)) {
+        $type->secureicon = $config->lti_secureicon;
+    }
+
     if (isset($config->lti_forcessl)) {
         $type->forcessl = !empty($config->lti_forcessl) ? $config->lti_forcessl : 0;
         $config->lti_forcessl = $type->forcessl;
@@ -1371,12 +1397,22 @@ function lti_prepare_type_for_save($type, $config) {
 
     unset ($config->lti_typename);
     unset ($config->lti_toolurl);
+    unset ($config->lti_icon);
+    unset ($config->lti_secureicon);
 }
 
 function lti_update_type($type, $config) {
-    global $DB;
+    global $DB, $CFG;
 
     lti_prepare_type_for_save($type, $config);
+
+    $clearcache = false;
+    if (lti_request_is_using_ssl() && !empty($type->secureicon)) {
+        $clearcache = !isset($config->oldicon) || ($config->oldicon !== $type->secureicon);
+    } else {
+        $clearcache = isset($type->icon) && (!isset($config->oldicon) || ($config->oldicon !== $type->icon));
+    }
+    unset($config->oldicon);
 
     if ($DB->update_record('lti_types', $type)) {
         foreach ($config as $key => $value) {
@@ -1387,6 +1423,10 @@ function lti_update_type($type, $config) {
                 $record->value = $value;
                 lti_update_config($record);
             }
+        }
+        require_once($CFG->libdir.'/modinfolib.php');
+        if ($clearcache) {
+            rebuild_course_cache();
         }
     }
 }

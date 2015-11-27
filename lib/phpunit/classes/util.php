@@ -104,16 +104,16 @@ class phpunit_util extends testing_util {
         global $DB, $CFG, $USER, $SITE, $COURSE, $PAGE, $OUTPUT, $SESSION;
 
         // Stop any message redirection.
-        phpunit_util::stop_message_redirection();
+        self::stop_message_redirection();
 
         // Stop any message redirection.
-        phpunit_util::stop_event_redirection();
+        self::stop_event_redirection();
 
         // Start a new email redirection.
         // This will clear any existing phpmailer redirection.
         // We redirect all phpmailer output to this message sink which is
         // called instead of phpmailer actually sending the message.
-        phpunit_util::start_phpmailer_redirection();
+        self::start_phpmailer_redirection();
 
         // We used to call gc_collect_cycles here to ensure desctructors were called between tests.
         // This accounted for 25% of the total time running phpunit - so we removed it.
@@ -131,6 +131,7 @@ class phpunit_util extends testing_util {
         }
 
         $resetdb = self::reset_database();
+        $localename = self::get_locale_name();
         $warnings = array();
 
         if ($detectchanges === true) {
@@ -163,14 +164,8 @@ class phpunit_util extends testing_util {
                 $warnings[] = 'Warning: unexpected change of $COURSE';
             }
 
-            if ($CFG->ostype === 'WINDOWS') {
-                if (setlocale(LC_TIME, 0) !== 'English_Australia.1252') {
-                    $warnings[] = 'Warning: unexpected change of locale';
-                }
-            } else {
-                if (setlocale(LC_TIME, 0) !== 'en_AU.UTF-8') {
-                    $warnings[] = 'Warning: unexpected change of locale';
-                }
+            if (setlocale(LC_TIME, 0) !== $localename) {
+                $warnings[] = 'Warning: unexpected change of locale';
             }
         }
 
@@ -216,6 +211,11 @@ class phpunit_util extends testing_util {
         filter_manager::reset_caches();
         core_filetypes::reset_caches();
 
+        // Reset static unit test options.
+        if (class_exists('\availability_date\condition', false)) {
+            \availability_date\condition::set_current_time_for_test(0);
+        }
+
         // Reset internal users.
         core_user::reset_internal_users();
 
@@ -239,6 +239,11 @@ class phpunit_util extends testing_util {
             \core\update\deployer::reset_caches(true);
         }
 
+        // Clear static cache within restore.
+        if (class_exists('restore_section_structure_step')) {
+            restore_section_structure_step::reset_caches();
+        }
+
         // purge dataroot directory
         self::reset_dataroot();
 
@@ -255,11 +260,7 @@ class phpunit_util extends testing_util {
         core_date::phpunit_reset();
 
         // Make sure the time locale is consistent - that is Australian English.
-        if ($CFG->ostype === 'WINDOWS') {
-            setlocale(LC_TIME, 'English_Australia.1252');
-        } else {
-            setlocale(LC_TIME, 'en_AU.UTF-8');
-        }
+        setlocale(LC_TIME, $localename);
 
         // verify db writes just in case something goes wrong in reset
         if (self::$lastdbwrites != $DB->perf_get_writes()) {
@@ -310,7 +311,7 @@ class phpunit_util extends testing_util {
         self::$globals['DB'] = $DB;
 
         // refresh data in all tables, clear caches, etc.
-        phpunit_util::reset_all_data();
+        self::reset_all_data();
     }
 
     /**
@@ -354,6 +355,11 @@ class phpunit_util extends testing_util {
      */
     public static function testing_ready_problem() {
         global $DB;
+
+        $localename = self::get_locale_name();
+        if (setlocale(LC_TIME, $localename) === false) {
+            return array(PHPUNIT_EXITCODE_CONFIGERROR, "Required locale '$localename' is not installed.");
+        }
 
         if (!self::is_test_site()) {
             // dataroot was verified in bootstrap, so it must be DB
@@ -417,7 +423,7 @@ class phpunit_util extends testing_util {
         }
 
         if ($DB->get_tables()) {
-            list($errorcode, $message) = phpunit_util::testing_ready_problem();
+            list($errorcode, $message) = self::testing_ready_problem();
             if ($errorcode) {
                 phpunit_bootstrap_error(PHPUNIT_EXITCODE_REINSTALL, 'Database tables already present, Moodle PHPUnit test environment can not be initialised');
             } else {
@@ -524,7 +530,7 @@ class phpunit_util extends testing_util {
 
         $template = '
         <testsuites>
-            <testsuite name="@component@">
+            <testsuite name="@component@_testsuite">
                 <directory suffix="_test.php">.</directory>
             </testsuite>
         </testsuites>';
@@ -789,6 +795,21 @@ class phpunit_util extends testing_util {
     public static function event_triggered(\core\event\base $event) {
         if (self::$eventsink) {
             self::$eventsink->add_event($event);
+        }
+    }
+
+    /**
+     * Gets the name of the locale for testing environment (Australian English)
+     * depending on platform environment.
+     *
+     * @return string the locale name.
+     */
+    protected static function get_locale_name() {
+        global $CFG;
+        if ($CFG->ostype === 'WINDOWS') {
+            return 'English_Australia.1252';
+        } else {
+            return 'en_AU.UTF-8';
         }
     }
 }

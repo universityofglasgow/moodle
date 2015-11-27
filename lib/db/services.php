@@ -521,6 +521,15 @@ $functions = array(
         'capabilities'  => 'moodle/user:viewdetails',
     ),
 
+    'core_user_add_user_private_files' => array(
+        'classname'     => 'core_user_external',
+        'methodname'    => 'add_user_private_files',
+        'classpath'     => 'user/externallib.php',
+        'description'   => 'Copy files from a draft area to users private files area.',
+        'type'          => 'write',
+        'capabilities'  => 'moodle/user:manageownfiles',
+    ),
+
     // === enrol related functions ===
 
     'core_enrol_get_enrolled_users_with_capability' => array(
@@ -966,6 +975,7 @@ $functions = array(
         'classpath'   => 'lib/external/externallib.php',
         'description' => 'Return a translated string - similar to core get_string() call',
         'type'        => 'read',
+        'loginrequired' => false
     ),
 
     'core_get_strings' => array(
@@ -974,6 +984,7 @@ $functions = array(
         'classpath'   => 'lib/external/externallib.php',
         'description' => 'Return some translated strings - like several core get_string() calls',
         'type'        => 'read',
+        'loginrequired' => false
     ),
 
     'core_get_component_strings' => array(
@@ -983,6 +994,7 @@ $functions = array(
         'description' => 'Return all raw strings (with {$a->xxx}) for a specific component
             - similar to core get_component_strings() call',
         'type'        => 'read',
+        'loginrequired' => false
     ),
 
 
@@ -1020,7 +1032,8 @@ $functions = array(
         'classname'   => 'core\output\external',
         'methodname'  => 'load_template',
         'description' => 'Load a template for a renderable',
-        'type'        => 'read'
+        'type'        => 'read',
+        'loginrequired' => false
     ),
 
     // Completion related functions.

@@ -242,7 +242,7 @@ function message_get_blocked_users($user1=null, $user2=null) {
                           FROM {message_contacts} mc
                           JOIN {user} u ON u.id = mc.contactid
                           LEFT OUTER JOIN {message} m ON m.useridfrom = mc.contactid AND m.useridto = :user1id1
-                         WHERE mc.userid = :user1id2 AND mc.blocked = 1
+                         WHERE u.deleted = 0 AND mc.userid = :user1id2 AND mc.blocked = 1
                       GROUP BY $userfields
                       ORDER BY u.firstname ASC";
     $rs =  $DB->get_recordset_sql($blockeduserssql, array('user1id1' => $user1->id, 'user1id2' => $user1->id));
@@ -339,7 +339,7 @@ function message_get_contacts($user1=null, $user2=null) {
                      FROM {message_contacts} mc
                      JOIN {user} u ON u.id = mc.contactid
                      LEFT OUTER JOIN {message} m ON m.useridfrom = mc.contactid AND m.useridto = ?
-                    WHERE mc.userid = ? AND mc.blocked = 0
+                    WHERE u.deleted = 0 AND mc.userid = ? AND mc.blocked = 0
                  GROUP BY $userfields
                  ORDER BY u.firstname ASC";
 
@@ -365,7 +365,7 @@ function message_get_contacts($user1=null, $user2=null) {
                       FROM {message} m
                       JOIN {user} u  ON u.id = m.useridfrom
                       LEFT OUTER JOIN {message_contacts} mc ON mc.contactid = m.useridfrom AND mc.userid = m.useridto
-                     WHERE mc.id IS NULL AND m.useridto = ?
+                     WHERE u.deleted = 0 AND mc.id IS NULL AND m.useridto = ?
                   GROUP BY $userfields
                   ORDER BY u.firstname ASC";
 
@@ -976,16 +976,16 @@ function message_format_message_text($message, $forcetexttohtml = false) {
 
     $format = $message->fullmessageformat;
 
-    if ($message->smallmessage !== '') {
+    if (strval($message->smallmessage) !== '') {
         if ($message->notification == 1) {
-            if ($message->fullmessagehtml !== '' or $message->fullmessage !== '') {
+            if (strval($message->fullmessagehtml) !== '' or strval($message->fullmessage) !== '') {
                 $format = FORMAT_PLAIN;
             }
         }
         $messagetext = $message->smallmessage;
 
     } else if ($message->fullmessageformat == FORMAT_HTML) {
-        if ($message->fullmessagehtml !== '') {
+        if (strval($message->fullmessagehtml) !== '') {
             $messagetext = $message->fullmessagehtml;
         } else {
             $messagetext = $message->fullmessage;
@@ -993,7 +993,7 @@ function message_format_message_text($message, $forcetexttohtml = false) {
         }
 
     } else {
-        if ($message->fullmessage !== '') {
+        if (strval($message->fullmessage) !== '') {
             $messagetext = $message->fullmessage;
         } else {
             $messagetext = $message->fullmessagehtml;
@@ -1028,7 +1028,7 @@ function message_add_contact($contactid, $blocked=0) {
     // Check if a record already exists as we may be changing blocking status.
     if (($contact = $DB->get_record('message_contacts', array('userid' => $USER->id, 'contactid' => $contactid))) !== false) {
         // Check if blocking status has been changed.
-        if ($contact->blocked !== $blocked) {
+        if ($contact->blocked != $blocked) {
             $contact->blocked = $blocked;
             $DB->update_record('message_contacts', $contact);
 
@@ -2700,6 +2700,10 @@ function message_messenger_requirejs() {
         'sendmessage',
         'viewconversation',
     ), 'core_message');
+    $PAGE->requires->strings_for_js(array(
+        'userisblockingyou',
+        'userisblockingyounoncontact'
+    ), 'message');
     $PAGE->requires->string_for_js('error', 'core');
 
     $done = true;
@@ -2712,10 +2716,117 @@ function message_messenger_requirejs() {
  * @return void
  */
 function message_messenger_sendmessage_link_params($user) {
-    return array(
+    $params = array(
         'data-trigger' => 'core_message-messenger::sendmessage',
         'data-fullname' => fullname($user),
         'data-userid' => $user->id,
         'role' => 'button'
     );
+
+    if (message_is_user_non_contact_blocked($user)) {
+        $params['data-blocked-string'] = 'userisblockingyounoncontact';
+    } else if (message_is_user_blocked($user)) {
+        $params['data-blocked-string'] = 'userisblockingyou';
+    }
+
+    return $params;
+}
+
+/**
+ * Determines if a user is permitted to send another user a private message.
+ * If no sender is provided then it defaults to the logged in user.
+ *
+ * @param object $recipient User object.
+ * @param object $sender User object.
+ * @return bool true if user is permitted, false otherwise.
+ */
+function message_can_post_message($recipient, $sender = null) {
+    global $USER, $DB;
+
+    if (is_null($sender)) {
+        // The message is from the logged in user, unless otherwise specified.
+        $sender = $USER;
+    }
+
+    if (!has_capability('moodle/site:sendmessage', context_system::instance(), $sender)) {
+        return false;
+    }
+
+    // The recipient blocks messages from non-contacts and the
+    // sender isn't a contact.
+    if (message_is_user_non_contact_blocked($recipient, $sender)) {
+        return false;
+    }
+
+    // The recipient has specifically blocked this sender.
+    if (message_is_user_blocked($recipient, $sender)) {
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * Checks if the recipient is allowing messages from users that aren't a
+ * contact. If not then it checks to make sure the sender is in the
+ * recipient's contacts.
+ *
+ * @param object $recipient User object.
+ * @param object $sender User object.
+ * @return bool true if $sender is blocked, false otherwise.
+ */
+function message_is_user_non_contact_blocked($recipient, $sender = null) {
+    global $USER, $DB;
+
+    if (is_null($sender)) {
+        // The message is from the logged in user, unless otherwise specified.
+        $sender = $USER;
+    }
+
+    $blockednoncontacts = get_user_preferences('message_blocknoncontacts', '', $recipient->id);
+    if (!empty($blockednoncontacts)) {
+        // Confirm the sender is a contact of the recipient.
+        $exists = $DB->record_exists('message_contacts', array('userid' => $recipient->id, 'contactid' => $sender->id));
+        if ($exists) {
+            // All good, the recipient is a contact of the sender.
+            return false;
+        } else {
+            // Oh no, the recipient is not a contact. Looks like we can't send the message.
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
+ * Checks if the recipient has specifically blocked the sending user.
+ *
+ * Note: This function will always return false if the sender has the
+ * readallmessages capability at the system context level.
+ *
+ * @param object $recipient User object.
+ * @param object $sender User object.
+ * @return bool true if $sender is blocked, false otherwise.
+ */
+function message_is_user_blocked($recipient, $sender = null) {
+    global $USER, $DB;
+
+    if (is_null($sender)) {
+        // The message is from the logged in user, unless otherwise specified.
+        $sender = $USER;
+    }
+
+    $systemcontext = context_system::instance();
+    if (has_capability('moodle/site:readallmessages', $systemcontext, $sender)) {
+        return false;
+    }
+
+    if ($contact = $DB->get_record('message_contacts', array('userid' => $recipient->id, 'contactid' => $sender->id))) {
+        if ($contact->blocked) {
+            return true;
+        }
+    }
+
+    return false;
 }
