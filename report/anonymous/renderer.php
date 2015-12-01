@@ -63,6 +63,23 @@ class report_anonymous_renderer extends plugin_renderer_base {
         return '<span class="urkundtt" title="'.$original.'">'.$filename.'</span>';
     }
 
+    private function head($strname, $column, $url) {
+        global $OUTPUT; 
+
+        $strtext = get_string($strname, 'report_anonymous');
+        $ptsort = optional_param('tsort', '', PARAM_ALPHA);
+        $dir = optional_param('tdir', 'asc', PARAM_ALPHA);
+        if ($column == $ptsort) {
+            $dir = $dir == 'asc' ? 'desc' : 'asc';
+            $logo = $dir == 'asc' ? 'up' : 'down';
+            $pix = '<img src="' . $OUTPUT->pix_url('i/'.$logo) . '" />';
+            $strtext = '<u>' . $strtext . '</u>';
+        } else {
+            $pix = '';
+        }
+        return '<a href="' . $url . '&tsort=' . $column . '&tdir=' . $dir . '">' . $strtext . ' ' . $pix . '</a>';
+    }
+
     /**
      * List of assignment users
      * @param int $courseid course id
@@ -71,69 +88,67 @@ class report_anonymous_renderer extends plugin_renderer_base {
      * @param boolean $reveal Display full names or not
      * @param boolean $urkund Is Urkund used in this assignment?
      */
-    public function report($courseid, $assignment, $submissions, $reveal, $urkund) {
+    public function report($courseid, $assignment, $submissions, $reveal, $urkund, $baseurl) {
         echo '<div class="alert alert-primary">' . get_string('assignnotsubmit', 'report_anonymous', $assignment->name) . '</div>';
 
         // Pager
-        $this->pagercontrols();
+        // $this->pagercontrols();
 
-        // Keep a track of records with no idnumber.
+        // Start to set up table.
         $table = new html_table();
-        $table->head = array(
-           get_string('idnumber', 'report_anonymous'),
-           get_string('participantnumber', 'report_anonymous'),
-           get_string('submitted', 'report_anonymous'),
-           get_string('name', 'report_anonymous'),
+
+        // Headers
+        $columns = array('idnumber', 'participantid', 'status', 'date', 'name');
+        $headers = array(
+           $this->head('idnumber', 'idnumber', $baseurl),
+           $this->head('participantnumber', 'participantid', $baseurl),
+           $this->head('status', 'status', $baseurl),
+           $this->head('submitdate', 'date', $baseurl),
+           $this->head('name', 'name', $baseurl),
         );
         if ($urkund) {
-            $table->head[] = get_string('urkundfile', 'report_anonymous');
-            $table->head[] = get_string('urkundstatus', 'report_anonymous');
-            $table->head[] = get_string('urkundscore', 'report_anonymous');
+            $columns[] = 'urkundfilename';
+            $columns[] = 'urkundstatus';
+            $columns[] = 'urkundscore';
+            $headers[] = $this->head('urkundfile', 'urkundfilename', $baseurl);
+            $headers[] = $this->head('urkundstatus', 'urkundstatus', $baseurl);
+            $headers[] = $this->head('urkundscore', 'urkundscore', $baseurl);
         }
-        $table->colclasses = array(
-            null,
-            null,
-            'anonymous-date',
-        );
-        $table->id = 'anonymous_table';
+        $table->head = $headers;
+
+        // Add data to table
         $nosubmitcount = 0;
         foreach ($submissions as $s) {
             $line = array();
 
             // Matric/ID Number
-            if ($s->user->idnumber) {
-                $line[] = $s->user->idnumber;
-            } else {
-                $line[] = '-';
-            }
+            $line[] = $s->idnumber;
 
             // Participant number
-            $line[] = $s->user->participantid;
+            $line[] = $s->participantid;
 
-            // Submitted
-            if ($s->submission) {
-                $line[] = date('d/m/Y', $s->submission->timemodified);
-            } else {
-                $line[] = get_string('no');
+            // Submitted status
+            $line[] = $s->status;
+            if ($s->status == '-') {
                 $nosubmitcount++;
             }
 
+            // Submitted date
+            $line[] = $s->date;
+
             // Name
-            if ($reveal || !$assignment->blindmarking) {
-                $userurl = new moodle_url('/user/view.php', array('id' => $s->user->id, 'course' => $courseid));
-                $line[] = "<a href=\"$userurl\">".fullname($s->user)."</a>";
-            } else {
-                $line[] = get_string('hidden', 'report_anonymous');
-            }
+            $line[] = $s->name;
 
             if ($urkund) {
-                $line[] = isset($s->urkundfilename) ? $this->urkund_filename($s->urkundfilename) : '-';
-                $line[] = isset($s->urkundstatus) ? $s->urkundstatus : '-';
-                $line[] = isset($s->urkundscore) ? $s->urkundscore : '-';
+                $line[] = $this->urkund_filename($s->urkundfilename);
+                $line[] = $s->urkundstatus;
+                $line[] = $s->urkundscore;
             }
       
             $table->data[] = $line;
         }
+
+        // Finally, display the table.
         echo html_writer::table($table);
 
         // Totals.
@@ -163,9 +178,8 @@ class report_anonymous_renderer extends plugin_renderer_base {
         }
 
         if (has_capability('report/anonymous:export', $context)) {
-            $url->params(array('export' => 1));
             $text = get_string('export', 'report_anonymous');
-            echo "<a class=\"btn\" href=\"$url\">$text</a>";
+            echo "<a class=\"btn\" href=\"$url&export=1\">$text</a>";
         }
         echo "</div>";
     }

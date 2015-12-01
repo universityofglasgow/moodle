@@ -70,7 +70,7 @@ class report_anonymous {
      * @param array $users list of user objects
      * @return array list of submissions indexed by user (null where not submitted)
      */
-    public static function get_submissions($assignid, $users) {
+    public static function get_submissions($assignid, $users, $group) {
         global $DB;
 
         // Is Urkund in use
@@ -78,6 +78,13 @@ class report_anonymous {
 
         $submissions = array();
         foreach ($users as $user) {
+
+            // is user in group
+            if ($group) {
+                if (!groups_is_member($group, $user->id)) {
+                    continue;
+                }
+            }
             $instance = new stdClass;
           
             // Check if this user has a participant number
@@ -113,6 +120,54 @@ class report_anonymous {
         }
 
         return $submissions;
+    }
+
+    /**
+     * Organise submission/user data into displayable form
+     */
+    public static function datatodisplay($submissions, $courseid, $showname=false) {
+        $output = array();
+
+        foreach ($submissions as $s) {
+            $record = new stdClass;
+
+            // Matric/ID Number
+            if ($s->user->idnumber) {
+                $record->idnumber = $s->user->idnumber;
+            } else {
+                $record->idnumber = '-';
+            }
+
+            // Participant number
+            $record->participantid = $s->user->participantid;
+
+            // Submitted (timemodified retained for sort)
+            if ($s->submission) {
+                $record->date = date('d/m/Y', $s->submission->timemodified);
+                $record->status = $s->submission->status;
+            } else {
+                $record->date = '-';
+                $record->status = '-';
+            }
+
+            // Name
+            if ($showname) {
+                $userurl = new moodle_url('/user/view.php', array('id' => $s->user->id, 'course' => $courseid));
+                $record->name = "<a href=\"$userurl\">".fullname($s->user)."</a>";
+                $record->fullname = fullname($s->user);
+            } else {
+                $record->name = get_string('hidden', 'report_anonymous');
+                $record->fullname = '-';
+            }
+
+            $record->urkundfilename = isset($s->urkundfilename) ? $s->urkundfilename : '-';
+            $record->urkundstatus = isset($s->urkundstatus) ? $s->urkundstatus : '-';
+            $record->urkundscore = isset($s->urkundscore) ? $s->urkundscore : '-';
+      
+            $output[] = $record;
+        }
+
+        return $output;
     }
 
     /**
@@ -177,14 +232,15 @@ class report_anonymous {
     /**
      * sort users using callback
      */
-    public static function sort_submissions($submissions, $onname=false) {
-        uasort($submissions, function($a, $b) use ($onname) {
-            if ((!$a->submission) xor (!$b->submission)) {
-                return ($a->submission) ? 1 : -1;
-            } else if ($onname) {
-                return strcasecmp(fullname($a->user), fullname($b->user));
+    public static function sort_submissions($submissions, $dir, $fieldname) {
+        if ($fieldname=='name') {
+            $fieldname = 'fullname';
+        }
+        uasort($submissions, function($a, $b) use ($fieldname, $dir) {
+            if ($dir=='asc') {
+                return strcasecmp($a->$fieldname, $b->$fieldname);
             } else {
-                return strcasecmp($a->user->idnumber, $b->user->idnumber);
+                return strcasecmp($b->$fieldname, $a->$fieldname);
             }
         });
         return $submissions;

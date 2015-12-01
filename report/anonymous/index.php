@@ -22,26 +22,35 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+define('REPORT_PAGESIZE', 20);
+
 require(dirname(__FILE__).'/../../config.php');
 require_once(dirname(__FILE__).'/locallib.php');
 require_once($CFG->dirroot . '/mod/assign/locallib.php');
+require_once($CFG->libdir.'/tablelib.php');
 
 // Parameters.
 $id = required_param('id', PARAM_INT);
 $assignid = optional_param('assign', 0, PARAM_INT);
 $reveal = optional_param('reveal', 0, PARAM_INT);
 $export = optional_param('export', 0, PARAM_INT);
+$page = optional_param('page', 0, PARAM_INT);
+$tsort = optional_param('tsort', 'idnumber', PARAM_ALPHA);
+$tdir = optional_param('tdir', 'asc', PARAM_ALPHA);
+$group = optional_param('group', 0, PARAM_INT);
+
 
 $url = new moodle_url('/report/anonymous/index.php', array('id' => $id));
 $fullurl = new moodle_url('/report/anonymous/index.php', array(
     'id' => $id,
     'assign' => $assignid,
     'reveal' => $reveal,
+    'group' => $group,
 ));
 
 // Page setup.
 $PAGE->set_url($fullurl);
-$PAGE->set_pagelayout('admin');
+$PAGE->set_pagelayout('report');
 
 $course = $DB->get_record('course', array('id' => $id), '*', MUST_EXIST);
 
@@ -71,6 +80,12 @@ $assignments = report_anonymous::get_assignments($id);
 
 // Has a link been submitted?
 if ($assignid) {
+    // get course module
+    $cm = get_coursemodule_from_instance('assign', $assignid);
+
+    // group mode
+    $groupmode = groups_get_activity_groupmode($cm, $course);
+
     if (!report_anonymous::allowed_to_view($assignid, $assignments)) {
         notice(get_string('notallowed', 'report_anonymous'), $url);
     }
@@ -83,15 +98,17 @@ if ($assignid) {
         assign::allocate_unique_ids($assignid);
     }
     $users = report_anonymous::get_assign_users($context);
-    $submissions = report_anonymous::get_submissions($assignid, $users);
-    $submissions = report_anonymous::sort_submissions($submissions, $reveal || (!$assignment->blindmarking));
+    $submissions = report_anonymous::get_submissions($assignid, $users, $group);
+    $displaysubs = report_anonymous::datatodisplay($submissions, $id, $reveal);
+    $displaysubs = report_anonymous::sort_submissions($displaysubs, $tdir, $tsort);
     if ($export) {
         $filename = "anonymous_{$assignment->name}.xls";
-        report_anonymous::export($assignment, $submissions, $reveal, $filename, $urkund);
+        report_anonymous::export($assignment, $displaysubs, $reveal, $filename, $urkund);
         die;
     }
     $output->actions($context, $fullurl, $reveal, $assignment);
-    $output->report($id, $assignment, $submissions, $reveal, $urkund);
+    groups_print_activity_menu($cm, $fullurl);
+    $output->report($id, $assignment, $displaysubs, $reveal, $urkund, $fullurl);
     $output->back_button($url);
 } else {
 
