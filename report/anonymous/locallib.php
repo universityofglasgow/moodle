@@ -241,7 +241,7 @@ class report_anonymous {
                 if ($dir=='asc') {
                     return ($a->$fieldname > $b->$fieldname) ? 1 : -1;
                 } else {
-                    return ($b->$fieldname > $a->$fieldname) ? -1 : 1;
+                    return ($b->$fieldname > $a->$fieldname) ? 1 : -1;
                 }
             } else {
                 if ($dir=='asc') {
