@@ -91,9 +91,6 @@ class report_anonymous_renderer extends plugin_renderer_base {
     public function report($courseid, $assignment, $submissions, $reveal, $urkund, $baseurl) {
         echo '<div class="alert alert-primary">' . get_string('assignnotsubmit', 'report_anonymous', $assignment->name) . '</div>';
 
-        // Pager
-        // $this->pagercontrols();
-
         // Start to set up table.
         $table = new html_table();
 
@@ -174,43 +171,21 @@ class report_anonymous_renderer extends plugin_renderer_base {
                 $showurl->params(array('reveal' => 1));
                 $text = get_string('clickshownames', 'report_anonymous');
             }
-            echo "<a class=\"btn\" href=\"$showurl\">$text</a>";
+            echo "<a class=\"btn btn-primary\" href=\"$showurl\">$text</a> ";
         }
 
         if (has_capability('report/anonymous:export', $context)) {
             $text = get_string('export', 'report_anonymous');
-            echo "<a class=\"btn\" href=\"$url&export=1\">$text</a>";
+            echo "<a class=\"btn btn-success\" href=\"$url&export=1\">$text</a>";
         }
         echo "</div>";
     }
 
     public function back_button($url) {
         echo "<div style=\"margin-top: 20px;\">";
-        echo "<a class=\"btn\" href=\"$url\">" . get_string('backtolist', 'report_anonymous') . "</a>";
+        echo "<a class=\"btn btn-success\" href=\"$url\">" . get_string('backtolist', 'report_anonymous') . "</a>";
         echo "</div>";
     }
 
-    /**
-     * Display controls for jquery-pager.
-     */
-    public function pagercontrols() {
-        global $OUTPUT;
-
-        echo '<div id="anonymous_pager" class="anonymous_pager">';
-        echo '  <form>';
-        echo '    <img src="' . $OUTPUT->pix_url('first', 'report_anonymous') . '" class="first"/>';
-        echo '    <img src="' . $OUTPUT->pix_url('prev', 'report_anonymous') . '" class="prev"/>';
-        echo '    <span class="pagedisplay"></span>';
-        echo '    <img src="' . $OUTPUT->pix_url('next', 'report_anonymous') . '" class="next"/>';
-        echo '    <img src="' . $OUTPUT->pix_url('last', 'report_anonymous') . '" class="last"/>';
-        echo '    <select class="pagesize">';
-        echo '      <option value="10">10</option>';
-        echo '      <option value="20">20</option>';
-        echo '      <option value="30">30</option>';
-        echo '      <option value="40">40</option>';
-        echo '    </select>';
-        echo '  </form>';
-        echo '</div>';
-    }
-
 }
+

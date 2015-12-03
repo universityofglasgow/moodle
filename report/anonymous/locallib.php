@@ -275,18 +275,15 @@ class report_anonymous {
 
         // Headers.
         $myxls->write_string(3, 0, '#');
-        $myxls->write_string(3, 1, get_string('idnumber'));
+        $myxls->write_string(3, 1, get_string('idnumber', 'report_anonymous'));
         $myxls->write_string(3, 2, get_string('participantnumber', 'report_anonymous'));
-        $myxls->write_string(3, 3, get_string('email'));
-        if ($reveal) {
-            $myxls->write_string(3, 4, get_string('username'));
-            $myxls->write_string(3, 5, get_string('fullname'));
-        }
-        $myxls->write_string(3, 6, get_string('submitted', 'report_anonymous'));
+        $myxls->write_string(3, 3, get_string('status', 'report_anonymous'));
+        $myxls->write_string(3, 4, get_string('submitdate', 'report_anonymous'));
+        $myxls->write_string(3, 5, get_string('name', 'report_anonymous'));
         if ($urkund) {
-            $myxls->write_string(3, 7, get_string('urkundfile', 'report_anonymous'));
-            $myxls->write_string(3, 8, get_string('urkundstatus', 'report_anonymous'));
-            $myxls->write_string(3, 9, get_string('urkundscore', 'report_anonymous'));
+            $myxls->write_string(3, 6, get_string('urkundfile', 'report_anonymous'));
+            $myxls->write_string(3, 7, get_string('urkundstatus', 'report_anonymous'));
+            $myxls->write_string(3, 8, get_string('urkundscore', 'report_anonymous'));
 
         }
 
@@ -294,32 +291,15 @@ class report_anonymous {
         $row = 4;
         foreach ($submissions as $s) {
             $myxls->write_number($row, 0, $row);
-            if ($s->user->idnumber) {
-                $myxls->write_string($row, 1, $s->user->idnumber);
-            } else {
-                $myxls->write_string($row, 1, '-');
-            }
-            $myxls->write_string($row, 2, $s->user->participantid);
-            $myxls->write_string($row, 3, $s->user->email);
-            if ($reveal || !$assignment->blindmarking) {
-                $myxls->write_string($row, 4, $s->user->username);
-                $myxls->write_string($row, 5, fullname($s->user));
-            }
-            if ($s->submission) {
-                $myxls->write_string($row, 6, userdate($s->submission->timemodified));
-            } else {
-                $myxls->write_string($row, 6, get_string('no'));
-            }
+            $myxls->write_string($row, 1, $s->idnumber);
+            $myxls->write_string($row, 2, $s->participantid);
+            $myxls->write_string($row, 3, $s->status);
+            $myxls->write_string($row, 4, $s->date);
+            $myxls->write_string($row, 5, $s->fullname);
             if ($urkund) {
-                if (isset($s->urkundfilename)) {
-                    $myxls->write_string($row, 7, $s->urkundfilename);
-                }
-                if (isset($s->urkundstatus)) {
-                    $myxls->write_string($row, 8, $s->urkundstatus);
-                }
-                if (isset($s->urkundscore)) {
-                    $myxls->write_string($row, 9, $s->urkundscore);
-                }
+                $myxls->write_string($row, 6, $s->urkundfilename);
+                $myxls->write_string($row, 7, $s->urkundstatus);
+                $myxls->write_string($row, 8, $s->urkundscore);
             }
             $row++;
         }
