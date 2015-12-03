@@ -237,10 +237,18 @@ class report_anonymous {
             $fieldname = 'fullname';
         }
         uasort($submissions, function($a, $b) use ($fieldname, $dir) {
-            if ($dir=='asc') {
-                return strcasecmp($a->$fieldname, $b->$fieldname);
+            if ($fieldname == 'urkundscore') {
+                if ($dir=='asc') {
+                    return ($a->$fieldname > $b->$fieldname) ? 1 : -1;
+                } else {
+                    return ($b->$fieldname > $a->$fieldname) ? -1 : 1;
+                }
             } else {
-                return strcasecmp($b->$fieldname, $a->$fieldname);
+                if ($dir=='asc') {
+                    return strcasecmp($a->$fieldname, $b->$fieldname);
+                } else {
+                    return strcasecmp($b->$fieldname, $a->$fieldname);
+                }
             }
         });
         return $submissions;
