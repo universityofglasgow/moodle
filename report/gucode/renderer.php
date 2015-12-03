@@ -37,20 +37,30 @@ class report_gucode_renderer extends plugin_renderer_base {
         $table = new html_table();
         $table->head[] = get_string('code', 'report_gucode');
         $table->head[] = get_string('course');
+        $table->head[] = get_string('localname', 'report_gucode');
         $table->head[] = get_string('subject', 'report_gucode');
         $table->head[] = get_string('number', 'report_gucode');
         $table->head[] = get_string('added', 'report_gucode');
         $table->head[] = get_string('isvisible', 'report_gucode');
         foreach ($courses as $course) {
-            $row = array();
+            $row = new html_table_row();
+            if ($course->visible == 'hidden') {
+                $row->style = 'font-style: italic';
+            }
+            if (strlen($course->fullname) > 25) {
+                $fullname = substr($filename, 0, 25) . '...';
+            } else {
+                $fullname = $course->fullname;
+            }    
             $codelink = GLA_COURSE_CODE_URL . $course->code;
-            $row[] = "<a href=\"$codelink\">$course->code</a>";
+            $row->cells[] = "<a href=\"$codelink\">$course->code</a>";
             $courselink = new moodle_url('/course/view.php', array('id' => $course->courseid));
-            $row[] = $course->missing ? $course->coursename : "<a href=\"$courselink\">{$course->coursename}</a>";
-            $row[] = $course->subjectname;
-            $row[] = $course->subjectnumber;
-            $row[] = userdate($course->timeadded, get_string('strftimedatetimeshort'), $CFG->timezone);
-            $row[] = $course->visible;
+            $row->cells[] = $course->missing ? $course->coursename : "<a href=\"$courselink\">{$course->coursename}</a>";
+            $row->cells[] = $course->missing ? $fullname: "<a href=\"$courselink\"  title=\"{$course->fullname}\">{$fullname}</a>";
+            $row->cells[] = $course->subjectname;
+            $row->cells[] = $course->subjectnumber;
+            $row->cells[] = userdate($course->timeadded, get_string('strftimedatetimeshort'), $CFG->timezone);
+            $row->cells[] = $course->visible;
             $table->data[] = $row;
         }
         echo html_writer::table($table);

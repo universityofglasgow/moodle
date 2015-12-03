@@ -65,13 +65,6 @@ if (!$export) {
     $PAGE->set_title($course->shortname .': '. get_string('pluginname', 'report_anonymous'));
     $PAGE->set_heading($course->fullname);
 
-    // Jquery stuff.
-    $PAGE->requires->jquery();
-    $PAGE->requires->js('/report/anonymous/jquery/tablesorter/jquery.tablesorter.js');
-    $PAGE->requires->js('/report/anonymous/jquery/tablesorter/jquery.tablesorter.widgets.js');
-    $PAGE->requires->js('/report/anonymous/jquery/pager/jquery.tablesorter.pager.js');
-    $PAGE->requires->js('/report/anonymous/jquery/anonymous.js');
-
     echo $OUTPUT->header();
 }
 

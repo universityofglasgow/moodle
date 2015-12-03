@@ -29,6 +29,7 @@ $string['heading'] = 'UofG Course Code Search';
 $string['hidden'] = 'hidden';
 $string['instructions'] = 'Enter the UofG Course Code';
 $string['isvisible'] = 'Visible?';
+$string['localname'] = 'Local name';
 $string['missing'] = 'missing';
 $string['nocourses'] = 'No courses match the supplied code';
 $string['number'] = 'Number';

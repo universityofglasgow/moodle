@@ -52,9 +52,13 @@ function report_gucodes_visible($courses) {
     foreach ($courses as $codecourse) {
         if ($course = $DB->get_record('course', array('id' => $codecourse->courseid))) {
             $codecourse->visible = $course->visible ? get_string('visible', 'report_gucode') : get_string('hidden', 'report_gucode');
+            $codecourse->fullname = $course->fullname;
+            $codecourse->shortname = $course->shortname;
             $codecourse->missing = 0;
         } else {
             $codecourse->visible = get_string('missing', 'report_gucode');
+            $codecourse->fullname = '-';
+            $codecourse->shortname = '-';
             $codecourse->missing = 1;
         }
     }
