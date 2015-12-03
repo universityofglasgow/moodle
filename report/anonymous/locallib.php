@@ -145,9 +145,11 @@ class report_anonymous {
             if ($s->submission) {
                 $record->date = date('d/m/Y', $s->submission->timemodified);
                 $record->status = $s->submission->status;
+                $record->timemodified = $s->submission->timemodified;
             } else {
                 $record->date = '-';
                 $record->status = '-';
+                $record->timemodified = 0;
             }
 
             // Name
@@ -235,6 +237,9 @@ class report_anonymous {
     public static function sort_submissions($submissions, $dir, $fieldname) {
         if ($fieldname=='name') {
             $fieldname = 'fullname';
+        }
+        if ($fieldname=='date') {
+            $fieldname = 'timemodified';
         }
         uasort($submissions, function($a, $b) use ($fieldname, $dir) {
             if ($fieldname == 'urkundscore') {
