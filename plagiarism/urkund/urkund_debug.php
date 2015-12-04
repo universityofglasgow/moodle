@@ -63,6 +63,8 @@ if (!$table->is_downloading($download, $exportfilename)) {
 
     require_once('urkund_tabs.php');
 
+    $plagiarismsettings = plagiarism_plugin_urkund::get_settings();
+
     if (!empty($resetall) && confirm_sesskey()) {
         // Check to see if there are any files in this state.
         if (!$confirm) {
@@ -76,7 +78,6 @@ if (!$table->is_downloading($download, $exportfilename)) {
         } else {
             $files = $DB->get_records('plagiarism_urkund_files', array('statuscode' => $resetall));
             $i = 0;
-            $plagiarismsettings = plagiarism_plugin_urkund::get_settings();
             foreach ($files as $plagiarismfile) {
                 if ($resetall == '202') {
                     $file = urkund_get_score($plagiarismsettings, $plagiarismfile, true);
@@ -85,12 +86,13 @@ if (!$table->is_downloading($download, $exportfilename)) {
                     $DB->update_record('plagiarism_urkund_files', $file);
                     if ($file->statuscode == URKUND_STATUSCODE_ACCEPTED) {
                         $response = get_string('scorenotavailableyet', 'plagiarism_urkund');
-                    } else if ($file->statuscode == URKUND_STATUSCODE_PROCESSED) {
+                    } else if ($file->statuscode == URKUND_STATUSCODE_PROCESSED ||
+                               $file->statuscode == 'Analyzed') {
                         $response = get_string('scoreavailable', 'plagiarism_urkund');
                     } else {
                         $response = get_string('unknownwarning', 'plagiarism_urkund');
                         if (debugging()) {
-                            urkund_pretty_print($file);
+                            echo urkund_pretty_print($file);
                         }
                     }
                     echo "<p>";
@@ -126,11 +128,11 @@ if (!$table->is_downloading($download, $exportfilename)) {
         $DB->update_record('plagiarism_urkund_files', $file);
         if ($file->statuscode == URKUND_STATUSCODE_ACCEPTED) {
             echo $OUTPUT->notification(get_string('scorenotavailableyet', 'plagiarism_urkund'));
-        } else if ($file->statuscode == URKUND_STATUSCODE_PROCESSED) {
+        } else if ($file->statuscode == URKUND_STATUSCODE_PROCESSED || $file->statuscode == 'Analyzed') {
             echo $OUTPUT->notification(get_string('scoreavailable', 'plagiarism_urkund'));
         } else {
             echo $OUTPUT->notification(get_string('unknownwarning', 'plagiarism_urkund'));
-            urkund_pretty_print($file);
+            echo urkund_pretty_print($file);
         }
 
     }
@@ -150,32 +152,10 @@ $sqlallfiles = "SELECT t.*, ".$userfields.", m.name as moduletype, ".
         "AND t.statuscode <> 'Analyzed' ";
 
 $sqlcount = "SELECT COUNT(id) FROM {plagiarism_urkund_files} WHERE statuscode <> 'Analyzed'";
-
-// Now do sorting if specified.
-$orderby = '';
-if (!empty($sort)) {
-    if ($sort == "name") {
-        $orderby = " ORDER BY u.firstname, u.lastname";
-    } else if ($sort == "module") {
-        $orderby = " ORDER BY cm.id";
-    } else if ($sort == "status") {
-        $orderby = " ORDER BY t.statuscode";
-    } else if ($sort == "id") {
-        $orderby = " ORDER BY t.id";
-    }
-    if (!empty($orderby) && ($dir == 'asc' || $dir == 'desc')) {
-        $orderby .= " ".$dir;
-    }
-}
-
 $count = $DB->count_records_sql($sqlcount);
-if ($showall or $table->is_downloading()) {
-    $urkundfiles = $DB->get_records_sql($sqlallfiles.$orderby, null);
-} else {
-    $urkundfiles = $DB->get_records_sql($sqlallfiles.$orderby, null, $page * $limit, $limit);
+if (!$showall && !$table->is_downloading()) {
     $table->pagesize($limit, $count);
 }
-
 
 $table->define_columns(array('id', 'name', 'module', 'identifier', 'status', 'attempts', 'action'));
 
@@ -195,6 +175,39 @@ $table->set_attribute('class', 'generaltable generalbox');
 
 $table->show_download_buttons_at(array(TABLE_P_BOTTOM));
 $table->setup();
+
+// Work out direction of sort required.
+$sortcolumns = $table->get_sort_columns();
+
+// Now do sorting if specified.
+$orderby = '';
+if (!empty($sort)) {
+    $direction = ' DESC';
+    if (!empty($sortcolumns[$sort]) && $sortcolumns[$sort] == SORT_ASC) {
+        $direction = ' ASC';
+    }
+
+    if ($sort == "name") {
+        $orderby = " ORDER BY u.firstname $direction, u.lastname $direction";
+    } else if ($sort == "module") {
+        $orderby = " ORDER BY cm.id $direction";
+    } else if ($sort == "status") {
+        $orderby = " ORDER BY t.statuscode $direction";
+    } else if ($sort == "id") {
+        $orderby = " ORDER BY t.id $direction";
+    }
+    if (!empty($orderby) && ($dir == 'asc' || $dir == 'desc')) {
+        $orderby .= " ".$dir;
+    }
+}
+
+
+if ($showall or $table->is_downloading()) {
+    $urkundfiles = $DB->get_records_sql($sqlallfiles.$orderby, null);
+} else {
+    $urkundfiles = $DB->get_records_sql($sqlallfiles.$orderby, null, $page * $limit, $limit);
+}
+
 
 $fs = get_file_storage();
 foreach ($urkundfiles as $tf) {
