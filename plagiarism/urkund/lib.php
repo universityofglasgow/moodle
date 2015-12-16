@@ -977,13 +977,14 @@ function urkund_send_file_to_urkund($plagiarismfile, $plagiarismsettings, $file)
     $status = $c->info['http_code'];
     if (!empty($status)) {
         if (in_array($status, $allowedstatus)) {
+            $plagiarismfile->statuscode = $status;
             if ($status == URKUND_STATUSCODE_ACCEPTED) {
                 $plagiarismfile->attempt = 0; // Reset attempts for status checks.
-                plagiarism_urkund_fix_temp_hash(); // Fix hash if temp file used and delete temp file.
+                plagiarism_urkund_fix_temp_hash($plagiarismfile); // Fix hash if temp file used and delete temp file.
             } else {
                 $plagiarismfile->errorresponse = $response;
             }
-            $plagiarismfile->statuscode = $status;
+
             mtrace("URKUND fileid:".$plagiarismfile->id. ' returned status: '.$status);
             $DB->update_record('plagiarism_urkund_files', $plagiarismfile);
             return true;
@@ -1160,11 +1161,11 @@ function urkund_get_url($baseurl, $plagiarismfile) {
     // Then the course module id of this plugin,
     // Then the id from the plagiarism_files table,
     // Then the full contenthash of the file.
-    if (strpos($plagiarismfile->identifier, $CFG->tempdir) === false) {
-        $identifier = $plagiarismfile->identifier;
-    } else {
+    if (strpos($plagiarismfile->identifier, $CFG->tempdir) !== false) {
         // In-line text files temporarily use the identifier field as the filepath.
         $identifier = sha1(file_get_contents($plagiarismfile->identifier));
+    } else {
+        $identifier = $plagiarismfile->identifier;
     }
 
     $siteid = substr(md5(get_site_identifier()), 0, 8);
@@ -1341,7 +1342,7 @@ function urkund_reset_file($file, $plagiarismsettings = null) {
         $plagiarismfile = urkund_queue_file($plagiarismfile->cm, $plagiarismfile->userid, $fileobject);
         if (!empty($plagiarismfile)) {
             // Send this file now.
-            urkund_send_file_to_urkund($plagiarismfile, $plagiarismsettings, $file);
+            urkund_send_file_to_urkund($plagiarismfile, $plagiarismsettings, $fileobject);
         }
         return true;
     }
@@ -1352,8 +1353,7 @@ function urkund_reset_file($file, $plagiarismsettings = null) {
 // Helper function used to get file record for given identifier.
 function plagiarism_urkund_get_file_object($plagiarismfile) {
     global $CFG, $DB;
-
-    if (strpos($plagiarismfile->identifier, $CFG->tempdir) === true) {
+    if (strpos($plagiarismfile->identifier, $CFG->tempdir) !== false) {
         // This is a stored text file in temp dir.
         $file = new stdclass();
         if (file_exists($plagiarismfile->identifier)) {
@@ -1449,7 +1449,7 @@ function plagiarism_urkund_get_file_object($plagiarismfile) {
 // Function called by scheduled tasks
 // Responsible for sending queued files.
 function plagiarism_urkund_send_files() {
-    global $DB, $CFG;
+    global $DB;
 
     $plagiarismsettings = plagiarism_plugin_urkund::get_settings();
     if (!empty($plagiarismsettings)) {
@@ -1471,9 +1471,10 @@ function plagiarism_urkund_send_files() {
             mtrace("URKUND fileid:".$pf->id. ' sending for processing');
             $file = plagiarism_urkund_get_file_object($pf);
             if (empty($file)) {
+                mtrace("URKUND fileid:".$pf->id. ' file not found');
                 continue;
             }
-            if ($module = "assign") {
+            if ($modulename == "assign") {
                 // Check for group assignment and adjust userid if required.
                 // This prevents subsequent group submissions from flagging a previous submission as a match.
                 $pf = plagiarism_urkund_check_group($pf);
@@ -1526,7 +1527,8 @@ function plagiarism_urkund_check_group($plagiarismfile) {
                     if (count($pfgroups) == 1) {
                         // This user made the first valid submission so use their id when sending the file.
                         $plagiarismfile->userid = $pf->userid;
-                        mtrace("URKUND: Group submission by newuser, modify to use original userid:".$pf->userid." id:".$plagiarismfile->id);
+                        mtrace("URKUND: Group submission by newuser, modify to use original userid:".
+                               $pf->userid." id:".$plagiarismfile->id);
                         return $plagiarismfile;
                     }
                     if ($i >= $sanitycheckusers) {
@@ -1544,17 +1546,17 @@ function plagiarism_urkund_check_group($plagiarismfile) {
 /* Function used to clean up after successful text based submission.
  * We only delete if the file was sucessfully sent to help a future reset.
  */
-function plagiarism_urkund_fix_temp_hash($originalrecord) {
+function plagiarism_urkund_fix_temp_hash($plagiarismfile) {
     global $DB, $CFG;
     // Text files temporarily use the filepath in the identifier field - convert this to contenthash.
-    $plagiarismfile = $DB->get_record('plagiarism_urkund_files', array('id' => $originalrecord->id));
     if ($plagiarismfile->statuscode == URKUND_STATUSCODE_ACCEPTED &&
-        strpos($plagiarismfile->identifier, $CFG->tempdir) === true) {
-
+        strpos($plagiarismfile->identifier, $CFG->tempdir) !== false) {
+        mtrace("URKUND fileid:".$plagiarismfile->id ." online text submission succesful, deleting temp file.");
         // If this was a succesful submission, convert identifier and delete temp file.
+        $filepath = $plagiarismfile->identifier;
         $plagiarismfile->identifier = sha1(file_get_contents($plagiarismfile->identifier));
         $DB->update_record('plagiarism_urkund_files', $plagiarismfile);
 
-        unlink($originalrecord->identifier); // Delete temp file as we don't need it anymore.
+        unlink($filepath); // Delete temp file as we don't need it anymore.
     }
 }
