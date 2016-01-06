@@ -38,7 +38,7 @@ require_once($CFG->dirroot . '/lib/filelib.php');
 // If we convert the existing calls to send file/get score we should move this to a config setting.
 define('URKUND_INTEGRATION_SERVICE', 'https://secure.urkund.com/api');
 
-define('URKUND_MAX_STATUS_ATTEMPTS', 17); // Maximum number of times to try and obtain the status of a submission.
+define('URKUND_MAX_STATUS_ATTEMPTS', 18); // Maximum number of times to try and obtain the status of a submission.
 define('URKUND_MAX_STATUS_DELAY', 2880); // Maximum time to wait between checks (defined in minutes).
 define('URKUND_STATUS_DELAY', 5); // Initial delay, doubled each time a check is made until the max_status_delay is met.
 define('URKUND_STATUSCODE_PROCESSED', '200');
@@ -547,6 +547,13 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             return true;
         }
 
+        // Check if this is a submission on-behalf.
+        if (!empty($eventdata['relateduserid'])) {
+            $userid = $eventdata['relateduserid'];
+        } else {
+            $userid = $eventdata['userid'];
+        }
+
         // Check to see if restrictcontent is in use.
         $showcontent = true;
         $showfiles = true;
@@ -584,7 +591,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                     if ($files = $fs->get_area_files($modulecontext->id, 'assignsubmission_file',
                         ASSIGNSUBMISSION_FILE_FILEAREA, $eventdata['objectid'], "id", false)) {
                         foreach ($files as $file) {
-                            urkund_queue_file($cmid, $eventdata['userid'], $file);
+                            urkund_queue_file($cmid, $userid, $file);
                         }
                     }
                 }
@@ -594,8 +601,8 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                     if (!empty($submission) && str_word_count($submission->onlinetext) > $wordcount) {
                         $content = trim(format_text($submission->onlinetext, $submission->onlineformat,
                             array('context' => $modulecontext)));
-                        $file = urkund_create_temp_file($cmid, $eventdata['courseid'], $eventdata['userid'], $content);
-                        urkund_queue_file($cmid, $eventdata['userid'], $file);
+                        $file = urkund_create_temp_file($cmid, $eventdata['courseid'], $userid, $content);
+                        urkund_queue_file($cmid, $userid, $file);
                     }
                 }
             }
@@ -613,8 +620,8 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         $result = true;
         if (!empty($eventdata['other']['content']) && $showcontent && str_word_count($eventdata['other']['content']) > $wordcount) {
 
-            $file = urkund_create_temp_file($cmid, $eventdata['courseid'], $eventdata['userid'], $eventdata['other']['content']);
-            urkund_queue_file($cmid, $eventdata['userid'], $file);
+            $file = urkund_create_temp_file($cmid, $eventdata['courseid'], $userid, $eventdata['other']['content']);
+            urkund_queue_file($cmid, $userid, $file);
         }
 
         // Normal situation: 1 or more assessable files attached to event, ready to be checked.
@@ -631,7 +638,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                     continue;
                 }
 
-                urkund_queue_file($cmid, $eventdata['userid'], $efile);
+                urkund_queue_file($cmid, $userid, $efile);
             }
         }
         return $result;
@@ -1385,6 +1392,9 @@ function plagiarism_urkund_get_file_object($plagiarismfile) {
         $modulecontext = context_module::instance($plagiarismfile->cm);
         $fs = get_file_storage();
         if ($cm->modname == 'assign') {
+            if (debugging()) {
+                mtrace("URKUND fileid:" . $plagiarismfile->id . " assignment found");
+            }
             require_once($CFG->dirroot . '/mod/assign/locallib.php');
             $assign = new assign($modulecontext, null, null);
 
@@ -1399,6 +1409,9 @@ function plagiarism_urkund_get_file_object($plagiarismfile) {
                 $component = $submissionplugin->get_subtype() . '_' . $submissionplugin->get_type();
                 $fileareas = $submissionplugin->get_file_areas();
                 foreach ($fileareas as $filearea => $name) {
+                    if (debugging()) {
+                        mtrace("URKUND fileid:" . $plagiarismfile->id . " Check component:" . $component . " Filearea:" . $filearea . " Submission" . $submission->id);
+                    }
                     $files = $fs->get_area_files(
                         $assign->get_context()->id,
                         $component,
@@ -1409,13 +1422,22 @@ function plagiarism_urkund_get_file_object($plagiarismfile) {
                     );
 
                     foreach ($files as $file) {
+                        if (debugging()) {
+                            mtrace("URKUND fileid:" . $plagiarismfile->id . " check fileid:" . $file->get_id());
+                        }
                         if ($file->get_contenthash() == $plagiarismfile->identifier) {
+                            if (debugging()) {
+                                mtrace("URKUND fileid:" . $plagiarismfile->id . " found fileid:" . $file->get_id());
+                            }
                             return $file;
                         }
                     }
                 }
             }
         } else if ($cm->modname == 'workshop') {
+            if (debugging()) {
+                mtrace("URKUND fileid:" . $plagiarismfile->id . " workshop found");
+            }
             require_once($CFG->dirroot . '/mod/workshop/locallib.php');
             $cm = get_coursemodule_from_id('workshop', $plagiarismfile->cm, 0, false, MUST_EXIST);
             $workshop = $DB->get_record('workshop', array('id' => $cm->instance), '*', MUST_EXIST);
@@ -1425,19 +1447,34 @@ function plagiarism_urkund_get_file_object($plagiarismfile) {
             foreach ($submissions as $submission) {
                 $files = $fs->get_area_files($workshop->context->id, 'mod_workshop', 'submission_attachment', $submission->id);
                 foreach ($files as $file) {
+                    if (debugging()) {
+                        mtrace("URKUND fileid:" . $plagiarismfile->id . " check fileid:" . $file->get_id());
+                    }
                     if ($file->get_contenthash() == $plagiarismfile->identifier) {
+                        if (debugging()) {
+                            mtrace("URKUND fileid:" . $plagiarismfile->id . " found fileid:" . $file->get_id());
+                        }
                         return $file;
                     }
                 }
             }
         } else if ($cm->modname == 'forum') {
+            if (debugging()) {
+                mtrace("URKUND fileid:" . $plagiarismfile->id . " forum found");
+            }
             require_once($CFG->dirroot . '/mod/forum/lib.php');
             $cm = get_coursemodule_from_id('forum', $plagiarismfile->cm, 0, false, MUST_EXIST);
             $posts = forum_get_user_posts($cm->instance, $plagiarismfile->userid);
             foreach ($posts as $post) {
                 $files = $fs->get_area_files($modulecontext->id, 'mod_forum', 'attachment', $post->id, "timemodified", false);
                 foreach ($files as $file) {
+                    if (debugging()) {
+                        mtrace("URKUND fileid:" . $plagiarismfile->id . " check fileid:" . $file->get_id());
+                    }
                     if ($file->get_contenthash() == $plagiarismfile->identifier) {
+                        if (debugging()) {
+                            mtrace("URKUND fileid:" . $plagiarismfile->id . " found fileid:" . $file->get_id());
+                        }
                         return $file;
                     }
                 }
@@ -1471,7 +1508,11 @@ function plagiarism_urkund_send_files() {
             mtrace("URKUND fileid:".$pf->id. ' sending for processing');
             $file = plagiarism_urkund_get_file_object($pf);
             if (empty($file)) {
-                mtrace("URKUND fileid:".$pf->id. ' file not found');
+                mtrace("URKUND fileid:$pf->id File not found, this may have been replaced by a newer file - deleting record");
+                if (debugging()) {
+                    mtrace(plagiarism_urkund_pretty_print($pf));
+                }
+                $DB->delete_records('plagiarism_urkund_files', array('id' => $pf->id));
                 continue;
             }
             if ($modulename == "assign") {
@@ -1479,12 +1520,7 @@ function plagiarism_urkund_send_files() {
                 // This prevents subsequent group submissions from flagging a previous submission as a match.
                 $pf = plagiarism_urkund_check_group($pf);
             }
-            if (!empty($file)) {
-                urkund_send_file_to_urkund($pf, $plagiarismsettings, $file);
-            } else {
-                $DB->delete_records('plagiarism_urkund_files', array('id' => $pf->id));
-                mtrace("URKUND fileid:$pf->id File not found, this may have been replaced by a newer file - deleting record");
-            }
+            urkund_send_file_to_urkund($pf, $plagiarismsettings, $file);
         }
     }
 }
@@ -1559,4 +1595,29 @@ function plagiarism_urkund_fix_temp_hash($plagiarismfile) {
 
         unlink($filepath); // Delete temp file as we don't need it anymore.
     }
+}
+
+/* We are not allowed to use print_object so use a hand-rolled function to help with debugging.
+ *
+ */
+function plagiarism_urkund_pretty_print($arr) {
+    if (is_object($arr)) {
+        $arr = (array) $arr;
+    }
+    $retstr = '<table class="generaltable">';
+    $retstr .= '<tr><th width=20%>Key</th><th width=80%>Value</th></tr>';
+    if (is_array($arr)) {
+        foreach ($arr as $key => $val) {
+            if (is_object($val)) {
+                $val = (array) $val;
+            }
+            if (is_array($val)) {
+                $retstr .= '<tr><td>' . $key . '</td><td>' . pretty_print($val) . '</td></tr>';
+            } else {
+                $retstr .= '<tt><td>' . $key . '</td><td>' . ($val == '' ? '""' : $val) . '</td></tr>';
+            }
+        }
+    }
+    $retstr .= '</table>';
+    return $retstr;
 }
