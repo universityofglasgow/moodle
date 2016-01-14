@@ -85,6 +85,19 @@ function local_gumenu_extend_settings_navigation(settings_navigation $nav, conte
         );
         $uofgnode->add_node(new navigation_node($props));
     }
+
+    // Add a link for CoreHR thing
+    if (has_capability('local/corehr:config', $context)) {
+        $props = array(
+            'text' => get_string('pluginname', 'local_corehr'),
+            'shorttext' => 'corehr',
+            'type' => navigation_node::TYPE_CUSTOM,
+            'action' => new moodle_url('/local/corehr/config.php', array('id' => $courseid)),
+            'key' => 'corehr',
+        );
+        $uofgnode->add_node(new navigation_node($props));
+    }
+
 }
 
 
