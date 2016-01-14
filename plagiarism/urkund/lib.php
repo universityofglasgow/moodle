@@ -38,9 +38,6 @@ require_once($CFG->dirroot . '/lib/filelib.php');
 // If we convert the existing calls to send file/get score we should move this to a config setting.
 define('URKUND_INTEGRATION_SERVICE', 'https://secure.urkund.com/api');
 
-define('URKUND_MAX_STATUS_ATTEMPTS', 18); // Maximum number of times to try and obtain the status of a submission.
-define('URKUND_MAX_STATUS_DELAY', 2880); // Maximum time to wait between checks (defined in minutes).
-define('URKUND_STATUS_DELAY', 5); // Initial delay, doubled each time a check is made until the max_status_delay is met.
 define('URKUND_STATUSCODE_PROCESSED', '200');
 define('URKUND_STATUSCODE_ACCEPTED', '202');
 define('URKUND_STATUSCODE_ACCEPTED_OLD', '202-old'); // File submitted before we changed the way the identifiers were stored.
@@ -287,7 +284,8 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
 
         // Under certain circumstances, users are allowed to see plagiarism info
         // even if they don't have view report capability.
-        if ($USER->id == $userid) {
+        if ($USER->id == $userid || // If this is a user viewing their own report, check if settings allow it.
+            (!$viewscore)) { // If teamsubmisson is enabled or teacher submitted, the file may be from a different user.
             $selfreport = true;
             if (isset($plagiarismvalues['urkund_show_student_report']) &&
                     ($plagiarismvalues['urkund_show_student_report'] == PLAGIARISM_URKUND_SHOW_ALWAYS ||
@@ -377,6 +375,10 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             // Array of possible plagiarism config options.
             $plagiarismelements = $this->config_options();
             // First get existing values.
+            if (empty($data->coursemodule)) {
+                debugging("URKUND settings failure - no coursemodule set in form data, URKUND could not be enabled.");
+                return;
+            }
             $existingelements = $DB->get_records_menu('plagiarism_urkund_config', array('cm' => $data->coursemodule),
                                                       '', 'name, id');
             foreach ($plagiarismelements as $element) {
@@ -894,37 +896,44 @@ function urkund_queue_file($cmid, $userid, $file) {
 // also checks max attempts to see if it has exceeded.
 function urkund_check_attempt_timeout($plagiarismfile) {
     global $DB;
+
+    // Maximum number of times to try and obtain the status of a submission.
+    // Make sure the max attempt value in $statusdelay is higher than this.
+    $maxstatusattempts = 28;
+
+    // Time to wait between checks array(number of attempts-1, time delay in minutes)..
+    $statusdelay = array(2 => 5, // Up to attempt 3 check every 5 minutes.
+                         3 => 15, // Up to attempt 4 check every 15 minutes,
+                         6 => 30,
+                        11 => 120,
+                        20 => 240,
+                        100 => 480);
+
     // The first time a file is submitted we don't need to wait at all.
     if (empty($plagiarismfile->attempt) && $plagiarismfile->statuscode == 'pending') {
         return true;
     }
 
     // Check if we have exceeded the max attempts.
-    if ($plagiarismfile->attempt > URKUND_MAX_STATUS_ATTEMPTS) {
+    if ($plagiarismfile->attempt > $maxstatusattempts) {
         $plagiarismfile->statuscode = 'timeout';
         $DB->update_record('plagiarism_urkund_files', $plagiarismfile);
         return true; // Return true to cancel the event.
     }
 
     $now = time();
-    $submissiondelay = URKUND_STATUS_DELAY; // Initial delay, doubled each time a check is made until the max delay is met.
-    $maxsubmissiondelay = URKUND_MAX_STATUS_DELAY; // Maximum time to wait between checks.
 
     // Now calculate wait time.
     $i = 0;
-    $delay = 0;
     $wait = 0;
     while ($i < $plagiarismfile->attempt) {
-        if ($plagiarismfile->attempt > 12) {
-            // If we haven't got the score by now something is not working, increase delay time a bit.
-            $delay = $submissiondelay * pow(1.4, $i);
-        } else {
-            $delay = $submissiondelay * pow(1.2, $i);
+        // Find what multiple we need to use for this attempt.
+        foreach ($statusdelay as $att => $delay) {
+            if ($att >= $i) {
+                $wait = $wait + $delay;
+                break;
+            }
         }
-        if ($delay > $maxsubmissiondelay) {
-            $delay = $maxsubmissiondelay;
-        }
-        $wait += $delay;
         $i++;
     }
     $wait = (int)$wait * 60;
@@ -988,6 +997,16 @@ function urkund_send_file_to_urkund($plagiarismfile, $plagiarismsettings, $file)
             if ($status == URKUND_STATUSCODE_ACCEPTED) {
                 $plagiarismfile->attempt = 0; // Reset attempts for status checks.
                 plagiarism_urkund_fix_temp_hash($plagiarismfile); // Fix hash if temp file used and delete temp file.
+                // If $file owned by a different user than in the plagiarism record, update the record.
+                // This may occur if a teacher has submitted the file for the student.
+                if ($file instanceof stored_file && $plagiarismfile->userid <> $file->get_userid()) {
+                    if (debugging()) {
+                        mtrace("Sent file associated with different userid. plagiarism recordid:".$plagiarismfile->id.
+                            " originaluserid:$plagiarismfile->userid  New userid:".$file->get_userid());
+                    }
+                    $plagiarismfile->userid = $file->get_userid();
+                }
+
             } else {
                 $plagiarismfile->errorresponse = $response;
             }
@@ -1143,6 +1162,8 @@ function urkund_get_score($plagiarismsettings, $plagiarismfile, $force = false) 
                         $urkund = new plagiarism_plugin_urkund();
                         $urkund->urkund_send_student_email($plagiarismfile);
                     }
+                } else {
+                    $plagiarismfile->errorresponse = $response;
                 }
             } else {
                 $plagiarismfile->statuscode = $httpstatus;
