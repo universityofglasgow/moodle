@@ -1,0 +1,84 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>{#helixmedia.add_media}</title>
+    <script type="text/javascript">
+        // Because there is no relative path to TinyMCE, we have to use JavaScript
+        // to work out correct path from the .js files from TinyMCE. Only files
+        // inside this plugin can be included with relative path (below).
+        var editor_tinymce_include = function(path) {
+            document.write('<script type="text/javascript" src="' +
+                    parent.tinyMCE.baseURL + '/' + path + '"></' + 'script>');
+        };
+        editor_tinymce_include('tiny_mce_popup.js');
+        editor_tinymce_include('utils/validate.js');
+        editor_tinymce_include('utils/form_utils.js');
+        editor_tinymce_include('utils/editable_selects.js');
+
+        var preid=-1;
+
+        function receiveMessage(event) {
+            var i=event.data.indexOf("preid_");
+            if (i==0) {
+                preid=event.data.substring(6);
+            }
+            if (event.data=="close_modal") {
+                insertMedia();
+            }
+        }
+
+        window.addEventListener("message", receiveMessage, false);
+        window.onunload=insertMedia;
+        var inserted=false;
+
+        function insertMedia() {
+            if (inserted)
+                return;
+
+            inserted=true;
+            var url=getHMLLaunchURL()+"?type=10&l="+preid;
+            var html="<p><iframe style=\"border:0px;background:#ffffff;width:680px;height:570px;\""+
+                " src=\""+url+"\" id=\"hmlvid-"+preid+"\"></iframe>\n"+
+                "</p>";
+
+            tinyMCEPopup.editor.execCommand('mceInsertContent', false, html);
+            tinyMCEPopup.close();
+        }
+
+        function getHMLLaunchURL() {
+            var pos=parent.tinyMCE.baseURL.indexOf("lib/editor/tinymce");
+            return parent.tinyMCE.baseURL.substring(0, pos)+"mod/helixmedia/launch.php";
+        }
+
+    </script>
+</head>
+<body>
+    <form onsubmit="insertMedia();return false;" action="#">
+        <script type="text/javascript">
+        var width = 950;
+        var height = 500;
+
+        if( typeof( window.innerWidth ) == 'number' ) {
+            //Non-IE
+            width = window.innerWidth-18;
+            height = window.innerHeight-44;
+        }
+        else if( document.documentElement &&
+            ( document.documentElement.clientWidth || document.documentElement.clientHeight ) ) {
+            //IE 6+ in 'standards compliant mode'
+            width = document.documentElement.clientWidth-18;
+            height = document.documentElement.clientHeight-44;
+        }
+
+            var url=getHMLLaunchURL()+"?type=9";
+            //document.write("<iframe style=\"border:0px;background:#ffffff;width:935px;height:455px;\" src=\""+url+"\"></iframe>");
+            document.write("<iframe style=\"border:0px;background:#ffffff;width:"+width+"px;height:"+height+"px;\" src=\""+url+"\"></iframe>");
+        </script>
+        <div class="mceActionPanel">
+            <input type="submit" id="insert" name="insert" value="{#insert}" />
+            <input type="button" id="cancel" name="cancel" value="{#cancel}" onclick="inserted=true;tinyMCEPopup.close();" />
+        </div>
+    </form>
+</body>
+</html>

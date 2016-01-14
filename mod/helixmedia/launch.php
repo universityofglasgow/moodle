@@ -251,6 +251,9 @@ if ($cap==null || !has_capability($cap, $context)) {
     break;
 }
 
+//*****Uncomment to force debug mode*****
+//$hmli->debuglaunch=1;
+$hmli->debuglaunch=0;
 
 //Do the logging
 if ($type==HML_LAUNCH_NORMAL || $type==HML_LAUNCH_EDIT)
@@ -277,15 +280,20 @@ if ($type==HML_LAUNCH_NORMAL || $type==HML_LAUNCH_EDIT)
         ));
     }
 
-    $event->add_record_snapshot('course_modules', $cm);
+    if (isset($cm)) {
+        $event->add_record_snapshot('course_modules', $cm);
+    }
+
     $event->add_record_snapshot('course', $course);
+
+    // The launch container may not be set for a new instance but Moodle will complain if it's missing, so set default here.
+    if (!property_exists($hmli, "launchcontainer")) {
+        $hmli->launchcontainer=LTI_LAUNCH_CONTAINER_DEFAULT;
+    }
+
     $event->add_record_snapshot('helixmedia', $hmli);
     $event->trigger();
 }
-
-
-//*****Uncomment to force debug mode*****
-//$hmli->debuglaunch=1;
 
 if ($type==HML_LAUNCH_VIEW_SUBMISSIONS_THUMBNAILS || $type==HML_LAUNCH_VIEW_SUBMISSIONS)
    $hmli->userid=$userid;

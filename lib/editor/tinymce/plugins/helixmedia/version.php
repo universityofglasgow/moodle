@@ -1,4 +1,5 @@
 <?php
+
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -15,19 +16,24 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * This file contains the version information for the helix feedback plugin
+ * TinyMCE helixmedia plugin version details.
  *
- * @package   assignfeedback_helixfeedback
- * @copyright 2014 Streaming LTD http://www.streaming.co.uk
+ * @package   tinymce_
+ * @copyright 2013 Streaming LTD
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @author    Tim Williams (tmw@autotrain.org) for Streaming LTD
  */
 
 defined('MOODLE_INTERNAL') || die();
 
+// The current plugin version (Date: YYYYMMDDXX).
 $plugin->version   = 2016011201;
+// Required Moodle version.
 $plugin->requires  = 2014051200;
-$plugin->component = 'assignfeedback_helixfeedback';
+// Full name of the plugin (used for diagnostics).
+$plugin->component = 'tinymce_helixmedia';
+
+$plugin->maturity = MATURITY_STABLE;
+
 $plugin->dependencies = array(
     'mod_helixmedia' => 2015112501
 );
