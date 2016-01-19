@@ -104,10 +104,15 @@ function local_corehr_add($staffTrainingRecord) {
 function local_corehr_course_completed($courseid, $userid) {
     global $DB;
 
-    mtrace("local_corehr: Processing completion for user=$userid, course=$courseid");
+    // Is this enabled for this course
+    if (!$corehr = $DB->get_record('local_corehr', array('courseid' => $courseid))) {
+        mtrace('local_corehr: not configured for courseid = ' . $courseid . ', completing userid = ' . $userid);
+        return;
+    }
 
-    // Get the course.
-    $course = $DB->get_record('course', array('id' => $courseid), '*', MUST_EXIST);
+    // Get the course code
+    $coursecode = $corehr->coursecode;
+    mtrace("local_corehr: Processing completion for user=$userid, course=$courseid, coursecode=$coursecode");
 
     // Get the user.
     $user = $DB->get_record('user', array('id' => $userid), '*', MUST_EXIST);
@@ -126,25 +131,63 @@ function local_corehr_course_completed($courseid, $userid) {
     // staffTrainingRecord 
     $staffTrainingRecord = new staffTrainingRecord(
         $user->idnumber,
-        $course->idnumber,
+        $coursecode,
         'CO',
         date('dmY', $completion->timestarted),
         date('dmY', $completion->timecompleted)
     );
 
     // Call CoreHR API to log completion.
-    $status = local_corehr_add($staffTrainingRecord);
-    mtrace("local_corehr: data sent to web service, status is $status");
+    // We'll skip this if there is no personnel number
+    if (empty($user->idnumber)) {
+        mtrace("local_corehr: skipping web service for user (id=$userid) with no personnel number");
+        $status = "No Personnel Number";
+    } else {
+        $status = local_corehr_add($staffTrainingRecord);
+        mtrace("local_corehr: data sent to web service, status is $status");
+    }
 
     // Record the details
     $corehr = new stdClass;
     $corehr->userid = $userid;
     $corehr->courseid = $courseid;
     $corehr->personnelno = $user->idnumber;
-    $corehr->coursecode = $course->idnumber;
+    $corehr->coursecode = $coursecode;
     $corehr->trainingstatus = 'CO';
     $corehr->startdate = date('dmY', $completion->timestarted);
     $corehr->enddate = date('dmY', $completion->timecompleted);
     $corehr->wsstatus = $status;
-    $DB->insert('local_corehr', $corehr);
+    $DB->insert_record('local_corehr_log', $corehr);
+}
+
+/** 
+ * Save/delete the 'coursecode' in the local_corehr table
+ * A blank course code deletes the matching record
+ * @param int $courseid Moodle course id
+ * @param string $coursecode CoreHR course identifier (or empty)
+ */
+function local_corehr_savecoursecode($courseid, $coursecode) {
+    global $DB;
+
+    // find existing record
+    $corehr = $DB->get_record('local_corehr', array('courseid' => $courseid));
+
+    // if record exists and code is empty, delete it
+    if ($corehr && !$coursecode) {
+        $DB->delete_records('local_corehr', array('courseid' => $courseid));
+        return;
+    }
+
+    // update or insert
+    if ($corehr) {
+        $corehr->coursecode = $coursecode;
+        $DB->update_record('local_corehr', $corehr);
+    } else {
+        $corehr = new stdClass;
+        $corehr->courseid = $courseid;
+        $corehr->coursecode = $coursecode;
+        $DB->insert_record('local_corehr', $corehr);
+    }
+
+    return;
 }

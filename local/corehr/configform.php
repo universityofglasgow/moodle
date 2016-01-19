@@ -22,19 +22,25 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once(dirname(__file__) . '/../locallib.php');
+require_once("$CFG->libdir/formslib.php");
 
-class local_corehr_observer {
+class local_corehr_configform extends moodleform {
 
-    /**
-     * Triggered when a course is marked complete
-     */
-    public static function course_completed(\core\event\course_completed $event) {
+    function definition() {
+        global $CFG;
 
-        $courseid = $event->courseid;
-        $relateduserid = $event->relateduserid;
-        local_corehr_course_completed($courseid, $relateduserid);
+        $mform =& $this->_form;
 
-        return;
+        $mform->addElement('html', get_string('configintro', 'local_corehr'));
+
+        $mform->addElement('hidden', 'id');
+        $mform->setType('id', PARAM_INT);
+
+        $mform->addElement('text', 'coursecode', get_string('coursecode', 'local_corehr'));
+        $mform->setType('coursecode', PARAM_TEXT);
+        $mform->addHelpButton('coursecode', 'coursecode', 'local_corehr');
+
+        $this->add_action_buttons();
     }
+
 }

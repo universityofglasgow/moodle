@@ -24,27 +24,43 @@
 
 require_once(dirname(__FILE__) . '/../../config.php');
 require_once(dirname(__FILE__) . '/locallib.php');
+require_once(dirname(__FILE__) . '/configform.php');
 
-$courseid   = required_param('id', PARAM_INT);
+$courseid  = required_param('id', PARAM_INT);
+$course = $DB->get_record('course', array('id' => $courseid), '*', MUST_EXIST);
 
 $returnurl = new moodle_url('/local/corehr/config.php', array('id' => $courseid));
 $PAGE->set_url($returnurl);
-
-$course = $DB->get_record('course', array('id' => $courseid), '*', MUST_EXIST);
-$coursecontext = course_context::instance($courseid);
-
 require_login($course);
 $coursecontext = context_course::instance($course->id);
 $title = get_string('pluginname', 'local_corehr');
 $PAGE->set_context($coursecontext);
 $PAGE->set_pagelayout('incourse');
-$PAGE->set_heading();
-$PAGE->set_title(get_string('config', 'local_corehr'));
 
 require_capability('local/corehr:config', $coursecontext);
 
+// Is there an existing coursecode?
+if ($corehr = $DB->get_record('local_corehr', array('courseid' => $courseid))) {
+    $coursecode = $corehr->coursecode;
+} else {
+    $coursecode = '';
+}
 
+// Form stuffs
+$mform = new local_corehr_configform($returnurl);
+$mform->set_data(array(
+    'id' => $courseid,
+    'coursecode' => $coursecode,
+));
+if ($mform->is_cancelled()) {
+    redirect(new moodle_url('/course/view.php', array('id' => $courseid)));
+} else if ($data = $mform->get_data()) {
+    $coursecode = $data->coursecode;
+    local_corehr_savecoursecode($courseid, $coursecode);
+
+    redirect(new moodle_url('/course/view.php', array('id' => $courseid)));
+}
 
 echo $OUTPUT->header();
-
+$mform->display();
 echo $OUTPUT->footer();

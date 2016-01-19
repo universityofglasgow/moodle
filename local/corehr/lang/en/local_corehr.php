@@ -21,7 +21,13 @@
  */
 
 $string['corehr:config'] = 'Configure CoreHR web service in a course';
+$string['configintro'] = '<div class="alert">This page configures synchronisation of user course completion to the University CoreHR system. 
+    It is enabled by entering a valid code here, which must have been supplied by HR.
+    Course completion in this course must also be properly configured.
+    If you need to use this facility please submit a request to the IT Services Help Desk</div>';
 $string['configwsdl'] = 'URL of SOAP WSDL';
+$string['coursecode'] = 'Course code (HR)';
+$string['coursecode_help'] = 'Course code, supplied by HR. Nothing to do with "normal" course codes!';
 $string['notconfigured'] = 'Plugin is not configured';
 $string['password'] = 'Password';
 $string['pluginname'] = 'CoreHR completion sync';
