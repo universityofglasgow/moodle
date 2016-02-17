@@ -25,13 +25,9 @@ defined('MOODLE_INTERNAL') || die;
 require_once(dirname(__FILE__) . '/locallib.php');
 
 if ($hassiteconfig) {
-    $test = local_corehr_test();
-
     $settings = new admin_settingpage(
             'local_corehr', get_string('pluginname', 'local_corehr'));
     $ADMIN->add('localplugins', $settings);
-
-    $settings->add(new admin_setting_heading('corehr_test', '', $test));
 
     $settings->add(new admin_setting_configtext(
             'local_corehr/wsdl', get_string('wsdl', 'local_corehr'),
