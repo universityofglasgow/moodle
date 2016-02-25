@@ -34,8 +34,8 @@ $PAGE->set_popup_notification_allowed(false);
 $PAGE->requires->jquery();
 
 // Cheesey image for login page
-$guimage = theme_gu28_crap_image($PAGE->theme);
-$loginslogan = theme_gu28_crap_slogan($PAGE->theme);
+$guimage = theme_gu28_cheesey_image($PAGE->theme);
+$loginslogan = theme_gu28_cheesey_slogan($PAGE->theme);
 
 echo $OUTPUT->doctype() ?>
 <html <?php echo $OUTPUT->htmlattributes(); ?>>

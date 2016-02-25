@@ -69,9 +69,9 @@ function theme_gu28_bootstrap3_grid() {
 }
 
 /**
- * Get the crappy login page images
+ * Get the cheesey login page images
  */
-function theme_gu28_crap_image($theme) {
+function theme_gu28_cheesey_image($theme) {
     global $CFG;
 
     $files = glob($CFG->dirroot . '/theme/gu28/pix/gucrop/*.*');
@@ -85,9 +85,9 @@ function theme_gu28_crap_image($theme) {
 }
 
 /**
- * Get the slogan to go with the crappy image
+ * Get the slogan to go with the cheesey image
  */
-function theme_gu28_crap_slogan($theme) {
+function theme_gu28_cheesey_slogan($theme) {
     $loginslogan = empty($theme->settings->loginslogan) ? '' : $theme->settings->loginslogan; 
     $sloganhighlight = empty($theme->settings->sloganhighlight) ? '' : $theme->settings->sloganhighlight;
     if (!$loginslogan) {
