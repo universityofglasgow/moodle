@@ -19,35 +19,50 @@ $capabilities = array(
                 'captype' => 'write',
                 'contextlevel' => CONTEXT_COURSE,
                 'archetypes' => array(
-                        'editingteacher' => CAP_ALLOW,
-                        'manager' => CAP_ALLOW
+                        'manager' => CAP_ALLOW,
+                        //'coursecreator' => CAP_ALLOW,
+                        'editingteacher' => CAP_ALLOW
                 ),
                 'clonepermissionsfrom' => 'moodle/course:manageactivities'
         ),
-        
+
         //
         // Ability to join a meeting
         'mod/bigbluebuttonbn:join' => array(
                 'captype' => 'read',
                 'contextlevel' => CONTEXT_MODULE,
                 'legacy' => array(
-                        'student' => CAP_ALLOW,
-                        'teacher' => CAP_ALLOW,
+                        'manager' => CAP_ALLOW,
+                        //'coursecreator' => CAP_ALLOW,
                         'editingteacher' => CAP_ALLOW,
-                        'manager' => CAP_ALLOW
+                        'teacher' => CAP_ALLOW,
+                        'student' => CAP_ALLOW
                 )
         ),
-        
+
         //
         // Ability to moderate a meeting
         'mod/bigbluebuttonbn:moderate' => array(
-                'captype' => 'write',
+                'captype' => 'read',
                 'contextlevel' => CONTEXT_MODULE,
                 'legacy' => array(
-                        'teacher' => CAP_ALLOW,
+                        'manager' => CAP_ALLOW,
+                        //'coursecreator' => CAP_ALLOW,
                         'editingteacher' => CAP_ALLOW,
-                        'manager' => CAP_ALLOW
+                        'teacher' => CAP_ALLOW
+                )
+        ),
+
+        //
+        // Ability to manage recordings
+        'mod/bigbluebuttonbn:managerecordings' => array(
+                'captype' => 'read',
+                'contextlevel' => CONTEXT_MODULE,
+                'legacy' => array(
+                        'manager' => CAP_ALLOW,
+                        //'coursecreator' => CAP_ALLOW,
+                        'editingteacher' => CAP_ALLOW,
+                        'teacher' => CAP_ALLOW
                 )
         )
-
 );

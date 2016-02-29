@@ -67,3 +67,13 @@ $string['wronganswers'] = 'Distractors.';
 $string['wronganswers_help'] = 'List of incorrect words designed to distract from the correct answers. Each word is separated by commas, only applies in dragdrop/dropdowns mode';
 $string['yougotnrightcount'] = 'Your number of correctly filled in gaps is {$a->num}.';
 $string['correctanswer'] = 'Correct answer';
+$string['coursenotfound'] = 'Course not found, check the course shortname';
+$string['questioncatnotfound'] = 'Question category not found, click click <a href={$a}>here</a> to initialise, then the browser back button';
+$string['import'] = 'Import';
+$string['cannotimport'] = 'cannotimport';
+$string['course'] = 'Import help';
+$string['courseshortname'] = 'Course Shortname';
+$string['visitquestions'] = 'Click <a href={$a}>here</a> to visit the questions';
+$string['courseshortname_help'] = 'Enter the shortname of the course to import question to. This does a standard xml question import from the '
+        . 'file example_questions.xml in the gapfill question type folder.';
+$string['importexamples'] = "Import Examples";

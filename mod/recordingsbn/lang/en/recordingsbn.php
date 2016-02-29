@@ -20,6 +20,16 @@ $string['pluginadministration'] = 'recordingsbn administration';
 $string['pluginname'] = 'RecordingsBN';
 $string['recordingsbn:addinstance'] = 'Add a new resource with playback recordings';
 $string['recordingsbn:view'] = 'View recordings';
+
+$string['mod_form_field_ui_html'] = 'Show the table in plain html';
+
+$string['config_general'] = 'General configuration';
+$string['config_general_description'] = 'These settings are <b>always</b> used';
+$string['config_feature_ui_html_default'] = 'UI as html is enabled by default';
+$string['config_feature_ui_html_default_description'] = 'If enabled the recording table is shown in plain HTML by default.';
+$string['config_feature_ui_html_editable'] = 'UI as html feature can be edited';
+$string['config_feature_ui_html_editable_description'] = 'UI as html value by default can be edited when the recordingbn is added or updated.';
+
 $string['view_noguests'] = 'The RecordingsBN module is not open to guests';
 $string['view_delete_confirmation'] = 'Are you sure to delete this recording?';
 $string['view_dependency_error'] = 'You must have BigBlueButtonBN Activity Module installed';
@@ -32,8 +42,9 @@ $string['view_head_length'] = 'Length';
 $string['view_head_duration'] = 'Duration';
 $string['view_head_recording'] = 'Recording';
 $string['view_duration_min'] = 'min';
+$string['view_no_recordings'] = 'There are no recordings to show';
 
-$string['event_resource_page_viewed'] = 'RcordingsBN page viewed';
+$string['event_resource_page_viewed'] = 'RecordingsBN page viewed';
 $string['event_recording_published'] = 'Recording published';
 $string['event_recording_unpublished'] = 'Recording unpublished';
 $string['event_recording_deleted'] = 'Recording deleted';

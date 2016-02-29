@@ -1,6 +1,5 @@
 <?php
-
-// Written at Louisiana State University
+//
 
 require_once('../../config.php');
 require_once('../../enrol/externallib.php');
@@ -51,7 +50,6 @@ $alternates = $DB->get_records_menu('block_quickmail_alternate', $alt_params, ''
 
 $blockname = quickmail::_s('pluginname');
 $header = quickmail::_s('email');
-$returnurl = '/blocks/quickmail/email.php?courseid=' . $courseid;
 
 $PAGE->set_context($context);
 $PAGE->set_course($course);
@@ -59,11 +57,11 @@ $PAGE->navbar->add($blockname);
 $PAGE->navbar->add($header);
 $PAGE->set_title($blockname . ': ' . $header);
 $PAGE->set_heading($blockname . ': ' . $header);
-$PAGE->set_url('/course/view.php', array('id' => $courseid, 'return' => $returnurl));
-$PAGE->set_pagetype($blockname);
+$PAGE->set_url('/blocks/quickmail/email.php', array('courseid' => $courseid));
+$PAGE->set_pagetype(quickmail::PAGE_TYPE);
 $PAGE->set_pagelayout('standard');
 
-$PAGE->requires->js('/blocks/quickmail/js/jquery.js');
+$PAGE->requires->jquery();
 $PAGE->requires->js('/blocks/quickmail/js/selection.js');
 
 $course_roles = get_roles_used_in_context($context);
@@ -134,7 +132,6 @@ if (empty($users)) {
     print_error('no_usergroups', 'block_quickmail');
 }
 
-
 // we are presenting the form with values populated from either the log or drafts table in the db
 if (!empty($type)) {
     
@@ -146,14 +143,8 @@ if (!empty($type)) {
 } else {
     $email = new stdClass;
     $email->id = null;
-    $email->subject = optional_param('subject', '', PARAM_TEXT);
-    $email->message = optional_param('message_editor[text]', '', PARAM_RAW);
-    $email->mailto = optional_param('mailto', '', PARAM_TEXT);
-    $email->format = $USER->mailformat;
 }
-$email->messageformat = $email->format;
-$email->messagetext = $email->message;
-
+$email->messageformat =  editors_get_preferred_format();
 $default_sigid = $DB->get_field('block_quickmail_signatures', 'id', array(
     'userid' => $USER->id, 'default_flag' => 1
 ));
@@ -164,7 +155,7 @@ $email->type = $type;
 $email->typeid = $typeid;
 
 $editor_options = array(
-    'trusttext' => true,
+    'trusttext' => false,
     'subdirs' => 1,
     'maxfiles' => EDITOR_UNLIMITED_FILES,
     'accepted_types' => '*',
@@ -186,6 +177,7 @@ if (!empty($email->mailto)) {
     }
 }
 
+
 $form = new email_form(null, array(
     'editor_options' => $editor_options,
     'selected' => $selected,
@@ -199,7 +191,7 @@ $form = new email_form(null, array(
 ));
 
 $warnings = array();
-
+//
 if ($form->is_cancelled()) {
     redirect(new moodle_url('/course/view.php?id=' . $courseid));
     // DWE we should check if we have selected users or emails around here. 
@@ -207,20 +199,17 @@ if ($form->is_cancelled()) {
     if (empty($data->subject)) {
         $warnings[] = get_string('no_subject', 'block_quickmail');
     }
-
     if (empty($data->mailto) && empty($data->additional_emails)) {
         $warnings[] = get_string('no_users', 'block_quickmail');
     }
-
     if (empty($warnings)) {
-
-        // Submitted data
+        // Submitted data //////////////////////////////////////////////////////
         $data->time = time();
         $data->format = $data->message_editor['format'];
         $data->message = $data->message_editor['text'];
         $data->attachment = quickmail::attachment_names($data->attachments);
         $data->messageWithSigAndAttach = "";
-        // Store data; id is needed for file storage
+        // Store data; id is needed for file storage ///////////////////////////
         if (isset($data->send)) {
             $data->id = $DB->insert_record('block_quickmail_log', $data);
             $table = 'log';
@@ -234,11 +223,9 @@ if ($form->is_cancelled()) {
                 $data->id = $DB->insert_record('block_quickmail_drafts', $data);
             }
         }
-
         $data = file_postupdate_standard_editor(
             $data, 'message', $editor_options, $context, 'block_quickmail', $table, $data->id
         );
-
         $DB->update_record('block_quickmail_' . $table, $data);
 
         $prepender = $config['prepend_class'];
@@ -248,17 +235,17 @@ if ($form->is_cancelled()) {
             $subject = $data->subject;
         }
 
-        // An instance id is needed before storing the file repository
+        // An instance id is needed before storing the file repository /////////
         file_save_draft_area_files(
                 $data->attachments, $context->id, 'block_quickmail', 'attachment_' . $table, $data->id, $editor_options
         );
 
-        // Send emails
+        // Send emails /////////////////////////////////////////////////////////
         if (isset($data->send)) {
             if ($type == 'drafts') {
                 quickmail::draft_cleanup($context->id, $typeid);
             }
-
+            // deal with possible signature, will be appended to message in a little bit.
             if (!empty($sigs) and $data->sigid > -1) {
                 $sig = $sigs[$data->sigid];
 
@@ -266,20 +253,30 @@ if ($form->is_cancelled()) {
 
                 
             }
+
+            // Prepare html content of message /////////////////////////////////
+            //$data->message = file_rewrite_pluginfile_urls($data->message, 'pluginfile.php', $context->id, 'block_quickmail', $table, $data->id, $editor_options);
+
             if(empty($signaturetext)){
                 $data->messageWithSigAndAttach = $data->message;
             }
             else{
-                $data->messageWithSigAndAttach = $data->message . "\n\n" .$signaturetext;
+                if($data->format == 0 || $data->format == 2 ){
+                    $data->messageWithSigAndAttach = $data->message . "\n\n" .$signaturetext;
+                }else{
+                    $data->messageWithSigAndAttach = $data->message . "<br /> <br /> <p></p>" .$signaturetext;
+                }
             }
-            // Append links to attachments, if any
+            // Append links to attachments, if any /////////////////////////////
                 $data->messageWithSigAndAttach .= quickmail::process_attachments(
                     $context, $data, $table, $data->id
                 );
-            // Prepare html content of message
+
+                // Prepare html content of message
             $data->message = file_rewrite_pluginfile_urls($data->message, 'pluginfile.php', $context->id, 'block_quickmail', $table, $data->id, $editor_options);
 
-            // Same user, alternate email
+
+            // Same user, alternate email //////////////////////////////////////
             if (!empty($data->alternateid)) {
                 $user = clone($USER);
                 $user->email = $alternates[$data->alternateid];
@@ -287,10 +284,19 @@ if ($form->is_cancelled()) {
                 $user = $USER;
             }
             $data->failuserids = array();
+            // DWE -> Begin hopefully new way of dealing with messagetext and messagehtml
+
+            // TEXT
+            // This is where we'll need to factor in the preferences of the receiver.
+            $messagetext = format_text_email($data->messageWithSigAndAttach, $data->format);
+
+            // HTML
+            $messagehtml = format_text($data->messageWithSigAndAttach, $data->format);
+
             if(!empty($data->mailto)) {
                 foreach (explode(',', $data->mailto) as $userid) {
-                    // WHERE THE ACTUAL EMAILING IS HAPPENING
-                    $success = email_to_user($everyone[$userid], $user, $subject, strip_tags($data->messageWithSigAndAttach), $data->messageWithSigAndAttach);
+                    // Email gets sent here
+                    $success = email_to_user($everyone[$userid], $user, $subject,$messagetext, $messagehtml);
                     if (!$success) {
                         $warnings[] = get_string("no_email", 'block_quickmail', $everyone[$userid]);
                         $data->failuserids[] = $userid;
@@ -315,7 +321,7 @@ if ($form->is_cancelled()) {
                     // TODO make this into a menu option
                     $fakeuser->mailformat = 1;
 
-                    $additional_email_success = email_to_user($fakeuser, $user, $subject, strip_tags($data->messageWithSigAndAttach), $data->messageWithSigAndAttach);
+                    $additional_email_success = email_to_user($fakeuser, $user, $subject, $messagetext, $messagehtml);
                     if (!$additional_email_success) {
                         $data->failuserids[] = $additional_email;
 
@@ -331,7 +337,7 @@ if ($form->is_cancelled()) {
             $DB->update_record('block_quickmail_log', $data);
 
             if ($data->receipt) {
-                email_to_user($USER, $user, $subject, strip_tags($data->messageWithSigAndAttach), $data->messageWithSigAndAttach);
+                email_to_user($USER, $user, $subject, $messagetext, $messagehtml);
             }
         }
     }
@@ -349,7 +355,6 @@ if (empty($email->attachments)) {
 }
 
 $form->set_data($email);
-
 if (empty($warnings)) {
     if (isset($email->send)) {
         redirect(new moodle_url('/blocks/quickmail/emaillog.php', array('courseid' => $course->id)));

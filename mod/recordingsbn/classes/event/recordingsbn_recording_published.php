@@ -1,6 +1,6 @@
 <?php
 /**
- * The mod_recordingsbn viewed event.
+ * The mod_recordingsbn published event.
  *
  * @package   mod_recordingsbn
  * @author    Jesus Federico  (jesus [at] blindsidenetworks [dt] com)
@@ -49,8 +49,8 @@ class recordingsbn_recording_published extends \core\event\base {
      * @return array
      */
     protected function get_legacy_logdata() {
-        return(array($this->courseid, 'recordingsbn', 'view',
-                'view.php?pageid=' . $this->objectid, $this->objectid, $this->contextinstanceid));
+        return(array($this->courseid, 'recordingsbn', 'recording published',
+                'view.php?pageid=' . $this->objectid, get_string('event_recording_published', 'recordingsbn'), $this->contextinstanceid));
     }
 
     /**

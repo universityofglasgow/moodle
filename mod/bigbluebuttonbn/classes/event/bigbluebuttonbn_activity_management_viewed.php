@@ -4,7 +4,7 @@
  *
  * @package   mod_bigbluebuttonbn
  * @author    Jesus Federico  (jesus [at] blindsidenetworks [dt] com)
- * @copyright 2014 Blindside Networks Inc.
+ * @copyright 2014-2015 Blindside Networks Inc.
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v2 or later
  */
 
@@ -47,8 +47,8 @@ class bigbluebuttonbn_activity_management_viewed extends \core\event\base {
      * @return array
      */
     protected function get_legacy_logdata() {
-        return(array($this->courseid, 'bigbluebuttonbn', 'view',
-                'view.php?pageid=' . $this->objectid, $this->objectid, $this->contextinstanceid));
+        return(array($this->courseid, 'bigbluebuttonbn', 'activity management viewed',
+                'view.php?pageid=' . $this->objectid, get_string('event_activity_viewed_all', 'bigbluebuttonbn'), $this->contextinstanceid));
     }
 
     /**

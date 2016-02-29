@@ -24,8 +24,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2015021004;
+$plugin->version   = 2015021005;
 $plugin->requires  = 2014051200;
 $plugin->component = 'assignsubmission_mahara';
 $plugin->maturity  = MATURITY_STABLE;
-$plugin->release   = '1.2-mdl2.7+'; // Plugin version 1.2, for Moodle 2.7+
+$plugin->release   = '1.2.1-mdl2.7+'; // Plugin version 1.2.x, for Moodle 2.7+

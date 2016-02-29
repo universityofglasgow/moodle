@@ -3,6 +3,12 @@
 // Written at Louisiana State University
 // 
 abstract class quickmail {
+
+    /**
+     * @const string The page type for this block.
+     */
+    const PAGE_TYPE = 'block-quickmail';
+
     public static function _s($key, $a = null) {
         return get_string($key, 'block_quickmail', $a);
     }
@@ -496,9 +502,12 @@ abstract class quickmail {
 
 function block_quickmail_pluginfile($course, $record, $context, $filearea, $args, $forcedownload) {
     $fs = get_file_storage();
-    global $DB;
+    global $DB, $CFG;
 
-    require_course_login($course, true, $record);
+    if (!empty($CFG->block_quickmail_downloads)) {
+
+        require_course_login($course, true, $record);
+    }
 
     list($itemid, $filename) = $args;
 

@@ -28,9 +28,9 @@ class email_form extends moodleform {
         $users_to_groups = $this->_customdata['users_to_groups'];
         $users_to_roles = $this->_customdata['users_to_roles'];
         $only_sn = function($role) { return $role->shortname; };
-        if(!is_numeric($user->id)) { 
+        if(!is_numeric($user->id)) {
            $roles = NULL;
-        } else { 
+        } else {
             $roles = implode(',', array_map($only_sn, $users_to_roles[$user->id]));
         }
 
@@ -46,7 +46,7 @@ class email_form extends moodleform {
             $groups = implode(',', array_map($only_id, $users_to_groups[$user->id]));
             $groups .= ',all';
         }
-            $groups .= ',1';
+            $groups .= ',allusers';
         return sprintf("%s %s %s", $user->id, $groups, $roles);
     }
 
@@ -57,16 +57,16 @@ class email_form extends moodleform {
 
         $mform->addElement('hidden', 'mailto', '');
         $mform->setType('mailto', PARAM_TEXT);
-        
+
         $mform->addElement('hidden', 'userid', $USER->id);
         $mform->setType('userid',PARAM_INT);
-        
+
         $mform->addElement('hidden', 'courseid', $COURSE->id);
         $mform->setType('courseid', PARAM_INT);
-        
+
         $mform->addElement('hidden', 'type', '');
         $mform->setType('type', PARAM_ALPHA);
-        
+
         $mform->addElement('hidden', 'typeid', 0);
         $mform->setType('typeid', PARAM_INT);
 
@@ -76,13 +76,16 @@ class email_form extends moodleform {
         }
 
         $group_options = empty($this->_customdata['groups']) ? array() : array(
-            'all' => quickmail::_s('all_sections')
+            'allusers' => quickmail::_s('allusers')
         );
+
+        $group_options['all'] = quickmail::_s('all_sections');
         foreach ($this->_customdata['groups'] as $group) {
             $group_options[$group->id] = $group->name;
         }
+
         $group_options[0] = quickmail::_s('no_section');
-        $group_options[1] = "All Users";
+
         $user_options = array();
         foreach ($this->_customdata['users'] as $user) {
             $user_options[$this->option_value($user)] = $this->option_display($user);
@@ -98,7 +101,7 @@ class email_form extends moodleform {
         $links[] =& $mform->createElement('static', 'draft_link', '', $draft_link);
 
         $context = context_course::instance($COURSE->id);
-        
+
         $config = quickmail::load_config($COURSE->id);
 
         $can_send = (
@@ -121,7 +124,7 @@ class email_form extends moodleform {
         $selected_label = new html_table_cell();
         $selected_label->text = html_writer::tag('strong',
             quickmail::_s('selected') . " ");
-        
+
         $role_filter_label = new html_table_cell();
         $role_filter_label->colspan = "2";
         $role_filter_label->text = html_writer::tag('div',
@@ -169,11 +172,11 @@ class email_form extends moodleform {
             array('id' => 'from_users', 'multiple' => 'multiple', 'size' => 20))
         );
 
-        
+
         // DWE -> NON REQUIRED VERSION
         $table->data[] = new html_table_row(array($selected_label, $role_filter_label));
 
-        
+
         //$table->data[] = new html_table_row(array($selected_required_label, $role_filter_label));
         $table->data[] = new html_table_row(array($select_filter, $center_buttons, $filters));
 
@@ -191,11 +194,13 @@ class email_form extends moodleform {
         }
 
         $mform->addElement('static', 'selectors', '', html_writer::table($table));
-        
+
+        if (!empty($CFG->block_quickmail_addionalemail)) {
         $mform->addElement('text', 'additional_emails', quickmail::_s('additional_emails'), array('style'=>'width: 50%;'));
-        $mform->setType('additional_emails', PARAM_TEXT);                
-        $mform->addRule('additional_emails', 'One or more email addresses is invalid', 'callback', 'mycallback', 'client');
+        $mform->setType('additional_emails', PARAM_TEXT);
+        $mform->addRule('additional_emails', 'One or more email addresses is invalid', 'callback', 'block_quickmail_mycallback', 'client');
         $mform->addHelpButton('additional_emails', 'additional_emails', 'block_quickmail');
+        }
         $mform->addElement(
             'filemanager', 'attachments', quickmail::_s('attachment'),
             null, array('subdirs' => 1, 'accepted_types' => '*')
@@ -204,7 +209,6 @@ class email_form extends moodleform {
         $mform->addElement('text', 'subject', quickmail::_s('subject'));
         $mform->setType('subject', PARAM_TEXT);
         $mform->addRule('subject', null, 'required');
-
         $mform->addElement('editor', 'message_editor', quickmail::_s('message'),
             null, $this->_customdata['editor_options']);
 
