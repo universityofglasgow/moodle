@@ -1438,11 +1438,7 @@ function message_print_user ($user=false, $iscontact=false, $isblocked=false, $i
 
     if ($user === false) {
         echo $OUTPUT->user_picture($USER, $userpictureparams);
-    } else if (core_user::is_real_user($user->id)) { // If not real user, then don't show any links.
-        $userpictureparams['link'] = false;
-        echo $OUTPUT->user_picture($USER, $userpictureparams);
-        echo fullname($user);
-    } else {
+    } else if (core_user::is_real_user($user->id)) {
         echo $OUTPUT->user_picture($user, $userpictureparams);
 
         $link = new moodle_url("/message/index.php?id=$user->id");
@@ -1462,6 +1458,10 @@ function message_print_user ($user=false, $iscontact=false, $isblocked=false, $i
         } else {
             message_contact_link($user->id, 'block', $return, $script, $includeicontext);
         }
+    } else { // If not real user, then don't show any links.
+        $userpictureparams['link'] = false;
+        echo $OUTPUT->user_picture($USER, $userpictureparams);
+        echo fullname($user);
     }
 }
 
@@ -2441,14 +2441,19 @@ function message_mark_message_read($message, $timeread, $messageworkingempty=fal
  *
  * @param bool $ready only return ready-to-use processors
  * @param bool $reset Reset list of message processors (used in unit tests)
+ * @param bool $resetonly Just reset, then exit
  * @return mixed $processors array of objects containing information on message processors
  */
-function get_message_processors($ready = false, $reset = false) {
+function get_message_processors($ready = false, $reset = false, $resetonly = false) {
     global $DB, $CFG;
 
     static $processors;
     if ($reset) {
         $processors = array();
+
+        if ($resetonly) {
+            return $processors;
+        }
     }
 
     if (empty($processors)) {
