@@ -85,6 +85,11 @@ if ($assignid) {
     $assignment = $DB->get_record('assign', array('id' => $assignid), '*', MUST_EXIST);
     $urkund = report_anonymous::urkund_enabled($assignid);
 
+    // Reveal always if not blindmarking
+    if (!$assignment->blindmarking) {
+        $reveal = true;
+    }
+
     // allocate ids if required
     if ($assignment->blindmarking) {
         assign::allocate_unique_ids($assignid);
