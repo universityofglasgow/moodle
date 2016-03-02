@@ -168,8 +168,14 @@ class report_anonymous {
             // Submitted (timemodified retained for sort)
             if ($s->submission) {
                 $record->date = date('d/m/Y H:i', $s->submission->timemodified);
-                $record->status = $s->submission->status;
-                $record->timemodified = $s->submission->timemodified;
+                if ($s->submission->status == 'new') {
+                    $record->date = '-';
+                    $record->status = '-';
+                    $record->timemodified = 0;
+                } else {
+                    $record->status = $s->submission->status == 'new' ? '-' : $s->submission->status;
+                    $record->timemodified = $s->submission->timemodified;
+                }
             } else {
                 $record->date = '-';
                 $record->status = '-';
