@@ -39,7 +39,6 @@ $tsort = optional_param('tsort', 'idnumber', PARAM_ALPHA);
 $tdir = optional_param('tdir', 'asc', PARAM_ALPHA);
 $group = optional_param('group', 0, PARAM_INT);
 
-
 $url = new moodle_url('/report/anonymous/index.php', array('id' => $id));
 $fullurl = new moodle_url('/report/anonymous/index.php', array(
     'id' => $id,

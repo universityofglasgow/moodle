@@ -102,6 +102,8 @@ class report_anonymous_renderer extends plugin_renderer_base {
            $this->head('status', 'status', $baseurl),
            $this->head('submitdate', 'date', $baseurl),
            $this->head('name', 'name', $baseurl),
+           $this->head('email', 'email', $baseurl),
+           $this->head('group', 'group', $baseurl),
         );
         if ($urkund) {
             $columns[] = 'urkundfilename';
@@ -135,6 +137,12 @@ class report_anonymous_renderer extends plugin_renderer_base {
 
             // Name
             $line[] = $s->name;
+
+            // Email
+            $line[] = $s->email;
+
+            // Group
+            $line[] = $s->groups;
 
             if ($urkund) {
                 $line[] = $this->urkund_filename($s->urkundfilename);

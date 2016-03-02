@@ -65,6 +65,30 @@ class report_anonymous {
     }
 
     /**
+     * Get the group(s) a user is a member of
+     * @param int $userid
+     * @param int $courseid
+     * @return string
+     */
+    public static function get_user_groups($userid, $courseid) {
+        global $DB;
+
+        $sql = 'SELECT gg.id, userid, courseid, name FROM {groups} gg
+            JOIN {groups_members} gm ON (gg.id = gm.groupid)
+            WHERE gg.courseid = ?
+            AND gm.userid = ?';
+        if (!$groups = $DB->get_records_sql($sql, array($courseid, $userid))) {
+            return '-';
+        } else {
+            $names = array();
+            foreach ($groups as $group) {
+                $names[] = $group->name;
+            }
+            return implode(', ', $names);
+        }
+    }
+
+    /**
      * get the user's submissions (or null for none)
      * @param int $assignid assignment id
      * @param array $users list of user objects
@@ -143,7 +167,7 @@ class report_anonymous {
 
             // Submitted (timemodified retained for sort)
             if ($s->submission) {
-                $record->date = date('d/m/Y', $s->submission->timemodified);
+                $record->date = date('d/m/Y H:i', $s->submission->timemodified);
                 $record->status = $s->submission->status;
                 $record->timemodified = $s->submission->timemodified;
             } else {
@@ -161,6 +185,12 @@ class report_anonymous {
                 $record->name = get_string('hidden', 'report_anonymous');
                 $record->fullname = '-';
             }
+
+            // EMail
+            $record->email = $s->user->email;
+
+            // Group(s)
+            $record->groups = self::get_user_groups($s->user->id, $courseid);
 
             $record->urkundfilename = isset($s->urkundfilename) ? $s->urkundfilename : '-';
             $record->urkundstatus = isset($s->urkundstatus) ? $s->urkundstatus : '-';
@@ -227,7 +257,7 @@ class report_anonymous {
         if (isset($codes[$statuscode])) {
             return $codes[$statuscode];
         } else {
-            return get_string('statusunknown', 'report_anonymous', $statuscode);
+            return get_string('statusother', 'report_anonymous', $statuscode);
         }
     }
 
@@ -274,32 +304,38 @@ class report_anonymous {
         $myxls->write_string(0, 1, $assignment->name);
 
         // Headers.
-        $myxls->write_string(3, 0, '#');
-        $myxls->write_string(3, 1, get_string('idnumber', 'report_anonymous'));
-        $myxls->write_string(3, 2, get_string('participantnumber', 'report_anonymous'));
-        $myxls->write_string(3, 3, get_string('status', 'report_anonymous'));
-        $myxls->write_string(3, 4, get_string('submitdate', 'report_anonymous'));
-        $myxls->write_string(3, 5, get_string('name', 'report_anonymous'));
+        $i = 0;
+        $myxls->write_string(3, $i++, '#');
+        $myxls->write_string(3, $i++, get_string('idnumber', 'report_anonymous'));
+        $myxls->write_string(3, $i++, get_string('participantnumber', 'report_anonymous'));
+        $myxls->write_string(3, $i++, get_string('status', 'report_anonymous'));
+        $myxls->write_string(3, $i++, get_string('submitdate', 'report_anonymous'));
+        $myxls->write_string(3, $i++, get_string('name', 'report_anonymous'));
+        $myxls->write_string(3, $i++, get_string('email', 'report_anonymous'));
+        $myxls->write_string(3, $i++, get_string('group', 'report_anonymous'));
         if ($urkund) {
-            $myxls->write_string(3, 6, get_string('urkundfile', 'report_anonymous'));
-            $myxls->write_string(3, 7, get_string('urkundstatus', 'report_anonymous'));
-            $myxls->write_string(3, 8, get_string('urkundscore', 'report_anonymous'));
+            $myxls->write_string(3, $i++, get_string('urkundfile', 'report_anonymous'));
+            $myxls->write_string(3, $i++, get_string('urkundstatus', 'report_anonymous'));
+            $myxls->write_string(3, $i++, get_string('urkundscore', 'report_anonymous'));
 
         }
 
         // Add some data.
         $row = 4;
         foreach ($submissions as $s) {
-            $myxls->write_number($row, 0, $row);
-            $myxls->write_string($row, 1, $s->idnumber);
-            $myxls->write_string($row, 2, $s->participantid);
-            $myxls->write_string($row, 3, $s->status);
-            $myxls->write_string($row, 4, $s->date);
-            $myxls->write_string($row, 5, $s->fullname);
+            $i = 0;
+            $myxls->write_number($row, $i++, $row);
+            $myxls->write_string($row, $i++, $s->idnumber);
+            $myxls->write_string($row, $i++, $s->participantid);
+            $myxls->write_string($row, $i++, $s->status);
+            $myxls->write_string($row, $i++, $s->date);
+            $myxls->write_string($row, $i++, $s->fullname);
+            $myxls->write_string($row, $i++, $s->email);
+            $myxls->write_string($row, $i++, $s->groups);
             if ($urkund) {
-                $myxls->write_string($row, 6, $s->urkundfilename);
-                $myxls->write_string($row, 7, $s->urkundstatus);
-                $myxls->write_string($row, 8, $s->urkundscore);
+                $myxls->write_string($row, $i++, $s->urkundfilename);
+                $myxls->write_string($row, $i++, $s->urkundstatus);
+                $myxls->write_string($row, $i++, $s->urkundscore);
             }
             $row++;
         }
