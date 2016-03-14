@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="blocks/gismo/db" VERSION="20111220" COMMENT="XMLDB file for Moodle blocks/gismo"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <TABLE NAME="block_gismo_activity" COMMENT="block_gismo_activity table retrofitted from MySQL" NEXT="block_gismo_config">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="20" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="course"/>
+        <FIELD NAME="course" TYPE="int" LENGTH="20" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="id" NEXT="userid"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="20" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="course" NEXT="activity"/>
+        <FIELD NAME="activity" TYPE="char" LENGTH="50" NOTNULL="true" SEQUENCE="false" PREVIOUS="userid" NEXT="actid"/>
+        <FIELD NAME="actid" TYPE="int" LENGTH="20" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="activity" NEXT="context"/>
+        <FIELD NAME="context" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false" PREVIOUS="actid" NEXT="timedate"/>
+        <FIELD NAME="timedate" TYPE="text" LENGTH="small" NOTNULL="true" SEQUENCE="false" PREVIOUS="context" NEXT="time"/>
+        <FIELD NAME="time" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="timedate" NEXT="numval"/>
+        <FIELD NAME="numval" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="time"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="mdl_gismacti_cou_ix" UNIQUE="false" FIELDS="course" NEXT="mdl_gismacti_use_ix"/>
+        <INDEX NAME="mdl_gismacti_use_ix" UNIQUE="false" FIELDS="userid" PREVIOUS="mdl_gismacti_cou_ix" NEXT="mdl_gismacti_act_ix"/>
+        <INDEX NAME="mdl_gismacti_act_ix" UNIQUE="false" FIELDS="actid" PREVIOUS="mdl_gismacti_use_ix"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="block_gismo_config" COMMENT="block_gismo_config table retrofitted from MySQL" PREVIOUS="block_gismo_activity" NEXT="block_gismo_resource">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="name"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" PREVIOUS="id" NEXT="value"/>
+        <FIELD NAME="value" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" PREVIOUS="name" NEXT="type"/>
+        <FIELD NAME="type" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="integer" SEQUENCE="false" PREVIOUS="value"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="mdl_gismconf_nam_uix" TYPE="unique" FIELDS="name" NEXT="primary"/>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" PREVIOUS="mdl_gismconf_nam_uix"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="block_gismo_resource" COMMENT="block_gismo_resource table retrofitted from MySQL" PREVIOUS="block_gismo_config" NEXT="block_gismo_sl">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="course"/>
+        <FIELD NAME="course" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="id" NEXT="userid"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="course" NEXT="restype"/>
+        <FIELD NAME="restype" TYPE="char" LENGTH="50" NOTNULL="true" SEQUENCE="false" PREVIOUS="userid" NEXT="resid"/>
+        <FIELD NAME="resid" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="restype" NEXT="timedate"/>
+        <FIELD NAME="timedate" TYPE="text" LENGTH="small" NOTNULL="true" SEQUENCE="false" PREVIOUS="resid" NEXT="time"/>
+        <FIELD NAME="time" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="timedate" NEXT="numval"/>
+        <FIELD NAME="numval" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="time"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="course" UNIQUE="false" FIELDS="course" NEXT="userid"/>
+        <INDEX NAME="userid" UNIQUE="false" FIELDS="userid" PREVIOUS="course" NEXT="resid"/>
+        <INDEX NAME="resid" UNIQUE="false" FIELDS="resid" PREVIOUS="userid"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="block_gismo_sl" COMMENT="block_gismo_sl table retrofitted from MySQL" PREVIOUS="block_gismo_resource">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="course"/>
+        <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="id" NEXT="userid"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="course" NEXT="timedate"/>
+        <FIELD NAME="timedate" TYPE="text" LENGTH="small" NOTNULL="true" SEQUENCE="false" PREVIOUS="userid" NEXT="time"/>
+        <FIELD NAME="time" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="timedate" NEXT="numval"/>
+        <FIELD NAME="numval" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="time"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="course" UNIQUE="false" FIELDS="course" NEXT="userid"/>
+        <INDEX NAME="userid" UNIQUE="false" FIELDS="userid" PREVIOUS="course"/>
+      </INDEXES>
+    </TABLE>
+  </TABLES>
+</XMLDB>
