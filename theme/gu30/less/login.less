@@ -1,0 +1,83 @@
+#page-login-index {
+	background-image: url([[pix:theme|login-background-scaled]]);
+	background-repeat: no-repeat;
+	background-position: 50% 0;
+}
+
+#page-login-index form {
+	background: rgba(255, 255, 255, 0.6);
+	padding: 10px;
+	border-radius: 8px;
+	//margin-top: 70px;
+	margin-top: 40px;
+}
+
+#page-login-index form input {
+	margin: 0;
+	margin-bottom: 10px;
+	width: 100%;
+	max-width: 100%;
+	display: block;
+}
+
+#page-login-index form .btn {
+	margin: 0;
+	margin-bottom: 10px;
+}
+
+#page-login-index .navbar {
+	background: transparent !important;
+	border-bottom: none;
+	box-shadow: none;
+}
+
+.login-text h2 {
+	font-size: 35px;
+	color: #fff;
+	line-height: 50px;
+	margin-bottom: 20px;
+	text-shadow: 1px 1px 2px @gu_university_blue, -1px -1px 2px @gu_university_blue;
+}
+
+.login-text p {
+	font-size: 22px;
+	color: #fff;
+	line-height: 31px;
+	margin-bottom: 16px;
+	text-shadow: 1px 1px 2px @gu_university_blue, -1px -1px 2px @gu_university_blue;
+}
+
+.login-spacer {
+	padding-top: 80px;
+}
+
+.login-help {
+	margin: 0;
+	text-align: center;
+}
+
+.login-help a {
+	text-decoration: underline;
+	color: @gu_university_blue;
+}
+
+.login-help .separator {
+	color: lighten(@gu_slate, 10%);
+	padding: 0 0.5em;
+}
+
+@media (max-width: 1200px) {
+	.login-help .separator {
+		display: none;
+	}
+	
+	.login-help a {
+		text-align: center;
+		display: block;
+		margin-bottom: 10px;
+	}
+	
+	.login-help a:last-child {
+		margin-bottom: 0;
+	}
+}

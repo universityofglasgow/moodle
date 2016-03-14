@@ -1,0 +1,599 @@
+@font-face {
+    font-family: 'PT Sans';
+    src: url('gu30/fonts/pt-sans-regular.eot');
+    src: url('gu30/fonts/pt-sans-regular.eot?#iefix') format('embedded-opentype'),
+         url('gu30/fonts/pt-sans-regular.woff') format('woff'),
+         url('gu30/fonts/pt-sans-regular.ttf') format('truetype'),
+         url('gu30/fonts/pt-sans-regular.svg#pt_sansregular') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+@font-face {
+    font-family: 'PT Sans';
+    src: url('gu30/fonts/pt-sans-bold.eot');
+    src: url('gu30/fonts/pt-sans-bold.eot?#iefix') format('embedded-opentype'),
+         url('gu30/fonts/pt-sans-bold.woff') format('woff'),
+         url('gu30/fonts/pt-sans-bold.ttf') format('truetype'),
+         url('gu30/fonts/pt-sans-bold.svg#pt_sansregular') format('svg');
+    font-weight: bold;
+    font-style: normal;
+
+}
+
+
+body {
+	font-family: 'PT Sans', 'Helvetica', sans-serif !important;
+    margin: 0;
+    background-color: lighten(@gu_slate, 55%);
+}
+
+html {
+    -webkit-tap-highlight-color: #fff;
+}
+
+// basics
+h1 {
+    font-size: 24px
+}
+
+h2 {
+    font-size: 20px;
+}
+
+h3 {
+    font-size: 18px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+	font-family: 'PT Sans', 'Helvetica', sans-serif !important;
+}
+
+.container {
+	padding: 20px;
+}
+
+a {
+	color: darken(@gu_cobalt, 10%);
+}
+
+// Headers logos and nav
+.navbar {
+    background-image: none;
+    background-color: @brand-primary;
+    border-bottom: 1px solid darken(@brand-primary, 30%);
+    border-radius: 0;
+    border: none;
+    margin: 0;
+    box-shadow: 0 1px 3px @gu_slate;
+}
+
+.navbar .usermenu {
+	background-color: darken(@brand-primary, 5%);
+	border-radius: 25px;
+	line-height: 30px;
+	box-shadow: inset 0 1px 3px darken(@brand-primary, 10%);
+}
+
+.navbar .usermenu a {
+	text-decoration: none;
+	text-shadow: none;
+	padding: 10px;
+}
+
+.navbar .usermenu .username, .navbar .usermenu .caret, .navbar .usermenu .Log.in {
+	color: #fff;
+}
+
+.navbar .usermenu .dropdown-toggle:hover, .navbar .usermenu .dropdown-toggle:focus, .navbar .usermenu .dropdown-toggle:active,
+.navbar .usermenu .Log.in:hover, .navbar .usermenu .Log.in:focus, .navbar .usermenu .Log.in:focus:active {
+	background-color: darken(@brand-primary, 10%);
+	border-radius: 25px;
+}
+
+.navbar .usermenu .picspan {
+	float: left;
+	border-radius: 15px;
+	margin-right: 10px;
+}
+
+.navbar .usermenu .picspan img {
+	border-radius: 15px;
+	float: left;
+}
+
+.navbar > .container .navbar-brand, .navbar > .container-fluid .navbar-brand {
+	margin: 0;
+}
+
+.navbar-brand {
+	height: auto;
+	padding: 0;
+}
+
+.navbar-nav > li > a {
+    color: #fff;
+}
+
+.navbar-nav > li > a:hover {
+    background-color: fade(@gu_university_blue, 30%);
+}
+
+.navbar-default .navbar-nav>li>a {
+    color: #fff;
+}
+
+.navbar .container {
+	padding: 10px 20px;
+}
+
+#page-navbar {
+	margin-bottom: 20px;
+}
+
+#page-navbar .breadcrumb-nav {
+	line-height: 38px;
+	margin-bottom: 0;
+}
+
+#page-navbar .breadcrumb {
+	background: transparent;
+	padding: 0;
+	margin-bottom: 0;
+}
+
+#page-navbar .breadcrumb a {
+	color: @gu_slate;
+}
+
+#page-navbar .breadcrumb > li + li:before {
+	content: "›";
+	color: lighten(@gu_slate, 30%);
+}
+
+.breadcrumb-button {
+	margin: 0;
+}
+
+.singlebutton div {
+	margin: 0;
+	float: right;
+}
+
+.singlebutton input {
+	margin: 0;
+}
+
+#logo {
+    background-image: url([[pix:theme|logo]]);
+    background-repeat: no-repeat;
+    width: 200px;
+    height: 54px;
+}
+
+#moodle-logo {
+    background-image: url([[pix:theme|moodle-logo]]);
+    background-repeat: no-repeat;
+    width: 200px;
+    height: 54px;
+    margin-left: 192px;
+}
+
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) { 
+	#logo {
+		background-image: url([[pix:theme|logo-retina]]);
+		background-size: 172px 54px;
+	}
+	
+	#moodle-logo {
+        background-image: url([[pix:theme|moodle-logo-retina]]);
+        background-size: 175px 54px;
+    }
+}
+
+// Put back the alert stuff that Bootstrap took away
+.alert {
+padding: 8px 35px 8px 18px;
+margin-bottom: 20px;
+text-shadow: none;
+background-color: fade(@gu_sunshine, 20%);
+border: 2px solid fade(@gu_sunshine, 50%);
+-webkit-border-radius: 5px;
+-moz-border-radius: 5px;
+border-radius: 5px;
+font-size: 18px;
+font-weight: 400;
+font-family: 'Roboto', sans-serif;
+}
+
+.alert>.icon-calendar,
+.alert>.icon-exclamation-sign,
+.alert>.icon-comment,
+blockquote>.icon-quote-left{
+        margin-right: 10px;
+        font-size: 27px;
+        float: left;
+        position: relative;
+}
+
+.alert>span{
+        padding-left: 37px;
+        display: block;
+}
+
+.alert-success {
+        color: @gu_forest;
+        background-color: fade(@gu_forest, 20%);
+        border: 2px solid fade(@gu_forest, 50%);
+}
+
+.alert-info {
+        color: @gu_sandstone;
+        background-color: fade(@gu_sandstone, 20%);
+        border: 2px solid fade(@gu_sandstone, 50%);
+}
+
+.alert-danger, .alert-error {
+        color: @gu_burgundy;
+        background-color: fade(@gu_burgundy, 20%);
+        border: 2px solid fade(@gu_burgundy, 50%);
+}
+
+.alert-warning {
+        color: @gu_rust;
+        background-color: fade(@gu_rust, 20%);
+        border: 2px solid fade(@gu_rust, 50%);
+}
+
+.guimage {
+    width: 600px;
+    height: 400px;
+}
+
+div.guimgbox {
+    position:absolute;
+    top:0;
+    right:0;
+    z-index:-1;
+    width:600px;
+    height:400px;
+    float: left;
+}
+
+div.gufluff {
+    position:relative;
+    width:48%;
+    min-width:600px;
+    height:400px;
+    float:left;   
+}
+
+div.sloganbox {
+    position:absolute;
+    top:0;
+    left:0;
+    z-index:0;
+    font-family:'Yantramanav', "Lucida Sans Unicode", sans-serif;
+    font-weight:100;
+    background-color:#003865;
+    color:#fff;
+    font-size:40px;
+    line-height:95%;
+    width:200px;
+    height:400px;
+    text-align:left;
+    padding:40px 5px
+}
+
+.gulogin {
+    //width:400px;
+    height:400px;
+    margin-left:15px;
+    overflow:hidden;
+    float:left;
+}
+
+#login_images {
+    margin-bottom:20px
+}
+
+#login_layout {
+}
+
+#login_layout img {
+    max-width: 600px;
+    max-height: 400px;
+}
+
+@media (max-width: 500px) {
+    #moodle-logo {
+        display: none;
+    } 
+}
+
+@media (max-width: 1023px) {
+    .gufluff {
+        display: none;
+    }
+
+    .gulogin {
+        width: 300px;
+    }
+
+    .container-fluid {
+        padding-left: 5px;
+    }
+}
+
+.loginbox.onecolumn {
+    width: 90%;
+    height: 400px;
+    left: auto !important;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.loginbox .desc {
+    line-height: normal;
+}
+
+// social network icons
+.socials p {
+    font-weight: normal;
+    color: #666;
+    font-size: 1.1em;
+}
+
+.socialicon,
+.socialicon:visited {
+    display: inline-block;
+    font-family: FontAwesome;
+    color: #bbb;
+    line-height: 25px;
+    text-decoration: none;
+    background-color: rgba(0,0,0,.2);
+    border-radius: 270px;
+    border: 0px none;
+    font-size: 1.6em;
+    padding: 8px;
+    margin-left: 8px;
+    text-align: center;
+    background-image: none;
+    width: 39px;
+    height: 39px;
+}
+
+.facebook:hover, button.facebook:focus {
+    background: #4a6ea9;
+}
+
+.skype:hover, button.skype:focus {
+    background: #00adf7;
+}
+
+.instagram:hover, button.instagram:focus {
+    background: #a5674a;
+}
+
+.ios:hover, button.ios:focus {
+    background: #000;
+}
+
+.android:hover, button.android:focus {
+    background: #98cd32;
+}
+
+.vk:hover, button.vk:focus {
+    background: #4a6ea9;
+}
+
+.twitter:hover, button.twitter:focus {
+    background: #00aced;
+}
+
+.googleplus:hover, button.googleplus:focus {
+    background: #f42941;
+}
+
+.flickr:hover, button.flickr:focus {
+    background: #ff3096;
+}
+
+.instagram:hover, a.instagram:focus {
+    background: #b99c6b;
+}
+
+.youtube:hover, button.youtube:focus {
+    background: #f42941;
+}
+
+.pinterest:hover, button.pinterest:focus {
+    background: #f42941;
+}
+
+.linkedin:hover, button.linkedin:focus {
+    background: #4A9CC9;
+}
+
+.website:hover, button.website:focus {
+    background: [[setting:themecolor]];
+}
+
+.vimeo:hover, button.vimeo:focus {
+    background: #38b7eb;
+}
+
+.tumblr:hover, button.tumblr:focus {
+    background: #405a71;
+}
+
+.blog:hover, button.blog:focus {
+    background: #ff9900;
+}
+
+.socials li {
+    text-align: right;
+    display: inline-block;
+}
+
+ul.socials {
+    text-align: right;
+}
+
+#socialheading {
+    text-align: right;
+    color: #666;
+    letter-spacing: .2em;
+    padding: 0px;
+    margin: 0px;
+    margin-top: 8px;
+}
+
+// Blocks
+
+.block, .island {
+	border-radius: 0;
+	border: 1px solid lighten(@gu_slate, 50%);
+	//box-shadow: 0px 1px 1px lighten(@gu_slate, 35%);
+	box-shadow: none;
+}
+
+.block .header {
+	border-bottom: 1px solid lighten(@gu_slate, 50%);
+	padding: 5px 10px;
+	background: transparent;
+}
+
+.block .header h2 {
+	font-size: 14px;
+}
+
+.block .content {
+	padding: 10px;
+}
+
+#page-my-index #heading h1 {
+    display: none;
+}
+
+.island {
+	padding: 10px;
+	background-color: #fff;
+}
+
+.island h2:first-of-type {
+	margin-top: 0;
+}
+
+// Dashboard panels
+
+.courses .panel {
+	border-radius: 0;
+	border: 1px solid lighten(@gu_slate, 50%);
+	box-shadow: none;
+}
+
+.panel .panel-heading {
+	border-bottom: 1px solid lighten(@gu_slate, 50%);
+	padding: 5px 10px;
+}
+
+.panel .panel-heading a {
+	color: darken(@gu_cobalt, 10%);
+}
+
+.panel .panel-body {
+	padding: 10px;
+}
+
+// Forms
+.mform .iconhelp {
+margin-right: 0;
+margin-left: 4px;
+}
+
+// Footer Stuff
+
+#page-footer {
+	margin-top: 0;
+	border-top: none;
+	padding: 0;
+}
+
+#page-footer, #page-footer .validators, #page-footer .purgecaches, #page-footer .performanceinfo {
+	text-align: left;
+}
+
+#page-footer .glasgow {
+	color: @gu_university_blue;
+	margin: 0;
+	margin-bottom: 10px;
+}
+
+#page-footer p {
+	margin-bottom: 10px;
+	color: @gu_slate;
+}
+
+#page-footer .container {
+	border-top: 1px solid lighten(@gu_slate, 50%);
+	padding-top: 20px;
+	padding-bottom: 20px;
+}
+
+.footer-links h4 {
+	padding: 0;
+	font-size: 1em;
+	line-height:19px;
+	vertical-align: baseline;
+	color: @gu_university_blue;
+	text-transform: uppercase;
+	margin: 0;
+	margin-bottom: 10px;
+}
+
+.footer-links ul {
+	margin: 0;
+	margin-bottom: 20px;
+}
+
+.footer-links li {
+	display: block;
+	margin-bottom: 5px;
+}
+
+// Form Overrides
+
+.mform fieldset.collapsible legend a.fheader {
+	margin-left: 0;
+}
+
+legend, #adminsettings h3, .backup-restore .backup-section > h2.header, .backup-restore .backup-section .backup-sub-section h3 {
+	font-size: 18px;
+}
+
+@media (min-width: 1200px) {
+	.container {
+		width: auto;
+		padding-left: 20px;
+		padding-right: 20px;
+	}
+}
+
+@media (max-width: 767px) {
+    
+    .navbar-header #moodle-logo {
+        display: none;
+    }
+    
+    .container > .navbar-header {
+        margin-left: 0;
+        margin-right: 0;
+    }
+    
+    .navbar-header .hidden-sm {
+        display: none;
+    }
+}
