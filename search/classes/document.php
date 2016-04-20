@@ -69,6 +69,16 @@ class document implements \renderable, \templatable {
     protected $contentitemid = null;
 
     /**
+     * @var bool Should be set to true if document hasn't been indexed before. False if unknown.
+     */
+    protected $isnew = false;
+
+    /**
+     * @var \stored_file[] An array of stored files to attach to the document.
+     */
+    protected $files = array();
+
+    /**
      * All required fields any doc should contain.
      *
      * We have to choose a format to specify field types, using solr format as we have to choose one and solr is the
@@ -91,14 +101,16 @@ class document implements \renderable, \templatable {
             'indexed' => true
         ),
         'title' => array(
-            'type' => 'string',
+            'type' => 'text',
             'stored' => true,
-            'indexed' => true
+            'indexed' => true,
+            'mainquery' => true
         ),
         'content' => array(
-            'type' => 'string',
+            'type' => 'text',
             'stored' => true,
-            'indexed' => true
+            'indexed' => true,
+            'mainquery' => true
         ),
         'contextid' => array(
             'type' => 'int',
@@ -118,7 +130,7 @@ class document implements \renderable, \templatable {
         'courseid' => array(
             'type' => 'int',
             'stored' => true,
-            'indexed' => false
+            'indexed' => true
         ),
         'owneruserid' => array(
             'type' => 'int',
@@ -145,19 +157,33 @@ class document implements \renderable, \templatable {
         'userid' => array(
             'type' => 'int',
             'stored' => true,
-            'indexed' => false
+            'indexed' => true
         ),
         'description1' => array(
-            'type' => 'string',
+            'type' => 'text',
             'stored' => true,
-            'indexed' => true
+            'indexed' => true,
+            'mainquery' => true
         ),
         'description2' => array(
-            'type' => 'string',
+            'type' => 'text',
             'stored' => true,
-            'indexed' => true
-        ),
+            'indexed' => true,
+            'mainquery' => true
+        )
     );
+
+    /**
+     * Any fields that are engine specifc. These are fields that are solely used by a search engine plugin
+     * for internal purposes.
+     *
+     * Field names should be prefixed with engine name to avoid potential conflict with core fields.
+     *
+     * Uses same format as fields above.
+     *
+     * @var array
+     */
+    protected static $enginefields = array();
 
     /**
      * We ensure that the document has a unique id across search areas.
@@ -179,6 +205,40 @@ class document implements \renderable, \templatable {
     }
 
     /**
+     * Add a stored file to the document.
+     *
+     * @param \stored_file|int $file The file to add, or file id.
+     * @return void
+     */
+    public function add_stored_file($file) {
+        if (is_numeric($file)) {
+            $this->files[$file] = $file;
+        } else {
+            $this->files[$file->get_id()] = $file;
+        }
+    }
+
+    /**
+     * Returns the array of attached files.
+     *
+     * @return \stored_file[]
+     */
+    public function get_files() {
+        // The files array can contain stored file ids, so we need to get instances if asked.
+        foreach ($this->files as $id => $listfile) {
+            if (is_numeric($listfile)) {
+                $fs = get_file_storage();
+
+                if ($file = $fs->get_file_by_id($id)) {
+                    $this->files[$id] = $file;
+                }
+            }
+        }
+
+        return $this->files;
+    }
+
+    /**
      * Setter.
      *
      * Basic checkings to prevent common issues.
@@ -197,6 +257,8 @@ class document implements \renderable, \templatable {
             $fielddata = static::$requiredfields[$fieldname];
         } else if (!empty(static::$optionalfields[$fieldname])) {
             $fielddata = static::$optionalfields[$fieldname];
+        } else if (!empty(static::$enginefields[$fieldname])) {
+            $fielddata = static::$enginefields[$fieldname];
         }
 
         if (empty($fielddata)) {
@@ -269,12 +331,30 @@ class document implements \renderable, \templatable {
     }
 
     /**
+     * Set if this is a new document. False if unknown.
+     *
+     * @param bool $new
+     */
+    public function set_is_new($new) {
+       $this->isnew = (bool)$new;
+    }
+
+    /**
+     * Returns if the document is new. False if unknown.
+     *
+     * @return bool
+     */
+    public function get_is_new() {
+       return $this->isnew;
+    }
+
+    /**
      * Returns all default fields definitions.
      *
      * @return array
      */
     public static function get_default_fields_definition() {
-        return static::$requiredfields + static::$optionalfields;
+        return static::$requiredfields + static::$optionalfields + static::$enginefields;
     }
 
     /**
@@ -303,6 +383,19 @@ class document implements \renderable, \templatable {
      */
     public static function format_string_for_engine($string) {
         return $string;
+    }
+
+    /**
+     * Formats a text value for the search engine.
+     *
+     * Search engines may overwrite this method to apply restrictions, like limiting the size.
+     * The default behaviour is just returning the string.
+     *
+     * @param string $text
+     * @return string
+     */
+    public static function format_text_for_engine($text) {
+        return $text;
     }
 
     /**
@@ -337,7 +430,7 @@ class document implements \renderable, \templatable {
      * @return void
      */
     public function set_data_from_engine($docdata) {
-        $fields = static::$requiredfields + static::$optionalfields;
+        $fields = static::$requiredfields + static::$optionalfields + static::$enginefields;
         foreach ($fields as $fieldname => $field) {
 
             // Optional params might not be there.
@@ -395,6 +488,8 @@ class document implements \renderable, \templatable {
      * @return array
      */
     public function export_for_engine() {
+        // Set any unset defaults.
+        $this->apply_defaults();
 
         // We don't want to affect the document instance.
         $data = $this->data;
@@ -411,12 +506,17 @@ class document implements \renderable, \templatable {
                 // Overwrite the timestamp with the engine dependant format.
                 $data[$fieldname] = static::format_time_for_engine($data[$fieldname]);
             } else if ($field['type'] === 'string') {
-                // Overwrite the timestamp with the engine dependant format.
+                // Overwrite the string with the engine dependant format.
                 $data[$fieldname] = static::format_string_for_engine($data[$fieldname]);
+            } else if ($field['type'] === 'text') {
+                // Overwrite the text with the engine dependant format.
+                $data[$fieldname] = static::format_text_for_engine($data[$fieldname]);
             }
+
         }
 
-        foreach (static::$optionalfields as $fieldname => $field) {
+        $fields = static::$optionalfields + static::$enginefields;
+        foreach ($fields as $fieldname => $field) {
             if (!isset($data[$fieldname])) {
                 continue;
             }
@@ -424,12 +524,27 @@ class document implements \renderable, \templatable {
                 // Overwrite the timestamp with the engine dependant format.
                 $data[$fieldname] = static::format_time_for_engine($data[$fieldname]);
             } else if ($field['type'] === 'string') {
-                // Overwrite the timestamp with the engine dependant format.
+                // Overwrite the string with the engine dependant format.
                 $data[$fieldname] = static::format_string_for_engine($data[$fieldname]);
+            } else if ($field['type'] === 'text') {
+                // Overwrite the text with the engine dependant format.
+                $data[$fieldname] = static::format_text_for_engine($data[$fieldname]);
             }
         }
 
         return $data;
+    }
+
+    /**
+     * Apply any defaults to unset fields before export. Called after document building, but before export.
+     *
+     * Sub-classes of this should make sure to call parent::apply_defaults().
+     */
+    protected function apply_defaults() {
+        // Set the default type, TYPE_TEXT.
+        if (!isset($this->data['type'])) {
+            $this->data['type'] = manager::TYPE_TEXT;
+        }
     }
 
     /**
@@ -444,20 +559,36 @@ class document implements \renderable, \templatable {
      * @return array
      */
     public function export_for_template(\renderer_base $output) {
-
         list($componentname, $areaname) = \core_search\manager::extract_areaid_parts($this->get('areaid'));
 
+        $title = $this->is_set('title') ? $this->format_text($this->get('title')) : '';
         $data = [
             'courseurl' => new \moodle_url('/course/view.php?id=' . $this->get('courseid')),
             'coursefullname' => format_string($this->get('coursefullname'), true, array('context' => $this->get('contextid'))),
             'modified' => userdate($this->get('modified')),
-            'title' => format_string($this->get('title'), true, array('context' => $this->get('contextid'))),
+            'title' => ($title !== '') ? $title : get_string('notitle', 'search'),
             'docurl' => $this->get_doc_url(),
             'content' => $this->is_set('content') ? $this->format_text($this->get('content')) : null,
             'contexturl' => $this->get_context_url(),
             'description1' => $this->is_set('description1') ? $this->format_text($this->get('description1')) : null,
             'description2' => $this->is_set('description2') ? $this->format_text($this->get('description2')) : null,
         ];
+
+        // Now take any attached any files.
+        $files = $this->get_files();
+        if (!empty($files)) {
+            if (count($files) > 1) {
+                $filenames = array();
+                foreach ($files as $file) {
+                    $filenames[] = $file->get_filename();
+                }
+                $data['multiplefiles'] = true;
+                $data['filenames'] = $filenames;
+            } else {
+                $file = reset($files);
+                $data['filename'] = $file->get_filename();
+            }
+        }
 
         if ($this->is_set('userid')) {
             $data['userurl'] = new \moodle_url('/user/view.php', array('id' => $this->get('userid'), 'course' => $this->get('courseid')));

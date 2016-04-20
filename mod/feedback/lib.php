@@ -1025,6 +1025,31 @@ function feedback_get_complete_users($cm,
 }
 
 /**
+ * If there are any new responses to the anonymous feedback, re-shuffle all
+ * responses and assign response number to each of them.
+ *
+ * @param stdClass $feedback
+ */
+function feedback_shuffle_anonym_responses($feedback) {
+    global $DB;
+    $params = array('feedback' => $feedback->id,
+                    'random_response' => 0,
+                    'anonymous_response' => FEEDBACK_ANONYMOUS_YES);
+
+    if ($DB->count_records('feedback_completed', $params, 'random_response')) {
+        // Get all of the anonymous records, go through them and assign a response id.
+        unset($params['random_response']);
+        $feedbackcompleteds = $DB->get_records('feedback_completed', $params, 'id');
+        shuffle($feedbackcompleteds);
+        $num = 1;
+        foreach ($feedbackcompleteds as $compl) {
+            $compl->random_response = $num++;
+            $DB->update_record('feedback_completed', $compl);
+        }
+    }
+}
+
+/**
  * get users which have the viewreports-capability
  *
  * @uses CONTEXT_MODULE
@@ -1450,7 +1475,9 @@ function feedback_get_depend_candidates_for_item($feedback, $item) {
     }
     //adding the choose-option
     foreach ($feedbackitems as $key => $val) {
-        $dependitems[$key] = $val;
+        if (trim(strval($val)) !== '') {
+            $dependitems[$key] = format_string($val);
+        }
     }
     return $dependitems;
 }
@@ -2824,16 +2851,15 @@ function feedback_get_feedbacks_from_sitecourse_map($courseid) {
 }
 
 /**
- * gets the courses from table feedback_sitecourse_map.
+ * Gets the courses from table feedback_sitecourse_map
  *
- * @global object
  * @param int $feedbackid
  * @return array the course-records
  */
 function feedback_get_courses_from_sitecourse_map($feedbackid) {
     global $DB;
 
-    $sql = "SELECT f.id, f.courseid, c.fullname, c.shortname
+    $sql = "SELECT c.id, c.fullname, c.shortname
               FROM {feedback_sitecourse_map} f, {course} c
              WHERE c.id = f.courseid
                    AND f.feedbackid = ?
@@ -2841,6 +2867,27 @@ function feedback_get_courses_from_sitecourse_map($feedbackid) {
 
     return $DB->get_records_sql($sql, array($feedbackid));
 
+}
+
+/**
+ * Updates the course mapping for the feedback
+ *
+ * @param stdClass $feedback
+ * @param array $courses array of course ids
+ */
+function feedback_update_sitecourse_map($feedback, $courses) {
+    global $DB;
+    if (empty($courses)) {
+        $courses = array();
+    }
+    $currentmapping = $DB->get_fieldset_select('feedback_sitecourse_map', 'courseid', 'feedbackid=?', array($feedback->id));
+    foreach (array_diff($courses, $currentmapping) as $courseid) {
+        $DB->insert_record('feedback_sitecourse_map', array('feedbackid' => $feedback->id, 'courseid' => $courseid));
+    }
+    foreach (array_diff($currentmapping, $courses) as $courseid) {
+        $DB->delete_records('feedback_sitecourse_map', array('feedbackid' => $feedback->id, 'courseid' => $courseid));
+    }
+    // TODO MDL-53574 add events.
 }
 
 /**
@@ -2954,8 +3001,7 @@ function feedback_send_email($cm, $feedback, $course, $userid) {
             $info->feedback = format_string($feedback->name, true);
             $info->url = $CFG->wwwroot.'/mod/feedback/show_entries.php?'.
                             'id='.$cm->id.'&'.
-                            'userid='.$userid.'&'.
-                            'do_show=showentries';
+                            'userid=' . $userid;
 
             $a = array('username' => $info->username, 'feedbackname' => $feedback->name);
 
@@ -3026,7 +3072,7 @@ function feedback_send_email_anonym($cm, $feedback, $course) {
             $info = new stdClass();
             $info->username = $printusername;
             $info->feedback = format_string($feedback->name, true);
-            $info->url = $CFG->wwwroot.'/mod/feedback/show_entries_anonym.php?id='.$cm->id;
+            $info->url = $CFG->wwwroot.'/mod/feedback/show_entries.php?id=' . $cm->id;
 
             $a = array('username' => $info->username, 'feedbackname' => $feedback->name);
 
@@ -3121,7 +3167,7 @@ function feedback_encode_target_url($url) {
 function feedback_extend_settings_navigation(settings_navigation $settings,
                                              navigation_node $feedbacknode) {
 
-    global $PAGE, $DB;
+    global $PAGE;
 
     if (!$context = context_module::instance($PAGE->cm->id, IGNORE_MISSING)) {
         print_error('badcontext');
@@ -3150,26 +3196,33 @@ function feedback_extend_settings_navigation(settings_navigation $settings,
                                           'do_show' => 'templates')));
     }
 
+    if (has_capability('mod/feedback:mapcourse', $context) && $PAGE->course->id == SITEID) {
+        $feedbacknode->add(get_string('mappedcourses', 'feedback'),
+                    new moodle_url('/mod/feedback/mapcourse.php',
+                                    array('id' => $PAGE->cm->id)));
+    }
+
     if (has_capability('mod/feedback:viewreports', $context)) {
-        $feedback = $DB->get_record('feedback', array('id'=>$PAGE->cm->instance));
+        $feedback = $PAGE->activityrecord;
         if ($feedback->course == SITEID) {
             $feedbacknode->add(get_string('analysis', 'feedback'),
                     new moodle_url('/mod/feedback/analysis_course.php',
-                                    array('id' => $PAGE->cm->id,
-                                          'course' => $PAGE->course->id,
-                                          'do_show' => 'analysis')));
+                                    array('id' => $PAGE->cm->id)));
         } else {
             $feedbacknode->add(get_string('analysis', 'feedback'),
                     new moodle_url('/mod/feedback/analysis.php',
-                                    array('id' => $PAGE->cm->id,
-                                          'course' => $PAGE->course->id,
-                                          'do_show' => 'analysis')));
+                                    array('id' => $PAGE->cm->id)));
         }
 
         $feedbacknode->add(get_string('show_entries', 'feedback'),
                     new moodle_url('/mod/feedback/show_entries.php',
-                                    array('id' => $PAGE->cm->id,
-                                          'do_show' => 'showentries')));
+                                    array('id' => $PAGE->cm->id)));
+
+        if ($feedback->anonymous == FEEDBACK_ANONYMOUS_NO AND $feedback->course != SITEID) {
+            $feedbacknode->add(get_string('show_nonrespondents', 'feedback'),
+                        new moodle_url('/mod/feedback/show_nonrespondents.php',
+                                        array('id' => $PAGE->cm->id)));
+        }
     }
 }
 
@@ -3213,4 +3266,30 @@ function feedback_ajax_saveitemorder($itemlist, $feedback) {
                                             array('id'=>$itemid, 'feedback'=>$feedback->id));
     }
     return $result;
+}
+
+/**
+ * Checks if current user is able to view feedback on this course.
+ *
+ * @param stdClass $feedback
+ * @param context_module $context
+ * @param int $courseid
+ * @return bool
+ */
+function feedback_can_view_analysis($feedback, $context, $courseid = false) {
+    if (has_capability('mod/feedback:viewreports', $context)) {
+        return true;
+    }
+
+    if (intval($feedback->publish_stats) != 1 ||
+            !has_capability('mod/feedback:viewanalysepage', $context)) {
+        return false;
+    }
+
+    if (!isloggedin() || isguestuser()) {
+        // There is no tracking for the guests, assume that they can view analysis if condition above is satisfied.
+        return $feedback->course == SITEID;
+    }
+
+    return feedback_is_already_submitted($feedback->id, $courseid);
 }

@@ -629,11 +629,16 @@ class mod_wiki_external_testcase extends externallib_advanced_testcase {
         $result = external_api::clean_returnvalue(mod_wiki_external::get_subwiki_pages_returns(), $result);
         $this->assertEquals($expectedpages, $result['pages']);
 
-        // Check that WS doesn't return page content if includecontent is false.
-        unset($expectedpages[0]['cachedcontent']);
-        unset($expectedpages[0]['contentformat']);
-        unset($expectedpages[1]['cachedcontent']);
-        unset($expectedpages[1]['contentformat']);
+        // Check that WS doesn't return page content if includecontent is false, it returns the size instead.
+        foreach ($expectedpages as $i => $expectedpage) {
+            if (function_exists('mb_strlen') && ((int)ini_get('mbstring.func_overload') & 2)) {
+                $expectedpages[$i]['contentsize'] = mb_strlen($expectedpages[$i]['cachedcontent'], '8bit');
+            } else {
+                $expectedpages[$i]['contentsize'] = strlen($expectedpages[$i]['cachedcontent']);
+            }
+            unset($expectedpages[$i]['cachedcontent']);
+            unset($expectedpages[$i]['contentformat']);
+        }
         $result = mod_wiki_external::get_subwiki_pages($this->wiki->id, 0, 0, array('sortby' => 'id', 'includecontent' => 0));
         $result = external_api::clean_returnvalue(mod_wiki_external::get_subwiki_pages_returns(), $result);
         $this->assertEquals($expectedpages, $result['pages']);
@@ -1005,6 +1010,121 @@ class mod_wiki_external_testcase extends externallib_advanced_testcase {
         $result = mod_wiki_external::get_page_contents($this->fpsepg1indstu->id);
         $result = external_api::clean_returnvalue(mod_wiki_external::get_page_contents_returns(), $result);
         $this->assertEquals($expectedfpsepg1indstu, $result['page']);
+    }
+
+    /**
+     * Test get_subwiki_files using a wiki without files.
+     */
+    public function test_get_subwiki_files_no_files() {
+        $result = mod_wiki_external::get_subwiki_files($this->wiki->id);
+        $result = external_api::clean_returnvalue(mod_wiki_external::get_subwiki_files_returns(), $result);
+        $this->assertCount(0, $result['files']);
+        $this->assertCount(0, $result['warnings']);
+    }
+
+    /**
+     * Test get_subwiki_files, check that a student can't get files from another group's subwiki when
+     * using separate groups.
+     */
+    public function test_get_subwiki_files_separate_groups_student_see_other_group() {
+        // Create testing data.
+        $this->create_collaborative_wikis_with_groups();
+
+        $this->setUser($this->student);
+        $this->setExpectedException('moodle_exception');
+        mod_wiki_external::get_subwiki_files($this->wikisep->id, $this->group2->id);
+    }
+
+    /**
+     * Test get_subwiki_files using a collaborative wiki without groups.
+     */
+    public function test_get_subwiki_files_collaborative_no_groups() {
+        $this->setUser($this->student);
+
+        // Add a file as subwiki attachment.
+        $fs = get_file_storage();
+        $file = array('component' => 'mod_wiki', 'filearea' => 'attachments',
+                'contextid' => $this->context->id, 'itemid' => $this->firstpage->subwikiid,
+                'filename' => 'image.jpg', 'filepath' => '/', 'timemodified' => time());
+        $content = 'IMAGE';
+        $fs->create_file_from_string($file, $content);
+
+        $expectedfile = array(
+            'filename' => $file['filename'],
+            'filepath' => $file['filepath'],
+            'mimetype' => 'image/jpeg',
+            'filesize' => strlen($content),
+            'timemodified' => $file['timemodified'],
+            'fileurl' => moodle_url::make_webservice_pluginfile_url($file['contextid'], $file['component'],
+                            $file['filearea'], $file['itemid'], $file['filepath'], $file['filename']),
+        );
+
+        // Call the WS and check that it returns this file.
+        $result = mod_wiki_external::get_subwiki_files($this->wiki->id);
+        $result = external_api::clean_returnvalue(mod_wiki_external::get_subwiki_files_returns(), $result);
+        $this->assertCount(1, $result['files']);
+        $this->assertEquals($expectedfile, $result['files'][0]);
+
+        // Now add another file to the same subwiki.
+        $file['filename'] = 'Another image.jpg';
+        $file['timemodified'] = time();
+        $content = 'ANOTHER IMAGE';
+        $fs->create_file_from_string($file, $content);
+
+        $expectedfile['filename'] = $file['filename'];
+        $expectedfile['timemodified'] = $file['timemodified'];
+        $expectedfile['filesize'] = strlen($content);
+        $expectedfile['fileurl'] = moodle_url::make_webservice_pluginfile_url($file['contextid'], $file['component'],
+                            $file['filearea'], $file['itemid'], $file['filepath'], $file['filename']);
+
+        // Call the WS and check that it returns both files file.
+        $result = mod_wiki_external::get_subwiki_files($this->wiki->id);
+        $result = external_api::clean_returnvalue(mod_wiki_external::get_subwiki_files_returns(), $result);
+        $this->assertCount(2, $result['files']);
+        // The new file is returned first because they're returned in alphabetical order.
+        $this->assertEquals($expectedfile, $result['files'][0]);
+    }
+
+    /**
+     * Test get_subwiki_files using an individual wiki with visible groups.
+     */
+    public function test_get_subwiki_files_visible_groups_individual() {
+        // Create testing data.
+        $this->create_individual_wikis_with_groups();
+
+        $this->setUser($this->student);
+
+        // Add a file as subwiki attachment in the student group 1 subwiki.
+        $fs = get_file_storage();
+        $contextwiki = context_module::instance($this->wikivisind->cmid);
+        $file = array('component' => 'mod_wiki', 'filearea' => 'attachments',
+                'contextid' => $contextwiki->id, 'itemid' => $this->fpvisg1indstu->subwikiid,
+                'filename' => 'image.jpg', 'filepath' => '/', 'timemodified' => time());
+        $content = 'IMAGE';
+        $fs->create_file_from_string($file, $content);
+
+        $expectedfile = array(
+            'filename' => $file['filename'],
+            'filepath' => $file['filepath'],
+            'mimetype' => 'image/jpeg',
+            'filesize' => strlen($content),
+            'timemodified' => $file['timemodified'],
+            'fileurl' => moodle_url::make_webservice_pluginfile_url($file['contextid'], $file['component'],
+                            $file['filearea'], $file['itemid'], $file['filepath'], $file['filename']),
+        );
+
+        // Call the WS and check that it returns this file.
+        $result = mod_wiki_external::get_subwiki_files($this->wikivisind->id, $this->group1->id);
+        $result = external_api::clean_returnvalue(mod_wiki_external::get_subwiki_files_returns(), $result);
+        $this->assertCount(1, $result['files']);
+        $this->assertEquals($expectedfile, $result['files'][0]);
+
+        // Now check that a teacher can see it too.
+        $this->setUser($this->teacher);
+        $result = mod_wiki_external::get_subwiki_files($this->wikivisind->id, $this->group1->id, $this->student->id);
+        $result = external_api::clean_returnvalue(mod_wiki_external::get_subwiki_files_returns(), $result);
+        $this->assertCount(1, $result['files']);
+        $this->assertEquals($expectedfile, $result['files'][0]);
     }
 
 }

@@ -27,8 +27,6 @@
 
 require_once(__DIR__ . '/../../behat/behat_base.php');
 
-use Moodle\BehatExtension\Context\Step\Given;
-use Moodle\BehatExtension\Context\Step\When;
 use Behat\Mink\Exception\ExpectationException as ExpectationException;
 use Behat\Mink\Exception\DriverException as DriverException;
 
@@ -62,7 +60,7 @@ class behat_navigation extends behat_base {
             $exception = new ExpectationException($exception, $this->getSession());
         }
 
-        $nodetextliteral = $this->getSession()->getSelectorsHandler()->xpathLiteral($text);
+        $nodetextliteral = behat_context_helper::escape($text);
         $hasblocktree = "[contains(concat(' ', normalize-space(@class), ' '), ' block_tree ')]";
         $hasbranch = "[contains(concat(' ', normalize-space(@class), ' '), ' branch ')]";
         $hascollapsed = "li[@aria-expanded='false']";
@@ -147,23 +145,22 @@ class behat_navigation extends behat_base {
      * @Given /^I follow "(?P<nodetext_string>(?:[^"]|\\")*)" in the user menu$/
      *
      * @param string $nodetext
-     * @return bool|void
      */
     public function i_follow_in_the_user_menu($nodetext) {
-        $steps = array();
 
         if ($this->running_javascript()) {
             // The user menu must be expanded when JS is enabled.
             $xpath = "//div[@class='usermenu']//a[contains(concat(' ', @class, ' '), ' toggle-display ')]";
-            $steps[] = new When('I click on "'.$xpath.'" "xpath_element"');
+            $this->execute("behat_general::i_click_on", array($this->escape($xpath), "xpath_element"));
         }
 
         // Now select the link.
         // The CSS path is always present, with or without JS.
         $csspath = ".usermenu [data-rel='menu-content']";
-        $steps[] = new When('I click on "'.$nodetext.'" "link" in the "'.$csspath.'" "css_element"');
 
-        return $steps;
+        $this->execute('behat_general::i_click_on_in_the',
+            array($nodetext, "link", $csspath, "css_element")
+        );
     }
 
     /**
@@ -182,7 +179,10 @@ class behat_navigation extends behat_base {
         if (!$this->running_javascript()) {
             if ($nodetext === get_string('administrationsite')) {
                 // Administration menu is not loaded by default any more. Click the link to expand.
-                return new Given('I click on "'.$nodetext.'" "link" in the "'.get_string('administration').'" "block"');
+                $this->execute('behat_general::i_click_on_in_the',
+                    array($nodetext, "link", get_string('administration'), "block")
+                );
+                return true;
             }
             return true;
         }
@@ -274,7 +274,7 @@ class behat_navigation extends behat_base {
                 // If node is a link then some driver click in the middle of the node, which click on link and
                 // page gets redirected. To ensure expansion works in all cases, check if the node to expand is a
                 // link and if yes then click on link and wait for it to navigate to next page with node expanded.
-                $nodetoexpandliteral = $this->getSession()->getSelectorsHandler()->xpathLiteral($parentnodes[$i]);
+                $nodetoexpandliteral = behat_context_helper::escape($parentnodes[$i]);
                 $nodetoexpandxpathlink = $xpath . "/a[normalize-space(.)=" . $nodetoexpandliteral . "]";
 
                 if ($nodetoexpandlink = $node->find('xpath', $nodetoexpandxpathlink)) {
@@ -297,7 +297,7 @@ class behat_navigation extends behat_base {
         }
 
         // Finally, click on requested node under navigation.
-        $nodetextliteral = $this->getSession()->getSelectorsHandler()->xpathLiteral($nodetext);
+        $nodetextliteral = behat_context_helper::escape($nodetext);
         $xpath = "/ul/li/p[contains(concat(' ', normalize-space(@class), ' '), ' tree_item ')]" .
                 "/a[normalize-space(.)=" . $nodetextliteral . "]";
         $nodetoclick = $node->find('xpath', $xpath);
@@ -321,7 +321,7 @@ class behat_navigation extends behat_base {
     protected function get_top_navigation_node($nodetext) {
 
         // Avoid problems with quotes.
-        $nodetextliteral = $this->getSession()->getSelectorsHandler()->xpathLiteral($nodetext);
+        $nodetextliteral = behat_context_helper::escape($nodetext);
         $exception = new ExpectationException('Top navigation node "' . $nodetext . ' not found in "', $this->getSession());
 
         // First find in navigation block.
@@ -365,7 +365,7 @@ class behat_navigation extends behat_base {
     protected function get_navigation_node($nodetext, $parentnode = null) {
 
         // Avoid problems with quotes.
-        $nodetextliteral = $this->getSession()->getSelectorsHandler()->xpathLiteral($nodetext);
+        $nodetextliteral = behat_context_helper::escape($nodetext);
 
         $xpath = "/ul/li[contains(concat(' ', normalize-space(@class), ' '), ' contains_branch ')]" .
             "[child::p[contains(concat(' ', normalize-space(@class), ' '), ' branch ')]" .
@@ -413,6 +413,6 @@ class behat_navigation extends behat_base {
             return false;
         }
 
-        return new Given('I click on ".btn-navbar" "css_element"');
+        $this->execute('behat_general::i_click_on', array(".btn-navbar", "css_element"));
     }
 }

@@ -43,6 +43,11 @@ class manager {
     const TYPE_TEXT = 1;
 
     /**
+     * @var int File contents.
+     */
+    const TYPE_FILE = 2;
+
+    /**
      * @var int User can not access the document.
      */
     const ACCESS_DENIED = 0;
@@ -306,9 +311,10 @@ class manager {
      * information and there will be a performance benefit on passing only some contexts
      * instead of the whole context array set.
      *
+     * @param array|false $limitcourseids An array of course ids to limit the search to. False for no limiting.
      * @return bool|array Indexed by area identifier (component + area name). Returns true if the user can see everything.
      */
-    protected function get_areas_user_accesses() {
+    protected function get_areas_user_accesses($limitcourseids = false) {
         global $CFG, $USER;
 
         // All results for admins. Eventually we could add a new capability for managers.
@@ -331,7 +337,7 @@ class manager {
         // This will store area - allowed contexts relations.
         $areascontexts = array();
 
-        if (!empty($areasbylevel[CONTEXT_SYSTEM])) {
+        if (empty($limitcourseids) && !empty($areasbylevel[CONTEXT_SYSTEM])) {
             // We add system context to all search areas working at this level. Here each area is fully responsible of
             // the access control as we can not automate much, we can not even check guest access as some areas might
             // want to allow guests to retrieve data from them.
@@ -344,9 +350,16 @@ class manager {
 
         // Get the courses where the current user has access.
         $courses = enrol_get_my_courses(array('id', 'cacherev'));
-        $courses[SITEID] = get_course(SITEID);
-        $site = \course_modinfo::instance(SITEID);
+
+        if (empty($limitcourseids) || in_array(SITEID, $limitcourseids)) {
+            $courses[SITEID] = get_course(SITEID);
+        }
+
         foreach ($courses as $course) {
+            if (!empty($limitcourseids) && !in_array($course->id, $limitcourseids)) {
+                // Skip non-included courses.
+                continue;
+            }
 
             // Info about the course modules.
             $modinfo = get_fast_modinfo($course);
@@ -397,21 +410,15 @@ class manager {
     public function search(\stdClass $formdata) {
         global $USER;
 
-        $cache = \cache::make('core', 'search_results');
-
-        // Generate a string from all query filters
-        // Not including $areascontext here, being a user cache it is not needed.
-        $querykey = $this->generate_query_key($formdata, $USER->id);
-
-        // Look for cached results before executing it.
-        if ($results = $cache->get($querykey)) {
-            return $results;
+        $limitcourseids = false;
+        if (!empty($formdata->courseids)) {
+            $limitcourseids = $formdata->courseids;
         }
 
         // Clears previous query errors.
         $this->engine->clear_query_error();
 
-        $areascontexts = $this->get_areas_user_accesses();
+        $areascontexts = $this->get_areas_user_accesses($limitcourseids);
         if (!$areascontexts) {
             // User can not access any context.
             $docs = array();
@@ -419,38 +426,7 @@ class manager {
             $docs = $this->engine->execute_query($formdata, $areascontexts);
         }
 
-        // Cache results.
-        $cache->set($querykey, $docs);
-
         return $docs;
-    }
-
-    /**
-     * We generate the key ourselves so MUC knows that it contains simplekeys.
-     *
-     * @param stdClass $formdata
-     * @return string
-     */
-    protected function generate_query_key($formdata) {
-        global $USER;
-
-        // Empty values by default (although q should always have a value).
-        $fields = array('q', 'title', 'areaid', 'timestart', 'timeend', 'page');
-
-        // Just in this function scope.
-        $params = clone $formdata;
-        foreach ($fields as $field) {
-            if (empty($params->{$field})) {
-                $params->{$field} = '';
-            }
-        }
-
-        // Although it is not likely, we prevent cache hits if available search areas change during the session.
-        $enabledareas = implode('-', array_keys(static::get_search_areas_list(true)));
-
-        return md5($params->q . 'userid=' . $USER->id . 'title=' . $params->title . 'areaid=' . $params->areaid .
-            'timestart=' . $params->timestart . 'timeend=' . $params->timeend . 'page=' . $params->page .
-            $enabledareas);
     }
 
     /**
@@ -498,33 +474,40 @@ class manager {
             $numdocsignored = 0;
             $lastindexeddoc = 0;
 
+            $prevtimestart = intval(get_config($componentconfigname, $varname . '_indexingstart'));
+
             if ($fullindex === true) {
-                $prevtimestart = 0;
+                $referencestarttime = 0;
             } else {
-                $prevtimestart = intval(get_config($componentconfigname, $varname . '_indexingstart'));
+                $referencestarttime = $prevtimestart;
             }
 
             // Getting the recordset from the area.
-            $recordset = $searcharea->get_recordset_by_timestamp($prevtimestart);
+            $recordset = $searcharea->get_recordset_by_timestamp($referencestarttime);
 
             // Pass get_document as callback.
-            $iterator = new \core\dml\recordset_walk($recordset, array($searcharea, 'get_document'));
+            $fileindexing = $this->engine->file_indexing_enabled() && $searcharea->uses_file_indexing();
+            $options = array('indexfiles' => $fileindexing, 'lastindexedtime' => $prevtimestart);
+            $iterator = new \core\dml\recordset_walk($recordset, array($searcharea, 'get_document'), $options);
             foreach ($iterator as $document) {
-
                 if (!$document instanceof \core_search\document) {
                     continue;
                 }
 
-                $docdata = $document->export_for_engine();
-                switch ($docdata['type']) {
-                    case static::TYPE_TEXT:
-                        $this->engine->add_document($docdata);
-                        $numdocs++;
-                        break;
-                    default:
-                        $numdocsignored++;
-                        $iterator->close();
-                        throw new \moodle_exception('doctypenotsupported', 'search');
+                if ($prevtimestart == 0) {
+                    // If we have never indexed this area before, it must be new.
+                    $document->set_is_new(true);
+                }
+
+                if ($fileindexing) {
+                    // Attach files if we are indexing.
+                    $searcharea->attach_files($document);
+                }
+
+                if ($this->engine->add_document($document, $fileindexing)) {
+                    $numdocs++;
+                } else {
+                    $numdocsignored++;
                 }
 
                 $lastindexeddoc = $document->get('modified');

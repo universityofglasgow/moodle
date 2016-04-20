@@ -319,6 +319,7 @@ class core_external extends external_api {
 
         $context = context::instance_by_id($contextid);
         self::validate_context($context);
+        $arguments['context'] = $context;
 
         // Hack alert: Forcing bootstrap_renderer to initiate moodle page.
         $OUTPUT->header();
@@ -326,7 +327,7 @@ class core_external extends external_api {
         // Overwriting page_requirements_manager with the fragment one so only JS included from
         // this point is returned to the user.
         $PAGE->start_collecting_javascript_requirements();
-        $data = component_callback($params['component'], 'output_fragment_' . $params['callback'], $arguments);
+        $data = component_callback($params['component'], 'output_fragment_' . $params['callback'], array($arguments));
         $jsfooter = $PAGE->requires->get_end_code();
         $output = array('html' => $data, 'javascript' => $jsfooter);
         return $output;
@@ -385,7 +386,6 @@ class core_external extends external_api {
         if (!$tmpl || !($tmpl instanceof \core\output\inplace_editable)) {
             throw new \moodle_exception('inplaceeditableerror');
         }
-        $PAGE->set_context(null); // To prevent warning if context was not set in the callback.
         return $tmpl->export_for_template($PAGE->get_renderer('core'));
     }
 
@@ -461,7 +461,7 @@ class core_external extends external_api {
             ]);
 
         $context = \context::instance_by_id($contextid);
-        $PAGE->set_context($context);
+        self::validate_context($context);
 
         return \core\notification::fetch_as_array($PAGE->get_renderer('core'));
     }

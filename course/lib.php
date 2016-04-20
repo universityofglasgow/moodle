@@ -1226,7 +1226,7 @@ function set_section_visible($courseid, $sectionnumber, $visibility) {
  * module
  */
 function get_module_metadata($course, $modnames, $sectionreturn = null) {
-    global $CFG, $OUTPUT;
+    global $OUTPUT;
 
     // get_module_metadata will be called once per section on the page and courses may show
     // different modules to one another
@@ -1246,82 +1246,107 @@ function get_module_metadata($course, $modnames, $sectionreturn = null) {
         }
         if (isset($modlist[$course->id][$modname])) {
             // This module is already cached
-            $return[$modname] = $modlist[$course->id][$modname];
+            $return += $modlist[$course->id][$modname];
+            continue;
+        }
+        $modlist[$course->id][$modname] = array();
+
+        // Create an object for a default representation of this module type in the activity chooser. It will be used
+        // if module does not implement callback get_shortcuts() and it will also be passed to the callback if it exists.
+        $defaultmodule = new stdClass();
+        $defaultmodule->title = $modnamestr;
+        $defaultmodule->name = $modname;
+        $defaultmodule->link = new moodle_url($urlbase, array('add' => $modname));
+        $defaultmodule->icon = $OUTPUT->pix_icon('icon', '', $defaultmodule->name, array('class' => 'icon'));
+        $sm = get_string_manager();
+        if ($sm->string_exists('modulename_help', $modname)) {
+            $defaultmodule->help = get_string('modulename_help', $modname);
+            if ($sm->string_exists('modulename_link', $modname)) {  // Link to further info in Moodle docs.
+                $link = get_string('modulename_link', $modname);
+                $linktext = get_string('morehelp');
+                $defaultmodule->help .= html_writer::tag('div',
+                    $OUTPUT->doc_link($link, $linktext, true), array('class' => 'helpdoclink'));
+            }
+        }
+        $defaultmodule->archetype = plugin_supports('mod', $modname, FEATURE_MOD_ARCHETYPE, MOD_ARCHETYPE_OTHER);
+
+        // Legacy support for callback get_types() - do not use any more, use get_shortcuts() instead!
+        $typescallbackexists = component_callback_exists($modname, 'get_types');
+
+        // Each module can implement callback modulename_get_shortcuts() in its lib.php and return the list
+        // of elements to be added to activity chooser.
+        $items = component_callback($modname, 'get_shortcuts', array($defaultmodule), null);
+        if ($items !== null) {
+            foreach ($items as $item) {
+                // Add all items to the return array. All items must have different links, use them as a key in the return array.
+                if (!isset($item->archetype)) {
+                    $item->archetype = $defaultmodule->archetype;
+                }
+                if (!isset($item->icon)) {
+                    $item->icon = $defaultmodule->icon;
+                }
+                // If plugin returned the only one item with the same link as default item - cache it as $modname,
+                // otherwise append the link url to the module name.
+                $item->name = (count($items) == 1 &&
+                    $item->link->out() === $defaultmodule->link->out()) ? $modname : $modname . ':' . $item->link;
+                $modlist[$course->id][$modname][$item->name] = $item;
+            }
+            $return += $modlist[$course->id][$modname];
+            if ($typescallbackexists) {
+                debugging('Both callbacks get_shortcuts() and get_types() are found in module ' . $modname .
+                    '. Callback get_types() will be completely ignored', DEBUG_DEVELOPER);
+            }
+            // If get_shortcuts() callback is defined, the default module action is not added.
+            // It is a responsibility of the callback to add it to the return value unless it is not needed.
             continue;
         }
 
-        // Include the module lib
-        $libfile = "$CFG->dirroot/mod/$modname/lib.php";
-        if (!file_exists($libfile)) {
-            continue;
+        if ($typescallbackexists) {
+            debugging('Callback get_types() is found in module ' . $modname . ', this functionality is deprecated, ' .
+                'please use callback get_shortcuts() instead', DEBUG_DEVELOPER);
         }
-        include_once($libfile);
-
-        // NOTE: this is legacy stuff, module subtypes are very strongly discouraged!!
-        $gettypesfunc =  $modname.'_get_types';
-        $types = MOD_SUBTYPE_NO_CHILDREN;
-        if (function_exists($gettypesfunc)) {
-            $types = $gettypesfunc();
-        }
+        $types = component_callback($modname, 'get_types', array(), MOD_SUBTYPE_NO_CHILDREN);
         if ($types !== MOD_SUBTYPE_NO_CHILDREN) {
+            // Legacy support for deprecated callback get_types(). To be removed in Moodle 3.5. TODO MDL-53697.
             if (is_array($types) && count($types) > 0) {
-                $group = new stdClass();
-                $group->name = $modname;
-                $group->icon = $OUTPUT->pix_icon('icon', '', $modname, array('class' => 'icon'));
+                $grouptitle = $modnamestr;
+                $icon = $OUTPUT->pix_icon('icon', '', $modname, array('class' => 'icon'));
                 foreach($types as $type) {
                     if ($type->typestr === '--') {
                         continue;
                     }
                     if (strpos($type->typestr, '--') === 0) {
-                        $group->title = str_replace('--', '', $type->typestr);
+                        $grouptitle = str_replace('--', '', $type->typestr);
                         continue;
                     }
-                    // Set the Sub Type metadata
+                    // Set the Sub Type metadata.
                     $subtype = new stdClass();
-                    $subtype->title = $type->typestr;
+                    $subtype->title = get_string('activitytypetitle', '',
+                        (object)['activity' => $grouptitle, 'type' => $type->typestr]);
                     $subtype->type = str_replace('&amp;', '&', $type->type);
-                    $subtype->name = preg_replace('/.*type=/', '', $subtype->type);
+                    $typename = preg_replace('/.*type=/', '', $subtype->type);
                     $subtype->archetype = $type->modclass;
-
-                    // The group archetype should match the subtype archetypes and all subtypes
-                    // should have the same archetype
-                    $group->archetype = $subtype->archetype;
 
                     if (!empty($type->help)) {
                         $subtype->help = $type->help;
                     } else if (get_string_manager()->string_exists('help' . $subtype->name, $modname)) {
                         $subtype->help = get_string('help' . $subtype->name, $modname);
                     }
-                    $subtype->link = new moodle_url($urlbase, array('add' => $modname, 'type' => $subtype->name));
-                    $group->types[] = $subtype;
+                    $subtype->link = new moodle_url($urlbase, array('add' => $modname, 'type' => $typename));
+                    $subtype->name = $modname . ':' . $subtype->link;
+                    $subtype->icon = $icon;
+                    $modlist[$course->id][$modname][$subtype->name] = $subtype;
                 }
-                $modlist[$course->id][$modname] = $group;
+                $return += $modlist[$course->id][$modname];
             }
         } else {
-            $module = new stdClass();
-            $module->title = $modnamestr;
-            $module->name = $modname;
-            $module->link = new moodle_url($urlbase, array('add' => $modname));
-            $module->icon = $OUTPUT->pix_icon('icon', '', $module->name, array('class' => 'icon'));
-            $sm = get_string_manager();
-            if ($sm->string_exists('modulename_help', $modname)) {
-                $module->help = get_string('modulename_help', $modname);
-                if ($sm->string_exists('modulename_link', $modname)) {  // Link to further info in Moodle docs
-                    $link = get_string('modulename_link', $modname);
-                    $linktext = get_string('morehelp');
-                    $module->help .= html_writer::tag('div', $OUTPUT->doc_link($link, $linktext, true), array('class' => 'helpdoclink'));
-                }
-            }
-            $module->archetype = plugin_supports('mod', $modname, FEATURE_MOD_ARCHETYPE, MOD_ARCHETYPE_OTHER);
-            $modlist[$course->id][$modname] = $module;
-        }
-        if (isset($modlist[$course->id][$modname])) {
-            $return[$modname] = $modlist[$course->id][$modname];
-        } else {
-            debugging("Invalid module metadata configuration for {$modname}");
+            // Neither get_shortcuts() nor get_types() callbacks found, use the default item for the activity chooser.
+            $modlist[$course->id][$modname][$modname] = $defaultmodule;
+            $return[$modname] = $defaultmodule;
         }
     }
 
+    core_collator::asort_objects_by_property($return, 'title');
     return $return;
 }
 
@@ -1694,6 +1719,15 @@ function course_delete_module($cmid) {
     if (!function_exists($deleteinstancefunction)) {
         throw new moodle_exception('cannotdeletemodulemissingfunc', '', '', null,
             "Cannot delete this module as the function {$modulename}_delete_instance is missing in mod/$modulename/lib.php.");
+    }
+
+    // Allow plugins to use this course module before we completely delete it.
+    if ($pluginsfunction = get_plugins_with_function('pre_course_module_delete')) {
+        foreach ($pluginsfunction as $plugintype => $plugins) {
+            foreach ($plugins as $pluginfunction) {
+                $pluginfunction($cm);
+            }
+        }
     }
 
     // Delete activity context questions and question categories.
@@ -3906,5 +3940,111 @@ function course_get_tagged_courses($tag, $exclusivemode = false, $fromctx = 0, $
 function core_course_inplace_editable($itemtype, $itemid, $newvalue) {
     if ($itemtype === 'activityname') {
         return \core_course\output\course_module_name::update($itemid, $newvalue);
+    }
+}
+
+/**
+ * Returns course modules tagged with a specified tag ready for output on tag/index.php page
+ *
+ * This is a callback used by the tag area core/course_modules to search for course modules
+ * tagged with a specific tag.
+ *
+ * @param core_tag_tag $tag
+ * @param bool $exclusivemode if set to true it means that no other entities tagged with this tag
+ *             are displayed on the page and the per-page limit may be bigger
+ * @param int $fromcontextid context id where the link was displayed, may be used by callbacks
+ *            to display items in the same context first
+ * @param int $contextid context id where to search for records
+ * @param bool $recursivecontext search in subcontexts as well
+ * @param int $page 0-based number of page being displayed
+ * @return \core_tag\output\tagindex
+ */
+function course_get_tagged_course_modules($tag, $exclusivemode = false, $fromcontextid = 0, $contextid = 0,
+                                          $recursivecontext = 1, $page = 0) {
+    global $OUTPUT;
+    $perpage = $exclusivemode ? 20 : 5;
+
+    // Build select query.
+    $ctxselect = context_helper::get_preload_record_columns_sql('ctx');
+    $query = "SELECT cm.id AS cmid, c.id AS courseid, $ctxselect
+                FROM {course_modules} cm
+                JOIN {tag_instance} tt ON cm.id = tt.itemid
+                JOIN {course} c ON cm.course = c.id
+                JOIN {context} ctx ON ctx.instanceid = cm.id AND ctx.contextlevel = :coursemodulecontextlevel
+               WHERE tt.itemtype = :itemtype AND tt.tagid = :tagid AND tt.component = :component
+                AND c.id %COURSEFILTER% AND cm.id %ITEMFILTER%";
+
+    $params = array('itemtype' => 'course_modules', 'tagid' => $tag->id, 'component' => 'core',
+        'coursemodulecontextlevel' => CONTEXT_MODULE);
+    if ($contextid) {
+        $context = context::instance_by_id($contextid);
+        $query .= $recursivecontext ? ' AND (ctx.id = :contextid OR ctx.path LIKE :path)' : ' AND ctx.id = :contextid';
+        $params['contextid'] = $context->id;
+        $params['path'] = $context->path.'/%';
+    }
+
+    $query .= ' ORDER BY';
+    if ($fromcontextid) {
+        // In order-clause specify that modules from inside "fromctx" context should be returned first.
+        $fromcontext = context::instance_by_id($fromcontextid);
+        $query .= ' (CASE WHEN ctx.id = :fromcontextid OR ctx.path LIKE :frompath THEN 0 ELSE 1 END),';
+        $params['fromcontextid'] = $fromcontext->id;
+        $params['frompath'] = $fromcontext->path.'/%';
+    }
+    $query .= ' c.sortorder, cm.id';
+    $totalpages = $page + 1;
+
+    // Use core_tag_index_builder to build and filter the list of items.
+    // Request one item more than we need so we know if next page exists.
+    $builder = new core_tag_index_builder('core', 'course_modules', $query, $params, $page * $perpage, $perpage + 1);
+    while ($item = $builder->has_item_that_needs_access_check()) {
+        context_helper::preload_from_record($item);
+        $courseid = $item->courseid;
+        if (!$builder->can_access_course($courseid)) {
+            $builder->set_accessible($item, false);
+            continue;
+        }
+        $modinfo = get_fast_modinfo($builder->get_course($courseid));
+        // Set accessibility of this item and all other items in the same course.
+        $builder->walk(function ($taggeditem) use ($courseid, $modinfo, $builder) {
+            if ($taggeditem->courseid == $courseid) {
+                $cm = $modinfo->get_cm($taggeditem->cmid);
+                $builder->set_accessible($taggeditem, $cm->uservisible);
+            }
+        });
+    }
+
+    $items = $builder->get_items();
+    if (count($items) > $perpage) {
+        $totalpages = $page + 2; // We don't need exact page count, just indicate that the next page exists.
+        array_pop($items);
+    }
+
+    // Build the display contents.
+    if ($items) {
+        $tagfeed = new core_tag\output\tagfeed();
+        foreach ($items as $item) {
+            context_helper::preload_from_record($item);
+            $course = $builder->get_course($item->courseid);
+            $modinfo = get_fast_modinfo($course);
+            $cm = $modinfo->get_cm($item->cmid);
+            $courseurl = course_get_url($item->courseid, $cm->sectionnum);
+            $cmname = $cm->get_formatted_name();
+            if (!$exclusivemode) {
+                $cmname = shorten_text($cmname, 100);
+            }
+            $cmname = html_writer::link($cm->url?:$courseurl, $cmname);
+            $coursename = format_string($course->fullname, true,
+                    array('context' => context_course::instance($item->courseid)));
+            $coursename = html_writer::link($courseurl, $coursename);
+            $icon = html_writer::empty_tag('img', array('src' => $cm->get_icon_url()));
+            $tagfeed->add($icon, $cmname, $coursename);
+        }
+
+        $content = $OUTPUT->render_from_template('core_tag/tagfeed',
+                $tagfeed->export_for_template($OUTPUT));
+
+        return new core_tag\output\tagindex($tag, 'core', 'course_modules', $content,
+                $exclusivemode, $fromcontextid, $contextid, $recursivecontext, $page, $totalpages);
     }
 }

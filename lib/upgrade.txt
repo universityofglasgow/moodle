@@ -3,6 +3,28 @@ information provided here is intended especially for developers.
 
 === 3.1 ===
 
+* Webservice function core_course_search_courses accepts a new parameter 'limittoenrolled' to filter the results
+  only to courses the user is enrolled in, and are visible to them.
+* External functions that are not calling external_api::validate_context are buggy and will now generate
+  exceptions. Previously they were only generating warnings in the webserver error log.
+  See https://docs.moodle.org/dev/External_functions_API#Security
+* The moodle/blog:associatecourse and moodle/blog:associatemodule capabilities has been removed.
+* The following functions has been finally deprecated and can not be used any more:
+    - profile_display_badges()
+    - useredit_shared_definition_preferences()
+    - calendar_normalize_tz()
+    - get_user_timezone_offset()
+    - get_timezone_offset()
+    - get_list_of_timezones()
+    - calculate_user_dst_table()
+    - dst_changes_for_year()
+    - get_timezone_record()
+    - test_get_list_of_timezones()
+    - test_get_timezone_offset()
+    - test_get_user_timezone_offset()
+* The google api library has been updated to version 1.1.7. There was some important changes
+  on the SSL handling. Now the SSL version will be determined by the underlying library.
+  For more information see https://github.com/google/google-api-php-client/pull/644
 * The get_role_users() function will now add the $sort fields that are not part
   of the requested fields to the query result and will throw a debugging message
   with the added fields when that happens.
@@ -39,7 +61,10 @@ information provided here is intended especially for developers.
     - upgrade_course_modules_sequences()
     - upgrade_grade_item_fix_sortorder()
     - upgrade_availability_item()
-
+* A new parameter $ajaxformdata was added to the constructor for moodleform. When building a
+  moodleform in a webservice or ajax script (for example using the new fragments API) we
+  cannot allow the moodleform to parse it's own data from _GET and _POST - we must pass it as
+  an array.
 * Plugins can extend the navigation for user by declaring the following callback:
   <frankenstyle>_extend_navigation_user(navigation_node $parentnode, stdClass $user,
                                         context_user $context, stdClass $course,
@@ -84,6 +109,13 @@ information provided here is intended especially for developers.
 * \repository::antivir_scan_file() has been deprecated, \core\antivirus\manager::scan_file() that
   applies antivirus plugins is replacing its functionality.
 * Added core_text::str_max_bytes() which safely truncates multi-byte strings to a maximum number of bytes.
+* Zend Framework has been removed completely.
+* Any plugin can report when a scale is being used with the callback function [pluginname]_scale_used_anywhere(int $scaleid).
+* Changes in file_rewrite_pluginfile_urls: Passing a new option reverse = true in the $options var will make the function to convert
+  actual URLs in $text to encoded URLs in the @@PLUGINFILE@@ form.
+* behat_util::is_server_running() is removed, please use behat_util::check_server_status() instead.
+* Behat\Mink\Selector\SelectorsHandler::xpathLiteral() method is deprecated use behat_context_helper::escape instead
+  when building Xpath, or pass the unescaped value when using the named selector.',
 
 === 3.0 ===
 

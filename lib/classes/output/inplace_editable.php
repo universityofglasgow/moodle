@@ -178,7 +178,15 @@ class inplace_editable implements templatable, renderable {
             $this->editable = false;
         }
         $this->type = 'select';
-        $this->options = json_encode($options);
+
+        $pairedoptions = [];
+        foreach ($options as $key => $value) {
+            $pairedoptions[] = [
+                'key' => $key,
+                'value' => $value,
+            ];
+        }
+        $this->options = json_encode($pairedoptions);
         if ($this->displayvalue === null) {
             $this->displayvalue = $options[$this->value];
         }
@@ -225,5 +233,15 @@ class inplace_editable implements templatable, renderable {
             'options' => $this->options,
             'linkeverything' => $this->get_linkeverything() ? 1 : 0,
         );
+    }
+
+    /**
+     * Renders this element
+     *
+     * @param renderer_base $output typically, the renderer that's calling this function
+     * @return string
+     */
+    public function render(\renderer_base $output) {
+        return $output->render_from_template('core/inplace_editable', $this->export_for_template($output));
     }
 }

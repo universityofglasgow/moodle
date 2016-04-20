@@ -416,7 +416,7 @@ class mod_wiki_external extends external_api {
                                     'sortdirection' => new external_value(PARAM_ALPHA,
                                             'Sort direction: ASC or DESC.', VALUE_DEFAULT, 'ASC'),
                                     'includecontent' => new external_value(PARAM_INT,
-                                            'Include each page contents or not.', VALUE_DEFAULT, 1),
+                                            'Include each page contents or just the contents size.', VALUE_DEFAULT, 1),
                             ), 'Options', VALUE_DEFAULT, array()),
             )
         );
@@ -433,7 +433,6 @@ class mod_wiki_external extends external_api {
      * @since Moodle 3.1
      */
     public static function get_subwiki_pages($wikiid, $groupid = -1, $userid = 0, $options = array()) {
-        global $USER, $DB;
 
         $returnedpages = array();
         $warnings = array();
@@ -455,58 +454,15 @@ class mod_wiki_external extends external_api {
         $context = context_module::instance($cm->id);
         self::validate_context($context);
 
-        // Determine group.
-        $groupmode = groups_get_activity_groupmode($cm);
-        if ($groupmode == NOGROUPS) {
-            $groupid = 0;
-        } else if ($params['groupid'] == -1) {
-            // Use current group.
-            $groupid = groups_get_activity_group($cm);
-            $groupid = !empty($groupid) ? $groupid : 0;
-        } else {
-            $groupid = $params['groupid'];
-        }
+        // Determine groupid and userid to use.
+        list($groupid, $userid) = self::determine_group_and_user($cm, $wiki, $params['groupid'], $params['userid']);
 
-        // Determine user.
-        if ($wiki->wikimode == 'collaborative') {
-            // Collaborative wikis don't use userid in subwikis.
-            $userid = 0;
-        } else if (empty($params['userid'])) {
-            // Use current user.
-            $userid = $USER->id;
-        } else {
-            $userid = $params['userid'];
-        }
+        // Get subwiki and validate it.
+        $subwiki = wiki_get_subwiki_by_group_and_user_with_validation($wiki, $groupid, $userid);
 
-        // Get subwiki based on group and user.
-        if (!$subwiki = wiki_get_subwiki_by_group($cm->instance, $groupid, $userid)) {
-            // The subwiki doesn't exist.
-            // Validate if user is valid.
-            if ($userid != 0 && $userid != $USER->id && !$user = $DB->get_record('user', array('id' => $userid))) {
-                throw new moodle_exception('invaliduserid', 'error');
-            }
-
-            // Validate that groupid is valid.
-            if ($groupid != 0 && !groups_group_exists($groupid)) {
-                throw new moodle_exception('cannotfindgroup', 'error');
-            }
-
-            // Valid data but subwiki not found. We'll simulate a subwiki object to check if the user would be able to see it
-            // if it existed. If he's able to see it then we'll return an empty array because the subwiki has no pages.
-            $subwiki = new stdClass();
-            $subwiki->wikiid = $wiki->id;
-            $subwiki->userid = $userid;
-            $subwiki->groupid = $groupid;
-
-            // Check that the user can view the subwiki. This function checks capabilities.
-            if (!wiki_user_can_view($subwiki, $wiki)) {
-                throw new moodle_exception('cannotviewpage', 'wiki');
-            }
-        } else {
-            // Check that the user can view the subwiki. This function checks capabilities.
-            if (!wiki_user_can_view($subwiki, $wiki)) {
-                throw new moodle_exception('cannotviewpage', 'wiki');
-            }
+        if ($subwiki === false) {
+            throw new moodle_exception('cannotviewpage', 'wiki');
+        } else if ($subwiki->id != -1) {
 
             // Set sort param.
             $options = $params['options'];
@@ -537,21 +493,30 @@ class mod_wiki_external extends external_api {
                         'firstpage' => $page->id == $firstpage->id
                     );
 
-                if ($options['includecontent']) {
-                    // Refresh page cached content if needed.
-                    if ($page->timerendered + WIKI_REFRESH_CACHE_TIME < time()) {
-                        if ($content = wiki_refresh_cachedcontent($page)) {
-                            $page = $content['page'];
-                        }
+                // Refresh page cached content if needed.
+                if ($page->timerendered + WIKI_REFRESH_CACHE_TIME < time()) {
+                    if ($content = wiki_refresh_cachedcontent($page)) {
+                        $page = $content['page'];
                     }
+                }
+                list($cachedcontent, $contentformat) = external_format_text(
+                            $page->cachedcontent, FORMAT_HTML, $context->id, 'mod_wiki', 'attachments', $subwiki->id);
 
-                    list($retpage['cachedcontent'], $retpage['contentformat']) = external_format_text(
-                                $page->cachedcontent, FORMAT_HTML, $context->id, 'mod_wiki', 'attachments', $subwiki->id);
+                if ($options['includecontent']) {
+                    // Return the page content.
+                    $retpage['cachedcontent'] = $cachedcontent;
+                    $retpage['contentformat'] = $contentformat;
+                } else {
+                    // Return the size of the content.
+                    if (function_exists('mb_strlen') && ((int)ini_get('mbstring.func_overload') & 2)) {
+                        $retpage['contentsize'] = mb_strlen($cachedcontent, '8bit');
+                    } else {
+                        $retpage['contentsize'] = strlen($cachedcontent);
+                    }
                 }
 
                 $returnedpages[] = $retpage;
             }
-
         }
 
         $result = array();
@@ -586,6 +551,8 @@ class mod_wiki_external extends external_api {
                             'firstpage' => new external_value(PARAM_BOOL, 'True if it\'s the first page.'),
                             'cachedcontent' => new external_value(PARAM_RAW, 'Page contents.', VALUE_OPTIONAL),
                             'contentformat' => new external_format_value('cachedcontent', VALUE_OPTIONAL),
+                            'contentsize' => new external_value(PARAM_INT, 'Size of page contents in bytes (doesn\'t include'.
+                                                                            ' size of attached files).', VALUE_OPTIONAL),
                         ), 'Pages'
                     )
                 ),
@@ -697,6 +664,152 @@ class mod_wiki_external extends external_api {
                 'warnings' => new external_warnings()
             )
         );
+    }
+
+    /**
+     * Describes the parameters for get_subwiki_files.
+     *
+     * @return external_function_parameters
+     * @since Moodle 3.1
+     */
+    public static function get_subwiki_files_parameters() {
+        return new external_function_parameters (
+            array(
+                'wikiid' => new external_value(PARAM_INT, 'Wiki instance ID.'),
+                'groupid' => new external_value(PARAM_INT, 'Subwiki\'s group ID, -1 means current group. It will be ignored'
+                                        . ' if the wiki doesn\'t use groups.', VALUE_DEFAULT, -1),
+                'userid' => new external_value(PARAM_INT, 'Subwiki\'s user ID, 0 means current user. It will be ignored'
+                                        .' in collaborative wikis.', VALUE_DEFAULT, 0)
+            )
+        );
+    }
+
+    /**
+     * Returns the list of files from a specific subwiki.
+     *
+     * @param int $wikiid The wiki instance ID.
+     * @param int $groupid The group ID. If not defined, use current group.
+     * @param int $userid The user ID. If not defined, use current user.
+     * @return array Containing a list of warnings and a list of files.
+     * @since Moodle 3.1
+     * @throws moodle_exception
+     */
+    public static function get_subwiki_files($wikiid, $groupid = -1, $userid = 0) {
+
+        $returnedfiles = array();
+        $warnings = array();
+
+        $params = self::validate_parameters(self::get_subwiki_files_parameters(),
+                                            array(
+                                                'wikiid' => $wikiid,
+                                                'groupid' => $groupid,
+                                                'userid' => $userid
+                                                )
+            );
+
+        // Get wiki instance.
+        if (!$wiki = wiki_get_wiki($params['wikiid'])) {
+            throw new moodle_exception('incorrectwikiid', 'wiki');
+        }
+        list($course, $cm) = get_course_and_cm_from_instance($wiki, 'wiki');
+        $context = context_module::instance($cm->id);
+        self::validate_context($context);
+
+        // Determine groupid and userid to use.
+        list($groupid, $userid) = self::determine_group_and_user($cm, $wiki, $params['groupid'], $params['userid']);
+
+        // Get subwiki and validate it.
+        $subwiki = wiki_get_subwiki_by_group_and_user_with_validation($wiki, $groupid, $userid);
+
+        // Get subwiki based on group and user.
+        if ($subwiki === false) {
+            throw new moodle_exception('cannotviewfiles', 'wiki');
+        } else if ($subwiki->id != -1) {
+            // The subwiki exists, let's get the files.
+            $fs = get_file_storage();
+            if ($files = $fs->get_area_files($context->id, 'mod_wiki', 'attachments', $subwiki->id, 'filename', false)) {
+                foreach ($files as $file) {
+                    $filename = $file->get_filename();
+                    $fileurl = moodle_url::make_webservice_pluginfile_url(
+                                    $context->id, 'mod_wiki', 'attachments', $subwiki->id, '/', $filename);
+
+                    $returnedfiles[] = array(
+                        'filename' => $filename,
+                        'mimetype' => $file->get_mimetype(),
+                        'fileurl'  => $fileurl->out(false),
+                        'filepath' => $file->get_filepath(),
+                        'filesize' => $file->get_filesize(),
+                        'timemodified' => $file->get_timemodified()
+                    );
+                }
+            }
+        }
+
+        $result = array();
+        $result['files'] = $returnedfiles;
+        $result['warnings'] = $warnings;
+        return $result;
+    }
+
+    /**
+     * Describes the get_subwiki_pages return value.
+     *
+     * @return external_single_structure
+     * @since Moodle 3.1
+     */
+    public static function get_subwiki_files_returns() {
+
+        return new external_single_structure(
+            array(
+                'files' => new external_multiple_structure(
+                    new external_single_structure(
+                        array(
+                            'filename' => new external_value(PARAM_FILE, 'File name.'),
+                            'filepath' => new external_value(PARAM_PATH, 'File path.'),
+                            'filesize' => new external_value(PARAM_INT, 'File size.'),
+                            'fileurl' => new external_value(PARAM_URL, 'Downloadable file url.'),
+                            'timemodified' => new external_value(PARAM_INT, 'Time modified.'),
+                            'mimetype' => new external_value(PARAM_RAW, 'File mime type.'),
+                        ), 'Files'
+                    )
+                ),
+                'warnings' => new external_warnings(),
+            )
+        );
+    }
+
+    /**
+     * Utility function for determining the groupid and userid to use.
+     *
+     * @param stdClass $cm The course module.
+     * @param stdClass $wiki The wiki.
+     * @param int $groupid Group ID. If not defined, use current group.
+     * @param int $userid User ID. If not defined, use current user.
+     * @return array Array containing the courseid and userid.
+     * @since  Moodle 3.1
+     */
+    protected static function determine_group_and_user($cm, $wiki, $groupid = -1, $userid = 0) {
+        global $USER;
+
+        $currentgroup = groups_get_activity_group($cm);
+        if ($currentgroup === false) {
+            // Activity doesn't use groups.
+            $groupid = 0;
+        } else if ($groupid == -1) {
+            // Use current group.
+            $groupid = !empty($currentgroup) ? $currentgroup : 0;
+        }
+
+        // Determine user.
+        if ($wiki->wikimode == 'collaborative') {
+            // Collaborative wikis don't use userid in subwikis.
+            $userid = 0;
+        } else if (empty($userid)) {
+            // Use current user.
+            $userid = $USER->id;
+        }
+
+        return array($groupid, $userid);
     }
 
 }

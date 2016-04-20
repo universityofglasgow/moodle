@@ -27,48 +27,19 @@ require_once("lib.php");
 
 $current_tab = 'analysis';
 
-$id = required_param('id', PARAM_INT);  //the POST dominated the GET
-$courseid = optional_param('courseid', false, PARAM_INT);
+$id = required_param('id', PARAM_INT);  // Course module id.
 
 $url = new moodle_url('/mod/feedback/analysis.php', array('id'=>$id));
-if ($courseid !== false) {
-    $url->param('courseid', $courseid);
-}
 $PAGE->set_url($url);
 
-if (! $cm = get_coursemodule_from_id('feedback', $id)) {
-    print_error('invalidcoursemodule');
-}
+list($course, $cm) = get_course_and_cm_from_cmid($id, 'feedback');
+require_course_login($course, true, $cm);
 
-if (! $course = $DB->get_record("course", array("id"=>$cm->course))) {
-    print_error('coursemisconf');
-}
-
-if (! $feedback = $DB->get_record("feedback", array("id"=>$cm->instance))) {
-    print_error('invalidcoursemodule');
-}
+$feedback = $PAGE->activityrecord;
 
 $context = context_module::instance($cm->id);
 
-if ($course->id == SITEID) {
-    require_login($course, true);
-} else {
-    require_login($course, true, $cm);
-}
-
-//check whether the given courseid exists
-if ($courseid AND $courseid != SITEID) {
-    if ($course2 = $DB->get_record('course', array('id'=>$courseid))) {
-        require_course_login($course2); //this overwrites the object $course :-(
-        $course = $DB->get_record("course", array("id"=>$cm->course)); // the workaround
-    } else {
-        print_error('invalidcourseid');
-    }
-}
-
-if ( !( ((intval($feedback->publish_stats) == 1) AND
-        has_capability('mod/feedback:viewanalysepage', $context)) OR
-        has_capability('mod/feedback:viewreports', $context))) {
+if (!feedback_can_view_analysis($feedback, $context)) {
     print_error('error');
 }
 
@@ -76,7 +47,6 @@ if ( !( ((intval($feedback->publish_stats) == 1) AND
 $strfeedbacks = get_string("modulenameplural", "feedback");
 $strfeedback  = get_string("modulename", "feedback");
 
-$PAGE->navbar->add(get_string('analysis', 'feedback'));
 $PAGE->set_heading($course->fullname);
 $PAGE->set_title($feedback->name);
 echo $OUTPUT->header();
@@ -86,19 +56,12 @@ echo $OUTPUT->heading(format_string($feedback->name));
 require('tabs.php');
 
 
-//print analysed items
-echo $OUTPUT->box_start('generalbox boxaligncenter boxwidthwide');
-
 //get the groupid
 $myurl = $CFG->wwwroot.'/mod/feedback/analysis.php?id='.$cm->id.'&do_show=analysis';
-$groupselect = groups_print_activity_menu($cm, $myurl, true);
-$mygroupid = groups_get_activity_group($cm);
+$mygroupid = groups_get_activity_group($cm, true);
+groups_print_activity_menu($cm, $myurl);
 
 if ( has_capability('mod/feedback:viewreports', $context) ) {
-
-    echo isset($groupselect) ? $groupselect : '';
-    echo '<div class="clearer"></div>';
-
     //button "export to excel"
     echo $OUTPUT->container_start('form-buttons');
     $aurl = new moodle_url('analysis_to_excel.php', array('sesskey'=>sesskey(), 'id'=>$id));
@@ -109,23 +72,22 @@ if ( has_capability('mod/feedback:viewreports', $context) ) {
 //get completed feedbacks
 $completedscount = feedback_get_completeds_group_count($feedback, $mygroupid);
 
-//show the group, if available
-if ($mygroupid and $group = $DB->get_record('groups', array('id'=>$mygroupid))) {
-    echo '<b>'.get_string('group').': '.$group->name. '</b><br />';
-}
-//show the count
+echo '<div class="analysis_header">';
+// Show the submissions count.
 echo '<b>'.get_string('completed_feedbacks', 'feedback').': '.$completedscount. '</b><br />';
 
 // get the items of the feedback
 $items = $DB->get_records('feedback_item',
                           array('feedback'=>$feedback->id, 'hasvalue'=>1),
                           'position');
-//show the count
+// Show the items count.
 if (is_array($items)) {
     echo '<b>'.get_string('questions', 'feedback').': ' .count($items). ' </b><hr />';
 } else {
     $items=array();
 }
+echo '</div>';
+
 $check_anonymously = true;
 if ($mygroupid > 0 AND $feedback->anonymous == FEEDBACK_ANONYMOUS_YES) {
     if ($completedscount < FEEDBACK_MIN_ANONYMOUS_COUNT_IN_GROUP) {
@@ -161,7 +123,6 @@ if ($check_anonymously) {
                                     'feedback', '', '', 3);
 }
 echo '</div>';
-echo $OUTPUT->box_end();
 
 echo $OUTPUT->footer();
 

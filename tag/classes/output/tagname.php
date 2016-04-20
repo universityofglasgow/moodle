@@ -41,7 +41,7 @@ class tagname extends \core\output\inplace_editable {
     /**
      * Constructor.
      *
-     * @param stdClass|core_tag $tag
+     * @param \stdClass|core_tag_tag $tag
      */
     public function __construct($tag) {
         $editable = has_capability('moodle/tag:manage', context_system::instance());
@@ -51,5 +51,19 @@ class tagname extends \core\output\inplace_editable {
         $displayvalue = html_writer::link(core_tag_tag::make_url($tag->tagcollid, $tag->rawname),
             core_tag_tag::make_display_name($tag));
         parent::__construct('core_tag', 'tagname', $tag->id, $editable, $displayvalue, $value, $edithint, $editlabel);
+    }
+
+    /**
+     * Updates the value in database and returns itself, called from inplace_editable callback
+     *
+     * @param int $itemid
+     * @param mixed $newvalue
+     * @return \self
+     */
+    public static function update($itemid, $newvalue) {
+        require_capability('moodle/tag:manage', context_system::instance());
+        $tag = core_tag_tag::get($itemid, '*', MUST_EXIST);
+        $tag->update(array('rawname' => $newvalue));
+        return new self($tag);
     }
 }

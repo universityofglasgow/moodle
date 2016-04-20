@@ -30,7 +30,7 @@ $string['allowfullanonymous'] = 'Allow full anonymous';
 $string['analysis'] = 'Analysis';
 $string['anonymous'] = 'Anonymous';
 $string['anonymous_edit'] = 'Record user names';
-$string['anonymous_entries'] = 'Anonymous entries';
+$string['anonymous_entries'] = 'Anonymous entries ({$a})';
 $string['anonymous_user'] = 'Anonymous user';
 $string['append_new_items'] = 'Append new items';
 $string['autonumbering'] = 'Auto number questions';
@@ -152,11 +152,11 @@ $string['mapcourse'] = 'Map feedback to courses';
 $string['mapcourse_help'] = 'By default, feedback forms created on your homepage are available site-wide
 and will appear in all courses using the feedback block. You can force the feedback form to appear by making it a sticky block or limit the courses in which a feedback form will appear by mapping it to specific courses.';
 $string['mapcourses'] = 'Map feedback to courses';
-$string['mapcourses_help'] = 'Once you have selected the relevant course(s) from your search,
-you can associate them with this feedback using map course(s). Multiple courses may be selected by holding down the Apple or Ctrl key whilst clicking on the course names. A course may be disassociated from a feedback at any time.';
 $string['mappedcourses'] = 'Mapped courses';
+$string['mappingchanged'] = 'Course mapping has been changed';
 $string['max_args_exceeded'] = 'Max 6 arguments can be handled, too many arguments for';
-$string['maximal'] = 'maximal';
+$string['minimal'] = 'minimum';
+$string['maximal'] = 'maximum';
 $string['messageprovider:message'] = 'Feedback reminder';
 $string['messageprovider:submission'] = 'Feedback notifications';
 $string['mode'] = 'Mode';
@@ -191,8 +191,8 @@ $string['no_itemlabel'] = 'No label';
 $string['no_itemname'] = 'No itemname';
 $string['no_items_available_yet'] = 'No questions have been set up yet';
 $string['non_anonymous'] = 'User\'s name will be logged and shown with answers';
-$string['non_anonymous_entries'] = 'non anonymous entries';
-$string['non_respondents_students'] = 'non respondents students';
+$string['non_anonymous_entries'] = 'Non anonymous entries ({$a})';
+$string['non_respondents_students'] = 'Non respondents students ({$a})';
 $string['notavailable'] = 'this feedback is not available';
 $string['not_completed_yet'] = 'Not completed yet';
 $string['not_started'] = 'not started';
@@ -268,6 +268,7 @@ $string['switch_item_to_not_required'] = 'switch to: answer not required';
 $string['switch_item_to_required'] = 'switch to: answer required';
 $string['template'] = 'Template';
 $string['templates'] = 'Templates';
+$string['template_deleted'] = 'Template deleted';
 $string['template_saved'] = 'Template saved';
 $string['textarea'] = 'Longer text answer';
 $string['textarea_height'] = 'Number of lines';
@@ -290,3 +291,6 @@ $string['viewcompleted_help'] = 'You may view completed feedback forms, searchab
 Feedback responses may be exported to Excel.';
 // Deprecated since Moodle 3.0.
 $string['completed'] = 'completed';
+// Deprecated since Moodle 3.1.
+$string['mapcourses_help'] = 'Once you have selected the relevant course(s) from your search,
+you can associate them with this feedback using map course(s). Multiple courses may be selected by holding down the Apple or Ctrl key whilst clicking on the course names. A course may be disassociated from a feedback at any time.';

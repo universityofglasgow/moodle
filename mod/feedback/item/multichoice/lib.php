@@ -231,7 +231,11 @@ class feedback_item_multichoice extends feedback_item_base {
         if ($analysed_item) {
             $itemname = $analysed_item[1];
             echo '<tr><th colspan="2" align="left">';
-            echo $itemnr.'&nbsp;('.$item->label.') '.$itemname;
+            echo $itemnr . ' ';
+            if (strval($item->label) !== '') {
+                echo '('. format_string($item->label).') ';
+            }
+            echo $itemname;
             echo '</th></tr>';
 
             $analysed_vals = $analysed_item[2];
@@ -320,12 +324,14 @@ class feedback_item_multichoice extends feedback_item_base {
         if ($info->subtype == 'd') {
             echo '<label for="'. $item->typ . '_' . $item->id .'">';
         }
-        echo '('.$item->label.') ';
+        if (strval($item->label) !== '') {
+            echo '('. format_string($item->label).') ';
+        }
         echo format_text($item->name . $requiredmark, FORMAT_HTML, array('noclean' => true, 'para' => false));
         if ($item->dependitem) {
             if ($dependitem = $DB->get_record('feedback_item', array('id'=>$item->dependitem))) {
                 echo ' <span class="feedback_depend">';
-                echo '('.$dependitem->label.'-&gt;'.$item->dependvalue.')';
+                echo '('.format_string($dependitem->label).'-&gt;'.$item->dependvalue.')';
                 echo '</span>';
             }
         }
@@ -364,7 +370,7 @@ class feedback_item_multichoice extends feedback_item_base {
             </span>
             <span class="feedback_item_radiolabel_<?php echo $hv.'_'.$align;?>">
                 <label for="<?php echo $item->typ . '_' . $item->id.'_xxx';?>">
-                    <?php print_string('not_selected', 'feedback');?>&nbsp;
+                    <?php print_string('not_selected', 'feedback');?>
                 </label>
             </span>
         </li>
@@ -425,7 +431,7 @@ class feedback_item_multichoice extends feedback_item_base {
         echo '<div class="feedback_item_label_'.$align.'">';
         if ($info->subtype == 'd') {
             echo '<label for="'. $inputname .'">';
-            echo format_text($item->name.$requiredmark, true, false, false);
+            echo format_text($item->name . $requiredmark, FORMAT_HTML, array('noclean' => true, 'para' => false));
             if ($highlightrequire AND $item->required AND (count($values) == 0 OR $values[0] == '' OR $values[0] == 0)) {
                 echo '<br class="error"><span id="id_error_'.$inputname.'" class="error"> '.get_string('err_required', 'form').
                     '</span><br id="id_error_break_'.$inputname.'" class="error" >';
@@ -474,7 +480,7 @@ class feedback_item_multichoice extends feedback_item_base {
                 </span>
                 <span class="feedback_item_radiolabel_<?php echo $hv.'_'.$align;?>">
                     <label for="<?php echo $item->typ.'_'.$item->id.'_xxx';?>">
-                        <?php print_string('not_selected', 'feedback');?>&nbsp;
+                        <?php print_string('not_selected', 'feedback');?>
                     </label>
                 </span>
             </li>
@@ -536,7 +542,9 @@ class feedback_item_multichoice extends feedback_item_base {
 
         //print the question and label
         echo '<div class="feedback_item_label_'.$align.'">';
-        echo '('.$item->label.') ';
+        if (strval($item->label) !== '') {
+            echo '('. format_string($item->label).') ';
+        }
         echo format_text($item->name . $requiredmark, FORMAT_HTML, array('noclean' => true, 'para' => false));
         echo '</div>';
 
@@ -578,7 +586,7 @@ class feedback_item_multichoice extends feedback_item_base {
             return true;
         }
 
-        if (empty($value) OR !is_array($value) OR $value[0] == '' OR $value[0] == 0) {
+        if (empty($value) OR !is_array($value) OR !array_filter($value)) {
             return false;
         }
 
@@ -588,7 +596,7 @@ class feedback_item_multichoice extends feedback_item_base {
     public function create_value($data) {
         $vallist = $data;
         if (is_array($vallist)) {
-            $vallist = array_unique($vallist);
+            $vallist = array_unique(array_filter($vallist));
         }
         return trim($this->item_array_to_string($vallist));
     }
@@ -667,6 +675,9 @@ class feedback_item_multichoice extends feedback_item_base {
         if (!is_array($value)) {
             return $value;
         }
+        if (empty($value)) {
+            return '0';
+        }
         $retval = '';
         $arrvals = array_values($value);
         $arrvals = clean_param_array($arrvals, PARAM_INT);  //prevent sql-injection
@@ -742,6 +753,8 @@ class feedback_item_multichoice extends feedback_item_base {
 
         $index = 1;
         $checked = '';
+        $inputname = $item->typ. '_' . $item->id;
+        echo '<input type="hidden" name="'.$inputname.'[]" value="0" />';
         foreach ($presentation as $check) {
             foreach ($values as $val) {
                 if ($val == $index) {
@@ -751,7 +764,6 @@ class feedback_item_multichoice extends feedback_item_base {
                     $checked = '';
                 }
             }
-            $inputname = $item->typ. '_' . $item->id;
             $inputid = $item->typ. '_' . $item->id.'_'.$index;
         ?>
             <li class="feedback_item_check_<?php echo $hv.'_'.$align;?>">

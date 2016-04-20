@@ -428,6 +428,7 @@ $functions = array(
         'classpath'   => 'user/externallib.php',
         'description' => 'Retrieve users information for a specified unique field - If you want to do a user search, use core_user_get_users()',
         'type'        => 'read',
+        'ajax'        => true,
         'capabilities'=> 'moodle/user:viewdetails, moodle/user:viewhiddendetails, moodle/course:useremail, moodle/user:update',
     ),
 
@@ -1186,6 +1187,24 @@ $functions = array(
         'ajax'        => true
     ),
 
+    // Question related functions.
+    'core_question_update_flag' => array(
+        'classname'     => 'core_question_external',
+        'methodname'    => 'update_flag',
+        'description'   => 'Update the flag state of a question attempt.',
+        'type'          => 'write',
+        'capabilities'  => 'moodle/question:flag',
+    ),
+
+    // Badges functions.
+    'core_badges_get_user_badges' => array(
+        'classname'     => 'core_badges_external',
+        'methodname'    => 'get_user_badges',
+        'description'   => 'Returns the list of badges awarded to a user.',
+        'type'          => 'read',
+        'capabilities'  => 'moodle/badges:viewotherbadges'
+    ),
+
 );
 
 $services = array(
@@ -1252,7 +1271,9 @@ $services = array(
             'core_rating_get_item_ratings',
             'core_user_get_users_by_field',
             'core_user_add_user_private_files',
-            ),
+            'core_question_update_flag',
+            'core_badges_get_user_badges',
+        ),
         'enabled' => 0,
         'restrictedusers' => 0,
         'shortname' => MOODLE_OFFICIAL_MOBILE_SERVICE,

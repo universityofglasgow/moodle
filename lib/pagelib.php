@@ -443,10 +443,15 @@ class moodle_page {
      * @return context the main context to which this page belongs.
      */
     protected function magic_get_context() {
+        global $CFG;
         if (is_null($this->_context)) {
             if (CLI_SCRIPT or NO_MOODLE_COOKIES) {
                 // Cli scripts work in system context, do not annoy devs with debug info.
                 // Very few scripts do not use cookies, we can safely use system as default context there.
+            } else if (AJAX_SCRIPT && $CFG->debugdeveloper) {
+                // Throw exception inside AJAX script in developer mode, otherwise the debugging message may be missed.
+                throw new coding_exception('$PAGE->context was not set. You may have forgotten '
+                    .'to call require_login() or $PAGE->set_context()');
             } else {
                 debugging('Coding problem: $PAGE->context was not set. You may have forgotten '
                     .'to call require_login() or $PAGE->set_context(). The page may not display '
@@ -976,7 +981,6 @@ class moodle_page {
             }
             return;
         }
-
         // Ideally we should set context only once.
         if (isset($this->_context) && $context->id !== $this->_context->id) {
             $current = $this->_context->contextlevel;
@@ -988,11 +992,7 @@ class moodle_page {
             } else {
                 // We do not want devs to do weird switching of context levels on the fly because we might have used
                 // the context already such as in text filter in page title.
-                // This is explicitly allowed for webservices though which may
-                // call "external_api::validate_context on many contexts in a single request.
-                if (!WS_SERVER) {
-                    debugging("Coding problem: unsupported modification of PAGE->context from {$current} to {$context->contextlevel}");
-                }
+                debugging("Coding problem: unsupported modification of PAGE->context from {$current} to {$context->contextlevel}");
             }
         }
 
@@ -1556,6 +1556,24 @@ class moodle_page {
     }
 
     /**
+     * Reset the theme and output for a new context. This only makes sense from
+     * external::validate_context(). Do not cheat.
+     *
+     * @return string the name of the theme that should be used on this page.
+     */
+    public function reset_theme_and_output() {
+        global $COURSE, $SITE;
+
+        $COURSE = clone($SITE);
+        $this->_theme = null;
+        $this->_wherethemewasinitialised = null;
+        $this->_course = null;
+        $this->_cm = null;
+        $this->_module = null;
+        $this->_context = null;
+    }
+
+    /**
      * Work out the theme this page should use.
      *
      * This depends on numerous $CFG settings, and the properties of this page.
@@ -1756,7 +1774,7 @@ class moodle_page {
             $this->add_body_class('notloggedin');
         }
 
-        if (!empty($USER->editing)) {
+        if ($this->user_is_editing()) {
             $this->add_body_class('editing');
             if (optional_param('bui_moveid', false, PARAM_INT)) {
                 $this->add_body_class('blocks-moving');

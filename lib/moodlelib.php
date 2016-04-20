@@ -448,7 +448,11 @@ define('MOD_ARCHETYPE_ASSIGNMENT', 2);
 /** System (not user-addable) module archetype */
 define('MOD_ARCHETYPE_SYSTEM', 3);
 
-/** Return this from modname_get_types callback to use default display in activity chooser */
+/**
+ * Return this from modname_get_types callback to use default display in activity chooser.
+ * Deprecated, will be removed in 3.5, TODO MDL-53697.
+ * @deprecated since Moodle 3.1
+ */
 define('MOD_SUBTYPE_NO_CHILDREN', 'modsubtypenochildren');
 
 /**
@@ -3928,6 +3932,15 @@ function delete_user(stdClass $user) {
         return false;
     }
 
+    // Allow plugins to use this user object before we completely delete it.
+    if ($pluginsfunction = get_plugins_with_function('pre_user_delete')) {
+        foreach ($pluginsfunction as $plugintype => $plugins) {
+            foreach ($plugins as $pluginfunction) {
+                $pluginfunction($user);
+            }
+        }
+    }
+
     // Keep user record before updating it, as we have to pass this to user_deleted event.
     $olduser = clone $user;
 
@@ -4675,6 +4688,15 @@ function delete_course($courseorid, $showfeedback = true) {
     // Frontpage course can not be deleted!!
     if ($courseid == SITEID) {
         return false;
+    }
+
+    // Allow plugins to use this course before we completely delete it.
+    if ($pluginsfunction = get_plugins_with_function('pre_course_delete')) {
+        foreach ($pluginsfunction as $plugintype => $plugins) {
+            foreach ($plugins as $pluginfunction) {
+                $pluginfunction($course);
+            }
+        }
     }
 
     // Make the course completely empty.
@@ -8190,72 +8212,6 @@ function make_grades_menu($gradingtype) {
         return $grades;
     }
     return $grades;
-}
-
-/**
- * This function returns the number of activities using the given scale in the given course.
- *
- * @param int $courseid The course ID to check.
- * @param int $scaleid The scale ID to check
- * @return int
- */
-function course_scale_used($courseid, $scaleid) {
-    global $CFG, $DB;
-
-    $return = 0;
-
-    if (!empty($scaleid)) {
-        if ($cms = get_course_mods($courseid)) {
-            foreach ($cms as $cm) {
-                // Check cm->name/lib.php exists.
-                if (file_exists($CFG->dirroot.'/mod/'.$cm->modname.'/lib.php')) {
-                    include_once($CFG->dirroot.'/mod/'.$cm->modname.'/lib.php');
-                    $functionname = $cm->modname.'_scale_used';
-                    if (function_exists($functionname)) {
-                        if ($functionname($cm->instance, $scaleid)) {
-                            $return++;
-                        }
-                    }
-                }
-            }
-        }
-
-        // Check if any course grade item makes use of the scale.
-        $return += $DB->count_records('grade_items', array('courseid' => $courseid, 'scaleid' => $scaleid));
-
-        // Check if any outcome in the course makes use of the scale.
-        $return += $DB->count_records_sql("SELECT COUNT('x')
-                                             FROM {grade_outcomes_courses} goc,
-                                                  {grade_outcomes} go
-                                            WHERE go.id = goc.outcomeid
-                                                  AND go.scaleid = ? AND goc.courseid = ?",
-                                          array($scaleid, $courseid));
-    }
-    return $return;
-}
-
-/**
- * This function returns the number of activities using scaleid in the entire site
- *
- * @param int $scaleid
- * @param array $courses
- * @return int
- */
-function site_scale_used($scaleid, &$courses) {
-    $return = 0;
-
-    if (!is_array($courses) || count($courses) == 0) {
-        $courses = get_courses("all", false, "c.id, c.shortname");
-    }
-
-    if (!empty($scaleid)) {
-        if (is_array($courses) && count($courses) > 0) {
-            foreach ($courses as $course) {
-                $return += course_scale_used($course->id, $scaleid);
-            }
-        }
-    }
-    return $return;
 }
 
 /**

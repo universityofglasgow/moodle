@@ -433,6 +433,57 @@ class quiz {
             throw new moodle_quiz_exception($this, 'questionnotloaded', $id);
         }
     }
+
+    /**
+     * Return all the question types used in this quiz.
+     *
+     * @param  boolean $includepotential if the quiz include random questions, setting this flag to true will make the function to
+     * return all the possible question types in the random questions category
+     * @return array a sorted array including the different question types
+     * @since  Moodle 3.1
+     */
+    public function get_all_question_types_used($includepotential = false) {
+        $questiontypes = array();
+
+        // To control if we need to look in categories for questions.
+        $qcategories = array();
+
+        // We must be careful with random questions, if we find a random question we must assume that the quiz may content
+        // any of the questions in the referenced category (or subcategories).
+        foreach ($this->get_questions() as $questiondata) {
+            if ($questiondata->qtype == 'random' and $includepotential) {
+                $includesubcategories = (bool) $questiondata->questiontext;
+                if (!isset($qcategories[$questiondata->category])) {
+                    $qcategories[$questiondata->category] = false;
+                }
+                if ($includesubcategories) {
+                    $qcategories[$questiondata->category] = true;
+                }
+            } else {
+                if (!in_array($questiondata->qtype, $questiontypes)) {
+                    $questiontypes[] = $questiondata->qtype;
+                }
+            }
+        }
+
+        if (!empty($qcategories)) {
+            // We have to look for all the question types in these categories.
+            $categoriestolook = array();
+            foreach ($qcategories as $cat => $includesubcats) {
+                if ($includesubcats) {
+                    $categoriestolook = array_merge($categoriestolook, question_categorylist($cat));
+                } else {
+                    $categoriestolook[] = $cat;
+                }
+            }
+            $questiontypesincategories = question_bank::get_all_question_types_in_categories($categoriestolook);
+            $questiontypes = array_merge($questiontypes, $questiontypesincategories);
+        }
+        $questiontypes = array_unique($questiontypes);
+        sort($questiontypes);
+
+        return $questiontypes;
+    }
 }
 
 
@@ -1230,6 +1281,17 @@ class quiz_attempt {
      */
     public function get_question_action_time($slot) {
         return $this->quba->get_question_action_time($slot);
+    }
+
+    /**
+     * Return the question type name for a given slot within the current attempt.
+     *
+     * @param int $slot the number used to identify this question within this attempt.
+     * @return string the question type name
+     * @since  Moodle 3.1
+     */
+    public function get_question_type_name($slot) {
+        return $this->quba->get_question($slot)->get_type_name();
     }
 
     /**
@@ -2033,6 +2095,229 @@ class quiz_attempt {
             return $url;
         }
     }
+
+    /**
+     * Process responses during an attempt at a quiz.
+     *
+     * @param  int $timenow time when the processing started
+     * @param  bool $finishattempt whether to finish the attempt or not
+     * @param  bool $timeup true if form was submitted by timer
+     * @param  int $thispage current page number
+     * @return string the attempt state once the data has been processed
+     * @since  Moodle 3.1
+     * @throws  moodle_exception
+     */
+    public function process_attempt($timenow, $finishattempt, $timeup, $thispage) {
+        global $DB;
+
+        $transaction = $DB->start_delegated_transaction();
+
+        // If there is only a very small amount of time left, there is no point trying
+        // to show the student another page of the quiz. Just finish now.
+        $graceperiodmin = null;
+        $accessmanager = $this->get_access_manager($timenow);
+        $timeclose = $accessmanager->get_end_time($this->get_attempt());
+
+        // Don't enforce timeclose for previews.
+        if ($this->is_preview()) {
+            $timeclose = false;
+        }
+        $toolate = false;
+        if ($timeclose !== false && $timenow > $timeclose - QUIZ_MIN_TIME_TO_CONTINUE) {
+            $timeup = true;
+            $graceperiodmin = get_config('quiz', 'graceperiodmin');
+            if ($timenow > $timeclose + $graceperiodmin) {
+                $toolate = true;
+            }
+        }
+
+        // If time is running out, trigger the appropriate action.
+        $becomingoverdue = false;
+        $becomingabandoned = false;
+        if ($timeup) {
+            if ($this->get_quiz()->overduehandling == 'graceperiod') {
+                if (is_null($graceperiodmin)) {
+                    $graceperiodmin = get_config('quiz', 'graceperiodmin');
+                }
+                if ($timenow > $timeclose + $this->get_quiz()->graceperiod + $graceperiodmin) {
+                    // Grace period has run out.
+                    $finishattempt = true;
+                    $becomingabandoned = true;
+                } else {
+                    $becomingoverdue = true;
+                }
+            } else {
+                $finishattempt = true;
+            }
+        }
+
+        // Don't log - we will end with a redirect to a page that is logged.
+
+        if (!$finishattempt) {
+            // Just process the responses for this page and go to the next page.
+            if (!$toolate) {
+                try {
+                    $this->process_submitted_actions($timenow, $becomingoverdue);
+
+                } catch (question_out_of_sequence_exception $e) {
+                    throw new moodle_exception('submissionoutofsequencefriendlymessage', 'question',
+                            $this->attempt_url(null, $thispage));
+
+                } catch (Exception $e) {
+                    // This sucks, if we display our own custom error message, there is no way
+                    // to display the original stack trace.
+                    $debuginfo = '';
+                    if (!empty($e->debuginfo)) {
+                        $debuginfo = $e->debuginfo;
+                    }
+                    throw new moodle_exception('errorprocessingresponses', 'question',
+                            $this->attempt_url(null, $thispage), $e->getMessage(), $debuginfo);
+                }
+
+                if (!$becomingoverdue) {
+                    foreach ($this->get_slots() as $slot) {
+                        if (optional_param('redoslot' . $slot, false, PARAM_BOOL)) {
+                            $this->process_redo_question($slot, $timenow);
+                        }
+                    }
+                }
+
+            } else {
+                // The student is too late.
+                $this->process_going_overdue($timenow, true);
+            }
+
+            $transaction->allow_commit();
+
+            return $becomingoverdue ? self::OVERDUE : self::IN_PROGRESS;
+        }
+
+        // Update the quiz attempt record.
+        try {
+            if ($becomingabandoned) {
+                $this->process_abandon($timenow, true);
+            } else {
+                $this->process_finish($timenow, !$toolate);
+            }
+
+        } catch (question_out_of_sequence_exception $e) {
+            throw new moodle_exception('submissionoutofsequencefriendlymessage', 'question',
+                    $this->attempt_url(null, $thispage));
+
+        } catch (Exception $e) {
+            // This sucks, if we display our own custom error message, there is no way
+            // to display the original stack trace.
+            $debuginfo = '';
+            if (!empty($e->debuginfo)) {
+                $debuginfo = $e->debuginfo;
+            }
+            throw new moodle_exception('errorprocessingresponses', 'question',
+                    $this->attempt_url(null, $thispage), $e->getMessage(), $debuginfo);
+        }
+
+        // Send the user to the review page.
+        $transaction->allow_commit();
+
+        return $becomingabandoned ? self::ABANDONED : self::FINISHED;
+    }
+
+    /**
+     * Check a page access to see if is an out of sequence access.
+     *
+     * @param  int $page page number
+     * @return boolean false is is an out of sequence access, true otherwise.
+     * @since Moodle 3.1
+     */
+    public function check_page_access($page) {
+        global $DB;
+
+        if ($this->get_currentpage() != $page) {
+            if ($this->get_navigation_method() == QUIZ_NAVMETHOD_SEQ && $this->get_currentpage() > $page) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Update attempt page.
+     *
+     * @param  int $page page number
+     * @return boolean true if everything was ok, false otherwise (out of sequence access).
+     * @since Moodle 3.1
+     */
+    public function set_currentpage($page) {
+        global $DB;
+
+        if ($this->check_page_access($page)) {
+            $DB->set_field('quiz_attempts', 'currentpage', $page, array('id' => $this->get_attemptid()));
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Trigger the attempt_viewed event.
+     *
+     * @since Moodle 3.1
+     */
+    public function fire_attempt_viewed_event() {
+        $params = array(
+            'objectid' => $this->get_attemptid(),
+            'relateduserid' => $this->get_userid(),
+            'courseid' => $this->get_courseid(),
+            'context' => context_module::instance($this->get_cmid()),
+            'other' => array(
+                'quizid' => $this->get_quizid()
+            )
+        );
+        $event = \mod_quiz\event\attempt_viewed::create($params);
+        $event->add_record_snapshot('quiz_attempts', $this->get_attempt());
+        $event->trigger();
+    }
+
+    /**
+     * Trigger the attempt_summary_viewed event.
+     *
+     * @since Moodle 3.1
+     */
+    public function fire_attempt_summary_viewed_event() {
+
+        $params = array(
+            'objectid' => $this->get_attemptid(),
+            'relateduserid' => $this->get_userid(),
+            'courseid' => $this->get_courseid(),
+            'context' => context_module::instance($this->get_cmid()),
+            'other' => array(
+                'quizid' => $this->get_quizid()
+            )
+        );
+        $event = \mod_quiz\event\attempt_summary_viewed::create($params);
+        $event->add_record_snapshot('quiz_attempts', $this->get_attempt());
+        $event->trigger();
+    }
+
+    /**
+     * Trigger the attempt_reviewed event.
+     *
+     * @since Moodle 3.1
+     */
+    public function fire_attempt_reviewed_event() {
+
+        $params = array(
+            'objectid' => $this->get_attemptid(),
+            'relateduserid' => $this->get_userid(),
+            'courseid' => $this->get_courseid(),
+            'context' => context_module::instance($this->get_cmid()),
+            'other' => array(
+                'quizid' => $this->get_quizid()
+            )
+        );
+        $event = \mod_quiz\event\attempt_reviewed::create($params);
+        $event->add_record_snapshot('quiz_attempts', $this->get_attempt());
+        $event->trigger();
+    }
+
 }
 
 

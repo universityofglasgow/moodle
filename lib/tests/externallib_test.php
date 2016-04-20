@@ -96,6 +96,40 @@ class core_externallib_testcase extends advanced_testcase {
 </span></span>', FORMAT_HTML);
         $this->assertSame(external_format_text($test, $testformat, $context->id, 'core', '', 0), $correct);
 
+        $test = '<p><a id="test"></a><a href="#test">Text</a></p>';
+        $testformat = FORMAT_HTML;
+        $correct = array($test, FORMAT_HTML);
+        $options = array('allowid' => true);
+        $this->assertSame(external_format_text($test, $testformat, $context->id, 'core', '', 0, $options), $correct);
+
+        $test = '<p><a id="test"></a><a href="#test">Text</a></p>';
+        $testformat = FORMAT_HTML;
+        $correct = array('<p><a></a><a href="#test">Text</a></p>', FORMAT_HTML);
+        $options = new StdClass();
+        $options->allowid = false;
+        $this->assertSame(external_format_text($test, $testformat, $context->id, 'core', '', 0, $options), $correct);
+
+        $test = '<p><a id="test"></a><a href="#test">Text</a></p>'."\n".'Newline';
+        $testformat = FORMAT_MOODLE;
+        $correct = array('<p><a id="test"></a><a href="#test">Text</a></p> Newline', FORMAT_HTML);
+        $options = new StdClass();
+        $options->newlines = false;
+        $this->assertSame(external_format_text($test, $testformat, $context->id, 'core', '', 0, $options), $correct);
+
+        $test = '<p><a id="test"></a><a href="#test">Text</a></p>';
+        $testformat = FORMAT_MOODLE;
+        $correct = array('<div class="text_to_html">'.$test.'</div>', FORMAT_HTML);
+        $options = new StdClass();
+        $options->para = true;
+        $this->assertSame(external_format_text($test, $testformat, $context->id, 'core', '', 0, $options), $correct);
+
+        $test = '<p><a id="test"></a><a href="#test">Text</a></p>';
+        $testformat = FORMAT_MOODLE;
+        $correct = array($test, FORMAT_HTML);
+        $options = new StdClass();
+        $options->context = $context;
+        $this->assertSame(external_format_text($test, $testformat, $context->id, 'core', '', 0, $options), $correct);
+
         $settings->set_raw($currentraw);
         $settings->set_filter($currentfilter);
     }
@@ -283,7 +317,7 @@ class core_externallib_testcase extends advanced_testcase {
      * @dataProvider all_external_info_provider
      */
     public function test_all_external_info($f) {
-        $desc = external_function_info($f);
+        $desc = external_api::external_function_info($f);
         $this->assertNotEmpty($desc->name);
         $this->assertNotEmpty($desc->classname);
         $this->assertNotEmpty($desc->methodname);
@@ -354,6 +388,46 @@ class core_externallib_testcase extends advanced_testcase {
         // The extra course passed is not returned.
         $this->assertArrayNotHasKey($c4->id, $courses);
     }
+
+
+    public function test_call_external_function() {
+        global $PAGE, $COURSE;
+
+        $this->resetAfterTest(true);
+
+        // Call some webservice functions and verify they are correctly handling $PAGE and $COURSE.
+        // First test a function that calls validate_context outside a course.
+        $this->setAdminUser();
+        $category = $this->getDataGenerator()->create_category();
+        $params = array(
+            'contextid' => context_coursecat::instance($category->id)->id,
+            'name' => 'aaagrrryyy',
+            'idnumber' => '',
+            'description' => ''
+        );
+        $cohort1 = $this->getDataGenerator()->create_cohort($params);
+        $cohort2 = $this->getDataGenerator()->create_cohort();
+
+        $beforepage = $PAGE;
+        $beforecourse = $COURSE;
+        $params = array('cohortids' => array($cohort1->id, $cohort2->id));
+        $result = external_api::call_external_function('core_cohort_get_cohorts', $params);
+
+        $this->assertSame($beforepage, $PAGE);
+        $this->assertSame($beforecourse, $COURSE);
+
+        // Now test a function that calls validate_context inside a course.
+        $course = $this->getDataGenerator()->create_course();
+
+        $beforepage = $PAGE;
+        $beforecourse = $COURSE;
+        $params = array('courseid' => $course->id, 'options' => array());
+        $result = external_api::call_external_function('core_enrol_get_enrolled_users', $params);
+
+        $this->assertSame($beforepage, $PAGE);
+        $this->assertSame($beforecourse, $COURSE);
+    }
+
 }
 
 /*

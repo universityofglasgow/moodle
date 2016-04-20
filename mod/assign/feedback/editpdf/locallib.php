@@ -168,21 +168,16 @@ class assign_feedback_editpdf extends assign_feedback_plugin {
             $attempt = $grade->attemptnumber;
         }
 
-        $files = document_services::list_compatible_submission_files_for_attempt($this->assignment, $userid, $attempt);
-        // Only show the editor if there was a compatible file submitted.
-        if (count($files)) {
+        $renderer = $PAGE->get_renderer('assignfeedback_editpdf');
 
-            $renderer = $PAGE->get_renderer('assignfeedback_editpdf');
+        $widget = $this->get_widget($userid, $grade, false);
 
-            $widget = $this->get_widget($userid, $grade, false);
-
-            $html = $renderer->render($widget);
-            $mform->addElement('static', 'editpdf', get_string('editpdf', 'assignfeedback_editpdf'), $html);
-            $mform->addHelpButton('editpdf', 'editpdf', 'assignfeedback_editpdf');
-            $mform->addElement('hidden', 'editpdf_source_userid', $userid);
-            $mform->setType('editpdf_source_userid', PARAM_INT);
-            $mform->setConstant('editpdf_source_userid', $userid);
-        }
+        $html = $renderer->render($widget);
+        $mform->addElement('static', 'editpdf', get_string('editpdf', 'assignfeedback_editpdf'), $html);
+        $mform->addHelpButton('editpdf', 'editpdf', 'assignfeedback_editpdf');
+        $mform->addElement('hidden', 'editpdf_source_userid', $userid);
+        $mform->setType('editpdf_source_userid', PARAM_INT);
+        $mform->setConstant('editpdf_source_userid', $userid);
     }
 
     /**
@@ -354,5 +349,22 @@ class assign_feedback_editpdf extends assign_feedback_plugin {
      */
     public function is_configurable() {
         return false;
+    }
+
+    /**
+     * Get file areas returns a list of areas this plugin stores files.
+     *
+     * @return array - An array of fileareas (keys) and descriptions (values)
+     */
+    public function get_file_areas() {
+        return array(document_services::FINAL_PDF_FILEAREA => $this->get_name());
+    }
+
+    /**
+     * This plugin will inject content into the review panel with javascript.
+     * @return bool true
+     */
+    public function supports_review_panel() {
+        return true;
     }
 }

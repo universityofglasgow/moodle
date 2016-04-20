@@ -32,8 +32,7 @@ use Behat\Mink\Exception\ExpectationException as ExpectationException,
     Behat\Mink\Exception\DriverException as DriverException,
     WebDriver\Exception\NoSuchElement as NoSuchElement,
     WebDriver\Exception\StaleElementReference as StaleElementReference,
-    Behat\Gherkin\Node\TableNode as TableNode,
-    Moodle\BehatExtension\Context\Step\Given as Given;
+    Behat\Gherkin\Node\TableNode as TableNode;
 
 /**
  * Cross component steps definitions.
@@ -258,8 +257,9 @@ class behat_general extends behat_base {
      */
     public function wait_until_the_page_is_ready() {
 
+        // No need to wait if not running JS.
         if (!$this->running_javascript()) {
-            throw new DriverException('Waits are disabled in scenarios without Javascript support');
+            return;
         }
 
         $this->getSession()->wait(self::TIMEOUT * 1000, self::PAGE_READY_JS);
@@ -540,7 +540,7 @@ class behat_general extends behat_base {
 
         // Looking for all the matching nodes without any other descendant matching the
         // same xpath (we are using contains(., ....).
-        $xpathliteral = $this->getSession()->getSelectorsHandler()->xpathLiteral($text);
+        $xpathliteral = behat_context_helper::escape($text);
         $xpath = "/descendant-or-self::*[contains(., $xpathliteral)]" .
             "[count(descendant::*[contains(., $xpathliteral)]) = 0]";
 
@@ -590,7 +590,7 @@ class behat_general extends behat_base {
 
         // Looking for all the matching nodes without any other descendant matching the
         // same xpath (we are using contains(., ....).
-        $xpathliteral = $this->getSession()->getSelectorsHandler()->xpathLiteral($text);
+        $xpathliteral = behat_context_helper::escape($text);
         $xpath = "/descendant-or-self::*[contains(., $xpathliteral)]" .
             "[count(descendant::*[contains(., $xpathliteral)]) = 0]";
 
@@ -648,7 +648,7 @@ class behat_general extends behat_base {
 
         // Looking for all the matching nodes without any other descendant matching the
         // same xpath (we are using contains(., ....).
-        $xpathliteral = $this->getSession()->getSelectorsHandler()->xpathLiteral($text);
+        $xpathliteral = behat_context_helper::escape($text);
         $xpath = "/descendant-or-self::*[contains(., $xpathliteral)]" .
             "[count(descendant::*[contains(., $xpathliteral)]) = 0]";
 
@@ -702,7 +702,7 @@ class behat_general extends behat_base {
 
         // Looking for all the matching nodes without any other descendant matching the
         // same xpath (we are using contains(., ....).
-        $xpathliteral = $this->getSession()->getSelectorsHandler()->xpathLiteral($text);
+        $xpathliteral = behat_context_helper::escape($text);
         $xpath = "/descendant-or-self::*[contains(., $xpathliteral)]" .
             "[count(descendant::*[contains(., $xpathliteral)]) = 0]";
 
@@ -1128,9 +1128,9 @@ class behat_general extends behat_base {
         $tablenode = $this->get_selected_node('table', $table);
         $tablexpath = $tablenode->getXpath();
 
-        $rowliteral = $this->getSession()->getSelectorsHandler()->xpathLiteral($row);
-        $valueliteral = $this->getSession()->getSelectorsHandler()->xpathLiteral($value);
-        $columnliteral = $this->getSession()->getSelectorsHandler()->xpathLiteral($column);
+        $rowliteral = behat_context_helper::escape($row);
+        $valueliteral = behat_context_helper::escape($value);
+        $columnliteral = behat_context_helper::escape($column);
 
         if (preg_match('/^-?(\d+)-?$/', $column, $columnasnumber)) {
             // Column indicated as a number, just use it as position of the column.
@@ -1266,7 +1266,7 @@ class behat_general extends behat_base {
      * @param string $link the text of the link.
      * @return string the content of the downloaded file.
      */
-    protected function download_file_from_link($link) {
+    public function download_file_from_link($link) {
         // Find the link.
         $linknode = $this->find_link($link);
         $this->ensure_node_is_visible($linknode);
