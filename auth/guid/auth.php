@@ -34,7 +34,7 @@ class auth_plugin_guid extends auth_plugin_ldap {
      * constructor
      */
     public function __construct() {
-        parent::auth_plugin_ldap();
+        parent::__construct();
         $this->authtype = 'guid';
         $this->errorlogtag = '[AUTH GUID]';
         $this->init_plugin($this->authtype);
