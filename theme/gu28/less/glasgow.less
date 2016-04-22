@@ -1,0 +1,350 @@
+body {
+    margin: 0 10px;
+    background-color: #fff !important;
+}
+
+html {
+    -webkit-tap-highlight-color: #fff;
+}
+
+// basics
+h1 {
+    font-size: 24px
+}
+
+h2 {
+    font-size: 20px;
+}
+
+h3 {
+    font-size: 18px;
+}
+
+// Headers logos and nav
+.navbar {
+    background-image: none;
+    background-color: @brand-primary;
+    min-height: 80px;
+}
+
+.navbar-nav > li > a {
+    color: #fff;
+}
+
+.navbar-header {
+    height: 80px;
+}
+
+.navbar-nav > li > a:hover {
+    background-color: fade(@gu_university_blue, 30%);
+}
+
+.navbar-brand {
+    padding: 9px 15px;
+}
+
+.navbar-default .navbar-nav>li>a {
+    color: #fff;
+}
+
+#logo {
+    background-image: url([[pix:theme|logo]]);
+    background-repeat: no-repeat;
+    width: 200px;
+    height: 60px;
+    border-right: 1px solid white;
+}
+
+#moodle-logo {
+    background-image: url([[pix:theme|moodle42]]);
+    background-repeat: no-repeat;
+    width: 200px;
+    height: 40px;
+    margin-left: 220px;
+    margin-top: 15px;
+}
+
+// Put back the alert stuff that Bootstrap took away
+.alert {
+padding: 8px 35px 8px 18px;
+margin-bottom: 20px;
+text-shadow: none;
+background-color: fade(@gu_sunshine, 20%);
+border: 2px solid fade(@gu_sunshine, 50%);
+-webkit-border-radius: 5px;
+-moz-border-radius: 5px;
+border-radius: 5px;
+font-size: 18px;
+font-weight: 400;
+font-family: 'Roboto', sans-serif;
+}
+
+.alert>.icon-calendar,
+.alert>.icon-exclamation-sign,
+.alert>.icon-comment,
+blockquote>.icon-quote-left{
+        margin-right: 10px;
+        font-size: 27px;
+        float: left;
+        position: relative;
+}
+
+.alert>span{
+        padding-left: 37px;
+        display: block;
+}
+
+.alert-success {
+        color: @gu_forest;
+        background-color: fade(@gu_forest, 20%);
+        border: 2px solid fade(@gu_forest, 50%);
+}
+
+.alert-info {
+        color: @gu_sandstone;
+        background-color: fade(@gu_sandstone, 20%);
+        border: 2px solid fade(@gu_sandstone, 50%);
+}
+
+.alert-danger, .alert-error {
+        color: @gu_burgundy;
+        background-color: fade(@gu_burgundy, 20%);
+        border: 2px solid fade(@gu_burgundy, 50%);
+}
+
+.alert-warning {
+        color: @gu_rust;
+        background-color: fade(@gu_rust, 20%);
+        border: 2px solid fade(@gu_rust, 50%);
+}
+
+.guimage {
+    width: 600px;
+    height: 400px;
+}
+
+div.guimgbox {
+    position:absolute;
+    top:0;
+    right:0;
+    z-index:-1;
+    width:600px;
+    height:400px;
+    float: left;
+}
+
+div.gufluff {
+    position:relative;
+    width:48%;
+    min-width:600px;
+    height:400px;
+    float:left;   
+}
+
+div.sloganbox {
+    position:absolute;
+    top:0;
+    left:0;
+    z-index:0;
+    font-family:'Yantramanav', "Lucida Sans Unicode", sans-serif;
+    font-weight:100;
+    background-color:#003865;
+    color:#fff;
+    font-size:40px;
+    line-height:95%;
+    width:200px;
+    height:400px;
+    text-align:left;
+    padding:40px 5px
+}
+
+.gulogin {
+    //width:400px;
+    height:400px;
+    margin-left:15px;
+    overflow:hidden;
+    float:left;
+}
+
+#login_images {
+    margin-bottom:20px
+}
+
+#login_layout {
+}
+
+#login_layout img {
+    max-width: 600px;
+    max-height: 400px;
+}
+
+@media (max-width: 500px) {
+    #moodle-logo {
+        display: none;
+    } 
+}
+
+@media (max-width: 1023px) {
+    .gufluff {
+        display: none;
+    }
+
+    .gulogin {
+        width: 300px;
+    }
+
+    .container-fluid {
+        padding-left: 5px;
+    }
+}
+
+.loginbox.onecolumn {
+    width: 90%;
+    height: 400px;
+    left: auto !important;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.loginbox .desc {
+    line-height: normal;
+}
+
+// social network icons
+.socials p {
+    font-weight: normal;
+    color: #666;
+    font-size: 1.1em;
+}
+
+.socialicon,
+.socialicon:visited {
+    display: inline-block;
+    font-family: FontAwesome;
+    color: #bbb;
+    line-height: 25px;
+    text-decoration: none;
+    background-color: rgba(0,0,0,.2);
+    border-radius: 270px;
+    border: 0px none;
+    font-size: 1.6em;
+    padding: 8px;
+    margin-left: 8px;
+    text-align: center;
+    background-image: none;
+    width: 39px;
+    height: 39px;
+}
+
+.facebook:hover, button.facebook:focus {
+    background: #4a6ea9;
+}
+
+.skype:hover, button.skype:focus {
+    background: #00adf7;
+}
+
+.instagram:hover, button.instagram:focus {
+    background: #a5674a;
+}
+
+.ios:hover, button.ios:focus {
+    background: #000;
+}
+
+.android:hover, button.android:focus {
+    background: #98cd32;
+}
+
+.vk:hover, button.vk:focus {
+    background: #4a6ea9;
+}
+
+.twitter:hover, button.twitter:focus {
+    background: #00aced;
+}
+
+.googleplus:hover, button.googleplus:focus {
+    background: #f42941;
+}
+
+.flickr:hover, button.flickr:focus {
+    background: #ff3096;
+}
+
+.instagram:hover, a.instagram:focus {
+    background: #b99c6b;
+}
+
+.youtube:hover, button.youtube:focus {
+    background: #f42941;
+}
+
+.pinterest:hover, button.pinterest:focus {
+    background: #f42941;
+}
+
+.linkedin:hover, button.linkedin:focus {
+    background: #4A9CC9;
+}
+
+.website:hover, button.website:focus {
+    background: [[setting:themecolor]];
+}
+
+.vimeo:hover, button.vimeo:focus {
+    background: #38b7eb;
+}
+
+.tumblr:hover, button.tumblr:focus {
+    background: #405a71;
+}
+
+.blog:hover, button.blog:focus {
+    background: #ff9900;
+}
+
+.socials li {
+    text-align: right;
+    display: inline-block;
+}
+
+ul.socials {
+    text-align: right;
+}
+
+#socialheading {
+    text-align: right;
+    color: #666;
+    letter-spacing: .2em;
+    padding: 0px;
+    margin: 0px;
+    margin-top: 8px;
+}
+
+// Side Blocks
+.block .header .title h2 {
+    font-style: normal;
+    font-weight: 300;
+    font-size: 24px;
+}
+
+.block .header {
+    background-color: fade(@gu_aquamarine, 50%);
+}
+
+// dashboard
+.course_title > h2.title {
+    font-size: 20px;
+}
+
+#page-my-index #heading h1 {
+    display: none;
+}
+
+// Forms
+.mform .iconhelp {
+margin-right: 0;
+margin-left: 4px;
+}

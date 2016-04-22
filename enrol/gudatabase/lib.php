@@ -395,7 +395,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
             $rs->Close();
         } else {
             $msg = $extdb->ErrorMsg();
-            $this->error('Error executing query in UofG enrolment table "'.$msg.'" - '.$sql);
+            //$this->error('Error executing query in UofG enrolment table "'.$msg.'" - '.$sql . ' code= ' . $code);
 
             return false;
         }
