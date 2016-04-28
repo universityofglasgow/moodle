@@ -1062,7 +1062,13 @@ class core_renderer extends renderer_base {
         }
         $footer = str_replace($this->unique_performance_info_token, $performanceinfo, $footer);
 
-        $this->page->requires->js_call_amd('core/notification', 'init', array($PAGE->context->id, \core\notification::fetch_as_array($this)));
+        // Only show notifications when we have a $PAGE context id.
+        if (!empty($PAGE->context->id)) {
+            $this->page->requires->js_call_amd('core/notification', 'init', array(
+                $PAGE->context->id,
+                \core\notification::fetch_as_array($this)
+            ));
+        }
         $footer = str_replace($this->unique_end_html_token, $this->page->requires->get_end_code(), $footer);
 
         $this->page->set_state(moodle_page::STATE_DONE);
@@ -1875,6 +1881,48 @@ class core_renderer extends renderer_base {
 
         return $this->render($select);
     }
+
+    /**
+     * Returns a dataformat selection and download form
+     *
+     * @param string $label A text label
+     * @param moodle_url|string $base The download page url
+     * @param string $name The query param which will hold the type of the download
+     * @param array $params Extra params sent to the download page
+     * @return string HTML fragment
+     */
+    public function download_dataformat_selector($label, $base, $name = 'dataformat', $params = array()) {
+
+        $formats = core_plugin_manager::instance()->get_plugins_of_type('dataformat');
+        $options = array();
+        foreach ($formats as $format) {
+            if ($format->is_enabled()) {
+                $options[] = array(
+                    'value' => $format->name,
+                    'label' => get_string('dataformat', $format->component),
+                );
+            }
+        }
+        $hiddenparams = array();
+        foreach ($params as $key => $value) {
+            $hiddenparams[] = array(
+                'name' => $key,
+                'value' => $value,
+            );
+        }
+        $data = array(
+            'label' => $label,
+            'base' => $base,
+            'name' => $name,
+            'params' => $hiddenparams,
+            'options' => $options,
+            'sesskey' => sesskey(),
+            'submit' => get_string('download'),
+        );
+
+        return $this->render_from_template('core/dataformat_selector', $data);
+    }
+
 
     /**
      * Internal implementation of single_select rendering

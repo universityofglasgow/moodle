@@ -205,7 +205,12 @@ class assign {
     public function register_return_link($action, $params) {
         global $PAGE;
         $params['action'] = $action;
-        $currenturl = new moodle_url('/mod/assign/view.php', array('id' => $this->get_course_module()->id));
+        $cm = $this->get_course_module();
+        if ($cm) {
+            $currenturl = new moodle_url('/mod/assign/view.php', array('id' => $cm->id));
+        } else {
+            $currenturl = new moodle_url('/mod/assign/index.php', array('id' => $this->get_course()->id));
+        }
 
         $currenturl->params($params);
         $PAGE->set_url($currenturl);
@@ -881,6 +886,26 @@ class assign {
         }
 
         return assign_grade_item_update($assign, $param);
+    }
+
+    /**
+     * Get the marking table page size
+     *
+     * @return integer
+     */
+    public function get_assign_perpage() {
+        $perpage = (int) get_user_preferences('assign_perpage', 10);
+        $adminconfig = $this->get_admin_config();
+        $maxperpage = -1;
+        if (isset($adminconfig->maxperpage)) {
+            $maxperpage = $adminconfig->maxperpage;
+        }
+        if (isset($maxperpage) &&
+            $maxperpage != -1 &&
+            ($perpage == -1 || $perpage > $maxperpage)) {
+            $perpage = $maxperpage;
+        }
+        return $perpage;
     }
 
     /**
@@ -2761,9 +2786,10 @@ class assign {
     /**
      * Download a zip file of all assignment submissions.
      *
+     * @param array $userids Array of user ids to download assignment submissions in a zip file
      * @return string - If an error occurs, this will contain the error page.
      */
-    protected function download_submissions() {
+    protected function download_submissions($userids = false) {
         global $CFG, $DB;
 
         // More efficient to load this here.
@@ -2799,6 +2825,10 @@ class assign {
         // Get all the files for each student.
         foreach ($students as $student) {
             $userid = $student->id;
+            // Download all assigments submission or only selected users.
+            if ($userids and !in_array($userid, $userids)) {
+                continue;
+            }
 
             if ((groups_is_member($groupid, $userid) or !$groupmode or !$groupid)) {
                 // Get the plugins to add their own files to the zip.
@@ -3594,7 +3624,7 @@ class assign {
 
         $gradingmanager = get_grading_manager($this->get_context(), 'mod_assign', 'submissions');
 
-        $perpage = (int) get_user_preferences('assign_perpage', 10);
+        $perpage = $this->get_assign_perpage();
         $filter = get_user_preferences('assign_filter', '');
         $markerfilter = get_user_preferences('assign_markerfilter', '');
         $workflowfilter = get_user_preferences('assign_workflowfilter', '');
@@ -4059,16 +4089,20 @@ class assign {
                 }
             }
 
-            foreach ($userlist as $userid) {
-                if ($data->operation == 'lock') {
-                    $this->process_lock_submission($userid);
-                } else if ($data->operation == 'unlock') {
-                    $this->process_unlock_submission($userid);
-                } else if ($data->operation == 'reverttodraft') {
-                    $this->process_revert_to_draft($userid);
-                } else if ($data->operation == 'addattempt') {
-                    if (!$this->get_instance()->teamsubmission) {
-                        $this->process_add_attempt($userid);
+            if ($data->operation == 'downloadselected') {
+                $this->download_submissions($userlist);
+            } else {
+                foreach ($userlist as $userid) {
+                    if ($data->operation == 'lock') {
+                        $this->process_lock_submission($userid);
+                    } else if ($data->operation == 'unlock') {
+                        $this->process_unlock_submission($userid);
+                    } else if ($data->operation == 'reverttodraft') {
+                        $this->process_revert_to_draft($userid);
+                    } else if ($data->operation == 'addattempt') {
+                        if (!$this->get_instance()->teamsubmission) {
+                            $this->process_add_attempt($userid);
+                        }
                     }
                 }
             }

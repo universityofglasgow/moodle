@@ -820,8 +820,8 @@ class mod_forum_external_testcase extends externallib_advanced_testcase {
         $this->getDataGenerator()->enrol_user($user->id, $course->id);
         $this->getDataGenerator()->enrol_user($otheruser->id, $course->id);
 
-        $post = mod_forum_external::add_discussion_post($discussion->firstpost, 'some subject', 'some text here...');
-        $post = external_api::clean_returnvalue(mod_forum_external::add_discussion_post_returns(), $post);
+        $createdpost = mod_forum_external::add_discussion_post($discussion->firstpost, 'some subject', 'some text here...');
+        $createdpost = external_api::clean_returnvalue(mod_forum_external::add_discussion_post_returns(), $createdpost);
 
         $posts = mod_forum_external::get_forum_discussion_posts($discussion->id);
         $posts = external_api::clean_returnvalue(mod_forum_external::get_forum_discussion_posts_returns(), $posts);
@@ -829,14 +829,70 @@ class mod_forum_external_testcase extends externallib_advanced_testcase {
         $this->assertEquals(2, count($posts['posts']));
 
         $tested = false;
-        foreach ($posts['posts'] as $postel) {
-            if ($post['postid'] == $postel['id']) {
-                $this->assertEquals('some subject', $postel['subject']);
-                $this->assertEquals('some text here...', $postel['message']);
+        foreach ($posts['posts'] as $thispost) {
+            if ($createdpost['postid'] == $thispost['id']) {
+                $this->assertEquals('some subject', $thispost['subject']);
+                $this->assertEquals('some text here...', $thispost['message']);
                 $tested = true;
             }
         }
         $this->assertTrue($tested);
+
+        // Test inline and regular attachment in post
+        // Create a file in a draft area for inline attachments.
+        $draftidinlineattach = file_get_unused_draft_itemid();
+        $draftidattach = file_get_unused_draft_itemid();
+        self::setUser($user);
+        $usercontext = context_user::instance($user->id);
+        $filepath = '/';
+        $filearea = 'draft';
+        $component = 'user';
+        $filenameimg = 'shouldbeanimage.txt';
+        $filerecordinline = array(
+            'contextid' => $usercontext->id,
+            'component' => $component,
+            'filearea'  => $filearea,
+            'itemid'    => $draftidinlineattach,
+            'filepath'  => $filepath,
+            'filename'  => $filenameimg,
+        );
+        $fs = get_file_storage();
+
+        // Create a file in a draft area for regular attachments.
+        $filerecordattach = $filerecordinline;
+        $attachfilename = 'attachment.txt';
+        $filerecordattach['filename'] = $attachfilename;
+        $filerecordattach['itemid'] = $draftidattach;
+        $fs->create_file_from_string($filerecordinline, 'image contents (not really)');
+        $fs->create_file_from_string($filerecordattach, 'simple text attachment');
+
+        $options = array(array('name' => 'inlineattachmentsid', 'value' => $draftidinlineattach),
+                         array('name' => 'attachmentsid', 'value' => $draftidattach));
+        $dummytext = 'Here is an inline image: <img src="' . $CFG->wwwroot
+                     . "/draftfile.php/{$usercontext->id}/user/draft/{$draftidinlineattach}/{$filenameimg}"
+                     . '" alt="inlineimage">.';
+        $createdpost = mod_forum_external::add_discussion_post($discussion->firstpost, 'new post inline attachment',
+                                                               $dummytext, $options);
+        $createdpost = external_api::clean_returnvalue(mod_forum_external::add_discussion_post_returns(), $createdpost);
+
+        $posts = mod_forum_external::get_forum_discussion_posts($discussion->id);
+        $posts = external_api::clean_returnvalue(mod_forum_external::get_forum_discussion_posts_returns(), $posts);
+        // We receive the discussion and the post.
+        // Can't guarantee order of posts during tests.
+        $postfound = false;
+        foreach ($posts['posts'] as $thispost) {
+            if ($createdpost['postid'] == $thispost['id']) {
+                $this->assertEquals($createdpost['postid'], $thispost['id']);
+                $this->assertEquals($thispost['attachment'], 1, "There should be a non-inline attachment");
+                $this->assertCount(1, $thispost['attachments'], "There should be 1 attachment");
+                $this->assertEquals($thispost['attachments'][0]['filename'], $attachfilename, "There should be 1 attachment");
+                $this->assertContains('pluginfile.php', $thispost['message']);
+                $postfound = true;
+                break;
+            }
+        }
+
+        $this->assertTrue($postfound);
 
         // Check not posting in groups the user is not member of.
         $group = $this->getDataGenerator()->create_group(array('courseid' => $course->id));
@@ -861,7 +917,7 @@ class mod_forum_external_testcase extends externallib_advanced_testcase {
      * Test add_discussion. A basic test since all the API functions are already covered by unit tests.
      */
     public function test_add_discussion() {
-
+        global $CFG, $USER;
         $this->resetAfterTest(true);
 
         // Create courses to add the modules.
@@ -887,8 +943,8 @@ class mod_forum_external_testcase extends externallib_advanced_testcase {
         }
 
         self::setAdminUser();
-        $discussion = mod_forum_external::add_discussion($forum->id, 'the subject', 'some text here...');
-        $discussion = external_api::clean_returnvalue(mod_forum_external::add_discussion_returns(), $discussion);
+        $createddiscussion = mod_forum_external::add_discussion($forum->id, 'the subject', 'some text here...');
+        $createddiscussion = external_api::clean_returnvalue(mod_forum_external::add_discussion_returns(), $createddiscussion);
 
         $discussions = mod_forum_external::get_forum_discussions_paginated($forum->id);
         $discussions = external_api::clean_returnvalue(mod_forum_external::get_forum_discussions_paginated_returns(), $discussions);
@@ -896,7 +952,7 @@ class mod_forum_external_testcase extends externallib_advanced_testcase {
         $this->assertCount(1, $discussions['discussions']);
         $this->assertCount(0, $discussions['warnings']);
 
-        $this->assertEquals($discussion['discussionid'], $discussions['discussions'][0]['discussion']);
+        $this->assertEquals($createddiscussion['discussionid'], $discussions['discussions'][0]['discussion']);
         $this->assertEquals(-1, $discussions['discussions'][0]['groupid']);
         $this->assertEquals('the subject', $discussions['discussions'][0]['subject']);
         $this->assertEquals('some text here...', $discussions['discussions'][0]['message']);
@@ -909,6 +965,67 @@ class mod_forum_external_testcase extends externallib_advanced_testcase {
         $discussions = external_api::clean_returnvalue(mod_forum_external::get_forum_discussions_paginated_returns(), $discussions);
         $this->assertCount(3, $discussions['discussions']);
         $this->assertEquals($discussion2pinned['discussionid'], $discussions['discussions'][0]['discussion']);
+
+        // Test inline and regular attachment in new discussion
+        // Create a file in a draft area for inline attachments.
+
+        $fs = get_file_storage();
+
+        $draftidinlineattach = file_get_unused_draft_itemid();
+        $draftidattach = file_get_unused_draft_itemid();
+
+        $usercontext = context_user::instance($USER->id);
+        $filepath = '/';
+        $filearea = 'draft';
+        $component = 'user';
+        $filenameimg = 'shouldbeanimage.txt';
+        $filerecord = array(
+            'contextid' => $usercontext->id,
+            'component' => $component,
+            'filearea'  => $filearea,
+            'itemid'    => $draftidinlineattach,
+            'filepath'  => $filepath,
+            'filename'  => $filenameimg,
+        );
+
+        // Create a file in a draft area for regular attachments.
+        $filerecordattach = $filerecord;
+        $attachfilename = 'attachment.txt';
+        $filerecordattach['filename'] = $attachfilename;
+        $filerecordattach['itemid'] = $draftidattach;
+        $fs->create_file_from_string($filerecord, 'image contents (not really)');
+        $fs->create_file_from_string($filerecordattach, 'simple text attachment');
+
+        $dummytext = 'Here is an inline image: <img src="' . $CFG->wwwroot .
+                    "/draftfile.php/{$usercontext->id}/user/draft/{$draftidinlineattach}/{$filenameimg}" .
+                    '" alt="inlineimage">.';
+
+        $options = array(array('name' => 'inlineattachmentsid', 'value' => $draftidinlineattach),
+                         array('name' => 'attachmentsid', 'value' => $draftidattach));
+        $createddiscussion = mod_forum_external::add_discussion($forum->id, 'the inline attachment subject',
+                                                                $dummytext, -1, $options);
+        $createddiscussion = external_api::clean_returnvalue(mod_forum_external::add_discussion_returns(), $createddiscussion);
+
+        $discussions = mod_forum_external::get_forum_discussions_paginated($forum->id);
+        $discussions = external_api::clean_returnvalue(mod_forum_external::get_forum_discussions_paginated_returns(), $discussions);
+
+        $this->assertCount(4, $discussions['discussions']);
+        $this->assertCount(0, $createddiscussion['warnings']);
+        // Can't guarantee order of posts during tests.
+        $postfound = false;
+        foreach ($discussions['discussions'] as $thisdiscussion) {
+            if ($createddiscussion['discussionid'] == $thisdiscussion['discussion']) {
+                $this->assertEquals($thisdiscussion['attachment'], 1, "There should be a non-inline attachment");
+                $this->assertCount(1, $thisdiscussion['attachments'], "There should be 1 attachment");
+                $this->assertEquals($thisdiscussion['attachments'][0]['filename'], $attachfilename, "There should be 1 attachment");
+                $this->assertNotContains('draftfile.php', $thisdiscussion['message']);
+                $this->assertContains('pluginfile.php', $thisdiscussion['message']);
+                $postfound = true;
+                break;
+            }
+        }
+
+        $this->assertTrue($postfound);
     }
 
     /**
