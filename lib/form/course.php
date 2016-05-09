@@ -69,6 +69,8 @@ class MoodleQuickForm_course extends MoodleQuickForm_autocomplete {
      *                       'multiple' - boolean multi select
      *                       'exclude' - array or int, list of course ids to never show
      *                       'requiredcapabilities' - array of capabilities. Uses ANY to combine them.
+     *                       'limittoenrolled' - boolean Limits to enrolled courses.
+     *                       'includefrontpage' - boolean Enables the frontpage to be selected.
      */
     public function __construct($elementname = null, $elementlabel = null, $options = array()) {
         if (isset($options['multiple'])) {
@@ -102,6 +104,9 @@ class MoodleQuickForm_course extends MoodleQuickForm_autocomplete {
         if (isset($options['placeholder'])) {
             $validattributes['placeholder'] = $options['placeholder'];
         }
+        if (!empty($options['includefrontpage'])) {
+            $validattributes['data-includefrontpage'] = SITEID;
+        }
 
         parent::__construct($elementname, $elementlabel, array(), $validattributes);
     }
@@ -125,7 +130,7 @@ class MoodleQuickForm_course extends MoodleQuickForm_autocomplete {
         }
 
         if (empty($coursestofetch)) {
-            return $this->setSelected(array());
+            return $this->setSelected($values);
         }
 
         // There is no API function to load a list of course from a list of ids.
@@ -144,14 +149,16 @@ class MoodleQuickForm_course extends MoodleQuickForm_autocomplete {
         $coursestoselect = array();
         foreach ($list as $course) {
             context_helper::preload_from_record($course);
+            $context = context_course::instance($course->id);
             // Make sure we can see the course.
-            if (!$course->visible && !has_capability('moodle/course:viewhiddencourses', context_course::instance($course->id))) {
+            if (!$course->visible && !has_capability('moodle/course:viewhiddencourses', $context)) {
                 continue;
             }
-            $label = get_course_display_name_for_list($course);
+            $label = format_string(get_course_display_name_for_list($course), true, ['context' => $context]);
             $this->addOption($label, $course->id);
             array_push($coursestoselect, $course->id);
         }
-        return $this->setSelected($coursestoselect);
+
+        return $this->setSelected($values);
     }
 }

@@ -431,6 +431,7 @@ class core_course_external extends external_api {
             $courseinfo['id'] = $course->id;
             $courseinfo['fullname'] = $course->fullname;
             $courseinfo['shortname'] = $course->shortname;
+            $courseinfo['displayname'] = external_format_string(get_course_display_name_for_list($course), $context->id);
             $courseinfo['categoryid'] = $course->category;
             list($courseinfo['summary'], $courseinfo['summaryformat']) =
                 external_format_text($course->summary, $course->summaryformat, $context->id, 'course', 'summary', 0);
@@ -498,6 +499,7 @@ class core_course_external extends external_api {
                             'categorysortorder' => new external_value(PARAM_INT,
                                     'sort order into the category', VALUE_OPTIONAL),
                             'fullname' => new external_value(PARAM_TEXT, 'full name'),
+                            'displayname' => new external_value(PARAM_TEXT, 'course display name'),
                             'idnumber' => new external_value(PARAM_RAW, 'id number', VALUE_OPTIONAL),
                             'summary' => new external_value(PARAM_RAW, 'summary'),
                             'summaryformat' => new external_format_value('summary'),
@@ -2494,109 +2496,4 @@ class core_course_external extends external_api {
         return self::get_course_module_returns();
     }
 
-}
-
-/**
- * Deprecated course external functions
- *
- * @package    core_course
- * @copyright  2009 Petr Skodak
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @since Moodle 2.0
- * @deprecated Moodle 2.2 MDL-29106 - Please do not use this class any more.
- * @see core_course_external
- */
-class moodle_course_external extends external_api {
-
-    /**
-     * Returns description of method parameters
-     *
-     * @return external_function_parameters
-     * @since Moodle 2.0
-     * @deprecated Moodle 2.2 MDL-29106 - Please do not call this function any more.
-     * @see core_course_external::get_courses_parameters()
-     */
-    public static function get_courses_parameters() {
-        return core_course_external::get_courses_parameters();
-    }
-
-    /**
-     * Get courses
-     *
-     * @param array $options
-     * @return array
-     * @since Moodle 2.0
-     * @deprecated Moodle 2.2 MDL-29106 - Please do not call this function any more.
-     * @see core_course_external::get_courses()
-     */
-    public static function get_courses($options) {
-        return core_course_external::get_courses($options);
-    }
-
-    /**
-     * Returns description of method result value
-     *
-     * @return external_description
-     * @since Moodle 2.0
-     * @deprecated Moodle 2.2 MDL-29106 - Please do not call this function any more.
-     * @see core_course_external::get_courses_returns()
-     */
-    public static function get_courses_returns() {
-        return core_course_external::get_courses_returns();
-    }
-
-    /**
-     * Marking the method as deprecated.
-     *
-     * @return bool
-     */
-    public static function get_courses_is_deprecated() {
-        return true;
-    }
-
-    /**
-     * Returns description of method parameters
-     *
-     * @return external_function_parameters
-     * @since Moodle 2.0
-     * @deprecated Moodle 2.2 MDL-29106 - Please do not call this function any more.
-     * @see core_course_external::create_courses_parameters()
-     */
-    public static function create_courses_parameters() {
-        return core_course_external::create_courses_parameters();
-    }
-
-    /**
-     * Create  courses
-     *
-     * @param array $courses
-     * @return array courses (id and shortname only)
-     * @since Moodle 2.0
-     * @deprecated Moodle 2.2 MDL-29106 - Please do not call this function any more.
-     * @see core_course_external::create_courses()
-     */
-    public static function create_courses($courses) {
-        return core_course_external::create_courses($courses);
-    }
-
-    /**
-     * Returns description of method result value
-     *
-     * @return external_description
-     * @since Moodle 2.0
-     * @deprecated Moodle 2.2 MDL-29106 - Please do not call this function any more.
-     * @see core_course_external::create_courses_returns()
-     */
-    public static function create_courses_returns() {
-        return core_course_external::create_courses_returns();
-    }
-
-    /**
-     * Marking the method as deprecated.
-     *
-     * @return bool
-     */
-    public static function create_courses_is_deprecated() {
-        return true;
-    }
 }

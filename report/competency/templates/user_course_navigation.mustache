@@ -17,7 +17,7 @@
 require(['core/form-autocomplete', 'report_competency/user_course_navigation'], function(autocomplete, nav) {
     (new nav('#user-nav-{{uniqid}}', '{{baseurl}}', {{userid}}, {{courseid}}));
 {{#hasusers}}
-    autocomplete.enhance('#user-nav-{{uniqid}}', false, false, '{{#str}}jumptouser, tool_lp{{/str}}');
+    autocomplete.enhance('#user-nav-{{uniqid}}', false, false, {{# quote }}{{# str }}jumptouser, tool_lp{{/ str }}{{/ quote }});
 {{/hasusers}}
 });
 {{/js}}

@@ -1703,27 +1703,54 @@ class restore_course_structure_step extends restore_structure_step {
      */
     public function process_course($data) {
         global $CFG, $DB;
+        $context = context::instance_by_id($this->task->get_contextid());
+        $userid = $this->task->get_userid();
+        $target = $this->get_task()->get_target();
+        $isnewcourse = $target != backup::TARGET_CURRENT_ADDING && $target != backup::TARGET_EXISTING_ADDING;
+
+        // When restoring to a new course we can set all the things except for the ID number.
+        $canchangeidnumber = $isnewcourse || has_capability('moodle/course:changeidnumber', $context, $userid);
+        $canchangeshortname = $isnewcourse || has_capability('moodle/course:changeshortname', $context, $userid);
+        $canchangefullname = $isnewcourse || has_capability('moodle/course:changefullname', $context, $userid);
+        $canchangesummary = $isnewcourse || has_capability('moodle/course:changesummary', $context, $userid);
 
         $data = (object)$data;
+        $data->id = $this->get_courseid();
 
         $fullname  = $this->get_setting_value('course_fullname');
         $shortname = $this->get_setting_value('course_shortname');
         $startdate = $this->get_setting_value('course_startdate');
 
-        // Calculate final course names, to avoid dupes
+        // Calculate final course names, to avoid dupes.
         list($fullname, $shortname) = restore_dbops::calculate_course_names($this->get_courseid(), $fullname, $shortname);
 
-        // Need to change some fields before updating the course record
-        $data->id = $this->get_courseid();
-        $data->fullname = $fullname;
-        $data->shortname= $shortname;
+        if ($canchangefullname) {
+            $data->fullname = $fullname;
+        } else {
+            unset($data->fullname);
+        }
+
+        if ($canchangeshortname) {
+            $data->shortname = $shortname;
+        } else {
+            unset($data->shortname);
+        }
+
+        if (!$canchangesummary) {
+            unset($data->summary);
+            unset($data->summaryformat);
+        }
 
         // Only allow the idnumber to be set if the user has permission and the idnumber is not already in use by
         // another course on this site.
-        $context = context::instance_by_id($this->task->get_contextid());
-        if (!empty($data->idnumber) && has_capability('moodle/course:changeidnumber', $context, $this->task->get_userid()) &&
-                $this->task->is_samesite() && !$DB->record_exists('course', array('idnumber' => $data->idnumber))) {
+        if (!empty($data->idnumber) && $canchangeidnumber && $this->task->is_samesite()
+                && !$DB->record_exists('course', array('idnumber' => $data->idnumber))) {
             // Do not reset idnumber.
+
+        } else if (!$isnewcourse) {
+            // Prevent override when restoring as merge.
+            unset($data->idnumber);
+
         } else {
             $data->idnumber = '';
         }
@@ -3066,10 +3093,15 @@ class restore_course_competencies_structure_step extends restore_structure_step 
      * @return array
      */
     protected function define_structure() {
+        $userinfo = $this->get_setting_value('users');
         $paths = array(
             new restore_path_element('course_competency', '/course_competencies/competencies/competency'),
-            new restore_path_element('course_competency_settings', '/course_competencies/settings')
+            new restore_path_element('course_competency_settings', '/course_competencies/settings'),
         );
+        if ($userinfo) {
+            $paths[] = new restore_path_element('user_competency_course',
+                '/course_competencies/user_competencies/user_competency');
+        }
         return $paths;
     }
 
@@ -3080,22 +3112,27 @@ class restore_course_competencies_structure_step extends restore_structure_step 
      */
     public function process_course_competency_settings($data) {
         global $DB;
-
         $data = (object) $data;
-        $courseid = $this->task->get_courseid();
-        $exists = \core_competency\course_competency_settings::get_record(array('courseid' => $courseid));
 
-        // Now update or insert.
-        if ($exists) {
-            $settings = $exists;
-            $settings->set_pushratingstouserplans($data->pushratingstouserplans);
-            return $settings->update();
-        } else {
-            $data = (object) array('courseid' => $courseid, 'pushratingstouserplans' => $data->pushratingstouserplans);
-            $settings = new \core_competency\course_competency_settings(0, $data);
-            $result = $settings->create();
-            return !empty($result);
+        // We do not restore the course settings during merge.
+        $target = $this->get_task()->get_target();
+        if ($target == backup::TARGET_CURRENT_ADDING || $target == backup::TARGET_EXISTING_ADDING) {
+            return;
         }
+
+        $courseid = $this->task->get_courseid();
+        $exists = \core_competency\course_competency_settings::record_exists_select('courseid = :courseid',
+            array('courseid' => $courseid));
+
+        // Strangely the course settings already exist, let's just leave them as is then.
+        if ($exists) {
+            $this->log('Course competency settings not restored, existing settings have been found.', backup::LOG_WARNING);
+            return;
+        }
+
+        $data = (object) array('courseid' => $courseid, 'pushratingstouserplans' => $data->pushratingstouserplans);
+        $settings = new \core_competency\course_competency_settings(0, $data);
+        $settings->create();
     }
 
     /**
@@ -3116,6 +3153,7 @@ class restore_course_competencies_structure_step extends restore_structure_step 
         if (!$competency) {
             return;
         }
+        $this->set_mapping(\core_competency\competency::TABLE, $data->id, $competency->get_id());
 
         $params = array(
             'competencyid' => $competency->get_id(),
@@ -3134,11 +3172,51 @@ class restore_course_competencies_structure_step extends restore_structure_step 
     }
 
     /**
+     * Process the user competency course.
+     *
+     * @param array $data The data.
+     */
+    public function process_user_competency_course($data) {
+        global $USER, $DB;
+        $data = (object) $data;
+
+        $data->competencyid = $this->get_mappingid(\core_competency\competency::TABLE, $data->competencyid);
+        if (!$data->competencyid) {
+            // This is strange, the competency does not belong to the course.
+            return;
+        } else if ($data->grade === null) {
+            // We do not need to do anything when there is no grade.
+            return;
+        }
+
+        $data->userid = $this->get_mappingid('user', $data->userid);
+        $shortname = $DB->get_field('course', 'shortname', array('id' => $this->task->get_courseid()), MUST_EXIST);
+
+        // The method add_evidence also sets the course rating.
+        \core_competency\api::add_evidence($data->userid,
+                                           $data->competencyid,
+                                           $this->task->get_contextid(),
+                                           \core_competency\evidence::ACTION_OVERRIDE,
+                                           'evidence_courserestored',
+                                           'core_competency',
+                                           $shortname,
+                                           false,
+                                           null,
+                                           $data->grade,
+                                           $USER->id);
+    }
+
+    /**
      * Execute conditions.
      *
      * @return bool
      */
     protected function execute_condition() {
+
+        // Do not execute if competencies are not included.
+        if (!$this->get_setting_value('competencies')) {
+            return false;
+        }
 
         // Do not execute if the competencies XML file is not found.
         $fullpath = $this->task->get_taskbasepath();
@@ -3209,6 +3287,11 @@ class restore_activity_competencies_structure_step extends restore_structure_ste
      * @return bool
      */
     protected function execute_condition() {
+
+        // Do not execute if competencies are not included.
+        if (!$this->get_setting_value('competencies')) {
+            return false;
+        }
 
         // Do not execute if the competencies XML file is not found.
         $fullpath = $this->task->get_taskbasepath();

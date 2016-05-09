@@ -24,7 +24,16 @@
             <a href="{{pluginbaseurl}}/editplan.php?id={{plan.id}}&amp;userid={{plan.userid}}">{{#pix}}t/edit, core, {{#str}}editplan, tool_lp{{/str}}{{/pix}}</a>
         {{/plan.canbeedited}}
     </h2>
+    {{#plan.canbeedited}}
+    <div data-region="actions" class="clearfix">
+        <div class="pull-left">
+            <!-- Button to add competencies to the plan -->
+            <button class="btn" data-action="add">{{#pix}}t/add{{/pix}} {{#str}}addcompetency, tool_lp{{/str}}</button>
+        </div>
+    </div>
+    {{/plan.canbeedited}}
     <div data-region="plan-summary">
+        {{{plan.description}}}
         <dl>
             <dt>{{#str}}status, tool_lp{{/str}}</dt>
             <dd>
@@ -81,10 +90,16 @@
                 <dd>{{{plan.description}}}</dd>
             {{/description}}
             <dt>{{#str}}progress, tool_lp{{/str}}</dt>
-            <dd><span class="progresstext">{{#str}}xcompetenciesproficientoutofy, tool_lp, { "x": "{{proficientcompetencycount}}", "y": "{{competencycount}}" }{{/str}}</span>
-                <div class="progress">
-                    <div class="bar" style="width: {{proficientcompetencypercentage}}%;">
-                        {{proficientcompetencypercentageformatted}} %
+            <dd>
+                <div class="span4">
+                    <div class="progresstext">
+                        {{#str}}xcompetenciesproficientoutofy, tool_lp, { "x": "{{proficientcompetencycount}}", "y": "{{competencycount}}" }{{/str}}
+                    </div>
+                </div>
+                <div class="span4">
+                    <span class="pull-right label label-info">{{proficientcompetencypercentageformatted}} %</span>
+                    <div class="progress">
+                        <div class="bar" style="width: {{proficientcompetencypercentage}}%;"></div>
                     </div>
                 </div>
             </dd>
@@ -98,14 +113,6 @@
         {{/canpostorhascomments}}
     {{/plan.commentarea}}
     <div data-region="plan-competencies">
-        <div data-region="actions">
-            <div class="pull-right">
-                <!-- Button to add competencies to the plan -->
-                {{#plan.canbeedited}}
-                <button class="btn" data-action="add">{{#pix}}t/add{{/pix}} {{#str}}addcompetency, tool_lp{{/str}}</button>
-                {{/plan.canbeedited}}
-            </div>
-        </div>
         <h3>{{#str}}learningplancompetencies, tool_lp{{/str}}</h3>
         <table class="generaltable fullwidth managecompetencies">
             <thead>
@@ -121,12 +128,14 @@
             </thead>
             <tbody class="drag-parentnode">
                 {{#competencies}}
-                <tr class="drag-samenode" data-node="user-competency" data-id="{{competency.id}}" data-competencyid="{{usercompetency.competencyid}}" data-userid="{{usercompetency.userid}}">
+                <tr class="drag-samenode" data-node="user-competency" data-id="{{competency.id}}"
+                        data-competencyid="{{competency.id}}"
+                        data-userid="{{plan.userid}}">
                     <td>
                         {{#plan.canbeedited}}
                         <span class="drag-handlecontainer pull-left"></span>
                         {{/plan.canbeedited}}
-                        <a href="{{pluginbaseurl}}/user_competency_in_plan.php?competencyid={{competency.id}}&amp;userid={{plan.userid}}&amp;planid={{plan.id}}">{{competency.shortname}}</a>
+                        <a data-usercompetency="true" href="#">{{competency.shortname}}</a>
                         <em>{{competency.idnumber}}</em>
                         {{#comppath}}
                             <br>
@@ -178,10 +187,11 @@
     </div>
 </div>
 {{#js}}
-require(['tool_lp/competencies', 'tool_lp/planactions', 'tool_lp/user_competency_workflow'], function(mod, actionsMod, UserCompWorkflow) {
+require(['tool_lp/competencies', 'tool_lp/planactions', 'tool_lp/user_competency_workflow', 'tool_lp/user_competency_plan_popup'], function(mod, actionsMod, UserCompWorkflow, Popup) {
     var planActions = new actionsMod('plan');
 
     (new mod({{plan.id}}, 'plan', {{contextid}}));
+    (new Popup('[data-region=plan-page]', '[data-usercompetency=true]', {{plan.id}}));
     planActions.registerEvents();
 
     var ucw = new UserCompWorkflow();
