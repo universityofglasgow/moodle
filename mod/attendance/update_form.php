@@ -43,50 +43,75 @@ class mod_attendance_update_form extends moodleform {
         global $DB;
         $mform    =& $this->_form;
 
-        $course        = $this->_customdata['course'];
-        $cm            = $this->_customdata['cm'];
         $modcontext    = $this->_customdata['modcontext'];
         $sessionid     = $this->_customdata['sessionid'];
 
-        if (!$sess = $DB->get_record('attendance_sessions', array('id'=> $sessionid) )) {
+        if (!$sess = $DB->get_record('attendance_sessions', array('id' => $sessionid) )) {
             error('No such session in this course');
         }
-        $dhours = floor($sess->duration / HOURSECS);
-        $dmins = floor(($sess->duration - $dhours * HOURSECS) / MINSECS);
-        $defopts = array('maxfiles'=>EDITOR_UNLIMITED_FILES, 'noclean'=>true, 'context'=>$modcontext);
+        $defopts = array('maxfiles' => EDITOR_UNLIMITED_FILES, 'noclean' => true, 'context' => $modcontext);
         $sess = file_prepare_standard_editor($sess, 'description', $defopts, $modcontext, 'mod_attendance', 'session', $sess->id);
+
+        $starttime = $sess->sessdate - usergetmidnight($sess->sessdate);
+        $starthour = floor($starttime / HOURSECS);
+        $startminute = floor(($starttime - $starthour * HOURSECS) / MINSECS);
+
+        $enddate = $sess->sessdate + $sess->duration;
+        $endtime = $enddate - usergetmidnight($enddate);
+        $endhour = floor($endtime / HOURSECS);
+        $endminute = floor(($endtime - $endhour * HOURSECS) / MINSECS);
+
+        $sesendtime = $sess->sessdate + $sess->duration;
         $data = array('sessiondate' => $sess->sessdate,
-                'durtime' => array('hours' => $dhours, 'minutes' => $dmins),
+                'sestime' => array('starthour' => $starthour, 'startminute' => $startminute,
+                                   'endhour' => $endhour, 'endminute' => $endminute),
                 'sdescription' => $sess->description_editor);
 
         $mform->addElement('header', 'general', get_string('changesession', 'attendance'));
 
-        $mform->addElement('static', 'olddate', get_string('olddate', 'attendance'),
-                           userdate($sess->sessdate, get_string('strftimedmyhm', 'attendance')));
-        $mform->addElement('date_time_selector', 'sessiondate', get_string('newdate', 'attendance'));
+        if ($sess->groupid == 0) {
+            $strtype = get_string('commonsession', 'attendance');
+        } else {
+            $groupname = $DB->get_field('groups', 'name', array('id' => $sess->groupid));
+            $strtype = get_string('group') . ': ' . $groupname;
+        }
+        $mform->addElement('static', 'sessiontypedescription', get_string('sessiontype', 'attendance'), $strtype);
 
-        for ($i=0; $i<=23; $i++) {
-            $hours[$i] = sprintf("%02d", $i);
-        }
-        for ($i=0; $i<60; $i+=5) {
-            $minutes[$i] = sprintf("%02d", $i);
-        }
-        $durselect[] =& $mform->createElement('select', 'hours', '', $hours);
-        $durselect[] =& $mform->createElement('select', 'minutes', '', $minutes, false, true);
-        $mform->addGroup($durselect, 'durtime', get_string('duration', 'attendance'), array(' '), true);
+        $olddate = construct_session_full_date_time($sess->sessdate, $sess->duration);
+        $mform->addElement('static', 'olddate', get_string('olddate', 'attendance'), $olddate);
+
+        attendance_form_sessiondate_selector($mform);
 
         // Show which status set is in use.
         $maxstatusset = attendance_get_max_statusset($this->_customdata['att']->id);
         if ($maxstatusset > 0) {
             $mform->addElement('static', 'statusset', get_string('usestatusset', 'mod_attendance'),
-                               att_get_setname($this->_customdata['att']->id, $sess->statusset));
+                attendance_get_setname($this->_customdata['att']->id, $sess->statusset));
         }
-        $mform->addElement('editor', 'sdescription', get_string('description', 'attendance'), null, $defopts);
+
+        $mform->addElement('editor', 'sdescription', get_string('description', 'attendance'),
+                           array('rows' => 1, 'columns' => 80), $defopts);
         $mform->setType('sdescription', PARAM_RAW);
 
         $mform->setDefaults($data);
 
-        $submit_string = get_string('update', 'attendance');
-        $this->add_action_buttons(true, $submit_string);
+        $this->add_action_buttons(true);
+    }
+
+    /**
+     * Perform minimal validation on the settings form
+     * @param array $data
+     * @param array $files
+     */
+    public function validation($data, $files) {
+        $errors = parent::validation($data, $files);
+
+        $sesstarttime = $data['sestime']['starthour'] * HOURSECS + $data['sestime']['startminute'] * MINSECS;
+        $sesendtime = $data['sestime']['endhour'] * HOURSECS + $data['sestime']['endminute'] * MINSECS;
+        if ($sesendtime < $sesstarttime) {
+            $errors['sestime'] = get_string('invalidsessionendtime', 'attendance');
+        }
+
+        return $errors;
     }
 }

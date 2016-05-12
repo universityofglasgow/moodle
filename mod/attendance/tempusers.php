@@ -33,7 +33,7 @@ $cm = get_coursemodule_from_id('attendance', $id, 0, false, MUST_EXIST);
 $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
 $att = $DB->get_record('attendance', array('id' => $cm->instance), '*', MUST_EXIST);
 
-$att = new attendance($att, $cm, $course);
+$att = new mod_attendance_structure($att, $cm, $course);
 $PAGE->set_url($att->url_managetemp());
 
 require_login($course, true, $cm);
@@ -45,7 +45,6 @@ $PAGE->set_heading($course->fullname);
 $PAGE->set_cacheable(true);
 $PAGE->navbar->add(get_string('tempusers', 'attendance'));
 
-/** @var mod_attendance_renderer $output */
 $output = $PAGE->get_renderer('mod_attendance');
 $tabs = new attendance_tabs($att, attendance_tabs::TAB_TEMPORARYUSERS);
 
@@ -79,7 +78,7 @@ if ($data = $mform->get_data()) {
     redirect($att->url_managetemp());
 }
 
-/// Output starts here
+// Output starts here.
 echo $output->header();
 echo $output->heading(get_string('tempusers', 'attendance').' : '.format_string($course->fullname));
 echo $output->render($tabs);
@@ -95,16 +94,17 @@ if ($tempusers) {
 echo '</div>';
 echo $output->footer($course);
 
-function print_tempusers($tempusers, attendance $att) {
+function print_tempusers($tempusers, mod_attendance_structure $att) {
     echo '<p></p>';
-    echo '<table border="1" bordercolor="#EEEEEE" style="background-color:#fff" cellpadding="2" align="center" width="80%" summary="'.get_string('temptable', 'attendance').'"><tr>';
+    echo '<table border="1" bordercolor="#EEEEEE" style="background-color:#fff" cellpadding="2" align="center"'.
+          'width="80%" summary="'.get_string('temptable', 'attendance').'"><tr>';
     echo '<th class="header">'.get_string('tusername', 'attendance').'</th>';
     echo '<th class="header">'.get_string('tuseremail', 'attendance').'</th>';
     echo '<th class="header">'.get_string('tcreated', 'attendance').'</th>';
     echo '<th class="header">'.get_string('tactions', 'attendance').'</th>';
     echo '</tr>';
 
-    $even = false; // used to colour rows
+    $even = false; // Used to colour rows.
     foreach ($tempusers as $tempuser) {
         if ($even) {
             echo '<tr style="background-color: #FCFCFC">';

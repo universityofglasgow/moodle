@@ -54,7 +54,7 @@ function attendance_supports($feature) {
 function att_add_default_statuses($attid) {
     global $DB;
 
-    $statuses = $DB->get_recordset('attendance_statuses', array('attendanceid'=> 0), 'id');
+    $statuses = $DB->get_recordset('attendance_statuses', array('attendanceid' => 0), 'id');
     foreach ($statuses as $st) {
         $rec = $st;
         $rec->attendanceid = $attid;
@@ -97,17 +97,17 @@ function attendance_update_instance($attendance) {
 function attendance_delete_instance($id) {
     global $DB;
 
-    if (! $attendance = $DB->get_record('attendance', array('id'=> $id))) {
+    if (! $attendance = $DB->get_record('attendance', array('id' => $id))) {
         return false;
     }
 
-    if ($sessids = array_keys($DB->get_records('attendance_sessions', array('attendanceid'=> $id), '', 'id'))) {
+    if ($sessids = array_keys($DB->get_records('attendance_sessions', array('attendanceid' => $id), '', 'id'))) {
         $DB->delete_records_list('attendance_log', 'sessionid', $sessids);
-        $DB->delete_records('attendance_sessions', array('attendanceid'=> $id));
+        $DB->delete_records('attendance_sessions', array('attendanceid' => $id));
     }
-    $DB->delete_records('attendance_statuses', array('attendanceid'=> $id));
+    $DB->delete_records('attendance_statuses', array('attendanceid' => $id));
 
-    $DB->delete_records('attendance', array('id'=> $id));
+    $DB->delete_records('attendance', array('id' => $id));
 
     attendance_grade_item_delete($attendance);
 
@@ -117,7 +117,7 @@ function attendance_delete_instance($id) {
 function attendance_delete_course($course, $feedback=true) {
     global $DB;
 
-    $attids = array_keys($DB->get_records('attendance', array('course'=> $course->id), '', 'id'));
+    $attids = array_keys($DB->get_records('attendance', array('course' => $course->id), '', 'id'));
     $sessids = array_keys($DB->get_records_list('attendance_sessions', 'attendanceid', $attids, '', 'id'));
     if ($sessids) {
         $DB->delete_records_list('attendance_log', 'sessionid', $sessids);
@@ -126,7 +126,7 @@ function attendance_delete_course($course, $feedback=true) {
         $DB->delete_records_list('attendance_statuses', 'attendanceid', $attids);
         $DB->delete_records_list('attendance_sessions', 'attendanceid', $attids);
     }
-    $DB->delete_records('attendance', array('course'=> $course->id));
+    $DB->delete_records('attendance', array('course' => $course->id));
 
     return true;
 }
@@ -154,7 +154,7 @@ function attendance_reset_course_form_definition(&$mform) {
  * Course reset form defaults.
  */
 function attendance_reset_course_form_defaults($course) {
-    return array('reset_attendance_log'=>0, 'reset_attendance_statuses'=>0, 'reset_attendance_sessions'=>0);
+    return array('reset_attendance_log' => 0, 'reset_attendance_statuses' => 0, 'reset_attendance_sessions' => 0);
 }
 
 function attendance_reset_userdata($data) {
@@ -162,7 +162,7 @@ function attendance_reset_userdata($data) {
 
     $status = array();
 
-    $attids = array_keys($DB->get_records('attendance', array('course'=> $data->courseid), '', 'id'));
+    $attids = array_keys($DB->get_records('attendance', array('course' => $data->courseid), '', 'id'));
 
     if (!empty($data->reset_attendance_log)) {
         $sess = $DB->get_records_list('attendance_sessions', 'attendanceid', $attids, '', 'id');
@@ -227,11 +227,11 @@ function attendance_user_outline($course, $user, $mod, $attendance) {
         $result->time = 0;
     }
     if (has_capability('mod/attendance:canbelisted', $mod->context, $user->id)) {
-        $statuses = att_get_statuses($attendance->id);
-        $grade = att_get_user_grade(att_get_user_statuses_stat($attendance->id, $course->startdate,
-                                                               $user->id, $mod), $statuses);
-        $maxgrade = att_get_user_max_grade(att_get_user_taken_sessions_count($attendance->id, $course->startdate,
-                                                                             $user->id, $mod), $statuses);
+        $statuses = attendance_get_statuses($attendance->id);
+        $grade = attendance_get_user_grade(attendance_get_user_statuses_stat($attendance->id, $course->startdate,
+                                                                      $user->id, $mod), $statuses);
+        $maxgrade = attendance_get_user_max_grade(attendance_get_user_taken_sessions_count($attendance->id, $course->startdate,
+                                                                                    $user->id, $mod), $statuses);
 
         $result->info = $grade.' / '.$maxgrade;
     }
@@ -252,13 +252,6 @@ function attendance_user_complete($course, $user, $mod, $attendance) {
     if (has_capability('mod/attendance:canbelisted', $mod->context, $user->id)) {
         echo construct_full_user_stat_html_table($attendance, $course, $user, $mod);
     }
-}
-function attendance_print_recent_activity($course, $isteacher, $timestart) {
-    return false;
-}
-
-function attendance_cron () {
-    return true;
 }
 
 function attendance_update_grades($attendance, $userid=0, $nullifnone=true) {
@@ -283,16 +276,16 @@ function attendance_grade_item_update($attendance, $grades=null) {
     if (!isset($attendance->courseid)) {
         $attendance->courseid = $attendance->course;
     }
-    if (! $course = $DB->get_record('course', array('id'=> $attendance->course))) {
+    if (! $course = $DB->get_record('course', array('id' => $attendance->course))) {
         error("Course is misconfigured");
     }
 
     if (!empty($attendance->cmidnumber)) {
-        $params = array('itemname'=>$attendance->name, 'idnumber'=>$attendance->cmidnumber);
+        $params = array('itemname' => $attendance->name, 'idnumber' => $attendance->cmidnumber);
     } else {
         // MDL-14303.
         $cm = get_coursemodule_from_instance('attendance', $attendance->id);
-        $params = array('itemname'=>$attendance->name/*, 'idnumber'=>$attendance->id*/);
+        $params = array('itemname' => $attendance->name/*, 'idnumber'=>$attendance->id*/);
     }
 
     if ($attendance->grade > 0) {
@@ -307,7 +300,7 @@ function attendance_grade_item_update($attendance, $grades=null) {
         $params['gradetype'] = GRADE_TYPE_NONE;
     }
 
-    if ($grades  === 'reset') {
+    if ($grades === 'reset') {
         $params['reset'] = true;
         $grades = null;
     }
@@ -330,11 +323,7 @@ function attendance_grade_item_delete($attendance) {
     }
 
     return grade_update('mod/attendance', $attendance->courseid, 'mod', 'attendance',
-                        $attendance->id, 0, null, array('deleted'=>1));
-}
-
-function attendance_get_participants($attendanceid) {
-    return false;
+                        $attendance->id, 0, null, array('deleted' => 1));
 }
 
 /**
@@ -375,7 +364,7 @@ function attendance_scale_used_anywhere($scaleid) {
  * @return bool false if file not found, does not return if found - justsend the file
  */
 function attendance_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload) {
-    global $CFG, $DB;
+    global $DB;
 
     if ($context->contextlevel != CONTEXT_MODULE) {
         return false;
@@ -383,7 +372,7 @@ function attendance_pluginfile($course, $cm, $context, $filearea, $args, $forced
 
     require_login($course, false, $cm);
 
-    if (!$att = $DB->get_record('attendance', array('id' => $cm->instance))) {
+    if (!$DB->record_exists('attendance', array('id' => $cm->instance))) {
         return false;
     }
 
@@ -394,7 +383,7 @@ function attendance_pluginfile($course, $cm, $context, $filearea, $args, $forced
     }
 
     $sessid = (int)array_shift($args);
-    if (!$sess = $DB->get_record('attendance_sessions', array('id' => $sessid))) {
+    if (!$DB->record_exists('attendance_sessions', array('id' => $sessid))) {
         return false;
     }
 
@@ -405,16 +394,4 @@ function attendance_pluginfile($course, $cm, $context, $filearea, $args, $forced
         return false;
     }
     send_stored_file($file, 0, 0, true);
-}
-
-// Count the number of status sets that exist for this instance.
-function attendance_get_max_statusset($attendanceid) {
-    global $DB;
-
-    $max = $DB->get_field_sql('SELECT MAX(setnumber) FROM {attendance_statuses} WHERE attendanceid = ? AND deleted = 0',
-                              array($attendanceid));
-    if ($max) {
-        return $max;
-    }
-    return 0;
 }

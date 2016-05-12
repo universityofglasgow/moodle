@@ -38,17 +38,15 @@ class mod_attendance_export_form extends moodleform {
      * @return void
      */
     public function definition() {
-
         global $USER, $DB, $PAGE;
         $mform    =& $this->_form;
-
         $course        = $this->_customdata['course'];
         $cm            = $this->_customdata['cm'];
         $modcontext    = $this->_customdata['modcontext'];
 
         $mform->addElement('header', 'general', get_string('export', 'attendance'));
 
-        $groupmode=groups_get_activity_groupmode($cm, $course);
+        $groupmode = groups_get_activity_groupmode($cm, $course);
         $groups = groups_get_activity_allowed_groups($cm, $USER->id);
         if ($groupmode == VISIBLEGROUPS or has_capability('moodle/site:accessallgroups', $modcontext)) {
             $grouplist[0] = get_string('allparticipants');
@@ -58,8 +56,6 @@ class mod_attendance_export_form extends moodleform {
                 $grouplist[$group->id] = $group->name;
             }
         }
-        $mform->addElement('select', 'group', get_string('group'), $grouplist);
-
 
         // Restrict the export to the selected users.
         $namefields = get_all_user_name_fields(true, 'u');
@@ -73,6 +69,11 @@ class mod_attendance_export_form extends moodleform {
         foreach ($tempusers as $user) {
             $userlist[$user->studentid] = $user->fullname;
         }
+        if (empty($userlist)) {
+            $mform->addElement('static', 'nousers', '', get_string('noattendanceusers', 'attendance'));
+            return;
+        }
+
         list($gsql, $gparams) = $DB->get_in_or_equal(array_keys($grouplist), SQL_PARAMS_NAMED);
         list($usql, $uparams) = $DB->get_in_or_equal(array_keys($userlist), SQL_PARAMS_NAMED);
         $params = array_merge($gparams, $uparams);
@@ -89,6 +90,8 @@ class mod_attendance_export_form extends moodleform {
             $groupmappings[0] = $userlist;
         }
 
+        $mform->addElement('select', 'group', get_string('group'), $grouplist);
+
         $mform->addElement('selectyesno', 'selectedusers', get_string('onlyselectedusers', 'mod_attendance'));
         $sel = $mform->addElement('select', 'users', get_string('users', 'mod_attendance'), $userlist, array('size' => 12));
         $sel->setMultiple(true);
@@ -100,13 +103,13 @@ class mod_attendance_export_form extends moodleform {
         $ident = array();
         $ident[] =& $mform->createElement('checkbox', 'id', '', get_string('studentid', 'attendance'));
         $ident[] =& $mform->createElement('checkbox', 'uname', '', get_string('username'));
-        
+
         $optional = array('idnumber', 'institution', 'department');
         foreach ($optional as $opt) {
             $ident[] =& $mform->createElement('checkbox', $opt, '', get_string($opt));
             $mform->setType($opt, PARAM_NOTAGS);
         }
-        
+
         $mform->addGroup($ident, 'ident', get_string('identifyby', 'attendance'), array('<br />'), true);
         $mform->setDefaults(array('ident[id]' => true, 'ident[uname]' => true));
         $mform->setType('id', PARAM_INT);
@@ -122,22 +125,21 @@ class mod_attendance_export_form extends moodleform {
         $mform->addElement('date_selector', 'sessionenddate', get_string('endofperiod', 'attendance'));
         $mform->disabledIf('sessionenddate', 'includeallsessions', 'checked');
 
-        $mform->addElement('select', 'format', get_string('format'),
-                            array('excel' => get_string('downloadexcel', 'attendance'),
-                                  'ooo' => get_string('downloadooo', 'attendance'),
-                                  'text' => get_string('downloadtext', 'attendance')
-                            ));
+        $formatoptions = array('excel' => get_string('downloadexcel', 'attendance'),
+                               'ooo' => get_string('downloadooo', 'attendance'),
+                               'text' => get_string('downloadtext', 'attendance'));
+        $mform->addElement('select', 'format', get_string('format'), $formatoptions);
 
-        $submit_string = get_string('ok');
-        $this->add_action_buttons(false, $submit_string);
+        $submitstring = get_string('ok');
+        $this->add_action_buttons(false, $submitstring);
 
         $mform->addElement('hidden', 'id', $cm->id);
     }
 
-    function validation($data, $files) {
+    public function validation($data, $files) {
         $errors = parent::validation($data, $files);
 
-       // Validate the 'users' field.
+        // Validate the 'users' field.
         if ($data['selectedusers'] && empty($data['users'])) {
             $errors['users'] = get_string('mustselectusers', 'mod_attendance');
         }

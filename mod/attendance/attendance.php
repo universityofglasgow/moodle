@@ -24,14 +24,12 @@
 
 require_once(dirname(__FILE__).'/../../config.php');
 require_once(dirname(__FILE__).'/locallib.php');
-require_once(dirname(__FILE__).'/student_attenance_form.php');
+require_once(dirname(__FILE__).'/student_attendance_form.php');
 
-$pageparams = new att_sessions_page_params();
+$pageparams = new mod_attendance_sessions_page_params();
 
 // Check that the required parameters are present.
 $id = required_param('sessid', PARAM_INT);
-$attendance_session_id = required_param('sessid', PARAM_INT);
-
 
 $attforsession = $DB->get_record('attendance_sessions', array('id' => $id), '*', MUST_EXIST);
 $attendance = $DB->get_record('attendance', array('id' => $attforsession->attendanceid), '*', MUST_EXIST);
@@ -42,7 +40,7 @@ $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST)
 require_login($course, true, $cm);
 
 $pageparams->sessionid = $id;
-$att = new attendance($attendance, $cm, $course, $PAGE->context, $pageparams);
+$att = new mod_attendance_structure($attendance, $cm, $course, $PAGE->context, $pageparams);
 
 // Require that a session key is passed to this page.
 require_sesskey();

@@ -39,7 +39,7 @@ require_login($course, true, $cm);
 $context = context_module::instance($cm->id);
 require_capability('mod/attendance:export', $context);
 
-$att = new attendance($att, $cm, $course, $context);
+$att = new mod_attendance_structure($att, $cm, $course, $context);
 
 $PAGE->set_url($att->url_export());
 $PAGE->set_title($course->shortname. ": ".$att->name);
@@ -53,11 +53,11 @@ $mform = new mod_attendance_export_form($att->url_export(), $formparams);
 
 if ($formdata = $mform->get_data()) {
 
-    $pageparams = new att_page_with_filter_controls();
+    $pageparams = new mod_attendance_page_with_filter_controls();
     $pageparams->init($cm);
     $pageparams->page = 0;
     $pageparams->group = $formdata->group;
-    $pageparams->set_current_sesstype($formdata->group ? $formdata->group : att_page_with_filter_controls::SESSTYPE_ALL);
+    $pageparams->set_current_sesstype($formdata->group ? $formdata->group : mod_attendance_page_with_filter_controls::SESSTYPE_ALL);
     if (isset($formdata->includeallsessions)) {
         if (isset($formdata->includenottaken)) {
             $pageparams->view = ATT_VIEW_ALL;
@@ -91,14 +91,14 @@ if ($formdata = $mform->get_data()) {
         if (isset($formdata->ident['uname'])) {
             $data->tabhead[] = get_string('username');
         }
-        
+
         $optional = array('idnumber', 'institution', 'department');
         foreach ($optional as $opt) {
             if (isset($formdata->ident[$opt])) {
                 $data->tabhead[] = get_string($opt);
             }
         }
-        
+
         $data->tabhead[] = get_string('lastname');
         $data->tabhead[] = get_string('firstname');
         $groupmode = groups_get_activity_groupmode($cm, $course);
@@ -110,7 +110,11 @@ if ($formdata = $mform->get_data()) {
             foreach ($reportdata->sessions as $sess) {
                 $text = userdate($sess->sessdate, get_string('strftimedmyhm', 'attendance'));
                 $text .= ' ';
-                $text .= $sess->groupid ? $reportdata->groups[$sess->groupid]->name : get_string('commonsession', 'attendance');
+                if (!empty($sess->groupid) && empty($reportdata->groups[$sess->groupid])) {
+                    $text .= get_string('deletedgroup', 'attendance');
+                } else {
+                    $text .= $sess->groupid ? $reportdata->groups[$sess->groupid]->name : get_string('commonsession', 'attendance');
+                }
                 $data->tabhead[] = $text;
                 if (isset($formdata->includeremarks)) {
                     $data->tabhead[] = ''; // Space for the remarks.
@@ -133,14 +137,14 @@ if ($formdata = $mform->get_data()) {
             if (isset($formdata->ident['uname'])) {
                 $data->table[$i][] = $user->username;
             }
-            
-            $optional_row = array('idnumber', 'institution', 'department');
-            foreach ($optional_row as $opt) {
+
+            $optionalrow = array('idnumber', 'institution', 'department');
+            foreach ($optionalrow as $opt) {
                 if (isset($formdata->ident[$opt])) {
                     $data->table[$i][] = $user->$opt;
                 }
             }
-            
+
             $data->table[$i][] = $user->lastname;
             $data->table[$i][] = $user->firstname;
             if (!empty($groupmode)) {

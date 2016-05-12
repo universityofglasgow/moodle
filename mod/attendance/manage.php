@@ -25,7 +25,7 @@
 require_once(dirname(__FILE__).'/../../config.php');
 require_once(dirname(__FILE__).'/locallib.php');
 
-$pageparams = new att_manage_page_params();
+$pageparams = new mod_attendance_manage_page_params();
 
 $id                         = required_param('id', PARAM_INT);
 $from                       = optional_param('from', null, PARAM_ALPHANUMEXT);
@@ -50,7 +50,7 @@ if (!has_any_capability($capabilities, $context)) {
 }
 
 $pageparams->init($cm);
-$att = new attendance($att, $cm, $course, $context, $pageparams);
+$att = new mod_attendance_structure($att, $cm, $course, $context, $pageparams);
 
 // If teacher is coming from block, then check for a session exists for today.
 if ($from === 'block') {
@@ -86,6 +86,7 @@ $sesstable = new attendance_manage_data($att);
 
 echo $output->header();
 echo $output->heading(get_string('attendanceforthecourse', 'attendance').' :: ' .format_string($course->fullname));
+mod_attendance_notifyqueue::show();
 echo $output->render($tabs);
 echo $output->render($filtercontrols);
 echo $output->render($sesstable);

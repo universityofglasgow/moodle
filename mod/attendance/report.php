@@ -25,7 +25,7 @@
 require_once(dirname(__FILE__).'/../../config.php');
 require_once(dirname(__FILE__).'/locallib.php');
 
-$pageparams = new att_report_page_params();
+$pageparams = new mod_attendance_report_page_params();
 
 $id                     = required_param('id', PARAM_INT);
 $from                   = optional_param('from', null, PARAM_ACTION);
@@ -46,7 +46,7 @@ $context = context_module::instance($cm->id);
 require_capability('mod/attendance:viewreports', $context);
 
 $pageparams->init($cm);
-$att = new attendance($attrecord, $cm, $course, $context, $pageparams);
+$att = new mod_attendance_structure($attrecord, $cm, $course, $context, $pageparams);
 
 $PAGE->set_url($att->url_report());
 $PAGE->set_pagelayout('report');
