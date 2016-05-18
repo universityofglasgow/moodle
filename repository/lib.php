@@ -1617,6 +1617,9 @@ abstract class repository implements cacheable_object {
      * @return file path
      */
     public function prepare_file($filename) {
+        if (empty($filename)) {
+            $filename = 'file';
+        }
         return sprintf('%s/%s', make_request_directory(), $filename);
     }
 
@@ -2774,6 +2777,18 @@ abstract class repository implements cacheable_object {
      */
     public function supports_relative_file() {
         return false;
+    }
+
+    /**
+     * Helper function to indicate if this repository uses post requests for uploading files.
+     *
+     * If the respository doesn't rely on uploading via POST requests, this can be overridden to return false,
+     * allowing users with the right permissions to upload files of any size from this repository.
+     *
+     * @return bool
+     */
+    public function uses_post_requests() {
+        return true;
     }
 }
 

@@ -52,7 +52,7 @@
     <tbody class="drag-parentnode">
         {{#competencyframeworks}}
         <tr class="drag-samenode" data-frameworkid="{{id}}">
-            <td><span class="drag-handlecontainer"></span><span><a href="{{pluginbaseurl}}/competencies.php?competencyframeworkid={{id}}&amp;pagecontextid={{pagecontextid}}">{{shortname}} ({{idnumber}})</a></span> {{^visible}}{{#str}}hiddenhint, tool_lp{{/str}}{{/visible}}</td>
+            <td><span class="drag-handlecontainer"></span><span><a href="{{pluginbaseurl}}/competencies.php?competencyframeworkid={{id}}&amp;pagecontextid={{pagecontextid}}">{{{shortname}}} ({{idnumber}})</a></span> {{^visible}}{{#str}}hiddenhint, tool_lp{{/str}}{{/visible}}</td>
             <td>{{competenciescount}}</td>
             <td>{{contextnamenoprefix}}</td>
             <td>
@@ -86,7 +86,7 @@
     </tbody>
 </table>
 {{^competencyframeworks}}
-<p class="alert-info">
+<p class="alert alert-info">
     {{#str}}nocompetencyframeworks, tool_lp{{/str}}
 </p>
 {{/competencyframeworks}}

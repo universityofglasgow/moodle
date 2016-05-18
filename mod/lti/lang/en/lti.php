@@ -290,6 +290,7 @@ External tool activities differ from URL resources in a few ways:
 * External tools support reading, updating, and deleting grades associated with the activity instance
 * External tool configurations create a trust relationship between your site and the tool provider, allowing secure communication between them';
 $string['modulename_link'] = 'mod/lti/view';
+$string['modulename_shortcut_link'] = 'mod/lti/view/custom';
 $string['modulenameplural'] = 'External tools';
 $string['modulenamepluralformatted'] = 'LTI Instances';
 $string['name'] = 'Name';
@@ -391,7 +392,7 @@ may not require a resource key.';
 $string['resourceurl'] = 'Resource URL';
 $string['return_to_course'] = 'Click <a href="{$a->link}" target="_top">here</a> to return to the course.';
 $string['saveallfeedback'] = 'Save all my feedback';
-$string['search:activity'] = 'LTI activities';
+$string['search:activity'] = 'External tool - activity information';
 $string['secure_icon_url'] = 'Secure icon URL';
 $string['secure_icon_url_help'] = 'Similar to the icon URL, but used if the user accessing Moodle securely through SSL. The main purpose for this field is to prevent
 the browser from warning the user if the underlying page was accessed over SSL, but requesting to show an unsecure image.';
