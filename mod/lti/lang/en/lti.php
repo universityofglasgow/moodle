@@ -63,6 +63,7 @@ Some tool providers support reporting grades back to Moodle based on actions tak
 Note that this setting may be overridden in the tool configuration.';
 $string['action'] = 'Action';
 $string['activate'] = 'Activate';
+$string['activatetoadddescription'] = 'You will need to activate this tool before you can add a description.';
 $string['active'] = 'Active';
 $string['activity'] = 'Activity';
 $string['addnewapp'] = 'Enable external application';
@@ -162,6 +163,7 @@ $string['embed_no_blocks'] = 'Embed, without blocks';
 $string['enableemailnotification'] = 'Send notification emails';
 $string['enableemailnotification_help'] = 'If enabled, students will receive email notification when their tool submissions are graded.';
 $string['enterkeyandsecret'] = 'Enter your consumer key and shared secret';
+$string['errorbadurl'] = 'URL is not a valid tool URL or cartridge.';
 $string['errormisconfig'] = 'Misconfigured tool. Please ask your Moodle administrator to fix the configuration of the tool.';
 $string['existing_window'] = 'Existing window';
 $string['extensions'] = 'LTI extension services';
@@ -189,7 +191,7 @@ Three icons are available after the preconfigured tool dropdown list:
 * **Delete** - Remove the selected course level tool.';
 $string['external_tool_types'] = 'Preconfigured tools';
 $string['failedtoconnect'] = 'Moodle was unable to communicate with the "{$a}" system';
-$string['failedtocreatetooltype'] = 'Failed to create new tool.';
+$string['failedtocreatetooltype'] = 'Failed to create new tool. Please check the url and try again.';
 $string['failedtodeletetoolproxy'] = 'Failed to delete tool registration. You may need to visit "Manage external tool registrations" and delete it manually.';
 $string['filter_basiclti_configlink'] = 'Configure your preferred sites and their passwords';
 $string['filter_basiclti_password'] = 'Password is mandatory';
@@ -216,7 +218,7 @@ $string['id'] = 'id';
 $string['invalidid'] = 'LTI ID was incorrect';
 $string['launch_in_moodle'] = 'Launch tool in moodle';
 $string['launch_in_popup'] = 'Launch tool in a pop-up';
-$string['launch_url'] = 'Launch/Cartridge URL';
+$string['launch_url'] = 'Launch/cartridge URL';
 $string['launch_url_help'] = 'The Launch URL indicates the web address of the External Tool, and may contain additional information, such as the resource to show.
 If you are unsure what to enter for the Launch URL, please check with the tool provider for more information.
 
@@ -245,7 +247,7 @@ $string['lti:manage'] = 'Be an Instructor when the tool is launched';
 $string['lti:requesttooladd'] = 'Request a tool is configured site-wide';
 $string['lti:view'] = 'Launch external tool activities';
 $string['ltisettings'] = 'LTI settings';
-$string['lti_administration'] = 'LTI administration';
+$string['lti_administration'] = 'Edit preconfigured tool';
 $string['lti_errormsg'] = 'The tool returned the following error message: "{$a}"';
 $string['lti_launch_error'] = 'An error occurred when launching the external tool:';
 $string['lti_launch_error_tool_request'] = '<p>
@@ -274,7 +276,7 @@ Tools listed on this page are separated into three categories:
 $string['manage_external_tools'] = 'Manage tools';
 $string['manage_tools'] = 'Manage preconfigured tools';
 $string['manage_tool_proxies'] = 'Manage external tool registrations';
-$string['manuallyaddtype'] = 'alternatively, you can <a href="{$a}">configure a tool manually</a>.';
+$string['manuallyaddtype'] = 'Alternatively, you can <a href="{$a}">configure a tool manually</a>.';
 $string['miscellaneous'] = 'Miscellaneous';
 $string['misconfiguredtools'] = 'Misconfigured tool instances were detected';
 $string['missingparameterserror'] = 'The page is misconfigured: "{$a}"';
@@ -344,8 +346,8 @@ along with the consumer key from the tool provider.
 Tools which do not require secure communication from Moodle and do not provide additional services (such as grade reporting)
 may not require a shared secret.';
 $string['pending'] = 'Pending';
-$string['pluginadministration'] = 'LTI administration';
-$string['pluginname'] = 'LTI';
+$string['pluginadministration'] = 'External tool administration';
+$string['pluginname'] = 'External tool';
 $string['preferheight'] = 'Preferred height';
 $string['preferwidget'] = 'Prefer widget launch';
 $string['preferwidth'] = 'Preferred width';
@@ -431,11 +433,15 @@ $string['share_roster_admin_help'] = 'Specify whether the tool can access the li
 $string['share_roster_help'] = 'Specify whether the tool can access the list of users enrolled in this course.
 
 Note that this setting may be overridden in the tool configuration.';
-$string['show_in_course'] = 'Show preconfigured tool when creating tool instances';
-$string['show_in_course_help'] = 'If selected, this tool configuration will appear in the "Preconfigured tools" dropdown when teachers
-configure external tools within courses, and it will appear in the activity picker.
+$string['show_in_course_activity_chooser'] = 'Show in activity chooser and as preconfigured tool';
+$string['show_in_course_lti1'] = 'Show when creating activities';
+$string['show_in_course_lti1_help'] = 'This tool can be shown in the activity chooser for a teacher to select to add to a course. It also can be shown in the preconfigured tool dropdown menu when adding an external tool to a course.
 
-If not selected teachers can only use this tool configuration based on the Launch URL matching the Tool base URL.';
+Alternatively, the tool configuration may not show up in the forms but only used if the correct launch URL is entered when adding an external tool to a course.';
+$string['show_in_course_lti2'] = 'Show when creating activities';
+$string['show_in_course_lti2_help'] = 'This tool can be shown in the activity chooser for a teacher to select to add to a course or in the preconfigured tool dropdown menu when adding an external tool to a course.';
+$string['show_in_course_no'] = 'Do not show, use for launch URL matching only';
+$string['show_in_course_preconfigured'] = 'Show as preconfigured tool when adding External tool';
 $string['size'] = 'Size parameters';
 $string['submission'] = 'Submission';
 $string['submissions'] = 'Submissions';
@@ -476,7 +482,7 @@ $string['tooltypeadded'] = 'Preconfigured tool added';
 $string['tooltypedeleted'] = 'Preconfigured tool deleted';
 $string['tooltypenotdeleted'] = 'Could not delete preconfigured tool';
 $string['tooltypeupdated'] = 'Preconfigured tool updated';
-$string['toolurl'] = 'Tool base URL/Cartridge URL';
+$string['toolurl'] = 'Tool base URL/cartridge URL';
 $string['toolurlplaceholder'] = 'Tool URL...';
 $string['toolurl_help'] = 'The tool base URL is used to match tool launch URLs to the correct tool configuration. Prefixing the URL with http(s) is optional.
 

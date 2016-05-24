@@ -26,6 +26,30 @@
 define(['core/ajax', 'core/notification'], function(ajax, notification) {
     return /** @alias module:mod_lti/tool_proxy */ {
         /**
+         * Get a list of tool types from Moodle for the given
+         * search args.
+         *
+         * See also:
+         * mod/lti/classes/external.php get_tool_types_parameters()
+         *
+         * @method query
+         * @public
+         * @param object Search parameters
+         * @return object jQuery deferred object
+         */
+        query: function(args) {
+            var request = {
+                methodname: 'mod_lti_get_tool_proxies',
+                args: args || {}
+            };
+
+            var promise = ajax.call([request])[0];
+
+            promise.fail(notification.exception);
+
+            return promise;
+        },
+        /**
          * Delete a tool proxy from Moodle.
          *
          * @method delete
@@ -51,6 +75,8 @@ define(['core/ajax', 'core/notification'], function(ajax, notification) {
         /**
          * Create a tool proxy in Moodle.
          *
+         * The promise will fail if the proxy cannot be created, so you must handle the fail result.
+         *
          * See mod/lti/classes/external.php create_tool_proxy_parameters
          *
          * @method create
@@ -65,8 +91,6 @@ define(['core/ajax', 'core/notification'], function(ajax, notification) {
             };
 
             var promise = ajax.call([request])[0];
-
-            promise.fail(notification.exception);
 
             return promise;
         }
