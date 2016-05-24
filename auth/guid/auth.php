@@ -342,4 +342,40 @@ class auth_plugin_guid extends auth_plugin_ldap {
         return;
     }
 
+    /**
+     * Hook for overriding behaviour of login page.
+     * This method is called from login/index.php page for all enabled auth plugins.
+     *
+     * This is used to catch Sharepoint sending us the 'urltogo' parameter
+     * in their fake login form.
+     * @global object
+     * @global object
+     */
+    function loginpage_hook() {
+        global $CFG, $SESSION, $USER;
+
+        $urltogo = optional_param('urltogo', '', PARAM_URL);
+        $username = optional_param('username', '', PARAM_USERNAME);
+        if (!$urltogo) {
+            return;
+        }
+
+        // make sure it points to *this* site
+        if (strpos($urltogo, $CFG->wwwroot) === 0 or strpos($urltogo, str_replace('http://', 'https://', $CFG->wwwroot)) === 0) {
+            
+            // If the user is already logged in, we just want to go to 'urltogo' with no further messing
+            if (isloggedin() and !isguestuser()) {
+
+                // username has to match (i.e. from form)
+                if (strtolower($USER->username) == strtolower(trim($username))) {
+                    redirect($urltogo);
+                }
+            } else {
+                $SESSION->wantsurl = $urltogo;
+            }
+        }
+
+        return;
+    }
+
 }
