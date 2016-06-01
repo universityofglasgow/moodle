@@ -83,8 +83,8 @@ class theme_bootstrap_core_renderer extends core_renderer {
 
     protected function render_custom_menu(custom_menu $menu) {
 
-        // TODO: eliminate this duplicated logic, it belongs in core, not
-        // here. See MDL-39565.
+        // Add the lang_menu to the left of the menu.
+        $this->add_lang_menu($menu);
 
         $content = '<ul class="nav navbar-nav pull-right">';
         foreach ($menu->get_children() as $item) {
@@ -106,7 +106,7 @@ class theme_bootstrap_core_renderer extends core_renderer {
             $user = $USER;
         }
 
-        $menuclass = 'guest';
+        $menuclass = 'navbar-nav guest';
 
         if (isloggedin() && !isguestuser()) {
             $menuclass = 'loggedin';
@@ -247,6 +247,67 @@ class theme_bootstrap_core_renderer extends core_renderer {
         return $content;
     }
 
+    /**
+     * Adds a lang submenu in a custom_menu
+     *
+     * @return string The lang menu HTML or empty string
+     */
+    protected function add_lang_menu(custom_menu $menu, $force = false) {
+        // TODO: eliminate this duplicated logic, it belongs in core, not
+        // here. See MDL-39565.
+
+        $haslangmenu = $this->lang_menu() != '';
+
+        if ($force || ( !empty($this->page->layout_options['langmenu']) && $haslangmenu ) ) {
+            $langs = get_string_manager()->get_list_of_translations();
+            $strlang = get_string('language');
+            $currentlang = current_language();
+            if (isset($langs[$currentlang])) {
+                $currentlang = $langs[$currentlang];
+            } else {
+                $currentlang = $strlang;
+            }
+            $this->language = $menu->add($currentlang, new moodle_url('#'), $strlang, 10000);
+            foreach ($langs as $langtype => $langname) {
+                $this->language->add($langname, new moodle_url($this->page->url, array('lang' => $langtype)), $langname);
+            }
+        }
+    }
+
+    /**
+     * This code renders the navbar brand link displayed in the left navbar
+     * on smaller screens.
+     *
+     * @return string HTML fragment
+     */
+    protected function navbar_brand() {
+        global $CFG, $SITE;
+        return html_writer::link($CFG->wwwroot, $SITE->shortname, array('class' => 'navbar-brand'));
+    }
+
+    /**
+     * This code renders the navbar button to control the display of the custom menu
+     * on smaller screens.
+     *
+     * Do not display the button if the menu is empty.
+     *
+     * @return string HTML fragment
+     */
+    protected function navbar_button() {
+        global $CFG;
+
+        if (empty($CFG->custommenuitems)) {
+            return '';
+        }
+
+        $accessibility = html_writer::tag('span', get_string('togglenav', 'theme_bootstrap'),
+            array('class' => 'sr-only'));
+        $iconbar = html_writer::tag('span', '', array('class' => 'icon-bar'));
+        $button = html_writer::tag('button', $accessibility . "\n" . $iconbar . "\n" . $iconbar. "\n" . $iconbar,
+            array('class' => 'navbar-toggle', 'data-toggle' => 'collapse', 'data-target' => '#moodle-navbar', 'type' => 'button'));
+        return $button;
+    }
+
     protected function render_tabtree(tabtree $tabtree) {
         if (empty($tabtree->subtree)) {
             return '';
@@ -258,7 +319,7 @@ class theme_bootstrap_core_renderer extends core_renderer {
                 $secondrow = $this->tabtree($tab->subtree);
             }
         }
-        return html_writer::tag('ul', $firstrow, array('class' => 'nav nav-tabs nav-justified')) . $secondrow;
+        return html_writer::tag('ul', $firstrow, array('class' => 'nav nav-tabs')) . $secondrow;
     }
 
     protected function render_tabobject(tabobject $tab) {
