@@ -360,7 +360,7 @@ class report_anonymous {
             'Pending' => get_string('statuspending', 'report_anonymous'),
             'Rejected' => get_string('statusrejected', 'report_anonymous'),
             'Error' => get_string('statuserror', 'report_anonymous'),
-            'timeout' => get_string('timeout', 'report_anonymous'),
+            'timeout' => get_string('statustimeout', 'report_anonymous'),
         );
         if (isset($codes[$statuscode])) {
             return $codes[$statuscode];
