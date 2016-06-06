@@ -24,6 +24,6 @@
 
 defined('MOODLE_INTERNAL') || die;
 
-$plugin->version   = 2013111400;
+$plugin->version   = 2016060600;
 $plugin->requires  = 2012061700;
 $plugin->component = 'report_anonymous';
