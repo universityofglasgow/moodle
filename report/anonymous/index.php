@@ -95,8 +95,9 @@ if ($assignid) {
         assign::allocate_unique_ids($assignid);
     }
     $users = report_anonymous::get_assign_users($context);
+    $grades = report_anonymous::get_grades($course->id, $assignid, $users);
     $submissions = report_anonymous::get_submissions($assignid, $users, $group);
-    $displaysubs = report_anonymous::datatodisplay($submissions, $id, $reveal);
+    $displaysubs = report_anonymous::datatodisplay($submissions, $grades, $id, $reveal);
     $displaysubs = report_anonymous::sort_submissions($displaysubs, $tdir, $tsort);
     if ($export) {
         $filename = "anonymous_{$assignment->name}.xls";

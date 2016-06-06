@@ -22,6 +22,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+$string['allocatedmarker'] = 'Marker';
 $string['anonymous'] = 'Anonymous';
 $string['anonymous:export'] = 'Export user lists to Excel';
 $string['anonymous:view'] = 'View course anonymous submission report';
@@ -35,6 +36,8 @@ $string['clickhidenames'] = 'Click to <b>hide</b> names';
 $string['clickshownames'] = 'Click to <b>reveal</b> names';
 $string['email'] = 'Email';
 $string['export'] = 'Export to Excel';
+$string['feedback'] = 'Feedback';
+$string['grade'] = 'Grade';
 $string['group'] = 'Group';
 $string['help'] = 'List of user ids who have not submitted to the chosen Assignment.';
 $string['hidden'] = 'Hidden';
@@ -52,14 +55,18 @@ $string['statusaccepted'] = 'Accepted';
 $string['statusacceptedold'] = 'Accepted (old)';
 $string['statusanalyzed'] = 'Analyzed';
 $string['statusbadrequest'] = 'Bad request';
+$string['statuserror'] = 'Error';
 $string['statusgone'] = 'Receiver inactive';
 $string['statusinvalid'] = 'Invalid';
 $string['statusnoreceiver'] = 'No receiver';
 $string['statusnotfound'] = 'Not found';
 $string['statusprocessed'] = 'Processed';
+$string['statusrejected'] = 'Rejected';
+$string['statustimeout'] = 'Timeout';
 $string['statustoolarge'] = 'Too large';
 $string['statusunknown'] = 'Unknown status \'{$a}\'';
 $string['statusother'] = 'Status \'{$a}\'';
+$string['statuspending'] = 'Pending';
 $string['statusunsupported'] = 'Unsupported';
 $string['submitdate'] = 'Submit date';
 $string['submitted'] = 'Submitted';

@@ -104,6 +104,8 @@ class report_anonymous_renderer extends plugin_renderer_base {
            $this->head('name', 'name', $baseurl),
            $this->head('email', 'email', $baseurl),
            $this->head('group', 'group', $baseurl),
+           $this->head('allocatedmarker', 'allocatedmarker', $baseurl),
+           $this->head('grade', 'grade', $baseurl),
         );
         if ($urkund) {
             $columns[] = 'urkundfilename';
@@ -143,6 +145,12 @@ class report_anonymous_renderer extends plugin_renderer_base {
 
             // Group
             $line[] = $s->groups;
+
+            // Allocated marker
+            $line[] = $s->allocatedmarker;
+
+            // Grade
+            $line[] = $s->grade;
 
             if ($urkund) {
                 $line[] = $this->urkund_filename($s->urkundfilename);

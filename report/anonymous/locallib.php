@@ -23,6 +23,11 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+require_once(dirname(__FILE__) . '/html2text/html2text.php');
+require_once(dirname(__FILE__) . '/forceutf8/src/ForceUTF8/Encoding.php');
+
+use \ForceUTF8\Encoding;
+
 class report_anonymous {
 
     /**
@@ -89,6 +94,87 @@ class report_anonymous {
     }
 
     /**
+     * Find user's allocated marker if there is one
+     * @param int $assignid assignment id
+     * @param int $userid 
+     * @return string formatted user name or '-'
+     */
+    public static function get_allocatedmarker($assignid, $userid) {
+        global $DB;
+
+        if ($flags = $DB->get_record('assign_user_flags', array('userid' => $userid, 'assignment' => $assignid))) {
+            if ($flags->allocatedmarker) {
+                if ($user = $DB->get_record('user', array('id' => $flags->allocatedmarker))) {
+                    return fullname($user);
+                } 
+            }
+        }
+        return '-';
+    }
+
+    /**
+     * Strip HTML from feedback comments for export
+     * @param string $feedback
+     * @return string sanitised feedback
+     */
+    private static function sanitise_feedback($feedback) {
+        if (!$feedback) {
+            return '-';
+        }
+        $text = convert_html_to_text($feedback);
+        $text = Encoding::fixUTF8($text);
+
+        return $text;
+    }
+
+    /**
+     * Find  grades for the submission
+     * @param int $courseid
+     * @param int $assignid assignment id
+     * @param array $users
+     * @return string grade or '-' if no grade
+     */
+    public static function get_grades($courseid, $assignid, $users) {
+        global $DB;
+        
+        // convert user array to list of ids
+        $userids = array_keys($users);
+
+        // Get grade info
+        $gradeinfo = grade_get_grades($courseid, 'mod', 'assign', $assignid);
+        $gradeinfo = $gradeinfo->items[0];
+        if (!empty($gradeinfo->scaleid)) {
+            $scale = $DB->get_record('scale', array('id' => $gradeinfo->scaleid), '*', MUST_EXIST);
+            $scaleitems = explode(',', $scale->scale);
+            $scaleitems = array_map('trim', $scaleitems);
+        } else {
+            $scaleitems = null;
+        }
+
+        // Get grade objects for chosen assignment
+        $grades = array();
+        $usergrades = grade_get_grades($courseid, 'mod', 'assign', $assignid, array_keys($users));
+        foreach ($users as $user) {
+            $finalgrade = $usergrades->items[0]->grades[$user->id];
+            $grade = $finalgrade->grade;
+            $feedback = $finalgrade->feedback;
+            if ($grade === null) {
+                $grade = '-'; 
+            } else if ($scaleitems) {
+                $grade = $scaleitems[(int)$grade - 1];
+            } else {
+                $grade = rtrim($grade, '0.');
+            }
+            $record = new stdClass;
+            $record->grade = $grade;
+            $record->feedback = self::sanitise_feedback($feedback);
+            $grades[$user->id] = $record;
+        }
+
+        return $grades;
+    }
+
+    /**
      * get the user's submissions (or null for none)
      * @param int $assignid assignment id
      * @param array $users list of user objects
@@ -124,6 +210,9 @@ class report_anonymous {
                 $instance->submission = null;
             }
 
+            // check if this user has an allocated marker
+            $instance->allocatedmarker = self::get_allocatedmarker($assignid, $user->id);
+
             // check for urkund files
             if ($urkund) {
                 $files = self::urkund_files($assignid, $user->id);
@@ -149,7 +238,7 @@ class report_anonymous {
     /**
      * Organise submission/user data into displayable form
      */
-    public static function datatodisplay($submissions, $courseid, $showname=false) {
+    public static function datatodisplay($submissions, $grades, $courseid, $showname=false) {
         $output = array();
 
         foreach ($submissions as $s) {
@@ -197,6 +286,15 @@ class report_anonymous {
 
             // Group(s)
             $record->groups = self::get_user_groups($s->user->id, $courseid);
+
+            // Allocated marker
+            $record->allocatedmarker = $s->allocatedmarker;
+
+            // Grade
+            $record->grade = $grades[$s->user->id]->grade;
+
+            // Feedback
+            $record->feedback = $grades[$s->user->id]->feedback;
 
             $record->urkundfilename = isset($s->urkundfilename) ? $s->urkundfilename : '-';
             $record->urkundstatus = isset($s->urkundstatus) ? $s->urkundstatus : '-';
@@ -259,6 +357,10 @@ class report_anonymous {
             '444' => get_string('statusnoreceiver', 'report_anonymous'),
             '613' => get_string('statusinvalid', 'report_anonymous'),
             'Analyzed' => get_string('statusanalyzed', 'report_anonymous'),
+            'Pending' => get_string('statuspending', 'report_anonymous'),
+            'Rejected' => get_string('statusrejected', 'report_anonymous'),
+            'Error' => get_string('statuserror', 'report_anonymous'),
+            'timeout' => get_string('timeout', 'report_anonymous'),
         );
         if (isset($codes[$statuscode])) {
             return $codes[$statuscode];
@@ -319,6 +421,9 @@ class report_anonymous {
         $myxls->write_string(3, $i++, get_string('name', 'report_anonymous'));
         $myxls->write_string(3, $i++, get_string('email', 'report_anonymous'));
         $myxls->write_string(3, $i++, get_string('group', 'report_anonymous'));
+        $myxls->write_string(3, $i++, get_string('allocatedmarker', 'report_anonymous'));
+        $myxls->write_string(3, $i++, get_string('grade', 'report_anonymous'));
+        $myxls->write_string(3, $i++, get_string('feedback', 'report_anonymous'));
         if ($urkund) {
             $myxls->write_string(3, $i++, get_string('urkundfile', 'report_anonymous'));
             $myxls->write_string(3, $i++, get_string('urkundstatus', 'report_anonymous'));
@@ -338,6 +443,13 @@ class report_anonymous {
             $myxls->write_string($row, $i++, $s->fullname);
             $myxls->write_string($row, $i++, $s->email);
             $myxls->write_string($row, $i++, $s->groups);
+            $myxls->write_string($row, $i++, $s->allocatedmarker);
+            if (is_numeric($s->grade)) {
+                $myxls->write_number($row, $i++, $s->grade);
+            } else {
+                $myxls->write_string($row, $i++, $s->grade);
+            }
+            $myxls->write_string($row, $i++, $s->feedback);
             if ($urkund) {
                 $myxls->write_string($row, $i++, $s->urkundfilename);
                 $myxls->write_string($row, $i++, $s->urkundstatus);
