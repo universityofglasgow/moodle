@@ -121,7 +121,9 @@ class report_anonymous {
         if (!$feedback) {
             return '-';
         }
+        $errorlevel = error_reporting();
         $text = convert_html_to_text($feedback);
+        error_reporting($errorlevel);
         $text = Encoding::fixUTF8($text);
 
         return $text;
