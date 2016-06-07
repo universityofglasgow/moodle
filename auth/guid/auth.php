@@ -43,6 +43,27 @@ class auth_plugin_guid extends auth_plugin_ldap {
         $this->config->start_tls = false;
     }
 
+    /** 
+     * translate college code to name
+     * (No point translating these strings)
+     * @param int $code single digit of cost centre code
+     * @return string College name
+     */
+    private function translate_college_code($code) {
+        $colleges = array(
+            1 => 'College of Arts',
+            2 => 'College of Medical Veterinary and Life Sciences',
+            3 => 'College of Science and Engineering',
+            4 => 'College of Social Sciences',
+            9 => 'University Services',
+        );
+        if (isset($colleges[$code])) {
+            return $colleges[$code];
+        } else {
+            return '';
+        }
+    }
+
     /**
      * Returns true if the username and password work and false if they are
      * wrong or don't exist.
@@ -154,6 +175,7 @@ class auth_plugin_guid extends auth_plugin_ldap {
         // add additional fields to search attributes to get
         // optional emailaddress field and uid.
         $search_attribs[] = 'emailaddress';
+        $search_attribs[] = 'costcenter';
 
         // Make sure uid is in the list.
         if (!in_array('uid', $search_attribs)) {
@@ -241,6 +263,13 @@ class auth_plugin_guid extends auth_plugin_ldap {
                 $firstname = ucfirst( strtolower( $matches[1] ) );
                 $result[ 'firstname' ] = $firstname;
             }
+        }
+
+        // Work out the College from the costcentre code 
+        // and stick it in Institution field
+        if (!empty($user_entry[0]['costcenter'][0])) {
+            $collegecode = substr($user_entry[0]['costcenter'][0], 0, 1);
+            $result['institution'] = $this->translate_college_code($collegecode);
         }
 
         $this->ldap_close();
