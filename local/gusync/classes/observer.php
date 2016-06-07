@@ -15,16 +15,25 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version information
+ * Sychronise completion data for CoreHR
  *
- * @package    mod_attendance
- * @copyright  2011 Artem Andreev <andreev.artem@gmail.com>
+ * @package    local_gusync
+ * @copyright  2016 Howard Miller
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$plugin->version  = 2016052201;
-$plugin->requires = 2015051100;
-$plugin->release = '3.1.0.3';
-$plugin->maturity  = MATURITY_STABLE;
-$plugin->cron     = 0;
-$plugin->component = 'mod_attendance';
+require_once(dirname(__file__) . '/../lib.php');
+
+class local_gusync_observer {
+
+    /**
+     * Triggered when a course is marked as deleted
+     */
+    public static function course_deleted(\core\event\course_deleted $event) {
+
+        $courseid = $event->courseid;
+        local_gusync_course_deleted($courseid);
+
+        return;
+    }
+}

@@ -22,8 +22,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$plugin->version = 2012092402;
-$plugin->requires = 2010111500;
+$plugin->version = 2016060600;
+$plugin->requires = 2015111600;
 $plugin->component = 'local_gusync';
 $plugin->description = 'GU course enrolments sync to external database';
 $plugin->cron = 1;

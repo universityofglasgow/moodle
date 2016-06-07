@@ -22,11 +22,11 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$handlers = array (
-    'course_deleted' => array (
-        'handlerfile'      => '/local/gusync/lib.php',
-        'handlerfunction'  => 'local_gusync_course_deleted',
-        'schedule'         => 'instant',
-        'internal'         => 1,
+$observers = array(
+
+    array(
+        'eventname' => '\core\event\course_deleted',
+        'callback' => 'local_gusync_observer::course_deleted',
     ),
+
 );

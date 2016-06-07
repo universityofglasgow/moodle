@@ -359,9 +359,9 @@ function local_gusync_query( $extdb, $sql, $singlerecord=false ) {
 
 /**
  * Catch course_deleted event
- * @param object $course course object
+ * @param object $courseid
  */
-function local_gusync_course_deleted($course) {
+function local_gusync_course_deleted($courseid) {
     global $SITE;
 
     // Site name.
@@ -384,7 +384,7 @@ function local_gusync_course_deleted($course) {
 
     // Try to find existing course record.
     $coursesql = "select * from moodlecourses where ";
-    $coursesql .= "courseid = {$course->id} and site='$sitename' ";
+    $coursesql .= "courseid = {$courseid} and site='$sitename' ";
     $extcourse = local_gusync_query( $extdb, $coursesql, true );
 
     if (!empty($extcourse)) {
