@@ -354,6 +354,24 @@ margin-left: 4px;
     background-color: #d9edf7;
 }
 
+// Label indents not working
+.mod-indent {
+    min-height: 1px;
+}
 
-// Bodge for label indent
-.mod-indent { min-height: 1px; } .mod-indent-outer > div { display: table-cell; }
+.mod-indent-outer > div {
+    display: table-cell;
+}
+
+// Transparency in drop-down menus of hidden sections
+.course-content ul li.section.hidden {
+    opacity: 1;
+    color: #aaa;
+}
+
+.course-content ul li.section.hidden a {
+    color: #aaa;
+}
+.course-content ul li.section.hidden img {
+    opacity: 0.5;
+}
