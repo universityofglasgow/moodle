@@ -82,7 +82,7 @@ if ($mform->is_cancelled()) {
         echo $OUTPUT->footer();
         die;
     }
-    $result = report_guid_ldapsearch( $ldaphost, $dn, $filter );
+    $result = report_guid_ldapsearch( $config, $filter );
     if (is_string( $result )) {
         notice(get_string('searcherror', 'report_guid', $result), $linkback );
         die;

@@ -84,22 +84,29 @@ function report_guid_build_filter($firstname, $lastname, $guid, $email) {
     return false;
 }
 
-function report_guid_ldapsearch( $ldaphost, $ldapdn, $filter ) {
+function report_guid_ldapsearch( $config, $filter ) {
 
     // Connect to host.
-    if (!$dv = ldap_connect( $ldaphost )) {
+    if (!$dv = ldap_connect( $config->host_url )) {
         debugging( 'Failed to connect to ldap host ' );
         return false;
     }
 
-    // Anonymous bind.
-    if (!ldap_bind( $dv )) {
-        debugging( 'Failed anonymous bind to ldap host '.ldap_error( $dv ) );
-        return false;
+    // Bind
+    if (empty($config->bind_dn)) {
+        if (!ldap_bind( $dv )) {
+            debugging( 'Failed anonymous bind to ldap host '.ldap_error( $dv ) );
+            return false;
+        }
+    } else {
+        if (!ldap_bind( $dv, $config->bind_dn, $config->bind_pw )) {
+            debugging( 'Failed bind to ldap host '.ldap_error( $dv ) );
+            return false;
+        }
     }
 
     // Search.
-    if (!$search = @ldap_search($dv, $ldapdn, $filter)) {
+    if (!$search = @ldap_search($dv, $config->contexts, $filter)) {
         debugging( 'ldap search failed for filter "'.$filter.'" '.ldap_error( $dv ) );
         return false;
     }
