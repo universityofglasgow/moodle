@@ -103,7 +103,7 @@ class report_anonymous_renderer extends plugin_renderer_base {
            $this->head('submitdate', 'date', $baseurl),
            $this->head('name', 'name', $baseurl),
            $this->head('email', 'email', $baseurl),
-           $this->head('group', 'group', $baseurl),
+           $this->head('group', 'groups', $baseurl),
            $this->head('allocatedmarker', 'allocatedmarker', $baseurl),
            $this->head('grade', 'grade', $baseurl),
         );
