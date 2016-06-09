@@ -29,6 +29,7 @@ defined('MOODLE_INTERNAL') || die;
 require_once($CFG->dirroot . '/course/format/grid/lib.php'); // For format_grid static constants.
 
 if ($ADMIN->fulltree) {
+
     /* Default course display.
      * Course display default, can be either one of:
      * COURSE_DISPLAY_SINGLEPAGE or - All sections on one page.
@@ -138,6 +139,17 @@ if ($ADMIN->fulltree) {
     $name = 'format_grid/defaultfitsectioncontainertowindow';
     $title = get_string('defaultfitsectioncontainertowindow', 'format_grid');
     $description = get_string('defaultfitsectioncontainertowindow_desc', 'format_grid');
+    $default = 1;
+    $choices = array(
+        1 => new lang_string('no'),   // No.
+        2 => new lang_string('yes')   // Yes.
+    );
+    $settings->add(new admin_setting_configselect($name, $title, $description, $default, $choices));
+
+    /* Grey out hidden sections. */
+    $name = 'format_grid/defaultgreyouthidden';
+    $title = get_string('greyouthidden', 'format_grid');
+    $description = get_string('greyouthidden_desc', 'format_grid');
     $default = 1;
     $choices = array(
         1 => new lang_string('no'),   // No.
