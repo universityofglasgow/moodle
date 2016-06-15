@@ -1,0 +1,10 @@
+{
+    "name": "moodle-atto_pastespecial-button",
+    "builds": {
+        "moodle-atto_pastespecial-button": {
+            "jsfiles": [
+                "button.js"
+            ]
+        }
+    }
+}

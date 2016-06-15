@@ -1,0 +1,17 @@
+Release notes
+-------------
+
+Date          Version   Comment
+2016/01/20    1.1.2     Clean up spans to omit default text colour, remove underline from links.
+2015/12/08    1.1.1     Fix code to pass codechecker, use POST instead of GET to upload Word file
+2015/12/08    1.1.0     Fix error importing some files, clean code to pass codechecker, upgrade maturity to stable
+2015/10/15    1.0.0     Make uninstall process safer, mark first officially approved release on Moodle plugins directory
+2015/10/14    0.9.5     Use Moodle exception class to flag errors, parameterize heading style to element map
+2015/10/12    0.9.4     Correct context ID handling to work on all platforms, improve error handling
+2015/09/28    0.9.3     Implement drag and drop support
+2015/09/25    0.9.2     Insert content whereever the cursor is, not at the end of the text area
+2015/09/24    0.9.1     Automate installation process so that icon is added to files group in editor
+2015/09/24    0.9.0     Add support for importing equations
+2015/09/21    0.0.9     Fix security issues when deleting imported Word file, other code cleanup
+2015/09/17    0.0.8     Ensure image names are always unique when importing multiple times
+2015/09/16    0.0.7     Clean up code to comply with Moodle guidelines and implement reviewer comments, import images

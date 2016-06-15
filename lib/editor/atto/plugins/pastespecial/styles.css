@@ -1,0 +1,39 @@
+form.atto_pastespecial_form div.atto_pastespecial_contenteditable div {
+    width: 100%;
+    height: -webkit-calc(100% - 25px);
+    height: -moz-calc(100% - 25px);
+    height: calc(100% - 25px);
+    overflow-y: scroll;
+    border: 1px solid grey;
+}
+form.atto_pastespecial_form div.atto_pastespecial_contenteditable label {
+    height: 24px;
+}
+
+form.atto_pastespecial_form div.atto_pastespecial_contenteditable.atto_pastespecial_preview {
+    margin-right: 2.5%;
+}
+
+form.atto_pastespecial_form div.atto_pastespecial_contenteditable.atto_pastespecial_handled {
+    margin-left: 2.5%;
+}
+
+form.atto_pastespecial_form div.atto_pastespecial_contenteditable {
+    width: 47.5%;
+    height: 50%;
+    display: inline-block;
+}
+
+form.atto_pastespecial_form {
+    height: 100%;
+}
+
+form.atto_pastespecial_form div.atto_pastespecial_radios {
+    height: 25%;
+}
+
+form.atto_pastespecial_form .atto_pastespecial_helptext, form.atto_pastespecial_div.atto_pastespecial_contenteditable label {
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: bold;
+}
