@@ -1321,7 +1321,7 @@ function format_text($text, $format = FORMAT_MOODLE, $options = null, $courseidd
 
     if ($options['blanktarget']) {
         $domdoc = new DOMDocument();
-        $domdoc->loadHTML($text);
+        $domdoc->loadHTML('<?xml version="1.0" encoding="UTF-8" ?>' . $text);
         foreach ($domdoc->getElementsByTagName('a') as $link) {
             if ($link->hasAttribute('target') && strpos($link->getAttribute('target'), '_blank') === false) {
                 continue;
@@ -1336,7 +1336,7 @@ function format_text($text, $format = FORMAT_MOODLE, $options = null, $courseidd
         // $domdoc->loadHTML($text, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD); however it seems like the libxml
         // version that travis uses doesn't work properly and ends up leaving <html><body>, so I'm forced to use
         // this regex to remove those tags.
-        $text = trim(preg_replace('~<(?:!DOCTYPE|/?(?:html|body))[^>]*>\s*~i', '', $domdoc->saveHTML()));
+        $text = trim(preg_replace('~<(?:!DOCTYPE|/?(?:html|body))[^>]*>\s*~i', '', $domdoc->saveHTML($domdoc->documentElement)));
     }
 
     return $text;
