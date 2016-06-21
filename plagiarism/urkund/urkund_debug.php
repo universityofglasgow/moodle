@@ -77,6 +77,11 @@ if (!$table->is_downloading($download, $exportfilename)) {
             exit;
 
         } else {
+            if ($resetall == '202') {
+                // Reset attempt value so that we restart the attempt cycle for these records.
+                // We don't do this for file submissions because if they fail sending the file it's as likely to change.
+                $DB->set_field('plagiarism_urkund_files', 'attempt', 1, array('statuscode' => $resetall));
+            }
             $files = $DB->get_records('plagiarism_urkund_files', array('statuscode' => $resetall));
             $i = 0;
             foreach ($files as $plagiarismfile) {
@@ -165,14 +170,15 @@ if (!$showall && !$table->is_downloading()) {
     $table->pagesize($limit, $count);
 }
 
-$table->define_columns(array('id', 'name', 'module', 'identifier', 'status', 'attempts', 'action'));
+$table->define_columns(array('id', 'name', 'module', 'identifier', 'status', 'attempts', 'timesubmitted', 'action'));
 
 $table->define_headers(array(get_string('id', 'plagiarism_urkund'),
                        get_string('user'),
                        get_string('module', 'plagiarism_urkund'),
                        get_string('identifier', 'plagiarism_urkund'),
                        get_string('status', 'plagiarism_urkund'),
-                       get_string('attempts', 'plagiarism_urkund'), ''));
+                       get_string('attempts', 'plagiarism_urkund'),
+                       get_string('timesubmitted', 'plagiarism_urkund'), ''));
 $table->define_baseurl('urkund_debug.php?filterdays=' . $filterdays);
 $table->sortable(true);
 $table->no_sorting('file', 'action');
@@ -203,6 +209,8 @@ if (!empty($sort)) {
         $orderby = " ORDER BY t.statuscode $direction";
     } else if ($sort == "id") {
         $orderby = " ORDER BY t.id $direction";
+    } else if ($sort == "timesubmitted") {
+        $orderby = " ORDER BY t.timesubmitted $direction";
     }
     if (!empty($orderby) && ($dir == 'asc' || $dir == 'desc')) {
         $orderby .= " ".$dir;
@@ -223,6 +231,9 @@ foreach ($urkundfiles as $tf) {
     $coursemodule = get_coursemodule_from_id($tf->moduletype, $tf->cm);
 
     $user = "<a href='".$CFG->wwwroot."/user/profile.php?id=".$tf->userid."'>".fullname($tf)."</a>";
+    if (!empty($tf->relateduserid)) {
+        $user .= " (On behalf userid: ".$tf->relateduserid .")";
+    }
     if ($tf->statuscode == 'Analyzed') { // Sanity check - don't show a resubmit link.
         $reset = '';
     } else if ($tf->statuscode == URKUND_STATUSCODE_ACCEPTED) { // Sanity Check.
@@ -237,9 +248,9 @@ foreach ($urkundfiles as $tf) {
     $cmlink = html_writer::link($cmurl, shorten_text($coursemodule->name, 40, true), array('title' => $coursemodule->name));
     if ($table->is_downloading()) {
         $row = array($tf->id, $tf->userid, $tf->cm .' '. $tf->moduletype, $tf->identifier, $tf->statuscode,
-                     $tf->attempt, $tf->errorresponse);
+                     $tf->attempt, userdate($tf->timesubmitted), $tf->errorresponse);
     } else {
-        $row = array($tf->id, $user, $cmlink, $tf->identifier, $tf->statuscode, $tf->attempt, $reset);
+        $row = array($tf->id, $user, $cmlink, $tf->identifier, $tf->statuscode, $tf->attempt, userdate($tf->timesubmitted), $reset);
     }
 
     $table->add_data($row);
