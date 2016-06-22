@@ -225,6 +225,12 @@ class report_anonymous {
                         $urkundinstance->urkundstatus = self::urkund_status($file->statuscode);
                         $urkundinstance->urkundfilename = $file->filename;
                         $urkundinstance->urkundscore = $file->similarityscore;
+                        $urkundinstance->submittedonbehalf = null;
+                        if ($file->relateduserid) {
+                            if ($subuser = $DB->get_record('user', array('id' => $file->userid))) {
+                                $urkundinstance->submittedonbehalf = fullname($subuser);
+                            }
+                        }
                         $submissions[] = $urkundinstance;
                     }
                 } else {
@@ -284,6 +290,11 @@ class report_anonymous {
                 $record->fullname = '-';
             }
 
+            // If submitted on behalf of (by urkund)
+            if (!empty($s->submittedonbehalf)) {
+                $record->name .= ' (' . $s->submittedonbehalf . ')';
+            }
+
             // EMail
             $record->email = $s->user->email;
 
@@ -338,6 +349,12 @@ class report_anonymous {
         $cm = get_coursemodule_from_instance('assign', $assignmentid);
         if ($files = $DB->get_records('plagiarism_urkund_files', array('cm' => $cm->id, 'userid' => $userid))) {
             return $files;
+        } else {
+
+            // if this was "submitted on behalf of" then record will refer to 'relateduserid'
+            if ($files = $DB->get_records('plagiarism_urkund_files', array('cm' => $cm->id, 'relateduserid' => $userid))) {
+                return $files;
+            }
         }
         return false;
     }

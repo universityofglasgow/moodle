@@ -1,5 +1,9 @@
 ﻿Version Information
 ===================
+Version 3.1.1.1
+  1. Fix inoperable toggle on iPhone's / iPad's.
+  2. Removed IE8 support.
+
 Version 3.1.1
   1. First stable version for Moodle 3.1.
 
