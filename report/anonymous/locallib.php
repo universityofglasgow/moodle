@@ -48,6 +48,59 @@ class report_anonymous {
         return $assignments;
     }
 
+    /** 
+     * Estimate submission return time from number of attempts
+     * @param int $attempts 
+     * @return int return time in minutes
+     */
+    private static function get_returntime($attempts) {
+       
+        // cron interval (minutes)
+        $croninterval = 5;
+
+        // Urkund retry table
+        $attemptTimes = Array(
+             '1'    => '0',
+             '2'    => '5',
+             '3'    => '10',
+             '4'    => '15',
+             '5'    => '30',
+             '6'    => '60',
+             '7'    => '90',
+             '8'    => '120',
+             '9'    => '240',
+             '10'   => '360',
+             '11'   => '480',
+             '12'   => '600',
+             '13'   => '720',
+             '14'   => '960',
+             '15'   => '1200',
+             '16'   => '1440',
+             '17'   => '1680',
+             '18'   => '1920',
+             '19'   => '2160',
+             '20'   => '2400',
+             '21'   => '2640',
+             '22'   => '2880',
+             '23'   => '3660',
+             '24'   => '3840',
+             '25'   => '4320',
+             '26'   => '4800',
+             '27'   => '5280',
+             '28'   => '5760',
+             '29'   => '6240'
+        );
+
+        // Estimate time
+        if (!$attempts) {
+            return $croninterval;
+        } else if (array_key_exists($attempts, $attemptTimes)) {
+            return $attemptTimes[$attempts] + (2 * $croninterval);
+        } else {
+            return false;
+        }
+    }
+
     /**
      * can the user view the data submitted
      * some checks
@@ -226,6 +279,7 @@ class report_anonymous {
                         $urkundinstance->urkundfilename = $file->filename;
                         $urkundinstance->urkundscore = $file->similarityscore;
                         $urkundinstance->submittedonbehalf = null;
+                        $urkundinstance->returntime = self::get_returntime($file->attempt);
                         if ($file->relateduserid) {
                             if ($subuser = $DB->get_record('user', array('id' => $file->userid))) {
                                 $urkundinstance->submittedonbehalf = fullname($subuser);
@@ -313,6 +367,7 @@ class report_anonymous {
             $record->urkundfilename = isset($s->urkundfilename) ? $s->urkundfilename : '-';
             $record->urkundstatus = isset($s->urkundstatus) ? $s->urkundstatus : '-';
             $record->urkundscore = isset($s->urkundscore) ? $s->urkundscore : '-';
+            $record->returntime = isset($s->returntime) ? $s->returntime : '-';
       
             $output[] = $record;
         }

@@ -81,6 +81,31 @@ class report_anonymous_renderer extends plugin_renderer_base {
     }
 
     /**
+     * Readable time (from minutes)
+     * @param mixed $mins (could be '-')
+     * @return string human readble time
+     */
+    private function readable_mins($mins) {
+        $minutes = get_string('minutes', 'report_anonymous');
+        $hour = get_string('hour', 'report_anonymous');
+        $hours = get_string('hours', 'report_anonymous');
+
+        if (!is_numeric($mins)) {
+            return $mins;
+        } else if ($mins < 60) {
+            return "$mins $minutes";
+        } else {
+            $numhours = floor($mins / 60);
+            $nummins = $mins - ($numhours * 60);
+            if ($numhours == 1) {
+                return "$numhours $hour $nummins $minutes";
+            } else {
+                return "$numhours $hours $nummins $minutes";
+            }
+        }
+    }
+
+    /**
      * List of assignment users
      * @param int $courseid course id
      * @param object $assignment assignment
@@ -114,6 +139,7 @@ class report_anonymous_renderer extends plugin_renderer_base {
             $headers[] = $this->head('urkundfile', 'urkundfilename', $baseurl);
             $headers[] = $this->head('urkundstatus', 'urkundstatus', $baseurl);
             $headers[] = $this->head('urkundscore', 'urkundscore', $baseurl);
+            $headers[] = $this->head('returntime', 'returntime', $baseurl);
         }
         $table->head = $headers;
 
@@ -156,6 +182,7 @@ class report_anonymous_renderer extends plugin_renderer_base {
                 $line[] = $this->urkund_filename($s->urkundfilename);
                 $line[] = $s->urkundstatus;
                 $line[] = $s->urkundscore;
+                $line[] = $this->readable_mins($s->returntime);
             }
       
             $table->data[] = $line;
