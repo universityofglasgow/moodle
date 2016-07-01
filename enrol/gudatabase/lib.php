@@ -877,17 +877,17 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
     public function course_updated($inserted, $course, $data) {
         global $DB;
 
-        // If course is not visible we don't do anything.
-        if (!$course->visible) {
-            return true;
-        }
-
         // Make sure we have config.
         $this->load_config();
 
         // We want all our new courses to have this plugin.
         if ($inserted) {
             $instanceid = $this->add_first_instance($course);
+        }
+
+        // If course is not visible we don't do anything further.
+        if (!$course->visible) {
+            return true;
         }
 
         // Get the instances of the enrolment plugin.
