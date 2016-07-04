@@ -503,7 +503,7 @@ class report_anonymous {
             $myxls->write_string(3, $i++, get_string('urkundfile', 'report_anonymous'));
             $myxls->write_string(3, $i++, get_string('urkundstatus', 'report_anonymous'));
             $myxls->write_string(3, $i++, get_string('urkundscore', 'report_anonymous'));
-
+            $myxls->write_string(3, $i++, get_string('returntime', 'report_anonymous'));
         }
 
         // Add some data.
@@ -529,6 +529,7 @@ class report_anonymous {
                 $myxls->write_string($row, $i++, $s->urkundfilename);
                 $myxls->write_string($row, $i++, $s->urkundstatus);
                 $myxls->write_string($row, $i++, $s->urkundscore);
+                $myxls->write_number($row, $i++, $s->returntime);
             }
             $row++;
         }
