@@ -1,7 +1,0 @@
-{
-    "moodle-atto_wordimport-button": {
-        "requires": [
-            "moodle-editor_atto-plugin"
-        ]
-    }
-}
