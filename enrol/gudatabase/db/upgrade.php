@@ -56,5 +56,21 @@ function xmldb_enrol_gudatabase_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2014080604, 'enrol', 'gudatabase');
     }
 
+    // Add a new key to enrol_gudatabase_users
+    if ($oldversion < 2016092200) {
+
+        // Define key enrol_gudatabase_users_cu (primary) to be added to enrol_gudatabase_users.
+        $table = new xmldb_table('enrol_gudatabase_users');
+        $key = new xmldb_key('enrol_gudatabase_users_cu', XMLDB_INDEX_NOTUNIQUE, array('userid', 'courseid'));
+
+        // Conditionally launch add index enrol_gudatabase_users_cu.
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Gudatabase savepoint reached.
+        upgrade_plugin_savepoint(true, 2016092200, 'enrol', 'gudatabase');
+    }
+
     return true;
 }

@@ -1172,6 +1172,15 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         if (!empty($uniquecourses)) {
             foreach ($uniquecourses as $courseid => $code) {
 
+                // Find last updated time for this user/course. If it was last updated within 24 hours
+                // then we won't do it again
+                $dayago = time() - (24 * 60 * 60);
+                if ($gudusers = $DB->get_record('enrol_gudatabase_users', array('userid' => $user->id, 'courseid' => $courseid))) {
+                    if ($gudusers->timeupdated > $dayago) {
+                        continue;
+                    }
+                }
+
                 // Get course object.
                 if (!$course = $DB->get_record('course', array('id' => $courseid))) {
                     continue;
