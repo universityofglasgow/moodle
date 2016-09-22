@@ -61,7 +61,7 @@ function xmldb_enrol_gudatabase_upgrade($oldversion) {
 
         // Define key enrol_gudatabase_users_cu (primary) to be added to enrol_gudatabase_users.
         $table = new xmldb_table('enrol_gudatabase_users');
-        $key = new xmldb_key('enrol_gudatabase_users_cu', XMLDB_INDEX_NOTUNIQUE, array('userid', 'courseid'));
+        $index = new xmldb_key('enrol_gudatabase_users_cu', XMLDB_INDEX_NOTUNIQUE, array('userid', 'courseid'));
 
         // Conditionally launch add index enrol_gudatabase_users_cu.
         if (!$dbman->index_exists($table, $index)) {
