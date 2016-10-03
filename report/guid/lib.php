@@ -52,7 +52,7 @@ function report_guid_settings() {
     return $config;
 }
 
-function report_guid_build_filter($firstname, $lastname, $guid, $email) {
+function report_guid_build_filter($firstname, $lastname, $guid, $email, $idnumber) {
     $config = report_guid_settings();
 
     // LDAP filter doesn't like escaped characters.
@@ -62,6 +62,11 @@ function report_guid_build_filter($firstname, $lastname, $guid, $email) {
     // If the GUID is supplied then we don't care about anything else.
     if (!empty($guid)) {
         return $config->user_attribute . "=$guid";
+    }
+
+    // If the idnumber is supplied then we'll go for that.
+    if (!empty($idnumber)) {
+        return $config->field_map_idnumber . "=$idnumber";
     }
 
     // If the email is supplied then we don't care about name.
@@ -439,6 +444,7 @@ function report_guid_print_mycampus($courses, $guid) {
 
     // Run through the courses.
     foreach ($courses as $course) {
+        $gucourses = report_guid_mycampus_code($course->courses);
         echo "<p><strong>{$course->courses}</strong> ";
         if ($course->name != '-') {
             echo "'{$course->name}' in '{$course->ou}' ";
@@ -449,7 +455,18 @@ function report_guid_print_mycampus($courses, $guid) {
             echo "as <span class=\"label label-warning\">{$course->UserName}</span> ";
             $mismatch = true;
         }
-        echo "</p>";
+
+        // display local courses (if there are any).
+        echo '<br /><small>';
+        if ($gucourses) {
+            foreach ($gucourses as $gu) {
+                $link = new moodle_url('/course/view.php', array('id' => $gu->courseid));
+                echo '<a href="' . $link . '">' . $gu->coursename . '>&nbsp;&nbsp;'; 
+            }
+        } else {
+            echo get_string('nolocalcourses', 'report_guid');
+        }
+        echo "</small></p>";
     }
 
     // Mismatch?
@@ -498,6 +515,14 @@ function report_guid_create_user_from_ldap($result) {
     return $user;
 }
 
+// Find details about MyCampus codes
+function report_guid_mycampus_code($code) {
+    global $DB;
+
+    $gucourses = $DB->get_records('enrol_gudatabase_codes', array('code' => $code));
+    return $gucourses;
+}
+
 // Form definition for search.
 class guidreport_form extends moodleform {
 
@@ -514,6 +539,8 @@ class guidreport_form extends moodleform {
         $mform->setType('lastname', PARAM_RAW);
         $mform->addElement('text', 'email', get_string('email', 'report_guid' ) );
         $mform->setType('email', PARAM_EMAIL);
+        $mform->addElement('text', 'idnumber', get_string('idnumber', 'report_guid' ) );
+        $mform->setType('idnumber', PARAM_INT);
         $mform->addElement('text', 'guid', get_string('guidform', 'report_guid' ) );
         $mform->setType('guid', PARAM_ALPHANUM);
 

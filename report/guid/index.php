@@ -39,6 +39,7 @@ $firstname = optional_param('firstname', '', PARAM_TEXT);
 $lastname = optional_param('lastname', '', PARAM_TEXT);
 $email = optional_param('email', '', PARAM_CLEAN);
 $guid = optional_param('guid', '', PARAM_ALPHANUM);
+$idnumber = optional_param('idnumber', 0, PARAM_INT);
 $action = optional_param('action', '', PARAM_ALPHA);
 
 
@@ -77,7 +78,7 @@ echo "<p><a class=\"btn btn-primary\" href=\"{$CFG->wwwroot}/report/guid/upload.
 if ($mform->is_cancelled()) {
     redirect( "index.php" );
 } else if ($data = $mform->get_data()) {
-    if (!$filter = report_guid_build_filter( $data->firstname, $data->lastname, $data->guid, $data->email )) {
+    if (!$filter = report_guid_build_filter($data->firstname, $data->lastname, $data->guid, $data->email, $data->idnumber)) {
         notice(get_string('filtererror', 'report_guid'), $linkback );
         echo $OUTPUT->footer();
         die;
@@ -98,6 +99,7 @@ if ($mform->is_cancelled()) {
             'firstname' => $data->firstname,
             'lastname' => $data->lastname,
             'email' => $data->email,
+            'idnumber' => $data->idnumber,
             'guid' => $data->guid,
             'submitbutton' => $data->submitbutton,
             '_qf__guidreport_form' => 1,
