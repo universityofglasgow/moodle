@@ -459,10 +459,12 @@ function report_guid_print_mycampus($courses, $guid) {
         // display local courses (if there are any).
         echo '<br /><small>';
         if ($gucourses) {
+            $links = array();
             foreach ($gucourses as $gu) {
                 $link = new moodle_url('/course/view.php', array('id' => $gu->courseid));
-                echo '<a href="' . $link . '">' . $gu->coursename . '>&nbsp;&nbsp;'; 
+                $links[] = '<a href="' . $link . '">&quot;' . $gu->coursename . '&quot;</a>'; 
             }
+            echo implode(', ', $links);
         } else {
             echo get_string('nolocalcourses', 'report_guid');
         }
