@@ -274,6 +274,9 @@ class report_anonymous {
         } else {
             $submission = $assignment->get_user_submission($userid, false);
         }
+        if (!$submission) {
+            return false;
+        }
         $user = $DB->get_record('user', array('id' => $userid));
 
         // run through active plugins
