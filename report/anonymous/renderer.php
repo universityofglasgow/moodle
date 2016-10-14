@@ -141,6 +141,7 @@ class report_anonymous_renderer extends plugin_renderer_base {
             $headers[] = $this->head('urkundscore', 'urkundscore', $baseurl);
             $headers[] = $this->head('returntime', 'returntime', $baseurl);
         }
+        $headers[] = $this->head('deletepdf', 'deletepdf', $baseurl);
         $table->head = $headers;
 
         // Add data to table
@@ -183,6 +184,13 @@ class report_anonymous_renderer extends plugin_renderer_base {
                 $line[] = $s->urkundstatus;
                 $line[] = $s->urkundscore;
                 $line[] = $this->readable_mins($s->returntime);
+            }
+
+            // Delete button?
+            if ($s->convertedfiles) {
+                $line[] = '<a class="btn btn-danger btn-sm" href="' . $baseurl . '&userid=' . $s->userid . '&action=delete' . '">' . get_string('delete', 'report_anonymous') . '</a>';
+            } else {
+                $line[] = '';
             }
       
             $table->data[] = $line;

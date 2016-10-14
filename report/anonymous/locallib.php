@@ -27,6 +27,7 @@ require_once(dirname(__FILE__) . '/html2text/html2text.php');
 require_once(dirname(__FILE__) . '/forceutf8/src/ForceUTF8/Encoding.php');
 
 use \ForceUTF8\Encoding;
+use \assignfeedback_editpdf\document_services;
 
 class report_anonymous {
 
@@ -231,6 +232,118 @@ class report_anonymous {
     }
 
     /**
+     * This function will take an int or an assignment instance and
+     * return an assignment instance. It is just for convenience.
+     * Stolen from private function in assignment code
+     * @param int|\assign $assignment
+     * @return assign
+     */
+    private static function get_assignment_from_param($assignment) {
+        global $CFG;
+
+        require_once($CFG->dirroot . '/mod/assign/locallib.php');
+
+        if (!is_object($assignment)) {
+            $cm = \get_coursemodule_from_instance('assign', $assignment, 0, false, MUST_EXIST);
+            $context = \context_module::instance($cm->id);
+
+            $assignment = new \assign($context, null, null);
+        }
+        return $assignment;
+    }
+
+    /**
+     * Get converted pdf files associated with user
+     * @param int $assignid assignment id
+     * @param int $userid id user id
+     */
+    public static function get_converted_files($assignid, $userid) {
+        global $DB;
+
+        $fs = get_file_storage();
+        $context = context_system::instance();
+        $path = '/pdf/';
+
+        // Get the possible assignment submission plugins
+        $assignment = self::get_assignment_from_param($assignid);
+        $plugins = $assignment->get_submission_plugins();
+
+        // Get submission and user
+        if ($assignment->get_instance()->teamsubmission) {
+            $submission = $assignment->get_group_submission($userid, 0, false);
+        } else {
+            $submission = $assignment->get_user_submission($userid, false);
+        }
+        $user = $DB->get_record('user', array('id' => $userid));
+
+        // run through active plugins
+        $files = array();
+        foreach ($plugins as $plugin) {
+            if ($plugin->is_enabled() && $plugin->is_visible()) {
+                $pluginfiles = $plugin->get_files($submission, $user);
+                foreach ($pluginfiles as $filename => $file) {
+                    if ($file instanceof \stored_file) {
+                        if ($file->get_mimetype() !== 'application/pdf') {
+                            $conversion = $fs->get_file($context->id, 'core', 'documentconversion', 0, $path, $file->get_contenthash());
+                            if ($conversion) {
+                                $files[$filename] = $conversion;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return $files;
+    }
+
+    /**
+     * Find combined pdf
+     * @param int $assignid assignment id
+     * @param int $userid id user id
+     */
+    public static function get_combined_pdf($assignid, $userid) {
+        $fs = get_file_storage();
+        $assignment = self::get_assignment_from_param($assignid);
+        $grade = $assignment->get_user_grade($userid, true, -1);
+        if ($assignment->get_instance()->teamsubmission) {
+            $submission = $assignment->get_group_submission($userid, 0, false);
+        } else {
+            $submission = $assignment->get_user_submission($userid, false);
+        }
+
+        $contextid = $assignment->get_context()->id;
+        $component = 'assignfeedback_editpdf';
+        $filearea = document_services::COMBINED_PDF_FILEAREA;
+        $itemid = $grade->id;
+        $filepath = '/';
+        $filename = document_services::COMBINED_PDF_FILENAME;
+
+        $combinedpdf = $fs->get_file($contextid, $component, $filearea, $itemid, $filepath, $filename);
+
+        return $combinedpdf;
+    }
+
+    /**
+     * Delete converted PDFs
+     * @param int $assignid assignment id
+     * @param int $userid id user id
+     */
+    public static function delete_pdfs($assignid, $userid) {
+        $fs = get_file_storage();
+        $files = self::get_converted_files($assignid, $userid);
+        foreach ($files as $file) {
+            $file->delete();
+        }
+
+        // Now need to delete the combined pdf (the thing you mark) if there is one
+        $combinedpdf = self::get_combined_pdf($assignid, $userid);
+        if ($combinedpdf) {
+            $combinedpdf->delete();
+        }
+    }
+
+    /**
      * get the user's submissions (or null for none)
      * @param int $assignid assignment id
      * @param array $users list of user objects
@@ -268,6 +381,10 @@ class report_anonymous {
 
             // check if this user has an allocated marker
             $instance->allocatedmarker = self::get_allocatedmarker($assignid, $user->id);
+
+            // Get submission files
+            $instance->convertedfiles = !empty(self::get_converted_files($assignid, $user->id)) || 
+                !empty(self::get_combined_pdf($assignid, $user->id));
 
             // check for urkund files
             if ($urkund) {
@@ -352,6 +469,9 @@ class report_anonymous {
             // EMail
             $record->email = $s->user->email;
 
+            // UserID
+            $record->userid = $s->user->id;
+
             // Group(s)
             $record->groups = self::get_user_groups($s->user->id, $courseid);
 
@@ -368,6 +488,9 @@ class report_anonymous {
             $record->urkundstatus = isset($s->urkundstatus) ? $s->urkundstatus : '-';
             $record->urkundscore = isset($s->urkundscore) ? $s->urkundscore : '-';
             $record->returntime = isset($s->returntime) ? $s->returntime : '-';
+
+            // Converted PDFs
+            $record->convertedfiles = $s->convertedfiles;
       
             $output[] = $record;
         }

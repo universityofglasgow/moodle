@@ -38,6 +38,8 @@ $page = optional_param('page', 0, PARAM_INT);
 $tsort = optional_param('tsort', 'idnumber', PARAM_ALPHA);
 $tdir = optional_param('tdir', 'asc', PARAM_ALPHA);
 $group = optional_param('group', 0, PARAM_INT);
+$action = optional_param('action', '', PARAM_ALPHA);
+$userid = optional_param('userid', 0, PARAM_INT);
 
 $url = new moodle_url('/report/anonymous/index.php', array('id' => $id));
 $fullurl = new moodle_url('/report/anonymous/index.php', array(
@@ -88,6 +90,11 @@ if ($assignid) {
     // Reveal always if not blindmarking
     if (!$assignment->blindmarking) {
         $reveal = true;
+    }
+
+    // Deelete user's converted PDFs?
+    if (($action == 'delete') and $userid) {
+        report_anonymous::delete_pdfs($assignid, $userid);
     }
 
     // allocate ids if required
