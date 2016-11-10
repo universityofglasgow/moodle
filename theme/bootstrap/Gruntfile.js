@@ -259,8 +259,8 @@ module.exports = function(grunt) {
         "cssflip",
         "replace:rtl_images",
         "autoprefixer",
-        'csscomb',
-        'cssmin',
+        "csscomb",
+        "cssmin",
         "decache"
     ]);
 
@@ -274,5 +274,4 @@ module.exports = function(grunt) {
             ''
         ].join(os.EOL));
     });
-
 };

@@ -245,5 +245,42 @@ function xmldb_bigbluebuttonbn_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2015080605, 'bigbluebuttonbn');
     }
 
+    if ( $result && $oldversion < 2016011305 ) {
+        // Update the bigbluebuttonbn table
+        $table = new xmldb_table('bigbluebuttonbn');
+
+        // Define field type to be droped from bigbluebuttonbn
+        $field = new xmldb_field('type');
+        $field->set_attributes(XMLDB_TYPE_INTEGER, '2', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 0, 'course');
+        if ( $dbman->field_exists($table, $field) ) {
+            $dbman->drop_field($table, $field, $continue=true, $feedback=true);
+        }
+
+        // Define field 'event' to be renamed
+        $field = new xmldb_field('event');
+        $field->set_attributes(XMLDB_TYPE_CHAR, '32', null, XMLDB_NOTNULL, null, null);
+
+        // Make sure bigbluebuttonbn_logs table exists
+        $table = new xmldb_table('bigbluebuttonbn_log');
+        // Conditionally rename the table
+        if ($dbman->table_exists($table)) {
+            // Update the bigbluebuttonbn_log table
+            if ( $dbman->field_exists($table, $field) ) {
+                $dbman->rename_field($table, $field, 'log', $continue=true, $feedback=true);
+            }
+            // Rename bigbluebuttonbn_log table to bigbluebuttonbn_logs
+            $dbman->rename_table($table, 'bigbluebuttonbn_logs', $continue=true, $feedback=true);
+        } else {
+            // It was already renamed, select it only
+            $table = new xmldb_table('bigbluebuttonbn_logs');
+            // Update the bigbluebuttonbn_logs table
+            if ( $dbman->field_exists($table, $field) ) {
+                $dbman->rename_field($table, $field, 'log', $continue=true, $feedback=true);
+            }
+        }
+
+        upgrade_mod_savepoint(true, 2016011305, 'bigbluebuttonbn');
+    }
+
     return $result;
 }

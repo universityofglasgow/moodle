@@ -17,6 +17,7 @@ $action = required_param('action', PARAM_TEXT);
 $name = optional_param('name', '', PARAM_TEXT);
 $description = optional_param('description', '', PARAM_TEXT);
 $tags = optional_param('tags', '', PARAM_TEXT);
+$errors = optional_param('errors', '', PARAM_TEXT);
 
 if ($id) {
     $cm = get_coursemodule_from_id('bigbluebuttonbn', $id, 0, false, MUST_EXIST);
@@ -37,15 +38,20 @@ $PAGE->set_context($context);
 $PAGE->set_url('/mod/bigbluebuttonbn/bbb_view.php', array('id' => $cm->id, 'bigbluebuttonbn' => $bigbluebuttonbn->id));
 $PAGE->set_title(format_string($bigbluebuttonbn->name));
 $PAGE->set_cacheable(false);
+$PAGE->set_heading($course->fullname);
 $PAGE->blocks->show_only_fake_blocks();
 
+require_login($course, true, $cm);
+
 if ( isset($SESSION) && isset($SESSION->bigbluebuttonbn_bbbsession)) {
-    require_login($course, true, $cm);
     $bbbsession = $SESSION->bigbluebuttonbn_bbbsession;
 }
 switch (strtolower($action)) {
     case 'logout':
-        if ( isset($bbbsession) && !is_null($bbbsession) ) {
+        if (isset($errors) && $errors != '') {
+          bigbluebutton_bbb_view_errors($errors, $id);
+
+        } else if ( isset($bbbsession) && !is_null($bbbsession) ) {
             /// Moodle event logger: Create an event for meeting left
             bigbluebuttonbn_event_log(BIGBLUEBUTTON_EVENT_MEETING_LEFT, $bigbluebuttonbn, $context, $cm);
 
@@ -106,6 +112,7 @@ switch (strtolower($action)) {
                             $bbbsession['record']? 'true': 'false',
                             $durationtime,
                             $bbbsession['voicebridge'],
+                            $bbbsession['userlimit'],
                             $metadata,
                             $bbbsession['presentation']['name'],
                             $bbbsession['presentation']['url']
@@ -137,7 +144,7 @@ switch (strtolower($action)) {
                         /// Moodle event logger: Create an event for meeting created
                         bigbluebuttonbn_event_log(BIGBLUEBUTTON_EVENT_MEETING_CREATED, $bigbluebuttonbn, $context, $cm);
                         /// Internal logger: Instert a record with the meeting created
-                        bigbluebuttonbn_log($bbbsession, 'Create');
+                        bigbluebuttonbn_logs($bbbsession, BIGBLUEBUTTONBN_LOG_EVENT_CREATE);
                         /// Since the meeting is already running, we just join the session
                         bigbluebutton_bbb_view_execute_join($bbbsession, $cm, $context, $bigbluebuttonbn);
                     }
@@ -179,11 +186,11 @@ function bigbluebutton_bbb_view_execute_join($bbbsession, $cm, $context, $bigblu
         } else {
             $password = $bbbsession['viewerPW'];
         }
-        $join_url = bigbluebuttonbn_getJoinURL($bbbsession['meetingid'], $bbbsession['username'], $password, $bbbsession['shared_secret'], $bbbsession['endpoint'], $bbbsession['userID']);
+        $join_url = bigbluebuttonbn_getJoinURL($bbbsession['meetingid'], $bbbsession['username'], $password, $bbbsession['shared_secret'], $bbbsession['endpoint'], $bbbsession['logoutURL']);
         //// Moodle event logger: Create an event for meeting joined
         bigbluebuttonbn_event_log(BIGBLUEBUTTON_EVENT_MEETING_JOINED, $bigbluebuttonbn, $context, $cm);
         /// Internal logger: Instert a record with the meeting created
-        bigbluebuttonbn_log($bbbsession, 'Join');
+        bigbluebuttonbn_logs($bbbsession, BIGBLUEBUTTONBN_LOG_EVENT_JOIN);
         //// Before executing the redirect, increment the number of participants
         bigbluebuttonbn_bbb_broker_participant_joined($bbbsession['meetingid'], ($bbbsession['administrator'] || $bbbsession['moderator']) );
         //// Execute the redirect
@@ -192,4 +199,18 @@ function bigbluebutton_bbb_view_execute_join($bbbsession, $cm, $context, $bigblu
     } else {
         header('Location: '.$bbbsession['logoutURL'] );
     }
+}
+
+function bigbluebutton_bbb_view_errors($sErrors, $id) {
+    global $CFG, $OUTPUT, $PAGE;
+
+    $errors = (array) json_decode(urldecode($sErrors));
+    $msgErrors = "";
+    foreach ($errors as $error) {
+        $msgErrors .= html_writer::tag('p', $error->{"message"}, array('class' => 'alert alert-danger')) . "\n";
+    }
+
+    echo $OUTPUT->header();
+    print_error( 'view_error_bigbluebutton', 'bigbluebuttonbn', $CFG->wwwroot.'/mod/bigbluebuttonbn/view.php?id='.$id, $msgErrors, $sErrors );
+    echo $OUTPUT->footer();
 }

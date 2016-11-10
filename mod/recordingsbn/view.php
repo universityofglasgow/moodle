@@ -68,12 +68,15 @@ if ( $version_major < '2014051200' ) {
 }
 
 //Validates if user has permissions for managing recordings
+$bbbsession['administrator'] = has_capability('moodle/category:manage', $context);
 $bbbsession['managerecordings'] = (has_capability('moodle/category:manage', $context) || has_capability('mod/bigbluebuttonbn:managerecordings', $context));
 
 //Additional info related to the course
-$bbbsession['coursename'] = $course->fullname;
-$bbbsession['courseid'] = $course->id;
+$bbbsession['course'] = $course;
 $bbbsession['cm'] = $cm;
+
+// Initialize session variable used across views
+$SESSION->bigbluebuttonbn_bbbsession = $bbbsession;
 
 ///Set strings to show
 $view_no_recordings = get_string('view_no_recordings', 'recordingsbn');
@@ -100,13 +103,13 @@ echo $OUTPUT->heading($recordingsbn->name, 2);
 
 // Recordings plugin code
 $dbman = $DB->get_manager(); // loads ddl manager and xmldb classes
-if ($dbman->table_exists('bigbluebuttonbn_log') ) {
+if ($dbman->table_exists('bigbluebuttonbn_logs') ) {
     // BigBlueButton Setup
     $endpoint = bigbluebuttonbn_get_cfg_server_url();
     $shared_secret = bigbluebuttonbn_get_cfg_shared_secret();
 
     //Execute actions if there is one and it is allowed
-    if( isset($action) && isset($recordingid) && ($bbbsession['managerecordings']) ){
+    if( !empty($action) && !empty($recordingid) && $bbbsession['managerecordings'] ){
         if( $action == 'show' ) {
             bigbluebuttonbn_doPublishRecordings($recordingid, 'true', $endpoint, $shared_secret);
             if ( $version_major < '2014051200' ) {
@@ -143,7 +146,13 @@ if ($dbman->table_exists('bigbluebuttonbn_log') ) {
     }
 
     $meetingID='';
-    $results = recordingsbn_getRecordedMeetings($course->id);
+    $results = bigbluebuttonbn_getRecordedMeetings($course->id);
+
+    if( $recordingsbn->include_deleted_activities ) {
+        $results_deleted = bigbluebuttonbn_getRecordedMeetingsDeleted($course->id);
+        $results = array_merge($results, $results_deleted);
+    }
+
     if( $results ){
         //Eliminates duplicates
         $mIDs = array();
@@ -157,9 +166,16 @@ if ($dbman->table_exists('bigbluebuttonbn_log') ) {
         }
     }
 
+    // Get actual recordings
     if ( $meetingID != '' ) {
         $recordings = bigbluebuttonbn_getRecordingsArray($meetingID, $endpoint, $shared_secret);
+    } else {
+        $recordings = Array();
     }
+    // Get recording links
+    $recordings_imported = bigbluebuttonbn_getRecordingsImportedArray($bbbsession['course']->id);
+    // Merge the recordings
+    $recordings = array_merge( $recordings, $recordings_imported );
 
     echo "\n".'  <div id="bigbluebuttonbn_html_table">'."\n";
     if ( isset($recordings) && !array_key_exists('messageKey', $recordings)) {  // There are recordings for this meeting
@@ -174,8 +190,8 @@ if ($dbman->table_exists('bigbluebuttonbn_log') ) {
 
         } else {
             //Shows YUI version.
-            $recordingsbn_data = bigbluebuttonbn_get_recording_data($bbbsession, $recordings);
             $recordingsbn_columns = bigbluebuttonbn_get_recording_columns($bbbsession, $recordings);
+            $recordingsbn_data = bigbluebuttonbn_get_recording_data($bbbsession, $recordings);
 
             echo '    <div id="recordingsbn_yui_table">'."\n";
 
