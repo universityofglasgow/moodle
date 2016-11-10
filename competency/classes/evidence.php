@@ -311,9 +311,9 @@ class evidence extends persistent {
         );
 
         if (!empty($sort)) {
-            $sortcolumns = explode(',', $sort);
-            $sortcolumns = array_map('trim', $sortcolumns);
-            $sort = ' ORDER BY e.' . implode(', e.', $sortcolumns) . ' ' . $order;
+            $sort = ' ORDER BY e.' . $sort . ' ' . $order . ', e.id ASC';
+        } else {
+            $sort = ' ORDER BY e.id ASC';
         }
 
         $sql = 'SELECT e.*

@@ -51,8 +51,8 @@ class mod_lti_external extends external_api {
         return new external_single_structure(
             array(
                 'id' => new external_value(PARAM_INT, 'Tool type id'),
-                'name' => new external_value(PARAM_TEXT, 'Tool type name'),
-                'description' => new external_value(PARAM_TEXT, 'Tool type description'),
+                'name' => new external_value(PARAM_NOTAGS, 'Tool type name'),
+                'description' => new external_value(PARAM_NOTAGS, 'Tool type description'),
                 'urls' => new external_single_structure(
                     array(
                         'icon' => new external_value(PARAM_URL, 'Tool type icon URL'),
@@ -307,7 +307,7 @@ class mod_lti_external extends external_api {
                 $viewablefields = [];
                 if (has_capability('mod/lti:view', $context)) {
                     list($module['intro'], $module['introformat']) =
-                        external_format_text($lti->intro, $lti->introformat, $context->id, 'mod_lti', 'intro', $lti->id);
+                        external_format_text($lti->intro, $lti->introformat, $context->id, 'mod_lti', 'intro', null);
 
                     $viewablefields = array('launchcontainer', 'showtitlelaunch', 'showdescriptionlaunch', 'icon', 'secureicon');
                 }
@@ -812,8 +812,8 @@ class mod_lti_external extends external_api {
         return new external_function_parameters(
             array(
                 'id' => new external_value(PARAM_INT, 'Tool type id'),
-                'name' => new external_value(PARAM_TEXT, 'Tool type name', VALUE_DEFAULT, null),
-                'description' => new external_value(PARAM_TEXT, 'Tool type description', VALUE_DEFAULT, null),
+                'name' => new external_value(PARAM_RAW, 'Tool type name', VALUE_DEFAULT, null),
+                'description' => new external_value(PARAM_RAW, 'Tool type description', VALUE_DEFAULT, null),
                 'state' => new external_value(PARAM_INT, 'Tool type state', VALUE_DEFAULT, null)
             )
         );

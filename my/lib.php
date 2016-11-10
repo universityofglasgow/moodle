@@ -133,6 +133,17 @@ function my_reset_page($userid, $private=MY_PAGE_PRIVATE, $pagetype='my-index') 
     if (!$systempage = $DB->get_record('my_pages', array('userid' => null, 'private' => $private))) {
         return false; // error
     }
+
+    // Trigger dashboard has been reset event.
+    $eventparams = array(
+        'context' => context_user::instance($userid),
+        'other' => array(
+            'private' => $private,
+            'pagetype' => $pagetype,
+        ),
+    );
+    $event = \core\event\dashboard_reset::create($eventparams);
+    $event->trigger();
     return $systempage;
 }
 
@@ -149,29 +160,18 @@ function my_reset_page_for_all_users($private = MY_PAGE_PRIVATE, $pagetype = 'my
     // This may take a while. Raise the execution time limit.
     core_php_time_limit::raise();
 
-    // Find all the user pages.
-    $where = 'userid IS NOT NULL AND private = :private';
-    $params = array('private' => $private);
-    $pages = $DB->get_recordset_select('my_pages', $where, $params, 'id, userid');
-    $blockids = array();
-
-    foreach ($pages as $page) {
-        $usercontext = context_user::instance($page->userid);
-
-        // Find all block instances in that page.
-        $blockswhere = 'parentcontextid = :parentcontextid AND
-            pagetypepattern = :pagetypepattern AND
-            (subpagepattern IS NULL OR subpagepattern = :subpagepattern)';
-        $blockswhereparams = [
-            'parentcontextid' => $usercontext->id,
-            'pagetypepattern' => $pagetype,
-            'subpagepattern' => $page->id
-        ];
-        if ($pageblockids = $DB->get_fieldset_select('block_instances', 'id', $blockswhere, $blockswhereparams)) {
-            $blockids = array_merge($blockids, $pageblockids);
-        }
-    }
-    $pages->close();
+    // Find all the user pages and all block instances in them.
+    $sql = "SELECT bi.id
+        FROM {my_pages} p
+        JOIN {context} ctx ON ctx.instanceid = p.userid AND ctx.contextlevel = :usercontextlevel
+        JOIN {block_instances} bi ON bi.parentcontextid = ctx.id AND
+            bi.pagetypepattern = :pagetypepattern AND
+            (bi.subpagepattern IS NULL OR bi.subpagepattern = " . $DB->sql_concat("''", 'p.id') . ")
+        WHERE p.private = :private";
+    $params = array('private' => $private,
+        'usercontextlevel' => CONTEXT_USER,
+        'pagetypepattern' => $pagetype);
+    $blockids = $DB->get_fieldset_sql($sql, $params);
 
     // Wrap the SQL queries in a transaction.
     $transaction = $DB->start_delegated_transaction();
@@ -182,12 +182,21 @@ function my_reset_page_for_all_users($private = MY_PAGE_PRIVATE, $pagetype = 'my
     }
 
     // Finally delete the pages.
-    if (!empty($pages)) {
-        $DB->delete_records_select('my_pages', $where, $params);
-    }
+    $DB->delete_records_select('my_pages', 'userid IS NOT NULL AND private = :private', ['private' => $private]);
 
     // We should be good to go now.
     $transaction->allow_commit();
+
+    // Trigger dashboard has been reset event.
+    $eventparams = array(
+        'context' => context_system::instance(),
+        'other' => array(
+            'private' => $private,
+            'pagetype' => $pagetype,
+        ),
+    );
+    $event = \core\event\dashboards_reset::create($eventparams);
+    $event->trigger();
 }
 
 class my_syspage_block_manager extends block_manager {

@@ -2196,10 +2196,13 @@ class api {
      */
     public static function reorder_template_competency($templateid, $competencyidfrom, $competencyidto) {
         static::require_enabled();
-        // First we do a permissions check.
-        $context = context_system::instance();
+        $template = new template($templateid);
 
-        require_capability('moodle/competency:templatemanage', $context);
+        // First we do a permissions check.
+        if (!$template->can_manage()) {
+            throw new required_capability_exception($template->get_context(), 'moodle/competency:templatemanage',
+                'nopermissions', '');
+        }
 
         $down = true;
         $matches = template_competency::get_records(array('templateid' => $templateid, 'competencyid' => $competencyidfrom));
@@ -4152,7 +4155,7 @@ class api {
      * @param int $limit Number of records to return.
      * @return \core_competency\evidence[]
      */
-    public static function list_evidence_in_course($userid = 0, $courseid = 0, $competencyid = 0, $sort = 'timecreated, id',
+    public static function list_evidence_in_course($userid = 0, $courseid = 0, $competencyid = 0, $sort = 'timecreated',
                                                    $order = 'DESC', $skip = 0, $limit = 0) {
         static::require_enabled();
 

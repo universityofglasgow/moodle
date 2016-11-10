@@ -1149,10 +1149,12 @@ function lti_get_configured_types($courseid, $sectionreturn = 0) {
         $type           = new stdClass();
         $type->modclass = MOD_CLASS_ACTIVITY;
         $type->name     = 'lti_type_' . $ltitype->id;
-        $type->title    = $ltitype->name;
+        // Clean the name. We don't want tags here.
+        $type->title    = clean_param($ltitype->name, PARAM_NOTAGS);
         $trimmeddescription = trim($ltitype->description);
         if ($trimmeddescription != '') {
-            $type->help     = $trimmeddescription;
+            // Clean the description. We don't want tags here.
+            $type->help     = clean_param($trimmeddescription, PARAM_NOTAGS);
             $type->helplink = get_string('modulename_shortcut_link', 'lti');
         }
         if (empty($ltitype->icon)) {
@@ -2491,11 +2493,18 @@ function get_tool_type_instance_ids($type) {
 function serialise_tool_type(stdClass $type) {
     $capabilitygroups = get_tool_type_capability_groups($type);
     $instanceids = get_tool_type_instance_ids($type);
-
+    // Clean the name. We don't want tags here.
+    $name = clean_param($type->name, PARAM_NOTAGS);
+    if (!empty($type->description)) {
+        // Clean the description. We don't want tags here.
+        $description = clean_param($type->description, PARAM_NOTAGS);
+    } else {
+        $description = get_string('editdescription', 'mod_lti');
+    }
     return array(
         'id' => $type->id,
-        'name' => $type->name,
-        'description' => isset($type->description) ? $type->description : get_string('editdescription', 'mod_lti'),
+        'name' => $name,
+        'description' => $description,
         'urls' => get_tool_type_urls($type),
         'state' => get_tool_type_state_info($type),
         'hascapabilitygroups' => !empty($capabilitygroups),
@@ -2691,11 +2700,14 @@ function lti_load_tool_from_cartridge($url, $lti) {
 function lti_load_cartridge($url, $map, $propertiesmap = array()) {
     global $CFG;
     require_once($CFG->libdir. "/filelib.php");
-    // TODO MDL-46023 Replace this code with a call to the new library.
-    $origentity = libxml_disable_entity_loader(true);
 
     $curl = new curl();
     $response = $curl->get($url);
+
+    // TODO MDL-46023 Replace this code with a call to the new library.
+    $origerrors = libxml_use_internal_errors(true);
+    $origentity = libxml_disable_entity_loader(true);
+    libxml_clear_errors();
 
     $document = new DOMDocument();
     @$document->loadXML($response, LIBXML_DTDLOAD | LIBXML_DTDATTR);
@@ -2703,12 +2715,17 @@ function lti_load_cartridge($url, $map, $propertiesmap = array()) {
     $cartridge = new DomXpath($document);
 
     $errors = libxml_get_errors();
+
+    libxml_clear_errors();
+    libxml_use_internal_errors($origerrors);
+    libxml_disable_entity_loader($origentity);
+
     if (count($errors) > 0) {
         $message = 'Failed to load cartridge.';
         foreach ($errors as $error) {
             $message .= "\n" . trim($error->message, "\n\r\t .") . " at line " . $error->line;
         }
-        throw new moodle_exception($message);
+        throw new moodle_exception('errorreadingfile', '', '', $url, $message);
     }
 
     $toolinfo = array();
@@ -2726,7 +2743,7 @@ function lti_load_cartridge($url, $map, $propertiesmap = array()) {
             }
         }
     }
-    libxml_disable_entity_loader($origentity);
+
     return $toolinfo;
 }
 

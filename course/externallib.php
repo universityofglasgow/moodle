@@ -195,9 +195,11 @@ class core_course_external extends external_api {
                 $sectionvalues['id'] = $section->id;
                 $sectionvalues['name'] = get_section_name($course, $section);
                 $sectionvalues['visible'] = $section->visible;
+
+                $options = (object) array('noclean' => true);
                 list($sectionvalues['summary'], $sectionvalues['summaryformat']) =
                         external_format_text($section->summary, $section->summaryformat,
-                                $context->id, 'course', 'section', $section->id);
+                                $context->id, 'course', 'section', $section->id, $options);
                 $sectioncontents = array();
 
                 //for each module of the section
@@ -429,8 +431,8 @@ class core_course_external extends external_api {
 
             $courseinfo = array();
             $courseinfo['id'] = $course->id;
-            $courseinfo['fullname'] = $course->fullname;
-            $courseinfo['shortname'] = $course->shortname;
+            $courseinfo['fullname'] = external_format_string($course->fullname, $context->id);
+            $courseinfo['shortname'] = external_format_string($course->shortname, $context->id);
             $courseinfo['displayname'] = external_format_string(get_course_display_name_for_list($course), $context->id);
             $courseinfo['categoryid'] = $course->category;
             list($courseinfo['summary'], $courseinfo['summaryformat']) =
@@ -1548,7 +1550,7 @@ class core_course_external extends external_api {
                     }
 
                     if (isset($value)) {
-                        $conditions[$key] = $crit['value'];
+                        $conditions[$key] = $value;
                         $wheres[] = $key . " = :" . $key;
                     }
                 }
@@ -2233,8 +2235,8 @@ class core_course_external extends external_api {
             $coursecontext = context_course::instance($course->id);
 
             // Category information.
-            if (!isset($categoriescache[$course->category])) {
-                $categoriescache[$course->category] = coursecat::get($course->category);
+            if (!array_key_exists($course->category, $categoriescache)) {
+                $categoriescache[$course->category] = coursecat::get($course->category, IGNORE_MISSING);
             }
             $category = $categoriescache[$course->category];
 
@@ -2279,7 +2281,7 @@ class core_course_external extends external_api {
             $coursereturns['displayname']       = external_format_string($displayname, $coursecontext->id);
             $coursereturns['shortname']         = external_format_string($course->shortname, $coursecontext->id);
             $coursereturns['categoryid']        = $course->category;
-            $coursereturns['categoryname']      = $category->name;
+            $coursereturns['categoryname']      = $category == null ? '' : $category->name;
             $coursereturns['summary']           = $summary;
             $coursereturns['summaryformat']     = $summaryformat;
             $coursereturns['overviewfiles']     = $files;
