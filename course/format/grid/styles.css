@@ -100,7 +100,7 @@ div#gridmiddle-column > ul {
     height: auto;
     padding: 10px;
     text-align: left;
-    display: inline-table;
+    display: inline-block;
 }
 .dir-rtl #gridiconcontainer ul.gridicons li {
    text-align: right;
@@ -121,11 +121,12 @@ div#gridmiddle-column > ul {
 }
 .course-content ul.gridicons li p.icon_content {
     font-weight: bold;
-    margin: 0;
-    white-space: nowrap;
-    overflow: hidden;
     height: 20px;
+    margin: 0;
+    overflow: hidden;
     text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 .course-content ul.gridicons li .image_holder {
     overflow: hidden;

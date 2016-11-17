@@ -968,12 +968,6 @@ class format_grid extends format_base {
      * @return bool whether section was deleted
      */
     public function delete_section($section, $forcedeleteifnotempty = false) {
-        global $DB;
-        if (!is_object($section)) {
-            $section = $DB->get_record('course_sections', array('course' => $this->get_courseid(), 'section' => $section),
-                'id,section,sequence');
-        }
-
         if (parent::delete_section($section, $forcedeleteifnotempty)) {
             $coursecontext = context_course::instance($this->courseid);
             $this->delete_image($section->id, $coursecontext->id);

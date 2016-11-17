@@ -1,5 +1,10 @@
 History
 =============
+Version 3.1.1.0
+  1. Changes for MDL-54557.
+  2. Fix layout rendering issues when section name is empty by using the single space trick - #36.
+  3. Fix truncate long section names in the grid - #33.
+
 Version 3.1.0.1
   1. First 'beta' version for M3.1.
   2. Changes for MDL-51802.
