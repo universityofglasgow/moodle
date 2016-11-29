@@ -171,6 +171,29 @@ function report_guid_cleanup_entry( $entry ) {
     return $retentry;
 }
 
+/**
+ * convert array guid to a string
+ * pick a likely looking option from the string
+ */
+function report_guid_array_to_guid($guids) {
+
+    // some guids look like an email
+    $chosenguid = '';
+    foreach ($guids as $guid) {
+        if (strpos($guid, '@') !== false) {
+            continue;
+        }
+        $chosenguid = $guid;
+    }
+
+    // if that doesn't help, just pick the first one
+    if (!$chosenguid) {
+        $chosenguid = reset($guids);
+    }
+
+    return $chosenguid;
+}
+
 function report_guid_print_results( $results, $url ) {
     // Basic idea is to print as abbreviated list unless there is
     // only one.
@@ -223,7 +246,11 @@ function report_guid_print_results( $results, $url ) {
                 continue;
             }
             $guid = $result[$config->user_attribute];
-
+     
+            // check that this isn't an array (it shouldn't be)
+            if (is_array($guid)) {
+                $guid = report_guid_array_to_guid($guid);
+            }
 
             // Modify guid in url.
             $url->param( 'guid', $guid );
@@ -292,6 +319,9 @@ function report_guid_print_single($results) {
 
     // Do they have a moodle account?
     $username = $result[$config->user_attribute];
+    if (is_array($username)) {
+        $username = report_guid_array_to_guid($username);
+    }
     if ($user = $DB->get_record( 'user', array('username' => strtolower($username)) )) {
         $displayname = "<a href=\"{$CFG->wwwroot}/user/view.php?id={$user->id}&amp;course=1\">$fullname</a>";
         $create = '';
