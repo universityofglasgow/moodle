@@ -400,6 +400,7 @@ class report_anonymous {
                         $urkundinstance->urkundscore = $file->similarityscore;
                         $urkundinstance->submittedonbehalf = null;
                         $urkundinstance->returntime = self::get_returntime($file->attempt);
+                        $urkundinstance->urkundtimesubmitted = $file->timesubmitted;
                         if ($file->relateduserid) {
                             if ($subuser = $DB->get_record('user', array('id' => $file->userid))) {
                                 $urkundinstance->submittedonbehalf = fullname($subuser);
@@ -439,7 +440,8 @@ class report_anonymous {
 
             // Submitted (timemodified retained for sort)
             if ($s->submission) {
-                $record->date = date('d/m/Y H:i', $s->submission->timemodified);
+                $filetime = empty($s->urkundtimesubmitted) ? $s->submission->timemodified : $s->urkundtimesubmitted;
+                $record->date = date('d/m/Y H:i', $filetime);
                 if ($s->submission->status == 'new') {
                     $record->date = '-';
                     $record->status = '-';
