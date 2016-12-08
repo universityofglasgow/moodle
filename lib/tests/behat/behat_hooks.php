@@ -302,7 +302,12 @@ class behat_hooks extends behat_base {
         // Reset $SESSION.
         \core\session\manager::init_empty_session();
 
+        // Ignore E_NOTICE and E_WARNING during reset, as this might be caused because of some existing process
+        // running ajax. This will be investigated in another issue.
+        $errorlevel = error_reporting();
+        error_reporting($errorlevel & ~E_NOTICE & ~E_WARNING);
         behat_util::reset_all_data();
+        error_reporting($errorlevel);
 
         // Assign valid data to admin user (some generator-related code needs a valid user).
         $user = $DB->get_record('user', array('username' => 'admin'));
@@ -336,6 +341,28 @@ class behat_hooks extends behat_base {
         }
         // Run all test with medium (1024x768) screen size, to avoid responsive problems.
         $this->resize_window('medium');
+    }
+
+    /**
+     * Executed after scenario to go to a page where no JS is executed.
+     * This will ensure there are no unwanted ajax calls from browser and
+     * site can be reset safely.
+     *
+     * @param AfterScenarioScope $scope scope passed by event fired after scenario.
+     * @AfterScenario
+     */
+    public function after_scenario(AfterScenarioScope $scope) {
+        try {
+            $this->wait_for_pending_js();
+            $this->getSession()->reset();
+        } catch (DriverException $e) {
+            // Try restart session, if DriverException caught.
+            try {
+                $this->getSession()->restart();
+            } catch (DriverException $e) {
+                // Do nothing, as this will be caught while starting session in before_scenario.
+            }
+        }
     }
 
     /**
