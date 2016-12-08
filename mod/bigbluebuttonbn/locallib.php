@@ -883,18 +883,18 @@ function bigbluebuttonbn_bbb_broker_validate_parameters($params) {
     $error = '';
 
     if ( !isset($params['callback']) ) {
-        $error = $bigbluebuttonbn_bbb_broker_add_error($error, 'This call must include a javascript callback.');
+        $error = bigbluebuttonbn_bbb_broker_add_error($error, 'This call must include a javascript callback.');
     }
 
     if ( !isset($params['action']) ) {
-        $error = $bigbluebuttonbn_bbb_broker_add_error($error, 'Action parameter must be included.');
+        $error = bigbluebuttonbn_bbb_broker_add_error($error, 'Action parameter must be included.');
     } else {
         switch ( strtolower($params['action']) ){
             case 'server_ping':
             case 'meeting_info':
             case 'meeting_end':
                 if ( !isset($params['id']) ) {
-                    $error = $bigbluebuttonbn_bbb_broker_add_error($error, 'The meetingID must be specified.');
+                    $error = bigbluebuttonbn_bbb_broker_add_error($error, 'The meetingID must be specified.');
                 }
                 break;
             case 'recording_list':
@@ -1059,8 +1059,8 @@ function bigbluebuttonbn_get_recording_data_row($bbbsession, $recording, $tools=
         }
 
         //Set corresponding format
-        $format = '%a %h %d, %Y %H:%M:%S %Z';
-        $formattedStartDate = userdate($startTime / 1000, $format, usertimezone($USER->timezone));
+        $dateformat = get_string('strftimerecentfull', 'langconfig').' %Z';
+        $formattedStartDate = userdate($startTime / 1000, $dateformat, usertimezone($USER->timezone));
 
         $row = new stdClass();
         $row->recording = "{$head}{$recording_types}{$tail}";

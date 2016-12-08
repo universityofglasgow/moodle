@@ -1,24 +1,70 @@
-version: 1.0.7 (April 8, 2012)
+2.1.2 (2016051906)
+Bug: Fixed version format for recording list so it works for formats used in non western countries.
+Bug: Fixed issue with user limit not being correctly enforced when default limit was updated and edition was not allowed. (This bug only affected sites making use of the user limit feature)
+Bug: Fixed issue in "wait for moderator" feature. The only way to enable the join session was to refresh the page manually.
 
-	Added Spanish and French.  Synced API calls with BigBlueButton 0.8-beta-4.
+2.1.1 (2016051905)
+Bug: Fixed issue with database upgrade when updating from versions older than 2.1.x. (This bug only affected users upgrading directly from 1.x to 2.1.0).
 
-version: 1.0.6 (October 31, 2011)
+2.1.0 (2016051904)
+Tag: Bumped version and release tags and updated maturity to stable
 
-	Extended supported languages (ru), fixed a bug in bigbluebuttonbn/index.php 
+2.1.0-rc2 (2016051903)
+Bug: Fixed missing variable triggering warning message showing up on in development mode
+Bug: Fixed bug in format of imported recordings on YUI table
+Bug: Fixed a bug in import recording. Recordings from deleted activities were not considered.
 
-version: 1.0.5 (October 19, 2011)
+2.1.0-rc1 (2016051902)
+Tag: Bumped release tag and updated maturity
 
-	Extended supported languages
+2.1.0-b3 (2016051902)
+Bug: Considers all the imported recordings corresponding to a course.
+Bug: Duration was not shown properly in recordings
+Bug: All events are localized
+Bug: recordings not showing up after restore
+Bug: backup/restore were not working on logs
+Bug: Added missing event
 
-version: 1.0.4 (October 12, 2011)
+2.1.0-b2 (2016051901)
+Fixed bug: Fix for action management not working in recordings.
 
-	Added support for separate groups
+2.1.0-b1 (2016051900)
+Enhancement: Links to recordings can now be imported into a room/activity from a different course room/activity.
+Bug: Fixed backups. The logs, a secondary table dependent of mdl_bigbluebuttonbn used for tracking meeting creation is now included as part of the backup.
+Bug: Fixed issue with database prefix.
 
-version: 1.0-b2 (September 16, 2011)
+2.0.4 (2015080611)
+Bug: Fixed a bug introduced in the previous revision that was making pre-uploaded presentations to be ignored when a new activity was created.
+Bug: Changed wording for message shown when user is waiting for moderator.
 
-	Removed unneeded code related to grade scales
+2.0.3 (2015080610)
+Enhancement: Make sure the php-curl extension is installed. For pre-uploading slides, the use of the php-curl extension is required. If it is not installed or enabled the feature won't be available.
+Bug: Toggle form for tagging sessions was flicking for a second when the activity page was shown.
+Bug: When creating a new and pre-uploading presentation is turned off an error messages comes up.
+Bug: When for security reasons either the webserver or the proxy ahead of the webserver(s) adds the header x-content-type-options: nosniff to force the MIME Type verification, the javascript in the client doesn't work in Chrome/IE.
 
-version: 1.0-b1 (September 13, 2011)
+2.0.2 (2015080609)
+Bug: When using localization in a language different than English, the recording table produced for RecordingsBN showed an 'Invalid date' message.
 
-	Beta release for use with BigBlueButton 0.71a and BigBlueButton 0.8-beta servers
+2.0.1 (2015080608)
+Fixed bug: Adding a presentation file while creating a new BigBlueButtonBN activity failed. Only after editing the activity and adding a presentation file again would let the feature work.
+Fixed bug: A warning message was shown in the logs when joining a session
 
+1.0.7 (April 8, 2012)
+Enhancement: Added Spanish and French.
+Enhancement: Synced API calls with BigBlueButton 0.8-beta-4.
+
+1.0.6 (October 31, 2011)
+Enhancement: Extended supported languages (ru), fixed a bug in bigbluebuttonbn/index.php 
+
+1.0.5 (October 19, 2011)
+Enhancement: Extended supported languages
+
+1.0.4 (October 12, 2011)
+Enhancement: Added support for separate groups
+
+1.0-b2 (September 16, 2011)
+Enhancement: Removed unneeded code related to grade scales
+
+1.0-b1 (September 13, 2011)
+Tag: Beta release for use with BigBlueButton 0.71a and BigBlueButton 0.8-beta servers
