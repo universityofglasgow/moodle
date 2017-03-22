@@ -888,7 +888,7 @@ function scorm_get_all_attempts($scormid, $userid) {
  * @param  stdClass $cm     course module object
  */
 function scorm_print_launch ($user, $scorm, $action, $cm) {
-    global $CFG, $DB, $PAGE, $OUTPUT, $COURSE;
+    global $CFG, $DB, $OUTPUT;
 
     if ($scorm->updatefreq == SCORM_UPDATE_EVERYTIME) {
         scorm_parse($scorm, false);
@@ -931,6 +931,13 @@ function scorm_print_launch ($user, $scorm, $action, $cm) {
 
     $result = scorm_get_toc($user, $scorm, $cm->id, TOCFULLURL, $orgidentifier);
     $incomplete = $result->incomplete;
+    // Get latest incomplete sco to launch first.
+    if (!empty($result->sco->id)) {
+        $launchsco = $result->sco->id;
+    } else {
+        // Use launch defined by SCORM package.
+        $launchsco = $scorm->launch;
+    }
 
     // Do we want the TOC to be displayed?
     if ($scorm->displaycoursestructure == 1) {
@@ -973,7 +980,7 @@ function scorm_print_launch ($user, $scorm, $action, $cm) {
         }
 
         echo html_writer::empty_tag('br');
-        echo html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'scoid', 'value' => $scorm->launch));
+        echo html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'scoid', 'value' => $launchsco));
         echo html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'cm', 'value' => $cm->id));
         echo html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'currentorg', 'value' => $orgidentifier));
         echo html_writer::empty_tag('input', array('type' => 'submit', 'value' => get_string('enter', 'scorm')));
@@ -1009,12 +1016,19 @@ function scorm_simple_play($scorm, $user, $context, $cmid) {
         }
         if ($scorm->skipview >= SCORM_SKIPVIEW_FIRST) {
             $sco = current($scoes);
-            $url = new moodle_url('/mod/scorm/player.php', array('a' => $scorm->id,
-                                                                'currentorg' => $orgidentifier,
-                                                                'scoid' => $sco->id));
+            $result = scorm_get_toc($user, $scorm, $cmid, TOCFULLURL, $orgidentifier);
+            $url = new moodle_url('/mod/scorm/player.php', array('a' => $scorm->id, 'currentorg' => $orgidentifier));
+
+            // Set last incomplete sco to launch first.
+            if (!empty($result->sco->id)) {
+                $url->param('scoid', $result->sco->id);
+            } else {
+                $url->param('scoid', $sco->id);
+            }
+
             if ($scorm->skipview == SCORM_SKIPVIEW_ALWAYS || !scorm_has_tracks($scorm->id, $user->id)) {
                 if (!empty($scorm->forcenewattempt)) {
-                    $result = scorm_get_toc($user, $scorm, $cmid, TOCFULLURL, $orgidentifier);
+
                     if ($result->incomplete === false) {
                         $url->param('newattempt', 'on');
                     }
@@ -1518,6 +1532,7 @@ function scorm_get_toc_object($user, $scorm, $currentorg='', $scoid='', $mode='n
 
             if ($sco->isvisible === 'true') {
                 if (!empty($sco->launch)) {
+                    // Set first sco to launch if in browse/review mode.
                     if (empty($scoid) && ($mode != 'normal')) {
                         $scoid = $sco->id;
                     }
@@ -1538,7 +1553,7 @@ function scorm_get_toc_object($user, $scorm, $currentorg='', $scoid='', $mode='n
                                 ($usertrack->status == 'incomplete') ||
                                 ($usertrack->status == 'browsed')) {
                             $incomplete = true;
-                            if ($play && empty($scoid)) {
+                            if (empty($scoid)) {
                                 $scoid = $sco->id;
                             }
                         }
@@ -1557,7 +1572,7 @@ function scorm_get_toc_object($user, $scorm, $currentorg='', $scoid='', $mode='n
                         }
 
                     } else {
-                        if ($play && empty($scoid)) {
+                        if (empty($scoid)) {
                             $scoid = $sco->id;
                         }
 
@@ -2234,4 +2249,109 @@ function scorm_launch_sco($scorm, $sco, $cm, $context, $scourl) {
     $event->add_record_snapshot('scorm', $scorm);
     $event->add_record_snapshot('scorm_scoes', $sco);
     $event->trigger();
+}
+
+/**
+ * This is really a little language parser for AICC_SCRIPT
+ * evaluates the expression and returns a boolean answer
+ * see 2.3.2.5.1. Sequencing/Navigation Today  - from the SCORM 1.2 spec (CAM).
+ * Also used by AICC packages.
+ *
+ * @param string $prerequisites the aicc_script prerequisites expression
+ * @param array  $usertracks the tracked user data of each SCO visited
+ * @return boolean
+ */
+function scorm_eval_prerequisites($prerequisites, $usertracks) {
+
+    // This is really a little language parser - AICC_SCRIPT is the reference
+    // see 2.3.2.5.1. Sequencing/Navigation Today  - from the SCORM 1.2 spec.
+    $element = '';
+    $stack = array();
+    $statuses = array(
+        'passed' => 'passed',
+        'completed' => 'completed',
+        'failed' => 'failed',
+        'incomplete' => 'incomplete',
+        'browsed' => 'browsed',
+        'not attempted' => 'notattempted',
+        'p' => 'passed',
+        'c' => 'completed',
+        'f' => 'failed',
+        'i' => 'incomplete',
+        'b' => 'browsed',
+        'n' => 'notattempted'
+    );
+    $i = 0;
+
+    // Expand the amp entities.
+    $prerequisites = preg_replace('/&amp;/', '&', $prerequisites);
+    // Find all my parsable tokens.
+    $prerequisites = preg_replace('/(&|\||\(|\)|\~)/', '\t$1\t', $prerequisites);
+    // Expand operators.
+    $prerequisites = preg_replace('/&/', '&&', $prerequisites);
+    $prerequisites = preg_replace('/\|/', '||', $prerequisites);
+    // Now - grab all the tokens.
+    $elements = explode('\t', trim($prerequisites));
+
+    // Process each token to build an expression to be evaluated.
+    $stack = array();
+    foreach ($elements as $element) {
+        $element = trim($element);
+        if (empty($element)) {
+            continue;
+        }
+        if (!preg_match('/^(&&|\|\||\(|\))$/', $element)) {
+            // Create each individual expression.
+            // Search for ~ = <> X*{} .
+
+            // Sets like 3*{S34, S36, S37, S39}.
+            if (preg_match('/^(\d+)\*\{(.+)\}$/', $element, $matches)) {
+                $repeat = $matches[1];
+                $set = explode(',', $matches[2]);
+                $count = 0;
+                foreach ($set as $setelement) {
+                    if (isset($usertracks[$setelement]) &&
+                        ($usertracks[$setelement]->status == 'completed' || $usertracks[$setelement]->status == 'passed')) {
+                        $count++;
+                    }
+                }
+                if ($count >= $repeat) {
+                    $element = 'true';
+                } else {
+                    $element = 'false';
+                }
+            } else if ($element == '~') {
+                // Not maps ~.
+                $element = '!';
+            } else if (preg_match('/^(.+)(\=|\<\>)(.+)$/', $element, $matches)) {
+                // Other symbols = | <> .
+                $element = trim($matches[1]);
+                if (isset($usertracks[$element])) {
+                    $value = trim(preg_replace('/(\'|\")/', '', $matches[3]));
+                    if (isset($statuses[$value])) {
+                        $value = $statuses[$value];
+                    }
+                    if ($matches[2] == '<>') {
+                        $oper = '!=';
+                    } else {
+                        $oper = '==';
+                    }
+                    $element = '(\''.$usertracks[$element]->status.'\' '.$oper.' \''.$value.'\')';
+                } else {
+                    $element = 'false';
+                }
+            } else {
+                // Everything else must be an element defined like S45 ...
+                if (isset($usertracks[$element]) &&
+                    ($usertracks[$element]->status == 'completed' || $usertracks[$element]->status == 'passed')) {
+                    $element = 'true';
+                } else {
+                    $element = 'false';
+                }
+            }
+
+        }
+        $stack[] = ' '.$element.' ';
+    }
+    return eval('return '.implode($stack).';');
 }

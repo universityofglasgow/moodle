@@ -2621,10 +2621,10 @@ function require_login($courseorid = null, $autologinguest = true, $cm = null, $
     }
 
     // Check that the user account is properly set up. If we can't redirect to
-    // edit their profile, perform just the lax check. It will allow them to
-    // use filepicker on the profile edit page.
+    // edit their profile and this is not a WS request, perform just the lax check.
+    // It will allow them to use filepicker on the profile edit page.
 
-    if ($preventredirect) {
+    if ($preventredirect && !WS_SERVER) {
         $usernotfullysetup = user_not_fully_set_up($USER, false);
     } else {
         $usernotfullysetup = user_not_fully_set_up($USER, true);
@@ -5093,6 +5093,7 @@ function reset_course_userdata($data) {
     global $CFG, $DB;
     require_once($CFG->libdir.'/gradelib.php');
     require_once($CFG->libdir.'/completionlib.php');
+    require_once($CFG->dirroot.'/completion/criteria/completion_criteria_date.php');
     require_once($CFG->dirroot.'/group/lib.php');
 
     $data->courseid = $data->id;
@@ -5135,6 +5136,27 @@ function reset_course_userdata($data) {
         // Update any date activity restrictions.
         if ($CFG->enableavailability) {
             \availability_date\condition::update_all_dates($data->courseid, $data->timeshift);
+        }
+
+        // Update completion expected dates.
+        if ($CFG->enablecompletion) {
+            $modinfo = get_fast_modinfo($data->courseid);
+            $changed = false;
+            foreach ($modinfo->get_cms() as $cm) {
+                if ($cm->completion && !empty($cm->completionexpected)) {
+                    $DB->set_field('course_modules', 'completionexpected', $cm->completionexpected + $data->timeshift,
+                        array('id' => $cm->id));
+                    $changed = true;
+                }
+            }
+
+            // Clear course cache if changes made.
+            if ($changed) {
+                rebuild_course_cache($data->courseid, true);
+            }
+
+            // Update course date completion criteria.
+            \completion_criteria_date::update_date($data->courseid, $data->timeshift);
         }
 
         $status[] = array('component' => $componentstr, 'item' => get_string('datechanged'), 'error' => false);
@@ -5670,6 +5692,18 @@ function email_to_user($user, $from, $subject, $messagetext, $messagehtml = '', 
     $tempreplyto = array();
 
     $supportuser = core_user::get_support_user();
+    $noreplyaddressdefault = 'noreply@' . get_host_from_url($CFG->wwwroot);
+    $noreplyaddress = empty($CFG->noreplyaddress) ? $noreplyaddressdefault : $CFG->noreplyaddress;
+
+    if (!validate_email($noreplyaddress)) {
+        debugging('email_to_user: Invalid noreply-email '.s($noreplyaddress));
+        $noreplyaddress = $noreplyaddressdefault;
+    }
+
+    if (!validate_email($supportuser->email)) {
+        debugging('email_to_user: Invalid support-email '.s($supportuser->email));
+        $supportuser->email = $noreplyaddress;
+    }
 
     // Make up an email address for handling bounces.
     if (!empty($CFG->handlebounces)) {
@@ -5687,17 +5721,28 @@ function email_to_user($user, $from, $subject, $messagetext, $messagehtml = '', 
         }
     }
 
+    // Make sure that the explicit replyto is valid, fall back to the implicit one.
+    if (!empty($replyto) && !validate_email($replyto)) {
+        debugging('email_to_user: Invalid replyto-email '.s($replyto));
+        $replyto = $noreplyaddress;
+    }
+
     if (is_string($from)) { // So we can pass whatever we want if there is need.
-        $mail->From     = $CFG->noreplyaddress;
+        $mail->From     = $noreplyaddress;
         $mail->FromName = $from;
     } else if ($usetrueaddress and $from->maildisplay) {
+        if (!validate_email($from->email)) {
+            debugging('email_to_user: Invalid from-email '.s($from->email).' - not sending');
+            // Better not to use $noreplyaddress in this case.
+            return false;
+        }
         $mail->From     = $from->email;
         $mail->FromName = fullname($from);
     } else {
-        $mail->From     = $CFG->noreplyaddress;
+        $mail->From     = $noreplyaddress;
         $mail->FromName = fullname($from);
         if (empty($replyto)) {
-            $tempreplyto[] = array($CFG->noreplyaddress, get_string('noreplyname'));
+            $tempreplyto[] = array($noreplyaddress, get_string('noreplyname'));
         }
     }
 
@@ -9570,6 +9615,58 @@ function get_course_display_name_for_list($course) {
     } else {
         return $course->fullname;
     }
+}
+
+/**
+ * Safe analogue of unserialize() that can only parse arrays
+ *
+ * Arrays may contain only integers or strings as both keys and values. Nested arrays are allowed.
+ * Note: If any string (key or value) has semicolon (;) as part of the string parsing will fail.
+ * This is a simple method to substitute unnecessary unserialize() in code and not intended to cover all possible cases.
+ *
+ * @param string $expression
+ * @return array|bool either parsed array or false if parsing was impossible.
+ */
+function unserialize_array($expression) {
+    $subs = [];
+    // Find nested arrays, parse them and store in $subs , substitute with special string.
+    while (preg_match('/([\^;\}])(a:\d+:\{[^\{\}]*\})/', $expression, $matches) && strlen($matches[2]) < strlen($expression)) {
+        $key = '--SUB' . count($subs) . '--';
+        $subs[$key] = unserialize_array($matches[2]);
+        if ($subs[$key] === false) {
+            return false;
+        }
+        $expression = str_replace($matches[2], $key . ';', $expression);
+    }
+
+    // Check the expression is an array.
+    if (!preg_match('/^a:(\d+):\{([^\}]*)\}$/', $expression, $matches1)) {
+        return false;
+    }
+    // Get the size and elements of an array (key;value;key;value;....).
+    $parts = explode(';', $matches1[2]);
+    $size = intval($matches1[1]);
+    if (count($parts) < $size * 2 + 1) {
+        return false;
+    }
+    // Analyze each part and make sure it is an integer or string or a substitute.
+    $value = [];
+    for ($i = 0; $i < $size * 2; $i++) {
+        if (preg_match('/^i:(\d+)$/', $parts[$i], $matches2)) {
+            $parts[$i] = (int)$matches2[1];
+        } else if (preg_match('/^s:(\d+):"(.*)"$/', $parts[$i], $matches3) && strlen($matches3[2]) == (int)$matches3[1]) {
+            $parts[$i] = $matches3[2];
+        } else if (preg_match('/^--SUB\d+--$/', $parts[$i])) {
+            $parts[$i] = $subs[$parts[$i]];
+        } else {
+            return false;
+        }
+    }
+    // Combine keys and values.
+    for ($i = 0; $i < $size * 2; $i += 2) {
+        $value[$parts[$i]] = $parts[$i+1];
+    }
+    return $value;
 }
 
 /**

@@ -3130,4 +3130,57 @@ class core_moodlelib_testcase extends advanced_testcase {
         $this->assertSame('', $result);
         $this->assertDebuggingCalled();
     }
+
+    /**
+     * Test that generate_email_processing_address() returns valid email address.
+     */
+    public function test_generate_email_processing_address() {
+        global $CFG;
+        $this->resetAfterTest();
+
+        $data = (object)[
+            'id' => 42,
+            'email' => 'my.email+from_moodle@example.com',
+        ];
+
+        $modargs = 'B'.base64_encode(pack('V', $data->id)).substr(md5($data->email), 0, 16);
+
+        $CFG->maildomain = 'example.com';
+        $CFG->mailprefix = 'mdl+';
+        $this->assertEquals(1, validate_email(generate_email_processing_address(0, $modargs)));
+
+        $CFG->maildomain = 'mail.example.com';
+        $CFG->mailprefix = 'mdl-';
+        $this->assertEquals(1, validate_email(generate_email_processing_address(23, $modargs)));
+    }
+
+    /**
+     * Test safe method unserialize_array().
+     */
+    public function test_unserialize_array() {
+        $a = [1, 2, 3];
+        $this->assertEquals($a, unserialize_array(serialize($a)));
+        $this->assertEquals($a, unserialize_array(serialize($a)));
+        $a = ['a' => 1, 2 => 2, 'b' => 'cde'];
+        $this->assertEquals($a, unserialize_array(serialize($a)));
+        $this->assertEquals($a, unserialize_array(serialize($a)));
+        $a = ['a' => 1, 2 => 2, 'b' => 'c"d"e'];
+        $this->assertEquals($a, unserialize_array(serialize($a)));
+        $a = ['a' => 1, 2 => ['c' => 'd', 'e' => 'f'], 'b' => 'cde'];
+        $this->assertEquals($a, unserialize_array(serialize($a)));
+
+        // Can not unserialize if any string contains semicolons.
+        $a = ['a' => 1, 2 => 2, 'b' => 'c"d";e'];
+        $this->assertEquals(false, unserialize_array(serialize($a)));
+
+        // Can not unserialize if there are any objects.
+        $a = (object)['a' => 1, 2 => 2, 'b' => 'cde'];
+        $this->assertEquals(false, unserialize_array(serialize($a)));
+        $a = ['a' => 1, 2 => 2, 'b' => (object)['a' => 'cde']];
+        $this->assertEquals(false, unserialize_array(serialize($a)));
+
+        // Array used in the grader report.
+        $a = array('aggregatesonly' => [51, 34], 'gradesonly' => [21, 45, 78]);
+        $this->assertEquals($a, unserialize_array(serialize($a)));
+    }
 }
