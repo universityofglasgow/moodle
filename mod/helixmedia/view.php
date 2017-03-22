@@ -98,7 +98,7 @@ if ($hmli->showdescriptionlaunch && $hmli->intro) {
 
 if ( $launchcontainer == LTI_LAUNCH_CONTAINER_WINDOW ) {
     echo "<script type=\"text/javascript\">//<![CDATA[\n";
-    echo "window.open(".$launchurl.",'helixmedia');";
+    echo "window.open('".$launchurl."','helixmedia');";
     echo "//]]\n";
     echo "</script>\n";
     echo "<p style='text-align:center;'>".get_string("hml_in_new_window_message", "helixmedia")."</p>";

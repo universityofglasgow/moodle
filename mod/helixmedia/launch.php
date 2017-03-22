@@ -61,6 +61,12 @@ $mid  = optional_param('mid', -1, PARAM_INT);
 //Base64 encoded return URL
 $ret  = optional_param('ret', "", PARAM_TEXT);
 
+//Item name
+$name  = optional_param('name', "", PARAM_TEXT);
+
+//Item Intro text
+$intro  = optional_param('intro', "", PARAM_TEXT);
+
 if (strlen($ret)>0)
     $ret=base64_decode($ret);
 
@@ -146,11 +152,19 @@ if ($l || $n_assign || $n_feed || $type==HML_LAUNCH_TINYMCE_EDIT || $type==HML_L
         $cm=get_coursemodule_from_id('assign', $aid, 0, false, MUST_EXIST);
         $assign=$DB->get_record('assign', array('id' => $cm->instance), '*', MUST_EXIST);
         $hmli->name=$assign->name;
+        $hmli->intro=$assign->intro;
         $hmli->cmid=$aid;
     }
     else
     {
-        $hmli->name="Untitled (Launch Type=".$type.")";
+        if (strlen($name)>0) {
+            $hmli->name=$name;
+        } else {
+            $hmli->name="Untitled (Launch Type=".$type.")";
+        }
+        if (strlen($intro)>0) {
+            $hmli->intro=$intro;
+        }
         $hmli->cmid = -1;
     }
     $course = $DB->get_record('course', array('id' => $c), '*', MUST_EXIST);
@@ -252,7 +266,6 @@ if ($cap==null || !has_capability($cap, $context)) {
 
 //*****Uncomment to force debug mode*****
 //$hmli->debuglaunch=1;
-$hmli->debuglaunch=0;
 
 //Do the logging
 if ($type==HML_LAUNCH_NORMAL || $type==HML_LAUNCH_EDIT)
@@ -297,7 +310,11 @@ if ($type==HML_LAUNCH_NORMAL || $type==HML_LAUNCH_EDIT)
 if ($type==HML_LAUNCH_VIEW_SUBMISSIONS_THUMBNAILS || $type==HML_LAUNCH_VIEW_SUBMISSIONS)
    $hmli->userid=$userid;
 
-helixmedia_view($hmli, $type, $mid, $ret);
+if ($type==HML_LAUNCH_NORMAL && $CFG->version>=2015111600) {
+   lti_view($hmli, $course, $cm, $context);
+}
+
+helixmedia_view_mod($hmli, $type, $mid, $ret);
 
 ?>
 

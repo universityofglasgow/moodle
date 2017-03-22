@@ -31,7 +31,7 @@ if ($ADMIN->fulltree) {
     // Number of groups to show when collapsed.
     $name = new lang_string('hideinsert', 'atto_helixatto');
     $desc = new lang_string('hideinsert_desc', 'atto_helixatto');
-    $default = 0;
+    $default = 1;
     $options = $always_stream=array(0=>new lang_string("no"), 1=>new lang_string("yes"));
 
     $setting = new admin_setting_configselect('atto_helixatto/hideinsert',

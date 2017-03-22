@@ -56,7 +56,7 @@ define('HML_LAUNCH_ATTO_VIEW', 16);
  * @param $ret The return URL to set for the modal dialogue
  */
 
-function helixmedia_view($instance, $type=HML_LAUNCH_NORMAL, $ref=-1, $ret="") {
+function helixmedia_view_mod($instance, $type=HML_LAUNCH_NORMAL, $ref=-1, $ret="") {
     global $PAGE, $CFG, $DB;
 
     $mod_config=get_config("helixmedia");
@@ -218,6 +218,25 @@ function helixmedia_view($instance, $type=HML_LAUNCH_NORMAL, $ref=-1, $ret="") {
     }
     else
         $debuglaunch=false;
+/*
+    if ($type == HML_LAUNCH_NORMAL) {
+        // Trigger course_module_viewed event.
+        $params = array(
+            'context' => get_context_instance(CONTEXT_MODULE, $instance->id),
+            'objectid' => $instance->id
+        );
+
+        $event = \mod_page\event\course_module_viewed::create($params);
+        $event->add_record_snapshot('course_modules', $in);
+        $event->add_record_snapshot('course', $course);
+        $event->add_record_snapshot('helixmedia', $instance);
+        $event->trigger();
+
+        // Completion.
+        $completion = new completion_info($course);
+        $completion->set_module_viewed($cm);
+    }
+*/
 
     if ($type==HML_LAUNCH_RELINK)
         return helixmedia_curl_post_launch_html($params, $endpoint);

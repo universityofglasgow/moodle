@@ -25,7 +25,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2016090603;
+$plugin->version   = 2017013101;
 $plugin->requires  = 2014051200;
 $plugin->component = 'assignsubmission_helixassign';
 $plugin->maturity = MATURITY_STABLE;

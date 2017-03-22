@@ -48,6 +48,7 @@ define('URKUND_STATUSCODE_UNSUPPORTED', '415');
 define('URKUND_STATUSCODE_TOO_LARGE', '413');
 define('URKUND_STATUSCODE_NORECEIVER', '444');
 define('URKUND_STATUSCODE_INVALID_RESPONSE', '613'); // Invalid response received from URKUND.
+define('URKUND_STATUSCODE_PENDING', 'pending');
 
 // Url to external xml that states URKUNDS allowed file type list.
 define('URKUND_FILETYPE_URL', 'https://secure.urkund.com/ws/integration/accepted-formats.xml');
@@ -137,7 +138,6 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                 $showfiles = false;
             }
         }
-
         if (!empty($linkarray['content']) && $showcontent && str_word_count($linkarray['content']) > $wordcount) {
             $filename = "content-" . $COURSE->id . "-" . $cmid . "-". $userid . ".htm";
             $filepath = $CFG->tempdir."/urkund/" . $filename;
@@ -146,6 +146,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             $file->filename = $filename;
             $file->timestamp = time();
             $file->identifier = sha1(plagiarism_urkund_format_temp_content($linkarray['content']));
+            $file->altidentifier = sha1(plagiarism_urkund_format_temp_content($linkarray['content'], true));
             $file->oldidentifier = sha1($linkarray['content']);
             $file->filepath = $filepath;
         } else if (!empty($linkarray['file']) && $showfiles) {
@@ -308,15 +309,19 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             // User is not permitted to see any details.
             return false;
         }
-        $params = array($cmid, $userid, $filehash);
+        $params = array($cmid, $userid, $userid, $filehash);
         $extrasql = '';
         if (!empty($file->oldidentifier)) {
             $extrasql = ' OR identifier = ?';
             $params[] = $file->oldidentifier;
         }
+        if (!empty($file->altidentifier)) {
+            $extrasql .= ' OR identifier = ?';
+            $params[] = $file->altidentifier;
+        }
         $plagiarismfile = $DB->get_record_sql(
                     "SELECT * FROM {plagiarism_urkund_files}
-                    WHERE cm = ? AND userid = ? AND " .
+                    WHERE cm = ? AND (userid = ? OR relateduserid = ?) AND " .
                     "(identifier = ? ".$extrasql.")", $params);
         if (empty($plagiarismfile)) {
             // No record of that submitted file.
@@ -384,6 +389,10 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             $existingelements = $DB->get_records_menu('plagiarism_urkund_config', array('cm' => $data->coursemodule),
                                                       '', 'name, id');
             foreach ($plagiarismelements as $element) {
+                // Don't allow changes to receiver address if urkund is disabled.
+                if (empty($data->use_urkund) && $element == 'urkund_receiver') {
+                    continue;
+                }
                 $newelement = new stdClass();
                 $newelement->cm = $data->coursemodule;
                 $newelement->name = $element;
@@ -400,7 +409,8 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                 }
 
             }
-            if (!empty($data->urkund_receiver)) {
+            // Don't save user preference if this assignment doesn't use Urkund.
+            if (!empty($data->urkund_receiver) && !empty($data->use_urkund)) {
                 set_user_preference('urkund_receiver', trim($data->urkund_receiver));
             }
         }
@@ -734,7 +744,11 @@ function urkund_create_temp_file($cmid, $courseid, $userid, $filecontent) {
 }
 
 // Helper function used to add extra html around file contents.
-function plagiarism_urkund_format_temp_content($content) {
+function plagiarism_urkund_format_temp_content($content, $strippretag = false) {
+    // See MDL-57886.
+    if ($strippretag) {
+        $content = substr($content, 25, strlen($content) - 31);
+    }
     return '<html>' .
            '<head>' .
            '<meta charset="UTF-8">' .
@@ -1532,9 +1546,9 @@ function plagiarism_urkund_send_files() {
     $plagiarismsettings = plagiarism_plugin_urkund::get_settings();
     if (!empty($plagiarismsettings)) {
         // Get all files in a pending state.
-        $sql = '(statuscode = "pending" or statuscode = ?) AND attempt <= ?';
+        $sql = '(statuscode = ? or statuscode = ?) AND attempt <= ?';
         $plagiarismfiles = $DB->get_recordset_select("plagiarism_urkund_files", $sql,
-            array(URKUND_STATUSCODE_INVALID_RESPONSE, PLAGIARISM_URKUND_MAXATTEMPTS));
+            array(URKUND_STATUSCODE_PENDING, URKUND_STATUSCODE_INVALID_RESPONSE, PLAGIARISM_URKUND_MAXATTEMPTS));
         foreach ($plagiarismfiles as $pf) {
             // Check to make sure cm exists. - delete record if cm has been deleted.
             $sql = "SELECT m.name

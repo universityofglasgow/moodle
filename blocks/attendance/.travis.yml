@@ -1,6 +1,6 @@
 language: php
 
-sudo: false
+sudo: true
 
 cache:
   directories:
@@ -13,18 +13,19 @@ php:
 env:
  matrix:
   - DB=pgsql MOODLE_BRANCH=MOODLE_30_STABLE
-  - DB=pgsql MOODLE_BRANCH=master
+  - DB=pgsql MOODLE_BRANCH=MOODLE_31_STABLE
   - DB=mysqli MOODLE_BRANCH=MOODLE_30_STABLE
-  - DB=mysqli MOODLE_BRANCH=master
+  - DB=mysqli MOODLE_BRANCH=MOODLE_31_STABLE
 
 before_install:
+  - phpenv config-rm xdebug.ini
   - cd ../..
   - composer selfupdate
-  - composer create-project -n --no-dev moodlerooms/moodle-plugin-ci ci ^1
+  - composer create-project -n --no-dev --prefer-dist moodlerooms/moodle-plugin-ci ci ^1
   - export PATH="$(cd ci/bin; pwd):$(cd ci/vendor/bin; pwd):$PATH"
 
 install:
-  - moodle-plugin-ci add-plugin danmarsden/moodle-mod_attendance
+  - moodle-plugin-ci add-plugin danmarsden/moodle-mod_attendance MOODLE_31_STABLE
   - moodle-plugin-ci install
 
 script:

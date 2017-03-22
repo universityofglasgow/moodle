@@ -49,6 +49,7 @@ function atto_helixatto_params_for_js($elementid, $options, $fpoptions) {
     /**Switch of button when using the activity module.
        Use PARAM_RAW type here in case "add" is used for something other than a plugin name in other parts of moodle**/
     $add = optional_param("add", "none", PARAM_RAW);
+    $action = optional_param("action", "none", PARAM_RAW);
 
     //coursecontext
     $coursecontext=context_course::instance($COURSE->id);	
@@ -66,7 +67,7 @@ function atto_helixatto_params_for_js($elementid, $options, $fpoptions) {
         $disabled=true;
     }
 
-    if ($add == "helixmedia") {
+    if ($add == "helixmedia" || $action == "grader" || $action == "grade") {
         $disabled = true;
     }
 

@@ -1,3 +1,24 @@
+2.1.6 (2016051910)
+Bug: Fixed issue with groups not shown correctly when set up as separated and no groups where created. (CONTRIB-6652)
+Bug: Fixed issue with references to recordings and imported links duplicated when a backup is restored in a different course.
+Bug: Fixed issue with references to recordings and imported links not being properly restored when using the option import from backups.
+Bug: Fixed issue with guest users not able to join as moderators even though the role is matched with the role with BBB .
+
+2.1.5 (2016051909)
+Bug: Fixed issue with actions for recording managment not working in instances with schedule. (CONTRIB-6654)
+Bug: Standarized output in intermediate page for activities not started/ended.
+Bug: Fixed issue with past BBB sessions listed as upcoming in the course overview block. (CONTRIB-6650)
+Bug: Fixed issue with default bigbluebutton server settings. (CONTRIB-6630)
+Bug: Rework to prevent potental issue with recordings not fetched when the course has too many groups.
+
+2.1.4 (2016051908)
+Bug: Reverted changes made to the language strings in previous release.
+
+2.1.3 (2016051907)
+Bug: Fixed issue with course logs not being backup/restore.
+Bug: Fixed issue with localized event description affecting multi-language sites.
+Bug: Fixed issue with activities not shown in the dashboard block in Moodle 3.x.
+
 2.1.2 (2016051906)
 Bug: Fixed version format for recording list so it works for formats used in non western countries.
 Bug: Fixed issue with user limit not being correctly enforced when default limit was updated and edition was not allowed. (This bug only affected sites making use of the user limit feature)
@@ -55,7 +76,7 @@ Enhancement: Added Spanish and French.
 Enhancement: Synced API calls with BigBlueButton 0.8-beta-4.
 
 1.0.6 (October 31, 2011)
-Enhancement: Extended supported languages (ru), fixed a bug in bigbluebuttonbn/index.php 
+Enhancement: Extended supported languages (ru), fixed a bug in bigbluebuttonbn/index.php
 
 1.0.5 (October 19, 2011)
 Enhancement: Extended supported languages

@@ -1,6 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html  dir="ltr" lang="en" xml:lang="en" xmlns="http://www.w3.org/1999/xhtml">
-<head><title>HML Container</title></head>
+<head><title>HML Container</title>
+</head>
 <body>
 <?php
 
@@ -29,6 +30,8 @@ $n_feed = optional_param('n_feed', 0, PARAM_INT);
 $e_feed = optional_param('e_feed', 0, PARAM_INT);
 $userid = optional_param('userid', 0, PARAM_INT);
 $type = optional_param('type', -1, PARAM_INT);
+$name  = optional_param('name', "", PARAM_TEXT);
+$intro  = optional_param('intro', "", PARAM_TEXT);
 
 if ($l>0)
     $param="l=".$l;
@@ -57,11 +60,17 @@ if ($type>0)
 if (strlen($ret)>0)
     $param=$param."&amp;ret=".$ret;
 
+if (strlen($name)>0)
+    $param=$param."&amp;name=".$name;
+
+if (strlen($intro)>0)
+    $param=$param."&amp;intro=".$intro;
+
 $h=$h-32;
 $w=$w-14;
 
 echo '<iframe style="margin-left:7px;margin-top:25px;border:0px;background:#ffffff;" width="'.$w.'" height="'.$h.'" '.
-     'src="'.$CFG->wwwroot.'/mod/helixmedia/launch.php?course='.$c.'&amp;'.$param.'"></iframe>';
+   'src="'.$CFG->wwwroot.'/mod/helixmedia/launch.php?course='.$c.'&amp;'.$param.'"></iframe>';
 
 ?>
 </body>

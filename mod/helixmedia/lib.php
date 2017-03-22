@@ -323,3 +323,31 @@ function helixmedia_install() {
 function helixmedia_uninstall() {
     return true;
 }
+
+/**
+ * Mark the activity completed (if required) and trigger the course_module_viewed event.
+ *
+ * @param  stdClass $hml        hml object
+ * @param  stdClass $course     course object
+ * @param  stdClass $cm         course module object
+ * @param  stdClass $context    context object
+ * @since Moodle 3.0
+ */
+
+function helixmedia_view($page, $course, $cm, $context) {
+    // Trigger course_module_viewed event.
+    $params = array(
+        'context' => $context,
+        'objectid' => $hml->id
+    );
+
+    $event = \mod_page\event\course_module_viewed::create($params);
+    $event->add_record_snapshot('course_modules', $cm);
+    $event->add_record_snapshot('course', $course);
+    $event->add_record_snapshot('helixmedia', $hml);
+    $event->trigger();
+
+    // Completion.
+    $completion = new completion_info($course);
+    $completion->set_module_viewed($cm);
+}

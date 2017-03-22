@@ -187,7 +187,7 @@
         rebuild_course_cache($course->id);
 
         /**Link the new mod to the old resource ID**/
-        helixmedia_view($helixmedia, HML_LAUNCH_RELINK, $ref_id)."\n";
+        helixmedia_view_mod($helixmedia, HML_LAUNCH_RELINK, $ref_id)."\n";
         //echo "<iframe src='".$CFG->wwwroot."/mod/helixmedia/launch.php?type=".HML_LAUNCH_EDIT."&amp;id=".$id."&amp;mid=".$ref_id."' width='600' height='300'></iframe>\n";
         return true;
     }

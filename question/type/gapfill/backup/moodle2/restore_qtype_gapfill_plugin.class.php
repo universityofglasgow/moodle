@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package    moodlecore
+ * @package    qtype_gapfill
  * @subpackage backup-moodle2
  * @copyright  2011 The Open University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -27,7 +27,7 @@ defined('MOODLE_INTERNAL') || die();
  * needed to restore one gapfill qtype plugin. Also used if you click
  * the duplicate quiz button in a course.
  *
- * @copyright  2012 Marcus Green
+ * @copyright  2017 Marcus Green
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class restore_qtype_gapfill_plugin extends restore_qtype_plugin {
@@ -51,9 +51,12 @@ class restore_qtype_gapfill_plugin extends restore_qtype_plugin {
         return $paths; // And we return the interesting paths.
     }
 
-    /**
-     * Process the qtype/gapfill element
-     */
+     /**
+      *
+      * @global moodle_database $DB
+      * @param type $data
+      * Process the qtype/gapfill element
+      */
     public function process_gapfill($data) {
         global $DB;
 
@@ -90,14 +93,18 @@ class restore_qtype_gapfill_plugin extends restore_qtype_plugin {
     }
 
     /**
-     * Processes the answer element (question answers).  This has been copied in from 
+     * Processes the answer element (question answers).  This has been copied in from
      * the parent restore_qtype class to allow the creation of duplicate
      * answers. These are a significant feature of this question type, see the
      * no duplicates feature in the documentation at
-     * http://docs.moodle.org/25/en//question/type/gapfill#No_Duplicates_Mode 
-     *  Previously it was throwing a debug error. This has been 'fixed' by 
+     * http://docs.moodle.org/25/en//question/type/gapfill#No_Duplicates_Mode
+     *  Previously it was throwing a debug error. This has been 'fixed' by
      * the addition of the IGNORE_MULTIPLE parameter to the call to get_field_sql.
      * However the docs seem to frown on the use of this parameter.
+     *
+     * @global moodle_database $DB
+     * @param type $data
+     * @throws restore_step_exception
      */
     public function process_question_answer($data) {
         global $DB;

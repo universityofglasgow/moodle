@@ -23,6 +23,10 @@
  */
 /* This should be called script.js and go through the Moodle minify process but that seems to break it */
 $(function () {
+    readonly = document.querySelectorAll('.readonly');
+    if (readonly.length > 0) {
+        return;
+    }
     $(".draggable").draggable({
         revert: false,
         helper: 'clone',
@@ -44,41 +48,4 @@ $(function () {
             $(this).css("background-color", "white");
         }
     });
-
-    /* For click to select instead of drag/drop */
-    var last_item_clicked = "";
-    $(".draggable").on("click", function (e) {
-        if ($(this).hasClass('picked')) {
-            /*if picked it set this must be a second
-             * click so set it back to show as unpicked
-             */
-            $(this).css('border','solid 1px');
-            $(".draggable").removeClass('picked');
-            last_item_clicked = "";
-        } else {
-            last_item_clicked = e.target.innerText;
-            /*set border to solid on all words */
-            $(".draggable").css('border','solid 1px');
-            /* remove border on selected item to 
-             * indicate it has been selected */
-            $(this).css('border', 'solid 0px');
-            /*picked is just a marker, it has no entry
-             * in css file
-             */
-            $(this).addClass('picked');
-        }
-    });
-
-    $(".droptarget").on("click", function (e) {
-        if (last_item_clicked !== "") {
-            this.value = last_item_clicked;
-            $(this).blur();
-        }
-        /*toggle picked status of item just 
-         * copied into droptarget */
-        $(".draggable").css('border', 'solid 1px');
-        $(".draggable").removeClass('picked');
-        last_item_clicked = "";
-    });
-    
 });

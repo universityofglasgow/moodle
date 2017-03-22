@@ -16,7 +16,6 @@ global $CFG;
 var activity_dialog;
 var gotIn=false;
 
-
 function checkStatus()
 {
     var xmlDoc=null;
@@ -145,16 +144,33 @@ if (typeof com.uol == 'undefined') {
             top=document.documentElement.scrollTop;
         }
 
-        this.width = wWidth-20;
+        this.width = wWidth-30;
         this.height = wHeight-100;
 
-        if (this.width>1000)
-            this.width=1000;
-        if (this.height>1400)
-            this.height=1400;
+        if (this.width > 1000) {
+            this.width = 1000;
+        }
+        if (this.height > 1400) {
+            this.height = 1400;
+        }
+
+        if (this.height < 480) {
+            this.height = 480;
+            this.y = top;
+        } else {
+            this.y = top + 50;
+        }
+
+        if (this.width < 770) {
+            this.width = 770;
+        }
 
         this.x=(wWidth-this.width)/2;
-        this.y=top+50;
+        if (this.x>8) {
+            this.x=this.x-8;
+        } else {
+            this.x=0;
+        }
     },
  
  
@@ -167,8 +183,19 @@ if (typeof com.uol == 'undefined') {
         this.ajax_callback.argument[1] = this.height;
         this.ajax_callback.argument[2] = this.x;
         this.ajax_callback.argument[3] = this.y;
+
+        var furl=this.url;
+        var nameEle=document.getElementById("id_name");
+        if (nameEle!=null) {
+            furl+="&name="+encodeURIComponent(nameEle.value);
+        }
+        var introEle=document.getElementById("id_introeditor");
+        if (introEle!=null) {
+            furl+="&intro="+encodeURIComponent(introEle.value.replace(/<(?:.|\n)*?>/gm, '').substring(0,1000));
+        }
+
         //make the ajax call
-        YAHOO.util.Connect.asyncRequest('GET', this.url, this.ajax_callback, null);
+        YAHOO.util.Connect.asyncRequest('GET', furl, this.ajax_callback, null);
     },
  
         this.PopupHandler.prototype.ajax_callback = {
@@ -189,7 +216,7 @@ if (typeof com.uol == 'undefined') {
                     close: true,
                     constraintoviewport: false,
                     postmethod: 'async',
-                    hideaftersubmit:true,
+                    hideaftersubmit:true
                 });
 
                 activity_dialog.render();
