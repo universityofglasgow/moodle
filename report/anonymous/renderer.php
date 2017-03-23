@@ -221,7 +221,7 @@ class report_anonymous_renderer extends plugin_renderer_base {
             $text = get_string('export', 'report_anonymous');
             echo "<a class=\"btn btn-success\" href=\"$url&export=1\">$text</a>";
         }
-        echo "</div>";
+        echo "</div><p></p>";
     }
 
     public function back_button($url) {
