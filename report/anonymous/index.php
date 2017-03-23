@@ -92,11 +92,6 @@ if ($assignid) {
         $reveal = true;
     }
 
-    // Deelete user's converted PDFs?
-    if (($action == 'delete') and $userid) {
-        report_anonymous::delete_pdfs($assignid, $userid);
-    }
-
     // allocate ids if required
     if ($assignment->blindmarking) {
         assign::allocate_unique_ids($assignid);
