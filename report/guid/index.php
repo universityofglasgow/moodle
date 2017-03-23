@@ -39,7 +39,7 @@ $firstname = optional_param('firstname', '', PARAM_TEXT);
 $lastname = optional_param('lastname', '', PARAM_TEXT);
 $email = optional_param('email', '', PARAM_CLEAN);
 $guid = optional_param('guid', '', PARAM_ALPHANUM);
-$idnumber = optional_param('idnumber', 0, PARAM_INT);
+$idnumber = optional_param('idnumber', '', PARAM_ALPHANUM);
 $action = optional_param('action', '', PARAM_ALPHA);
 
 

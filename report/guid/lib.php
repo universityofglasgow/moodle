@@ -65,7 +65,7 @@ function report_guid_build_filter($firstname, $lastname, $guid, $email, $idnumbe
     }
 
     // If the idnumber is supplied then we'll go for that.
-    if (!empty($idnumber)) {
+    if (!empty($idnumber) & is_numeric($idnumber)) {
         return $config->field_map_idnumber . "=$idnumber";
     }
 
@@ -572,7 +572,7 @@ class guidreport_form extends moodleform {
         $mform->addElement('text', 'email', get_string('email', 'report_guid' ) );
         $mform->setType('email', PARAM_EMAIL);
         $mform->addElement('text', 'idnumber', get_string('idnumber', 'report_guid' ) );
-        $mform->setType('idnumber', PARAM_INT);
+        $mform->setType('idnumber', PARAM_ALPHANUM);
         $mform->addElement('text', 'guid', get_string('guidform', 'report_guid' ) );
         $mform->setType('guid', PARAM_ALPHANUM);
 
