@@ -1,0 +1,379 @@
+/**
+ * GISMO block
+ *
+ * @package    block_gismo
+ * @copyright  eLab Christian Milani
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+html, body {
+    font-family: Arial;
+    font-size: 12px;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    background:#d8d8d8;
+}
+a { color:#fff; }
+ul {
+    margin: 0;
+    padding: 0;
+}
+img {
+    border: none;
+    text-decoration: none;
+} 
+#global {
+    height: 100%;
+    width: 100%;
+    position: relative;
+} 
+#header, #footer, #content, #upperContent {
+    width: 100%;
+    float: left;
+} 
+#header {
+    position: fixed;
+    height: 25px;
+    padding:0;
+    border-bottom: 1px solid #999;
+    background:#222;
+    z-index:99; /* Fix for bug on chrome menu */
+}
+#header #logo {
+    position:absolute;
+    top:5px;
+    right:5px;
+}
+#header #logo img {
+    border:none;
+}
+
+.hidden {
+    display: none;
+    visibility: hidden;
+}
+
+/* ---------------------- Header menu --------------------------- */
+
+#header #menu {
+    margin: 0;
+    padding: 0;
+    z-index: 1;
+    position: relative;
+} 
+#header #menu a {
+    padding:5px;
+    color:#eee;
+    text-decoration:none;
+}
+#header #menu a img {
+    border:none;
+}
+#header #menu a:hover {
+    text-decoration:none;
+}
+#header #menu a:focus {
+    text-decoration:none;    
+}
+#header #menu a:visited {
+    color:#eee;
+}
+#header #menu ul {
+    float: left;
+    margin: 5px 0 0 0;
+    padding: 0;
+}
+#header #menu ul li {
+    float: left;
+    list-style: none;
+    margin:0 5px;
+    position: relative;
+}
+#header #menu ul li ul {
+    margin: 20px 0 0 0;
+    padding: 0;
+    position: absolute;
+    visibility: hidden;
+    top: 0;
+    left: 0;
+    border-bottom:1px solid #999999;
+    border-left:1px solid #999999;
+    border-right:1px solid #999999;    
+    background:#222;
+    z-index:100;
+    width: auto;        
+}
+
+#header #menu ul li ul li {
+    margin: 0;
+    padding:0;
+    border: none;
+    display: block;
+    width: 100%;
+} 
+
+#header #menu ul li ul li a {
+    margin: 0;
+    padding: 3px 0px;
+    display:block;
+    color:#eee;
+    text-decoration:none;
+    width: 100%;
+} 
+
+#header #menu ul li ul li a:hover {
+    background:#D8D8D8;
+    color:#333333;
+    text-decoration:none;
+    width: 100%;
+}
+
+#header #menu ul li ul li div {
+    padding: 0px 6px;
+    /*white-space: nowrap*/
+}
+
+.menu_open {
+    background-color: #D8D8D8 !important;
+    color: #333333 !important;   
+}
+
+/* ---------------------- Content --------------------------- */
+#content {
+    margin-top: 25px;
+    width: 100%;
+    float: left;
+    clear: right;
+}
+
+#left_menu {
+    width: 250px;
+    float: left;
+    background-color: #333333;
+}
+#chart {
+    margin-left: 250px;
+    clear: right;
+}
+
+.ct_header {
+    height: 27px;
+    border-bottom: 1px solid #999999;
+    color: white;
+    line-height: 27px;    
+}
+
+.cb_control {
+    background-color: #999999;
+    vertical-align: middle;
+    line-height: 20px;
+}
+
+#lm_header {
+    background:#333;
+    border-right: 1px solid #999999;
+    width: 250px;
+}
+#lm_header #htoggle {
+    height: 27px;
+    width: 15px;
+    position: relative;
+    float: right;
+}
+#lm_header .htoggle_opened {
+    background: url(../images/htoogle.png) no-repeat -15px 0;    
+}
+#lm_header .htoggle_closed {
+    background: url(../images/htoogle.png) no-repeat 0 0;
+}
+#lm_header img {
+    margin: 5px 3px;
+}
+#lm_content {
+    width: 250px;
+    background:#333;
+    color: #FFFFFF;
+    overflow: auto;
+    border-right: 1px solid #999999;   
+}
+#lm_content .cb {
+    margin: 4px;
+}
+#lm_content .cb_main {
+    margin: 0px;
+    padding: 4px;
+    background-color: #999999;
+}
+#lm_content .cb_element {
+    width: 13px;
+    height: 13px;
+    padding: 0;
+    margin:0;
+    vertical-align: bottom;
+    position: relative;
+    top: -1px;
+    overflow: hidden;
+    margin-right: 2px;
+}
+#lm_content .cb .cb_label {
+    display: block;
+    padding-left: 15px;
+    text-indent: -15px;
+    width: 185px;
+}
+#ch_header {
+    background:#333;   
+}
+#ch_header #title {
+    margin-left: 5px;
+    margin-right: 40px;  
+}
+#ch_header #title img {
+    text-align: center;
+    vertical-align: top;   
+}
+#ch_header #course_name {
+    /* width: 40px; */
+    float: right;
+    text-align: right;
+    margin-right: 5px;   
+}
+#ch_content {
+    overflow: auto;    
+}
+#ch_content #error_message #title,
+#ch_content #processing #p_img {
+    font-size: 18px;
+    text-align: center;
+    color: red;
+    margin-top: 20px;  
+}
+#ch_content #error_message #message {
+    font-size: 14px;
+    text-align: center;
+    color: #333;  
+}
+#ch_content #processing #p_message {
+    text-align: center;  
+}
+#plot {
+    margin: 10px;
+}
+#inner {
+    padding: 10px;
+}
+#inner * {
+    text-align: left;
+}
+.local_fieldset { padding: 5px; margin: 0px; border: none; border-top: 1px solid #D8D8D8; }
+#gismo_options_form .form_submitter { margin: 0px; padding: 2px !important; border: none; }
+#gismo_options_form label { float: left; width: 250px; height: 20px; line-height: 20px; padding: 0; margin: 0; margin-bottom: 5px; margin-right: 5px; display: block; text-align: left; }
+#gismo_options_form br { clear: left; }
+#gismo_options_form .small_field { float: left; width: 30px; height: 20px; line-height: 20px; padding: 0; margin: 0; margin-bottom: 5px; display: block; }
+#gismo_options_form .medium_field { float: left; width: 50px; height: 20px; line-height: 20px; padding: 0; margin: 0; margin-bottom: 5px; display: block; }
+.important { color: red; font-weight: bold; }
+
+.closed_lm { width: 0px !important; }
+.expanded_ch { margin-left: 0px !important; }
+
+/* ---------------------- Footer --------------------------- */
+
+#footer {
+    height: 16px;
+    position:fixed;
+    bottom: 0;
+    left:0;
+    right:0;
+    width: 100%;    
+    margin: 0 auto;    
+    border-top: 1px solid #000;
+    background: #222222;
+}
+
+#footer #from_date {
+    height: 14px; 
+    /* width: 105px; */
+    width: 85px; /* NEW */ 
+    float: left; 
+    color: white; 
+    text-align: center;
+    font-size: 11px;
+    background: #222222;
+    padding: 0px;
+    margin: 0px;
+    border: none;
+    line-height: 14px;   
+}
+
+#footer #f1 {
+    /* margin-left: 105px; */
+    margin-left: 85px; /* NEW */   
+}
+
+#date_slider {
+    /* margin-left: 105px; */
+    margin-left: 85px; /* NEW */
+    margin-top: 1px;
+    margin-bottom: 1px;
+    margin-left: 12px;
+    margin-right: 12px;
+}
+
+#footer #to_date {
+    height: 14px; 
+    /* width: 105px; */
+    width: 85px; /* NEW */ 
+    float: right; 
+    color: white; 
+    text-align: center;
+    font-size: 11px;
+    background: #222222;
+    padding: 0px;
+    margin: 0px;
+    border: none;
+    line-height: 14px;   
+}
+
+/* ---------------------- dialogs --------------------------- */
+
+#dialog ul {
+    list-style-position: inside;
+}
+
+.selected {color: red !important;}
+.image_link { cursor: pointer; border: none; }
+.float_right { float: right; }
+.charts_tooltip {
+    background-color: #EEEEEE; 
+    margin: -1px; 
+    padding: 3px; 
+    font-size: 12px;
+}
+
+/* ---------------------- guide --------------------------- */
+a.guide{
+    background-color: #EEEEEE; 
+    color:#CC9999;
+    font-size: +3;
+}
+
+/* ADDED 10.10.2013 */
+#lm_content .cb .cb_label_type { /* New resource separator by type */
+    display: block;
+    width: 210px;
+    padding:2px;
+    padding-left: 15px;
+    text-indent: -15px;
+    font-weight: bold;
+    text-transform:uppercase;
+    background-color:#666;
+    margin-top:5px;
+    margin-bottom:5px;    
+}
+
+#lm_content #resources_list .cb .cb_label { /* If resources indent the element under the type*/
+    padding-left: 25px; /* Indent 10px */
+    text-indent: -15px;    
+    width: 175px; /* Must make smaller for the detail eye */
+}
