@@ -1,0 +1,424 @@
+$breadcrumb-divider: "›";
+$breadcrumb-divider-rtl: "‹";
+
+$gu-blue: #003865;
+$gu-blue-border: #011A31;
+
+$gu-blue-dark: #061D38;
+
+$gu-background: #e2e5e7;
+$gu-island-back: #fff;
+$gu-island-border: #d3d8dc;
+
+$flat-blue: #3498DB;
+$flat-blue-dark: #2980B9;
+$flat-turquoise: #1ABC9C;
+$flat-turquoise-dark: #16A085;
+$flat-grey: #ecf0f1;
+$flat-grey-dark: #bdc3c7;
+
+$brand-primary: $gu-blue;
+
+$font-family-sans-serif: "Ubuntu", "Trebuchet MS", Arial, sans-serif;
+
+$body-bg: $gu-background;
+
+$spacer: 20px;
+$border-width: 1px;
+$navbar-height: 55px;
+$footer-min-height: 155px;
+
+$card-border-radius:       4px;
+$card-border-color:        $gu-island-border;
+
+$btn-primary-color:              #fff;
+$btn-primary-bg:                 $flat-blue;
+$btn-primary-border:             $flat-blue-dark;
+
+$btn-secondary-color:              #555;
+$btn-secondary-bg:                 $flat-grey;
+$btn-secondary-border:             $flat-grey-dark;
+
+$message-sent-background: #B9E6F9;
+$message-sent-border: #A3CADB;
+
+$message-received-background: #DFEFD1;
+$message-received-border: #C2E3A5;
+
+body {
+    font-weight: 300;
+}
+
+h1 {
+    font-size: 1.4em !important;
+}
+
+h2 {
+    font-size: 1.3em !important;
+}
+
+h3 {
+    font-size: 1.2em !important;
+}
+
+h4 {
+    font-size: 1.1em !important;
+}
+
+.card-title {
+    font-size: 1em;
+}
+
+header.navbar {
+    background-color:$gu-blue;
+    border-bottom: $border-width solid $gu-blue-border;
+}
+
+header .navbar-brand {
+    text-indent: -1000em;
+    background-image: url([[pix:theme|gu-logo]]);
+    background-repeat: no-repeat;
+    width: 111px;
+}
+
+.form-group .fitem.btn-cancel .btn-secondary {
+    color: #7f8c8d;
+}
+
+@media only screen and (-webkit-min-device-pixel-ratio: 2) {
+    header .navbar-brand {
+        background-image: url([[pix:theme|gu-logo-retina]]);
+        background-size: 111px 35px;
+    }
+}
+
+body#page-login-index {
+    background-image: url([[pix:theme|login-background]]);
+    background-attachment: fixed;
+    background-position: 50% 50%;
+    background-size: cover;
+}
+@media (max-width:1920px) and (max-height:1080px) {
+    body#page-login-index {
+        background-size: auto;
+        background-position: 50% 50%;
+    }
+}
+
+body#page-login-index #page-footer {
+    background-color: rgba(226, 229, 231, 0.8);
+}
+
+body#page-login-index .card-block {
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+body#page-login-index #page {
+    margin-top: 0;
+    padding-top: 55px;
+}
+
+#region-main-settings-menu.has-blocks, #region-main.has-blocks {
+    width: calc(100% - 270px) !important;
+}
+
+#page-header {
+    margin-left: -20px;
+    margin-right: -20px;
+    
+    .card {
+        margin-bottom: 0;
+    }
+}
+
+#page.container-fluid {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+}
+
+#nav-drawer {
+    background-color: #C5C7CA;
+}
+
+header .navbar-nav {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+header .usermenu .dropdown-toggle {
+    color: $gu-background;
+}
+
+#page-login-index #page-footer {
+    margin-top: -250px;
+}
+
+#page-login-index #page-footer {
+    background-color: $gu-background;
+    margin-top: -190px;
+}
+
+#page-footer .container-fluid {
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+footer .glasgow {
+	color: $gu-blue;
+	margin: 0;
+	margin-bottom: 10px;
+}
+
+footer p {
+	margin-bottom: 10px;
+	color: $gu-blue;
+}
+
+footer .container-fluid {
+	margin-top: 0;
+}
+
+footer h3 {
+    font-weight: 500;
+    font-size: 20px;
+}
+
+.footer-links h4 {
+	padding: 0;
+	font-size: 1em;
+	line-height:19px;
+	vertical-align: baseline;
+	color: $gu-blue;
+	text-transform: uppercase;
+	font-weight: 500;
+	margin: 0;
+	margin-bottom: 10px;
+}
+
+.footer-links ul {
+	margin: 0;
+	margin-bottom: 20px;
+	padding-left: 0;
+}
+
+.footer-links ul:last-child {
+	margin-bottom: 0;
+}
+
+
+.footer-links li {
+	display: block;
+	margin-bottom: 5px;
+}
+
+.message .content.right {
+    background-color: $message-sent-background;
+    border-color: $message-sent-border;
+}
+
+.message .content.left {
+    background-color: $message-received-background;
+    border-color: $message-received-border;
+}
+
+.gu-login {
+    background-color: rgba(255, 255, 255, 0.7);
+    border-radius: 6px;
+    padding: 10px;
+}
+
+.gu-login input, .gu-login button, .gu-login p {
+    margin-bottom: 10px;
+}
+
+.gu-login input, .gu-login button {
+    border-radius: 3px;
+}
+
+.gu-login *:last-child {
+    margin-bottom: 0;
+}
+
+.gu-login .gu-feature-link {
+    padding: 0;
+    text-align: center;
+}
+
+.gu-login .alert {
+    padding: 4px 7px;
+    margin-bottom: 10px;
+}
+
+.gu-login-intro h2 {
+    color: $gu-blue;
+    font-size: 30px !important;
+    font-weight: 400;
+    line-height: 1.4em;
+}
+
+
+.gu-login-intro a {
+    color: $gu-blue;
+    text-decoration: underline;
+}
+
+.gu-login-intro a:hover {
+    color: $gu-blue;
+    text-decoration: underline;
+}
+
+.gu-login-intro p {
+    color: $gu-blue;
+    font-size: 20px;
+    font-weight: 300;
+    line-height: 1.4em;
+}
+
+.gu-login-spacer {
+    height: 100px;
+}
+
+#page-login-index header button, #page-login-index header .login {
+    display: none;
+}
+
+// This gets rid of the annoying padding on the Dashboard
+
+.block_course_overview .content {
+    margin: 0;
+}
+
+.block_course_overview .course_list .box.coursebox {
+    margin: 0;
+    padding: 0 !important;
+    margin-bottom: 20px;
+}
+
+#region-main > .card, #page-enrol-users #region-main > #filterform, .path-calendar .maincalendar #region-main > .calendar-event-panel, .block .calendar-event-panel #region-main > .yui3-overlay-content, .que #region-main > .history, .userprofile .profile_tree #region-main > section, #region-main > .groupinfobox, #region-main > .forumpost, .yui-skin-sam .yui-layout.path-mod-chat-gui_ajax #region-main > .yui-layout-unit-right, .yui-skin-sam .yui-layout.path-mod-chat-gui_ajax #region-main > .yui-layout-unit-bottom, .yui-skin-sam .yui-layout.path-mod-chat-gui_ajax #chat-messages #region-main > .chat-message.course-theme, #region-main > .well {
+    min-height: 0;
+}
+
+// Accessibility Tools
+
+body.hillhead-font-comic {
+    font-family: "Chalkboard", "Comic Sans", sans-serif;
+}
+
+body.hillhead-font-modern {
+    font-family: "Helvetica Neue", "Helvetica", "Arial", sans-serif;
+}
+
+body.hillhead-font-classic {
+    font-family: "Palatino", "Times New Roman", serif;
+}
+
+body.hillhead-size-120 {
+    font-size: 120%;
+}
+
+body.hillhead-size-140 {
+    font-size: 140%;
+}
+
+body.hillhead-size-160 {
+    font-size: 160%;
+}
+
+body.hillhead-contrast-yb {
+    background-color: #000 !important;
+}
+
+body.hillhead-contrast-yb * {
+    background-color: #000 !important;
+    color: #cc0 !important;
+    border-color: #cc0 !important;
+    border-radius: 0;
+}
+
+body.hillhead-contrast-by {
+    background-color: #ee6 !important;
+}
+
+body.hillhead-contrast-by * {
+    background-color: #ee6 !important;
+    color: #111 !important;
+    border-color: #111 !important;
+    border-radius: 0;
+}
+
+body.hillhead-contrast-wg {
+    background-color: #666 !important;
+}
+
+body.hillhead-contrast-wg * {
+    background-color: #666 !important;
+    color: #eee !important;
+    border-color: #eee !important;
+    border-radius: 0;
+}
+
+body.hillhead-contrast-bb {
+    background-color: #B9D9EE !important;
+}
+
+body.hillhead-contrast-bb * {
+    background-color: #B9D9EE !important;
+    color: #111 !important;
+    border-color: #111 !important;
+    border-radius: 0;
+}
+
+body.hillhead-contrast-br {
+    background-color: #EEB9B9 !important;
+}
+
+body.hillhead-contrast-br * {
+    background-color: #EEB9B9 !important;
+    color: #111 !important;
+    border-color: #111 !important;
+    border-radius: 0;
+}
+
+body.hillhead-contrast #nav-drawer {
+    border-right-width: 1px;
+    border-right-style: solid;
+}
+
+body.hillhead-contrast header .navbar-brand {
+    background-image: none;
+}
+
+body.hillhead-contrast header .navbar-brand span.site-name {
+    text-indent: 0;
+}
+
+.hh-acc {
+    padding-left: 48px !important;
+    background-repeat: no-repeat;
+    background-position: 12px 50%;
+}
+
+body.hillhead-bold * {
+    font-weight: bold !important;
+}
+
+.hh-acc-ac-on, .hh-acc-ac-of { background-image: url([[pix:theme|accessibility]]);}
+
+.hh-acc-ft-de { background-image: url([[pix:theme|font-original]]);}
+.hh-acc-ft-mo { background-image: url([[pix:theme|font-modern]]);}
+.hh-acc-ft-cl { background-image: url([[pix:theme|font-classic]]);}
+.hh-acc-ft-co { background-image: url([[pix:theme|font-comic]]);}
+
+.hh-acc-fs-10 { background-image: url([[pix:theme|font-100]]);}
+.hh-acc-fs-12 { background-image: url([[pix:theme|font-120]]);}
+.hh-acc-fs-14 { background-image: url([[pix:theme|font-140]]);}
+
+.hh-acc-th-de { background-image: url([[pix:theme|theme-or]]);}
+.hh-acc-th-yb { background-image: url([[pix:theme|theme-yb]]);}
+.hh-acc-th-by { background-image: url([[pix:theme|theme-by]]);}
+.hh-acc-th-wg { background-image: url([[pix:theme|theme-wg]]);}
+.hh-acc-th-br { background-image: url([[pix:theme|theme-br]]);}
+.hh-acc-th-bb { background-image: url([[pix:theme|theme-bb]]);}
+
+.hh-acc-fb-on { background-image: url([[pix:theme|font-bold-on]]);}
+.hh-acc-fb-of { background-image: url([[pix:theme|font-bold-off]]);}
