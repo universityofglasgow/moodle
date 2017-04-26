@@ -323,25 +323,6 @@ class auth_plugin_guid extends auth_plugin_ldap {
     }
 
     /**
-     * Prints a form for configuring this authentication plugin.
-     *
-     * This function is called from admin/auth.php, and outputs a full page with
-     * a form for configuring this plugin.
-     *
-     * @param array $page An object containing all the data for this page.
-     */
-    public function config_form($config, $err, $user_fields) {
-        global $CFG, $OUTPUT;
-
-        if (!function_exists('ldap_connect')) { // Is php-ldap really there?
-            echo $OUTPUT->notification(get_string('auth_ldap_noextension', 'auth_ldap'));
-            return;
-        }
-
-        include($CFG->dirroot.'/auth/guid/config.html');
-    }
-
-    /**
      * Processes and stores configuration data for this authentication plugin.
      */
     public function process_config($config) {
