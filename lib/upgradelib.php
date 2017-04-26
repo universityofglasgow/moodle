@@ -371,6 +371,12 @@ function upgrade_stale_php_files_present() {
     global $CFG;
 
     $someexamplesofremovedfiles = array(
+        // Removed in 3.3.
+        '/badges/backpackconnect.php',
+        '/calendar/yui/src/info/assets/skins/sam/moodle-calendar-info.css',
+        '/competency/classes/external/exporter.php',
+        '/mod/forum/forum.js',
+        '/user/pixgroup.php',
         // Removed in 3.2.
         '/calendar/preferences.php',
         '/lib/alfresco/',
@@ -2245,6 +2251,27 @@ function check_mysql_incomplete_unicode_support(environment_results $result) {
             $result->setStatus(false);
             return $result;
         }
+    }
+    return null;
+}
+
+/**
+ * Check if the site is being served using an ssl url.
+ *
+ * Note this does not really perform any request neither looks for proxies or
+ * other situations. Just looks to wwwroot and warn if it's not using https.
+ *
+ * @param  environment_results $result $result
+ * @return environment_results|null updated results object, or null if the site is https.
+ */
+function check_is_https(environment_results $result) {
+    global $CFG;
+
+    // Only if is defined, non-empty and whatever core tell us.
+    if (!empty($CFG->wwwroot) && !is_https()) {
+        $result->setInfo('site not https');
+        $result->setStatus(false);
+        return $result;
     }
     return null;
 }

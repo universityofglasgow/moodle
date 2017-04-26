@@ -2248,7 +2248,7 @@ Y.extend(COMMENTSEARCH, M.core.dialogue, {
         placeholder = M.util.get_string('filter', 'assignfeedback_editpdf');
         commentfilter = Y.Node.create('<input type="text" size="20" placeholder="' + placeholder + '"/>');
         container.append(commentfilter);
-        commentlist = Y.Node.create('<ul role="menu" class="assignfeedback_editpdf_menu"/>');
+        commentlist = Y.Node.create('<ul role="menu" class="assignfeedback_editpdf_search"/>');
         container.append(commentlist);
 
         commentfilter.on('keyup', this.filter_search_comments, this);
@@ -2562,6 +2562,7 @@ var COMMENT = function(editor, gradeid, pageno, x, y, width, colour, rawtext) {
         container.setAttribute('tabindex', '-1');
         label.setAttribute('tabindex', '0');
         node.setAttribute('tabindex', '-1');
+        menu.setAttribute('tabindex', '0');
 
         if (!this.editor.get('readonly')) {
             container.append(menu);
@@ -2681,6 +2682,8 @@ var COMMENT = function(editor, gradeid, pageno, x, y, width, colour, rawtext) {
             if (node.collapse.delay) {
                 node.collapse.delay.cancel();
             }
+            // Give comment a tabindex to prevent focus outline being suppressed.
+            node.setAttribute('tabindex', '0');
             // Expand comment and pass focus to it.
             node.expand();
             node.focus();
@@ -2697,7 +2700,10 @@ var COMMENT = function(editor, gradeid, pageno, x, y, width, colour, rawtext) {
             label.setAttribute('tabindex', '0');
         }, this);
 
-        // Always restore label tabindex when leaving.
+        // Always restore the default tabindex states when moving away.
+        node.on('blur', function() {
+            node.setAttribute('tabindex', '-1');
+        }, this);
         label.on('blur', function() {
             label.setAttribute('tabindex', '0');
         }, this);

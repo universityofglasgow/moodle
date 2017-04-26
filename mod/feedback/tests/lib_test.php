@@ -125,8 +125,8 @@ class mod_feedback_lib_testcase extends advanced_testcase {
             'anonymous_response' => FEEDBACK_ANONYMOUS_NO,
             'courseid' => $course->id,
         ];
-        $DB->insert_record('feedback_completed', (object) $record);
-        $DB->insert_record('feedback_completedtmp', (object) $record);
+        $DB->insert_record('feedback_completed', (object)$record);
+        $DB->insert_record('feedback_completedtmp', (object)$record);
 
         // Check now for finished and unfinished attempts.
         $updates = feedback_check_updates_since($cm, $onehourago);
@@ -230,6 +230,97 @@ class mod_feedback_lib_testcase extends advanced_testcase {
     }
 
     /**
+     * A user that cannot submit the feedback should not see the event.
+     */
+    public function test_feedback_core_calendar_is_event_visible_can_not_submit() {
+        global $DB;
+
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $user = $this->getDataGenerator()->create_user();
+        $studentrole = $DB->get_record('role', array('shortname' => 'student'));
+        $course = $this->getDataGenerator()->create_course();
+        $feedback = $this->getDataGenerator()->create_module('feedback', ['course' => $course->id]);
+        $event = $this->create_action_event($course->id, $feedback->id, FEEDBACK_EVENT_TYPE_OPEN);
+        $cm = get_coursemodule_from_instance('feedback', $feedback->id);
+        $context = context_module::instance($cm->id);
+        $this->getDataGenerator()->enrol_user($user->id, $course->id, $studentrole->id, 'manual');
+
+        $this->setUser($user);
+
+        assign_capability('mod/feedback:complete', CAP_PROHIBIT, $studentrole->id, $context);
+        $context->mark_dirty();
+
+        $visible = mod_feedback_core_calendar_is_event_visible($event);
+
+        $this->assertFalse($visible);
+    }
+
+    /**
+     * A user that can submit the feedback should see the event.
+     */
+    public function test_feedback_core_calendar_is_event_visible_can_submit() {
+        global $DB;
+
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $user = $this->getDataGenerator()->create_user();
+        $studentrole = $DB->get_record('role', array('shortname' => 'student'));
+        $course = $this->getDataGenerator()->create_course();
+        $feedback = $this->getDataGenerator()->create_module('feedback', ['course' => $course->id]);
+        $event = $this->create_action_event($course->id, $feedback->id, FEEDBACK_EVENT_TYPE_OPEN);
+        $cm = get_coursemodule_from_instance('feedback', $feedback->id);
+        $context = context_module::instance($cm->id);
+        $this->getDataGenerator()->enrol_user($user->id, $course->id, $studentrole->id, 'manual');
+
+        $this->setUser($user);
+
+        assign_capability('mod/feedback:complete', CAP_ALLOW, $studentrole->id, $context->id);
+        $context->mark_dirty();
+
+        $visible = mod_feedback_core_calendar_is_event_visible($event);
+
+        $this->assertTrue($visible);
+    }
+
+    /**
+     * A user that has already submitted feedback should not have an action.
+     */
+    public function test_feedback_core_calendar_provide_event_action_already_submitted() {
+        global $DB;
+
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $user = $this->getDataGenerator()->create_user();
+        $studentrole = $DB->get_record('role', array('shortname' => 'student'));
+        $course = $this->getDataGenerator()->create_course();
+        $feedback = $this->getDataGenerator()->create_module('feedback', ['course' => $course->id]);
+        $event = $this->create_action_event($course->id, $feedback->id, FEEDBACK_EVENT_TYPE_OPEN);
+        $cm = get_coursemodule_from_instance('feedback', $feedback->id);
+        $context = context_module::instance($cm->id);
+
+        $this->setUser($user);
+
+        $record = [
+            'feedback' => $feedback->id,
+            'userid' => $user->id,
+            'timemodified' => time(),
+            'random_response' => 0,
+            'anonymous_response' => FEEDBACK_ANONYMOUS_NO,
+            'courseid' => 0,
+        ];
+        $DB->insert_record('feedback_completed', (object) $record);
+
+        $factory = new \core_calendar\action_factory();
+        $action = mod_feedback_core_calendar_provide_event_action($event, $factory);
+
+        $this->assertNull($action);
+    }
+
+    /**
      * Creates an action event.
      *
      * @param int $courseid The course id.
@@ -240,7 +331,7 @@ class mod_feedback_lib_testcase extends advanced_testcase {
     private function create_action_event($courseid, $instanceid, $eventtype) {
         $event = new stdClass();
         $event->name = 'Calendar event';
-        $event->modulename  = 'feedback';
+        $event->modulename = 'feedback';
         $event->courseid = $courseid;
         $event->instance = $instanceid;
         $event->type = CALENDAR_EVENT_TYPE_ACTION;
@@ -248,5 +339,43 @@ class mod_feedback_lib_testcase extends advanced_testcase {
         $event->timestart = time();
 
         return calendar_event::create($event);
+    }
+
+    /**
+     * Test the callback responsible for returning the completion rule descriptions.
+     * This function should work given either an instance of the module (cm_info), such as when checking the active rules,
+     * or if passed a stdClass of similar structure, such as when checking the the default completion settings for a mod type.
+     */
+    public function test_mod_feedback_completion_get_active_rule_descriptions() {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        // Two activities, both with automatic completion. One has the 'completionsubmit' rule, one doesn't.
+        $course = $this->getDataGenerator()->create_course(['enablecompletion' => 2]);
+        $feedback1 = $this->getDataGenerator()->create_module('feedback', [
+            'course' => $course->id,
+            'completion' => 2,
+            'completionsubmit' => 1
+        ]);
+        $feedback2 = $this->getDataGenerator()->create_module('feedback', [
+            'course' => $course->id,
+            'completion' => 2,
+            'completionsubmit' => 0
+        ]);
+        $cm1 = cm_info::create(get_coursemodule_from_instance('feedback', $feedback1->id));
+        $cm2 = cm_info::create(get_coursemodule_from_instance('feedback', $feedback2->id));
+
+        // Data for the stdClass input type.
+        // This type of input would occur when checking the default completion rules for an activity type, where we don't have
+        // any access to cm_info, rather the input is a stdClass containing completion and customdata attributes, just like cm_info.
+        $moddefaults = new stdClass();
+        $moddefaults->customdata = ['customcompletionrules' => ['completionsubmit' => 1]];
+        $moddefaults->completion = 2;
+
+        $activeruledescriptions = [get_string('completionsubmit', 'feedback')];
+        $this->assertEquals(mod_feedback_get_completion_active_rule_descriptions($cm1), $activeruledescriptions);
+        $this->assertEquals(mod_feedback_get_completion_active_rule_descriptions($cm2), []);
+        $this->assertEquals(mod_feedback_get_completion_active_rule_descriptions($moddefaults), $activeruledescriptions);
+        $this->assertEquals(mod_feedback_get_completion_active_rule_descriptions(new stdClass()), []);
     }
 }

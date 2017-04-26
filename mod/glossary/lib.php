@@ -2173,7 +2173,7 @@ function  glossary_print_entry_ratings($course, $entry) {
  * @param int $displayformat
  */
 function glossary_print_dynaentry($courseid, $entries, $displayformat = -1) {
-    global $USER,$CFG, $DB;
+    global $USER, $CFG, $DB;
 
     echo '<div class="boxaligncenter">';
     echo '<table class="glossarypopup" cellspacing="0"><tr>';
@@ -4163,10 +4163,13 @@ function glossary_check_updates_since(cm_info $cm, $from, $filter = array()) {
 
 /**
  * Get icon mapping for font-awesome.
+ *
+ * @return array
  */
-function forum_get_fontawesome_icon_map() {
+function mod_glossary_get_fontawesome_icon_map() {
     return [
-        'mod_glossary:export' => 'fa-download'
+        'mod_glossary:export' => 'fa-download',
+        'mod_glossary:minus' => 'fa-minus'
     ];
 }
 
@@ -4200,4 +4203,64 @@ function mod_glossary_core_calendar_provide_event_action(calendar_event $event,
         1,
         true
     );
+}
+
+/**
+ * Add a get_coursemodule_info function in case any glossary type wants to add 'extra' information
+ * for the course (see resource).
+ *
+ * Given a course_module object, this function returns any "extra" information that may be needed
+ * when printing this activity in a course listing.  See get_array_of_activities() in course/lib.php.
+ *
+ * @param stdClass $coursemodule The coursemodule object (record).
+ * @return cached_cm_info An object on information that the courses
+ *                        will know about (most noticeably, an icon).
+ */
+function glossary_get_coursemodule_info($coursemodule) {
+    global $DB;
+
+    $dbparams = ['id' => $coursemodule->instance];
+    $fields = 'id, name, completionentries';
+    if (!$glossary = $DB->get_record('glossary', $dbparams, $fields)) {
+        return false;
+    }
+
+    $result = new cached_cm_info();
+    $result->name = $glossary->name;
+
+    // Populate the custom completion rules as key => value pairs, but only if the completion mode is 'automatic'.
+    if ($coursemodule->completion == COMPLETION_TRACKING_AUTOMATIC) {
+        $result->customdata['customcompletionrules']['completionentries'] = $glossary->completionentries;
+    }
+
+    return $result;
+}
+
+/**
+ * Callback which returns human-readable strings describing the active completion custom rules for the module instance.
+ *
+ * @param cm_info|stdClass $cm object with fields ->completion and ->customdata['customcompletionrules']
+ * @return array $descriptions the array of descriptions for the custom rules.
+ */
+function mod_glossary_get_completion_active_rule_descriptions($cm) {
+    // Values will be present in cm_info, and we assume these are up to date.
+    if (empty($cm->customdata['customcompletionrules'])
+        || $cm->completion != COMPLETION_TRACKING_AUTOMATIC) {
+        return [];
+    }
+
+    $descriptions = [];
+    foreach ($cm->customdata['customcompletionrules'] as $key => $val) {
+        switch ($key) {
+            case 'completionentries':
+                if (empty($val)) {
+                    continue;
+                }
+                $descriptions[] = get_string('completionentriesdesc', 'glossary', $val);
+                break;
+            default:
+                break;
+        }
+    }
+    return $descriptions;
 }

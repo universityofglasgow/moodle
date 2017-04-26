@@ -3419,6 +3419,23 @@ function feedback_check_updates_since(cm_info $cm, $from, $filter = array()) {
 }
 
 /**
+ * The event is only visible anywhere if the user can submit feedback.
+ *
+ * @param calendar_event $event
+ * @return bool Returns true if the event is visible to the current user, false otherwise.
+ */
+function mod_feedback_core_calendar_is_event_visible(calendar_event $event) {
+    global $DB;
+
+    $cm = get_fast_modinfo($event->courseid)->instances['feedback'][$event->instance];
+    $feedback = $DB->get_record('feedback', ['id' => $event->instance]);
+    $feedbackcompletion = new mod_feedback_completion($feedback, $cm, 0);
+
+    // The event is only visible if the user can submit it.
+    return $feedbackcompletion->can_complete();
+}
+
+/**
  * This function receives a calendar event and returns the action associated with it, or null if there is none.
  *
  * This is used by block_myoverview in order to display the event appropriately. If null is returned then the event
@@ -3433,7 +3450,13 @@ function mod_feedback_core_calendar_provide_event_action(calendar_event $event,
     global $DB;
 
     $cm = get_fast_modinfo($event->courseid)->instances['feedback'][$event->instance];
-    $feedback = $DB->get_record('feedback', ['id' => $event->instance], 'id, timeopen, timeclose');
+    $feedback = $DB->get_record('feedback', ['id' => $event->instance]);
+    $feedbackcompletion = new mod_feedback_completion($feedback, $cm, 0);
+
+    if ($feedbackcompletion->is_already_submitted()) {
+        // There is no action if the user has already submitted the feedback.
+        return null;
+    }
 
     $now = time();
     if ($feedback->timeopen && $feedback->timeclose) {
@@ -3454,3 +3477,62 @@ function mod_feedback_core_calendar_provide_event_action(calendar_event $event,
     );
 }
 
+/**
+ * Add a get_coursemodule_info function in case any feedback type wants to add 'extra' information
+ * for the course (see resource).
+ *
+ * Given a course_module object, this function returns any "extra" information that may be needed
+ * when printing this activity in a course listing.  See get_array_of_activities() in course/lib.php.
+ *
+ * @param stdClass $coursemodule The coursemodule object (record).
+ * @return cached_cm_info An object on information that the courses
+ *                        will know about (most noticeably, an icon).
+ */
+function feedback_get_coursemodule_info($coursemodule) {
+    global $DB;
+
+    $dbparams = ['id' => $coursemodule->instance];
+    $fields = 'id, name, completionsubmit';
+    if (!$feedback = $DB->get_record('feedback', $dbparams, $fields)) {
+        return false;
+    }
+
+    $result = new cached_cm_info();
+    $result->name = $feedback->name;
+
+    // Populate the custom completion rules as key => value pairs, but only if the completion mode is 'automatic'.
+    if ($coursemodule->completion == COMPLETION_TRACKING_AUTOMATIC) {
+        $result->customdata['customcompletionrules']['completionsubmit'] = $feedback->completionsubmit;
+    }
+
+    return $result;
+}
+
+/**
+ * Callback which returns human-readable strings describing the active completion custom rules for the module instance.
+ *
+ * @param cm_info|stdClass $cm object with fields ->completion and ->customdata['customcompletionrules']
+ * @return array $descriptions the array of descriptions for the custom rules.
+ */
+function mod_feedback_get_completion_active_rule_descriptions($cm) {
+    // Values will be present in cm_info, and we assume these are up to date.
+    if (empty($cm->customdata['customcompletionrules'])
+        || $cm->completion != COMPLETION_TRACKING_AUTOMATIC) {
+        return [];
+    }
+
+    $descriptions = [];
+    foreach ($cm->customdata['customcompletionrules'] as $key => $val) {
+        switch ($key) {
+            case 'completionsubmit':
+                if (empty($val)) {
+                    continue;
+                }
+                $descriptions[] = get_string('completionsubmit', 'feedback');
+                break;
+            default:
+                break;
+        }
+    }
+    return $descriptions;
+}

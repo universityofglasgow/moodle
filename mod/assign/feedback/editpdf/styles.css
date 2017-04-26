@@ -147,6 +147,8 @@
 
 .assignfeedback_editpdf_commentsearch ul li pre {
     background-color: #efefef;
+    white-space: pre-wrap;
+    word-break: break-word;
 }
 
 .assignfeedback_editpdf_commentsearch ul li pre:hover {
@@ -154,7 +156,6 @@
 }
 
 .assignfeedback_editpdf_commentsearch ul li {
-    line-height: 0;
     margin: 2px;
 }
 
@@ -248,6 +249,19 @@
     margin: 10px;
 }
 
+ul.assignfeedback_editpdf_search {
+    margin: 0;
+}
+
+.assignfeedback_editpdf_search li {
+    list-style-type: none;
+}
+
+.assignfeedback_editpdf_search li a {
+    text-decoration: none;
+    color: #555;
+}
+
 .assignfeedback_editpdf_menu li:hover,
 .assignfeedback_editpdf_menu li:hover a,
 .assignfeedback_editpdf_menu li a:hover {
@@ -312,6 +326,14 @@ ul.assignfeedback_editpdf_menu {
     font-size: 16px;
     font-family: helvetica;
     min-height: 1.2em;
+}
+
+.assignfeedback_editpdf_widget .commentdrawable textarea:focus {
+    outline: thin dotted #333;
+    outline-color: -webkit-focus-ring-color;
+    outline-width: 5px;
+    outline-style: auto;
+    outline-offset: -2px;
 }
 
 .assignfeedback_editpdf_widget .commentdrawable {

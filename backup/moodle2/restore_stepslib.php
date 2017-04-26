@@ -3272,14 +3272,14 @@ class restore_course_competencies_structure_step extends restore_structure_step 
             return;
         }
         $competency = \core_competency\competency::get_record(array('idnumber' => $data->idnumber,
-            'competencyframeworkid' => $framework->get_id()));
+            'competencyframeworkid' => $framework->get('id')));
         if (!$competency) {
             return;
         }
-        $this->set_mapping(\core_competency\competency::TABLE, $data->id, $competency->get_id());
+        $this->set_mapping(\core_competency\competency::TABLE, $data->id, $competency->get('id'));
 
         $params = array(
-            'competencyid' => $competency->get_id(),
+            'competencyid' => $competency->get('id'),
             'courseid' => $this->task->get_courseid()
         );
         $query = 'competencyid = :competencyid AND courseid = :courseid';
@@ -3383,13 +3383,13 @@ class restore_activity_competencies_structure_step extends restore_structure_ste
             return;
         }
         $competency = \core_competency\competency::get_record(array('idnumber' => $data->idnumber,
-            'competencyframeworkid' => $framework->get_id()));
+            'competencyframeworkid' => $framework->get('id')));
         if (!$competency) {
             return;
         }
 
         $params = array(
-            'competencyid' => $competency->get_id(),
+            'competencyid' => $competency->get('id'),
             'cmid' => $this->task->get_moduleid()
         );
         $query = 'competencyid = :competencyid AND cmid = :cmid';
@@ -5426,5 +5426,75 @@ abstract class restore_questions_activity_structure_step extends restore_activit
         } else {
             return $state->answer;
         }
+    }
+}
+
+/**
+ * Restore completion defaults for each module type
+ *
+ * @package     core_backup
+ * @copyright   2017 Marina Glancy
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class restore_completion_defaults_structure_step extends restore_structure_step {
+    /**
+     * To conditionally decide if this step must be executed.
+     */
+    protected function execute_condition() {
+        // No completion on the front page.
+        if ($this->get_courseid() == SITEID) {
+            return false;
+        }
+
+        // No default completion info found, don't execute.
+        $fullpath = $this->task->get_taskbasepath();
+        $fullpath = rtrim($fullpath, '/') . '/' . $this->filename;
+        if (!file_exists($fullpath)) {
+            return false;
+        }
+
+        // Arrived here, execute the step.
+        return true;
+    }
+
+    /**
+     * Function that will return the structure to be processed by this restore_step.
+     *
+     * @return restore_path_element[]
+     */
+    protected function define_structure() {
+        return [new restore_path_element('completion_defaults', '/course_completion_defaults/course_completion_default')];
+    }
+
+    /**
+     * Processor for path element 'completion_defaults'
+     *
+     * @param stdClass|array $data
+     */
+    protected function process_completion_defaults($data) {
+        global $DB;
+
+        $data = (array)$data;
+        $oldid = $data['id'];
+        unset($data['id']);
+
+        // Find the module by name since id may be different in another site.
+        if (!$mod = $DB->get_record('modules', ['name' => $data['modulename']])) {
+            return;
+        }
+        unset($data['modulename']);
+
+        // Find the existing record.
+        $newid = $DB->get_field('course_completion_defaults', 'id',
+            ['course' => $this->task->get_courseid(), 'module' => $mod->id]);
+        if (!$newid) {
+            $newid = $DB->insert_record('course_completion_defaults',
+                ['course' => $this->task->get_courseid(), 'module' => $mod->id] + $data);
+        } else {
+            $DB->update_record('course_completion_defaults', ['id' => $newid] + $data);
+        }
+
+        // Save id mapping for restoring associated events.
+        $this->set_mapping('course_completion_defaults', $oldid, $newid);
     }
 }

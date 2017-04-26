@@ -2613,7 +2613,7 @@ function xmldb_main_upgrade($oldversion) {
 
     if ($oldversion < 2017040400.00) {
 
-        // If the 'Course overview' block is no longer present, replace with the 'My overview' block.
+        // If block_course_overview is no longer present, replace with block_myoverview.
         if (!file_exists($CFG->dirroot . '/blocks/course_overview/block_course_overview.php')) {
             $DB->set_field('block_instances', 'blockname', 'myoverview', array('blockname' => 'course_overview'));
         }
@@ -2623,10 +2623,10 @@ function xmldb_main_upgrade($oldversion) {
 
     if ($oldversion < 2017040401.00) {
 
-        // If the 'Course overview' block is no longer present, remove it.
+        // If block_course_overview is no longer present, remove it.
         // Note - we do not need to completely remove the block context etc because we
-        // have replaced all occurrences of the 'Course overview' block with the 'My overview'
-        // block in the upgrade step above.
+        // have replaced all occurrences of block_course_overview with block_myoverview
+        // in the upgrade step above.
         if (!file_exists($CFG->dirroot . '/blocks/course_overview/block_course_overview.php')) {
             // Delete the block from the block table.
             $DB->delete_records('block', array('name' => 'course_overview'));
@@ -2801,6 +2801,37 @@ function xmldb_main_upgrade($oldversion) {
 
         // Main savepoint reached.
         upgrade_main_savepoint(true, 2017040700.04);
+    }
+
+    if ($oldversion < 2017041801.00) {
+
+        // Define table course_completion_defaults to be created.
+        $table = new xmldb_table('course_completion_defaults');
+
+        // Adding fields to table course_completion_defaults.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('course', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('module', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('completion', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('completionview', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('completionusegrade', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('completionexpected', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('customrules', XMLDB_TYPE_TEXT, null, null, null, null, null);
+
+        // Adding keys to table course_completion_defaults.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+        $table->add_key('module', XMLDB_KEY_FOREIGN, array('module'), 'modules', array('id'));
+        $table->add_key('course', XMLDB_KEY_FOREIGN, array('course'), 'course', array('id'));
+
+        // Adding indexes to table course_completion_defaults.
+        $table->add_index('coursemodule', XMLDB_INDEX_UNIQUE, array('course', 'module'));
+
+        // Conditionally launch create table for course_completion_defaults.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        upgrade_main_savepoint(true, 2017041801.00);
     }
 
     return true;

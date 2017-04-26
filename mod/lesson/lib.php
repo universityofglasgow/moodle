@@ -1634,6 +1634,11 @@ function mod_lesson_core_calendar_provide_event_action(calendar_event $event,
     $cm = get_fast_modinfo($event->courseid)->instances['lesson'][$event->instance];
     $lesson = new lesson($DB->get_record('lesson', array('id' => $cm->instance), '*', MUST_EXIST));
 
+    if ($lesson->count_user_retries($USER->id)) {
+        // If the user has attempted the lesson then there is no further action for the user.
+        return null;
+    }
+
     // Apply overrides.
     $lesson->update_effective_access($USER->id);
 
@@ -1643,4 +1648,71 @@ function mod_lesson_core_calendar_provide_event_action(calendar_event $event,
         1,
         $lesson->is_accessible()
     );
+}
+
+/**
+ * Add a get_coursemodule_info function in case any lesson type wants to add 'extra' information
+ * for the course (see resource).
+ *
+ * Given a course_module object, this function returns any "extra" information that may be needed
+ * when printing this activity in a course listing.  See get_array_of_activities() in course/lib.php.
+ *
+ * @param stdClass $coursemodule The coursemodule object (record).
+ * @return cached_cm_info An object on information that the courses
+ *                        will know about (most noticeably, an icon).
+ */
+function lesson_get_coursemodule_info($coursemodule) {
+    global $DB;
+
+    $dbparams = ['id' => $coursemodule->instance];
+    $fields = 'id, name, completionendreached, completiontimespent';
+    if (!$lesson = $DB->get_record('lesson', $dbparams, $fields)) {
+        return false;
+    }
+
+    $result = new cached_cm_info();
+    $result->name = $lesson->name;
+
+    // Populate the custom completion rules as key => value pairs, but only if the completion mode is 'automatic'.
+    if ($coursemodule->completion == COMPLETION_TRACKING_AUTOMATIC) {
+        $result->customdata['customcompletionrules']['completionendreached'] = $lesson->completionendreached;
+        $result->customdata['customcompletionrules']['completiontimespent'] = $lesson->completiontimespent;
+    }
+
+    return $result;
+}
+
+/**
+ * Callback which returns human-readable strings describing the active completion custom rules for the module instance.
+ *
+ * @param cm_info|stdClass $cm object with fields ->completion and ->customdata['customcompletionrules']
+ * @return array $descriptions the array of descriptions for the custom rules.
+ */
+function mod_lesson_get_completion_active_rule_descriptions($cm) {
+    // Values will be present in cm_info, and we assume these are up to date.
+    if (empty($cm->customdata['customcompletionrules'])
+        || $cm->completion != COMPLETION_TRACKING_AUTOMATIC) {
+        return [];
+    }
+
+    $descriptions = [];
+    foreach ($cm->customdata['customcompletionrules'] as $key => $val) {
+        switch ($key) {
+            case 'completionendreached':
+                if (empty($val)) {
+                    continue;
+                }
+                $descriptions[] = get_string('completionendreached_desc', 'lesson', $val);
+                break;
+            case 'completiontimespent':
+                if (empty($val)) {
+                    continue;
+                }
+                $descriptions[] = get_string('completiontimespentdesc', 'lesson', format_time($val));
+                break;
+            default:
+                break;
+        }
+    }
+    return $descriptions;
 }
