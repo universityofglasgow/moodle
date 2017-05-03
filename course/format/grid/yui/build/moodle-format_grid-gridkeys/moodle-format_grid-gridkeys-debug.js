@@ -85,65 +85,71 @@ M.format_grid.gridkeys = {
         }
         M.format_grid.gridkeys.currentGridBox = false;
         if (focused && focused.id) {
-            Y.log(focused.id);
+            Y.log('Focus id: ' + focused.id);
             if (focused.id.indexOf('gridsection-') > -1) {
-                Y.log('Grid id:' + focused.id);
+                Y.log('Grid id: ' + focused.id);
                 M.format_grid.gridkeys.currentGridBox = true;
-                M.format_grid.gridkeys.currentGridBoxIndex = parseInt(focused.id.replace("gridsection-", ""));
+                M.format_grid.gridkeys.currentGridBoxIndex = parseInt(focused.id.replace("gridsection-", ""), 10);
             }
         }
         return M.format_grid.gridkeys.currentGridBox;
     },
     init: function(params) {
-        if (!params.editing) {
-            Y.on('esc', function (e) {
+        Y.on('esc', function (e) {
+            e.preventDefault();
+            Y.log("Esc pressed");
+            Y.log("Selected section no: " + M.format_grid.selected_section_no);
+            M.format_grid.icon_toggle(e);
+        });
+        // Initiated in CONTRIB-3240...
+        Y.on('enter', function (e) {
+            if (M.format_grid.gridkeys.currentGridBox) {
                 e.preventDefault();
-                Y.log("Esc pressed");
-                Y.log("Selected section no: " + M.format_grid.selected_section_no);
-                M.format_grid.icon_toggle(e);
-            });
-            // Initiated in CONTRIB-3240...
-            Y.on('enter', function (e) {
-                if (M.format_grid.gridkeys.currentGridBox) {
-                    e.preventDefault();
-                    if (M.format_grid.shadebox.shadebox_open === false) {
-                        Y.log("Enter pressed");
-                        Y.log("Selected section no: " + M.format_grid.selected_section_no);
-                        M.format_grid.icon_toggle(e);
-                    } else if (e.shiftKey) {
-                        Y.log("Shift Enter pressed");
-                        Y.log("Selected section no: " + M.format_grid.selected_section_no);
-                        M.format_grid.icon_toggle(e);
-                    }
-                }
-            });
-            Y.on('tab', function (/*e*/) {
-                setTimeout(function() {
-                    // Cope with the fact that the default event happens after us.
-                    // Therefore we need to react after focus has moved.
-                    if (M.format_grid.gridkeys.findfocused()) {
-                        M.format_grid.tab(M.format_grid.gridkeys.currentGridBoxIndex);
-                    }
-                }, 250);
-            });
-            Y.on('space', function (e) {
-                if (M.format_grid.gridkeys.currentGridBox) {
-                    e.preventDefault();
-                    Y.log("Space pressed");
+                if (e.shiftKey) {
+                    Y.log("Shift Enter pressed");
+                    Y.log("Selected section no: " + M.format_grid.selected_section_no);
+                    M.format_grid.icon_toggle(e);
+                } else {
+                    Y.log("Enter pressed");
                     Y.log("Selected section no: " + M.format_grid.selected_section_no);
                     M.format_grid.icon_toggle(e);
                 }
-            });
-        }
+            }
+        });
+        Y.on('tab', function (/*e*/) {
+            setTimeout(function() {
+                // Cope with the fact that the default event happens after us.
+                // Therefore we need to react after focus has moved.
+                if (M.format_grid.gridkeys.findfocused()) {
+                    M.format_grid.tab(M.format_grid.gridkeys.currentGridBoxIndex);
+                }
+            }, 250);
+        });
+        Y.on('space', function (e) {
+            if (M.format_grid.gridkeys.currentGridBox) {
+                e.preventDefault();
+                Y.log("Space pressed");
+                Y.log("Selected section no: " + M.format_grid.selected_section_no);
+                M.format_grid.icon_toggle(e);
+            }
+        });
         Y.on('left', function (e) {
             e.preventDefault();
             Y.log("Left pressed");
-            M.format_grid.arrow_left(e);
+            if (params.rtl) {
+                M.format_grid.next_section(e);
+            } else {
+                M.format_grid.previous_section(e);
+            }
         });
         Y.on('right', function (e) {
             e.preventDefault();
             Y.log("Right pressed");
-            M.format_grid.arrow_right(e);
+            if (params.rtl) {
+                M.format_grid.previous_section(e);
+            } else {
+                M.format_grid.next_section(e);
+            }
         });
     }
 };

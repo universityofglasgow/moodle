@@ -328,77 +328,96 @@ class format_grid_renderer extends format_section_renderer_base {
         $this->make_block_icon_topics($coursecontext->id, $modinfo, $course, $editing, $hascapvishidsect, $urlpicedit);
         echo html_writer::end_tag('ul');
         echo html_writer::end_tag('div');
-        echo html_writer::start_tag('div', array('id' => 'gridshadebox'));
-        echo html_writer::tag('div', '', array('id' => 'gridshadebox_overlay', 'style' => 'display: none;'));
 
-        $gridshadeboxcontentclasses = array('hide_content');
-        if (!$editing) {
-            if ($this->settings['fitsectioncontainertowindow'] == 2) {
-                 $gridshadeboxcontentclasses[] = 'fit_to_window';
-            } else {
-                 $gridshadeboxcontentclasses[] = 'absolute';
+        $rtl = right_to_left();
+        if (!(($course->coursedisplay == COURSE_DISPLAY_MULTIPAGE) && (!$editing))) {
+            echo html_writer::start_tag('div', array('id' => 'gridshadebox'));
+            echo html_writer::tag('div', '', array('id' => 'gridshadebox_overlay', 'style' => 'display: none;'));
+
+            $gridshadeboxcontentclasses = array('hide_content');
+            if (!$editing) {
+                if ($this->settings['fitsectioncontainertowindow'] == 2) {
+                    $gridshadeboxcontentclasses[] = 'fit_to_window';
+                } else {
+                    $gridshadeboxcontentclasses[] = 'absolute';
+                }
             }
-        }
 
-        echo html_writer::start_tag('div', array('id' => 'gridshadebox_content', 'class' => implode(' ',
-            $gridshadeboxcontentclasses),
-            'role' => 'region',
-            'aria-label' => get_string('shadeboxcontent', 'format_grid')));
+            echo html_writer::start_tag('div', array('id' => 'gridshadebox_content', 'class' => implode(' ',
+                $gridshadeboxcontentclasses),
+                'role' => 'region',
+                'aria-label' => get_string('shadeboxcontent', 'format_grid')));
 
-        $deviceextra = '';
-        switch ($this->portable) {
-            case 1: // Mobile.
-                $deviceextra = ' gridshadebox_mobile';
-            break;
-            case 2: // Tablet.
-                $deviceextra = ' gridshadebox_tablet';
-            break;
-            default:
-            break;
-        }
-        echo html_writer::tag('img', '', array('id' => 'gridshadebox_close', 'style' => 'display: none;',
-            'class' => $deviceextra,
-            'src' => $this->output->pix_url('close', 'format_grid'),
-            'role' => 'link',
-            'aria-label' => get_string('closeshadebox', 'format_grid')));
-
-        // Only show the arrows if there is more than one box shown.
-        if (($course->numsections > 1) || (($course->numsections == 1) && (!$this->topic0attop))) {
-            echo html_writer::start_tag('div', array('id' => 'gridshadebox_left',
-                'class' => 'gridshadebox_area gridshadebox_left_area',
-                'style' => 'display: none;',
+            $deviceextra = '';
+            switch ($this->portable) {
+                case 1: // Mobile.
+                    $deviceextra = ' gridshadebox_mobile';
+                break;
+                case 2: // Tablet.
+                    $deviceextra = ' gridshadebox_tablet';
+                break;
+                default:
+                break;
+            }
+            echo html_writer::tag('img', '', array('id' => 'gridshadebox_close', 'style' => 'display: none;',
+                'class' => $deviceextra,
+                'src' => $this->output->pix_url('close', 'format_grid'),
                 'role' => 'link',
-                'aria-label' => get_string('previoussection', 'format_grid')));
-            echo html_writer::tag('img', '', array('class' => 'gridshadebox_arrow gridshadebox_left'.$deviceextra,
-                'src' => $this->output->pix_url('fa-arrow-circle-left-w', 'format_grid')));
+                'aria-label' => get_string('closeshadebox', 'format_grid')));
+
+            // Only show the arrows if there is more than one box shown.
+            if (($course->numsections > 1) || (($course->numsections == 1) && (!$this->topic0attop))) {
+                if ($rtl) {
+                    $previcon = 'right';
+                    $nexticon = 'left';
+                    $areadir = 'rtl';
+                } else {
+                    $previcon = 'left';
+                    $nexticon = 'right';
+                    $areadir = 'ltr';
+                }
+                $prev = html_writer::start_tag('div', array('id' => 'gridshadebox_previous',
+                    'class' => 'gridshadebox_area gridshadebox_previous_area '.$areadir,
+                    'style' => 'display: none;',
+                    'role' => 'link',
+                    'aria-label' => get_string('previoussection', 'format_grid')));
+                $prev .= html_writer::tag('img', '', array('class' => 'gridshadebox_arrow gridshadebox_previous'.$deviceextra,
+                    'src' => $this->output->pix_url('fa-arrow-circle-'.$previcon.'-w', 'format_grid')));
+                $prev .= html_writer::end_tag('div');
+                $next = html_writer::start_tag('div', array('id' => 'gridshadebox_next',
+                    'class' => 'gridshadebox_area gridshadebox_next_area '.$areadir,
+                    'style' => 'display: none;',
+                    'role' => 'link',
+                    'aria-label' => get_string('nextsection', 'format_grid')));
+                $next .= html_writer::tag('img', '', array('class' => 'gridshadebox_arrow gridshadebox_next'.$deviceextra,
+                    'src' => $this->output->pix_url('fa-arrow-circle-'.$nexticon.'-w', 'format_grid')));
+                $next .= html_writer::end_tag('div');
+
+                if ($rtl) {
+                    echo $next.$prev;
+                } else {
+                    echo $prev.$next;
+                }
+            }
+
+            echo $this->start_section_list();
+            // If currently moving a file then show the current clipboard.
+            $this->make_block_show_clipboard_if_file_moving($course);
+
+            // Print Section 0 with general activities.
+            if (!$this->topic0attop) {
+                $this->make_block_topic0($course, $sections, $modinfo, $editing, $urlpicedit, $streditsummary, false);
+            }
+
+            // Now all the normal modules by topic.
+            // Everything below uses "section" terminology - each "section" is a topic/module.
+            $this->make_block_topics($course, $sections, $modinfo, $editing, $hascapvishidsect, $streditsummary,
+                    $urlpicedit, false);
+
             echo html_writer::end_tag('div');
-            echo html_writer::start_tag('div', array('id' => 'gridshadebox_right',
-                'class' => 'gridshadebox_area gridshadebox_right_area',
-                'style' => 'display: none;',
-                'role' => 'link',
-                'aria-label' => get_string('nextsection', 'format_grid')));
-            echo html_writer::tag('img', '', array('class' => 'gridshadebox_arrow gridshadebox_right'.$deviceextra,
-                'src' => $this->output->pix_url('fa-arrow-circle-right-w', 'format_grid')));
             echo html_writer::end_tag('div');
+            echo html_writer::tag('div', '&nbsp;', array('class' => 'clearer'));
         }
-
-        echo $this->start_section_list();
-        // If currently moving a file then show the current clipboard.
-        $this->make_block_show_clipboard_if_file_moving($course);
-
-        // Print Section 0 with general activities.
-        if (!$this->topic0attop) {
-            $this->make_block_topic0($course, $sections, $modinfo, $editing, $urlpicedit, $streditsummary, false);
-        }
-
-        // Now all the normal modules by topic.
-        // Everything below uses "section" terminology - each "section" is a topic/module.
-        $this->make_block_topics($course, $sections, $modinfo, $editing, $hascapvishidsect, $streditsummary,
-                $urlpicedit, false);
-
-        echo html_writer::end_tag('div');
-        echo html_writer::end_tag('div');
-        echo html_writer::tag('div', '&nbsp;', array('class' => 'clearer'));
         echo html_writer::end_tag('div');
 
         $sectionredirect = null;
@@ -412,11 +431,12 @@ class format_grid_renderer extends format_section_renderer_base {
             $PAGE->user_is_editing(),
             $sectionredirect,
             $course->numsections,
-            json_encode($this->shadeboxshownarray),
-            right_to_left()));
-        // Initialise the key control functionality...
-        $PAGE->requires->yui_module('moodle-format_grid-gridkeys', 'M.format_grid.gridkeys.init',
-            array(array('editing' => $PAGE->user_is_editing())), null, true);
+            json_encode($this->shadeboxshownarray)));
+        if (!$PAGE->user_is_editing()) {
+            // Initialise the key control functionality...
+            $PAGE->requires->yui_module('moodle-format_grid-gridkeys', 'M.format_grid.gridkeys.init',
+                array(array('rtl' => $rtl)), null, true);
+        }
     }
 
     /**
