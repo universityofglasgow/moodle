@@ -175,7 +175,7 @@ if ($ADMIN->fulltree) {
                 get_string('changepasswordhelp', 'auth'), '', PARAM_URL));
 
         // Password Expiration Header.
-        $settings->add(new admin_setting_heading('auth_ldap/passwordexpire',
+        $settings->add(new admin_setting_heading('auth_guid/passwordexpire',
                 new lang_string('auth_ldap_passwdexpire_settings', 'auth_ldap'), ''));
 
         // Password Expiration.
@@ -205,8 +205,16 @@ if ($ADMIN->fulltree) {
         $settings->add(new auth_ldap_admin_setting_special_lowercase_configtext('auth_guid/graceattr',
                 get_string('auth_ldap_gracelogin_key', 'auth_ldap'),
                 get_string('auth_ldap_graceattr_desc', 'auth_ldap'), '', PARAM_RAW));
-    }
 
+        // Debug mode Header.
+        $settings->add(new admin_setting_heading('auth_guid/guiddebugmode',
+                new lang_string('auth_debugmode', 'auth_guid'), ''));
+    
+        // Debugmode
+        $settings->add(new admin_setting_configselect('auth_guid/debugmode',
+                new lang_string('auth_debugmode_key', 'auth_guid'),
+                new lang_string('auth_guid_debugmode', 'auth_guid'), 0 , $yesno));
+    }
 
     // Display locking / mapping of profile fields.
     $authplugin = get_auth_plugin($this->name);
