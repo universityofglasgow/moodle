@@ -1352,8 +1352,8 @@ function quiz_get_group_override_priorities($quizid) {
         }
     }
 
-    // Sort open times in descending manner. The earlier open time gets higher priority.
-    rsort($grouptimeopen);
+    // Sort open times in ascending manner. The earlier open time gets higher priority.
+    sort($grouptimeopen);
     // Set priorities.
     $opengrouppriorities = [];
     $openpriority = 1;
@@ -1361,8 +1361,8 @@ function quiz_get_group_override_priorities($quizid) {
         $opengrouppriorities[$timeopen] = $openpriority++;
     }
 
-    // Sort close times in ascending manner. The later close time gets higher priority.
-    sort($grouptimeclose);
+    // Sort close times in descending manner. The later close time gets higher priority.
+    rsort($grouptimeclose);
     // Set priorities.
     $closegrouppriorities = [];
     $closepriority = 1;
@@ -2178,13 +2178,18 @@ function quiz_get_coursemodule_info($coursemodule) {
     global $DB;
 
     $dbparams = ['id' => $coursemodule->instance];
-    $fields = 'id, name, completionattemptsexhausted, completionpass';
+    $fields = 'id, name, intro, introformat, completionattemptsexhausted, completionpass';
     if (!$quiz = $DB->get_record('quiz', $dbparams, $fields)) {
         return false;
     }
 
     $result = new cached_cm_info();
     $result->name = $quiz->name;
+
+    if ($coursemodule->showdescription) {
+        // Convert intro to html. Do not filter cached version, filters run at display time.
+        $result->content = format_module_intro('quiz', $quiz, $coursemodule->id, false);
+    }
 
     // Populate the custom completion rules as key => value pairs, but only if the completion mode is 'automatic'.
     if ($coursemodule->completion == COMPLETION_TRACKING_AUTOMATIC) {

@@ -28,6 +28,7 @@
      data-limit="{{$limit}}20{{/limit}}"
      data-course-id="{{$courseid}}{{/courseid}}"
      data-last-id="{{$lastid}}{{/lastid}}"
+     data-midnight="{{midnight}}"
      id="event-list-container-{{$courseid}}{{/courseid}}">
 
     <div data-region="event-list-content">
@@ -86,12 +87,14 @@
             </button>
         </div>
     </div>
-    <div class="hidden text-xs-center text-center" data-region="empty-message">
+    <div class="hidden text-xs-center text-center m-y-3" data-region="empty-message">
         <img class="empty-placeholder-image-sm"
              src="{{urls.noevents}}"
-             alt="{{#str}} noevents, block_myoverview {{/str}}">
+             alt="{{#str}} noevents, block_myoverview {{/str}}"
+             role="presentation">
         <p class="text-muted m-t-1">{{#str}} noevents, block_myoverview {{/str}}</p>
-        <a href="{{viewurl}}" class="btn btn-secondary text-primary">
+        <a href="{{viewurl}}" class="btn btn-secondary text-primary"
+           aria-label="{{#str}} viewcoursename, block_myoverview, {{fullnamedisplay}} {{/str}}">
             {{#str}} viewcourse, block_myoverview {{/str}}
         </a>
     </div>

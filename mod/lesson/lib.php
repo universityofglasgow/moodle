@@ -243,7 +243,7 @@ function lesson_update_events($lesson, $override = null) {
 /**
  * Calculates the priorities of timeopen and timeclose values for group overrides for a lesson.
  *
- * @param int $lessonid The quiz ID.
+ * @param int $lessonid The lesson ID.
  * @return array|null Array of group override priorities for open and close times. Null if there are no group overrides.
  */
 function lesson_get_group_override_priorities($lessonid) {
@@ -268,8 +268,8 @@ function lesson_get_group_override_priorities($lessonid) {
         }
     }
 
-    // Sort open times in descending manner. The earlier open time gets higher priority.
-    rsort($grouptimeopen);
+    // Sort open times in ascending manner. The earlier open time gets higher priority.
+    sort($grouptimeopen);
     // Set priorities.
     $opengrouppriorities = [];
     $openpriority = 1;
@@ -277,8 +277,8 @@ function lesson_get_group_override_priorities($lessonid) {
         $opengrouppriorities[$timeopen] = $openpriority++;
     }
 
-    // Sort close times in ascending manner. The later close time gets higher priority.
-    sort($grouptimeclose);
+    // Sort close times in descending manner. The later close time gets higher priority.
+    rsort($grouptimeclose);
     // Set priorities.
     $closegrouppriorities = [];
     $closepriority = 1;
@@ -1665,13 +1665,18 @@ function lesson_get_coursemodule_info($coursemodule) {
     global $DB;
 
     $dbparams = ['id' => $coursemodule->instance];
-    $fields = 'id, name, completionendreached, completiontimespent';
+    $fields = 'id, name, intro, introformat, completionendreached, completiontimespent';
     if (!$lesson = $DB->get_record('lesson', $dbparams, $fields)) {
         return false;
     }
 
     $result = new cached_cm_info();
     $result->name = $lesson->name;
+
+    if ($coursemodule->showdescription) {
+        // Convert intro to html. Do not filter cached version, filters run at display time.
+        $result->content = format_module_intro('lesson', $lesson, $coursemodule->id, false);
+    }
 
     // Populate the custom completion rules as key => value pairs, but only if the completion mode is 'automatic'.
     if ($coursemodule->completion == COMPLETION_TRACKING_AUTOMATIC) {
