@@ -81,6 +81,15 @@ header .navbar-brand {
     width: 111px;
 }
 
+body.notloggedin header .usermenu {
+    color: #fff;
+}
+
+body.notloggedin header .usermenu a, body.notloggedin header .usermenu a:hover {
+    color: #fff;
+    text-decoration: underline;
+}
+
 .form-group .fitem.btn-cancel .btn-secondary {
     color: #7f8c8d;
 }
