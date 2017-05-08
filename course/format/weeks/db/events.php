@@ -15,31 +15,26 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * No authentication plugin upgrade code
+ * Format weeks event handler definition.
  *
- * @package    auth_none
- * @copyright  2017 Stephen Bourget
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package format_weeks
+ * @copyright 2017 Mark Nelson <markn@moodle.com>
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-/**
- * Function to upgrade auth_none.
- * @param int $oldversion the version we are upgrading from
- * @return bool result
- */
-function xmldb_auth_none_upgrade($oldversion) {
-    global $CFG, $DB;
-
-    // Automatically generated Moodle v3.2.0 release upgrade line.
-    // Put any upgrade step following this.
-
-    if ($oldversion < 2017020700) {
-        // Convert info in config plugins from auth/none to auth_none.
-        upgrade_fix_config_auth_plugin_names('none');
-        upgrade_plugin_savepoint(true, 2017020700, 'auth', 'none');
-    }
-
-    return true;
-}
+$observers = array(
+    array(
+        'eventname'   => '\core\event\course_updated',
+        'callback'    => 'format_weeks_observer::course_updated',
+    ),
+    array(
+        'eventname'   => '\core\event\course_section_created',
+        'callback'    => 'format_weeks_observer::course_section_created',
+    ),
+    array(
+        'eventname'   => '\core\event\course_section_deleted',
+        'callback'    => 'format_weeks_observer::course_section_deleted',
+    )
+);
