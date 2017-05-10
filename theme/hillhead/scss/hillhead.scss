@@ -87,11 +87,24 @@ header .popover-region {
     margin-right: 20px;
 }
 
-header .popover-region i.fa {
+header .popover-region-toggle > i.fa {
     font-size: 18px;
     color: #021B32;
     line-height: 23px;
     text-shadow: 0 1px 0 #476B8E, 0 -1px 0 #031425;
+}
+
+header.navbar .count-container {
+    display: inline-block;
+    border-radius: 7px;
+    min-width: 14px;
+    font-weight: bold;
+    text-align: center;
+    background-color: #D50032;
+}
+
+header.navbar .count-container.hidden {
+    display: none;
 }
 
 body.notloggedin header .usermenu {
@@ -127,6 +140,12 @@ body#page-login-index {
     }
 }
 
+@media (min-width: 1024) {
+    #region-main-settings-menu.has-blocks, #region-main.has-blocks {
+        width: calc(100% - 270px) !important;
+    }
+}
+
 body#page-login-index #page-footer {
     background-color: rgba(226, 229, 231, 0.8);
 }
@@ -138,10 +157,6 @@ body#page-login-index .card-block {
 body#page-login-index #page {
     margin-top: 0;
     padding-top: 55px;
-}
-
-#region-main-settings-menu.has-blocks, #region-main.has-blocks {
-    width: calc(100% - 270px) !important;
 }
 
 #page-header {
@@ -303,6 +318,10 @@ footer h3 {
 
 #page-login-index header button, #page-login-index header .login {
     display: none;
+}
+
+.open>.dropdown-menu {
+    box-shadow: 0 1px 4px #ccc;
 }
 
 // This gets rid of the annoying padding on the Dashboard

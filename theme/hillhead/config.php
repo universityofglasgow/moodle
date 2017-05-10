@@ -27,7 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 require_once(__DIR__ . '/lib.php');
 
 $THEME->name = 'hillhead';
-$THEME->sheets = ['font-awesome'];
+$THEME->sheets = ['font-awesome', 'ubuntu'];
 $THEME->editor_sheets = [];
 $THEME->parents = ['boost'];
 $THEME->enable_dock = false;
