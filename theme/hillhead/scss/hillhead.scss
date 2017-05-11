@@ -2,8 +2,10 @@ $breadcrumb-divider: "›";
 $breadcrumb-divider-rtl: "‹";
 
 $gu-blue: #003865;
-$gu-blue-gradient: #002F55;
+$gu-blue-gradient: #00447B;
 $gu-blue-border: #011A31;
+
+$gu-header-icons: #ddd;
 
 $gu-blue-dark: #061D38;
 
@@ -72,7 +74,7 @@ h4 {
 
 header.navbar {
     background-color: $gu-blue;
-    background: linear-gradient(to bottom, $gu-blue 0%,$gu-blue-gradient 100%);
+    background: linear-gradient(to bottom, $gu-blue-gradient 0%,$gu-blue 100%);
     border-bottom: $border-width solid $gu-blue-border;
 }
 
@@ -89,9 +91,9 @@ header .popover-region {
 
 header .popover-region-toggle > i.fa {
     font-size: 18px;
-    color: #021B32;
+    color: $gu-header-icons;
     line-height: 23px;
-    text-shadow: 0 1px 0 #476B8E, 0 -1px 0 #031425;
+    text-shadow: 0 1px 0 #eee, 0 -1px 0 #031425;
 }
 
 header.navbar .count-container {
@@ -108,7 +110,7 @@ header.navbar .count-container.hidden {
 }
 
 body.notloggedin header .usermenu {
-    color: #fff;
+    color: $gu-header-icons;
 }
 
 body.notloggedin header .usermenu a, body.notloggedin header .usermenu a:hover {
@@ -140,7 +142,7 @@ body#page-login-index {
     }
 }
 
-@media (min-width: 1024) {
+@media (min-width: 1199px) {
     #region-main-settings-menu.has-blocks, #region-main.has-blocks {
         width: calc(100% - 270px) !important;
     }
