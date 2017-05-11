@@ -17,8 +17,8 @@
 /**
  * Prints attendance info for particular user
  *
- * @package    mod
- * @subpackage attendance
+ * @package   mod_attendance
+ * @copyright  2014 Dan Marsden
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -39,6 +39,18 @@ $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST)
 // Require the user is logged in.
 require_login($course, true, $cm);
 
+if (!attendance_can_student_mark($attforsession)) {
+    // TODO: should we add a log message here? - student has got to submit page but cannot save attendance (time ran out?)
+    redirect(new moodle_url('/mod/attendance/view.php', array('id' => $cm->id)));
+    exit;
+}
+
+// Check if subnet is set and if the user is in the allowed range.
+if (!empty($attendance->subnet) && !address_in_subnet(getremoteaddr(), $attendance->subnet)) {
+    notice(get_string('subnetwrong', 'attendance'));
+    exit; // Notice calls this anyway.
+}
+
 $pageparams->sessionid = $id;
 $att = new mod_attendance_structure($attendance, $cm, $course, $PAGE->context, $pageparams);
 
@@ -56,6 +68,14 @@ if ($mform->is_cancelled()) {
     $url = new moodle_url('/mod/attendance/view.php', array('id' => $cm->id));
     redirect($url);
 } else if ($fromform = $mform->get_data()) {
+    // Check if password required and if set correctly.
+    if (!empty($attforsession->studentpassword) &&
+        $attforsession->studentpassword !== $fromform->studentpassword) {
+
+        $url = new moodle_url('/mod/attendance/attendance.php', array('sessid' => $id, 'sesskey' => sesskey()));
+        redirect($url, get_string('incorrectpassword', 'mod_attendance'));
+    }
+
     if (!empty($fromform->status)) {
         $success = $att->take_from_student($fromform);
 

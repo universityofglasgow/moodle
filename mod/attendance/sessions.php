@@ -59,7 +59,6 @@ $PAGE->set_url($att->url_sessions(array('action' => $pageparams->action)));
 $PAGE->set_title($course->shortname. ": ".$att->name);
 $PAGE->set_heading($course->fullname);
 $PAGE->set_cacheable(true);
-$PAGE->set_button($OUTPUT->update_module_button($cm->id, 'attendance'));
 $PAGE->navbar->add($att->name);
 
 $currenttab = attendance_tabs::TAB_ADD;
@@ -74,7 +73,7 @@ switch ($att->pageparams->action) {
         }
 
         if ($formdata = $mform->get_data()) {
-            $sessions = construct_sessions_data_for_add($formdata);
+            $sessions = attendance_construct_sessions_data_for_add($formdata);
             $att->add_sessions($sessions);
             if (count($sessions) == 1) {
                 $message = get_string('sessiongenerated', 'attendance');
@@ -134,14 +133,16 @@ switch ($att->pageparams->action) {
         exit;
     case mod_attendance_sessions_page_params::ACTION_DELETE_SELECTED:
         $confirm    = optional_param('confirm', null, PARAM_INT);
+        $message = get_string('deletecheckfull', '', get_string('session', 'attendance'));
 
         if (isset($confirm) && confirm_sesskey()) {
             $sessionsids = required_param('sessionsids', PARAM_ALPHANUMEXT);
             $sessionsids = explode('_', $sessionsids);
-
-            $att->delete_sessions($sessionsids);
-            attendance_update_users_grade($att);
-            redirect($att->url_manage(), get_string('sessiondeleted', 'attendance'));
+            if ($att->pageparams->action == mod_attendance_sessions_page_params::ACTION_DELETE_SELECTED) {
+                $att->delete_sessions($sessionsids);
+                attendance_update_users_grade($att);
+                redirect($att->url_manage(), get_string('sessiondeleted', 'attendance'));
+            }
         }
         $sessid = optional_param_array('sessid', '', PARAM_SEQUENCE);
         if (empty($sessid)) {
@@ -149,7 +150,6 @@ switch ($att->pageparams->action) {
         }
         $sessionsinfo = $att->get_sessions_info($sessid);
 
-        $message = get_string('deletecheckfull', '', get_string('session', 'attendance'));
         $message .= html_writer::empty_tag('br');
         foreach ($sessionsinfo as $sessinfo) {
             $message .= html_writer::empty_tag('br');
@@ -223,91 +223,3 @@ echo $output->render($tabs);
 $mform->display();
 
 echo $OUTPUT->footer();
-
-function construct_sessions_data_for_add($formdata) {
-    global $CFG;
-
-    $sesstarttime = $formdata->sestime['starthour'] * HOURSECS + $formdata->sestime['startminute'] * MINSECS;
-    $sesendtime = $formdata->sestime['endhour'] * HOURSECS + $formdata->sestime['endminute'] * MINSECS;
-    $sessiondate = $formdata->sessiondate + $sesstarttime;
-    $duration = $sesendtime - $sesstarttime;
-    $now = time();
-
-    $sessions = array();
-    if (isset($formdata->addmultiply)) {
-        $startdate = $sessiondate;
-        $enddate = $formdata->sessionenddate + DAYSECS; // Because enddate in 0:0am.
-
-        if ($enddate < $startdate) {
-            return null;
-        }
-
-        // Getting first day of week.
-        $sdate = $startdate;
-        $dinfo = usergetdate($sdate);
-        if ($CFG->calendar_startwday === '0') { // Week start from sunday.
-            $startweek = $startdate - $dinfo['wday'] * DAYSECS; // Call new variable.
-        } else {
-            $wday = $dinfo['wday'] === 0 ? 7 : $dinfo['wday'];
-            $startweek = $startdate - ($wday - 1) * DAYSECS;
-        }
-
-        $wdaydesc = array(0 => 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat');
-
-        while ($sdate < $enddate) {
-            if ($sdate < $startweek + WEEKSECS) {
-                $dinfo = usergetdate($sdate);
-                if (isset($formdata->sdays) && array_key_exists($wdaydesc[$dinfo['wday']], $formdata->sdays)) {
-                    $sess = new stdClass();
-                    $sess->sessdate = make_timestamp($dinfo['year'], $dinfo['mon'], $dinfo['mday'],
-                                                     $formdata->sestime['starthour'], $formdata->sestime['startminute']);
-                    $sess->duration = $duration;
-                    $sess->descriptionitemid = $formdata->sdescription['itemid'];
-                    $sess->description = $formdata->sdescription['text'];
-                    $sess->descriptionformat = $formdata->sdescription['format'];
-                    $sess->timemodified = $now;
-                    if (isset($formdata->studentscanmark)) { // Students will be able to mark their own attendance.
-                        $sess->studentscanmark = 1;
-                    }
-                    $sess->statusset = $formdata->statusset;
-
-                    fill_groupid($formdata, $sessions, $sess);
-                }
-                $sdate += DAYSECS;
-            } else {
-                $startweek += WEEKSECS * $formdata->period;
-                $sdate = $startweek;
-            }
-        }
-    } else {
-        $sess = new stdClass();
-        $sess->sessdate = $sessiondate;
-        $sess->duration = $duration;
-        $sess->descriptionitemid = $formdata->sdescription['itemid'];
-        $sess->description = $formdata->sdescription['text'];
-        $sess->descriptionformat = $formdata->sdescription['format'];
-        $sess->timemodified = $now;
-        if (isset($formdata->studentscanmark)) { // Students will be able to mark their own attendance.
-            $sess->studentscanmark = 1;
-        }
-        $sess->statusset = $formdata->statusset;
-
-        fill_groupid($formdata, $sessions, $sess);
-    }
-
-    return $sessions;
-}
-
-function fill_groupid($formdata, &$sessions, $sess) {
-    if ($formdata->sessiontype == mod_attendance_structure::SESSION_COMMON) {
-        $sess = clone $sess;
-        $sess->groupid = 0;
-        $sessions[] = $sess;
-    } else {
-        foreach ($formdata->groups as $groupid) {
-            $sess = clone $sess;
-            $sess->groupid = $groupid;
-            $sessions[] = $sess;
-        }
-    }
-}

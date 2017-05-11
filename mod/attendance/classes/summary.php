@@ -22,8 +22,16 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot . '/mod/attendance/locallib.php');
 
+/**
+ * Class that computes summary of users points
+ *
+ * @package   mod_attendance
+ * @copyright  2016 Antonio Carlos Mariani http://antonio.c.mariani@gmail.com
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class mod_attendance_summary {
 
     /** @var int attendance instance identifier */
@@ -41,11 +49,14 @@ class mod_attendance_summary {
     /** @var array pointsbygroup (groupid, numsessions, maxpoints) */
     private $maxpointsbygroupsessions;
 
+    /** @var array userstakensessionsbyacronym */
+    private $userstakensessionsbyacronym;
+
     /**
      * Initializes the class
      *
-     * @param int attendance instance identifier
-     * @param array userids user instances identifier
+     * @param int $attendanceid instance identifier
+     * @param array $userids user instances identifier
      * @param int $startdate Attendance sessions startdate
      * @param int $enddate Attendance sessions enddate
      */
@@ -53,12 +64,13 @@ class mod_attendance_summary {
         $this->attendanceid = $attendanceid;
 
         $this->compute_users_points($userids, $startdate, $enddate);
+        $this->compute_users_taken_sessions_by_acronym($userids, $startdate, $enddate);
     }
 
     /**
      * Returns true if the user has some session with points
      *
-     * @param int userid User instance id
+     * @param int $userid User instance id
      *
      * @return boolean
      */
@@ -102,7 +114,7 @@ class mod_attendance_summary {
     /**
      * Returns a summary of the points assigned to the user related to the taken sessions
      *
-     * @param int userid User instance id
+     * @param int $userid User instance id
      *
      * @return array
      */
@@ -119,6 +131,11 @@ class mod_attendance_summary {
         }
         $usersummary->takensessionspercentage = attendance_calc_fraction($usersummary->takensessionspoints,
                                                                          $usersummary->takensessionsmaxpoints);
+        if (isset($this->userstakensessionsbyacronym[$userid])) {
+            $usersummary->userstakensessionsbyacronym = $this->userstakensessionsbyacronym[$userid];
+        } else {
+            $usersummary->userstakensessionsbyacronym = array();
+        }
 
         return $usersummary;
     }
@@ -126,7 +143,7 @@ class mod_attendance_summary {
     /**
      * Returns a summary of the points assigned to the user, both related to taken sessions and related to all sessions
      *
-     * @param int userid User instance id
+     * @param int $userid User instance id
      *
      * @return array
      */
@@ -163,7 +180,7 @@ class mod_attendance_summary {
     /**
      * Computes the summary of points for the users that have some taken session
      *
-     * @param array userids user instances identifier
+     * @param array $userids user instances identifier
      * @param int $startdate Attendance sessions startdate
      * @param int $enddate Attendance sessions enddate
      * @return  (userid, numtakensessions, points, maxpoints)
@@ -222,6 +239,69 @@ class mod_attendance_summary {
                     {$where}
                 GROUP BY atl.studentid";
         $this->userspoints = $DB->get_records_sql($sql, $params);
+    }
+
+    /**
+     * Computes the summary of taken sessions by acronym
+     *
+     * @param array $userids user instances identifier
+     * @param int $startdate Attendance sessions startdate
+     * @param int $enddate Attendance sessions enddate
+     * @return  null
+     */
+    private function compute_users_taken_sessions_by_acronym($userids=array(), $startdate = '', $enddate = '') {
+        global $DB;
+
+        list($this->course, $cm) = get_course_and_cm_from_instance($this->attendanceid, 'attendance');
+        $this->groupmode = $cm->effectivegroupmode;
+
+        $params = array(
+            'attid'      => $this->attendanceid,
+            'cstartdate' => $this->course->startdate,
+            );
+
+        $where = '';
+        if (!empty($userids)) {
+            list($insql, $inparams) = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED);
+            $where .= ' AND atl.studentid ' . $insql;
+            $params = array_merge($params, $inparams);
+        }
+        if (!empty($startdate)) {
+            $where .= ' AND ats.sessdate >= :startdate';
+            $params['startdate'] = $startdate;
+        }
+        if (!empty($enddate)) {
+            $where .= ' AND ats.sessdate < :enddate ';
+            $params['enddate'] = $enddate;
+        }
+
+        if ($this->with_groups()) {
+            $joingroup = 'LEFT JOIN {groups_members} gm ON (gm.userid = atl.studentid AND gm.groupid = ats.groupid)';
+            $where .= ' AND (ats.groupid = 0 or gm.id is NOT NULL)';
+        } else {
+            $joingroup = '';
+            $where .= ' AND ats.groupid = 0';
+        }
+
+        $sql = "SELECT atl.studentid AS userid, sts.setnumber, sts.acronym, COUNT(*) AS numtakensessions
+                  FROM {attendance_sessions} ats
+                  JOIN {attendance_log} atl ON (atl.sessionid = ats.id)
+                  JOIN {attendance_statuses} sts
+                    ON (sts.attendanceid = ats.attendanceid AND
+                        sts.id = atl.statusid AND
+                        sts.deleted = 0 AND sts.visible = 1)
+                  {$joingroup}
+                 WHERE ats.attendanceid = :attid
+                   AND ats.sessdate >= :cstartdate
+                   AND ats.lasttakenby != 0
+                   {$where}
+              GROUP BY atl.studentid, sts.setnumber, sts.acronym";
+        $this->userstakensessionsbyacronym = array();
+        $records = $DB->get_recordset_sql($sql, $params);
+        foreach ($records as $rec) {
+            $this->userstakensessionsbyacronym[$rec->userid][$rec->setnumber][$rec->acronym] = $rec->numtakensessions;
+        }
+        $records->close();
     }
 
     /**

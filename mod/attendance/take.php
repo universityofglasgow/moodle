@@ -30,7 +30,7 @@ $pageparams = new mod_attendance_take_page_params();
 $id                     = required_param('id', PARAM_INT);
 $pageparams->sessionid  = required_param('sessionid', PARAM_INT);
 $pageparams->grouptype  = required_param('grouptype', PARAM_INT);
-$pageparams->sort       = optional_param('sort', null, PARAM_INT);
+$pageparams->sort       = optional_param('sort', ATT_SORT_DEFAULT, PARAM_INT);
 $pageparams->copyfrom   = optional_param('copyfrom', null, PARAM_INT);
 $pageparams->viewmode   = optional_param('viewmode', null, PARAM_INT);
 $pageparams->gridcols   = optional_param('gridcols', null, PARAM_INT);
@@ -64,7 +64,6 @@ $PAGE->set_url($att->url_take());
 $PAGE->set_title($course->shortname. ": ".$att->name);
 $PAGE->set_heading($course->fullname);
 $PAGE->set_cacheable(true);
-$PAGE->set_button($OUTPUT->update_module_button($cm->id, 'attendance'));
 $PAGE->navbar->add($att->name);
 
 $output = $PAGE->get_renderer('mod_attendance');

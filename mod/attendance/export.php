@@ -45,7 +45,6 @@ $PAGE->set_url($att->url_export());
 $PAGE->set_title($course->shortname. ": ".$att->name);
 $PAGE->set_heading($course->fullname);
 $PAGE->set_cacheable(true);
-$PAGE->set_button($OUTPUT->update_module_button($cm->id, 'attendance'));
 $PAGE->navbar->add(get_string('export', 'attendance'));
 
 $formparams = array('course' => $course, 'cm' => $cm, 'modcontext' => $context);
@@ -123,6 +122,16 @@ if ($formdata = $mform->get_data()) {
         } else {
             print_error('sessionsnotfound', 'attendance', $att->url_manage());
         }
+
+        $setnumber = -1;
+        foreach ($reportdata->statuses as $sts) {
+            if ($sts->setnumber != $setnumber) {
+                $setnumber = $sts->setnumber;
+            }
+
+            $data->tabhead[] = $sts->acronym;
+        }
+
         $data->tabhead[] = get_string('takensessions', 'attendance');
         $data->tabhead[] = get_string('points', 'attendance');
         $data->tabhead[] = get_string('percentage', 'attendance');
@@ -159,6 +168,15 @@ if ($formdata = $mform->get_data()) {
             $data->table[$i] = array_merge($data->table[$i], $cellsgenerator->get_cells(isset($formdata->includeremarks)));
 
             $usersummary = $reportdata->summary->get_taken_sessions_summary_for($user->id);
+
+            foreach ($reportdata->statuses as $sts) {
+                if (isset($usersummary->userstakensessionsbyacronym[$sts->setnumber][$sts->acronym])) {
+                    $data->table[$i][] = $usersummary->userstakensessionsbyacronym[$sts->setnumber][$sts->acronym];
+                } else {
+                    $data->table[$i][] = 0;
+                }
+            }
+
             $data->table[$i][] = $usersummary->numtakensessions;
             $data->table[$i][] = format_float($usersummary->takensessionspoints, 1, true, true) . ' / ' .
                                     format_float($usersummary->takensessionsmaxpoints, 1, true, true);
@@ -168,9 +186,9 @@ if ($formdata = $mform->get_data()) {
         }
 
         if ($formdata->format === 'text') {
-            exporttocsv($data, $filename);
+            attendance_exporttocsv($data, $filename);
         } else {
-            exporttotableed($data, $filename, $formdata->format);
+            attendance_exporttotableed($data, $filename, $formdata->format);
         }
         exit;
     } else {
@@ -189,68 +207,4 @@ $mform->display();
 echo $OUTPUT->footer();
 
 
-function exporttotableed($data, $filename, $format) {
-    global $CFG;
 
-    if ($format === 'excel') {
-        require_once("$CFG->libdir/excellib.class.php");
-        $filename .= ".xls";
-        $workbook = new MoodleExcelWorkbook("-");
-    } else {
-        require_once("$CFG->libdir/odslib.class.php");
-        $filename .= ".ods";
-        $workbook = new MoodleODSWorkbook("-");
-    }
-    // Sending HTTP headers.
-    $workbook->send($filename);
-    // Creating the first worksheet.
-    $myxls = $workbook->add_worksheet('Attendances');
-    // Format types.
-    $formatbc = $workbook->add_format();
-    $formatbc->set_bold(1);
-
-    $myxls->write(0, 0, get_string('course'), $formatbc);
-    $myxls->write(0, 1, $data->course);
-    $myxls->write(1, 0, get_string('group'), $formatbc);
-    $myxls->write(1, 1, $data->group);
-
-    $i = 3;
-    $j = 0;
-    foreach ($data->tabhead as $cell) {
-        // Merge cells if the heading would be empty (remarks column).
-        if (empty($cell)) {
-            $myxls->merge_cells($i, $j - 1, $i, $j);
-        } else {
-            $myxls->write($i, $j, $cell, $formatbc);
-        }
-        $j++;
-    }
-    $i++;
-    $j = 0;
-    foreach ($data->table as $row) {
-        foreach ($row as $cell) {
-            $myxls->write($i, $j++, $cell);
-        }
-        $i++;
-        $j = 0;
-    }
-    $workbook->close();
-}
-
-function exporttocsv($data, $filename) {
-    $filename .= ".txt";
-
-    header("Content-Type: application/download\n");
-    header("Content-Disposition: attachment; filename=\"$filename\"");
-    header("Expires: 0");
-    header("Cache-Control: must-revalidate,post-check=0,pre-check=0");
-    header("Pragma: public");
-
-    echo get_string('course')."\t".$data->course."\n";
-    echo get_string('group')."\t".$data->group."\n\n";
-
-    echo implode("\t", $data->tabhead)."\n";
-    foreach ($data->table as $row) {
-        echo implode("\t", $row)."\n";
-    }
-}

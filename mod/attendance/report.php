@@ -32,7 +32,7 @@ $from                   = optional_param('from', null, PARAM_ACTION);
 $pageparams->view       = optional_param('view', null, PARAM_INT);
 $pageparams->curdate    = optional_param('curdate', null, PARAM_INT);
 $pageparams->group      = optional_param('group', null, PARAM_INT);
-$pageparams->sort       = optional_param('sort', null, PARAM_INT);
+$pageparams->sort       = optional_param('sort', ATT_SORT_DEFAULT, PARAM_INT);
 $pageparams->page       = optional_param('page', 1, PARAM_INT);
 $pageparams->perpage    = get_config('attendance', 'resultsperpage');
 
@@ -46,6 +46,9 @@ $context = context_module::instance($cm->id);
 require_capability('mod/attendance:viewreports', $context);
 
 $pageparams->init($cm);
+$pageparams->showsessiondetails = optional_param('showsessiondetails', $attrecord->showsessiondetails, PARAM_INT);
+$pageparams->sessiondetailspos = optional_param('sessiondetailspos', $attrecord->sessiondetailspos, PARAM_TEXT);
+
 $att = new mod_attendance_structure($attrecord, $cm, $course, $context, $pageparams);
 
 $PAGE->set_url($att->url_report());
@@ -53,7 +56,6 @@ $PAGE->set_pagelayout('report');
 $PAGE->set_title($course->shortname. ": ".$att->name.' - '.get_string('report', 'attendance'));
 $PAGE->set_heading($course->fullname);
 $PAGE->set_cacheable(true);
-$PAGE->set_button($OUTPUT->update_module_button($cm->id, 'attendance'));
 $PAGE->navbar->add(get_string('report', 'attendance'));
 
 $output = $PAGE->get_renderer('mod_attendance');
@@ -71,13 +73,14 @@ $event->add_record_snapshot('course_modules', $cm);
 $event->add_record_snapshot('attendance', $attrecord);
 $event->trigger();
 
-// Output starts here.
+$title = get_string('attendanceforthecourse', 'attendance').' :: ' .format_string($course->fullname);
+$header = new mod_attendance_header($att, $title);
 
+// Output starts here.
 echo $output->header();
-echo $output->heading(get_string('attendanceforthecourse', 'attendance').' :: ' .format_string($course->fullname));
+echo $output->render($header);
 echo $output->render($tabs);
 echo $output->render($filtercontrols);
 echo $output->render($reportdata);
-
 echo $output->footer();
 

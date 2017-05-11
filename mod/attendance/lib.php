@@ -22,6 +22,9 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die();
+require_once(dirname(__FILE__) . '/classes/calendar_helpers.php');
+
 /**
  * Returns the information if the module supports a feature
  *
@@ -40,7 +43,7 @@ function attendance_supports($feature) {
         case FEATURE_GROUPMEMBERSONLY:
             return true;
         case FEATURE_MOD_INTRO:
-            return false;
+            return true;
         case FEATURE_BACKUP_MOODLE2:
             return true;
         // Artem Andreev: AFAIK it's not tested.
@@ -51,6 +54,11 @@ function attendance_supports($feature) {
     }
 }
 
+/**
+ * Add default set of statuses to the new attendance.
+ *
+ * @param int $attid - id of attendance instance.
+ */
 function att_add_default_statuses($attid) {
     global $DB;
 
@@ -63,6 +71,12 @@ function att_add_default_statuses($attid) {
     $statuses->close();
 }
 
+/**
+ * Add new attendance instance.
+ *
+ * @param stdClass $attendance
+ * @return bool|int
+ */
 function attendance_add_instance($attendance) {
     global $DB;
 
@@ -77,7 +91,12 @@ function attendance_add_instance($attendance) {
     return $attendance->id;
 }
 
-
+/**
+ * Update existing attendance instance.
+ *
+ * @param stdClass $attendance
+ * @return bool
+ */
 function attendance_update_instance($attendance) {
     global $DB;
 
@@ -93,7 +112,12 @@ function attendance_update_instance($attendance) {
     return true;
 }
 
-
+/**
+ * Delete existing attendance
+ *
+ * @param int $id
+ * @return bool
+ */
 function attendance_delete_instance($id) {
     global $DB;
 
@@ -102,6 +126,9 @@ function attendance_delete_instance($id) {
     }
 
     if ($sessids = array_keys($DB->get_records('attendance_sessions', array('attendanceid' => $id), '', 'id'))) {
+        if (attendance_existing_calendar_events_ids($sessids)) {
+            attendance_delete_calendar_events($sessids);
+        }
         $DB->delete_records_list('attendance_log', 'sessionid', $sessids);
         $DB->delete_records('attendance_sessions', array('attendanceid' => $id));
     }
@@ -114,26 +141,9 @@ function attendance_delete_instance($id) {
     return true;
 }
 
-function attendance_delete_course($course, $feedback=true) {
-    global $DB;
-
-    $attids = array_keys($DB->get_records('attendance', array('course' => $course->id), '', 'id'));
-    $sessids = array_keys($DB->get_records_list('attendance_sessions', 'attendanceid', $attids, '', 'id'));
-    if ($sessids) {
-        $DB->delete_records_list('attendance_log', 'sessionid', $sessids);
-    }
-    if ($attids) {
-        $DB->delete_records_list('attendance_statuses', 'attendanceid', $attids);
-        $DB->delete_records_list('attendance_sessions', 'attendanceid', $attids);
-    }
-    $DB->delete_records('attendance', array('course' => $course->id));
-
-    return true;
-}
-
 /**
  * Called by course/reset.php
- * @param $mform form passed by reference
+ * @param moodleform $mform form passed by reference
  */
 function attendance_reset_course_form_definition(&$mform) {
     $mform->addElement('header', 'attendanceheader', get_string('modulename', 'attendance'));
@@ -152,11 +162,20 @@ function attendance_reset_course_form_definition(&$mform) {
 
 /**
  * Course reset form defaults.
+ *
+ * @param stdClass $course
+ * @return array
  */
 function attendance_reset_course_form_defaults($course) {
     return array('reset_attendance_log' => 0, 'reset_attendance_statuses' => 0, 'reset_attendance_sessions' => 0);
 }
 
+/**
+ * Reset user data within attendance.
+ *
+ * @param stdClass $data
+ * @return array
+ */
 function attendance_reset_userdata($data) {
     global $DB;
 
@@ -194,6 +213,10 @@ function attendance_reset_userdata($data) {
     }
 
     if (!empty($data->reset_attendance_sessions)) {
+        $sessionsids = array_keys($DB->get_records_list('attendance_sessions', 'attendanceid', $attids, '', 'id'));
+        if (attendance_existing_calendar_events_ids($sessionsids)) {
+            attendance_delete_calendar_events($sessionsids);
+        }
         $DB->delete_records_list('attendance_sessions', 'attendanceid', $attids);
 
         $status[] = array(
@@ -205,12 +228,18 @@ function attendance_reset_userdata($data) {
 
     return $status;
 }
-/*
+/**
  * Return a small object with summary information about what a
  *  user has done with a given particular instance of this module
  *  Used for user activity reports.
  *  $return->time = the time they did it
  *  $return->info = a short text description
+ *
+ * @param stdClass $course - full course record.
+ * @param stdClass $user - full user record
+ * @param stdClass $mod
+ * @param stdClass $attendance
+ * @return stdClass.
  */
 function attendance_user_outline($course, $user, $mod, $attendance) {
     global $CFG;
@@ -227,21 +256,23 @@ function attendance_user_outline($course, $user, $mod, $attendance) {
         $result->time = 0;
     }
     if (has_capability('mod/attendance:canbelisted', $mod->context, $user->id)) {
-        $statuses = attendance_get_statuses($attendance->id);
-        $grade = attendance_get_user_grade(attendance_get_user_statuses_stat($attendance->id, $course->startdate,
-                                                                      $user->id, $mod), $statuses);
-        $maxgrade = attendance_get_user_max_grade(attendance_get_user_taken_sessions_count($attendance->id, $course->startdate,
-                                                                                    $user->id, $mod), $statuses);
+        $summary = new mod_attendance_summary($attendance->id, $user->id);
+        $usersummary = $summary->get_all_sessions_summary_for($user->id);
 
-        $result->info = $grade.' / '.$maxgrade;
+        $result->info = format_float($usersummary->takensessionspoints, 1, true, true) . ' / ' .
+                        format_float($usersummary->allsessionsmaxpoints, 1, true, true);
     }
 
     return $result;
 }
-/*
+/**
  * Print a detailed representation of what a  user has done with
  * a given particular instance of this module, for user activity reports.
  *
+ * @param stdClass $course
+ * @param stdClass $user
+ * @param stdClass $mod
+ * @param stdClass $attendance
  */
 function attendance_user_complete($course, $user, $mod, $attendance) {
     global $CFG;
@@ -254,14 +285,21 @@ function attendance_user_complete($course, $user, $mod, $attendance) {
     }
 }
 
+/**
+ * Dummy function - must exist to allow quick editing of module name.
+ *
+ * @param stdClass $attendance
+ * @param int $userid
+ * @param bool $nullifnone
+ */
 function attendance_update_grades($attendance, $userid=0, $nullifnone=true) {
     // We need this function to exist so that quick editing of module name is passed to gradebook.
 }
 /**
  * Create grade item for given attendance
  *
- * @param object $attendance object with extra cmidnumber
- * @param mixed optional array/object of grade(s); 'reset' means reset grades in gradebook
+ * @param stdClass $attendance object with extra cmidnumber
+ * @param mixed $grades optional array/object of grade(s); 'reset' means reset grades in gradebook
  * @return int 0 if ok, error code otherwise
  */
 function attendance_grade_item_update($attendance, $grades=null) {
@@ -284,7 +322,7 @@ function attendance_grade_item_update($attendance, $grades=null) {
         $params = array('itemname' => $attendance->name, 'idnumber' => $attendance->cmidnumber);
     } else {
         // MDL-14303.
-        $params = array('itemname' => $attendance->name/*, 'idnumber'=>$attendance->id*/);
+        $params = array('itemname' => $attendance->name);
     }
 
     if ($attendance->grade > 0) {
@@ -393,4 +431,27 @@ function attendance_pluginfile($course, $cm, $context, $filearea, $args, $forced
         return false;
     }
     send_stored_file($file, 0, 0, true);
+}
+
+/**
+ * Print tabs on attendance settings page.
+ *
+ * @param string $selected - current selected tab.
+ */
+function attendance_print_settings_tabs($selected = 'settings') {
+    global $CFG;
+    // Print tabs for different settings pages.
+    $tabs = array();
+    $tabs[] = new tabobject('settings', $CFG->wwwroot.'/admin/settings.php?section=modsettingattendance',
+        get_string('settings', 'attendance'), get_string('settings'), false);
+
+    $tabs[] = new tabobject('defaultstatus', $CFG->wwwroot.'/mod/attendance/defaultstatus.php',
+        get_string('defaultstatus', 'attendance'), get_string('defaultstatus', 'attendance'), false);
+
+    ob_start();
+    print_tabs(array($tabs), $selected);
+    $tabmenu = ob_get_contents();
+    ob_end_clean();
+
+    return $tabmenu;
 }

@@ -22,6 +22,9 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die();
+require_once(dirname(__FILE__) . '/upgradelib.php');
+
 /**
  * upgrade this attendance instance - this function could be skipped but it will be needed later
  * @param int $oldversion The old version of the attendance module
@@ -43,7 +46,7 @@ function xmldb_attendance_upgrade($oldversion=0) {
             $dbman->add_field($table, $field);
         }
 
-        upgrade_mod_savepoint($result, 2014112000, 'attendance');
+        upgrade_mod_savepoint(true, 2014112000, 'attendance');
     }
 
     if ($oldversion < 2014112001) {
@@ -82,7 +85,7 @@ function xmldb_attendance_upgrade($oldversion=0) {
         // Delete old capabilities.
         $DB->delete_records_select('capabilities', 'component = ?', array('mod_attforblock'));
 
-        upgrade_plugin_savepoint($result, 2014112001, 'mod', 'attendance');
+        upgrade_mod_savepoint(true, 2014112001, 'attendance');
     }
 
     if ($oldversion < 2015040501) {
@@ -156,6 +159,90 @@ function xmldb_attendance_upgrade($oldversion=0) {
 
         // Attendance savepoint reached.
         upgrade_mod_savepoint(true, 2015040503, 'attendance');
+    }
+
+    if ($oldversion < 2016052202) {
+        // Adding field to store calendar event ids.
+        $table = new xmldb_table('attendance_sessions');
+        $field = new xmldb_field('caleventid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '0', null);
+
+        // Conditionally launch add field statusset.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Creating events for all existing sessions.
+        attendance_upgrade_create_calendar_events();
+
+        // Attendance savepoint reached.
+        upgrade_mod_savepoint(true, 2016052202, 'attendance');
+    }
+
+    if ($oldversion < 2016082900) {
+
+        // Define field timemodified to be added to attendance.
+        $table = new xmldb_table('attendance');
+        $field = new xmldb_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'grade');
+
+        // Conditionally launch add field timemodified.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Attendance savepoint reached.
+        upgrade_mod_savepoint(true, 2016082900, 'attendance');
+    }
+    if ($oldversion < 2016112100) {
+        $table = new xmldb_table('attendance');
+        $newfield = $table->add_field('subnet', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'timemodified');
+        if (!$dbman->field_exists($table, $newfield)) {
+            $dbman->add_field($table, $newfield);
+        }
+        upgrade_mod_savepoint(true, 2016112100, 'attendance');
+    }
+
+    if ($oldversion < 2016121300) {
+        $table = new xmldb_table('attendance');
+        $field = new xmldb_field('sessiondetailspos', XMLDB_TYPE_CHAR, '5', null, null, null, 'left', 'subnet');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        $field = new xmldb_field('showsessiondetails', XMLDB_TYPE_INTEGER, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '1', 'subnet');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        upgrade_mod_savepoint(true, 2016121300, 'attendance');
+    }
+
+    if ($oldversion < 2017020700) {
+        // Define field timemodified to be added to attendance.
+        $table = new xmldb_table('attendance');
+
+        $fields = [];
+        $fields[] = new xmldb_field('intro', XMLDB_TYPE_TEXT, null, null, null, null, null, 'timemodified');
+        $fields[] = new xmldb_field('introformat', XMLDB_TYPE_INTEGER, '4', null, XMLDB_NOTNULL, null, 0, 'intro');
+
+        // Conditionally launch add field.
+        foreach ($fields as $field) {
+            if (!$dbman->field_exists($table, $field)) {
+                $dbman->add_field($table, $field);
+            }
+        }
+
+        // Attendance savepoint reached.
+        upgrade_mod_savepoint(true, 2017020700, 'attendance');
+    }
+
+    if ($oldversion < 2017042800) {
+        $table = new xmldb_table('attendance_sessions');
+
+        $field = new xmldb_field('studentpassword');
+        $field->set_attributes(XMLDB_TYPE_CHAR, '50', null, false, null, '', 'studentscanmark');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        upgrade_mod_savepoint(true, 2017042800, 'attendance');
     }
 
     return $result;

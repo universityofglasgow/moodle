@@ -21,10 +21,11 @@
  * @copyright  2011 Artem Andreev <andreev.artem@gmail.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+defined('MOODLE_INTERNAL') || die();
 
-$plugin->version  = 2016052201;
-$plugin->requires = 2015051100;
-$plugin->release = '3.1.0.3';
+$plugin->version  = 2017050200;
+$plugin->requires = 2017011900;
+$plugin->release = '3.3.4';
 $plugin->maturity  = MATURITY_STABLE;
 $plugin->cron     = 0;
 $plugin->component = 'mod_attendance';

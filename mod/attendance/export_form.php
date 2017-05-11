@@ -22,6 +22,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir.'/formslib.php');
 
 /**
@@ -136,6 +137,12 @@ class mod_attendance_export_form extends moodleform {
         $mform->addElement('hidden', 'id', $cm->id);
     }
 
+    /**
+     * Validate form.
+     * @param array $data
+     * @param array $files
+     * @return array
+     */
     public function validation($data, $files) {
         $errors = parent::validation($data, $files);
 

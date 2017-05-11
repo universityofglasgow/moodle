@@ -35,9 +35,18 @@ define('ATT_VIEW_ALL', 5);
 define('ATT_VIEW_NOTPRESENT', 6);
 define('ATT_VIEW_SUMMARY', 7);
 
+define('ATT_SORT_DEFAULT', 0);
 define('ATT_SORT_LASTNAME', 1);
 define('ATT_SORT_FIRSTNAME', 2);
 
+/**
+ * Get statuses,
+ *
+ * @param int $attid
+ * @param bool $onlyvisible
+ * @param int $statusset
+ * @return array
+ */
 function attendance_get_statuses($attid, $onlyvisible=true, $statusset = -1) {
     global $DB;
 
@@ -89,6 +98,12 @@ function attendance_get_setname($attid, $statusset, $includevalues = true) {
     return $statusname;
 }
 
+/**
+ * Get users courses and the relevant attendances.
+ *
+ * @param int $userid
+ * @return array
+ */
 function attendance_get_user_courses_attendances($userid) {
     global $DB;
 
@@ -180,7 +195,7 @@ function attendance_get_max_statusset($attendanceid) {
 /**
  * Returns the maxpoints for each statusset
  *
- * @param array statuses
+ * @param array $statuses
  * @return array
  */
 function attendance_get_statusset_maxpoints($statuses) {
@@ -196,7 +211,7 @@ function attendance_get_statusset_maxpoints($statuses) {
 /**
  * Update user grades
  *
- * @param mixed mod_attendance_structure|stdClass $attendance
+ * @param mod_attendance_structure|stdClass $attendance
  * @param array $userids
  */
 function attendance_update_users_grade($attendance, $userids=array()) {
@@ -238,4 +253,375 @@ function attendance_update_users_grade($attendance, $userids=array()) {
     }
 
     return grade_update('mod/attendance', $course->id, 'mod', 'attendance', $attendance->id, 0, $grades);
+}
+
+/**
+ * Add an attendance status variable
+ *
+ * @param string $acronym
+ * @param string $description
+ * @param int $grade
+ * @param int $attendanceid
+ * @param int $setnumber
+ * @param stdClass $context
+ * @param stdClass $cm
+ * @return bool
+ */
+function attendance_add_status($acronym, $description, $grade, $attendanceid, $setnumber = 0, $context = null, $cm = null) {
+    global $DB;
+    if (empty($context)) {
+        $context = context_system::instance();
+    }
+    if ($acronym && $description) {
+        $rec = new stdClass();
+        $rec->attendanceid = $attendanceid;
+        $rec->acronym = $acronym;
+        $rec->description = $description;
+        $rec->grade = $grade;
+        $rec->setnumber = $setnumber; // Save which set it is part of.
+        $rec->deleted = 0;
+        $rec->visible = 1;
+        $id = $DB->insert_record('attendance_statuses', $rec);
+        $rec->id = $id;
+
+        $event = \mod_attendance\event\status_added::create(array(
+            'objectid' => $attendanceid,
+            'context' => $context,
+            'other' => array('acronym' => $acronym, 'description' => $description, 'grade' => $grade)));
+        if (!empty($cm)) {
+            $event->add_record_snapshot('course_modules', $cm);
+        }
+        $event->add_record_snapshot('attendance_statuses', $rec);
+        $event->trigger();
+        return true;
+    } else {
+        return false;
+    }
+}
+
+/**
+ * Remove a status variable from an attendance instance
+ *
+ * @param stdClass $status
+ * @param stdClass $context
+ * @param stdClass $cm
+ */
+function attendance_remove_status($status, $context = null, $cm = null) {
+    global $DB;
+    if (empty($context)) {
+        $context = context_system::instance();
+    }
+    $DB->set_field('attendance_statuses', 'deleted', 1, array('id' => $status->id));
+    $event = \mod_attendance\event\status_removed::create(array(
+        'objectid' => $status->id,
+        'context' => $context,
+        'other' => array(
+            'acronym' => $status->acronym,
+            'description' => $status->description
+        )));
+    if (!empty($cm)) {
+        $event->add_record_snapshot('course_modules', $cm);
+    }
+    $event->add_record_snapshot('attendance_statuses', $status);
+    $event->trigger();
+}
+
+/**
+ * Update status variable for a particular Attendance module instance
+ *
+ * @param stdClass $status
+ * @param string $acronym
+ * @param string $description
+ * @param int $grade
+ * @param bool $visible
+ * @param stdClass $context
+ * @param stdClass $cm
+ * @return array
+ */
+function attendance_update_status($status, $acronym, $description, $grade, $visible, $context = null, $cm = null) {
+    global $DB;
+
+    if (empty($context)) {
+        $context = context_system::instance();
+    }
+
+    if (isset($visible)) {
+        $status->visible = $visible;
+        $updated[] = $visible ? get_string('show') : get_string('hide');
+    } else if (empty($acronym) || empty($description)) {
+        return array('acronym' => $acronym, 'description' => $description);
+    }
+
+    $updated = array();
+
+    if ($acronym) {
+        $status->acronym = $acronym;
+        $updated[] = $acronym;
+    }
+    if ($description) {
+        $status->description = $description;
+        $updated[] = $description;
+    }
+    if (isset($grade)) {
+        $status->grade = $grade;
+        $updated[] = $grade;
+    }
+    $DB->update_record('attendance_statuses', $status);
+
+    $event = \mod_attendance\event\status_updated::create(array(
+        'objectid' => $status->attendanceid,
+        'context' => $context,
+        'other' => array('acronym' => $acronym, 'description' => $description, 'grade' => $grade,
+            'updated' => implode(' ', $updated))));
+    if (!empty($cm)) {
+        $event->add_record_snapshot('course_modules', $cm);
+    }
+    $event->add_record_snapshot('attendance_statuses', $status);
+    $event->trigger();
+}
+
+/**
+ * Similar to core random_string function but only lowercase letters.
+ * designed to make it relatively easy to provide a simple password in class.
+ *
+ * @param int $length The length of the string to be created.
+ * @return string
+ */
+function attendance_random_string($length=6) {
+    $randombytes = random_bytes_emulate($length);
+    $pool = 'abcdefghijklmnopqrstuvwxyz';
+    $pool .= '0123456789';
+    $poollen = strlen($pool);
+    $string = '';
+    for ($i = 0; $i < $length; $i++) {
+        $rand = ord($randombytes[$i]);
+        $string .= substr($pool, ($rand % ($poollen)), 1);
+    }
+    return $string;
+}
+
+/**
+ * Check to see if this session is open for student marking.
+ *
+ * @param stdclass $sess the session record from attendance_sessions.
+ * @return boolean
+ */
+function attendance_can_student_mark($sess) {
+    $canmark = false;
+    $attconfig = get_config('attendance');
+    if (!empty($attconfig->studentscanmark) && !empty($sess->studentscanmark)) {
+        if (empty($attconfig->studentscanmarksessiontime)) {
+            $canmark = true;
+        } else {
+            $duration = $sess->duration;
+            if (empty($duration)) {
+                $duration = $attconfig->studentscanmarksessiontimeend * 60;
+            }
+            if ($sess->sessdate < time() && time() < ($sess->sessdate + $duration)) {
+                $canmark = true;
+            }
+        }
+    }
+    return $canmark;
+}
+
+/**
+ * Generate worksheet for Attendance export
+ *
+ * @param stdclass $data The data for the report
+ * @param string $filename The name of the file
+ * @param string $format excel|ods
+ *
+ */
+function attendance_exporttotableed($data, $filename, $format) {
+    global $CFG;
+
+    if ($format === 'excel') {
+        require_once("$CFG->libdir/excellib.class.php");
+        $filename .= ".xls";
+        $workbook = new MoodleExcelWorkbook("-");
+    } else {
+        require_once("$CFG->libdir/odslib.class.php");
+        $filename .= ".ods";
+        $workbook = new MoodleODSWorkbook("-");
+    }
+    // Sending HTTP headers.
+    $workbook->send($filename);
+    // Creating the first worksheet.
+    $myxls = $workbook->add_worksheet('Attendances');
+    // Format types.
+    $formatbc = $workbook->add_format();
+    $formatbc->set_bold(1);
+
+    $myxls->write(0, 0, get_string('course'), $formatbc);
+    $myxls->write(0, 1, $data->course);
+    $myxls->write(1, 0, get_string('group'), $formatbc);
+    $myxls->write(1, 1, $data->group);
+
+    $i = 3;
+    $j = 0;
+    foreach ($data->tabhead as $cell) {
+        // Merge cells if the heading would be empty (remarks column).
+        if (empty($cell)) {
+            $myxls->merge_cells($i, $j - 1, $i, $j);
+        } else {
+            $myxls->write($i, $j, $cell, $formatbc);
+        }
+        $j++;
+    }
+    $i++;
+    $j = 0;
+    foreach ($data->table as $row) {
+        foreach ($row as $cell) {
+            $myxls->write($i, $j++, $cell);
+        }
+        $i++;
+        $j = 0;
+    }
+    $workbook->close();
+}
+
+/**
+ * Generate csv for Attendance export
+ *
+ * @param stdclass $data The data for the report
+ * @param string $filename The name of the file
+ *
+ */
+function attendance_exporttocsv($data, $filename) {
+    $filename .= ".txt";
+
+    header("Content-Type: application/download\n");
+    header("Content-Disposition: attachment; filename=\"$filename\"");
+    header("Expires: 0");
+    header("Cache-Control: must-revalidate,post-check=0,pre-check=0");
+    header("Pragma: public");
+
+    echo get_string('course')."\t".$data->course."\n";
+    echo get_string('group')."\t".$data->group."\n\n";
+
+    echo implode("\t", $data->tabhead)."\n";
+    foreach ($data->table as $row) {
+        echo implode("\t", $row)."\n";
+    }
+}
+
+/**
+ * Get session data for form.
+ * @param stdClass $formdata moodleform - attendance form.
+ * @return array.
+ */
+function attendance_construct_sessions_data_for_add($formdata) {
+    global $CFG;
+
+    $sesstarttime = $formdata->sestime['starthour'] * HOURSECS + $formdata->sestime['startminute'] * MINSECS;
+    $sesendtime = $formdata->sestime['endhour'] * HOURSECS + $formdata->sestime['endminute'] * MINSECS;
+    $sessiondate = $formdata->sessiondate + $sesstarttime;
+    $duration = $sesendtime - $sesstarttime;
+    $now = time();
+
+    if (empty(get_config('attendance', 'studentscanmark'))) {
+        $formdata->studentscanmark = 0;
+    }
+
+    $sessions = array();
+    if (isset($formdata->addmultiply)) {
+        $startdate = $sessiondate;
+        $enddate = $formdata->sessionenddate + DAYSECS; // Because enddate in 0:0am.
+
+        if ($enddate < $startdate) {
+            return null;
+        }
+
+        // Getting first day of week.
+        $sdate = $startdate;
+        $dinfo = usergetdate($sdate);
+        if ($CFG->calendar_startwday === '0') { // Week start from sunday.
+            $startweek = $startdate - $dinfo['wday'] * DAYSECS; // Call new variable.
+        } else {
+            $wday = $dinfo['wday'] === 0 ? 7 : $dinfo['wday'];
+            $startweek = $startdate - ($wday - 1) * DAYSECS;
+        }
+
+        $wdaydesc = array(0 => 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat');
+
+        while ($sdate < $enddate) {
+            if ($sdate < $startweek + WEEKSECS) {
+                $dinfo = usergetdate($sdate);
+                if (isset($formdata->sdays) && array_key_exists($wdaydesc[$dinfo['wday']], $formdata->sdays)) {
+                    $sess = new stdClass();
+                    $sess->sessdate = make_timestamp($dinfo['year'], $dinfo['mon'], $dinfo['mday'],
+                        $formdata->sestime['starthour'], $formdata->sestime['startminute']);
+                    $sess->duration = $duration;
+                    $sess->descriptionitemid = $formdata->sdescription['itemid'];
+                    $sess->description = $formdata->sdescription['text'];
+                    $sess->descriptionformat = $formdata->sdescription['format'];
+                    $sess->timemodified = $now;
+                    if (isset($formdata->studentscanmark)) { // Students will be able to mark their own attendance.
+                        $sess->studentscanmark = 1;
+                        if (!empty($formdata->randompassword)) {
+                            $sess->studentpassword = attendance_random_string();
+                        } else {
+                            $sess->studentpassword = $formdata->studentpassword;
+                        }
+                    } else {
+                        $sess->studentpassword = '';
+                    }
+                    $sess->statusset = $formdata->statusset;
+
+                    attendance_fill_groupid($formdata, $sessions, $sess);
+                }
+                $sdate += DAYSECS;
+            } else {
+                $startweek += WEEKSECS * $formdata->period;
+                $sdate = $startweek;
+            }
+        }
+    } else {
+        $sess = new stdClass();
+        $sess->sessdate = $sessiondate;
+        $sess->duration = $duration;
+        $sess->descriptionitemid = $formdata->sdescription['itemid'];
+        $sess->description = $formdata->sdescription['text'];
+        $sess->descriptionformat = $formdata->sdescription['format'];
+        $sess->timemodified = $now;
+        $sess->studentscanmark = 0;
+        $sess->studentpassword = '';
+
+        if (isset($formdata->studentscanmark) && !empty($formdata->studentscanmark)) {
+            // Students will be able to mark their own attendance.
+            $sess->studentscanmark = 1;
+            if (!empty($formdata->randompassword)) {
+                $sess->studentpassword = attendance_random_string();
+            } else {
+                $sess->studentpassword = $formdata->studentpassword;
+            }
+        }
+        $sess->statusset = $formdata->statusset;
+
+        attendance_fill_groupid($formdata, $sessions, $sess);
+    }
+
+    return $sessions;
+}
+
+/**
+ * Helper function for attendance_construct_sessions_data_for_add().
+ *
+ * @param stdClass $formdata
+ * @param stdClass $sessions
+ * @param stdClass $sess
+ */
+function attendance_fill_groupid($formdata, &$sessions, $sess) {
+    if ($formdata->sessiontype == mod_attendance_structure::SESSION_COMMON) {
+        $sess = clone $sess;
+        $sess->groupid = 0;
+        $sessions[] = $sess;
+    } else {
+        foreach ($formdata->groups as $groupid) {
+            $sess = clone $sess;
+            $sess->groupid = $groupid;
+            $sessions[] = $sess;
+        }
+    }
 }

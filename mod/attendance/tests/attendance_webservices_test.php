@@ -14,8 +14,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 /**
+ * Webservices test for attendance plugin.
  *
- * @package    local_attendance
+ * @package    mod_attendance
  * @copyright  2015 Caio Bressan Doneda
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -30,14 +31,26 @@ global $CFG;
 require_once($CFG->dirroot . '/mod/attendance/classes/attendance_webservices_handler.php');
 require_once($CFG->dirroot . '/mod/attendance/classes/structure.php');
 
-/** This class contains the test cases for the functions in attendance_webservices_handler.php. */
+/**
+ * This class contains the test cases for the functions in attendance_webservices_handler.php.
+ * @copyright  2015 Caio Bressan Doneda
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class attendance_webservices_tests extends advanced_testcase {
+    /** @var coursecat */
     protected $category;
+    /** @var stdClass */
     protected $course;
+    /** @var stdClass */
     protected $attendance;
+    /** @var stdClass */
     protected $teacher;
+    /** @var array */
     protected $sessions;
 
+    /**
+     * Setup class.
+     */
     public function setUp() {
         global $DB;
 
@@ -63,7 +76,6 @@ class attendance_webservices_tests extends advanced_testcase {
 
         $this->setUser($this->teacher);
 
-        $sessions = array();
         $session = new stdClass();
         $session->sessdate = time();
         $session->duration = 6000;

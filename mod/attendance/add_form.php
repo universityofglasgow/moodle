@@ -22,6 +22,8 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once($CFG->libdir.'/formslib.php');
 
 /**
@@ -46,6 +48,8 @@ class mod_attendance_add_form extends moodleform {
         $cm            = $this->_customdata['cm'];
         $modcontext    = $this->_customdata['modcontext'];
 
+        $pluginconfig = get_config('attendance');
+
         $mform->addElement('header', 'general', get_string('addsession', 'attendance'));
 
         $groupmode = groups_get_activity_groupmode($cm);
@@ -66,10 +70,10 @@ class mod_attendance_add_form extends moodleform {
                 break;
             case VISIBLEGROUPS:
                 $radio = array();
-                $radio[] = &$mform->createElement('radio', 'sessiontype', '',
-                                                  get_string('commonsession', 'attendance'), mod_attendance_structure::SESSION_COMMON);
-                $radio[] = &$mform->createElement('radio', 'sessiontype', '',
-                                                  get_string('groupsession', 'attendance'), mod_attendance_structure::SESSION_GROUP);
+                $radio[] = &$mform->createElement('radio', 'sessiontype', '', get_string('commonsession', 'attendance'),
+                                                  mod_attendance_structure::SESSION_COMMON);
+                $radio[] = &$mform->createElement('radio', 'sessiontype', '', get_string('groupsession', 'attendance'),
+                                                  mod_attendance_structure::SESSION_GROUP);
                 $mform->addGroup($radio, 'sessiontype', get_string('sessiontype', 'attendance'), ' ', false);
                 $mform->setType('sessiontype', PARAM_INT);
                 $mform->addHelpButton('sessiontype', 'sessiontype', 'attendance');
@@ -118,8 +122,32 @@ class mod_attendance_add_form extends moodleform {
         }
 
         // Students can mark own attendance.
-        $mform->addElement('checkbox', 'studentscanmark', '', get_string('studentscanmark', 'attendance'));
-        $mform->addHelpButton('studentscanmark', 'studentscanmark', 'attendance');
+        if (!empty(get_config('attendance', 'studentscanmark'))) {
+            $mform->addElement('checkbox', 'studentscanmark', '', get_string('studentscanmark', 'attendance'));
+            $mform->addHelpButton('studentscanmark', 'studentscanmark', 'attendance');
+            $mgroup = array();
+
+            $mgroup[] = & $mform->createElement('text', 'studentpassword', get_string('studentpassword', 'attendance'));
+            $mgroup[] = & $mform->createElement('checkbox', 'randompassword', '', get_string('randompassword', 'attendance'));
+            $mform->addGroup($mgroup, 'passwordgrp', get_string('passwordgrp', 'attendance'), array(' '), false);
+
+            $mform->setType('studentpassword', PARAM_TEXT);
+            $mform->disabledif('studentpassword', 'studentscanmark', 'notchecked');
+
+            $mform->addHelpButton('passwordgrp', 'passwordgrp', 'attendance');
+            $mform->disabledif('randompassword', 'studentscanmark', 'notchecked');
+            $mform->disabledif('studentpassword', 'randompassword', 'checked');
+            if (isset($pluginconfig->studentscanmark_default)) {
+                $mform->setDefault('studentscanmark', $pluginconfig->studentscanmark_default);
+            }
+            if (isset($pluginconfig->randompassword_default)) {
+                $mform->setDefault('randompassword', $pluginconfig->randompassword_default);
+            }
+
+        } else {
+            $mform->addElement('hidden', 'studentscanmark', '0');
+            $mform->settype('studentscanmark', PARAM_INT);
+        }
 
         $mform->addElement('editor', 'sdescription', get_string('description', 'attendance'), array('rows' => 1, 'columns' => 80),
                             array('maxfiles' => EDITOR_UNLIMITED_FILES, 'noclean' => true, 'context' => $modcontext));
@@ -214,6 +242,13 @@ class mod_attendance_add_form extends moodleform {
         return $errors;
     }
 
+    /**
+     * Check weekdays function.
+     * @param int $sessiondate
+     * @param int $sessionenddate
+     * @param int $sdays
+     * @return bool
+     */
     private function checkweekdays($sessiondate, $sessionenddate, $sdays) {
 
         $found = false;

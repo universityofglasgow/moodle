@@ -27,6 +27,9 @@ defined('MOODLE_INTERNAL') || die;
 if ($ADMIN->fulltree) {
     require_once(dirname(__FILE__).'/lib.php');
 
+    $tabmenu = attendance_print_settings_tabs();
+    $settings->add(new admin_setting_heading('attendance_header', '', $tabmenu));
+
     // Paging options.
     $options = array(
           0 => get_string('donotusepaging', 'attendance'),
@@ -41,4 +44,33 @@ if ($ADMIN->fulltree) {
 
     $settings->add(new admin_setting_configselect('attendance/resultsperpage',
         get_string('resultsperpage', 'attendance'), get_string('resultsperpage_desc', 'attendance'), 25, $options));
+
+    $settings->add(new admin_setting_configcheckbox('attendance/studentscanmark',
+        get_string('studentscanmark', 'attendance'), get_string('studentscanmark_desc', 'attendance'), 1));
+
+    $settings->add(new admin_setting_configcheckbox('attendance/studentscanmarksessiontime',
+        get_string('studentscanmarksessiontime', 'attendance'),
+        get_string('studentscanmarksessiontime_desc', 'attendance'), 1));
+
+    $settings->add(new admin_setting_configtext('attendance/studentscanmarksessiontimeend',
+        get_string('studentscanmarksessiontimeend', 'attendance'),
+        get_string('studentscanmarksessiontimeend_desc', 'attendance'), '60', PARAM_INT));
+
+
+    $name = new lang_string('defaultsettings', 'mod_attendance');
+    $description = new lang_string('defaultsettings_help', 'mod_attendance');
+    $settings->add(new admin_setting_heading('defaultsettings', $name, $description));
+
+    $settings->add(new admin_setting_configtext('attendance/subnet',
+        get_string('requiresubnet', 'attendance'), get_string('requiresubnet_help', 'attendance'), '', PARAM_RAW));
+
+    $name = new lang_string('defaultsessionsettings', 'mod_attendance');
+    $description = new lang_string('defaultsessionsettings_help', 'mod_attendance');
+    $settings->add(new admin_setting_heading('defaultsessionsettings', $name, $description));
+
+    $settings->add(new admin_setting_configcheckbox('attendance/studentscanmark_default',
+        get_string('studentscanmark', 'attendance'), '', 0));
+
+    $settings->add(new admin_setting_configcheckbox('attendance/randompassword_default',
+        get_string('randompassword', 'attendance'), '', 0));
 }

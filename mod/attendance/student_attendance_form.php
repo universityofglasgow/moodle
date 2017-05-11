@@ -14,17 +14,34 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * Student form class.
+ *
+ * @package    mod_attendance
+ * @copyright  2011 Artem Andreev <andreev.artem@gmail.com>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir.'/formslib.php');
 
+/**
+ * Class mod_attendance_student_attendance_form
+ *
+ * @copyright  2011 Artem Andreev <andreev.artem@gmail.com>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class mod_attendance_student_attendance_form extends moodleform {
+    /**
+     * Called to define this moodle form
+     *
+     * @return void
+     */
     public function definition() {
-        global $CFG, $USER;
+        global $USER;
 
         $mform  =& $this->_form;
 
-        $course = $this->_customdata['course'];
-        $cm = $this->_customdata['cm'];
-        $modcontext = $this->_customdata['modcontext'];
         $attforsession = $this->_customdata['session'];
         $attblock = $this->_customdata['attendance'];
 
@@ -40,7 +57,7 @@ class mod_attendance_student_attendance_form extends moodleform {
 
         // Set a title as the date and time of the session.
         $sesstiontitle = userdate($attforsession->sessdate, get_string('strftimedate')).' '
-                .userdate($attforsession->sessdate, get_string('strftimehm', 'mod_attendance'));
+                .attendance_strftimehm($attforsession->sessdate);
 
         $mform->addElement('header', 'session', $sesstiontitle);
 
@@ -48,7 +65,11 @@ class mod_attendance_student_attendance_form extends moodleform {
         if (!empty($attforsession->description)) {
             $mform->addElement('html', $attforsession->description);
         }
-
+        if (!empty($attforsession->studentpassword)) {
+            $mform->addElement('text', 'studentpassword', get_string('password', 'attendance'));
+            $mform->setType('studentpassword', PARAM_TEXT);
+            $mform->addRule('studentpassword', get_string('passwordrequired', 'attendance'), 'required');
+        }
         // Create radio buttons for setting the attendance status.
         $radioarray = array();
         foreach ($statuses as $status) {
