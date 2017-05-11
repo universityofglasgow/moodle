@@ -2857,7 +2857,29 @@ function xmldb_main_upgrade($oldversion) {
         upgrade_main_savepoint(true, 2017042600.01);
     }
 
-    if ($oldversion < 2017050300.01) {
+    if ($oldversion < 2017050500.01) {
+        // Get the list of parent event IDs.
+        $sql = "SELECT DISTINCT repeatid
+                           FROM {event}
+                          WHERE repeatid <> 0";
+        $parentids = array_keys($DB->get_records_sql($sql));
+        // Check if there are repeating events we need to process.
+        if (!empty($parentids)) {
+            // The repeat IDs of parent events should match their own ID.
+            // So we need to update parent events that have non-matching IDs and repeat IDs.
+            list($insql, $params) = $DB->get_in_or_equal($parentids);
+            $updatesql = "UPDATE {event}
+                             SET repeatid = id
+                           WHERE id <> repeatid
+                                 AND id $insql";
+            $DB->execute($updatesql, $params);
+        }
+
+        // Main savepoint reached.
+        upgrade_main_savepoint(true, 2017050500.01);
+    }
+
+    if ($oldversion < 2017050500.02) {
         // MDL-58684:
         // Remove all portfolio_tempdata records as these may contain serialized \file_system type objects, which are now unable to
         // be unserialized because of changes to the file storage API made in MDL-46375. Portfolio now stores an id reference to
@@ -2869,7 +2891,7 @@ function xmldb_main_upgrade($oldversion) {
         $DB->delete_records_select('portfolio_tempdata', 'id > ?', [0]);
 
         // Main savepoint reached.
-        upgrade_main_savepoint(true, 2017050300.01);
+        upgrade_main_savepoint(true, 2017050500.02);
     }
 
     return true;
