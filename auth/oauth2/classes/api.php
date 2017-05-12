@@ -40,6 +40,16 @@ defined('MOODLE_INTERNAL') || die();
 class api {
 
     /**
+     * Remove all linked logins that are using issuers that have been deleted.
+     *
+     * @param int $issuerid The issuer id of the issuer to check, or false to check all (defaults to all)
+     * @return boolean
+     */
+    public static function clean_orphaned_linked_logins($issuerid = false) {
+        return linked_login::delete_orphaned($issuerid);
+    }
+
+    /**
      * List linked logins
      *
      * Requires auth/oauth2:managelinkedlogins capability at the user context.
@@ -105,6 +115,10 @@ class api {
             $userid = $USER->id;
         }
 
+        if (linked_login::has_existing_issuer_match($issuer, $userinfo['username'])) {
+            throw new moodle_exception('alreadylinked', 'auth_oauth2');
+        }
+
         if (\core\session\manager::is_loggedinas()) {
             throw new moodle_exception('notwhileloggedinas', 'auth_oauth2');
         }
@@ -144,9 +158,8 @@ class api {
         $record->issuerid = $issuer->get('id');
         $record->username = $userinfo['username'];
         $record->userid = $userid;
-        $existing = linked_login::get_record((array)$record);
-        if ($existing) {
-            return false;
+        if (linked_login::has_existing_issuer_match($issuer, $userinfo['username'])) {
+            throw new moodle_exception('alreadylinked', 'auth_oauth2');
         }
         $record->email = $userinfo['email'];
         $record->confirmtoken = random_string(32);
@@ -239,6 +252,10 @@ class api {
         require_once($CFG->dirroot.'/user/profile/lib.php');
         require_once($CFG->dirroot.'/user/lib.php');
 
+        if (linked_login::has_existing_issuer_match($issuer, $userinfo['username'])) {
+            throw new moodle_exception('alreadylinked', 'auth_oauth2');
+        }
+
         $user = new stdClass();
         $user->username = $userinfo['username'];
         $user->email = $userinfo['email'];
@@ -318,5 +335,29 @@ class api {
         require_capability('auth/oauth2:managelinkedlogins', $context);
 
         $login->delete();
+    }
+
+    /**
+     * Delete linked logins for a user.
+     *
+     * @param \core\event\user_deleted $event
+     * @return boolean
+     */
+    public static function user_deleted(\core\event\user_deleted $event) {
+        global $DB;
+
+        $userid = $event->objectid;
+
+        return $DB->delete_records(linked_login::TABLE, ['userid' => $userid]);
+    }
+
+    /**
+     * Is the plugin enabled.
+     *
+     * @return bool
+     */
+    public static function is_enabled() {
+        $plugininfo = \core_plugin_manager::instance()->get_plugin_info('auth_oauth2');
+        return $plugininfo->is_enabled();
     }
 }

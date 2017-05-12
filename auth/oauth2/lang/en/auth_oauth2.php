@@ -42,6 +42,7 @@ line at the top of your web browser window.
 If you need help, please contact the site administrator,
 {$a->admin}';
 $string['confirmaccountemailsubject'] = '{$a}: account confirmation';
+$string['confirmationinvalid'] = 'The confirmation link is either invalid, or has expired. Please start the login process again to generate a new confirmation email.';
 $string['confirmationpending'] = 'This account is pending email confirmation.';
 $string['confirmlinkedloginemail'] = 'Hi {$a->fullname},
 
@@ -71,15 +72,19 @@ $string['emailconfirmlinksent'] = '<p>An existing account was found with this em
    <p>If you have any difficulty, contact the site administrator.</p>';
 $string['info'] = 'External account';
 $string['issuer'] = 'OAuth 2 Service';
+$string['issuernologin'] = 'This issuer can not be used to login';
 $string['linkedlogins'] = 'Linked logins';
 $string['linkedloginshelp'] = 'Help with linked logins';
 $string['loginerror_userincomplete'] = 'The user information returned did not contain a username and email address. The OAuth 2 service may be configured incorrectly.';
 $string['loginerror_nouserinfo'] = 'No user information was returned. The OAuth 2 service may be configured incorrectly.';
 $string['loginerror_invaliddomain'] = 'The email address is not allowed at this site.';
 $string['loginerror_authenticationfailed'] = 'The authentication process failed.';
-$string['loginerror_cannotcreateaccounts'] = 'The account does not exist and this site does not allow self-registration.';
+$string['loginerror_cannotcreateaccounts'] = 'An account with your email address could not be found.';
+$string['noissuersavailable'] = 'None of the configured OAuth2 services allow you to link login accounts';
 $string['notloggedindebug'] = 'The login attempt failed. Reason: {$a}';
 $string['notwhileloggedinas'] = 'Linked logins cannot be managed while logged in as another user.';
 $string['oauth2:managelinkedlogins'] = 'Manage own linked login accounts';
+$string['notenabled'] = 'Sorry, OAuth 2 authentication plugin is not enabled';
 $string['plugindescription'] = 'This authentication plugin displays a list of the configured identity providers on the login page. Selecting an identity provider allows users to login with their credentials from an OAuth 2 provider.';
 $string['pluginname'] = 'OAuth 2';
+$string['alreadylinked'] = 'This external account is already linked to an account on this site';
