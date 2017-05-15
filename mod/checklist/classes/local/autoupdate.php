@@ -27,9 +27,9 @@ namespace mod_checklist\local;
 defined('MOODLE_INTERNAL') || die();
 
 class autoupdate {
-    static $uselegacy = null;
+    protected static $uselegacy = null;
     /** @var \core\log\sql_select_reader */
-    static $reader = null;
+    protected static $reader = null;
 
     public static function get_log_actions_legacy($modname) {
         switch ($modname) {
@@ -198,10 +198,6 @@ class autoupdate {
         if (self::$uselegacy !== null) {
             return;
         }
-        if ($CFG->branch < 27) {
-            self::$uselegacy = true;
-            return;
-        }
 
         $manager = get_log_manager();
         $allreaders = $manager->get_readers();
@@ -351,7 +347,7 @@ class autoupdate {
                 foreach ($wantedaction as $candidate) {
                     list($target, $action) = $candidate;
                     if ($entry->target == $target && $entry->action == $action) {
-                        return (object) array(
+                        return (object)array(
                             'course' => $entry->courseid,
                             'module' => $module,
                             'cmid' => $entry->contextinstanceid,
@@ -372,6 +368,11 @@ class autoupdate {
             $comp = $event->get_record_snapshot('course_modules_completion', $event->objectid);
             // Update any relevant checklists.
             checklist_completion_autoupdate($comp->coursemoduleid, $comp->userid, $comp->completionstate);
+        } else if ($event->target == 'course' && $event->action == 'completed') {
+
+            // Update from a course completion event.
+            checklist_course_completion_autoupdate($event->courseid, $event->relateduserid);
+
         } else {
             // Check if this is an action that counts as 'completing' an activity (when completion is off).
             $info = self::get_entry_info($event);

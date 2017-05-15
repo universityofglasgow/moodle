@@ -25,22 +25,26 @@ $string['addownitems-stop'] = 'Stop adding your own items';
 $string['allowmodulelinks'] = 'Allow module links';
 
 $string['anygrade'] = 'Any';
+$string['anygrouping'] = 'Any grouping';
 $string['autopopulate'] = 'Show course modules in checklist';
 $string['autopopulate_help'] = 'This will automatically add a list of all the resources and activities in the current course into the checklist.<br />
 This list will be updated with any changes in the course, whenever you visit the \'Edit\' page for the checklist.<br />
 Items can be hidden from the list, by clicking on the \'hide\' icon beside them.<br />
 To remove the automatic items from the list, change this option back to \'No\', then click on \'Remove course module items\' on the \'Edit\' page.';
 $string['autoupdate'] = 'Check-off when modules complete';
+$string['autoupdate2'] = 'Check-off when courses or modules complete';
 $string['autoupdate_help'] = 'This will automatically check-off items in your checklist when you complete the relevant activity in the course.<br />
-\'Completing\' an activity varies from one activity to another - \'view\' a resource, \'submit\' a quiz or assignment, \'post\' to a forum or join in with a chat, etc.<br />
-If completion tracking is switched on for a particular activity, that will be used to tick-off the item in the list<br />
-For details of exactly what causes an activity to be marked as \'complete\', ask your site administrator to look in the file \'mod/checklist/autoupdate.php\'<br />
-Note: it can take a short while for a student\'s activity to be reflected in their checklist (when using completion tracking)';
+If completion tracking is switched on for a particular activity, that will be used to tick-off the item in the list<br>
+Otherwise, \'completing\' an activity varies from one activity to another - \'view\' a resource, \'submit\' a quiz or assignment, \'post\' to a forum or join in with a chat, etc. (for details of exactly what causes an activity to be marked as \'complete\', ask your site administrator to look in the file \'mod/checklist/classes/local/autoupdate.php\')<br>';
+$string['autoupdate2_help'] = 'This will automatically check-off items in your checklist when you complete the relevant activity in the course.<br />
+If completion tracking is switched on for a particular activity, that will be used to tick-off the item in the list<br>
+Otherwise, \'completing\' an activity varies from one activity to another - \'view\' a resource, \'submit\' a quiz or assignment, \'post\' to a forum or join in with a chat, etc. (for details of exactly what causes an activity to be marked as \'complete\', ask your site administrator to look in the file \'mod/checklist/classes/local/autoupdate.php\')<br>
+If an item is linked to a course and that course has completion enabled for it, then the item will be updated when that course is marked as complete.';
 $string['autoupdatenote'] = 'It is the \'student\' mark that is automatically updated - no updates will be displayed for \'Teacher only\' checklists';
 
 $string['autoupdatewarning_both'] = 'There are items on this list that will be automatically updated (as students complete the related activity). However, as this is a \'student and teacher\' checklist the progress bars will not update until a teacher agrees the marks given.';
 $string['autoupdatewarning_student'] = 'There are items on this list that will be automatically updated (as students complete the related activity).';
-$string['autoupdatewarning_teacher'] = 'Automatic updating has been switched on for this checklist, but these marks will not be displayed as only \'teacher\' marks are shown.';
+$string['autoupdatewarning_teacher'] = 'There are items on this list that will be automatically updated (as students complete the related activity).';
 
 $string['canceledititem'] = 'Cancel';
 
@@ -71,6 +75,7 @@ $string['checklistintro'] = 'Introduction';
 $string['checklistsettings'] = 'Settings';
 
 $string['checks'] = 'Check marks';
+$string['choosecourse'] = 'Choose course...';
 $string['comments'] = 'Comments';
 
 $string['completionpercentgroup'] = 'Require checked-off';
@@ -102,7 +107,7 @@ $string['emailoncompletebody'] = 'User {$a->user} has completed checklist \'{$a-
 View the checklist here:';
 $string['emailoncompletebodyown'] = 'You have completed checklist \'{$a->checklist}\' in the course \'{$a->coursename}\' 
 View the checklist here:';
-
+$string['enterurl'] = 'Enter url ...';
 $string['eventchecklistcomplete'] = 'Checklist complete';
 $string['eventeditpageviewed'] = 'Edit page viewed';
 $string['eventreportviewed'] = 'Report viewed';
@@ -114,6 +119,7 @@ $string['export'] = 'Export items';
 $string['forceupdate'] = 'Update checks for all automatic items';
 
 $string['gradetocomplete'] = 'Grade to complete:';
+$string['grouping'] = 'Visible to grouping';
 $string['guestsno'] = 'You do not have permission to view this checklist';
 
 $string['headingitem'] = 'This item is a heading - it will not have a checkbox beside it';
@@ -126,7 +132,12 @@ $string['indentitem'] = 'Indent item';
 $string['itemcomplete'] = 'Completed';
 $string['items'] = 'Checklist items';
 
-$string['linktomodule'] = 'Link to this module';
+$string['linkcourses'] = 'Allow linking items to courses';
+$string['linkcourses_desc'] = 'When enabled, checklist items can be linked to courses within Moodle - being marked as complete when the associated course is completed. Enabling this may have some performance implications when editing checkist items on sites with a large number of courses.';
+$string['linkto'] = 'Link to';
+$string['linktocourse'] = 'Course associated with this item';
+$string['linktomodule'] = 'Activity associated with this item';
+$string['linktourl'] = 'Link associated with this item';
 
 $string['lockteachermarks'] = 'Lock teacher marks';
 $string['lockteachermarks_help'] = 'When this setting is enabled, once a teacher has saved a \'Yes\' mark, they will be unable to change it. Users with the capability \'mod/checklist:updatelocked\' will still be able to change the mark.';
@@ -144,6 +155,7 @@ $string['noitems'] = 'No items in the checklist';
 $string['optionalitem'] = 'This item is optional';
 $string['optionalhide'] = 'Hide optional items';
 $string['optionalshow'] = 'Show optional items';
+$string['or'] = 'OR';
 
 $string['percentcomplete'] = 'Required items';
 $string['percentcompleteall'] = 'All items';

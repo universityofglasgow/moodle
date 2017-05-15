@@ -10,6 +10,13 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Print a selection box of existing slots to be scheduler in
+ *
+ * @param scheduler_instance $scheduler
+ * @param int $studentid student to schedule
+ * @param int $groupid group to schedule
+ */
 function scheduler_print_schedulebox(scheduler_instance $scheduler, $studentid, $groupid = 0) {
     global $output;
 
@@ -139,6 +146,11 @@ if ($action == 'updateslot') {
 
     $slotid = required_param('slotid', PARAM_INT);
     $slot = $scheduler->get_slot($slotid);
+    if ($slot->starttime % 300 !== 0 || $slot->duration % 5 !== 0) {
+        $timeoptions = array('step' => 1, 'optional' => false);
+    } else {
+        $timeoptions = array('step' => 5, 'optional' => false);
+    }
 
     $actionurl = new moodle_url('/mod/scheduler/view.php',
                     array('what' => 'updateslot', 'id' => $cm->id, 'slotid' => $slotid,
@@ -146,7 +158,10 @@ if ($action == 'updateslot') {
     $returnurl = new moodle_url('/mod/scheduler/view.php',
                     array('what' => 'view', 'id' => $cm->id, 'subpage' => $subpage, 'offset' => $offset));
 
-    $mform = new scheduler_editslot_form($actionurl, $scheduler, $cm, $groupsicansee, array('slotid' => $slotid));
+    $mform = new scheduler_editslot_form($actionurl, $scheduler, $cm, $groupsicansee, array(
+            'slotid' => $slotid,
+            'timeoptions' => $timeoptions)
+        );
     $data = $mform->prepare_formdata($slot);
     $mform->set_data($data);
 
@@ -389,6 +404,9 @@ if ($offset == -1) {
         $offset = 0;
     }
 }
+if ($offset * $pagesize >= $sqlcount && $sqlcount > 0) {
+    $offset = floor(($sqlcount-1) / $pagesize);
+}
 
 $slots = $scheduler->get_slots_for_teacher($teacherid, $currentgroup, $offset * $pagesize, $pagesize);
 
@@ -459,7 +477,7 @@ if ($slots) {
         $studlist->buttontext = get_string('saveseen', 'scheduler');
         $studlist->actionurl = new moodle_url($actionurl, array('what' => 'saveseen', 'slotid' => $slot->id));
         foreach ($slot->get_appointments() as $app) {
-            $studlist->add_student($app, false, $app->is_attended());
+            $studlist->add_student($app, false, $app->is_attended(), true, $scheduler->uses_studentdata());
         }
 
         $slotman->add_slot($slot, $studlist, $editable);
@@ -479,10 +497,21 @@ if ($slots) {
 $groupfilter = ($subpage == 'myappointments') ? $groupsthatcanseeme : $groupsicurrentlysee;
 $maxlistsize = get_config('mod_scheduler', 'maxstudentlistsize');
 $students = array();
+$reminderstudents = array();
 if ($groupfilter === '') {
     $students = $scheduler->get_students_for_scheduling('', $maxlistsize);
+    if ($scheduler->allows_unlimited_bookings()) {
+        $reminderstudents  = $scheduler->get_students_for_scheduling('', $maxlistsize, true);
+    } else {
+        $reminderstudents = $students;
+    }
 } else if (count($groupfilter) > 0) {
     $students = $scheduler->get_students_for_scheduling(array_keys($groupfilter), $maxlistsize);
+    if ($scheduler->allows_unlimited_bookings()) {
+        $reminderstudents = $scheduler->get_students_for_scheduling(array_keys($groupfilter), $maxlistsize, true);
+    } else {
+        $reminderstudents = $students;
+    }
 }
 
 if ($students === 0) {
@@ -498,26 +527,27 @@ if ($students === 0) {
 
 } else if (count($students) > 0) {
 
-    $studids = implode(',', array_keys($students));
+    if (count($reminderstudents) > 0) {
+        $studids = implode(',', array_keys($reminderstudents));
 
-    $messageurl = new moodle_url($actionurl, array('what' => 'sendmessage', 'recipients' => $studids));
-    $invitationurl = new moodle_url($messageurl, array('template' => 'invite'));
-    $reminderurl = new moodle_url($messageurl, array('template' => 'invitereminder'));
+        $messageurl = new moodle_url($actionurl, array('what' => 'sendmessage', 'recipients' => $studids));
+        $invitationurl = new moodle_url($messageurl, array('template' => 'invite'));
+        $reminderurl = new moodle_url($messageurl, array('template' => 'invitereminder'));
 
-    $maildisplay = '';
-    $maildisplay .= html_writer::link($invitationurl, get_string('sendinvitation', 'scheduler'));
-    $maildisplay .= ' &mdash; ';
-    $maildisplay .= html_writer::link($reminderurl, get_string('sendreminder', 'scheduler'));
+        $maildisplay = '';
+        $maildisplay .= html_writer::link($invitationurl, get_string('sendinvitation', 'scheduler'));
+        $maildisplay .= ' &mdash; ';
+        $maildisplay .= html_writer::link($reminderurl, get_string('sendreminder', 'scheduler'));
 
-    echo $output->box_start('maildisplay');
-    // Print number of students who still have to make an appointment.
-    echo $output->heading(get_string('missingstudents', 'scheduler', count($students)), 3);
-    // Print e-mail addresses and mailto links.
-    echo $maildisplay;
-    echo $output->box_end();
+        echo $output->box_start('maildisplay');
+        // Print number of students who still have to make an appointment.
+        echo $output->heading(get_string('missingstudents', 'scheduler', count($reminderstudents)), 3);
+        // Print e-mail addresses and mailto links.
+        echo $maildisplay;
+        echo $output->box_end();
+    }
 
-
-    $userfields = scheduler_get_user_fields(null);
+    $userfields = scheduler_get_user_fields(null, $context);
     $fieldtitles = array();
     foreach ($userfields as $f) {
         $fieldtitles[] = $f->title;
@@ -538,7 +568,7 @@ if ($students === 0) {
                         new pix_icon('t/approve', '', 'moodle'),
                         get_string('markasseennow', 'scheduler') );
 
-        $userfields = scheduler_get_user_fields($student);
+        $userfields = scheduler_get_user_fields($student, $context);
         $fieldvals = array();
         foreach ($userfields as $f) {
             $fieldvals[] = $f->value;

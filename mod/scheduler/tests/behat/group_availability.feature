@@ -40,7 +40,7 @@ Feature: As a teacher I need to see an accurate list of users to be scheduled
       | activity  | name           | intro | course | idnumber   |
       | scheduler | Test scheduler | n     | C1     | scheduler1 |      
     And I log in as "teacher"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
 
   @javascript
   Scenario: A scheduler that is restricted to a single group
@@ -49,7 +49,7 @@ Feature: As a teacher I need to see an accurate list of users to be scheduled
     And I should see "Student 2" in the "studentstoschedule" "table"
     And I should see "Student 3" in the "studentstoschedule" "table"
     
-    When I click on "Edit settings" "link" in the "Administration" "block"
+    When I navigate to "Edit settings" in current page administration
     And I expand all fieldsets
     And I click on "Add restriction..." "button"
     And I click on "Group" "button" in the "Add restriction..." "dialogue"
@@ -66,7 +66,7 @@ Feature: As a teacher I need to see an accurate list of users to be scheduled
     And I should see "Student 2" in the "studentstoschedule" "table"
     And I should see "Student 3" in the "studentstoschedule" "table"
     
-    When I click on "Edit settings" "link" in the "Administration" "block"
+    When I navigate to "Edit settings" in current page administration
     And I expand all fieldsets
     And I click on "Add restriction..." "button"
     And I click on "Grouping" "button" in the "Add restriction..." "dialogue"

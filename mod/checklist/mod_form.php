@@ -66,9 +66,7 @@ class mod_checklist_mod_form extends moodleform_mod {
         }
 
         $mform->addElement('header', 'checklistsettings', get_string('checklistsettings', 'checklist'));
-        if ($CFG->branch >= 25) {
-            $mform->setExpanded('checklistsettings', true);
-        }
+        $mform->setExpanded('checklistsettings', true);
 
         $ynoptions = array(0 => get_string('no'), 1 => get_string('yes'));
         $mform->addElement('select', 'useritemsallowed', get_string('useritemsallowed', 'checklist'), $ynoptions);
@@ -109,16 +107,25 @@ class mod_checklist_mod_form extends moodleform_mod {
         $mform->setDefault('autopopulate', 0);
         $mform->addHelpButton('autopopulate', 'autopopulate', 'checklist');
 
+        $checkdisable = true;
+        $str = 'autoupdate';
+        if (get_config('mod_checklist', 'linkcourses')) {
+            $str = 'autoupdate2';
+            $checkdisable = false;
+        }
+
         $autoupdateoptions = array(
             CHECKLIST_AUTOUPDATE_NO => get_string('no'),
             CHECKLIST_AUTOUPDATE_YES => get_string('yesnooverride', 'checklist'),
             CHECKLIST_AUTOUPDATE_YES_OVERRIDE => get_string('yesoverride', 'checklist')
         );
-        $mform->addElement('select', 'autoupdate', get_string('autoupdate', 'checklist'), $autoupdateoptions);
+        $mform->addElement('select', 'autoupdate', get_string($str, 'checklist'), $autoupdateoptions);
         $mform->setDefault('autoupdate', 1);
-        $mform->disabledIf('autoupdate', 'autopopulate', 'eq', 0);
-        $mform->addHelpButton('autoupdate', 'autoupdate', 'checklist');
+        $mform->addHelpButton('autoupdate', $str, 'checklist');
         $mform->addElement('static', 'autoupdatenote', '', get_string('autoupdatenote', 'checklist'));
+        if ($checkdisable) {
+            $mform->disabledIf('autoupdate', 'autopopulate', 'eq', 0);
+        }
 
         $mform->addElement('selectyesno', 'lockteachermarks', get_string('lockteachermarks', 'checklist'));
         $mform->setDefault('lockteachermarks', 0);
