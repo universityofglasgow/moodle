@@ -32,7 +32,7 @@ define('MOODLE_COURSE_SEARCH_URL', $CFG->wwwroot.'/course/search.php');
 
 define('MOODLE_ALL_COURSES_URL', $CFG->wwwroot.'/course/index.php');
 define('MOODLE_USER_COURSES_URL', $CFG->wwwroot.'/my/index.php');
-define('MOODLE_CATEGORY_URL', $CFG->wwwroot.'/course/category.php');
+define('MOODLE_CATEGORY_URL', $CFG->wwwroot.'/course/index.php');
 define('MOODLE_COURSE_URL', $CFG->wwwroot.'/course/view.php');
 
 define('PLUGIN_CONFIG_URL', $CFG->wwwroot . 
@@ -55,25 +55,25 @@ define('PLUGIN_JS_PATH', '/blocks/course_quick_access/js/');
 define('PLUGIN_LIST_ID_REG', '/[^A-Za-z0-9]/');
 
 
-define('MOODLE_ICON_INFO_SRC', $OUTPUT->pix_icon('i/info', get_string('info')));
-define('MOODLE_ICON_ATTENTION_SRC', $OUTPUT->pix_icon('i/risk_personal', get_string('personal')));
+define('MOODLE_ICON_INFO_SRC', $OUTPUT->image_url('i/info'));
+define('MOODLE_ICON_ATTENTION_SRC', $OUTPUT->image_url('i/risk_personal'));
 
-define('MOODLE_ICON_EDIT_SRC', $OUTPUT->pix_icon('t/edit', get_string('edit')));
-define('MOODLE_ICON_DELETE_SRC', $OUTPUT->pix_icon('t/delete', get_string('delete')));
-define('MOODLE_ICON_HIDE_SRC', $OUTPUT->pix_icon('t/hide', get_string('hide')));
-define('MOODLE_ICON_SHOW_SRC', $OUTPUT->pix_icon('t/show', get_string('show')));
+define('MOODLE_ICON_EDIT_SRC', $OUTPUT->image_url('t/edit'));
+define('MOODLE_ICON_DELETE_SRC', $OUTPUT->image_url('t/delete'));
+define('MOODLE_ICON_HIDE_SRC', $OUTPUT->image_url('t/hide'));
+define('MOODLE_ICON_SHOW_SRC', $OUTPUT->image_url('t/show'));
 
-define('MOODLE_ICON_COLLAPSED_SRC', $OUTPUT->pix_icon('t/switch_plus', get_string('expand')));
-define('MOODLE_ICON_EXPANDED_SRC', $OUTPUT->pix_icon('i/closed', get_string('hide')));
+define('MOODLE_ICON_COLLAPSED_SRC', $OUTPUT->image_url('t/switch_plus'));
+define('MOODLE_ICON_EXPANDED_SRC', $OUTPUT->image_url('i/closed'));
 
-define('MOODLE_ICON_UP_SRC', $OUTPUT->pix_icon('t/up', get_string('up')));
-define('MOODLE_ICON_DOWN_SRC', $OUTPUT->pix_icon('t/down', get_string('down')));
+define('MOODLE_ICON_UP_SRC', $OUTPUT->image_url('t/up'));
+define('MOODLE_ICON_DOWN_SRC', $OUTPUT->image_url('t/down'));
 
-define('MOODLE_ICON_NAVIGATION', $OUTPUT->pix_icon('i/navigationitem', ''));
-define('MOODLE_ICON_COURSE_SRC', $OUTPUT->pix_icon('i/course', get_string('course')));
-define('MOODLE_ICON_CATEGORY_SRC', $OUTPUT->pix_icon('i/course', get_String('category')));
-define('PLUGIN_ICON_USERCATEGORY_SRC', $OUTPUT->pix_icon('i/open', ''));
-define('PLUGIN_ICON_USERCATEGORYCLOSED_SRC', $OUTPUT->pix_icon('i/closed', ''));
+define('MOODLE_ICON_NAVIGATION', $OUTPUT->image_url('i/navigationitem'));
+define('MOODLE_ICON_COURSE_SRC', $OUTPUT->image_url('i/course'));
+define('MOODLE_ICON_CATEGORY_SRC', $OUTPUT->image_url('i/course'));
+define('PLUGIN_ICON_USERCATEGORY_SRC', $OUTPUT->image_url('i/open'));
+define('PLUGIN_ICON_USERCATEGORYCLOSED_SRC', $OUTPUT->image_url('i/closed'));
 
 define('MOODLE_ICON_FOLDERCLOSED_SRC', $CFG->wwwroot.
 		'/blocks/course_quick_access/pix/folder_closed.png');

@@ -69,7 +69,7 @@ function get_moodle_category_list() {
         $list = '';
         foreach ($categories as $category) {
             $name = format_string($category->name);
-            $url = MOODLE_CATEGORY_URL.'?id='.$category->id;
+            $url = MOODLE_CATEGORY_URL.'?categoryid='.$category->id;
             $icon = '<img src="'.MOODLE_ICON_NAVIGATION.'" class="icon"'.
                     ' style="position: absolute; font-align: middle;"/>';
             $link = "<a title=\"{$name }\" href=\"{$url}\">{$icon}"."
