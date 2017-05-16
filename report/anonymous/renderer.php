@@ -43,7 +43,7 @@ class report_anonymous_renderer extends plugin_renderer_base {
                 echo ' (' . get_string('anonymous', 'report_anonymous') . ')';
             }
             if ($assignment->urkundenabled) {
-                echo '&nbsp;<img src="' . $OUTPUT->pix_url('urkund', 'report_anonymous') . '" />';
+                echo '&nbsp;<img src="' . $OUTPUT->image_url('urkund', 'report_anonymous') . '" />';
             }
             echo "</a></li>";
         }
@@ -72,7 +72,7 @@ class report_anonymous_renderer extends plugin_renderer_base {
         if ($column == $ptsort) {
             $dir = $dir == 'asc' ? 'desc' : 'asc';
             $logo = $dir == 'asc' ? 'up' : 'down';
-            $pix = '<img src="' . $OUTPUT->pix_url('i/'.$logo) . '" />';
+            $pix = '<img src="' . $OUTPUT->image_url('i/'.$logo) . '" />';
             $strtext = '<u>' . $strtext . '</u>';
         } else {
             $pix = '';
