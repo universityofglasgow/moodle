@@ -142,6 +142,10 @@ $string['nextpage'] = 'Sonraki sayfa';
 $string['previouspage'] = 'Önceki sayfa';
 $string['search'] = 'Ara';
 $string['empty'] = 'Sonuç yok';
+$string['viewreportlabel'] = 'Report';
+$string['dataviewreportlabel'] = 'View Answers';
+$string['invalidxapiresult'] = 'No xAPI results were found for the given content and user id combination';
+$string['reportnotsupported'] = 'Not supported';
 
 // Editor
 $string['javascriptloading'] = 'JavaScript bekleniyor ...';
@@ -167,6 +171,7 @@ $string['hvp:userestrictedlibraries'] = 'Kısıtlı H5P kitaplıkları kullan';
 $string['hvp:savecontentuserdata'] = 'H5P içerik kullanıcısı verisini kaydet';
 $string['hvp:saveresults'] = 'H5P içeriği için sonucu kaydet';
 $string['hvp:viewresults'] = 'H5P içeriği için sonucu gör';
+$string['hvp:viewallresults'] = 'View result for all users in course';
 $string['hvp:getcachedassets'] = 'Ön belleğe alınmış H5P içerik değerlerini al';
 $string['hvp:getcontent'] = 'Kurs içìndeki H5P dosyası içeriğini al/gör';
 $string['hvp:getexport'] = 'Kurs içindeki H5P içeriğinden dışa aktarma dosyası al';

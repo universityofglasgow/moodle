@@ -81,33 +81,60 @@ class results {
      * Print results data
      */
     public function print_results() {
-        global $DB;
+        global $DB, $USER;
 
         // Check permission
         $course = $DB->get_field('hvp', 'course', array('id' => $this->content_id));
         $context = \context_course::instance($course);
-        if (!has_capability('mod/hvp:viewresults', $context)) {
+        $view_own_results = has_capability('mod/hvp:viewresults', $context);
+        $view_all_results = has_capability('mod/hvp:viewallresults', $context);
+        if (!$view_own_results && !$view_all_results) {
             \H5PCore::ajaxError(get_string('nopermissiontoviewresult', 'hvp'));
             http_response_code(403);
             exit;
         }
 
-        $results = $this->get_results();
+        // Only get own results if can't view all.
+        $uid = $view_all_results ? NULL : (int)$USER->id;
+        $results = $this->get_results($uid);
 
         // Make data readable for humans
         $rows = array();
         foreach ($results as $result)  {
+            $userLink = \html_writer::link(
+                new \moodle_url('/user/view.php', array(
+                    'id' => $result->user_id,
+                    'course' => $course
+                )),
+                \fullname($result)
+            );
+
+            $reviewLink = '—';
+
+            // Check if result has xAPI data
+            if ($result->xapiid) {
+                $reviewLink = \html_writer::link(
+                    new \moodle_url('/mod/hvp/review.php',
+                        array(
+                            'id' => $this->content_id,
+                            'course' => $course,
+                            'user' => $result->user_id
+                        )
+                    ),
+                    get_string('viewreportlabel', 'hvp')
+                );
+            }
+            else if ($result->rawgrade !== null) {
+              $reviewLink = get_string('reportnotsupported', 'hvp');
+            }
+
+
             $rows[] = array(
-                \html_writer::link(
-                    new \moodle_url('/user/view.php', array(
-                        'id' => $result->user_id,
-                        'course' => $course
-                    )),
-                    \fullname($result)
-                ),
+                $userLink,
                 $result->rawgrade === null ? '—' : (int) $result->rawgrade,
                 $result->rawgrade === null ? '—' : (int) $result->rawgrademax,
-                empty($result->timemodified) ? '—' : date('Y/m/d – H:i', $result->timemodified)
+                empty($result->timemodified) ? '—' : date('Y/m/d – H:i', $result->timemodified),
+                $reviewLink
             );
         }
 
@@ -124,13 +151,15 @@ class results {
      * Builds the SQL query required to retrieve results for the given
      * interactive content.
      *
+     * @param int $uid Only get results for uid
+     *
      * @throws \coding_exception
      * @return array
      */
-    protected function get_results() {
+    protected function get_results($uid=NULL) {
         // Add extra fields, joins and where for the different result lists
         if ($this->content_id !== 0) {
-            list($fields, $join, $where, $order, $args) = $this->get_content_sql();
+            list($fields, $join, $where, $order, $args) = $this->get_content_sql($uid);
         }
         else {
             throw new \coding_exception('missing content_id');
@@ -147,6 +176,10 @@ class results {
         $order[] = 'g.timemodified';
         $order_by = $this->get_order_sql($order);
 
+        // Join on xAPI results
+        $join .= ' LEFT JOIN {hvp_xapi_results} x ON i.iteminstance = x.content_id AND g.userid = x.user_id';
+        $group_by = ' GROUP BY g.id, u.id, i.iteminstance, x.id';
+
         // Get from statement
         $from = $this->get_from_sql();
 
@@ -156,10 +189,12 @@ class results {
                        {$fields}
                        g.rawgrade,
                        g.rawgrademax,
-                       g.timemodified
+                       g.timemodified,
+                       x.id as xapiid
                   {$from}
                   {$join}
                   {$where}
+                  {$group_by}
                   {$order_by}
                 ", $args,
                 $this->offset,
@@ -263,9 +298,10 @@ class results {
      * (An alternative to this could be getting all the results for a
      * specified user.)
      *
+     * @param int $uid Only get users with this id
      * @return array $fields, $join, $where, $order, $args
      */
-    protected function get_content_sql() {
+    protected function get_content_sql($uid=NULL) {
         global $DB;
 
         $usernamefields = implode(', ', self::get_ordered_user_name_fields());
@@ -273,6 +309,12 @@ class results {
         $join = " LEFT JOIN {user} u ON u.id = g.userid";
         $where = array("i.iteminstance = ?");
         $args = array($this->content_id);
+
+        // Only get entries with own user id
+        if (isset($uid)) {
+          array_push($where, "u.id = ?");
+          array_push($args, $uid);
+        }
 
         if (isset($this->filters[0])) {
             $keywordswhere = array();

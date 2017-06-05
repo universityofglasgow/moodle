@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="mod/attendance/db" VERSION="20170307" COMMENT="XMLDB file for Moodle mod/attendance"
+<XMLDB PATH="mod/attendance/db" VERSION="20170511" COMMENT="XMLDB file for Moodle mod/attendance"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
-        >
+>
   <TABLES>
     <TABLE NAME="attendance" COMMENT="Attendance module table">
       <FIELDS>
@@ -13,7 +13,7 @@
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The time the settings for this attendance instance were last modified."/>
         <FIELD NAME="intro" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="This field is a requirement for activity modules."/>
         <FIELD NAME="introformat" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="This field is a requirement for activity modules."/>
-        <FIELD NAME="subnet" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Restrict ability for students to mark by subnet."/>
+        <FIELD NAME="subnet" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Default subnet used when creating sessions."/>
         <FIELD NAME="sessiondetailspos" TYPE="char" LENGTH="5" NOTNULL="true" DEFAULT="left" SEQUENCE="false" COMMENT="Position for the session detail columns related to summary columns."/>
         <FIELD NAME="showsessiondetails" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Define if session details should be shown in reports."/>
       </FIELDS>
@@ -38,6 +38,7 @@
         <FIELD NAME="descriptionformat" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="studentscanmark" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="studentpassword" TYPE="char" LENGTH="50" NOTNULL="false" DEFAULT="" SEQUENCE="false"/>
+        <FIELD NAME="subnet" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Restrict ability for students to mark by subnet."/>
         <FIELD NAME="statusset" TYPE="int" LENGTH="5" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Which set of statuses to use"/>
         <FIELD NAME="caleventid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
       </FIELDS>
@@ -78,6 +79,7 @@
         <FIELD NAME="acronym" TYPE="char" LENGTH="2" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="description" TYPE="char" LENGTH="30" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="grade" TYPE="number" LENGTH="5" NOTNULL="true" DEFAULT="0" SEQUENCE="false" DECIMALS="2"/>
+        <FIELD NAME="studentavailability" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="How many minutes this status is available when self marking is enabled."/>
         <FIELD NAME="visible" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false"/>
         <FIELD NAME="deleted" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="setnumber" TYPE="int" LENGTH="5" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Allows different sets of statuses to be allocated to different sessions"/>

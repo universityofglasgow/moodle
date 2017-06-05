@@ -21,10 +21,12 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+global $DB, $PAGE, $USER, $COURSE;
 require_once(dirname(__FILE__) . '/../../config.php');
+require_once("locallib.php");
 
 $id = required_param('id', PARAM_INT);
-$userid = optional_param('userid', 0, PARAM_INT);
+$userid = optional_param('userid', (int)$USER->id, PARAM_INT);
 
 if (! $cm = get_coursemodule_from_id('hvp', $id)) {
     print_error('invalidcoursemodule');
@@ -34,10 +36,9 @@ if (! $course = $DB->get_record('course', array('id' => $cm->course))) {
 }
 require_course_login($course, false, $cm);
 
-if ($userid === (int)$USER->id) {
-    // If it's the same user, redirect to content.
-    redirect(new moodle_url('/mod/hvp/view.php', array('id' => $cm->id)));
-}
+// Check permission
+$course_context = context_course::instance($COURSE->id);
+hvp_require_view_results_permission($userid, $course_context, $cm->id);
 
 // Load H5P Content.
 $hvp = $DB->get_record_sql(
@@ -100,6 +101,9 @@ $settings = array(
                 (object) array(
                     'text' => get_string('finished', 'hvp'),
                     'sortable' => true
+                ),
+                (object) array(
+                    'text' => get_string('dataviewreportlabel', 'hvp')
                 )
             ),
             'filters' => array(true),

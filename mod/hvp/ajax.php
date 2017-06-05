@@ -260,6 +260,14 @@ switch($action) {
         $editor->ajax->action(H5PEditorEndpoints::LIBRARY_UPLOAD, $token, $uploadPath, $contentId);
         break;
 
+    /**
+     * Record xAPI result from view
+     */
+    case 'xapiresult':
+        \mod_hvp\xapi_result::handle_ajax();
+        break;
+
+
     /*
      * Throw error if AJAX isnt handeled
      */

@@ -1,6 +1,7 @@
 YUI.add('moodle-mod_attendance-groupfilter', function (Y, NAME) {
 
-/*global M*/
+/* global M */
+// eslint-disable-next-line camelcase
 M.mod_attendance = M.mod_attendance || {};
 M.mod_attendance.groupfilter = {
     groupmappings: null,
@@ -15,7 +16,7 @@ M.mod_attendance.groupfilter = {
     /**
      * Update the user list with those found in the selected group.
      */
-    update_user_list: function() {
+    update_user_list: function() { // eslint-disable-line camelcase
         "use strict";
         var groupid, userlist, users, userid, opt;
 

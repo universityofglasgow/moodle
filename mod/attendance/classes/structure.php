@@ -440,8 +440,15 @@ class mod_attendance_structure {
             $sess->description = $description;
             $sess->lasttaken = 0;
             $sess->lasttakenby = 0;
-            $sess->studentscanmark = 0;
-            $sess->studentpassword = '';
+            if (!isset($sess->studentscanmark)) {
+                $sess->studentscanmark = 0;
+            }
+            if (!isset($sess->studentpassword)) {
+                $sess->studentpassword = '';
+            }
+            if (!isset($sess->subnet)) {
+                $sess->subnet = '';
+            }
 
             $event->add_record_snapshot('attendance_sessions', $sess);
             $event->trigger();
@@ -475,11 +482,13 @@ class mod_attendance_structure {
 
         $sess->studentscanmark = 0;
         $sess->studentpassword = '';
+        $sess->subnet = '';
 
         if (!empty(get_config('attendance', 'studentscanmark')) &&
             !empty($formdata->studentscanmark)) {
             $sess->studentscanmark = $formdata->studentscanmark;
             $sess->studentpassword = $formdata->studentpassword;
+            $sess->subnet = $formdata->subnet;
         }
 
         $sess->timemodified = time();
@@ -755,6 +764,8 @@ class mod_attendance_structure {
      * @return object
      */
     protected static function tempuser_to_user($tempuser) {
+        global $CFG;
+
         $ret = (object)array(
             'id' => $tempuser->studentid,
             'firstname' => $tempuser->fullname,
@@ -766,11 +777,17 @@ class mod_attendance_structure {
             'picture' => 0,
             'type' => 'temporary',
         );
-        foreach (get_all_user_name_fields() as $namefield) {
+        $allfields = get_all_user_name_fields();
+        if (!empty($CFG->showuseridentity)) {
+            $allfields = array_merge($allfields, explode(',', $CFG->showuseridentity));
+        }
+
+        foreach ($allfields as $namefield) {
             if (!isset($ret->$namefield)) {
                 $ret->$namefield = '';
             }
         }
+
         return $ret;
     }
 

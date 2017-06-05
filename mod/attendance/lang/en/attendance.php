@@ -133,7 +133,7 @@ $string['identifyby'] = 'Identify student by';
 $string['includeall'] = 'Select all sessions';
 $string['includenottaken'] = 'Include not taken sessions';
 $string['includeremarks'] = 'Include remarks';
-$string['incorrectpassword'] = 'You have entered an incorrect password';
+$string['incorrectpassword'] = 'You have entered an incorrect password and your attendance has not been recorded, please enter the correct password.';
 $string['indetail'] = 'In detail...';
 $string['invalidsessionenddate'] = 'This date can not be earlier than the session date';
 $string['invalidaction'] = 'You must select an action';
@@ -273,12 +273,12 @@ $string['statuses'] = 'Statuses';
 $string['statusdeleted'] = 'Status deleted';
 $string['statusset'] = 'Status set {$a}';
 $string['statussetsettings'] = 'Status set';
-$string['strftimedm'] = '%h %d';
-$string['strftimedmy'] = '%d %h %Y';
-$string['strftimedmyhm'] = '%d %h %Y %I.%M%P'; // Line added to allow multiple sessions in the same day.
-$string['strftimedmyw'] = '<nobr>%a %d %h %Y</nobr>';
-$string['strftimeh'] = '%l%P';
-$string['strftimehm'] = '%l:%M%P';
+$string['strftimedm'] = '%b %d';
+$string['strftimedmy'] = '%d %b %Y';
+$string['strftimedmyhm'] = '%d %b %Y %I.%M%p'; // Line added to allow multiple sessions in the same day.
+$string['strftimedmyw'] = '<nobr>%a %d %b %Y</nobr>';
+$string['strftimeh'] = '%I%p';
+$string['strftimehm'] = '%I:%M%p';
 $string['strftimeshortdate'] = '%d.%m.%Y';
 $string['studentid'] = 'Student ID';
 $string['studentpassword'] = 'Student password';
@@ -374,9 +374,18 @@ $string['extrarestrictions'] = 'Extra restrictions';
 $string['requiresubnet'] = 'Students can only record own attendance from these computers.';
 $string['subnetwrong'] = 'Attendance can only be recorded from certain locations, and this computer is not on the allowed list.';
 $string['requiresubnet_help'] = 'Attendance recording may be restricted to particular subnets by specifying a comma-separated list of partial or full IP addresses.';
+$string['defaultsubnet'] = 'Default subnet range';
+$string['defaultsubnet_help'] = 'Attendance recording may be restricted to particular subnets by specifying a comma-separated list of partial or full IP addresses. This is the default value used when creating new sessions.';
 $string['defaultsettings'] = 'Default attendance settings';
 $string['defaultsettings_help'] = 'These settings define the defaults for all new attendances';
 $string['defaultstatus'] = 'Default status set';
 
 $string['defaultsessionsettings'] = 'Default session settings';
 $string['defaultsessionsettings_help'] = 'These settings define the defaults for all new sessions';
+
+$string['studentavailability'] = 'Available for students (minutes)';
+$string['studentavailability_help'] = 'When students are marking their own attendance, the number of minutes after session starts that this status is available.
+ <br/>If empty, this status will always be available, If set to 0 it will always be hidden to students.';
+
+$string['somedisabledstatus'] = '(Some options have been removed as the session has started.)';
+$string['invalidstatus'] = 'You have selected an invalid status, please try again';

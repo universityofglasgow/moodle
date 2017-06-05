@@ -257,8 +257,8 @@ class mod_attendance_renderer extends plugin_renderer_base {
                 get_string('actions'),
                 html_writer::checkbox('cb_selector', 0, false, '', array('id' => 'cb_selector'))
             );
-        $table->align = array('', 'right', '', '', 'left', 'center', 'center');
-        $table->size = array('1px', '1px', '1px', '', '*', '110px', '1px');
+        $table->align = array('', 'right', '', '', 'left', 'right', 'center');
+        $table->size = array('1px', '1px', '1px', '', '*', '120px', '1px');
 
         $i = 0;
         foreach ($sessdata->sessions as $key => $sess) {
@@ -300,6 +300,18 @@ class mod_attendance_renderer extends plugin_renderer_base {
      */
     private function construct_date_time_actions(attendance_manage_data $sessdata, $sess) {
         $actions = '';
+        if (!empty($sess->studentpassword) &&
+            (has_capability('mod/attendance:manageattendances', $sessdata->att->context) ||
+            has_capability('mod/attendance:takeattendances', $sessdata->att->context) ||
+            has_capability('mod/attendance:changeattendances', $sessdata->att->context))) {
+
+            $icon = new pix_icon('key', '', 'attendance');
+            $attributes = array("class" => "btn-link p-a-0", "role" => "button",
+                                "data-toggle" => "popover", "data-placement" => "left", "data-html" => "true",
+                                "tabindex" => "0", "data-trigger" => "manual");
+            $attributes['data-content'] = html_writer::span($sess->studentpassword, 'student-pass');
+            $actions .= html_writer::tag('a', $this->output->render($icon), $attributes);
+        }
 
         $date = userdate($sess->sessdate, get_string('strftimedmyw', 'attendance'));
         $time = $this->construct_time($sess->sessdate, $sess->duration);
@@ -311,7 +323,7 @@ class mod_attendance_renderer extends plugin_renderer_base {
                 $date = html_writer::link($url, $date, array('title' => $title));
                 $time = html_writer::link($url, $time, array('title' => $title));
 
-                $actions = $this->output->action_icon($url, new pix_icon('redo', $title, 'attendance'));
+                $actions .= $this->output->action_icon($url, new pix_icon('redo', $title, 'attendance'));
             } else {
                 $date = '<i>' . $date . '</i>';
                 $time = '<i>' . $time . '</i>';
@@ -320,7 +332,7 @@ class mod_attendance_renderer extends plugin_renderer_base {
             if (has_capability('mod/attendance:takeattendances', $sessdata->att->context)) {
                 $url = $sessdata->url_take($sess->id, $sess->groupid);
                 $title = get_string('takeattendance', 'attendance');
-                $actions = $this->output->action_icon($url, new pix_icon('t/go', $title));
+                $actions .= $this->output->action_icon($url, new pix_icon('t/go', $title));
             }
         }
 
@@ -937,6 +949,9 @@ class mod_attendance_renderer extends plugin_renderer_base {
      * @return string
      */
     private function construct_user_sessions_log(attendance_user_data $userdata) {
+        global $OUTPUT;
+        $context = context_module::instance($userdata->filtercontrols->cm->id);
+
         $table = new html_table();
         $table->attributes['class'] = 'generaltable attwidth boxaligncenter';
         $table->head = array(
@@ -951,6 +966,9 @@ class mod_attendance_renderer extends plugin_renderer_base {
         );
         $table->align = array('', '', '', 'left', 'left', 'center', 'center', 'center');
         $table->size = array('1px', '1px', '1px', '1px', '*', '*', '1px', '*');
+        if (has_capability('mod/attendance:takeattendances', $context)) {
+            $table->head[] = get_string('action');
+        }
 
         $statussetmaxpoints = attendance_get_statusset_maxpoints($userdata->statuses);
 
@@ -1001,6 +1019,15 @@ class mod_attendance_renderer extends plugin_renderer_base {
                     $row->cells[] = '? / ' . format_float($statussetmaxpoints[$sess->statusset], 1, true, true);
                     $row->cells[] = '';
                 }
+            }
+
+            if (has_capability('mod/attendance:takeattendances', $context)) {
+                $params = array('id' => $userdata->filtercontrols->cm->id,
+                    'sessionid' => $sess->id,
+                    'grouptype' => $sess->groupid);
+                $url = new moodle_url('/mod/attendance/take.php', $params);
+                $icon = $OUTPUT->pix_icon('redo', get_string('changeattendance', 'attendance'), 'attendance');
+                $row->cells[] = html_writer::link($url, $icon);
             }
 
             $table->data[] = $row;
@@ -1593,14 +1620,25 @@ class mod_attendance_renderer extends plugin_renderer_base {
     protected function render_attendance_preferences_data($prefdata) {
         $this->page->requires->js('/mod/attendance/module.js');
 
+        $studentscanmark = false;
+        if (!empty(get_config('attendance', 'studentscanmark'))) {
+            $studentscanmark = true;
+        }
+
         $table = new html_table();
         $table->width = '100%';
         $table->head = array('#',
                              get_string('acronym', 'attendance'),
                              get_string('description'),
-                             get_string('points', 'attendance'),
-                             get_string('action'));
+                             get_string('points', 'attendance'));
         $table->align = array('center', 'center', 'center', 'center', 'center', 'center');
+        if ($studentscanmark) {
+            $table->head[] = get_string('studentavailability', 'attendance').
+                $this->output->help_icon('studentavailability', 'attendance');
+
+            $table->align[] = 'center';
+        }
+        $table->head[] = get_string('action');
 
         $i = 1;
         foreach ($prefdata->statuses as $st) {
@@ -1614,14 +1652,19 @@ class mod_attendance_renderer extends plugin_renderer_base {
                     $emptydescription = $this->construct_notice(get_string('emptydescription', 'mod_attendance') , 'notifyproblem');
                 }
             }
-
-            $table->data[$i][] = $i;
-            $table->data[$i][] = $this->construct_text_input('acronym['.$st->id.']', 2, 2, $st->acronym) . $emptyacronym;
-            $table->data[$i][] = $this->construct_text_input('description['.$st->id.']', 30, 30, $st->description) .
+            $cells = array();
+            $cells[] = $i;
+            $cells[] = $this->construct_text_input('acronym['.$st->id.']', 2, 2, $st->acronym) . $emptyacronym;
+            $cells[] = $this->construct_text_input('description['.$st->id.']', 30, 30, $st->description) .
                                  $emptydescription;
-            $table->data[$i][] = $this->construct_text_input('grade['.$st->id.']', 4, 4, $st->grade);
-            $table->data[$i][] = $this->construct_preferences_actions_icons($st, $prefdata);
+            $cells[] = $this->construct_text_input('grade['.$st->id.']', 4, 4, $st->grade);
+            if ($studentscanmark) {
+                $cells[] = $this->construct_text_input('studentavailability['.$st->id.']', 4, 5, $st->studentavailability);
+            }
+            $cells[] = $this->construct_preferences_actions_icons($st, $prefdata);
 
+            $table->data[$i] = new html_table_row($cells);
+            $table->data[$i]->id = "statusrow".$i;
             $i++;
         }
 
@@ -1629,6 +1672,9 @@ class mod_attendance_renderer extends plugin_renderer_base {
         $table->data[$i][] = $this->construct_text_input('newacronym', 2, 2);
         $table->data[$i][] = $this->construct_text_input('newdescription', 30, 30);
         $table->data[$i][] = $this->construct_text_input('newgrade', 4, 4);
+        if ($studentscanmark) {
+            $table->data[$i][] = $this->construct_text_input('newstudentavailability', 4, 5);
+        }
         $table->data[$i][] = $this->construct_preferences_button(get_string('add', 'attendance'),
             mod_attendance_preferences_page_params::ACTION_ADD);
 

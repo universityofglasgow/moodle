@@ -46,7 +46,7 @@ if (!attendance_can_student_mark($attforsession)) {
 }
 
 // Check if subnet is set and if the user is in the allowed range.
-if (!empty($attendance->subnet) && !address_in_subnet(getremoteaddr(), $attendance->subnet)) {
+if (!empty($attforsession->subnet) && !address_in_subnet(getremoteaddr(), $attforsession->subnet)) {
     notice(get_string('subnetwrong', 'attendance'));
     exit; // Notice calls this anyway.
 }
@@ -73,7 +73,7 @@ if ($mform->is_cancelled()) {
         $attforsession->studentpassword !== $fromform->studentpassword) {
 
         $url = new moodle_url('/mod/attendance/attendance.php', array('sessid' => $id, 'sesskey' => sesskey()));
-        redirect($url, get_string('incorrectpassword', 'mod_attendance'));
+        redirect($url, get_string('incorrectpassword', 'mod_attendance'), null, \core\output\notification::NOTIFY_ERROR);
     }
 
     if (!empty($fromform->status)) {

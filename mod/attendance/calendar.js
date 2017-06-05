@@ -1,4 +1,5 @@
 /* global YUI */
+// eslint-disable-next-line new-cap
 YUI().use('yui2-container', 'yui2-calendar', function(Y) {
     var YAHOO = Y.YUI2;
 
@@ -13,12 +14,17 @@ YUI().use('yui2-container', 'yui2-calendar', function(Y) {
         var showBtn = Dom.get("show");
 
         Event.on(showBtn, "click", function() {
-
+            /**
+             * Reset handler and set current day.
+             */
             function resetHandler() {
                 calendar.cfg.setProperty("pagedate", calendar.today);
                 calendar.render();
             }
 
+            /**
+             * Close dialog.
+             */
             function closeHandler() {
                 dialog.hide();
             }
@@ -39,8 +45,8 @@ YUI().use('yui2-container', 'yui2-calendar', function(Y) {
                 dialog = new YAHOO.widget.Dialog("attcalendarcontainer", {
                     visible: false,
                     context: ["show", "tl", "bl"],
-                    buttons: [{text: M.str.attendance.caltoday, handler: resetHandler, isDefault: true},
-                             {text: M.str.attendance.calclose, handler: closeHandler}],
+                    buttons: [{text: M.util.get_string('caltoday', 'attendance'), handler: resetHandler, isDefault: true},
+                             {text: M.util.get_string('calclose', 'attendance'), handler: closeHandler}],
                     draggable: false,
                     close: false
                 });
@@ -63,6 +69,7 @@ YUI().use('yui2-container', 'yui2-calendar', function(Y) {
 
                 calendar = new YAHOO.widget.Calendar("cal", {
                     iframe: false,          // Turn iframe off, since container has iframe support.
+                    // eslint-disable-next-line camelcase
                     hide_blank_weeks: true  // Enable, to demonstrate how we handle changing height, using changeContent.
                 });
 

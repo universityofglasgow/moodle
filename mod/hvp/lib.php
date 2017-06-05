@@ -203,6 +203,11 @@ function hvp_delete_instance($id) {
     $h5pstorage = \mod_hvp\framework::instance('storage');
     $h5pstorage->deletePackage(array('id' => $hvp->id, 'slug' => $hvp->slug, 'coursemodule' => $cm->id));
 
+    // Delete xAPI statements
+    $DB->delete_records('hvp_xapi_results', array (
+      'content_id' => $hvp->id
+    ));
+
     // Get library details
     $library = $DB->get_record_sql(
             "SELECT machine_name AS name, major_version, minor_version
@@ -284,7 +289,7 @@ function hvp_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload
               return false;
             }
 
-            $contentid = $matches[0];
+            $contentid = $matches[1];
             $content = $h5pinterface->loadContent($contentid);
             $displayOptions = $h5pcore->getDisplayOptionsForView($content['disable'], $contentid);
 

@@ -142,7 +142,10 @@ $string['nextpage'] = 'Page suivante';
 $string['previouspage'] = 'Page précédente';
 $string['search'] = 'Rechercher';
 $string['empty'] = 'Aucun résultat disponible';
-
+$string['viewreportlabel'] = 'Report';
+$string['dataviewreportlabel'] = 'View Answers';
+$string['invalidxapiresult'] = 'No xAPI results were found for the given content and user id combination';
+$string['reportnotsupported'] = 'Not supported';
 // Editor
 $string['javascriptloading'] = 'Chargement de JavaScript...';
 $string['action'] = 'Action';
@@ -167,6 +170,7 @@ $string['hvp:userestrictedlibraries'] = 'Utiliser des bibliothèques H5P restrei
 $string['hvp:savecontentuserdata'] = 'Sauvegarder les données utilisateur H5P';
 $string['hvp:saveresults'] = 'Sauvegarder les résultats';
 $string['hvp:viewresults'] = 'Visualiser les résultats';
+$string['hvp:viewallresults'] = 'View result for all users in course';
 $string['hvp:getcachedassets'] = 'Récupérer les assets mis en cache';
 $string['hvp:getcontent'] = 'Visualiser le contenu d\'un fichier H5P dans un cours';
 $string['hvp:getexport'] = 'Récupérer un fichier H5P dans un cours';

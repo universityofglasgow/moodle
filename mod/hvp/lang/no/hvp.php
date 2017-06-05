@@ -152,6 +152,10 @@ $string['nextpage'] = 'Neste side';
 $string['previouspage'] = 'Forrige side';
 $string['search'] = 'Søk';
 $string['empty'] = 'Ingen resultater tilgjengelig';
+$string['viewreportlabel'] = 'Report';
+$string['dataviewreportlabel'] = 'View Answers';
+$string['invalidxapiresult'] = 'No xAPI results were found for the given content and user id combination';
+$string['reportnotsupported'] = 'Not supported';
 
 // Editor
 $string['javascriptloading'] = 'Venter på JavaScript...';
@@ -176,7 +180,8 @@ $string['hvp:updatelibraries'] = 'Oppdatere versjonen til et H5P-bibliotek';
 $string['hvp:userestrictedlibraries'] = 'Bruke begrenset H5P-bibliotek';
 $string['hvp:savecontentuserdata'] = 'Lagre H5P-brukerdata';
 $string['hvp:saveresults'] = 'Lagre resultater for H5P-innhold';
-$string['hvp:viewresults'] = 'Vise resultater for H5P-innhold';
+$string['hvp:viewresults'] = 'Vis resultater for eget H5P-innhold';
+$string['hvp:viewallresults'] = 'Vis resultater for alle brukeres H5P-innhold';
 $string['hvp:getcachedassets'] = 'Tilgang til bufret H5P-innholdsressurser';
 $string['hvp:getcontent'] = 'Tilgang til innholdet til H5P-fil i kurs';
 $string['hvp:getexport'] = 'Tilgang til eksportfil fra H5P i kurs';
