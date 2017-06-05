@@ -90,10 +90,12 @@ header .popover-region {
 }
 
 header .popover-region-toggle > i.fa {
+    display: inline-block;
     font-size: 18px;
     color: $gu-header-icons;
-    line-height: 23px;
+    line-height: 35px;
     text-shadow: 0 1px 0 #eee, 0 -1px 0 #031425;
+    height: auto !important;
 }
 
 header.navbar .count-container {
@@ -103,6 +105,11 @@ header.navbar .count-container {
     font-weight: bold;
     text-align: center;
     background-color: #D50032;
+}
+
+header .navbar-nav .nav-link {
+    padding-top: 0;
+    padding-top: 0;
 }
 
 header.navbar .count-container.hidden {
@@ -142,7 +149,7 @@ body#page-login-index {
     }
 }
 
-@media (min-width: 1199px) {
+@media (min-width: 1200px) {
     #region-main-settings-menu.has-blocks, #region-main.has-blocks {
         width: calc(100% - 270px) !important;
     }
@@ -296,6 +303,12 @@ footer h3 {
     line-height: 1.4em;
 }
 
+.gu-login-intro {
+    animation-name: lift;
+    animation-duration: 0.4s;
+    animation-iteration-count: 1;
+    animation-timing-function: ease-out;
+}
 
 .gu-login-intro a {
     color: $gu-blue;
@@ -451,6 +464,10 @@ body.hillhead-bold * {
     font-weight: bold !important;
 }
 
+.card, #page-enrol-users #filterform, .que .history, .userprofile .profile_tree section, .groupinfobox, .forumpost, .yui-skin-sam .yui-layout.path-mod-chat-gui_ajax .yui-layout-unit-right, .yui-skin-sam .yui-layout.path-mod-chat-gui_ajax .yui-layout-unit-bottom, .yui-skin-sam .yui-layout.path-mod-chat-gui_ajax #chat-messages .chat-message.course-theme, .well {
+    margin-bottom: 20px;
+}
+
 .hh-acc-ac-on, .hh-acc-ac-of { background-image: url([[pix:theme|accessibility]]);}
 
 .hh-acc-ft-de { background-image: url([[pix:theme|font-original]]);}
@@ -471,3 +488,15 @@ body.hillhead-bold * {
 
 .hh-acc-fb-on { background-image: url([[pix:theme|font-bold-on]]);}
 .hh-acc-fb-of { background-image: url([[pix:theme|font-bold-off]]);}
+
+@keyframes lift {
+    0% {
+        margin-top: 120px;
+        opacity: 0.2;
+    }
+    
+    100% {
+        margin-top: 0;
+        opacity: 1;
+    }
+}

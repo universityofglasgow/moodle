@@ -1,0 +1,16 @@
+ion-content {
+    background-color: #f0f1f2;
+}
+
+.bar-header {
+    background-color: #003865;
+    color: #dddddd;
+}
+
+.bar-side-menu {
+    background-color: #003865;
+}
+
+.item-divider {
+    background-color: #f0f1f2;
+}
