@@ -662,14 +662,12 @@ function bigbluebuttonbn_get_file_areas() {
  * @package  mod_bigbluebuttonbn
  * @return array a list of available roles
  */
-function bigbluebuttonbn_get_db_moodle_roles($rolename='all') {
-    global $DB;
-
-    if( $rolename != 'all')
-        $roles = $DB->get_record('role', array('shortname' => $rolename));
-    else
-        $roles = $DB->get_records('role', array());
-
+function bigbluebuttonbn_get_moodle_roles($rolename='all') {
+    if( $rolename != 'all') {
+        $roles = array(bigbluebuttonbn_get_role($rolename));
+    } else {
+        $roles = (array) role_get_names();
+    }
     return $roles;
 }
 
@@ -687,15 +685,10 @@ function bigbluebuttonbn_send_notification($sender, $bigbluebuttonbn, $message="
     $message .= '<p><hr/><br/>'.get_string('email_footer_sent_by', 'bigbluebuttonbn').' '.$msg->user_name.'('.$msg->user_email.') ';
     $message .= get_string('email_footer_sent_from', 'bigbluebuttonbn').' '.$msg->course_name.'.</p>';
 
-    $users = bigbluebuttonbn_get_users($context);
+    $users = get_enrolled_users($context,'',0,'u.*',null,0,0,true);
     foreach( $users as $user ) {
         if( $user->id != $sender->id ){
             $messageid = message_post_message($sender, $user, $message, FORMAT_HTML);
-            if (!empty($messageid)) {
-                error_log("Msg to ".$msg->user_name." was sent.");
-            } else {
-                error_log("Msg to ".$msg->user_name." was NOT sent.");
-            }
         }
     }
 }
