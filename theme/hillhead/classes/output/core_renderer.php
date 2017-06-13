@@ -35,6 +35,7 @@ use single_select;
 use paging_bar;
 use url_select;
 use context_course;
+use context_system;
 use pix_icon;
 
 defined('MOODLE_INTERNAL') || die;
@@ -47,7 +48,7 @@ defined('MOODLE_INTERNAL') || die;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-class theme_hillhead_core_renderer extends \core_renderer {
+class core_renderer extends \core_renderer {
 
     /** @var custom_menu_item language The language menu if created */
     protected $language = null;
@@ -408,20 +409,6 @@ class theme_hillhead_core_renderer extends \core_renderer {
         }
         $context = $menu->export_for_template($this);
 
-        // We do not want the icon with the caret, the caret is added by Bootstrap.
-        if (empty($context->primary->menutrigger)) {
-            $newurl = $this->image_url('t/edit', 'moodle');
-            $context->primary->icon['attributes'] = array_reduce($context->primary->icon['attributes'],
-                function($carry, $item) use ($newurl) {
-                    if ($item['name'] === 'src') {
-                        $item['value'] = $newurl->out(false);
-                    }
-                    $carry[] = $item;
-                    return $carry;
-                }, []
-            );
-        }
-
         return $this->render_from_template('core/action_menu', $context);
     }
 
@@ -481,27 +468,6 @@ class theme_hillhead_core_renderer extends \core_renderer {
     }
 
     /**
-     * Renders a pix_icon widget and returns the HTML to display it.
-     *
-     * @param pix_icon $icon
-     * @return string HTML fragment
-     */
-    protected function render_pix_icon(pix_icon $icon) {
-        $data = $icon->export_for_template($this);
-        foreach ($data['attributes'] as $key => $item) {
-            $name = $item['name'];
-            $value = $item['value'];
-            if ($name == 'class') {
-                $data['extraclasses'] = $value;
-                unset($data['attributes'][$key]);
-                $data['attributes'] = array_values($data['attributes']);
-                break;
-            }
-        }
-        return $this->render_from_template('core/pix_icon', $data);
-    }
-
-    /**
      * Renders the login form.
      *
      * @param \core_auth\output\login $form The renderable.
@@ -519,9 +485,9 @@ class theme_hillhead_core_renderer extends \core_renderer {
         //if ($url) {
         //    $url = $url->out(false);
         //}
-        $context['logourl'] = $url;
-        $context['sitename'] = format_string($SITE->fullname, true, ['context' => context_course::instance(SITEID), "escape" => false]);
-        $context['loginintro'] = get_config('theme_hillhead', 'login_intro');
+        //$context['logourl'] = $url;
+        $context->sitename = format_string($SITE->fullname, true, ['context' => context_course::instance(SITEID), "escape" => false]);
+        $context->loginintro = get_config('theme_hillhead', 'login_intro');
 
         return $this->render_from_template('core/login', $context);
     }
@@ -770,4 +736,39 @@ class theme_hillhead_core_renderer extends \core_renderer {
     public function secure_login_info() {
         return $this->login_info(false);
     }
+    
+    public function search_box($id = false) {
+        global $CFG;
+
+        // Accessing $CFG directly as using \core_search::is_global_search_enabled would
+        // result in an extra included file for each site, even the ones where global search
+        // is disabled.
+        if (empty($CFG->enableglobalsearch) || !has_capability('moodle/search:query', context_system::instance())) {
+            return '';
+        }
+
+        if ($id == false) {
+            $id = uniqid();
+        } else {
+            // Needs to be cleaned, we use it for the input id.
+            $id = clean_param($id, PARAM_ALPHANUMEXT);
+        }
+
+        // JS to animate the form.
+        
+        $formText = '<label for="header-search-form-input" class="accesshide">Search for:</label><div class="input-group">
+      <input type="text" name="q" id="header-search-form-input" class="form-control" placeholder="Search Moodle">
+      <span class="input-group-btn">
+        <button class="btn btn-default" type="button"><i class="fa fa-search"></i><span class="hidden-sm-down"> Search</span></button>
+      </span>
+    </div>';
+
+        $formattrs = array('class' => '', 'action' => $CFG->wwwroot . '/search/index.php');
+
+        $searchinput = html_writer::tag('form', $formText, $formattrs);
+
+        return html_writer::tag('div', $searchinput, array('class' => 'hillhead-search-input-wrapper nav-link', 'id' => $id));
+    }
+
+    
 }

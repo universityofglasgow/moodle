@@ -5,6 +5,11 @@ $gu-blue: #003865;
 $gu-blue-gradient: #00447B;
 $gu-blue-border: #011A31;
 
+$gu-forest: #005133;
+$gu-cobalt: #0075B0;
+$gu-rose: #D278AB;
+$gu-heather: #5B537D;
+
 $gu-header-icons: #ddd;
 
 $gu-blue-dark: #061D38;
@@ -68,6 +73,20 @@ h4 {
     font-size: 1.1em !important;
 }
 
+#page-content.row, #page-footer .row {
+    margin-left: -10px !important;
+    margin-right: -10px !important;
+}
+
+.col-xs-1, .col-xs-2, .col-xs-3, .col-xs-4, .col-xs-5, .col-xs-6, .col-xs-7, .col-xs-8, .col-xs-9, .col-xs-10, .col-xs-11, .col-xs-12, .col-sm-1, .col-sm-2, .col-sm-3, .col-sm-4, .col-sm-5, .col-sm-6, .col-sm-7, .col-sm-8, .col-sm-9, .col-sm-10, .col-sm-11, .col-sm-12, .col-md-1, .col-md-2, .col-md-3, .col-md-4, .col-md-5, .col-md-6, .col-md-7, .col-md-8, .col-md-9, .col-md-10, .col-md-11, .col-md-12, .col-lg-1, .col-lg-2, .col-lg-3, .col-lg-4, .col-lg-5, .col-lg-6, .col-lg-7, .col-lg-8, .col-lg-9, .col-lg-10, .col-lg-11, .col-lg-12, .col-xl-1, .col-xl-2, .col-xl-3, .col-xl-4, .col-xl-5, .col-xl-6, .col-xl-7, .col-xl-8, .col-xl-9, .col-xl-10, .col-xl-11, .col-xl-12 {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+}
+
+#region-main > .card, #page-enrol-users #region-main > #filterform, .que #region-main > .history, .userprofile .profile_tree #region-main > section, #region-main > .groupinfobox, #region-main > .forumpost, .yui-skin-sam .yui-layout.path-mod-chat-gui_ajax #region-main > .yui-layout-unit-right, .yui-skin-sam .yui-layout.path-mod-chat-gui_ajax #region-main > .yui-layout-unit-bottom, .yui-skin-sam .yui-layout.path-mod-chat-gui_ajax #chat-messages #region-main > .chat-message.course-theme, #region-main > .well {
+    min-height: inherit !important;
+}
+
 .card-title {
     font-size: 1em;
 }
@@ -78,8 +97,9 @@ header.navbar {
     border-bottom: $border-width solid $gu-blue-border;
 }
 
-header .navbar-brand {
+header.navbar-light .navbar-brand {
     text-indent: -1000em;
+    background-color: transparent;
     background-image: url([[pix:theme|gu-logo]]);
     background-repeat: no-repeat;
     width: 111px;
@@ -130,7 +150,7 @@ body.notloggedin header .usermenu a, body.notloggedin header .usermenu a:hover {
 }
 
 @media only screen and (-webkit-min-device-pixel-ratio: 2) {
-    header .navbar-brand {
+    header.navbar-light .navbar-brand {
         background-image: url([[pix:theme|gu-logo-retina]]);
         background-size: 111px 35px;
     }
@@ -155,6 +175,12 @@ body#page-login-index {
     }
 }
 
+@media (max-width: 767px) {
+    .mod-indent {
+        display: none !important;
+    }
+}
+
 body#page-login-index #page-footer {
     background-color: rgba(226, 229, 231, 0.8);
 }
@@ -169,8 +195,8 @@ body#page-login-index #page {
 }
 
 #page-header {
-    margin-left: -20px;
-    margin-right: -20px;
+    margin-left: -20px !important;
+    margin-right: -20px !important;
     
     .card {
         margin-bottom: 0;
@@ -195,6 +221,11 @@ header .navbar-nav {
 header .usermenu .dropdown-toggle {
     color: $gu-background;
 }
+
+#page-footer {
+    margin-top: -185px;
+}
+
 
 #page-login-index #page-footer {
     margin-top: -250px;
@@ -488,6 +519,63 @@ body.hillhead-bold * {
 
 .hh-acc-fb-on { background-image: url([[pix:theme|font-bold-on]]);}
 .hh-acc-fb-of { background-image: url([[pix:theme|font-bold-off]]);}
+
+.block-region .card-block .card-title, .block-region #page-enrol-users #filterform .card-title, #page-enrol-users .block-region #filterform .card-title, .block-region .userprofile .profile_tree section .card-title, .userprofile .profile_tree .block-region section .card-title, .block-region .yui-skin-sam .yui-layout.path-mod-chat-gui_ajax .yui-layout-unit-right .card-title, .yui-skin-sam .yui-layout.path-mod-chat-gui_ajax .block-region .yui-layout-unit-right .card-title, .block-region .yui-skin-sam .yui-layout.path-mod-chat-gui_ajax .yui-layout-unit-bottom .card-title, .yui-skin-sam .yui-layout.path-mod-chat-gui_ajax .block-region .yui-layout-unit-bottom .card-title, .block-region .yui-skin-sam .yui-layout.path-mod-chat-gui_ajax #chat-messages .chat-message.course-theme .card-title, .yui-skin-sam .yui-layout.path-mod-chat-gui_ajax #chat-messages .block-region .chat-message.course-theme .card-title, .block-region .well .card-title {
+    text-transform: none !important;
+    color: $gu-heather;
+}
+
+.card-block {
+    padding: 0 !important;
+}
+
+#page-header .card-block, .block-myoverview .card-block, #page-search-index #region-main .card-block {
+    padding: 20px !important;
+}
+
+.card-block .card-title {
+    padding: 10px 20px 6px 20px !important;
+    border-bottom: 1px solid $gu-island-border;
+}
+
+.card-block .content {
+    padding: 20px;
+}
+
+.block_myoverview .courses-view-course-item {
+    height: 150px !important;
+}
+
+.progress-chart-container {
+    width: 50px !important;
+    height: 50px  !important;
+}
+
+.progress-chart-container .no-progress{
+    width: 50px !important;
+    height: 50px  !important;
+}
+
+.progress-chart-container .progress-doughnut {
+    width: 50px !important;
+    height: 50px  !important;
+}
+
+.progress-chart-container .progress-doughnut .progress-indicator {
+    width: 50px !important;
+    height: 50px  !important;
+}
+
+#region-main.has-blocks > .card-block {
+    background: transparent;
+    border: none;
+    margin-bottom: 0;
+}
+
+.action-menu .userpicture {
+    width: 35px !important;
+    height: 35px !important;
+}
 
 @keyframes lift {
     0% {
