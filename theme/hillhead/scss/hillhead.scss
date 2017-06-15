@@ -533,8 +533,12 @@ body.hillhead-bold * {
     color: $gu-heather;
 }
 
-body.path-my #region-main .card-block, body.path-course-view #region-main .card-block {
+body.path-my #region-main .card-block, body.path-course-view #region-main .card-block, #block-region-side-pre aside .card-block {
     padding: 0 !important;
+}
+
+#block-region-side-pre aside .card-block h3 {
+    margin-bottom: 0;
 }
 
 /*#page-header .card-block, .block-myoverview .card-block, #page-search-index #region-main .card-block, .path-admin #region-main .card-block*/
@@ -565,10 +569,15 @@ body.path-course-view .course-content > ul > li.section {
 }
 
 .course-content > ul > li.section .sectionname {
-    padding: 10px 20px 6px 20px !important;
+    margin-top: 0;
+    padding: 16px 20px 6px 20px !important;
     border-bottom: 1px solid $gu-island-border;
     color: $gu-heather;
     margin-bottom: 20px;
+}
+
+body.editing .course-content > ul > li.section .sectionname {
+    padding-top: 10px !important;
 }
 
 .format-topcoll .course-content > ul > li.section .sectionname {
@@ -619,7 +628,7 @@ body.path-course-view .course-content > ul > li.section {
 }
 
 .course-content > ul ul.section {
-    margin: 0 20px;
+    margin: 0 20px 20px 20px;
     padding-left: 0;
 }
 
