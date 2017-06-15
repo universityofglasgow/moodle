@@ -34,7 +34,7 @@ $body-bg: $gu-background;
 $spacer: 20px;
 $border-width: 1px;
 $navbar-height: 55px;
-$footer-min-height: 155px;
+$footer-min-height: 152px;
 
 $card-border-radius:       4px;
 $card-border-color:        $gu-island-border;
@@ -73,9 +73,31 @@ h4 {
     font-size: 1.1em !important;
 }
 
+#page {
+    margin-top: 0 !important;
+    padding-top: 55px !important;
+}
+
 #page-content.row, #page-footer .row {
     margin-left: -10px !important;
     margin-right: -10px !important;
+}
+
+#page-footer {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    min-height: 152px !important; // Does very little, if set small
+    margin-top: -152px !important; // Distance of footer from absolute bottom
+}
+
+#page-wrapper {
+    margin-bottom: -172px !important; // Distance of footer from absolute bottom
+}
+
+#page-wrapper::after {
+    content: "";
+    display: block;
+    min-height: 172px !important; // Footer-containing 'gap' on long pages
 }
 
 .col-xs-1, .col-xs-2, .col-xs-3, .col-xs-4, .col-xs-5, .col-xs-6, .col-xs-7, .col-xs-8, .col-xs-9, .col-xs-10, .col-xs-11, .col-xs-12, .col-sm-1, .col-sm-2, .col-sm-3, .col-sm-4, .col-sm-5, .col-sm-6, .col-sm-7, .col-sm-8, .col-sm-9, .col-sm-10, .col-sm-11, .col-sm-12, .col-md-1, .col-md-2, .col-md-3, .col-md-4, .col-md-5, .col-md-6, .col-md-7, .col-md-8, .col-md-9, .col-md-10, .col-md-11, .col-md-12, .col-lg-1, .col-lg-2, .col-lg-3, .col-lg-4, .col-lg-5, .col-lg-6, .col-lg-7, .col-lg-8, .col-lg-9, .col-lg-10, .col-lg-11, .col-lg-12, .col-xl-1, .col-xl-2, .col-xl-3, .col-xl-4, .col-xl-5, .col-xl-6, .col-xl-7, .col-xl-8, .col-xl-9, .col-xl-10, .col-xl-11, .col-xl-12 {
@@ -220,20 +242,6 @@ header .navbar-nav {
 
 header .usermenu .dropdown-toggle {
     color: $gu-background;
-}
-
-#page-footer {
-    margin-top: -185px;
-}
-
-
-#page-login-index #page-footer {
-    margin-top: -250px;
-}
-
-#page-login-index #page-footer {
-    background-color: $gu-background;
-    margin-top: -190px;
 }
 
 #page-footer .container-fluid {
@@ -525,11 +533,13 @@ body.hillhead-bold * {
     color: $gu-heather;
 }
 
-.card-block {
+body.path-my #region-main .card-block, body.path-course-view #region-main .card-block {
     padding: 0 !important;
 }
 
-#page-header .card-block, .block-myoverview .card-block, #page-search-index #region-main .card-block {
+/*#page-header .card-block, .block-myoverview .card-block, #page-search-index #region-main .card-block, .path-admin #region-main .card-block*/
+
+.card-block {
     padding: 20px !important;
 }
 
@@ -540,6 +550,81 @@ body.hillhead-bold * {
 
 .card-block .content {
     padding: 20px;
+}
+
+body.path-course-view .course-content > ul {
+    
+}
+
+body.path-course-view .course-content > ul > li.section {
+    background-color: $gu-island-back;
+    border: 1px solid $gu-island-border !important;
+    margin-bottom: 20px;
+    border-radius: $card-border-radius;
+    padding: 0;
+}
+
+.course-content > ul > li.section .sectionname {
+    padding: 10px 20px 6px 20px !important;
+    border-bottom: 1px solid $gu-island-border;
+    color: $gu-heather;
+    margin-bottom: 20px;
+}
+
+.format-topcoll .course-content > ul > li.section .sectionname {
+    padding: 5px;
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.course-content ul.ctopics li.section.main, .course-content ul.ctopics li.tcsection {
+    margin: 0px !important;
+    margin-bottom: 20px !important;
+}
+
+.course-content ul.ctopics li.section .content .toggle, .course-content ul.ctopics li.section .content.sectionhidden {
+    border-radius: 0 !important;
+}
+
+.course-content ul.ctopics li.section.main .content, .course-content ul.ctopics li.tcsection .content {
+    margin: 0 60px;
+}
+
+.course-content ul.ctopics > li.section .right {
+    padding: 0 !important;
+}
+
+#page-course-view-grid #gridmiddle-column {
+    background-color: $gu-island-back;
+    border: 1px solid $gu-island-border !important;
+    padding: 20px;
+    border-radius: $card-border-radius;
+}
+
+.course-content > ul > li.section .sectionname a {
+    color: $gu-heather;
+}
+
+.course-content > ul > li.section .section-modchooser {
+    padding: 5px 20px !important;
+    border-top: 1px solid $gu-island-border;
+    margin-top: 20px;
+}
+
+.course-content > ul > li.section .summary {
+    margin-top: 0;
+    margin-left: 20px;
+    margin-right: 20px;
+    margin-bottom: 20px;
+}
+
+.course-content > ul ul.section {
+    margin: 0 20px;
+    padding-left: 0;
+}
+
+.course-content > ul > li.section .right {
+    padding: 0 20px !important;
 }
 
 .block_myoverview .courses-view-course-item {
@@ -566,7 +651,7 @@ body.hillhead-bold * {
     height: 50px  !important;
 }
 
-#region-main.has-blocks > .card-block {
+#region-main.has-blocks > .card-block, body.path-course-view #region-main .card-block {
     background: transparent;
     border: none;
     margin-bottom: 0;
