@@ -2,8 +2,8 @@ $breadcrumb-divider: "›";
 $breadcrumb-divider-rtl: "‹";
 
 $gu-blue: #003865;
-$gu-blue-gradient: #00447B;
-$gu-blue-border: #011A31;
+$gu-blue-gradient: #00457D;
+$gu-blue-border: #002645;
 
 $gu-forest: #005133;
 $gu-cobalt: #0075B0;
@@ -12,18 +12,22 @@ $gu-heather: #5B537D;
 
 $gu-header-icons: #ddd;
 
-$gu-blue-dark: #061D38;
+$gu-blue-dark: #193446;
 
 $gu-background: #f0f1f2;
 $gu-island-back: #fff;
 $gu-island-border: #d3d8dc;
 
-$flat-blue: #3498DB;
-$flat-blue-dark: #2980B9;
+$flat-blue: #0075B0;
+$flat-blue-dark: #005E8D;
 $flat-turquoise: #1ABC9C;
 $flat-turquoise-dark: #16A085;
 $flat-grey: #ecf0f1;
 $flat-grey-dark: #bdc3c7;
+$flat-heather: #5B537D;
+$flat-heather-dark: #453F5E;
+$flat-forest: #005133;
+$flat-forest-dark: #003C26;
 
 $brand-primary: $gu-blue;
 
@@ -36,16 +40,16 @@ $border-width: 1px;
 $navbar-height: 55px;
 $footer-min-height: 152px;
 
-$card-border-radius:       4px;
+$card-border-radius:       0;
 $card-border-color:        $gu-island-border;
 
 $btn-primary-color:              #fff;
-$btn-primary-bg:                 $flat-blue;
-$btn-primary-border:             $flat-blue-dark;
+$btn-primary-bg:                 $flat-forest;
+$btn-primary-border:             $flat-forest-dark;
 
-$btn-secondary-color:              #555;
-$btn-secondary-bg:                 $flat-grey;
-$btn-secondary-border:             $flat-grey-dark;
+$btn-secondary-color:              #fff;
+$btn-secondary-bg:                 $flat-blue;
+$btn-secondary-border:             $flat-blue-dark;
 
 $message-sent-background: #B9E6F9;
 $message-sent-border: #A3CADB;
@@ -55,6 +59,7 @@ $message-received-border: #C2E3A5;
 
 body {
     font-weight: 300;
+    background-image: url([[pix:theme|linen]]);
 }
 
 h1 {
@@ -232,7 +237,8 @@ body#page-login-index #page {
 
 #nav-drawer {
     background-color: #E3E4E5;
-    border-right: 1px solid $gu-island-border;
+    background-image: url([[pix:theme|noise]]);
+    border-right: 1px solid #D8D9DA;
 }
 
 header .navbar-nav {
@@ -530,7 +536,9 @@ body.hillhead-bold * {
 
 .block-region .card-block .card-title, .block-region #page-enrol-users #filterform .card-title, #page-enrol-users .block-region #filterform .card-title, .block-region .userprofile .profile_tree section .card-title, .userprofile .profile_tree .block-region section .card-title, .block-region .yui-skin-sam .yui-layout.path-mod-chat-gui_ajax .yui-layout-unit-right .card-title, .yui-skin-sam .yui-layout.path-mod-chat-gui_ajax .block-region .yui-layout-unit-right .card-title, .block-region .yui-skin-sam .yui-layout.path-mod-chat-gui_ajax .yui-layout-unit-bottom .card-title, .yui-skin-sam .yui-layout.path-mod-chat-gui_ajax .block-region .yui-layout-unit-bottom .card-title, .block-region .yui-skin-sam .yui-layout.path-mod-chat-gui_ajax #chat-messages .chat-message.course-theme .card-title, .yui-skin-sam .yui-layout.path-mod-chat-gui_ajax #chat-messages .block-region .chat-message.course-theme .card-title, .block-region .well .card-title {
     text-transform: none !important;
-    color: $gu-heather;
+    background-color: $gu-blue;
+    color: #fff;
+    font-weight: 300 !important;
 }
 
 body.path-my #region-main .card-block, body.path-course-view #region-main .card-block, #block-region-side-pre aside .card-block {
@@ -548,7 +556,7 @@ body.path-my #region-main .card-block, body.path-course-view #region-main .card-
 }
 
 .card-block .card-title {
-    padding: 10px 20px 6px 20px !important;
+    padding: 10px 20px !important;
     border-bottom: 1px solid $gu-island-border;
 }
 
@@ -569,11 +577,16 @@ body.path-course-view .course-content > ul > li.section {
 }
 
 .course-content > ul > li.section .sectionname {
-    margin-top: 0;
-    padding: 16px 20px 6px 20px !important;
+    margin-top: 5px; // Fixes collapsing margin issue
+    padding: 10px 20px !important;
     border-bottom: 1px solid $gu-island-border;
-    color: $gu-heather;
+    background-color: #4f5961;
+    color: #fff;
     margin-bottom: 20px;
+}
+
+.course-content > ul > li.section {
+    overflow: visible;
 }
 
 body.editing .course-content > ul > li.section .sectionname {
@@ -611,7 +624,7 @@ body.editing .course-content > ul > li.section .sectionname {
 }
 
 .course-content > ul > li.section .sectionname a {
-    color: $gu-heather;
+    color: #fff;
 }
 
 .course-content > ul > li.section .section-modchooser {
@@ -669,6 +682,26 @@ body.editing .course-content > ul > li.section .sectionname {
 .action-menu .userpicture {
     width: 35px !important;
     height: 35px !important;
+}
+
+// Button fixes
+
+.form-group .btn-secondary, header.navbar .btn-secondary {
+    background-color: $flat-grey;
+    border-color: $flat-grey-dark;
+    color: #555;
+}
+
+.form-group .btn-secondary, header.navbar .btn-secondary {
+     &:hover,
+    &:focus,
+    &.focus {
+        background-color: darken($flat-grey, 17%);
+        border-color: darken($flat-grey-dark, 25%);
+    }
+    background-color: darken($flat-grey, 10%);
+    border-color: darken($flat-grey-dark, 12%);
+    color: #555;
 }
 
 @keyframes lift {
