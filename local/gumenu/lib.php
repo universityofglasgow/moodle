@@ -22,11 +22,24 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+
 /**
  * Extend navigation menu
  */
 function local_gumenu_extend_settings_navigation(settings_navigation $nav, context $context) {
     global $DB;
+
+    // check that the user has *any* capability needed here. This is so
+    // we don't display the category if not needed
+    $caps = array(
+        'report/anonymous:view',
+        'moodle/course:enrolconfig',
+        'moodle/course:enrolreview',
+        'local/corehr:config',
+    );
+    if (!has_any_capability($caps, $context)) {
+        return;
+    }
 
     // Make sure we can grab the course admin node
     if (!$courseadminnode = $nav->get('courseadmin')) {
