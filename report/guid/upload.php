@@ -22,16 +22,20 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once(dirname(__FILE__).'/../../config.php');
+require_once(dirname(__FILE__) . '/../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 require_once($CFG->libdir . '/formslib.php');
 require_once($CFG->libdir . '/csvlib.class.php');
-require_once(dirname(__FILE__).'/lib.php');
 
 // Configuration.
-$config = report_guid_settings();
+$config = report_guid_search::settings();
 $ldaphost = $config->host_url;
 $dn = $config->contexts;
+
+// Renderer
+$PAGE->set_context(context_system::instance());
+$output = $PAGE->get_renderer('report_guid');
+$output->set_guid_config($config);
 
 // Start the page.
 admin_externalpage_setup('reportguid', '', null, '', array('pagelayout' => 'report'));
@@ -45,7 +49,7 @@ if (!function_exists( 'ldap_connect' )) {
 }
 
 // Form definition.
-$mform = new guidreportupload_form();
+$mform = new report_guid_uploadform();
 if ($mform->is_cancelled()) {
     redirect( 'index.php' );
     die;
@@ -78,7 +82,7 @@ if ($mform->is_cancelled()) {
     $existscount = 0;
 
     // configuration
-    $config = report_guid_settings();
+    $config = report_guid_search::settings();
 
     // Iterate over lines in csv.
     $cir->init();
@@ -107,7 +111,7 @@ if ($mform->is_cancelled()) {
         if (!$user = $DB->get_record( 'user', array('username' => strtolower($guid)) )) {
 
             // Need to find them in ldap.
-            $result = report_guid_ldapsearch( $config, "{$config->user_attribute}=$guid" );
+            $result = report_guid_search::ldapsearch( $config, "{$config->user_attribute}=$guid" );
             if (empty($result)) {
                 echo "<span class=\"label label-warning\">".get_string('nouser', 'report_guid')."</span> ";
                 $errorcount++;
@@ -123,7 +127,7 @@ if ($mform->is_cancelled()) {
 
             // Create account.
             $result = array_shift( $result );
-            $user = report_guid_create_user_from_ldap( $result );
+            $user = report_guid_search::create_user_from_ldap( $result );
             $link = new moodle_url( '/user/view.php', array('id' => $user->id) );
             echo "<span class=\"label label-success\">".
                 get_string('accountcreated', 'report_guid', "<a href=\"$link\">" . fullname($user) . "</a>") . "</span>";
@@ -142,6 +146,7 @@ if ($mform->is_cancelled()) {
     echo "<li><strong>".get_string('countexistingaccounts', 'report_guid', $existscount)."</strong></li>";
     echo "<li><strong>".get_string('counterrors', 'report_guid', $errorcount)."</strong></li>";
     echo "</ul>";
+    $output->continue_button();
 } else {
     $mform->display();
 }

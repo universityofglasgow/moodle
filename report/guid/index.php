@@ -22,15 +22,22 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once(dirname(__FILE__).'/../../config.php');
+require_once(dirname(__FILE__) . '/../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 require_once($CFG->libdir . '/formslib.php');
-require_once(dirname(__FILE__).'/lib.php');
 
 require_login();
 
+// Get settings
+$config = report_guid_search::settings();
+
+// Renderer
+$context = context_system::instance();
+$PAGE->set_context($context);
+$output = $PAGE->get_renderer('report_guid');
+$output->set_guid_config($config);
+
 // Configuration.
-$config = report_guid_settings();
 $ldaphost = $config->host_url;
 $dn = $config->contexts;
 
@@ -41,6 +48,14 @@ $email = optional_param('email', '', PARAM_CLEAN);
 $guid = optional_param('guid', '', PARAM_ALPHANUM);
 $idnumber = optional_param('idnumber', '', PARAM_ALPHANUM);
 $action = optional_param('action', '', PARAM_ALPHA);
+$resetbutton = optional_param('resetbutton', '', PARAM_ALPHA);
+$delete = optional_param('delete', 0, PARAM_INT);
+$confirm = optional_param('confirm', '', PARAM_TEXT);
+
+// Has form been reset?
+if ($resetbutton) {
+    redirect(new moodle_url('/report/guid'));
+}
 
 
 // Start the page.
@@ -59,52 +74,68 @@ if (($action == 'create') and confirm_sesskey()) {
     if (!empty($USER->report_guid_ldap)) {
         $result = $USER->report_guid_ldap;
         if ($guid == $result[$config->user_attribute]) {
-            $user = report_guid_create_user_from_ldap($result);
+            $user = report_guid_search::create_user_from_ldap($result);
             notice(get_string('usercreated', 'report_guid', fullname($user)));
         }
     }
+}
+
+// Check for delete
+if ($delete) {
+    require_sesskey();
+    require_capability('moodle/user:delete', $context);
+    $user = $DB->get_record('user', array('id' => $delete));
+    
+    if ($confirm != md5($user->id)) {
+        
+        // Confirm message
+        $output->confirmdelete($user);
+        echo $OUTPUT->footer();
+        die;
+    } else {
+        delete_user($user);
+        \core\session\manager::gc(); // Remove stale sessions.
+        $output->deleted($user);
+        echo $OUTPUT->footer();
+        die;
+    }
+}
+
+// 'more' button pressed
+if ($guid && ($action == 'more')) {
+    $results = report_guid_search::filter($output, '', '', $guid, '', '');
+    $result = array_shift($results);
+    $output->single_ldap($result);
+
+    echo $OUTPUT->footer();
+    die;
 }
 
 // Url for errors and stuff.
 $linkback = new moodle_url( '/report/guid/index.php' );
 
 // Form.
-$mform = new guidreport_form(null, null, 'get');
+$mform = new report_guid_filterform(null, null, 'get');
 $mform->display();
 
 // Link to upload script.
-echo "<p><a class=\"btn btn-primary\" href=\"{$CFG->wwwroot}/report/guid/upload.php\">".get_string('uploadguid', 'report_guid')."</a></p>";
+$output->mainlinks();
 
 if ($mform->is_cancelled()) {
     redirect( "index.php" );
 } else if ($data = $mform->get_data()) {
-    if (!$filter = report_guid_build_filter($data->firstname, $data->lastname, $data->guid, $data->email, $data->idnumber)) {
-        notice(get_string('filtererror', 'report_guid'), $linkback );
-        echo $OUTPUT->footer();
-        die;
+    $result = report_guid_search::filter($output, $data->firstname, $data->lastname, $data->guid, $data->email, $data->idnumber);
+    $users = report_guid_search::user_search($data->firstname, $data->lastname, $data->guid, $data->email, $data->idnumber);
+    report_guid_search::add_enrol_counts($users);
+
+    // Display ldap search results.
+    if (($action == 'more') && (count($result) == 1)) {
+        $result = array_shift($results);
+        $output->single_ldap($result);
+    } else {
+        $output->ldap_results($result);
+        $output->user_results($users);
     }
-    $result = report_guid_ldapsearch( $config, $filter );
-    if (is_string( $result )) {
-        notice(get_string('searcherror', 'report_guid', $result), $linkback );
-        die;
-    }
-    if ($result === false) {
-        echo '<p class="alert alert-error">' . get_string('ldapsearcherror', 'report_guid') . '</p>\n';
-        echo $OUTPUT->footer();
-        die;
-    }
-    // Build url for paging.
-    $url = new moodle_url($CFG->wwwroot.'/report/guid/index.php',
-        array(
-            'firstname' => $data->firstname,
-            'lastname' => $data->lastname,
-            'email' => $data->email,
-            'idnumber' => $data->idnumber,
-            'guid' => $data->guid,
-            'submitbutton' => $data->submitbutton,
-            '_qf__guidreport_form' => 1,
-        ));
-    report_guid_print_results( $result, $url );
 }
 
 echo $OUTPUT->footer();
