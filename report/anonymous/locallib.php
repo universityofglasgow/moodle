@@ -41,9 +41,14 @@ class report_anonymous {
 
         $assignments = $DB->get_records('assign', array('course' => $id));
 
-        // add URKUND status
+        // add URKUND and feedback status
         foreach ($assignments as $assignment) {
             $assignment->urkundenabled = self::urkund_enabled($assignment->id);
+            if ($DB->get_record('assign_plugin_config', array('assignment' => $assignment->id, 'plugin' => 'file', 'subtype' => 'assignfeedback', 'name' => 'enabled'))) {
+                $assignment->assignfeedback_file_enabled = true;
+            } else {
+                $assignment->assignfeedback_file_enabled = false;
+            }
         }
 
         return $assignments;
@@ -663,5 +668,92 @@ class report_anonymous {
         }
         $workbook->close();
     }
+
+    /**
+     * Create filename for zipfile
+     * @param int $assignid
+     * @return string zip file name
+     */
+    private static function get_zipfilename($assignid) {
+        global $DB;
+
+        // Get assignment and course
+        $assign = $DB->get_record('assign', array('id' => $assignid), '*', MUST_EXIST);
+        $course = $DB->get_record('course', array('id' => $assign->course), '*', MUST_EXIST);
+
+        // Construct out of bits
+        $zipfilename = clean_filename(implode('_', array(
+            $course->shortname,
+            $assign->name,
+        )));
+
+        return $zipfilename . '.zip';
+    }
+
+    /**
+     * Generate zip file from array of given files.
+     *
+     * @param array $filesforzipping - array of files to pass into archive_to_pathname.
+     *                                 This array is indexed by the final file name and each
+     *                                 element in the array is an instance of a stored_file object.
+     * @return path of temp file - note this returned file does
+     *         not have a .zip extension - it is a temp file.
+     */
+    private static function pack_files($filesforzipping) {
+        global $CFG;
+
+        // Create path for new zip file.
+        $tempzip = tempnam($CFG->tempdir . '/', 'assignment_');
+
+        // Zip files.
+        $zipper = new zip_packer();
+        if ($zipper->archive_to_pathname($filesforzipping, $tempzip)) {
+            return $tempzip;
+        }
+        return false;
+    }
+
+    /**
+     * Download feedback files
+     * @param int assignid
+     */
+    public static function feedback_files($assignid) {
+        global $DB;
+
+        $cm = get_coursemodule_from_instance('assign', $assignid, 0, false, MUST_EXIST);
+        $context = context_module::instance($cm->id);
+
+        // find the feedback files
+        $fs = get_file_storage();
+        $files = $fs->get_area_files($context->id, 'assignfeedback_file', 'feedback_files');
+
+        // Zipfiles array of 'path/name in zip' => file_object.
+        $zipfiles = array(); 
+
+        // Build zipfiles array
+        foreach ($files as $f) {
+
+            // Skip those pesky . files
+            if ($f->get_filename() == '.') {
+                continue;
+            }
+
+            // use itemid (maps to id in assign_grades) to track down user
+            $grade = $DB->get_record('assign_grades', array('id' => $f->get_itemid()), '*', MUST_EXIST);
+            $user = $DB->get_record('user', array('id' => $grade->userid), '*', MUST_EXIST);
+
+            // Try to create a unique filename from idnumber or username
+            $prefix = $user->idnumber ? $user->idnumber : $user->username;
+            $filename = $prefix . '_' . $f->get_filename();
+        
+            $zipfiles[$filename] = $f;   
+        }
+
+        // Pack zip file for export
+        if ($zip = self::pack_files($zipfiles)) {
+            $zipfilename = self::get_zipfilename($assignid);
+            send_temp_file($zip, $zipfilename);
+        }
+    }    
 
 }

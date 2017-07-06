@@ -62,6 +62,13 @@ $context = context_course::instance($course->id);
 require_capability('mod/assign:grade', $context);
 require_capability('report/anonymous:view', $context);
 
+// Download feedback files?
+// Avoid headers and stuff
+if ($assignid && ($action == 'feedback')) {
+    report_anonymous::feedback_files($assignid);
+    die;
+}
+
 if (!$export) {
     $PAGE->set_title($course->shortname .': '. get_string('pluginname', 'report_anonymous'));
     $PAGE->set_heading($course->fullname);

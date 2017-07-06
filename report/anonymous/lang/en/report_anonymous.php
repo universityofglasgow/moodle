@@ -36,6 +36,7 @@ $string['clickhidenames'] = 'Click to <b>hide</b> names';
 $string['clickshownames'] = 'Click to <b>reveal</b> names';
 $string['delete'] = 'Delete';
 $string['deletepdf'] = 'Delete PDF';
+$string['downloadfeedback'] = 'Download feedback';
 $string['email'] = 'Email';
 $string['export'] = 'Export to Excel';
 $string['feedback'] = 'Feedback';
