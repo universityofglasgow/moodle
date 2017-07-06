@@ -251,6 +251,56 @@ foreach($accessibilityTools as $accessibilityGroup) {
     $acc .= '</nav>';
 }
 
+$footerLinks = Array(
+    'middle' => Array(
+        'Site Links' => Array(
+            'Dashboard' => $CFG->wwwroot.'/my',
+            'Course Directory' => $CFG->wwwroot.'/course'
+        ),
+    ),
+    'right' => Array(
+        'Current Students' => Array(
+            'MyGlasgow Students' => 'http://www.gla.ac.uk/students/myglasgow/'
+        ),
+        'Current Staff' => Array(
+            'MyGlasgow Staff' => 'http://www.gla.ac.uk/myglasgow/staff/'
+        )
+    )
+);
+
+$siteContext = context_system::instance();
+$isAdmin = has_capability('moodle/site:config', $siteContext);
+
+if($isAdmin) {
+    $footerLinks['middle']['Site Links']['Purge All Caches'] = $CFG->wwwroot.'/admin/purgecaches.php';
+}
+
+$footerText = '<div class="row">
+            <div class="col-sm-6">
+    			<h3 class="glasgow">University <em>of</em> Glasgow</h3>
+    			<p class="address">Glasgow, G12 8QQ, Scotland</p>
+    			<p class="phone">Tel +44 (0) 141 330 2000</p>
+    			<p class="charity">The University of Glasgow is a registered Scottish charity: Registration Number SC004401</p>
+            </div>
+            <div class="col-sm-3 footer-links">';
+foreach($footerLinks['middle'] as $sectionHeading=>$sectionLinks) {
+    $footerText .= '<h4>'.$sectionHeading.'</h4><ul>';
+    foreach($sectionLinks as $linkTitle=>$linkLink) {
+        $footerText .= '<li><a href="'.$linkLink.'">'.$linkTitle.'</a></li>';
+    }
+    $footerText .= '</ul>';
+}
+$footerText .= '</div>
+    		<div class="col-sm-3 footer-links">';
+foreach($footerLinks['right'] as $sectionHeading=>$sectionLinks) {
+    $footerText .= '<h4>'.$sectionHeading.'</h4><ul>';
+    foreach($sectionLinks as $linkTitle=>$linkLink) {
+        $footerText .= '<li><a href="'.$linkLink.'">'.$linkTitle.'</a></li>';
+    }
+    $footerText .= '</ul>';
+}
+$footerText .= '</div></div>';
+
 $bodyattributes = $OUTPUT->body_attributes($extraclasses);
 $blockshtml = $OUTPUT->blocks('side-pre');
 $hasblocks = strpos($blockshtml, 'data-block=') !== false;
@@ -265,7 +315,8 @@ $templatecontext = [
     'regionmainsettingsmenu' => $regionmainsettingsmenu,
     'hasregionmainsettingsmenu' => !empty($regionmainsettingsmenu),
     'hillheadnotification' => $notiftext,
-    'accessibilityText' => $acc
+    'accessibilityText' => $acc,
+    'footerText' => $footerText
 ];
 
 $templatecontext['flatnavigation'] = $PAGE->flatnav;
