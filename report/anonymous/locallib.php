@@ -44,8 +44,8 @@ class report_anonymous {
         // add URKUND and feedback status
         foreach ($assignments as $assignment) {
             $assignment->urkundenabled = self::urkund_enabled($assignment->id);
-            if ($DB->get_record('assign_plugin_config', array('assignment' => $assignment->id, 'plugin' => 'file', 'subtype' => 'assignfeedback', 'name' => 'enabled'))) {
-                $assignment->assignfeedback_file_enabled = true;
+            if ($plugin_config = $DB->get_record('assign_plugin_config', array('assignment' => $assignment->id, 'plugin' => 'file', 'subtype' => 'assignfeedback', 'name' => 'enabled'))) {
+                $assignment->assignfeedback_file_enabled = $plugin_config->value == 1;
             } else {
                 $assignment->assignfeedback_file_enabled = false;
             }
@@ -747,6 +747,11 @@ class report_anonymous {
             $filename = $prefix . '_' . $f->get_filename();
         
             $zipfiles[$filename] = $f;   
+        }
+
+        // No point if there are no files
+        if (count($zipfiles) == 0) {
+            die;
         }
 
         // Pack zip file for export
