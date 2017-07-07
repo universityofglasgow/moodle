@@ -17,7 +17,7 @@ Feature: Test all the basic functionality of this question type
   @javascript
   Scenario: Create, edit then preview a gapfill question.
     Given I log in as "teacher1"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I navigate to "Question bank" node in "Course administration"
 
     # Create a new question.
@@ -45,8 +45,9 @@ Feature: Test all the basic functionality of this question type
     And I press "Start again with these options"
 
     #Enter both correct responses 
-    And I type "sat" into gap "1" in the gapfill question
-    And I type "mat" into gap "2" in the gapfill question
+    And I drag "sat" into gap "1" in the gapfill question
+    And I drag "mat" into gap "2" in the gapfill question
+
 
     And I press "Check"      
     And I should see "Your answer is correct."
@@ -66,8 +67,8 @@ Feature: Test all the basic functionality of this question type
     ################################################
     #second attempt
     And I press "Try again"
-    And I type "sat" into gap "1" in the gapfill question
-    And I type "mat" into gap "2" in the gapfill question
+    And I drag "sat" into gap "1" in the gapfill question
+    And I drag "mat" into gap "2" in the gapfill question
     
     And I press "Check"      
     And I should see "Your answer is correct."
@@ -85,8 +86,8 @@ Feature: Test all the basic functionality of this question type
       | Right answer         | Shown |
     
     And I press "Start again with these options" 
-    And I type "sat" into gap "1" in the gapfill question
-    And I type "mat" into gap "2" in the gapfill question
+    And I drag "sat" into gap "1" in the gapfill question
+    And I drag "mat" into gap "2" in the gapfill question
 
     And I press "Submit and finish"      
     And I should see "Your answer is correct."

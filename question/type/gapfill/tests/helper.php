@@ -65,12 +65,14 @@ class qtype_gapfill_test_helper extends question_test_helper {
                     'noduplicates' => '1',
                     'disableregex' => $poptions['disableregex'],
                     'fixedgapsize' => '0',
+                    'optionaftertext' => '',
                     'correctfeedback' => 'Correct Feedback',
                     'correctfeedbackformat' => '0',
                     'partiallycorrectfeedback' => 'Partially Correct Feedback',
                     'partiallycorrectfeedbackformat' => '0',
                     'incorrectfeedback' => 'Incorrect Feedback',
                     'incorrectfeedbackformat' => '0',
+                    'optionsaftertext' => false,
                     'answers' => $answers,
         );
 
@@ -120,6 +122,8 @@ class qtype_gapfill_test_helper extends question_test_helper {
         $question->displayanswers = '1';
         $question->casesensitive = '1';
         $question->gapcount = '2';
+        $question->optionsaftertext = false;
+
         $question->generalfeedback = 'congratulations on your knowledge of pets and floor covering';
 
         $question->places[1] = $answers[0];
@@ -156,8 +160,8 @@ class qtype_gapfill_test_helper extends question_test_helper {
     }
 
     /**
-     * Gets the question data for a shortanswer questionwith just the correct
-     * ansewer 'frog', and no other answer matching.
+     * Gets the question data for a shortanswer question with just the correct
+     * answer 'frog', and no other answer matching.
      * @return stdClass
      */
     public function get_gapfill_question_data_catmat() {
