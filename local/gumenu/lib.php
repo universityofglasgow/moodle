@@ -33,6 +33,7 @@ function local_gumenu_extend_settings_navigation(settings_navigation $nav, conte
     // we don't display the category if not needed
     $caps = array(
         'report/anonymous:view',
+        'report/guid:courseupload',
         'moodle/course:enrolconfig',
         'moodle/course:enrolreview',
         'local/corehr:config',
@@ -73,6 +74,18 @@ function local_gumenu_extend_settings_navigation(settings_navigation $nav, conte
             'type' => navigation_node::TYPE_CUSTOM,
             'action' => new moodle_url('/report/anonymous/index.php', array('id' => $courseid)),
             'key' => 'uofganonymous',
+        );
+        $uofgnode->add_node(new navigation_node($props));
+    }
+
+    // Add a link to guid courseupload
+    if (has_capability('report/guid:courseupload', $context)) {
+        $props = array(
+            'text' => get_string('courseupload', 'report_guid'),
+            'shorttext' => 'uofgcourseupload',
+            'type' => navigation_node::TYPE_CUSTOM,
+            'action' => new moodle_url('/report/guid/courseupload.php', array('id' => $courseid)),
+            'key' => 'uofcourseupload',
         );
         $uofgnode->add_node(new navigation_node($props));
     }
