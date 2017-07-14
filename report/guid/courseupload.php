@@ -65,7 +65,7 @@ $mform = new report_guid_courseuploadform(null, array(
     'studentroleid' => $studentrole ? $studentrole->id : 1,
 ));
 if ($mform->is_cancelled()) {
-    redirect( 'index.php' );
+    redirect($url);
     die;
 } else if ($data = $mform->get_data()) {
 
