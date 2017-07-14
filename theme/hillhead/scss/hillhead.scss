@@ -437,6 +437,16 @@ footer h3 {
     min-height: 0;
 }
 
+// Hides the past/future courses links on the dashboard
+
+.block-myoverview #myoverview_courses_view .btn-group {
+    display: none;
+}
+
+.block-myoverview #myoverview_courses_view .tab-content {
+    margin-top: 20px;
+}
+
 // Accessibility Tools
 
 body.hillhead-font-comic {
@@ -544,6 +554,15 @@ body.hillhead-contrast header .navbar-brand span.site-name {
 
 body.hillhead-bold * {
     font-weight: bold !important;
+}
+
+.navbar .popover-region, .usermenu {
+    float: none !important;
+    display: inline-block;
+}
+
+.col-xs-4.user-menu {
+    text-align: right;
 }
 
 .card, #page-enrol-users #filterform, .que .history, .userprofile .profile_tree section, .groupinfobox, .forumpost, .yui-skin-sam .yui-layout.path-mod-chat-gui_ajax .yui-layout-unit-right, .yui-skin-sam .yui-layout.path-mod-chat-gui_ajax .yui-layout-unit-bottom, .yui-skin-sam .yui-layout.path-mod-chat-gui_ajax #chat-messages .chat-message.course-theme, .well {
@@ -728,10 +747,52 @@ body.editing .course-content > ul > li.section .sectionname {
 }
 
 body.path-my #region-main.has-blocks > .card-block,
-body.path-course-view #region-main .card-block {
+body.pagelayout-course #region-main .card-block,
+body#page-user-profile #region-main > .card-block,
+body.path-course.path-user #region-main .card-block {
     background: transparent;
     border: none;
     margin-bottom: 0;
+    padding: 0 !important;
+}
+
+body#page-user-profile #region-main .description, body.path-course.path-user #region-main .description, body.path-course.path-user #region-main .page-context-header {
+    background-color: $gu-island-back;
+    border: 1px solid $gu-island-border;
+    padding: 20px;
+    margin-bottom: 20px;
+    margin-top: 0;
+}
+
+body#page-user-profile #region-main .description *:last-child {
+    margin-bottom: 0;
+}
+
+body.path-course.path-user #region-main > .card-block .node_category {
+    background: $gu-island-back !important;
+    border: 1px solid $gu-island-border !important;
+    padding: 0 !important;
+    margin-bottom: 20px !important;
+}
+
+body#page-user-profile #region-main > .card-block .node_category, body.path-course.path-user #region-main > .card-block .node_category {
+    padding: 0 !important;
+    margin-bottom: 20px;
+}
+
+body#page-user-profile #region-main > .card-block .node_category h3, body.path-course.path-user #region-main > .card-block .node_category h3 {
+    background-color: $gu-forest;
+    color: #fff;
+    padding: 7px 20px;
+    margin: 0;
+}
+
+body#page-user-profile #region-main > .card-block .node_category > ul, body.path-course.path-user #region-main > .card-block .node_category > ul {
+    padding: 20px;
+}
+
+body#page-user-profile #region-main > .card-block .node_category .editprofile, body.path-course.path-user #region-main > .card-block .node_category .editprofile {
+    float: right;
 }
 
 .action-menu .userpicture {
