@@ -406,7 +406,7 @@ class report_guid_search {
         $user->firstname = $result[$config->field_map_firstname];
         $user->lastname = $result[$config->field_map_lastname];
         if (!empty($result['workforceid'])) {
-            $user->idnumber = $result['workforceid'];
+            $user->idnumber = $result[$config->field_map_idnumber];
         }
         $user->city = 'Glasgow';
         $user->country = 'GB';
