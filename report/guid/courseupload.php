@@ -48,7 +48,7 @@ $url = new moodle_url('/report/guid/courseupload.php', array('id' => $courseid))
 $PAGE->set_url($url);
 
 // Start the page.
-$PAGE->set_title($course->shortname .': '. get_string('corseupload', 'report_guid'));
+$PAGE->set_title($course->shortname .': '. get_string('courseupload', 'report_guid'));
 $PAGE->set_heading($course->fullname);
 echo $OUTPUT->header();
 
