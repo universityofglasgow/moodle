@@ -397,9 +397,17 @@ class report_guid_search {
             $guid = self::array_to_guid($guid);
         }
 
+        // Sanity check that guid doesn't already exist.
+        if ($user = $DB->get_record('user', array('username' => $guid))) {
+            return $user;
+        }
+
         $user = create_user_record( strtolower($guid), 'not cached', 'guid' );
         $user->firstname = $result[$config->field_map_firstname];
         $user->lastname = $result[$config->field_map_lastname];
+        if (!empty($result['workforceid'])) {
+            $user->idnumber = $result['workforceid'];
+        }
         $user->city = 'Glasgow';
         $user->country = 'GB';
         $mailinfo = self::get_email( $result );
@@ -507,6 +515,56 @@ class report_guid_search {
         }
 
         return $users;
+    }
+
+    /**
+     * Get student role from archetype
+     * Just so we can use it as default
+     * @return object or false
+     */
+    public static function getstudentrole() {
+        global $DB;
+
+        if ($studentroles = $DB->get_records('role', array('archetype' => 'student'))) {
+            return reset($studentroles);
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Find user in moodle
+     * @param string $usermatch matching criteria
+     * @param string $criteria currently guid (username) or idnumber
+     * @return mixed user object or false
+     */
+    public static function findmoodleuser($usermatch, $criteria) {
+        global $DB;
+
+        if ($criteria == 'guid') {
+            $criteria = 'username';
+        }
+        return $DB->get_record('user', array($criteria => $usermatch));
+    } 
+
+    /**
+     * Creat group (after checking if it exists)
+     * @param string $groupname
+     * @param int $courseid
+     * @return int groupid
+     */
+    public static function create_group($groupname, $courseid) {
+        if ($groupid = groups_get_group_by_name($courseid, $groupname)) {
+            return $groupid;
+        } else {
+            $group = new stdClass;
+            $group->name = $groupname;
+            $group->description = '';
+            $group->enrolmentkey = '';
+            $group->courseid = $courseid;
+            $groupid = groups_create_group($group);
+            return $groupid;
+        }
     }
 
 }

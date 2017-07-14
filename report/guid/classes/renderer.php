@@ -348,4 +348,19 @@ class report_guid_renderer extends plugin_renderer_base {
         echo get_string('deleted', 'report_guid', $fullname);
         echo '</div>';
     }
+
+    /**
+     * Display status note for course upload output
+     * @param string $message language string
+     * @param string $class Bootstrap alert/label class suffix (e.g., info, warning)
+     * @param boolean $eol add end of line characters
+     * @param string $a get_string extra
+     */
+    public function courseuploadnote($message, $class, $eol=false, $a = '') {
+        $str = get_string($message, 'report_guid', $a);
+        echo '&nbsp;<span class="label label-' . $class . '">' . $str . '</span>';
+        if ($eol) {
+            echo "<br />";
+        }
+    }
 }
