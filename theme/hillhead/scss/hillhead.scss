@@ -79,11 +79,11 @@ h4 {
 }
 
 a {
-    color: $flat-blue;
+    color: $flat-blue !important;
 }
 
 a:hover {
-    color: $flat-blue-dark;
+    color: $flat-blue-dark !important;
 }
 
 b, strong {
@@ -413,6 +413,18 @@ footer h3 {
     height: 100px;
 }
 
+.gu-login .rememberpass {
+    padding-top: 8px !important;
+    margin-top: 0 !important;
+    margin-bottom: 0;
+    border-top: 1px solid #8CAECB;
+}
+
+.gu-login .rememberpass input {
+    margin-bottom: 0;
+    margin-right: 10px;
+}
+
 #page-login-index header button, #page-login-index header .login {
     display: none;
 }
@@ -700,6 +712,19 @@ body.editing .course-content > ul > li.section .sectionname {
     color: #fff !important;
 }
 
+div#gridshadebox_overlay {
+    z-index: 9998;
+}
+
+div#gridshadebox_content.absolute {
+    top: 75px !important;
+    z-index: 9999;
+}
+
+#gridshadebox_content.fit_to_window {
+    z-index: 9999;
+}
+
 #page-course-view-grid #gridmiddle-column {
     background-color: $gu-island-back;
     border: 1px solid $gu-island-border !important;
@@ -749,11 +774,31 @@ body.editing .course-content > ul > li.section .sectionname {
 body.path-my #region-main.has-blocks > .card-block,
 body.pagelayout-course #region-main .card-block,
 body#page-user-profile #region-main > .card-block,
-body.path-course.path-user #region-main .card-block {
+body.path-course.pagelayout-course #region-main .card-block {
     background: transparent;
     border: none;
     margin-bottom: 0;
     padding: 0 !important;
+}
+
+body.path-course.pagelayout-incourse #region-main .card-block {
+    padding: 20px !important;
+}
+
+.userlist table.controls {
+    margin-bottom: 20px;
+}
+
+.userlist div.rolesform {
+    margin-bottom: 20px;
+}
+
+.userlist .initialbar.firstinitial {
+    margin-bottom: 10px;
+}
+
+.userlist .initialbar.lastinitial {
+    margin-bottom: 20px;
 }
 
 body#page-user-profile #region-main .description, body.path-course.path-user #region-main .description, body.path-course.path-user #region-main .page-context-header {

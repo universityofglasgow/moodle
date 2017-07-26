@@ -272,7 +272,7 @@ $siteContext = context_system::instance();
 $isAdmin = has_capability('moodle/site:config', $siteContext);
 
 if($isAdmin) {
-    $footerLinks['middle']['Site Links']['Purge All Caches'] = $CFG->wwwroot.'/admin/purgecaches.php';
+    $footerLinks['middle']['Site Links']['Purge All Caches'] = $CFG->wwwroot.'/admin/purgecaches.php?confirm=1&sesskey='.sesskey().'&returnurl='.$PAGE->url->out_as_local_url(false);
     $footerLinks['middle']['Site Links']['GUID Search'] = $CFG->wwwroot.'/report/guid/index.php';
 }
 
