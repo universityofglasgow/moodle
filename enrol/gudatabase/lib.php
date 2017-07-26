@@ -25,6 +25,18 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+/**
+ * Use of custom enrol table fields
+ * customint1 - role id if change role on expire is used
+ * customint2 - 0/1, create course groups if = 1
+ * customint3 - 0/1, also get codes from shortname/idnumber if = 1
+ * customint4 - 0/1, allow unenrol if = 1
+ * customint5 - 0/1, allow remove from groups if = 1
+ *
+ * customtext1 - code list
+ * customtext2 - (serialised) groups enabled
+ */
+
 defined('MOODLE_INTERNAL') || die();
 
 require_once( $CFG->dirroot . '/group/lib.php' );
@@ -122,6 +134,31 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
     }
 
     /**
+     * Return true if we can add a new instance to this course.
+     *
+     * @param int $courseid
+     * @return boolean
+     */
+    public function can_add_instance($courseid) {
+        $context = context_course::instance($courseid, MUST_EXIST);
+
+        if (!has_capability('moodle/course:enrolconfig', $context) or !has_capability('enrol/gudatabase:config', $context)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * We are a good plugin and don't invent our own UI/validation code path.
+     *
+     * @return boolean
+     */
+    public function use_standard_editing_ui() {
+        return true;
+    }
+
+    /**
      * Gets an array of the user enrolment actions
      *
      * @param course_enrolment_manager $manager
@@ -140,23 +177,6 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
                     $url, array('class' => 'unenrollink', 'rel' => $ue->id));
         }
         return $actions;
-    }
-
-    /**
-     * Returns link to page which may be used to add new instance of enrolment plugin in course.
-     * @param int $courseid
-     * @return moodle_url page url
-     */
-    public function get_newinstance_link($courseid) {
-        global $DB;
-
-        $context = context_course::instance($courseid, MUST_EXIST);
-        if (!has_capability('moodle/course:enrolconfig', $context) or !has_capability('enrol/gudatabase:config', $context)) {
-            return NULL;
-        }
-
-        // Multiple instances supported - different roles
-        return new moodle_url('/enrol/gudatabase/edit.php', array('courseid'=>$courseid));
     }
 
     /**
@@ -528,6 +548,17 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
             foreach ($newinfo as $key => $value) {
                 $newuser->$key = $value;
             }
+        } else {
+        
+            // We didn't find the user in LDAP so there's not much else we can do.
+            return false;
+        }
+
+        // Sanity check
+        // Make sure we have pulled basic data from LDAP (something is wrong if we don't)
+        // Don't think we need worry about alternate email as these should be legit students
+        if (empty($newuser->firstname) || empty($newuser->lastname) || empty($newuser->email)) {
+            return false;
         }
 
         // From here on in the username will be the uid (if it
@@ -727,7 +758,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
     public function get_codes($course, $instance) {
 
         // if customint3 is false then no settings codes
-        if ($instance->customint3) {
+        if (!empty($instance->customint3)) {
             $shortname = $course->shortname;
             $idnumber = $course->idnumber;
             $codes = $this->split_code( $idnumber );
@@ -755,13 +786,15 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
      * @param object $instance of enrol plugin
      * @return boolean success
      */
-    public function enrol_course_users( $course, $instance ) {
+    public function enrol_course_users($course, $instance) {
         global $CFG, $DB;
 
         // is the plugin enabled for this instance?
         if ($instance->status != ENROL_INSTANCE_ENABLED) {
             return true;
         }
+
+        $context = context_course::instance($course->id);
 
         // First need to get a list of possible course codes
         // we will aggregate single code from course shortname
@@ -782,6 +815,9 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
             return false;
         }
 
+        // Keep list of enrolled users
+        $enrolledusers = array();
+
         // Iterate over the enrolments and deal.
         foreach ($enrolments as $enrolment) {
             $username = $enrolment->UserName;
@@ -795,8 +831,13 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
 
                 // If we get here, couldn't find with username, so
                 // let's just have another go with idnumber.
-                if (!$user = $DB->get_record( 'user', array('idnumber' => $matricno))) {
-                    $user = $this->create_user_record( $username, $matricno );
+                if (!$user = $DB->get_record('user', array('idnumber' => $matricno))) {
+
+                    // Try to create the new user.
+                    // If it fails then there's not much else we can do with this user
+                    if (!$user = $this->create_user_record($username, $matricno)) {
+                        continue;
+                    }
                 }
             }
 
@@ -814,9 +855,26 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
             if (!$this->is_user_enrolled($instance, $user->id)) {
                 $this->enrol_user( $instance, $user->id, $instance->roleid, $timestart, $timeend, ENROL_USER_ACTIVE );
             }
+            $enrolledusers[$user->id] = $user->id;
 
             // Cache enrolment.
             $this->cache_user_enrolment( $course, $user, $enrolment->courses );
+        }
+
+        // If required unenrol remaining users.
+        if (!empty($instance->customint4)) {
+        
+            // Get list of users enrolled in this instance
+            $enrolments = $DB->get_records('user_enrolments', array('enrolid' => $instance->id));
+
+            // Check they should still be here
+            foreach ($enrolments as $enrolment) {
+                if (array_key_exists($enrolment->userid, $enrolledusers)) {
+                    continue;
+                } else {
+                    $this->unenrol_user($instance, $enrolment->userid);
+                }
+            }
         }
 
         return true;
@@ -835,6 +893,10 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         $fields['customint1'] = 0; // expiry role
         $fields['customint2'] = 0; // course code groups
         $fields['customint3'] = 1; // honour settings codes
+        $fields['customint4'] = 0; // allow unenrol
+        $fields['customint5'] = 0; // allow renove from groups
+        $fields['customtext1'] = ''; // course codes
+        $fields['customtext2'] = ''; // serialised group enrolments. 
         return $this->add_instance($course, $fields);
     }
 
@@ -1113,9 +1175,18 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
                         foreach ($memberids as $memberid) {
                             if ($user = $DB->get_record('user', array('idnumber'=>$memberid))) {
 
-                                // if this user is already in any classgroup then nothing to do
-                                if (!$this->is_in_any_classgroup($course->id, $user, $groupbasename, $classgroups)) {
-                                    groups_add_member($group, $user);
+                                // Add to the group
+                                groups_add_member($group, $user);
+                            }
+                        }
+
+                        // Remove group members no longer in classgroup
+                        if (!empty($instance->customint5)) {
+                            if ($members = $DB->get_records('groups_members', array('groupid' => $groupid))) {
+                                foreach ($members as $member) {
+                                    if (!in_array($member->userid, $memberids)) {
+                                        groups_remove_member($groupid, $member->userid);
+                                    }
                                 }
                             }
                         }
@@ -1240,46 +1311,236 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
     }
 
     /**
-     * Returns edit icons for the page with list of instances
-     * @param stdClass $instance
-     * @return array
+     * Get list of coursedescriptions for form
+     * @param object $course
+     * @param object $instance
+     * @return array of codeclases + coursedescriptions
      */
-    public function get_action_icons(stdClass $instance) {
-        global $OUTPUT;
+    protected function get_coursedescriptions($course, $instance) {
+        global $PAGE;
 
-        if ($instance->enrol !== 'gudatabase') {
-            throw new coding_exception('invalid enrol instance!');
+        // Get renderer
+        $output = $PAGE->get_renderer('enrol_gudatabase');
+
+        // get current codes
+        $codes = $this->get_codes($course, $instance);
+
+        // loop through to get current classes
+        $codeclasses = array();
+        $coursedescriptions = array();
+        foreach ($codes as $code) {
+            $classes = $this->external_classes($code);
+            $codeclasses[$code] = $classes;
+            $coursedescriptions[$code] = $output->courseinfo($course->id, $code);
         }
-        $context = context_course::instance($instance->courseid);
 
-        $icons = array();
-
-        if (has_capability('enrol/gudatabase:config', $context)) {
-            $editlink = new moodle_url("/enrol/gudatabase/edit.php", array('courseid'=>$instance->courseid, 'id'=>$instance->id));
-            $icons[] = $OUTPUT->action_icon($editlink, new pix_icon('t/edit', get_string('edit'), 'core',
-                array('class' => 'iconsmall')));
-        }
-
-        return $icons;
+        return array($codeclasses, $coursedescriptions);
     }
 
     /**
-     * Sets up navigation entries.
-     *
-     * @param stdClass $instancesnode
-     * @param stdClass $instance
-     * @return void
+     * Get course object from instance
+     * @param object $instance
+     * @return object course
      */
-    public function add_course_navigation($instancesnode, stdClass $instance) {
-        if ($instance->enrol !== 'gudatabase') {
-             throw new coding_exception('Invalid enrol instance type!');
+    protected function get_course($instance) {
+        global $DB;
+
+        return $DB->get_record('course', array('id' => $instance->courseid), '*', MUST_EXIST);
+    }
+
+    /**
+     * Add elements to the edit instance form.
+     *
+     * @param stdClass $instance
+     * @param MoodleQuickForm $mform
+     * @param context $context
+     * @return bool
+     */
+    public function edit_instance_form($instance, MoodleQuickForm $mform, $context) {
+        global $PAGE;
+
+        $course = $this->get_course($instance);
+        list($codeclasses, $coursedescriptions) = $this->get_coursedescriptions($course, $instance);
+
+        // Get renderer
+        $output = $PAGE->get_renderer('enrol_gudatabase');
+
+        // Unpack groups
+        if (empty($instance->customtext2)) {
+            $instance->customtext2 = '';
+        }
+        if (!$groups = unserialize($instance->customtext2)) {
+            $groups = array();
         }
 
-        $context = context_course::instance($instance->courseid);
-        if (has_capability('enrol/gudatabase:config', $context)) {
-            $managelink = new moodle_url('/enrol/gudatabase/edit.php', array('courseid'=>$instance->courseid, 'id'=>$instance->id));
-            $instancesnode->add($this->get_instance_name($instance), $managelink, navigation_node::TYPE_SETTING);
+        $mform->addElement('html', '<div class="alert alert-danger">' . get_string('savewarning', 'enrol_gudatabase') . '</div>');
+
+        $mform->addElement('text', 'name', get_string('custominstancename', 'enrol'));
+        $mform->setType('name', PARAM_TEXT);
+
+        $options = array(ENROL_INSTANCE_ENABLED  => get_string('yes'),
+                         ENROL_INSTANCE_DISABLED => get_string('no'));
+        $mform->addElement('select', 'status', get_string('status', 'enrol_gudatabase'), $options);
+        $mform->addHelpButton('status', 'status', 'enrol_gudatabase');
+        $mform->setDefault('status', $this->get_config('status'));
+
+        $yesno = array(
+            0 => get_string('no'),
+            1 => get_string('yes'),
+        );
+        $mform->addElement('select', 'customint3', get_string('settingscodes', 'enrol_gudatabase'), $yesno);
+        $mform->addHelpButton('customint3', 'settingscodes', 'enrol_gudatabase');
+        $mform->setDefault('customint3', 0);
+
+        if ($instance->id) {
+            $roles = get_default_enrol_roles($context, $instance->roleid);
+        } else {
+            $roles = get_default_enrol_roles($context, $this->get_config('roleid'));
         }
+        $mform->addElement('select', 'roleid', get_string('defaultrole', 'role'), $roles);
+        $mform->setDefault('roleid', 5);
+
+        $mform->addElement('duration', 'enrolperiod', get_string('defaultperiod', 'enrol_gudatabase'), array('optional' => true, 'defaultunit' => 86400));
+        $mform->setDefault('enrolperiod', $this->get_config('enrolperiod'));
+        $mform->addHelpButton('enrolperiod', 'defaultperiod', 'enrol_gudatabase');
+
+        $mform->addElement('date_time_selector', 'enrolenddate', get_string('enrolenddate', 'enrol_gudatabase'), array('optional' => true));
+        $mform->setDefault('enrolenddate', 0);
+        $mform->addHelpButton('enrolenddate', 'enrolenddate', 'enrol_gudatabase');
+
+        $roles = array(0 => get_string('unenrol', 'enrol_gudatabase')) + $roles;
+        $mform->addElement('select', 'expireroleid', get_string('expirerole', 'enrol_gudatabase'), $roles);
+        $mform->setDefault('expireroleid', $this->get_config('expireroleid'));
+        $mform->addHelpButton('expireroleid', 'expirerole', 'enrol_gudatabase');
+
+        if (has_capability('enrol/gudatabase:enableunenrol', $context)) {
+            $mform->addElement('select', 'customint4', get_string('enableunenrol', 'enrol_gudatabase'), $yesno);
+            $mform->setDefault('customint4', 0);
+            $mform->addHelpButton('customint4', 'enableunenrol', 'enrol_gudatabase');
+        }
+
+        $mform->addElement('select', 'customint5', get_string('enablegroupremove', 'enrol_gudatabase'), $yesno);
+        $mform->setDefault('customint5', 0);
+        $mform->addHelpButton('customint5', 'enablegroupremove', 'enrol_gudatabase');
+
+        // Automatic enrolment (codes) settings.
+        $mform->addElement('header', 'codesettings', get_string('codesettings', 'enrol_gudatabase'));
+
+        $codes = $this->get_codes($course, $instance);
+        if (empty($instance->customint3)) {
+            $instance->customint3 = 0;
+        }
+        $mform->addElement('html', $output->print_codes($course->id, $codes, $instance->customint3));
+
+        $mform->addElement('textarea', 'customtext1', get_string('codelist', 'enrol_gudatabase'), 'rows="15" cols="25" style="height: auto; width:auto;"');
+        $mform->addHelpButton('customtext1', 'codelist', 'enrol_gudatabase');
+        $mform->setType('customtext1', PARAM_TEXT);
+
+        // Automatic groups settings.
+        $mform->addElement('header', 'groupsettings', get_string('groupsettings', 'enrol_gudatabase'));
+
+        if ($coursedescriptions) {
+            $mform->addElement('html', '<div class="alert alert-info">' . get_string('groupsinstruction', 'enrol_gudatabase') . '</div>');
+        } else {
+            $mform->addElement('html', '<div class="alert alert-warning">' . get_string('nolegacycodes', 'enrol_gudatabase') . '</div>');
+        }
+
+        if ($coursedescriptions) {
+            $mform->addElement('advcheckbox', 'coursegroups', get_string('coursegroups', 'enrol_gudatabase'), '');
+            $mform->setDefault('coursegroups', $instance->customint2);
+            $mform->addHelpButton('coursegroups', 'coursegroups', 'enrol_gudatabase');
+        }
+
+        foreach ($codeclasses as $code => $classes) {
+            $description = $coursedescriptions[$code];
+            $mform->addElement('html', "<h3>$code ($description)</h3>");
+            foreach ($classes as $class) {
+                $selector = "{$code}_{$class}";
+                $mform->addElement('advcheckbox', $selector, $class, '');
+                $mform->setDefault($selector, !empty($groups[$code][$class]));
+            }
+        }
+
+        $mform->closeHeaderBefore('groupsettings');
+    }
+
+    /**
+     * Update instance of enrol plugin.
+     * @param stdClass $instance
+     * @param stdClass $data modified instance fields
+     * @return boolean
+     */
+    public function update_instance($instance, $data) {
+        global $DB;
+
+        // Needed data
+        $course = $this->get_course($instance);
+        list($codeclasses, $coursedescriptions) = $this->get_coursedescriptions($course, $instance);
+
+        // 'Standard' settings
+        $data->customint1 = $data->expireroleid;
+
+        // Codes settings
+        $instance->customtext1 = strtoupper($data->customtext1);
+
+        // Group settings
+        $groups = array();
+        foreach ($codeclasses as $code => $codeclass) {
+            $groups[$code] = array();
+            foreach ($codeclass as $class) {
+                $selector = "{$code}_{$class}";
+
+                // If code has just been added, expected classes are not on the form
+                if (!isset($data->$selector)) {
+                    continue;
+                }
+                $groups[$code][$class] = $data->$selector == 1;
+            }
+        }
+        $data->customtext2 = serialize($groups);
+
+        // Update enrolments
+        $this->enrol_course_users($course, $instance);
+        $this->sync_groups($course, $instance);
+        cache_helper::invalidate_by_definition('core', 'groupdata', array(), array($course->id));
+        
+        return parent::update_instance($instance, $data);
+    }
+
+    /**
+     * Perform custom validation of the data used to edit the instance.
+     *
+     * @param array $data array of ("fieldname"=>value) of submitted data
+     * @param array $files array of uploaded files "element_name"=>tmp_file_path
+     * @param object $instance The instance loaded from the DB
+     * @param context $context The context of the instance we are editing
+     * @return array of "element_name"=>"error_description" if there are errors,
+     *         or an empty array if everything is OK.
+     * @return void
+     */
+    public function edit_instance_validation($data, $files, $instance, $context) {
+        $errors = array();
+
+        // Valid data
+        if ($instance->id) {
+            $roles = get_default_enrol_roles($context, $instance->roleid);
+        } else {
+            $roles = get_default_enrol_roles($context, $this->get_config('roleid'));
+        }
+        $roles = array_keys($roles);
+        $yesno = array(0, 1);
+        
+        // Parameters to validate
+        $rules = array(
+            'customint3' => $yesno,
+            'roleid' => $roles,
+            'expireroleid' => [0] + $roles,
+            'customint5' => $yesno,
+        );
+
+        $errors = $this->validate_param_types($data, $rules);
+
+        return $errors;
     }
 
     /**

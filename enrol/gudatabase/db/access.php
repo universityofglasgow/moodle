@@ -29,7 +29,6 @@ $capabilities = array(
 
     /* Add or edit enrol-gudatabase instance in course. */
     'enrol/gudatabase:config' => array(
-
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
         'archetypes' => array(
@@ -40,7 +39,6 @@ $capabilities = array(
 
     /* This is used only when sync suspends users instead of full unenrolment */
     'enrol/gudatabase:unenrol' => array(
-
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
         'archetypes' => array(
@@ -48,13 +46,22 @@ $capabilities = array(
             'teacher' => CAP_ALLOW,
         )
     ),
-    'enrol/gudatabase:manage' => array(
 
+    'enrol/gudatabase:manage' => array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
         'archetypes' => array(
             'manager' => CAP_ALLOW,
             'teacher' => CAP_ALLOW,
+        )
+    ),
+
+    // allow user to set unenrol on mycampus (potential data loss)
+    'enrol/gudatabase:enableunenrol' => array(
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_COURSE,
+        'archetypes' => array(
+            'manager' => CAP_ALLOW,
         )
     ),
 
