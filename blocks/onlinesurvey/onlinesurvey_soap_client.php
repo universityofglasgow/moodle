@@ -70,7 +70,7 @@ class onlinesurvey_soap_client extends SoapClient {
         parent::__construct($uri, $options);
     }
 
-    public function __doRequest($request, $location, $action, $version) {
+    public function __doRequest($request, $location, $action, $version, $one_way = 0) {
         $headers = array(
             'Content-Type: text/xml;charset=UTF-8',
             "SOAPAction: \"$action\"",

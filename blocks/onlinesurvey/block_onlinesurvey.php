@@ -95,8 +95,11 @@ class block_onlinesurvey extends block_base {
     public function get_content() {
         global $SESSION;
 
+        $this->content = new stdClass();
+        $this->content->footer = '';
+        $this->content->text = '';
+
         if ($this->moodleuserid && $this->isconfigured) {
-            $this->content = new stdClass();
 
             if (!isset($SESSION->block_onlinesurvey_surveykeys) || $this->debugmode) {
                 $SESSION->block_onlinesurvey_surveykeys = $this->get_surveys();
