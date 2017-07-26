@@ -960,6 +960,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
             $this->enrol_course_users($course, $instance);
             $this->sync_groups($course, $instance);
         }
+        cache_helper::invalidate_by_definition('core', 'groupdata', array(), array($course->id));
 
         return true;
     }
@@ -1172,11 +1173,13 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
                         }
 
                         // find all the users for this group combination
+                        $enrolledusers = array();
                         foreach ($memberids as $memberid) {
                             if ($user = $DB->get_record('user', array('idnumber'=>$memberid))) {
 
                                 // Add to the group
                                 groups_add_member($group, $user);
+                                $enrolledusers[$user->id] = $user->id;
                             }
                         }
 
@@ -1184,7 +1187,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
                         if (!empty($instance->customint5)) {
                             if ($members = $DB->get_records('groups_members', array('groupid' => $groupid))) {
                                 foreach ($members as $member) {
-                                    if (!in_array($member->userid, $memberids)) {
+                                    if (!in_array($member->userid, $enrolledusers)) {
                                         groups_remove_member($groupid, $member->userid);
                                     }
                                 }
