@@ -31,7 +31,7 @@ function theme_hillhead_get_main_scss_content($theme) {
     $filename = !empty($theme->settings->preset) ? $theme->settings->preset : null;                                                 
     $fs = get_file_storage();                
     
-    $scss .= file_get_contents($CFG->dirroot . '/theme/hillhead/scss/hillhead.scss');                                                                                          
+    $scss .= file_get_contents($CFG->dirroot . '/theme/hillhead/scss/hillhead.scss');                                                                                      
  
     $context = context_system::instance();                                                                                          
     if ($filename == 'default.scss') {                                                                                              
