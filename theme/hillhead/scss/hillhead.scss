@@ -119,6 +119,10 @@ h3.sectionname a {
     color: #fff !important;
 }
 
+page-item.active.disabled .page-link {
+    color: #818a91;
+}
+
 #page {
     margin-top: 0 !important;
     padding-top: 55px !important;
@@ -675,6 +679,7 @@ body.path-course-view.editing .course-content > ul > li.section .content {
     background-color: #4f5961;
     color: #fff;
     margin-bottom: 20px;
+    min-height: 38px;
 }
 
 .course-content > ul > li.section {
@@ -712,6 +717,36 @@ body.editing .course-content > ul > li.section .sectionname {
     color: #fff !important;
 }
 
+.course-content ul.ctopics li.section.main .content, .course-content ul.ctopics li.tcsection .content {
+    margin: 0 !important;
+}
+
+.course-content ul.ctopics li.section.main .side, .course-content ul.ctopics li.tcsection .side {
+    width: 40px !important;
+}
+
+.course-content ul.ctopics li.section .content .toggle span.the_toggle.tc-medium {
+    padding-left: 40px !important;
+    padding-right: 40px !important;
+}
+
+.course-content ul.ctopics li.section .content .toggle, .course-content ul.ctopics li.section .content.sectionhidden {
+    background: transparent !important;
+    border-bottom: 1px solid $gu-island-border;
+}
+
+.course-content ul.ctopics li.section .content.sectionhidden {
+    border-bottom: none;
+}
+
+.course-content ul.ctopics li.section .left.side span.cps_centre {
+    display: none;
+}
+
+course-content ul.ctopics li.section .content div.toggle {
+    background: transparent !important;
+}
+
 div#gridshadebox_overlay {
     z-index: 9998;
 }
@@ -737,6 +772,12 @@ div#gridshadebox_content.absolute {
 }
 
 .course-content > ul > li.section .section-modchooser {
+    padding: 5px 20px !important;
+    border-top: 1px solid $gu-island-border;
+    margin-top: 20px;
+}
+
+.course-content > ul > li.section .addresourcedropdown {
     padding: 5px 20px !important;
     border-top: 1px solid $gu-island-border;
     margin-top: 20px;
