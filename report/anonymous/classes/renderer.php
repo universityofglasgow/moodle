@@ -61,12 +61,16 @@ class report_anonymous_renderer extends plugin_renderer_base {
             } else {
                 $line[] = ' ';
             }
-            $buttons = '<a class="btn btn-info" href="' . $url . '">' . get_string('show') . '</a>&nbsp;';
-            if ($assignment->assignfeedback_file_enabled) {
-                $url->params(array('assign' => $assignment->id, 'action' => 'feedback'));
-                $buttons .= '<a class="btn btn-success" href="' . $url . '">' . get_string('downloadfeedback', 'report_anonymous') . '</a>';
+            if ($assignment->hasgrades) {
+                $buttons = '<a class="btn btn-info" href="' . $url . '">' . get_string('show') . '</a>&nbsp;';
+                if ($assignment->assignfeedback_file_enabled) {
+                    $url->params(array('assign' => $assignment->id, 'action' => 'feedback'));
+                    $buttons .= '<a class="btn btn-success" href="' . $url . '">' . get_string('downloadfeedback', 'report_anonymous') . '</a>';
+                }
+                $line[] = $buttons;
+            } else {
+                $line[] = '<i>' . get_string('nogrades', 'report_anonymous') . '</i>';
             }
-            $line[] = $buttons;
             $table->data[] = $line;
         }
 

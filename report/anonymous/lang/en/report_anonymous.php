@@ -51,6 +51,7 @@ $string['name'] = 'Name';
 $string['idnumber'] = 'Matric/ID number';
 $string['noassignments'] = 'There are no assignments in this course';
 $string['nocapability'] = 'You do not have the required capabiltities to view this report';
+$string['nogrades'] = 'No data yet';
 $string['notallowed'] = 'You do not have permission to view the selected activity';
 $string['participantnumber'] = 'Participant';
 $string['partname'] = 'Part name:';

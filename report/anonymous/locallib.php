@@ -49,6 +49,9 @@ class report_anonymous {
             } else {
                 $assignment->assignfeedback_file_enabled = false;
             }
+
+            // Check if it has any grades yet (if not we won't display it)
+            $assignment->hasgrades = self::count_grades($assignment->id) != 0;
         }
 
         return $assignments;
@@ -187,6 +190,29 @@ class report_anonymous {
         $text = Encoding::fixUTF8($text);
 
         return $text;
+    }
+
+    /**
+     * Load a count of grades.
+     *
+     * @param int assignid
+     * @return int number of grades
+     */
+    public static function count_grades($assignid) {
+        global $DB;
+
+        $cm = get_coursemodule_from_instance('assign', $assignid, 0, false, MUST_EXIST);
+        $context = context_module::instance($cm->id);
+        list($esql, $params) = get_enrolled_sql($context, 'mod/assign:submit', 0, true);
+
+        $params['assignid'] = $assignid;
+
+        $sql = 'SELECT COUNT(g.userid)
+                   FROM {assign_grades} g
+                   JOIN(' . $esql . ') e ON e.id = g.userid
+                   WHERE g.assignment = :assignid';
+
+        return $DB->count_records_sql($sql, $params);
     }
 
     /**
