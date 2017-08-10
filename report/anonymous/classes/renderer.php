@@ -48,7 +48,8 @@ class report_anonymous_renderer extends plugin_renderer_base {
             get_string('urkundstatus', 'report_anonymous'),
         );
         foreach ($assignments as $assignment) {
-            $url->params(array('mod' => 'assign', 'assign' => $assignment->id));
+            $assignurl = clone $url;
+            $assignurl->params(array('mod' => 'assign', 'assign' => $assignment->id));
             $line = array();
             $line[] = '<b>' . $assignment->name . '</b>';
             if ($assignment->blindmarking) {
@@ -62,10 +63,10 @@ class report_anonymous_renderer extends plugin_renderer_base {
                 $line[] = ' ';
             }
             if ($assignment->hasgrades) {
-                $buttons = '<a class="btn btn-info" href="' . $url . '">' . get_string('show') . '</a>&nbsp;';
+                $buttons = '<a class="btn btn-info" href="' . $assignurl . '">' . get_string('show') . '</a>&nbsp;';
                 if ($assignment->assignfeedback_file_enabled) {
-                    $url->params(array('assign' => $assignment->id, 'action' => 'feedback'));
-                    $buttons .= '<a class="btn btn-success" href="' . $url . '">' . get_string('downloadfeedback', 'report_anonymous') . '</a>';
+                    $assignurl->params(array('action' => 'feedback'));
+                    $buttons .= '<a class="btn btn-success" href="' . $assignurl . '">' . get_string('downloadfeedback', 'report_anonymous') . '</a>';
                 }
                 $line[] = $buttons;
             } else {

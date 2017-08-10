@@ -752,6 +752,9 @@ class report_anonymous {
         // find the feedback files
         $fs = get_file_storage();
         $files = $fs->get_area_files($context->id, 'assignfeedback_file', 'feedback_files');
+        if (!$files) {
+            return;
+        }
 
         // Zipfiles array of 'path/name in zip' => file_object.
         $zipfiles = array(); 
@@ -777,7 +780,7 @@ class report_anonymous {
 
         // No point if there are no files
         if (count($zipfiles) == 0) {
-            die;
+            return;
         }
 
         // Pack zip file for export

@@ -66,7 +66,7 @@ require_capability('report/anonymous:view', $context);
 // Avoid headers and stuff
 if ($assignid && ($action == 'feedback')) {
     report_anonymous::feedback_files($assignid);
-    die;
+    redirect($url);
 }
 
 if (!$export) {
