@@ -50,11 +50,24 @@ class report_anonymous {
                 $assignment->assignfeedback_file_enabled = false;
             }
 
-            // Check if it has any grades yet (if not we won't display it)
-            $assignment->hasgrades = self::count_grades($assignment->id) != 0;
+	    // Check if it has any grades yet (if not we won't display it)
+            $assignment->hasgrades = (self::count_grades($assignment->id) != 0) || self::anySubmissions($assignment->id);
         }
 
         return $assignments;
+    }
+
+    /**
+     * Check for any submissions
+     * @param int $assignmentid
+     * @return boolean
+     */
+    protected static function anySubmissions($assignmentid) {
+        global $DB;
+
+	$submissions = $DB->count_records('assign_submission', array('assignment' => $assignmentid, 'status' => 'submitted'));
+
+	return $submissions != 0; 
     }
 
     /** 
