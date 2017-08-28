@@ -14,8 +14,9 @@ M.block_course_overview.add_handles = function(Y) {
         var list = Y.Node.all('.course_list .coursebox');
         list.each(function(v, k) {
             // Replace move link and image with move_2d image.
-            var imagenode = v.one('.course_title .move a img');
-            imagenode.setAttribute('src', M.util.image_url(MOVEICON.pix, MOVEICON.component));
+            var imagenode = v.one('.course_title .move a .fa-arrows-v');
+            imagenode.replaceClass('fa-arrows-v', 'fa-arrows');		
+            //imagenode.setAttribute('src', M.util.image_url(MOVEICON.pix, MOVEICON.component));
             imagenode.addClass('cursor');
             v.one('.course_title .move a').replace(imagenode);
 
