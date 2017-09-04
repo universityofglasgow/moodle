@@ -1484,7 +1484,10 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         $data->customint1 = $data->expireroleid;
 
         // Codes settings
-        $instance->customtext1 = strtoupper($data->customtext1);
+	$instance->customtext1 = strtoupper($data->customtext1);
+
+	// Course groups
+	$instance->customint2 = $data->coursegroups;
 
         // Group settings
         $groups = array();
