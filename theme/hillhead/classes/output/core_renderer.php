@@ -769,6 +769,5 @@ class core_renderer extends \core_renderer {
 
         return html_writer::tag('div', $searchinput, array('class' => 'hillhead-search-input-wrapper nav-link', 'id' => $id));
     }
-
-    
+   
 }

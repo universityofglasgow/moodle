@@ -38,7 +38,7 @@ $body-bg: $gu-background;
 $spacer: 20px;
 $border-width: 1px;
 $navbar-height: 55px;
-$footer-min-height: 152px;
+$footer-min-height: 172px;
 
 $card-border-radius:       0;
 $card-border-color:        $gu-island-border;
@@ -111,23 +111,27 @@ h6 {
 #page-footer {
     padding-top: 0 !important;
     padding-bottom: 0 !important;
-    min-height: 152px !important; // Does very little, if set small
-    margin-top: -152px !important; // Distance of footer from absolute bottom
+    min-height: 172px !important; // Does very little, if set small
+    margin-top: -172px !important; // Distance of footer from absolute bottom
 }
 
 #page-wrapper {
-    margin-bottom: -172px !important; // Distance of footer from absolute bottom
+    margin-bottom: -192px !important; // Distance of footer from absolute bottom
 }
 
 #page-wrapper::after {
     content: "";
     display: block;
-    min-height: 172px !important; // Footer-containing 'gap' on long pages
+    min-height: 192px !important; // Footer-containing 'gap' on long pages
 }
 
 body#page-login-index #page {
     margin-top: 0;
     padding-top: 55px;
+}
+
+.moodle-footer-doc-link i {
+    display: none;
 }
 
 // Link colours
@@ -137,7 +141,7 @@ body#page-login-index #page {
 }
 
 a:hover {
-    color: $flat-blue-dark !important;
+    color: $flat-blue-dark;
 }
 
 b, strong {
@@ -492,7 +496,7 @@ body.path-course-view.editing .course-content > ul > li.section .content {
 }
 
 .format-topics .course-content > ul > li.section .side.right, .format-weeks .course-content > ul > li.section .side.right {
-    background-color: #555 !important;
+    background-color: #4f5961 !important;
 }
 
 .path-course-view .completionprogress {
@@ -511,6 +515,14 @@ body.editing .course-content > ul > li.section .sectionname {
     padding: 5px;
     border-bottom: none;
     margin-bottom: 0;
+}
+
+body.path-course-view .course-content > ul > li.section-summary {
+    padding: 20px;
+}
+
+body.path-course-view.editing #gtopics h3.sectionname a {
+    color: $flat-blue !important;
 }
 
 .course-content ul.ctopics li.section.main, .course-content ul.ctopics li.tcsection {
@@ -538,17 +550,12 @@ body.editing .course-content > ul > li.section .sectionname {
     margin: 0 !important;
 }
 
-.course-content ul.ctopics li.section.main .side, .course-content ul.ctopics li.tcsection .side {
-    width: 40px !important;
-}
-
 .course-content ul.ctopics li.section .content .toggle span.the_toggle.tc-medium {
-    padding-left: 40px !important;
-    padding-right: 40px !important;
+    padding-left: 60px !important;
+    padding-right: 60px !important;
 }
 
 .course-content ul.ctopics li.section .content .toggle, .course-content ul.ctopics li.section .content.sectionhidden {
-    background: transparent !important;
     border-bottom: 1px solid $gu-island-border;
 }
 
@@ -571,6 +578,8 @@ div#gridshadebox_overlay {
 div#gridshadebox_content.absolute {
     top: 75px !important;
     z-index: 9999;
+    left: 20px !important;
+    right: 20px !important;
 }
 
 #gridshadebox_content.fit_to_window {
@@ -654,15 +663,28 @@ div.course-content, ul.ctopics {
 }
 
 .course-content ul.ctopics>li.section .side.left {
-    padding-top: 12px !important;
-    width: 30px !important;
-    margin-left: 10px !important;
+    padding-top: 6px !important;
+    width: 40px !important;
+    margin-left: 20px !important;
+}
+
+.course-content ul.ctopics>li.section .side.left span.section-handle {
+    display: block;
+    margin-left: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+    margin-top: 2px !important;
 }
 
 .course-content ul.ctopics>li.section .side.right {
-    padding-top: 8px !important;
-    width: 30px !important;
+    padding-top: 4px !important;
+    width: 50px !important;
     margin-right: 10px !important;
+    height: 26px;
+}
+
+.course-content ul.ctopics>li.section .side.right .cps_centre {
+    display: block;
 }
 
 #gridshadebox_content ul.gtopics {
@@ -688,6 +710,96 @@ div.course-content, ul.ctopics {
 
 #gridmiddle-coulmn .tooltip {
     z-index: 9999 !important;
+}
+
+ul.ctopics > li .sectionhead span.the_toggle::before {
+    content: "\f0da";
+    font: normal normal normal 14px/1 FontAwesome;
+    font-size: 1.8rem;
+    float: left;
+    margin-top: 6px;
+    width: 1.5em;
+    display: inline-block;
+    text-align: center;
+    transform-origin: 50% 50%;
+    transform: rotate(0deg);
+    transition: 300ms linear all;
+    margin-left: -60px;
+}
+
+ul.ctopics > li .sectionhead span.toggle_open::before {
+        transform-origin: 50% 50%;
+    transform: rotate(90deg);
+    transition: 300ms linear all;
+}
+
+.course-content ul.ctopics li.section .content .toggle {
+    border-bottom: none !important;
+    padding: 0 !important;
+}
+
+ul.ctopics div.availabilityinfo .tag {
+    background-color: #555 !important;
+    color: #eee !important;
+}
+
+#toggles-all-opened {
+    background: transparent !important;
+    padding: 0 !important;
+}
+
+#toggles-all-opened::before {
+    content: "\f0d7";
+    font: normal normal normal 14px/1 FontAwesome;
+    font-size: 1rem;
+    padding-right: 0.5em;
+}
+
+#toggles-all-closed {
+    background: transparent !important;
+    padding: 0 !important;
+}
+
+#toggles-all-closed::before {
+    content: "\f0da";
+    font: normal normal normal 14px/1 FontAwesome;
+    font-size: 1rem;
+    padding-right: 0.5em;
+}
+
+#toggles-all-closed {
+    background: transparent !important;
+}
+
+body.jsenabled .toggledsection.sectionopen {
+    padding-left: 10px;
+}
+
+body.format-topcoll.editing ul.ctopics .section .activity .actions {
+    position: absolute;
+}
+
+// Quiz
+
+.que.multichoice .answer div.r0, .que.multichoice .answer div.r1 {
+    text-indent: 0;
+}
+
+.que .info {
+    padding: 20px 10px;
+}
+
+.que .info * {
+    font-size: 1em !important;
+    font-weight: inherit !important;
+}
+
+.path-mod-quiz #responseform .que .content {
+    padding: 0;
+}
+
+.confirmation-buttons .m-r-1:last-child {
+    margin-right: 0;
 }
 
 // Transparent background on drag and drop questions
@@ -732,6 +844,10 @@ page-item.active.disabled .page-link {
     text-align: center;
 }
 
+body#page-admin-roles-assign .admintable th.c2.userrole {
+    min-width: 15em;
+}
+
 // User profile fixes
 
 body#page-user-profile #region-main .description, body.path-course.path-user #region-main .description, body.path-course.path-user #region-main .page-context-header {
@@ -770,7 +886,7 @@ body#page-user-profile #region-main > .card-block .node_category > ul, body.path
 }
 
 body#page-user-profile #region-main > .card-block .node_category .editprofile, body.path-course.path-user #region-main > .card-block .node_category .editprofile {
-    float: right;
+    float: none;
 }
 
 .action-menu .userpicture {
@@ -881,6 +997,12 @@ body#page-user-profile #region-main > .card-block .node_category .editprofile, b
     margin-top: 20px;
 }
 
+// MathJax Fix
+
+span.MathJax_SVG, span.MathJax_CHTML, span.MathJax_PHTML,  span.MathJax {
+    font-family: serif !important;
+}
+
 // Accessibility features
 
 body.hillhead-font-comic {
@@ -980,6 +1102,10 @@ body.hillhead-contrast header .navbar-brand span.site-name {
     text-indent: 0;
 }
 
+.navbar .popover-region-container {
+    top: 2.9rem !important;
+}
+
 .hh-acc {
     padding-left: 48px !important;
     background-repeat: no-repeat;
@@ -1010,3 +1136,6 @@ body.hillhead-bold * {
 
 .hh-acc-fb-on { background-image: url([[pix:theme|font-bold-on]]);}
 .hh-acc-fb-of { background-image: url([[pix:theme|font-bold-off]]);}
+
+// Hotfixes to integrate
+

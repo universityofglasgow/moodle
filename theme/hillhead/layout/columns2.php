@@ -276,6 +276,8 @@ if($isAdmin) {
     $footerLinks['middle']['Site Links']['GUID Search'] = $CFG->wwwroot.'/report/guid/index.php';
 }
 
+$footerLinks['middle']['Site Links']['GUID Search'] = $CFG->wwwroot.'/report/guid/index.php';
+
 $footerText = '<div class="row">
             <div class="col-sm-6">
     			<h3 class="glasgow">University <em>of</em> Glasgow</h3>
@@ -288,6 +290,11 @@ foreach($footerLinks['middle'] as $sectionHeading=>$sectionLinks) {
     $footerText .= '<h4>'.$sectionHeading.'</h4><ul>';
     foreach($sectionLinks as $linkTitle=>$linkLink) {
         $footerText .= '<li><a href="'.$linkLink.'">'.$linkTitle.'</a></li>';
+    }
+    if($sectionHeading=='Site Links') {
+        // Nasty hack for Moodle Docs link
+        $footerText .= '<li class="moodle-footer-doc-link">'.page_doc_link('Help with this page').'</li>';
+        $footerText .= '<li class="logininfo"></li>';
     }
     $footerText .= '</ul>';
 }
