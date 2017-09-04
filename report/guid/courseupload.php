@@ -103,14 +103,16 @@ if ($mform->is_cancelled()) {
 
         // Get the username/guid from the first column 
         // and groups from any additional
-        $groups = array();
-        foreach ($line as $key => $item) {
+	$groups = array();
+        $count = 0;
+        foreach ($line as $item) {
             $item = trim( $item, '" ' );
-            if ($key == 0) {
+            if ($count == 0) {
                 $usermatch = $item;
             } else {
                 $groups[] = $item;
-            }
+	    }
+	    $count++;
         }
 
         // If nothing in first column, possibly blank line?
