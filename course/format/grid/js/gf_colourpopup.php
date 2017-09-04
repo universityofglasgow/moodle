@@ -19,8 +19,10 @@
  *
  * @package    course/format
  * @subpackage grid
+ * @version    See the value of '$plugin->version' in version.php.
  * @copyright  &copy; 2013 G J Barnard in respect to modifications of standard topics format.
- * @author     G J Barnard - gjbarnard at gmail dot com, about.me/gjbarnard and {@link http://moodle.org/user/profile.php?id=442195}
+ * @author     G J Barnard - {@link http://about.me/gjbarnard} and
+ *                           {@link http://moodle.org/user/profile.php?id=442195}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 require_once("HTML/QuickForm/text.php");
@@ -69,10 +71,10 @@ class MoodleQuickForm_gfcolourpopup extends HTML_QuickForm_text {
         $content = "<input size='8' name='" . $this->getName() . "' value='" . $colour . "'id='{$id}' type='text' " .
                     $this->_getAttrString($this->_attributes) . " >";
         $content .= html_writer::tag('span', '&nbsp;', array('id' => 'colpicked_' . $id, 'tabindex' => '-1',
-                                     'style' => 'background-color:#' . $colour .
-                                     ';cursor:pointer;margin:0px;padding: 0 8px;border:1px solid black'));
-        $content .= html_writer::start_tag('div', array('id' => 'colpick_' . $id,
-                                           'style' => "display:none;position:absolute;z-index:500;",
+                                     'style' => 'background-color: #'.$colour.
+                                     '; cursor: pointer; margin: 0; padding: 0 8px; border: 1px solid black'));
+        $content .= html_writer::start_tag('div', array('id' => 'colpick_'.$id,
+                                           'style' => "display:none; position:absolute; z-index:500;",
                     'class' => 'form-colourpicker defaultsnext'));
         $content .= html_writer::tag('div', '', array('class' => 'admin_colourpicker clearfix'));
         $content .= html_writer::end_tag('div');
