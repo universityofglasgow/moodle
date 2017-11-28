@@ -51,7 +51,10 @@ class attendance_tabs implements renderable {
     const TAB_TEMPORARYUSERS = 6; // Tab for managing temporary users.
     /** Update tab */
     const TAB_UPDATE        = 7;
-
+    /** Warnings tab */
+    const TAB_WARNINGS = 8;
+    /** Absentee tab */
+    const TAB_ABSENTEE      = 9;
     /** @var int current tab */
     public $currenttab;
 
@@ -97,6 +100,12 @@ class attendance_tabs implements renderable {
                             get_string('report', 'attendance'));
         }
 
+        if (has_capability('mod/attendance:viewreports', $context) &&
+            get_config('attendance', 'enablewarnings')) {
+            $toprow[] = new tabobject(self::TAB_ABSENTEE, $this->att->url_absentee()->out(),
+                get_string('absenteereport', 'attendance'));
+        }
+
         if (has_capability('mod/attendance:export', $context)) {
             $toprow[] = new tabobject(self::TAB_EXPORT, $this->att->url_export()->out(),
                             get_string('export', 'attendance'));
@@ -105,6 +114,11 @@ class attendance_tabs implements renderable {
         if (has_capability('mod/attendance:changepreferences', $context)) {
             $toprow[] = new tabobject(self::TAB_PREFERENCES, $this->att->url_preferences()->out(),
                             get_string('statussetsettings', 'attendance'));
+
+            if (get_config('attendance', 'enablewarnings')) {
+                $toprow[] = new tabobject(self::TAB_WARNINGS, $this->att->url_warnings()->out(),
+                    get_string('warnings', 'attendance'));
+            }
         }
         if (has_capability('mod/attendance:managetemporaryusers', $context)) {
             $toprow[] = new tabobject(self::TAB_TEMPORARYUSERS, $this->att->url_managetemp()->out(),
@@ -475,9 +489,12 @@ class attendance_user_data implements renderable {
             $this->summary = array();
             foreach ($this->coursesatts as $atid => $ca) {
                 // Check to make sure the user can view this cm.
-                if (!get_fast_modinfo($ca->courseid)->instances['attendance'][$ca->attid]->uservisible) {
-                    unset($this->courseatts[$atid]);
+                $modinfo = get_fast_modinfo($ca->courseid);
+                if (!$modinfo->instances['attendance'][$ca->attid]->uservisible) {
+                    unset($this->coursesatts[$atid]);
                     continue;
+                } else {
+                    $this->coursesatts[$atid]->cmid = $modinfo->instances['attendance'][$ca->attid]->get_course_module_record()->id;
                 }
                 $this->statuses[$ca->attid] = attendance_get_statuses($ca->attid);
                 $this->summary[$ca->attid] = new mod_attendance_summary($ca->attid, array($userid));
@@ -790,5 +807,63 @@ class url_helpers {
      */
     public static function url_view($att, $params=array()) {
         return $att->url_view($params);
+    }
+}
+
+/**
+ * Data structure representing an attendance password icon.
+ * copied from help_icon class
+ *
+ * @copyright 2017 Dan Marsden
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class attendance_password_icon implements renderable, templatable {
+
+    /**
+     * @var string text to show
+     */
+    public $text;
+
+    /**
+     * @var string Extra descriptive text next to the icon
+     */
+    public $linktext = null;
+
+    /**
+     * Constructor
+     *
+     * @param string $identifier string for help page title,
+     *  string with _help suffix is used for the actual help text.
+     *  string with _link suffix is used to create a link to further info (if it exists)
+     * @param string $component
+     */
+    public function __construct($text, $sessionid) {
+        $this->text  = $text;
+        $this->sessionid = $sessionid;
+    }
+
+    /**
+     * Export this data so it can be used as the context for a mustache template.
+     *
+     * @param renderer_base $output Used to do a final render of any components that need to be rendered for export.
+     * @return array
+     */
+    public function export_for_template(renderer_base $output) {
+
+        $title = get_string('password', 'attendance');
+
+        $data = new stdClass();
+        $data->heading = '';
+        $data->text = $this->text;
+
+        $data->alt = $title;
+        $data->icon = (new pix_icon('key', '', 'attendance'))->export_for_template($output);
+        $data->linktext = '';
+        $data->title = $title;
+        $data->url = (new moodle_url('/mod/attendance/password.php', [
+            'session' => $this->sessionid]))->out(false);
+
+        $data->ltr = !right_to_left();
+        return $data;
     }
 }

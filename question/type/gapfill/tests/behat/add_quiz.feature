@@ -1,4 +1,4 @@
-@mod @mod_quiz
+@mod @mod_quiz @javascript
 
 Feature: Add a quiz
   In order to evaluate students
@@ -22,15 +22,19 @@ Feature: Add a quiz
     And I am on "Course 1" course homepage with editing mode on
     And I add a "Quiz" to section "1" and I fill the form with:
       | Name        | Gapfill single page quiz         |
-      | Description | Test Gapfill with more than one quesiton per page |
+      | Description | Test Gapfill with more than one question per page |
     And I follow "Gapfill single page quiz"
     And I navigate to "Edit settings" in current page administration
     And I expand all fieldsets
     And I set the field "How questions behave" to "Interactive with multiple tries"
-    When I click on "id_generalfeedbackduring" "checkbox"
-    And I press "Save and return to course"
-
+    And I set the field with xpath "//input[@id='id_generalfeedbackduring']" to "1"
+  And I press "Save and return to course"
    
+#############################################################################
+#All questions on a single page. This will check that javascript only works
+#on the current question and is not applied to every question as happened
+#with an early bug
+##############################################################################
 And I add a "Gapfill" question to the "Gapfill single page quiz" quiz with:
       | Question name                      | First question                         |
       | Question text                      | The [cat] sat on the [mat]               |
@@ -58,6 +62,9 @@ And I add a "Gapfill" question to the "Gapfill single page quiz" quiz with:
     And I click on "Submit all and finish" "button" in the "Confirmation" "dialogue"
     And I log out
 
+##########################################################################################
+# One question per page, which can be used to check the status of the question 
+# if you page forward and backwards between pages (though I don't think it does at the moment)
 ##########################################################################################
     When I log in as "teacher1"
     And I am on "Course 1" course homepage with editing mode on
@@ -92,7 +99,7 @@ And I add a "Gapfill" question to the "Gapfill single page quiz" quiz with:
     And I press "Finish attempt ..."
     And I press "Submit all and finish"
 
-  @javascript
+ # @javascript
   Scenario: Add and configure small quiz and perform an attempt as a student with Javascript enabled
     Then I click on "Submit all and finish" "button" in the "Confirmation" "dialogue"
     And I follow "Finish review"

@@ -1,6 +1,25 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-// Written at Louisiana State University
+/**
+ * @package    block_quickmail
+ * @copyright  2008-2017 Louisiana State University
+ * @copyright  2008-2017 Adam Zapletal, Chad Mazilly, Philip Cali, Robert Russo
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 require_once($CFG->libdir . '/formslib.php');
 $PAGE->requires->js('/blocks/quickmail/validation.js');
@@ -116,8 +135,6 @@ class email_form extends moodleform {
 
         $mform->addGroup($links, 'links', '&nbsp;', array(' | '), false);
 
-        $req_img = html_writer::empty_tag('img', array('src' => $OUTPUT->pix_url('req'), 'class' => 'req', 'alt' => ''));
-
         $table = new html_table();
         $table->attributes['class'] = 'emailtable';
 
@@ -210,9 +227,9 @@ class email_form extends moodleform {
         $mform->setType('subject', PARAM_TEXT);
         $mform->addRule('subject', null, 'required');
         $mform->addElement('editor', 'message_editor', quickmail::_s('message'),
-            null, $this->_customdata['editor_options']);
+            $this->_customdata['attributes'], $this->_customdata['editor_options']);
 
-        $options = $this->_customdata['sigs'] + array(-1 => 'No '. quickmail::_s('sig'));
+        $options = $this->_customdata['sigs'] + array(-1 => quickmail::_s('no').' '.quickmail::_s('sig'));
         $mform->addElement('select', 'sigid', quickmail::_s('signature'), $options);
 
         $radio = array(

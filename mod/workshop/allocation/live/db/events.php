@@ -14,13 +14,20 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * Declaration of event observers.
+ *
+ * @copyright 2014-2017 Albert Gasset <albertgasset@fsfe.org>
+ * @license   https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package   workshopallocation_live
+ */
+
 defined('MOODLE_INTERNAL') || die();
 
-$observers = array(
-    array(
-        'eventname'   => '\mod_workshop\event\assessable_uploaded',
-        'includefile' => '/mod/workshop/allocation/live/lib.php',
-        'callback'    => 'workshopallocation_live_assessable_uploaded',
-        'internal'    => true,
-    ),
-);
+$observers = [
+    [
+        'eventname' => '\mod_workshop\event\assessable_uploaded',
+        'callback' => '\workshopallocation_live\observer::assessable_uploaded',
+        'internal' => true,
+    ]
+];

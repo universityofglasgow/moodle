@@ -14,6 +14,16 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * URKUND capabilities.
+ *
+ * @package    plagiarism_urkund
+ * @author     Dan Marsden http://danmarsden.com
+ * @copyright  2017 Dan Marsden
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+
 defined('MOODLE_INTERNAL') || die();
 
 $capabilities = array(
@@ -33,6 +43,14 @@ $capabilities = array(
          'manager' => CAP_ALLOW)
     ),
     'plagiarism/urkund:resetfile' => array(
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_COURSE,
+         'legacy' => array(
+         'editingteacher' => CAP_ALLOW,
+         'teacher' => CAP_ALLOW,
+         'manager' => CAP_ALLOW)
+    ),
+    'plagiarism/urkund:advancedsettings' => array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
          'legacy' => array(

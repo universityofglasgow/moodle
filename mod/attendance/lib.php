@@ -40,8 +40,6 @@ function attendance_supports($feature) {
             return true;
         case FEATURE_GROUPINGS:
             return true;
-        case FEATURE_GROUPMEMBERSONLY:
-            return true;
         case FEATURE_MOD_INTRO:
             return true;
         case FEATURE_BACKUP_MOODLE2:
@@ -72,6 +70,25 @@ function att_add_default_statuses($attid) {
 }
 
 /**
+ * Add default set of warnings to the new attendance.
+ *
+ * @param int $id - id of attendance instance.
+ */
+function attendance_add_default_warnings($id) {
+    global $DB, $CFG;
+    require_once($CFG->dirroot.'/mod/attendance/locallib.php');
+
+    $warnings = $DB->get_recordset('attendance_warning',
+        array('idnumber' => 0), 'id');
+    foreach ($warnings as $n) {
+        $rec = $n;
+        $rec->idnumber = $id;
+        $DB->insert_record('attendance_warning', $rec);
+    }
+    $warnings->close();
+}
+
+/**
  * Add new attendance instance.
  *
  * @param stdClass $attendance
@@ -85,6 +102,8 @@ function attendance_add_instance($attendance) {
     $attendance->id = $DB->insert_record('attendance', $attendance);
 
     att_add_default_statuses($attendance->id);
+
+    attendance_add_default_warnings($attendance->id);
 
     attendance_grade_item_update($attendance);
 
@@ -119,7 +138,8 @@ function attendance_update_instance($attendance) {
  * @return bool
  */
 function attendance_delete_instance($id) {
-    global $DB;
+    global $DB, $CFG;
+    require_once($CFG->dirroot.'/mod/attendance/locallib.php');
 
     if (! $attendance = $DB->get_record('attendance', array('id' => $id))) {
         return false;
@@ -133,6 +153,8 @@ function attendance_delete_instance($id) {
         $DB->delete_records('attendance_sessions', array('attendanceid' => $id));
     }
     $DB->delete_records('attendance_statuses', array('attendanceid' => $id));
+
+    $DB->delete_records('attendance_warning', array('idnumber' => $id));
 
     $DB->delete_records('attendance', array('id' => $id));
 
@@ -190,6 +212,10 @@ function attendance_reset_userdata($data) {
             $DB->delete_records_select('attendance_log', "sessionid $sql", $params);
             list($sql, $params) = $DB->get_in_or_equal($attids);
             $DB->set_field_select('attendance_sessions', 'lasttaken', 0, "attendanceid $sql", $params);
+            if (empty($data->reset_attendance_sessions)) {
+                // If sessions are being retained, clear automarkcompleted value.
+                $DB->set_field_select('attendance_sessions', 'automarkcompleted', 0, "attendanceid $sql", $params);
+            }
 
             $status[] = array(
                 'component' => get_string('modulenameplural', 'attendance'),
@@ -447,6 +473,22 @@ function attendance_print_settings_tabs($selected = 'settings') {
 
     $tabs[] = new tabobject('defaultstatus', $CFG->wwwroot.'/mod/attendance/defaultstatus.php',
         get_string('defaultstatus', 'attendance'), get_string('defaultstatus', 'attendance'), false);
+
+    if (get_config('attendance', 'enablewarnings')) {
+        $tabs[] = new tabobject('defaultwarnings', $CFG->wwwroot . '/mod/attendance/warnings.php',
+            get_string('defaultwarnings', 'attendance'), get_string('defaultwarnings', 'attendance'), false);
+    }
+
+    $tabs[] = new tabobject('coursesummary', $CFG->wwwroot.'/mod/attendance/coursesummary.php',
+        get_string('coursesummary', 'attendance'), get_string('coursesummary', 'attendance'), false);
+
+    if (get_config('attendance', 'enablewarnings')) {
+        $tabs[] = new tabobject('absentee', $CFG->wwwroot . '/mod/attendance/absentee.php',
+            get_string('absenteereport', 'attendance'), get_string('absenteereport', 'attendance'), false);
+    }
+
+    $tabs[] = new tabobject('resetcalendar', $CFG->wwwroot.'/mod/attendance/resetcalendar.php',
+        get_string('resetcalendar', 'attendance'), get_string('resetcalendar', 'attendance'), false);
 
     ob_start();
     print_tabs(array($tabs), $selected);

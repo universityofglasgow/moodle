@@ -14,10 +14,20 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * URKUND upgrade tasks.
+ *
+ * @package    plagiarism_urkund
+ * @author     Dan Marsden http://danmarsden.com
+ * @copyright  2017 Dan Marsden
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * @global moodle_database $DB
+ * Xmldb upgrade api.
+ *
  * @param int $oldversion
  * @return bool
  */
@@ -132,6 +142,54 @@ function xmldb_plagiarism_urkund_upgrade($oldversion) {
 
         // Urkund savepoint reached.
         upgrade_plugin_savepoint(true, 2016061600, 'plagiarism', 'urkund');
+    }
+
+    if ($oldversion < 2017051501) {
+
+        // Set advanceditems setting.
+        if (!$DB->record_exists('plagiarism_urkund_config', array('cm' => 0, 'name' => 'urkund_advanceditems'))) {
+            $advsetting = new stdClass();
+            $advsetting->cm = 0;
+            $advsetting->name = 'urkund_advanceditems';
+            $advsetting->value = 'urkund_receiver,urkund_studentemail,urkund_allowallfile,urkund_selectfiletypes';
+            $DB->insert_record('plagiarism_urkund_config', $advsetting);
+        }
+
+        // Urkund savepoint reached.
+        upgrade_plugin_savepoint(true, 2017051501, 'plagiarism', 'urkund');
+    }
+
+    if ($oldversion < 2017051502) {
+        // Check to see if this has already been completed.
+        $sql = "cm = 0 AND (name LIKE '%_assign' OR name LIKE '%_forum' OR name LIKE '%_workshop')";
+        if (!$DB->record_exists_select('plagiarism_urkund_config', $sql)) {
+            $defaults = $DB->get_records('plagiarism_urkund_config', array('cm' => 0));
+
+            // Store list of id's to delete.
+            $defaultsdelete = array();
+            foreach ($defaults as $default) {
+                $defaultsdelete[] = $default->id;
+            }
+
+            // Set the existing default as the default for assign/forum/workshop.
+            $supportedmodules = array('assign', 'forum', 'workshop');
+            foreach ($supportedmodules as $sm) {
+                foreach ($defaults as $default) {
+                    $newitem = clone $default;
+                    unset($newitem->id);
+                    $newitem->name .= '_'.$sm;
+                    $DB->insert_record('plagiarism_urkund_config', $newitem);
+                }
+            }
+
+            // Delete old records.
+            foreach ($defaults as $default) {
+                $DB->delete_records_list('plagiarism_urkund_config', 'id', $defaultsdelete);
+            }
+        }
+
+        // Urkund savepoint reached.
+        upgrade_plugin_savepoint(true, 2017051502, 'plagiarism', 'urkund');
     }
 
     return true;

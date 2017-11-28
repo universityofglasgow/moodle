@@ -7,14 +7,16 @@ cache:
     - $HOME/.composer/cache
 
 php: 
- - 5.6
- - 7.0
+# - 5.6
+# - 7.0
+ - 7.1
 
 addons:
+  firefox: "47.0.1"
   postgresql: "9.3"
 
 env: 
-  - MOODLE_BRANCH=master DB=mysqli IGNORE_PATHS=jquery
+  - MOODLE_BRANCH=MOODLE_33_STABLE DB=mysqli IGNORE_PATHS=jquery
 #  - MOODLE_BRANCH=master DB=pgsql IGNORE_PATHS=jquery
 
   
@@ -32,11 +34,12 @@ install:
 script:
   - moodle-plugin-ci phplint
   - moodle-plugin-ci csslint
+ # - moodle-plugin-ci stylelint
   - moodle-plugin-ci jshint
   - moodle-plugin-ci phpcpd
   - moodle-plugin-ci phpmd
   - moodle-plugin-ci codechecker
-  - moodle-plugin-ci shifter
+#  - moodle-plugin-ci shifter
   - moodle-plugin-ci validate
   - moodle-plugin-ci phpunit
   - moodle-plugin-ci behat

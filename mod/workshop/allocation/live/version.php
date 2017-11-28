@@ -14,10 +14,17 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * Version information.
+ *
+ * @copyright 2014-2017 Albert Gasset <albertgasset@fsfe.org>
+ * @license   https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'workshopallocation_live';
-$plugin->version = 2016042200;
-$plugin->requires = 2014051200;
+$plugin->version = 2017112100;
+$plugin->requires = 2016052300;
 $plugin->maturity = MATURITY_STABLE;
-$plugin->release = '1.1';
+$plugin->release = '1.2';

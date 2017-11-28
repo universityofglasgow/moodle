@@ -1,7 +1,26 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
 //
-// Written at Louisiana State University
-// 
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * @package    block_quickmail
+ * @copyright  2008-2017 Louisiana State University
+ * @copyright  2008-2017 Adam Zapletal, Chad Mazilly, Philip Cali, Robert Russo
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 abstract class quickmail {
 
     /**
@@ -14,7 +33,7 @@ abstract class quickmail {
     }
 
     static function format_time($time) {
-        return userdate($time, '%A, %d %B %Y, %I:%M %P');
+        return userdate($time, '%m-%d-%Y, %I:%M %p');
     }
 
     static function cleanup($table, $contextid, $itemid) {
@@ -92,10 +111,8 @@ abstract class quickmail {
             if (empty($text)) {
                 $text = $filename;
             }
-            $url = new moodle_url('/pluginfile.php', array(
-                'forcedownload' => 1,
-                'file' => "/$base_url/$filename"
-            ));
+
+            $url = moodle_url::make_file_url('/pluginfile.php', "$base_url/$filename", true);
 
             //to prevent double encoding of ampersands in urls for our plaintext users,
             //we use the out() method of moodle_url
@@ -414,9 +431,10 @@ abstract class quickmail {
                $get_name_string = get_all_user_name_fields(true, 'u');
         }
         $sql = "SELECT DISTINCT u.id, " . $get_name_string . ",
-        u.email, u.mailformat, u.suspended, u.maildisplay
+        u.email, up.value, u.mailformat, u.suspended, u.maildisplay
         FROM {role_assignments} ra
         JOIN {user} u ON u.id = ra.userid
+        LEFT JOIN {user_preferences} up on u.id = up.userid AND up.name = 'message_processor_email_email'
         JOIN {role} r ON ra.roleid = r.id
         WHERE (ra.contextid = ? ) ";
         
@@ -444,10 +462,13 @@ abstract class quickmail {
                $get_name_string = get_all_user_name_fields(true, 'u');
         }
 
-        $sql = "SELECT u.id, " . $get_name_string . " , u.email, u.mailformat, u.suspended, u.maildisplay, ue.status  
+        $sql = "SELECT u.id, " . $get_name_string . " , u.email, up.value, u.username, u.mailformat, u.suspended, u.maildisplay, ue.status  
             FROM {user} u  
                 JOIN {user_enrolments} ue                 
-                    ON u.id = ue.userid 
+                    ON u.id = ue.userid
+                LEFT JOIN {user_preferences} up 
+                    ON u.id = up.userid 
+                    AND up.name = 'message_processor_email_email' 
                 JOIN {enrol} en
                     ON en.id = ue.enrolid                     
                 WHERE en.courseid = ?
@@ -504,8 +525,7 @@ function block_quickmail_pluginfile($course, $record, $context, $filearea, $args
     $fs = get_file_storage();
     global $DB, $CFG;
 
-    if (!empty($CFG->block_quickmail_downloads)) {
-
+    if (!empty($CFG->block_quickmail_downloads) && $filearea != 'log') {
         require_course_login($course, true, $record);
     }
 

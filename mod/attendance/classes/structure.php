@@ -70,6 +70,12 @@ class mod_attendance_structure {
     /** @var string subnets (IP range) for student self selection. */
     public $subnet;
 
+    /** @var string subnets (IP range) for student self selection. */
+    public $automark;
+
+    /** @var boolean flag set when automarking is complete. */
+    public $automarkcompleted;
+
     /** @var int Define if session details should be shown in reports */
     public $showsessiondetails;
 
@@ -363,6 +369,16 @@ class mod_attendance_structure {
     }
 
     /**
+     * Get url for report.
+     * @param array $params
+     * @return moodle_url of report.php for attendance instance
+     */
+    public function url_absentee($params=array()) {
+        $params = array_merge(array('id' => $this->cm->id), $params);
+        return new moodle_url('/mod/attendance/absentee.php', $params);
+    }
+
+    /**
      * Get url for export.
      *
      * @return moodle_url of export.php for attendance instance
@@ -384,6 +400,20 @@ class mod_attendance_structure {
         }
         $params = array_merge(array('id' => $this->cm->id), $params);
         return new moodle_url('/mod/attendance/preferences.php', $params);
+    }
+
+    /**
+     * Get preferences url
+     * @param array $params
+     * @return moodle_url of attsettings.php for attendance instance
+     */
+    public function url_warnings($params=array()) {
+        // Add the statusset params.
+        if (isset($this->pageparams->statusset) && !isset($params['statusset'])) {
+            $params['statusset'] = $this->pageparams->statusset;
+        }
+        $params = array_merge(array('id' => $this->cm->id), $params);
+        return new moodle_url('/mod/attendance/warnings.php', $params);
     }
 
     /**
@@ -416,6 +446,10 @@ class mod_attendance_structure {
 
         foreach ($sessions as $sess) {
             $sess->attendanceid = $this->id;
+            $sess->automarkcompleted = 0;
+            if (!isset($sess->automark)) {
+                $sess->automark = 0;
+            }
 
             $sess->id = $DB->insert_record('attendance_sessions', $sess);
             $description = file_save_draft_area_files($sess->descriptionitemid,
@@ -483,25 +517,39 @@ class mod_attendance_structure {
         $sess->studentscanmark = 0;
         $sess->studentpassword = '';
         $sess->subnet = '';
+        $sess->automark = 0;
+        $sess->automarkcompleted = 0;
 
         if (!empty(get_config('attendance', 'studentscanmark')) &&
             !empty($formdata->studentscanmark)) {
             $sess->studentscanmark = $formdata->studentscanmark;
             $sess->studentpassword = $formdata->studentpassword;
-            $sess->subnet = $formdata->subnet;
+            if (!empty($formdata->usedefaultsubnet)) {
+                $sess->subnet = $this->subnet;
+            } else {
+                $sess->subnet = $formdata->subnet;
+            }
+
+            if (!empty($formdata->automark)) {
+                $sess->automark = $formdata->automark;
+            }
         }
 
         $sess->timemodified = time();
         $DB->update_record('attendance_sessions', $sess);
-
-        attendance_update_calendar_event($sess->caleventid, $sess->duration, $sess->sessdate);
+        if (empty($sess->caleventid)) {
+             // This shouldn't really happen, but just in case to prevent fatal error.
+            attendance_create_calendar_event($sess);
+        } else {
+            attendance_update_calendar_event($sess->caleventid, $sess->duration, $sess->sessdate);
+        }
 
         $info = construct_session_full_date_time($sess->sessdate, $sess->duration);
         $event = \mod_attendance\event\session_updated::create(array(
             'objectid' => $this->id,
             'context' => $this->context,
             'other' => array('info' => $info, 'sessionid' => $sessionid,
-                             'action' => mod_attendance_sessions_page_params::ACTION_UPDATE)));
+                'action' => mod_attendance_sessions_page_params::ACTION_UPDATE)));
         $event->add_record_snapshot('course_modules', $this->cm);
         $event->add_record_snapshot('attendance_sessions', $sess);
         $event->trigger();
@@ -599,14 +647,21 @@ class mod_attendance_structure {
                 $sesslog[$sid]->takenby = $USER->id;
             }
         }
-
+        // Get existing session log.
         $dbsesslog = $this->get_session_log($this->pageparams->sessionid);
         foreach ($sesslog as $log) {
             // Don't save a record if no statusid or remark.
             if (!empty($log->statusid) || !empty($log->remarks)) {
                 if (array_key_exists($log->studentid, $dbsesslog)) {
-                    $log->id = $dbsesslog[$log->studentid]->id;
-                    $DB->update_record('attendance_log', $log);
+                    // Check if anything important has changed before updating record.
+                    // Don't update timetaken/takenby records if nothing has changed.
+                    if ($dbsesslog[$log->studentid]->remarks <> $log->remarks ||
+                        $dbsesslog[$log->studentid]->statusid <> $log->statusid ||
+                        $dbsesslog[$log->studentid]->statusset <> $log->statusset) {
+
+                        $log->id = $dbsesslog[$log->studentid]->id;
+                        $DB->update_record('attendance_log', $log);
+                    }
                 } else {
                     $DB->insert_record('attendance_log', $log, false);
                 }
@@ -616,6 +671,7 @@ class mod_attendance_structure {
         $session = $this->get_session_info($this->pageparams->sessionid);
         $session->lasttaken = $now;
         $session->lasttakenby = $USER->id;
+
         $DB->update_record('attendance_sessions', $session);
 
         if ($this->grade != 0) {
@@ -687,7 +743,7 @@ class mod_attendance_structure {
 
         if ($page) {
             $usersperpage = $this->pageparams->perpage;
-            if (!empty($CFG->enablegroupmembersonly) and $this->cm->groupmembersonly) {
+            if (!empty($this->cm->groupingid)) {
                 $startusers = ($page - 1) * $usersperpage;
                 if ($groupid == 0) {
                     $groups = array_keys(groups_get_all_groups($this->cm->course, 0, $this->cm->groupingid, 'g.id'));
@@ -704,7 +760,7 @@ class mod_attendance_structure {
                     $orderby, $startusers, $usersperpage);
             }
         } else {
-            if (!empty($CFG->enablegroupmembersonly) and $this->cm->groupmembersonly) {
+            if (!empty($this->cm->groupingid)) {
                 if ($groupid == 0) {
                     $groups = array_keys(groups_get_all_groups($this->cm->course, 0, $this->cm->groupingid, 'g.id'));
                 } else {
@@ -751,7 +807,7 @@ class mod_attendance_structure {
         // Add the 'temporary' users to this list.
         $tempusers = $DB->get_records('attendance_tempusers', array('courseid' => $this->course->id));
         foreach ($tempusers as $tempuser) {
-            $users[] = self::tempuser_to_user($tempuser);
+            $users[$tempuser->studentid] = self::tempuser_to_user($tempuser);
         }
 
         return $users;
@@ -919,7 +975,7 @@ class mod_attendance_structure {
     public function get_session_log($sessionid) {
         global $DB;
 
-        return $DB->get_records('attendance_log', array('sessionid' => $sessionid), '', 'studentid,statusid,remarks,id');
+        return $DB->get_records('attendance_log', array('sessionid' => $sessionid), '', 'studentid,statusid,remarks,id,statusset');
     }
 
     /**
@@ -1138,5 +1194,42 @@ class mod_attendance_structure {
         }
 
         return null;
+    }
+
+    /**
+     * Gets the status to use when auto-marking.
+     *
+     * @param int $time the time the user first accessed the course.
+     * @param int $sessionid the related sessionid to check.
+     * @return int the statusid to assign to this user.
+     */
+    public function get_automark_status($time, $sessionid) {
+        $statuses = $this->get_statuses();
+        // Statuses are returned highest grade first, find the first high grade we can assign to this user.
+
+        // Get status to use when unmarked.
+        $session = $this->sessioninfo[$sessionid];
+        $duration = $session->duration;
+        if (empty($duration)) {
+            $duration = get_config('attendance', 'studentscanmarksessiontimeend') * 60;
+        }
+        if ($time > $session->sessdate + $duration) {
+            // This session closed after the users access - use the unmarked state.
+            foreach ($statuses as $status) {
+                if (!empty($status->setunmarked)) {
+                    return $status->id;
+                }
+            }
+        } else {
+            foreach ($statuses as $status) {
+                if ($status->studentavailability !== '0' &&
+                    $this->sessioninfo[$sessionid]->sessdate + ($status->studentavailability * 60) > $time) {
+
+                    // Found first status we could set.
+                    return $status->id;
+                }
+            }
+        }
+        return;
     }
 }

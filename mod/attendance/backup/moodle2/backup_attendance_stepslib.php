@@ -44,17 +44,21 @@ class backup_attendance_activity_structure_step extends backup_activity_structur
 
         // XML nodes declaration - non-user data.
         $attendance = new backup_nested_element('attendance', array('id'), array(
-            'name', 'intro', 'introformat', 'grade', 'showsessiondetails', 'sessiondetailspos'));
+            'name', 'intro', 'introformat', 'grade', 'showsessiondetails', 'sessiondetailspos', 'subnet'));
 
         $statuses = new backup_nested_element('statuses');
         $status  = new backup_nested_element('status', array('id'), array(
-            'acronym', 'description', 'grade', 'studentavailability', 'visible', 'deleted', 'setnumber'));
+            'acronym', 'description', 'grade', 'studentavailability', 'setunmarked', 'visible', 'deleted', 'setnumber'));
+
+        $warnings = new backup_nested_element('warnings');
+        $warning  = new backup_nested_element('warning', array('id'), array('warningpercent', 'warnafter',
+            'maxwarn', 'emailuser', 'emailsubject', 'emailcontent', 'emailcontentformat', 'thirdpartyemails'));
 
         $sessions = new backup_nested_element('sessions');
         $session  = new backup_nested_element('session', array('id'), array(
             'groupid', 'sessdate', 'duration', 'lasttaken', 'lasttakenby',
             'timemodified', 'description', 'descriptionformat', 'studentscanmark', 'studentpassword',
-            'subnet', 'statusset', 'caleventid'));
+            'subnet', 'automark', 'automarkcompleted', 'statusset', 'caleventid'));
 
         // XML nodes declaration - user data.
         $logs = new backup_nested_element('logs');
@@ -64,6 +68,9 @@ class backup_attendance_activity_structure_step extends backup_activity_structur
         // Build the tree in the order needed for restore.
         $attendance->add_child($statuses);
         $statuses->add_child($status);
+
+        $attendance->add_child($warnings);
+        $warnings->add_child($warning);
 
         $attendance->add_child($sessions);
         $sessions->add_child($session);
@@ -76,6 +83,9 @@ class backup_attendance_activity_structure_step extends backup_activity_structur
         $attendance->set_source_table('attendance', array('id' => backup::VAR_ACTIVITYID));
 
         $status->set_source_table('attendance_statuses', array('attendanceid' => backup::VAR_PARENTID));
+
+        $warning->set_source_table('attendance_warning',
+            array('idnumber' => backup::VAR_PARENTID));
 
         $session->set_source_table('attendance_sessions', array('attendanceid' => backup::VAR_PARENTID));
 

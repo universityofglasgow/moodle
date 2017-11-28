@@ -19,6 +19,31 @@ ns.Editor = function (library, defaultParams, replace, iframeLoaded) {
   // Library may return "0", make sure this doesn't return true in checks
   library = library && library != 0 ? library : '';
 
+  /**
+   * Checks if iframe needs resizing, and then resize it.
+   *
+   * @private
+   */
+  var resize = function (iframe) {
+    if (iframe.clientHeight === iframe.contentDocument.body.scrollHeight &&
+      iframe.contentDocument.body.scrollHeight === iframe.contentWindow.document.body.clientHeight) {
+      return; // Do not resize unless page and scrolling differs
+    }
+
+    // Retain parent size to avoid jumping/scrolling
+    var parentHeight = iframe.parentElement.style.height;
+    iframe.parentElement.style.height = iframe.parentElement.clientHeight + 'px';
+
+    // Reset iframe height, in case content has shrinked.
+    iframe.style.height = iframe.contentWindow.document.body.clientHeight + 'px';
+
+    // Resize iframe so all content is visible. Use scrollHeight to make sure we get everything
+    iframe.style.height = iframe.contentDocument.body.scrollHeight + 'px';
+
+    // Free parent
+    iframe.parentElement.style.height = parentHeight;
+  };
+
   // Create iframe and replace the given element with it
   var iframe = ns.$('<iframe/>', {
     'css': {
@@ -33,6 +58,10 @@ ns.Editor = function (library, defaultParams, replace, iframeLoaded) {
     'class': 'h5p-editor-iframe',
     'frameBorder': '0'
   }).replaceAll(replace).load(function () {
+
+    // "this" is the iframe DOM element
+    var loadedIframe = this;
+
     if (iframeLoaded) {
       iframeLoaded.call(this.contentWindow);
     }
@@ -54,7 +83,7 @@ ns.Editor = function (library, defaultParams, replace, iframeLoaded) {
 
       // Resize iframe when selector resizes
       self.selector.on('resized', function () {
-        resize();
+        resize(loadedIframe);
       });
 
       /**
@@ -65,7 +94,7 @@ ns.Editor = function (library, defaultParams, replace, iframeLoaded) {
        */
       var relayEvent = function (event) {
         H5P.externalDispatcher.trigger(event);
-      }
+      };
       self.selector.on('editorload', relayEvent);
       self.selector.on('editorloaded', relayEvent);
 
@@ -82,7 +111,7 @@ ns.Editor = function (library, defaultParams, replace, iframeLoaded) {
       var limitedResize = function (mutations) {
         if (!running) {
           running = setTimeout(function () {
-            resize();
+            resize(loadedIframe);
             running = null;
           }, 40); // 25 fps cap
         }
@@ -98,12 +127,12 @@ ns.Editor = function (library, defaultParams, replace, iframeLoaded) {
       });
 
       H5P.$window.resize(limitedResize);
-      resize();
+      resize(loadedIframe);
     }
     else {
       // Use an interval for resizing the iframe
       (function resizeInterval() {
-        resize();
+        resize(loadedIframe);
         setTimeout(resizeInterval, 40); // No more than 25 times per second
       })();
     }
@@ -119,31 +148,6 @@ ns.Editor = function (library, defaultParams, replace, iframeLoaded) {
     '</body></html>');
   iframe.contentDocument.close();
   iframe.contentDocument.documentElement.style.overflow = 'hidden';
-
-  /**
-   * Checks if iframe needs resizing, and then resize it.
-   *
-   * @private
-   */
-  var resize = function () {
-    if (iframe.clientHeight === iframe.contentDocument.body.scrollHeight &&
-      iframe.contentDocument.body.scrollHeight === iframe.contentWindow.document.body.clientHeight) {
-      return; // Do not resize unless page and scrolling differs
-    }
-
-    // Retain parent size to avoid jumping/scrolling
-    var parentHeight = iframe.parentElement.style.height;
-    iframe.parentElement.style.height = iframe.parentElement.clientHeight + 'px';
-
-    // Reset iframe height, in case content has shrinked.
-    iframe.style.height = iframe.contentWindow.document.body.clientHeight + 'px';
-
-    // Resize iframe so all content is visible. Use scrollHeight to make sure we get everything
-    iframe.style.height = iframe.contentDocument.body.scrollHeight + 'px';
-
-    // Free parent
-    iframe.parentElement.style.height = parentHeight;
-  };
 };
 
 /**
@@ -219,7 +223,7 @@ ns.t = function (library, key, vars) {
 
   // Replace placeholder with variables.
   for (var placeholder in vars) {
-    if (!vars[placeholder]) {
+    if (vars[placeholder] === undefined) {
       continue;
     }
     translation = translation.replace(placeholder, vars[placeholder]);

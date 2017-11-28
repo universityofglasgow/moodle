@@ -1,3 +1,12 @@
+## 3.3.3 ##
+
+* All javascript changed from YUI to jquery amd modules
+* Rendering now using mustache templates
+* Course overviews displayed by clicking icon 
+* Favourites tab added
+* Limit on courses displayed and child course display dropped.
+* print_overview() still in use (for now)
+
 ## 3.3.1 ##
 
 * Debugging messages raised by using deprecated `print_overview()` are not

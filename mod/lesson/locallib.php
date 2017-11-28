@@ -4070,7 +4070,11 @@ abstract class lesson_page extends lesson_base {
                     if ($qattempts == 1) {
                         $result->feedback = $OUTPUT->box(get_string("firstwrong", "lesson"), 'feedback');
                     } else {
-                        $result->feedback = $OUTPUT->box(get_string("secondpluswrong", "lesson"), 'feedback');
+                        if (!$result->maxattemptsreached) {
+                            $result->feedback = $OUTPUT->box(get_string("secondpluswrong", "lesson"), 'feedback');
+                        } else {
+                            $result->feedback = $OUTPUT->box(get_string("finalwrong", "lesson"), 'feedback');
+                        }
                     }
                 } else {
                     $result->feedback = '';
@@ -4089,13 +4093,8 @@ abstract class lesson_page extends lesson_base {
 
                 $result->feedback .= $OUTPUT->box(format_text($this->get_contents(), $this->properties->contentsformat, $options),
                         'generalbox boxaligncenter');
-                if (isset($result->studentanswerformat)) {
-                    // This is the student's answer so it should be cleaned.
-                    $studentanswer = format_text($result->studentanswer, $result->studentanswerformat,
+                $studentanswer = format_text($result->studentanswer, $result->studentanswerformat,
                             array('context' => $context, 'para' => true));
-                } else {
-                    $studentanswer = format_string($result->studentanswer);
-                }
                 $result->feedback .= '<div class="correctanswer generalbox"><em>'
                         . get_string("youranswer", "lesson").'</em> : ' . $studentanswer;
                 if (isset($result->responseformat)) {
@@ -4474,6 +4473,7 @@ abstract class lesson_page extends lesson_base {
         $result->response        = '';
         $result->newpageid       = 0;       // stay on the page
         $result->studentanswer   = '';      // use this to store student's answer(s) in order to display it on feedback page
+        $result->studentanswerformat = FORMAT_MOODLE;
         $result->userresponse    = null;
         $result->feedback        = '';
         $result->nodefaultresponse  = false; // Flag for redirecting when default feedback is turned off

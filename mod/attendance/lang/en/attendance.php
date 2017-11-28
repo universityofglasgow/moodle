@@ -22,11 +22,8 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['attendance:addinstance'] = 'Add a new attendance activity';
 $string['Aacronym'] = 'A';
-$string['adduser'] = 'Add user';
 $string['Afull'] = 'Absent';
-$string['allsessions'] = 'All sessions';
 $string['Eacronym'] = 'E';
 $string['Efull'] = 'Excused';
 $string['Lacronym'] = 'L';
@@ -34,31 +31,49 @@ $string['Lfull'] = 'Late';
 $string['Pacronym'] = 'P';
 $string['Pfull'] = 'Present';
 $string['acronym'] = 'Acronym';
+$string['absenteereport'] = 'Absentee report';
 $string['add'] = 'Add';
 $string['addmultiplesessions'] = 'Multiple sessions';
+$string['addwarning'] = 'Add warning';
 $string['addsession'] = 'Add session';
-$string['allcourses'] = 'All courses';
+$string['adduser'] = 'Add user';
 $string['all'] = 'All';
+$string['allcourses'] = 'All courses';
 $string['allpast'] = 'All past';
-$string['attendancedata'] = 'Attendance data';
-$string['attendanceforthecourse'] = 'Attendance for the course';
-$string['attendancegrade'] = 'Attendance grade';
-$string['attendancenotstarted'] = 'Attendance has not started yet for this course';
-$string['attendancepercent'] = 'Attendance percent';
-$string['attendancereport'] = 'Attendance report';
-$string['attendancesuccess'] = 'Attendance has been successfully taken';
-$string['attendanceupdated'] = 'Attendance successfully updated';
+$string['allsessions'] = 'All sessions';
+$string['attendance:addinstance'] = 'Add a new attendance activity';
 $string['attendance:canbelisted'] = 'Appears in the roster';
-$string['attendance:changepreferences'] = 'Changing Preferences';
 $string['attendance:changeattendances'] = 'Changing Attendances';
+$string['attendance:changepreferences'] = 'Changing Preferences';
 $string['attendance:export'] = 'Export Reports';
 $string['attendance:manageattendances'] = 'Manage Attendances';
 $string['attendance:managetemporaryusers'] = 'Manage temporary users';
 $string['attendance:takeattendances'] = 'Taking Attendances';
 $string['attendance:view'] = 'Viewing Attendances';
 $string['attendance:viewreports'] = 'Viewing Reports';
+$string['attendance:viewsummaryreports'] = 'View course summary reports';
+$string['attendance:warningemails'] = 'Can be subscribed to emails with absentee users';
+$string['attendance_already_submitted'] = 'You may not self register attendance that has already been set.';
+$string['attendancedata'] = 'Attendance data';
+$string['attendanceforthecourse'] = 'Attendance for the course';
+$string['attendancegrade'] = 'Attendance grade';
+$string['attendancenotset'] = 'You must set your attendance';
+$string['attendancenotstarted'] = 'Attendance has not started yet for this course';
+$string['attendancepercent'] = 'Attendance percent';
+$string['attendancereport'] = 'Attendance report';
+$string['attendancesuccess'] = 'Attendance has been successfully taken';
+$string['attendanceupdated'] = 'Attendance successfully updated';
 $string['attforblockdirstillexists'] = 'old mod/attforblock directory still exists - you must delete this directory on your server before running this upgrade.';
 $string['attrecords'] = 'Attendances records';
+$string['automark'] = 'Automatic marking';
+$string['automarkall'] = 'Yes';
+$string['automarkclose'] = 'Set unmarked at end of session';
+$string['automark_help'] = 'Allows marking to be completed automatically.
+If "Yes" students will be automatically marked depending on their first access to the course.
+If "Set unmarked at end of session" any students who have not marked their attendance will be set to the unmarked status selected.';
+$string['automarktask'] = 'Check for attendance sessions that require auto marking';
+$string['autorecorded'] = 'system auto recorded';
+$string['averageattendance'] = 'Average attendance';
 $string['calclose'] = 'Close';
 $string['caleventcreated'] = 'Calendar event for session successfully created';
 $string['caleventdeleted'] = 'Calendar event for session successfully deleted';
@@ -67,6 +82,7 @@ $string['calshow'] = 'Choose date';
 $string['caltoday'] = 'Today';
 $string['calweekdays'] = 'Su,Mo,Tu,We,Th,Fr,Sa';
 $string['cannottakeforgroup'] = 'You can\'t take attendance for group "{$a}"';
+$string['categoryreport'] = 'Course category report';
 $string['changeattendance'] = 'Change attendance';
 $string['changeduration'] = 'Change duration';
 $string['changesession'] = 'Change session';
@@ -75,9 +91,11 @@ $string['column'] = 'column';
 $string['columns'] = 'columns';
 $string['commonsession'] = 'All students';
 $string['commonsessions'] = 'All students';
+$string['confirmdeletehiddensessions'] = 'Are you sure you want to delete {$a->count} sessions scheduled before the course start date ({$a->date})?';
 $string['confirmdeleteuser'] = 'Are you sure you want to delete user \'{$a->fullname}\' ({$a->email})?<br/>All of their attendance records will be permanently deleted.';
-$string['countofselected'] = 'Count of selected';
 $string['copyfrom'] = 'Copy attendance data from';
+$string['countofselected'] = 'Count of selected';
+$string['coursesummary'] = 'Course summary report';
 $string['createmultiplesessions'] = 'Create multiple sessions';
 $string['createmultiplesessions_help'] = 'This function allows you to create multiple sessions in one simple step.
 The sessions begin on the date of the base session and continue until the \'repeat until\' date.
@@ -88,9 +106,24 @@ The sessions begin on the date of the base session and continue until the \'repe
 ';
 $string['createonesession'] = 'Create one session for the course';
 $string['days'] = 'Days';
-$string['defaults'] = 'Defaults';
 $string['defaultdisplaymode'] = 'Default display mode';
+$string['defaultwarnings'] = 'Default warning set';
+$string['defaultwarningsettings'] = 'Default warning settings';
+$string['defaultwarningsettings_help'] = 'These settings define the defaults for all new warnings';
+$string['defaults'] = 'Defaults';
+$string['defaultsessionsettings'] = 'Default session settings';
+$string['defaultsessionsettings_help'] = 'These settings define the defaults for all new sessions';
+$string['defaultsettings'] = 'Default attendance settings';
+$string['defaultsettings_help'] = 'These settings define the defaults for all new attendances';
+$string['defaultstatus'] = 'Default status set';
+$string['defaultsubnet'] = 'Default network address';
+$string['defaultsubnet_help'] = 'Attendance recording may be restricted to particular subnets by specifying a comma-separated list of partial or full IP addresses. This is the default value used when creating new sessions.';
+$string['defaultview'] = 'Default view on login';
+$string['defaultview_desc'] = 'This is the default view shown to teachers on first login.';
 $string['delete'] = 'Delete';
+$string['deletewarningconfirm'] = 'Are you sure you want to delete this warning?';
+$string['deletedgroup'] = 'The group associated with this session has been deleted';
+$string['deletehiddensessions'] = 'Delete all hidden sessions';
 $string['deletelogs'] = 'Delete attendance data';
 $string['deleteselected'] = 'Delete selected';
 $string['deletesession'] = 'Delete session';
@@ -101,23 +134,66 @@ $string['deletingstatus'] = 'Deleting status for the course';
 $string['description'] = 'Description';
 $string['display'] = 'Display';
 $string['displaymode'] = 'Display mode';
+$string['donotusepaging'] = 'Do not use paging';
 $string['downloadexcel'] = 'Download in Excel format';
 $string['downloadooo'] = 'Download in OpenOffice format';
 $string['downloadtext'] = 'Download in text format';
-$string['donotusepaging'] = 'Do not use paging';
 $string['duration'] = 'Duration';
 $string['editsession'] = 'Edit Session';
+$string['edituser'] = 'Edit user';
+$string['emailcontent_default'] = 'Hi %userfirstname%,
+Your attendance in %coursename% %attendancename% has dropped below %warningpercent% and is currently %percent% - we hope you are ok!
+
+To get the most out of this course you should improve your attendance, please get in touch if you require any further support.';
+$string['emailcontent'] = 'Email content';
+$string['emailcontent_help'] = 'When a warning is sent to a student, it takes the email content from this field. The following wildcards can be used:
+<ul>
+<li>%coursename%</li>
+<li>%userfirstname%</li>
+<li>%userlastname%</li>
+<li>%userid%</li>
+<li>%warningpercent%</li>
+<li>%attendancename%</li>
+<li>%cmid%</li>
+<li>%numtakensessions%</li>
+<li>%points%</li>
+<li>%maxpoints%</li>
+<li>%percent%</li>
+</ul>';
+
+$string['emailsubject'] = 'Email subject';
+$string['emailsubject_help'] = 'When a warning is sent to a student, it takes the email subject from this field.';
+$string['emailsubject_default'] = 'Attendance warning';
+$string['emailuser'] = 'Email user';
+$string['emailuser_help'] = 'If checked, a warning will be sent to the student.';
 $string['emptyacronym'] = 'Empty acronyms are not allowed. Status record not updated.';
 $string['emptydescription'] = 'Empty descriptions are not allowed. Status record not updated.';
-$string['edituser'] = 'Edit user';
-$string['endtime'] = 'Session end time';
+$string['enablecalendar'] = 'Create calendar events';
+$string['enablecalendar_desc'] = 'If enabled, a calendar event will be created for each attendance session. After changing this setting you should run the reset calendar report.';
+$string['enablewarnings'] = 'Enable warnings';
+$string['enablewarnings_desc'] = 'This allows a warning set to be defined for an attendance and email notifications to users when attendance drops below the configured threshold. <br/><strong>WARNING: This is a new feature and has not been tested extensively. Please use at your own-risk and provide feeback in the moodle forums if you find it works well.</strong>';
 $string['endofperiod'] = 'End of period';
+$string['endtime'] = 'Session end time';
 $string['enrolmentend'] = 'User enrolment ends {$a}';
 $string['enrolmentstart'] = 'User enrolment starts {$a}';
 $string['enrolmentsuspended'] = 'Enrolment suspended';
 $string['errorgroupsnotselected'] = 'Select one or more groups';
 $string['errorinaddingsession'] = 'Error in adding session';
 $string['erroringeneratingsessions'] = 'Error in generating sessions ';
+$string['eventdurationupdated'] = 'Session duration updated';
+$string['eventreportviewed'] = 'Attendance report viewed';
+$string['eventscreated'] = 'Calendar events created';
+$string['eventsdeleted'] = 'Calendar events deleted';
+$string['eventsessionadded'] = 'Session added';
+$string['eventsessiondeleted'] = 'Session deleted';
+$string['eventsessionupdated'] = 'Session updated';
+$string['eventstatusadded'] = 'Status added';
+$string['eventstatusupdated'] = 'Status updated';
+$string['eventtaken'] = 'Attendance taken';
+$string['eventtakenbystudent'] = 'Attendance taken by student';
+$string['export'] = 'Export';
+$string['extrarestrictions'] = 'Extra restrictions';
+$string['from'] = 'from:';
 $string['gradebookexplanation'] = 'Grade in gradebook';
 $string['gradebookexplanation_help'] = 'The Attendance module displays your current attendance grade based on the number of points you have earned to date and the number of points that could have been earned to date; it does not include class periods in the future. In the gradebook, your attendance grade is based on your current attendance percentage and the number of points that can be earned over the entire duration of the course, including future class periods. As such, your attendance grades displayed in the Attendance module and in the gradebook may not be the same number of points but they are the same percentage.
 
@@ -128,6 +204,7 @@ $string['hiddensessions'] = 'Hidden sessions';
 $string['hiddensessions_help'] = 'Sessions are hidden if they are scheduled before the course start date.
 
 You can use this feature to hide older sessions instead of deleting them. Only visible sessions will appear in the Gradebook.';
+$string['hiddensessionsdeleted'] = 'All hidden sessions were delete';
 $string['hidensessiondetails'] = 'Hide session details';
 $string['identifyby'] = 'Identify student by';
 $string['includeall'] = 'Select all sessions';
@@ -135,17 +212,23 @@ $string['includenottaken'] = 'Include not taken sessions';
 $string['includeremarks'] = 'Include remarks';
 $string['incorrectpassword'] = 'You have entered an incorrect password and your attendance has not been recorded, please enter the correct password.';
 $string['indetail'] = 'In detail...';
-$string['invalidsessionenddate'] = 'This date can not be earlier than the session date';
 $string['invalidaction'] = 'You must select an action';
+$string['invalidemails'] = 'You must specify addresses of existing user accounts, could not find: {$a}';
+$string['invalidsessionenddate'] = 'This date can not be earlier than the session date';
+$string['invalidsessionendtime'] = 'The end time must be greater than start time';
+$string['invalidstatus'] = 'You have selected an invalid status, please try again';
 $string['jumpto'] = 'Jump to';
+$string['lowgrade'] = 'Low grade';
 $string['maxpossible'] = 'Maximum possible';
 $string['maxpossible_help'] = 'Shows the score each user can reach if they receive the maximum points in each session not yet taken (past and future):
     <ul>
     <li><strong>Points</strong>: maximum points each user can reach over all sessions.</li>
     <li><strong>Percentage</strong>: maximum percentage each user can reach over all sessions.</li>
     </ul>';
-$string['maxpossiblepoints'] = 'Maximum possible points';
 $string['maxpossiblepercentage'] = 'Maximum possible percentage';
+$string['maxpossiblepoints'] = 'Maximum possible points';
+$string['maxwarn'] = 'Maximum number of e-mail warnings';
+$string['maxwarn_help'] = 'The maximum number of times a warning should be sent (only one warning per session is sent)';
 $string['mergeuser'] = 'Merge user';
 $string['modulename'] = 'Attendance';
 $string['modulename_help'] = 'The attendance activity module enables a teacher to take attendance during class and students to view their own attendance record.
@@ -158,14 +241,19 @@ $string['months'] = 'Months';
 $string['moreattendance'] = 'Attendance has been successfully taken for this page';
 $string['moveleft'] = 'Move left';
 $string['moveright'] = 'Move right';
+$string['multisessionexpanded'] = 'Multiple sessions expanded';
+$string['multisessionexpanded_desc'] = 'Show the "Multiple sessions" settings as expanded by default when creating new sessions.';
 $string['mustselectusers'] = 'Must select users to export';
 $string['newdate'] = 'New date';
 $string['newduration'] = 'New duration';
 $string['newstatusset'] = 'New set of statuses';
+$string['noattendanceusers'] = 'It is not possible to export any data as there are no students enrolled in the course.';
+$string['noautomark'] = 'Disabled';
 $string['noattforuser'] = 'No attendance records exist for the user';
 $string['nodescription'] = 'Regular class session';
-$string['noguest'] = 'Guest can\'t see attendance';
+$string['noeventstoreset'] = 'There are no calendar events that require an update.';
 $string['nogroups'] = 'You can\'t add group sessions. No groups exists in course.';
+$string['noguest'] = 'Guest can\'t see attendance';
 $string['noofdaysabsent'] = 'No of days absent';
 $string['noofdaysexcused'] = 'No of days excused';
 $string['noofdayslate'] = 'No of days late';
@@ -173,22 +261,54 @@ $string['noofdayspresent'] = 'No of days present';
 $string['nosessiondayselected'] = 'No Session day selected';
 $string['nosessionexists'] = 'No Session exists for this course';
 $string['nosessionsselected'] = 'No sessions selected';
+$string['warningdeleted'] = 'Warning deleted';
+$string['warningdesc'] = 'These warnings will be automatically added to any new attendance activities. If more than one warning is triggered at exactly the same time, only the warning with the lower warning threshold will be sent.';
+$string['warningdesc_course'] = 'Warnings thresholds set here affect the absentee report and allow students and third parties to be notified.  If more than one warning is triggered at exactly the same time, only the warning with the lower warning threshold will be sent.';
+$string['warnings'] = 'Warnings set';
+$string['warningupdated'] = 'Updated warnings';
+$string['notifytask'] = 'Send warnings to users';
 $string['notfound'] = 'Attendance activity not found in this course!';
+$string['notmember'] = 'not&nbsp;member';
 $string['noupgradefromthisversion'] = 'The Attendance module cannot upgrade from the version of attforblock you have installed. - please delete attforblock or upgrade it to the latest version before isntalling the new attendance module';
+$string['numsessions'] = 'Number of sessions';
 $string['olddate'] = 'Old date';
 $string['onlyselectedusers'] = 'Export specific users';
+$string['overallsessions'] = 'Over all sessions';
+$string['overallsessions_help'] = 'Shows statistics for all sessions including those not yet taken (past and future):
+    <ul>
+    <li><strong>Sessions</strong>: total number of sessions.</li>
+    <li><strong>Points</strong>: points awarded based on the taken sessions.</li>
+    <li><strong>Percentage</strong>: percentage of points awarded over the maxium possible points for all sessions.</li>
+    </ul>';
+$string['oversessionstaken'] = 'Over taken sessions';
+$string['oversessionstaken_help'] = 'Shows statistics for sessions where attendance has been taken:
+    <ul>
+    <li><strong>Sessions</strong>: number of already taken sessions.</li>
+    <li><strong>Points</strong>: points awarded based on the taken sessions.</li>
+    <li><strong>Percentage</strong>: percentage of points awarded over the maxium possible points of the taken sessions.</li>
+    </ul>';
 $string['participant'] = 'Participant';
 $string['password'] = 'Password';
-$string['passwordrequired'] = 'You must enter the session password before you can submit your attendance';
-$string['percentage'] = 'Percentage';
-$string['percentagesessionscompleted'] = 'Percentage over taken sessions';
-$string['percentageallsessions'] = 'Percentage over all sessions';
-$string['pluginname'] = 'Attendance';
-$string['pluginadministration'] = 'Attendance administration';
 $string['passwordgrp'] = 'Student password';
 $string['passwordgrp_help'] = 'If set students will be required to enter this password before they can set their own attendance status for the session. If empty, no password is required.';
+$string['passwordrequired'] = 'You must enter the session password before you can submit your attendance';
+$string['percentage'] = 'Percentage';
+$string['percentageallsessions'] = 'Percentage over all sessions';
+$string['percentagesessionscompleted'] = 'Percentage over taken sessions';
+$string['pluginadministration'] = 'Attendance administration';
+$string['pluginname'] = 'Attendance';
+$string['points'] = 'Points';
+$string['pointsallsessions'] = 'Points over all sessions';
+$string['pointssessionscompleted'] = 'Points over taken sessions';
+$string['preferences_desc'] = 'Changes to status sets will affect existing attendance sessions and may affect grading.';
+$string['priorto'] = 'The session date is prior to the course start date ({$a}) so that the new sessions scheduled before this date will be hidden (not accessible). You can change the course start date at any time (see course settings) in order to have access to earlier sessions.<br><br>Please change the session date or just click the "Add session" button again to confirm?';
+$string['randompassword'] = 'Random password';
 $string['remark'] = 'Remark for: {$a}';
 $string['remarks'] = 'Remarks';
+$string['repeatasfollows'] = 'Repeat the session above as follows';
+$string['repeatevery'] = 'Repeat every';
+$string['repeaton'] = 'Repeat on';
+$string['repeatuntil'] = 'Repeat until';
 $string['report'] = 'Report';
 $string['required'] = 'Required*';
 $string['requiredentries'] = '  Temporary records overwrite participant attendance records';
@@ -226,6 +346,11 @@ $string['requiredentry_help'] = '<p align="center"><b>Attendance</b></p>
 
 </p>
 <p align="left"><strong>Temporay user will be deleted in all cases after merge action</strong></p>';
+$string['requiresubnet'] = 'Require network address';
+$string['requiresubnet_help'] = 'Attendance recording may be restricted to particular subnets by specifying a comma-separated list of partial or full IP addresses.';
+$string['resetcalendar'] = 'Reset calendar';
+$string['resetcaledarcreate'] = 'Calendar events have been enabled but a number of existing sessions do not have events. Do you want to create calendar events for all existing sessions?';
+$string['resetcaledardelete'] = 'Calendar events have been disabled but a number of existing sessions have events that should be deleted. Do you want to delete all existing events?';
 $string['resetdescription'] = 'Remember that deleting attendance data will erase information from database. You can just hide older sessions having changed start date of course!';
 $string['resetstatuses'] = 'Reset statuses to default';
 $string['restoredefaults'] = 'Restore defaults';
@@ -241,14 +366,14 @@ $string['sessiondate'] = 'Date';
 $string['sessiondays'] = 'Session Days';
 $string['sessiondeleted'] = 'Session successfully deleted';
 $string['sessionexist'] = 'Session not added (already exists)!';
+$string['sessiongenerated'] = 'One session was successfully generated';
 $string['sessions'] = 'Sessions';
 $string['sessionscompleted'] = 'Taken sessions';
-$string['sessionstotal'] = 'Total number of sessions';
-$string['sessionsids'] = 'IDs of sessions: ';
-$string['sessiongenerated'] = 'One session was successfully generated';
 $string['sessionsgenerated'] = '{$a} sessions were successfully generated';
+$string['sessionsids'] = 'IDs of sessions: ';
 $string['sessionsnotfound'] = 'There is no sessions in the selected timespan';
 $string['sessionstartdate'] = 'Session start date';
+$string['sessionstotal'] = 'Total number of sessions';
 $string['sessiontype'] = 'Type';
 $string['sessiontype_help'] = 'You can add sessions for all students or for a group of students. Ability to add different types depends on activity group mode.
 
@@ -258,19 +383,22 @@ $string['sessiontype_help'] = 'You can add sessions for all students or for a gr
 ';
 $string['sessiontypeshort'] = 'Type';
 $string['sessionupdated'] = 'Session successfully updated';
+$string['set_by_student'] = 'Self-recorded';
 $string['setallstatuses'] = 'Set status for all users';
 $string['setallstatusesto'] = 'Set status for all users to «{$a}»';
-$string['randompassword'] = 'Random password';
 $string['settings'] = 'Settings';
+$string['setunmarked'] = 'Automatically set when not marked';
+$string['setunmarked_help'] = 'If enabled in the session, set this status if a student has not marked their own attendance.';
 $string['showdefaults'] = 'Show defaults';
 $string['showduration'] = 'Show duration';
 $string['showsessiondetails'] = 'Show session details';
+$string['somedisabledstatus'] = '(Some options have been removed as the session has started.)';
 $string['sortedgrid'] = 'Sorted grid';
 $string['sortedlist'] = 'Sorted list';
 $string['startofperiod'] = 'Start of period';
 $string['status'] = 'Status';
-$string['statuses'] = 'Statuses';
 $string['statusdeleted'] = 'Status deleted';
+$string['statuses'] = 'Statuses';
 $string['statusset'] = 'Status set {$a}';
 $string['statussetsettings'] = 'Status set';
 $string['strftimedm'] = '%b %d';
@@ -280,47 +408,14 @@ $string['strftimedmyw'] = '<nobr>%a %d %b %Y</nobr>';
 $string['strftimeh'] = '%I%p';
 $string['strftimehm'] = '%I:%M%p';
 $string['strftimeshortdate'] = '%d.%m.%Y';
+$string['studentavailability'] = 'Available for students (minutes)';
+$string['studentavailability_help'] = 'When students are marking their own attendance, the number of minutes after session starts that this status is available.
+ <br/>If empty, this status will always be available, If set to 0 it will always be hidden to students.';
 $string['studentid'] = 'Student ID';
+$string['studentmarking'] = 'Student recording';
 $string['studentpassword'] = 'Student password';
-$string['summary'] = 'Summary';
-$string['takeattendance'] = 'Take attendance';
-$string['takensessions'] = 'Taken sessions';
-$string['tempaddform'] = 'Add temporary user';
-$string['tempexists'] = 'There is already a temporary user with this email address';
-$string['tempusers'] = 'Temporary users';
-$string['thiscourse'] = 'This course';
-$string['tablerenamefailed'] = 'Rename of old attforblock table to attendance failed';
-$string['tactions'] = 'Action';
-$string['tcreated'] = 'Created';
-$string['temptable'] = 'List of temporary users';
-$string['tempuser'] = 'Temporary user';
-$string['tempusersedit'] = 'Edit temporary user';
-$string['tempuserslist'] = 'Temporary users';
-$string['tempusermerge'] = 'Merge temporary user';
-$string['tuseremail'] = 'Email';
-$string['tusername'] = 'Full name';
-$string['update'] = 'Update';
-$string['usestatusset'] = 'Status set';
-$string['userexists'] = 'There is already a real user with this email address';
-$string['users'] = 'Users to export';
-$string['variable'] = 'variable';
-$string['variablesupdated'] = 'Variables successfully updated';
-$string['versionforprinting'] = 'version for printing';
-$string['viewmode'] = 'View mode';
-$string['week'] = 'week(s)';
-$string['weeks'] = 'Weeks';
-$string['youcantdo'] = 'You can\'t do anything';
-
-$string['eventreportviewed'] = 'Attendance report viewed';
-$string['eventsessionadded'] = 'Session added';
-$string['eventsessionupdated'] = 'Session updated';
-$string['eventtaken'] = 'Attendance taken';
-$string['eventtakenbystudent'] = 'Attendance taken by student';
-$string['eventsessiondeleted'] = 'Session deleted';
-$string['eventdurationupdated'] = 'Session duration updated';
-$string['eventstatusupdated'] = 'Status updated';
-$string['eventstatusadded'] = 'Status added';
-
+$string['studentrecordingexpanded'] = 'Student recording expanded';
+$string['studentrecordingexpanded_desc'] = 'Show the "Student recording" settings as expanded by default when creating new sessions.';
 $string['studentscanmark'] = 'Allow students to record own attendance';
 $string['studentscanmark_desc'] = 'If checked, teachers will be able to allow students to mark their own attendance.';
 $string['studentscanmark_help'] = 'If checked students will be able to change their own attendance status for the session.';
@@ -328,64 +423,52 @@ $string['studentscanmarksessiontime'] = 'Students record attendance during sessi
 $string['studentscanmarksessiontime_desc'] = 'If checked students can only record their attendance during the session.';
 $string['studentscanmarksessiontimeend'] = 'Session end (minutes)';
 $string['studentscanmarksessiontimeend_desc'] = 'If the session does not have an end time, how many minutes should the session be available for students to record their attendance.';
-$string['set_by_student'] = 'Self-recorded';
-$string['attendance_already_submitted'] = 'You may not self register attendance that has already been set.';
-$string['lowgrade'] = 'Low grade';
 $string['submitattendance'] = 'Submit attendance';
-$string['attendancenotset'] = 'You must set your attendance';
-$string['export'] = 'Export';
-$string['points'] = 'Points';
-$string['oversessionstaken'] = 'Over taken sessions';
-$string['oversessionstaken_help'] = 'Shows statistics for sessions where attendance has been taken:
-    <ul>
-    <li><strong>Sessions</strong>: number of already taken sessions.</li>
-    <li><strong>Points</strong>: points awarded based on the taken sessions.</li>
-    <li><strong>Percentage</strong>: percentage of points awarded over the maxium possible points of the taken sessions.</li>
-    </ul>';
-$string['overallsessions'] = 'Over all sessions';
-$string['overallsessions_help'] = 'Shows statistics for all sessions including those not yet taken (past and future):
-    <ul>
-    <li><strong>Sessions</strong>: total number of sessions.</li>
-    <li><strong>Points</strong>: points awarded based on the taken sessions.</li>
-    <li><strong>Percentage</strong>: percentage of points awarded over the maxium possible points for all sessions.</li>
-    </ul>';
-$string['pointssessionscompleted'] = 'Points over taken sessions';
-$string['pointsallsessions'] = 'Points over all sessions';
-$string['unknowngroup'] = 'Unknown group';
-$string['notmember'] = 'not&nbsp;member';
-
-$string['deletehiddensessions'] = 'Delete all hidden sessions';
-$string['confirmdeletehiddensessions'] = 'Are you sure you want to delete {$a->count} sessions scheduled before the course start date ({$a->date})?';
-$string['hiddensessionsdeleted'] = 'All hidden sessions were delete';
-
-$string['timeahead'] = 'Multiple sessions that exceed one year cannot be created, please adjust the start and end dates.';
-$string['priorto'] = 'The session date is prior to the course start date ({$a}) so that the new sessions scheduled before this date will be hidden (not accessible). You can change the course start date at any time (see course settings) in order to have access to earlier sessions.<br><br>Please change the session date or just click the "Add session" button again to confirm?';
-$string['noattendanceusers'] = 'It is not possible to export any data as there are no students enrolled in the course.';
-$string['time'] = 'Time';
-$string['from'] = 'from:';
-$string['to'] = 'to:';
-$string['repeatasfollows'] = 'Repeat the session above as follows';
-$string['repeatevery'] = 'Repeat every';
-$string['repeatuntil'] = 'Repeat until';
-$string['repeaton'] = 'Repeat on';
-$string['invalidsessionendtime'] = 'The end time must be greater than start time';
-$string['deletedgroup'] = 'The group associated with this session has been deleted';
-$string['extrarestrictions'] = 'Extra restrictions';
-$string['requiresubnet'] = 'Students can only record own attendance from these computers.';
+$string['subnetactivitylevel'] = 'Allow subnet config at activity level';
+$string['subnetactivitylevel_desc'] = 'If enabled, teachers can override the default subnet at the activity level when creating an attendance. Otherwise the site default will be used when creating a session.';
 $string['subnetwrong'] = 'Attendance can only be recorded from certain locations, and this computer is not on the allowed list.';
-$string['requiresubnet_help'] = 'Attendance recording may be restricted to particular subnets by specifying a comma-separated list of partial or full IP addresses.';
-$string['defaultsubnet'] = 'Default subnet range';
-$string['defaultsubnet_help'] = 'Attendance recording may be restricted to particular subnets by specifying a comma-separated list of partial or full IP addresses. This is the default value used when creating new sessions.';
-$string['defaultsettings'] = 'Default attendance settings';
-$string['defaultsettings_help'] = 'These settings define the defaults for all new attendances';
-$string['defaultstatus'] = 'Default status set';
-
-$string['defaultsessionsettings'] = 'Default session settings';
-$string['defaultsessionsettings_help'] = 'These settings define the defaults for all new sessions';
-
-$string['studentavailability'] = 'Available for students (minutes)';
-$string['studentavailability_help'] = 'When students are marking their own attendance, the number of minutes after session starts that this status is available.
- <br/>If empty, this status will always be available, If set to 0 it will always be hidden to students.';
-
-$string['somedisabledstatus'] = '(Some options have been removed as the session has started.)';
-$string['invalidstatus'] = 'You have selected an invalid status, please try again';
+$string['summary'] = 'Summary';
+$string['tablerenamefailed'] = 'Rename of old attforblock table to attendance failed';
+$string['tactions'] = 'Action';
+$string['takeattendance'] = 'Take attendance';
+$string['takensessions'] = 'Taken sessions';
+$string['tcreated'] = 'Created';
+$string['tempaddform'] = 'Add temporary user';
+$string['tempexists'] = 'There is already a temporary user with this email address';
+$string['temptable'] = 'List of temporary users';
+$string['tempuser'] = 'Temporary user';
+$string['tempusermerge'] = 'Merge temporary user';
+$string['tempusers'] = 'Temporary users';
+$string['tempusersedit'] = 'Edit temporary user';
+$string['tempuserslist'] = 'Temporary users';
+$string['thirdpartyemailsubject'] = 'Attendance warning';
+$string['thirdpartyemailtext'] = '{$a->firstname} {$a->lastname} attendance within {$a->coursename} {$a->aname} is lower than {$a->warningpercent} ({$a->percent})';
+$string['thirdpartyemailtextfooter'] = 'You are receiving this because the teacher of this course has added your email to the recipient’s list';
+$string['thirdpartyemails'] = 'Notify other users';
+$string['thirdpartyemails_help'] = 'List of other users who will be notified. (requires the capability mod/attendance:viewreports)';
+$string['thiscourse'] = 'This course';
+$string['time'] = 'Time';
+$string['timeahead'] = 'Multiple sessions that exceed one year cannot be created, please adjust the start and end dates.';
+$string['to'] = 'to:';
+$string['triggered'] = 'First notified';
+$string['tuseremail'] = 'Email';
+$string['tusername'] = 'Full name';
+$string['unknowngroup'] = 'Unknown group';
+$string['update'] = 'Update';
+$string['usedefaultsubnet'] = 'Use default';
+$string['userexists'] = 'There is already a real user with this email address';
+$string['users'] = 'Users to export';
+$string['usestatusset'] = 'Status set';
+$string['variable'] = 'variable';
+$string['variablesupdated'] = 'Variables successfully updated';
+$string['versionforprinting'] = 'version for printing';
+$string['viewmode'] = 'View mode';
+$string['warnafter'] = 'Number of sessions taken before warning';
+$string['warnafter_help'] = 'Warnings will only be triggered when the user has had their attendance taken for at least this number of sessions.';
+$string['warningfailed'] = 'You cannot create a warning that uses the same percentage and number of sessions.';
+$string['warningpercent'] = 'Warn if percentage falls under';
+$string['warningpercent_help'] = 'A warning will be triggered when the overall percentage falls below this number.';
+$string['warningthreshold'] = 'Warning threshold';
+$string['week'] = 'week(s)';
+$string['weeks'] = 'Weeks';
+$string['youcantdo'] = 'You can\'t do anything';

@@ -27,14 +27,13 @@ require_once(dirname(dirname(__FILE__)) . '/../config.php');
 require_once($CFG->libdir.'/adminlib.php');
 require_once($CFG->libdir.'/plagiarismlib.php');
 require_once($CFG->dirroot.'/plagiarism/urkund/lib.php');
-require_once('urkund_form.php');
 
 require_login();
 admin_externalpage_setup('plagiarismurkund');
 
 $context = context_system::instance();
 
-$mform = new urkund_defaults_form(null);
+$mform = new plagiarism_urkund_defaults_form(null);
 $plagiarismdefaults = $DB->get_records_menu('plagiarism_urkund_config',
     array('cm' => 0), '', 'name, value'); // The cmid(0) is the default list.
 if (!empty($plagiarismdefaults)) {
@@ -46,23 +45,28 @@ require_once('urkund_tabs.php');
 if (($data = $mform->get_data()) && confirm_sesskey()) {
     $plagiarismplugin = new plagiarism_plugin_urkund();
 
-    $plagiarismelements = $plagiarismplugin->config_options();
-    foreach ($plagiarismelements as $element) {
-        if (isset($data->$element)) {
-            $newelement = new Stdclass();
-            $newelement->cm = 0;
-            $newelement->name = $element;
-            if (is_array($data->$element)) {
-                $newelement->value = implode(',', $data->$element);
-            } else {
-                $newelement->value = $data->$element;
-            }
+    $plagiarismelements = $plagiarismplugin->config_options(true);
+    $supportedmodules = array('assign', 'forum', 'workshop');
 
-            if (isset($plagiarismdefaults[$element])) {
-                $newelement->id = $DB->get_field('plagiarism_urkund_config', 'id', (array('cm' => 0, 'name' => $element)));
-                $DB->update_record('plagiarism_urkund_config', $newelement);
-            } else {
-                $DB->insert_record('plagiarism_urkund_config', $newelement);
+    foreach ($supportedmodules as $sm) {
+        foreach ($plagiarismelements as $element) {
+            $element .= "_".$sm;
+            if (isset($data->$element)) {
+                $newelement = new Stdclass();
+                $newelement->cm = 0;
+                $newelement->name = $element;
+                if (is_array($data->$element)) {
+                    $newelement->value = implode(',', $data->$element);
+                } else {
+                    $newelement->value = $data->$element;
+                }
+
+                if (isset($plagiarismdefaults[$element])) {
+                    $newelement->id = $DB->get_field('plagiarism_urkund_config', 'id', (array('cm' => 0, 'name' => $element)));
+                    $DB->update_record('plagiarism_urkund_config', $newelement);
+                } else {
+                    $DB->insert_record('plagiarism_urkund_config', $newelement);
+                }
             }
         }
     }

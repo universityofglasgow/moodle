@@ -15,11 +15,12 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Language strings for Urkund plugin.
  *
- * @package   plagiarism_urkund
+ * @package    plagiarism_urkund
  * @author     Dan Marsden <dan@danmarsden.com>
  * @copyright  2011 Dan Marsden http://danmarsden.com
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 $string['allowallsupportedfiles'] = 'Allow all supported file types';
@@ -98,12 +99,16 @@ $string['urkund'] = 'URKUND plagiarism plugin';
 $string['urkund:enable'] = 'Allow the teacher to enable/disable URKUND inside an activity';
 $string['urkund:resetfile'] = 'Allow the teacher to resubmit the file to URKUND after an error';
 $string['urkund:viewreport'] = 'Allow the teacher to view the full report from URKUND';
+$string['urkund_advanceditems'] = 'Set of settings to consider advanced';
+$string['urkund_advanceditems_help'] = 'The list of settings set as advanced here, will be shown as advanced in module settings. If so, they will be also hidden from teachers if they do not have capability \'urkund:advancedsettings\'.';
 $string['urkund_api'] = 'URKUND Integration Address';
 $string['urkund_api_help'] = 'This is the address of the URKUND API';
 $string['urkund_draft_submit'] = 'When should the file be submitted';
 $string['urkund_enableoptout'] = 'Show opt-out link';
 $string['urkund_enableoptoutdesc'] = 'Disabling this will remove the option for students to unhide or hide (depending on the default setting) the content of their texts should they be found as a match in other clients’ students’ papers (“opt-in” and “opt-out”). By deactivating this feature, you certify that you will take responsibility for managing the copyright of your students’ submissions and that this does not contravene laws applicable in your country.';
 $string['urkund_enableplugin'] = 'Enable URKUND for {$a}';
+$string['urkund_hidefilename'] = 'Hide submission filename';
+$string['urkund_hidefilenamedesc'] = 'Enabling this will pass a generic filename to URKUND so students cannot see the filename of any sources that match an existing submission.';
 $string['urkund_lang'] = 'Language';
 $string['urkund_lang_help'] = 'Language code provided by URKUND';
 $string['urkund_password'] = 'Password';
@@ -120,6 +125,9 @@ $string['urkund_username'] = 'Username';
 $string['urkund_username_help'] = 'Username provided by URKUND to access the API';
 $string['urkunddebug'] = 'Debugging';
 $string['urkunddefaults'] = 'URKUND defaults';
+$string['urkunddefaults_assign'] = 'Default assign settings';
+$string['urkunddefaults_forum'] = 'Default forum settings';
+$string['urkunddefaults_workshop'] = 'Default workshop settings';
 $string['urkundexplain'] = 'For more information on this plugin see: <a href="http://www.urkund.com/en" target="_blank">http://www.urkund.com/int/en/</a>';
 $string['urkundfiles'] = 'Urkund Files';
 $string['useurkund'] = 'Enable URKUND';
@@ -131,3 +139,4 @@ $string['cannotupgradeunprocesseddata'] = '<h1>Cannot upgrade to this version of
  You should revert to an older version of the URKUND plugin, put the site into maintenance mode, run the Moodle Cron process and make sure all old events are cleared. Then try upgrading to this version of the URKUND plugin again.</p>
  <p>For more information see: <a href="https://docs.moodle.org/en/Plagiarism_Prevention_URKUND_Settings#Installation_failed_due_to_unprocessed_data">URKUND Installation failed due to unprocessed data</a></p>';
 $string['timesubmitted'] = 'Time submitted';
+$string['urkund:advancedsettings'] = 'Allow the teacher to view advanced module settings from URKUND';

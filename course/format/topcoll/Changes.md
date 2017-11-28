@@ -1,6 +1,20 @@
 ﻿Version Information
 ===================
-Version 3.3.0.3
+Version 3.3.1.1
+  1. Revert MDL-55074 by applying MDL-57412 - #30.
+  2. Fix CONTRIB-7056 - Edit menu cut off for some activities when using collapsed topics and boost.
+  3. Apply MDL-35628 - thanks to Skylar Kelty for the patch.
+
+Version 3.3.1.0
+  1. Fix missing reset course settings.
+  2. Add 'numsections' coping restore code from Topics format.
+  3. Fix toggle all cursor.
+  4. Add folder icon from /pix/f.
+  5. One section only.
+  6. Remove 'coursedisplay' setting favour of combining the two and adding a link on the right of the toggle.
+  7. Add opactity option for all four toggle colour settings.
+  8. private or protected - #31.
+  9. Fix Boost theme :target CSS conflict.
 
 Version 3.3.0.2
   1. Make the 'readme' course setting only display and not store in the database, thus regenerate and not broken in the

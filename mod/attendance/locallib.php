@@ -39,6 +39,10 @@ define('ATT_SORT_DEFAULT', 0);
 define('ATT_SORT_LASTNAME', 1);
 define('ATT_SORT_FIRSTNAME', 2);
 
+define('ATTENDANCE_AUTOMARK_DISABLED', 0);
+define('ATTENDANCE_AUTOMARK_ALL', 1);
+define('ATTENDANCE_AUTOMARK_CLOSE', 2);
+
 /**
  * Get statuses,
  *
@@ -270,6 +274,8 @@ function attendance_add_status($status) {
     if (!empty($status->acronym) && !empty($status->description)) {
         $status->deleted = 0;
         $status->visible = 1;
+        $status->setunmarked = 0;
+
         $id = $DB->insert_record('attendance_statuses', $status);
         $status->id = $id;
 
@@ -328,10 +334,11 @@ function attendance_remove_status($status, $context = null, $cm = null) {
  * @param stdClass $context
  * @param stdClass $cm
  * @param int $studentavailability
+ * @param bool $setunmarked
  * @return array
  */
 function attendance_update_status($status, $acronym, $description, $grade, $visible,
-                                  $context = null, $cm = null, $studentavailability = null) {
+                                  $context = null, $cm = null, $studentavailability = null, $setunmarked = false) {
     global $DB;
 
     if (empty($context)) {
@@ -368,6 +375,11 @@ function attendance_update_status($status, $acronym, $description, $grade, $visi
 
         $status->studentavailability = $studentavailability;
         $updated[] = $studentavailability;
+    }
+    if ($setunmarked) {
+        $status->setunmarked = 1;
+    } else {
+        $status->setunmarked = 0;
     }
     $DB->update_record('attendance_statuses', $status);
 
@@ -512,9 +524,10 @@ function attendance_exporttocsv($data, $filename) {
 /**
  * Get session data for form.
  * @param stdClass $formdata moodleform - attendance form.
+ * $param mod_attendance_structure $att - used to get attendance level subnet.
  * @return array.
  */
-function attendance_construct_sessions_data_for_add($formdata) {
+function attendance_construct_sessions_data_for_add($formdata, mod_attendance_structure $att) {
     global $CFG;
 
     $sesstarttime = $formdata->sestime['starthour'] * HOURSECS + $formdata->sestime['startminute'] * MINSECS;
@@ -562,7 +575,13 @@ function attendance_construct_sessions_data_for_add($formdata) {
                     $sess->timemodified = $now;
                     if (isset($formdata->studentscanmark)) { // Students will be able to mark their own attendance.
                         $sess->studentscanmark = 1;
-                        $sess->subnet = $formdata->subnet;
+                        if (!empty($formdata->usedefaultsubnet)) {
+                            $sess->subnet = $att->subnet;
+                        } else {
+                            $sess->subnet = $formdata->subnet;
+                        }
+                        $sess->automark = $formdata->automark;
+                        $sess->automarkcompleted = 0;
                         if (!empty($formdata->randompassword)) {
                             $sess->studentpassword = attendance_random_string();
                         } else {
@@ -571,6 +590,8 @@ function attendance_construct_sessions_data_for_add($formdata) {
                     } else {
                         $sess->studentpassword = '';
                         $sess->subnet = '';
+                        $sess->automark = 0;
+                        $sess->automarkcompleted = 0;
                     }
                     $sess->statusset = $formdata->statusset;
 
@@ -593,16 +614,26 @@ function attendance_construct_sessions_data_for_add($formdata) {
         $sess->studentscanmark = 0;
         $sess->subnet = '';
         $sess->studentpassword = '';
+        $sess->automark = 0;
+        $sess->automarkcompleted = 0;
 
         if (isset($formdata->studentscanmark) && !empty($formdata->studentscanmark)) {
             // Students will be able to mark their own attendance.
             $sess->studentscanmark = 1;
             if (!empty($formdata->randompassword)) {
                 $sess->studentpassword = attendance_random_string();
-            } else {
+            } else if (!empty($formdata->studentpassword)) {
                 $sess->studentpassword = $formdata->studentpassword;
             }
-            $sess->subnet = $formdata->subnet;
+            if (!empty($formdata->usedefaultsubnet)) {
+                $sess->subnet = $att->subnet;
+            } else {
+                $sess->subnet = $formdata->subnet;
+            }
+
+            if (!empty($formdata->automark)) {
+                $sess->automark = $formdata->automark;
+            }
         }
         $sess->statusset = $formdata->statusset;
 
@@ -631,4 +662,163 @@ function attendance_fill_groupid($formdata, &$sessions, $sess) {
             $sessions[] = $sess;
         }
     }
+}
+
+/**
+ * Generates a summary of points for the courses selected.
+ *
+ * @param array $courseids optional list of courses to return
+ * @param string $orderby - optional order by param
+ * @return stdClass
+ */
+function attendance_course_users_points($courseids = array(), $orderby = '') {
+    global $DB;
+
+    $where = '';
+    $params = array();
+    $where .= ' AND ats.sessdate < :enddate ';
+    $params['enddate'] = time();
+
+    $joingroup = 'LEFT JOIN {groups_members} gm ON (gm.userid = atl.studentid AND gm.groupid = ats.groupid)';
+    $where .= ' AND (ats.groupid = 0 or gm.id is NOT NULL)';
+
+    if (!empty($courseids)) {
+        list($insql, $inparams) = $DB->get_in_or_equal($courseids, SQL_PARAMS_NAMED);
+        $where .= ' AND c.id ' . $insql;
+        $params = array_merge($params, $inparams);
+    }
+
+    $sql = "SELECT courseid, coursename, sum(points) / sum(maxpoints) as percentage FROM (
+SELECT a.id, a.course as courseid, c.fullname as coursename, atl.studentid AS userid, COUNT(DISTINCT ats.id) AS numtakensessions,
+                        SUM(stg.grade) AS points, SUM(stm.maxgrade) AS maxpoints
+                   FROM {attendance_sessions} ats
+                   JOIN {attendance} a ON a.id = ats.attendanceid
+                   JOIN {course} c ON c.id = a.course
+                   JOIN {attendance_log} atl ON (atl.sessionid = ats.id)
+                   JOIN {attendance_statuses} stg ON (stg.id = atl.statusid AND stg.deleted = 0 AND stg.visible = 1)
+                   JOIN (SELECT attendanceid, setnumber, MAX(grade) AS maxgrade
+                           FROM {attendance_statuses}
+                          WHERE deleted = 0
+                            AND visible = 1
+                         GROUP BY attendanceid, setnumber) stm
+                     ON (stm.setnumber = ats.statusset AND stm.attendanceid = ats.attendanceid)
+                  {$joingroup}
+                  WHERE ats.sessdate >= c.startdate
+                    AND ats.lasttaken != 0
+                    {$where}
+                GROUP BY a.id, a.course, c.fullname, atl.studentid
+                ) p GROUP by courseid, coursename {$orderby}";
+
+    return $DB->get_records_sql($sql, $params);
+}
+
+/**
+ * Generates a list of users flagged absent.
+ *
+ * @param array $courseids optional list of courses to return
+ * @param bool $allfornotify get notification list for scheduled task.
+ * @return stdClass
+ */
+function attendance_get_users_to_notify($courseids = array(), $orderby = '', $allfornotify = false) {
+    global $DB;
+
+    $joingroup = 'LEFT JOIN {groups_members} gm ON (gm.userid = atl.studentid AND gm.groupid = ats.groupid)';
+    $where = ' AND (ats.groupid = 0 or gm.id is NOT NULL)';
+    $having = '';
+    $params = array();
+
+    if (!empty($courseids)) {
+        list($insql, $inparams) = $DB->get_in_or_equal($courseids, SQL_PARAMS_NAMED);
+        $where .= ' AND c.id ' . $insql;
+        $params = array_merge($params, $inparams);
+    }
+    if ($allfornotify) {
+        // Exclude warnings that have already sent the max num.
+        $having .= ' AND n.maxwarn > COUNT(DISTINCT ns.id) ';
+    }
+
+    $unames = get_all_user_name_fields(true);
+    $unames2 = get_all_user_name_fields(true, 'u');
+
+    $idfield = $DB->sql_concat('cm.id', 'atl.studentid', 'n.id');
+    $sql = "SELECT {$idfield} as uniqueid, a.id as aid, {$unames2}, a.name as aname, cm.id as cmid, c.id as courseid,
+                    c.fullname as coursename, atl.studentid AS userid, n.id as notifyid, n.warningpercent, n.emailsubject,
+                    n.emailcontent, n.emailcontentformat, n.emailuser, n.thirdpartyemails, n.warnafter, n.maxwarn,
+                     COUNT(DISTINCT ats.id) AS numtakensessions, SUM(stg.grade) AS points, SUM(stm.maxgrade) AS maxpoints,
+                      COUNT(DISTINCT ns.id) as nscount, MAX(ns.timesent) as timesent,
+                      SUM(stg.grade) / SUM(stm.maxgrade) AS percent
+                   FROM {attendance_sessions} ats
+                   JOIN {attendance} a ON a.id = ats.attendanceid
+                   JOIN {course_modules} cm ON cm.instance = a.id
+                   JOIN {course} c on c.id = cm.course
+                   JOIN {modules} md ON md.id = cm.module AND md.name = 'attendance'
+                   JOIN {attendance_log} atl ON (atl.sessionid = ats.id)
+                   JOIN {user} u ON (u.id = atl.studentid)
+                   JOIN {attendance_statuses} stg ON (stg.id = atl.statusid AND stg.deleted = 0 AND stg.visible = 1)
+                   JOIN {attendance_warning} n ON n.idnumber = a.id
+                   LEFT JOIN {attendance_warning_done} ns ON ns.notifyid = n.id AND ns.userid = atl.studentid
+                   JOIN (SELECT attendanceid, setnumber, MAX(grade) AS maxgrade
+                           FROM {attendance_statuses}
+                          WHERE deleted = 0
+                            AND visible = 1
+                         GROUP BY attendanceid, setnumber) stm
+                     ON (stm.setnumber = ats.statusset AND stm.attendanceid = ats.attendanceid)
+                  {$joingroup}
+                  WHERE 1 = 1 {$where}
+                GROUP BY uniqueid, a.id, a.name, a.course, c.fullname, atl.studentid, n.id, n.warningpercent,
+                         n.emailsubject, n.emailcontent, n.emailcontentformat, n.warnafter, n.maxwarn,
+                         n.emailuser, n.thirdpartyemails, cm.id, c.id, {$unames2}, ns.userid
+                HAVING n.warnafter <= COUNT(DISTINCT ats.id) AND n.warningpercent > ((SUM(stg.grade) / SUM(stm.maxgrade)) * 100)
+                {$having}
+                      {$orderby}";
+
+    if (!$allfornotify) {
+        $idfield = $DB->sql_concat('cmid', 'userid');
+        // Only show one record per attendance for teacher reports.
+        $sql = "SELECT DISTINCT {$idfield} as id, {$unames}, aid, cmid, courseid, aname, coursename, userid,
+                        numtakensessions, percent, MAX(timesent) as timesent
+              FROM ({$sql}) as m
+         GROUP BY id, aid, cmid, courseid, aname, userid, numtakensessions,
+                  percent, coursename, {$unames} {$orderby}";
+    }
+
+    return $DB->get_records_sql($sql, $params);
+
+}
+
+/**
+ * Template variables into place in supplied email content.
+ *
+ * @param object $record db record of details
+ * @return array - the content of the fields after templating.
+ */
+function attendance_template_variables($record) {
+    $templatevars = array(
+        '/%coursename%/' => $record->coursename,
+        '/%courseid%/' => $record->courseid,
+        '/%userfirstname%/' => $record->firstname,
+        '/%userlastname%/' => $record->lastname,
+        '/%userid%/' => $record->userid,
+        '/%warningpercent%/' => $record->warningpercent,
+        '/%attendancename%/' => $record->aname,
+        '/%cmid%/' => $record->cmid,
+        '/%numtakensessions%/' => $record->numtakensessions,
+        '/%points%/' => $record->points,
+        '/%maxpoints%/' => $record->maxpoints,
+        '/%percent%/' => $record->percent,
+    );
+    $extrauserfields = get_all_user_name_fields();
+    foreach ($extrauserfields as $extra) {
+        $templatevars['/%'.$extra.'%/'] = $record->$extra;
+    }
+    $patterns = array_keys($templatevars); // The placeholders which are to be replaced.
+    $replacements = array_values($templatevars); // The values which are to be templated in for the placeholders.
+    // Array to describe which fields in reengagement object should have a template replacement.
+    $replacementfields = array('emailsubject', 'emailcontent');
+
+    // Replace %variable% with relevant value everywhere it occurs in reengagement->field.
+    foreach ($replacementfields as $field) {
+        $record->$field = preg_replace($patterns, $replacements, $record->$field);
+    }
+    return $record;
 }
