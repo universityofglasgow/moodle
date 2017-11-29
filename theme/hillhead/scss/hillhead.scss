@@ -261,7 +261,7 @@ header .usermenu .dropdown-toggle {
     display: inline-block;
 }
 
-.col-xs-4.user-menu {
+.col-xs-10.user-menu {
     text-align: right;
 }
 
@@ -582,8 +582,27 @@ div#gridshadebox_overlay {
 div#gridshadebox_content.absolute {
     top: 75px !important;
     z-index: 9999;
-    left: 20px !important;
-    right: 20px !important;
+    left: 40px !important;
+    right: 40px !important;
+}
+
+.gridshadebox_area {
+    width: 40px;
+    text-align: center;
+}
+
+.gridshadebox_arrow {
+    width: 30px;
+    height: 30px;
+    left: 5px;
+}
+
+.gridshadebox_previous_area {
+    left: -40px;
+}
+
+.gridshadebox_next_area {
+    right: -40px;
 }
 
 #gridshadebox_content.fit_to_window {
@@ -632,6 +651,11 @@ div#gridshadebox_content.absolute {
 
 .course-content > ul > li.section .right {
     padding: 0 20px !important;
+}
+
+.section .activity.modtype_label.label {
+    line-height: 1.5em !important;
+    font-weight: 300 !important;
 }
 
 body.path-course-view .course-content>ul>li.section .content {
@@ -732,7 +756,7 @@ ul.ctopics > li .sectionhead span.the_toggle::before {
 }
 
 ul.ctopics > li .sectionhead span.toggle_open::before {
-        transform-origin: 50% 50%;
+    transform-origin: 50% 50%;
     transform: rotate(90deg);
     transition: 300ms linear all;
 }
@@ -898,6 +922,10 @@ body#page-user-profile #region-main > .card-block .node_category .editprofile, b
     height: 35px !important;
 }
 
+#id_moodle_additional_names {
+    display :none;
+}
+
 // Login Page Stuff
 
 .gu-login {
@@ -1033,6 +1061,10 @@ body.hillhead-size-160 {
     font-size: 160%;
 }
 
+body.hillhead-spacing * {
+    line-height: 2em;
+}
+
 body.hillhead-contrast-yb {
     background: #000 !important;
 }
@@ -1093,6 +1125,18 @@ body.hillhead-contrast-br * {
     text-shadow: none !important;
 }
 
+body.hillhead-contrast-bw {
+    background: #f6f6f6 !important;
+}
+
+body.hillhead-contrast-bw * {
+    background: #f6f6f6 !important;
+    color: #111 !important;
+    border-color: #111 !important;
+    border-radius: 0;
+    text-shadow: none !important;
+}
+
 body.hillhead-contrast #nav-drawer {
     border-right-width: 1px;
     border-right-style: solid;
@@ -1110,36 +1154,80 @@ body.hillhead-contrast header .navbar-brand span.site-name {
     top: 2.9rem !important;
 }
 
-.hh-acc {
-    padding-left: 48px !important;
-    background-repeat: no-repeat;
-    background-position: 12px 50%;
+.card.accessibility-card {
+    margin-bottom: 0;
+    margin-top: 20px;
+}
+
+.accessibility-card h3 {
+    margin-bottom: 20px;
+}
+
+.accessibility-card .accessibility-group h4 {
+    background-color: #eee;
+    border-bottom: 1px solid #ddd;
+    line-height: 24px !important;
+    padding: 3px 10px;
+    margin-bottom: 5px;
+}
+
+.list-group.accessibility-toggle {
+    margin-bottom: 20px;
 }
 
 body.hillhead-bold * {
     font-weight: bold !important;
 }
 
-.hh-acc-ac-on, .hh-acc-ac-of { background-image: url([[pix:theme|accessibility]]);}
+.accessibility-features {
+    margin: 0;
+    padding-left: 0;
+}
 
-.hh-acc-ft-de { background-image: url([[pix:theme|font-original]]);}
-.hh-acc-ft-mo { background-image: url([[pix:theme|font-modern]]);}
-.hh-acc-ft-cl { background-image: url([[pix:theme|font-classic]]);}
-.hh-acc-ft-co { background-image: url([[pix:theme|font-comic]]);}
+.accessibility-features li {
+    display: block;
+    padding-left: 0;
+}
 
-.hh-acc-fs-10 { background-image: url([[pix:theme|font-100]]);}
-.hh-acc-fs-12 { background-image: url([[pix:theme|font-120]]);}
-.hh-acc-fs-14 { background-image: url([[pix:theme|font-140]]);}
+.hh-acc {
+    display: block;
+    line-height: 24px !important;
+    padding: 3px 10px;
+    margin-bottom: 5px;
+}
 
-.hh-acc-th-de { background-image: url([[pix:theme|theme-or]]);}
-.hh-acc-th-yb { background-image: url([[pix:theme|theme-yb]]);}
-.hh-acc-th-by { background-image: url([[pix:theme|theme-by]]);}
-.hh-acc-th-wg { background-image: url([[pix:theme|theme-wg]]);}
-.hh-acc-th-br { background-image: url([[pix:theme|theme-br]]);}
-.hh-acc-th-bb { background-image: url([[pix:theme|theme-bb]]);}
+.hh-acc i {
+    display: inline-block;
+    width: 18px;
+    text-align: center;
+    margin-right: 5px;
+}
 
-.hh-acc-fb-on { background-image: url([[pix:theme|font-bold-on]]);}
-.hh-acc-fb-of { background-image: url([[pix:theme|font-bold-off]]);}
+#hh-acc-ft-de { font-family: "Ubuntu", "Trebuchet MS", Arial, sans-serif; }
+#hh-acc-ft-mo { font-family: "Helvetica Neue", "Helvetica", "Arial", sans-serif !important; }
+#hh-acc-ft-cl { font-family: "Palatino", "Times New Roman", serif !important; }
+#hh-acc-ft-co { font-family: "Chalkboard", "Comic Sans", "Comic Sans MS", sans-serif !important; }
+
+#hh-acc-fs-10 { font-size: 1rem; }
+#hh-acc-fs-12 { font-size: 1.2rem; }
+#hh-acc-fs-14 { font-size: 1.4rem; }
+#hh-acc-fs-16 { font-size: 1.6rem; }
+
+#hh-acc-th-de, #hh-acc-th-de i { background-image: url([[pix:theme|linen]]) !important; color: #3a3a3a !important; }
+#hh-acc-th-yb, #hh-acc-th-yb i { background-color: #000 !important; color: #cc0 !important; }
+#hh-acc-th-by, #hh-acc-th-by i  { background-color: #ee6 !important; color: #111 !important; }
+#hh-acc-th-wg, #hh-acc-th-wg i  { background-color: #666 !important; color: #eee !important; }
+#hh-acc-th-br, #hh-acc-th-br i  { background-color: #EEB9B9 !important; color: #111 !important; }
+#hh-acc-th-bb, #hh-acc-th-bb i  { background-color: #B9D9EE !important; color: #111 !important; }
+#hh-acc-th-bw, #hh-acc-th-bw i  { background-color: #f6f6f6 !important; color: #111 !important; }
+
+#hh-acc-fb-on { font-weight: 700 !important; }
+#hh-acc-fb-of { font-weight: 300 !important; }
+
+.currentlySpeakingHighlight {
+    background-color: #FEC34E !important;
+    color: #000 !important;
+}
 
 // Hotfixes to integrate
 

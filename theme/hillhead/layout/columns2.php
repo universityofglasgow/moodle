@@ -37,6 +37,8 @@ if ($navdraweropen) {
     $extraclasses[] = 'drawer-open-left';
 }
 
+$extraScripts = '';
+
 $theme_hillhead_font = get_user_preferences('theme_hillhead_font');
 
 switch($theme_hillhead_font) {
@@ -88,6 +90,10 @@ switch($theme_hillhead_contrast) {
         $extraclasses[]='hillhead-contrast';
         $extraclasses[]='hillhead-contrast-br';
         break;
+    case 'bw':
+        $extraclasses[]='hillhead-contrast';
+        $extraclasses[]='hillhead-contrast-bw';
+        break;
 }
 
 $theme_hillhead_bold = get_user_preferences('theme_hillhead_bold');
@@ -95,6 +101,38 @@ $theme_hillhead_bold = get_user_preferences('theme_hillhead_bold');
 switch($theme_hillhead_bold) {
     case 'on':
         $extraclasses[]='hillhead-bold';
+        break;
+}
+
+$theme_hillhead_spacing = get_user_preferences('theme_hillhead_spacing');
+
+switch($theme_hillhead_spacing) {
+    case 'on':
+        $extraclasses[]='hillhead-spacing';
+        break;
+}
+
+$theme_hillhead_read_highlight = get_user_preferences('theme_hillhead_readtome');
+
+switch($theme_hillhead_read_highlight) {
+    case 'on':
+        $extraScripts .= '<script type="text/javascript" src="'.$CFG->wwwroot.'/theme/hillhead/js/readtome.js"></script>';
+        break;
+}
+
+$theme_hillhead_read_alert = get_user_preferences('theme_hillhead_readalert');
+
+switch($theme_hillhead_read_alert) {
+    case 'on':
+        $extraclasses[]='hillhead-readalert';
+        break;
+}
+
+$theme_hillhead_stripstyles = get_user_preferences('theme_hillhead_stripstyles');
+
+switch($theme_hillhead_stripstyles) {
+    case 'on':
+        $extraScripts .= '<script type="text/javascript" src="'.$CFG->wwwroot.'/theme/hillhead/js/stripstyles.js"></script>';
         break;
 }
 
@@ -120,7 +158,7 @@ switch($hillheadnotificationtype) {
 $usesAccessibilityTools=get_user_preferences('theme_hillhead_accessibility', false);
 
 if($usesAccessibilityTools === false) {
-    $accessibilityTools = Array(
+    $accessibilityButton = Array(
         Array(
             Array(
                 'o'=>'theme_hillhead_accessibility',
@@ -131,7 +169,7 @@ if($usesAccessibilityTools === false) {
         ),
     );
 } else {
-    $accessibilityTools = Array(
+    $accessibilityButton = Array(
         Array(
             Array(
                 'o'=>'theme_hillhead_accessibility',
@@ -140,115 +178,290 @@ if($usesAccessibilityTools === false) {
                 't'=>'Hide Accessibility Tools',
             ),
         ),
-        Array(
-            Array(
-                'o'=>'theme_hillhead_font',
-                'v'=>'clear',
-                'c'=>'hh-acc-ft-de',
-                't'=>'Default Font',
-            ),
-            Array(
-                'o'=>'theme_hillhead_font',
-                'v'=>'modern',
-                'c'=>'hh-acc-ft-mo',
-                't'=>'Modern Font',
-            ),
-            Array(
-                'o'=>'theme_hillhead_font',
-                'v'=>'classic',
-                'c'=>'hh-acc-ft-cl',
-                't'=>'Classic Font',
-            ),
-            Array(
-                'o'=>'theme_hillhead_font',
-                'v'=>'comic',
-                'c'=>'hh-acc-ft-co',
-                't'=>'Comic Font',
-            ),
-        ),
-        Array(
-            Array(
-                'o'=>'theme_hillhead_size',
-                'v'=>'clear',
-                'c'=>'hh-acc-fs-10',
-                't'=>'Default Text Size',
-            ),
-            Array(
-                'o'=>'theme_hillhead_size',
-                'v'=>'120',
-                'c'=>'hh-acc-fs-12',
-                't'=>'Large Text Size',
-            ),
-            Array(
-                'o'=>'theme_hillhead_size',
-                'v'=>'140',
-                'c'=>'hh-acc-fs-14',
-                't'=>'Huge Text Size',
-            ),
-        ),
-        Array(
-            Array(
-                'o'=>'theme_hillhead_bold',
-                'v'=>'clear',
-                'c'=>'hh-acc-fb-of',
-                't'=>'Use Normal Fonts',
-            ),
-            Array(
-                'o'=>'theme_hillhead_bold',
-                'v'=>'on',
-                'c'=>'hh-acc-fb-on',
-                't'=>'Use Bold Fonts',
-            ),
-        ),
-        Array(
-            Array(
-                'o'=>'theme_hillhead_contrast',
-                'v'=>'clear',
-                'c'=>'hh-acc-th-de',
-                't'=>'Default Moodle Theme',
-            ),
-            Array(
-                'o'=>'theme_hillhead_contrast',
-                'v'=>'yb',
-                'c'=>'hh-acc-th-yb',
-                't'=>'Yellow on Black Theme',
-            ),
-            Array(
-                'o'=>'theme_hillhead_contrast',
-                'v'=>'by',
-                'c'=>'hh-acc-th-by',
-                't'=>'Black on Yellow Theme',
-            ),
-            Array(
-                'o'=>'theme_hillhead_contrast',
-                'v'=>'wg',
-                'c'=>'hh-acc-th-wg',
-                't'=>'White on Grey Theme',
-            ),
-            Array(
-                'o'=>'theme_hillhead_contrast',
-                'v'=>'br',
-                'c'=>'hh-acc-th-br',
-                't'=>'Black on Red Theme',
-            ),
-            Array(
-                'o'=>'theme_hillhead_contrast',
-                'v'=>'bb',
-                'c'=>'hh-acc-th-bb',
-                't'=>'Black on Blue Theme',
-            ),
-        ),
     );
 }
 
-$acc = '';
+$accBtn = '';
+$accTxt = '';
 
-foreach($accessibilityTools as $accessibilityGroup) {
-    $acc .= '<nav class="list-group m-t-1">';
+foreach($accessibilityButton as $accessibilityGroup) {
+    $accBtn .= '<nav class="list-group accessibility-toggle">';
     foreach($accessibilityGroup as $accessibilityItem) {
-        $acc .= '<a class="list-group-item hh-acc '.$accessibilityItem['c'].'" href="'.$CFG->wwwroot.'/theme/hillhead/accessibility.php?o='.$accessibilityItem['o'].'&v='.$accessibilityItem['v'].'">'.$accessibilityItem['t'].'</a>';
+        $accBtn .= '<a class="list-group-item hh-acc '.$accessibilityItem['c'].'" href="'.$CFG->wwwroot.'/theme/hillhead/accessibility.php?o='.$accessibilityItem['o'].'&v='.$accessibilityItem['v'].'">'.$accessibilityItem['t'].'</a>';
     }
-    $acc .= '</nav>';
+    $accBtn .= '</nav>';
+}
+
+$colourOptions = Array(
+    Array(
+        'o'=>'theme_hillhead_contrast',
+        'v'=>'clear',
+        'c'=>'hh-acc-th-de',
+        't'=>'Default Moodle Theme',
+        'i'=>'fa-low-vision'
+    ),
+    Array(
+        'o'=>'theme_hillhead_contrast',
+        'v'=>'yb',
+        'c'=>'hh-acc-th-yb',
+        't'=>'Yellow on Black Theme',
+        'i'=>'fa-low-vision'
+    ),
+    Array(
+        'o'=>'theme_hillhead_contrast',
+        'v'=>'by',
+        'c'=>'hh-acc-th-by',
+        't'=>'Black on Yellow Theme',
+        'i'=>'fa-low-vision'
+    ),
+    Array(
+        'o'=>'theme_hillhead_contrast',
+        'v'=>'wg',
+        'c'=>'hh-acc-th-wg',
+        't'=>'White on Grey Theme',
+        'i'=>'fa-low-vision'
+    ),
+    Array(
+        'o'=>'theme_hillhead_contrast',
+        'v'=>'br',
+        'c'=>'hh-acc-th-br',
+        't'=>'Black on Red Theme',
+        'i'=>'fa-low-vision'
+    ),
+    Array(
+        'o'=>'theme_hillhead_contrast',
+        'v'=>'bb',
+        'c'=>'hh-acc-th-bb',
+        't'=>'Black on Blue Theme',
+        'i'=>'fa-low-vision'
+    ),
+    Array(
+        'o'=>'theme_hillhead_contrast',
+        'v'=>'bw',
+        'c'=>'hh-acc-th-bw',
+        't'=>'Black on White Theme',
+        'i'=>'fa-low-vision'
+    )
+);
+
+$fontOptions = Array(
+    Array(
+        'o'=>'theme_hillhead_font',
+        'v'=>'clear',
+        'c'=>'hh-acc-ft-de',
+        't'=>'Default Font',
+        'i'=>'fa-font'
+    ),
+    Array(
+        'o'=>'theme_hillhead_font',
+        'v'=>'modern',
+        'c'=>'hh-acc-ft-mo',
+        't'=>'Modern Font',
+        'i'=>'fa-font'
+    ),
+    Array(
+        'o'=>'theme_hillhead_font',
+        'v'=>'classic',
+        'c'=>'hh-acc-ft-cl',
+        't'=>'Classic Font',
+        'i'=>'fa-font'
+    ),
+    Array(
+        'o'=>'theme_hillhead_font',
+        'v'=>'comic',
+        'c'=>'hh-acc-ft-co',
+        't'=>'Comic Font',
+        'i'=>'fa-font'
+    )
+);
+
+if($theme_hillhead_bold == 'on') {
+    $boldOptions = Array(
+        Array(
+            'o'=>'theme_hillhead_bold',
+            'v'=>'clear',
+            'c'=>'hh-acc-fb-of',
+            't'=>'Don\'t Always Use Bold Fonts',
+            'i'=>'fa-bold'
+        )
+    );
+} else {
+    $boldOptions = Array(
+        Array(
+            'o'=>'theme_hillhead_bold',
+            'v'=>'on',
+            'c'=>'hh-acc-fb-on',
+            't'=>'Always Use Bold Fonts',
+            'i'=>'fa-bold'
+        )
+    );
+}
+
+if($theme_hillhead_spacing == 'on') {
+    $spacingOptions = Array(
+        Array(
+            'o'=>'theme_hillhead_spacing',
+            'v'=>'clear',
+            'c'=>'hh-acc-sp-of',
+            't'=>'Normal Space Between Lines',
+            'i'=>'fa-align-justify'
+        )
+    );
+} else {
+    $spacingOptions = Array(
+        Array(
+            'o'=>'theme_hillhead_spacing',
+            'v'=>'on',
+            'c'=>'hh-acc-sp-on',
+            't'=>'More Space Between Lines',
+            'i'=>'fa-align-justify'
+        )
+    );
+}
+
+$sizeOptions = Array(
+    Array(
+        'o'=>'theme_hillhead_size',
+        'v'=>'clear',
+        'c'=>'hh-acc-fs-10',
+        't'=>'Default Text Size',
+        'i'=>'fa-text-height'
+    ),
+    Array(
+        'o'=>'theme_hillhead_size',
+        'v'=>'120',
+        'c'=>'hh-acc-fs-12',
+        't'=>'Large Text Size',
+        'i'=>'fa-text-height'
+    ),
+    Array(
+        'o'=>'theme_hillhead_size',
+        'v'=>'140',
+        'c'=>'hh-acc-fs-14',
+        't'=>'Huge Text Size',
+        'i'=>'fa-text-height'
+    ),
+    Array(
+        'o'=>'theme_hillhead_size',
+        'v'=>'160',
+        'c'=>'hh-acc-fs-16',
+        't'=>'Massive Text Size',
+        'i'=>'fa-text-height'
+    )
+);
+
+if($theme_hillhead_read_highlight == 'on') {
+    $readHighlightOptions = Array(
+        Array(
+            'o'=>'theme_hillhead_readtome',
+            'v'=>'clear',
+            'c'=>'hh-acc-sp-of',
+            't'=>'Turn Off Read-To-Me',
+            'i'=>'fa-headphones'
+        )
+    );
+} else {
+    $readHighlightOptions = Array(
+        Array(
+            'o'=>'theme_hillhead_readtome',
+            'v'=>'on',
+            'c'=>'hh-acc-sp-on',
+            't'=>'Turn On Read-To-Me',
+            'i'=>'fa-headphones'
+        )
+    );
+}
+
+if($theme_hillhead_read_alert == 'on') {
+    $readAlertOptions = Array(
+        Array(
+            'o'=>'theme_hillhead_readalert',
+            'v'=>'clear',
+            'c'=>'hh-acc-sp-of',
+            't'=>'Don\'t Announce Notifications',
+            'i'=>'fa-bullhorn'
+        )
+    );
+} else {
+    $readAlertOptions = Array(
+        Array(
+            'o'=>'theme_hillhead_readalert',
+            'v'=>'on',
+            'c'=>'hh-acc-sp-on',
+            't'=>'Announce Moodle Notifications',
+            'i'=>'fa-bullhorn'
+        )
+    );
+}
+
+if($theme_hillhead_stripstyles == 'on') {
+    $stripStyleOptions = Array(
+        Array(
+            'o'=>'theme_hillhead_stripstyles',
+            'v'=>'clear',
+            'c'=>'hh-acc-ss-of',
+            't'=>'Don\'t Apply to All Moodle Content',
+            'i'=>'fa-minus-square'
+        )
+    );
+} else {
+    $stripStyleOptions = Array(
+        Array(
+            'o'=>'theme_hillhead_stripstyles',
+            'v'=>'on',
+            'c'=>'hh-acc-ss-of',
+            't'=>'Apply to All Moodle Content',
+            'i'=>'fa-plus-square'
+        )
+    );
+}
+
+if($usesAccessibilityTools) {
+    $accTxt = '<div class="card accessibility-card"><div class="card-block"><h3>Accessibility Tools</h3>';
+    $accTxt .= '<div class="row">';
+    $accTxt .= '<div class="col-xs-12 col-sm-4 accessibility-group">';
+    $accTxt .= '<h4>Colour Scheme</h4><ul class="accessibility-features">';
+    foreach($colourOptions as $opt) {
+        $accTxt .= '<li><a class="hh-acc" id="'.$opt['c'].'" href="'.$CFG->wwwroot.'/theme/hillhead/accessibility.php?o='.$opt['o'].'&v='.$opt['v'].'"><i class="fa '.$opt['i'].'"></i> '.$opt['t'].'</a></li>';
+    }
+    foreach($stripStyleOptions as $opt) {
+        $accTxt .= '<li><a class="hh-acc" id="'.$opt['c'].'" href="'.$CFG->wwwroot.'/theme/hillhead/accessibility.php?o='.$opt['o'].'&v='.$opt['v'].'"><i class="fa '.$opt['i'].'"></i> '.$opt['t'].'</a></li>';
+    }
+    $accTxt .= '</ul>';
+    $accTxt .= '</div>';
+    $accTxt .= '<div class="col-xs-12 col-sm-4 accessibility-group">';
+    $accTxt .= '<h4>Font Style</h4><ul class="accessibility-features">';
+    
+    foreach($fontOptions as $opt) {
+        $accTxt .= '<li><a class="hh-acc" id="'.$opt['c'].'" href="'.$CFG->wwwroot.'/theme/hillhead/accessibility.php?o='.$opt['o'].'&v='.$opt['v'].'"><i class="fa '.$opt['i'].'"></i> '.$opt['t'].'</a></li>';
+    }
+    $accTxt .= '</ul>';
+    $accTxt .= '<h4>Readability</h4><ul class="accessibility-features">';
+    foreach($boldOptions as $opt) {
+        $accTxt .= '<li><a class="hh-acc" id="'.$opt['c'].'" href="'.$CFG->wwwroot.'/theme/hillhead/accessibility.php?o='.$opt['o'].'&v='.$opt['v'].'"><i class="fa '.$opt['i'].'"></i> '.$opt['t'].'</a></li>';
+    }
+    foreach($spacingOptions as $opt) {
+        $accTxt .= '<li><a class="hh-acc" id="'.$opt['c'].'" href="'.$CFG->wwwroot.'/theme/hillhead/accessibility.php?o='.$opt['o'].'&v='.$opt['v'].'"><i class="fa '.$opt['i'].'"></i> '.$opt['t'].'</a></li>';
+    }
+    $accTxt .= '</ul>';
+    $accTxt .= '</div>';
+    $accTxt .= '<div class="col-xs-12 col-sm-4 accessibility-group">';
+    $accTxt .= '<h4>Text Size and Spacing</h4><ul class="accessibility-features">';
+    foreach($sizeOptions as $opt) {
+        $accTxt .= '<li><a class="hh-acc" id="'.$opt['c'].'" href="'.$CFG->wwwroot.'/theme/hillhead/accessibility.php?o='.$opt['o'].'&v='.$opt['v'].'"><i class="fa '.$opt['i'].'"></i> '.$opt['t'].'</a></li>';
+    }
+    $accTxt .= '</ul>';
+    $accTxt .= '<h4>Read To Me</h4><ul class="accessibility-features">';
+    foreach($readHighlightOptions as $opt) {
+        $accTxt .= '<li><a class="hh-acc" id="'.$opt['c'].'" href="'.$CFG->wwwroot.'/theme/hillhead/accessibility.php?o='.$opt['o'].'&v='.$opt['v'].'"><i class="fa '.$opt['i'].'"></i> '.$opt['t'].'</a></li>';
+    }
+    foreach($readAlertOptions as $opt) {
+        $accTxt .= '<li><a class="hh-acc" id="'.$opt['c'].'" href="'.$CFG->wwwroot.'/theme/hillhead/accessibility.php?o='.$opt['o'].'&v='.$opt['v'].'"><i class="fa '.$opt['i'].'"></i> '.$opt['t'].'</a></li>';
+    }
+    $accTxt .= '</ul>';
+    $accTxt .= '</div>';
+    $accTxt .= '</div>';
+    $accTxt .= '</div></div>';
 }
 
 $footerLinks = Array(
@@ -323,8 +536,10 @@ $templatecontext = [
     'regionmainsettingsmenu' => $regionmainsettingsmenu,
     'hasregionmainsettingsmenu' => !empty($regionmainsettingsmenu),
     'hillheadnotification' => $notiftext,
-    'accessibilityText' => $acc,
-    'footerText' => $footerText
+    'accessibilityText' => $accTxt,
+    'accessibilityButton' => $accBtn,
+    'footerText' => $footerText,
+    'extraScripts' => $extraScripts
 ];
 
 $templatecontext['flatnavigation'] = $PAGE->flatnav;
