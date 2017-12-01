@@ -28,20 +28,20 @@ define(['jquery', 'jqueryui'], function($, UI) {
     return {
         init: function() {
 
-            // change non-js links to be inactive
+            // Change non-js links to be inactive.
             $(".courseovbox a").removeAttr("href");
 
-            // Make the course list sort
+            // Make the course list sort.
             $(".tab-pane .course-list").sortable({
                 update: function(event, ui) {
                     var kids = $(".tab-pane.active .course-list").children();
                     var sortorder = [];
                     $.each(kids, function(index, value) {
-                       var id = value.getAttribute('id');
-                       sortorder[index] = id.substring(7);
+                        var id = value.getAttribute('id');
+                        sortorder[index] = id.substring(7);
                     });
 
-                    // send new sortorder
+                    // Send new sortorder.
                     var activetab = $(".block_course_overview .nav-tabs .active").data("tabname");
                     var data = {
                         sesskey : M.cfg.sesskey,
@@ -49,7 +49,7 @@ define(['jquery', 'jqueryui'], function($, UI) {
                         sortorder : sortorder
                     };
                     $.post(
-                        M.cfg.wwwroot+'/blocks/course_overview/save.php',
+                        M.cfg.wwwroot + '/blocks/course_overview/save.php',
                         data
                     );
                 }

@@ -86,12 +86,13 @@ class main implements renderable, templatable {
             if (!empty($tab->overviews[$course->id])) {
                 $course->hasoverviews = true;
                 $overviews = array();
-                foreach ($tab->overviews[$course->id] as $activity => $overview_text) {
+                foreach ($tab->overviews[$course->id] as $activity => $overviewtext) {
                     $overview = new \stdClass;
                     $overview->coursename = $course->fullname;
                     $overview->activity = $activity;
-                    $overview->text = str_replace('p-y-1', '', $overview_text);
-                    $description = get_string('activityoverview', 'block_course_overview', get_string('pluginname', 'mod_' . $activity));
+                    $overview->text = str_replace('p-y-1', '', $overviewtext);
+                    $description = get_string('activityoverview', 'block_course_overview',
+                        get_string('pluginname', 'mod_' . $activity));
                     $overviewid = $activity . '_' . $course->id;
                     $overview->overviewid = $overviewid;
                     $overview->icon = $output->pix_icon('icon', $description, 'mod_' . $activity);
@@ -143,15 +144,15 @@ class main implements renderable, templatable {
      */
     public function export_for_template(renderer_base $output) {
 
-        // generate array for tabs 0=favs, 1=courses
+        // Generate array for tabs 0=favs, 1=courses.
         $tabs = array(
             0 => (object) [
-                'tab' => 'favourites', 
+                'tab' => 'favourites',
                 'show' => $this->selectedtab == 'favourites' ? 'show active' : '',
                 'data' => $this->process_tab($output, true, $this->tabs['favourites']),
             ],
             1 => (object) [
-                'tab' => 'courses', 
+                'tab' => 'courses',
                 'show' => $this->selectedtab == 'courses' ? 'show active' : '',
                 'data' => $this->process_tab($output, false, $this->tabs['courses']),
                 ],

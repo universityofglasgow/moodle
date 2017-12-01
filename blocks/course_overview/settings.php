@@ -29,6 +29,11 @@ if ($ADMIN->fulltree) {
         BLOCKS_COURSE_OVERVIEW_SHOWCATEGORIES_ONLY_PARENT_NAME => new lang_string('onlyparentname', 'block_course_overview'),
         BLOCKS_COURSE_OVERVIEW_SHOWCATEGORIES_FULL_PATH => new lang_string('fullpath', 'block_course_overview')
     );
-    $settings->add(new admin_setting_configselect('block_course_overview/showcategories', new lang_string('showcategories', 'block_course_overview'),
-        new lang_string('showcategoriesdesc', 'block_course_overview'), BLOCKS_COURSE_OVERVIEW_SHOWCATEGORIES_NONE, $showcategories));
+    $settings->add(new admin_setting_configselect(
+        'block_course_overview/showcategories',
+        new lang_string('showcategories', 'block_course_overview'),
+        new lang_string('showcategoriesdesc', 'block_course_overview'),
+        BLOCKS_COURSE_OVERVIEW_SHOWCATEGORIES_NONE,
+        $showcategories
+    ));
 }

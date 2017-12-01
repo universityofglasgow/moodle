@@ -22,6 +22,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 define('BLOCKS_COURSE_OVERVIEW_SHOWCATEGORIES_NONE', '0');
 define('BLOCKS_COURSE_OVERVIEW_SHOWCATEGORIES_ONLY_PARENT_NAME', '1');
 define('BLOCKS_COURSE_OVERVIEW_SHOWCATEGORIES_FULL_PATH', '2');
@@ -35,7 +37,7 @@ define('BLOCKS_COURSE_OVERVIEW_SHOWCATEGORIES_FULL_PATH', '2');
 function block_course_overview_get_overviews($courses) {
     global $CFG;
 
-    // tab may not have any courses
+    // Tab may not have any courses.
     if (!$courses) {
         return array();
     }
@@ -81,7 +83,8 @@ function block_course_overview_update_mynumber($number) {
 function block_course_overview_update_myorder($sortorder) {
     $value = implode(',', $sortorder);
     if (core_text::strlen($value) > 1333) {
-        // The value won't fit into the user preference. Remove courses in the end of the list (mostly likely user won't even notice).
+        // The value won't fit into the user preference.
+        // Remove courses in the end of the list (mostly likely user won't even notice).
         $value = preg_replace('/,[\d]*$/', '', core_text::substr($value, 0, 1334));
     }
     set_user_preference('course_overview_course_sortorder', $value);
@@ -127,7 +130,8 @@ function block_course_overview_get_favourites() {
 function block_course_overview_update_favourites($favourites) {
     $value = implode(',', $favourites);
     if (core_text::strlen($value) > 1333) {
-        // The value won't fit into the user preference. Remove courses in the end of the list (mostly likely user won't even notice).
+        // The value won't fit into the user preference.
+        // Remove courses in the end of the list (mostly likely user won't even notice).
         $value = preg_replace('/,[\d]*$/', '', core_text::substr($value, 0, 1334));
     }
     set_user_preference('course_overview_favourites', $value);
@@ -146,7 +150,7 @@ function block_course_overview_get_sorted_courses($favourites, $exclude = []) {
     $courses = enrol_get_my_courses();
     $site = get_site();
 
-    if (array_key_exists($site->id,$courses)) {
+    if (array_key_exists($site->id, $courses)) {
         unset($courses[$site->id]);
     }
 
@@ -163,7 +167,7 @@ function block_course_overview_get_sorted_courses($favourites, $exclude = []) {
     if (is_enabled_auth('mnet')) {
         $remotecourses = get_my_remotecourses();
     }
-    // Remote courses will have -ve remoteid as key, so it can be differentiated from normal courses
+    // Remote courses will have -ve remoteid as key, so it can be differentiated from normal courses.
     foreach ($remotecourses as $id => $val) {
         $remoteid = $val->remoteid * -1;
         $val->id = $remoteid;
@@ -188,7 +192,7 @@ function block_course_overview_get_sorted_courses($favourites, $exclude = []) {
         }
     }
 
-    // Append unsorted courses if limit allows & not favourites
+    // Append unsorted courses if limit allows & not favourites.
     if (!$favourites) {
         foreach ($courses as $c) {
             if (in_array($c->id, $exclude)) {
@@ -201,7 +205,7 @@ function block_course_overview_get_sorted_courses($favourites, $exclude = []) {
         }
     }
 
-    // From list extract site courses for overview
+    // From list extract site courses for overview.
     $sitecourses = array();
     foreach ($sortedcourses as $key => $course) {
         if ($course->id > 0) {
@@ -217,19 +221,19 @@ function block_course_overview_get_sorted_courses($favourites, $exclude = []) {
  */
 function block_course_overview_add_favourite($favourite) {
 
-    // Add to fabourites list
+    // Add to fabourites list.
     $favourites = block_course_overview_get_favourites();
     if (!in_array($favourite, $favourites)) {
         array_unshift($favourites, $favourite);
     }
     block_course_overview_update_favourites($favourites);
 
-    // Remove from courses list
+    // Remove from courses list.
     $order = block_course_overview_get_myorder();
     $key = array_search($favourite, $order);
     if ($key !== false) {
         unset($order[$key]);
-    }    
+    }
     block_course_overview_update_myorder($order);
 }
 
@@ -239,15 +243,15 @@ function block_course_overview_add_favourite($favourite) {
  */
 function block_course_overview_remove_favourite($favourite) {
 
-    // Remove from favourites list
+    // Remove from favourites list.
     $order = block_course_overview_get_favourites();
     $key = array_search($favourite, $order);
     if ($key !== false) {
         unset($order[$key]);
-    }    
+    }
     block_course_overview_update_favourites($order);
 
-    // Add to courses list
+    // Add to courses list.
     $order = block_course_overview_get_myorder();
     if (!in_array($favourite, $order)) {
         $order[] = $favourite;

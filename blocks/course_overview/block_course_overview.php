@@ -21,7 +21,8 @@
  * @copyright  1999 onwards Martin Dougiamas (http://dougiamas.com)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-require_once($CFG->dirroot.'/blocks/course_overview/locallib.php');
+
+defined('MOODLE_INTERNAL') || die();
 
 /**
  * Course overview block
@@ -49,9 +50,11 @@ class block_course_overview extends block_base {
      */
     public function get_content() {
         global $USER, $CFG, $DB, $SESSION;
+
+        require_once($CFG->dirroot.'/blocks/course_overview/locallib.php');
         require_once($CFG->dirroot.'/user/profile/lib.php');
 
-        if($this->content !== NULL) {
+        if ($this->content !== null) {
             return $this->content;
         }
 
@@ -72,7 +75,7 @@ class block_course_overview extends block_base {
 
         profile_load_custom_fields($USER);
 
-        // Check if favourite added/removed
+        // Check if favourite added/removed.
         $favourite = optional_param('favourite', 0, PARAM_INT);
         if ($favourite) {
             block_course_overview_add_favourite($favourite);
@@ -82,9 +85,7 @@ class block_course_overview extends block_base {
             block_course_overview_remove_favourite($unfavourite);
         }
 
-        // Check if tab clicked
-
-        // get data for favourites and course tab
+        // Get data for favourites and course tab.
         $tabs = array();
         $ftab = new stdClass;
         $ftab->tab = 'favourites';
@@ -92,14 +93,15 @@ class block_course_overview extends block_base {
         $ftab->overviews = block_course_overview_get_overviews($ftab->sortedcourses);
         $ctab = new stdClass;
         $ctab->tab = 'courses';
-        list($ctab->sortedcourses, $ctab->sitecourses, $ctab->totalcourses) = block_course_overview_get_sorted_courses(false, array_keys($ftab->sortedcourses));
+        list($ctab->sortedcourses, $ctab->sitecourses, $ctab->totalcourses)
+            = block_course_overview_get_sorted_courses(false, array_keys($ftab->sortedcourses));
         $ctab->overviews = block_course_overview_get_overviews($ctab->sortedcourses);
         $tabs = array(
             'favourites' => $ftab,
             'courses' => $ctab,
         );
 
-        // Default tab. One with something in it or favourites
+        // Default tab. One with something in it or favourites.
         if ($ftab->totalcourses) {
             $tab = 'favourites';
         } else {
@@ -108,7 +110,7 @@ class block_course_overview extends block_base {
 
         $renderer = $this->page->get_renderer('block_course_overview');
 
-        // Render block
+        // Render block.
         $main = new block_course_overview\output\main($config, $tabs, $isediting, $tab);
         $this->content->text .= $renderer->render($main);
         return $this->content;

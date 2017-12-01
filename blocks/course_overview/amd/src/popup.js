@@ -28,7 +28,7 @@ define(['jquery', 'jqueryui', 'core/config'], function($, UI, mdlconfig) {
     return {
         init: function() {
 
-            // Dialogues on activity icons
+            // Dialogues on activity icons.
             $(".dialogue").dialog({
                 autoOpen: false,
                 minWidth: 400,
@@ -39,13 +39,13 @@ define(['jquery', 'jqueryui', 'core/config'], function($, UI, mdlconfig) {
                 modal: true
             });
 
-            //opens the appropriate dialog
+            // Opens the appropriate dialog.
             $(".overview-icon").click(function () {
 
-                //takes the ID of appropriate dialogue
+                // Takes the ID of appropriate dialogue.
                 var id = $(this).data('id');
 
-                //open dialogue
+                // Open dialogue.
                 $(id).dialog("open");
             });
 

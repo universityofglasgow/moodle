@@ -1,45 +1,13 @@
 .block-course-overview .courseovbox {
     border-bottom: 1px solid #d3d8dc;
     padding-top: 12px;
-    height: 52px;
 }
 
-.block-course-overview .courseovbox h2 {
-    margin-bottom: 0;
+.overview-icon .icon {
+    height: 25px;
+    width: 25px;
 }
 
-.block-course-overview .ovcategories {
-    padding-left: 42px;
-}
-
-.block-course-overview .course-list {
-    border-top: 1px solid #d3d8dc;
-}
-
-.overview-icon {
-    height: 40px;
-    width: 40px;
-    float: right;
-    margin-bottom: 5px;
-    margin-left: 15px;
-}
-
-.overview-icon > img {
-    height: 36px;
-    width: 36px;
-}
-
-.activity_overviews  a {
-    color: #0075b0;
-}
-
-.activity_overviews > .overview {
-    margin-bottom: 15px;
-}
-
-.activity_overviews > .overview > .name {
-    font-weight: bold;
-}
 
 .course-overview-dialog {
     display: none;
@@ -57,14 +25,14 @@
 .course-overview-dialog .ui-dialog-titlebar-close:after {
     position: absolute;
     font-family: FontAwesome;
-    font-size: 1.0em;
+    font-size: 2.0em;
     top:8px;
     right:8px;
-    content: "\f00d "; 
+    content: "\f00d ";
 }
 
-.block-course-overview .singleselect {
-    margin-bottom: 10px;
+.dialogue h3 {
+    font-size: 1.5rem;
 }
 
 a.favourite_icon:hover {
@@ -78,5 +46,3 @@ a.favourite_icon:hover {
 .block-course-overview .overview-help i {
     font-size: 1.5em;
 }
-
-
