@@ -23,6 +23,8 @@
  */
 defined('MOODLE_INTERNAL') || die;
 
+require_once(dirname(__FILE__) . '/locallib.php');
+
 if ($ADMIN->fulltree) {
     $showcategories = array(
         BLOCKS_COURSE_OVERVIEW_SHOWCATEGORIES_NONE => new lang_string('none', 'block_course_overview'),
