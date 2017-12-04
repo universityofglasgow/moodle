@@ -61,6 +61,7 @@ $string['removeoldlogentries'] = 'Entfernen alter H5P-Logdateien';
 $string['displayoptionnevershow'] = 'Nie zeigen';
 $string['displayoptionalwaysshow'] = 'Immer zeigen';
 $string['displayoptionpermissions'] = 'Nur zeigen, wenn der Nutzer H5P exportieren darf';
+$string['displayoptionpermissionsembed'] = 'Show only if user has permissions to embed H5P';
 $string['displayoptionauthoron'] = 'Vom Autor gesteuert, Standard ist an';
 $string['displayoptionauthoroff'] = 'Vom Autor gesteuert, Standard ist aus';
 $string['displayoptions'] = 'Optionen anzeigen';
@@ -172,17 +173,20 @@ $string['maximumgrade'] = 'Beste Bewertung';
 $string['maximumgradeerror'] = 'Bitte gib einen positive ganze Zahl als maximale Punktzahl für diese Aktivität an.';
 
 // Capabilities.
+$string['hvp:view'] = 'See and interact with H5P activities';
 $string['hvp:addinstance'] = 'Neue H5P-Aktivität hinzufügen';
-$string['hvp:restrictlibraries'] = 'H5P-Bibliothek beschränken';
-$string['hvp:updatelibraries'] = 'Aktualisieren einer H5P-Bibliothek';
-$string['hvp:userestrictedlibraries'] = 'Verwendung eingeschränkter H5P-Bibliotheken';
-$string['hvp:savecontentuserdata'] = 'H5P-Nutzerinhalt speichern';
+$string['hvp:manage'] = 'Edit existing H5P activites';
+$string['hvp:getexport'] = 'Exportierte H5P Datei im Kurs verwenden';
+$string['hvp:getembedcode'] = 'Get embed code from H5P in course';
 $string['hvp:saveresults'] = 'Ergebnis des H5P-Inhalts speichern';
+$string['hvp:savecontentuserdata'] = 'H5P-Nutzerinhalt speichern';
 $string['hvp:viewresults'] = 'Ergebnis des H5P-Inhalts ansehen';
 $string['hvp:viewallresults'] = 'View result for all users in course';
+$string['hvp:restrictlibraries'] = 'H5P-Bibliothek beschränken';
+$string['hvp:userestrictedlibraries'] = 'Verwendung eingeschränkter H5P-Bibliotheken';
+$string['hvp:updatelibraries'] = 'Aktualisieren einer H5P-Bibliothek';
 $string['hvp:getcachedassets'] = 'Zwischengespeicherte H5P-Inhaltswerte erhalten';
-$string['hvp:getcontent'] = 'H5P-Dateiinhalt im Kurs verwenden/ansehen';
-$string['hvp:getexport'] = 'Exportierte H5P Datei im Kurs verwenden';
+$string['hvp:installrecommendedh5plibraries'] = 'Install new safe H5P content types recommended by H5P.org';
 
 // Capabilities error messages.
 $string['nopermissiontoupgrade'] = 'Die nötigen Rechte, um die Bibliothek zu aktualisieren, sind nicht vorhanden.';
@@ -215,9 +219,14 @@ $string['invalidlibrarydata'] = 'Ungültige Daten für {$a->%property} in {$a->%
 $string['invalidlibraryproperty'] = 'Kann das Merkmal {$a->%property} in {$a->%library} nicht lesen';
 $string['missinglibraryproperty'] = 'Das benötigte Merkmal {$a->%property} fehlt in {$a->%library}';
 $string['invalidlibraryoption'] = 'Nicht erlaubte Option {$a->%option} in {$a->%library}';
-$string['addedandupdatelibraries'] = '{$a->%new} neue H5P-Bibliotheken hinzugefügt und {$a->%old} alte aktualisiert.';
-$string['addednewlibraries'] = '{$a->%new} neue H5P-Bibliotheken hinzugefügt.';
-$string['updatedlibraries'] = '{$a->%old} H5P-Bibliotheken aktualisiert.';
+$string['addedandupdatedss'] = 'Added {$a->%new} new H5P library and updated {$a->%old} old one.';
+$string['addedandupdatedsp'] = 'Added {$a->%new} new H5P library and updated {$a->%old} old ones.';
+$string['addedandupdatedps'] = 'Added {$a->%new} new H5P libraries and updated {$a->%old} old one.';
+$string['addedandupdatedpp'] = 'Added {$a->%new} new H5P libraries and updated {$a->%old} old ones.';
+$string['addednewlibrary'] = 'Added {$a->%new} new H5P library.';
+$string['addednewlibraries'] = 'Added {$a->%new} new H5P libraries.';
+$string['updatedlibrary'] = 'Updated {$a->%old} H5P library.';
+$string['updatedlibraries'] = 'Updated {$a->%old} H5P libraries.';
 $string['missingdependency'] = 'Fehlende Abhängigkeit {$a->@dep} wird von {$a->@lib} benötigt.';
 $string['invalidstring'] = 'Der übergebene string ist nicht gültig gemäß des regulären Ausdrucks in semantics. (value: \"{$a->%value}\", regexp: \"{$a->%regexp}\")';
 $string['invalidfile'] = 'Datei "{$a->%filename}" nicht erlaubt. Es sind nur Dateien mit den folgenden Endungen erlaubt: {$a->%files-allowed}.';
@@ -235,12 +244,14 @@ $string['invalidaudioformat'] = 'Ungültiges Audio-Dateiformat. Verwende mp3 ode
 $string['invalidvideoformat'] = 'Ungültiges Video-Dateiformat. Verwende mp4 oder webm.';
 $string['couldnotsave'] = 'Konnte die Datei nicht speichern.';
 $string['couldnotcopy'] = 'Konnte die Datei nicht kopieren.';
+$string['librarynotselected'] = 'You must select a content type.';
 
 // Welcome messages.
 $string['welcomeheader'] = 'Willkommen in der Welt von H5P!';
 $string['welcomegettingstarted'] = 'Um mit H5P und Moodle loszulegen, befindet sich hier ein <a {$a->moodle_tutorial}>Tutorial</a> und es gibt<a {$a->example_content}>Beispielinhalte</a> auf H5P.org als Inspiration.';
-$string['welcomecommunity'] = 'Wir hoffen, dass Ihnen H5P gefällt und bieten die Möglichkeit, im <a {$a->forums}>Forum</a> und im Chat-Room <a {$a->gitter}>H5P bei Gitter</a> aktiv zu werden.';
+$string['welcomecommunity'] = 'Wir hoffen, dass Ihnen H5P gefällt und bieten die Möglichkeit, im <a {$a->forums}>Forum</a>.';
 $string['welcomecontactus'] = 'Für Feedback bitte nicht zögern, uns zu <a {$a}>kontaktieren</a>. Wir nehmen Feedback sehr ernst und bemühen uns, H5P jeden Tag besser zu machen!';
+$string['invalidlibrarynamed'] = 'The H5P library {$a->%library} used in the content is not valid';
 
 // Licensing.
 $string['copyrightinfo'] = 'Urheberrechtsinformationen';
@@ -279,3 +290,6 @@ $string['licenseV1'] = 'Version 1';
 $string['licenseCC010'] = 'CC0 1.0 Universal (CC0 1.0) Public Domain Dedication';
 $string['licenseCC010U'] = 'CC0 1.0 Universal';
 $string['licenseversion'] = 'License Version';
+
+// Embed.
+$string['embedloginfailed'] = 'You do not have access to this content. Try logging in.';

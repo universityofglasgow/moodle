@@ -65,6 +65,7 @@ $string['removeoldlogentries'] = 'Supprimer les anciennes entrées de logs H5P';
 $string['displayoptionnevershow'] = 'Never show';
 $string['displayoptionalwaysshow'] = 'Always show';
 $string['displayoptionpermissions'] = 'Show only if user has permissions to export H5P';
+$string['displayoptionpermissionsembed'] = 'Show only if user has permissions to embed H5P';
 $string['displayoptionauthoron'] = 'Controlled by author, default is on';
 $string['displayoptionauthoroff'] = 'Controlled by author, default is off';
 $string['displayoptions'] = 'Afficher les options';
@@ -176,17 +177,20 @@ $string['maximumgrade'] = 'Maximum grade';
 $string['maximumgradeerror'] = 'Please enter a valid positive integer as the max points available for this activity';
 
 // Capabilities.
+$string['hvp:view'] = 'See and interact with H5P activities';
 $string['hvp:addinstance'] = 'Ajouter une nouvelle activité H5P';
-$string['hvp:restrictlibraries'] = 'Restreindre une bibliothèque H5P';
-$string['hvp:updatelibraries'] = 'Mettre à jour la version d\'une bibliothèque H5P';
-$string['hvp:userestrictedlibraries'] = 'Utiliser des bibliothèques H5P restreintes';
-$string['hvp:savecontentuserdata'] = 'Sauvegarder les données utilisateur H5P';
+$string['hvp:manage'] = 'Edit existing H5P activites';
+$string['hvp:getexport'] = 'Récupérer un fichier H5P dans un cours';
+$string['hvp:getembedcode'] = 'View H5P embed code when \'controlled by permission\' option is set';
 $string['hvp:saveresults'] = 'Sauvegarder les résultats';
+$string['hvp:savecontentuserdata'] = 'Sauvegarder les données utilisateur H5P';
 $string['hvp:viewresults'] = 'Visualiser les résultats';
 $string['hvp:viewallresults'] = 'View result for all users in course';
+$string['hvp:restrictlibraries'] = 'Restreindre une bibliothèque H5P';
+$string['hvp:userestrictedlibraries'] = 'Utiliser des bibliothèques H5P restreintes';
+$string['hvp:updatelibraries'] = 'Mettre à jour la version d\'une bibliothèque H5P';
 $string['hvp:getcachedassets'] = 'Récupérer les assets mis en cache';
-$string['hvp:getcontent'] = 'Visualiser le contenu d\'un fichier H5P dans un cours';
-$string['hvp:getexport'] = 'Récupérer un fichier H5P dans un cours';
+$string['hvp:installrecommendedh5plibraries'] = 'Install new safe H5P content types recommended by H5P.org';
 
 // Capabilities error messages.
 $string['nopermissiontoupgrade'] = 'Vous n\'avez pas les droits pour mettre à jour les bibliothèques.';
@@ -220,9 +224,14 @@ $string['invalidlibrarydata'] = 'La donnée fournie pour la proriété {$a->%pro
 $string['invalidlibraryproperty'] = 'Impossible de lire la propriété {$a->%property} de la bibliothèque {$a->%library}';
 $string['missinglibraryproperty'] = 'La propriété requise {$a->%property} de la bibliothèque {$a->%library} est manquante';
 $string['invalidlibraryoption'] = 'L\'option {$a->%option} de la bibliothèque {$a->%library} n\'est pas autorisée';
-$string['addedandupdatelibraries'] = '{$a->%new} nouvelles bibliothèques H5P ont été ajoutées et {$a->%old} déjà existantes ont été mises à jour.';
-$string['addednewlibraries'] = '{$a->%new} nouvelles bibliothèques H5P ont été ajoutées.';
-$string['updatedlibraries'] = '{$a->%old} bibliothèques H5P ont été mises à jour.';
+$string['addedandupdatedss'] = 'Added {$a->%new} new H5P library and updated {$a->%old} old one.';
+$string['addedandupdatedsp'] = 'Added {$a->%new} new H5P library and updated {$a->%old} old ones.';
+$string['addedandupdatedps'] = 'Added {$a->%new} new H5P libraries and updated {$a->%old} old one.';
+$string['addedandupdatedpp'] = 'Added {$a->%new} new H5P libraries and updated {$a->%old} old ones.';
+$string['addednewlibrary'] = 'Added {$a->%new} new H5P library.';
+$string['addednewlibraries'] = 'Added {$a->%new} new H5P libraries.';
+$string['updatedlibrary'] = 'Updated {$a->%old} H5P library.';
+$string['updatedlibraries'] = 'Updated {$a->%old} H5P libraries.';
 $string['missingdependency'] = 'la dépendance {$a->@dep} requise par {$a->@lib} est manquante.';
 $string['invalidstring'] = 'La chaine fournie n\'est pas valide selon l\'expression régulière suivante : (value: \"{$a->%value}\", regexp: \"{$a->%regexp}\")';
 $string['invalidfile'] = 'Le fichier "{$a->%filename}" n\est pas autorisé. Seuls les fichiers avec les extensions suivantes sont autorisés : {$a->%files-allowed}.';
@@ -240,12 +249,14 @@ $string['invalidaudioformat'] = 'Format de fichier audio non valide. Utilisez mp
 $string['invalidvideoformat'] = 'Format de fichier vidéo non valide. Utilisez mp4 ou webm.';
 $string['couldnotsave'] = 'Impossible de sauvegarder le fichier.';
 $string['couldnotcopy'] = 'Impossible de copier le fichier.';
+$string['librarynotselected'] = 'You must select a content type.';
 
 // Welcome messages.
 $string['welcomeheader'] = 'Bienvenue dans le monde H5P!';
 $string['welcomegettingstarted'] = 'Pour démarrer avec H5P et Moodle, consultez nos tutoriels <a {$a->moodle_tutorial}>tutorial</a> et testez <a {$a->example_content}>nos exemples</a> sur le site H5P.org pour vous en inspirer.';
-$string['welcomecommunity'] = 'Nous espérons que vous allez apprécier H5P et rejoindre notre communauté en constante augmentation au travers de nos <a {$a->forums}>forums</a> et notre chat <a {$a->gitter}>H5P sur Gitter</a>';
+$string['welcomecommunity'] = 'Nous espérons que vous allez apprécier H5P et rejoindre notre communauté en constante augmentation au travers de nos <a {$a->forums}>forums</a>.';
 $string['welcomecontactus'] = 'Si vous avez des suggestions, n\'hésitez pas à <a {$a}>nous contacter</a>. Nous prenons toutes les suggestions très sérieuse en considération pour rendre H5P meilleur chaque jour !';
+$string['invalidlibrarynamed'] = 'The H5P library {$a->%library} used in the content is not valid';
 
 // Licensing.
 $string['copyrightinfo'] = 'Information copyright';
@@ -284,3 +295,6 @@ $string['licenseV1'] = 'Version 1';
 $string['licenseCC010'] = 'CC0 1.0 Universal (CC0 1.0) Public Domain Dedication';
 $string['licenseCC010U'] = 'CC0 1.0 Universal';
 $string['licenseversion'] = 'License Version';
+
+// Embed.
+$string['embedloginfailed'] = 'You do not have access to this content. Try logging in.';

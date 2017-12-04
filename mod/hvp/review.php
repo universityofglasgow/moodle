@@ -37,8 +37,8 @@ if (!$course = $DB->get_record('course', ['id' => $cm->course])) {
 require_login($course, false, $cm);
 
 // Check permission.
-$coursecontext = context_course::instance($COURSE->id);
-hvp_require_view_results_permission($userid, $coursecontext, $cm->id);
+$context = \context_module::instance($cm->id);
+hvp_require_view_results_permission($userid, $context, $cm->id);
 
 // Load H5P Content.
 $hvp = $DB->get_record_sql(
@@ -95,11 +95,11 @@ foreach ($xapiresults as $question) {
         $basequestion = $question;
 
         if (isset($question->raw_score) && isset($question->grademax) && isset($question->max_score)) {
-            $scaledscoreperscore   = $question->grademax / $question->max_score;
+            $scaledscoreperscore   = $question->max_score ? ($question->grademax / $question->max_score) : 0;
             $question->score_scale = round($scaledscoreperscore, 2);
             $totalrawscore         = $question->raw_score;
             $totalmaxscore         = $question->max_score;
-            if ($question->raw_score === $question->max_score) {
+            if ($question->max_score && $question->raw_score === $question->max_score) {
                 $totalscaledscore = round($question->grademax, 2);
             } else {
                 $totalscaledscore = round($question->score_scale * $question->raw_score, 2);
