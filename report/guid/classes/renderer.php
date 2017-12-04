@@ -111,13 +111,19 @@ class report_guid_renderer extends plugin_renderer_base {
             }
             if ($username) {
                 $link = new moodle_url('/report/guid/index.php', array('guid' => $guid, 'action' => 'more'));
+                $createbutton = '<a class="btn btn-primary" href="' . $link->out(true, array('sesskey' => sesskey())) . '">'.
+                        get_string('more', 'report_guid') . '</a>';
+                if (!$user) {
+                    $createlink = new moodle_url('/report/guid/index.php', array('action' => 'create', 'guid' => $guid, 'sesskey' => sesskey()));
+                    $createbutton .= ' <a class="btn btn-info" href="' . $createlink->out(true, array('sesskey' => sesskey())) . '">' .
+                        get_string('createbutton', 'report_guid') . '</a>';
+                }
                 $table->data[] = array(
                     $username,
                     $result[$config->field_map_firstname],
                     $result[$config->field_map_lastname],
                     $mail,
-                    '<a class="btn btn-primary" href="' . $link->out(true, array('sesskey' => sesskey())) . '">'.
-                    get_string('more', 'report_guid').'</a>'
+                    $createbutton
                 );
             }
         }

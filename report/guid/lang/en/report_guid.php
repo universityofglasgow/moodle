@@ -34,6 +34,7 @@ $string['countnewaccounts'] = '{$a} new accounts created';
 $string['courseupload'] = 'Upload users and groups to course';
 $string['courseuploadinstructions'] = 'Upload your CSV file. First column is either GUID or ID number (= matric number for students) as selected below. Remaining columns (if present) contain the names of groups those students should be added to. Users will be created, enrolled on the course and added to groups as required';
 $string['create'] = '(Create an account for this user)';
+$string['createbutton'] = 'Create';
 $string['csverror'] = 'There is an error in the CSV file';
 $string['csvfile'] = 'CSV File';
 $string['currentusername'] = 'Current username';
