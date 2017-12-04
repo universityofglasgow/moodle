@@ -32,7 +32,7 @@ $config = report_guid_search::settings();
 $ldaphost = $config->host_url;
 $dn = $config->contexts;
 
-// Renderer
+// Renderer.
 $PAGE->set_context(context_system::instance());
 $output = $PAGE->get_renderer('report_guid');
 $output->set_guid_config($config);
@@ -81,7 +81,7 @@ if ($mform->is_cancelled()) {
     $errorcount = 0;
     $existscount = 0;
 
-    // configuration
+    // Configuration.
     $config = report_guid_search::settings();
 
     // Iterate over lines in csv.

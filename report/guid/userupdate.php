@@ -29,7 +29,7 @@ require_once($CFG->libdir . '/formslib.php');
 // Configuration.
 $config = report_guid_search::settings();
 
-// Renderer
+// Renderer.
 $context = context_system::instance();
 $PAGE->set_context($context);
 $output = $PAGE->get_renderer('report_guid');
@@ -38,12 +38,12 @@ $output->set_guid_config($config);
 // Parameters.
 $userid = required_param('userid', PARAM_INT);
 
-// Security
+// Security.
 require_login();
 require_sesskey();
 require_capability('moodle/user:update', $context);
 
-// User details
+// User details.
 $user = $DB->get_record('user', array('id' => $userid), '*', MUST_EXIST);
 
 // Start the page.
@@ -59,8 +59,8 @@ if ($mform->is_cancelled()) {
     die;
 } else if ($data = $mform->get_data()) {
     $newusername = $data->newusername;
-    
-    // check for duplicate
+
+    // Check for duplicate.
     if ($users = report_guid_search::isduplicate($newusername)) {
         $output->duplicates($users);
     } else {

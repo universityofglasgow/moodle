@@ -23,6 +23,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die;
+
 class report_guid_updateform extends moodleform {
 
     public function definition() {
@@ -30,11 +32,12 @@ class report_guid_updateform extends moodleform {
 
         $mform =& $this->_form;
         $user = $this->_customdata['user'];
-        
 
         // Main part.
-        $mform->addElement('html', '<div class="alert alert-info">' . get_string('changeuserdesc', 'report_guid', fullname($user) ) . '</div>' );
-        $mform->addElement('text', 'currentusername', get_string('currentusername', 'report_guid'), array('disabled' => 'disabled'));
+        $mform->addElement('html', '<div class="alert alert-info">' .
+            get_string('changeuserdesc', 'report_guid', fullname($user) ) . '</div>' );
+        $mform->addElement('text', 'currentusername',
+            get_string('currentusername', 'report_guid'), array('disabled' => 'disabled'));
         $mform->setType('currentusername', PARAM_TEXT);
         $mform->setDefault('currentusername', $user->username);
 

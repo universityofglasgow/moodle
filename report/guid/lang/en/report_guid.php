@@ -22,6 +22,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+$string['addgroups'] = 'Add groups';
+$string['addgroups_help'] = 'Additional columns will be used to add user to specified groups. Groups are created if they do not exist. If this is set to \'No\' additional columns are ignored';
 $string['accountcreated'] = 'Account created for {$a}';
 $string['accountexists'] = 'Account not created, {$a} already exists';
 $string['changeuserdesc'] = 'Change username for \'{$a}\'. Take care - mistakes will stop them logging in';

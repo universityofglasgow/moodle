@@ -22,6 +22,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die;
 
 class report_guid_search {
 
@@ -33,6 +34,7 @@ class report_guid_search {
         $config = $auth->config;
         if (empty($config->host_url) || empty($config->contexts)) {
             debugging('host_url and contexts must be defined in enrol_guid settings');
+            return false;
         }
         if (empty($config->field_map_firstname)) {
             $config->field_map_firstname = 'givenName';
@@ -127,7 +129,7 @@ class report_guid_search {
             return false;
         }
 
-        // Bind
+        // Bind.
         if (empty($config->bind_dn)) {
             if (!ldap_bind( $dv )) {
                 debugging( 'Failed anonymous bind to ldap host '.ldap_error( $dv ) );
@@ -207,7 +209,7 @@ class report_guid_search {
      */
     public static function array_to_guid($guids) {
 
-        // some guids look like an email
+        // Some guids look like an email.
         $chosenguid = '';
         foreach ($guids as $guid) {
             if (strpos($guid, '@') !== false) {
@@ -216,7 +218,7 @@ class report_guid_search {
             $chosenguid = $guid;
         }
 
-        // if that doesn't help, just pick the first one
+        // If that doesn't help, just pick the first one.
         if (!$chosenguid) {
             $chosenguid = reset($guids);
         }
@@ -281,7 +283,7 @@ class report_guid_search {
     }
 
     /**
-     * print enrolments 
+     * print enrolments
      */
     public static function print_enrolments( $enrolments, $name, $guid ) {
         global $OUTPUT;
@@ -346,14 +348,14 @@ class report_guid_search {
 
             echo '<br />';
 
-            // display local courses (if there are any).
+            // Display local courses (if there are any).
             if (strpos($course->courses, '*') === false) {
                 echo '<small>';
                 if ($gucourses) {
                     $links = array();
                     foreach ($gucourses as $gu) {
                         $link = new moodle_url('/course/view.php', array('id' => $gu->courseid));
-                        $links[] = '<a href="' . $link . '">&quot;' . $gu->coursename . '&quot;</a>'; 
+                        $links[] = '<a href="' . $link . '">&quot;' . $gu->coursename . '&quot;</a>';
                     }
                     echo implode(', ', $links);
                 } else {
@@ -391,7 +393,7 @@ class report_guid_search {
 
         $config = self::settings();
 
-        // check if multiple uids
+        // Check if multiple uids.
         $guid = $result[$config->user_attribute];
         if (is_array($guid)) {
             $guid = self::array_to_guid($guid);
@@ -424,7 +426,7 @@ class report_guid_search {
         return $user;
     }
 
-    // Find details about MyCampus codes
+    // Find details about MyCampus codes.
     private static function mycampus_code($code) {
         global $DB;
 
@@ -440,7 +442,6 @@ class report_guid_search {
         global $DB;
 
         $config = self::settings();
-
 
         // If the GUID is supplied then we don't care about anything else.
         if (!empty($guid)) {
@@ -460,7 +461,7 @@ class report_guid_search {
         // Otherwise we'll take the name.
         $sql = 'SELECT * FROM {user} WHERE deleted=0 AND ';
         $params = array();
-        
+
         if (empty($firstname) && empty($lastname)) {
             return false;
         }
@@ -545,7 +546,7 @@ class report_guid_search {
             $criteria = 'username';
         }
         return $DB->get_record('user', array($criteria => $usermatch));
-    } 
+    }
 
     /**
      * Creat group (after checking if it exists)

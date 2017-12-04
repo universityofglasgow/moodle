@@ -74,6 +74,8 @@ class parseCSV {
     ----------------
      */
 
+defined('MOODLE_INTERNAL') || die;
+
     /**
      * Configuration
      * - set these options with $object->var_name = 'value';

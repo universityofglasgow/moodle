@@ -28,10 +28,10 @@ require_once($CFG->libdir . '/formslib.php');
 
 require_login();
 
-// Get settings
+// Get settings.
 $config = report_guid_search::settings();
 
-// Renderer
+// Renderer.
 $context = context_system::instance();
 $PAGE->set_context($context);
 $output = $PAGE->get_renderer('report_guid');
@@ -80,15 +80,15 @@ if (($action == 'create') and confirm_sesskey()) {
     }
 }
 
-// Check for delete
+// Check for delete.
 if ($delete) {
     require_sesskey();
     require_capability('moodle/user:delete', $context);
     $user = $DB->get_record('user', array('id' => $delete));
-    
+
     if ($confirm != md5($user->id)) {
-        
-        // Confirm message
+
+        // Confirm message.
         $output->confirmdelete($user);
         echo $OUTPUT->footer();
         die;
@@ -101,7 +101,7 @@ if ($delete) {
     }
 }
 
-// 'more' button pressed
+// Was 'more' button pressed?
 if ($guid && ($action == 'more')) {
     $results = report_guid_search::filter($output, '', '', $guid, '', '');
     $result = array_shift($results);

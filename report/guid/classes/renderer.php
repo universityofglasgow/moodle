@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -68,7 +67,7 @@ class report_guid_renderer extends plugin_renderer_base {
             return;
         }
 
-        // check for too many
+        // Check for too many.
         if (count($results) > MAXIMUM_RESULTS) {
             echo '<div class="alert alert-warning">' . get_string('toomanyldap', 'report_guid') . '</div>';
             return;
@@ -92,8 +91,8 @@ class report_guid_renderer extends plugin_renderer_base {
             );
         foreach ($results as $cn => $result) {
             $guid = $result[$config->user_attribute];
-     
-            // check that this isn't an array (it shouldn't be)
+
+            // Check that this isn't an array (it shouldn't be).
             if (is_array($guid)) {
                 $guid = report_guid_search::array_to_guid($guid);
             }
@@ -135,7 +134,7 @@ class report_guid_renderer extends plugin_renderer_base {
      * Print single, detailed result
      * @param object $result
      */
-    function single_ldap($result) {
+    public function single_ldap($result) {
         global $OUTPUT, $CFG, $USER, $DB;
 
         $config = report_guid_search::settings();
@@ -156,7 +155,8 @@ class report_guid_renderer extends plugin_renderer_base {
             $create = '';
         } else {
             $displayname = $fullname;
-            $createlink = new moodle_url('/report/guid/index.php', array('action' => 'create', 'guid' => $username, 'sesskey' => sesskey()));
+            $createlink = new moodle_url('/report/guid/index.php',
+                array('action' => 'create', 'guid' => $username, 'sesskey' => sesskey()));
             if (!empty( $mailinfo['mail'] )) {
                 $create = '<a class="btn btn-primary" href="' . $createlink . '" >' . get_string('create', 'report_guid')."</a>";
             } else {
@@ -169,10 +169,11 @@ class report_guid_renderer extends plugin_renderer_base {
         if (!empty($user)) {
             echo $OUTPUT->user_picture( $user, array('size' => 100) );
         }
-        echo '<div class="alert alert-info">' . get_string( 'resultfor', 'report_guid') . ' ' .  $displayname . ' ' . $create . ' (' . $username . ')</div>';
+        echo '<div class="alert alert-info">' . get_string( 'resultfor', 'report_guid') .
+            ' ' .  $displayname . ' ' . $create . ' (' . $username . ')</div>';
         report_guid_search::array_prettyprint( $result );
 
-        // if we have a $user object, synchronise their enrolments
+        // If we have a $user object, synchronise their enrolments.
         if ($user) {
             $gudatabase = enrol_get_plugin('gudatabase');
             if ($gudatabase->is_configured()) {
@@ -239,7 +240,7 @@ class report_guid_renderer extends plugin_renderer_base {
             return;
         }
 
-        // check for too many
+        // Check for too many.
         if (count($users) > MAXIMUM_RESULTS) {
             echo '<div class="alert alert-warning">' . get_string('toomanyuser', 'report_guid') . '</div>';
             return;
@@ -265,9 +266,10 @@ class report_guid_renderer extends plugin_renderer_base {
             }
             if (has_capability('moodle/user:update', $context)) {
                 $link = new moodle_url('/report/guid/userupdate.php', array('userid' => $userid, 'sesskey' => sesskey()));
-                $buttons .= '<a class="btn btn-warning" href="' . $link . '">' . get_string('changeusername', 'report_guid') . '</a>';
+                $buttons .= '<a class="btn btn-warning" href="' .
+                    $link . '">' . get_string('changeusername', 'report_guid') . '</a>';
             }
-     
+
             $userlink = new moodle_url('/user/view.php', array('id' => $user->id, 'course' => 1));
             $username = '<a class="btn btn-success" href="' . $userlink . '">' . $user->username . '</a>';
             $table->data[] = array(
@@ -330,7 +332,7 @@ class report_guid_renderer extends plugin_renderer_base {
 
         $fullname = fullname($user, true);
 
-        $optionsyes = array('delete' => $user->id, 'confirm' => md5($user->id), 'sesskey'=>sesskey());
+        $optionsyes = array('delete' => $user->id, 'confirm' => md5($user->id), 'sesskey' => sesskey());
         $deleteurl = new moodle_url('/report/guid/index.php', $optionsyes);
         $cancelurl = new moodle_url('/report/guid/index.php');
         $deletebutton = new single_button($deleteurl, get_string('delete'), 'post');

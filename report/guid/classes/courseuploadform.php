@@ -23,6 +23,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die;
+
 class report_guid_courseuploadform extends moodleform {
 
     public function definition() {
@@ -30,7 +32,7 @@ class report_guid_courseuploadform extends moodleform {
 
         $mform =& $this->_form;
 
-        // parameters
+        // Parameters.
         $roles = $this->_customdata['roles'];
         $studentroleid = $this->_customdata['studentroleid'];
         $courseid = $this->_customdata['id'];
@@ -44,14 +46,18 @@ class report_guid_courseuploadform extends moodleform {
         $mform->addElement('html', '<div class="alert">'.get_string('courseuploadinstructions', 'report_guid' ).'</div>' );
         $mform->addElement('filepicker', 'csvfile', get_string('csvfile', 'report_guid' ) );
 
-        // Role to assign
+        // Role to assign.
         $mform->addElement('select', 'role', get_string('roletoassign', 'report_guid'), $roles);
         $mform->addHelpButton('role', 'roletoassign', 'report_guid');
         $mform->setDefault('role', $studentroleid);
 
-        // First column
+        // First column.
         $mform->addElement('select', 'firstcolumn', get_string('firstcolumn', 'report_guid'), $firstcoloptions);
         $mform->addHelpButton('firstcolumn', 'firstcolumn', 'report_guid');
+
+        // Add groups.
+        $mform->addElement('selectyesno', 'addgroups', get_string('addgroups', 'report_guid'), 0);
+        $mform->addHelpButton('addgroups', 'addgroups', 'report_guid');
 
         // Action buttons.
         $this->add_action_buttons(false, get_string('submitfile', 'report_guid'));

@@ -34,13 +34,13 @@ $config = report_guid_search::settings();
 // Parameters.
 $courseid = required_param('id', PARAM_INT);
 
-// Security
+// Security.
 $course = $DB->get_record('course', array('id' => $courseid), '*', MUST_EXIST);
 $context = context_course::instance($courseid);
 require_login($course);
 require_capability('report/guid:courseupload', $context);
 
-// Renderer
+// Renderer.
 $PAGE->set_context($context);
 $output = $PAGE->get_renderer('report_guid');
 $output->set_guid_config($config);
@@ -54,9 +54,9 @@ echo $OUTPUT->header();
 
 echo $OUTPUT->heading(get_string('headingcourseupload', 'report_guid'));
 
-// Get the list of roles current user may assign
+// Get the list of roles current user may assign.
 $roles = get_assignable_roles($context);
-$studentrole =report_guid_search::getstudentrole();
+$studentrole = report_guid_search::getstudentrole();
 
 // Form definition.
 $mform = new report_guid_courseuploadform(null, array(
@@ -69,9 +69,10 @@ if ($mform->is_cancelled()) {
     die;
 } else if ($data = $mform->get_data()) {
 
-    // Upload settings
+    // Upload settings.
     $roleid = $data->role;
     $firstcolumn = $data->firstcolumn;
+    $addgroups = $data->addgroups;
 
     // Get the data from the file.
     $filedata = $mform->get_file_content('csvfile');
@@ -95,15 +96,17 @@ if ($mform->is_cancelled()) {
     $errorcount = 0;
     $existscount = 0;
 
-    // configuration
-    $config = report_guid_search::settings();
+    // Configuration.
+    if (!$config = report_guid_search::settings()) {
+        notice('GUID enrol plugin is not configured');
+    }
 
     // Iterate over lines in csv.
     foreach ($csv->data as $line) {
 
-        // Get the username/guid from the first column 
-        // and groups from any additional
-	$groups = array();
+        // Get the username/guid from the first column,
+        // and groups from any additional.
+        $groups = array();
         $count = 0;
         foreach ($line as $item) {
             $item = trim( $item, '" ' );
@@ -111,12 +114,12 @@ if ($mform->is_cancelled()) {
                 $usermatch = $item;
             } else {
                 $groups[] = $item;
-	    }
-	    $count++;
+            }
+            $count++;
         }
 
         // If nothing in first column, possibly blank line?
-        // Anyway, nothing else to be done
+        // Anyway, nothing else to be done.
         if (empty($usermatch)) {
             continue;
         }
@@ -124,10 +127,10 @@ if ($mform->is_cancelled()) {
         // Notify...
         echo "<p><strong>'$usermatch'</strong> ";
 
-        // Does user exist in Moodle at all
+        // Does user exist in Moodle at all?
         if (!$user = report_guid_search::findmoodleuser($usermatch, $firstcolumn)) {
 
-            // If they don't already exist then find in
+            // If they don't already exist then find in LDAP.
             if ($firstcolumn == 'guid') {
                 $ldap = report_guid_search::filter($output, '', '', $usermatch, '', '');
             } else {
@@ -147,7 +150,7 @@ if ($mform->is_cancelled()) {
                 continue;
             }
 
-            // Create the user profile from ldap if needed
+            // Create the user profile from ldap if needed.
             $ldapuser = reset($ldap);
             $user = report_guid_search::create_user_from_ldap($ldapuser);
 
@@ -170,8 +173,8 @@ if ($mform->is_cancelled()) {
             }
         }
 
-        // Any remaining items on the line will be groups
-        if ($groups) {
+        // Any remaining items on the line will be groups (if enabled).
+        if ($groups && $addgroups) {
             foreach ($groups as $groupname) {
                 $groupid = report_guid_search::create_group($groupname, $courseid);
                 if (groups_add_member($groupid, $user->id)) {
