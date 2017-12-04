@@ -46,18 +46,22 @@ class main implements renderable, templatable {
 
     private $selectedtab;
 
+    private $sortorder;
+
     /**
      * Constructor
      * @param object $config block configuration
      * @param array $tabs data for favourites/courses
      * @param boolean $isediting
      * @param string $selectedtab
+     * @param int $sortorder
      */
-    public function __construct($config, $tabs, $isediting, $selectedtab) {
+    public function __construct($config, $tabs, $isediting, $selectedtab, $sortorder) {
         $this->config = $config;
         $this->tabs = $tabs;
         $this->isediting = $isediting;
         $this->selectedtab = $selectedtab;
+        $this->sortorder = $sortorder;
     }
 
     /**
@@ -137,6 +141,32 @@ class main implements renderable, templatable {
     }
 
     /**
+     * Build select for course list reorder
+     * @param object $output
+     * @return string html
+     */
+    private function reorder_select(renderer_base $output) {
+
+        $options = [
+            BLOCKS_COURSE_OVERVIEW_REORDER_NONE => get_string('reordernone', 'block_course_overview'),
+            BLOCKS_COURSE_OVERVIEW_REORDER_FULLNAME => get_string('reorderfullname', 'block_course_overview'),
+            BLOCKS_COURSE_OVERVIEW_REORDER_SHORTNAME => get_string('reordershortname', 'block_course_overview'),
+            BLOCKS_COURSE_OVERVIEW_REORDER_ID => get_string('reorderid', 'block_course_overview'),
+        ];
+
+        // Courses reorder select.
+        $select = $output->single_select(
+            new \moodle_url('/my', array('sesskey' => sesskey())),
+            'sortorder',
+            $options,
+            $this->sortorder,
+            null
+        );
+
+        return $select;
+    }
+
+    /**
      * Export this data so it can be used as the context for a mustache template.
      *
      * @param \renderer_base $output
@@ -163,6 +193,7 @@ class main implements renderable, templatable {
             'isediting' => $this->isediting,
             'help' => $output->help_icon('help', 'block_course_overview', true),
             'viewingfavourites' => $this->selectedtab == 'favourites',
+            'select' => $this->reorder_select($output),
         ];
     }
 

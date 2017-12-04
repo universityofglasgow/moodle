@@ -25,6 +25,12 @@
 
 <div id="block-course-overview-{{uniqid}}" class="block-course-overview" data-region="course-overview">
 
+    {{# isediting }}
+        <div class="alert alert-secondary">
+            {{# str }}sortorder, block_course_overview{{/ str }} {{{ select }}}
+        </div>
+    {{/ isediting }}
+
     <ul id="block-course-overview-view-choices-{{ uniqid }}" class="nav nav-tabs" role="tablist">
         <li class="nav-item">
             <a class="nav-link {{# viewingfavourites }}active{{/ viewingfavourites }}" href="#favourites" role="tab" data-toggle="tab" data-tabname="favourites">

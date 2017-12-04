@@ -28,6 +28,11 @@ define('BLOCKS_COURSE_OVERVIEW_SHOWCATEGORIES_NONE', '0');
 define('BLOCKS_COURSE_OVERVIEW_SHOWCATEGORIES_ONLY_PARENT_NAME', '1');
 define('BLOCKS_COURSE_OVERVIEW_SHOWCATEGORIES_FULL_PATH', '2');
 
+define('BLOCKS_COURSE_OVERVIEW_REORDER_NONE', '0');
+define('BLOCKS_COURSE_OVERVIEW_REORDER_FULLNAME', '1');
+define('BLOCKS_COURSE_OVERVIEW_REORDER_SHORTNAME', '2');
+define('BLOCKS_COURSE_OVERVIEW_REORDER_ID', '3');
+
 /**
  * Display overview for courses
  *
@@ -138,16 +143,48 @@ function block_course_overview_update_favourites($favourites) {
 }
 
 /**
+ * Get sort order preference
+ * @return int
+ */
+function block_course_overview_get_sortorder() {
+    if ($value = get_user_preferences('course_overview_sortorder')) {
+        return $value;
+    } else {
+        return BLOCKS_COURSE_OVERVIEW_REORDER_NONE;
+    }
+}
+
+/**
+ * Set sort order preference
+ * @param int $sortorder
+ */
+function block_course_overview_update_sortorder($sortorder) {
+    set_user_preference('course_overview_sortorder', $sortorder);
+}
+
+/**
  * Return sorted list of user courses
  *
  * @param bool $favourites tab selected
- * @param array $exlude list of courses not to include (i.e. favs in courses list)
+ * @param bool $keepfavourites setting, show favs in course tab
+ * @param array $exlude list of courses not to include (i.e. favs in courses list)A
  * @return array list of sorted courses and count of courses.
  */
-function block_course_overview_get_sorted_courses($favourites, $exclude = []) {
+function block_course_overview_get_sorted_courses($favourites, $keepfavourites = false, $exclude = []) {
     global $USER;
 
-    $courses = enrol_get_my_courses();
+    // Get courses in order.
+    $sortorder = block_course_overview_get_sortorder();
+    if ($sortorder == BLOCKS_COURSE_OVERVIEW_REORDER_FULLNAME) {
+        $sort = 'fullname ASC';
+    } else if ($sortorder == BLOCKS_COURSE_OVERVIEW_REORDER_SHORTNAME) {
+        $sort = 'shortname ASC';
+    } else if ($sortorder == BLOCKS_COURSE_OVERVIEW_REORDER_ID) {
+        $sort = 'id ASC';
+    } else {
+        $sort = 'visible DESC,sortorder ASC';
+    }
+    $courses = enrol_get_my_courses(null, $sort);
     $site = get_site();
 
     if (array_key_exists($site->id, $courses)) {
@@ -181,26 +218,39 @@ function block_course_overview_get_sorted_courses($favourites, $exclude = []) {
     }
 
     $sortedcourses = array();
-    $counter = 0;
-    // Get courses in sort order into list.
-    foreach ($order as $key => $cid) {
 
-        // Make sure user is still enroled.
-        if (isset($courses[$cid])) {
-            $sortedcourses[$cid] = $courses[$cid];
-            $counter++;
+    // Accept list as-is or order by preference list.
+    if (!$favourites && ($sortorder != BLOCKS_COURSE_OVERVIEW_REORDER_NONE)) {
+        $sortedcourses = $courses;
+    } else {
+        $counter = 0;
+
+        // Get courses in sort order into list.
+        foreach ($order as $key => $cid) {
+
+            // Make sure user is still enroled.
+            if (isset($courses[$cid])) {
+                $sortedcourses[$cid] = $courses[$cid];
+                $counter++;
+            }
+        }
+
+        // Append unsorted courses if limit allows & not favourites.
+        if (!$favourites) {
+            foreach ($courses as $c) {
+                if (!in_array($c->id, $order)) {
+                    $sortedcourses[$c->id] = $c;
+                    $counter++;
+                }
+            }
         }
     }
 
-    // Append unsorted courses if limit allows & not favourites.
-    if (!$favourites) {
-        foreach ($courses as $c) {
+    // If this is the courses tab and we are excluding favourites.
+    if (!$favourites && !$keepfavourites) {
+        foreach ($sortedcourses as $c) {
             if (in_array($c->id, $exclude)) {
-                continue;
-            }
-            if (!in_array($c->id, $order)) {
-                $sortedcourses[$c->id] = $c;
-                $counter++;
+                unset($sortedcourses[$c->id]);
             }
         }
     }

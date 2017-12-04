@@ -85,6 +85,15 @@ class block_course_overview extends block_base {
             block_course_overview_remove_favourite($unfavourite);
         }
 
+        // Check if sortorder updated.
+        $soparam = optional_param('sortorder', -1, PARAM_INT);
+        if ($soparam == -1) {
+            $sortorder = block_course_overview_get_sortorder();
+        } else {
+            $sortorder = $soparam;
+            block_course_overview_update_sortorder($sortorder);
+        }
+
         // Get data for favourites and course tab.
         $tabs = array();
         $ftab = new stdClass;
@@ -94,7 +103,7 @@ class block_course_overview extends block_base {
         $ctab = new stdClass;
         $ctab->tab = 'courses';
         list($ctab->sortedcourses, $ctab->sitecourses, $ctab->totalcourses)
-            = block_course_overview_get_sorted_courses(false, array_keys($ftab->sortedcourses));
+            = block_course_overview_get_sorted_courses(false, $config->keepfavourites, array_keys($ftab->sortedcourses));
         $ctab->overviews = block_course_overview_get_overviews($ctab->sortedcourses);
         $tabs = array(
             'favourites' => $ftab,
@@ -111,7 +120,7 @@ class block_course_overview extends block_base {
         $renderer = $this->page->get_renderer('block_course_overview');
 
         // Render block.
-        $main = new block_course_overview\output\main($config, $tabs, $isediting, $tab);
+        $main = new block_course_overview\output\main($config, $tabs, $isediting, $tab, $sortorder);
         $this->content->text .= $renderer->render($main);
         return $this->content;
     }

@@ -1,3 +1,10 @@
+## 3.3.4 ##
+
+* Layout of courses improved using Bootstrap grids
+* Option to keep favourites in 'normal' course list added to block settings
+* Option to have a fixed sort order for courses tab
+* Code tidied up somewhat
+
 ## 3.3.3 ##
 
 * All javascript changed from YUI to jquery amd modules

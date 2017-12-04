@@ -38,4 +38,10 @@ if ($ADMIN->fulltree) {
         BLOCKS_COURSE_OVERVIEW_SHOWCATEGORIES_NONE,
         $showcategories
     ));
+    $settings->add(new admin_setting_configcheckbox(
+        'block_course_overview/keepfavourites',
+        new lang_string('keepfavourites', 'block_course_overview'),
+        new lang_string('keepfavouritesdesc', 'block_course_overview'),
+        0
+    ));
 }
