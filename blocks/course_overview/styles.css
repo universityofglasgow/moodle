@@ -8,6 +8,11 @@
     width: 25px;
 }
 
+/* bodge for Boostrapbase/Clean */
+.block-course-overview .container-fluid {
+    padding-left: 27px;
+}
+
 
 .course-overview-dialog {
     display: none;
