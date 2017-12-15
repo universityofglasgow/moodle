@@ -15,14 +15,25 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Sychronise enrolment data for Sharepoint feed
+ * GUID Enrolment sync
  *
  * @package    local_gusync
- * @copyright  2013 Howard Miller
+ * @copyright  2017 Howard miller
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$plugin->version = 2017121500;
-$plugin->requires = 2017051500;
-$plugin->component = 'local_gusync';
-$plugin->description = 'GU course enrolments sync to external database';
+namespace local_gusync\task;
+
+require_once($CFG->dirroot . '/local/gusync/lib.php');
+
+class sync extends \core\task\scheduled_task {
+
+    public function get_name() {
+        return get_string('synctask', 'local_gusync');
+    }
+
+    public function execute() {
+        local_gusync_sync();
+    }
+
+}

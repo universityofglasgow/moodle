@@ -359,7 +359,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         $sql .= "and ClassGroupDesc = '$class' ";
 
         // Read the data from external db.
-        $matrics = array();
+        $matricnos = array();
         if ($rs = $extdb->Execute($sql)) {
             if (!$rs->EOF) {
                 while ($row = $rs->FetchRow()) {

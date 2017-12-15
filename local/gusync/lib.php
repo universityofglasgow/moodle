@@ -23,9 +23,9 @@
  */
 
 /**
- * gusync cron script
+ * gusync scheduled task
  */
-function local_gusync_cron() {
+function local_gusync_sync() {
     global $CFG;
     global $DB;
 

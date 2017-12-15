@@ -34,5 +34,6 @@ $string['dbname'] = 'DB name';
 $string['dbpass'] = 'DB password';
 $string['dbuser'] = 'DB user';
 $string['pluginname'] = 'GU Enrolments sync';
+$string['synctask'] = 'Sync UofG enrolments for Sharepoint feed';
 $string['testing'] = 'Testing mode';
 $string['timelimit'] = 'Time limit';
