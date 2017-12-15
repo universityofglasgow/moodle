@@ -1,8 +1,23 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /**
  * Language File
  *
- * @package   mod_bigbluebutton
+ * @package   mod_recordingsbn
  * @author    Jesus Federico  (jesus [at] blindsidenetworks [dt] com)
  * @copyright 2011-2014 Blindside Networks Inc.
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v2 or later
@@ -48,6 +63,8 @@ $string['view_head_duration'] = 'Duration';
 $string['view_head_recording'] = 'Recording';
 $string['view_duration_min'] = 'min';
 $string['view_no_recordings'] = 'There are no recordings to show';
+$string['view_deprecated'] = 'RecordingsBN has been deprecated and can only be used with BigBlueButtonBN 2.1.x.';
+$string['view_deprecated_info'] = 'Since version 2.2 it is possible to add a BigBlueButtonBN instance in Recordings only mode for getting RecordingsBN functionality.';
 
 $string['event_resource_page_viewed'] = 'RecordingsBN page viewed';
 $string['event_recording_published'] = 'Recording published';
