@@ -1491,7 +1491,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         $instance->customtext1 = strtoupper($data->customtext1);
 
         // Course groups.
-        $instance->customint2 = $data->coursegroups;
+        $instance->customint2 = isset($data->coursegroups) ? $data->coursegroups : '';
 
         // Group settings.
         $groups = array();
