@@ -22,6 +22,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die;
+
 /**
  * gusync scheduled task
  */
@@ -109,6 +111,39 @@ function local_gusync_sync() {
 }
 
 /**
+ * Convenience function to sync a single course
+ * @param int $courseid;
+ */
+function local_gusync_sync_one($courseid) {
+    global $CFG;
+
+    // Get plugin config.
+    $config = get_config( 'local_gusync' );
+
+    // Are we set up?
+    if (empty($config->dbhost)) {
+        mtrace( 'local_gusync: not configured' );
+        return false;
+    }
+
+    // Testing mode warning.
+    if ($config->testing) {
+        mtrace( 'local_gusync: running in testing mode' );
+    }
+
+    // Attempt to connect to external db.
+    if (!$extdb = local_gusync_dbinit($config)) {
+        mtrace( 'local_gusync: unable to connect to external database' );
+        return false;
+    }
+
+    // Sync the course.
+    local_gusync_processcourse($extdb, $courseid, $config->testing);
+
+    return true;
+}
+
+/**
  * process the enrolments in a given course
  * @param object $extdb
  * @param int $id course id
@@ -160,7 +195,7 @@ function local_gusync_processcourse( $extdb, $id, $testing ) {
     // Reload course object with final data.
     $extcourse = local_gusync_query( $extdb, $coursesql, true );
 
-    // If we are 'testing' then it's possible this is still empty
+    // If we are 'testing' then it's possible this is still empty.
     if ($testing && empty($extcourse)) {
         mtrace('local_gusync: course data does not exist and not written in testing mode (warning)');
         return;
@@ -267,8 +302,8 @@ function local_gusync_getusers( $course ) {
     // Get the (guid) users in these instances.
     $users = array();
     foreach ($instances as $instance) {
-        $sql = "select distinct u.id as id, username, ue.timemodified as timemodified, auth ";
-        $sql .= "from {user} as u join {user_enrolments} as ue on (ue.userid = u.id) ";
+        $sql = "select distinct u.id id, username, ue.timemodified timemodified, auth ";
+        $sql .= "from {user} u join {user_enrolments} ue on (ue.userid = u.id) ";
         $sql .= "where enrolid = ? ";
         $sql .= "and auth = ? ";
         $enrolments = $DB->get_records_sql( $sql, array($instance->id, 'guid') );
@@ -321,7 +356,7 @@ function local_gusync_dbinit($config) {
 
 /**
  * Execute sql and return rows from external database
- * @param object $extdb 
+ * @param object $extdb
  * @param string $sql
  * @param boolean $singlerecord
  * @return mixes rows or false

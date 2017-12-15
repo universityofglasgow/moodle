@@ -22,11 +22,11 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$observers = array(
+defined('MOODLE_INTERNAL') || die;
 
+$observers = array(
     array(
         'eventname' => '\core\event\course_deleted',
         'callback' => 'local_gusync_observer::course_deleted',
     ),
-
 );

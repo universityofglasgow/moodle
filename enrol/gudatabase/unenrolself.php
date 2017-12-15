@@ -26,7 +26,7 @@ $enrolid = required_param('enrolid', PARAM_INT);
 $confirm = optional_param('confirm', 0, PARAM_BOOL);
 
 $instance = $DB->get_record('enrol', array('id' => $enrolid, 'enrol' => 'gudatabase'), '*', MUST_EXIST);
-$course = $DB->get_record('course', array('id' =>$instance->courseid), '*', MUST_EXIST);
+$course = $DB->get_record('course', array('id' => $instance->courseid), '*', MUST_EXIST);
 $context = context_course::instance($course->id, MUST_EXIST);
 
 require_login();
@@ -46,7 +46,7 @@ $PAGE->set_url('/enrol/gudatabase/unenrolself.php', array('enrolid' => $instance
 $PAGE->set_title($plugin->get_instance_name($instance));
 
 // Is user allowed to unenrol?
-// They must not be in the MyCampus feed
+// They must not be in the MyCampus feed.
 $shortname = $course->shortname;
 $idnumber = $course->idnumber;
 $codes = $plugin->split_code( $idnumber );

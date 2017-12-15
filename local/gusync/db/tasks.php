@@ -22,14 +22,16 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$tasks = array(                                                                                                                     
-    array(                                                                                                                          
-        'classname' => 'local_gusync\task\sync',                                                                            
-        'blocking' => 0,                                                                                                            
-        'minute' => '*',                                                                                                            
-        'hour' => '*',                                                                                                              
-        'day' => '*',                                                                                                               
-        'dayofweek' => '*',                                                                                                         
-        'month' => '*'                                                                                                              
+defined('MOODLE_INTERNAL') || die;
+
+$tasks = array(
+    array(
+        'classname' => 'local_gusync\task\sync',
+        'blocking' => 0,
+        'minute' => '*',
+        'hour' => '*',
+        'day' => '*',
+        'dayofweek' => '*',
+        'month' => '*'
     )
 );

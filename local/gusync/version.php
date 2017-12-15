@@ -22,6 +22,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die;
+
 $plugin->version = 2017121500;
 $plugin->requires = 2017051500;
 $plugin->component = 'local_gusync';

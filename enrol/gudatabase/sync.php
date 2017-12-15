@@ -23,10 +23,11 @@
  */
 
 require(dirname(__FILE__) . '/../../config.php');
+require_once($CFG->dirroot . '/local/gusync/lib.php');
 
 $courseid = required_param('courseid', PARAM_INT);
 
-$course = $DB->get_record('course', array('id'=>$courseid), '*', MUST_EXIST);
+$course = $DB->get_record('course', array('id' => $courseid), '*', MUST_EXIST);
 $context = context_course::instance($course->id, MUST_EXIST);
 
 require_login($course);
@@ -36,12 +37,15 @@ require_capability('enrol/gudatabase:config', $context);
 $plugin = enrol_get_plugin('gudatabase');
 
 if ($instances = $DB->get_records('enrol', array('courseid' => $courseid, 'enrol' => 'gudatabase'))) {
-    foreach( $instances as $instance) {
+    foreach ($instances as $instance) {
         $plugin->enrol_course_users($course, $instance);
         $plugin->sync_groups($course, $instance);
     }
 }
 cache_helper::invalidate_by_definition('core', 'groupdata', array(), array($course->id));
+
+// Export enrolments to 'Sharepoint' database.
+local_gusync_sync_one($course->id);
 
 redirect(new moodle_url('/course/view.php', array('id' => $courseid)));
 die;

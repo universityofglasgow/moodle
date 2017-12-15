@@ -56,7 +56,7 @@ $capabilities = array(
         )
     ),
 
-    // allow user to set unenrol on mycampus (potential data loss)
+    // Allow user to set unenrol on mycampus (potential data loss).
     'enrol/gudatabase:enableunenrol' => array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,

@@ -51,7 +51,7 @@ require_once( $CFG->dirroot . '/enrol/database/lib.php' );
  */
 class enrol_gudatabase_plugin extends enrol_database_plugin {
 
-    // need to store this for error function
+    // Need to store this for error function.
     protected $trace;
 
     /**
@@ -121,7 +121,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         global $DB;
 
         if (empty($instance->name)) {
-            if (!empty($instance->roleid) and $role = $DB->get_record('role', array('id'=>$instance->roleid))) {
+            if (!empty($instance->roleid) and $role = $DB->get_record('role', array('id' => $instance->roleid))) {
                 $role = ' (' . role_get_name($role, context_course::instance($instance->courseid, IGNORE_MISSING)) . ')';
             } else {
                 $role = '';
@@ -195,7 +195,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         }
     }
 
-    /** 
+    /**
      * synchronise enrollments for particular course
      * @param object $course
      */
@@ -225,7 +225,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
      * get enrollment data from external table
      * @param array $codes list of course codes
      * @param string $userid user id
-     * @return array 
+     * @return array
      */
     public function external_enrolments( $codes=null, $userid=null ) {
         global $CFG, $DB;
@@ -304,7 +304,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
             return false;
         }
 
-        // get table name from plugin config
+        // Get table name from plugin config.
         $table = $this->get_config('classlisttable');
 
         list($subjectcode, $catcode) = $this->decode_code($code);
@@ -349,10 +349,10 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
             return false;
         }
 
-        // get table name from plugin config
+        // Get table name from plugin config.
         $table = $this->get_config('classlisttable');
 
-        list($subjectcode, $coursecatcode) = $this->decode_code($code);        
+        list($subjectcode, $coursecatcode) = $this->decode_code($code);
 
         $sql = "select matricno, ClassGroupCode from $table where ";
         $sql .= "SubjectCode = '$subjectcode' and CourseCatCode = '$coursecatcode' ";
@@ -415,8 +415,6 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
             $rs->Close();
         } else {
             $msg = $extdb->ErrorMsg();
-            //$this->error('Error executing query in UofG enrolment table "'.$msg.'" - '.$sql . ' code= ' . $code);
-
             return false;
         }
 
@@ -549,14 +547,14 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
                 $newuser->$key = $value;
             }
         } else {
-        
+
             // We didn't find the user in LDAP so there's not much else we can do.
             return false;
         }
 
         // Sanity check
         // Make sure we have pulled basic data from LDAP (something is wrong if we don't)
-        // Don't think we need worry about alternate email as these should be legit students
+        // Don't think we need worry about alternate email as these should be legit students.
         if (empty($newuser->firstname) || empty($newuser->lastname) || empty($newuser->email)) {
             return false;
         }
@@ -604,7 +602,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         return $user;
     }
 
-    /** 
+    /**
      * save codes:
      * maintain a table of codes versus course
      * so we can use in cron and reports
@@ -616,7 +614,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
     public function save_codes( $course, $codes ) {
         global $CFG, $DB;
 
-        // track codes that are deemed to exist
+        // Track codes that are deemed to exist.
         $realcodes = array();
 
         // Run through codes finding data.
@@ -698,8 +696,8 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
      */
     private function is_user_enrolled($instance, $userid) {
         global $DB;
-  
-        if ($ue = $DB->get_record('user_enrolments', array('enrolid'=>$instance->id, 'userid'=>$userid))) {
+
+        if ($ue = $DB->get_record('user_enrolments', array('enrolid' => $instance->id, 'userid' => $userid))) {
             return true;
         } else {
             return false;
@@ -714,38 +712,38 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
      */
     private function end_date($instance) {
 
-        // enrolperiod time end
+        // Enrolperiod time end.
         if ($instance->enrolperiod) {
-            $period_timeend = time() + $instance->enrolperiod;
+            $periodtimeend = time() + $instance->enrolperiod;
         } else {
-            $period_timeend = 0;
+            $periodtimeend = 0;
         }
 
-        // enrolenddate time end
+        // Enrolenddate time end.
         if ($instance->enrolenddate) {
 
-            // if in the past - forget it
+            // If in the past - forget it.
             if ($instance->enrolenddate < time()) {
-                $enddate_timeend = 0;
+                $enddatetimeend = 0;
             } else {
-                $enddate_timeend = $instance->enrolenddate;
+                $enddatetimeend = $instance->enrolenddate;
             }
         } else {
-            $enddate_timeend = 0;
+            $enddatetimeend = 0;
         }
 
-        // which to return
-        if ($enddate_timeend && $period_timeend) {
-            if ($period_timeend < $enddate_timeend) {
-                return $period_timeend;
+        // Which to return?
+        if ($enddatetimeend && $periodtimeend) {
+            if ($periodtimeend < $enddatetimeend) {
+                return $periodtimeend;
             } else {
-                return $enddate_timeend;
+                return $enddatetimeend;
             }
         } else {
-            if ($period_timeend) {
-                return $period_timeend;
+            if ($periodtimeend) {
+                return $periodtimeend;
             } else {
-                return $enddate_timeend;
+                return $enddatetimeend;
             }
         }
     }
@@ -757,7 +755,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
      */
     public function get_codes($course, $instance) {
 
-        // if customint3 is false then no settings codes
+        // If customint3 is false then no settings codes.
         if (!empty($instance->customint3)) {
             $shortname = $course->shortname;
             $idnumber = $course->idnumber;
@@ -767,7 +765,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
             $codes = array();
         }
 
-        // add codes from customtext1
+        // Add codes from customtext1.
         $morecodes = isset($instance->customtext1) ? $instance->customtext1 : '';
         $morecodes = str_replace("\n\r", "\n", $morecodes);
         $mcodes = explode("\n", $morecodes);
@@ -775,21 +773,21 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
             $mcodes[$index] = clean_param( trim($mcode), PARAM_TEXT );
         }
         $codes = array_merge($codes, $mcodes);
-        $verified_codes = $this->save_codes($course, $codes);
-        return $verified_codes;
+        $verifiedcodes = $this->save_codes($course, $codes);
+        return $verifiedcodes;
     }
 
     /**
      * Get enrollments for given course
      * and add users
-     * @parm object $course 
+     * @parm object $course
      * @param object $instance of enrol plugin
      * @return boolean success
      */
     public function enrol_course_users($course, $instance) {
         global $CFG, $DB;
 
-        // is the plugin enabled for this instance?
+        // Is the plugin enabled for this instance?
         if ($instance->status != ENROL_INSTANCE_ENABLED) {
             return true;
         }
@@ -801,7 +799,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         // and (possible) list from idnumber.
         $codes = $this->get_codes($course, $instance);
 
-        // if there are none, we have nothing to do
+        // If there are none, we have nothing to do.
         if (!$codes) {
             return false;
         }
@@ -815,7 +813,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
             return false;
         }
 
-        // Keep list of enrolled users
+        // Keep list of enrolled users.
         $enrolledusers = array();
 
         // Iterate over the enrolments and deal.
@@ -826,7 +824,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
             // Can we find this user?
             // Check against idnumber <=> matric_no if possible
             // NOTE: the username in enrol database should be correct but some
-            //       are not. The matricno<=>idnumber is definitive however.
+            // are not. The matricno<=>idnumber is definitive however.
             if (!$user = $DB->get_record( 'user', array('username' => $username))) {
 
                 // If we get here, couldn't find with username, so
@@ -834,18 +832,18 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
                 if (!$user = $DB->get_record('user', array('idnumber' => $matricno))) {
 
                     // Try to create the new user.
-                    // If it fails then there's not much else we can do with this user
+                    // If it fails then there's not much else we can do with this user.
                     if (!$user = $this->create_user_record($username, $matricno)) {
                         continue;
                     }
                 }
             }
 
-            // Enrolment period
+            // Enrolment period.
             $timestart = time();
             $timeend = $this->end_date($instance);
 
-            // role to use (existing instances will not have a 'roleid')
+            // Role to use (existing instances will not have a 'roleid').
             if (empty($instance->roleid)) {
                 $instance->roleid = $defaultrole;
                 $DB->update_record('enrol', $instance);
@@ -863,11 +861,11 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
 
         // If required unenrol remaining users.
         if (!empty($instance->customint4)) {
-        
-            // Get list of users enrolled in this instance
+
+            // Get list of users enrolled in this instance.
             $enrolments = $DB->get_records('user_enrolments', array('enrolid' => $instance->id));
 
-            // Check they should still be here
+            // Check they should still be here.
             foreach ($enrolments as $enrolment) {
                 if (array_key_exists($enrolment->userid, $enrolledusers)) {
                     continue;
@@ -882,21 +880,21 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
 
     /**
      * Add new instance of gudatabaseenrol plugin when there isn't one already
-     * using appropriate defaults. 
+     * using appropriate defaults.
      * @param object $course
      * @param array instance fields
      * @return int id of new instance, null if can not be created
      */
-    public function add_first_instance($course, array $fields = NULL) {
+    public function add_first_instance($course, array $fields = null) {
 
         $fields['roleid'] = $this->get_config('defaultrole');
-        $fields['customint1'] = 0; // expiry role
+        $fields['customint1'] = 0; // Expiry role.
         $fields['customint2'] = 0; // course code groups
         $fields['customint3'] = 1; // honour settings codes
         $fields['customint4'] = 0; // allow unenrol
         $fields['customint5'] = 0; // allow renove from groups
         $fields['customtext1'] = ''; // course codes
-        $fields['customtext2'] = ''; // serialised group enrolments. 
+        $fields['customtext2'] = ''; // serialised group enrolments.
         return $this->add_instance($course, $fields);
     }
 
@@ -988,7 +986,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         $groupid = $DB->insert_record('groups', $group);
         $group->id = $groupid;
 
-        // Invalidate the grouping cache for the course
+        // Invalidate the grouping cache for the course.
         cache_helper::invalidate_by_definition('core', 'groupdata', array(), array($course->id));
 
         // Trigger group event.
@@ -1038,7 +1036,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         }
     }
 
-    /** 
+    /**
      * Get group id given default name and course id
      * Could have been changed, so we keep them in our own table
      * (It's possible a group isn't in this table - yet - as it may have been created
@@ -1051,23 +1049,24 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         global $DB;
 
         // Is the group in the local table?
-        if ($enrolgroup = $DB->get_record('enrol_gudatabase_groups', array('originalname' => $originalname, 'courseid' => $courseid))) {
+        if ($enrolgroup = $DB->get_record('enrol_gudatabase_groups',
+            array('originalname' => $originalname, 'courseid' => $courseid))) {
             return $enrolgroup->groupid;
         } else {
 
             // The group name might exist in the course even if not in our table!
             if ($groupid = groups_get_group_by_name($courseid, $originalname)) {
 
-                // In which case save it
+                // In which case save it.
                 $enrolgroup = new stdClass;
                 $enrolgroup->originalname = $originalname;
                 $enrolgroup->courseid = $courseid;
                 $enrolgroup->groupid = $groupid;
                 $DB->insert_record('enrol_gudatabase_groups', $enrolgroup);
-                return $groupid; 
+                return $groupid;
             } else {
 
-                // It's not in the course (by name) nor in our table so the group doesn't exist
+                // It's not in the course (by name) nor in our table so the group doesn't exist.
                 return false;
             }
         }
@@ -1075,10 +1074,10 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
 
     /**
      * Check if a user is already in a group in the same 'set'
-     * @param int $courseid 
+     * @param int $courseid
      * @param object $user user in question
      * @param string $basename Fixed part of (default) group name
-     * @param array $classgroups List of groups 
+     * @param array $classgroups List of groups
      * @return boolean true if in group
      */
     private function is_in_any_classgroup($courseid, $user, $basename, $classgroups) {
@@ -1086,12 +1085,12 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         foreach ($classgroups as $classgroupcode => $memberids) {
             $groupname = "$basename $classgroupcode";
 
-            // see if group exists, if not just continue
+            // See if group exists, if not just continue.
             if (!$groupid = $this->get_local_groupid($groupname, $courseid)) {
                 continue;
             } else {
 
-                // If user is in the group then good enough
+                // If user is in the group then good enough.
                 if (groups_is_member($groupid, $user->id)) {
                     return true;
                 }
@@ -1117,30 +1116,30 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         // Make sure local group table is clean.
         $this->clean_up_groups($course->id);
 
-        // get group settings from instance
-        // nothing to do if this doesn't work
+        // Get group settings from instance.
+        // Nothing to do if this doesn't work.
         if (!$selectedgroups = unserialize($instance->customtext2)) {
             return false;
         }
 
-        // synchronise course groups
+        // Synchronise course groups.
         if ($instance->customint2) {
             $codes = $this->get_codes($course, $instance);
             if ($codes) {
                 foreach ($codes as $code) {
 
-                    // see if group exists, if not create it
+                    // See if group exists, if not create it.
                     $groupname = $code;
                     if (!$groupid = $this->get_local_groupid($groupname, $course->id)) {
                         $group = $this->create_group($groupname, $course);
-                        
-                        // when creating a group also add to local group list
+
+                        // When creating a group also add to local group list.
                         $this->get_local_groupid($groupname, $course->id);
                     } else {
                         $group = groups_get_group($groupid);
                     }
 
-                    // get enrolments
+                    // Get enrolments.
                     $enrolments = $this->external_enrolments(array($code));
                     foreach ($enrolments as $enrolment) {
                         if ($user = $DB->get_record('user', array('idnumber' => $enrolment->matric_no))) {
@@ -1151,39 +1150,39 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
             }
         }
 
-        // run through selected groups and classes
+        // Run through selected groups and classes.
         foreach ($selectedgroups as $code => $selectedgroup) {
             foreach ($selectedgroup as $class => $enabled) {
                 if ($enabled) {
                     $groupbasename = "{$code} {$class}";
                     $matricnos = $this->external_class_users($code, $class);
                     $classgroups = $this->convert_matricnos($matricnos);
- 
+
                     foreach ($classgroups as $classgroupcode => $memberids) {
                         $groupname = "$groupbasename $classgroupcode";
 
-                        // see if group exists, if not create it
+                        // See if group exists, if not create it.
                         if (!$groupid = $this->get_local_groupid($groupname, $course->id)) {
                             $group = $this->create_group($groupname, $course);
-                        
-                            // when creating a group also add to local group list
+
+                            // When creating a group also add to local group list.
                             $this->get_local_groupid($groupname, $course->id);
                         } else {
                             $group = groups_get_group($groupid);
                         }
 
-                        // find all the users for this group combination
+                        // Find all the users for this group combination.
                         $enrolledusers = array();
                         foreach ($memberids as $memberid) {
-                            if ($user = $DB->get_record('user', array('idnumber'=>$memberid))) {
+                            if ($user = $DB->get_record('user', array('idnumber' => $memberid))) {
 
-                                // Add to the group
+                                // Add to the group.
                                 groups_add_member($group, $user);
                                 $enrolledusers[$user->id] = $user->id;
                             }
                         }
 
-                        // Remove group members no longer in classgroup
+                        // Remove group members no longer in classgroup.
                         if (!empty($instance->customint5)) {
                             if ($members = $DB->get_records('groups_members', array('groupid' => $groupid))) {
                                 foreach ($members as $member) {
@@ -1247,7 +1246,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
             foreach ($uniquecourses as $courseid => $code) {
 
                 // Find last updated time for this user/course. If it was last updated within 24 hours
-                // then we won't do it again
+                // then we won't do it again.
                 $dayago = time() - (24 * 60 * 60);
                 if ($gudusers = $DB->get_record('enrol_gudatabase_users', array('userid' => $user->id, 'courseid' => $courseid))) {
                     if ($gudusers->timeupdated > $dayago) {
@@ -1260,7 +1259,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
                     continue;
                 }
 
-                // if course is not visible then do not enrol
+                // If course is not visible then do not enrol.
                 if (!$course->visible) {
                     continue;
                 }
@@ -1275,13 +1274,13 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
                         continue;
                     }
 
-                    // Now need to confirm that this instance is the one that defined this code
+                    // Now need to confirm that this instance is the one that defined this code.
                     $instcodes = $this->get_codes($course, $instance);
                     if (empty($instcodes) || !in_array($code->code, $instcodes)) {
                         continue;
                     }
-                
-                    // Enrolment period
+
+                    // Enrolment period.
                     $timestart = time();
                     $timeend = $this->end_date($instance);
                     if ($instance->enrolperiod) {
@@ -1290,7 +1289,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
                         $timeend = 0;
                     }
 
-                    // role to use (existing instances will not have a 'roleid')
+                    // Role to use (existing instances will not have a 'roleid').
                     if (empty($instance->roleid)) {
                         $instance->roleid = $defaultrole;
                         $DB->update_record('enrol', $instance);
@@ -1304,7 +1303,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
                     // Cache enrolment.
                     $this->cache_user_enrolment( $course, $user, $code->code );
 
-                    // sync the courses groups
+                    // Sync the courses groups.
                     $this->sync_groups($course, $instance);
                 }
             }
@@ -1322,13 +1321,13 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
     protected function get_coursedescriptions($course, $instance) {
         global $PAGE;
 
-        // Get renderer
+        // Get renderer.
         $output = $PAGE->get_renderer('enrol_gudatabase');
 
-        // get current codes
+        // Get current codes.
         $codes = $this->get_codes($course, $instance);
 
-        // loop through to get current classes
+        // Loop through to get current classes.
         $codeclasses = array();
         $coursedescriptions = array();
         foreach ($codes as $code) {
@@ -1365,10 +1364,10 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         $course = $this->get_course($instance);
         list($codeclasses, $coursedescriptions) = $this->get_coursedescriptions($course, $instance);
 
-        // Get renderer
+        // Get renderer.
         $output = $PAGE->get_renderer('enrol_gudatabase');
 
-        // Unpack groups
+        // Unpack groups.
         if (empty($instance->customtext2)) {
             $instance->customtext2 = '';
         }
@@ -1403,11 +1402,13 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         $mform->addElement('select', 'roleid', get_string('defaultrole', 'role'), $roles);
         $mform->setDefault('roleid', 5);
 
-        $mform->addElement('duration', 'enrolperiod', get_string('defaultperiod', 'enrol_gudatabase'), array('optional' => true, 'defaultunit' => 86400));
+        $mform->addElement('duration', 'enrolperiod', get_string('defaultperiod', 'enrol_gudatabase'),
+            array('optional' => true, 'defaultunit' => 86400));
         $mform->setDefault('enrolperiod', $this->get_config('enrolperiod'));
         $mform->addHelpButton('enrolperiod', 'defaultperiod', 'enrol_gudatabase');
 
-        $mform->addElement('date_time_selector', 'enrolenddate', get_string('enrolenddate', 'enrol_gudatabase'), array('optional' => true));
+        $mform->addElement('date_time_selector', 'enrolenddate', get_string('enrolenddate', 'enrol_gudatabase'),
+            array('optional' => true));
         $mform->setDefault('enrolenddate', 0);
         $mform->addHelpButton('enrolenddate', 'enrolenddate', 'enrol_gudatabase');
 
@@ -1435,7 +1436,8 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         }
         $mform->addElement('html', $output->print_codes($course->id, $codes, $instance->customint3));
 
-        $mform->addElement('textarea', 'customtext1', get_string('codelist', 'enrol_gudatabase'), 'rows="15" cols="25" style="height: auto; width:auto;"');
+        $mform->addElement('textarea', 'customtext1', get_string('codelist', 'enrol_gudatabase'),
+            'rows="15" cols="25" style="height: auto; width:auto;"');
         $mform->addHelpButton('customtext1', 'codelist', 'enrol_gudatabase');
         $mform->setType('customtext1', PARAM_TEXT);
 
@@ -1443,9 +1445,11 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         $mform->addElement('header', 'groupsettings', get_string('groupsettings', 'enrol_gudatabase'));
 
         if ($coursedescriptions) {
-            $mform->addElement('html', '<div class="alert alert-info">' . get_string('groupsinstruction', 'enrol_gudatabase') . '</div>');
+            $mform->addElement('html', '<div class="alert alert-info">' .
+                get_string('groupsinstruction', 'enrol_gudatabase') . '</div>');
         } else {
-            $mform->addElement('html', '<div class="alert alert-warning">' . get_string('nolegacycodes', 'enrol_gudatabase') . '</div>');
+            $mform->addElement('html', '<div class="alert alert-warning">' .
+                get_string('nolegacycodes', 'enrol_gudatabase') . '</div>');
         }
 
         if ($coursedescriptions) {
@@ -1476,27 +1480,27 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
     public function update_instance($instance, $data) {
         global $DB;
 
-        // Needed data
+        // Needed data.
         $course = $this->get_course($instance);
         list($codeclasses, $coursedescriptions) = $this->get_coursedescriptions($course, $instance);
 
-        // 'Standard' settings
+        // Standard settings.
         $data->customint1 = $data->expireroleid;
 
-        // Codes settings
-	$instance->customtext1 = strtoupper($data->customtext1);
+        // Codes settings.
+        $instance->customtext1 = strtoupper($data->customtext1);
 
-	// Course groups
-	$instance->customint2 = $data->coursegroups;
+        // Course groups.
+        $instance->customint2 = $data->coursegroups;
 
-        // Group settings
+        // Group settings.
         $groups = array();
         foreach ($codeclasses as $code => $codeclass) {
             $groups[$code] = array();
             foreach ($codeclass as $class) {
                 $selector = "{$code}_{$class}";
 
-                // If code has just been added, expected classes are not on the form
+                // If code has just been added, expected classes are not on the form.
                 if (!isset($data->$selector)) {
                     continue;
                 }
@@ -1505,11 +1509,11 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         }
         $data->customtext2 = serialize($groups);
 
-        // Update enrolments
+        // Update enrolments.
         $this->enrol_course_users($course, $instance);
         $this->sync_groups($course, $instance);
         cache_helper::invalidate_by_definition('core', 'groupdata', array(), array($course->id));
-        
+
         return parent::update_instance($instance, $data);
     }
 
@@ -1527,7 +1531,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
     public function edit_instance_validation($data, $files, $instance, $context) {
         $errors = array();
 
-        // Valid data
+        // Valid data.
         if ($instance->id) {
             $roles = get_default_enrol_roles($context, $instance->roleid);
         } else {
@@ -1535,8 +1539,8 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         }
         $roles = array_keys($roles);
         $yesno = array(0, 1);
-        
-        // Parameters to validate
+
+        // Parameters to validate.
         $rules = array(
             'customint3' => $yesno,
             'roleid' => $roles,
@@ -1556,7 +1560,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         global $CFG;
         global $DB;
 
-        // trace
+        // Trace.
         $trace = new text_progress_trace();
         $this->trace = $trace;
 
@@ -1601,17 +1605,10 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
                 $updatestart = microtime(true);
                 $trace->output( "enrol_gudatabase: updating enrolments for course '{$course->shortname}'" );
                 $this->course_updated(false, $course, null);
-                //$trace->output( "enrol_gudatabase: updating groups for course '{$course->shortname}'" );
-                //$instances = $DB->get_records('enrol', array('courseid' => $course->id, 'enrol' => 'gudatabase'));
-                //foreach ($instances as $instance) {
-                //    $name = $this->get_instance_name($instance);
-                //    $trace->output("enrol_gudatabase: processing groups for instance $name");
-                //    $this->sync_groups($course, $instance);
-                //}
                 $updateend = microtime(true);
                 $updatetime = number_format($updateend - $updatestart, 4);
 
-                // process expired users
+                // Process expired users.
                 $this->process_expirations($trace, $course->id);
                 $trace->output( "enrol_gudatabase: --- course {$course->shortname} took $updatetime seconds to update");
             }
@@ -1695,7 +1692,12 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
                   JOIN {enrol} e ON (e.id = ue.enrolid AND e.enrol = :enrol)
                   JOIN {context} c ON (c.instanceid = e.courseid AND c.contextlevel = :courselevel)
                  WHERE ue.timeend > 0 AND ue.timeend < :now $coursesql";
-        $params = array('now'=>time(), 'courselevel'=>CONTEXT_COURSE, 'enrol'=>$name, 'courseid'=>$courseid);
+        $params = array(
+            'now' => time(),
+            'courselevel' => CONTEXT_COURSE,
+            'enrol' => $name,
+            'courseid' => $courseid
+        );
 
         $rs = $DB->get_recordset_sql($sql, $params);
         foreach ($rs as $ue) {
@@ -1704,12 +1706,12 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
                 $processed = true;
             }
             if (empty($instances[$ue->enrolid])) {
-                $instances[$ue->enrolid] = $DB->get_record('enrol', array('id'=>$ue->enrolid));
+                $instances[$ue->enrolid] = $DB->get_record('enrol', array('id' => $ue->enrolid));
             }
             $instance = $instances[$ue->enrolid];
 
-            // depending on customint1 (target roleid) we will just remove them or
-            // change their role
+            // Depending on customint1 (target roleid) we will just remove them or
+            // change their role.
             if (!$instance->customint1) {
 
                 // Let's just guess what extra roles are supposed to be removed.
@@ -1720,20 +1722,19 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
                 // The unenrol cleans up all subcontexts if this is the only course enrolment for this user.
                 $this->unenrol_user($instance, $ue->userid);
                 $trace->output("enrol_gudatabase: Unenrolling expired user $ue->userid from course $instance->courseid", 1);
-           } else {
+            } else {
 
-               // swap role
-               if ($instance->roleid) {
+                // Swap role.
+                if ($instance->roleid) {
                     role_assign($instance->customint1, $ue->userid, $ue->contextid);
                     role_unassign($instance->roleid, $ue->userid, $ue->contextid);
 
-                    // enrolment now has no time limit
+                    // Enrolment now has no time limit.
                     $this->update_user_enrol($instance, $ue->userid, null, 0, 0);
 
-                    // set their 
                     $trace->output("enrol_gudatabase: Moving role for expired user $ue->userid from course $instance->courseid", 1);
-               }
-           }
+                }
+            }
         }
         $rs->close();
         unset($instances);
@@ -1809,10 +1810,11 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
                 $rs->Close();
 
             } else {
-                $fields_obj = $rs->FetchObj();
-                $columns = array_keys((array)$fields_obj);
+                $fieldsobj = $rs->FetchObj();
+                $columns = array_keys((array)$fieldsobj);
 
-                echo $OUTPUT->notification('External enrolment table contains following columns:<br />'.implode(', ', $columns), 'notifysuccess');
+                echo $OUTPUT->notification('External enrolment table contains following columns:<br />'.
+                    implode(', ', $columns), 'notifysuccess');
                 $rs->Close();
             }
         }
@@ -1828,10 +1830,11 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
                 $rs->Close();
 
             } else {
-                $fields_obj = $rs->FetchObj();
-                $columns = array_keys((array)$fields_obj);
+                $fieldsobj = $rs->FetchObj();
+                $columns = array_keys((array)$fieldsobj);
 
-                echo $OUTPUT->notification('Remote codes table contains following columns:<br />'.implode(', ', $columns), 'notifysuccess');
+                echo $OUTPUT->notification('Remote codes table contains following columns:<br />'.
+                    implode(', ', $columns), 'notifysuccess');
                 $rs->Close();
             }
         }
@@ -1847,10 +1850,11 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
                 $rs->Close();
 
             } else {
-                $fields_obj = $rs->FetchObj();
-                $columns = array_keys((array)$fields_obj);
+                $fieldsobj = $rs->FetchObj();
+                $columns = array_keys((array)$fieldsobj);
 
-                echo $OUTPUT->notification('Class list table contains following columns:<br />'.implode(', ', $columns), 'notifysuccess');
+                echo $OUTPUT->notification('Class list table contains following columns:<br />'.
+                    implode(', ', $columns), 'notifysuccess');
                 $rs->Close();
             }
         }

@@ -24,12 +24,13 @@
  */
 
 defined('MOODLE_INTERNAL') || die();
+
 function xmldb_enrol_gudatabase_upgrade($oldversion) {
     global $CFG, $DB;
 
     $dbman = $DB->get_manager();
 
-    // Create new table for groups
+    // Create new table for groups.
     if ($oldversion < 2014080604) {
 
         // Define table enrol_gudatabase_groups to be created.
@@ -56,7 +57,7 @@ function xmldb_enrol_gudatabase_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2014080604, 'enrol', 'gudatabase');
     }
 
-    // Add a new key to enrol_gudatabase_users
+    // Add a new key to enrol_gudatabase_users.
     if ($oldversion < 2016092200) {
 
         // Define key enrol_gudatabase_users_cu (primary) to be added to enrol_gudatabase_users.
