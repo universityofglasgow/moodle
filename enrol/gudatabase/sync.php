@@ -22,6 +22,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+define('NO_OUTPUT_BUFFERING', true);
+
 require(dirname(__FILE__) . '/../../config.php');
 require_once($CFG->dirroot . '/local/gusync/lib.php');
 
@@ -33,20 +35,33 @@ $context = context_course::instance($course->id, MUST_EXIST);
 require_login($course);
 require_capability('enrol/gudatabase:config', $context);
 
+$PAGE->set_url('/enrol/gudatabase/sync.php', array('courseid' => $courseid));
+$PAGE->set_title(get_string('sync', 'enrol_gudatabase'));
+echo $OUTPUT->header();
+echo "<pre>";
+
 // Get the enrolment plugin.
 $plugin = enrol_get_plugin('gudatabase');
 
 if ($instances = $DB->get_records('enrol', array('courseid' => $courseid, 'enrol' => 'gudatabase'))) {
     foreach ($instances as $instance) {
+        echo get_string('processinginstance', 'enrol_gudatabase', $plugin->get_instance_name($instance)) . "\n";
+        echo get_string('syncusers', 'enrol_gudatabase') . "\n";
         $plugin->enrol_course_users($course, $instance);
+        echo get_string('syncgroups', 'enrol_gudatabase') . "\n";
         $plugin->sync_groups($course, $instance);
     }
 }
 cache_helper::invalidate_by_definition('core', 'groupdata', array(), array($course->id));
 
 // Export enrolments to 'Sharepoint' database.
+echo get_string('syncexport', 'enrol_gudatabase') . "\n";
 local_gusync_sync_one($course->id);
+echo "</pre>";
 
-redirect(new moodle_url('/course/view.php', array('id' => $courseid)));
-die;
+$conurl = new moodle_url('/course/view.php', array('id' => $course->id));
+echo $OUTPUT->continue_button($conurl);
+echo $OUTPUT->footer();
+
+//redirect(new moodle_url('/course/view.php', array('id' => $courseid)));
 
