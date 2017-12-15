@@ -158,7 +158,7 @@ function local_gusync_processcourse( $extdb, $id, $testing ) {
 
     // Get complete course.
     $course = $DB->get_record( 'course', array('id' => $id));
-    mtrace( 'local_gusync: processing course ' . $course->shortname );
+    mtrace( 'local_gusync: processing course "' . $course->shortname . '"' );
 
     // Add users from visible courses and take them
     // from hidden ones (too).
