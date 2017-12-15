@@ -20,9 +20,9 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die;
-
 namespace enrol_gudatabase\task;
+
+defined('MOODLE_INTERNAL') || die;
 
 class sync_enrolments extends \core\task\scheduled_task {
 
