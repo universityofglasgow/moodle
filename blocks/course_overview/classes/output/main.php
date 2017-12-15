@@ -48,6 +48,8 @@ class main implements renderable, templatable {
 
     private $sortorder;
 
+    private $favourites;
+
     /**
      * Constructor
      * @param object $config block configuration
@@ -55,30 +57,32 @@ class main implements renderable, templatable {
      * @param boolean $isediting
      * @param string $selectedtab
      * @param int $sortorder
+     * @param array list of favourites
      */
-    public function __construct($config, $tabs, $isediting, $selectedtab, $sortorder) {
+    public function __construct($config, $tabs, $isediting, $selectedtab, $sortorder, $favourites) {
         $this->config = $config;
         $this->tabs = $tabs;
         $this->isediting = $isediting;
         $this->selectedtab = $selectedtab;
         $this->sortorder = $sortorder;
+        $this->favourites = $favourites;
     }
 
     /**
      * Get course data into suitable construct
      * @param \renderer_base $output
-     * @param boolean favourites (is this favourites tab)
+     * @param boolean $favtab (is this favourites tab)
      * @param object $tab data for tab
      * @return array of courses
      */
-    private function process_tab($output, $favourites, $tab) {
+    private function process_tab($output, $favtab, $tab) {
 
         // Add extra info (and make zero indexed).
         $courselist = [];
         foreach ($tab->sortedcourses as $course) {
             $course->link = new \moodle_url('/course/view.php', array('id' => $course->id));
             $course->categories = implode(' / ', $this->categories($course->category));
-            if ($favourites) {
+            if (in_array($course->id, $this->favourites)) {
                 $course->favouritelink = new \moodle_url('/my', array('unfavourite' => $course->id));
                 $course->favouriteicon = 'fa-star';
                 $course->favouritealt = get_string('unfavourite', 'block_course_overview');

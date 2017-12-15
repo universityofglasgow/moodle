@@ -25,22 +25,22 @@
 <div class="course-list container-fluid">
     {{# data }}
         <div id="course-{{ id }}" class="row courseovbox lead">
-            <div class="col-sm-1 span1">
+            <div class="col-sm-1">
                 {{# isediting }}
                     <i class="icon fa fa-fw fa-arrows cursor" title="{{# str }}movecourse, block_course_overview, {{ fullname }}{{/ str }}"></i>
                 {{/ isediting }}
                 {{^ isediting }}
-                    <a href="{{ favouritelink }}" class="favourite_icon" alt="{{ favouritealt }}">
+                    <a href="{{ favouritelink }}" class="favourite_icon text-primary" alt="{{ favouritealt }}">
                         <i class="icon fa fa-fw {{ favouriteicon }} " title="{{ favouritealt }}"></i>
                     </a>
                 {{/ isediting }}
             </div>
-            <div class="col-sm-8 span8">
+            <div class="col-sm-8">
                 <strong><a href="{{ link }}">{{ fullname }}</a></strong><br />
                 <small>{{ categories }}</small>
             </div>
             {{# hasoverviews }}
-                <div class="col-sm-3 span3">
+                <div class="col-sm-3">
                     {{# overviews }}
                          <span class="overview-icon" data-id="#{{ overviewid }}">
                              {{{ icon }}}

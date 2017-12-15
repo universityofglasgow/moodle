@@ -1,3 +1,8 @@
+## 3.3.5 ##
+
+* Some support for bootstrapbase themes added
+* favourites shown with correct 'star' in course list
+
 ## 3.3.4 ##
 
 * Layout of courses improved using Bootstrap grids

@@ -110,6 +110,9 @@ class block_course_overview extends block_base {
             'courses' => $ctab,
         );
 
+        // Get list of favourites.
+        $favourites = array_keys($ftab->sortedcourses);
+
         // Default tab. One with something in it or favourites.
         if ($ftab->totalcourses) {
             $tab = 'favourites';
@@ -120,7 +123,7 @@ class block_course_overview extends block_base {
         $renderer = $this->page->get_renderer('block_course_overview');
 
         // Render block.
-        $main = new block_course_overview\output\main($config, $tabs, $isediting, $tab, $sortorder);
+        $main = new block_course_overview\output\main($config, $tabs, $isediting, $tab, $sortorder, $favourites);
         $this->content->text .= $renderer->render($main);
         return $this->content;
     }
