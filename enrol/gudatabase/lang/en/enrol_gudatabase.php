@@ -61,6 +61,7 @@ $string['mainsettings'] = 'Main settings';
 $string['newwarning'] = 'Click \'Add method\' and then re-edit to define codes and groups.';
 $string['nocourseinfo'] = 'No course info';
 $string['nolegacycodes'] = 'There are no codes defined for this course';
+$string['patience'] = 'Please be patient while this process completes. For course with large numbers of students, it may take some time';
 $string['pluginname'] = 'UofG Enrolment database';
 $string['pluginname_desc'] = 'You can use an external database (of nearly any kind) to control your enrolments. It is assumed your external database contains at least a field containing a course ID, and a field containing a user ID. These are compared against fields that you choose in the local course and user tables.';
 $string['processinginstance'] = 'Processing plugin instance \'{$a}\'';

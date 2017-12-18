@@ -38,6 +38,7 @@ require_capability('enrol/gudatabase:config', $context);
 $PAGE->set_url('/enrol/gudatabase/sync.php', array('courseid' => $courseid));
 $PAGE->set_title(get_string('sync', 'enrol_gudatabase'));
 echo $OUTPUT->header();
+echo '<div class="alert alert-warning">' . get_string('patience', 'enrol_gudatabase') . '</div>';
 echo "<pre>";
 
 // Get the enrolment plugin.
