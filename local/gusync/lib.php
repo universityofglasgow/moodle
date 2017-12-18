@@ -190,6 +190,8 @@ function local_gusync_processcourse( $extdb, $id, $testing ) {
     }
     if (!$testing) {
         local_gusync_query( $extdb, $sql );
+    } else {
+        mtrace('local_gusync: (testing) skipped moodlecourses courseid = ' . $id);
     }
 
     // Reload course object with final data.
@@ -251,7 +253,11 @@ function local_gusync_processcourse( $extdb, $id, $testing ) {
                 $sql .= "timelastaccess = $timeaccess ";
                 $sql .= "where id={$extenrol->id} ";
             }
-            local_gusync_query( $extdb, $sql );
+            if (!$testing) {
+                local_gusync_query( $extdb, $sql );
+            } else {
+                mtrace('local_gusync: (testing) skipping enrolment guid = ' . $guid . ' courseid = ' . $extcourse->id);
+            } 
         }
     }
 
