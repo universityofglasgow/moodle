@@ -1,5 +1,7 @@
 <?php
 
+defined('MOODLE_INTERNAL') || die;
+
 class parseCSV {
 
     /*
@@ -74,7 +76,6 @@ class parseCSV {
     ----------------
      */
 
-defined('MOODLE_INTERNAL') || die;
 
     /**
      * Configuration
