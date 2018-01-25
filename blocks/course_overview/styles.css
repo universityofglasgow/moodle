@@ -46,3 +46,7 @@ a.favourite_icon:hover {
 .block-course-overview .overview-help i {
     font-size: 1.5em;
 }
+
+div.courseovbox {
+    margin-left: -15px !important;
+}

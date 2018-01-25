@@ -97,6 +97,7 @@ class main implements renderable, templatable {
                 foreach ($tab->overviews[$course->id] as $activity => $overviewtext) {
                     $overview = new \stdClass;
                     $overview->coursename = $course->fullname;
+                    $overview->visible = $course->visible;
                     $overview->activity = $activity;
                     $overview->text = str_replace('p-y-1', '', $overviewtext);
                     $description = get_string('activityoverview', 'block_course_overview',

@@ -1,3 +1,8 @@
+## 3.3.6 ##
+
+* Now displays hidden courses (to Teachers et al) as 'dimmed'
+* Layout a bit better on legacy Bootstrap 2 themes (e.g. Clean).
+
 ## 3.3.5 ##
 
 * Some support for bootstrapbase themes added
