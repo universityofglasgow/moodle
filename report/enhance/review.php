@@ -74,7 +74,8 @@ if ($form->is_cancelled()) {
 } else if ($data = $form->get_data()) {
     $request->status = $data->status;
     foreach ($fields as $field) {
-        $request->$field = $data->$field['text'];
+        $formdata = $data->$field;
+        $request->$field = $formdata['text'];
     }
     $DB->update_record('report_enhance', $request);
     redirect(new moodle_url('/report/enhance/index.php', array('courseid' => $courseid)));
