@@ -1,0 +1,116 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template report_ehnace/elist
+
+    This template renders the form for new/edit requests
+
+    Example context (json):
+    {}
+}}
+
+<h1>VLE Enhancement request</h1>
+
+<table class="table">
+    <tbody>
+        <tr>
+            <th>Request number</th>
+            <td>{{ request.id }}</td>
+        </tr>
+        <tr>
+            <th>Status</th>
+            <td>{{ request.statusformatted }}</td>
+        </tr>
+        <tr>
+            <th>Sumbitted by</th>
+            <td>{{ request.username }}</td>
+        </tr>
+        <tr>
+            <th>Sumbitted on</th>
+            <td>{{ request.userdate }}</td>
+        </tr>
+        <tr>
+            <th>Description</th>
+            <td>{{{ request.description }}}</td>
+        </tr>
+        <tr>
+            <th>Benefits</th>
+            <td>{{{ request.benefits }}}</td>
+        </tr>
+        <tr>
+            <th>College / School etc.</th>
+            <td>{{{ request.department }}}</td>
+        </tr>
+        <tr>
+            <th>Reason</th>
+            <td>{{{ request.reason }}}</td>
+        </tr>
+        <tr>
+            <th>Policy</th>
+            <td>{{{ request.policy }}}</td>
+        </tr>
+        <tr>
+            <th>Benefit</th>
+            <td>{{{ request.benefit }}}</td>
+        </tr>
+        <tr>
+            <th>Impact</th>
+            <td>{{{ request.impact }}}</td>
+        </tr>
+        <tr>
+            <th>Consultations</th>
+            <td>{{{ request.consultations }}}</td>
+        </tr>
+        <tr>
+            <th>Remit</th>
+            <td>{{{ request.remit }}}</td>
+        </tr>
+        <tr>
+            <th>Sustainability</th>
+            <td>{{{ request.sustainability }}}</td>
+        </tr>
+        <tr>
+            <th>Security</th>
+            <td>{{{ request.security }}}</td>
+        </tr>
+        <tr>
+            <th>Robustness</th>
+            <td>{{{ request.robustness }}}</td>
+        </tr>
+        <tr>
+            <th>Support</th>
+            <td>{{{ request.support }}}</td>
+        </tr>
+        <tr>
+            <th>Availability</th>
+            <td>{{{ request.availability }}}</td>
+        </tr>
+        <tr>
+            <th>Uniqueness</th>
+            <td>{{{ request.uniqueness }}}</td>
+        </tr>
+        <tr>
+            <th>Timescales</th>
+            <td>{{{ request.timescales }}}</td>
+        </tr>
+        <tr>
+            <th>Resources</th>
+            <td>{{{ request.resources }}}</td>
+        </tr>
+       
+    </tbody>
+</table>
