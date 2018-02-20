@@ -176,6 +176,7 @@
 
     label {
         margin: 0;
+        display: block;
     }
 
     .header {
@@ -296,6 +297,13 @@ body.path-question-type {
 
 .que .formulation {
     @extend .alert-info;
+}
+
+.que.multichoice .answer div.r0 .icon.fa-check,
+.que.multichoice .answer div.r1 .icon.fa-check,
+.que.multichoice .answer div.r0 .icon.fa-remove,
+.que.multichoice .answer div.r1 .icon.fa-remove {
+    text-indent: 0;
 }
 
 .formulation input[type="text"],
