@@ -65,15 +65,10 @@
     <a class="list-group-item list-group-item-action {{#isactive}}font-weight-bold{{/isactive}}" href="{{{action}}}" data-key="{{key}}">
         <div class="m-l-{{get_indent}}">
             {{#is_section}}
-                <div class="media">
-                    <span class="media-left">
-                        {{#pix}}i/folder{{/pix}}
-                    </span>
-                    <span class="media-body">{{{text}}}</span>
-                </div>
+                    <span class="text-holder">{{{text}}}</span>
             {{/is_section}}
             {{^is_section}}
-                {{{text}}}
+                <span class="text-holder">{{{text}}}</span>
             {{/is_section}}
         </div>
     </a>
@@ -84,7 +79,7 @@
             {{#is_section}}
                 {{#pix}}i/folder{{/pix}}
             {{/is_section}}
-            {{{text}}}
+            <span class="text-holder">{{{text}}}</span>
         </div>
     </div>
     {{/action}}

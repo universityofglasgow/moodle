@@ -15,19 +15,22 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * IomadBoost
+ * A one column layout for the boost theme.
  *
- * @package    theme_iomadboost
- * @copyright  2017 E-Learn Design Ltd http://www.e-learndesign.co.uk
- * @author     Howard Miller
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package   theme_boost
+ * @copyright 2016 Damyon Wiese
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2018040500;
-$plugin->requires  = 2016112900;
-$plugin->component = 'theme_hillhead';
-$plugin->dependencies = [
-    'theme_boost' => '2016102100',
+$bodyattributes = $OUTPUT->body_attributes(['page-layout-minimal']);
+
+$templatecontext = [
+    'sitename' => format_string($SITE->shortname, true, ['context' => context_course::instance(SITEID), "escape" => false]),
+    'output' => $OUTPUT,
+    'bodyattributes' => $bodyattributes
 ];
+
+echo $OUTPUT->render_from_template('theme_hillhead/columns1', $templatecontext);
+

@@ -1,53 +1,46 @@
 @font-face {
-    font-family: 'Ubuntu';
+    font-family: 'Hillhead';
     src: url([[font:theme|ubuntu-l.woff]]) format('woff'));
-    src: url([[font:theme|ubuntu-l.woff2]]) format('woff2'));
     font-weight: 300;
     font-style: normal;
 
 }
 
 @font-face {
-    font-family: 'Ubuntu';
+    font-family: 'Hillhead';
     src: url([[font:theme|ubuntu-li.woff]]) format('woff'));
-    src: url([[font:theme|ubuntu-li.woff2]]) format('woff2'));
     font-weight: 300;
     font-style: italic;
 
 }
 
 @font-face {
-    font-family: 'Ubuntu';
+    font-family: 'Hillhead';
     src: url([[font:theme|ubuntu-r.woff]]) format('woff'));
-    src: url([[font:theme|ubuntu-r.woff2]]) format('woff2'));
     font-weight: 400;
     font-style: normal;
 
 }
 
 @font-face {
-    font-family: 'Ubuntu';
+    font-family: 'Hillhead';
     src: url([[font:theme|ubuntu-ri.woff]]) format('woff'));
-    src: url([[font:theme|ubuntu-ri.woff2]]) format('woff2'));
     font-weight: 400;
     font-style: italic;
 
 }
 
 @font-face {
-    font-family: 'Ubuntu';
+    font-family: 'Hillhead';
     src: url([[font:theme|ubuntu-b.woff]]) format('woff'));
-    src: url([[font:theme|ubuntu-b.woff2]]) format('woff2'));
     font-weight: 700;
     font-style: normal;
 
 }
 
 @font-face {
-    font-family: 'Ubuntu';
+    font-family: 'Hillhead';
     src: url([[font:theme|ubuntu-bi.woff]]) format('woff'));
-    src: url([[font:theme|ubuntu-bi.woff2]]) format('woff2'));
     font-weight: 700;
     font-style: italic;
-
 }

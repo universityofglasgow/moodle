@@ -51,6 +51,9 @@ switch($theme_hillhead_font) {
     case 'comic':
         $extraclasses[]='hillhead-font-comic';
         break;
+        case 'mono':
+        $extraclasses[]='hillhead-font-mono';
+        break;
 }
 
 $theme_hillhead_size = get_user_preferences('theme_hillhead_size');
@@ -64,6 +67,9 @@ switch($theme_hillhead_size) {
         break;
     case '160':
         $extraclasses[]='hillhead-size-160';
+        break;
+    case '180':
+        $extraclasses[]='hillhead-size-180';
         break;
 }
 
@@ -137,22 +143,59 @@ switch($theme_hillhead_stripstyles) {
 }
 
 $hillheadnotificationtype = get_config('theme_hillhead', 'hillhead_notification_type');
+$hillheadNotificationText =  get_config('theme_hillhead', 'hillhead_notification');
 
-switch($hillheadnotificationtype) {
-    case 'alert-danger':
-        $notiftext = '<div class="alert alert-danger"><i class="fa fa-warning"></i>&emsp;'.get_config('theme_hillhead', 'hillhead_notification').'</div>';
-        break;
-    case 'alert-warning':
-        $notiftext = '<div class="alert alert-warning"><i class="fa fa-warning"></i>&emsp;'.get_config('theme_hillhead', 'hillhead_notification').'</div>';
-        break;
-    case 'alert-success':
-        $notiftext = '<div class="alert alert-success"><i class="fa fa-info-circle"></i>&emsp;'.get_config('theme_hillhead', 'hillhead_notification').'</div>';
-        break;
-    case 'alert-info':
-        $notiftext = '<div class="alert alert-info"><i class="fa fa-info-circle"></i>&emsp;'.get_config('theme_hillhead', 'hillhead_notification').'</div>';
-        break;
-    default:
-        $notiftext = '';
+if(empty($_SESSION['SESSION']->hillhead_notifications) || !array_key_exists(md5($hillheadNotificationText), $_SESSION['SESSION']->hillhead_notifications)) {
+    switch($hillheadnotificationtype) {
+        case 'alert-danger':
+            $notiftext = '<div class="alert alert-danger"><a class="close" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($hillheadNotificationText).'" aria-label="Close"><span aria-hidden="true">&times;</span></a><i class="fa fa-warning"></i><span>'.$hillheadNotificationText.'</span></div>';
+            break;
+        case 'alert-warning':
+            $notiftext = '<div class="alert alert-warning"><a class="close" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($hillheadNotificationText).'" aria-label="Close"><span aria-hidden="true">&times;</span></a><i class="fa fa-warning"></i><span>'.$hillheadNotificationText.'</span></div>';
+            break;
+        case 'alert-success':
+            $notiftext = '<div class="alert alert-success"><a class="close" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($hillheadNotificationText).'" aria-label="Close"><span aria-hidden="true">&times;</span></a><i class="fa fa-info-circle"></i><span>'.$hillheadNotificationText.'</span></div>';
+            break;
+        case 'alert-info':
+            $notiftext = '<div class="alert alert-info"><a class="close" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($hillheadNotificationText).'" aria-label="Close"><span aria-hidden="true">&times;</span></a><i class="fa fa-info-circle"></i><span>'.$$hillheadNotificationText.'</span></div>';
+            break;
+        default:
+            $notiftext = '';
+    }
+} else {
+    $notiftext = '';
+}
+
+$hillheadsmartalerts = get_config('theme_hillhead', 'hillhead_smart_alerts');
+
+if($hillheadsmartalerts == 'enabled') {
+
+    $courseDetails = $PAGE->course;
+    
+    if((!empty($courseDetails->id)) && $courseDetails->id != 1) {
+        if($courseDetails->visible=='0') {
+            if(empty($_SESSION['SESSION']->hillhead_notifications) || !array_key_exists(md5($courseDetails->id.'courseinvisible'), $_SESSION['SESSION']->hillhead_notifications)) {
+                $notiftext .= '<div class="alert alert-info"><a class="close" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($courseDetails->id.'courseinvisible').'" aria-label="Close"><span aria-hidden="true">&times;</span></a><i class="fa fa-info-circle"></i><span><strong>This course is currently hidden.</strong> You can see it, but students can\'t. You can unhide this course <a href="edit.php?id='.$courseDetails->id.'">on the settings page</a>.</span></div>';
+            }
+        }
+            
+        $context = context_course::instance($courseDetails->id);
+        $studentyUsers = count_role_users(3, $PAGE->context);
+        
+        if($studentyUsers === 0) {
+            if(empty($_SESSION['SESSION']->hillhead_notifications) || !array_key_exists(md5($courseDetails->id.'coursenostudents'), $_SESSION['SESSION']->hillhead_notifications)) {
+                $notiftext .= '<div class="alert alert-warning"><a class="close" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($courseDetails->id.'coursenostudents').'" aria-label="Close"><span aria-hidden="true">&times;</span></a><i class="fa fa-info-circle"></i><span><strong>There are no students on this course.</strong> <a href="https://www.gla.ac.uk/myglasgow/moodle/universityofglasgowmoodleguides/enrollingstudentsonmoodlecourses/" target="_blank">How do I add students to my course?</a></span></div>';
+            }
+        }
+        
+        if(($courseDetails->enddate) < time()) {
+            if(empty($_SESSION['SESSION']->hillhead_notifications) || !array_key_exists(md5($courseDetails->id.'courseenddate'), $_SESSION['SESSION']->hillhead_notifications)) {
+                $notiftext .= '<div class="alert alert-danger"><a class="close" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($courseDetails->id.'courseenddate').'" aria-label="Close"><span aria-hidden="true">&times;</span></a><i class="fa fa-info-circle"></i><span><strong>This course\'s end date is in the past.</strong> If you\'re still using this course, you should update the end date so Automatic Rollover works. You can change your course\'s start and end dates <a href="edit.php?id='.$courseDetails->id.'">on the settings page</a>.</span></div>';
+            }
+        }
+        
+    }
+    
 }
 
 $usesAccessibilityTools=get_user_preferences('theme_hillhead_accessibility', false);
@@ -187,7 +230,7 @@ $accTxt = '';
 foreach($accessibilityButton as $accessibilityGroup) {
     $accBtn .= '<nav class="list-group accessibility-toggle">';
     foreach($accessibilityGroup as $accessibilityItem) {
-        $accBtn .= '<a class="list-group-item hh-acc '.$accessibilityItem['c'].'" href="'.$CFG->wwwroot.'/theme/hillhead/accessibility.php?o='.$accessibilityItem['o'].'&v='.$accessibilityItem['v'].'">'.$accessibilityItem['t'].'</a>';
+        $accBtn .= '<a class="list-group-item list-group-item-action hh-acc '.$accessibilityItem['c'].'" href="'.$CFG->wwwroot.'/theme/hillhead/accessibility.php?o='.$accessibilityItem['o'].'&v='.$accessibilityItem['v'].'" data-key="accessibility"><div class="m-l-0"> '.$accessibilityItem['t'].'</div></a>';
     }
     $accBtn .= '</nav>';
 }
@@ -272,6 +315,13 @@ $fontOptions = Array(
         'c'=>'hh-acc-ft-co',
         't'=>'Comic Font',
         'i'=>'fa-font'
+    ),
+    Array(
+        'o'=>'theme_hillhead_font',
+        'v'=>'mono',
+        'c'=>'hh-acc-ft-mn',
+        't'=>'Monospace Font',
+        'i'=>'fa-font'
     )
 );
 
@@ -346,6 +396,13 @@ $sizeOptions = Array(
         'v'=>'160',
         'c'=>'hh-acc-fs-16',
         't'=>'Massive Text Size',
+        'i'=>'fa-text-height'
+    ),
+    Array(
+        'o'=>'theme_hillhead_size',
+        'v'=>'180',
+        'c'=>'hh-acc-fs-18',
+        't'=>'Gigantic Text Size',
         'i'=>'fa-text-height'
     )
 );
@@ -422,10 +479,10 @@ if($usesAccessibilityTools) {
     $accTxt .= '<div class="col-xs-12 col-sm-4 accessibility-group">';
     $accTxt .= '<h4>Colour Scheme</h4><ul class="accessibility-features">';
     foreach($colourOptions as $opt) {
-        $accTxt .= '<li><a class="hh-acc" id="'.$opt['c'].'" href="'.$CFG->wwwroot.'/theme/hillhead/accessibility.php?o='.$opt['o'].'&v='.$opt['v'].'"><i class="fa '.$opt['i'].'"></i> '.$opt['t'].'</a></li>';
+        $accTxt .= '<li><a class="hh-acc" id="'.$opt['c'].'" href="'.$CFG->wwwroot.'/theme/hillhead/accessibility.php?o='.$opt['o'].'&v='.$opt['v'].'"><i class="fa '.$opt['i'].'"></i>'.$opt['t'].'</a></li>';
     }
     foreach($stripStyleOptions as $opt) {
-        $accTxt .= '<li><a class="hh-acc" id="'.$opt['c'].'" href="'.$CFG->wwwroot.'/theme/hillhead/accessibility.php?o='.$opt['o'].'&v='.$opt['v'].'"><i class="fa '.$opt['i'].'"></i> '.$opt['t'].'</a></li>';
+        $accTxt .= '<li><a class="hh-acc" id="'.$opt['c'].'" href="'.$CFG->wwwroot.'/theme/hillhead/accessibility.php?o='.$opt['o'].'&v='.$opt['v'].'"><i class="fa '.$opt['i'].'"></i>'.$opt['t'].'</a></li>';
     }
     $accTxt .= '</ul>';
     $accTxt .= '</div>';
@@ -433,30 +490,30 @@ if($usesAccessibilityTools) {
     $accTxt .= '<h4>Font Style</h4><ul class="accessibility-features">';
     
     foreach($fontOptions as $opt) {
-        $accTxt .= '<li><a class="hh-acc" id="'.$opt['c'].'" href="'.$CFG->wwwroot.'/theme/hillhead/accessibility.php?o='.$opt['o'].'&v='.$opt['v'].'"><i class="fa '.$opt['i'].'"></i> '.$opt['t'].'</a></li>';
+        $accTxt .= '<li><a class="hh-acc" id="'.$opt['c'].'" href="'.$CFG->wwwroot.'/theme/hillhead/accessibility.php?o='.$opt['o'].'&v='.$opt['v'].'"><i class="fa '.$opt['i'].'"></i>'.$opt['t'].'</a></li>';
     }
     $accTxt .= '</ul>';
     $accTxt .= '<h4>Readability</h4><ul class="accessibility-features">';
     foreach($boldOptions as $opt) {
-        $accTxt .= '<li><a class="hh-acc" id="'.$opt['c'].'" href="'.$CFG->wwwroot.'/theme/hillhead/accessibility.php?o='.$opt['o'].'&v='.$opt['v'].'"><i class="fa '.$opt['i'].'"></i> '.$opt['t'].'</a></li>';
+        $accTxt .= '<li><a class="hh-acc" id="'.$opt['c'].'" href="'.$CFG->wwwroot.'/theme/hillhead/accessibility.php?o='.$opt['o'].'&v='.$opt['v'].'"><i class="fa '.$opt['i'].'"></i>'.$opt['t'].'</a></li>';
     }
     foreach($spacingOptions as $opt) {
-        $accTxt .= '<li><a class="hh-acc" id="'.$opt['c'].'" href="'.$CFG->wwwroot.'/theme/hillhead/accessibility.php?o='.$opt['o'].'&v='.$opt['v'].'"><i class="fa '.$opt['i'].'"></i> '.$opt['t'].'</a></li>';
+        $accTxt .= '<li><a class="hh-acc" id="'.$opt['c'].'" href="'.$CFG->wwwroot.'/theme/hillhead/accessibility.php?o='.$opt['o'].'&v='.$opt['v'].'"><i class="fa '.$opt['i'].'"></i>'.$opt['t'].'</a></li>';
     }
     $accTxt .= '</ul>';
     $accTxt .= '</div>';
     $accTxt .= '<div class="col-xs-12 col-sm-4 accessibility-group">';
     $accTxt .= '<h4>Text Size and Spacing</h4><ul class="accessibility-features">';
     foreach($sizeOptions as $opt) {
-        $accTxt .= '<li><a class="hh-acc" id="'.$opt['c'].'" href="'.$CFG->wwwroot.'/theme/hillhead/accessibility.php?o='.$opt['o'].'&v='.$opt['v'].'"><i class="fa '.$opt['i'].'"></i> '.$opt['t'].'</a></li>';
+        $accTxt .= '<li><a class="hh-acc" id="'.$opt['c'].'" href="'.$CFG->wwwroot.'/theme/hillhead/accessibility.php?o='.$opt['o'].'&v='.$opt['v'].'"><i class="fa '.$opt['i'].'"></i>'.$opt['t'].'</a></li>';
     }
     $accTxt .= '</ul>';
     $accTxt .= '<h4>Read To Me</h4><ul class="accessibility-features">';
     foreach($readHighlightOptions as $opt) {
-        $accTxt .= '<li><a class="hh-acc" id="'.$opt['c'].'" href="'.$CFG->wwwroot.'/theme/hillhead/accessibility.php?o='.$opt['o'].'&v='.$opt['v'].'"><i class="fa '.$opt['i'].'"></i> '.$opt['t'].'</a></li>';
+        $accTxt .= '<li><a class="hh-acc" id="'.$opt['c'].'" href="'.$CFG->wwwroot.'/theme/hillhead/accessibility.php?o='.$opt['o'].'&v='.$opt['v'].'"><i class="fa '.$opt['i'].'"></i>'.$opt['t'].'</a></li>';
     }
     foreach($readAlertOptions as $opt) {
-        $accTxt .= '<li><a class="hh-acc" id="'.$opt['c'].'" href="'.$CFG->wwwroot.'/theme/hillhead/accessibility.php?o='.$opt['o'].'&v='.$opt['v'].'"><i class="fa '.$opt['i'].'"></i> '.$opt['t'].'</a></li>';
+        $accTxt .= '<li><a class="hh-acc" id="'.$opt['c'].'" href="'.$CFG->wwwroot.'/theme/hillhead/accessibility.php?o='.$opt['o'].'&v='.$opt['v'].'"><i class="fa '.$opt['i'].'"></i>'.$opt['t'].'</a></li>';
     }
     $accTxt .= '</ul>';
     $accTxt .= '</div>';

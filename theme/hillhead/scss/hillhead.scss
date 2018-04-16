@@ -2,7 +2,6 @@ $breadcrumb-divider: "›";
 $breadcrumb-divider-rtl: "‹";
 
 $gu-blue: #003865;
-$gu-blue-gradient: #00457D;
 $gu-blue-border: #002645;
 
 $gu-forest: #005133;
@@ -16,7 +15,7 @@ $gu-blue-dark: #193446;
 
 $gu-background: #f0f1f2;
 $gu-island-back: #fff;
-$gu-island-border: #d3d8dc;
+$gu-island-border: #E1E6EB;
 
 $flat-blue: #0075B0;
 $flat-blue-dark: #005E8D;
@@ -31,9 +30,9 @@ $flat-forest-dark: #003C26;
 
 $brand-primary: $gu-blue;
 
-$font-family-sans-serif: "Ubuntu", "Trebuchet MS", Arial, sans-serif;
+$font-family-sans-serif: "Hillhead", "Ubuntu", "Trebuchet MS", Arial, sans-serif;
 
-$body-bg: $gu-background;
+$body-bg: #EBF1F5;
 
 $spacer: 20px;
 $border-width: 1px;
@@ -61,7 +60,6 @@ $message-received-border: #C2E3A5;
 
 body {
     font-weight: 300;
-    background-image: url([[pix:theme|linen]]);
 }
 
 h1 {
@@ -164,6 +162,25 @@ a.nav-link, a.btn-default {
     color: #555;
 }
 
+#nav-drawer .list-group-item {
+    border-color: #D6DBDF;
+}
+
+#nav-drawer .list-group-item .text-holder {
+    display: block;
+    overflow: hidden;
+}
+
+#nav-drawer .list-group-item:first-child {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
+
+#nav-drawer .list-group-item:last-child {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
 footer a, footer p {
     color: #555 !important;
 }
@@ -181,7 +198,6 @@ h3.sectionname a {
 
 header.navbar {
     background-color: $gu-blue;
-    background: linear-gradient(to bottom, $gu-blue-gradient 0%,$gu-blue 100%);
     border-bottom: $border-width solid $gu-blue-border;
 }
 
@@ -195,6 +211,12 @@ header.navbar-light .navbar-brand {
 
 header .popover-region {
     margin-right: 20px;
+}
+
+.btn-drawertoggle {
+    background-color: #005398;
+    color: #fff;
+    border-color: transparent;
 }
 
 header .popover-region-toggle > i.fa {
@@ -222,6 +244,10 @@ header .navbar-nav .nav-link {
 
 header.navbar .count-container.hidden {
     display: none;
+}
+
+#page-header nav .breadcrumb {
+    padding: 0;
 }
 
 body.notloggedin header .usermenu {
@@ -303,9 +329,8 @@ body#page-login-index {
 // Navigation drawer
 
 #nav-drawer {
-    background-color: #E3E4E5;
-    background-image: url([[pix:theme|noise]]);
-    border-right: 1px solid #D8D9DA;
+    background-color: #E1E6EB;
+    border-right: 1px solid #D6DBDF;
 }
 
 // Footer
@@ -337,7 +362,7 @@ footer h3 {
 
 .footer-links h4 {
 	padding: 0;
-	font-size: 1em;
+	font-size: 1rem;
 	line-height:19px;
 	vertical-align: baseline;
 	color: $gu-blue;
@@ -357,10 +382,13 @@ footer h3 {
 	margin-bottom: 0;
 }
 
-
 .footer-links li {
 	display: block;
 	margin-bottom: 5px;
+}
+
+#page-footer .footer-links a {
+    text-decoration: none;
 }
 
 // Messaging tidy-ups
@@ -376,7 +404,7 @@ footer h3 {
 }
 
 .card-title {
-    font-size: 1em;
+    font-size: 1rem;
 }
 
 .open>.dropdown-menu {
@@ -482,7 +510,6 @@ body.path-course-view .course-content > ul > li.section {
 }
 
 body.path-course-view .course-content > ul > li.section .content {
-    padding-top: 7px;
     box-sizing: border-box;
 }
 
@@ -575,6 +602,11 @@ course-content ul.ctopics li.section .content div.toggle {
     background: transparent !important;
 }
 
+.section .side {
+    // Fix for Safari's space above topic headings
+    margin-top: 8px !important;
+}
+
 div#gridshadebox_overlay {
     z-index: 9998;
 }
@@ -656,10 +688,6 @@ div#gridshadebox_content.absolute {
 .section .activity.modtype_label.label {
     line-height: 1.5em !important;
     font-weight: 300 !important;
-}
-
-body.path-course-view .course-content>ul>li.section .content {
-padding-top: 0;
 }
 
 .block-myoverview #myoverview_courses_view .btn-group {
@@ -926,6 +954,59 @@ body#page-user-profile #region-main > .card-block .node_category .editprofile, b
     display :none;
 }
 
+// Alert fixes
+
+.alert i {
+    display: block;
+    float: left;
+    margin-right: 0.2em;
+    float: left;
+    width: 1.4em;
+    text-align: left;
+    line-height: 1.5;
+}
+
+.alert span {
+    display: block;
+    margin-left: 1.6em;
+}
+
+.alert, #page-admin-index .releasenoteslink, #page-admin-index .adminwarning, #page-admin-index .adminerror, .que .formulation, .que .outcome, .que .commen {
+    border-radius: 0 !important;
+    padding: 5px 10px !important;
+}
+
+.alert-warning {
+    border-color: #E7E2C6 !important;
+}
+
+.alert-danger span a {
+    color: #a94442 !important;
+    text-decoration: underline;
+}
+
+.alert-warning span a {
+    color: #8a6d3b !important;
+    text-decoration: underline;
+}
+
+.alert-info span a {
+    color: #31708f !important;
+    text-decoration: underline;
+}
+
+.alert p {
+    margin-bottom: 10px;
+}
+
+.alert *:last-child {
+    margin-bottom: 0;
+}
+
+.alert a.close {
+    color: #000 !important;
+}
+
 // Login Page Stuff
 
 .gu-login {
@@ -1038,7 +1119,7 @@ span.MathJax_SVG, span.MathJax_CHTML, span.MathJax_PHTML,  span.MathJax {
 // Accessibility features
 
 body.hillhead-font-comic {
-    font-family: "Chalkboard", "Comic Sans", "Comic Sans MS", sans-serif !important;
+    font-family: "Hillhead Comic", "Chalkboard", "Comic Sans", "Comic Sans MS", sans-serif !important;
 }
 
 body.hillhead-font-modern {
@@ -1047,6 +1128,10 @@ body.hillhead-font-modern {
 
 body.hillhead-font-classic {
     font-family: "Palatino", "Times New Roman", serif !important;
+}
+
+body.hillhead-font-mono {
+    font-family: "Hillhead Mono", "Menlo", "Courier New", monospace !important;
 }
 
 body.hillhead-size-120 {
@@ -1061,8 +1146,12 @@ body.hillhead-size-160 {
     font-size: 160%;
 }
 
+body.hillhead-size-180 {
+    font-size: 180%;
+}
+
 body.hillhead-spacing * {
-    line-height: 2em;
+    line-height: 2rem;
 }
 
 body.hillhead-contrast-yb {
@@ -1198,22 +1287,97 @@ body.hillhead-bold * {
 
 .hh-acc i {
     display: inline-block;
-    width: 18px;
+    width: 24px;
     text-align: center;
     margin-right: 5px;
 }
 
-#hh-acc-ft-de { font-family: "Ubuntu", "Trebuchet MS", Arial, sans-serif; }
+#nav-drawer .list-group-item div::before, #nav-drawer .list-group-item div i.fa {
+    font-family: "FontAwesome";
+    width: 1.5em;
+    display: block;
+    float: left;
+    text-align: center;
+    margin-right: 0.2em;
+}
+
+#nav-drawer .list-group-item div::before {
+    content: "\f105";
+}
+
+#nav-drawer .list-group-item[data-key="accessibility"] div::before {
+    content: "\f29a";
+}
+
+#nav-drawer .list-group-item[data-key="myhome"] div::before {
+    content: "\f0e4";
+}
+
+#nav-drawer .list-group-item[data-key="home"] div::before {
+    content: "\f015";
+}
+
+#nav-drawer .list-group-item[data-key="calendar"] div::before {
+    content: "\f073";
+}
+
+#nav-drawer .list-group-item[data-key="privatefiles"] div::before {
+    content: "\f07c";
+}
+
+#nav-drawer .list-group-item[data-key="sitesettings"] div::before {
+    content: "\f0ad";
+}
+
+#nav-drawer .list-group-item[data-key="coursehome"] div::before {
+    content: "\f19d";
+}
+
+#nav-drawer .list-group-item[data-key="mycourses"] div::before {
+    content: "\f19d";
+}
+
+#nav-drawer .list-group-item[data-key="participants"] div::before {
+    content: "\f0c0";
+}
+
+#nav-drawer .list-group-item[data-key="badgesview"] div::before {
+    content: "\f005";
+}
+
+#nav-drawer .list-group-item[data-key="competencies"] div::before {
+    content: "\f1b3";
+}
+
+#nav-drawer .list-group-item[data-key="grades"] div::before {
+    content: "\f24e";
+}
+
+#nav-drawer .list-group-item[data-key="coursehome"] div::before {
+    content: "\f19d";
+}
+
+#nav-drawer .list-group-item[data-key="coursehome"] div::before {
+    content: "\f19d";
+}
+
+#nav-drawer .list-group-item[data-key="addblock"] div::before {
+    content: "\f0fe";
+}
+
+#hh-acc-ft-de { font-family: "Hillhead", "Ubuntu", "Trebuchet MS", Arial, sans-serif; }
 #hh-acc-ft-mo { font-family: "Helvetica Neue", "Helvetica", "Arial", sans-serif !important; }
 #hh-acc-ft-cl { font-family: "Palatino", "Times New Roman", serif !important; }
-#hh-acc-ft-co { font-family: "Chalkboard", "Comic Sans", "Comic Sans MS", sans-serif !important; }
+#hh-acc-ft-co { font-family: "Hillhead Comic", "Chalkboard", "Comic Sans", "Comic Sans MS", sans-serif !important; }
+#hh-acc-ft-mn { font-family: "Hillhead Mono", "Menlo", "Courier New", monospace !important; }
 
 #hh-acc-fs-10 { font-size: 1rem; }
 #hh-acc-fs-12 { font-size: 1.2rem; }
 #hh-acc-fs-14 { font-size: 1.4rem; }
 #hh-acc-fs-16 { font-size: 1.6rem; }
+#hh-acc-fs-18 { font-size: 1.8rem; }
 
-#hh-acc-th-de, #hh-acc-th-de i { background-image: url([[pix:theme|linen]]) !important; color: #3a3a3a !important; }
+#hh-acc-th-de, #hh-acc-th-de i { background-color: #EBF1F5 !important; color: #3a3a3a !important; }
 #hh-acc-th-yb, #hh-acc-th-yb i { background-color: #000 !important; color: #cc0 !important; }
 #hh-acc-th-by, #hh-acc-th-by i  { background-color: #ee6 !important; color: #111 !important; }
 #hh-acc-th-wg, #hh-acc-th-wg i  { background-color: #666 !important; color: #eee !important; }
