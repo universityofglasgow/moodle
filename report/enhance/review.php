@@ -48,20 +48,10 @@ $output = $PAGE->get_renderer('report_enhance');
 
 // Form fields
 $fields = array(
-    'reason',
-    'strategy',
-    'benefit',
-    'impact',
-    'consultations',
-    'remit',
-    'sustainability',
-    'robustness',
-    'support',
-    'availability',
     'functionality',
-    'uniqueness',
-    'timescales',
-    'resources',
+    'viability',
+    'policies',
+    'result',
 );
 
 // Form stuff

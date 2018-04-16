@@ -48,6 +48,13 @@ class enhance_form extends moodleform {
             $mform->setType('id', PARAM_INT);
         }
 
+        // Headline / Summary
+        $headline = $mform->addElement('text', 'headline', get_string('headline', 'report_enhance'), ['size' => 80]);
+        $mform->setType('headline', PARAM_RAW);
+        if ($request) {
+            $headline->setValue($request->headline);
+        }
+
         // description
         $editor = $mform->addElement('editor', 'description', get_string('description', 'report_enhance'));
         $mform->setType('description', PARAM_RAW);
@@ -63,7 +70,7 @@ class enhance_form extends moodleform {
         }
 
         // College or School
-        $department = $mform->addElement('text', 'department', get_string('department', 'report_enhance'));
+        $department = $mform->addElement('text', 'department', get_string('department', 'report_enhance'), ['size' => 80]);
         $mform->setType('department', PARAM_ALPHA);
         if ($request) {
             $department->setValue($request->department);

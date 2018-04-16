@@ -41,12 +41,15 @@ class elist implements renderable, templatable {
 
     private $requests;
 
+    private $statuses;
+
     /**
      * Constructor
      */
-    public function __construct($course, $requests) {
+    public function __construct($course, $requests, $statuses) {
         $this->course = $course;
         $this->requests = $this->format_requests($requests);
+        $this->statuses = $statuses;
     }
 
     private function format_requests($requests) {
@@ -62,6 +65,7 @@ class elist implements renderable, templatable {
             $request->link = new \moodle_url('/report/enhance/edit.php', array('courseid' => $this->course->id, 'id' => $request->id));
             $request->more = new \moodle_url('/report/enhance/more.php', array('courseid' => $this->course->id, 'id' => $request->id));
             $request->review = new \moodle_url('/report/enhance/review.php', array('courseid' => $this->course->id, 'id' => $request->id));
+            $request->allowedit = $request->status == 1;
         }
 
         return $requests;
@@ -75,6 +79,7 @@ class elist implements renderable, templatable {
         return [
             'formurl' => new \moodle_url('/report/enhance/edit.php', array('courseid' => $this->course->id)),
             'requests' => array_values($this->requests),
+            'status' => $output->single_select('', 'filterstatus', $this->statuses, '', array('' => 'choosedots'), null, ['class' => 'form-control']),
         ];
     }
 

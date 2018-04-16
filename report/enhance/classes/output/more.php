@@ -69,6 +69,7 @@ class more implements renderable, templatable {
 
         return [
             'request' => $this->request,
+            'back' => new \moodle_url('/report/enhance/index.php', ['courseid' => $this->course->id]),
         ];
     }
 

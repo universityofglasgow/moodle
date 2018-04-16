@@ -17,12 +17,17 @@
 /**
  * Version info
  *
- * @package    report_enhance
+ * This File contains information about the current version of report/componentgrades
+ *
+ * @package    report_componentgrades
+ * @copyright  2014 Paul Nicholls
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die;
 
-$plugin->version   = 2018032800;
-$plugin->requires  = 2017051500;
-$plugin->component = 'report_enhance';
+$plugin->version   = 2014052907;    // The current plugin version (Date: YYYYMMDDXX)
+$plugin->requires  = 2014051200;    // Requires this Moodle version
+$plugin->release   = '1.1';
+$plugin->maturity  = MATURITY_STABLE;
+$plugin->component = 'report_componentgrades';  // Full name of the plugin (used for diagnostics)

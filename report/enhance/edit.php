@@ -61,6 +61,7 @@ if ($form->is_cancelled()) {
         $request->status = 1;
         $request->userid = $USER->id;
     }
+    $request->headline = $data->headline;
     $request->description = $data->description['text'];
     $request->benefits = $data->benefits['text'];
     $request->department = $data->department;

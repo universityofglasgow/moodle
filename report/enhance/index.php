@@ -24,13 +24,13 @@
 
 require(dirname(__FILE__).'/../../config.php');
 
-// Page setup.
-$url = new moodle_url('/report/enhance/index.php');
-$PAGE->set_url($url);
-$PAGE->set_pagelayout('admin');
-
 // params
 $courseid = required_param('courseid', PARAM_INT);
+
+// Page setup.
+$url = new moodle_url('/report/enhance/index.php', ['courseid' => $courseid]);
+$PAGE->set_url($url);
+$PAGE->set_pagelayout('admin');
 
 // Find course
 $course = $DB->get_record('course', array('id' => $courseid), '*', MUST_EXIST);
@@ -48,7 +48,8 @@ $PAGE->set_title(get_string('pluginname', 'report_enhance'));
 $PAGE->set_heading($course->fullname);
 echo $OUTPUT->header();
 
-$elist = new report_enhance\output\elist($course, $requests);
+$status = new \report_enhance\status();
+$elist = new report_enhance\output\elist($course, $requests, $status->getStatuses());
 echo $output->render($elist);
 
 

@@ -25,14 +25,17 @@
 
 <h1>VLE Enhancement requests</h1>
 
-<p>Filters / search etc. go here</p>
+<div class="form-group">
+    <label for="filterstatus">{{# str }}filterstatus, report_enhance{{/ str }}</label>
+    {{{ status }}}
+</div>
 
 <table class="table">
     <thead>
         <tr>
             <th>ID</th>
             <th>Submitted by</th>
-            <th>Description</th>
+            <th>Summary</th>
             <th>Submission date</th>
             <th>Status</th>
             <th>&nbsp;</th>
@@ -43,12 +46,14 @@
             <tr>
                 <td>{{ id }}</td>
                 <td>{{ username }}</td>
-                <td>{{{ description }}}</td>
+                <td>{{ headline }}</td>
                 <td>{{ userdate }}</td>
                 <td>{{ statusformatted }}</td>
                 <td>
                     <a href="{{{ more }}}" class="btn btn-success btn-sm">More...</a>
-                    <a href="{{{ link }}}" class="btn btn-primary btn-sm">Edit...</a>
+                    {{# allowedit }}
+                        <a href="{{{ link }}}" class="btn btn-primary btn-sm">Edit...</a>
+                    {{/ allowedit }}
                     <a href="{{{ review }}}" class="btn btn-primary btn-sm">Review...</a>
                 </td>
             </tr>
