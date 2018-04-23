@@ -1,0 +1,93 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template block_course_overview/main
+
+    This template renders the main content area for the course_overview block
+
+    Example context (json):
+    {}
+}}
+
+<div id="block-course-overview-{{uniqid}}" class="block-course-overview" data-region="course-overview">
+
+    {{# isediting }}
+        <div class="alert alert-secondary">
+            {{# str }}sortorder, block_course_overview{{/ str }} {{{ select }}}
+        </div>
+    {{/ isediting }}
+
+    <ul id="block-course-overview-view-choices-{{ uniqid }}" class="nav nav-tabs" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link {{# viewingfavourites }}active{{/ viewingfavourites }}" href="#favourites" role="tab" data-toggle="tab" data-tabname="favourites">
+                {{# str }}favourites, block_course_overview{{/ str }}
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {{^ viewingfavourites }}active{{/ viewingfavourites }}" href="#courses" role="tab" data-toggle="tab" data-tabname="courses">
+                {{# str }}courses{{/ str }}
+            </a>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+        {{# tabs }}
+            <div class="tab-pane {{ show }}" id="{{ tab }}" role="tabpanel">
+                {{> block_course_overview/courselist }}
+            </div>
+        {{/ tabs }}
+    </div>
+
+    {{^ isediting }}
+    <div class="dialogue_container" style="display: none">
+        {{# tabs }}
+            {{# data }}
+                {{# hasoverviews }}
+                    {{# overviews }}
+                        <div class="dialogue" id="{{ overviewid }}">
+                            <h3>{{ coursename }}</h3>
+                            <div class="activity_overviews">
+                                {{{ text }}}
+                            </div>
+                        </div>
+                    {{/ overviews }}
+                {{/ hasoverviews }}
+            {{/ data }}
+        {{/ tabs }}
+    </div>
+    {{/ isediting }}
+
+    <div class="overview-help">
+        {{{ help }}}
+    </div>
+</div>
+
+{{# isediting }}
+    {{# js }}
+        require(['jquery', 'block_course_overview/edit'], function($, Edit) {
+            Edit.init();
+        });
+    {{/ js }}
+{{/ isediting }}
+{{^ isediting }}
+    {{# js }}
+        require(['jquery', 'block_course_overview/popup'], function($, Popup) {
+            Popup.init({{ viewingfavourites }});
+        });
+    {{/ js }}
+{{/ isediting }}
+

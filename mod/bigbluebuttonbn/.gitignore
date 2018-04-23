@@ -1,0 +1,9 @@
+.buildpath
+.project
+.settings*
+config.php
+deploy*
+vendor*
+moodle-plugin-ci/
+output*
+/node_modules/

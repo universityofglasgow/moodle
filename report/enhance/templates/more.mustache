@@ -1,0 +1,79 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template report_ehnace/elist
+
+    This template renders the form for new/edit requests
+
+    Example context (json):
+    {}
+}}
+
+<h1>VLE Enhancement request</h1>
+
+<h4>"{{ request.headline }}"</h4>
+
+<table class="table">
+    <tbody>
+        <tr>
+            <th>Request number</th>
+            <td>{{ request.id }}</td>
+        </tr>
+        <tr>
+            <th>Status</th>
+            <td>{{ request.statusformatted }}</td>
+        </tr>
+        <tr>
+            <th>Sumbitted by</th>
+            <td>{{ request.username }}</td>
+        </tr>
+        <tr>
+            <th>Sumbitted on</th>
+            <td>{{ request.userdate }}</td>
+        </tr>
+        <tr>
+            <th>Description</th>
+            <td>{{{ request.description }}}</td>
+        </tr>
+        <tr>
+            <th>Benefits</th>
+            <td>{{{ request.benefits }}}</td>
+        </tr>
+        <tr>
+            <th>College / School etc.</th>
+            <td>{{{ request.department }}}</td>
+        </tr>
+        <tr>
+            <th>Functionality</th>
+            <td>{{{ request.functionality }}}</td>
+        </tr>
+        <tr>
+            <th>Viability</th>
+            <td>{{{ request.viability }}}</td>
+        </tr>
+        <tr>
+            <th>Policies</th>
+            <td>{{{ request.policies }}}</td>
+        </tr>
+        <tr>
+            <th>Result</th>
+            <td>{{{ request.result }}}</td>
+        </tr>
+    </tbody>
+</table>
+
+<a class="btn btn-primary" href="{{{ back }}}">Back</a>
