@@ -33,8 +33,7 @@ class report_guid_search {
         $auth = get_auth_plugin('guid');
         $config = $auth->config;
         if (empty($config->host_url) || empty($config->contexts)) {
-            debugging('host_url and contexts must be defined in enrol_guid settings');
-            return false;
+            throw new Exception('host_url and contexts must be defined in auth_guid settings');
         }
         if (empty($config->field_map_firstname)) {
             $config->field_map_firstname = 'givenName';
@@ -136,7 +135,7 @@ class report_guid_search {
                 return false;
             }
         } else {
-            if (!ldap_bind( $dv, $config->bind_dn, $config->bind_pw )) {
+            if (!ldap_bind( $dv, trim($config->bind_dn), trim($config->bind_pw ))) {
                 debugging( 'Failed bind to ldap host '.ldap_error( $dv ) );
                 return false;
             }

@@ -70,13 +70,12 @@ if (!function_exists( 'ldap_connect' )) {
 }
 
 // Check for user create.
-if (($action == 'create') and confirm_sesskey()) {
-    if (!empty($USER->report_guid_ldap)) {
-        $result = $USER->report_guid_ldap;
-        if ($guid == $result[$config->user_attribute]) {
-            $user = report_guid_search::create_user_from_ldap($result);
-            notice(get_string('usercreated', 'report_guid', fullname($user)));
-        }
+if (($action == 'create') && confirm_sesskey()) {
+    if ($guid) {
+        $results = report_guid_search::filter($output, '', '', $guid, '', '');
+        $result = array_shift($results);
+        $user = report_guid_search::create_user_from_ldap($result);
+        notice(get_string('usercreated', 'report_guid', fullname($user)));
     }
 }
 
