@@ -71,6 +71,7 @@ class search_solr_engine_testcase extends advanced_testcase {
     public function setUp() {
         $this->resetAfterTest();
         set_config('enableglobalsearch', true);
+        set_config('searchengine', 'solr');
 
         if (!function_exists('solr_get_version')) {
             $this->markTestSkipped('Solr extension is not loaded.');
@@ -936,6 +937,80 @@ class search_solr_engine_testcase extends advanced_testcase {
     }
 
     /**
+     * Tests searching for results restricted to specific user id(s).
+     */
+    public function test_user_restriction() {
+        // Use real search areas.
+        $this->search->clear_static();
+        $this->search->add_core_search_areas();
+
+        // Create a course, a forum, and a glossary.
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        $forum = $generator->create_module('forum', ['course' => $course->id]);
+        $glossary = $generator->create_module('glossary', ['course' => $course->id]);
+
+        // Create 3 user accounts, all enrolled as students on the course.
+        $user1 = $generator->create_user();
+        $user2 = $generator->create_user();
+        $user3 = $generator->create_user();
+        $generator->enrol_user($user1->id, $course->id, 'student');
+        $generator->enrol_user($user2->id, $course->id, 'student');
+        $generator->enrol_user($user3->id, $course->id, 'student');
+
+        // All users create a forum discussion.
+        $forumgen = $generator->get_plugin_generator('mod_forum');
+        $forumgen->create_discussion(['course' => $course->id, 'forum' => $forum->id,
+            'userid' => $user1->id, 'name' => 'Post1', 'message' => 'plugh']);
+        $forumgen->create_discussion(['course' => $course->id, 'forum' => $forum->id,
+                'userid' => $user2->id, 'name' => 'Post2', 'message' => 'plugh']);
+        $forumgen->create_discussion(['course' => $course->id, 'forum' => $forum->id,
+                'userid' => $user3->id, 'name' => 'Post3', 'message' => 'plugh']);
+
+        // Two of the users create entries in the glossary.
+        $glossarygen = $generator->get_plugin_generator('mod_glossary');
+        $glossarygen->create_content($glossary, ['concept' => 'Entry1', 'definition' => 'plugh',
+                'userid' => $user1->id]);
+        $glossarygen->create_content($glossary, ['concept' => 'Entry3', 'definition' => 'plugh',
+                'userid' => $user3->id]);
+
+        // Index the data.
+        $this->search->index();
+
+        // Search without user restriction should find everything.
+        $querydata = new stdClass();
+        $querydata->q = 'plugh';
+        $results = $this->search->search($querydata);
+        $this->assert_result_titles(
+                ['Entry1', 'Entry3', 'Post1', 'Post2', 'Post3'], $results);
+
+        // Restriction to user 3 only.
+        $querydata->userids = [$user3->id];
+        $results = $this->search->search($querydata);
+        $this->assert_result_titles(
+                ['Entry3', 'Post3'], $results);
+
+        // Restriction to users 1 and 2.
+        $querydata->userids = [$user1->id, $user2->id];
+        $results = $this->search->search($querydata);
+        $this->assert_result_titles(
+                ['Entry1', 'Post1', 'Post2'], $results);
+
+        // Restriction to users 1 and 2 combined with context restriction.
+        $querydata->contextids = [context_module::instance($glossary->cmid)->id];
+        $results = $this->search->search($querydata);
+        $this->assert_result_titles(
+                ['Entry1'], $results);
+
+        // Restriction to users 1 and 2 combined with area restriction.
+        unset($querydata->contextids);
+        $querydata->areaids = [\core_search\manager::generate_areaid('mod_forum', 'post')];
+        $results = $this->search->search($querydata);
+        $this->assert_result_titles(
+                ['Post1', 'Post2'], $results);
+    }
+
+    /**
      * Asserts that the returned documents have the expected titles (regardless of order).
      *
      * @param string[] $expected List of expected document titles
@@ -1058,6 +1133,43 @@ class search_solr_engine_testcase extends advanced_testcase {
         $querydata->context = $course1pagecontext;
         $results = $this->search->search($querydata);
         $this->assertEquals('C1P', $results[0]->get('title'));
+    }
+
+    /**
+     * Tests with bogus content (that can be entered into Moodle) to see if it crashes.
+     */
+    public function test_bogus_content() {
+        $generator = $this->getDataGenerator();
+        $course1 = $generator->create_course(['fullname' => 'Course 1']);
+        $course1context = \context_course::instance($course1->id);
+
+        // It is possible to enter into a Moodle database content containing these characters,
+        // which are Unicode non-characters / byte order marks. If sent to Solr, these cause
+        // failures.
+        $boguscontent = html_entity_decode('&#xfffe;') . 'frog';
+        $this->create_search_record($course1->id, $course1context->id, 'C1', $boguscontent);
+        $boguscontent = html_entity_decode('&#xffff;') . 'frog';
+        $this->create_search_record($course1->id, $course1context->id, 'C1', $boguscontent);
+
+        // Unicode Standard Version 9.0 - Core Specification, section 23.7, lists 66 non-characters
+        // in total. Here are some of them - these work OK for me but it may depend on platform.
+        $boguscontent = html_entity_decode('&#xfdd0;') . 'frog';
+        $this->create_search_record($course1->id, $course1context->id, 'C1', $boguscontent);
+        $boguscontent = html_entity_decode('&#xfdef;') . 'frog';
+        $this->create_search_record($course1->id, $course1context->id, 'C1', $boguscontent);
+        $boguscontent = html_entity_decode('&#x1fffe;') . 'frog';
+        $this->create_search_record($course1->id, $course1context->id, 'C1', $boguscontent);
+        $boguscontent = html_entity_decode('&#x10ffff;') . 'frog';
+        $this->create_search_record($course1->id, $course1context->id, 'C1', $boguscontent);
+
+        // Do the indexing (this will check it doesn't throw warnings).
+        $this->search->index();
+
+        // Confirm that all 6 documents are found in search.
+        $querydata = new stdClass();
+        $querydata->q = 'frog';
+        $results = $this->search->search($querydata);
+        $this->assertCount(6, $results);
     }
 
     /**

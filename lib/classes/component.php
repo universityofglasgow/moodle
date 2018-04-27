@@ -85,6 +85,7 @@ class core_component {
         'IMSGlobal\LTI' => 'lib/ltiprovider/src',
         'Phpml' => 'lib/mlbackend/php/phpml/src/Phpml',
         'PHPMailer\\PHPMailer' => 'lib/phpmailer/src',
+        'RedeyeVentures\\GeoPattern' => 'lib/geopattern-php/GeoPattern',
     );
 
     /**
@@ -483,7 +484,7 @@ $cache = '.var_export($cache, true).';
             'tag'         => $CFG->dirroot.'/tag',
             'timezones'   => null,
             'user'        => $CFG->dirroot.'/user',
-            'userkey'     => null,
+            'userkey'     => $CFG->dirroot.'/lib/userkey',
             'webservice'  => $CFG->dirroot.'/webservice',
         );
 
