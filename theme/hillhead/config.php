@@ -28,7 +28,7 @@ require_once(__DIR__ . '/lib.php');
 
 $THEME->name = 'hillhead';
 $THEME->sheets = ['font-awesome', 'ubuntu', 'comic', 'mono'];
-$THEME->editor_sheets = [];
+$THEME->editor_sheets = ['editor'];
 $THEME->parents = ['boost'];
 $THEME->enable_dock = false;
 $THEME->yuicssmodules = array();

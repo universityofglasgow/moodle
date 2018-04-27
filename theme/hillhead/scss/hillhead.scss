@@ -1,6 +1,13 @@
 $breadcrumb-divider: "›";
 $breadcrumb-divider-rtl: "‹";
 
+$enable-rounded: true;
+
+$font-size-base: 0.9rem;
+$headings-font-weight: 400;
+
+$alert-border-width: 1px;
+
 $gu-blue: #003865;
 $gu-blue-border: #002645;
 
@@ -58,10 +65,6 @@ $message-received-background: #DFEFD1;
 $message-received-border: #C2E3A5;
 
 // Page structure and resets
-
-body {
-    font-weight: 300;
-}
 
 h1 {
     font-size: 1.4rem !important;
@@ -147,11 +150,11 @@ b, strong {
     font-weight: 700;
 }
 
-header.navbar a.dropdown-toggle {
+nav.navbar a.dropdown-toggle {
     color: $gu-background !important;
 }
 
-header.navbar a.dropdown-item {
+nav.navbar a.dropdown-item {
     color: #555 !important;
 }
 
@@ -197,40 +200,55 @@ h3.sectionname a {
 
 // Page header
 
-header.navbar {
+nav.navbar {
     background-color: $gu-skyblue;
     border-bottom: $border-width solid $gu-blue-border;
 }
 
-header.navbar-light .navbar-brand {
+nav.navbar-light .navbar-brand {
     text-indent: -1000em;
     background-color: transparent;
     background-image: url([[pix:theme|gu-logo]]);
     background-repeat: no-repeat;
     width: 111px;
+    height: 35px;
+    padding: 0;
+    display: inline-block !important;
 }
 
-header.navbar .popover-region {
+nav.navbar .d-inline-block {
+    vertical-align: middle !important;
+}
+
+nav.navbar .popover-region {
     margin-right: 0;
     margin-left: 15px;
     display: inline-block;
 }
 
-header .help-centre {
+nav.navbar .help-centre {
     display: inline-block;
 }
 
-.btn-drawertoggle {
+nav.navbar.row > div {
+    padding: 0;
+}
+
+nav .btn-drawertoggle {
     background-color: $gu-blue;
     color: $gu-background;
     border-color: transparent;
+    height: 35px;
+    width: 45px;
+    padding: 0;
+    margin-right: 0 !important;
 }
 
 i.fa, header .help-centre a {
     display: inline-block !important;
 }
 
-header .popover-region-toggle > i.fa, header .help-centre i.fa {
+nav.navbar .popover-region-toggle > i.fa, nav.navbar .help-centre i.fa {
     display: inline-block;
     font-size: 24px;
     color: $gu-background;
@@ -248,7 +266,7 @@ header .popover-region-toggle > i.fa, header .help-centre i.fa {
     bottom: -11px !important;
 }
 
-header.navbar .count-container {
+nav.navbar .count-container {
     display: inline-block;
     border-radius: 7px;
     min-width: 14px;
@@ -257,12 +275,12 @@ header.navbar .count-container {
     background-color: #D50032;
 }
 
-header .navbar-nav .nav-link {
+nav.navbar .nav-link {
     padding-top: 0 !important;
     padding-bottom: 0 !important;
 }
 
-header.navbar .count-container.hidden {
+nav.navbar .count-container.hidden {
     display: none;
 }
 
@@ -270,9 +288,10 @@ header.navbar .count-container.hidden {
     padding: 0;
 }
 
-body.notloggedin header .usermenu {
-    color: $gu-header-icons;
+body.notloggedin nav.navbar .usermenu {
+    display: none;
 }
+
 
 body.notloggedin header .usermenu a, body.notloggedin header .usermenu a:hover {
     color: $gu-background;
@@ -285,7 +304,16 @@ body.notloggedin header .usermenu a, body.notloggedin header .usermenu a:hover {
     
     .card {
         margin-bottom: 0;
+        padding: 20px;
     }
+    
+    .context-header-settings-menu a {
+        color: #777;
+    }
+}
+
+.action-menu a {
+    color: #777 !important;
 }
 
 #page.container-fluid {
@@ -293,12 +321,12 @@ body.notloggedin header .usermenu a, body.notloggedin header .usermenu a:hover {
     padding-right: 20px !important;
 }
 
-header .navbar-nav {
+nav.navbar .navbar-nav {
     padding-left: 0;
     padding-right: 0;
 }
 
-header .usermenu .dropdown-toggle {
+nav.navbar .usermenu .dropdown-toggle {
     color: $gu-background;
 }
 
@@ -311,14 +339,19 @@ header .usermenu .dropdown-toggle {
     text-align: right;
 }
 
-header.navbar .d-inline {
+nav.navbar .d-inline {
     vertical-align: middle !important;
+}
+
+.hillhead-search-input-wrapper .btn {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
 }
 
 // Responsive changes and retina displays
 
 @media only screen and (-webkit-min-device-pixel-ratio: 2) {
-    header.navbar-light .navbar-brand {
+    nav.navbar-light .navbar-brand {
         background-image: url([[pix:theme|gu-logo-retina]]);
         background-size: 111px 35px;
     }
@@ -391,7 +424,7 @@ footer h3 {
 
 .footer-links h4 {
 	padding: 0;
-	font-size: 1rem;
+	font-size: 1em;
 	line-height:19px;
 	vertical-align: baseline;
 	color: $gu-blue;
@@ -436,6 +469,16 @@ footer h3 {
     border-color: $message-received-border;
 }
 
+// Block Stuff
+
+.card {
+    padding: 20px;
+}
+
+.block.card {
+    padding: 0;
+}
+
 .card-title {
     font-size: 1rem;
 }
@@ -443,6 +486,67 @@ footer h3 {
 .open>.dropdown-menu {
     box-shadow: 0 1px 4px #ccc;
 }
+
+.block .card-body {
+    padding: 0;
+}
+
+.block .block-heading {
+    padding: 10px 20px;
+    border-bottom: 1px solid $gu-island-border;
+    background-color: $gu-skyblue;    
+}
+
+.block .block-heading h3, .block .block-heading h5 {
+    color: #fff;
+    font-weight: 300;
+    font-size: 1.05rem;
+    margin: 0;
+}
+
+.block .block-content {
+    margin: 20px;
+}
+
+.block .block-footer * {
+    padding: 10px 20px;
+    color: #777; 
+}
+
+.block .block-footer a {
+    color: #777; 
+    text-decoration: underline;
+}
+
+body.path-my #region-main > .card-block,
+body.pagelayout-course #region-main .card-block,
+body#page-user-profile #region-main > .card-block,
+body.path-course.pagelayout-course #region-main .card-block {
+    background: transparent !important;
+    border: none !important;
+    margin-bottom: 0 !important;
+    padding: 0 !important;
+}
+
+.block .block-controls {
+    color: #fff !important;
+    font-size: 16px;
+    padding-right: 0;
+}
+
+.block .block-controls a {
+    color: #fff !important;
+}
+
+#nav-drawer .list-group-item.active {
+    background-color: $gu-background;
+    
+    span.font-weight-bold {
+        font-weight: 500 !important;
+    }
+}
+
+/*
 
 // Dashboard fixes
 
@@ -466,13 +570,6 @@ footer h3 {
     margin-bottom: 20px;
 }
 
-.block-region .card-block .card-title, .block-region #page-enrol-users #filterform .card-title, #page-enrol-users .block-region #filterform .card-title, .block-region .userprofile .profile_tree section .card-title, .userprofile .profile_tree .block-region section .card-title, .block-region .yui-skin-sam .yui-layout.path-mod-chat-gui_ajax .yui-layout-unit-right .card-title, .yui-skin-sam .yui-layout.path-mod-chat-gui_ajax .block-region .yui-layout-unit-right .card-title, .block-region .yui-skin-sam .yui-layout.path-mod-chat-gui_ajax .yui-layout-unit-bottom .card-title, .yui-skin-sam .yui-layout.path-mod-chat-gui_ajax .block-region .yui-layout-unit-bottom .card-title, .block-region .yui-skin-sam .yui-layout.path-mod-chat-gui_ajax #chat-messages .chat-message.course-theme .card-title, .yui-skin-sam .yui-layout.path-mod-chat-gui_ajax #chat-messages .block-region .chat-message.course-theme .card-title, .block-region .well .card-title {
-    text-transform: none !important;
-    background-color: $gu-skyblue;
-    color: #fff;
-    font-weight: 300 !important;
-}
-
 body.path-my #region-main .card-block, body.path-course-view #region-main .card-block, #block-region-side-pre aside .card-block {
     padding: 0 !important;
 }
@@ -481,25 +578,7 @@ body.path-my #region-main .card-block, body.path-course-view #region-main .card-
     margin-bottom: 0;
 }
 
-.card-block {
-    padding: 20px !important;
-}
 
-.card-block .card-title {
-    padding: 10px 20px !important;
-    border-bottom: 1px solid $gu-island-border;
-}
-
-.card-block .content {
-    padding: 20px;
-}
-
-.card-block .block-controls {
-    color: #fff !important;
-    font-size: 16px;
-    padding-top: 6px;
-    padding-right: 20px;
-}
 
 .card-block .block-controls a i.icon {
     color: #fff !important;
@@ -517,19 +596,13 @@ body.path-my #region-main .card-block, body.path-course-view #region-main .card-
     height: 150px !important;
 }
 
-body.path-my #region-main > .card-block,
-body.pagelayout-course #region-main .card-block,
-body#page-user-profile #region-main > .card-block,
-body.path-course.pagelayout-course #region-main .card-block {
-    background: transparent;
-    border: none;
-    margin-bottom: 0;
-    padding: 0 !important;
-}
+
 
 body.path-course.pagelayout-incourse #region-main .card-block {
     padding: 20px !important;
 }
+
+*/
 
 // Course sections
 
@@ -540,6 +613,11 @@ body.path-course-view .course-content > ul > li.section {
     border-radius: $card-border-radius;
     padding: 0;
     overflow: visible;
+}
+
+body.path-course.pagelayout-incourse #region-main .card-block,
+body.path-mod-coursework #region-main .card-block {
+    padding: 20px !important;
 }
 
 body.path-course-view .course-content > ul > li.section .content {
@@ -571,7 +649,8 @@ body.path-course-view.editing .course-content > ul > li.section .content {
     overflow: visible;
 }
 
-body.editing .course-content > ul > li.section .sectionname {
+body.format-topics.editing .course-content > ul > li.section .sectionname,
+body.format-weeks.editing .course-content > ul > li.section .sectionname {
     padding-top: 10px !important;
 }
 
@@ -637,7 +716,7 @@ course-content ul.ctopics li.section .content div.toggle {
 
 .section .side {
     // Fix for Safari's space above topic headings
-    margin-top: 8px !important;
+    margin-top: 0 !important;
 }
 
 div#gridshadebox_overlay {
@@ -683,6 +762,10 @@ div#gridshadebox_content.absolute {
 
 .course-content > ul > li.section .sectionname a {
     color: #fff;
+}
+
+body#page-course-view-topcoll .course-content > ul > li.section .sectionname a, body#page-course-view-topcoll .course-content > ul > li.section i {
+    color: inherit !important;
 }
 
 .course-content > ul > li.section .section-modchooser {
@@ -740,7 +823,8 @@ ul.ctopics li.section .side a.dropdown-toggle {
 }
 
 div.course-content, ul.ctopics {
-    overflow: visible !important;
+    overflow-y: visible !important;
+    overflow-x: hidden;
 }
 
 .course-content>ul.ctopics>li.section .side i {
@@ -752,9 +836,15 @@ div.course-content, ul.ctopics {
 }
 
 .course-content ul.ctopics>li.section .side.left {
-    padding-top: 6px !important;
+    padding-top: 14px !important;
     width: 40px !important;
-    margin-left: 20px !important;
+    margin-left: 0 !important;
+}
+
+.course-content ul.ctopics>li.section .side.right {
+    padding-top: 14px !important;
+    width: 60px !important;
+    margin-right: 0 !important;
 }
 
 .course-content ul.ctopics>li.section .side.left span.section-handle {
@@ -813,7 +903,11 @@ ul.ctopics > li .sectionhead span.the_toggle::before {
     transform-origin: 50% 50%;
     transform: rotate(0deg);
     transition: 300ms linear all;
-    margin-left: -60px;
+    margin-left: -20px;
+}
+
+ul.ctopics > li .sectionhead span.the_toggle::before {
+    margin-left: -20px;
 }
 
 ul.ctopics > li .sectionhead span.toggle_open::before {
@@ -939,7 +1033,7 @@ body#page-admin-roles-assign .admintable th.c2.userrole {
 
 // User profile fixes
 
-body#page-user-profile #region-main .description, body.path-course.path-user #region-main .description, body.path-course.path-user #region-main .page-context-header, .course-content .single-section {
+body#page-user-profile #region-main .description, body.path-course.path-user #region-main .description, body.path-course.path-user #region-main .page-context-header, .course-content .single-section, body.path-admin #region-main .card-block {
     background-color: $gu-island-back;
     border: 1px solid $gu-island-border;
     padding: 20px;
@@ -994,6 +1088,11 @@ body#page-user-profile #region-main > .card-block .node_category .editprofile, b
 
 // Alert fixes
 
+.alert {
+    padding: 5px 10px !important;
+    margin-bottom: 20px !important;
+}
+
 .alert i {
     display: block;
     float: left;
@@ -1014,8 +1113,28 @@ body#page-user-profile #region-main > .card-block .node_category .editprofile, b
     padding: 5px 10px !important;
 }
 
-.alert-warning {
-    border-color: #E7E2C6 !important;
+.alert.alert-danger {
+    background-color: #f2dede !important;
+    color: #a94442 !important;
+    border-color: #ebcccc !important;
+}
+
+.alert.alert-warning {
+    background-color: #fcf8e3 !important;
+    color: #8a6d3b !important;
+    border-color: #faf2cc !important;
+}
+
+.alert.alert-success {
+    background-color: #dff0d8 !important;
+    color: #3c763d !important;
+    border-color: #d0e9c6 !important;
+}
+
+.alert.alert-info {
+    background-color: #d9edf7 !important;
+    color: #31708f !important;
+    border-color: #bcdff1 !important;
 }
 
 .alert-danger span a {
@@ -1108,6 +1227,10 @@ body#page-user-profile #region-main > .card-block .node_category .editprofile, b
 
 .gu-login-spacer {
     height: 100px;
+}
+
+.gu-login label.hidden-xs-up {
+    display: none;
 }
 
 .gu-login .rememberpass {
@@ -1285,16 +1408,14 @@ body.hillhead-contrast header .navbar-brand span.site-name {
     top: 2.9rem !important;
 }
 
-.card.accessibility-card {
+.card.accessibility-tools {
     margin-bottom: 0;
     margin-top: 20px;
 }
 
-.accessibility-card h3 {
-    margin-bottom: 20px;
-}
-
-.accessibility-card .accessibility-group h4 {
+.accessibility-tools .accessibility-group h4 {
+    font-size: 1rem !important;
+    font-weight: 500;
     background-color: #eee;
     border-bottom: 1px solid #ddd;
     line-height: 24px !important;
@@ -1332,79 +1453,6 @@ body.hillhead-bold * {
     width: 24px;
     text-align: center;
     margin-right: 5px;
-}
-
-#nav-drawer .list-group-item div::before, #nav-drawer .list-group-item div i.fa {
-    font-family: "FontAwesome";
-    width: 1.5em;
-    display: block;
-    float: left;
-    text-align: center;
-    margin-right: 0.2em;
-}
-
-#nav-drawer .list-group-item div::before {
-    content: "\f105";
-}
-
-#nav-drawer .list-group-item[data-key="accessibility"] div::before {
-    content: "\f29a";
-}
-
-#nav-drawer .list-group-item[data-key="myhome"] div::before {
-    content: "\f0e4";
-}
-
-#nav-drawer .list-group-item[data-key="home"] div::before {
-    content: "\f015";
-}
-
-#nav-drawer .list-group-item[data-key="calendar"] div::before {
-    content: "\f073";
-}
-
-#nav-drawer .list-group-item[data-key="privatefiles"] div::before {
-    content: "\f07c";
-}
-
-#nav-drawer .list-group-item[data-key="sitesettings"] div::before {
-    content: "\f0ad";
-}
-
-#nav-drawer .list-group-item[data-key="coursehome"] div::before {
-    content: "\f19d";
-}
-
-#nav-drawer .list-group-item[data-key="mycourses"] div::before {
-    content: "\f19d";
-}
-
-#nav-drawer .list-group-item[data-key="participants"] div::before {
-    content: "\f0c0";
-}
-
-#nav-drawer .list-group-item[data-key="badgesview"] div::before {
-    content: "\f005";
-}
-
-#nav-drawer .list-group-item[data-key="competencies"] div::before {
-    content: "\f1b3";
-}
-
-#nav-drawer .list-group-item[data-key="grades"] div::before {
-    content: "\f24e";
-}
-
-#nav-drawer .list-group-item[data-key="coursehome"] div::before {
-    content: "\f19d";
-}
-
-#nav-drawer .list-group-item[data-key="coursehome"] div::before {
-    content: "\f19d";
-}
-
-#nav-drawer .list-group-item[data-key="addblock"] div::before {
-    content: "\f0fe";
 }
 
 #hh-acc-ft-de { font-family: "Hillhead", "Ubuntu", "Trebuchet MS", Arial, sans-serif; }

@@ -157,7 +157,7 @@ if(empty($_SESSION['SESSION']->hillhead_notifications) || !array_key_exists(md5(
             $notiftext = '<div class="alert alert-success"><a class="close" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($hillheadNotificationText).'" aria-label="Close"><span aria-hidden="true">&times;</span></a><i class="fa fa-info-circle"></i><span>'.$hillheadNotificationText.'</span></div>';
             break;
         case 'alert-info':
-            $notiftext = '<div class="alert alert-info"><a class="close" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($hillheadNotificationText).'" aria-label="Close"><span aria-hidden="true">&times;</span></a><i class="fa fa-info-circle"></i><span>'.$$hillheadNotificationText.'</span></div>';
+            $notiftext = '<div class="alert alert-info"><a class="close" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($hillheadNotificationText).'" aria-label="Close"><span aria-hidden="true">&times;</span></a><i class="fa fa-info-circle"></i><span>'.$hillheadNotificationText.'</span></div>';
             break;
         default:
             $notiftext = '';
@@ -208,6 +208,7 @@ if($usesAccessibilityTools === false) {
                 'v'=>'on',
                 'c'=>'hh-acc-ac-on',
                 't'=>'Show Accessibility Tools',
+                'i'=>'fa-universal-access'
             ),
         ),
     );
@@ -219,6 +220,7 @@ if($usesAccessibilityTools === false) {
                 'v'=>'clear',
                 'c'=>'hh-acc-ac-of',
                 't'=>'Hide Accessibility Tools',
+                'i'=>'fa-universal-access'
             ),
         ),
     );
@@ -230,7 +232,7 @@ $accTxt = '';
 foreach($accessibilityButton as $accessibilityGroup) {
     $accBtn .= '<nav class="list-group accessibility-toggle">';
     foreach($accessibilityGroup as $accessibilityItem) {
-        $accBtn .= '<a class="list-group-item list-group-item-action hh-acc '.$accessibilityItem['c'].'" href="'.$CFG->wwwroot.'/theme/hillhead/accessibility.php?o='.$accessibilityItem['o'].'&v='.$accessibilityItem['v'].'" data-key="accessibility"><div class="m-l-0"> '.$accessibilityItem['t'].'</div></a>';
+        $accBtn .= '<a class="list-group-item list-group-item-action hh-acc '.$accessibilityItem['c'].'" href="'.$CFG->wwwroot.'/theme/hillhead/accessibility.php?o='.$accessibilityItem['o'].'&v='.$accessibilityItem['v'].'" data-key="accessibility"><div class="m-l-0"><div class="media"><span class="media-left"><i class="fa '.$accessibilityItem['i'].'"></i></span><span class="media-body"> '.$accessibilityItem['t'].'</span></div></div></a>';
     }
     $accBtn .= '</nav>';
 }
@@ -474,7 +476,7 @@ if($theme_hillhead_stripstyles == 'on') {
 }
 
 if($usesAccessibilityTools) {
-    $accTxt = '<div class="card accessibility-card"><div class="card-block"><h3>Accessibility Tools</h3>';
+    $accTxt = '<div class="block card m-t-1 accessibility-tools"><div class="block-heading"><h3>Accessibility Tools</h3></div><div class="block-content">';
     $accTxt .= '<div class="row">';
     $accTxt .= '<div class="col-xs-12 col-sm-4 accessibility-group">';
     $accTxt .= '<h4>Colour Scheme</h4><ul class="accessibility-features">';

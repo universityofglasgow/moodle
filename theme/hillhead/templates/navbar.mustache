@@ -15,29 +15,29 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    Page header.
+    Page navbar.
 }}
-<header id="page-header" class="row">
+<nav class="row fixed-top navbar navbar-light navbar-expand moodle-has-zindex">
     <div class="col-md-4 col-sm-3 col-xs-2">
-        <div data-region="drawer-toggle">
-            <button aria-expanded="{{#navdraweropen}}true{{/navdraweropen}}{{^navdraweropen}}false{{/navdraweropen}}" aria-controls="nav-drawer" type="button" class="btn pull-xs-left m-r-1 btn-drawertoggle" data-action="toggle-drawer" data-side="left" data-preference="drawer-open-nav"><span aria-hidden="true">&#9776;</span><span class="sr-only">{{#str}}expand, core{{/str}}</span></button>
-            </div>
+        <div data-region="drawer-toggle" class="d-inline-block mr-3">
+            <button aria-expanded="{{#navdraweropen}}true{{/navdraweropen}}{{^navdraweropen}}false{{/navdraweropen}}" aria-controls="nav-drawer" type="button" class="btn nav-link float-sm-left mr-1 btn-drawertoggle" data-action="toggle-drawer" data-side="left" data-preference="drawer-open-nav">{{#pix}}i/menubars{{/pix}}<span class="sr-only">{{#str}}sidepanel, core{{/str}}</span></button>
+        </div>
 
         <a href="{{{ config.wwwroot }}}" class="navbar-brand {{# output.should_display_navbar_logo }}has-logo{{/ output.should_display_navbar_logo }}
             {{^ output.should_display_navbar_logo }}
-                hidden-sm-down
+                d-none d-sm-inline
             {{/ output.should_display_navbar_logo }}
                 ">
             {{# output.should_display_navbar_logo }}
-                <span class="logo hidden-xs-down">
+                <span class="logo d-none d-sm-inline">
                     <img src="{{output.get_compact_logo_url}}" alt="{{sitename}}">
                 </span>
             {{/ output.should_display_navbar_logo }}
-            <span class="site-name hidden-sm-down">{{{ sitename }}}</span>
+            <span class="site-name d-none d-md-inline">{{{ sitename }}}</span>
         </a>
     </div>
     <div class="col-md-4 col-sm-4 hidden-xs-down">
-        {{{ output.search_box }}}
+    {{{ output.search_box }}}
     </div>
     <div class="col-md-4 col-sm-5 col-xs-10 user-menu">
         <!-- user_menu -->
@@ -46,5 +46,5 @@
         {{{ output.navbar_plugin_output }}}
         {{{ hillheadhelplink }}}
     </div>
-</header>
+</nav>
 
