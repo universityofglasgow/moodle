@@ -16643,7 +16643,8 @@ form {
 }
 .mform .fcheckbox > span,
 .mform .fradio > span,
-.mform .fgroup > span {
+.mform .fgroup > span,
+.mform .fadvcheckbox > span {
   display: inline-block;
   margin-top: 5px;
 }
@@ -18383,6 +18384,16 @@ div#dock {
   padding: 10px;
   height: 300px;
   overflow-y: scroll;
+}
+@media (max-width: 768px) {
+  .backup-restore .backup-section.settings-section .detail-pair {
+    width: 100%;
+  }
+}
+@media (max-width: 900px) {
+  .backup-restore .backup-section.settings-section .detail-pair-label {
+    width: 50%;
+  }
 }
 table.flexible,
 .generaltable {
