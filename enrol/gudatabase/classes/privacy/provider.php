@@ -26,6 +26,8 @@ namespace enrol_gudatabase\privacy;
 use core_privacy\local\metadata\collection;
 use core_privacy\local\request\approved_contextlist;
 use core_privacy\local\request\contextlist;
+use core_privacy\local\request\helper;
+use core_privacy\local\request\writer;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -92,7 +94,46 @@ class provider implements \core_privacy\local\metadata\provider, \core_privacy\l
      *
      * @param   approved_contextlist    $contextlist    The approved contexts to export information for.
      */
-    public static function export_user_data(approved_contextlist $contextlist) {}
+    public static function export_user_data(approved_contextlist $contextlist) {
+        global $DB;
+
+        if (empty($contextlist->count())) {
+            return;
+        }
+
+        $user = $contextlist->get_user();
+
+        list($contextsql, $contextparams) = $DB->get_in_or_equal($contextlist->get_contextids(), SQL_PARAMS_NAMED);
+        $sql = "SELECT co.id AS id, co.fullname AS fullname, egu.code AS coursecode, egu.timeupdated AS timeupdated
+            FROM {context} c
+            JOIN {course} co ON co.id = c.instanceid
+            JOIN {enrol_gudatabase_users} egu ON egu.courseid = co.id
+            WHERE c.id $contextsql
+            AND egu.userid = :userid
+        ";
+   
+        $params = [
+            'userid' => $user->id,
+        ] + $contextparams; 
+
+        $enrolments = $DB->get_records_sql($sql, $params);
+
+        // Export the data 
+        foreach ($enrolments as $enrolment) {
+            $context = \context_course::instance($enrolment->id);
+            $contextdata = helper::get_context_data($context, $user);
+
+            // Create data to export
+            $enrolmentdata = [
+                'code' => $enrolment->coursecode,
+                'timeupdated' => \core_privacy\local\request\transform::datetime($enrolment->timeupdated)
+            ];
+
+            // Merge data
+            $contextdata = (object)array_merge((array)$contextdata, $enrolmentdata);
+            writer::with_context($context)->export_data([], $contextdata);
+        }
+    }
 
     /**
      * Delete all personal data for all users in the specified context.
