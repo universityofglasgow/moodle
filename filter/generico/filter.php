@@ -80,7 +80,11 @@ function filter_generico_callback(array $link){
 	
 	//we use this to see if its a web service calling this, 
 	//in which case we return the alternate content
-	$is_webservice = strpos($PAGE->url,$CFG->wwwroot .'/webservice/') === 0;
+    $climode = defined('CLI_SCRIPT') && CLI_SCRIPT;
+	$is_webservice = false;
+	if(!$climode){
+	   $is_webservice = strpos($PAGE->url,$CFG->wwwroot .'/webservice/') === 0;
+	}
 	
 	
 	//if we want to ignore the filter (for "how to use generico" or "cut and paste" this style use) we let it go
@@ -410,7 +414,7 @@ function filter_generico_callback(array $link){
 	$require_amd = $conf['template_amd_' . $tempindex] && $CFG->version>=2015051100;
 	
 	//figure out if this is https or http. We don't want to scare the browser
-	if(strpos($PAGE->url->out(),'https:')===0){
+	if(!$climode && strpos($PAGE->url->out(),'https:')===0){
 		$scheme='https:';
 	}else{
 		$scheme='http:';
