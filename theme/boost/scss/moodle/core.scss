@@ -293,10 +293,7 @@ form.popupform div {
 
 // Accessibility: text 'seen' by screen readers but not visual users.
 .accesshide {
-    position: absolute;
-    left: -10000px;
-    font-weight: normal;
-    font-size: 1em;
+    @include sr-only();
 }
 
 span.hide,
@@ -1101,6 +1098,18 @@ body#page-lib-editor-tinymce-plugins-moodlemedia-preview {
 /* Moodle Dialogue Settings (moodle-core-dialogue)  */
 .moodle-dialogue-base .moodle-dialogue-lightbox {
     background-color: $gray;
+}
+
+// Prevent adding backdrops to popups in popups.
+.pagelayout-popup {
+    .moodle-dialogue-base {
+        .moodle-dialogue-lightbox {
+            background-color: transparent;
+        }
+        .moodle-dialogue {
+            box-shadow: $popover-box-shadow;
+        }
+    }
 }
 
 .moodle-dialogue-base .hidden,

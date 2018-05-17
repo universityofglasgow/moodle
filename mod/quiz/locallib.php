@@ -1972,7 +1972,6 @@ class mod_quiz_display_options extends question_display_options {
     }
 }
 
-
 /**
  * A {@link qubaid_condition} for finding all the question usages belonging to
  * a particular quiz.
@@ -1984,6 +1983,41 @@ class qubaids_for_quiz extends qubaid_join {
     public function __construct($quizid, $includepreviews = true, $onlyfinished = false) {
         $where = 'quiza.quiz = :quizaquiz';
         $params = array('quizaquiz' => $quizid);
+
+        if (!$includepreviews) {
+            $where .= ' AND preview = 0';
+        }
+
+        if ($onlyfinished) {
+            $where .= ' AND state = :statefinished';
+            $params['statefinished'] = quiz_attempt::FINISHED;
+        }
+
+        parent::__construct('{quiz_attempts} quiza', 'quiza.uniqueid', $where, $params);
+    }
+}
+
+/**
+ * A {@link qubaid_condition} for finding all the question usages belonging to a particular user and quiz combination.
+ *
+ * @copyright  2018 Andrew Nicols <andrwe@nicols.co.uk>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class qubaids_for_quiz_user extends qubaid_join {
+    /**
+     * Constructor for this qubaid.
+     *
+     * @param   int     $quizid The quiz to search.
+     * @param   int     $userid The user to filter on
+     * @param   bool    $includepreviews Whether to include preview attempts
+     * @param   bool    $onlyfinished Whether to only include finished attempts or not
+     */
+    public function __construct($quizid, $userid, $includepreviews = true, $onlyfinished = false) {
+        $where = 'quiza.quiz = :quizaquiz AND quiza.userid = :quizauserid';
+        $params = [
+            'quizaquiz' => $quizid,
+            'quizauserid' => $userid,
+        ];
 
         if (!$includepreviews) {
             $where .= ' AND preview = 0';
@@ -2432,6 +2466,80 @@ function quiz_is_overriden_calendar_event(\calendar_event $event) {
 }
 
 /**
+ * Retrieves tag information for the given list of quiz slot ids.
+ * Currently the only slots that have tags are random question slots.
+ *
+ * Example:
+ * If we have 3 slots with id 1, 2, and 3. The first slot has two tags, the second
+ * has one tag, and the third has zero tags. The return structure will look like:
+ * [
+ *      1 => [
+ *          { ...tag data... },
+ *          { ...tag data... },
+ *      ],
+ *      2 => [
+ *          { ...tag data... }
+ *      ],
+ *      3 => []
+ * ]
+ *
+ * @param int[] $slotids The list of id for the quiz slots.
+ * @return array[] List of quiz_slot_tags records indexed by slot id.
+ */
+function quiz_retrieve_tags_for_slot_ids($slotids) {
+    global $DB;
+
+    if (empty($slotids)) {
+        return [];
+    }
+
+    $slottags = $DB->get_records_list('quiz_slot_tags', 'slotid', $slotids);
+    $tagsbyid = core_tag_tag::get_bulk(array_filter(array_column($slottags, 'tagid')), 'id, name');
+    $tagsbyname = false; // It will be loaded later if required.
+    $emptytagids = array_reduce($slotids, function($carry, $slotid) {
+        $carry[$slotid] = [];
+        return $carry;
+    }, []);
+
+    return array_reduce(
+        $slottags,
+        function($carry, $slottag) use ($slottags, $tagsbyid, $tagsbyname) {
+            if (isset($tagsbyid[$slottag->tagid])) {
+                // Make sure that we're returning the most updated tag name.
+                $slottag->tagname = $tagsbyid[$slottag->tagid]->name;
+            } else {
+                if ($tagsbyname === false) {
+                    // We were hoping that this query could be avoided, but life
+                    // showed its other side to us!
+                    $tagcollid = core_tag_area::get_collection('core', 'question');
+                    $tagsbyname = core_tag_tag::get_by_name_bulk(
+                        $tagcollid,
+                        array_column($slottags, 'tagname'),
+                        'id, name'
+                    );
+                }
+                if (isset($tagsbyname[$slottag->tagname])) {
+                    // Make sure that we're returning the current tag id that matches
+                    // the given tag name.
+                    $slottag->tagid = $tagsbyname[$slottag->tagname]->id;
+                } else {
+                    // The tag does not exist anymore (neither the tag id nor the tag name
+                    // matches an existing tag).
+                    // We still need to include this row in the result as some callers might
+                    // be interested in these rows. An example is the editing forms that still
+                    // need to display tag names even if they don't exist anymore.
+                    $slottag->tagid = null;
+                }
+            }
+
+            $carry[$slottag->slotid][] = $slottag;
+            return $carry;
+        },
+        $emptytagids
+    );
+}
+
+/**
  * Retrieves tag information for the given quiz slot.
  * A quiz slot have some tags if and only if it is representing a random question by tags.
  *
@@ -2439,37 +2547,8 @@ function quiz_is_overriden_calendar_event(\calendar_event $event) {
  * @return stdClass[] List of quiz_slot_tags records.
  */
 function quiz_retrieve_slot_tags($slotid) {
-    global $DB;
-
-    $slottags = $DB->get_records('quiz_slot_tags', ['slotid' => $slotid]);
-
-    $tagsbyid = core_tag_tag::get_bulk(array_filter(array_column($slottags, 'tagid')), 'id, name');
-
-    $tagcollid = core_tag_area::get_collection('core', 'question');
-    $tagsbyname = false; // It will be loaded later if required.
-
-    foreach ($slottags as $slottag) {
-        if (isset($tagsbyid[$slottag->tagid])) {
-            $slottag->tagname = $tagsbyid[$slottag->tagid]->name;   // Make sure that we're returning the most updated tag name.
-        } else {
-            if ($tagsbyname === false) {
-                // We were hoping that this query could be avoided, but life showed its other side to us!
-                $tagsbyname = core_tag_tag::get_by_name_bulk($tagcollid, array_column($slottags, 'tagname'), 'id, name');
-            }
-            if (isset($tagsbyname[$slottag->tagname])) {
-                $slottag->tagid = $tagsbyname[$slottag->tagname]->id;   // Make sure that we're returning the current tag id
-                                                                        // that matches the given tag name.
-            } else {
-                $slottag->tagid = null; // The tag does not exist anymore (neither the tag id nor the tag name
-                                        // matches an existing tag).
-                                        // We still need to include this row in the result as some callers might
-                                        // be interested in these rows. An example is the editing forms that still
-                                        // need to display tag names even if they don't exist anymore.
-            }
-        }
-    }
-
-    return $slottags;
+    $slottags = quiz_retrieve_tags_for_slot_ids([$slotid]);
+    return $slottags[$slotid];
 }
 
 /**

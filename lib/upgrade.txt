@@ -3,6 +3,11 @@ information provided here is intended especially for developers.
 
 === 3.5 ===
 
+* There is a new privacy API that every subsystem and plugin has to implement so that the site can become GDPR
+  compliant. Plugins use this API to report what information they store or process regarding users, and provide ability
+  to export and delete personal data. See https://docs.moodle.org/dev/Privacy_API for guidelines on how to implement the
+  privacy API in your plugin.
+* The cron runner now sets up a fresh PAGE and OUTPUT between each task.
 * The core_renderer methods notify_problem(), notify_success(), notify_message() and notify_redirect() that were
   deprecated in Moodle 3.1 have been removed. Use \core\notification::add(), or \core\output\notification as required.
 * The maximum supported precision (the total number of digits) for XMLDB_TYPE_NUMBER ("number") fields raised from 20 to
@@ -24,6 +29,11 @@ information provided here is intended especially for developers.
   act as a site policy handler.
 * There is a new is_fulltext_search_supported() DML function. The default implementation returns false. This function
   is used by 'Simple search' global search engine to determine if the database full-text search capabilities can be used.
+* The following have been removed from the list of core subsystems:
+   - core_register
+   - core_publish
+  Following this change, \core_register_renderer and \core_publish_renderer have been removed and their methods have been
+  moved to \core_admin_renderer and \core_course_renderer respectively.
 
 === 3.4 ===
 

@@ -134,7 +134,7 @@ ol {
 }
 
 // Set menus in the fixed header to scroll vertically when they are longer than the page.
-.navbar-static-top .dropdown .dropdown-menu {
+.navbar.fixed-top .dropdown .dropdown-menu {
     max-height: calc(100vh - #{$navbar-height});
     overflow-y: auto;
 }
@@ -161,4 +161,17 @@ ol {
 .bs-popover-left .arrow,
 .bs-popover-auto[x-placement^="left"] .arrow {
     right: -9px;
+}
+.bs-popover-top .arrow,
+.bs-popover-auto[x-placement^="top"] .arrow {
+    bottom: -9px;
+}
+.bs-popover-bottom .arrow,
+.bs-popover-auto[x-placement^="bottom"] .arrow {
+    top: -9px;
+}
+
+// Fixes an issue on Safari when the .custom-select is inside a .card class.
+.custom-select {
+    word-wrap: normal;
 }

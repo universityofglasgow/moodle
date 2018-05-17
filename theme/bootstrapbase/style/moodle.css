@@ -3659,6 +3659,9 @@ body#page-lib-editor-tinymce-plugins-moodlemedia-preview {
 .moodle-dialogue-base .moodle-dialogue-lightbox {
   background-color: #aaa;
 }
+.pagelayout-popup .moodle-dialogue-base .moodle-dialogue-lightbox {
+  background-color: transparent;
+}
 .moodle-dialogue-base .hidden,
 .moodle-dialogue-base .moodle-dialogue-hidden {
   display: none;
@@ -15786,6 +15789,9 @@ li.activity.label,
 }
 .choosercontainer #chooseform .option label {
   font-size: 12px;
+}
+.modal:focus {
+  outline: #5e9ed7 auto 5px;
 }
 /* block.invisible vs .invisible
  * block.hidden vs .invisible

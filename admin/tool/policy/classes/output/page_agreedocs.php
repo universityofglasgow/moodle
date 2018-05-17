@@ -237,13 +237,13 @@ class page_agreedocs implements renderable, templatable {
      * Redirect to $SESSION->wantsurl if defined or to $CFG->wwwroot if not.
      */
     protected function redirect_to_previous_url() {
-        global $SESSION, $CFG;
+        global $SESSION;
 
         if (!empty($SESSION->wantsurl)) {
             $returnurl = $SESSION->wantsurl;
             unset($SESSION->wantsurl);
         } else {
-            $returnurl = $CFG->wwwroot.'/';
+            $returnurl = (new moodle_url('/admin/tool/policy/user.php'))->out();
         }
 
         redirect($returnurl);
@@ -278,7 +278,7 @@ class page_agreedocs implements renderable, templatable {
         // and $SESSION->wantsurl is defined, redirect to the return page.
         $hasagreedsignupuser = empty($USER->id) && $this->signupuserpolicyagreed;
         $hasagreedloggeduser = $USER->id == $userid && !empty($USER->policyagreed);
-        if (!is_siteadmin() && ($hasagreedsignupuser || ($hasagreedloggeduser && !empty($SESSION->wantsurl)))) {
+        if (!is_siteadmin() && ($hasagreedsignupuser || $hasagreedloggeduser)) {
             $this->redirect_to_previous_url();
         }
 
@@ -293,7 +293,6 @@ class page_agreedocs implements renderable, templatable {
 
         // Page setup.
         $PAGE->set_context(context_system::instance());
-        $PAGE->set_pagelayout('standard');
         $PAGE->set_url($myurl);
         $PAGE->set_heading($SITE->fullname);
         $PAGE->set_title(get_string('policiesagreements', 'tool_policy'));

@@ -68,8 +68,9 @@ class process_data_request_task extends adhoc_task {
         $request = $requestpersistent->to_record();
 
         // Check if this request still needs to be processed. e.g. The user might have cancelled it before this task has run.
-        if ($request->status != api::DATAREQUEST_STATUS_APPROVED) {
-            mtrace("Request {$request->id} hasn\'t been approved yet or it has already been processed. Skipping...");
+        $status = $requestpersistent->get('status');
+        if (!api::is_active($status)) {
+            mtrace("Request {$requestid} with status {$status} doesn't need to be processed. Skipping...");
             return;
         }
 
@@ -87,6 +88,8 @@ class process_data_request_task extends adhoc_task {
 
             // Export the data.
             $manager = new \core_privacy\manager();
+            $manager->set_observer(new \tool_dataprivacy\manager_observer());
+
             $exportedcontent = $manager->export_user_data($approvedclcollection);
 
             $fs = get_file_storage();
@@ -109,6 +112,8 @@ class process_data_request_task extends adhoc_task {
 
             // Delete the data.
             $manager = new \core_privacy\manager();
+            $manager->set_observer(new \tool_dataprivacy\manager_observer());
+
             $manager->delete_data_for_user($approvedclcollection);
         }
 
@@ -181,23 +186,27 @@ class process_data_request_task extends adhoc_task {
         }
         mtrace('Message sent to user: ' . $messagetextdata['username']);
 
-        // Send to the requester as well. requestedby is 0 if the request was made on behalf of the user by a DPO.
-        if (!empty($request->requestedby) && $foruser->id != $request->requestedby) {
-            $requestedby = core_user::get_user($request->requestedby);
-            $message->userto = $requestedby;
-            $messagetextdata['username'] = fullname($requestedby);
-            // Render message email body.
-            $messagehtml = $output->render_from_template('tool_dataprivacy/data_request_results_email', $messagetextdata);
-            $message->fullmessage = html_to_text($messagehtml);
-            $message->fullmessagehtml = $messagehtml;
+        // Send to requester as well if this request was made on behalf of another user who's not a DPO,
+        // and has the capability to make data requests for the user (e.g. Parent).
+        if (!api::is_site_dpo($request->requestedby) && $foruser->id != $request->requestedby) {
+            // Ensure the requester has the capability to make data requests for this user.
+            if (api::can_create_data_request_for_user($request->userid, $request->requestedby)) {
+                $requestedby = core_user::get_user($request->requestedby);
+                $message->userto = $requestedby;
+                $messagetextdata['username'] = fullname($requestedby);
+                // Render message email body.
+                $messagehtml = $output->render_from_template('tool_dataprivacy/data_request_results_email', $messagetextdata);
+                $message->fullmessage = html_to_text($messagehtml);
+                $message->fullmessagehtml = $messagehtml;
 
-            // Send message.
-            if ($emailonly) {
-                email_to_user($requestedby, $dpo, $subject, $message->fullmessage, $messagehtml);
-            } else {
-                message_send($message);
+                // Send message.
+                if ($emailonly) {
+                    email_to_user($requestedby, $dpo, $subject, $message->fullmessage, $messagehtml);
+                } else {
+                    message_send($message);
+                }
+                mtrace('Message sent to requester: ' . $messagetextdata['username']);
             }
-            mtrace('Message sent to requester: ' . $messagetextdata['username']);
         }
 
         if ($request->type == api::DATAREQUEST_TYPE_DELETE) {
