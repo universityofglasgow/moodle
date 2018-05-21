@@ -131,7 +131,7 @@ class provider implements \core_privacy\local\metadata\provider, \core_privacy\l
 
             // Merge data
             $contextdata = (object)array_merge((array)$contextdata, $enrolmentdata);
-            writer::with_context($context)->export_data([], $contextdata);
+            writer::with_context($context)->export_data(['GUDatabase enrolment'], $contextdata);
         }
     }
 
@@ -143,12 +143,13 @@ class provider implements \core_privacy\local\metadata\provider, \core_privacy\l
     public static function delete_data_for_all_users_in_context(\context $context) {
         global $DB;
  
-         if ($context->contextlevel != CONTEXT_COURSE) {
+        if ($context->contextlevel != CONTEXT_COURSE) {
             return;
         }
  
-        $instanceid = $DB->get_field('course_modules', 'instance', ['id' => $context->instanceid], MUST_EXIST);
-        //$DB->delete_records('choice_answers', ['choiceid' => $instanceid]);
+        // Delete all entries in the enrolment codes table for this context
+        $courseid = $context->instanceid;
+        $DB->delete_records('enrol_gudatabase_users', ['courseid' => $courseid]);
     }
 
     /**
@@ -164,8 +165,11 @@ class provider implements \core_privacy\local\metadata\provider, \core_privacy\l
         }
         $userid = $contextlist->get_user()->id;
         foreach ($contextlist->get_contexts() as $context) {
-            //$instanceid = $DB->get_field('course_modules', 'instance', ['id' => $context->instanceid], MUST_EXIST);
-            //$DB->delete_records('choice_answers', ['choiceid' => $instanceid, 'userid' => $userid]);
+            if ($context->contextlevel != CONTEXT_COURSE) {
+                continue;
+            }
+            $courseid = $context->instanceid;
+            $DB->delete_records('enrol_gudatabase_users', ['courseid' => $courseid, 'userid' => $userid]);
         }
     }
 
