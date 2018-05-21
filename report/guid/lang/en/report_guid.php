@@ -84,6 +84,7 @@ $string['nouserresults'] = 'No Moodle profiles found';
 $string['numbercsvlines'] = 'Number of lines in CSV file = {$a}';
 $string['numberofresults'] = 'Number of results = {$a}';
 $string['pluginname'] = 'GUID search';
+$string['privacy:metadata'] = 'The GUID report does not store any personal data';
 $string['reset'] = 'Reset form';
 $string['resultfor'] = 'LDAP record for user';
 $string['roletoassign'] = 'Assign role';
