@@ -56,6 +56,7 @@ $string['notallowed'] = 'You do not have permission to view the selected activit
 $string['participantnumber'] = 'Participant';
 $string['partname'] = 'Part name:';
 $string['pluginname'] = 'Assignment submission report';
+$string['privacy:metadata'] = 'The Assignment submission report only shows data stored in other locations.';
 $string['returntime'] = 'Response';
 $string['selectassignment'] = 'Select assignment to view submission report';
 $string['status'] = 'Status';
