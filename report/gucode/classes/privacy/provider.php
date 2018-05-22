@@ -15,26 +15,32 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * GUID report
+ * Privacy provider implementation for report_gucode.
  *
  * @package    report_gucode
- * @copyright  2013 Howard Miller
+ * @copyright  2018 Howard Miller
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['added'] = 'Added';
-$string['code'] = 'Course Code';
-$string['gucode:view'] = 'View UofG Course Code report';
-$string['heading'] = 'UofG Course Code Search';
-$string['hidden'] = 'hidden';
-$string['instructions'] = 'Enter the UofG Course Code';
-$string['isvisible'] = 'Visible?';
-$string['localname'] = 'Local name';
-$string['missing'] = 'missing';
-$string['nocourses'] = 'No courses match the supplied code';
-$string['number'] = 'Number';
-$string['pluginname'] = 'UofG Course Code';
-$string['privacy:metadata'] = 'The course code report does not store any personal data';
-$string['subject'] = 'Subject';
-$string['visible'] = 'visible';
+namespace report_gucode\privacy;
 
+defined('MOODLE_INTERNAL') || die();
+
+/**
+ * Privacy provider implementation for report_gucode
+ *
+ * @copyright  2018 Howard Miller
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class provider implements \core_privacy\local\metadata\null_provider {
+
+    /**
+     * Get the language string identifier with the component's language
+     * file to explain why this plugin stores no data.
+     *
+     * @return  string
+     */
+    public static function get_reason() : string {
+        return 'privacy:metadata';
+    }
+}

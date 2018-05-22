@@ -34,6 +34,7 @@ $string['notvisible'] = 'This course is hidden and automatic enrolment is disabl
 $string['page-report-guenrol-x'] = 'Any participation report';
 $string['page-report-guenrol-index'] = 'Course participation report';
 $string['pluginname'] = 'UofG enrolment status';
+$string['privacy:metadata'] = 'The enrolment status report does not store any personal data';
 $string['removed'] = 'Show users removed from MyCampus but still in course';
 $string['removeddone'] = 'Users have been unenrolled';
 $string['removedusers'] = 'Users removed from MyCampus but still in course';
