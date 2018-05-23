@@ -138,7 +138,7 @@ body#page-login-index #page {
 
 // Link colours
 
-#page a {
+a {
     color: $flat-blue;
 }
 
@@ -296,7 +296,19 @@ nav.navbar .count-container.hidden {
     padding: 0;
 }
 
-body.notloggedin nav.navbar .usermenu {
+body.notloggedin nav.navbar .usermenu, body.notloggedin nav.navbar .usermenu a {
+    color: $gu-background;
+}
+
+body.notloggedin nav.navbar .usermenu a {
+    text-decoration: underline;
+}
+
+body.notloggedin nav.navbar .usermenu a:hover {
+    color: $gu-background;
+}
+
+body#page-login-index nav.navbar .usermenu {
     display: none;
 }
 
@@ -318,10 +330,6 @@ body.notloggedin header .usermenu a, body.notloggedin header .usermenu a:hover {
     .context-header-settings-menu a {
         color: #777;
     }
-}
-
-.action-menu a {
-    color: #777 !important;
 }
 
 #page.container-fluid {
@@ -470,11 +478,13 @@ footer h3 {
 .message .content.right {
     background-color: $message-sent-background;
     border-color: $message-sent-border;
+    clear: both;
 }
 
 .message .content.left {
     background-color: $message-received-background;
     border-color: $message-received-border;
+    clear: both;
 }
 
 // Block Stuff
@@ -537,13 +547,17 @@ body.path-course.pagelayout-course #region-main .card-block {
 }
 
 .block .block-controls {
-    color: #fff !important;
+    color: $gu-background !important;
     font-size: 16px;
     padding-right: 0;
 }
 
-.block .block-controls a {
-    color: #fff !important;
+.block .block-controls a, .block .block-controls .dropdown-toggle {
+    color: $gu-background !important;
+}
+
+.block .block-controls .dropdown-menu a {
+    color: #333 !important;
 }
 
 #nav-drawer .list-group-item.active {
