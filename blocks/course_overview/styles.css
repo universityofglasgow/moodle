@@ -1,6 +1,11 @@
 .block-course-overview .courseovbox {
     border-bottom: 1px solid #d3d8dc;
     padding-top: 12px;
+    padding-bottom: 4px;
+}
+
+.block-course-overview .course-list {
+    padding-top: 4px;
 }
 
 .overview-icon .icon {
@@ -49,4 +54,17 @@ a.favourite_icon:hover {
 
 div.courseovbox {
     margin-left: -15px !important;
+}
+
+.course-overview-dialog .ui-dialog-titlebar button{
+    background-color: #fff;
+    background-image:none;
+    height: 25px;
+    position: absolute;
+    top: 8px;
+    right: 13px;
+}
+.course-overview-dialog .ui-dialog-titlebar-close::after{
+    top: 1px;
+    left: 1px;
 }
