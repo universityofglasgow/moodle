@@ -22,7 +22,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$plugin->version = 20180524;
+$plugin->version = 2018052900;
 $plugin->requires = 2018051700;
 $plugin->component = 'local_rollover';
 $plugin->description = 'UofG rollover control';

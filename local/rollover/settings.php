@@ -23,8 +23,66 @@
 defined('MOODLE_INTERNAL') || die;
 
 if ($hassiteconfig) {
-    $settings = new admin_settingpage(
-            'local_rollover', get_string('pluginname', 'local_rollover'));
+    $settings = new admin_settingpage('local_rollover', get_string('pluginname', 'local_rollover'));
+
+    // List of category ids to exclude
+    $settings->add(new admin_setting_configtextarea(
+        'local_rollover/categoryexclude',
+        get_string('categoryexclude', 'local_rollover'),
+        get_string('categoryexclude_desc', 'local_rollover'),
+        ''
+    ));
+
+    // Source category
+    $settings->add(new admin_setting_configtext(
+        'local_rollover/sourcecategory',
+        get_string('sourcecategory', 'local_rollover'),
+        get_string('sourcecategory_desc', 'local_rollover'),
+        '',
+        PARAM_INT
+    ));
+
+    // Destination category
+    $settings->add(new admin_setting_configtext(
+        'local_rollover/destinationcategory',
+        get_string('destinationcategory', 'local_rollover'),
+        get_string('destinationcategory_desc', 'local_rollover'),
+        '',
+        PARAM_INT
+    ));
+
+    // Append text
+    $settings->add(new admin_setting_configtext(
+        'local_rollover/appendtext',
+        get_string('appendtext', 'local_rollover'),
+        get_string('appendtext_desc', 'local_rollover'),
+        ''
+    ));
+
+    // Prepend text
+    $settings->add(new admin_setting_configtext(
+        'local_rollover/prependtext',
+        get_string('prependtext', 'local_rollover'),
+        get_string('prependtext_desc', 'local_rollover'),
+        ''
+    ));
+
+    // Short name text
+    $settings->add(new admin_setting_configtext(
+        'local_rollover/shortprependtext',
+        get_string('shortprependtext', 'local_rollover'),
+        get_string('shortprependtext_desc', 'local_rollover'),
+        ''
+    ));
+
+    // Enable
+    $settings->add(new admin_setting_configcheckbox(
+        'local_rollover/enable',
+        get_string('enable', 'local_rollover'),
+        get_string('enable_desc', 'local_rollover'),
+        0
+    ));
+
     $ADMIN->add('localplugins', $settings);
 
 }

@@ -20,6 +20,21 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+$string['appendtext'] = 'Course name append text';
+$string['appendtext_desc'] = 'Archived courses will have this text appended to their full name';
+$string['categoryexclude'] = 'Categories to exclude';
+$string['categoryexclude_desc'] = 'List category ids to exclude. Both these and all their child categories will not take part in the rollover';
+$string['destinationcategory'] = 'Destination category ID';
+$string['destinationcategory_desc'] = 'Category course archive will be written *to*. You should probably create this in preparation for each rollover';
+$string['enable'] = 'Enable rollover';
+$string['enable_desc'] = 'Rollover process will operate with the above settings. Enable will switch off when complete';
 $string['rollover:config'] = 'Configure CoreHR web service in a course';
 $string['pluginname'] = 'UofG rollover configuration';
+$string['prependtext'] = 'Course name prepend text';
+$string['prependtext_desc'] = 'Archived courses will have this text prepended to their full name';
 $string['privacy:metadata'] = 'The rollover settings plugin does not store any personal data';
+$string['rollovertask'] = 'Rollover task';
+$string['shortprependtext'] = 'Short name prepend text';
+$string['shortprependtext_desc'] = 'Archived courses will have this text prepended to their short name';
+$string['sourcecategory'] = 'Source category ID';
+$string['sourcecategory_desc'] = 'Category course archive will be copied *from*. This will typically be (and remain as) the tree of live courses';

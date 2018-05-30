@@ -24,4 +24,5 @@
 
 $string['enrolsync'] = 'Synchronise auto enrol (slow!!)';
 $string['pluginname'] = 'GU custom course menu';
+$string['privacy:metadata'] = 'The GuMenu plugin does not store any personal data';
 $string['uofg'] = 'University of Glasgow';

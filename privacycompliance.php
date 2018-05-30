@@ -1,7 +1,7 @@
 <?php
  
 // Set this if you want to run the script for one component only. Otherwise leave empty.
-$CHECK_COMPONENT = 'enrol_gudatabase';
+$CHECK_COMPONENT = '';
  
 define('CLI_SCRIPT', true);
  

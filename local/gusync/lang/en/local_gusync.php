@@ -34,6 +34,7 @@ $string['dbname'] = 'DB name';
 $string['dbpass'] = 'DB password';
 $string['dbuser'] = 'DB user';
 $string['pluginname'] = 'GU Enrolments sync';
+$string['privacy:metadata'] = 'The GUSync plugin does not store any personal data';
 $string['synctask'] = 'Sync UofG enrolments for Sharepoint feed';
 $string['testing'] = 'Testing mode';
 $string['timelimit'] = 'Time limit';
