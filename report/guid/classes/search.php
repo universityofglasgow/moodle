@@ -232,8 +232,8 @@ class report_guid_search {
         if (!empty($result['mail'])) {
             return array( 'primary' => true, 'mail' => $result['mail'] );
         }
-        if (!empty($result['emailaddress'])) {
-            $mail = ltrim( $result['emailaddress'], '3#' );
+        if (!empty($result['homeemailaddress'])) {
+            $mail = $result['homeemailaddress'];
             return array( 'primary' => false, 'mail' => $mail );
         }
         return array( 'primary' => true, 'mail' => '' );

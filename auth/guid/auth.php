@@ -174,7 +174,7 @@ class auth_plugin_guid extends auth_plugin_ldap {
         // Ugly University of Glasgow hack
         // add additional fields to search attributes to get
         // optional emailaddress field and uid.
-        $search_attribs[] = 'emailaddress';
+        $search_attribs[] = 'homeemailaddress';
         $search_attribs[] = 'costcenter';
 
         // Make sure uid is in the list.
@@ -192,18 +192,18 @@ class auth_plugin_guid extends auth_plugin_ldap {
         }
 
         // University of Glasgow Ugly Hack
-        // if 'mail' field is empty consider using 'emailaddress'
-        // field (if not empty). The 3# characters will need stripped
-        // from the front (if extant) and as this is their
+        // if 'mail' field is empty consider using 'homeemailaddress'
+        // field (if not empty). 
+        // As this is their
         // private email address they will need their email
         // visibility set to hidden. This will be stored for later
         // so we can check the visibility setting.
         $SESSION->gu_email = '';
         if (empty($user_entry[0]['mail'][0])) {
-            if (!empty($user_entry[0]['emailaddress'][0])) {
+            if (!empty($user_entry[0]['homeemailaddress'][0])) {
                 // Check for '3#' code and strip.
-                $emailaddress = $user_entry[0]['emailaddress'][0];
-                $SESSION->gu_email = ltrim( $emailaddress, '3#' );
+                $emailaddress = $user_entry[0]['homeemailaddress'][0];
+                $SESSION->gu_email = $emailaddress;
             }
         }
 
