@@ -26,6 +26,7 @@ defined('MOODLE_INTERNAL') || die();
 
 user_preference_allow_ajax_update('drawer-open-nav', PARAM_ALPHA);
 require_once($CFG->libdir . '/behat/lib.php');
+require_once($CFG->dirroot . '/admin/tool/mobile/lib.php');
 
 if (isloggedin() && !behat_is_test_site()) {
     $navdraweropen = (get_user_preferences('drawer-open-nav', 'true') == 'true');
@@ -542,13 +543,16 @@ $footerLinks = Array(
 
 $siteContext = context_system::instance();
 $isAdmin = has_capability('moodle/site:config', $siteContext);
+$canSeeGUIDReport = has_capability('report/guid:view', $siteContext);
 
 if($isAdmin) {
     $footerLinks['middle']['Site Links']['Purge All Caches'] = $CFG->wwwroot.'/admin/purgecaches.php?confirm=1&sesskey='.sesskey().'&returnurl='.$PAGE->url->out_as_local_url(false);
+}
+if($canSeeGUIDReport) {
     $footerLinks['middle']['Site Links']['GUID Search'] = $CFG->wwwroot.'/report/guid/index.php';
 }
 
-$footerLinks['middle']['Site Links']['GUID Search'] = $CFG->wwwroot.'/report/guid/index.php';
+$footerLinks['middle']['Site Links']['Get the Moodle Mobile App'] = tool_mobile_create_app_download_url();
 
 $footerText = '<div class="row">
             <div class="col-sm-6">

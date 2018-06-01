@@ -857,6 +857,19 @@ div.course-content, ul.ctopics {
     background-image: none !important;
 }
 
+.course-content ul.topics>li.section .side.left, .course-content ul.weeks>li.section .side.left {
+    padding-top: 12px;
+}
+
+.course-content ul.topics>li.section .side.right, .course-content ul.weeks>li.section .side.right {
+    position: relative;
+    top: 12px;
+}
+
+body:not(.editing) #gridmiddle-column {
+    line-height: inherit;
+}
+
 .course-content ul.ctopics>li.section .side.left {
     padding-top: 14px !important;
     width: 40px !important;
