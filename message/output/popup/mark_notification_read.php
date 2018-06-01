@@ -15,35 +15,29 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Theme More upgrade.
+ * Mark a notification read and redirect to the relevant content.
  *
- * @package    theme_more
- * @copyright  2014 Frédéric Massart
+ * @package    message_popup
+ * @copyright  2018 Michael Hawkins
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+require_once(__DIR__ . '/../../../config.php');
 
-/**
- * Theme_more upgrade function.
- *
- * @param  int $oldversion The version we upgrade from.
- * @return bool
- */
-function xmldb_theme_more_upgrade($oldversion) {
-    global $CFG;
+require_login(null, false);
 
-    // Automatically generated Moodle v3.2.0 release upgrade line.
-    // Put any upgrade step following this.
-
-    // Automatically generated Moodle v3.3.0 release upgrade line.
-    // Put any upgrade step following this.
-
-    // Automatically generated Moodle v3.4.0 release upgrade line.
-    // Put any upgrade step following this.
-
-    // Automatically generated Moodle v3.5.0 release upgrade line.
-    // Put any upgrade step following this.
-
-    return true;
+if (isguestuser()) {
+    redirect($CFG->wwwroot);
 }
+
+$notificationid = required_param('notificationid', PARAM_INT);
+$redirecturl = optional_param('redirecturl', $CFG->wwwroot, PARAM_LOCALURL);
+$notification = $DB->get_record('notifications', array('id' => $notificationid));
+
+// Check notification belongs to this user.
+if ($USER->id != $notification->useridto) {
+    redirect($CFG->wwwroot);
+}
+
+\core_message\api::mark_notification_as_read($notification);
+redirect($redirecturl);
