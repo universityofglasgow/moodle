@@ -29,5 +29,5 @@ $plugin->version   = 2018042000;
 $plugin->requires  = 2016112900;
 $plugin->component = 'theme_hillhead';
 $plugin->dependencies = [
-    'theme_boost' => '2016102100',
+    'theme_boost' => '2017111300',
 ];

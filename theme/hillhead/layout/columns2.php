@@ -552,7 +552,7 @@ if($canSeeGUIDReport) {
     $footerLinks['middle']['Site Links']['GUID Search'] = $CFG->wwwroot.'/report/guid/index.php';
 }
 
-$footerLinks['middle']['Site Links']['Get the Moodle Mobile App'] = tool_mobile_create_app_download_url();
+$footerLinks['middle']['Site Links']['Moodle Mobile App'] = tool_mobile_create_app_download_url();
 
 $footerText = '<div class="row">
             <div class="col-sm-6">
