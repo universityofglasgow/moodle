@@ -155,7 +155,7 @@ class certificate {
         // Array to store the sizes.
         $sizes = array();
 
-        for ($i = 1; $i <= 60; $i++) {
+        for ($i = 1; $i <= 200; $i++) {
             $sizes[$i] = $i;
         }
 
@@ -247,7 +247,7 @@ class certificate {
      * @param int $limitfrom
      * @param int $limitnum
      * @param string $sort
-     * @return \stdClass the users
+     * @return array the users
      */
     public static function get_issues($customcertid, $groupmode, $cm, $limitfrom, $limitnum, $sort = '') {
         global $DB;
@@ -419,6 +419,27 @@ class certificate {
                  WHERE ci.userid = :userid
               ORDER BY $sort";
         return $DB->get_records_sql($sql, array('userid' => $userid), $limitfrom, $limitnum);
+    }
+
+    /**
+     * Issues a certificate to a user.
+     *
+     * @param int $certificateid The ID of the certificate
+     * @param int $userid The ID of the user to issue the certificate to
+     * @return int The ID of the issue
+     */
+    public static function issue_certificate($certificateid, $userid) {
+        global $DB;
+
+        $issue = new \stdClass();
+        $issue->userid = $userid;
+        $issue->customcertid = $certificateid;
+        $issue->code = self::generate_code();
+        $issue->emailed = 0;
+        $issue->timecreated = time();
+
+        // Insert the record into the database.
+        return $DB->insert_record('customcert_issues', $issue);
     }
 
     /**

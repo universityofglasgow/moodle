@@ -86,7 +86,7 @@ class report_table extends \table_sql {
             $headers[] = get_string('file');
         }
 
-        if (has_capability('mod/customcert:manage', \context_module::instance($cm->id))) {
+        if (!$this->is_downloading() && has_capability('mod/customcert:manage', \context_module::instance($cm->id))) {
             $columns[] = 'actions';
             $headers[] = '';
         }
@@ -113,7 +113,11 @@ class report_table extends \table_sql {
     public function col_fullname($user) {
         global $OUTPUT;
 
-        return $OUTPUT->user_picture($user) . ' ' . fullname($user);
+        if (!$this->is_downloading()) {
+            return $OUTPUT->user_picture($user) . ' ' . fullname($user);
+        } else {
+            return fullname($user);
+        }
     }
 
     /**
@@ -145,7 +149,7 @@ class report_table extends \table_sql {
     public function col_download($user) {
         global $OUTPUT;
 
-        $icon = new \pix_icon('i/import', get_string('download'));
+        $icon = new \pix_icon('download', get_string('download'), 'customcert');
         $link = new \moodle_url('/mod/customcert/report.php',
             array('id' => $this->cm->id,
                   'downloadcert' => '1',
