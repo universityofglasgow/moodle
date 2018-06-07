@@ -24,6 +24,8 @@
 
 namespace local_rollover\task;
 
+use local_rollover\locallib;
+
 class rollover extends \core\task\scheduled_task {
 
     public function get_name() {
@@ -35,8 +37,10 @@ class rollover extends \core\task\scheduled_task {
         $config = get_config('local_rollover');
 
         // If not enabled then there's nothing to do
-        if (!$config->enable) {
+        if (locallib::get_state() == ROLLOVER_STATE_DISABLED) {
             mtrace('rollover: Skipping rollover. Not currently enabled');
+
+            return;
         }
 
         // Raft of sanity checks.
@@ -51,6 +55,13 @@ class rollover extends \core\task\scheduled_task {
         }
         if (!$config->shortprependtext) {
             mtrace('rollover: Cannot execute rollover. Short name prepend text not defined');
+        }
+
+        // What to do?
+        $state = locallib::get_state();
+        if ($state == ROLLOVER_STATE_START) {
+            mtrace('rollver: Starting rollover. Building course table');
+            locallib::build_course_table();
         }
     }
 }
