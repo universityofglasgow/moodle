@@ -75,8 +75,21 @@ class locallib {
         $existing = 0;
         $added = 0;
 
-        // Every single course :-O
-        $rs = $DB->get_recordset('course');
+        // Which courses?
+        $sourcecategory = get_config('local_rollover', 'sourcecategory');
+        if ($sourcecategory) {
+            mtrace('rollover: source category specified = ' . $sourcecategory);
+            $category = \coursecat::get($sourcecategory);
+            $children = $category->get_all_children_ids();
+            $categoryids = array_merge([$sourcecategory], $children);
+            $rs = $DB->get_recordset_list('course', 'category', $categoryids); 
+        } else {
+
+            // Every single course :-O        
+            mtrace('rollover: no source category specified. Examining all courses');
+            $rs = $DB->get_recordset('course');
+        }
+
         foreach ($rs as $course) {
 
             // If it's in an excluded category...
