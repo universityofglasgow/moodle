@@ -39,6 +39,7 @@ use context_system;
 use pix_icon;
 use action_menu_filler;
 use action_menu_link_secondary;
+use core_text;
 
 defined('MOODLE_INTERNAL') || die;
 
