@@ -44,17 +44,17 @@ class rollover extends \core\task\scheduled_task {
         }
 
         // Raft of sanity checks.
-        if (!$config->sourcecategory) {
-            mtrace('rollover: Cannot execute rollover. Source category not defined');
-        }
         if (!$config->destinationcategory) {
             mtrace('rollover: Cannot execute rollover. Destination category not defined');
+            return;
         }
         if (!$config->appendtext && !$config->prependtext) {
             mtrace('rollover: Cannot execute rollover. One of prepend/append text must be defined');
+            return;
         }
         if (!$config->shortprependtext) {
             mtrace('rollover: Cannot execute rollover. Short name prepend text not defined');
+            return;
         }
 
         // What to do?

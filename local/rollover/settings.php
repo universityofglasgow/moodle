@@ -75,6 +75,30 @@ if ($hassiteconfig) {
         ''
     ));
 
+    // Backup location
+    $settings->add(new admin_setting_configtext(
+        'local_rollover/backupfilepath',
+        get_string('backupfilepath', 'local_rollover'),
+        get_string('backupfilepath_desc', 'local_rollover'),
+        ''
+    ));
+
+    // Keep all backups
+    $settings->add(new admin_setting_configcheckbox(
+        'local_rollover/keepbackups',
+        get_string('keepbackups', 'local_rollover'),
+        get_string('keepbackups_desc', 'local_rollover'),
+        1
+    ));
+
+    // Enable restore
+    $settings->add(new admin_setting_configcheckbox(
+        'local_rollover/enablerestore',
+        get_string('enablerestore', 'local_rollover'),
+        get_string('enablerestore_desc', 'local_rollover'),
+        0
+    ));
+
     // Enable
     $settings->add(new admin_setting_configcheckbox(
         'local_rollover/enable',

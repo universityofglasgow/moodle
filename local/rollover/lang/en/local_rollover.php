@@ -22,12 +22,18 @@
 
 $string['appendtext'] = 'Course name append text';
 $string['appendtext_desc'] = 'Archived courses will have this text appended to their full name';
+$string['backupfilepath'] = 'Backup file path';
+$string['backupfilepath_desc'] = 'Location to store backup files';
 $string['categoryexclude'] = 'Categories to exclude';
 $string['categoryexclude_desc'] = 'List category ids to exclude. Both these and all their child categories will not take part in the rollover';
 $string['destinationcategory'] = 'Destination category ID';
 $string['destinationcategory_desc'] = 'Category course archive will be written *to*. You should probably create this in preparation for each rollover';
 $string['enable'] = 'Enable rollover';
 $string['enable_desc'] = 'Rollover process will operate with the above settings. Enable will switch off when complete';
+$string['enablerestore'] = 'Enable restore';
+$string['enablerestore_desc'] = 'Enable restore of backups to archive area';
+$string['keepbackups'] = 'Keep backups';
+$string['keepbackups_desc'] = 'Do not delete backup files after restore (only if restore enabled).';
 $string['rollover:config'] = 'Configure CoreHR web service in a course';
 $string['pluginname'] = 'UofG rollover configuration';
 $string['prependtext'] = 'Course name prepend text';
