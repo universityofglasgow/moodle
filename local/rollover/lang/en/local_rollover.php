@@ -44,3 +44,5 @@ $string['shortprependtext'] = 'Short name prepend text';
 $string['shortprependtext_desc'] = 'Archived courses will have this text prepended to their short name';
 $string['sourcecategory'] = 'Source category ID';
 $string['sourcecategory_desc'] = 'Category course archive will be copied *from*. This will typically be (and remain as) the tree of live courses';
+$string['timelimit'] = 'Time limit (minutes)';
+$string['timelimit_desc'] = 'Maximum time (in minutes) backup or restore Moosh process will run at one time';

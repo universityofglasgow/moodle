@@ -99,6 +99,15 @@ if ($hassiteconfig) {
         0
     ));
 
+    // Limit backup
+    $settings->add(new admin_setting_configtext(
+        'local_rollover/timelimit',
+        get_string('timelimit', 'local_rollover'),
+        get_string('timelimit_desc', 'local_rollover'),
+        240, // in minutes (4 hours)
+        PARAM_INT
+    ));
+
     // Enable
     $settings->add(new admin_setting_configcheckbox(
         'local_rollover/enable',
