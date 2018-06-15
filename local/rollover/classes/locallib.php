@@ -69,6 +69,7 @@ class locallib {
         // set_config('state', ROLLOVER_STATE_BUILDTABLE, 'local_rollover');
         mtrace('rollover: creating course table');
         $excludedcategories = self::get_excluded_categories();
+        $session = get_config('local_rollover', 'session');
 
         // Keep some counts.
         $skipped = 0;
@@ -96,13 +97,13 @@ class locallib {
             if (in_array($course->category, $excludedcategories)) {
 
                 // It may already have a table entry...
-                $DB->delete_records('local_rollover', ['courseid' => $course->id]);
+                $DB->delete_records('local_rollover', ['session' => $session, 'courseid' => $course->id]);
                 $skipped++;
                 continue;
             }
 
             // Does this already have an entry
-            if ($rollover = $DB->get_record('local_rollover', ['courseid' => $course->id])) {
+            if ($rollover = $DB->get_record('local_rollover', ['session' => $session, 'courseid' => $course->id])) {
                 $existing++;
                 continue;
             }
@@ -110,6 +111,7 @@ class locallib {
             // Create the record
             $rollover = new \stdClass();
             $rollover->courseid = $course->id;
+            $rollover->session = $session;
             $rollover->destinationcourseid = 0;
             $rollover->state = ROLLOVER_COURSE_WAITING;
             $rollover->filename = '';

@@ -25,6 +25,15 @@ defined('MOODLE_INTERNAL') || die;
 if ($hassiteconfig) {
     $settings = new admin_settingpage('local_rollover', get_string('pluginname', 'local_rollover'));
 
+    // Limit backup
+    $settings->add(new admin_setting_configtext(
+        'local_rollover/session',
+        get_string('session', 'local_rollover'),
+        get_string('session_desc', 'local_rollover'),
+        2018, // in minutes (4 hours)
+        PARAM_INT
+    ));
+
     // List of category ids to exclude
     $settings->add(new admin_setting_configtextarea(
         'local_rollover/categoryexclude',
