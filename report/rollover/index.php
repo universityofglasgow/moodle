@@ -41,8 +41,8 @@ echo $OUTPUT->heading(get_string('pluginname', 'report_rollover'));
 $config = get_config('local_rollover');
 
 // get counts for the various statuses
-$sql = "SELECT state, count(*) AS countval FROM {local_rollover} GROUP BY state";
-$counts = $DB->get_records_sql($sql);
+$sql = "SELECT state, count(*) AS countval FROM {local_rollover} GROUP BY state WHERE session = :session";
+$counts = $DB->get_records_sql($sql, ['session' => $config->session]);
 $values = [
     ROLLOVER_COURSE_WAITING => 0,
     ROLLOVER_COURSE_BACKUP => 0,
