@@ -19,27 +19,31 @@
  *
  * @package    course/format
  * @subpackage grid
- * @version    See the value of '$plugin->version' in below.
- * @copyright  &copy; 2012 G J Barnard in respect to modifications of standard topics format.
+ * @category   privacy
+ * @version    See the value of '$plugin->version' in version.php.
+ * @copyright  &copy; 2018-onwards G J Barnard based upon work done by Marina Glancy.
  * @author     G J Barnard - {@link http://about.me/gjbarnard} and
  *                           {@link http://moodle.org/user/profile.php?id=442195}
  * @author     Based on code originally written by Paul Krix and Julian Ridden.
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace format_grid\privacy;
+
 defined('MOODLE_INTERNAL') || die();
 
-// Plugin version.
-$plugin->version = 2018052300;
+/**
+ * The Grid format does not store any user data.
+ */
+class provider implements \core_privacy\local\metadata\null_provider {
 
-// Required Moodle version.
-$plugin->requires  = 2018051700.00; // 3.5 (Build: 20180517).
-
-// Full name of the plugin.
-$plugin->component = 'format_grid';
-
-// Software maturity level.
-$plugin->maturity = MATURITY_BETA;
-
-// User-friendly version number.
-$plugin->release = '3.5.0.1';
+    /**
+     * Get the language string identifier with the component's language
+     * file to explain why this plugin stores no data.
+     *
+     * @return  string
+     */
+    public static function get_reason() : string {
+        return 'privacy:nop';
+    }
+}
