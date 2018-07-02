@@ -48,6 +48,19 @@ require_login($course, false, $cm);
 $context = context_module::instance($cm->id);
 require_capability('mod/customcert:viewreport', $context);
 
+// Set up the page.
+$title = $customcert->name;
+$heading = format_string($title);
+\mod_customcert\page_helper::page_setup($pageurl, $context, $title);
+
+// Additional page setup.
+if ($deleteissue && confirm_sesskey()) {
+    $PAGE->navbar->add(get_string('listofissues', 'customcert'),
+        new moodle_url('/mod/customcert/report.php', ['id' => $id]));
+} else {
+    $PAGE->navbar->add(get_string('listofissues', 'customcert'));
+}
+
 if ($deleteissue && confirm_sesskey()) {
     require_capability('mod/customcert:manage', $context);
 
@@ -63,13 +76,10 @@ if ($deleteissue && confirm_sesskey()) {
         );
 
         // Show a confirmation page.
-        $strheading = get_string('deleteconfirm', 'customcert');
-        $PAGE->navbar->add($strheading);
-        $PAGE->set_title($strheading);
-        $PAGE->set_url($url);
+        $PAGE->navbar->add(get_string('deleteconfirm', 'customcert'));
         $message = get_string('deleteissueconfirm', 'customcert');
         echo $OUTPUT->header();
-        echo $OUTPUT->heading($strheading);
+        echo $OUTPUT->heading($heading);
         echo $OUTPUT->confirm($message, $yesurl, $nourl);
         echo $OUTPUT->footer();
         exit();
@@ -103,17 +113,8 @@ if ($table->is_downloading()) {
     exit();
 }
 
-// Set up the page.
-\mod_customcert\page_helper::page_setup($pageurl, $context, get_string('customcertreport', 'customcert'));
-
-// Additional page setup.
-$PAGE->navbar->add(get_string('customcertreport', 'customcert'));
-
 echo $OUTPUT->header();
-echo $OUTPUT->heading(get_string('modulenameplural', 'customcert'));
-
+echo $OUTPUT->heading(format_string($customcert->name), 2);
 groups_print_activity_menu($cm, $url);
-
 $table->out($perpage, false);
-
 echo $OUTPUT->footer();

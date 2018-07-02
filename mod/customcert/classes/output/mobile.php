@@ -45,8 +45,6 @@ class mobile {
 
         $args = (object) $args;
 
-        // Get the group variable.
-        $groupid = empty($args->group) ? 0 : $args->group; // By default, group 0.
         $cmid = $args->cmid;
 
         // Capabilities check.
@@ -60,14 +58,12 @@ class mobile {
         list($certificate->intro, $certificate->introformat) = external_format_text($certificate->intro,
             $certificate->introformat, $context->id, 'mod_customcert', 'intro');
 
-        // Get the groups (if any) to display - also sets active group.
-        $groups = self::get_groups($cm, $groupid, $USER->id);
-
         // Get any issues this person may have.
         $issues = $DB->get_records('customcert_issues', ['userid' => $USER->id, 'customcertid' => $certificate->id]);
 
         $candownload = true;
-        if ($certificate->requiredtime && !has_capability('mod/certificate:manage', $context)) {
+        $canmanage = has_capability('mod/customcert:manage', $context);
+        if ($certificate->requiredtime && !$canmanage) {
             if (\mod_customcert\certificate::get_course_time($certificate->course) < ($certificate->requiredtime * 60)) {
                 $candownload = false;
             }
@@ -95,11 +91,9 @@ class mobile {
         $data = [
             'certificate' => $certificate,
             'cmid' => $cm->id,
-            'groupselected' => $groupid,
-            'showgroups' => !empty($groups),
-            'groups' => array_values($groups),
             'hasissues' => !empty($issues),
             'issues' => array_values($issues),
+            'canmanage' => $canmanage,
             'candownload' => $candownload,
             'fileurl' => $fileurl,
             'showreport' => $showreport,

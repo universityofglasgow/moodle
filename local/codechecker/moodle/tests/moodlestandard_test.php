@@ -280,7 +280,7 @@ class moodlestandard_testcase extends local_codechecker_testcase {
         // - line => array of contents for message / source problem matching.
         // - line => string of contents for message / source problem matching (only 1).
         $this->set_errors(array(
-            5 => array('Function ereg_replace', 'Use call_user_func instead', '@Source: PHPCompat')
+            5 => array('Function ereg_replace', 'Use call_user_func() instead', '@Source: PHPCompat')
         ));
         $this->set_warnings(array());
 
@@ -351,7 +351,7 @@ class moodlestandard_testcase extends local_codechecker_testcase {
     /**
      * Test operator spacing standards
      */
-    public function test_moodle_operator_spacing() {
+    public function test_squiz_operator_spacing() {
 
         // Define the standard, sniff and fixture to use.
         $this->set_standard('moodle');
@@ -422,6 +422,63 @@ class moodlestandard_testcase extends local_codechecker_testcase {
                                61 => 0,
                                62 => 0
                           ));
+        $this->set_warnings(array());
+
+        // Let's do all the hard work!
+        $this->verify_cs_results();
+    }
+
+    /**
+     * Test object operator spacing standards
+     */
+    public function test_squiz_object_operator_spacing() {
+
+        // Define the standard, sniff and fixture to use.
+        $this->set_standard('moodle');
+        $this->set_sniff('Squiz.WhiteSpace.ObjectOperatorSpacing');
+        $this->set_fixture(__DIR__ . '/fixtures/squiz_whitespace_objectoperatorspacing.php');
+
+        // Define expected results (errors and warnings). Format, array of:
+        // - line => number of problems,  or
+        // - line => array of contents for message / source problem matching.
+        // - line => string of contents for message / source problem matching (only 1).
+        $this->set_errors(array());
+        $this->set_warnings(array());
+
+        // Let's do all the hard work!
+        $this->verify_cs_results();
+    }
+
+    /**
+     * Test object operator indentation standards
+     */
+    public function test_pear_object_operator_indent() {
+
+        // Define the standard, sniff and fixture to use.
+        $this->set_standard('moodle');
+        $this->set_sniff('PEAR.WhiteSpace.ObjectOperatorIndent');
+        $this->set_fixture(__DIR__ . '/fixtures/pear_whitespace_objectoperatorspacing.php');
+
+        // Define expected results (errors and warnings). Format, array of:
+        // - line => number of problems,  or
+        // - line => array of contents for message / source problem matching.
+        // - line => string of contents for message / source problem matching (only 1).
+        $this->set_errors(array(
+            40 => 'not indented correctly; expected 4 spaces but found 2',
+            41 => '@Source: PEAR.WhiteSpace.ObjectOperatorIndent.Incorrect',
+            44 => 1,
+            45 => 1,
+            49 => 'not indented correctly; expected 4 spaces but found 6',
+            50 => '@Source: PEAR.WhiteSpace.ObjectOperatorIndent.Incorrect',
+            53 => 1,
+            54 => 1,
+            61 => 1,
+            62 => 1,
+            65 => 1,
+            66 => 1,
+            69 => 1,
+            70 => 1,
+        ));
         $this->set_warnings(array());
 
         // Let's do all the hard work!

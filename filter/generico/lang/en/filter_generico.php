@@ -28,6 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 
 $string['filtername'] = 'Generico';
 $string['pluginname'] = 'Generico';
+$string['genericotemplatesadmin'] = 'Generico Templates Admin';
 $string['privacy:metadata'] = 'The Generico filter plugin does not store any personal data.';
 $string['filterdescription'] = 'Convert filter strings into templates merged with data';
 $string['commonpageheading'] = 'General Settings';
@@ -62,6 +63,11 @@ $string['templatestyle_desc'] = 'Enter any custom CSS that your template uses he
 $string['templaterequire_amd'] = 'Load via AMD';
 $string['templaterequire_amd_desc'] = 'AMD is a javascript loading mechanism. If you upload or link to javascript libraries in your template, you might have to uncheck this. It only applies if on Moodle 2.9 or greater';
 
+$string['templateupdated'] = '{$a} Poodll Templates Updated.';
+$string['updatetoversion'] = 'Update to version: {$a}';
+$string['updateall'] = 'Update all';
+$string['cleartemplate'] = 'Clear template';
+
 $string['uploadjs'] = 'Upload JS (template {$a})';
 $string['uploadjs_desc'] = 'You can upload one js library file which will be loaded for your template. Only one.';
 
@@ -87,7 +93,7 @@ $string['templateversion'] = 'The version of this template {$a}';
 $string['templateversion_desc'] = 'When sharing templates it is best to maintain a clear version per release. The version format is up to you.';
 $string['templatealternate'] = 'Alternate content'; 
 $string['templatealternate_desc'] = 'Content that can be used when the custom and uploaded CSS and javascript content is not available. Currently this is used when the template is processed by a webservice, probably for content on the mobile app';
-$string['templatealternate_end'] = 'Alternate content end ((template {$a})'; 
+$string['templatealternate_end'] = 'Alternate content end (template {$a})';
 $string['templatealternate_end_desc'] = 'Closing alternate content tags for templates that enclose user content with start and end Generico tags';
 
 //Settings tree headings

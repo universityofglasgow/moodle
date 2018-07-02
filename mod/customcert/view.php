@@ -37,12 +37,14 @@ require_login($course, false, $cm);
 $context = context_module::instance($cm->id);
 require_capability('mod/customcert:view', $context);
 
+$canmanage = has_capability('mod/customcert:manage', $context);
+
 // Initialise $PAGE.
 $pageurl = new moodle_url('/mod/customcert/view.php', array('id' => $cm->id));
 \mod_customcert\page_helper::page_setup($pageurl, $context, format_string($customcert->name));
 
 // Check if the user can view the certificate based on time spent in course.
-if ($customcert->requiredtime && !has_capability('mod/customcert:manage', $context)) {
+if ($customcert->requiredtime && !$canmanage) {
     if (\mod_customcert\certificate::get_course_time($course->id) < ($customcert->requiredtime * 60)) {
         $a = new stdClass;
         $a->requiredtime = $customcert->requiredtime;
@@ -85,12 +87,11 @@ if (empty($action)) {
 
     // If the current user has been issued a customcert generate HTML to display the details.
     $issuelist = '';
-    if ($issues = $DB->get_records('customcert_issues', array('userid' => $USER->id, 'customcertid' => $customcert->id))) {
-        $header = $OUTPUT->heading(get_string('summaryofissue', 'customcert'));
-
+    $issues = $DB->get_records('customcert_issues', array('userid' => $USER->id, 'customcertid' => $customcert->id));
+    if ($issues && !$canmanage) {
         $table = new html_table();
         $table->class = 'generaltable';
-        $table->head = array(get_string('issued', 'customcert'));
+        $table->head = array(get_string('receiveddate', 'customcert'));
         $table->align = array('left');
         $table->attributes = array('style' => 'width:20%; margin:auto');
 
@@ -100,7 +101,7 @@ if (empty($action)) {
             $table->data[$issue->id] = $row;
         }
 
-        $issuelist = $header . html_writer::table($table) . "<br />";
+        $issuelist = html_writer::table($table) . "<br />";
     }
 
     // Create the button to download the customcert.
@@ -111,7 +112,7 @@ if (empty($action)) {
 
     // Output all the page data.
     echo $OUTPUT->header();
-    groups_print_activity_menu($cm, $pageurl);
+    echo $OUTPUT->heading(format_string($customcert->name), 2);
     echo $reportlink;
     echo $intro;
     echo $issuelist;

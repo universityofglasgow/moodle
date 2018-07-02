@@ -33,7 +33,6 @@ $string['coursetimereq'] = 'Required minutes in course';
 $string['coursetimereq_help'] = 'Enter here the minimum amount of time, in minutes, that a student must be logged into the course before they will be able to receive
 the certificate.';
 $string['createtemplate'] = 'Create template';
-$string['customcertreport'] = 'Custom certificate report';
 $string['customcert:addinstance'] = 'Add a new custom certificate instance';
 $string['customcert:manage'] = 'Manage a custom certificate';
 $string['customcert:view'] = 'View a custom certificate';
@@ -94,10 +93,10 @@ $string['invalidposition'] = 'Please select a positive number for position {$a}.
 $string['invalidheight'] = 'The height has to be a valid number greater than 0.';
 $string['invalidmargin'] = 'The margin has to be a valid number greater than 0.';
 $string['invalidwidth'] = 'The width has to be a valid number greater than 0.';
-$string['issued'] = 'Issued';
 $string['landscape'] = 'Landscape';
 $string['leftmargin'] = 'Left margin';
 $string['leftmargin_help'] = 'This is the left margin of the certificate PDF in mm.';
+$string['listofissues'] = 'Recipients';
 $string['load'] = 'Load';
 $string['loadtemplate'] = 'Load template';
 $string['loadtemplatemsg'] = 'Are you sure you wish to load this template? This will remove any existing pages and elements for this certificate.';
@@ -135,7 +134,7 @@ $string['privacy:metadata:customcert_issues:timecreated'] = 'The time the certif
 $string['privacy:metadata:customcert_issues:userid'] = 'The ID of the user who was issued the certificate';
 $string['rearrangeelements'] = 'Reposition elements';
 $string['rearrangeelementsheading'] = 'Drag and drop elements to change where they are positioned on the certificate.';
-$string['receiveddate'] = 'Received date';
+$string['receiveddate'] = 'Awarded on';
 $string['refpoint'] = 'Reference point location';
 $string['refpoint_help'] = 'The reference point is the location of an element from which its x and y coordinates are determined. It is indicated by the \'+\' that appears in the centre or corners of the element.';
 $string['replacetemplate'] = 'Replace';
@@ -154,7 +153,6 @@ $string['showposxy'] = 'Show position X and Y';
 $string['showposxy_desc'] = 'This will show the X and Y position when editing of an element, allowing the user to accurately specify the location.
 
 This isn\'t required if you plan on solely using the drag and drop interface for this purpose.';
-$string['summaryofissue'] = 'Summary of issue';
 $string['taskemailcertificate'] = 'Handles emailing certificates.';
 $string['templatename'] = 'Template name';
 $string['templatenameexists'] = 'That template name is currently in use, please choose another.';
@@ -172,6 +170,7 @@ $string['verifyallcertificates_desc'] = 'When this setting is enabled any person
 
 Note - this only applies to certificates where \'Allow anyone to verify a certificate\' has been set to \'Yes\' in the certificate settings.';
 $string['verifycertificate'] = 'Verify certificate';
+$string['verifycertificatedesc'] = 'This link will take you to a new screen where you will be able to verify certificates on the site';
 $string['verifycertificateanyone'] = 'Allow anyone to verify a certificate';
 $string['verifycertificateanyone_help'] = 'This setting enables anyone with the certificate verification link (including users not logged in) to verify a certificate.';
 $string['viewcustomcertissues'] = 'View {$a} issued certificates';

@@ -493,8 +493,8 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                 }
             }
             // Check if files have been submitted and we need to disable the receiver address.
-            if ($DB->record_exists('plagiarism_urkund_files', array('cm' => $cmid, 'statuscode' => 'pending'))) {
-                $mform->hideif('urkund_receiver', 'use_urkund');
+            if ($DB->record_exists('plagiarism_urkund_files', array('cm' => $cmid, 'statuscode' => URKUND_STATUSCODE_ACCEPTED))) {
+                $mform->disabledIf('urkund_receiver', 'use_urkund');
             }
             $mform->hideif('urkund_selectfiletypes', 'urkund_allowallfile', 'eq', 1);
         } else { // Add plagiarism settings as hidden vars.
@@ -885,7 +885,6 @@ function urkund_get_form_elements($mform) {
 
     $mform->addElement('header', 'plagiarismdesc', get_string('urkund', 'plagiarism_urkund'));
     $mform->addElement('select', 'use_urkund', get_string("useurkund", "plagiarism_urkund"), $ynoptions);
-    $mform->setType('urkund_receiver', PARAM_TEXT);
     $mform->addElement('select', 'urkund_show_student_score',
                        get_string("urkund_show_student_score", "plagiarism_urkund"), $tiioptions);
     $mform->addHelpButton('urkund_show_student_score', 'urkund_show_student_score', 'plagiarism_urkund');
@@ -900,7 +899,8 @@ function urkund_get_form_elements($mform) {
         $resubmitoptions = array(PLAGIARISM_URKUND_RESUBMITNO => get_string('no'),
             PLAGIARISM_URKUND_RESUBMITDUEDATE => get_string('resubmitdue', 'plagiarism_urkund'),
             PLAGIARISM_URKUND_RESUBMITCLOSEDATE => get_string('resubmitclose', 'plagiarism_urkund'));
-        $mform->addElement('select', 'urkund_resubmit_on_close', get_string("urkund_resubmit_on_close", "plagiarism_urkund"), $resubmitoptions);
+        $mform->addElement('select', 'urkund_resubmit_on_close', get_string("urkund_resubmit_on_close", "plagiarism_urkund"),
+            $resubmitoptions);
         $mform->addHelpButton('urkund_resubmit_on_close', 'urkund_resubmit_on_close', 'plagiarism_urkund');
         $mform->setType('urkund_resubmit_on_close', PARAM_INT);
     }
@@ -1939,7 +1939,8 @@ function plagiarism_urkund_resubmit_on_close() {
               JOIN {course_modules} cm ON cm.instance = a.id
               JOIN {modules} m ON m.id = cm.module
               JOIN {plagiarism_urkund_config} uc ON uc.cm = cm.id AND uc.name = 'use_urkund' AND uc.value = '1'
-              JOIN {plagiarism_urkund_config} uc1 ON uc1.cm = cm.id AND uc1.name = 'urkund_resubmit_on_close' AND uc1.value = :resubmit
+              JOIN {plagiarism_urkund_config} uc1 ON uc1.cm = cm.id AND uc1.name = 'urkund_resubmit_on_close'
+                                                  AND uc1.value = :resubmit
          LEFT JOIN {plagiarism_urkund_config} uc2 ON uc2.cm = cm.id AND uc2.name = 'timeresubmitted'
              WHERE m.name = 'assign' AND a.duedate > 1 AND a.duedate < :now
                    AND uc2.value IS NULL OR ". $DB->sql_cast_char2int('uc2.value'). " < a.duedate";
@@ -1968,7 +1969,11 @@ function plagiarism_urkund_resubmit_on_close() {
     }
 }
 
-
+/**
+ * Function used to trigger resubmission for all files in a cm.
+ *
+ * @param int $cmid
+ */
 function plagiarism_urkund_resubmit_cm($cmid) {
     global $DB;
 
