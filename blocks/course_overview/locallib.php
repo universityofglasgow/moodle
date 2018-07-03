@@ -33,6 +33,9 @@ define('BLOCKS_COURSE_OVERVIEW_REORDER_FULLNAME', '1');
 define('BLOCKS_COURSE_OVERVIEW_REORDER_SHORTNAME', '2');
 define('BLOCKS_COURSE_OVERVIEW_REORDER_ID', '3');
 
+define('BLOCKS_COURSE_OVERVIEW_DEFAULT_FAVOURITES', '1');
+define('BLOCKS_COURSE_OVERVIEW_DEFAULT_COURSES', '2');
+
 /**
  * Display overview for courses
  *
@@ -173,42 +176,50 @@ function block_course_overview_update_sortorder($sortorder) {
 function block_course_overview_get_sorted_courses($favourites, $keepfavourites = false, $exclude = []) {
     global $USER;
 
-    // Get courses in order.
+    // Bodge... don't regenerate course list
+    static $courses = [];
+
     $sortorder = block_course_overview_get_sortorder();
-    if ($sortorder == BLOCKS_COURSE_OVERVIEW_REORDER_FULLNAME) {
-        $sort = 'fullname ASC';
-    } else if ($sortorder == BLOCKS_COURSE_OVERVIEW_REORDER_SHORTNAME) {
-        $sort = 'shortname ASC';
-    } else if ($sortorder == BLOCKS_COURSE_OVERVIEW_REORDER_ID) {
-        $sort = 'id ASC';
-    } else {
-        $sort = 'visible DESC,sortorder ASC';
-    }
-    $courses = enrol_get_my_courses(null, $sort);
-    $site = get_site();
 
-    if (array_key_exists($site->id, $courses)) {
-        unset($courses[$site->id]);
-    }
+    if (!$courses) {
 
-    foreach ($courses as $c) {
-        if (isset($USER->lastcourseaccess[$c->id])) {
-            $courses[$c->id]->lastaccess = $USER->lastcourseaccess[$c->id];
+        // Get courses in order.
+        if ($sortorder == BLOCKS_COURSE_OVERVIEW_REORDER_FULLNAME) {
+            $sort = 'fullname ASC';
+        } else if ($sortorder == BLOCKS_COURSE_OVERVIEW_REORDER_SHORTNAME) {
+            $sort = 'shortname ASC';
+        } else if ($sortorder == BLOCKS_COURSE_OVERVIEW_REORDER_ID) {
+            $sort = 'id ASC';
         } else {
-            $courses[$c->id]->lastaccess = 0;
+            $sort = 'visible DESC,sortorder ASC';
         }
-    }
+        $courses = enrol_get_my_courses(null, $sort);
+        $site = get_site();
 
-    // Get remote courses.
-    $remotecourses = array();
-    if (is_enabled_auth('mnet')) {
-        $remotecourses = get_my_remotecourses();
-    }
-    // Remote courses will have -ve remoteid as key, so it can be differentiated from normal courses.
-    foreach ($remotecourses as $id => $val) {
-        $remoteid = $val->remoteid * -1;
-        $val->id = $remoteid;
-        $courses[$remoteid] = $val;
+        if (array_key_exists($site->id, $courses)) {
+            unset($courses[$site->id]);
+        }
+
+        foreach ($courses as $c) {
+            if (isset($USER->lastcourseaccess[$c->id])) {
+                $courses[$c->id]->lastaccess = $USER->lastcourseaccess[$c->id];
+            } else {
+                $courses[$c->id]->lastaccess = 0;
+            }
+        }
+
+        // Get remote courses.
+        $remotecourses = array();
+        if (is_enabled_auth('mnet')) {
+            $remotecourses = get_my_remotecourses();
+        }
+
+        // Remote courses will have -ve remoteid as key, so it can be differentiated from normal courses.
+        foreach ($remotecourses as $id => $val) {
+            $remoteid = $val->remoteid * -1;
+            $val->id = $remoteid;
+            $courses[$remoteid] = $val;
+        }
     }
 
     if ($favourites) {

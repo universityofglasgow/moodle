@@ -1,3 +1,9 @@
+## 3.5.3 ##
+
+* New instances load in the 'content' area of the Dashboard automagically.
+* New option to select default tab
+* Performance improvements. User's course list is only loaded once for both tabs. 
+
 ## 3.3.6 ##
 
 * Now displays hidden courses (to Teachers et al) as 'dimmed'

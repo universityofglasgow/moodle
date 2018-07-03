@@ -44,4 +44,15 @@ if ($ADMIN->fulltree) {
         new lang_string('keepfavouritesdesc', 'block_course_overview'),
         0
     ));
+    $defaulttabs = [
+        BLOCKS_COURSE_OVERVIEW_DEFAULT_FAVOURITES => new lang_string('favourites', 'block_course_overview'),
+        BLOCKS_COURSE_OVERVIEW_DEFAULT_COURSES => new lang_string('courses', 'block_course_overview'),
+    ];
+    $settings->add(new admin_setting_configselect(
+        'block_course_overview/defaulttab',
+        new lang_string('defaulttab', 'block_course_overview'),
+        new lang_string('defaulttabdesc', 'block_course_overview'),
+        BLOCKS_COURSE_OVERVIEW_DEFAULT_FAVOURITES,
+        $defaulttabs
+    ));
 }
