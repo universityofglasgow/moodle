@@ -1,3 +1,7 @@
+## 3.5.4 ##
+
+* Missing language strings in settings page
+
 ## 3.5.3 ##
 
 * New instances load in the 'content' area of the Dashboard automagically.
