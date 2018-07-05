@@ -50,7 +50,37 @@ class icon_system_fontawesome extends \core\output\icon_system_fontawesome {
     private $map = [];
     public function get_core_icon_map() {
         $iconmap = parent::get_core_icon_map();
-        $iconmap['core:req'] = 'fa-asterisk text-warning';
-        return $iconmap;
+        
+        $overrides = Array(
+            'core:req'                      => 'fa-asterisk text-warning',
+            'core:a/add_file'               => 'fa-file',
+            'core:b/document-new'           => 'fa-file',
+            'core:b/edit-copy'              => 'fa-file',
+            'core:e/insert_edit_video'      => 'fa-file-video',
+            'core:e/insert_file'            => 'fa-file',
+            'core:e/manage_files'           => 'fa-files',
+            'core:e/new_document'           => 'fa-file',
+            'theme:fp/add_file'             => 'fa-file',
+            'core:i/backup'                 => 'fa-file-zip',
+            'core:i/files'                  => 'fa-file',
+            'core:i/privatefiles'           => 'fa-file',
+            'core:i/dashboard'              => 'fa-tachometer-alt',
+            'core:i/badge'                  => 'fa-shield-alt',
+            'core:i/competencies'           => 'fa-check-square',
+            'core:a/create_folder'          => 'fa-folder',
+            'core:a/view_tree_active'       => 'fa-folder',
+            'theme:fp/create_folder'        => 'fa-folder',
+            'theme:fp/path_folder'          => 'fa-folder',
+            'theme:fp/path_folder_rtl'      => 'fa-folder',
+            'theme:fp/view_tree_active'     => 'fa-folder',
+            'core:i/folder'                 => 'fa-folder',
+            'core:i/open'                   => 'fa-folder',
+            'core:i/section'                => 'fa-folder',
+
+        );
+        
+        $merged = array_merge($iconmap, $overrides);
+        
+        return $merged;
     }
 }

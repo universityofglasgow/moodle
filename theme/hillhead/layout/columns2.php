@@ -77,6 +77,9 @@ switch($theme_hillhead_size) {
 $theme_hillhead_contrast = get_user_preferences('theme_hillhead_contrast');
 
 switch($theme_hillhead_contrast) {
+    case 'night':
+        $extraclasses[]='hillhead-night';
+        break;
     case 'by':
         $extraclasses[]='hillhead-contrast';
         $extraclasses[]='hillhead-contrast-by';
@@ -243,9 +246,18 @@ $colourOptions = Array(
         'o'=>'theme_hillhead_contrast',
         'v'=>'clear',
         'c'=>'hh-acc-th-de',
-        't'=>'Default Moodle Theme',
-        'i'=>'fa-low-vision'
+        't'=>'Bright Mode',
+        'i'=>'fa-sun'
     ),
+    Array(
+        'o'=>'theme_hillhead_contrast',
+        'v'=>'night',
+        'c'=>'hh-acc-th-nt',
+        't'=>'Night Mode',
+        'i'=>'fa-moon'
+    ),
+);
+$accessibleColourOptions = Array(
     Array(
         'o'=>'theme_hillhead_contrast',
         'v'=>'yb',
@@ -460,7 +472,7 @@ if($theme_hillhead_stripstyles == 'on') {
             'o'=>'theme_hillhead_stripstyles',
             'v'=>'clear',
             'c'=>'hh-acc-ss-of',
-            't'=>'Don\'t Apply to All Moodle Content',
+            't'=>'Enable Custom Fonts &amp; Colours',
             'i'=>'fa-minus-square'
         )
     );
@@ -470,21 +482,23 @@ if($theme_hillhead_stripstyles == 'on') {
             'o'=>'theme_hillhead_stripstyles',
             'v'=>'on',
             'c'=>'hh-acc-ss-of',
-            't'=>'Apply to All Moodle Content',
+            't'=>'Disable Custom Fonts &amp; Colours',
             'i'=>'fa-plus-square'
         )
     );
 }
 
 if($usesAccessibilityTools) {
-    $accTxt = '<div class="block card m-t-1 accessibility-tools"><div class="block-heading"><h3>Accessibility Tools</h3></div><div class="block-content">';
+    $accTxt = '<div class="block card m-t-1 accessibility-tools"><div class="block-heading"><h3>Accessibility Tools<a class="float-right" href="'.$CFG->wwwroot.'/theme/hillhead/accessibility.php?o=theme_hillhead_accessibility&v=clear" data-key="accessibility"><i class="fa fa-times"></i></a></h3></div><div class="block-content">';
     $accTxt .= '<div class="row">';
     $accTxt .= '<div class="col-xs-12 col-sm-4 accessibility-group">';
     $accTxt .= '<h4>Colour Scheme</h4><ul class="accessibility-features">';
     foreach($colourOptions as $opt) {
         $accTxt .= '<li><a class="hh-acc" id="'.$opt['c'].'" href="'.$CFG->wwwroot.'/theme/hillhead/accessibility.php?o='.$opt['o'].'&v='.$opt['v'].'"><i class="fa '.$opt['i'].'"></i>'.$opt['t'].'</a></li>';
     }
-    foreach($stripStyleOptions as $opt) {
+    $accTxt .= '</ul>';
+    $accTxt .= '<h4>Accessible Colour Schemes</h4><ul class="accessibility-features">';
+    foreach($accessibleColourOptions as $opt) {
         $accTxt .= '<li><a class="hh-acc" id="'.$opt['c'].'" href="'.$CFG->wwwroot.'/theme/hillhead/accessibility.php?o='.$opt['o'].'&v='.$opt['v'].'"><i class="fa '.$opt['i'].'"></i>'.$opt['t'].'</a></li>';
     }
     $accTxt .= '</ul>';
@@ -501,6 +515,9 @@ if($usesAccessibilityTools) {
         $accTxt .= '<li><a class="hh-acc" id="'.$opt['c'].'" href="'.$CFG->wwwroot.'/theme/hillhead/accessibility.php?o='.$opt['o'].'&v='.$opt['v'].'"><i class="fa '.$opt['i'].'"></i>'.$opt['t'].'</a></li>';
     }
     foreach($spacingOptions as $opt) {
+        $accTxt .= '<li><a class="hh-acc" id="'.$opt['c'].'" href="'.$CFG->wwwroot.'/theme/hillhead/accessibility.php?o='.$opt['o'].'&v='.$opt['v'].'"><i class="fa '.$opt['i'].'"></i>'.$opt['t'].'</a></li>';
+    }
+    foreach($stripStyleOptions as $opt) {
         $accTxt .= '<li><a class="hh-acc" id="'.$opt['c'].'" href="'.$CFG->wwwroot.'/theme/hillhead/accessibility.php?o='.$opt['o'].'&v='.$opt['v'].'"><i class="fa '.$opt['i'].'"></i>'.$opt['t'].'</a></li>';
     }
     $accTxt .= '</ul>';
