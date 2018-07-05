@@ -73,5 +73,38 @@ function xmldb_enrol_gudatabase_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2016092200, 'enrol', 'gudatabase');
     }
 
+    // Add fields for code location and plugin instanceid
+    if ($oldversion < 2018070500) {
+
+        // Define field location to be added to enrol_gudatabase_codes.
+        $table = new xmldb_table('enrol_gudatabase_codes');
+        $field = new xmldb_field('location', XMLDB_TYPE_CHAR, '15', null, XMLDB_NOTNULL, null, null, 'subjectnumber');
+
+        // Conditionally launch add field location.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define field instanceid to be added to enrol_gudatabase_codes.
+        $field = new xmldb_field('instanceid', XMLDB_TYPE_INTEGER, '11', null, XMLDB_NOTNULL, null, '0', 'location');
+
+        // Conditionally launch add field instanceid.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define field instanceid to be added to enrol_gudatabase_groups.
+        $table = new xmldb_table('enrol_gudatabase_groups');
+        $field = new xmldb_field('instanceid', XMLDB_TYPE_INTEGER, '11', null, XMLDB_NOTNULL, null, '0', 'courseid');
+
+        // Conditionally launch add field instanceid.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Gudatabase savepoint reached.
+        upgrade_plugin_savepoint(true, 2018070500, 'enrol', 'gudatabase');
+    }
+
     return true;
 }

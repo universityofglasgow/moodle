@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="enrol/gudatabase/db" VERSION="20160922" COMMENT="XMLDB file for Moodle enrol/gudatabase"
+<XMLDB PATH="enrol/gudatabase/db" VERSION="20180705" COMMENT="XMLDB file for Moodle enrol/gudatabase"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -14,6 +14,8 @@
         <FIELD NAME="coursename" TYPE="char" LENGTH="80" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="subjectname" TYPE="char" LENGTH="80" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="subjectnumber" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="location" TYPE="char" LENGTH="15" NOTNULL="true" SEQUENCE="false" COMMENT="Where was the code defined - idnumber, shortcode or plugin"/>
+        <FIELD NAME="instanceid" TYPE="int" LENGTH="11" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="If defined in a plugin instance what is the id"/>
         <FIELD NAME="timeadded" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
@@ -55,6 +57,7 @@
         <FIELD NAME="originalname" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" COMMENT="The name we would have called it when first created"/>
         <FIELD NAME="groupid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="id in groups table"/>
         <FIELD NAME="courseid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="Id of course in which groups live"/>
+        <FIELD NAME="instanceid" TYPE="int" LENGTH="11" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The plugin instance in which the groups were defined"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>

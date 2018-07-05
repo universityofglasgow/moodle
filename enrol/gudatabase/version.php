@@ -19,14 +19,14 @@
  *
  * @package    enrol
  * @subpackage gudatabase
- * @copyright  2012-2014 Howard Miller
+ * @copyright  2012-2018 Howard Miller
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2017121500;
-$plugin->requires  = 2017051500;
+$plugin->version   = 2018070500;
+$plugin->requires  = 2018051700;
 $plugin->component = 'enrol_gudatabase';
 $plugin->maturity = MATURITY_STABLE;
 $plugin->dependencies = array(

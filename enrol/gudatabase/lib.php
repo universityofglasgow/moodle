@@ -54,6 +54,9 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
     // Need to store this for error function.
     protected $trace;
 
+    // Annotated list of codes stored for reporting.
+    protected $advcodes = [];
+
     /**
      * Is it possible to delete enrol instance via standard UI?
      *
@@ -608,17 +611,17 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
      * so we can use in cron and reports
      * NB: we will check it exists here too
      * @param object $course
-     * @param array $codes list of codes
      * @return array list of 'real' codes
      */
-    public function save_codes( $course, $codes ) {
+    public function save_codes($course) {
         global $CFG, $DB;
 
         // Track codes that are deemed to exist.
         $realcodes = array();
 
         // Run through codes finding data.
-        foreach ($codes as $code) {
+        foreach ($this->advcodes as $advcode) {
+            $code = $advcode->code;
             $coursedata = $this->external_coursedata( $code );
 
             // It's possible (and ok) that nothing is found.
@@ -630,6 +633,8 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
                 $coursecode->code = $code;
                 $coursecode->courseid = $course->id;
                 $coursecode->subject = $coursedata->Crse_cd_Subject;
+                $coursecode->location = $advcode->location;
+                $coursecode->instanceid = $advcode->instanceid;
 
                 // COCK UP: these codes can contain letters at the end
                 // but we'll just strip them off for now.
@@ -651,6 +656,10 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
 
         // Now need to check if there are entries for that course
         // that should be deleted.
+        $codes = [];
+        foreach ($this->advcodes as $advcode) {
+            $codes[] = $advcode->code;
+        }
         $entries = $DB->get_records( 'enrol_gudatabase_codes', array( 'courseid' => $course->id ));
         if (!empty($entries)) {
             foreach ($entries as $entry) {
@@ -749,6 +758,30 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
     }
 
     /**
+     * Add the codes to a list also containining info
+     * about how they were defined. Saved in a table
+     * and used for reporting. 
+     * @param string/array $codes of codes
+     * @param string $location (shortname, idnumber, plugin)
+     * @param int $instanceid (of plugin, if appropriate)
+     */
+    protected function log_codes($codes, $location, $instanceid = 0) {
+        if (!$codes) {
+            return;
+        }
+        if (!is_array($codes)) {
+            $codes = [$codes];
+        }
+        foreach ($codes as $code) {
+            $advcode = new stdClass;
+            $advcode->code = $code;
+            $advcode->location = $location;
+            $advcode->instanceid = $instanceid;
+            $this->advcodes[] = $advcode;
+        }
+    }
+
+    /**
      * Get the list of (legacy) codes for the given course
      * @param object $course course object
      * @return array list of codes
@@ -759,8 +792,11 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         if (!empty($instance->customint3)) {
             $shortname = $course->shortname;
             $idnumber = $course->idnumber;
-            $codes = $this->split_code( $idnumber );
-            $codes[] = clean_param( $shortname, PARAM_ALPHANUM );
+            $codes = $this->split_code($idnumber);
+            $this->log_codes($codes, 'idnumber');
+            $shortnamecode = clean_param($shortname, PARAM_ALPHANUM);
+            $this->log_codes($shortnamecode, 'shortname');
+            $codes[] = $shortnamecode;
         } else {
             $codes = array();
         }
@@ -772,6 +808,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         foreach ($mcodes as $index => $mcode) {
             $mcodes[$index] = clean_param( trim($mcode), PARAM_TEXT );
         }
+        $this->log_codes($mcodes, 'plugin', $instance->id);
         $codes = array_merge($codes, $mcodes);
         $verifiedcodes = $this->save_codes($course, $codes);
         return $verifiedcodes;
@@ -1043,9 +1080,10 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
      * before this feature was added)
      * @param string $originalname - the name we would have called it when created
      * @param int $courseid
+     * @param int $instanceid (of plugin)
      * @return int groupid (from groups table) or false if group does not exist
      */
-    private function get_local_groupid($originalname, $courseid) {
+    private function get_local_groupid($originalname, $courseid, $instanceid) {
         global $DB;
 
         // Is the group in the local table?
@@ -1062,6 +1100,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
                 $enrolgroup->originalname = $originalname;
                 $enrolgroup->courseid = $courseid;
                 $enrolgroup->groupid = $groupid;
+                $enrolgroup->instanceid = $instanceid;
                 $DB->insert_record('enrol_gudatabase_groups', $enrolgroup);
                 return $groupid;
             } else {
@@ -1070,34 +1109,6 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
                 return false;
             }
         }
-    }
-
-    /**
-     * Check if a user is already in a group in the same 'set'
-     * @param int $courseid
-     * @param object $user user in question
-     * @param string $basename Fixed part of (default) group name
-     * @param array $classgroups List of groups
-     * @return boolean true if in group
-     */
-    private function is_in_any_classgroup($courseid, $user, $basename, $classgroups) {
-
-        foreach ($classgroups as $classgroupcode => $memberids) {
-            $groupname = "$basename $classgroupcode";
-
-            // See if group exists, if not just continue.
-            if (!$groupid = $this->get_local_groupid($groupname, $courseid)) {
-                continue;
-            } else {
-
-                // If user is in the group then good enough.
-                if (groups_is_member($groupid, $user->id)) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
     }
 
     /**
@@ -1130,11 +1141,11 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
 
                     // See if group exists, if not create it.
                     $groupname = $code;
-                    if (!$groupid = $this->get_local_groupid($groupname, $course->id)) {
+                    if (!$groupid = $this->get_local_groupid($groupname, $course->id, $instance->id)) {
                         $group = $this->create_group($groupname, $course);
 
                         // When creating a group also add to local group list.
-                        $this->get_local_groupid($groupname, $course->id);
+                        $this->get_local_groupid($groupname, $course->id, $instance->id);
                     } else {
                         $group = groups_get_group($groupid);
                     }
@@ -1162,11 +1173,11 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
                         $groupname = "$groupbasename $classgroupcode";
 
                         // See if group exists, if not create it.
-                        if (!$groupid = $this->get_local_groupid($groupname, $course->id)) {
+                        if (!$groupid = $this->get_local_groupid($groupname, $course->id, $instance->id)) {
                             $group = $this->create_group($groupname, $course);
 
                             // When creating a group also add to local group list.
-                            $this->get_local_groupid($groupname, $course->id);
+                            $this->get_local_groupid($groupname, $course->id, $instance->id);
                         } else {
                             $group = groups_get_group($groupid);
                         }
