@@ -644,7 +644,12 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
                 $coursecode->subjectnumber = $coursedata->ou_cd;
 
                 // Is there already a record for this combination.
-                if ($record = $DB->get_record( 'enrol_gudatabase_codes', array('code' => $code, 'courseid' => $course->id))) {
+                if ($record = $DB->get_record( 'enrol_gudatabase_codes', [
+                        'code' => $code,
+                        'courseid' => $course->id,
+                        'location' => $advcode->location,
+                        'instanceid' => $advcode->instanceid,
+                    ])) {
                     $coursecode->id = $record->id;
                     $DB->update_record( 'enrol_gudatabase_codes', $coursecode );
                 } else {
@@ -777,7 +782,9 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
             $advcode->code = $code;
             $advcode->location = $location;
             $advcode->instanceid = $instanceid;
-            $this->advcodes[] = $advcode;
+           
+            // Mad key is used to make sure we only include each unique code once.  
+            $this->advcodes[$code . $location . $instanceid] = $advcode;
         }
     }
 
@@ -810,7 +817,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         }
         $this->log_codes($mcodes, 'plugin', $instance->id);
         $codes = array_merge($codes, $mcodes);
-        $verifiedcodes = $this->save_codes($course, $codes);
+        $verifiedcodes = $this->save_codes($course);
         return $verifiedcodes;
     }
 
@@ -964,6 +971,35 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
     }
 
     /**
+     * Check if automatic enrolment possible.
+     * Do not do anything if course outside of date range
+     * or not visible
+     * @param object $course
+     * @return boolean
+     */
+    protected function enrolment_possible($course) {
+    
+        // Ignore hidden courses
+        if (!$course->visible) {
+            return false;
+        }
+
+        // Ignore courses after end date
+        // (enddata == 0 means disabled)
+        if ($course->enddate and (time() > $course->enddate)) {
+            return false;
+        }
+
+        // Ignore courses before start 
+        if (time() < $course->startdate) {
+            return false;
+        }
+
+        // In which case...
+        return true;
+    }
+
+    /**
      * Called after updating/inserting course.
      *
      * @param bool $inserted true if course just inserted
@@ -982,8 +1018,8 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
             $instanceid = $this->add_first_instance($course);
         }
 
-        // If course is not visible we don't do anything further.
-        if (!$course->visible) {
+        // Check if we can proceed.
+        if ($this->enrolment_possible($course)) {
             return true;
         }
 
@@ -1121,6 +1157,11 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
 
         // Shall we?
         if ($instance->status != ENROL_INSTANCE_ENABLED) {
+            return false;
+        }
+
+        // Check if we can proceed.
+        if ($this->enrolment_possible($course)) {
             return false;
         }
 
@@ -1445,7 +1486,8 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         if (empty($instance->customint3)) {
             $instance->customint3 = 0;
         }
-        $mform->addElement('html', $output->print_codes($course->id, $codes, $instance->customint3));
+
+        $mform->addElement('html', $output->print_codes($course->id, $codes, $instance->customint3, $this->enrolment_possible($course)));
 
         $mform->addElement('textarea', 'customtext1', get_string('codelist', 'enrol_gudatabase'),
             'rows="15" cols="25" style="height: auto; width:auto;"');

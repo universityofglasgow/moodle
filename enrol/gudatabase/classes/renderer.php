@@ -60,7 +60,7 @@ class enrol_gudatabase_renderer extends plugin_renderer_base {
 
         if (substr($code, -1) == '*') {
             $courseinfo = get_string('starcode', 'enrol_gudatabase');
-        } else if ($codeinfo = $DB->get_record('enrol_gudatabase_codes', array('courseid' => $courseid, 'code' => $code))) {
+        } else if ($codeinfo = $DB->get_record('enrol_gudatabase_codes', array('courseid' => $courseid, 'code' => $code), '*', IGNORE_MULTIPLE)) {
             $courseinfo = "{$codeinfo->subjectname} > {$codeinfo->coursename}";
         } else {
             $courseinfo = get_string('nocourseinfo', 'enrol_gudatabase');
@@ -72,10 +72,14 @@ class enrol_gudatabase_renderer extends plugin_renderer_base {
     /**
      * Print legacy codes
      */
-    public function print_codes($courseid, $codes, $settingcodes=false) {
-        global $DB;
+    public function print_codes($courseid, $codes, $settingcodes=false, $enrolmentpossible = true) {
+        global $DB, $CFG;
 
         $html = '';
+        if (!$enrolmentpossible) {
+            $link = $CFG->wwwroot . '/report/guenrol/index.php?id=' . $courseid;
+            $html .= '<div class="alert alert-danger">' . get_string('enrolmentdisabled', 'enrol_gudatabase', $link) . '</div>';
+        }
         if ($codes) {
             $html .= '<div class="alert alert-info">';
             if ($settingcodes) {

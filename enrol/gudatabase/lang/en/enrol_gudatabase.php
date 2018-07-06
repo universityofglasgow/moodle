@@ -46,6 +46,7 @@ $string['enableunenrol'] = 'Enable user unenrol';
 $string['enableunenrol_help'] = 'If enabled, students will be unenrolled shortly after they are removed from the course in MyCampus. Otherwise they will stay enrolled even if they are removed in MyCampus.<br />WARNING: Risk of data loss. If students are unenrolled their submissions and data are irrevocably deleted';
 $string['enrolenddate'] = 'Enrol end date';
 $string['enrolenddate_help'] = 'If enabled, users will be unenrolled (or their role changed) after this date/time. Note that this only applies to users enrolled AFTER this is set or changed.';
+$string['enrolmentdisabled'] = '<b>Enrolment is disabled for this course</b> See <a href="{$a}">Enrolment Report</a> for more information.';
 $string['expirerole'] = 'Action after period';
 $string['expirerole_help'] = 'After period expires (if set) switch to this role or unenrol completely';
 $string['groups'] = 'Groups';
