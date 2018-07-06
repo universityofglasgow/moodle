@@ -155,11 +155,11 @@ nav.navbar a.dropdown-toggle {
 }
 
 nav.navbar a.dropdown-item {
-    color: #555 !important;
+    color: #555;
 }
 
 a.nav-link, a.btn-default {
-    color: #555 !important;
+    color: #555;
 }
 
 #nav-drawer a {
@@ -185,12 +185,11 @@ a.nav-link, a.btn-default {
     border-bottom-right-radius: 0;
 }
 
-footer a, footer p {
-    color: #555 !important;
+footer#page-footer a, footer#page-footer p {
+    color: #555;
 }
 
-.pagination .active a,
-h3.sectionname a {
+.pagination .active a, h3.sectionname a {
     color: #fff !important;
 }
 
@@ -514,6 +513,10 @@ footer h3 {
     background-color: $gu-skyblue;    
 }
 
+.block-heading a i {
+    color: #fff;
+}
+
 .block .block-heading h3, .block .block-heading h5 {
     color: #fff;
     font-weight: 300;
@@ -656,10 +659,6 @@ body.path-course-view.editing .course-content > ul > li.section .content {
     color: #fff;
     margin-bottom: 20px;
     min-height: 38px;
-}
-
-.format-topics .course-content > ul > li.section .side.right, .format-weeks .course-content > ul > li.section .side.right {
-    background-color: #4f5961 !important;
 }
 
 .path-course-view .completionprogress {
@@ -1148,41 +1147,41 @@ body#page-user-profile #region-main > .card-block .node_category .editprofile, b
 }
 
 .alert.alert-danger {
-    background-color: #f2dede !important;
-    color: #a94442 !important;
-    border-color: #ebcccc !important;
+    background-color: #f2dede;
+    color: #a94442;
+    border-color: #ebcccc;
 }
 
 .alert.alert-warning {
-    background-color: #fcf8e3 !important;
-    color: #8a6d3b !important;
-    border-color: #faf2cc !important;
+    background-color: #fcf8e3;
+    color: #8a6d3b;
+    border-color: #faf2cc;
 }
 
 .alert.alert-success {
-    background-color: #dff0d8 !important;
-    color: #3c763d !important;
-    border-color: #d0e9c6 !important;
+    background-color: #dff0d8;
+    color: #3c763d;
+    border-color: #d0e9c6;
 }
 
 .alert.alert-info {
-    background-color: #d9edf7 !important;
-    color: #31708f !important;
-    border-color: #bcdff1 !important;
+    background-color: #d9edf7;
+    color: #31708f;
+    border-color: #bcdff1;
 }
 
 .alert-danger span a {
-    color: #a94442 !important;
+    color: #a94442;
     text-decoration: underline;
 }
 
 .alert-warning span a {
-    color: #8a6d3b !important;
+    color: #8a6d3b;
     text-decoration: underline;
 }
 
 .alert-info span a {
-    color: #31708f !important;
+    color: #31708f;
     text-decoration: underline;
 }
 
@@ -1508,6 +1507,7 @@ body.hillhead-bold * {
 #hh-acc-th-br, #hh-acc-th-br i  { background-color: #EEB9B9 !important; color: #111 !important; }
 #hh-acc-th-bb, #hh-acc-th-bb i  { background-color: #B9D9EE !important; color: #111 !important; }
 #hh-acc-th-bw, #hh-acc-th-bw i  { background-color: #f6f6f6 !important; color: #111 !important; }
+#hh-acc-th-nt, #hh-acc-th-nt i { background-color: #121E30 !important; color: #eee !important; }
 
 #hh-acc-fb-on { font-weight: 700 !important; }
 #hh-acc-fb-of { font-weight: 300 !important; }
@@ -1515,6 +1515,198 @@ body.hillhead-bold * {
 .currentlySpeakingHighlight {
     background-color: #FEC34E !important;
     color: #000 !important;
+}
+
+//Night Mode!
+
+body.hillhead-night {
+    background-color: #132030;
+    color: #C4D6EE;
+}
+
+body.hillhead-night .modal-content {
+    background-color: #132030;
+    border-color: #121E30;
+}
+
+body.hillhead-night .modal-header, body.hillhead-night .modal-footer {
+    border-color: #182941;
+}
+
+body.hillhead-night nav.navbar {
+    background-color: #274163;
+    border-bottom-color: #121E30;
+}
+
+body.hillhead-night #nav-drawer {
+    background-color: #182941;
+    border-right-color: #121E30;
+}
+
+body.hillhead-night nav .btn-drawertoggle {
+    background-color: #182941;
+}
+
+body.hillhead-night .card, body.hillhead-night.path-course-view .course-content>ul>li.section {
+    border-color: #121E30 !important;
+    background-color: #1A2B41;
+}
+ 
+body.hillhead-night .card .block-heading, body.hillhead-night.format-topics .course-content>ul>li.section .sectionname, body.hillhead-night.format-weeks .course-content>ul>li.section .sectionname {
+    border-color: #121E30;
+    background-color: #274163;
+}
+
+body.hillhead-night .accessibility-tools .accessibility-group h4 {
+    border-color: #121E30;
+    background-color: #274163;
+}
+
+body.hillhead-night .region_main_settings_menu_proxy {
+    background-color: #1A2B41;
+}
+
+body.hillhead-night#page-user-profile #region-main .description, body.hillhead-night.path-course.path-user #region-main .description, body.hillhead-night.path-course.path-user #region-main .page-context-header, body.hillhead-night .course-content .single-section, body.hillhead-night.path-admin #region-main .card-block, body.hillhead-night.path-admin #region-main #page-enrol-users #filterform, #page-enrol-users body.hillhead-night.path-admin #region-main #filterform {
+    border-color: #121E30;
+    background-color: #1A2B41;
+}
+
+body.hillhead-night #nav-drawer .list-group-item  {
+    border-color: #182941;
+    background-color: #121E2D;
+    color: #C4D6EE;
+}
+
+body.hillhead-night .alert, body.hillhead-night .alert a {
+    color: #132030;
+}
+
+body.hillhead-night pre {
+    color: #C4D6EE;
+}
+
+body.hillhead-night .footer-links h4, body.hillhead-night footer h3.glasgow {
+    color: #3F69A0 !important;
+}
+
+body.hillhead-night footer#page-footer p {
+    color: #A6B5CA !important;
+}
+
+body.hillhead-night footer#page-footer a {
+    color: #789BCA !important;
+}
+
+body.hillhead-night a, a.nav-link {
+    color: #789BCA;
+}
+
+body.hillhead-night .nav-tabs {
+    border-color: #274163;
+}
+
+body.hillhead-night .nav-tabs .nav-link {
+    color: #789BCA;
+}
+
+body.hillhead-night .nav-tabs .nav-link.active, body.hillhead-night .nav-tabs .nav-item.show .nav-link {
+    color: #789BCA;
+    background-color: #274163;
+    border-color: #274163;
+}
+
+body.hillhead-night .nav-tabs .nav-link:hover, body.hillhead-night .nav-tabs .nav-link:focus {
+    border-color: #274163;
+}
+
+body.hillhead-night table.grading-details th, body.hillhead-night table.personal-deadline-details th, body.hillhead-night table.grading-details td, body.hillhead-night table.personal-deadline-details, td {
+    border-color: #274163;
+}
+
+body.hillhead-night .block-course-overview .courseovbox {
+    border-color: #274163;
+}
+
+body.hillhead-night #page-header .context-header-settings-menu a {
+    color: #C4D6EE;
+}
+
+body.hillhead-night .alert.alert-danger {
+    background-color: #6B292B !important;
+    border-color: #4D1F20 !important;
+    color: #E57A7E !important;
+}
+
+body.hillhead-night .alert.alert-danger a {
+    color: #E57A7E;
+    text-decoration: underline;
+}
+
+body.hillhead-night .alert.alert-warning, body.hillhead-night .adminwarning {
+    background-color: #956A31 !important;
+    border-color: #735326 !important;
+    color: #F6BD70 !important;
+}
+
+body.hillhead-night .alert.alert-warning a, body.hillhead-night .adminwarning a {
+    color: #F6BD70;
+    text-decoration: underline;
+}
+
+body.hillhead-night .alert.alert-info {
+    background-color: #406BAF !important;
+    border-color: #243C62 !important;
+    color: #c4d6ee !important;
+}
+
+body.hillhead-night .alert.alert-info a {
+    color: #c4d6ee;
+    text-decoration: underline;
+}
+
+body.hillhead-night .alert.alert-success {
+    background-color: #547D44 !important;
+    border-color: #436336 !important;
+    color: #A4F284 !important;
+}
+
+body.hillhead-night .alert.alert-success a {
+    color: #A4F284;
+    text-decoration: underline;
+}
+
+.alert a.close {
+    text-decoration: none !important;
+}
+
+body.hillhead-night a.close {
+    color: #fff !important;
+}
+
+body.hillhead-night .breadcrumb-item + .breadcrumb-item::before {
+    color: #274163;
+}
+
+body.hillhead-night .filepicker-filelist, body.hillhead-night .filemanager, body.hillhead-night .filemanager .card {
+    background-color: #fff;
+    color: #132030;
+    border: none !important;
+}
+
+body.hillhead-night .page-item a {
+    border-color: #274163;
+    background-color: transparent;
+}
+
+body.hillhead-night .page-item.active a {
+    background-color: #274163;
+    border-color: #274163;
+}
+
+body.hillhead-night .page-item.disabled span {
+    background: transparent;
+    color: #274163;
+    border-color: #274163;
 }
 
 // Hotfixes to integrate
