@@ -1019,7 +1019,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         }
 
         // Check if we can proceed.
-        if ($this->enrolment_possible($course)) {
+        if (!$this->enrolment_possible($course)) {
             return true;
         }
 
@@ -1161,7 +1161,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         }
 
         // Check if we can proceed.
-        if ($this->enrolment_possible($course)) {
+        if (!$this->enrolment_possible($course)) {
             return false;
         }
 
