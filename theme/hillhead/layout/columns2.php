@@ -218,7 +218,7 @@ if($hillheadsmartalerts == 'enabled') {
         $usesMyCampus = false;
         $usesSelfEnrolment = false;
         foreach($enrolmentInstances as $enrolmentInstance) {
-            if(property_exists($enromlentInstance, 'status')) {
+            if(property_exists($enrolmentInstance, 'status')) {
                 switch($enrolmentInstance->enrol) {
                     case 'gudatabase':
                         if ($enromlentInstance->status==1) {
