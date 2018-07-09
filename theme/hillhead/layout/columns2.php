@@ -215,17 +215,18 @@ if($hillheadsmartalerts == 'enabled') {
         
         $enman = new course_enrolment_manager($PAGE, $courseDetails);
         $enrolmentInstances = $enman->get_enrolment_instances();
+    
         $usesMyCampus = false;
         $usesSelfEnrolment = false;
         foreach($enrolmentInstances as $enrolmentInstance) {
             switch($enrolmentInstance->enrol) {
                 case 'gudatabase':
-                    if ($enrolmentInstance->status==1) {
+                    if ($enrolmentInstance->status==0) {
                         $usesMyCampus = true;
                     }
                     break;
                 case 'self':
-                    if ($enrolmentInstance->status==1) {
+                    if ($enrolmentInstance->status==0) {
                         if(empty($enrolmentInstance->password)) {
                             $usesSelfEnrolment = true;
                         }
