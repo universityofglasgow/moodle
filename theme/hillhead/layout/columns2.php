@@ -218,19 +218,21 @@ if($hillheadsmartalerts == 'enabled') {
         $usesMyCampus = false;
         $usesSelfEnrolment = false;
         foreach($enrolmentInstances as $enrolmentInstance) {
-            switch($enrolmentInstance->enrol) {
-                case 'gudatabase':
-                    if ($enromlentInstance->status==1) {
-                        $usesMyCampus = true;
-                    }
-                    break;
-                case 'self':
-                    if ($enromlentInstance->status==1) {
-                        if(empty($enrolmentInstance->password)) {
-                            $usesSelfEnrolment = true;
+            if(property_exists($enromlentInstance, 'status')) {
+                switch($enrolmentInstance->enrol) {
+                    case 'gudatabase':
+                        if ($enromlentInstance->status==1) {
+                            $usesMyCampus = true;
                         }
-                    }
-                    break;
+                        break;
+                    case 'self':
+                        if ($enromlentInstance->status==1) {
+                            if(empty($enrolmentInstance->password)) {
+                                $usesSelfEnrolment = true;
+                            }
+                        }
+                        break;
+                }
             }
         }
         
