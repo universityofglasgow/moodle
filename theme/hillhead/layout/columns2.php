@@ -27,6 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 user_preference_allow_ajax_update('drawer-open-nav', PARAM_ALPHA);
 require_once($CFG->libdir . '/behat/lib.php');
 require_once($CFG->dirroot . '/admin/tool/mobile/lib.php');
+require_once("$CFG->dirroot/enrol/locallib.php");
 
 if (isloggedin() && !behat_is_test_site()) {
     $navdraweropen = (get_user_preferences('drawer-open-nav', 'true') == 'true');
@@ -176,25 +177,78 @@ if($hillheadsmartalerts == 'enabled') {
 
     $courseDetails = $PAGE->course;
     
+    $automaticEnrolmentsDisabled = false;
+    
     if((!empty($courseDetails->id)) && $courseDetails->id != 1) {
         if($courseDetails->visible=='0') {
             if(empty($_SESSION['SESSION']->hillhead_notifications) || !array_key_exists(md5($courseDetails->id.'courseinvisible'), $_SESSION['SESSION']->hillhead_notifications)) {
-                $notiftext .= '<div class="alert alert-info"><a class="close" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($courseDetails->id.'courseinvisible').'" aria-label="Close"><span aria-hidden="true">&times;</span></a><i class="fa fa-info-circle"></i><span><strong>This course is currently hidden.</strong> You can see it, but students can\'t. You can unhide this course <a href="edit.php?id='.$courseDetails->id.'">on the settings page</a>.</span></div>';
+                $notiftext .= '<div class="alert alert-info"><a class="close" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($courseDetails->id.'courseinvisible').'" aria-label="Close"><span aria-hidden="true">&times;</span></a><i class="fa fa-eye-slash"></i><span><strong>This course is currently hidden.</strong> You can see it, but students can\'t. You can unhide this course <a href="edit.php?id='.$courseDetails->id.'">on the settings page</a>.</span></div>';
+                $automaticEnrolmentsDisabled = true;
+                $automaticEnrolmentsReason = 'this course has been hidden from students.';
             }
         }
             
         $context = context_course::instance($courseDetails->id);
-        $studentyUsers = count_role_users(3, $PAGE->context);
-        
+        $studentyUsers = count_role_users(5, $PAGE->context);
+                
         if($studentyUsers === 0) {
             if(empty($_SESSION['SESSION']->hillhead_notifications) || !array_key_exists(md5($courseDetails->id.'coursenostudents'), $_SESSION['SESSION']->hillhead_notifications)) {
-                $notiftext .= '<div class="alert alert-warning"><a class="close" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($courseDetails->id.'coursenostudents').'" aria-label="Close"><span aria-hidden="true">&times;</span></a><i class="fa fa-info-circle"></i><span><strong>There are no students on this course.</strong> <a href="https://www.gla.ac.uk/myglasgow/moodle/universityofglasgowmoodleguides/enrollingstudentsonmoodlecourses/" target="_blank">How do I add students to my course?</a></span></div>';
+                $notiftext .= '<div class="alert alert-warning"><a class="close" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($courseDetails->id.'coursenostudents').'" aria-label="Close"><span aria-hidden="true">&times;</span></a><i class="fa fa-users"></i><span><strong>There are no students on this course.</strong> <a href="https://www.gla.ac.uk/myglasgow/moodle/universityofglasgowmoodleguides/enrollingstudentsonmoodlecourses/" target="_blank">How do I add students to my course?</a></span></div>';
             }
         }
         
-        if(($courseDetails->enddate) < time()) {
+        if(!empty($courseDetails->enddate) && ($courseDetails->enddate) < time()) {
             if(empty($_SESSION['SESSION']->hillhead_notifications) || !array_key_exists(md5($courseDetails->id.'courseenddate'), $_SESSION['SESSION']->hillhead_notifications)) {
-                $notiftext .= '<div class="alert alert-danger"><a class="close" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($courseDetails->id.'courseenddate').'" aria-label="Close"><span aria-hidden="true">&times;</span></a><i class="fa fa-info-circle"></i><span><strong>This course\'s end date is in the past.</strong> If you\'re still using this course, you should update the end date so Automatic Rollover works. You can change your course\'s start and end dates <a href="edit.php?id='.$courseDetails->id.'">on the settings page</a>.</span></div>';
+                $notiftext .= '<div class="alert alert-info"><a class="close" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($courseDetails->id.'courseenddate').'" aria-label="Close"><span aria-hidden="true">&times;</span></a><i class="fa fa-clock"></i><span><strong>This course\'s end date is in the past.</strong> MyCampus enrolments are frozen, and won\'t be updated. If you\'re still using this course, you can change the end date <a href="edit.php?id='.$courseDetails->id.'">on the settings page</a>.</span></div>';
+                $automaticEnrolmentsDisabled = true;
+                $automaticEnrolmentsReason = 'the course\'s end date is in the past. Any old MyCampus enrolments have been frozen and won\'t be removed.';
+            }
+        }
+        
+        if(!empty($courseDetails->startdate) && ($courseDetails->startdate) > time()) {
+            if(empty($_SESSION['SESSION']->hillhead_notifications) || !array_key_exists(md5($courseDetails->id.'courseenddate'), $_SESSION['SESSION']->hillhead_notifications)) {
+                $notiftext .= '<div class="alert alert-info"><a class="close" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($courseDetails->id.'courseenddate').'" aria-label="Close"><span aria-hidden="true">&times;</span></a><i class="fa fa-clock"></i><span><strong>This course\'s start date is in the future.</strong> If you\'re using this course right now, you can change the start date <a href="edit.php?id='.$courseDetails->id.'">on the settings page</a>.</span></div>';
+                $automaticEnrolmentsDisabled = true;
+                $automaticEnrolmentsReason = 'the course\'s start date is in the future.';
+            }
+        }
+        
+        $enman = new course_enrolment_manager($PAGE, $courseDetails);
+        $enrolmentInstances = $enman->get_enrolment_instances();
+        $usesMyCampus = false;
+        $usesSelfEnrolment = false;
+        foreach($enrolmentInstances as $enrolmentInstance) {
+            switch($enrolmentInstance->enrol) {
+                case 'gudatabase':
+                    if ($enromlentInstance->status==1) {
+                        $usesMyCampus = true;
+                    }
+                    break;
+                case 'self':
+                    if ($enromlentInstance->status==1) {
+                        if(empty($enrolmentInstance->password)) {
+                            $usesSelfEnrolment = true;
+                        }
+                    }
+                    break;
+            }
+        }
+        
+        if ($usesMyCampus == false) {
+            $automaticEnrolmentsDisabled = true;
+            $automaticEnrolmentsReason = 'the plugin has been disabled.';
+        }
+
+        
+        if ($automaticEnrolmentsDisabled) {
+            if(empty($_SESSION['SESSION']->hillhead_notifications) || !array_key_exists(md5($courseDetails->id.'nomycampus'), $_SESSION['SESSION']->hillhead_notifications)) {
+                $notiftext .= '<div class="alert alert-danger"><a class="close" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($courseDetails->id.'nomycampus').'" aria-label="Close"><span aria-hidden="true">&times;</span></a><i class="fa fa-refresh"></i><span><strong>MyCampus enrolments are disabled for this course.</strong> This is because '.$automaticEnrolmentsReason.' <a href="'.$CFG->wwwroot.'/report/guenrol/index.php?id='.$courseDetails->id.'">More Information</a></span></div>';
+            }
+        }
+        
+        if ($usesSelfEnrolment) {
+            if(empty($_SESSION['SESSION']->hillhead_notifications) || !array_key_exists(md5($courseDetails->id.'selfenabled'), $_SESSION['SESSION']->hillhead_notifications)) {
+                $notiftext .= '<div class="alert alert-warning"><a class="close" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($courseDetails->id.'selfenabled').'" aria-label="Close"><span aria-hidden="true">&times;</span></a><i class="fa fa-user-plus"></i><span><strong>Self-enrolment is enabled for this course, with no enrolment key.</strong> This means anybody can add themselves to this course. <a href="'.$CFG->wwwroot.'/enrol/instances.php?id='.$courseDetails->id.'">Manage Enrolments</a></span></div>';
             }
         }
         

@@ -166,6 +166,10 @@ a.nav-link, a.btn-default {
     color: #555;
 }
 
+a.btn-primary, a.btn-success, body.hillhead-night .btn-primary, body.hillhead-night .btn-success {
+    color: #fff !important;
+}
+
 #nav-drawer .list-group-item {
     border-color: #D6DBDF;
 }
@@ -1631,6 +1635,11 @@ body.hillhead-night #page-header .context-header-settings-menu a {
     color: #C4D6EE;
 }
 
+body.hillhead-night .alert {
+    color: #c4d6ee;
+    background-color: #132030;
+}
+
 body.hillhead-night .alert.alert-danger {
     background-color: #6B292B !important;
     border-color: #4D1F20 !important;
@@ -1679,7 +1688,7 @@ body.hillhead-night .alert.alert-success a {
     text-decoration: none !important;
 }
 
-body.hillhead-night a.close {
+body.hillhead-night a.close, body.hillhead-night button.close {
     color: #fff !important;
 }
 
