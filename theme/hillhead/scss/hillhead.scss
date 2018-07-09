@@ -1561,6 +1561,10 @@ body.hillhead-night .card .block-heading, body.hillhead-night.format-topics .cou
     background-color: #274163;
 }
 
+.course-content>ul>li.section .section-modchooser {
+    border-color: #121E30;
+}
+
 body.hillhead-night .accessibility-tools .accessibility-group h4 {
     border-color: #121E30;
     background-color: #274163;
@@ -1716,6 +1720,76 @@ body.hillhead-night .page-item.disabled span {
     background: transparent;
     color: #274163;
     border-color: #274163;
+}
+
+body.hillhead-night .btn-primary {
+    background-color: #406BAF !important;
+    border-color: #243C62 !important;
+    color: #c4d6ee !important;
+}
+
+body.hillhead-night .btn-primary:hover {
+    background-color: #243C62 !important;
+}
+
+body.hillhead-night .btn-success {
+    background-color: #547D44 !important;
+    border-color: #436336 !important;
+    color: #A4F284 !important;
+}
+
+body.hillhead-night .btn-success:hover {
+    background-color: #436336 !important;
+}
+
+body.hillhead-night .btn-warning {
+    background-color: #956A31 !important;
+    border-color: #735326 !important;
+    color: #F6BD70 !important;
+}
+
+body.hillhead-night .btn-warning:hover {
+    background-color: #735326 !important;
+}
+
+body.hillhead-night .btn-danger {
+    background-color: #6B292B !important;
+    border-color: #4D1F20 !important;
+    color: #E57A7E !important;
+}
+
+body.hillhead-night .btn-danger:hover {
+    background-color: #4D1F20 !important;
+}
+
+body.hillhead-night .btn-secondary {
+    background-color: #555658 !important;
+    border-color: #474849 !important;
+    color: #B9BBBF !important;
+}
+
+body.hillhead-night .btn-secondary:hover {
+    background-color: #474849 !important;
+}
+
+body.hillhead-night .btn-info {
+    background-color: #0D6858 !important;
+    border-color: #09453B !important;
+    color: #76CABD !important;
+}
+
+body.hillhead-night nav.navbar .btn-info:hover {
+    background-color: #09453B !important;
+}
+
+body.hillhead-night nav.navbar .input-group-btn .btn-secondary {
+    background-color: #182941 !important;
+    border-color: #121E30 !important;
+    color: #c4d6ee !important;
+}
+
+body.hillhead-night .input-group-btn .btn-secondary:hover {
+    background-color: #121E30 !important;
 }
 
 // Hotfixes to integrate
