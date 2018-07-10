@@ -144,6 +144,7 @@ $theme_hillhead_stripstyles = get_user_preferences('theme_hillhead_stripstyles')
 switch($theme_hillhead_stripstyles) {
     case 'on':
         $extraScripts .= '<script type="text/javascript" src="'.$CFG->wwwroot.'/theme/hillhead/js/stripstyles.js"></script>';
+        $extraclasses[]='hillhead-stripstyles';
         break;
 }
 
