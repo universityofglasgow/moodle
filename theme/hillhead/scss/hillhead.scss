@@ -1802,6 +1802,30 @@ body.hillhead-night #gridshadebox_content {
     background-color: #121E30 !important;
 }
 
+body.hillhead-night .mform fieldset {
+    border-bottom-color: #132030;
+}
+
+body.hillhead-night .choosercontainer #chooseform .option label, body.hillhead-night .choosercontainer #chooseform .options {
+    border-bottom-color: #1A2B41;
+}
+
+body.hillhead-night .choosercontainer #chooseform .selected {
+    background-color: #1A2B41;
+}
+
+body.hillhead-night .chooserdialogue .moodle-dialogue-wrap .moodle-dialogue-bd {
+    background-color: #121E30;
+}
+
+body.hillhead-night.jschooser .choosercontainer #chooseform .instruction, body.hillhead-night.jschooser .choosercontainer #chooseform .typesummary {
+    background-color: #1A2B41;
+}
+
+body.hillhead-night .moodle-dialogue-base .moodle-dialogue-wrap .moodle-dialogue-hd.yui3-widget-hd {
+    color: #C4D6EE;
+}
+
 body.hillhead-stripstyles i {
     font-style: normal !important;
 }
