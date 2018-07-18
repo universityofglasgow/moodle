@@ -46,6 +46,7 @@ class mobile {
         $args = (object) $args;
 
         $cmid = $args->cmid;
+        $groupid = empty($args->group) ? 0 : $args->group; // By default, group 0.
 
         // Capabilities check.
         $cm = get_coursemodule_from_id('customcert', $cmid);
@@ -59,45 +60,60 @@ class mobile {
             $certificate->introformat, $context->id, 'mod_customcert', 'intro');
 
         // Get any issues this person may have.
-        $issues = $DB->get_records('customcert_issues', ['userid' => $USER->id, 'customcertid' => $certificate->id]);
+        $issue = false;
+        if ($issues = $DB->get_records('customcert_issues', ['userid' => $USER->id, 'customcertid' => $certificate->id],
+                'timecreated DESC')) {
+            $issue = reset($issues);
+        }
 
-        $candownload = true;
+        $requiredtimemet = true;
         $canmanage = has_capability('mod/customcert:manage', $context);
         if ($certificate->requiredtime && !$canmanage) {
             if (\mod_customcert\certificate::get_course_time($certificate->course) < ($certificate->requiredtime * 60)) {
-                $candownload = false;
+                $requiredtimemet = false;
             }
         }
 
         $fileurl = "";
-        if ($candownload) {
+        if ($requiredtimemet) {
             $fileurl = new \moodle_url('/mod/customcert/mobile/pluginfile.php', ['certificateid' => $certificate->id,
                 'userid' => $USER->id]);
             $fileurl = $fileurl->out(true);
         }
 
         $showreport = false;
-        $numissues = 0;
+        $groups = [];
+        $recipients = [];
         if (has_capability('mod/customcert:viewreport', $context)) {
-            // Get the total number of issues.
             $showreport = true;
+
+            // Get the groups (if any) to display - also sets active group.
+            $groups = self::get_groups($cm, $groupid, $USER->id);
             $groupmode = groups_get_activity_groupmode($cm);
             if (has_capability('moodle/site:accessallgroups', $context)) {
                 $groupmode = 'aag';
             }
-            $numissues = \mod_customcert\certificate::get_number_of_issues($certificate->id, $cm, $groupmode);
+
+            $recipients = \mod_customcert\certificate::get_issues($certificate->id, $groupmode, $cm, 0, 0);
+            foreach ($recipients as $recipient) {
+                $recipient->displayname = fullname($recipient);
+                $recipient->fileurl = new \moodle_url('/mod/customcert/mobile/pluginfile.php', ['certificateid' => $certificate->id,
+                    'userid' => $recipient->id]);
+            }
         }
 
         $data = [
             'certificate' => $certificate,
             'cmid' => $cm->id,
-            'hasissues' => !empty($issues),
-            'issues' => array_values($issues),
+            'issue' => $issue,
+            'showgroups' => !empty($groups),
+            'groups' => array_values($groups),
             'canmanage' => $canmanage,
-            'candownload' => $candownload,
+            'requiredtimemet' => $requiredtimemet,
             'fileurl' => $fileurl,
             'showreport' => $showreport,
-            'numissuesinreport' => $numissues,
+            'hasrecipients' => !empty($recipients),
+            'recipients' => array_values($recipients),
             'currenttimestamp' => time()
         ];
 
@@ -106,69 +122,6 @@ class mobile {
                 [
                     'id' => 'main',
                     'html' => $OUTPUT->render_from_template('mod_customcert/mobile_view_activity_page', $data),
-                ],
-            ],
-            'javascript' => '',
-            'otherdata' => ''
-        ];
-    }
-
-    /**
-     * Returns the list of issues certificates for the activity for the mobile app.
-     *
-     * @param  array $args Arguments from tool_mobile_get_content WS
-     * @return array HTML, javascript and other data
-     */
-    public static function mobile_view_report($args) {
-        global $DB, $OUTPUT, $USER;
-
-        $args = (object) $args;
-
-        $cmid = $args->cmid;
-        $groupid = empty($args->group) ? 0 : $args->group; // By default, group 0.
-
-        // Capabilities check.
-        $cm = get_coursemodule_from_id('customcert', $cmid);
-        $context = \context_module::instance($cm->id);
-
-        self::require_capability($cm, $context, 'mod/customcert:viewreport');
-
-        // Get the groups (if any) to display - also sets active group.
-        $groups = self::get_groups($cm, $groupid, $USER->id);
-
-        $certificate = $DB->get_record('customcert', ['id' => $cm->instance], '*', MUST_EXIST);
-        $certificate->name = format_string($certificate->name);
-        list($certificate->intro, $certificate->introformat) = external_format_text($certificate->intro,
-            $certificate->introformat, $context->id, 'mod_customcert', 'intro');
-
-        $groupmode = groups_get_activity_groupmode($cm);
-        if (has_capability('moodle/site:accessallgroups', $context)) {
-            $groupmode = 'aag';
-        }
-
-        $issues = \mod_customcert\certificate::get_issues($certificate->id, $groupmode, $cm, 0, 0);
-        foreach ($issues as $issue) {
-            $issue->displayname = fullname($issue);
-            $issue->fileurl = new \moodle_url('/mod/customcert/mobile/pluginfile.php', ['certificateid' => $certificate->id,
-                'userid' => $issue->id]);
-        }
-
-        $data = [
-            'certificate' => $certificate,
-            'cmid' => $cmid,
-            'showgroups' => !empty($groups),
-            'groups' => array_values($groups),
-            'canmanage' => has_capability('mod/customcert:manage', $context),
-            'hasissues' => !empty($issues),
-            'issues' => array_values($issues),
-            'currenttimestamp' => time()
-        ];
-
-        return [
-            'templates' => [
-                [
-                    'id' => 'main',
-                    'html' => $OUTPUT->render_from_template('mod_customcert/mobile_report_page', $data),
                 ],
             ],
             'javascript' => '',

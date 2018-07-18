@@ -50,6 +50,7 @@ class email_certificate_task extends \core\task\scheduled_task {
         global $DB, $PAGE;
 
         // Get all the certificates that have requested someone get emailed.
+        $emailotherslengthsql = $DB->sql_length('c.emailothers');
         $sql = "SELECT c.*, ct.id as templateid, ct.name as templatename, ct.contextid, co.id as courseid,
                        co.fullname as coursefullname, co.shortname as courseshortname
                   FROM {customcert} c
@@ -59,7 +60,7 @@ class email_certificate_task extends \core\task\scheduled_task {
                     ON c.course = co.id
                  WHERE (c.emailstudents = :emailstudents
                         OR c.emailteachers = :emailteachers
-                        OR c.emailothers != '')";
+                        OR $emailotherslengthsql >= 3)";
         if ($customcerts = $DB->get_records_sql($sql, array('emailstudents' => 1, 'emailteachers' => 1))) {
             // The renderers used for sending emails.
             $htmlrenderer = $PAGE->get_renderer('mod_customcert', 'email', 'htmlemail');
@@ -70,8 +71,7 @@ class email_certificate_task extends \core\task\scheduled_task {
 
                 // Get the person we are going to send this email on behalf of.
                 // Look through the teachers.
-                if ($teachers = get_users_by_capability($context, 'moodle/course:update', 'u.*', 'u.id ASC',
-                    '', '', '', '', false, true)) {
+                if ($teachers = get_enrolled_users($context, 'moodle/course:update')) {
                     $teachers = sort_by_roleassignment_authority($teachers, $context);
                     $userfrom = reset($teachers);
                 } else { // Ok, no teachers, use administrator name.

@@ -256,27 +256,44 @@ class element extends \mod_customcert\element {
      * @return array the list of date formats
      */
     public static function get_date_formats() {
-        $date = time();
+        // Hard-code date so users can see the difference between short dates with and without the leading zero.
+        // Eg. 06/07/18 vs 6/07/18.
+        $date = 1530849658;
 
         $suffix = self::get_ordinal_number_suffix(userdate($date, '%d'));
 
-        $dateformats = array(
+        $dateformats = [
             1 => userdate($date, '%B %d, %Y'),
-            2 => userdate($date, '%B %d' . $suffix . ', %Y'),
-            'strftimedate' => userdate($date, get_string('strftimedate', 'langconfig')),
-            'strftimedatefullshort' => userdate($date, get_string('strftimedatefullshort', 'langconfig')),
-            'strftimedateshort' => userdate($date, get_string('strftimedateshort', 'langconfig')),
-            'strftimedatetime' => userdate($date, get_string('strftimedatetime', 'langconfig')),
-            'strftimedatetimeshort' => userdate($date, get_string('strftimedatetimeshort', 'langconfig')),
-            'strftimedaydate' => userdate($date, get_string('strftimedaydate', 'langconfig')),
-            'strftimedaydatetime' => userdate($date, get_string('strftimedaydatetime', 'langconfig')),
-            'strftimedayshort' => userdate($date, get_string('strftimedayshort', 'langconfig')),
-            'strftimedaytime' => userdate($date, get_string('strftimedaytime', 'langconfig')),
-            'strftimemonthyear' => userdate($date, get_string('strftimemonthyear', 'langconfig')),
-            'strftimerecent' => userdate($date, get_string('strftimerecent', 'langconfig')),
-            'strftimerecentfull' => userdate($date, get_string('strftimerecentfull', 'langconfig')),
-            'strftimetime' => userdate($date, get_string('strftimetime', 'langconfig'))
-        );
+            2 => userdate($date, '%B %d' . $suffix . ', %Y')
+        ];
+
+        $strdateformats = [
+            'strftimedate',
+            'strftimedatefullshort',
+            'strftimedatefullshortwleadingzero',
+            'strftimedateshort',
+            'strftimedatetime',
+            'strftimedatetimeshort',
+            'strftimedatetimeshortwleadingzero',
+            'strftimedaydate',
+            'strftimedaydatetime',
+            'strftimedayshort',
+            'strftimedaytime',
+            'strftimemonthyear',
+            'strftimerecent',
+            'strftimerecentfull',
+            'strftimetime'
+        ];
+
+        foreach ($strdateformats as $strdateformat) {
+            if ($strdateformat == 'strftimedatefullshortwleadingzero') {
+                $dateformats[$strdateformat] = userdate($date, get_string('strftimedatefullshort', 'langconfig'), 99, false);
+            } else if ($strdateformat == 'strftimedatetimeshortwleadingzero') {
+                $dateformats[$strdateformat] = userdate($date, get_string('strftimedatetimeshort', 'langconfig'), 99, false);
+            } else {
+                $dateformats[$strdateformat] = userdate($date, get_string($strdateformat, 'langconfig'));
+            }
+        }
 
         return $dateformats;
     }
@@ -312,7 +329,13 @@ class element extends \mod_customcert\element {
 
         // Ok, so we must have been passed the actual format in the lang file.
         if (!isset($certificatedate)) {
-            $certificatedate = userdate($date, get_string($dateformat, 'langconfig'));
+            if ($dateformat == 'strftimedatefullshortwleadingzero') {
+                $certificatedate = userdate($date, get_string('strftimedatefullshort', 'langconfig'), 99, false);
+            } else if ($dateformat == 'strftimedatetimeshortwleadingzero') {
+                $certificatedate = userdate($date, get_string('strftimedatetimeshort', 'langconfig'), 99, false);
+            } else {
+                $certificatedate = userdate($date, get_string($dateformat, 'langconfig'));
+            }
         }
 
         return $certificatedate;

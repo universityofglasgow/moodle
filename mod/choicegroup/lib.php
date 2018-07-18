@@ -114,9 +114,9 @@ function choicegroup_get_user_answer($choicegroup, $user, $returnArray = FALSE, 
     } else {
         $user_answers = array();
     }
+    if(!is_array($choicegroup_groups) || !count($choicegroup_groups)){
+            $choicegroup_groups = choicegroup_get_groups($choicegroup);
 
-    if (!count($choicegroup_groups)) {
-        $choicegroup_groups = choicegroup_get_groups($choicegroup);
     }
 
     $groupids = array();
@@ -313,7 +313,7 @@ function choicegroup_prepare_options($choicegroup, $user, $coursemodule, $allres
 
     $cdisplay['limitanswers'] = true;
     $context = context_module::instance($coursemodule->id);
-    $answers = choicegroup_get_user_answer($choicegroup, $user, TRUE);
+    $answers = choicegroup_get_user_answer($choicegroup, $user, TRUE, true);
 
     foreach ($choicegroup->option as $optionid => $text) {
         if (isset($text)) { //make sure there are no dud entries in the db with blank text values.
