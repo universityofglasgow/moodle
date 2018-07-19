@@ -22,6 +22,10 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+
+// Some screens show 'live' progress.
+define('NO_OUTPUT_BUFFERING', true);
+
 require(dirname(__FILE__).'/../../config.php');
 require_once($CFG->dirroot.'/lib/tablelib.php');
 
@@ -30,7 +34,11 @@ $id = required_param('id', PARAM_INT); // Course id.
 $codeid = optional_param('codeid', 0, PARAM_INT);
 $action = optional_param('action', '', PARAM_ALPHA);
 
-$url = new moodle_url('/report/guenrol/index.php', array('id' => $id));
+$url = new moodle_url('/report/guenrol/index.php', array(
+    'id' => $id,
+    'codeid' => $codeid,
+    'action' => $action
+));
 
 // Page setup.
 $PAGE->set_url($url);
@@ -44,10 +52,10 @@ if (!$course = $DB->get_record('course', array('id' => $id))) {
 require_login($course);
 $context = context_course::instance($course->id);
 require_capability('report/guenrol:view', $context);
-$output = $PAGE->get_renderer('report_guenrol');;
+$output = $PAGE->get_renderer('report_guenrol');
 
-// Log. (deprecated and PITA to replace)
-// add_to_log($course->id, "course", "report guenrol", "report/guenrol/index.php?id=$course->id", $course->id);
+// Library.
+$locallib = new report_guenrol\locallib($id);
 
 $PAGE->set_title($course->shortname .': '. get_string('pluginname', 'report_guenrol'));
 $PAGE->set_heading($course->fullname);
@@ -55,130 +63,63 @@ echo $OUTPUT->header();
 echo $OUTPUT->heading( get_string('title', 'report_guenrol') . ' : ' . $course->fullname );
 
 // get the last time the course was synced
-$sql = "select max(timeupdated) as updated from {enrol_gudatabase_users} where courseid=?";
-if ($updated = $DB->get_record_sql($sql, array($id))) {
-    $lastupdate = userdate($updated->updated);
-} else {
-    $lastupdate = get_string('never', 'report_guenrol');
-}
+$lastupdate = $locallib->lastupdate();
 
 // Get the codes for this course.
-$codes = $DB->get_records( 'enrol_gudatabase_codes', array('courseid' => $id));
+list($codes, $simplecodes) = $locallib->getcodes();
 
-// convert to simple array
-$simplecodes = array();
-foreach ($codes as $code) {
-   $simplecodes[] = $code->code; 
-}
+// Actions...
+if ($action == 'sync') {
+    $locallib->sync($output, $course);
 
-// If action is 'removed'...
-if (($action=='removed') || ($action=='unenrol')) {
-
-    // Get the gudatabase enrolments in this course.
-    $sql = 'SELECT u.*, e.id AS instance from {user} u ';
-    $sql .= 'JOIN {user_enrolments} ue ON (ue.userid=u.id) ';
-    $sql .= 'JOIN {enrol} e ON (ue.enrolid=e.id) ';
-    $sql .= 'WHERE e.courseid=? AND e.enrol=? ';
-    $sql .= 'ORDER BY lastname, firstname ';
-    $users = $DB->get_records_sql($sql, array($id, 'gudatabase'));
-
-    // Get all the users who are supposed to be in this course
-    // and change to ids (for comparison).
-    $gudatabase = enrol_get_plugin('gudatabase');
-    $codeusers = $gudatabase->external_enrolments($simplecodes);
-    $usernames = array();
-    foreach ($codeusers as $codeuser) {
-        $usernames[$codeuser->UserName] = $codeuser;
-    }
-
-    // compare
-    $removed = array();
-    foreach ($users as $user) {
-        if (empty($usernames[$user->username])) {
-            $removed[$user->id] = $user;
-        }
-    }
-
-    // Display or unenrol
-    if ($action=='removed') {
-        $output->list_removed_users($id, $removed);
+} else if (($action == 'remove') || ($action == 'doremove')) {
+    $users = $locallib->get_remove_users($simplecodes, $id);
+    if ($action == 'doremove') {
+        $locallib->remove_users($users);
+        echo $output->continue_button(new \moodle_url('/report/guenrol/index.php', ['id' => $course->id]));
     } else {
-        foreach ($removed as $remove) {
-            $instance = $DB->get_record('enrol', array('id' => $remove->instance));
-            $gudatabase->unenrol_user($instance, $remove->id);
+        $userlist = new report_guenrol\output\userlist($course, $users, get_string('removelist', 'report_guenrol'));
+        echo $output->render_userlist($userlist);
+        if ($users) {
+            $remove = new \single_button(new \moodle_url('/report/guenrol/index.php', ['id' => $course->id, 'action' => 'doremove']), get_string('remove', 'report_guenrol'));
+            $cancel = new \single_button(new \moodle_url('/report/guenrol/index.php', ['id' => $course->id]), get_string('cancel'));
+            echo $output->confirm(get_string('oktoremove', 'report_guenrol'), $remove, $cancel);
+        } else {
+            echo $output->continue_button(new \moodle_url('/report/guenrol/index.php', ['id' => $course->id]));
         }
-        $output->removed($id);
     }
-} else if (empty($codeid)) {
-    $output->menu($id, $codes, $course->visible, $lastupdate);
+
+} else if (($action == 'revert') || ($action == 'dorevert')) {
+    if ($action == 'dorevert') {
+        $users = $locallib->get_code_users($simplecodes, $id);
+        $locallib->get_instances($users);
+        $locallib->remove_users($users);
+        echo $output->continue_button(new \moodle_url('/report/guenrol/index.php', ['id' => $course->id]));
+    } else {
+            $revert = new \single_button(new \moodle_url('/report/guenrol/index.php', ['id' => $course->id, 'action' => 'dorevert']), get_string('revert', 'report_guenrol'));
+            $cancel = new \single_button(new \moodle_url('/report/guenrol/index.php', ['id' => $course->id]), get_string('cancel'));
+            echo $output->confirm(get_string('oktorevert', 'report_guenrol'), $revert, $cancel);
+    }
+    
+} else if (empty($codeid) && empty($action)) {
+    $menu = new report_guenrol\output\menu(
+        $course,
+        $codes,
+        $lastupdate
+    );
+    echo $output->render_menu($menu);
 } else {
 
-    // Get enrolment info.
-    if ($codeid > -1) {
-        $selectedcode = $codes[ $codeid ];
-    } else {
-        $selectedcode = null;
+    if ($codeid) {
+        $simplecodes = [$simplecodes[$codeid]];
     }
 
-    // Get users.
-    if ($codeid > -1) {
-        $codename = $codes[$codeid]->code;
-        $coursename = $codes[$codeid]->coursename;
-        $subjectname = $codes[$codeid]->subjectname;
-        $users = $DB->get_records('enrol_gudatabase_users', array('courseid' => $id, 'code' => $codename));
-    } else {
-        $users = array();
-        foreach ($codes as $code) {
-            $codeusers = $DB->get_records('enrol_gudatabase_users', array('courseid' => $id, 'code' => $code->code));
-            $users = array_merge($users, $codeusers);
-        }
-        $codename = '';
-        $coursename = '';
-        $subjectname = '';
-    }
-
-    // Convert to unique userid table based on code.
-    $uniqueusers = array();
-    foreach ($users as $user) {
-        if (empty($uniqueusers[ $user->userid ])) {
-            $moodleuser = $DB->get_record('user', array('id' => $user->userid));
-            $uniqueusers[ $user->userid ] = $user;
-            $uniqueusers[ $user->userid ]->firstname = $moodleuser->firstname;
-            $uniqueusers[ $user->userid ]->lastname = $moodleuser->lastname;
-            $uniqueusers[ $user->userid ]->fullname = fullname( $moodleuser );
-            $uniqueusers[ $user->userid ]->deleted = $moodleuser->deleted;
-            $uniqueusers[ $user->userid ]->username = $moodleuser->username;
-        } else {
-            $uniqueusers[ $user->userid]->code .= ", {$user->code}";
-        }
-    }
-
-    // Sort.
-    usort( $uniqueusers, 'report_guenrol_sort' );
-
-    // Some information.
-    $output->code_info($codes, $codeid, $codename, $coursename, $subjectname);
-
-    // List users.
-    $output->list_users($uniqueusers);
+    // Get list of users
+    $users = $locallib->get_code_users($simplecodes, $id);
+    $userlist = new report_guenrol\output\userlist($course, $users, get_string('userlist', 'report_guenrol'));
+    echo $output->render_userlist($userlist);
+    echo $output->continue_button(new \moodle_url('/report/guenrol/index.php', ['id' => $course->id]));
 }
 
 echo $OUTPUT->footer();
 
-// Callback function for sort.
-function report_guenrol_sort( $a, $b ) {
-    $afirstname = strtolower( $a->firstname );
-    $alastname = strtolower( $a->lastname );
-    $bfirstname = strtolower( $b->firstname );
-    $blastname = strtolower( $b->lastname );
-
-    if ($alastname == $blastname) {
-        if ($afirstname == $bfirstname) {
-            return 0;
-        } else {
-            return ($afirstname < $bfirstname) ? -1 : 1;
-        }
-    } else {
-        return ($alastname < $blastname) ? -1 : 1;
-    }
-}

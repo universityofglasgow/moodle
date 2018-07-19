@@ -34,6 +34,7 @@ function local_gumenu_extend_settings_navigation(settings_navigation $nav, conte
     $caps = array(
         'report/anonymous:view',
         'report/guid:courseupload',
+        'report/guenrol:view',
         'moodle/course:enrolconfig',
         'moodle/course:enrolreview',
         'local/corehr:config',
@@ -74,6 +75,18 @@ function local_gumenu_extend_settings_navigation(settings_navigation $nav, conte
             'type' => navigation_node::TYPE_CUSTOM,
             'action' => new moodle_url('/report/anonymous/index.php', array('id' => $courseid)),
             'key' => 'uofganonymous',
+        );
+        $uofgnode->add_node(new navigation_node($props));
+    }
+
+    // Add a link to anonymous report
+    if (has_capability('report/guenrol:view', $context)) {
+        $props = array(
+            'text' => get_string('pluginname', 'report_guenrol'),
+            'shorttext' => 'uofgenrol',
+            'type' => navigation_node::TYPE_CUSTOM,
+            'action' => new moodle_url('/report/guenrol/index.php', array('id' => $courseid)),
+            'key' => 'uofgenrol',
         );
         $uofgnode->add_node(new navigation_node($props));
     }

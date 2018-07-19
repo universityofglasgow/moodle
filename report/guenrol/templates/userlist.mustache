@@ -1,0 +1,29 @@
+
+{{# isusers }}
+    <div class="alert alert-info">{{ heading }}</div>
+    <table class="table table-striped">
+        <tbody>
+            {{# users }}
+                <tr>
+                    <td>
+                        <a href="{{{ link }}}">{{ firstname }} {{lastname}}</a>
+                    </td>
+                    <td>
+                        {{# enrolled }}
+                            <span class="badge badge-primary">{{# str }}enrolled, report_guenrol{{/ str }}</span>
+                        {{/ enrolled }}
+                        {{^ enrolled }}
+                            <span class="badge badge-warning">{{# str }}notenrolled, report_guenrol{{/ str }}</span>
+                        {{/ enrolled }}
+                   </td>
+                    <td>{{ email }}</td>
+                    <td>{{ code }}</td>
+                </tr>
+            {{/ users }}
+        </tbody>
+    </table>
+{{/ isusers }}
+
+{{^ isusers }}
+    <div class="alert alert-warning">{{# str }}nousers, report_guenrol{{/ str }}</div>
+{{/ isusers }}
