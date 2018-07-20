@@ -62,10 +62,17 @@ class logload extends \core\task\scheduled_task {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPY_CONNECTTIMEOUT, 5);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
         $data = curl_exec($ch);
+        $error = curl_errno($ch);
         curl_close($ch);
-echo "<pre>"; var_dump($data); die;
+        if ($error) {
+            mtrace('failed to get loads from ' . $host . ', error was ' . $error);
+            return false;
+        } else {
+            $avgs = explode(PHP_EOL, $data);
+            return $avgs;
+        }
     }
 
     public function execute() {
@@ -77,7 +84,14 @@ echo "<pre>"; var_dump($data); die;
 
         // Get loads for each host
         if (trim($cfghosts)) {
-
+            foreach ($hosts as $host) {
+                if (trim($host)) {
+                    $avgs = $this->get_remote($host);
+                    if ($avgs) {
+                        $this->save_load($host, $avgs[0], $avgs[1], $avgs[2]);
+                    }
+                }
+            }
         } else {
 
             // Just this server then
