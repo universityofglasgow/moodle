@@ -168,6 +168,44 @@ class locallib {
     }
 
     /**
+     * Disable auto enrolment
+     * @param array $codes
+     */
+    public function disable_enrolment($codes) {
+        global $DB;
+
+        // Get course - we'll probably need it
+        $course = $DB->get_record('course', ['id' => $this->courseid], '*', MUST_EXIST);
+
+        foreach ($codes as $code) {
+            if ($code->location == 'plugin') {
+
+                // Disable plugin instance
+                $instance = $DB->get_record('enrol', ['id' => $code->instanceid], '*', MUST_EXIST);
+                $instance->status = 1;
+                $DB->update_record('enrol', $instance);
+            } else if ($code->location == 'shortname') {
+
+                // Add underscores to shortname (may have to add more than one).
+                $underscore = '_';
+                while ($DB->get_record('course', ['shortname' => $underscore . $course->shortname])) {
+                    $underscore .= '_';
+                    if ($underscore == '__________') {
+                        break;
+                    }
+                }
+                $course->shortname = $underscore . $course->shortname;
+                $DB->update_record('course', $course);
+            } else if ($code->location == 'idnumber') {
+
+                // Modify just this string
+                $course->idnumber = str_replace($code->code, '_' . $code->code, $course->idnumber);
+                $DB->update_record('course', $course); 
+            }
+        }
+    }
+
+    /**
      * Get user enrolment instances
      * @param array $users
      */
@@ -190,9 +228,12 @@ class locallib {
     /**
      * Use list generated in get_remove_users to unenrol them from the course
      * @param array $users
+     * @return int $count number unenrolled
      */
     public function remove_users($users) {
         global $DB;
+
+        $count = 0;
 
         $instances = array();
         $gudatabase = enrol_get_plugin('gudatabase');
@@ -202,8 +243,11 @@ class locallib {
                     $instances[$user->instance] = $DB->get_record('enrol', ['id' => $user->instance], '*', MUST_EXIST);
                 }
                 $gudatabase->unenrol_user($instances[$user->instance], $user->id);
+                $count++;
             }
         }
+
+        return $count;
     }
 
     /**

@@ -93,7 +93,8 @@ if ($action == 'sync') {
     if ($action == 'dorevert') {
         $users = $locallib->get_code_users($simplecodes, $id);
         $locallib->get_instances($users);
-        $locallib->remove_users($users);
+        $count = $locallib->remove_users($users);
+        $locallib->disable_enrolment($codes);
         echo $output->continue_button(new \moodle_url('/report/guenrol/index.php', ['id' => $course->id]));
     } else {
             $revert = new \single_button(new \moodle_url('/report/guenrol/index.php', ['id' => $course->id, 'action' => 'dorevert']), get_string('revert', 'report_guenrol'));

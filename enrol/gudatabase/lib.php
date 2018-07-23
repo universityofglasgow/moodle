@@ -801,7 +801,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
             $idnumber = $course->idnumber;
             $codes = $this->split_code($idnumber);
             $this->log_codes($codes, 'idnumber');
-            $shortnamecode = clean_param($shortname, PARAM_ALPHANUM);
+            $shortnamecode = clean_param($shortname, PARAM_RAW);
             $this->log_codes($shortnamecode, 'shortname');
             $codes[] = $shortnamecode;
         } else {
@@ -809,14 +809,16 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         }
 
         // Add codes from customtext1.
-        $morecodes = isset($instance->customtext1) ? $instance->customtext1 : '';
-        $morecodes = str_replace("\n\r", "\n", $morecodes);
-        $mcodes = explode("\n", $morecodes);
-        foreach ($mcodes as $index => $mcode) {
-            $mcodes[$index] = clean_param( trim($mcode), PARAM_TEXT );
+        $morecodes = isset($instance->customtext1) && (!$instance->status)? $instance->customtext1 : '';
+        if ($morecodes) {
+            $morecodes = str_replace("\n\r", "\n", $morecodes);
+            $mcodes = explode("\n", $morecodes);
+            foreach ($mcodes as $index => $mcode) {
+                $mcodes[$index] = clean_param( trim($mcode), PARAM_TEXT );
+            }
+            $this->log_codes($mcodes, 'plugin', $instance->id);
+            $codes = array_merge($codes, $mcodes);
         }
-        $this->log_codes($mcodes, 'plugin', $instance->id);
-        $codes = array_merge($codes, $mcodes);
         $verifiedcodes = $this->save_codes($course);
         return $verifiedcodes;
     }
