@@ -79,7 +79,8 @@ if ($ADMIN->fulltree) {
         $PAGE->requires->string_for_js('upgradeavailable', 'turnitintooltwo');
 
         if (is_siteadmin()) {
-            $data = turnitintooltwo_updateavailable($version);
+            //$data = turnitintooltwo_updateavailable($version);
+            $data['update'] = false;
 
             if ($data['update']) {
                 $upgrade = html_writer::tag('a', get_string('upgradeavailable', 'turnitintooltwo'), array('href' => $data['file']));
