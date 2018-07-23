@@ -24,6 +24,8 @@
 
 namespace local_rollover;
 
+require_once($CFG->libdir . '/coursecatlib.php');
+
 // Overall rollover processing state.
 define('ROLLOVER_STATE_DISABLED', 1); // Completely disabled
 define('ROLLOVER_STATE_START', 2); // Just enabled but haven't done anything yet

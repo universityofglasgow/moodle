@@ -38,6 +38,7 @@ $string['privacy:metadata:local_corehr_log:enddate'] = 'The date that the course
 $string['privacy:metadata:local_corehr_log:personnelno'] = 'The Personnel/Staff number of the user completing the course';
 $string['privacy:metadata:local_corehr_log:userid'] = 'The ID of the user who is logged in CoreHR completion.';
 $string['privacy:metadata:local_corehr_log:wsstatus'] = 'The status of the interaction with the CoreHR webservice';
+$string['send'] = 'Send data to CoreHR';
 $string['testpass'] = 'Web service connections tests OK';
 $string['wsdl'] = 'WSDL';
 $string['username'] = 'SOAP username';

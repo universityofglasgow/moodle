@@ -42,6 +42,34 @@ class staffTrainingRecord {
 }
 
 /**
+ * Get the retry delay for given retry value
+ * @param $count retry count
+ * @return int seconds (since last try)
+ */
+function local_corehr_get_delay($count) {
+    $counts = [
+        0 => 0, // immediately
+        1 => 0, // immediately
+        2 => 300, // 5 mins
+        3 => 3600, // 1 hour
+        4 => 7200, // 2 hours
+        5 => 14400, // 4 hours
+        6 => 28800, // 8 hours
+        7 => 57600, // 16 hours
+        8 => 86400, // 1 day
+        9 => 172800, // 2 days
+        10 => 345600, // 4 days
+        11 => 604800, // 1 week
+        12 => 1209600, // 2 weeks
+    ];
+    if (array_key_exists($count, $counts)) {
+        return $counts[$count];
+    } else {
+        return end($counts);
+    }
+}
+
+/**
  * A very basic check that the web service details are correct
  * @return string informative message
  */
@@ -97,6 +125,30 @@ function local_corehr_add($staffTrainingRecord) {
 }
 
 /**
+ * Log details
+ * @param object $user
+ * @param object $completion
+ * @param int $courseid
+ * @param string $coursecode
+ * @param string $status
+ */
+function local_corehr_log($user, $completion, $courseid, $coursecode, $status) {
+    global $DB;
+
+    // Record the details
+    $corehr = new stdClass;
+    $corehr->userid = $user->id;
+    $corehr->courseid = $courseid;
+    $corehr->personnelno = $user->idnumber;
+    $corehr->coursecode = $coursecode;
+    $corehr->trainingstatus = 'CO';
+    $corehr->startdate = date('dmY', $completion->timestarted);
+    $corehr->enddate = date('dmY', $completion->timecompleted);
+    $corehr->wsstatus = $status;
+    $DB->insert_record('local_corehr_log', $corehr);
+}
+
+/**
  * write completion data to CoreHR web service
  * @param int $courseid Course ID of completed course
  * @param int $userid User ID of completing user
@@ -128,36 +180,70 @@ function local_corehr_course_completed($courseid, $userid) {
     }
     $completion = array_pop($completions);
 
+    // Check if this user has already completed this
+    // We don't make them do it twice (for the same course id)
+    // If we really want them to do it again then create a new course. 
+    if ($status = $DB->get_record('local_corehr_status', ['userid' => $userid, 'courseid' => $courseid, 'status' => 'OK'])) {
+        local_corehr_log($user, $completion, $courseid, $coursecode, "Completed " . $status->id);
+        return true;
+    }
+
+    // Write details to status record
+    $status = new stdClass;
+    $status->userid = $userid;
+    $status->courseid = $courseid;
+    $status->personnelno = $user->idnumber;
+    $status->coursecode = $coursecode;
+    $status->completed = time();
+    $status->lasttry = time();
+    $status->retrycount = 0;
+    $status->status = 'pending';
+    $DB->insert_record('local_corehr_status', $status);
+
+    return;
+}
+
+/**
+ * Send data to CoreHR web service
+ * @param object $status from local_corehr_status table
+ * @return string data returned from web service
+ */
+function local_corehr_send($status) {
+    global $DB;
+
+    mtrace('Sending to corehr for userid = ' . $status->userid . ', coursecode = ' . $status->coursecode . ', retry = ' . $status->retrycount);
+
     // staffTrainingRecord 
     $staffTrainingRecord = new staffTrainingRecord(
-        $user->idnumber,
-        $coursecode,
+        $status->personnelno,
+        $status->coursecode,
         'CO',
-        date('dmY', $completion->timestarted),
-        date('dmY', $completion->timecompleted)
+        date('dmY', $status->completed),
+        date('dmY', $status->completed)
     );
 
     // Call CoreHR API to log completion.
     // We'll skip this if there is no personnel number
-    if (empty($user->idnumber)) {
+    if (empty($status->personnelno)) {
         mtrace("local_corehr: skipping web service for user (id=$userid) with no personnel number");
-        $status = "No Personnel Number";
+        $message = "No Personnel Number";
     } else {
-        $status = local_corehr_add($staffTrainingRecord);
-        mtrace("local_corehr: data sent to web service, status is $status");
+        $message = local_corehr_add($staffTrainingRecord);
+        mtrace("local_corehr: data sent to web service, status is $message");
     }
 
     // Record the details
     $corehr = new stdClass;
-    $corehr->userid = $userid;
-    $corehr->courseid = $courseid;
-    $corehr->personnelno = $user->idnumber;
-    $corehr->coursecode = $coursecode;
+    $corehr->userid = $status->userid;
+    $corehr->courseid = $status->courseid;
+    $corehr->personnelno = $status->personnelno;
+    $corehr->coursecode = $status->coursecode;
     $corehr->trainingstatus = 'CO';
-    $corehr->startdate = date('dmY', $completion->timestarted);
-    $corehr->enddate = date('dmY', $completion->timecompleted);
-    $corehr->wsstatus = $status;
-    $DB->insert_record('local_corehr_log', $corehr);
+    $corehr->startdate = date('dmY', $status->completed);
+    $corehr->enddate = date('dmY', time());
+    $corehr->wsstatus = $message;
+
+    return $message;
 }
 
 /** 
