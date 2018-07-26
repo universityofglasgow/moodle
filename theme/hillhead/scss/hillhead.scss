@@ -634,6 +634,10 @@ body.path-course.pagelayout-incourse #region-main .card-block {
 
 // Course sections
 
+.card-deck .myoverviewimg {
+    display: none;
+}
+
 body.path-course-view .course-content > ul > li.section {
     background-color: $gu-island-back;
     border: 1px solid $gu-island-border !important;
@@ -1561,7 +1565,7 @@ body.hillhead-night .card .block-heading, body.hillhead-night.format-topics .cou
     background-color: #274163;
 }
 
-.course-content>ul>li.section .section-modchooser {
+body.hillhead-night .course-content>ul>li.section .section-modchooser {
     border-color: #121E30;
 }
 
@@ -1627,7 +1631,7 @@ body.hillhead-night .nav-tabs .nav-link:hover, body.hillhead-night .nav-tabs .na
     border-color: #274163;
 }
 
-body.hillhead-night table.grading-details th, body.hillhead-night table.personal-deadline-details th, body.hillhead-night table.grading-details td, body.hillhead-night table.personal-deadline-details, td {
+body.hillhead-night table.grading-details th, body.hillhead-night table.personal-deadline-details th, body.hillhead-night table.grading-details td, body.hillhead-night table.personal-deadline-details, body.hillhead-night td {
     border-color: #274163;
 }
 
@@ -1716,7 +1720,7 @@ body.hillhead-night .page-item.active a {
     border-color: #274163;
 }
 
-body.hillhead-night .page-item.disabled span {
+body.hillhead-night .page-item.disabled span, .page-item.disabled .page-link {
     background: transparent;
     color: #274163;
     border-color: #274163;
