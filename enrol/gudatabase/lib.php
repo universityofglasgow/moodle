@@ -54,9 +54,6 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
     // Need to store this for error function.
     protected $trace;
 
-    // Annotated list of codes stored for reporting.
-    protected $advcodes = [];
-
     /**
      * Is it possible to delete enrol instance via standard UI?
      *
@@ -611,16 +608,17 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
      * so we can use in cron and reports
      * NB: we will check it exists here too
      * @param object $course
+     * @param array list of 'enhanced' codes
      * @return array list of 'real' codes
      */
-    public function save_codes($course) {
+    public function save_codes($course, $advcodes) {
         global $CFG, $DB;
 
         // Track codes that are deemed to exist.
         $realcodes = array();
 
         // Run through codes finding data.
-        foreach ($this->advcodes as $advcode) {
+        foreach ($advcodes as $advcode) {
             $code = $advcode->code;
             $coursedata = $this->external_coursedata( $code );
 
@@ -662,7 +660,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         // Now need to check if there are entries for that course
         // that should be deleted.
         $codes = [];
-        foreach ($this->advcodes as $advcode) {
+        foreach ($advcodes as $advcode) {
             $codes[] = $advcode->code;
         }
         $entries = $DB->get_records( 'enrol_gudatabase_codes', array( 'courseid' => $course->id ));
@@ -766,11 +764,12 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
      * Add the codes to a list also containining info
      * about how they were defined. Saved in a table
      * and used for reporting. 
+     * @param array $advcodes enhanced codes
      * @param string/array $codes of codes
      * @param string $location (shortname, idnumber, plugin)
      * @param int $instanceid (of plugin, if appropriate)
      */
-    protected function log_codes($codes, $location, $instanceid = 0) {
+    protected function log_codes(&$advcodes, $codes, $location, $instanceid = 0) {
         if (!$codes) {
             return;
         }
@@ -784,7 +783,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
             $advcode->instanceid = $instanceid;
            
             // Mad key is used to make sure we only include each unique code once.  
-            $this->advcodes[$code . $location . $instanceid] = $advcode;
+            $advcodes[$code . $location . $instanceid] = $advcode;
         }
     }
 
@@ -795,14 +794,17 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
      */
     public function get_codes($course, $instance) {
 
+        // Variables
+        $advcodes = [];
+
         // If customint3 is false then no settings codes.
         if (!empty($instance->customint3)) {
             $shortname = $course->shortname;
             $idnumber = $course->idnumber;
             $codes = $this->split_code($idnumber);
-            $this->log_codes($codes, 'idnumber');
+            $this->log_codes($advcodes, $codes, 'idnumber');
             $shortnamecode = clean_param($shortname, PARAM_RAW);
-            $this->log_codes($shortnamecode, 'shortname');
+            $this->log_codes($advcodes, $shortnamecode, 'shortname');
             $codes[] = $shortnamecode;
         } else {
             $codes = array();
@@ -816,10 +818,10 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
             foreach ($mcodes as $index => $mcode) {
                 $mcodes[$index] = clean_param( trim($mcode), PARAM_TEXT );
             }
-            $this->log_codes($mcodes, 'plugin', $instance->id);
+            $this->log_codes($advcodes, $mcodes, 'plugin', $instance->id);
             $codes = array_merge($codes, $mcodes);
         }
-        $verifiedcodes = $this->save_codes($course);
+        $verifiedcodes = $this->save_codes($course, $advcodes);
         return $verifiedcodes;
     }
 
