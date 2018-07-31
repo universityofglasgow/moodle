@@ -302,7 +302,7 @@ $colourOptions = Array(
         'o'=>'theme_hillhead_contrast',
         'v'=>'clear',
         'c'=>'hh-acc-th-de',
-        't'=>'Bright Mode',
+        't'=>'Day Mode',
         'i'=>'fa-sun'
     ),
     Array(
