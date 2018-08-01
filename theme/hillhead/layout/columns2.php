@@ -303,14 +303,14 @@ $colourOptions = Array(
         'v'=>'clear',
         'c'=>'hh-acc-th-de',
         't'=>'Day Mode',
-        'i'=>'fa-sun'
+        'i'=>'fa-sun-o'
     ),
     Array(
         'o'=>'theme_hillhead_contrast',
         'v'=>'night',
         'c'=>'hh-acc-th-nt',
         't'=>'Night Mode',
-        'i'=>'fa-moon'
+        'i'=>'fa-moon-o'
     ),
 );
 $accessibleColourOptions = Array(
@@ -528,7 +528,7 @@ if($theme_hillhead_stripstyles == 'on') {
             'o'=>'theme_hillhead_stripstyles',
             'v'=>'clear',
             'c'=>'hh-acc-ss-of',
-            't'=>'Enable Custom Fonts &amp; Colours',
+            't'=>'Show Custom Fonts &amp; Colours',
             'i'=>'fa-minus-square'
         )
     );
@@ -538,7 +538,7 @@ if($theme_hillhead_stripstyles == 'on') {
             'o'=>'theme_hillhead_stripstyles',
             'v'=>'on',
             'c'=>'hh-acc-ss-of',
-            't'=>'Disable Custom Fonts &amp; Colours',
+            't'=>'Don\'t Show Custom Fonts &amp; Colours',
             'i'=>'fa-plus-square'
         )
     );

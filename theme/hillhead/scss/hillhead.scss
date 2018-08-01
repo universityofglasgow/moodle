@@ -1521,8 +1521,7 @@ body.hillhead-bold * {
 #hh-acc-fb-of { font-weight: 300 !important; }
 
 .currentlySpeakingHighlight {
-    background-color: #FEC34E !important;
-    color: #000 !important;
+    text-decoration: underline overline !important;
 }
 
 //Night Mode!
