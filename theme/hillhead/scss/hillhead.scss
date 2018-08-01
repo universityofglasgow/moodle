@@ -1134,7 +1134,7 @@ body#page-user-profile #region-main > .card-block .node_category .editprofile, b
     margin-bottom: 20px !important;
 }
 
-.alert i {
+.alert i.fa {
     display: block;
     float: left;
     margin-right: 0.2em;
@@ -1144,7 +1144,7 @@ body#page-user-profile #region-main > .card-block .node_category .editprofile, b
     line-height: 1.5;
 }
 
-.alert span {
+.alert span.content {
     display: block;
     margin-left: 1.6em;
 }
