@@ -208,10 +208,19 @@ class data_requests_table extends table_sql {
                 break;
         }
 
+        if ($status == api::DATAREQUEST_STATUS_COMPLETE) {
+            $userid = $data->foruser->id;
+            $usercontext = \context_user::instance($userid, IGNORE_MISSING);
+            if ($usercontext && api::can_download_data_request_for_user($userid, $data->requestedbyuser->id)) {
+                $actions[] = api::get_download_link($usercontext, $requestid);
+            }
+        }
+
         $actionsmenu = new action_menu($actions);
         $actionsmenu->set_menu_trigger(get_string('actions'));
         $actionsmenu->set_owner_selector('request-actions-' . $requestid);
         $actionsmenu->set_alignment(\action_menu::TL, \action_menu::BL);
+        $actionsmenu->set_constraint('[data-region=data-requests-table] > .no-overflow');
 
         return $OUTPUT->render($actionsmenu);
     }
