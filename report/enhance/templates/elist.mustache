@@ -29,38 +29,35 @@
     <label for="filterstatus">{{# str }}filterstatus, report_enhance{{/ str }}</label>
     {{{ status }}}
 </div>
-
-<table class="table">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Submitted by</th>
-            <th>Summary</th>
-            <th>Submission date</th>
-            <th>Status</th>
-            <th>&nbsp;</th>
-        </tr>
-    </thead>
-    <tbody>
-        {{# requests }}
-            <tr>
-                <td>{{ id }}</td>
-                <td>{{ username }}</td>
-                <td>{{ headline }}</td>
-                <td>{{ userdate }}</td>
-                <td>{{ statusformatted }}</td>
-                <td>
-                    <a href="{{{ more }}}" class="btn btn-success btn-sm">More...</a>
-                    {{# allowedit }}
-                        <a href="{{{ link }}}" class="btn btn-primary btn-sm">Edit...</a>
-                    {{/ allowedit }}
-                    <a href="{{{ review }}}" class="btn btn-primary btn-sm">Review...</a>
-                </td>
-            </tr>
-        {{/ requests }}
-    </tbody>
-</table>
-
-<div>
-    <a href="{{ formurl }}" class="btn btn-info">New request</a>
 </div>
+</div>
+<div class="enhancement-list">
+    {{# requests }}
+        <div class="card m-t-1 {{ cardclasses }}">
+            <div class="holder">
+            <div class="status-icon status-{{ statuscolour }}">
+                    <span class="statusicon">
+                        <i class="fa fa-{{ statusicon }}"></i>
+                    </span>
+                    <span class="statustext">{{ statusformatted }}</span>
+                
+                </div>
+                <div class="status-description">
+                    <h4 class="headline">{{ headline }}</h4>
+                    <p class="information">Submitted {{ timeago }} ago by {{username}} </p>
+                    <div class="media-footer">
+                        <ul class="enhancement-links">
+                            <li><a href="{{{ more }}}"><i class="fa fa-info-circle"></i> More Information</a></li>
+                            {{# allowedit }}
+                            <li><a href="{{{ link }}}"><i class="fa fa-pencil"></i> Edit</a></li>
+                            {{/ allowedit }}
+                            <li><a href="{{{ review }}}"><i class="fa fa-list"></i> Review</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {{/ requests }}
+</div>
+
+<a href="{{ formurl }}" class="btn btn-block btn-lg btn-success m-t-1"><i class="fa fa-plus-circle"></i> New request</a>

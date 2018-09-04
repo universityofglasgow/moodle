@@ -53,7 +53,7 @@ class elist implements renderable, templatable {
     }
 
     private function format_requests($requests) {
-        global $DB;
+        global $DB, $USER;
 
         $status = new \report_enhance\status();
 
@@ -61,11 +61,23 @@ class elist implements renderable, templatable {
             $user = $DB->get_record('user', array('id' => $request->userid), '*', MUST_EXIST);
             $request->username = fullname($user);
             $request->userdate = userdate($request->timecreated);
+            $request->timeago = $this->ago($request->timecreated);
             $request->statusformatted = $status->getStatus($request->status);
+            $request->statusicon = $status->getStatusIcon($request->status);
+            $request->statuscolour = $status->getStatusColour($request->status);
             $request->link = new \moodle_url('/report/enhance/edit.php', array('courseid' => $this->course->id, 'id' => $request->id));
             $request->more = new \moodle_url('/report/enhance/more.php', array('courseid' => $this->course->id, 'id' => $request->id));
             $request->review = new \moodle_url('/report/enhance/review.php', array('courseid' => $this->course->id, 'id' => $request->id));
             $request->allowedit = $request->status == 1;
+            
+            // This really should go into its own function once I find the best place to put it.
+            
+            $requestClasses = Array();
+            $requestClasses[] = 'filter-status-'.$request->status;
+            if($request->userid == $USER->id) {
+                $requestClasses[] = 'filter-me';
+            }
+            $request->cardclasses = implode(" ", $requestClasses);
         }
 
         return $requests;
@@ -82,6 +94,29 @@ class elist implements renderable, templatable {
             'status' => $output->single_select('', 'filterstatus', $this->statuses, '', array('' => 'choosedots'), null, ['class' => 'form-control']),
         ];
     }
-
+    
+    public static function ago($ptime) {
+        $etime = time() - $ptime;
+        
+        if ($etime < 1) {
+            return '0 seconds';
+        }
+        
+        $a = array( 12 * 30 * 24 * 60 * 60  =>  'year',
+                    30 * 24 * 60 * 60       =>  'month',
+                    7 * 24 * 60 * 60 		=>  'week',
+                    24 * 60 * 60            =>  'day',
+                    60 * 60                 =>  'hour',
+                    60                      =>  'minute',
+                    1                       =>  'second'
+                    );
+        
+        foreach ($a as $secs => $str) {
+            $d = $etime / $secs;
+            if ($d >= 1) {
+                $r = round($d);
+                return $r . ' ' . $str . ($r > 1 ? 's' : '');
+            }
+        }
+    }
 }
-

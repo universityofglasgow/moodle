@@ -18,6 +18,28 @@ class status {
             7 => get_string('complete', 'report_enhance'),
             8 => get_string('rejected', 'report_enhance'),
         );
+        
+        $this->statusicons = array(
+            1 => 'star-o',
+            2 => 'clock-o',
+            3 => 'gavel',
+            4 => 'info-circle',
+            5 => 'thumbs-o-up',
+            6 => 'gear',
+            7 => 'check-circle',
+            8 => 'thumbs-o-down',
+        );
+        
+        $this->statusclass = array(
+            1 => 'info',
+            2 => 'good',
+            3 => 'wait',
+            4 => 'info',
+            5 => 'good',
+            6 => 'wait',
+            7 => 'good',
+            8 => 'fail',
+        );
     }
 
     public function getStatuses() {
@@ -27,5 +49,14 @@ class status {
     public function getStatus($id) {
         return $this->statuses[$id];
     }
+    
+    public function getStatusIcon($id) {
+        return $this->statusicons[$id];
+    }
+    
+    public function getStatusColour($id) {
+        return $this->statusclass[$id];
+    }
+
 
 }
