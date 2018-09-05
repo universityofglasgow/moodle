@@ -31,6 +31,7 @@ $courseid = required_param('courseid', PARAM_INT);
 $url = new moodle_url('/report/enhance/index.php', ['courseid' => $courseid]);
 $PAGE->set_url($url);
 $PAGE->set_pagelayout('admin');
+$PAGE->requires->js_call_amd('report_enhance/filter', 'init');
 
 // Find course
 $course = $DB->get_record('course', array('id' => $courseid), '*', MUST_EXIST);

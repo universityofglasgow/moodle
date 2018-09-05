@@ -26,14 +26,35 @@
 <h1>VLE Enhancement requests</h1>
 
 <div class="form-group">
-    <label for="filterstatus">{{# str }}filterstatus, report_enhance{{/ str }}</label>
-    {{{ status }}}
+    <ul class="nav nav-pills filter-list">
+        <li class="nav-item">
+            <a class="nav-link active" href="#" data-filter=".filter-all"><i class="fa fa-list"></i> All Requests</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#" data-filter=".filter-me"><i class="fa fa-user"></i> Submitted By Me</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#" data-filter=".filter-status-7"><i class="fa fa-check-circle"></i> Completed</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#" data-filter=".filter-status-5, .filter-status-6"><i class="fa fa-gear"></i> In Development</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#" data-filter=".filter-status-8"><i class="fa fa-thumbs-o-down"></i> Rejected</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#" data-filter=".filter-status-2, .filter-status-3, filter-status-4"><i class="fa fa-gavel"></i> Under Review</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#" data-filter=".filter-status-1"><i class="fa fa-star-o"></i> New</a>
+        </li>
+    </ul>
 </div>
 </div>
 </div>
 <div class="enhancement-list">
     {{# requests }}
-        <div class="card m-t-1 {{ cardclasses }}">
+        <div class="card m-t-1 filter-all {{ cardclasses }}">
             <div class="holder">
             <div class="status-icon status-{{ statuscolour }}">
                     <span class="statusicon">
