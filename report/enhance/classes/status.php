@@ -17,6 +17,7 @@ class status {
             6 => get_string('developmentinprogress', 'report_enhance'),
             7 => get_string('complete', 'report_enhance'),
             8 => get_string('rejected', 'report_enhance'),
+            9 => get_string('desirable', 'report_enhance'),
         );
         
         $this->statusicons = array(
@@ -28,6 +29,7 @@ class status {
             6 => 'gear',
             7 => 'check-circle',
             8 => 'thumbs-o-down',
+            9 => 'heart',
         );
         
         $this->statusclass = array(
@@ -39,6 +41,7 @@ class status {
             6 => 'wait',
             7 => 'good',
             8 => 'fail',
+            9 => 'wait',
         );
     }
 

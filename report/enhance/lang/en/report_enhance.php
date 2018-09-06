@@ -34,6 +34,7 @@ $string['benefits'] = 'Benefits';
 $string['complete'] = 'Complete';
 $string['department'] = 'College or School';
 $string['description'] = 'Description';
+$string['desirable'] = 'Desirable';
 $string['developmentinprogress'] = 'Accepted, Development in Progress';
 $string['enhance:view'] = 'View list of enhancement requests';
 $string['filterstatus'] = 'Filter on status';
