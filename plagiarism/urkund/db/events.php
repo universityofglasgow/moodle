@@ -45,5 +45,10 @@ $observers = array (
     array(
         'eventname' => '\mod_assign\event\assessable_submitted',
         'callback' => 'plagiarism_urkund_observer::assignsubmission_submitted'
-    )
+    ),
+    array(
+        'eventname' => '\mod_coursework\event\assessable_uploaded',
+        'callback' => 'plagiarism_urkund_observer::coursework_submitted'
+        
+    ),
 );

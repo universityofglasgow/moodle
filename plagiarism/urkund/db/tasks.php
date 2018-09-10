@@ -52,14 +52,5 @@ $tasks = array(
         'day' => '*',
         'dayofweek' => '0',
         'month' => '*'
-    ),
-    array(
-        'classname' => 'plagiarism_urkund\task\resubmit_on_close',
-        'blocking' => 0,
-        'minute' => '10',
-        'hour' => '2',
-        'day' => '*',
-        'dayofweek' => '*',
-        'month' => '*'
     )
 );

@@ -144,7 +144,7 @@ function xmldb_plagiarism_urkund_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2016061600, 'plagiarism', 'urkund');
     }
 
-    if ($oldversion < 2017072500) {
+    if ($oldversion < 2017051501) {
 
         // Set advanceditems setting.
         if (!$DB->record_exists('plagiarism_urkund_config', array('cm' => 0, 'name' => 'urkund_advanceditems'))) {
@@ -156,10 +156,10 @@ function xmldb_plagiarism_urkund_upgrade($oldversion) {
         }
 
         // Urkund savepoint reached.
-        upgrade_plugin_savepoint(true, 2017072500, 'plagiarism', 'urkund');
+        upgrade_plugin_savepoint(true, 2017051501, 'plagiarism', 'urkund');
     }
 
-    if ($oldversion < 2017081402) {
+    if ($oldversion < 2017051502) {
         // Check to see if this has already been completed.
         $sql = "cm = 0 AND (name LIKE '%_assign' OR name LIKE '%_forum' OR name LIKE '%_workshop')";
         if (!$DB->record_exists_select('plagiarism_urkund_config', $sql)) {
@@ -189,22 +189,7 @@ function xmldb_plagiarism_urkund_upgrade($oldversion) {
         }
 
         // Urkund savepoint reached.
-        upgrade_plugin_savepoint(true, 2017081402, 'plagiarism', 'urkund');
-    }
-
-    if ($oldversion < 2018011700) {
-
-        // Define field revision to be added to plagiarism_urkund_files.
-        $table = new xmldb_table('plagiarism_urkund_files');
-        $field = new xmldb_field('revision', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'timesubmitted');
-
-        // Conditionally launch add field revision.
-        if (!$dbman->field_exists($table, $field)) {
-            $dbman->add_field($table, $field);
-        }
-
-        // Urkund savepoint reached.
-        upgrade_plugin_savepoint(true, 2018011700, 'plagiarism', 'urkund');
+        upgrade_plugin_savepoint(true, 2017051502, 'plagiarism', 'urkund');
     }
 
     return true;

@@ -174,7 +174,7 @@ if(empty($_SESSION['SESSION']->hillhead_notifications) || !array_key_exists(md5(
 
 $hillheadsmartalerts = get_config('theme_hillhead', 'hillhead_smart_alerts');
 
-if($hillheadsmartalerts == 'enabled') {
+if((substr($PAGE->pagetype, 0, 11) == 'course-view') && ($hillheadsmartalerts == 'enabled')) {
 
     $courseDetails = $PAGE->course;
     

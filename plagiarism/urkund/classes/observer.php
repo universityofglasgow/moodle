@@ -98,4 +98,16 @@ class plagiarism_urkund_observer {
         $urkund = new plagiarism_plugin_urkund();
         $urkund->event_handler($eventdata);
     }
+    
+    public static function coursework_submitted(
+        \mod_coursework\event\assessable_uploaded $event) {
+        global $CFG;
+        require_once($CFG->dirroot . '/plagiarism/urkund/lib.php');
+        $eventdata = $event->get_data();
+        $eventdata['eventtype'] = 'assignsubmission_submitted';
+        $eventdata['other']['modulename'] = 'coursework';
+
+        $urkund = new plagiarism_plugin_urkund();
+        $urkund->event_handler($eventdata);
+    }
 }
