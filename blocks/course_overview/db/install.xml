@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="blocks/course_overview/db" VERSION="20180913" COMMENT="XMLDB file for Moodle blocks/course_overview"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <TABLE NAME="block_course_overview" COMMENT="Default comment for block_course_overview, please edit me">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="label" TYPE="char" LENGTH="30" NOTNULL="true" SEQUENCE="false" COMMENT="Tab label"/>
+        <FIELD NAME="order" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="Order in which tabs are organised"/>
+        <FIELD NAME="favourite" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="This is the tab for favourites"/>
+        <FIELD NAME="hide" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Tab is hidden"/>
+        <FIELD NAME="courseorder" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="List of course ids (comma separated)"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="ix_userid" UNIQUE="false" FIELDS="userid"/>
+      </INDEXES>
+    </TABLE>
+  </TABLES>
+</XMLDB>
