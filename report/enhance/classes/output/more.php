@@ -58,6 +58,8 @@ class more implements renderable, templatable {
         $request->username = fullname($user);
         $request->userdate = userdate($request->timecreated);
         $request->statusformatted = $status->getStatus($request->status);
+        $request->statusicon = $status->getStatusIcon($request->status);
+        $request->statuscolour = $status->getStatusColour($request->status);
 
         return $request;
     }
