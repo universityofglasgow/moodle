@@ -47,7 +47,11 @@ if ($id) {
 // Security.
 require_login($course);
 $context = context_course::instance($course->id);
-require_capability('report/enhance:view', $context);
+if(isset($request)) {
+    if(!($request->userid == $USER->id && ($request->status == 1 || $request->status == 4))) {
+        require_capability('report/enhance:editall', $context);
+    }
+}
 $output = $PAGE->get_renderer('report_enhance');;
 
 // Form stuff

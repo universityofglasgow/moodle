@@ -43,7 +43,7 @@ require_capability('report/enhance:view', $context);
 $output = $PAGE->get_renderer('report_enhance');;
 
 // Get requests
-$requests = $DB->get_records('report_enhance');
+$requests = $DB->get_records('report_enhance', null, 'id desc');
 
 $PAGE->set_title(get_string('pluginname', 'report_enhance'));
 $PAGE->set_heading($course->fullname);

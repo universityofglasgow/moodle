@@ -79,3 +79,6 @@ $string['timescales_help'] = 'If specific timescales are mentioned are they feas
 $string['viability'] = 'Viability';
 $string['viability_help'] = 'Is the request:<ul><li>feasible - will it work and are there sufficient resources available?</li><li>compatible with current (and proposed) version of Moodle?</li><li>Actively maintained and documented?</li><li>Secure - will it compromise systems or data?</li><li>Supportable - what would be the future support requirements?</li></ul>';
 $string['waitingdevelopment'] = 'Accepted, Waiting for Development';
+$string['enhance:editall'] = 'Edit All Enhancement Requests';
+$string['enhance:review'] = 'Review Enhancement Requests';
+$string['rollover:view'] = 'View Enhancement Requests';

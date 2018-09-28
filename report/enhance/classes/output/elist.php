@@ -28,6 +28,8 @@ defined('MOODLE_INTERNAL') || die;
 use renderable;
 use renderer_base;
 use templatable;
+use context;
+use context_course;
 
 /**
  * Class contains data for report_enhance elist
@@ -56,6 +58,8 @@ class elist implements renderable, templatable {
         global $DB, $USER;
 
         $status = new \report_enhance\status();
+        
+        $context = context_course::instance($this->course->id);
 
         foreach ($requests as $request) {
             $user = $DB->get_record('user', array('id' => $request->userid), '*', MUST_EXIST);
@@ -68,7 +72,8 @@ class elist implements renderable, templatable {
             $request->link = new \moodle_url('/report/enhance/edit.php', array('courseid' => $this->course->id, 'id' => $request->id));
             $request->more = new \moodle_url('/report/enhance/more.php', array('courseid' => $this->course->id, 'id' => $request->id));
             $request->review = new \moodle_url('/report/enhance/review.php', array('courseid' => $this->course->id, 'id' => $request->id));
-            $request->allowedit = $request->status == 1;
+            $request->allowedit = has_capability('report/enhance:editall', $context) || ($request->userid==$USER->id && ($request->status == 1 || $request->status=4));
+            $request->allowreview = has_capability('report/enhance:review', $context);
             
             // This really should go into its own function once I find the best place to put it.
             

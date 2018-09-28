@@ -51,6 +51,7 @@ class enhance_form extends moodleform {
         // Headline / Summary
         $headline = $mform->addElement('text', 'headline', get_string('headline', 'report_enhance'), ['size' => 80]);
         $mform->setType('headline', PARAM_RAW);
+        $mform->addRule('headline', null, 'required', null, 'client');
         if ($request) {
             $headline->setValue($request->headline);
         }
@@ -58,6 +59,7 @@ class enhance_form extends moodleform {
         // description
         $editor = $mform->addElement('editor', 'description', get_string('description', 'report_enhance'));
         $mform->setType('description', PARAM_RAW);
+        $mform->addRule('description', null, 'required', null, 'client');
         if ($request) {
             $editor->setValue(array('text' => $request->description));
         }
@@ -65,6 +67,7 @@ class enhance_form extends moodleform {
         // benefits
         $benefits = $mform->addElement('editor', 'benefits', get_string('benefits', 'report_enhance'));
         $mform->setType('benefits', PARAM_RAW);
+        $mform->addRule('benefits', null, 'required', null, 'client');
         if ($request) {
             $benefits->setValue(array('text' => $request->benefits));
         }
@@ -72,6 +75,7 @@ class enhance_form extends moodleform {
         // College or School
         $department = $mform->addElement('text', 'department', get_string('department', 'report_enhance'), ['size' => 80]);
         $mform->setType('department', PARAM_ALPHA);
+        $mform->addRule('department', null, 'required', null, 'client');
         if ($request) {
             $department->setValue($request->department);
         }

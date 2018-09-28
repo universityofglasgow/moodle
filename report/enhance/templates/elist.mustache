@@ -23,9 +23,9 @@
     {}
 }}
 
-<h1>VLE Enhancement requests</h1>
+<p>Got an idea for something that would make Moodle better? You can submit it to the VLE Enhancement Board for consideration. Projects that are approved will be added to Moodle in due course.</p>
 
-<div class="form-group">
+<div class="form-group m-b-0">
     <ul class="nav nav-pills filter-list">
         <li class="nav-item">
             <a class="nav-link active" href="#" data-filter=".filter-all"><i class="fa fa-list"></i> All Requests</a>
@@ -73,7 +73,9 @@
                             {{# allowedit }}
                             <li><a href="{{{ link }}}"><i class="fa fa-pencil"></i> Edit</a></li>
                             {{/ allowedit }}
+                            {{# allowreview }}
                             <li><a href="{{{ review }}}"><i class="fa fa-list"></i> Review</a></li>
+                            {{/ allowreview }}
                         </ul>
                     </div>
                 </div>

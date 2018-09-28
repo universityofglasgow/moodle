@@ -34,6 +34,18 @@ $capabilities = array(
             'manager' => CAP_ALLOW,
             'student' => CAP_ALLOW,
         ),
+    ),
+    'report/enhance:review' => array(
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => array(
+        ),
+    ),
+    'report/enhance:editall' => array(
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => array(
+        ),
     )
 );
 
