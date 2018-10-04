@@ -59,7 +59,7 @@ class student_submission_form extends moodleform {
 
         // See if any plagiarism plugins are enabled
         // TODO: re-add the TurnItIn terms
-        if($this->get_coursework()->plagiarism_enbled()) {
+        if(!$this->get_coursework()->tii_enabled() || has_user_seen_tii_EULA_agreement()) {
 
             $this->add_header_to_form();
 
