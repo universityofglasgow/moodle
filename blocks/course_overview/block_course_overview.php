@@ -54,11 +54,16 @@ class block_course_overview extends block_base {
         require_once($CFG->dirroot.'/blocks/course_overview/locallib.php');
         require_once($CFG->dirroot.'/user/profile/lib.php');
 
+        $lib = new \block_course_overview\lib;
+
         if ($this->content !== null) {
             return $this->content;
         }
 
         $config = get_config('block_course_overview');
+
+        // Check block config records are present
+        $lib->check_records();
 
         $this->content = new stdClass();
         $this->content->text = '';

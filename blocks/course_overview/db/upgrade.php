@@ -39,7 +39,9 @@
 defined('MOODLE_INTERNAL') || die();
 
 function xmldb_block_course_overview_upgrade($oldversion, $block) {
-    global $CFG;
+    global $DB;
+
+    $dbman = $DB->get_manager();
 
     if ($oldversion < 2018081300) {
 
