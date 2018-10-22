@@ -696,8 +696,9 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                     }
                 }
             }
+            return $result;
         }
-        return $result;
+        
 
         if (isset($plagiarismvalues['urkund_draft_submit']) &&
             $plagiarismvalues['urkund_draft_submit'] == PLAGIARISM_URKUND_DRAFTSUBMIT_FINAL) {
