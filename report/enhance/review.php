@@ -43,7 +43,7 @@ $request = $DB->get_record('report_enhance', array('id' => $id), '*', MUST_EXIST
 // Security.
 require_login($course);
 $context = context_course::instance($course->id);
-require_capability('report/enhance:editall', $context);
+require_capability('report/enhance:review', $context);
 $output = $PAGE->get_renderer('report_enhance');
 
 // Form fields
