@@ -46,7 +46,14 @@ $capabilities = array(
         'contextlevel' => CONTEXT_SYSTEM,
         'archetypes' => array(
         ),
-    )
+    ),
+    'report/enhance:emailnotifynew' => array(
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => array(
+        ),
+    ),
+
 );
 
 

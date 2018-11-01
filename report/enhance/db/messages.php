@@ -15,14 +15,19 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version info
+ * Messages
  *
  * @package    report_enhance
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die;
+defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2018110102;
-$plugin->requires  = 2017051500;
-$plugin->component = 'report_enhance';
+$messageproviders = [
+    'newrequest' => [
+        'capability' => 'report/enhance:emailnotifynew'
+    ]
+];
+
+
+

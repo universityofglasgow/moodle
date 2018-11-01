@@ -74,6 +74,7 @@ if ($form->is_cancelled()) {
         $DB->update_record('report_enhance', $request);
     } else {
         $DB->insert_record('report_enhance', $request);
+        \report_enhance\email::newrequest($USER, $request);
     }
     redirect(new moodle_url('/report/enhance/index.php', array('courseid' => $courseid)));
 }
