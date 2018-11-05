@@ -26,29 +26,29 @@
 <h1 class="m-b-1">{{ request.headline }}</h1>
 
 <dl class="row">
-    <dt class="col-xs-4 col-sm-3">Request Number</dt>
+    <dt class="col-xs-4 col-sm-3">{{# str }}requestnumber, report_enhance{{/ str }}</dt>
     <dd class="col-xs-8 col-sm-9">{{ request.id }}</dd>
 </dl>
 
 <dl class="row">
-    <dt class="col-xs-4 col-sm-3">Submitted By</dt>
+    <dt class="col-xs-4 col-sm-3">{{# str }}submittedby, report_enhance{{/ str }}</dt>
     <dd class="col-xs-8 col-sm-9">{{ request.username }}</dd>
 </dl>
 
 <dl class="row">
-    <dt class="col-xs-4 col-sm-3">Submitted On</dt>
+    <dt class="col-xs-4 col-sm-3">{{# str }}submittedon, report_enhance{{/ str }}</dt>
     <dd class="col-xs-8 col-sm-9">{{ request.userdate }}</dd>
 </dl>
 
 {{#request.department}}
 <dl class="row">
-    <dt class="col-xs-4 col-sm-3">Department</dt>
+    <dt class="col-xs-4 col-sm-3">{{# str }}department, report_enhance{{/ str }}</dt>
     <dd class="col-xs-8 col-sm-9">{{ request.department }}</dd>
 </dl>
 {{/request.department}}
 
 <dl class="row m-b-0">
-    <dt class="col-xs-4 col-sm-3">Status</dt>
+    <dt class="col-xs-4 col-sm-3">{{# str }}status, report_enhance{{/ str }}</dt>
     <dd class="col-xs-8 col-sm-9"><span class="inline-status status-{{ request.statuscolour }}"><i class="fa fa-{{ request.statusicon }}"></i> {{ request.statusformatted }}</span></dd>
 </dl>
 </div>
@@ -57,7 +57,7 @@
 {{#request.description}}
 <div class="card m-t-1 m-b-1">
 <dl class="row m-b-0">
-    <dt class="col-xs-4 col-sm-3">Description</dt>
+    <dt class="col-xs-4 col-sm-3">{{# str }}description, report_enhance{{/ str }}</dt>
     <dd class="col-xs-8 col-sm-9">{{{ request.description }}}</dd>
 </dl>
 </div>
@@ -66,46 +66,46 @@
 {{#request.benefits}}
 <div class="card m-b-1">
 <dl class="row m-b-0">
-    <dt class="col-xs-4 col-sm-3">Benefits</dt>
+    <dt class="col-xs-4 col-sm-3">{{# str }}benefits, report_enhance{{/ str }}</dt>
     <dd class="col-xs-8 col-sm-9">{{{ request.benefits }}}</dd>
 </dl>
 </div>
 {{/request.benefits}}
 
-{{#request.functionality}}
+{{#request.desirability}}
 <div class="card m-b-1">
 <dl class="row m-b-0">
-    <dt class="col-xs-4 col-sm-3">Functionality</dt>
+    <dt class="col-xs-4 col-sm-3">{{# str }}desirability, report_enhance{{/ str }}</dt>
     <dd class="col-xs-8 col-sm-9">{{{ request.functionality }}}</dd>
 </dl>
 </div>
-{{/request.functionality}}
+{{/request.desirability}}
+
+{{#request.impact}}
+<div class="card m-b-1">
+<dl class="row m-b-0">
+    <dt class="col-xs-4 col-sm-3">{{# str }}impact, report_enhance{{/ str }}</dt>
+    <dd class="col-xs-8 col-sm-9">{{{ request.impact }}}</dd>
+</dl>
+</div>
+{{/request.impact}}
 
 {{#request.viability}}
 <div class="card m-b-1">
 <dl class="row m-b-0">
-    <dt class="col-xs-4 col-sm-3">Viability</dt>
+    <dt class="col-xs-4 col-sm-3">{{# str }}viability, report_enhance{{/ str }}</dt>
     <dd class="col-xs-8 col-sm-9">{{{ request.viability }}}</dd>
 </dl>
 </div>
 {{/request.viability}}
 
-{{#request.policies}}
-<div class="card m-b-1">
-<dl class="row m-b-0">
-    <dt class="col-xs-4 col-sm-3">Policies</dt>
-    <dd class="col-xs-8 col-sm-9">{{{ request.policies }}}</dd>
-</dl>
-</div>
-{{/request.policies}}
-
 {{#request.result}}
 <div class="card m-b-1">
 <dl class="row m-b-0">
-    <dt class="col-xs-4 col-sm-3">Result</dt>
+    <dt class="col-xs-4 col-sm-3">{{# str }}result, report_enhance{{/ str }}</dt>
     <dd class="col-xs-8 col-sm-9">{{{ request.result }}}</dd>
 </dl>
 </div>
 {{/request.result}}
 
-<a class="btn btn-primary" href="{{{ back }}}">Back</a>
+<a class="btn btn-primary" href="{{{ back }}}">{{# str }}back{{/ str }}</a>
