@@ -48,9 +48,9 @@ $output = $PAGE->get_renderer('report_enhance');
 
 // Form fields
 $fields = array(
-    'functionality',
+    'desirability',
+    'impact',
     'viability',
-    'policies',
     'result',
 );
 
