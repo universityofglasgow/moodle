@@ -165,7 +165,7 @@ class mod_lib_testcase extends test_lib {
 
         turnitintooltwo_cron_migrate_gradebook();
 
-        /** 
+        /**
          * Test that we migrate the gradebook when using the cron workflow.
          * There should be 400 grades that require a migration afterwards since migrating the third assignment would take us over 1000.
          */
@@ -268,5 +268,188 @@ class mod_lib_testcase extends test_lib {
 	    $result = turnitintooltwo_get_report_gen_speed_params();
 
 	    $this->assertEquals($expected, $result);
+    }
+
+    public function test_turnitintooltwo_availability_status() {
+        global $DB;
+
+        $this->resetAfterTest();
+
+        $this->setAdminUser();
+
+        // Create a course and assignment.
+        $course = $this->getDataGenerator()->create_course();
+
+        $turnitintooltwoassignment = $this->make_test_tii_assignment();
+        $cmid = $this->make_test_module($turnitintooltwoassignment->turnitintooltwo->course,'turnitintooltwo', $turnitintooltwoassignment->turnitintooltwo->id);
+        $context = context_module::instance($cmid);
+        $cm = $DB->get_record("course_modules", array('id' => $cmid));
+
+        // Set to the student user.
+        $generator = $this->getDataGenerator();
+
+        // Create users.
+        $student = self::getDataGenerator()->create_user();
+        $teacher = self::getDataGenerator()->create_user();
+
+        // Users enrolments.
+        $studentrole = $DB->get_record('role', array('shortname' => 'student'));
+        $teacherrole = $DB->get_record('role', array('shortname' => 'editingteacher'));
+        $this->getDataGenerator()->enrol_user($student->id, $course->id, $studentrole->id, 'manual');
+        $this->getDataGenerator()->enrol_user($teacher->id, $course->id, $teacherrole->id, 'manual');
+
+        self::setUser($student);
+
+        // Create data object for passing in.
+        $data = new stdClass();
+        $data->id = $cm->instance;
+        $data->timeclose = 0;
+        $data->timeopen = 0;
+
+        // Usual case.
+        list($status, $warnings) = mod_turnitintooltwo_get_availability_status($data, false);
+        $this->assertEquals(true, $status);
+        $this->assertCount(0, $warnings);
+
+        // Turnitintooltwo not open.
+        $data->timeopen = time() + DAYSECS;
+        list($status, $warnings) = mod_turnitintooltwo_get_availability_status($data, false);
+        $this->assertEquals(false, $status);
+        $this->assertArrayHasKey('notopenyet', $warnings);
+
+        // Turnitintooltwo closed.
+        $data->timeopen = 0;
+        $data->timeclose = time() - DAYSECS;
+        list($status, $warnings) = mod_turnitintooltwo_get_availability_status($data, false);
+        $this->assertEquals(false, $status);
+        $this->assertArrayHasKey('expired', $warnings);
+
+        // Turnitintooltwo not open and closed.
+        $data->timeopen = time() + DAYSECS;
+        list($status, $warnings) = mod_turnitintooltwo_get_availability_status($data, false);
+        $this->assertEquals(false, $status);
+        $this->assertArrayHasKey('notopenyet', $warnings);
+        $this->assertArrayHasKey('expired', $warnings);
+
+        // Now additional checkings with different parameters values.
+        list($status, $warnings) = mod_turnitintooltwo_get_availability_status($data, true, $context);
+        $this->assertEquals(false, $status);
+        $this->assertArrayHasKey('notopenyet', $warnings);
+        $this->assertArrayHasKey('expired', $warnings);
+
+        // Turnitintooltwo not open.
+        $data->timeopen = time() + DAYSECS;
+        $data->timeclose = 0;
+        list($status, $warnings) = mod_turnitintooltwo_get_availability_status($data, true, $context);
+        $this->assertEquals(false, $status);
+        $this->assertArrayHasKey('notopenyet', $warnings);
+
+        // Turnitintooltwo closed.
+        $data->timeopen = 0;
+        $data->timeclose = time() - DAYSECS;
+        list($status, $warnings) = mod_turnitintooltwo_get_availability_status($data, true, $context);
+        $this->assertEquals(false, $status);
+        $this->assertArrayHasKey('expired', $warnings);
+
+        // Turnitintooltwo not open and closed.
+        $data->timeopen = time() + DAYSECS;
+        list($status, $warnings) = mod_turnitintooltwo_get_availability_status($data, true, $context);
+        $this->assertEquals(false, $status);
+        $this->assertArrayHasKey('notopenyet', $warnings);
+        $this->assertArrayHasKey('expired', $warnings);
+
+        // As teacher now.
+        self::setUser($teacher);
+
+        // Turnitintooltwo not open and closed.
+        $data->timeopen = time() + DAYSECS;
+        list($status, $warnings) = mod_turnitintooltwo_get_availability_status($data, false);
+        $this->assertEquals(false, $status);
+        $this->assertArrayHasKey('notopenyet', $warnings);
+        $this->assertArrayHasKey('expired', $warnings);
+    }
+
+    public function test_turnitintooltwo_update_event() {
+        global $DB, $CFG;
+
+        $this->resetAfterTest();
+
+        $turnitintooltwoassignment = $this->make_test_tii_assignment();
+        $turnitintooltwo = $turnitintooltwoassignment->turnitintooltwo;
+        $this->make_test_parts("turnitintooltwo", $turnitintooltwo->id, 1);
+        $part = $DB->get_record('turnitintooltwo_parts', array('turnitintooltwoid' => $turnitintooltwo->id));
+
+        $turnitintooltwo->intro = "Intro";
+        $part->dtdue = time();
+
+        // Create an event.
+        $assignment = new turnitintooltwo_assignment(1, $turnitintooltwo);
+        $assignment->create_event($turnitintooltwo->id, $part->partname, time());
+
+        $event = $DB->get_record_select("event", " modulename = ? AND instance = ? AND name LIKE ? ",
+            array('turnitintooltwo', $turnitintooltwo->id, '% - '.$part->partname));
+
+        // Reset event values so we can then go on to check if our method will update them.
+        $updatedevent = new stdClass();
+        $updatedevent->id = $event->id;
+        $updatedevent->userid = 0;
+        $updatedevent->timestart = 0;
+        if ($CFG->branch >= 33) {
+            $updatedevent->timesort = 0;
+            $updatedevent->type = 0;
+        }
+        $DB->update_record('event', $updatedevent);
+
+        // Check the event will update for a standard call to the method.
+        turnitintooltwo_update_event($turnitintooltwo, $part);
+        $response = $DB->get_record("event", array("id" => $event->id));
+
+        if ($CFG->branch >= 33) {
+            $this->assertEquals(1, $response->type);
+            $this->assertNotEquals(0, $response->timesort);
+        }
+        $this->assertNotEquals(0, $response->timestart);
+
+        // Reset event values.
+        $DB->update_record('event', $updatedevent);
+
+        // Check the event will update for a call to the method with an extra course parameter.
+        turnitintooltwo_update_event($turnitintooltwo, $part, true);
+        $response = $DB->get_record("event", array("id" => $event->id));
+
+        if ($CFG->branch >= 33) {
+            $this->assertEquals(1, $response->type);
+            $this->assertNotEquals(0, $response->timesort);
+        }
+        $this->assertNotEquals(0, $response->timestart);
+
+        // Reset event values.
+        $DB->update_record('event', $updatedevent);
+
+        // This test is only relevant to 3.3+;
+
+        if ($CFG->branch >= 33) {
+            // Check that we can convert an old event to a new event.
+            turnitintooltwo_update_event($turnitintooltwo, $part, null, true);
+            $response = $DB->get_record("event", array("id" => $event->id));
+
+            if ($CFG->branch >= 33) {
+                $this->assertEquals(1, $response->type);
+                $this->assertNotEquals(0, $response->timesort);
+            }
+            $this->assertNotEquals(0, $response->timestart);
+
+            // We can check that a second call to convert an event will not update the event by resetting only the timestart value and checking it is not updated,
+            $updatedevent = new stdClass();
+            $updatedevent->id = $event->id;
+            $updatedevent->timestart = 0;
+            $DB->update_record('event', $updatedevent);
+
+            // This call should not update values, so timestart should still equal 0.
+            turnitintooltwo_update_event($turnitintooltwo, $part, null, true);
+            $response = $DB->get_record("event", array("id" => $event->id));
+
+            $this->assertEquals(0, $response->timestart);
+        }
     }
 }

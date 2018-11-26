@@ -1,3 +1,66 @@
+### Date:		2018-October-26
+### Release:	v2018102601
+
+#### Fixes and enhancements
+
+---
+
+#### The course restoration tool has now been restored for use!
+
+Were you previously using Turnitin.com or TurnitinUK.com before making the switch over to Moodle? The course restoration tool allows you to take your old classes and assignments with you by recreating them within Moodle. Previously, a bug had prevented this functionality from working as intended. Want to learn more? [Check out our guide](https://help.turnitin.com/Feedback_Studio/Moodle/Direct%20V2/Administrator/Administrator%20Category.htm#Turnitinclassrestoration).
+
+---
+
+### Date:		2018-October-19
+### Release:	v2018101901
+
+#### Fixes and enhancements
+
+---
+
+#### Assignments now display correctly on Moodle’s timeline
+
+We’ve made three separate fixes following Moodle’s new timeline support:
+
+- When creating a V2 assignment using course reset and the “use new dates” option, your assignment now displays correctly on the timeline.
+- By changing the due date of the assignment, this now will update on the timeline.
+- Providing that the assignment’s due date hasn’t already passed, any assignments created prior to our previous fix in v2018082801 will now appear on the timeline after an instructor accesses the assignment.
+
+#### Thanks to Paul Damiani and Rossco Hellmans
+
+We've received some invaluable bug fixes, in the form of pull requests, to help us improve Moodle V2. We’re really grateful!
+
+---
+
+### Date:		2018-August-28
+### Release:	v2018082801
+
+### :wrench: Fixes and enhancements
+
+---
+
+#### The administrator default option for student paper storage is now visible to instructors
+
+We noticed a blip, where the administrator default option for student paper storage wasn't passed to instructors during assignment creation. We've corrected this problem so that the "Store student papers" drop-down menu now populates with the preferred administrator option.
+
+**Note:** All instructor default settings will override the global settings of an administrator.
+
+#### V2 assignments are now available on the Moodle course overview page
+
+We found that Moodle V2 assignments failed to appear on the Moodle course overview page when using Moodle 3.3+ which made it difficult to access assignments. This issue was a direct result of Moodle making a change to their course overview block. To resolve this, we've implemented Moodle's [release notesCalendar Action Events API](https://docs.moodle.org/dev/Calendar_API#Action_events). All is back to normal.
+
+#### The link to the Moodle support wizard is no longer available in Moodle
+
+Our Moodle support wizard has been broken for some time, and while we try to fix it, we're removing access to it to prevent confusion. But don't worry! You can still contact Turnitin via email at tiisupport@turnitin.com. We're currently thinking about how we can reintroduce a working version of the form in the future.
+
+#### We've removed the plugin update checker from Turnitin administrator settings
+
+Moodle has superseded this update checker with a tool that not only checks for Turnitin plugin updates but updates to all plugins within Moodle!
+
+You can find Moodle's **Check for available updates** button by visiting: Site administration > Plugins > Plugins overview.
+
+---
+
 ### Date:	2018-May-23
 ### Release:	v2018052301
 

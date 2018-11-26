@@ -29,7 +29,10 @@ if ($ADMIN->fulltree) {
     require_once(dirname(__FILE__).'/locallib.php');
 
     $tabmenu = attendance_print_settings_tabs();
+
     $settings->add(new admin_setting_heading('attendance_header', '', $tabmenu));
+
+    $plugininfos = core_plugin_manager::instance()->get_plugins_of_type('local');
 
     // Paging options.
     $options = array(
@@ -64,7 +67,7 @@ if ($ADMIN->fulltree) {
     $options = array(
         ATT_VIEW_ALL => get_string('all', 'attendance'),
         ATT_VIEW_ALLPAST => get_string('allpast', 'attendance'),
-        ATT_VIEW_NOTPRESENT => get_string('lowgrade', 'attendance'),
+        ATT_VIEW_NOTPRESENT => get_string('below', 'attendance', 'X'),
         ATT_VIEW_MONTHS => get_string('months', 'attendance'),
         ATT_VIEW_WEEKS => get_string('weeks', 'attendance'),
         ATT_VIEW_DAYS => get_string('days', 'attendance')
@@ -105,6 +108,9 @@ if ($ADMIN->fulltree) {
     $description = new lang_string('defaultsessionsettings_help', 'mod_attendance');
     $settings->add(new admin_setting_heading('defaultsessionsettings', $name, $description));
 
+    $settings->add(new admin_setting_configcheckbox('attendance/calendarevent_default',
+        get_string('calendarevent', 'attendance'), '', 1));
+
     $settings->add(new admin_setting_configcheckbox('attendance/absenteereport_default',
         get_string('includeabsentee', 'attendance'), '', 1));
 
@@ -119,11 +125,16 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configcheckbox('attendance/randompassword_default',
         get_string('randompassword', 'attendance'), '', 0));
 
+    $settings->add(new admin_setting_configcheckbox('attendance/includeqrcode_default',
+        get_string('includeqrcode', 'attendance'), '', 0));
+
     $settings->add(new admin_setting_configcheckbox('attendance/autoassignstatus',
         get_string('autoassignstatus', 'attendance'), '', 0));
 
-    $settings->add(new admin_setting_configcheckbox('attendance/preventsharedip',
-        get_string('preventsharedip', 'attendance'), '', 0));
+    $options = attendance_get_sharedipoptions();
+    $settings->add(new admin_setting_configselect('attendance/preventsharedip',
+        get_string('preventsharedip', 'attendance'),
+        '', ATTENDANCE_SHAREDIP_DISABLED, $options));
 
     $settings->add(new admin_setting_configtext('attendance/preventsharediptime',
         get_string('preventsharediptime', 'attendance'), get_string('preventsharediptime_help', 'attendance'), '', PARAM_RAW));

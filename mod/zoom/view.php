@@ -52,18 +52,16 @@ $PAGE->set_url('/mod/zoom/view.php', array('id' => $cm->id));
 $PAGE->set_title(format_string($zoom->name));
 $PAGE->set_heading(format_string($course->fullname));
 
-/*
- * Other things you may want to set - remove if not needed.
- * $PAGE->set_cacheable(false);
- * $PAGE->set_focuscontrol('some-html-id');
- * $PAGE->add_body_class('zoom-'.$somevar);
- */
-
 $zoomuserid = zoom_get_user_id(false);
 $userishost = ($zoomuserid == $zoom->host_id);
 
 $service = new mod_zoom_webservice();
-$showrecreate = !$service->get_meeting_info($zoom) && zoom_is_meeting_gone_error($service->lasterror);
+try {
+    $service->get_meeting_webinar_info($zoom->meeting_id, $zoom->webinar);
+    $showrecreate = false;
+} catch (moodle_exception $error) {
+    $showrecreate = zoom_is_meeting_gone_error($error);
+}
 
 $stryes = get_string('yes');
 $strno = get_string('no');
@@ -112,16 +110,13 @@ list($inprogress, $available, $finished) = zoom_get_state($zoom);
 
 if ($available) {
     if ($userishost) {
-        $buttonhtml = html_writer::tag('button', $strstart,
-                array('type' => 'submit', 'class' => 'btn btn-success'));
-        $aurl = new moodle_url($zoom->start_url);
+        $buttonhtml = html_writer::tag('button', $strstart, array('type' => 'submit', 'class' => 'btn btn-success'));
     } else {
-        $buttonhtml = html_writer::tag('button', $strjoin,
-                array('type' => 'submit', 'class' => 'btn btn-primary'));
-        $aurl = new moodle_url('/mod/zoom/loadmeeting.php', array('id' => $cm->id));
+        $buttonhtml = html_writer::tag('button', $strjoin, array('type' => 'submit', 'class' => 'btn btn-primary'));
     }
+    $aurl = new moodle_url('/mod/zoom/loadmeeting.php', array('id' => $cm->id));
     $buttonhtml .= html_writer::input_hidden_params($aurl);
-    $link = html_writer::tag('form', $buttonhtml, array('action' => $aurl->out_omit_querystring()));
+    $link = html_writer::tag('form', $buttonhtml, array('action' => $aurl->out_omit_querystring(), 'target' => '_blank'));
 } else {
     $link = html_writer::tag('span', $strunavailable, array('style' => 'font-size:20px'));
 }
@@ -131,14 +126,35 @@ $title->header = true;
 $title->colspan = $numcolumns;
 $table->data[] = array($title);
 
-// Only show sessions link to users with edit capability.
 if ($iszoommanager) {
+    // Only show sessions link to users with edit capability.
     $sessionsurl = new moodle_url('/mod/zoom/report.php', array('id' => $cm->id));
     $sessionslink = html_writer::link($sessionsurl, get_string('sessions', 'mod_zoom'));
     $sessions = new html_table_cell($sessionslink);
     $sessions->colspan = $numcolumns;
     $table->data[] = array($sessions);
+
+    // Display alternate hosts if they exist.
+    if (!empty($zoom->alternative_hosts)) {
+        $table->data[] = array(get_string('alternative_hosts', 'mod_zoom'), $zoom->alternative_hosts);
+    }
 }
+
+//@codingStandardsIgnoreStart
+// TODO: Commenting out because it requires user to be host. Need to generate ical file ourselves.
+//// Generate add-to-calendar buttons if meeting was found.
+//if (!$showrecreate) {
+//    $googlelink = 'https://ucla.zoom.us/meeting/' . $zoom->meeting_id . '/calendar/google/add';
+//    $outlooklink = 'https://ucla.zoom.us/meeting/' . $zoom->meeting_id . '/ics';
+//    $googleicon = $OUTPUT->pix_icon('i/google', get_string('googleiconalt', 'mod_zoom'), 'mod_zoom');
+//    $windowsicon = $OUTPUT->pix_icon('i/windows', get_string('windowsiconalt', 'mod_zoom'), 'mod_zoom');
+//    $googlebutton = html_writer::div($googleicon . ' ' . get_string('googlecalendar', 'mod_zoom'), 'btn btn-primary');
+//    $outlookbutton = html_writer::div($windowsicon . ' ' . get_string('outlook', 'mod_zoom'), 'btn btn-primary');
+//    $googlehtml = html_writer::link($googlelink, $googlebutton, array('target' => '_blank'));
+//    $outlookhtml = html_writer::link($outlooklink, $outlookbutton, array('target' => '_blank'));
+//    $table->data[] = array(get_string('addtocalendar', 'mod_zoom'), $googlehtml . $outlookhtml);
+//}
+//@codingStandardsIgnoreEnd
 
 if ($zoom->recurring) {
     $recurringmessage = new html_table_cell(get_string('recurringmeetinglong', 'mod_zoom'));
@@ -174,11 +190,11 @@ if (!$zoom->webinar) {
     $table->data[] = array($strstartvideopart, $strparticipantsvideo);
 }
 
-$table->data[] = array($straudioopt, $zoom->option_audio);
+$table->data[] = array($straudioopt, get_string('audio_' . $zoom->option_audio, 'mod_zoom'));
 
 if (!$zoom->recurring) {
-    if ($zoom->status == ZOOM_MEETING_EXPIRED) {
-        $status = get_string('meeting_expired', 'mod_zoom');
+    if (!$zoom->exists_on_zoom) {
+        $status = get_string('meeting_nonexistent_on_zoom', 'mod_zoom');
     } else if ($finished) {
         $status = get_string('meeting_finished', 'mod_zoom');
     } else if ($inprogress) {

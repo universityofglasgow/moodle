@@ -53,7 +53,7 @@ $action = optional_param('action', "", PARAM_ALPHA);
 $viewcontext = optional_param('view_context', "window", PARAM_ALPHAEXT);
 $migrated = optional_param('migrated', 0, PARAM_INT); // Migrated
 
-// If v1 migration tool is being enabled then this will prompt user to migrate when 
+// If v1 migration tool is being enabled then this will prompt user to migrate when
 // they return to the previous v1 assignment.
 $_SESSION["migrationtool"]["lastasked"] = 0;
 
@@ -467,15 +467,6 @@ if ($viewcontext == "box" || $viewcontext == "box_solid") {
     }
 
     $turnitintooltwoview->draw_tool_tab_menu($cm, $do);
-
-    // Show Helpdesk link for tutors if enabled.
-    if ($istutor && $config->helpdeskwizard) {
-        $helpdesklink = html_writer::link($CFG->wwwroot.'/mod/turnitintooltwo/extras.php?id='.$id.'&legacy='
-                                            .$turnitintooltwoassignment->turnitintooltwo->legacy.'&cmd=supportwizard',
-                                            get_string('helpdesklink', 'turnitintooltwo'));
-
-        echo html_writer::tag('p', $helpdesklink);
-    }
 }
 
 echo html_writer::start_tag('div', array('class' => 'mod_turnitintooltwo'));
@@ -739,6 +730,13 @@ switch ($do) {
                 !empty($_SESSION["digital_receipt"]) && !isset($_SESSION["digital_receipt"]["is_manual"])) {
             echo $turnitintooltwoview->show_digital_receipt($_SESSION["digital_receipt"]);
             unset($_SESSION["digital_receipt"]);
+        }
+
+        // Convert the course overview events to MDL33+ events if necessary.
+        if (($CFG->branch >= 33) && ($istutor)) {
+            foreach ($parts as $part) {
+                turnitintooltwo_update_event($turnitintooltwoassignment->turnitintooltwo, $part, null, true);
+            }
         }
 
         // Initialise inbox, if a student is logged in then populate it also incase they have no javascript.

@@ -26,6 +26,8 @@
  */
 
 require_once(dirname(__FILE__).'/../../config.php');
+require_once(dirname(__FILE__).'/locallib.php');
+require_once($CFG->libdir.'/tcpdf/tcpdf_barcodes_2d.php'); // Used for generating qrcode.
 
 $session = required_param('session', PARAM_INT);
 $session = $DB->get_record('attendance_sessions', array('id' => $session), '*', MUST_EXIST);
@@ -47,5 +49,15 @@ $PAGE->set_context(context_system::instance());
 $PAGE->set_title(get_string('password', 'attendance'));
 
 echo $OUTPUT->header();
+echo html_writer::tag('h2', get_string('passwordgrp', 'attendance'));
 echo html_writer::span($session->studentpassword, 'student-password');
+
+if (isset($session->includeqrcode) && $session->includeqrcode == 1) {
+    $qrcodeurl = $CFG->wwwroot . '/mod/attendance/attendance.php?qrpass=' . $session->studentpassword . '&sessid=' . $session->id;
+    echo html_writer::tag('h3', get_string('qrcode', 'attendance'));
+
+    $barcode = new TCPDF2DBarcode($qrcodeurl, 'QRCODE');
+    $image = $barcode->getBarcodePngData(15, 15);
+    echo html_writer::img('data:image/png;base64,' . base64_encode($image), get_string('qrcode', 'attendance'));
+}
 echo $OUTPUT->footer();

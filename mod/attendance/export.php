@@ -22,6 +22,8 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+define('NO_OUTPUT_BUFFERING', true);
+
 require_once(dirname(__FILE__).'/../../config.php');
 require_once(dirname(__FILE__).'/locallib.php');
 require_once(dirname(__FILE__).'/export_form.php');
@@ -179,8 +181,7 @@ if ($formdata = $mform->get_data()) {
             }
 
             $data->table[$i][] = $usersummary->numtakensessions;
-            $data->table[$i][] = format_float($usersummary->takensessionspoints, 1, true, true) . ' / ' .
-                                    format_float($usersummary->takensessionsmaxpoints, 1, true, true);
+            $data->table[$i][] = $usersummary->pointssessionscompleted;
             $data->table[$i][] = format_float($usersummary->takensessionspercentage * 100);
 
             $i++;
