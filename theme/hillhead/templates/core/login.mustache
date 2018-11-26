@@ -94,6 +94,7 @@
 }}
 
         <form class="form-horizontal gu-login" method="post">
+            <input type="hidden" name="logintoken" value="{{logintoken}}">
          {{#error}}
             <a href="#" id="loginerrormessage" class="accesshide">{{error}}</a>
             <div id="loginerrormessage" class="alert alert-danger">{{error}}</div>
