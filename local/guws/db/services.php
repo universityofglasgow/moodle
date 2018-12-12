@@ -28,10 +28,10 @@ $services = array(
 
       // Define service for AMS
       'AMS' => array(
-          'functions' => [],
+          'functions' => ['local_guws_ams_searchassign'],
           'requiredcapability' => '',
-          'restrictedusers' =>0,
-          'enabled'=>1,
+          'restrictedusers' => 1,
+          'enabled' => 1,
        )
 );
 

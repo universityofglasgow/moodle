@@ -26,7 +26,7 @@ defined('MOODLE_INTERNAL') || die;
 
 require_once("$CFG->libdir/externallib.php");
  
-class local_myplugin_external extends external_api {
+class local_guws_external extends external_api {
 
     /**
      * Parameter definition for ams_searchassign

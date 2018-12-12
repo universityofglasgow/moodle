@@ -22,7 +22,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$plugin->version = 2018121200;
+$plugin->version =  2018121202;
 $plugin->requires = 2018051700;
 $plugin->description = 'GU web services';
 $plugin->component = 'local_guws';
