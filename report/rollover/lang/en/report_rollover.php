@@ -22,5 +22,5 @@
 
 $string['pluginname'] = 'Rollover report';
 $string['privacy:metadata'] = 'The rollover report does not store any personal data';
-$string['report:rollover'] = 'Allow user to view report';
+$string['rollover:view'] = 'Allow user to view report';
 
