@@ -49,15 +49,42 @@ class local_guws_external extends external_api {
                 'id' => new external_value(PARAM_INT, 'Assignment id'),
                 'cm' => new external_value(PARAM_INT, 'Assignment course module id'),
                 'name' => new external_value(PARAM_TEXT, 'Assignment name in full'),
-            ])
-        );
+            ]),
+        '', VALUE_OPTIONAL);
     }
 
     public static function ams_searchassign($code, $date) {
-        global $CFG, $DB;
+        global $CFG, $DB, $USER;
 
         // Check params
-        $params = self::validate_params(self::ams_searchassign_parameters(), ['code' => $code, 'date' => $date]);
+        $params = self::validate_parameters(self::ams_searchassign_parameters(), ['code' => $code, 'date' => $date]);
+
+        // Get all the courses this user can access.
+        // Final true means all that can be accessed
+        $courses = enrol_get_my_courses(['id'], null, 0, [], true);
+
+        // Are there any courses?
+        if (!$courses) {
+            throw new invalid_response_exception('No courses found for user ' . $USER->username);
+        }
+
+        // Find assignments
+        $found = [];
+        foreach ($courses as $course) {
+            $assignments = $DB->get_records('assign', ['course' => $course->id]);
+            foreach ($assignments as $assignment) {
+                if (stripos($assignment->name, $params->code) !== false) {
+                    $found[] = [$assignment->id, $assignment->name, 0];
+                }
+            }
+        }
+
+        // Exception if there is nothing
+        if (!$found) {
+            throw new invalid_response_exception('No matching assignments found for code ' . $params->code);
+        }
+
+        return $found;
     }
 
 }
