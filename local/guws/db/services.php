@@ -42,4 +42,5 @@ $functions = array(
         'classpath'   => 'local/guws/externallib.php',
         'description' => 'Search assignments for those with name including specified string.',
         'type'        => 'read',
+    )
 );
