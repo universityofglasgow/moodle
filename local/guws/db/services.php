@@ -28,7 +28,7 @@ $services = array(
 
       // Define service for AMS
       'AMS' => array(
-          'functions' => ['local_guws_ams_searchassign'],
+          'functions' => ['local_guws_ams_searchassign', 'local_guws_ams_download'],
           'requiredcapability' => '',
           'restrictedusers' => 1,
           'enabled' => 1,
@@ -42,5 +42,12 @@ $functions = array(
         'classpath'   => 'local/guws/externallib.php',
         'description' => 'Search assignments for those with name including specified string.',
         'type'        => 'read',
-    )
+    ),
+    'local_guws_ams_download' => array(
+        'classname'   => 'local_guws_external',
+        'methodname'  => 'ams_download',
+        'classpath'   => 'local/guws/externallib.php',
+        'description' => 'Download assignment participants, grades and feedback.',
+        'type'        => 'read',
+    ),
 );

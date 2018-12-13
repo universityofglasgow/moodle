@@ -55,6 +55,11 @@ class local_guws_external extends external_api {
         '', VALUE_OPTIONAL);
     }
 
+    /**
+     * Search assignment for specific string in name
+     * @param string $code substring to find
+     * @param string $date date must be within course start and end dates
+     */
     public static function ams_searchassign($code, $date) {
         global $CFG, $DB, $USER;
 
@@ -80,22 +85,23 @@ class local_guws_external extends external_api {
         // Find assignments
         $found = [];
         foreach ($courses as $course) {
+
+            // Check for valid date
+            if ($udate) {
+
+                // If there's a course start date make sure date is after this.
+                if ($udate < $course->startdate) {
+                    continue;
+                }
+
+                // If there's a course end date then supplied date must be before.
+                if ($course->enddate && ($udate > $course->enddate)) {
+                    continue;
+                }
+            }
             $assignments = $DB->get_records('assign', ['course' => $course->id]);
             foreach ($assignments as $assignment) {
                 if (stripos($assignment->name, $params['code']) !== false) {
-
-                    if ($udate) {
-
-                        // If there's a course start date make sure date is after this.
-                        if ($udate < $course->startdate) {
-                            continue;
-                        }
-
-                        // If there's a course end date then supplied date must be before.
-                        if ($course->enddate && ($udate > $course->enddate)) {
-                            continue;
-                        }
-                    }
 
                     // Find cmid
                     $cm = get_coursemodule_from_instance('assign', $assignment->id, $course->id, false, MUST_EXIST);
@@ -120,4 +126,119 @@ class local_guws_external extends external_api {
         return $found;
     }
 
+    /**
+     * Parameter definition for ams_download
+     * @return external_funtion_parameters
+     */
+    public static function ams_download_parameters() {
+        return new external_function_parameters([
+            'id' => new external_value(PARAM_INT, 'Assignment instance id'),
+        ]);
+    }
+
+    /**
+     * Return definition for amd_searchassign
+     * @returns external_multiple_structure
+     */
+    public static function ams_download_returns() {
+        return new external_multiple_structure(
+            new external_single_structure([
+                'userid' => new external_value(PARAM_INT, 'Moodle user id'),
+                'participantid' => new external_value(PARAM_INT, 'Participant number'),
+                'email' => new external_value(PARAM_TEXT, 'User email address'),
+                'status' => new external_value(PARAM_TEXT, 'Submission status'),
+                'timemodifiedsubmission' => new external_value(PARAM_TEXT, 'Date/time submission last modified'),
+                'timemodifiedgrade' => new external_value(PARAM_TEXT, 'Date/time grade last modified'),
+                'grade' => new external_value(PARAM_TEXT, 'Grade given'),
+                'feedbackcomments' => new external_value(PARAM_RAW, 'Feedback comments'),
+            ])
+        );
+    }
+
+    /**
+     * Download Assignment details and feedback
+     * @param int feedback instance id
+     */
+    public static function ams_download($id) {
+        global $CFG, $DB, $USER;
+
+        // load the Assign module class
+        require_once($CFG->dirroot . '/mod/assign/locallib.php');
+
+        // Check params
+        $params = self::validate_parameters(self::ams_download_parameters(), ['id' => $id]);
+
+        // Get assignment (one or two steps).
+        $assignment = $DB->get_record('assign', ['id' => $params['id']], '*', MUST_EXIST);
+        $course = $DB->get_record('course', ['id' => $assignment->course], '*', MUST_EXIST);
+        $cm = get_coursemodule_from_instance('assign', $assignment->id, $course->id, false, MUST_EXIST);
+        $context = context_module::instance($cm->id);
+        $assign = new assign($context, $cm, $course);
+
+        // Ok to see this data?
+        require_capability('mod/assign:view', $context);
+
+        // Negative grade means a scale
+        if ($assignment->grade < 0) {
+            $scaleid = abs($assignment->grade);
+            $scale = $DB->get_record('scale', ['id' => $scaleid], '*', MUST_EXIST);
+            $scaleitems = array_map('trim', explode(',', $scale->scale));
+        } else {
+            $scaleitems = null;
+        }
+
+        // Make sure participant IDs are assigned
+        $assign->allocate_unique_ids($assignment->id);
+
+        // Get list of assignment participants.
+        $participants = $assign->list_participants(0, false);
+
+        // Get results
+        $results = [];
+        foreach ($participants as $participant) {
+
+            // Participant ID
+            $mapping = $DB->get_record('assign_user_mapping', ['userid' => $participant->id]);
+
+            // Submission details.
+            $submission = $DB->get_record('assign_submission', ['assignment' => $assignment->id, 'userid' => $participant->id]);
+
+            // Assignment grades
+            $grades = $DB->get_record('assign_grades', ['assignment' => $assignment->id, 'userid' => $participant->id]);
+            if ($grades->grade > -1) {
+                if ($scaleitems) {
+                    $grade = $scaleitems[intval($grades->grade)];
+                } else {
+                    $grade = $grades->grade;
+                }
+            } else {
+                $grade = '';
+            }
+
+            // Get feedback
+            if ($grades) {
+                $comments = $DB->get_record('assignfeedback_comments', ['grade' => $grades->id]);
+            } else {
+                $comments = null;
+            }
+
+            // Build data record.
+            $results[] = [
+                'userid' => $participant->id,
+                'participantid' => $mapping ? $mapping->id : 0,
+                'email' => $participant->email,
+                'status' => $submission ? $submission->status : '',
+                'timemodifiedsubmission' => $submission ? date('YmdHis', $submission->timemodified) : '',
+                'timemodifiedgrade' => $grades ? date('YmdHis', $grades->timemodified) : '',
+                'grade' => $grade,
+                'feedbackcomments' => $comments ? $comments->commenttext : '',
+            ]; 
+        }
+
+        if (!$results) {
+            throw new invalid_response_exception('No matching users found for code assignment ' . $assignment->name);
+        }
+
+        return $results;
+    }
 }
