@@ -49,6 +49,8 @@ class local_guws_external extends external_api {
                 'id' => new external_value(PARAM_INT, 'Assignment id'),
                 'cm' => new external_value(PARAM_INT, 'Assignment course module id'),
                 'name' => new external_value(PARAM_TEXT, 'Assignment name in full'),
+                'startdate' => new external_value(PARAM_TEXT, 'Course start date in ISO format'),
+                'enddate' => new external_value(PARAM_TEXT, 'Course end date in ISO format'),
             ]),
         '', VALUE_OPTIONAL);
     }
@@ -59,9 +61,16 @@ class local_guws_external extends external_api {
         // Check params
         $params = self::validate_parameters(self::ams_searchassign_parameters(), ['code' => $code, 'date' => $date]);
 
+        // Target date converted to timestamp.
+        if ($params['date']) {
+            $udate = strtotime($params['date']);
+        } else {
+            $date = 0;
+        }
+
         // Get all the courses this user can access.
         // Final true means all that can be accessed
-        $courses = enrol_get_my_courses(['id'], null, 0, [], true);
+        $courses = enrol_get_my_courses(['id', 'startdate', 'enddate'], null, 0, [], true);
 
         // Are there any courses?
         if (!$courses) {
@@ -73,15 +82,39 @@ class local_guws_external extends external_api {
         foreach ($courses as $course) {
             $assignments = $DB->get_records('assign', ['course' => $course->id]);
             foreach ($assignments as $assignment) {
-                if (stripos($assignment->name, $params->code) !== false) {
-                    $found[] = [$assignment->id, $assignment->name, 0];
+                if (stripos($assignment->name, $params['code']) !== false) {
+
+                    if ($udate) {
+
+                        // If there's a course start date make sure date is after this.
+                        if ($udate < $course->startdate) {
+                            continue;
+                        }
+
+                        // If there's a course end date then supplied date must be before.
+                        if ($course->enddate && ($udate > $course->enddate)) {
+                            continue;
+                        }
+                    }
+
+                    // Find cmid
+                    $cm = get_coursemodule_from_instance('assign', $assignment->id, $course->id, false, MUST_EXIST);
+
+                    // Happy. Add to results.
+                    $found[] = [
+                        'id' => $assignment->id,
+                        'cm' => $cm->id,
+                        'name' => $assignment->name,
+                        'startdate' => date('Ymd', $course->startdate),
+                        'enddate' => date('Ymd', $course->enddate),
+                    ];
                 }
             }
         }
 
-        // Exception if there is nothing
+        // Exception if there is nothing.
         if (!$found) {
-            throw new invalid_response_exception('No matching assignments found for code ' . $params->code);
+            throw new invalid_response_exception('No matching assignments found for code ' . $params['code']);
         }
 
         return $found;
