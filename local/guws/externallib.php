@@ -146,6 +146,12 @@ class local_guws_external extends external_api {
                 'userid' => new external_value(PARAM_INT, 'Moodle user id'),
                 'participantid' => new external_value(PARAM_INT, 'Participant number'),
                 'email' => new external_value(PARAM_TEXT, 'User email address'),
+                'groups' => new external_multiple_structure(
+                    new external_single_structure([
+                        'id' => new external_value(PARAM_INT, 'Moodle internal group id'),
+                        'name' => new external_value(PARAM_TEXT, 'Group name') 
+                    ])
+                ),
                 'status' => new external_value(PARAM_TEXT, 'Submission status'),
                 'timemodifiedsubmission' => new external_value(PARAM_TEXT, 'Date/time submission last modified'),
                 'timemodifiedgrade' => new external_value(PARAM_TEXT, 'Date/time grade last modified'),
@@ -198,13 +204,13 @@ class local_guws_external extends external_api {
         foreach ($participants as $participant) {
 
             // Participant ID
-            $mapping = $DB->get_record('assign_user_mapping', ['userid' => $participant->id]);
+            $mapping = $DB->get_record('assign_user_mapping', ['assignment' => $assignment->id, 'userid' => $participant->id]);
 
             // Submission details.
             $submission = $DB->get_record('assign_submission', ['assignment' => $assignment->id, 'userid' => $participant->id]);
 
             // Assignment grades
-            $grades = $DB->get_record('assign_grades', ['assignment' => $assignment->id, 'userid' => $participant->id]);
+            $grades = $DB->get_record('assign_grades', ['assignment' => $assignment->id, 'userid' => $participant->id], '*', MUST_EXIST);
             if ($grades->grade > -1) {
                 if ($scaleitems) {
                     $grade = $scaleitems[intval($grades->grade)];
@@ -222,11 +228,26 @@ class local_guws_external extends external_api {
                 $comments = null;
             }
 
+            // Get groups
+            $sql = "SELECT g.id, name FROM {groups} g
+                JOIN {groups_members} gm ON gm.groupid = g.id
+                WHERE courseid = ?
+                AND userid = ?";
+            $groups = $DB->get_records_sql($sql, [$course->id, $participant->id]);
+            $groupdata = [];
+            foreach ($groups as $group) {
+                $groupdata[] = [
+                    'id' => $group->id,
+                    'name' => $group->name,
+                ];
+            }
+
             // Build data record.
             $results[] = [
                 'userid' => $participant->id,
                 'participantid' => $mapping ? $mapping->id : 0,
                 'email' => $participant->email,
+                'groups' => $groupdata,
                 'status' => $submission ? $submission->status : '',
                 'timemodifiedsubmission' => $submission ? date('YmdHis', $submission->timemodified) : '',
                 'timemodifiedgrade' => $grades ? date('YmdHis', $grades->timemodified) : '',
