@@ -137,13 +137,13 @@ class local_guws_external extends external_api {
     }
 
     /**
-     * Return definition for amd_searchassign
+     * Return definition for amd_download
      * @returns external_multiple_structure
      */
     public static function ams_download_returns() {
         return new external_multiple_structure(
             new external_single_structure([
-                'userid' => new external_value(PARAM_INT, 'Moodle user id'),
+                'userid' => new external_value(PARAM_INT, 'Moodle internal user id'),
                 'participantid' => new external_value(PARAM_INT, 'Participant number'),
                 'email' => new external_value(PARAM_TEXT, 'User email address'),
                 'groups' => new external_multiple_structure(
@@ -162,24 +162,38 @@ class local_guws_external extends external_api {
     }
 
     /**
+     * Get assignment and cm
+     * @param int $assignmentid
+     * @return [object $course, object $assignment, object $assign, object $cm]
+     */
+    protected static function ams_assignment_from_id($id) {
+        global $CFG, $DB;
+
+        // load the Assign module class
+        require_once($CFG->dirroot . '/mod/assign/locallib.php');
+
+        // Get assignment (one or two steps).
+        $assignment = $DB->get_record('assign', ['id' => $id], '*', MUST_EXIST);
+        $course = $DB->get_record('course', ['id' => $assignment->course], '*', MUST_EXIST);
+        $cm = get_coursemodule_from_instance('assign', $assignment->id, $course->id, false, MUST_EXIST);
+        $context = context_module::instance($cm->id);
+        $assign = new assign($context, $cm, $course);
+
+        return [$course, $assignment, $assign, $context];
+    }
+
+    /**
      * Download Assignment details and feedback
      * @param int feedback instance id
      */
     public static function ams_download($id) {
         global $CFG, $DB, $USER;
 
-        // load the Assign module class
-        require_once($CFG->dirroot . '/mod/assign/locallib.php');
-
         // Check params
         $params = self::validate_parameters(self::ams_download_parameters(), ['id' => $id]);
 
-        // Get assignment (one or two steps).
-        $assignment = $DB->get_record('assign', ['id' => $params['id']], '*', MUST_EXIST);
-        $course = $DB->get_record('course', ['id' => $assignment->course], '*', MUST_EXIST);
-        $cm = get_coursemodule_from_instance('assign', $assignment->id, $course->id, false, MUST_EXIST);
-        $context = context_module::instance($cm->id);
-        $assign = new assign($context, $cm, $course);
+        // Get assignment
+        list($course, $assignment, $assign, $context) = self::ams_assignment_from_id($params['id']);
 
         // Ok to see this data?
         require_capability('mod/assign:view', $context);
@@ -262,4 +276,103 @@ class local_guws_external extends external_api {
 
         return $results;
     }
+
+    /**
+     * Parameter definition for ams_upload
+     * @return external_funtion_parameters
+     */
+    public static function ams_upload_parameters() {
+        return new external_function_parameters([
+            'id' => new external_value(PARAM_INT, 'Assignment instance id'),
+            'participants' => new external_multiple_structure(
+                new external_single_structure([
+                    'userid' => new external_value(PARAM_INT, 'Moodle internal user id'),
+                    'grade' => new external_value(PARAM_TEXT, 'Grade value or scale item'),
+                    'feedback' => new external_value(PARAM_RAW, 'Feedback comments'),
+                ])
+            )
+        ]);
+    }
+
+    /**
+     * Return definition for ams_upload
+     * @returns external_multiple_structure
+     */
+    public static function ams_upload_returns() {
+        return new external_multiple_structure(
+            new external_single_structure([
+                'userid' => new external_value(PARAM_INT, 'Moodle user id'),
+                'success' => new external_value(PARAM_BOOL, 'Upload succeeded'),
+                'message' => new external_value(PARAM_TEXT, 'Error message if success = false'),
+            ])
+        );
+    }
+
+    /**
+     * Upload grade/feedback data to Assignment
+     * @param int $id instance id of Assignment
+     * @param array $data data to upload to Assignment
+     */
+    public static function ams_upload($id, $participants) {
+        global $CFG, $DB, $USER;
+
+        // Check params
+        $params = self::validate_parameters(self::ams_upload_parameters(), ['id' => $id, 'participants' => $participants]);
+
+        // Get assignment
+        list($course, $assignment, $assign, $context) = self::ams_assignment_from_id($params['id']);
+
+        // Ok to grade Assignment?
+        require_capability('mod/assign:grade', $context);
+
+        // Get list of assignment participants (to compare against
+        // those supplied)
+        $currentparticipants = $assign->list_participants(0, false);
+
+        // Build results
+        $results = [];
+        foreach ($params['participants'] as $participant) {
+            $userid = $participant['userid'];
+      
+            // Check the user is a participant
+            if (!array_key_exists($userid, $currentparticipants)) {
+                $results[] = [
+                    'userid' => $userid,
+                    'success' => false,
+                    'message' => 'User is not a participant in the Assignment'
+                ];
+                continue;
+            }
+
+            // Create fake grading form
+            $data = new stdClass;
+            $data->attemptnumber = 0;
+            $data->advancedgrading = 0;
+            $data->grade = $participant['grade'];
+            $data->assignfeedbackcomment = [];
+            $data->assignfeedbackcomments_editor['text'] = $participant['feedback'];
+            $data->assignfeedbackcomments_editor['format'] = FORMAT_MOODLE;
+            $updated = $assign->save_grade($userid, $data);
+
+            // Check
+            if (!$updated) {
+                $results[] = [
+                    'userid' => $userid,
+                    'success' => false,
+                    'message' => 'Error saving grade - see logs'
+                ];
+                continue;
+            }
+
+            // Record success
+            $results[] = [
+                'userid' => $userid,
+                'success' => true,
+                'message' => '',
+            ];
+        }
+
+        return $results;
+    }
+
 }
