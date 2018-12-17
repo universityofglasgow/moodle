@@ -51,6 +51,33 @@ $string['messageprovider:reminder'] = 'Reminder of an upcoming appointment';
 /* ***** Search areas ***** */
 $string['search:activity'] = 'Scheduler - activity information';
 
+/* ***** Privacy API strings **** */
+
+$string['privacy:metadata:scheduler_slots'] = 'Represents one slot in a scheduler';
+
+$string['privacy:metadata:scheduler_slots:teacherid'] = 'Teacher associated with the slot';
+$string['privacy:metadata:scheduler_slots:starttime'] = 'Start time of the slot';
+$string['privacy:metadata:scheduler_slots:duration'] = 'Duration of the slot in minutes';
+$string['privacy:metadata:scheduler_slots:appointmentlocation'] = 'Appointment location';
+$string['privacy:metadata:scheduler_slots:notes'] = 'Notes about the slot';
+$string['privacy:metadata:scheduler_slots:notesformat'] = "Format of the notes";
+$string['privacy:metadata:scheduler_slots:exclusivity'] = "Maximum number of students on the slot";
+
+$string['privacy:metadata:scheduler_appointment'] = 'Represents a student appointment in a scheduler';
+
+$string['privacy:metadata:scheduler_appointment:studentid'] = "Student who booked the appointment";
+$string['privacy:metadata:scheduler_appointment:attended'] = "Whether the appointment was attended";
+$string['privacy:metadata:scheduler_appointment:grade'] = "Grade for the appointment";
+$string['privacy:metadata:scheduler_appointment:appointmentnote'] = "Note by teacher (visible to student)";
+$string['privacy:metadata:scheduler_appointment:appointmentnoteformat'] = "Format of teacher note";
+$string['privacy:metadata:scheduler_appointment:teachernote'] = "Note by teacher (private)";
+$string['privacy:metadata:scheduler_appointment:teachernoteformat'] = "Format of private teacher note";
+$string['privacy:metadata:scheduler_appointment:studentnote'] = "Note by student";
+$string['privacy:metadata:scheduler_appointment:studentnoteformat'] = "Format of student note";
+
+$string['privacy:metadata:filepurpose'] = 'File used in notes for the slot or appointment';
+
+
 /* ***** Interface strings ****** */
 
 $string['onedaybefore'] = '1 day before slot';
@@ -205,6 +232,9 @@ $string['field-teachernote'] = 'Confidential note (teacher only)';
 $string['field-studentnote'] = 'Message by student';
 $string['field-filecount'] = 'Number of uploaded files';
 $string['field-grade'] = 'Grade';
+$string['field-groupssingle'] = 'Groups';
+$string['field-groupssingle-label'] = 'Groups (one column)';
+$string['field-groupsmulti'] = 'Groups (several columns)';
 $string['fileformat'] = 'File format';
 $string['fileformat_help'] = 'The following file formats are available:
      <ul>
@@ -338,6 +368,10 @@ $string['reminder'] = 'Reminder';
 $string['requireupload'] = 'File upload required';
 $string['resetslots'] = 'Delete scheduler slots';
 $string['resetappointments'] = 'Delete appointments and grades';
+$string['revealteachernotes'] = 'Reveal teacher notes in privacy exports';
+$string['revealteachernotes_desc'] = 'If this option is selected, then confidential teacher notes (which are normally not visible to students)
+will be revealed to students in data export requests, i.e., via the privay API. You should decide based on individual usage of this field
+whether it needs to be included in data exports for students under the GDPR.';
 $string['return'] = 'Back to course';
 $string['revoke'] = 'Revoke the appointment';
 $string['saturday'] = 'Saturday';
