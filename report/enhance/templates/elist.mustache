@@ -57,7 +57,8 @@
     {{# requests }}
         <div class="card m-t-1 filter-all {{ cardclasses }}">
             <div class="holder">
-            <div class="status-icon status-{{ statuscolour }}">
+                <div class="status-icon status-{{ statuscolour }}">
+                    <span class="statusidnumber">{{ id }}</span>
                     <span class="statusicon">
                         <i class="fa fa-{{ statusicon }}"></i>
                     </span>
@@ -83,5 +84,4 @@
         </div>
     {{/ requests }}
 </div>
-
-<a href="{{ formurl }}" class="btn btn-block btn-lg btn-success m-t-1"><i class="fa fa-plus-circle"></i> New request</a>
+<a href="{{ formurl }}" class="btn btn-block btn-lg btn-success m-t-1 bottom-button"><i class="fa fa-plus-circle"></i> New request</a>
