@@ -177,7 +177,7 @@ class local_guws_external extends external_api {
         $course = $DB->get_record('course', ['id' => $assignment->course], '*', MUST_EXIST);
         $cm = get_coursemodule_from_instance('assign', $assignment->id, $course->id, false, MUST_EXIST);
         $context = context_module::instance($cm->id);
-        $assign = new assign($context, $cm, $course);
+        $assign = new local_guws\assign($context, $cm, $course);
 
         return [$course, $assignment, $assign, $context];
     }
@@ -210,6 +210,9 @@ class local_guws_external extends external_api {
         // Make sure participant IDs are assigned
         $assign->allocate_unique_ids($assignment->id);
 
+        // fix any missing grades
+        $assign->fix_null_grades();
+
         // Get list of assignment participants.
         $participants = $assign->list_participants(0, false);
 
@@ -224,8 +227,8 @@ class local_guws_external extends external_api {
             $submission = $DB->get_record('assign_submission', ['assignment' => $assignment->id, 'userid' => $participant->id]);
 
             // Assignment grades
-            $grades = $DB->get_record('assign_grades', ['assignment' => $assignment->id, 'userid' => $participant->id], '*', MUST_EXIST);
-            if ($grades->grade > -1) {
+            $grades = $DB->get_record('assign_grades', ['assignment' => $assignment->id, 'userid' => $participant->id]);
+            if ($grades && ($grades->grade > -1)) {
                 if ($scaleitems) {
                     $grade = $scaleitems[intval($grades->grade)];
                 } else {
@@ -322,6 +325,15 @@ class local_guws_external extends external_api {
         // Get assignment
         list($course, $assignment, $assign, $context) = self::ams_assignment_from_id($params['id']);
 
+        // Negative grade means a scale
+        if ($assignment->grade < 0) {
+            $scaleid = abs($assignment->grade);
+            $scale = $DB->get_record('scale', ['id' => $scaleid], '*', MUST_EXIST);
+            $scaleitems = array_map('trim', explode(',', $scale->scale));
+        } else {
+            $scaleitems = null;
+        }
+
         // Ok to grade Assignment?
         require_capability('mod/assign:grade', $context);
 
@@ -344,11 +356,23 @@ class local_guws_external extends external_api {
                 continue;
             }
 
+            // If grade is scale then check/translate
+            if ($scaleitems) {
+                $key = array_search($participant['grade'], $scaleitems);
+                if ($key === false) {
+                    throw new invalid_parameter_exception('Grade item is not valid. A scale item is expected for this Assignment - ' . $participant['grade']);
+                } else {
+                    $grade = $key + 1;
+                }
+            } else {
+                $grade = $participant['grade'];
+            }
+
             // Create fake grading form
             $data = new stdClass;
             $data->attemptnumber = 0;
             $data->advancedgrading = 0;
-            $data->grade = $participant['grade'];
+            $data->grade = $grade;
             $data->assignfeedbackcomment = [];
             $data->assignfeedbackcomments_editor['text'] = $participant['feedback'];
             $data->assignfeedbackcomments_editor['format'] = FORMAT_MOODLE;
