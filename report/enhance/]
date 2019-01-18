@@ -44,21 +44,15 @@ $request = $DB->get_record('report_enhance', array('id' => $id), '*', MUST_EXIST
 $fs = get_file_storage();
 $dir = $fs->get_area_tree($context->id, 'report_enhance', 'attachments', $id);
 $files = $dir['files'];
-$attachments = [];
+$fileviews = [];
 foreach ($files as $file) {
-    $attachment = new stdClass;
-    $attachment->name = $file->get_filename();
-    $attachment->url = moodle_url::make_pluginfile_url(
-        $file->get_contextid(),
-        $file->get_component(),
-        $file->get_filearea(),
-        $file->get_itemid(),
-        $file->get_filepath(),
-        $file->get_filename()
-    );
+    $fileview = new stdClass;
+    $fileview->name = $file->get_name();
 
-    $attachments[] = $attachment;
+    $fileviews[] = $fileview;
 }
+
+echo "<pre>"; var_dump($fileviews); die;
 
 // Security.
 require_login($course);
@@ -70,7 +64,7 @@ $PAGE->set_title(get_string('pluginname', 'report_enhance'));
 $PAGE->set_heading($course->fullname);
 echo $OUTPUT->header();
 
-$more = new report_enhance\output\more($course, $request, $attachments);
+$more = new report_enhance\output\more($course, $request);
 echo $output->render($more);
 
 

@@ -23,7 +23,7 @@
  */
 
 require(dirname(__FILE__).'/../../config.php');
-require_once($CFG->dirroot . '/report/enhance/review_form.php');
+require_once($CFG->libdir . '/filelib.php');
 
 // params
 $courseid = required_param('courseid', PARAM_INT);
@@ -54,9 +54,15 @@ $fields = array(
     'result',
 );
 
+// Set up files area
+$entry = new stdClass();
+$entry->id = $id;
+$options = ['subdirs' => 0];
+file_prepare_standard_filemanager($entry, 'attachments', $options, $context, 'report_enhance', 'attachments', $id);
+
 // Form stuff
 $status = new \report_enhance\status();
-$form = new \review_form(null, array('course' => $course, 'request' => $request, 'fields' => $fields, 'statuses' => $status->getStatuses()));
+$form = new \report_enhance\forms\review_form(null, array('course' => $course, 'request' => $request, 'fields' => $fields, 'statuses' => $status->getStatuses(), 'entry' => $entry));
 $form->set_data($request);
 
 if ($form->is_cancelled()) {
@@ -68,6 +74,10 @@ if ($form->is_cancelled()) {
         $request->$field = $formdata['text'];
     }
     $DB->update_record('report_enhance', $request);
+
+    // Attachments
+    file_postupdate_standard_filemanager($data, 'attachments', $options, $context, 'report_enhance', 'attachments', $id);
+
     redirect(new moodle_url('/report/enhance/index.php', array('courseid' => $courseid)));
 }
 

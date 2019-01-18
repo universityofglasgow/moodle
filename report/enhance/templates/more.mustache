@@ -108,4 +108,17 @@
 </div>
 {{/request.result}}
 
+<div class="card m-b-1">
+<dl class="row m-b-0">
+    <dt class="col-xs-4 col-sm-3">{{# str }}attachments, report_enhance{{/ str }}</dt>
+    <dd class="col-xs-8 col-sm-9">
+        <ul>
+            {{# attachments }}
+                <li><a href="{{{ url }}}">{{ name }}</li>
+            {{/ attachments }}
+        </ul>
+    </dd>
+</dl>
+</div>
+
 <a class="btn btn-primary" href="{{{ back }}}">{{# str }}back{{/ str }}</a>

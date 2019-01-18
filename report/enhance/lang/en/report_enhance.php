@@ -24,6 +24,7 @@
 $string['approved'] = 'Approved';
 $string['approvedindev'] = 'Approved in development';
 $string['approvedreleased'] = 'Approved released';
+$string['attachments'] = 'Attachements';
 $string['availability'] = 'Availability';
 $string['availability_help'] = 'Is there something available that meets the requirements or is this a new custom development?';
 $string['consultations'] = 'Consultations';

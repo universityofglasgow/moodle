@@ -22,11 +22,15 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace report_enhance\forms;
+
+use \stdClass;
+
 defined('MOODLE_INTERNAL') || die;
 
 require_once("$CFG->libdir/formslib.php");
- 
-class enhance_form extends moodleform {
+
+class enhance_form extends \moodleform {
 
     public function definition() {
         global $CFG;
@@ -37,6 +41,7 @@ class enhance_form extends moodleform {
         $customdata = $this->_customdata;
         $course = $customdata['course'];
         $request = $customdata['request'];
+        $entry = $customdata['entry'];
 
         // Course id
         $mform->addElement('hidden', 'courseid', $course->id);
@@ -79,6 +84,10 @@ class enhance_form extends moodleform {
         if ($request) {
             $department->setValue($request->department);
         }
+
+        // Files
+        $filemanager = $mform->addElement('filemanager', 'attachments_filemanager', get_string('attachments', 'report_enhance'), null, ['subdirs' => 0]);
+        $filemanager->setValue($entry->attachments_filemanager);
        
         $this->add_action_buttons(); 
     }

@@ -22,11 +22,13 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace report_enhance\forms;
+
 defined('MOODLE_INTERNAL') || die;
 
 require_once("$CFG->libdir/formslib.php");
  
-class review_form extends moodleform {
+class review_form extends \moodleform {
 
     public function definition() {
         global $CFG;
@@ -39,6 +41,7 @@ class review_form extends moodleform {
         $request = $customdata['request'];
         $fields = $customdata['fields'];
         $statuses = $customdata['statuses'];
+        $entry = $customdata['entry'];
 
         // Course id
         $mform->addElement('hidden', 'courseid', $course->id);
@@ -58,6 +61,10 @@ class review_form extends moodleform {
             $mform->setType($field, PARAM_RAW);
             $mform->addHelpButton($field, $field, 'report_enhance');
         }
+
+        // Files
+        $filemanager = $mform->addElement('filemanager', 'attachments_filemanager', get_string('attachments', 'report_enhance'), null, ['subdirs' => 0]);
+        $filemanager->setValue($entry->attachments_filemanager);
         
         $this->add_action_buttons(); 
     }

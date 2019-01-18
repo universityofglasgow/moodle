@@ -41,12 +41,15 @@ class more implements renderable, templatable {
 
     private $course;
 
+    private $attachments;
+
     /**
      * Constructor
      */
-    public function __construct($course, $request) {
+    public function __construct($course, $request, $attachments) {
         $this->course = $course;
         $this->request = $this->format_request($request);
+        $this->attachments = $attachments;
     }
 
     private function format_request($request) {
@@ -72,6 +75,7 @@ class more implements renderable, templatable {
         return [
             'request' => $this->request,
             'back' => new \moodle_url('/report/enhance/index.php', ['courseid' => $this->course->id]),
+            'attachments' => $this->attachments,
         ];
     }
 

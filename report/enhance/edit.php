@@ -23,16 +23,16 @@
  */
 
 require(dirname(__FILE__).'/../../config.php');
-require_once($CFG->dirroot . '/report/enhance/enhance_form.php');
-
-// Page setup.
-$url = new moodle_url('/report/enhance/index.php');
-$PAGE->set_url($url);
-$PAGE->set_pagelayout('admin');
+require_once($CFG->libdir . '/filelib.php');
 
 // params
 $courseid = required_param('courseid', PARAM_INT);
 $id = optional_param('id', 0, PARAM_INT);
+
+// Page setup.
+$url = new moodle_url('/report/enhance/index.php', ['courseid' => $courseid, 'id' => $id]);
+$PAGE->set_url($url);
+$PAGE->set_pagelayout('admin');
 
 // Find course
 $course = $DB->get_record('course', array('id' => $courseid), '*', MUST_EXIST);
@@ -52,13 +52,20 @@ if(isset($request)) {
         require_capability('report/enhance:editall', $context);
     }
 }
-$output = $PAGE->get_renderer('report_enhance');;
+$output = $PAGE->get_renderer('report_enhance');
+
+// Set up files area
+$entry = new stdClass();
+$entry->id = $id;
+$options = ['subdirs' => 0];
+file_prepare_standard_filemanager($entry, 'attachments', $options, $context, 'report_enhance', 'attachments', $id);
 
 // Form stuff
-$form = new \enhance_form(null, array('course' => $course, 'request' => $request));
+$form = new \report_enhance\forms\enhance_form(null, array('course' => $course, 'request' => $request, 'entry' => $entry));
 if ($form->is_cancelled()) {
     redirect(new moodle_url('/report/enhance/index.php', array('courseid' => $courseid)));
 } else if ($data = $form->get_data()) {
+
     if (!$id) {
         $request = new stdClass();
         $request->timecreated = time();
@@ -73,9 +80,13 @@ if ($form->is_cancelled()) {
     if ($id) {
         $DB->update_record('report_enhance', $request);
     } else {
-        $DB->insert_record('report_enhance', $request);
+        $id = $DB->insert_record('report_enhance', $request);
         \report_enhance\email::newrequest($USER, $request);
     }
+
+    // Attachments
+    file_postupdate_standard_filemanager($data, 'attachments', $options, $context, 'report_enhance', 'attachments', $id);
+
     redirect(new moodle_url('/report/enhance/index.php', array('courseid' => $courseid)));
 }
 
@@ -85,7 +96,6 @@ echo $OUTPUT->header();
 
 $edit = new report_enhance\output\edit($form->render());
 echo $output->render($edit);
-
 
 echo $OUTPUT->footer();
 
