@@ -72,7 +72,8 @@ class elist implements renderable, templatable {
             $request->link = new \moodle_url('/report/enhance/edit.php', array('courseid' => $this->course->id, 'id' => $request->id));
             $request->more = new \moodle_url('/report/enhance/more.php', array('courseid' => $this->course->id, 'id' => $request->id));
             $request->review = new \moodle_url('/report/enhance/review.php', array('courseid' => $this->course->id, 'id' => $request->id));
-            $request->allowedit = has_capability('report/enhance:editall', $context) || ($request->userid==$USER->id && ($request->status == 1 || $request->status=4));
+            $request->allowedit = has_capability('report/enhance:editall', $context) ||
+                ($request->userid == $USER->id && ($request->status == ENHANCE_STATUS_NEW || $request->status == ENHANCE_STATUS_MOREINFORMATION));
             $request->allowreview = has_capability('report/enhance:review', $context);
             
             // This really should go into its own function once I find the best place to put it.

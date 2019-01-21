@@ -23,6 +23,16 @@
 
 namespace report_enhance;
 
+define('ENHANCE_STATUS_NEW', 1);
+define('ENHANCE_STATUS_PENDINGREVIEW', 2);
+define('ENHANCE_STATUS_UNDERREVIEW', 3);
+define('ENHANCE_STATUS_MOREINFORMATION', 4);
+define('ENHANCE_STATUS_WAITINGDEVELOPMENT', 5);
+define('ENHANCE_STATUS_DEVELOPMENTINPROGRESS', 6);
+define('ENHANCE_STATUS_COMPLETE', 7);
+define('ENHANCE_STATUS_REJECTED', 8);
+define('ENHANCE_STATUS_DESIRABLE', 9);
+
 defined('MOODLE_INTERNAL') || die();
 
 class status {
@@ -32,39 +42,39 @@ class status {
     public function __construct() {
 
         $this->statuses = array(
-            1 => get_string('new', 'report_enhance'),
-            2 => get_string('pendingreview', 'report_enhance'),
-            3 => get_string('underreview', 'report_enhance'),
-            4 => get_string('moreinformation', 'report_enhance'),
-            5 => get_string('waitingdevelopment', 'report_enhance'),
-            6 => get_string('developmentinprogress', 'report_enhance'),
-            7 => get_string('complete', 'report_enhance'),
-            8 => get_string('rejected', 'report_enhance'),
-            9 => get_string('desirable', 'report_enhance'),
+            ENHANCE_STATUS_NEW => get_string('new', 'report_enhance'),
+            ENHANCE_STATUS_PENDINGREVIEW => get_string('pendingreview', 'report_enhance'),
+            ENHANCE_STATUS_UNDERREVIEW => get_string('underreview', 'report_enhance'),
+            ENHANCE_STATUS_MOREINFORMATION => get_string('moreinformation', 'report_enhance'),
+            ENHANCE_STATUS_WAITINGDEVELOPMENT => get_string('waitingdevelopment', 'report_enhance'),
+            ENHANCE_STATUS_DEVELOPMENTINPROGRESS => get_string('developmentinprogress', 'report_enhance'),
+            ENHANCE_STATUS_COMPLETE => get_string('complete', 'report_enhance'),
+            ENHANCE_STATUS_REJECTED => get_string('rejected', 'report_enhance'),
+            ENHANCE_STATUS_DESIRABLE => get_string('desirable', 'report_enhance'),
         );
         
         $this->statusicons = array(
-            1 => 'star-o',
-            2 => 'clock-o',
-            3 => 'gavel',
-            4 => 'info-circle',
-            5 => 'thumbs-o-up',
-            6 => 'gear',
-            7 => 'check-circle',
-            8 => 'thumbs-o-down',
-            9 => 'heart',
+            ENHANCE_STATUS_NEW => 'star-o',
+            ENHANCE_STATUS_PENDINGREVIEW => 'clock-o',
+            ENHANCE_STATUS_UNDERREVIEW => 'gavel',
+            ENHANCE_STATUS_MOREINFORMATION => 'info-circle',
+            ENHANCE_STATUS_WAITINGDEVELOPMENT => 'thumbs-o-up',
+            ENHANCE_STATUS_DEVELOPMENTINPROGRESS => 'gear',
+            ENHANCE_STATUS_COMPLETE => 'check-circle',
+            ENHANCE_STATUS_REJECTED => 'thumbs-o-down',
+            ENHANCE_STATUS_DESIRABLE => 'heart',
         );
         
         $this->statusclass = array(
-            1 => 'info',
-            2 => 'good',
-            3 => 'wait',
-            4 => 'info',
-            5 => 'good',
-            6 => 'wait',
-            7 => 'good',
-            8 => 'fail',
-            9 => 'wait',
+            ENHANCE_STATUS_NEW => 'info',
+            ENHANCE_STATUS_PENDINGREVIEW => 'good',
+            ENHANCE_STATUS_UNDERREVIEW => 'wait',
+            ENHANCE_STATUS_MOREINFORMATION => 'info',
+            ENHANCE_STATUS_WAITINGDEVELOPMENT => 'good',
+            ENHANCE_STATUS_DEVELOPMENTINPROGRESS => 'wait',
+            ENHANCE_STATUS_COMPLETE => 'good',
+            ENHANCE_STATUS_REJECTED => 'fail',
+            ENHANCE_STATUS_DESIRABLE => 'wait',
         );
     }
 

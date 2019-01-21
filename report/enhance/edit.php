@@ -24,6 +24,7 @@
 
 require(dirname(__FILE__).'/../../config.php');
 require_once($CFG->libdir . '/filelib.php');
+require_once($CFG->dirroot . '/report/enhance/classes/status.php');
 
 // params
 $courseid = required_param('courseid', PARAM_INT);
@@ -48,7 +49,7 @@ if ($id) {
 require_login($course);
 $context = context_course::instance($course->id);
 if(isset($request)) {
-    if(!($request->userid == $USER->id && ($request->status == 1 || $request->status == 4))) {
+    if(!($request->userid == $USER->id && ($request->status == ENHANCE_STATUS_NEW || $request->status == ENHANCE_STATUS_MOREINFORMATION))) {
         require_capability('report/enhance:editall', $context);
     }
 }
@@ -69,7 +70,7 @@ if ($form->is_cancelled()) {
     if (!$id) {
         $request = new stdClass();
         $request->timecreated = time();
-        $request->status = 1;
+        $request->status = ENHANCE_STATUS_NEW;
         $request->userid = $USER->id;
     }
     $request->headline = $data->headline;

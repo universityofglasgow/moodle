@@ -23,6 +23,7 @@
  */
 
 require(dirname(__FILE__).'/../../config.php');
+require_once($CFG->dirroot . '/report/enhance/classes/status.php');
 require_once($CFG->libdir . '/filelib.php');
 
 // params
