@@ -94,7 +94,9 @@ class elist implements renderable, templatable {
     public function export_for_template(renderer_base $output) {
 
         return [
+            'course' => $this->course,
             'formurl' => new \moodle_url('/report/enhance/edit.php', array('courseid' => $this->course->id)),
+            'moreurl' => new \moodle_url('/report/enhance/more.php', array('courseid' => $this->course->id)),
             'requests' => array_values($this->requests),
             'status' => $output->single_select('', 'filterstatus', $this->statuses, '', array('' => 'choosedots'), null, ['class' => 'form-control']),
         ];

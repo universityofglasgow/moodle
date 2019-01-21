@@ -23,40 +23,48 @@
     {}
 }}
 
-<p>Got an idea for something that would make Moodle better? You can submit it to the VLE Enhancement Board for consideration. Projects that are approved will be added to Moodle in due course.</p>
+<p>{{# str }}gotanidea, report_enhance{{/ str }}</p>
 
 <div class="form-group m-b-0">
     <ul class="nav nav-pills filter-list">
         <li class="nav-item">
-            <a class="nav-link active" href="#" data-filter=".filter-all"><i class="fa fa-list"></i> All Requests</a>
+            <a class="nav-link active" href="#" data-filter=".filter-all"><i class="fa fa-list"></i> {{# str }}allrequests, report_enhance{{/ str }}</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="#" data-filter=".filter-me"><i class="fa fa-user"></i> Submitted By Me</a>
+            <a class="nav-link" href="#" data-filter=".filter-me"><i class="fa fa-user"></i> {{# str }}submittedbyme, report_enhance{{/ str }}</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="#" data-filter=".filter-status-7"><i class="fa fa-check-circle"></i> Completed</a>
+            <a class="nav-link" href="#" data-filter=".filter-status-7"><i class="fa fa-check-circle"></i> {{# str }}completed, report_enhance{{/ str }}</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="#" data-filter=".filter-status-5, .filter-status-6"><i class="fa fa-gear"></i> In Development</a>
+            <a class="nav-link" href="#" data-filter=".filter-status-5, .filter-status-6"><i class="fa fa-gear"></i> {{# str }}indevelopment, report_enhance{{/ str }}</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="#" data-filter=".filter-status-8"><i class="fa fa-thumbs-o-down"></i> Rejected</a>
+            <a class="nav-link" href="#" data-filter=".filter-status-8"><i class="fa fa-thumbs-o-down"></i> {{# str }}rejected, report_enhance{{/ str }}</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="#" data-filter=".filter-status-2, .filter-status-3, filter-status-4"><i class="fa fa-gavel"></i> Under Review</a>
+            <a class="nav-link" href="#" data-filter=".filter-status-2, .filter-status-3, filter-status-4"><i class="fa fa-gavel"></i> {{# str }}underreview, report_enhance{{/ str }}</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="#" data-filter=".filter-status-1"><i class="fa fa-star-o"></i> New</a>
-        </li>
-        <li class="">
-            <label>Find ID</label>
-            <input type="text" name="idfilter">
+            <a class="nav-link" href="#" data-filter=".filter-status-1"><i class="fa fa-star-o"></i> {{# str }}new, report_enhance{{/ str }}</a>
         </li>
     </ul>
 </div>
 </div>
 </div>
-<a href="{{ formurl }}" class="btn btn-success m-t-1"><i class="fa fa-plus-circle"></i> Submit a New request</a>
+<div class="row">
+    <div class="col">
+        <a href="{{ formurl }}" class="btn btn-success m-t-1"><i class="fa fa-plus-circle"></i> {{# str }}submitnew, report_enhance{{/ str }}</a>
+    </div>
+    <div class="col p-t-1">
+        <form class="form-inline" action="{{ moreurl }}">
+            <input type="hidden" name="courseid" value="{{ course.id }}">
+            <label for="inputidfilter">{{# str }}findid, report_enhance{{/ str }}</label>&nbsp;
+            <input id="inputidfilter" type="number" name="id">&nbsp;
+            <input class="btn btn-info" type="submit" value="{{# str }}go, report_enhance{{/ str }}">
+        </form>
+    </div>
+</div>
 <div class="enhancement-list">
     {{# requests }}
         <div class="card m-t-1 filter-all {{ cardclasses }}">
@@ -74,12 +82,12 @@
                     <p class="information">Submitted {{ timeago }} ago by {{username}} </p>
                     <div class="media-footer">
                         <ul class="enhancement-links">
-                            <li><a href="{{{ more }}}"><i class="fa fa-info-circle"></i> More Information</a></li>
+                            <li><a href="{{{ more }}}"><i class="fa fa-info-circle"></i> {{# str }}moreinfo, report_enhance{{/ str }}</a></li>
                             {{# allowedit }}
-                            <li><a href="{{{ link }}}"><i class="fa fa-pencil"></i> Edit</a></li>
+                            <li><a href="{{{ link }}}"><i class="fa fa-pencil"></i> {{# str }}edit, report_enhance{{/ str }}</a></li>
                             {{/ allowedit }}
                             {{# allowreview }}
-                            <li><a href="{{{ review }}}"><i class="fa fa-list"></i> Review</a></li>
+                            <li><a href="{{{ review }}}"><i class="fa fa-list"></i> {{# str }}review, report_enhance{{/ str }}</a></li>
                             {{/ allowreview }}
                         </ul>
                     </div>
@@ -88,4 +96,4 @@
         </div>
     {{/ requests }}
 </div>
-<a href="{{ formurl }}" class="btn btn-success m-t-1 bottom-button"><i class="fa fa-plus-circle"></i> Submit a New request</a>
+<a href="{{ formurl }}" class="btn btn-success m-t-1 bottom-button"><i class="fa fa-plus-circle"></i> {{# str }}submitnew, report_enhance{{/ str }}</a>

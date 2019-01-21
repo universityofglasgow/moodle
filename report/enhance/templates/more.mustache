@@ -122,3 +122,9 @@
 </div>
 
 <a class="btn btn-primary" href="{{{ back }}}">{{# str }}back{{/ str }}</a>
+{{# allowedit }}
+    <a class="btn btn-warning" href="{{{ editurl }}}">{{# str }}edit, report_enhance{{/ str }}</a>
+{{/ allowedit }}
+{{# allowreview }}
+    <a class="btn btn-warning" href="{{{ reviewurl }}}">{{# str }}review, report_enhance{{/ str }}</a>
+{{/ allowreview }}

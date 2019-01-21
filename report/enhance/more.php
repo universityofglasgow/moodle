@@ -34,11 +34,19 @@ $courseid = required_param('courseid', PARAM_INT);
 $id = required_param('id', PARAM_INT);
 $context = context_course::instance($courseid);
 
+// Page setup.
+$url = new moodle_url('/report/enhance/more.php', ['courseid' => $courseid, 'id' => $id]);
+$PAGE->set_url($url);
+$PAGE->set_pagelayout('admin');
+
 // Find course
 $course = $DB->get_record('course', array('id' => $courseid), '*', MUST_EXIST);
 
 // Find request
-$request = $DB->get_record('report_enhance', array('id' => $id), '*', MUST_EXIST);
+$request = $DB->get_record('report_enhance', array('id' => $id));
+if (!$request) {
+    redirect(new moodle_url('/report/enhance/index.php', ['courseid' => $courseid]));
+}
 
 // Get any attachments
 $fs = get_file_storage();
@@ -70,7 +78,7 @@ $PAGE->set_title(get_string('pluginname', 'report_enhance'));
 $PAGE->set_heading($course->fullname);
 echo $OUTPUT->header();
 
-$more = new report_enhance\output\more($course, $request, $attachments);
+$more = new report_enhance\output\more($course, $request, $context, $attachments);
 echo $output->render($more);
 
 

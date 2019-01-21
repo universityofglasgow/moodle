@@ -41,14 +41,17 @@ class more implements renderable, templatable {
 
     private $course;
 
+    private $context;
+
     private $attachments;
 
     /**
      * Constructor
      */
-    public function __construct($course, $request, $attachments) {
+    public function __construct($course, $request, $context, $attachments) {
         $this->course = $course;
         $this->request = $this->format_request($request);
+        $this->context = $context;
         $this->attachments = $attachments;
     }
 
@@ -75,6 +78,10 @@ class more implements renderable, templatable {
         return [
             'request' => $this->request,
             'back' => new \moodle_url('/report/enhance/index.php', ['courseid' => $this->course->id]),
+	    'editurl' => new \moodle_url('/report/enhance/edit.php', ['courseid' => $this->course->id, 'id' => $this->request->id]),
+            'reviewurl' => new \moodle_url('/report/enhance/review.php', ['courseid' => $this->course->id, 'id' => $this->request->id]),
+            'allowedit' => has_capability('report/enhance:editall', $this->context) || ($this->request->userid==$USER->id && ($this->request->status == 1 || $this->request->status=4)),
+            'allowreview' => has_capability('report/enhance:review', $this->context),
             'attachments' => $this->attachments,
         ];
     }
