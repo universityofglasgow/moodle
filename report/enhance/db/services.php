@@ -15,14 +15,29 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version info
+ * Web services
  *
  * @package    report_enhance
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die;
+defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2019020400;
-$plugin->requires  = 2017051500;
-$plugin->component = 'report_enhance';
+$functions = [
+    'report_enhance_get_votes' => [
+        'classname' => 'report_enhance_external',
+        'methodname' => 'get_votes',
+        'classpath' => 'report/enhance/externallib.php',
+        'description' => 'Get vote count and user involvement',
+        'type' => 'read',
+        'ajax' => true,
+    ],
+    'report_enhance_set_vote' => [
+        'classname' => 'report_enhance_external',
+        'methodname' => 'set_vote',
+        'classpath' => 'report/enhance/externallib.php',
+        'description' => 'Set/reset vote for given user.',
+        'type' => 'write',
+        'ajax' => true,
+    ],
+];

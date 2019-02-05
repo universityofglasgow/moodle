@@ -1,0 +1,10 @@
+    {{# str }}votes, report_enhance{{/ str }} <span class="badge badge-light">{{ votecount }}</span>
+    {{^ ownrequest }}
+        {{# voted }}
+            <a class="votebutton" data-requestid="{{ id }}" data-vote="0" href="#"><i class="fa fa-thumbs-down"></i>{{# str }}removevote, report_enhance{{/ str }}</a>
+        {{/ voted }}
+        {{^ voted }}
+            <a class="votebutton" data-requestid="{{ id }}" data-vote="1" href="#"><i class="fa fa-thumbs-up"></i>{{# str }}addvote, report_enhance{{/ str }}</a>
+        {{/ voted }}
+    {{/ ownrequest }}
+

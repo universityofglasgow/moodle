@@ -21,6 +21,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+$string['addvote'] = 'Add my vote';
 $string['allrequests'] = 'All requests';
 $string['approved'] = 'Approved';
 $string['approvedindev'] = 'Approved in development';
@@ -63,6 +64,7 @@ $string['pluginname'] = 'UofG VLE enhancement requests';
 $string['proposed'] = 'Proposed';
 $string['reason'] = 'Reason';
 $string['reason_help'] = 'Reason for acceptance or rejection.';
+$string['removevote'] = 'Remove my vote';
 $string['rejected'] = 'Rejected';
 $string['remit'] = 'Remit';
 $string['remit_help'] = 'Is the feature Moodle only or should it involve others e.g. MyCampus/Library, or even be a MyCampus/Library proposal and not Moodle? (Is this request about changes to policy, rather than functionality?  Is it within the Board’s remit?)';
@@ -93,6 +95,7 @@ $string['underreview'] = 'Under Review';
 $string['timescales'] = 'Timescales';
 $string['timescales_help'] = 'If specific timescales are mentioned are they feasible? (How urgent is it that the issue is resolved?)';
 $string['underreview'] = 'Under review';
+$string['votes'] = 'Votes';
 $string['viability'] = 'Viability';
 $string['viability_help'] = '<ul><li>Quick win - is there any easy way of meeting the user requirement</li><li>Costs and Benefits - how much staff time is required to implement the proposal and is this consistent with its perceived benefits?</li><li>Funding - is additional funding required?</li><li>Robustness - if a specific plugin or software is recommended, is this compatible with our current (and any proposed) version of Moodle, is it up to date, properly documented, being maintained, and from a trusted provider?</li><li>Support - what are the future support requirements of the proposal?</li><li>Timescales - how urgent is the requirement, and if timescales are mentioned are they feasible?</li></ul>';
 $string['waitingdevelopment'] = 'Accepted, Waiting for Development';

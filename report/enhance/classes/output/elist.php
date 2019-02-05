@@ -75,15 +75,8 @@ class elist implements renderable, templatable {
             $request->allowedit = has_capability('report/enhance:editall', $context) ||
                 ($request->userid == $USER->id && ($request->status == ENHANCE_STATUS_NEW || $request->status == ENHANCE_STATUS_MOREINFORMATION));
             $request->allowreview = has_capability('report/enhance:review', $context);
-            
-            // This really should go into its own function once I find the best place to put it.
-            
-            $requestClasses = Array();
-            $requestClasses[] = 'filter-status-'.$request->status;
-            if($request->userid == $USER->id) {
-                $requestClasses[] = 'filter-me';
-            }
-            $request->cardclasses = implode(" ", $requestClasses);
+            $request->cardclasses = \report_enhance\lib::cardclasses($request);
+            list($request->votecount, $request->ownrequest, $request->voted) = \report_enhance\lib::getvotes($request);
         }
 
         return $requests;

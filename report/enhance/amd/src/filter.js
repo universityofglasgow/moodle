@@ -1,10 +1,9 @@
-define(['jquery'], function($) {
+define(['jquery', 'core/templates', 'core/ajax', 'core/notification'], function($, templates, ajax, notification) {
 
     return {
         init: function() {
 
-            // Put whatever you like here. $ is available
-            // to you as normal.
+            // Set up filter for list of requests
             $(".filter-list .nav-link").click(function() {
                 $(".filter-list .nav-link").removeClass("active");
                 $(this).addClass("active");
@@ -36,6 +35,38 @@ define(['jquery'], function($) {
             } catch (error) {
                 return false;
             }
+
+            // Display updated voting buttons
+            function render_voting(container, requestid, votes) {
+                var context = {
+                    votecount: votes.count,
+                    id: requestid,
+                    ownrequest: votes.ownrequest,
+                    voted: votes.voted
+                }
+                templates.render("report_enhance/votes", context)
+                   .done(function(html) {
+                        $(container).html(html);
+                    })
+                    .fail(notification.exception);
+            }
+
+            // set up voting stuffs
+            $(".enhance_votes").on("click", ".votebutton", function() {
+                var requestid = $(this).data("requestid");
+                var vote = $(this).data("vote");
+                var container = $(this).parent();
+           
+                // ajax call to get voting details
+                ajax.call([{
+                    methodname: 'report_enhance_set_vote',
+                    args: { requestid: requestid, vote: vote },
+                    done: function(votes) { render_voting(container, requestid, votes)  },
+                    fail: notification.exception,
+                }]);
+
+                return false;
+            });
         }
     };
 });

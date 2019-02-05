@@ -62,7 +62,8 @@ foreach ($files as $file) {
         $file->get_filearea(),
         $file->get_itemid(),
         $file->get_filepath(),
-        $file->get_filename()
+        $file->get_filename(),
+        true // true = force download.
     );
 
     $attachments[] = $attachment;
