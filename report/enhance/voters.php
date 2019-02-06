@@ -30,7 +30,7 @@ $id = required_param('id', PARAM_INT);
 $context = context_course::instance($courseid);
 
 // Page setup.
-$url = new moodle_url('/report/enhance/more.php', ['courseid' => $courseid, 'id' => $id]);
+$url = new moodle_url('/report/enhance/voters.php', ['courseid' => $courseid, 'id' => $id]);
 $PAGE->set_url($url);
 $PAGE->set_pagelayout('admin');
 
@@ -43,26 +43,8 @@ if (!$request) {
     redirect(new moodle_url('/report/enhance/index.php', ['courseid' => $courseid]));
 }
 
-// Get any attachments
-$fs = get_file_storage();
-$dir = $fs->get_area_tree($context->id, 'report_enhance', 'attachments', $id);
-$files = $dir['files'];
-$attachments = [];
-foreach ($files as $file) {
-    $attachment = new stdClass;
-    $attachment->name = $file->get_filename();
-    $attachment->url = moodle_url::make_pluginfile_url(
-        $file->get_contextid(),
-        $file->get_component(),
-        $file->get_filearea(),
-        $file->get_itemid(),
-        $file->get_filepath(),
-        $file->get_filename(),
-        true // true = force download.
-    );
-
-    $attachments[] = $attachment;
-}
+// Get voters
+$voters = $DB->get_records('report_enhance_vote', ['enhanceid' => $id]);
 
 // Security.
 require_login($course);
@@ -74,7 +56,7 @@ $PAGE->set_title(get_string('pluginname', 'report_enhance'));
 $PAGE->set_heading($course->fullname);
 echo $OUTPUT->header();
 
-$more = new report_enhance\output\more($course, $request, $context, $attachments);
+$more = new report_enhance\output\voters($courseid, $request, $voters);
 echo $output->render($more);
 
 echo $OUTPUT->footer();

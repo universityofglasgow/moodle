@@ -1,0 +1,8 @@
+<h2>{{# str }}votershead, report_enhance, {{ request.headline }}{{/ str }}</h2>
+<ul>
+    {{# voters }}
+        <li>{{{ userpicture }}} <a href="{{ userlink }}">{{ fullname }}</a></li>
+    {{/ voters }} 
+</ul>
+
+<a class="btn btn-primary" href="{{{ back }}}">{{# str }}back{{/ str }}</a>

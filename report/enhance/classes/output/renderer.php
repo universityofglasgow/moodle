@@ -57,6 +57,14 @@ class renderer extends plugin_renderer_base {
      }
 
     /**
+     * Render 'voters' page
+     * @param voters $voters
+     */
+     public function render_voters(voters $voters) {
+         return $this->render_from_template('report_enhance/voters', $voters->export_for_template($this));
+     }
+
+    /**
      * Review  enhancement
      * @param review $review
      */

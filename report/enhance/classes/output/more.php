@@ -61,11 +61,13 @@ class more implements renderable, templatable {
         $status = new \report_enhance\status;
 
         $user = $DB->get_record('user', array('id' => $request->userid), '*', MUST_EXIST);
+        $request->user = $user;
         $request->username = fullname($user);
         $request->userdate = userdate($request->timecreated);
         $request->statusformatted = $status->getStatus($request->status);
         $request->statusicon = $status->getStatusIcon($request->status);
         $request->statuscolour = $status->getStatusColour($request->status);
+        list($request->votes) = \report_enhance\lib::getvotes($request);
 
         return $request;
     }
@@ -74,6 +76,7 @@ class more implements renderable, templatable {
      * Export data for list of enhancements
      */
     public function export_for_template(renderer_base $output) {
+        global $USER;
 
         return [
             'request' => $this->request,
@@ -84,6 +87,9 @@ class more implements renderable, templatable {
                 ($this->request->userid == $USER->id && ($this->request->status == ENHANCE_STATUS_NEW || $this->request->status == ENHANCE_STATUS_MOREINFORMATION)),
             'allowreview' => has_capability('report/enhance:review', $this->context),
             'attachments' => $this->attachments,
+            'userpicture' => $output->user_picture($this->request->user, ['size' => 64, 'alttext' => false]),
+            'userlink' => new \moodle_url('/user/view.php', ['id' => $this->request->userid]),
+            'voteslink' => new \moodle_url('/report/enhance/voters.php', ['courseid' => $this->course->id, 'id' => $this->request->id]),
         ];
     }
 

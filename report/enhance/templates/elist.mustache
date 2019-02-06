@@ -82,12 +82,12 @@
                     <p class="information">Submitted {{ timeago }} ago by {{username}} </p>
                     <div class="media-footer">
                         <ul class="enhancement-links">
-                            <li><a href="{{{ more }}}"><i class="fa fa-info-circle"></i> {{# str }}moreinfo, report_enhance{{/ str }}</a></li>
+                            <li><a class="save-link" href="{{{ more }}}"><i class="fa fa-info-circle"></i> {{# str }}moreinfo, report_enhance{{/ str }}</a></li>
                             {{# allowedit }}
-                            <li><a href="{{{ link }}}"><i class="fa fa-pencil"></i> {{# str }}edit, report_enhance{{/ str }}</a></li>
+                            <li><a class="save-link" href="{{{ link }}}"><i class="fa fa-pencil"></i> {{# str }}edit, report_enhance{{/ str }}</a></li>
                             {{/ allowedit }}
                             {{# allowreview }}
-                            <li><a href="{{{ review }}}"><i class="fa fa-list"></i> {{# str }}review, report_enhance{{/ str }}</a></li>
+                            <li><a class="save-link" href="{{{ review }}}"><i class="fa fa-list"></i> {{# str }}review, report_enhance{{/ str }}</a></li>
                             {{/ allowreview }}
                             <li class="enhance_votes">{{> report_enhance/votes }}</li>
                         </ul>

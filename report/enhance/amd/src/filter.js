@@ -67,6 +67,26 @@ define(['jquery', 'core/templates', 'core/ajax', 'core/notification'], function(
 
                 return false;
             });
+
+            // remember scroll position
+            $(".save-link").on("click", function() {
+                var scroll = $(document).scrollTop();
+                try {
+                    localStorage.setItem('scroll-position', scroll);
+                } catch(e) {
+                    return;
+                }
+            });
+
+            // Restore scroll position
+            try {
+                var scroll = localStorage.getItem('scroll-position');
+            } catch(e) {
+                return
+            }
+            if (scroll) {
+                $(document).scrollTop(scroll);
+            }
         }
     };
 });

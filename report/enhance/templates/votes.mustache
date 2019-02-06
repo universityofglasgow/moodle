@@ -1,10 +1,21 @@
-    {{# str }}votes, report_enhance{{/ str }} <span class="badge badge-light">{{ votecount }}</span>
+    {{# ownrequest }}
+        <span class="enhancement-links">
+            <i class="fa fa-star-o"></i>
+            {{# str }}votes, report_enhance{{/ str }} <span class="badge badge-light">{{ votecount }}</span>
+        </span>
+    {{/ ownrequest }}
     {{^ ownrequest }}
         {{# voted }}
-            <a class="votebutton" data-requestid="{{ id }}" data-vote="0" href="#"><i class="fa fa-thumbs-down"></i>{{# str }}removevote, report_enhance{{/ str }}</a>
+            <a class="text-primary votebutton" data-requestid="{{ id }}" data-vote="0" href="#">
+                <i class="fa fa-star"></i>
+                {{# str }}voted, report_enhance{{/ str }} <span class="badge badge-light">{{ votecount }}</span>
+            </a>
         {{/ voted }}
         {{^ voted }}
-            <a class="votebutton" data-requestid="{{ id }}" data-vote="1" href="#"><i class="fa fa-thumbs-up"></i>{{# str }}addvote, report_enhance{{/ str }}</a>
+            <a class="text-info votebutton" data-requestid="{{ id }}" data-vote="1" href="#">
+                <i class="fa fa-star"></i>
+                {{# str }}vote, report_enhance{{/ str }} <span class="badge badge-light">{{ votecount }}</span>
+            </a>
         {{/ voted }}
     {{/ ownrequest }}
 

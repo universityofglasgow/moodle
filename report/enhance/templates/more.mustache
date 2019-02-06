@@ -32,7 +32,7 @@
 
 <dl class="row">
     <dt class="col-xs-4 col-sm-3">{{# str }}submittedby, report_enhance{{/ str }}</dt>
-    <dd class="col-xs-8 col-sm-9">{{ request.username }}</dd>
+    <dd class="col-xs-8 col-sm-9">{{{ userpicture }}} <a href="{{{ userlink }}}">{{ request.username }}</a></dd>
 </dl>
 
 <dl class="row">
@@ -47,10 +47,19 @@
 </dl>
 {{/request.department}}
 
-<dl class="row m-b-0">
+<dl class="row">
     <dt class="col-xs-4 col-sm-3">{{# str }}status, report_enhance{{/ str }}</dt>
     <dd class="col-xs-8 col-sm-9"><span class="inline-status status-{{ request.statuscolour }}"><i class="fa fa-{{ request.statusicon }}"></i> {{ request.statusformatted }}</span></dd>
 </dl>
+
+<dl class="row m-b-0">
+    <dt class="col-xs-4 col-sm-3">{{# str }}votes, report_enhance{{/ str }}</dt>
+    <dd class="col-xs-8 col-sm-9">
+        {{ request.votes }}
+        {{# request.votes }}(<a href="{{{ voteslink }}}">{{# str }}voters, report_enhance{{/ str }}</a>){{/ request.votes }}
+    </dd>
+</dl>
+
 </div>
 </div>
 
