@@ -49,7 +49,7 @@ $voters = $DB->get_records('report_enhance_vote', ['enhanceid' => $id]);
 // Security.
 require_login($course);
 $context = context_course::instance($course->id);
-require_capability('report/enhance:view', $context);
+require_capability('report/enhance:review', $context);
 $output = $PAGE->get_renderer('report_enhance');;
 
 $PAGE->set_title(get_string('pluginname', 'report_enhance'));

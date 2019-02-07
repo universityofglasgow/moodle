@@ -93,5 +93,16 @@ class lib {
         return implode(" ", $requestClasses);
     }
 
+    /**
+     * Get list of priorities
+     * @return array
+     */
+    public static function getpriorities() {
+        return [
+            0 => '<i class="text-success fa fa-arrow-down"></i> ' . get_string('lowpriority', 'report_enhance'),
+            1 => '<i class="text-warning fa fa-arrow-right"></i> ' .get_string('mediumpriority', 'report_enhance'),
+            2 => '<i class="text-danger fa fa-arrow-up"></i> ' .get_string('highpriority', 'report_enhance'),
+        ];
+    }
 
 }

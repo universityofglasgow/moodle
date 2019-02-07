@@ -25,7 +25,7 @@
 require(dirname(__FILE__).'/../../config.php');
 
 // params
-$courseid = required_param('courseid', PARAM_INT);
+$courseid = optional_param('courseid', 1, PARAM_INT);
 
 // Page setup.
 $url = new moodle_url('/report/enhance/index.php', ['courseid' => $courseid]);

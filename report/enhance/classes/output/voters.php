@@ -60,7 +60,7 @@ class voters implements renderable, templatable {
 
         foreach ($this->voters as $voter) {
             $user = $DB->get_record('user', ['id' => $voter->userid]);
-            $voter->userpicture = $output->user_picture($user, ['size' => 24, 'alttext' => false]);
+            $voter->userpicture = $output->user_picture($user, ['size' => 32, 'alttext' => false]);
             $voter->userlink = new \moodle_url('/user/view.php', ['id' => $voter->userid]);
             $voter->fullname = fullname($user);
         }

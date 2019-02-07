@@ -90,6 +90,8 @@ class more implements renderable, templatable {
             'userpicture' => $output->user_picture($this->request->user, ['size' => 64, 'alttext' => false]),
             'userlink' => new \moodle_url('/user/view.php', ['id' => $this->request->userid]),
             'voteslink' => new \moodle_url('/report/enhance/voters.php', ['courseid' => $this->course->id, 'id' => $this->request->id]),
+            'reviewer' => has_capability('report/enhance:review', \context_course::instance($this->course->id)),
+            'priority' => \report_enhance\lib::getpriorities()[$this->request->priority],
         ];
     }
 

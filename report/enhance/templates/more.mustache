@@ -56,7 +56,7 @@
     <dt class="col-xs-4 col-sm-3">{{# str }}votes, report_enhance{{/ str }}</dt>
     <dd class="col-xs-8 col-sm-9">
         {{ request.votes }}
-        {{# request.votes }}(<a href="{{{ voteslink }}}">{{# str }}voters, report_enhance{{/ str }}</a>){{/ request.votes }}
+        {{# reviewer }}{{# request.votes }}(<a href="{{{ voteslink }}}">{{# str }}voters, report_enhance{{/ str }}</a>){{/ request.votes }}{{/ reviewer }}
     </dd>
 </dl>
 
@@ -109,13 +109,29 @@
 {{/request.viability}}
 
 {{#request.result}}
-<div class="card m-b-1">
-<dl class="row m-b-0">
-    <dt class="col-xs-4 col-sm-3">{{# str }}result, report_enhance{{/ str }}</dt>
-    <dd class="col-xs-8 col-sm-9">{{{ request.result }}}</dd>
-</dl>
-</div>
+    <div class="card m-b-1">
+        <dl class="row m-b-0">
+        <dt class="col-xs-4 col-sm-3">{{# str }}result, report_enhance{{/ str }}</dt>
+        <dd class="col-xs-8 col-sm-9">{{{ request.result }}}</dd>
+        </dl>
+    </div>
 {{/request.result}}
+
+{{# reviewer }}
+    <div class="card m-b-1">
+        <dl class="row m-b-0">
+        <dt class="col-xs-4 col-sm-3">{{# str }}reviewernotes, report_enhance{{/ str }}</dt>
+        <dd class="col-xs-8 col-sm-9">{{{ request.reviewernotes }}}</dd>
+        </dl>
+    </div>
+{{/ reviewer }}
+
+<div class="card m-b-1">
+    <dl class="row m-b-0">
+    <dt class="col-xs-4 col-sm-3">{{# str }}priority, report_enhance{{/ str }}</dt>
+    <dd class="col-xs-8 col-sm-9">{{{ priority }}}</dd>
+    </dl>
+</div>
 
 <div class="card m-b-1">
 <dl class="row m-b-0">

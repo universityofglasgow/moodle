@@ -53,6 +53,7 @@ $fields = array(
     'impact',
     'viability',
     'result',
+    'reviewernotes',
 );
 
 // Set up files area
@@ -70,6 +71,7 @@ if ($form->is_cancelled()) {
     redirect(new moodle_url('/report/enhance/index.php', array('courseid' => $courseid)));
 } else if ($data = $form->get_data()) {
     $request->status = $data->status;
+    $request->priority = $data->priority;
     foreach ($fields as $field) {
         $formdata = $data->$field;
         $request->$field = $formdata['text'];

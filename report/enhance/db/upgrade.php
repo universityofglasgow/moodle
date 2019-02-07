@@ -62,5 +62,20 @@ function xmldb_report_enhance_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2019013000, 'report', 'enhance');
     }
 
+    if ($oldversion < 2019020700) {
+
+        // Define field priority to be added to report_enhance.
+        $table = new xmldb_table('report_enhance');
+        $field = new xmldb_field('priority', XMLDB_TYPE_INTEGER, '11', null, XMLDB_NOTNULL, null, '0', 'reviewernotes');
+
+        // Conditionally launch add field priority.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Enhance savepoint reached.
+        upgrade_plugin_savepoint(true, 2019020700, 'report', 'enhance');
+    }
+
     return true; //have to be in else get an unknown error
 }
