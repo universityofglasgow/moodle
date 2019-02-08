@@ -105,4 +105,19 @@ class lib {
         ];
     }
 
+    /**
+     * Fix navigation - make the breadcrumbs work
+     * @param string $name optional breadcrumb
+     * @param string $url optional breadcrumb
+     */
+    public static function fixnavigation($name = '', $url = '') {
+        global $PAGE;
+
+        $PAGE->navbar->ignore_active();
+        $PAGE->navbar->add(get_string('vleenhancements', 'report_enhance'), new \moodle_url('/report/enhance'));
+        if ($name) {
+            $PAGE->navbar->add($name, $url);
+        }
+    }
+
 }

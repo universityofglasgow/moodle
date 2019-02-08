@@ -54,6 +54,7 @@ $output = $PAGE->get_renderer('report_enhance');;
 
 $PAGE->set_title(get_string('pluginname', 'report_enhance'));
 $PAGE->set_heading($course->fullname);
+\report_enhance\lib::fixnavigation(get_string('voters', 'report_enhance'), $url);
 echo $OUTPUT->header();
 
 $more = new report_enhance\output\voters($courseid, $request, $voters);

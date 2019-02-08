@@ -86,6 +86,7 @@ if ($form->is_cancelled()) {
 
 $PAGE->set_title(get_string('pluginname', 'report_enhance'));
 $PAGE->set_heading($course->fullname);
+\report_enhance\lib::fixnavigation(get_string('review', 'report_enhance'), $url);
 echo $OUTPUT->header();
 
 $review = new report_enhance\output\review($form->render(), $request);

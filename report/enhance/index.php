@@ -47,6 +47,7 @@ $requests = $DB->get_records('report_enhance', null, 'id desc');
 
 $PAGE->set_title(get_string('pluginname', 'report_enhance'));
 $PAGE->set_heading($course->fullname);
+\report_enhance\lib::fixnavigation();
 echo $OUTPUT->header();
 
 $status = new \report_enhance\status();

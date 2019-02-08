@@ -31,6 +31,8 @@ define(['jquery', 'core/templates', 'core/ajax', 'core/notification'], function(
                     } else {
                         $(".bottom-button").show();
                     }
+                    $('.active').removeClass("active");
+                    $("[data-filter='" + filter + "']").addClass("active");
                 }
             } catch (error) {
                 return false;
@@ -43,7 +45,7 @@ define(['jquery', 'core/templates', 'core/ajax', 'core/notification'], function(
                     id: requestid,
                     ownrequest: votes.ownrequest,
                     voted: votes.voted
-                }
+                };
                 templates.render("report_enhance/votes", context)
                    .done(function(html) {
                         $(container).html(html);
@@ -56,12 +58,12 @@ define(['jquery', 'core/templates', 'core/ajax', 'core/notification'], function(
                 var requestid = $(this).data("requestid");
                 var vote = $(this).data("vote");
                 var container = $(this).parent();
-           
+
                 // ajax call to get voting details
                 ajax.call([{
                     methodname: 'report_enhance_set_vote',
                     args: { requestid: requestid, vote: vote },
-                    done: function(votes) { render_voting(container, requestid, votes)  },
+                    done: function(votes) { render_voting(container, requestid, votes);  },
                     fail: notification.exception,
                 }]);
 
@@ -82,7 +84,7 @@ define(['jquery', 'core/templates', 'core/ajax', 'core/notification'], function(
             try {
                 var scroll = localStorage.getItem('scroll-position');
             } catch(e) {
-                return
+                return;
             }
             if (scroll) {
                 $(document).scrollTop(scroll);
