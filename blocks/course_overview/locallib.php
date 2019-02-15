@@ -166,6 +166,26 @@ function block_course_overview_update_sortorder($sortorder) {
 }
 
 /**
+ * Sets user preference for max number of courses to show in course_overview block
+ * @param int $usersetmaxcourses
+ */
+function block_course_overview_update_usersetmaxcourses($usersetmaxcourses) {
+    set_user_preference('course_overview_usersetmaxcourses', $usersetmaxcourses);
+}
+
+/**
+ * Gets user preference for max number of courses to show in course_overview block
+ * @return int
+ */
+function block_course_overview_get_usersetmaxcourses() {
+    if ($value = get_user_preferences('course_overview_usersetmaxcourses')) {
+        return $value;
+    } else {
+        return get_config('block_course_overview')->setmaxcourses;
+    }
+}
+
+/**
  * Return sorted list of user courses
  *
  * @param bool $favourites tab selected
@@ -176,7 +196,7 @@ function block_course_overview_update_sortorder($sortorder) {
 function block_course_overview_get_sorted_courses($favourites, $keepfavourites = false, $exclude = []) {
     global $USER;
 
-    // Bodge... don't regenerate course list
+    // Bodge... don't regenerate course list.
     static $courses = [];
 
     $sortorder = block_course_overview_get_sortorder();
@@ -273,7 +293,18 @@ function block_course_overview_get_sorted_courses($favourites, $keepfavourites =
             $sitecourses[$key] = $course;
         }
     }
-    return array($sortedcourses, $sitecourses, count($sortedcourses));
+
+    // Implement pagination.
+    $maxcourses = block_course_overview_get_usersetmaxcourses();
+    if ($favourites) {
+        $page = optional_param('ssf_pagenum', 0, PARAM_INT);
+    } else {
+        $page = optional_param('ssc_pagenum', 0, PARAM_INT);
+    }
+    $page = $page <= 0 ? 0 : $page;
+    $first = $page * $maxcourses;
+    $sortedcoursessliced = array_slice($sortedcourses, $first, $maxcourses, true);
+    return array($sortedcoursessliced, $sitecourses, count($sortedcourses));
 }
 
 /**

@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version details
+ * Upgrade
  *
  * @package    block_course_overview
  * @copyright  1999 onwards Martin Dougiamas (http://dougiamas.com)
@@ -24,8 +24,15 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'block_course_overview';
-$plugin->version = 2019021300;
-$plugin->requires = 2017051500;
-$plugin->maturity = MATURITY_STABLE;
-$plugin->release = '3.5.5';
+function xmldb_block_course_overview_upgrade($oldversion, $block) {
+    global $CFG;
+
+    // Implement pagination.
+    if ($oldversion < 2018070400.2) {
+        set_config('setmaxcourses', 10, 'block_course_overview');
+        set_config('setmaxcoursesmax', 50, 'block_course_overview');
+        upgrade_block_savepoint(true, 2018070400.2, 'course_overview', true);
+    }
+
+    return true;
+}

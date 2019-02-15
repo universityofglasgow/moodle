@@ -29,6 +29,9 @@
         <div class="alert alert-secondary">
             {{# str }}sortorder, block_course_overview{{/ str }} {{{ select }}}
         </div>
+        <div class="alert alert-secondary">
+            {{# str }}usersetmaxcourses, block_course_overview{{/ str }} {{{ selectmaxcourses }}}
+        </div>
     {{/ isediting }}
 
     <ul id="block-course-overview-view-choices-{{ uniqid }}" class="nav nav-tabs" role="tablist">
@@ -48,6 +51,22 @@
         {{# tabs }}
             <div class="tab-pane {{ show }}" id="{{ tab }}" role="tabpanel">
                 {{> block_course_overview/courselist }}
+                {{# showmorecourses }}
+                <div class="morecoursesdiv">
+                    {{{ morecourses.text }}}
+                    {{# morecourses.showprevpage }}<a href="{{{ morecourses.linkprev }}}" class="morecourseslink">{{{ morecourses.prevpage }}}</a>{{/ morecourses.showprevpage }}
+                    {{# morecourses.pages }}
+                        {{^ current }}
+                            <a href="{{{ pagelink }}}">
+                        {{/ current }}
+                        <span class="pageslink {{# current }}current{{/ current}}">{{{ pagetext }}}</span>
+                        {{^ current }}
+                            </a>
+                        {{/ current }}
+                    {{/ morecourses.pages }}
+                    {{# morecourses.shownextpage }}<a href="{{{ morecourses.linknext }}}" class="morecourseslink">{{{ morecourses.nextpage }}}</a>{{/ morecourses.shownextpage }}
+                </div>
+                {{/ showmorecourses }}
             </div>
         {{/ tabs }}
     </div>

@@ -94,6 +94,14 @@ class block_course_overview extends block_base {
             block_course_overview_update_sortorder($sortorder);
         }
 
+        // Check if number of courses to display was updated.
+        $usersetmaxcourses = optional_param('usersetmaxcourses', null, PARAM_INT);
+        if ( $usersetmaxcourses === null ) {
+            $usersetmaxcourses = block_course_overview_get_usersetmaxcourses();
+        } else {
+            block_course_overview_update_usersetmaxcourses($usersetmaxcourses);
+        }
+
         // Get data for favourites and course tab.
         $tabs = array();
         $ftab = new stdClass;
@@ -123,7 +131,8 @@ class block_course_overview extends block_base {
         $renderer = $this->page->get_renderer('block_course_overview');
 
         // Render block.
-        $main = new block_course_overview\output\main($config, $tabs, $isediting, $tab, $sortorder, $favourites);
+        $main = new block_course_overview\output\main(
+            $config, $tabs, $isediting, $tab, $sortorder, $favourites, $usersetmaxcourses);
         $this->content->text .= $renderer->render($main);
         return $this->content;
     }
@@ -159,7 +168,7 @@ class block_course_overview extends block_base {
      * Do any additional initialization you may need at the time a new block instance is created
      * @return boolean
      */
-    function instance_create() {
+    public function instance_create() {
         global $DB;
 
         // Bodge? Modify our own instance to make the default region the

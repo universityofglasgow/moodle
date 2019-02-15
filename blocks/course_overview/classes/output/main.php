@@ -50,6 +50,8 @@ class main implements renderable, templatable {
 
     private $favourites;
 
+    private $usersetmaxcourses;
+
     /**
      * Constructor
      * @param object $config block configuration
@@ -59,13 +61,14 @@ class main implements renderable, templatable {
      * @param int $sortorder
      * @param array list of favourites
      */
-    public function __construct($config, $tabs, $isediting, $selectedtab, $sortorder, $favourites) {
+    public function __construct($config, $tabs, $isediting, $selectedtab, $sortorder, $favourites, $usersetmaxcourses) {
         $this->config = $config;
         $this->tabs = $tabs;
         $this->isediting = $isediting;
         $this->selectedtab = $selectedtab;
         $this->sortorder = $sortorder;
         $this->favourites = $favourites;
+        $this->usersetmaxcourses = $usersetmaxcourses;
     }
 
     /**
@@ -172,6 +175,33 @@ class main implements renderable, templatable {
     }
 
     /**
+     * Build select for user to choose max number of courses to show in course_overview block
+     * @param object $output
+     * @return string html
+     */
+    private function user_select_maxcourses(renderer_base $output) {
+        // Site setting - max possible courses.
+        $setmaxcoursesmax = get_config('block_course_overview')->setmaxcoursesmax;
+        // User total enrolled courses.
+        $usercount = count(enrol_get_my_courses());
+        // Number of courses to display for user to choose from.
+        $max = $usercount > $setmaxcoursesmax ? $setmaxcoursesmax : $usercount;
+
+        $options = range(0, $max);
+        $options[0] = "0".get_string('userchoosezero', 'block_course_overview');
+
+        $select = $output->single_select(
+            new \moodle_url('/my', array('sesskey' => sesskey())),
+            'usersetmaxcourses',
+            $options,
+            block_course_overview_get_usersetmaxcourses(),
+            null
+        );
+
+        return $select;
+    }
+
+    /**
      * Export this data so it can be used as the context for a mustache template.
      *
      * @param \renderer_base $output
@@ -179,18 +209,75 @@ class main implements renderable, templatable {
      */
     public function export_for_template(renderer_base $output) {
 
+        // Implement pagination.
+        $maxcourses = block_course_overview_get_usersetmaxcourses();
+        $currpagef = optional_param('ssf_pagenum', 0, PARAM_INT);
+        $currpagec = optional_param('ssc_pagenum', 0, PARAM_INT);
+        $numfavpages = (int)ceil($this->tabs['favourites']->totalcourses / $maxcourses) - 1;
+        $numfavpages = $numfavpages <= 0 ? 0 : $numfavpages;
+        $numcoursepages = (int)ceil($this->tabs['courses']->totalcourses / $maxcourses) - 1;
+        $numcoursepages = $numcoursepages <= 0 ? 0 : $numcoursepages;
+        $nextpagef = $currpagef + 1;
+        $nextpagec = $currpagec + 1;
+        $prevpagef = $currpagef - 1;
+        $prevpagec = $currpagec - 1;
+
+        $favpages = range(0, $numfavpages);
+        foreach ($favpages as $k => $v) {
+            $favpages[$k] = [
+                "pagelink" => new \moodle_url('/my/index.php', ['ssf_pagenum' => $v]),
+                "pagetext" => $v + 1,
+                "current" => ($v == $currpagef),
+            ];
+        }
+        $coursepages = range(0, $numcoursepages);
+        foreach ($coursepages as $k => $v) {
+            $coursepages[$k] = [
+                "pagelink" => new \moodle_url('/my/index.php', ['ssc_pagenum' => $v]),
+                "pagetext" => $v + 1,
+                "current" => ($v == $currpagec),
+            ];
+        }
+
+        // Defaults to favourites.
+        if (optional_param('ssc_pagenum', null, PARAM_INT) !== null) {
+            $this->selectedtab = 'courses';
+        }
+
         // Generate array for tabs 0=favs, 1=courses.
         $tabs = array(
             0 => (object) [
                 'tab' => 'favourites',
                 'show' => $this->selectedtab == 'favourites' ? 'show active' : '',
                 'data' => $this->process_tab($output, true, $this->tabs['favourites']),
+                'morecourses' => [
+                    'nextpage' => new \lang_string('nextpage', 'block_course_overview'),
+                    'prevpage' => new \lang_string('prevpage', 'block_course_overview'),
+                    'shownextpage' => !(end($favpages)['current']),
+                    'showprevpage' => !($favpages[0]['current']),
+                    'text' => new \lang_string('morecoursestext', 'block_course_overview'),
+                    'linknext' => new \moodle_url('/my/index.php', ['ssf_pagenum' => $nextpagef]),
+                    'linkprev' => new \moodle_url('/my/index.php', ['ssf_pagenum' => $prevpagef]),
+                    'pages' => $favpages,
+                ],
+                'showmorecourses' => ($numfavpages > 0),
             ],
             1 => (object) [
                 'tab' => 'courses',
                 'show' => $this->selectedtab == 'courses' ? 'show active' : '',
                 'data' => $this->process_tab($output, false, $this->tabs['courses']),
+                'morecourses' => [
+                    'nextpage' => new \lang_string('nextpage', 'block_course_overview'),
+                    'prevpage' => new \lang_string('prevpage', 'block_course_overview'),
+                    'shownextpage' => !(end($coursepages)['current']),
+                    'showprevpage' => !($coursepages[0]['current']),
+                    'text' => new \lang_string('morecoursestext', 'block_course_overview'),
+                    'linknext' => new \moodle_url('/my/index.php', ['ssc_pagenum' => $nextpagec]),
+                    'linkprev' => new \moodle_url('/my/index.php', ['ssc_pagenum' => $prevpagec]),
+                    'pages' => $coursepages,
                 ],
+                'showmorecourses' => ($numcoursepages > 0),
+            ],
         );
 
         return [
@@ -199,6 +286,7 @@ class main implements renderable, templatable {
             'help' => $output->help_icon('help', 'block_course_overview', true),
             'viewingfavourites' => $this->selectedtab == 'favourites',
             'select' => $this->reorder_select($output),
+            'selectmaxcourses' => $this->user_select_maxcourses($output),
         ];
     }
 

@@ -55,4 +55,18 @@ if ($ADMIN->fulltree) {
         BLOCKS_COURSE_OVERVIEW_DEFAULT_FAVOURITES,
         $defaulttabs
     ));
+    $settings->add(new admin_setting_configtext(
+        'block_course_overview/setmaxcourses',
+        new lang_string('setmaxcourses', 'block_course_overview'),
+        new lang_string('setmaxcoursesdesc', 'block_course_overview'),
+        10,
+        PARAM_INT,
+        5));
+    $settings->add(new admin_setting_configtext(
+        'block_course_overview/setmaxcoursesmax',
+        new lang_string('setmaxcoursesmax', 'block_course_overview'),
+        new lang_string('setmaxcoursesmaxdesc', 'block_course_overview'),
+        50,
+        PARAM_INT,
+        5));
 }

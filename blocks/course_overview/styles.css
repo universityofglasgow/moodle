@@ -68,3 +68,22 @@ div.courseovbox {
     top: 1px;
     left: 1px;
 }
+
+.block-course-overview .morecoursesdiv {
+    margin-top: 10px;
+}
+.block-course-overview .morecoursesdiv .morecourseslink {
+    margin-left: 20px;
+}
+.block-course-overview .morecoursesdiv a {
+    text-decoration: none;
+}
+.block-course-overview .morecoursesdiv .pageslink {
+    margin-left: 10px;
+}
+.block-course-overview .morecoursesdiv a, .block-course-overview .morecoursesdiv .current {
+    padding: 5px;
+}
+.block-course-overview .tab-content {
+    overflow: hidden;
+}
