@@ -25,7 +25,7 @@
 require(dirname(__FILE__).'/../../config.php');
 
 // params
-$courseid = required_param('courseid', PARAM_INT);
+$courseid = optional_param('courseid', 1, PARAM_INT);
 
 // Page setup.
 $url = new moodle_url('/report/enhance/index.php', ['courseid' => $courseid]);
@@ -47,6 +47,7 @@ $requests = $DB->get_records('report_enhance', null, 'id desc');
 
 $PAGE->set_title(get_string('pluginname', 'report_enhance'));
 $PAGE->set_heading($course->fullname);
+\report_enhance\lib::fixnavigation();
 echo $OUTPUT->header();
 
 $status = new \report_enhance\status();

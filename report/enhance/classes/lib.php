@@ -93,5 +93,31 @@ class lib {
         return implode(" ", $requestClasses);
     }
 
+    /**
+     * Get list of priorities
+     * @return array
+     */
+    public static function getpriorities() {
+        return [
+            0 => '<i class="text-success fa fa-arrow-down"></i> ' . get_string('lowpriority', 'report_enhance'),
+            1 => '<i class="text-warning fa fa-arrow-right"></i> ' .get_string('mediumpriority', 'report_enhance'),
+            2 => '<i class="text-danger fa fa-arrow-up"></i> ' .get_string('highpriority', 'report_enhance'),
+        ];
+    }
+
+    /**
+     * Fix navigation - make the breadcrumbs work
+     * @param string $name optional breadcrumb
+     * @param string $url optional breadcrumb
+     */
+    public static function fixnavigation($name = '', $url = '') {
+        global $PAGE;
+
+        $PAGE->navbar->ignore_active();
+        $PAGE->navbar->add(get_string('vleenhancements', 'report_enhance'), new \moodle_url('/report/enhance'));
+        if ($name) {
+            $PAGE->navbar->add($name, $url);
+        }
+    }
 
 }

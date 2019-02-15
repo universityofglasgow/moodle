@@ -53,6 +53,7 @@ $fields = array(
     'impact',
     'viability',
     'result',
+    'reviewernotes',
 );
 
 // Set up files area
@@ -70,6 +71,7 @@ if ($form->is_cancelled()) {
     redirect(new moodle_url('/report/enhance/index.php', array('courseid' => $courseid)));
 } else if ($data = $form->get_data()) {
     $request->status = $data->status;
+    $request->priority = $data->priority;
     foreach ($fields as $field) {
         $formdata = $data->$field;
         $request->$field = $formdata['text'];
@@ -84,6 +86,7 @@ if ($form->is_cancelled()) {
 
 $PAGE->set_title(get_string('pluginname', 'report_enhance'));
 $PAGE->set_heading($course->fullname);
+\report_enhance\lib::fixnavigation(get_string('review', 'report_enhance'), $url);
 echo $OUTPUT->header();
 
 $review = new report_enhance\output\review($form->render(), $request);

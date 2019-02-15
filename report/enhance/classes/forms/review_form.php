@@ -62,6 +62,11 @@ class review_form extends \moodleform {
             $mform->addHelpButton($field, $field, 'report_enhance');
         }
 
+        // Priority
+        $mform->addElement('select', 'priority', get_string('priority', 'report_enhance'), \report_enhance\lib::getpriorities())
+            ->setValue($request->priority);
+        $mform->setType('priority', PARAM_INT);
+
         // Files
         $filemanager = $mform->addElement('filemanager', 'attachments_filemanager', get_string('attachments', 'report_enhance'), null, ['subdirs' => 0]);
         $filemanager->setValue($entry->attachments_filemanager);

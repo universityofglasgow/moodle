@@ -72,6 +72,7 @@ $output = $PAGE->get_renderer('report_enhance');;
 
 $PAGE->set_title(get_string('pluginname', 'report_enhance'));
 $PAGE->set_heading($course->fullname);
+\report_enhance\lib::fixnavigation(get_string('requestno', 'report_enhance', $request->id), $url);
 echo $OUTPUT->header();
 
 $more = new report_enhance\output\more($course, $request, $context, $attachments);

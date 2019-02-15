@@ -49,11 +49,12 @@ $voters = $DB->get_records('report_enhance_vote', ['enhanceid' => $id]);
 // Security.
 require_login($course);
 $context = context_course::instance($course->id);
-require_capability('report/enhance:view', $context);
+require_capability('report/enhance:review', $context);
 $output = $PAGE->get_renderer('report_enhance');;
 
 $PAGE->set_title(get_string('pluginname', 'report_enhance'));
 $PAGE->set_heading($course->fullname);
+\report_enhance\lib::fixnavigation(get_string('voters', 'report_enhance'), $url);
 echo $OUTPUT->header();
 
 $more = new report_enhance\output\voters($courseid, $request, $voters);
