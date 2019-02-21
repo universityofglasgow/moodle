@@ -30,8 +30,12 @@ if ($hassiteconfig) {
     $ADMIN->add('localplugins', $settings);
 
     $settings->add(new admin_setting_configtext(
-            'local_corehr/wsdl', get_string('wsdl', 'local_corehr'),
-            get_string('configwsdl', 'local_corehr'), '', PARAM_URL));
+            'local_corehr/wsdltraining', get_string('wsdltraining', 'local_corehr'),
+            get_string('configwsdltraining', 'local_corehr'), '', PARAM_URL));
+
+    $settings->add(new admin_setting_configtext(
+            'local_corehr/wsdlextract', get_string('wsdlextract', 'local_corehr'),
+            get_string('configwsdlextract', 'local_corehr'), '', PARAM_URL));
 
     $settings->add(new admin_setting_configtext(
             'local_corehr/username', get_string('username', 'local_corehr'),

@@ -15,30 +15,42 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version details.
+ * Update form
  *
  * @package    report
  * @subpackage guid
- * @copyright  2012 Howard Miller
+ * @copyright  2017 Howard Miller
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace report_guid\forms;
+
 defined('MOODLE_INTERNAL') || die;
 
-class report_guid_uploadform extends moodleform {
+use \moodleform;
+
+class update extends moodleform {
 
     public function definition() {
         global $CFG;
 
         $mform =& $this->_form;
+        $user = $this->_customdata['user'];
 
-        // File upload.
-        $mform->addElement('header', 'guidupload', get_string('uploadheader', 'report_guid' ) );
-        $mform->addElement('html', '<div class="alert">'.get_string('uploadinstructions', 'report_guid' ).'</div>' );
-        $mform->addElement('filepicker', 'csvfile', get_string('csvfile', 'report_guid' ) );
+        // Main part.
+        $mform->addElement('html', '<div class="alert alert-info">' .
+            get_string('changeuserdesc', 'report_guid', fullname($user) ) . '</div>' );
+        $mform->addElement('text', 'currentusername',
+            get_string('currentusername', 'report_guid'), array('disabled' => 'disabled'));
+        $mform->setType('currentusername', PARAM_TEXT);
+        $mform->setDefault('currentusername', $user->username);
 
-        // Action buttons.
-        $this->add_action_buttons(false, get_string('submitfile', 'report_guid'));
+        $mform->addElement('text', 'newusername', get_string('newusername', 'report_guid'));
+        $mform->setType('newusername', PARAM_TEXT);
+
+        $mform->addElement('hidden', 'userid', $user->id);
+        $mform->setType('userid', PARAM_INT);
+
+        $this->add_action_buttons();
     }
-
 }

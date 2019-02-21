@@ -15,14 +15,17 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Sychronise completion data for CoreHR
+ * External api for local_corehr
  *
  * @package    local_corehr
  * @copyright  2016 Howard Miller
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require(dirname(__file__) . '/../../config.php');
-require(dirname(__file__) . '/locallib.php');
+namespace local_corehr;
 
-local_corehr_add();
+require_once(dirname(__file__) . '/../locallib.php');
+
+class corehr {
+
+}

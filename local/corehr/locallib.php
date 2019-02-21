@@ -41,6 +41,21 @@ class staffTrainingRecord {
     }
 }
 
+class getPersonByGuid {
+
+    public $username;
+
+    public $password;
+
+    public $guid;
+
+    public function __construct($username, $password, $guid) {
+        $this->username = $username;
+        $this->password = $password;
+        $this->guid = $guid;
+    }
+}
+
 /**
  * Get the retry delay for given retry value
  * @param $count retry count
@@ -75,10 +90,10 @@ function local_corehr_get_delay($count) {
  */
 function local_corehr_test() {
     $config = get_config('local_corehr');
-    if (empty($config->wsdl)) {
+    if (empty($config->wsdltraining)) {
         return get_string('notconfigured', 'local_corehr');
     }
-    $client = new SoapClient($config->wsdl);
+    $client = new SoapClient($config->wsdltraining);
 
     $functions = $client->__getFunctions();
     if (count($functions) > 1) {
@@ -93,7 +108,7 @@ function local_corehr_test() {
  */
 function local_corehr_add($staffTrainingRecord) {
     $config = get_config('local_corehr');
-    if (empty($config->wsdl)) {
+    if (empty($config->wsdltraining)) {
         return get_string('notconfigured', 'local_corehr');
     }
     try {
@@ -122,6 +137,79 @@ function local_corehr_add($staffTrainingRecord) {
 
     // probably worked, so status ok
     return 'OK';
+}
+
+/**
+ * Web service to get HR data extract
+ * @param string $guid
+ */
+function local_corehr_extract($guid) {
+    $config = get_config('local_corehr');
+    if (empty($config->wsdlextract)) {
+        return get_string('notconfigured', 'local_corehr');
+    }
+    try {
+        $client = new SoapClient($config->wsdlextract, array('trace' => 1));
+    } catch (Exception $e) {
+        return $e->getMessage();
+    }
+
+    // Construct parameters
+    $getPersonByGuid = new getPersonByGuid(
+        $config->username,
+        $config->password,
+        $guid
+    );
+    $params = [
+        'getPersonByGuid' => $getPersonByGuid
+    ];
+
+    // Try soap call. Attempt to get some useful information if it fails.
+    try {
+        $result = $client->getPersonByGuid($getPersonByGuid);
+    } catch (Exception $e) {
+        $request = $client->__getLastRequest();
+        return $e->getMessage() . "\n\n" . $request;
+    }
+
+    $request = $client->__getLastRequest();
+
+    return $result->return;
+}
+
+/**
+ * Write extracted corehr data to database
+ * @param int $userid
+ * @param object $extract
+ */
+function local_corehr_store_extract($userid, $extract) {
+    global $DB;
+
+    if (!$data = $DB->get_record('corehr_extract', ['userid' => $userid])) {
+        $data = new \stdClass;
+        $data->userid = $userid;
+    }
+
+    $data->college = $extract->college;
+    $data->collegedesc = $extract->collegeDesc;
+    $data->costcentre = $extract->costCentre;
+    $data->costcentredesc = $extract->costCentreDesc;
+    $data->title = $extract->title;
+    $data->forename = $extract->forename;
+    $data->middlename = $extract->middleName;
+    $data->surname = $extract->surname;
+    $data->knownas = $extract->knownAs;
+    $data->orgunitno = $extract->orgUnitNo;
+    $data->orgunitdesc = $extract->orgUnitDesc;
+    $data->jobtitle = $extract->jobTitle;
+    $data->jobtitledesc = $extract->jobTitleDesc;
+    $data->timemodified = time();
+
+    if (empty($data->id)) {
+        $DB->insert_record('corehr_extract', $data);
+    } else {
+        $DB->update_record('corehr_extract', $data);
+    }
 }
 
 /**

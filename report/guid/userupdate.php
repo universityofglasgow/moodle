@@ -24,7 +24,7 @@
 
 require_once(dirname(__FILE__) . '/../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
-require_once($CFG->libdir . '/formslib.php');
+//require_once($CFG->libdir . '/formslib.php');
 
 // Configuration.
 $config = report_guid_search::settings();
@@ -53,7 +53,8 @@ echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('headingupdate', 'report_guid'));
 
 // Form definition.
-$mform = new report_guid_updateform(null, array('user' => $user));
+$mform = new \report_guid\forms\update(null, array('user' => $user));
+
 if ($mform->is_cancelled()) {
     redirect( 'index.php' );
     die;

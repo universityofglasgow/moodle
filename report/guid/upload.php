@@ -49,7 +49,7 @@ if (!function_exists( 'ldap_connect' )) {
 }
 
 // Form definition.
-$mform = new report_guid_uploadform();
+$mform = new report_guid\forms\upload();
 if ($mform->is_cancelled()) {
     redirect( 'index.php' );
     die;

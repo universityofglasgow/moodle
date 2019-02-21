@@ -114,7 +114,7 @@ if ($guid && ($action == 'more')) {
 $linkback = new moodle_url( '/report/guid/index.php' );
 
 // Form.
-$mform = new report_guid_filterform(null, null, 'get');
+$mform = new \report_guid\forms\filter(null, null, 'get');
 $mform->display();
 
 // Link to upload script.

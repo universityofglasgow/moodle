@@ -25,12 +25,13 @@ $string['configintro'] = '<div class="alert">This page configures synchronisatio
     It is enabled by entering a valid code here, which must have been supplied by HR.
     Course completion in this course must also be properly configured.
     If you need to use this facility please submit a request to the IT Services Help Desk</div>';
-$string['configwsdl'] = 'URL of SOAP WSDL';
+$string['configwsdltraining'] = 'URL of SOAP WSDL for training interface';
+$string['configwsdlextract'] = 'URL of SOAP WSDL for HR data extract';
 $string['coursecode'] = 'Course code (HR)';
 $string['coursecode_help'] = 'Course code, supplied by HR. Nothing to do with "normal" course codes!';
 $string['notconfigured'] = 'Plugin is not configured';
 $string['password'] = 'Password';
-$string['pluginname'] = 'CoreHR completion sync';
+$string['pluginname'] = 'CoreHR integration';
 $string['privacy:metadata:local_corehr_log'] = 'Logs transactions with CoreHR webservice';
 $string['privacy:metadata:local_corehr_log:coursecode'] = 'The CoreHR course code for the training completed';
 $string['privacy:metadata:local_corehr_log:courseid'] = 'The ID of the course completed by the user.';
@@ -40,5 +41,6 @@ $string['privacy:metadata:local_corehr_log:userid'] = 'The ID of the user who is
 $string['privacy:metadata:local_corehr_log:wsstatus'] = 'The status of the interaction with the CoreHR webservice';
 $string['send'] = 'Send data to CoreHR';
 $string['testpass'] = 'Web service connections tests OK';
-$string['wsdl'] = 'WSDL';
+$string['wsdlextract'] = 'WSDL extract';
+$string['wsdltraining'] = 'WSDL training';
 $string['username'] = 'SOAP username';

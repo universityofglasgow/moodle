@@ -23,9 +23,13 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace report_guid\forms;
+
 defined('MOODLE_INTERNAL') || die;
 
-class report_guid_filterform extends moodleform {
+use \moodleform;
+
+class filter extends moodleform {
 
     public function definition() {
         global $CFG;
