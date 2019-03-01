@@ -151,10 +151,9 @@ class api {
     /**
      * Handles searching for user in a particular course in the message area.
      *
-     * TODO: This function should be removed once the new group messaging UI is in place and the old messaging UI is removed.
-     * For now we are not removing/deprecating this function for backwards compatibility with messaging UI.
-     * But we are deprecating data_for_messagearea_search_users_in_course external function.
-     * Followup: MDL-63915
+     * TODO: This function should be removed once the related web service goes through final deprecation.
+     * The related web service is data_for_messagearea_search_users_in_course.
+     * Followup: MDL-63261
      *
      * @param int $userid The user id doing the searching
      * @param int $courseid The id of the course we are searching in
@@ -197,10 +196,9 @@ class api {
     /**
      * Handles searching for user in the message area.
      *
-     * TODO: This function should be removed once the new group messaging UI is in place and the old messaging UI is removed.
-     * For now we are not removing/deprecating this function for backwards compatibility with messaging UI.
-     * But we are deprecating data_for_messagearea_search_users external function.
-     * Followup: MDL-63915
+     * TODO: This function should be removed once the related web service goes through final deprecation.
+     * The related web service is data_for_messagearea_search_users.
+     * Followup: MDL-63261
      *
      * @param int $userid The user id doing the searching
      * @param string $search The string the user is searching
@@ -713,6 +711,13 @@ class api {
                             $members[$convid][$key]->canmessage = null;
                             $members[$convid][$key]->contactrequests = [];
                         }
+                    } else { // Remove all members and individual conversations where we could not get the member's information.
+                        unset($members[$convid][$key]);
+
+                        // If the conversation is an individual conversation, then we should remove it from the list.
+                        if ($conversations[$convid]->conversationtype == self::MESSAGE_CONVERSATION_TYPE_INDIVIDUAL) {
+                            unset($conversations[$convid]);
+                        }
                     }
                 }
             }
@@ -1022,9 +1027,9 @@ class api {
     /**
      * Returns the contacts to display in the contacts area.
      *
-     * TODO: This function should be removed once the new group messaging UI is in place and the old messaging UI is removed.
-     * For now we are not removing/deprecating this function for backwards compatibility with messaging UI.
-     * Followup: MDL-63915
+     * TODO: This function should be removed once the related web service goes through final deprecation.
+     * The related web service is data_for_messagearea_contacts.
+     * Followup: MDL-63261
      *
      * @param int $userid The user id
      * @param int $limitfrom
@@ -1192,9 +1197,9 @@ class api {
     /**
      * Returns the messages to display in the message area.
      *
-     * TODO: This function should be removed once the new group messaging UI is in place and the old messaging UI is removed.
-     * For now we are not removing/deprecating this function for backwards compatibility with messaging UI.
-     * Followup: MDL-63915
+     * TODO: This function should be removed once the related web service goes through final deprecation.
+     * The related web service is data_for_messagearea_messages.
+     * Followup: MDL-63261
      *
      * @param int $userid the current user
      * @param int $otheruserid the other user
@@ -1273,9 +1278,9 @@ class api {
     /**
      * Returns the most recent message between two users.
      *
-     * TODO: This function should be removed once the new group messaging UI is in place and the old messaging UI is removed.
-     * For now we are not removing/deprecating this function for backwards compatibility with messaging UI.
-     * Followup: MDL-63915
+     * TODO: This function should be removed once the related web service goes through final deprecation.
+     * The related web service is data_for_messagearea_get_most_recent_message.
+     * Followup: MDL-63261
      *
      * @param int $userid the current user
      * @param int $otheruserid the other user
@@ -1318,9 +1323,9 @@ class api {
     /**
      * Returns the profile information for a contact for a user.
      *
-     * TODO: This function should be removed once the new group messaging UI is in place and the old messaging UI is removed.
-     * For now we are not removing/deprecating this function for backwards compatibility with messaging UI.
-     * Followup: MDL-63915
+     * TODO: This function should be removed once the related web service goes through final deprecation.
+     * The related web service is data_for_messagearea_get_profile.
+     * Followup: MDL-63261
      *
      * @param int $userid The user id
      * @param int $otheruserid The id of the user whose profile we want to view.
