@@ -1,0 +1,121 @@
+.enhancement-list .card {
+    padding: 0;
+    display: table;
+    width: 100%;
+}
+
+.enhancement-list .card .holder {
+    display: table-row;
+}
+
+.enhancement-list .headline {
+    font-size: 1.1em !important;
+    margin-bottom: 5px;
+}
+
+.enhancement-list .status-description {
+    padding: 10px;
+    padding-bottom: 0;
+    position: relative;
+    display: table-cell;
+}
+
+.enhancement-list .status-icon {
+    display: table-cell;
+    margin-right: 0;
+    text-align: center;
+    width: 100px;
+    background-color: #F5F8FB;
+    padding: 10px;
+    vertical-align: middle;
+    position: relative;
+}
+
+.enhancement-list p {
+    margin-bottom: 10px;
+}
+
+.enhancement-list .status-icon span {
+    display: block;
+    line-height: 1em;
+}
+
+.enhancement-list .status-icon .statusicon {
+    font-size: 1.9em;
+    margin-bottom: 10px;
+}
+
+.enhancement-list .status-icon .statustext {
+    font-size: 0.8em;
+    line-height: 1.2em;
+}
+
+.path-report-enhance .status-info {
+    color: #0075B0;
+}
+
+.path-report-enhance .status-good {
+    color: #00843d;
+}
+
+.path-report-enhance .status-warn {
+    color: #be4d00;
+}
+
+.path-report-enhance .status-fail {
+    color: #b30c00;
+}
+
+.path-report-enhance .status-wait {
+    color: #951272;
+}
+
+.path-report-enhance .inline-status i {
+    margin-right: 0.3em;
+}
+
+.enhancement-list .media-footer {
+    border-top: 1px solid #e1e6eb;
+    line-height: 20px;
+    margin-left: -10px;
+    margin-right: -10px;
+    padding: 5px 20px;
+    
+}
+
+.enhancement-list .enhancement-links {
+    margin: 0;
+    padding: 0;
+}
+
+.enhancement-list .enhancement-links li {
+    display: inline;
+    margin-right: 1em;
+}
+
+.enhancement-list .enhancement-links i {
+    margin-right: 0.3em;
+}
+
+.enhancement-list .enhancement-links  a {
+    color: #777;
+}
+
+.enhancement-list .information {
+    color: #888;
+}
+
+.filter-list a i {
+    margin-right: 0.3em;
+}
+
+.enhancement-list .statusidnumber {
+    position: absolute;
+    top: 0;
+    left: 0;
+    color: #555;
+    background-color: #e1e6eb;
+    padding: 4px 8px;
+    border-bottom-right-radius: 4px;
+    font-size: 1.1em;
+}

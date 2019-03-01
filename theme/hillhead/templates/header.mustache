@@ -1,0 +1,50 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    Page header.
+}}
+<header id="page-header" class="row">
+    <div class="col-md-4 col-sm-3 col-xs-2">
+        <div data-region="drawer-toggle">
+            <button aria-expanded="{{#navdraweropen}}true{{/navdraweropen}}{{^navdraweropen}}false{{/navdraweropen}}" aria-controls="nav-drawer" type="button" class="btn pull-xs-left m-r-1 btn-drawertoggle" data-action="toggle-drawer" data-side="left" data-preference="drawer-open-nav"><span aria-hidden="true">&#9776;</span><span class="sr-only">{{#str}}expand, core{{/str}}</span></button>
+            </div>
+
+        <a href="{{{ config.wwwroot }}}" class="navbar-brand {{# output.should_display_navbar_logo }}has-logo{{/ output.should_display_navbar_logo }}
+            {{^ output.should_display_navbar_logo }}
+                hidden-sm-down
+            {{/ output.should_display_navbar_logo }}
+                ">
+            {{# output.should_display_navbar_logo }}
+                <span class="logo hidden-xs-down">
+                    <img src="{{output.get_compact_logo_url}}" alt="{{sitename}}">
+                </span>
+            {{/ output.should_display_navbar_logo }}
+            <span class="site-name hidden-sm-down">{{{ sitename }}}</span>
+        </a>
+    </div>
+    <div class="col-md-4 col-sm-4 hidden-xs-down">
+        {{{ output.search_box }}}
+    </div>
+    <div class="col-md-4 col-sm-5 col-xs-10 user-menu">
+        <!-- user_menu -->
+        {{{ output.user_menu }}}
+        <!-- navbar_plugin_output -->
+        {{{ output.navbar_plugin_output }}}
+        {{{ hillheadhelplink }}}
+    </div>
+</header>
+
