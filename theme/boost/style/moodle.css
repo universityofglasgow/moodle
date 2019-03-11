@@ -9004,6 +9004,7 @@ form.popupform div {
   overflow: auto; }
 
 .no-overflow > .generaltable {
+  position: relative;
   margin-bottom: 0;
   min-height: 10em; }
 
@@ -14773,6 +14774,11 @@ fieldset.coursesearchbox label {
   top: 0.2em;
   left: -1.5em;
   cursor: pointer; }
+  .form-autocomplete-downarrow .loading-icon {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: #fff; }
 
 .form-autocomplete-selection:focus {
   outline: none; }
@@ -15302,9 +15308,6 @@ div#dock {
 .path-mod-assign [data-region="grade-actions-panel"] [data-region="grade-actions"] .collapse-buttons {
   top: auto; }
 
-.path-mod-assign .no-overflow {
-  overflow: initial; }
-
 .path-mod-assign #page-content [data-region="grade-panel"] .mform:not(.unresponsive) .fcontainer .fitem.popout .felement {
   height: calc(100% - 4rem); }
 
@@ -15699,6 +15702,7 @@ p.arrow_button {
   left: 40vw; }
 
 .path-grade-report-grader #region-main {
+  overflow-x: visible;
   min-width: 100%;
   width: auto;
   display: inline-flex; }
