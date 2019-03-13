@@ -14,7 +14,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * support for the mdl35+ mobile app
+ * support for the mdl35+ mobile app. PHP calls this from within
+ * classes/output/mobile.php
  */
 /* jshint esversion: 6 */
 /* eslint-disable no-console */
@@ -98,7 +99,7 @@ var result = {
         const answeroptions = div.querySelector('.answeroptions');
 
         if (div.querySelector('.readonly') !== null) {
-            this.question.readonly = true;
+            this.question.readOnly = true;
         }
         if (div.querySelector('.feedback') !== null) {
             this.question.feedback = div.querySelector('.feedback');
@@ -126,11 +127,11 @@ var result = {
         }
 
         // Wait for the DOM to be rendered.
-        setTimeout(() => {
+        setTimeout(()=> {
             /* Set isdragdrop to true if it is a dragdrop question. This will then be used
             * in template.html to determine when to show the  blue "tap to select..." prompt
             */
-            if (div.querySelectorAll('.draggable') !== null) {
+            if (div.querySelectorAll('.draggable').length > 0 ) {
                 this.question.isdragdrop = true;
             }
             if (div.querySelector('#gapfill_optionsaftertext') !== null) {
