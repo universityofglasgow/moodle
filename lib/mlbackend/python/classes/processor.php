@@ -38,7 +38,7 @@ class processor implements  \core_analytics\classifier, \core_analytics\regresso
     /**
      * The required version of the python package that performs all calculations.
      */
-    const REQUIRED_PIP_PACKAGE_VERSION = '0.37.0';
+    const REQUIRED_PIP_PACKAGE_VERSION = '1.0.0';
 
     /**
      * The path to the Python bin.
@@ -229,9 +229,11 @@ class processor implements  \core_analytics\classifier, \core_analytics\regresso
      * @param int $niterations
      * @param \stored_file $dataset
      * @param string $outputdir
+     * @param  string $trainedmodeldir
      * @return \stdClass
      */
-    public function evaluate_classification($uniqueid, $maxdeviation, $niterations, \stored_file $dataset, $outputdir) {
+    public function evaluate_classification($uniqueid, $maxdeviation, $niterations, \stored_file $dataset,
+            $outputdir, $trainedmodeldir) {
 
         // Obtain the physical route to the file.
         $datasetpath = $this->get_file_path($dataset);
@@ -243,6 +245,10 @@ class processor implements  \core_analytics\classifier, \core_analytics\regresso
             escapeshellarg(\core_analytics\model::MIN_SCORE) . ' ' .
             escapeshellarg($maxdeviation) . ' ' .
             escapeshellarg($niterations);
+
+        if ($trainedmodeldir) {
+            $cmd .= ' ' . escapeshellarg($trainedmodeldir);
+        }
 
         if (!PHPUNIT_TEST && CLI_SCRIPT) {
             debugging($cmd, DEBUG_DEVELOPER);
@@ -370,9 +376,11 @@ class processor implements  \core_analytics\classifier, \core_analytics\regresso
      * @param int $niterations
      * @param \stored_file $dataset
      * @param string $outputdir
+     * @param  string $trainedmodeldir
      * @return \stdClass
      */
-    public function evaluate_regression($uniqueid, $maxdeviation, $niterations, \stored_file $dataset, $outputdir) {
+    public function evaluate_regression($uniqueid, $maxdeviation, $niterations, \stored_file $dataset,
+            $outputdir, $trainedmodeldir) {
         throw new \coding_exception('This predictor does not support regression yet.');
     }
 
