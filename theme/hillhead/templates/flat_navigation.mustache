@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template theme_hillhead/flat_navigation
+    @template theme_boost/flat_navigation
 
     Display the flat navigation for the boost theme
 
@@ -55,40 +55,123 @@
         ]
     }
 }}
-{{{ accessibilityButton }}}
-<nav class="list-group">
-{{# flatnavigation }}
-    {{#showdivider}}
-</nav>
-<nav class="list-group m-t-1">
-    {{/showdivider}}
-    {{#action}}
-    <a class="list-group-item list-group-item-action" href="{{{action}}}" data-key="{{key}}" data-isexpandable="{{isexpandable}}" data-indent="{{get_indent}}" data-showdivider="{{showdivider}}" data-type="{{type}}" data-nodetype="{{nodetype}}" data-collapse="{{collapse}}" data-forceopen="{{forceopen}}" data-isactive="{{isactive}}" data-hidden="{{hidden}}" data-preceedwithhr="{{preceedwithhr}}" {{#parent.key}}data-parent-key="{{.}}"{{/parent.key}}>
-        <div class="m-l-{{get_indent}}">
+
+{{#sitenavexists}}
+<h2>Moodle</h2>
+<ul>
+{{#sitenav}}
+    <li>
+        <a href="{{{action}}}">
             <div class="media">
-            {{#icon.pix}}
-                <span class="media-left">
-                    {{#pix}}{{{icon.pix}}}, {{{icon.component}}}, {{{icon.alt}}}{{/pix}}
-                </span>
-            {{/icon.pix}}
+                {{#icon.pix}}
+                    <span class="media-left">
+                        {{#pix}}{{{icon.pix}}}, {{{icon.component}}}, {{{icon.alt}}}{{/pix}}
+                    </span>
+                {{/icon.pix}}
                 <span class="media-body">{{{text}}}</span>
             </div>
-        </div>
-    </a>
-    {{/action}}
-    {{^action}}
-    <div class="list-group-item" data-key="{{key}}" data-isexpandable="{{isexpandable}}" data-indent="{{get_indent}}" data-showdivider="{{showdivider}}" data-type="{{type}}" data-nodetype="{{nodetype}}" data-collapse="{{collapse}}" data-forceopen="{{forceopen}}" data-isactive="{{isactive}}" data-hidden="{{hidden}}" data-preceedwithhr="{{preceedwithhr}}" {{#parent.key}}data-parent-key="{{.}}"{{/parent.key}}>
-        <div class="m-l-{{get_indent}}">
+        </a>
+    </li>
+{{/sitenav}}
+</ul>
+{{/sitenavexists}}
+
+{{#coursenavexists}}
+<h2>My Courses</h2>
+<ul>
+{{#coursenav}}
+    <li>
+        <a href="{{{action}}}">
             <div class="media">
-            {{#icon.pix}}
-                <span class="media-left">
-                    {{#pix}}{{{icon.pix}}}, {{{icon.component}}}, {{{icon.alt}}}{{/pix}}
-                </span>
-            {{/icon.pix}}
+                {{#icon.pix}}
+                    <span class="media-left">
+                        {{#pix}}{{{icon.pix}}}, {{{icon.component}}}, {{{icon.alt}}}{{/pix}}
+                    </span>
+                {{/icon.pix}}
                 <span class="media-body">{{{text}}}</span>
             </div>
-        </div>
-    </div>
-    {{/action}}
-{{/ flatnavigation }}
-</nav>
+        </a>
+    </li>
+{{/coursenav}}
+</ul>
+{{/coursenavexists}}
+
+{{#settingsnavexists}}
+<h2>Settings</h2>
+<ul>
+{{#settingsnav}}
+    <li>
+        <a href="{{{action}}}">
+            <div class="media">
+                {{#icon.pix}}
+                    <span class="media-left">
+                        {{#pix}}{{{icon.pix}}}, {{{icon.component}}}, {{{icon.alt}}}{{/pix}}
+                    </span>
+                {{/icon.pix}}
+                <span class="media-body">{{{text}}}</span>
+            </div>
+        </a>
+    </li>
+{{/settingsnav}}
+</ul>
+{{/settingsnavexists}}
+
+{{#thiscoursenavexists}}
+<h2>This Course</h2>
+<ul>
+{{#thiscoursenav}}
+    <li>
+        <a href="{{{action}}}">
+            <div class="media">
+                {{#icon.pix}}
+                    <span class="media-left">
+                        {{#pix}}{{{icon.pix}}}, {{{icon.component}}}, {{{icon.alt}}}{{/pix}}
+                    </span>
+                {{/icon.pix}}
+                <span class="media-body">{{{text}}}</span>
+            </div>
+        </a>
+    </li>
+{{/thiscoursenav}}
+</ul>
+{{/thiscoursenavexists}}
+
+{{#adminnavexists}}
+<h2>Administration</h2>
+<ul>
+{{#adminnav}}
+    <li>
+        <a href="{{{action}}}">
+            <div class="media">
+                {{#icon.pix}}
+                    <span class="media-left">
+                        {{#pix}}{{{icon.pix}}}, {{{icon.component}}}, {{{icon.alt}}}{{/pix}}
+                    </span>
+                {{/icon.pix}}
+                <span class="media-body">{{{text}}}</span>
+            </div>
+        </a>
+    </li>
+{{/adminnav}}
+</ul>
+{{/adminnavexists}}
+
+{{#othernavexists}}
+<h2>Not Yet Categorised</h2>
+<ul>
+{{#othernav}}
+    <li>
+        <a href="{{{action}}}">
+            <div class="media">
+                {{#icon.pix}}
+                    <span class="media-left">
+                        {{#pix}}{{{icon.pix}}}, {{{icon.component}}}, {{{icon.alt}}}{{/pix}}
+                    </span>
+                {{/icon.pix}}
+                <span class="media-body">{{{type}}} - {{{key}}}</span>
+            </div>
+        </a>
+    </li>
+{{/othernav}}
+</ul>
+{{/othernavexists}}

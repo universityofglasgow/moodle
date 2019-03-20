@@ -17,26 +17,44 @@
 {{!
     Page navbar.
 }}
-<nav class="row fixed-top navbar navbar-light navbar-expand moodle-has-zindex">
-    <div class="col-md-4 col-sm-3 col-xs-2">
-        <div data-region="drawer-toggle" class="d-inline-block mr-3">
-            <button aria-expanded="{{#navdraweropen}}true{{/navdraweropen}}{{^navdraweropen}}false{{/navdraweropen}}" aria-controls="nav-drawer" type="button" class="btn nav-link float-sm-left mr-1 btn-drawertoggle" data-action="toggle-drawer" data-side="left" data-preference="drawer-open-nav">{{#pix}}i/menubars{{/pix}}<span class="sr-only">{{#str}}sidepanel, core{{/str}}</span></button>
+<nav class="fixed-top navbar navbar-light navbar-expand moodle-has-zindex justify-content-between" aria-label="{{#str}}sitemenubar, admin{{/str}}">
+    
+        <div class="d-flex">
+            <div data-region="drawer-toggle" class="d-inline-block mr-3">
+                <button aria-expanded="{{#navdraweropen}}true{{/navdraweropen}}{{^navdraweropen}}false{{/navdraweropen}}" aria-controls="nav-drawer" type="button" class="btn nav-link float-sm-left mr-1" data-action="toggle-drawer" data-side="left" data-preference="drawer-open-nav">{{#pix}}i/menubars{{/pix}}<span class="sr-only">{{#str}}sidepanel, core{{/str}}</span></button>
+            </div>
+            <a href="{{{ config.wwwroot }}}" class="navbar-brand {{# output.should_display_navbar_logo }}has-logo{{/ output.should_display_navbar_logo }}
+                {{^ output.should_display_navbar_logo }}
+                    d-none d-sm-inline
+                {{/ output.should_display_navbar_logo }}
+                    ">
+                {{# output.should_display_navbar_logo }}
+                    <span class="logo d-none d-sm-inline">
+                        <img src="{{output.get_compact_logo_url}}" alt="{{sitename}}">
+                    </span>
+                {{/ output.should_display_navbar_logo }}
+                <span class="site-name d-none d-sm-inline">{{{ sitename }}}</span>
+            </a>
         </div>
-
-        <a href="{{{ config.wwwroot }}}" class="navbar-brand has-logo d-none d-md-inline-block
+        
+        <div class="d-flex flex-grow-1">
+            {{{ output.search_box }}}
+        </div>
+        
+        <div class="d-flex">
+            <ul class="nav navbar-nav ml-auto">
+                
+                
             
-            <span class="site-name d-none">{{{ sitename }}}</span>
-        </a>
-    </div>
-    <div class="d-none d-md-block col-md-4 col-sm-4">
-        {{{ output.search_box }}}
-    </div>
-    <div class="col-md-4 col-sm-5 col-xs-10 user-menu">
-        <!-- user_menu -->
-        {{{ output.user_menu }}}
-        <!-- navbar_plugin_output -->
-        {{{ output.navbar_plugin_output }}}
-        {{{ hillheadhelplink }}}
-    </div>
+                <!-- navbar_plugin_output -->
+                <li class="nav-item">
+                {{{ output.navbar_plugin_output }}}
+                </li>
+                <!-- user_menu -->
+                <li class="nav-item d-flex align-items-center">
+                    {{{ output.user_menu }}}
+                </li>
+            </ul>
+        </div>
+    
 </nav>
-

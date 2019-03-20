@@ -24,30 +24,25 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-function theme_hillhead_get_main_scss_content($theme) {                                                                                
+function theme_hillhead_get_main_scss_content($theme) {         
+                                                                       
     global $CFG;                                                                                                                    
  
-    $scss = '';                                                                                                                     
-    $filename = !empty($theme->settings->preset) ? $theme->settings->preset : null;                                                 
-    $fs = get_file_storage();                
+    $scss = '';                                                                                                                   
     
-    $scss .= file_get_contents($CFG->dirroot . '/theme/hillhead/scss/hillhead.scss');                                                                                      
- 
-    $context = context_system::instance();                                                                                          
-    if ($filename == 'default.scss') {                                                                                              
-        // We still load the default preset files directly from the boost theme. No sense in duplicating them.                      
-        $scss .= file_get_contents($CFG->dirroot . '/theme/boost/scss/preset/default.scss');                                        
-    } else if ($filename == 'plain.scss') {                                                                                         
-        // We still load the default preset files directly from the boost theme. No sense in duplicating them.                      
-        $scss .= file_get_contents($CFG->dirroot . '/theme/boost/scss/preset/plain.scss');                                          
- 
-    } else if ($filename && ($presetfile = $fs->get_file($context->id, 'theme_hillhead', 'preset', 0, '/', $filename))) {              
-        // This preset file was fetched from the file area for theme_photo and not theme_boost (see the line above).                
-        $scss .= $presetfile->get_content();                                                                                        
-    } else {                                                                                                                        
-        // Safety fallback - maybe new installs etc.                                                                                
-        $scss .= file_get_contents($CFG->dirroot . '/theme/boost/scss/preset/default.scss');                                        
-    }                                                                                                                  
+    $sheets = Array('config');
+    
+    foreach($sheets as $sheet) {
+        $scss .= file_get_contents($CFG->dirroot . '/theme/hillhead/scss/'.$sheet.'.scss');
+    }
+    
+    $scss .= theme_boost_get_main_scss_content($theme);
+    
+    $sheets = Array('hillhead', 'accessibility', 'login');
+    
+    foreach($sheets as $sheet) {
+        $scss .= file_get_contents($CFG->dirroot . '/theme/hillhead/scss/'.$sheet.'.scss');
+    }                                                               
  
     return $scss;                                                                                                                   
 }

@@ -1,5 +1,5 @@
 {{!
-    @template theme_boost/block
+    @template theme_hillhead/block
 
     Example context (json):
     {
@@ -31,27 +31,33 @@
           aria-labelledby="instance-{{blockinstanceid}}-header"
         {{/title}}
      {{/arialabel}}>
-
-    {{! Block contents }}
-    <div class="block-heading">
-        {{! Block header }}
+     
+     <div class="block-header">
         {{#title}}
-        <h5 id="instance-{{blockinstanceid}}-header" class="card-title d-inline">{{{title}}}</h5>
+            <h5 id="instance-{{blockinstanceid}}-header" class="card-title d-inline">{{{title}}}</h5>
         {{/title}}
 
         {{#hascontrols}}
-        <div class="block-controls pull-right header">
-            {{{controls}}}
-        </div>
+            <div class="block-controls pull-right header">
+                {{{controls}}}
+            </div>
         {{/hascontrols}}
     </div>
-    <div class="block-content content">
-        {{{content}}}
+    <div class="block-body">
+         <div class="card-body">
+
+        {{! Block header }}
+        
+
+        <div class="card-text content">
+            {{{content}}}
+            <div class="footer">{{{footer}}}</div>
+            {{{annotation}}}
+        </div>
+
     </div>
-    <div class="block-footer">
-        {{{footer}}}
     </div>
-    {{{annotation}}}
+   
 {{! End Block Container }}
 </section>
 
