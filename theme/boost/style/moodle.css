@@ -10540,6 +10540,10 @@ div.editor_atto_toolbar button .icon {
   overflow: hidden !important;
   /* stylelint-disable-line declaration-no-important */ }
 
+.text-break {
+  overflow-wrap: break-word !important;
+  /* stylelint-disable-line declaration-no-important */ }
+
 .icon {
   font-size: 16px;
   width: 16px;
@@ -11158,6 +11162,10 @@ div.editor_atto_toolbar button .icon {
     padding-right: 0.5rem;
     padding-left: 0.5rem;
     content: "/"; }
+
+@media (min-width: 576px) {
+  #page-admin-search .container {
+    overflow-wrap: break-word; } }
 
 #page-admin-tasklogs .task-class {
   font-size: 0.8203125rem;
