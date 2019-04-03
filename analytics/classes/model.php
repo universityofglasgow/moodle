@@ -346,8 +346,6 @@ class model {
                                   $timesplittingid = false, $processor = null) {
         global $USER, $DB;
 
-        \core_analytics\manager::check_can_manage_models();
-
         $indicatorclasses = self::indicator_classes($indicators);
 
         $now = time();
@@ -359,6 +357,20 @@ class model {
         $modelobj->timecreated = $now;
         $modelobj->timemodified = $now;
         $modelobj->usermodified = $USER->id;
+
+        if ($target->based_on_assumptions()) {
+            $modelobj->trained = 1;
+        }
+
+        if ($timesplittingid) {
+            if (!\core_analytics\manager::is_valid($timesplittingid, '\core_analytics\local\time_splitting\base')) {
+                throw new \moodle_exception('errorinvalidtimesplitting', 'analytics');
+            }
+            if (substr($timesplittingid, 0, 1) !== '\\') {
+                throw new \moodle_exception('errorinvalidtimesplitting', 'analytics');
+            }
+            $modelobj->timesplitting = $timesplittingid;
+        }
 
         if ($processor &&
                 !manager::is_valid($processor, '\core_analytics\classifier') &&
@@ -374,14 +386,6 @@ class model {
         $modelobj = $DB->get_record('analytics_models', array('id' => $id), '*', MUST_EXIST);
 
         $model = new static($modelobj);
-
-        if ($timesplittingid) {
-            $model->enable($timesplittingid);
-        }
-
-        if ($model->is_static()) {
-            $model->mark_as_trained();
-        }
 
         return $model;
     }
@@ -400,6 +404,10 @@ class model {
         global $DB;
 
         $existingmodels = $DB->get_records('analytics_models', array('target' => $target->get_id()));
+
+        if (!$existingmodels) {
+            return false;
+        }
 
         if (!$indicators && $existingmodels) {
             return true;
@@ -1049,8 +1057,6 @@ class model {
     public function enable($timesplittingid = false) {
         global $DB, $USER;
 
-        \core_analytics\manager::check_can_manage_models();
-
         $now = time();
 
         if ($timesplittingid && $timesplittingid !== $this->model->timesplitting) {
@@ -1626,7 +1632,10 @@ class model {
         // 1 db read per context.
         $this->purge_insights_cache();
 
-        $this->model->trained = 0;
+        if (!$this->is_static()) {
+            $this->model->trained = 0;
+        }
+
         $this->model->timemodified = time();
         $this->model->usermodified = $USER->id;
         $DB->update_record('analytics_models', $this->model);

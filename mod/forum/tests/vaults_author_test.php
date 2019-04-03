@@ -15,39 +15,35 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * A scheduled task.
+ * The author vault tests.
  *
- * @package    core
- * @copyright  2013 onwards Martin Dougiamas  http://dougiamas.com
+ * @package    mod_forum
+ * @copyright  2019 Ryan Wyllie <ryan@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace core\task;
+
+defined('MOODLE_INTERNAL') || die();
 
 /**
- * Simple task to run the question cron.
+ * The author vault tests.
+ *
+ * @package    mod_forum
+ * @copyright  2019 Ryan Wyllie <ryan@moodle.com>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class question_cron_task extends scheduled_task {
-
+class mod_forum_vaults_author_testcase extends advanced_testcase {
     /**
-     * Get a descriptive name for this task (shown to admins).
-     *
-     * @return string
+     * Test get_from_id.
      */
-    public function get_name() {
-        return get_string('taskquestioncron', 'admin');
+    public function test_get_from_id() {
+        $this->resetAfterTest();
+
+        $user = $this->getDataGenerator()->create_user();
+        $vaultfactory = \mod_forum\local\container::get_vault_factory();
+        $authorvault = $vaultfactory->get_author_vault();
+
+        $author = $authorvault->get_from_id($user->id);
+
+        $this->assertEquals($user->id, $author->get_id());
     }
-
-    /**
-     * Do the job.
-     * Throw exceptions on errors (the job will be retried).
-     */
-    public function execute() {
-        global $CFG;
-
-        // Run question bank clean-up.
-        require_once($CFG->libdir . '/questionlib.php');
-        \question_bank::cron();
-
-    }
-
 }

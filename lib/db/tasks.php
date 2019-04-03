@@ -150,6 +150,15 @@ $tasks = array(
         'month' => '*'
     ),
     array(
+        'classname' => 'core\task\grade_history_cleanup_task',
+        'blocking' => 0,
+        'minute' => '*',
+        'hour' => '0',
+        'day' => '*',
+        'dayofweek' => '*',
+        'month' => '*'
+    ),
+    array(
         'classname' => 'core\task\completion_regular_task',
         'blocking' => 0,
         'minute' => '*',
@@ -204,7 +213,16 @@ $tasks = array(
         'month' => '*'
     ),
     array(
-        'classname' => 'core\task\question_cron_task',
+        'classname' => 'core\task\question_preview_cleanup_task',
+        'blocking' => 0,
+        'minute' => '*',
+        'hour' => '*',
+        'day' => '*',
+        'dayofweek' => '*',
+        'month' => '*'
+    ),
+    array(
+        'classname' => 'core\task\question_stats_cleanup_task',
         'blocking' => 0,
         'minute' => '*',
         'hour' => '*',
