@@ -27,15 +27,8 @@ defined('MOODLE_INTERNAL') || die();
 user_preference_allow_ajax_update('drawer-open-nav', PARAM_ALPHA);
 require_once($CFG->libdir . '/behat/lib.php');
 
-if (isloggedin()) {
-    $navdraweropen = (get_user_preferences('drawer-open-nav', 'true') == 'true');
-} else {
-    $navdraweropen = false;
-}
-$extraclasses = [];
-if ($navdraweropen) {
-    $extraclasses[] = 'drawer-open-left';
-}
+include('extraclasses.php');
+
 $bodyattributes = $OUTPUT->body_attributes($extraclasses);
 $blockshtml = $OUTPUT->blocks('side-pre');
 $hasblocks = strpos($blockshtml, 'data-block=') !== false;
@@ -51,97 +44,8 @@ $templatecontext = [
     'hasregionmainsettingsmenu' => !empty($regionmainsettingsmenu)
 ];
 
-$siteContext = context_system::instance();
-$isAdmin = has_capability('moodle/site:config', $siteContext);
-$canSeeGUIDReport = has_capability('report/guid:view', $siteContext);
-
-if($canSeeGUIDReport) {
-    $guidReportLink = new moodle_url('/report/guid/index.php');
-    $guidReportNav = navigation_node::create('GUID Report', $guidReportLink);
-    $guidFlat = new flat_navigation_node($guidReportNav, 0);
-    $guidFlat->key = 'guidreport';
-    $guidFlat->icon = new pix_icon('a/search', 'GUID Report', 'moodle');
-    $PAGE->flatnav->add($guidFlat);
-}
-
-if($isAdmin) {
-    $purgeLink = new moodle_url('/admin/purgecaches.php?confirm=1&sesskey='.sesskey().'&returnurl='.$PAGE->url->out_as_local_url(false));
-    $purgeNav = navigation_node::create('Purge All Caches', $purgeLink);
-    $purgeFlat = new flat_navigation_node($purgeNav, 0);
-    $purgeFlat->key = 'purgecaches';
-    $purgeFlat->icon = new pix_icon('t/delete', 'Purge All Caches', 'moodle');
-    $PAGE->flatnav->add($purgeFlat);
-}
-
-
-
-$flatnav = $PAGE->flatnav;
-
-$coursenav = Array();
-$coursenavexists = false;
-
-$sitenav = Array();
-$sitenavexists = false;
-
-$thiscoursenav = Array();
-$thiscoursenavexists = false;
-
-$settingsnav = Array();
-$settingsnavexists = false;
-
-$othernav = Array();
-$othernavexists = false;
-
-$adminnav = Array();
-$adminnavexists = false;
-
-foreach($flatnav as $navitem) {
-    
-    switch($navitem->type) {
-        case 1:
-            $sitenav[] = $navitem;
-            $sitenavexists = true;
-            break;
-        case 20:
-            $coursenav[] = $navitem;
-            $coursenavexists = true;
-            break;
-        case 30:
-            $thiscoursenav[] = $navitem;
-            $thiscoursenavexists = true;
-            break;
-        default:
-            switch($navitem->key) {
-                case 'coursehome':
-                case 'participants':
-                case 'badgesview':
-                case 'competencies':
-                case 'grades':
-                    $settingsnav[] = $navitem;
-                    $settingsnavexists = true;
-                    break;
-                case 'calendar':
-                case 'privatefiles':
-                    $sitenav[] = $navitem;
-                    $sitenavexists = true;
-                    break;
-                case 'sitesettings':
-                case 'purgecaches':
-                case 'guidreport':
-                    $adminnav[] = $navitem;
-                    $adminnavexists = true;
-                    break;
-                case 'home':
-                case 'mycourses':
-                    break;
-                default:
-                    $othernav[] = $navitem;
-                    $othernavexists = true;
-                    break;
-            }
-            
-    }
-}
+include('navigation.php');
+include('accessibility.php');
 
 $templatecontext['coursenav'] = $coursenav;
 $templatecontext['coursenavexists'] = $coursenavexists;
@@ -155,5 +59,9 @@ $templatecontext['othernav'] = $othernav;
 $templatecontext['othernavexists'] = $othernavexists;
 $templatecontext['adminnav'] = $adminnav;
 $templatecontext['adminnavexists'] = $adminnavexists;
+$templatecontext['accessibilityText'] = $accTxt;
+$templatecontext['accessibilityButton'] = $accessibilityButton;
+$templatecontext['extrascripts'] = $extraScripts;
+
 echo $OUTPUT->render_from_template('theme_hillhead/columns2', $templatecontext);
 

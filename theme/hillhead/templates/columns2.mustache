@@ -59,6 +59,8 @@
     {{> theme_hillhead/navbar }}
 
     <div id="page" class="container-fluid">
+        {{{ accessibilityText }}}
+    
         {{{ output.full_header }}}
 
         <div id="page-content" class="row pb-3">
@@ -92,7 +94,7 @@
     {{> theme_hillhead/nav-drawer }}
     {{> theme_hillhead/footer }}
 </div>
-
+{{{ extrascripts }}}
 </body>
 </html>
 {{#js}}

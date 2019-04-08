@@ -1,5 +1,25 @@
 $hillhead-blue: #005398;
 
+h1 {
+    font-size: 1.5rem;
+    color: #003865;
+}
+
+h2 {
+    font-size: 1.3rem;
+    color: #003865;
+}
+
+h3 {
+    font-size: 1.1rem;
+    color: #003865;
+}
+
+h4 {
+    font-size: 1rem;
+    color: #003865;
+}
+
 #page {
     padding: 0 $card-spacer-x;
 }
@@ -35,8 +55,23 @@ nav.navbar button.btn {
     margin-right: 0;
     color: $hillhead-page-bg;
     background: $hillhead-main;
+    border: 1px solid $hillhead-main;
+    padding: 7px 10px;
+    box-shadow: none;
+}
+
+nav.navbar button.drawer-opener {
+    width: 37px;
+    height: 37px;
+    padding: 4px;
+    background: transparent;
     border: none;
-    padding: 6px 10px;
+}
+
+nav.navbar button.drawer-opener i.icon {
+    font-size: 29px;
+    width: 29px;
+    height: 29px;
 }
 
 nav.navbar a.navbar-brand {
@@ -107,6 +142,10 @@ nav.navbar .dropdown > a {
     border-bottom: 1px solid $hillhead-card-br;
 }
 
+.block-header h3, .block-header h5 {
+    margin-bottom: 0;
+}
+
 .block-body {
     padding: 20px;
 }
@@ -115,23 +154,50 @@ nav.navbar .dropdown > a {
     padding: 0;
 }
 
-body.format-topics #region-main {
+#page-course-view-topics #region-main {
     background: transparent;
     border: none;
     padding: 0;
 }
 
-body.format-topics .course-content ul.topics li.section {
+#page-course-view-topics .course-content ul.topics li.section {
     border: 1px solid $hillhead-card-br;
     background-color: #fff;
     padding-bottom: 0;
+    margin-top: 0;
+    margin-bottom: 20px;
 }
 
-body.format-topics ul.topics li.section .sectionname {
+#page-course-view-topics ul.topics li.section .sectionname {
     padding: 7px 20px;
     border-bottom: 1px solid $hillhead-card-br;
+    margin-top: 1px transparent;
 }
 
-.course-content ul.topics li.section .left, .course-content ul.topics li.section .right {
-    padding: 5px 20px;
+#page-course-view-topics .course-content ul.topics li.section .left, #page-course-view-topics .course-content ul.topics li.section .right {
+    //padding: 5px 20px;
+}
+
+#page-footer {
+    border-top: 1px solid $hillhead-side-br;
+    padding-top: 20px;
+    margin: 20px;
+    color: #577492;
+}
+
+#page-header .card {
+    background: transparent;
+    border: none;
+}
+
+#page-header .card-body {
+    padding: 0;
+}
+
+#page-header .action-menu .dropdown > a {
+    color: #555;
+}
+
+[data-region="blocks-column"] {
+    display: inline-block;
 }

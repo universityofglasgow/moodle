@@ -1,5 +1,21 @@
 require(['jquery'], function($) { $(document).ready(function(){
-    $("span, a, p, div, h1, h2, h3, h4, h5, h6, strong, i").not("#gridshadebox_overlay, [role='alert'], #cboxOverlay, #colorbox").each(function() { 
-        $(this).removeAttr("style");
+    
+    // Remove custom styles from topic sections
+    
+    $("li.section ul.section *").each(function() {
+        $(this).removeAttr("style").removeAttr("bgcolor").removeAttr("style");
     });
+    
+    // Remove custom styles from section summaries
+    
+    $("li.section div.summary *").each(function() {
+        $(this).removeAttr("style").removeAttr("bgcolor").removeAttr("style");
+    });
+    
+    // Remove custom styles from activity intros
+    
+    $("body.path-mod #intro *").each(function() {
+        $(this).removeAttr("style").removeAttr("bgcolor").removeAttr("style");
+    });
+    
 })});

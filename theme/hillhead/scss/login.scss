@@ -1,5 +1,18 @@
 // Login Page Stuff
 
+body#page-login-index {
+    background-image: url([[pix:theme|login-background]]);
+    background-attachment: fixed;
+    background-position: 50% 50%;
+    background-size: cover;
+}
+@media (max-width:1920px) and (max-height:1080px) {
+    body#page-login-index {
+        background-size: auto;
+        background-position: 50% 50%;
+    }
+}
+
 .gu-login {
     background-color: rgba(255, 255, 255, 0.7);
     border-radius: 6px;

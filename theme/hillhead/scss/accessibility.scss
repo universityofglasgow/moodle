@@ -1,5 +1,22 @@
 // Accessibility features
 
+.accessibility-link {
+    background-color: #000 !important;
+    font-weight: bold !important;
+    padding: 5px 7px;
+    margin-left: -7px;
+    margin-right: -7px;
+    border-radius: 4px;
+}
+
+.accessibility-tools .block-body {
+    padding-top: 0;
+}
+
+.accessibility-link a {
+    color: #ff0 !important;
+}
+
 body.hillhead-font-comic {
     font-family: "Hillhead Comic", "Chalkboard", "Comic Sans", "Comic Sans MS", sans-serif !important;
 }
@@ -133,11 +150,12 @@ body.hillhead-contrast header .navbar-brand span.site-name {
 .accessibility-tools .accessibility-group h4 {
     font-size: 1rem !important;
     font-weight: 500;
-    background-color: #eee;
-    border-bottom: 1px solid #ddd;
-    line-height: 24px !important;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e1e6eb;
+    line-height: 30px !important;
     padding: 3px 10px;
     margin-bottom: 5px;
+    margin-top: 20px;
 }
 
 .list-group.accessibility-toggle {
@@ -160,16 +178,16 @@ body.hillhead-bold * {
 
 .hh-acc {
     display: block;
-    line-height: 24px !important;
+    line-height: 30px !important;
     padding: 3px 10px;
     margin-bottom: 5px;
 }
 
 .hh-acc i {
     display: inline-block;
-    width: 24px;
+    width: 26px;
     text-align: center;
-    margin-right: 5px;
+    margin-right: 8px;
 }
 
 #hh-acc-ft-de { font-family: "Hillhead", "Ubuntu", "Trebuchet MS", Arial, sans-serif; }
@@ -202,7 +220,7 @@ body.hillhead-bold * {
 
 //Night Mode!
 
-body.hillhead-night {
+body.hillhead-night, #page-my-index.hillhead-night {
     background-color: #132030;
     color: #C4D6EE;
 }
@@ -226,6 +244,22 @@ body.hillhead-night #nav-drawer {
     border-right-color: #121E30;
 }
 
+body.hillhead-night #nav-drawer a {
+    color: #C4D6EE;
+}
+
+body.hillhead-night #nav-drawer h2 {
+    color: #789bca;
+}
+
+body.hillhead-night h1, body.hillhead-night h2, body.hillhead-night h3, body.hillhead-night h4, body.hillhead-night h5, body.hillhead-night h6 {
+    color: #789bca;
+}
+
+body.hillhead-night .accessibility-tools .accessibility-group h4 {
+    color: #789bca;
+}
+
 body.hillhead-night nav .btn-drawertoggle {
     background-color: #182941;
 }
@@ -235,9 +269,19 @@ body.hillhead-night .card, body.hillhead-night.path-course-view .course-content>
     background-color: #1A2B41;
 }
  
-body.hillhead-night .card .block-heading, body.hillhead-night.format-topics .course-content>ul>li.section .sectionname, body.hillhead-night.format-weeks .course-content>ul>li.section .sectionname {
+body.hillhead-night .card .block-header, body.hillhead-night.format-weeks .course-content>ul>li.section .sectionname, body.hillhead-night .block .block-cards .course-summaryitem {
     border-color: #121E30;
     background-color: #274163;
+}
+
+body#page-course-view-topics.hillhead-night ul.topics li.section .sectionname {
+    border-bottom-color: #121E30;
+    background-color: #274163;
+}
+
+body.hillhead-night#page-course-view-topics .course-content ul.topics li.section {
+    background-color: #182941;
+    border-color: #121E30;
 }
 
 body.hillhead-night .course-content>ul>li.section .section-modchooser {
@@ -253,7 +297,7 @@ body.hillhead-night .region_main_settings_menu_proxy {
     background-color: #1A2B41;
 }
 
-body.hillhead-night#page-user-profile #region-main .description, body.hillhead-night.path-course.path-user #region-main .description, body.hillhead-night.path-course.path-user #region-main .page-context-header, body.hillhead-night .course-content .single-section, body.hillhead-night.path-admin #region-main .card-block, body.hillhead-night.path-admin #region-main #page-enrol-users #filterform, #page-enrol-users body.hillhead-night.path-admin #region-main #filterform {
+body.hillhead-night #region-main, body.hillhead-night#page-user-profile #region-main .description, body.hillhead-night.path-course.path-user #region-main .description, body.hillhead-night.path-course.path-user #region-main .page-context-header, body.hillhead-night .course-content .single-section, body.hillhead-night.path-admin #region-main .card-block, body.hillhead-night.path-admin #region-main #page-enrol-users #filterform, #page-enrol-users body.hillhead-night.path-admin #region-main #filterform {
     border-color: #121E30;
     background-color: #1A2B41;
 }
@@ -401,6 +445,11 @@ body.hillhead-night .page-item.disabled span, .page-item.disabled .page-link {
     border-color: #274163;
 }
 
+body.hillhead-night table {
+    border-color: #274162;
+    color: #c4d6ee;
+}
+
 body.hillhead-night .btn-primary {
     background-color: #406BAF !important;
     border-color: #243C62 !important;
@@ -505,8 +554,8 @@ body.hillhead-night .moodle-dialogue-base .moodle-dialogue-wrap .moodle-dialogue
     color: #C4D6EE;
 }
 
-body.hillhead-night .resourcelinkdetails, body.hillhead-night .dimmed, body.hillhead-night a.dimmed {
-    color: #A3B2C6;
+body.hillhead-night .text-muted, body.hillhead-night a.dimmed, body.hillhead-night a.dimmed:link, body.hillhead-night a.dimmed:visited, body.hillhead-night a.dimmed_text, body.hillhead-night a.dimmed_text:link, body.hillhead-night a.dimmed_text:visited, body.hillhead-night .dimmed_text, body.hillhead-night .dimmed_text a, body.hillhead-night .dimmed_text a:link, body.hillhead-night .dimmed_text a:visited, body.hillhead-night .usersuspended, body.hillhead-night .usersuspended a, body.hillhead-night .usersuspended a:link, body.hillhead-night .usersuspended a:visited, body.hillhead-night .dimmed_category, body.hillhead-night .dimmed_category a, body.hillhead-night .tag_feed .media .muted a, body.hillhead-night #page-admin-qtypes .disabled, body.hillhead-night #page-admin-qbehaviours .disabled, body.hillhead-night #page-admin-plugins #plugins-control-panel .pluginname .componentname, body.hillhead-night #page-admin-plugins #plugins-control-panel .version .versionnumber, body.hillhead-night #page-admin-plugins #plugins-control-panel .notes .requiredby, body.hillhead-night #plugins-check-page .page-description, body.hillhead-night #plugins-check-page #plugins-check .requires-ok, body.hillhead-night #plugins-check-page #plugins-check .displayname .plugindir, body.hillhead-night #plugins-check-page #plugins-check-available-dependencies .displayname .component, body.hillhead-night #page-admin-search .adminpagepath li, body.hillhead-night .block .minicalendar td.weekend, body.hillhead-night .section .activity .stealth, body.hillhead-night .course-content .section-summary .section-summary-activities .activity-count, body.hillhead-night .course-content ul li.section.hidden .sectionname>span, body.hillhead-night .course-content ul li.section.hidden .content>div.summary, body.hillhead-night .course-content ul li.section.hidden .activity .activityinstance, body.hillhead-night #course-category-listings .listitem[data-visible="0"], body.hillhead-night #course-category-listings .listitem[data-visible="0"]>div>a, body.hillhead-night #course-category-listings .listing-pagination-totals.dimmed, body.hillhead-night .fitem.disabled .fp-btn-choose, body.hillhead-night .form-defaultinfo, body.hillhead-night .form-label .form-shortname, body.hillhead-night .formsettingheading .form-horizontal, body.hillhead-night .no-felement.fstatic, body.hillhead-night .path-backup .backup_progress .backup_stage {
+    color: #8598B0 !important;
 }
 
 body.hillhead-stripstyles i {
