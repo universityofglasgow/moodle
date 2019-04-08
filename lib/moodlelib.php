@@ -6047,6 +6047,7 @@ function email_to_user($user, $from, $subject, $messagetext, $messagehtml = '', 
         'siteshortname' => $SITE->shortname,
         'sitewwwroot' => $CFG->wwwroot,
         'subject' => $subject,
+        'prefix' => $CFG->emailsubjectprefix,
         'to' => $user->email,
         'toname' => fullname($user),
         'from' => $mail->From,
@@ -9285,7 +9286,7 @@ function get_performance_info() {
         // Attempt to avoid devs debugging peformance issues, when its caused by css building and so on.
         $info['html'] .= '<p><strong>Warning: Theme designer mode is enabled.</strong></p>';
     }
-    $info['html'] .= '<ul class="list-unstyled m-l-1 row">';         // Holds userfriendly HTML representation.
+    $info['html'] .= '<ul class="list-unstyled ml-1 row">';         // Holds userfriendly HTML representation.
 
     $info['realtime'] = microtime_diff($PERF->starttime, microtime());
 
@@ -9309,7 +9310,7 @@ function get_performance_info() {
         $info['txt']  .= 'memory_peak: '.$info['memory_peak'].'B (' . display_size($info['memory_peak']).') ';
     }
 
-    $info['html'] .= '</ul><ul class="list-unstyled m-l-1 row">';
+    $info['html'] .= '</ul><ul class="list-unstyled ml-1 row">';
     $inc = get_included_files();
     $info['includecount'] = count($inc);
     $info['html'] .= '<li class="included col-sm-4">Included '.$info['includecount'].' files</li> ';
@@ -9394,9 +9395,9 @@ function get_performance_info() {
 
     $info['html'] .= '</ul>';
     if ($stats = cache_helper::get_stats()) {
-        $html = '<ul class="cachesused list-unstyled m-l-1 row">';
+        $html = '<ul class="cachesused list-unstyled ml-1 row">';
         $html .= '<li class="cache-stats-heading font-weight-bold">Caches used (hits/misses/sets)</li>';
-        $html .= '</ul><ul class="cachesused list-unstyled m-l-1">';
+        $html .= '</ul><ul class="cachesused list-unstyled ml-1">';
         $text = 'Caches used (hits/misses/sets): ';
         $hits = 0;
         $misses = 0;
@@ -9416,7 +9417,7 @@ function get_performance_info() {
                     $mode = ' <span title="request cache">[r]</span>';
                     break;
             }
-            $html .= '<ul class="cache-definition-stats list-unstyled m-l-1 m-b-1 cache-mode-'.$modeclass.' card d-inline-block">';
+            $html .= '<ul class="cache-definition-stats list-unstyled ml-1 mb-1 cache-mode-'.$modeclass.' card d-inline-block">';
             $html .= '<li class="cache-definition-stats-heading p-t-1 card-header bg-dark bg-inverse font-weight-bold">' .
                 $definition . $mode.'</li>';
             $text .= "$definition {";
@@ -10282,4 +10283,29 @@ function get_callable_name($callable) {
     } else {
         return $name;
     }
+}
+
+/**
+ * Tries to guess if $CFG->wwwroot is publicly accessible or not.
+ * Never put your faith on this function and rely on its accuracy as there might be false positives.
+ * It just performs some simple checks, and mainly is used for places where we want to hide some options
+ * such as site registration when $CFG->wwwroot is not publicly accessible.
+ * Good thing is there is no false negative.
+ *
+ * @return bool
+ */
+function site_is_public() {
+    global $CFG;
+
+    $host = parse_url($CFG->wwwroot, PHP_URL_HOST);
+
+    if ($host === 'localhost' || preg_match('|^127\.\d+\.\d+\.\d+$|', $host)) {
+        $ispublic = false;
+    } else if (\core\ip_utils::is_ip_address($host) && !ip_is_public($host)) {
+        $ispublic = false;
+    } else {
+        $ispublic = true;
+    }
+
+    return $ispublic;
 }

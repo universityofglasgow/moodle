@@ -116,6 +116,9 @@ function(
         var countElement = container.find(SELECTORS.SECTION_TOTAL_COUNT);
         countElement.text(count);
         container.removeClass('hidden');
+        Str.get_string('totalconversations', 'core_message', count).done(function(string) {
+            container.attr('aria-label', string);
+        });
 
         var numPlaceholders = count > 20 ? 20 : count;
         // Array of "true" up to the number of placeholders we want.
@@ -145,6 +148,10 @@ function(
     var renderUnreadCount = function(root, count) {
         var countElement = root.find(SELECTORS.SECTION_UNREAD_COUNT);
         countElement.text(count);
+
+        Str.get_string('unreadconversations', 'core_message', count).done(function(string) {
+            countElement.attr('aria-label', string);
+        });
 
         if (count > 0) {
             countElement.removeClass('hidden');
@@ -200,6 +207,12 @@ function(
             }
 
             return formattedConversation;
+        });
+
+        formattedConversations.forEach(function(conversation) {
+            if (new Date().toDateString() == new Date(conversation.lastmessagedate * 1000).toDateString()) {
+                conversation.istoday = true;
+            }
         });
 
         return Templates.render(TEMPLATES.CONVERSATIONS_LIST, {conversations: formattedConversations})
@@ -455,6 +468,10 @@ function(
 
         // Cache the conversation.
         loadedConversationsById[conversation.id] = conversation;
+
+        if (new Date().toDateString() == new Date(formattedConversation.lastmessagedate * 1000).toDateString()) {
+            formattedConversation.istoday = true;
+        }
 
         return Templates.render(TEMPLATES.CONVERSATIONS_LIST, {conversations: [formattedConversation]})
             .then(function(html) {
