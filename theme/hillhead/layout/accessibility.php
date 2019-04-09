@@ -255,7 +255,7 @@
         );
     }
     
-    $accText = '';
+    $accTxt = '';
     
     if($usesAccessibilityTools) {
         $accTxt = '<div class="block card m-t-1 accessibility-tools"><div class="block-header"><h3>Accessibility Tools<a class="float-right" href="'.$CFG->wwwroot.'/theme/hillhead/accessibility.php?o=theme_hillhead_accessibility&v=clear" data-key="accessibility"><i class="fa fa-times"></i></a></h3></div><div class="block-body">';

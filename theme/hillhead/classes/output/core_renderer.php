@@ -97,7 +97,7 @@ class core_renderer extends \core_renderer {
         return html_writer::tag('div', $searchinput, array('class' => 'hillhead-search-input-wrapper nav-link', 'id' => $id));
     }
     
-    protected function render_context_header($contextheader) {
+    protected function render_context_header(\context_header $contextheader) {
 
         $showheader = empty($this->page->layout_options['nocontextheader']);
         if (!$showheader) {

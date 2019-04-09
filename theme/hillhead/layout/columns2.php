@@ -59,7 +59,7 @@ $templatecontext['othernav'] = $othernav;
 $templatecontext['othernavexists'] = $othernavexists;
 $templatecontext['adminnav'] = $adminnav;
 $templatecontext['adminnavexists'] = $adminnavexists;
-$templatecontext['accessibilityText'] = $accText;
+$templatecontext['accessibilityText'] = $accTxt;
 $templatecontext['accessibilityButton'] = $accessibilityButton;
 $templatecontext['extrascripts'] = $extraScripts;
 
