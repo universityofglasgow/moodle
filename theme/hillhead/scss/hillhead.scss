@@ -20,6 +20,10 @@ h4 {
     color: #003865;
 }
 
+#region-main-settings-menu.has-blocks, #region-main.has-blocks {
+    width: calc(100% - 320px);
+}
+
 #page {
     padding: 0 $card-spacer-x;
 }
@@ -154,7 +158,7 @@ nav.navbar .dropdown > a {
     padding: 0;
 }
 
-#page-course-view-topics #region-main {
+.pagelayout-course #region-main {
     background: transparent;
     border: none;
     padding: 0;
@@ -171,7 +175,6 @@ nav.navbar .dropdown > a {
 #page-course-view-topics ul.topics li.section .sectionname {
     padding: 7px 20px;
     border-bottom: 1px solid $hillhead-card-br;
-    margin-top: 1px transparent;
 }
 
 #page-course-view-topics .course-content ul.topics li.section .left, #page-course-view-topics .course-content ul.topics li.section .right {
@@ -200,4 +203,9 @@ nav.navbar .dropdown > a {
 
 [data-region="blocks-column"] {
     display: inline-block;
+}
+
+.course-content ul.topics li.section .left, .course-content ul.topics li.section .right {
+    margin-top: auto;
+    padding-top: 0.5em;
 }
