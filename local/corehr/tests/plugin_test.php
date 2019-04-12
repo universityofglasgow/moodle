@@ -29,6 +29,8 @@
  define('TEST_LOCAL_COREHR_VALID_PERSONNELNO', '12345');
  define('TEST_LOCAL_COREHR_PERSONNELNO_STUDENT', '1234567');
  define('TEST_LOCAL_COREHR_INVALID_PERSONNELNO', '1');
+ define('TEST_LOCAL_COREHR_VALID_GUID', 'ab23c');
+ define('TEST_LOCAL_COREHR_INVALID_GUID', 'xx');
  *
  * @package    local_corehr
  * @category   phpunit
@@ -122,4 +124,45 @@ class local_corehr_testcase extends advanced_testcase {
         }
     }
 
+
+    public function test_corehr_extract() {
+        global $CFG, $DB;
+
+        // Check Soap extension is installed
+        if (!extension_loaded('soap')) {
+            $this->markTestSkipped('Soap extension is not loaded.');
+        }
+
+        // skip test if no WSDL defined
+        if (!defined('TEST_LOCAL_COREHR_WSDLEXTRACT')) {
+            $this->markTestSkipped('No WSDLTRAINING defined');
+        }
+
+        $this->resetAfterTest();
+
+        // Setup config
+        set_config('wsdlextract', TEST_LOCAL_COREHR_WSDLEXTRACT, 'local_corehr');
+        set_config('username', TEST_LOCAL_COREHR_USERNAME, 'local_corehr');
+        set_config('password', TEST_LOCAL_COREHR_PASSWORD, 'local_corehr');
+
+        // Test extract for (valid) GUID
+        $result = \local_corehr\api::extract(TEST_LOCAL_COREHR_VALID_GUID);
+        $this->assertNotEmpty($result, 'no result returned for valid guid');
+        $this->assertNotEmpty($result->forename, 'missing forename');
+        $this->assertNotEmpty($result->surname, 'missing surname');
+
+        // Test extract for invalid GUID
+        $result = \local_corehr\api::extract(TEST_LOCAL_COREHR_INVALID_GUID);
+        $this->assertEmpty($result, 'invalid guid did not produce empty result');
+
+        // Test storing extracted data
+        $user = $this->getDataGenerator()->create_user([
+            'username' => TEST_LOCAL_COREHR_VALID_GUID,
+        ]);
+        $result = \local_corehr\api::extract(TEST_LOCAL_COREHR_VALID_GUID);
+        \local_corehr\api::store_extract_guid(TEST_LOCAL_COREHR_VALID_GUID, $result);
+        $extract = $DB->get_record('local_corehr_extract', ['userid' => $user->id]);
+        $this->assertNotEmpty($extract, 'extract record missing for user');
+
+    }
 }

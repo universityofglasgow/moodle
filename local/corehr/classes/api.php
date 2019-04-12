@@ -141,17 +141,6 @@ class api {
     }
 
     /**
-     * Interpret soap client error response
-     * @param string $rawxml
-     * @return
-     */
-    private static function xmlresponse($rawxml) {
-        var_dump($rawxml); die;
-        $xml = new \SimpleXMLElement($rawxml);
-        var_dump($xml); die;
-    }
-
-    /**
      * Web service 'add' function
      * @param object $staffTrainingRecord data object for web service
      * @return string status / error log from ws
@@ -193,6 +182,7 @@ class api {
     /**
      * Web service to get HR data extract
      * @param string $guid
+     * @return mixed user data object or false
      */
     public static function extract($guid) {
         $config = get_config('local_corehr');
@@ -200,7 +190,7 @@ class api {
             return get_string('notconfigured', 'local_corehr');
         }
         try {
-            $client = new SoapClient($config->wsdlextract, array('trace' => 1));
+            $client = new SoapClient($config->wsdlextract, array('trace' => 1, 'exceptions' => 0));
         } catch (Exception $e) {
             return $e->getMessage();
         }
@@ -216,14 +206,20 @@ class api {
         ];
 
         // Try soap call. Attempt to get some useful information if it fails.
-        try {
-            $result = $client->getPersonByGuid($getPersonByGuid);
-        } catch (Exception $e) {
-            $request = $client->__getLastRequest();
-            return $e->getMessage() . "\n\n" . $request;
-        }
+        $result = $client->__soapCall('getPersonByGuid', [$getPersonByGuid]);        
+        if (is_a($result, 'SoapFault')) {
 
-        $request = $client->__getLastRequest();
+            // This doesn't appear to throw an error, but just in case
+            return false;
+        } else {
+
+            // 'return' contains the object of user data
+            if (!empty($result->return)) {
+                return $result->return;
+            } else {
+                return false;
+            }
+        }
 
         return $result->return;
     }
@@ -236,7 +232,7 @@ class api {
     public static function store_extract($userid, $extract) {
         global $DB;
 
-        if (!$data = $DB->get_record('corehr_extract', ['userid' => $userid])) {
+        if (!$data = $DB->get_record('local_corehr_extract', ['userid' => $userid])) {
             $data = new \stdClass;
             $data->userid = $userid;
         }
@@ -252,14 +248,30 @@ class api {
         $data->knownas = $extract->knownAs;
         $data->orgunitno = $extract->orgUnitNo;
         $data->orgunitdesc = $extract->orgUnitDesc;
+        $data->school = $extract->school;
+        $data->schooldesc = $extract->schoolDesc;
         $data->jobtitle = $extract->jobTitle;
         $data->jobtitledesc = $extract->jobTitleDesc;
         $data->timemodified = time();
 
         if (empty($data->id)) {
-            $DB->insert_record('corehr_extract', $data);
+            $DB->insert_record('local_corehr_extract', $data);
         } else {
-            $DB->update_record('corehr_extract', $data);
+            $DB->update_record('local_corehr_extract', $data);
+        }
+    }
+
+    /**
+     * Convenience function, store extract for GUID
+     * @param string guid (username)
+     * @param object $extract
+     */
+    public static function store_extract_guid($guid, $extract) {
+        global $DB;
+
+        $user = $DB->get_record('user', ['username' => $guid]);
+        if ($user) {
+            self::store_extract($user->id, $extract);
         }
     }
 
