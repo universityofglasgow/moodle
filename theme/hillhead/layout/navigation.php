@@ -69,6 +69,9 @@ foreach($flatnav as $navitem) {
         default:
             switch($navitem->key) {
                 case 'coursehome':
+                    $thiscoursenav[] = $navitem;
+                    $thiscoursenavexists = true;
+                    break;
                 case 'participants':
                 case 'badgesview':
                 case 'competencies':
@@ -85,6 +88,7 @@ foreach($flatnav as $navitem) {
                 case 'sitesettings':
                 case 'purgecaches':
                 case 'guidreport':
+                case 'addblock':
                     $adminnav[] = $navitem;
                     $adminnavexists = true;
                     break;
