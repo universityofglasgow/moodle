@@ -76,6 +76,20 @@ function xmldb_local_corehr_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2019021800, 'local', 'corehr');
     }
 
+    if ($oldversion < 2019041100) {
+
+        // Define field error to be added to local_corehr_status.
+        $table = new xmldb_table('local_corehr_status');
+        $field = new xmldb_field('error', XMLDB_TYPE_CHAR, '50', null, XMLDB_NOTNULL, null, null, 'status');
+
+        // Conditionally launch add field error.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Corehr savepoint reached.
+        upgrade_plugin_savepoint(true, 2019041100, 'local', 'corehr');
+    }
 
     return true; //have to be in else get an unknown error
 }

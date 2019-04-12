@@ -23,8 +23,6 @@
  */
 
 require_once(dirname(__FILE__) . '/../../config.php');
-require_once(dirname(__FILE__) . '/locallib.php');
-require_once(dirname(__FILE__) . '/configform.php');
 
 $courseid  = required_param('id', PARAM_INT);
 $course = $DB->get_record('course', array('id' => $courseid), '*', MUST_EXIST);
@@ -47,7 +45,7 @@ if ($corehr = $DB->get_record('local_corehr', array('courseid' => $courseid))) {
 }
 
 // Form stuffs
-$mform = new local_corehr_configform($returnurl);
+$mform = new \local_corehr\form\config($returnurl);
 $mform->set_data(array(
     'id' => $courseid,
     'coursecode' => $coursecode,
@@ -56,7 +54,7 @@ if ($mform->is_cancelled()) {
     redirect(new moodle_url('/course/view.php', array('id' => $courseid)));
 } else if ($data = $mform->get_data()) {
     $coursecode = $data->coursecode;
-    local_corehr_savecoursecode($courseid, $coursecode);
+    \local_corehr\api::savecoursecode($courseid, $coursecode);
 
     redirect(new moodle_url('/course/view.php', array('id' => $courseid)));
 }

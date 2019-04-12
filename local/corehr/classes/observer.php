@@ -22,7 +22,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once(dirname(__file__) . '/../locallib.php');
 
 class local_corehr_observer {
 
@@ -33,7 +32,8 @@ class local_corehr_observer {
 
         $courseid = $event->courseid;
         $relateduserid = $event->relateduserid;
-        local_corehr_course_completed($courseid, $relateduserid);
+        \local_corehr\api::course_completed($courseid, $relateduserid);
+        mtrace("local_corehr recording completion for courseid=" . $courseid . ", userid = " . $relateduserid);
 
         return;
     }

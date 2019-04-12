@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="local/corehr/db" VERSION="20190218" COMMENT="XMLDB file for Moodle local/corehr"
+<XMLDB PATH="local/corehr/db" VERSION="20190411" COMMENT="XMLDB file for Moodle local/corehr"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -44,6 +44,7 @@
         <FIELD NAME="lasttry" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false" COMMENT="Timestamp"/>
         <FIELD NAME="retrycount" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="status" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false" COMMENT="pending, retry, error, OK"/>
+        <FIELD NAME="error" TYPE="char" LENGTH="50" NOTNULL="true" SEQUENCE="false" COMMENT="Error string from Core"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>

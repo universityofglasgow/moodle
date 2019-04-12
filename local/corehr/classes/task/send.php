@@ -24,8 +24,6 @@
 
 namespace local_corehr\task;
 
-require_once($CFG->dirroot . '/local/corehr/locallib.php');
-
 class send extends \core\task\scheduled_task {      
     public function get_name() {
         // Shown in admin screens
@@ -35,33 +33,40 @@ class send extends \core\task\scheduled_task {
     public function execute() {       
         global $DB;
 
+        // Get list of possible error codes
+        $errors = \local_corehr\api::getErrors();
+
         // Find records that (might) need sent/resent
         $statii = $DB->get_records('local_corehr_status', ['status' => 'pending']);
         foreach ($statii as $status) {
-            $delay = local_corehr_get_delay($status->retrycount);
+            $delay = \local_corehr\api::get_delay($status->retrycount);
             $targettime = $status->lasttry + $delay;
             if ($targettime > time()) {
                 continue;
             }
   
             // Attempt to send to CoreHR
-            $message = local_corehr_send($status);
+            $message = \local_corehr\api::send($status);
    
             // Deal sensibly with message
             $message = trim($message);
             $status->lasttry = time();
             if ($message == 'OK') {
                 $status->status = 'OK';
-            } else if (strpos($message, 'does not exist') !== false) {
-                $status->status = 'error';
-            } else if ($message == "No Personnel Number") {
-                $status->status = 'error';
-            } else {
-                $status->retrycount++;
-                if ($status->retrycount > 12) {
-                    $status->status = 'timeout';
+            } else if (array_key_exists($message, $errors)) {
+                $permanent = $errors[$message];
+                $status->error = $message;
+                if ($permanent) {
+                    $status->status = 'error';
+                } else {
+                    $status->retrycount++;
+                    \local_corehr\api::mtrace('local_corehr: Retry count for user ' . $status->userid . ' is now ' . $status->retrycount);
+                    if ($status->retrycount > 12) {
+                        $status->status = 'timeout';
+                    }
                 }
             }
+
             $DB->update_record('local_corehr_status', $status);
         }
     }                                                                                                                               

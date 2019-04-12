@@ -22,8 +22,6 @@
 
 defined('MOODLE_INTERNAL') || die;
 
-require_once(dirname(__FILE__) . '/locallib.php');
-
 if ($hassiteconfig) {
     $settings = new admin_settingpage(
             'local_corehr', get_string('pluginname', 'local_corehr'));

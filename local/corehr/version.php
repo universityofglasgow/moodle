@@ -22,7 +22,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$plugin->version = 2019021800;
+$plugin->version = 2019041100;
 $plugin->requires = 2018051700;
 $plugin->component = 'local_corehr';
 $plugin->description = 'Sychronise completion data for CoreHR';

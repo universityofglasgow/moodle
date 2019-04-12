@@ -15,17 +15,34 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * External api for local_corehr
+ * Sychronise completion data for CoreHR
  *
  * @package    local_corehr
  * @copyright  2016 Howard Miller
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_corehr;
+namespace local_corehr\form;
 
-require_once(dirname(__file__) . '/../locallib.php');
+require_once("$CFG->libdir/formslib.php");
 
-class corehr {
+class config extends \moodleform {
+
+    function definition() {
+        global $CFG;
+
+        $mform =& $this->_form;
+
+        $mform->addElement('html', get_string('configintro', 'local_corehr'));
+
+        $mform->addElement('hidden', 'id');
+        $mform->setType('id', PARAM_INT);
+
+        $mform->addElement('text', 'coursecode', get_string('coursecode', 'local_corehr'));
+        $mform->setType('coursecode', PARAM_TEXT);
+        $mform->addHelpButton('coursecode', 'coursecode', 'local_corehr');
+
+        $this->add_action_buttons();
+    }
 
 }
