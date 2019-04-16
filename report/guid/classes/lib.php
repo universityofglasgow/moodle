@@ -18,13 +18,15 @@
  * GUID report
  *
  * @package    report_guid
- * @copyright  2013 Howard Miller
+ * @copyright  2013-19 Howard Miller
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace report_guid;
+
 defined('MOODLE_INTERNAL') || die;
 
-class report_guid_search {
+class lib {
 
     /**
      * Get all the settings from the GUID auth plugin
@@ -33,7 +35,7 @@ class report_guid_search {
         $auth = get_auth_plugin('guid');
         $config = $auth->config;
         if (empty($config->host_url) || empty($config->contexts)) {
-            throw new Exception('host_url and contexts must be defined in auth_guid settings');
+            throw new \Exception('host_url and contexts must be defined in auth_guid settings');
         }
         if (empty($config->field_map_firstname)) {
             $config->field_map_firstname = 'givenName';
@@ -353,7 +355,7 @@ class report_guid_search {
                 if ($gucourses) {
                     $links = array();
                     foreach ($gucourses as $gu) {
-                        $link = new moodle_url('/course/view.php', array('id' => $gu->courseid));
+                        $link = new \moodle_url('/course/view.php', array('id' => $gu->courseid));
                         $links[] = '<a href="' . $link . '">&quot;' . $gu->coursename . '&quot;</a>';
                     }
                     echo implode(', ', $links);
@@ -557,11 +559,12 @@ class report_guid_search {
         if ($groupid = groups_get_group_by_name($courseid, $groupname)) {
             return $groupid;
         } else {
-            $group = new stdClass;
-            $group->name = $groupname;
-            $group->description = '';
-            $group->enrolmentkey = '';
-            $group->courseid = $courseid;
+            $group = (object) [
+                'name' => $groupname,
+                'description' => '',
+                'enrolmentkey' => '',
+                'courseid' => $courseid,
+            ];
             $groupid = groups_create_group($group);
             return $groupid;
         }

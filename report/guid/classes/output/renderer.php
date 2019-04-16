@@ -23,11 +23,14 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace report_guid\output;
+
 defined('MOODLE_INTERNAL') || die;
 
-define('MAXIMUM_RESULTS', 8);
+use plugin_renderer_base;
+use moodle_url;
 
-class report_guid_renderer extends plugin_renderer_base {
+class renderer extends plugin_renderer_base {
 
     protected $config;
 
@@ -371,4 +374,13 @@ class report_guid_renderer extends plugin_renderer_base {
             echo "<br />";
         }
     }
+
+    /**
+     * Render LDAP long listing
+     * @param object $ldaplist
+     */
+    public function render_ldaplist(ldaplist $ldaplist) {
+        return $this->render_from_template('report_guid/ldaplist', $ldaplist->export_for_template($this));
+    }
 }
+

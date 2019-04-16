@@ -22,6 +22,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+define('MAXIMUM_RESULTS', 12);
+
 require_once(dirname(__FILE__) . '/../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 require_once($CFG->libdir . '/formslib.php');
@@ -29,7 +31,7 @@ require_once($CFG->libdir . '/formslib.php');
 require_login();
 
 // Get settings.
-$config = report_guid_search::settings();
+$config = report_guid\lib::settings();
 
 // Renderer.
 $context = context_system::instance();
@@ -56,7 +58,6 @@ $confirm = optional_param('confirm', '', PARAM_TEXT);
 if ($resetbutton) {
     redirect(new moodle_url('/report/guid'));
 }
-
 
 // Start the page.
 admin_externalpage_setup('reportguid', '', null, '', array('pagelayout' => 'report'));
@@ -123,17 +124,19 @@ $output->mainlinks();
 if ($mform->is_cancelled()) {
     redirect( "index.php" );
 } else if ($data = $mform->get_data()) {
-    $result = report_guid_search::filter($output, $data->firstname, $data->lastname, $data->guid, $data->email, $data->idnumber);
-    $users = report_guid_search::user_search($data->firstname, $data->lastname, $data->guid, $data->email, $data->idnumber);
-    report_guid_search::add_enrol_counts($users);
+    $result = report_guid\lib::filter($output, $data->firstname, $data->lastname, $data->guid, $data->email, $data->idnumber);
+    $users = report_guid\lib::user_search($data->firstname, $data->lastname, $data->guid, $data->email, $data->idnumber);
+    report_guid\lib::add_enrol_counts($users);
 
     // Display ldap search results.
     if (($action == 'more') && (count($result) == 1)) {
         $result = array_shift($results);
         $output->single_ldap($result);
     } else {
-        $output->ldap_results($result);
-        $output->user_results($users);
+        //$output->ldap_results($result);
+        //$output->user_results($users);
+        $ldaplist = new report_guid\output\ldaplist($result, $users);
+        echo $output->render_ldaplist($ldaplist);
     }
 }
 
