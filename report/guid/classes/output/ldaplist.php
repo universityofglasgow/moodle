@@ -39,6 +39,8 @@ use context_course;
  */
 class ldaplist implements renderable, templatable {
 
+    protected $config;
+
     protected $results;
 
     protected $users;
@@ -48,25 +50,114 @@ class ldaplist implements renderable, templatable {
      * @param array $results ldap search results
      * @param array $users existing Moodle users
      */
-    public function __construct($results, $users) {
+    public function __construct($config, $results, $users) {
+        $this->config = $config;
         $this->results = $results;
         $this->users = $users;
     }
 
     /**
      * Format ldap data for display
+     * @param array $results
      * @return array formatted data
      */
-    protected function format_results() {
+    protected function format_results($results) {
+        global $DB;
 
-        
+        $formatted = [];
+        foreach ($results as $cn => $result) {
+            $guid = $result[$this->config->user_attribute];
+
+            // Check that this isn't an array (it shouldn't be).
+            if (is_array($guid)) {
+                $guid = report_guid_search::array_to_guid($guid);
+            }
+
+            $mailinfo = \report_guid\lib::get_email($result);
+            $mail = $mailinfo['mail'];
+            if (!$mailinfo['primary']) {
+                $mail = "<i>$mail</i>";
+                $externalmail = true;
+            }
+            if ($user = $DB->get_record('user', ['username' => strtolower($guid)])) {
+                $userlink = new \moodle_url('/user/view.php', ['id' => $user->id, 'course' => 1]);
+                $username = '<a class="btn btn-success" href="' . $userlink . '">' . $guid . '</a>';
+            } else {
+                $username = $guid;
+            }
+            if ($username) {
+                $link = new \moodle_url('/report/guid/index.php', ['guid' => $guid, 'action' => 'more']);
+                $createbutton = '<a class="btn btn-primary" href="' . $link->out(true) . '">'.
+                        get_string('more', 'report_guid') . '</a>';
+                if (!$user) {
+                    $createlink = new \moodle_url('/report/guid/index.php', ['action' => 'create', 'guid' => $guid, 'sesskey' => sesskey()]);
+                    $createbutton .= ' <a class="btn btn-info" href="' . $createlink->out(true, ['sesskey' => sesskey()]) . '">' .
+                        get_string('createbutton', 'report_guid') . '</a>';
+                }
+                $formatted[] = (object)[
+                    'username' => $username,
+                    'firstname' => $result[$this->config->field_map_firstname],
+                    'lastname' => $result[$this->config->field_map_lastname],
+                    'mail' => $mail,
+                    'buttons' => $createbutton,
+                ];
+            }
+        }
+
+        return $formatted;
+    }
+
+    /**
+     * Format list of existing Moodle users
+     * @param array $users
+     * @return array formatted list
+     */
+    public function format_users($users) {
+        global $DB;
+
+        $context = \context_system::instance();
+
+        $formatted = [];
+        foreach ($users as $userid => $user) {
+
+            $buttons = '';
+            if (has_capability('moodle/user:delete', $context)) {
+                $link = new \moodle_url('/report/guid/index.php', ['delete' => $userid, 'sesskey' => sesskey()]);
+                $buttons .= '<a class="btn btn-danger" href="' . $link . '">' . get_string('delete') . '</a>';
+            }
+            if (has_capability('moodle/user:update', $context)) {
+                $link = new \moodle_url('/report/guid/userupdate.php', ['userid' => $userid, 'sesskey' => sesskey()]);
+                $buttons .= '<a class="btn btn-warning" href="' .
+                    $link . '">' . get_string('changeusername', 'report_guid') . '</a>';
+            }
+
+            $userlink = new \moodle_url('/user/view.php', ['id' => $user->id, 'course' => 1]);
+            $username = '<a class="btn btn-success" href="' . $userlink . '">' . $user->username . '</a>';
+            $formatted[] = (object)[
+                'username' => $username,
+                'auth' => $user->auth,
+                'firstname' => $user->firstname,
+                'lastname' => $user->lastname,
+                'email' => $user->email,
+                'enrolcount' => $user->enrolcount,
+                'lastlogin' => $user->lastlogin ? userdate($user->lastlogin) : get_string('never'),
+                'buttons' => $buttons,
+            ];
+        }
+
+        return $formatted;
     }
 
     public function export_for_template(renderer_base $output) {
         return [
             'ldapresultsempty' => empty($this->results),
             'toomanyldapresults' => count($this->results) > MAXIMUM_RESULTS,
-            'results' => $this->results,
+            'results' => $this->format_results($this->results),
+            'resultcount' => count($this->results),
+            'users' => $this->format_users($this->users),
+            'toomanyuserresults' => count($this->users) > MAXIMUM_RESULTS,
+            'userresultsempty' => empty($this->users),
+            'usercount' => count($this->users),
         ];
     }
 }

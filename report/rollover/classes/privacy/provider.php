@@ -17,17 +17,17 @@
 /**
  * Privacy provider implementation for report_aonymous.
  *
- * @package    report_guid
+ * @package    report_rollover
  * @copyright  2018 Howard Miller
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace report_guid\privacy;
+namespace report_rollover\privacy;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Privacy provider implementation for report_guid
+ * Privacy provider implementation for report_rollover
  *
  * @copyright  2018 Howard Miller
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later

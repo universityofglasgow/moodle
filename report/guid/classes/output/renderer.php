@@ -53,93 +53,6 @@ class renderer extends plugin_renderer_base {
     }
 
     /**
-     * Print the list of LDAP results
-     * We only print if there's a few as a big list is pointless
-     * @param array $results
-     */
-    public function ldap_results($results) {
-        global $CFG, $DB;
-
-        $config = report_guid_search::settings();
-
-        echo '<h3>' . get_string('ldapresults', 'report_guid') . '</h3>';
-
-        // Check there are some.
-        if (empty($results)) {
-            echo '<div class="alert alert-warning">' . get_string('noresults', 'report_guid') . '</div>';
-            return;
-        }
-
-        // Check for too many.
-        if (count($results) > MAXIMUM_RESULTS) {
-            echo '<div class="alert alert-warning">' . get_string('toomanyldap', 'report_guid') . '</div>';
-            return;
-        }
-
-        // Note any external email addresses.
-        $externalmail = false;
-
-        // Add dn into data.
-        foreach ($results as $dn => $result) {
-            $results[$dn]['dn'] = $dn;
-        }
-
-        $table = new html_table();
-        $table->head = array(
-            get_string( 'username' ),
-            get_string( 'firstname' ),
-            get_string( 'lastname' ),
-            get_string( 'email' ),
-            ' ',
-            );
-        foreach ($results as $cn => $result) {
-            $guid = $result[$config->user_attribute];
-
-            // Check that this isn't an array (it shouldn't be).
-            if (is_array($guid)) {
-                $guid = report_guid_search::array_to_guid($guid);
-            }
-
-            $mailinfo = report_guid_search::get_email( $result );
-            $mail = $mailinfo['mail'];
-            if (!$mailinfo['primary']) {
-                $mail = "<i>$mail</i>";
-                $externalmail = true;
-            }
-            if ($user = $DB->get_record('user', array('username' => strtolower($guid)))) {
-                $userlink = new moodle_url('/user/view.php', array('id' => $user->id, 'course' => 1));
-                $username = '<a class="btn btn-success" href="' . $userlink . '">' . $guid . '</a>';
-            } else {
-                $username = $guid;
-            }
-            if ($username) {
-                $link = new moodle_url('/report/guid/index.php', array('guid' => $guid, 'action' => 'more'));
-                $createbutton = '<a class="btn btn-primary" href="' . $link->out(true, array('sesskey' => sesskey())) . '">'.
-                        get_string('more', 'report_guid') . '</a>';
-                if (!$user) {
-                    $createlink = new moodle_url('/report/guid/index.php', array('action' => 'create', 'guid' => $guid, 'sesskey' => sesskey()));
-                    $createbutton .= ' <a class="btn btn-info" href="' . $createlink->out(true, array('sesskey' => sesskey())) . '">' .
-                        get_string('createbutton', 'report_guid') . '</a>';
-                }
-                $table->data[] = array(
-                    $username,
-                    $result[$config->field_map_firstname],
-                    $result[$config->field_map_lastname],
-                    $mail,
-                    $createbutton
-                );
-            }
-        }
-        echo html_writer::table($table);
-        echo '<div class="alert alert-success">' . get_string('numberofresults', 'report_guid', count($results)) . '</div>';
-
-        // If external emails - add note.
-        if ($externalmail) {
-            echo '<div class="alert alert-warning">' . get_string( 'externalmail', 'report_guid' ) . '</div>';
-        }
-    }
-
-    /**
      * Print single, detailed result
      * @param object $result
      */
@@ -231,72 +144,6 @@ class renderer extends plugin_renderer_base {
     }
 
     /**
-     * Print the list of (interna) user results
-     * We only print if there's a few as a big list is pointless
-     * @param array $results
-     */
-    public function user_results($users) {
-        global $CFG, $DB;
-
-        $config = report_guid_search::settings();
-        $context = context_system::instance();
-
-        echo '<h3>' . get_string('userresults', 'report_guid') . '</h3>';
-
-        // Check there are some.
-        if (empty($users)) {
-            echo '<div class="alert alert-warning">' . get_string('nouserresults', 'report_guid') . '</div>';
-            return;
-        }
-
-        // Check for too many.
-        if (count($users) > MAXIMUM_RESULTS) {
-            echo '<div class="alert alert-warning">' . get_string('toomanyuser', 'report_guid') . '</div>';
-            return;
-        }
-
-        $table = new html_table();
-        $table->head = array(
-            get_string('username'),
-            get_string('authentication'),
-            get_string('firstname'),
-            get_string('lastname'),
-            get_string('email'),
-            get_string('enrolledcourses', 'report_guid'),
-            get_string('lastlogin'),
-            ' ',
-            );
-        foreach ($users as $userid => $user) {
-
-            $buttons = '';
-            if (has_capability('moodle/user:delete', $context)) {
-                $link = new moodle_url('/report/guid/index.php', array('delete' => $userid, 'sesskey' => sesskey()));
-                $buttons .= '<a class="btn btn-danger" href="' . $link . '">' . get_string('delete') . '</a>';
-            }
-            if (has_capability('moodle/user:update', $context)) {
-                $link = new moodle_url('/report/guid/userupdate.php', array('userid' => $userid, 'sesskey' => sesskey()));
-                $buttons .= '<a class="btn btn-warning" href="' .
-                    $link . '">' . get_string('changeusername', 'report_guid') . '</a>';
-            }
-
-            $userlink = new moodle_url('/user/view.php', array('id' => $user->id, 'course' => 1));
-            $username = '<a class="btn btn-success" href="' . $userlink . '">' . $user->username . '</a>';
-            $table->data[] = array(
-                $username,
-                $user->auth,
-                $user->firstname,
-                $user->lastname,
-                $user->email,
-                $user->enrolcount,
-                $user->lastlogin ? userdate($user->lastlogin) : get_string('never'),
-                $buttons,
-                );
-        }
-        echo html_writer::table($table);
-        echo '<div class="alert alert-success">' . get_string('numberofresults', 'report_guid', count($users)) . '</div>';
-    }
-
-    /**
      * Continue, back to main form
      */
     public function continue_button() {
@@ -381,6 +228,14 @@ class renderer extends plugin_renderer_base {
      */
     public function render_ldaplist(ldaplist $ldaplist) {
         return $this->render_from_template('report_guid/ldaplist', $ldaplist->export_for_template($this));
+    }
+
+    /**
+     * Render single user report
+     * @param object $single
+     */
+    public function render_single(single $single) {
+        return $this->render_from_template('report_guid/single', $single->export_for_template($this));
     }
 }
 

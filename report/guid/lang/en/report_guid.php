@@ -22,6 +22,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+$string['accessed'] = 'Accessed {$a}';
 $string['addgroups'] = 'Add groups';
 $string['addgroups_help'] = 'Additional columns will be used to add user to specified groups. Groups are created if they do not exist. If this is set to \'No\' additional columns are ignored';
 $string['accountcreated'] = 'Account created for {$a}';
@@ -33,7 +34,7 @@ $string['countexistingaccounts'] = '{$a} accounts already existed';
 $string['countnewaccounts'] = '{$a} new accounts created';
 $string['courseupload'] = 'Upload users and groups to course';
 $string['courseuploadinstructions'] = 'Upload your CSV file. First column is either GUID or ID number (= matric number for students) as selected below. Remaining columns (if present) contain the names of groups those students should be added to. Users will be created, enrolled on the course and added to groups as required';
-$string['create'] = '(Create an account for this user)';
+$string['create'] = 'Create a Moodle profile for {$a}';
 $string['createbutton'] = 'Create';
 $string['csverror'] = 'There is an error in the CSV file';
 $string['csvfile'] = 'CSV File';
@@ -86,7 +87,7 @@ $string['numberofresults'] = 'Number of results = {$a}';
 $string['pluginname'] = 'GUID search';
 $string['privacy:metadata'] = 'The GUID report does not store any personal data';
 $string['reset'] = 'Reset form';
-$string['resultfor'] = 'LDAP record for user';
+$string['resultfor'] = 'LDAP record for user {$a}';
 $string['roletoassign'] = 'Assign role';
 $string['roletoassign_help'] = 'New users to this course will be enrolled with this role. Existing users are ignored';
 $string['search'] = 'Search';

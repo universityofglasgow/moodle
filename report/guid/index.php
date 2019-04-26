@@ -73,9 +73,9 @@ if (!function_exists( 'ldap_connect' )) {
 // Check for user create.
 if (($action == 'create') && confirm_sesskey()) {
     if ($guid) {
-        $results = report_guid_search::filter($output, '', '', $guid, '', '');
+        $results = report_guid\lib::filter($output, '', '', $guid, '', '');
         $result = array_shift($results);
-        $user = report_guid_search::create_user_from_ldap($result);
+        $user = report_guid\lib::create_user_from_ldap($result);
         notice(get_string('usercreated', 'report_guid', fullname($user)));
     }
 }
@@ -103,9 +103,10 @@ if ($delete) {
 
 // Was 'more' button pressed?
 if ($guid && ($action == 'more')) {
-    $results = report_guid_search::filter($output, '', '', $guid, '', '');
+    $results = report_guid\lib::filter($output, '', '', $guid, '', '');
     $result = array_shift($results);
-    $output->single_ldap($result);
+    $single = new report_guid\output\single($config, $result);
+    echo $output->render_single($single);
 
     echo $OUTPUT->footer();
     die;
@@ -135,7 +136,7 @@ if ($mform->is_cancelled()) {
     } else {
         //$output->ldap_results($result);
         //$output->user_results($users);
-        $ldaplist = new report_guid\output\ldaplist($result, $users);
+        $ldaplist = new report_guid\output\ldaplist($config, $result, $users);
         echo $output->render_ldaplist($ldaplist);
     }
 }

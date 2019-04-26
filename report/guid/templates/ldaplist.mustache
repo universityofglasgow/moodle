@@ -35,6 +35,7 @@
         </div>
     {{/ toomanyldapresults }}
 
+    {{^ toomanyldapresults }}
         <table class="table table-striped">
             <thead>
                 <tr>
@@ -47,12 +48,70 @@
             </thead>
             <tbody>
                 {{# results }}
-
+                    <tr>
+                        <td>{{{ username }}}</td>
+                        <td>{{ firstname }}</td>
+                        <td>{{ lastname }}</td>
+                        <td>{{{ mail }}}</td>
+                        <td>{{{ buttons }}}</td>
+                    </tr>
                 {{/ results }}
             </tbody>
         </table>
 
-    {{^ toomanyldapresults }}
+        <div class="alert alert-success">
+            {{# str }}numberofresults, report_guid, {{ resultcount }}{{/ str }}
+        </div>
     {{/ toomanyldapresults }}
 {{/ ldapresultsempty }}
 
+<h3>{{# str }}userresults, report_guid{{/ str }}</h3>
+
+{{# userresultsempty }}
+    <div class="alert alert-warning">
+        {{# str }}nouserresults, report_guid{{/ str }}
+    </div>
+{{/ userresultsempty }}
+
+{{^ userresultsempty }}
+    {{# toomanyuserresults }}
+        <div class="alert alert-warning">
+            {{# str }}toomanyuser, report_guid{{/ str }}
+        </div>
+    {{/ toomanyuserresults }}
+
+    {{^ toomanyuserresults }}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>{{# str }}username{{/ str }}</th>
+                    <th>{{# str }}authentication{{/ str }}
+                    <th>{{# str }}firstname{{/ str }}</th>
+                    <th>{{# str }}lastname{{/ str }}</th>
+                    <th>{{# str }}email{{/ str }}</th>
+                    <th>{{# str }}enrolledcourses, report_guid{{/ str }}</th>
+                    <th>{{# str }}lastlogin{{/ str }}</th>
+                    <th> </th>
+                </tr>
+            </thead>
+            <tbody>
+                {{# users }}
+                    <tr>
+                        <td>{{{ username }}}</td>
+                        <td>{{ auth }}</td>
+                        <td>{{ firstname }}</td>
+                        <td>{{ lastname }}</td>
+                        <td>{{{ mail }}}</td>
+                        <td>{{ enrolcount }}</td>
+                        <td>{{ lastlogin }}</td>
+                        <td>{{{ buttons }}}</td>
+                    </tr>
+                {{/ users }}
+            </tbody>
+        </table>
+
+        <div class="alert alert-success">
+            {{# str }}numberofresults, report_guid, {{ usercount }}{{/ str }}
+        </div>
+    {{/ toomanyuserresults }}
+{{/ userresultsempty }}

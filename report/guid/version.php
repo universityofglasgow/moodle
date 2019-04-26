@@ -31,4 +31,5 @@ $plugin->component = 'report_guid';
 $plugin->dependencies = array(
     'enrol_gudatabase' => 2015070900,
     'auth_guid' => ANY_VERSION,
+    'local_gusync' => ANY_VERSION,
 );

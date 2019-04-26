@@ -286,106 +286,86 @@ class lib {
     /**
      * print enrolments
      */
-    public static function print_enrolments( $enrolments, $name, $guid ) {
-        global $OUTPUT;
+    public static function format_enrolments($enrolments) {
+        global $DB;
 
-        echo $OUTPUT->box_start();
-        echo $OUTPUT->heading(get_string('enrolments', 'report_guid', $name));
-
-        // Old site to see when site changes.
-        $oldsite = '';
+        if (empty($enrolments)) {
+            return [];
+        }
+        $formattedenrolments = [];
 
         // Run through enrolments.
         foreach ($enrolments as $enrolment) {
-            $newsite = $enrolment->site;
-            if ($newsite != $oldsite) {
-                $sitelink = $enrolment->wwwroot;
-                echo "<p>&nbsp;</p>";
-                echo "<h3>".get_string('enrolmentsonsite', 'report_guid', "<a href=\"$sitelink\">$newsite</a>")."</h3>";
-                $profilelink = $enrolment->wwwroot . '/user/view.php?id=' . $guid;
-                $oldsite = $newsite;
-            }
-            $courselink = $enrolment->wwwroot . '/course/view.php?id=' . $enrolment->courseid;
+
+            // Check target course actually exists
+            if ($DB->record_exists('course', ['id' => $enrolment->courseid])) {
+                $courselink = new \moodle_url('/course/view.php', ['id' => $enrolment->courseid]);
+            } else {
+                $courselink = '';
+            }    
             if (empty($enrolment->timelastaccess)) {
                 $lasttime = get_string('never');
             } else {
-                $lasttime = date( 'd/M/y H:i', $enrolment->timelastaccess );
+                $lasttime = date('d/M/y H:i', $enrolment->timelastaccess);
             }
-            echo "<a href=\"$courselink\">{$enrolment->name}</a> <i>(accessed $lasttime)</i><br />";
+            $formattedenrolments[] = (object)[
+                'courselink' => $courselink,
+                'name' => $enrolment->name,
+                'lastaccess' => $lasttime,
+            ];
         }
 
-        echo $OUTPUT->box_end();
+        return $formattedenrolments;
     }
 
     /**
      * print MyCampus data
      */
-    public static function print_mycampus($courses, $guid) {
-        global $OUTPUT;
+    public static function format_mycampus($courses, $guid) {
 
         // Normalise.
         $guid = strtolower( $guid );
+        $formatted = [];
 
-        // Title.
-        echo $OUTPUT->box_start();
-        echo $OUTPUT->heading(get_string('mycampus', 'report_guid'));
-
-        // Did we pick up any guid mismatches.
-        $mismatch = false;
+        if (empty($courses)) {
+            return [];
+        }
 
         // Run through the courses.
         foreach ($courses as $course) {
             $gucourses = self::mycampus_code($course->courses);
-            echo "<p><strong>{$course->courses}</strong> ";
-            if ($course->name != '-') {
-                echo "'{$course->name}' in '{$course->ou}' ";
+            foreach ($gucourses as $gucourse) {
+                $gucourse->link = new \moodle_url('/course/view.php', ['id' => $gucourse->id]);
             }
 
-            // Check for username discrepancy.
-            if ($course->UserName != $guid) {
-                echo "as <span class=\"label label-warning\">{$course->UserName}</span> ";
-                $mismatch = true;
-            }
-
-            echo '<br />';
-
-            // Display local courses (if there are any).
-            if (strpos($course->courses, '*') === false) {
-                echo '<small>';
-                if ($gucourses) {
-                    $links = array();
-                    foreach ($gucourses as $gu) {
-                        $link = new \moodle_url('/course/view.php', array('id' => $gu->courseid));
-                        $links[] = '<a href="' . $link . '">&quot;' . $gu->coursename . '&quot;</a>';
-                    }
-                    echo implode(', ', $links);
-                } else {
-                    echo get_string('nolocalcourses', 'report_guid');
-                }
-                echo "</small></p>";
-            }
+            $formatted[] = (object)[
+                'code' => $course->courses,
+                'isnamed' => $course->name != '-',
+                'name' => $course->name,
+                'ou' => $course->ou,
+                'gucourses' => array_values($gucourses),
+                'isgucourses' => !empty($gucourses),
+                'usernamemismatch' => $course->UserName != $guid,
+            ];
         }
 
-        // Mismatch?
-        if ($mismatch) {
-            echo "<p><span class=\"label label-warning\">".get_string('guidnomatch', 'report_guid')."</span></p>";
-        }
-
-        echo $OUTPUT->box_end();
+        return $formatted;
     }
 
-    public static function array_prettyprint( $rows ) {
-        echo "<ul>\n";
+    public static function array_prettyprint($rows) {
+        $html = '';
+        $html .=  '<dl class="row" style="line-height: 0.8rem">';
         foreach ($rows as $name => $row) {
             if (is_array( $row )) {
-                echo "<li><strong>$name:</strong>";
-                self::array_prettyprint( $row );
-                echo "</li>\n";
+                $html .= '<dt class="col-sm-3">' . $name . '</dt>';
+                $html .= '<dd class="col-sm-7">' . self::array_prettyprint( $row ) . '</dd>';;
             } else {
-                echo "<li><strong>$name</strong> => $row</li>\n";
+                $html .= '<dt class="col-sm-3">' . $name . '</dt><dd class="col-sm-7">' . $row . '</dd>';
             }
         }
-        echo "</ul>\n";
+        $html .= '</dl>';
+
+        return $html;
     }
 
     // Create new Moodle user.
@@ -431,7 +411,10 @@ class lib {
     private static function mycampus_code($code) {
         global $DB;
 
-        $gucourses = $DB->get_records('enrol_gudatabase_codes', array('code' => $code));
+        $sql = 'SELECT cc.* from {course} cc
+            JOIN {enrol_gudatabase_codes} egc ON egc.courseid = cc.id
+            WHERE code = :code';
+        $gucourses = $DB->get_records_sql($sql, ['code' => $code]);
         return $gucourses;
     }
 
