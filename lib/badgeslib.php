@@ -324,6 +324,28 @@ class badge {
                 $crit->make_clone($new);
             }
 
+            // Copy endorsement.
+            $endorsement = $this->get_endorsement();
+            if ($endorsement) {
+                unset($endorsement->id);
+                $endorsement->badgeid = $new;
+                $newbadge->save_endorsement($endorsement);
+            }
+
+            // Copy alignments.
+            $alignments = $this->get_alignments();
+            foreach ($alignments as $alignment) {
+                unset($alignment->id);
+                $alignment->badgeid = $new;
+                $newbadge->save_alignment($alignment);
+            }
+
+            // Copy related badges.
+            $related = $this->get_related_badges(true);
+            if (!empty($related)) {
+                $newbadge->add_related_badges(array_keys($related));
+            }
+
             // Trigger event, badge duplicated.
             $eventparams = array('objectid' => $new, 'context' => $PAGE->context);
             $event = \core\event\badge_duplicated::create($eventparams);
@@ -1012,6 +1034,11 @@ function badges_notify_badge_award(badge $badge, $userid, $issued, $filepathhash
     $eventdata->fullmessageformat = FORMAT_HTML;
     $eventdata->fullmessagehtml   = $message;
     $eventdata->smallmessage      = '';
+    $eventdata->customdata        = [
+        'notificationiconurl' => moodle_url::make_pluginfile_url(
+            $badge->get_context()->id, 'badges', 'badgeimage', $badge->id, '/', 'f1')->out(),
+        'hash' => $issued,
+    ];
 
     // Attach badge image if possible.
     if (!empty($CFG->allowattachments) && $badge->attachment && is_string($filepathhash)) {
@@ -1049,6 +1076,11 @@ function badges_notify_badge_award(badge $badge, $userid, $issued, $filepathhash
         $eventdata->fullmessageformat = FORMAT_HTML;
         $eventdata->fullmessagehtml   = $creatormessage;
         $eventdata->smallmessage      = '';
+        $eventdata->customdata        = [
+            'notificationiconurl' => moodle_url::make_pluginfile_url(
+                $badge->get_context()->id, 'badges', 'badgeimage', $badge->id, '/', 'f1')->out(),
+            'hash' => $issued,
+        ];
 
         message_send($eventdata);
         $DB->set_field('badge_issued', 'issuernotified', time(), array('badgeid' => $badge->id, 'userid' => $userid));
@@ -1610,4 +1642,51 @@ function badge_award_criteria_competency_has_records_for_competencies($competenc
     $params['criteriatype'] = BADGE_CRITERIA_TYPE_COMPETENCY;
 
     return $DB->record_exists_sql($sql, $params);
+}
+
+/**
+ * Creates single message for all notification and sends it out
+ *
+ * @param object $badge A badge which is notified about.
+ */
+function badge_assemble_notification(stdClass $badge) {
+    global $DB;
+
+    $userfrom = core_user::get_noreply_user();
+    $userfrom->maildisplay = true;
+
+    if ($msgs = $DB->get_records_select('badge_issued', 'issuernotified IS NULL AND badgeid = ?', array($badge->id))) {
+        // Get badge creator.
+        $creator = $DB->get_record('user', array('id' => $badge->creator), '*', MUST_EXIST);
+        $creatorsubject = get_string('creatorsubject', 'badges', $badge->name);
+        $creatormessage = '';
+
+        // Put all messages in one digest.
+        foreach ($msgs as $msg) {
+            $issuedlink = html_writer::link(new moodle_url('/badges/badge.php', array('hash' => $msg->uniquehash)), $badge->name);
+            $recipient = $DB->get_record('user', array('id' => $msg->userid), '*', MUST_EXIST);
+
+            $a = new stdClass();
+            $a->user = fullname($recipient);
+            $a->link = $issuedlink;
+            $creatormessage .= get_string('creatorbody', 'badges', $a);
+            $DB->set_field('badge_issued', 'issuernotified', time(), array('badgeid' => $msg->badgeid, 'userid' => $msg->userid));
+        }
+
+        // Create a message object.
+        $eventdata = new \core\message\message();
+        $eventdata->courseid          = SITEID;
+        $eventdata->component         = 'moodle';
+        $eventdata->name              = 'badgecreatornotice';
+        $eventdata->userfrom          = $userfrom;
+        $eventdata->userto            = $creator;
+        $eventdata->notification      = 1;
+        $eventdata->subject           = $creatorsubject;
+        $eventdata->fullmessage       = format_text_email($creatormessage, FORMAT_HTML);
+        $eventdata->fullmessageformat = FORMAT_PLAIN;
+        $eventdata->fullmessagehtml   = $creatormessage;
+        $eventdata->smallmessage      = $creatorsubject;
+
+        message_send($eventdata);
+    }
 }

@@ -27,7 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 
 $models = [
     [
-        'target' => '\core\analytics\target\course_dropout',
+        'target' => '\core_course\analytics\target\course_dropout',
         'indicators' => [
             '\core\analytics\indicator\any_access_after_end',
             '\core\analytics\indicator\any_access_before_start',
@@ -81,12 +81,19 @@ $models = [
         ],
     ],
     [
-        'target' => '\core\analytics\target\no_teaching',
+        'target' => '\core_course\analytics\target\no_teaching',
         'indicators' => [
             '\core_course\analytics\indicator\no_teacher',
             '\core_course\analytics\indicator\no_student',
         ],
         'timesplitting' => '\core\analytics\time_splitting\single_range',
         'enabled' => true,
+    ],
+    [
+        'target' => '\core_user\analytics\target\upcoming_activities_due',
+        'indicators' => [
+            '\core_course\analytics\indicator\activities_due',
+        ],
+        'timesplitting' => '\core\analytics\time_splitting\upcoming_week',
     ],
 ];

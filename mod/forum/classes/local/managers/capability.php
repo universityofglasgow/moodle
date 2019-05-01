@@ -110,6 +110,12 @@ class capability {
             return false;
         }
 
+        if ($this->forum->is_cutoff_date_reached()) {
+            if (!has_capability('mod/forum:canoverridecutoff', $this->get_context())) {
+                return false;
+            }
+        }
+
         switch ($this->forum->get_type()) {
             case 'news':
                 $capability = 'mod/forum:addnews';
@@ -313,6 +319,18 @@ class capability {
         $course = $forum->get_course_record();
 
         return forum_user_can_post($forumrecord, $discussionrecord, $user, $coursemodule, $course, $context);
+    }
+
+    /**
+     * Can the user favourite the discussion
+     *
+     * @param stdClass $user The user to check
+     * @param discussion_entity $discussion The discussion to check
+     * @return bool
+     */
+    public function can_favourite_discussion(stdClass $user, discussion_entity $discussion) : bool {
+        $context = $this->get_context();
+        return has_capability('mod/forum:cantogglefavourite', $context, $user);
     }
 
     /**

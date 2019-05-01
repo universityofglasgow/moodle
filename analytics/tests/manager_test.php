@@ -173,6 +173,20 @@ class analytics_manager_testcase extends advanced_testcase {
     }
 
     /**
+     * Tests for the {@link \core_analytics\manager::load_default_models_for_all_components()} implementation.
+     */
+    public function test_load_default_models_for_all_components() {
+        $this->resetAfterTest();
+
+        $models = \core_analytics\manager::load_default_models_for_all_components();
+
+        $this->assertTrue(is_array($models['core']));
+        $this->assertNotEmpty($models['core']);
+        $this->assertNotEmpty($models['core'][0]['target']);
+        $this->assertNotEmpty($models['core'][0]['indicators']);
+    }
+
+    /**
      * Tests for the successful execution of the {@link \core_analytics\manager::validate_models_declaration()}.
      */
     public function test_validate_models_declaration() {
@@ -346,11 +360,13 @@ class analytics_manager_testcase extends advanced_testcase {
         $this->resetAfterTest();
         $this->setAdminuser();
 
-        $noteaching = \core_analytics\manager::get_target('\core\analytics\target\no_teaching');
-        $dropout = \core_analytics\manager::get_target('\core\analytics\target\course_dropout');
+        $noteaching = \core_analytics\manager::get_target('\core_course\analytics\target\no_teaching');
+        $dropout = \core_analytics\manager::get_target('\core_course\analytics\target\course_dropout');
+        $upcomingactivities = \core_analytics\manager::get_target('\core_user\analytics\target\upcoming_activities_due');
 
         $this->assertTrue(\core_analytics\model::exists($noteaching));
         $this->assertTrue(\core_analytics\model::exists($dropout));
+        $this->assertTrue(\core_analytics\model::exists($upcomingactivities));
 
         foreach (\core_analytics\manager::get_all_models() as $model) {
             $model->delete();
@@ -358,17 +374,105 @@ class analytics_manager_testcase extends advanced_testcase {
 
         $this->assertFalse(\core_analytics\model::exists($noteaching));
         $this->assertFalse(\core_analytics\model::exists($dropout));
+        $this->assertFalse(\core_analytics\model::exists($upcomingactivities));
 
         $updated = \core_analytics\manager::update_default_models_for_component('moodle');
 
-        $this->assertEquals(2, count($updated));
+        $this->assertEquals(3, count($updated));
+        $this->assertTrue(array_pop($updated) instanceof \core_analytics\model);
         $this->assertTrue(array_pop($updated) instanceof \core_analytics\model);
         $this->assertTrue(array_pop($updated) instanceof \core_analytics\model);
         $this->assertTrue(\core_analytics\model::exists($noteaching));
         $this->assertTrue(\core_analytics\model::exists($dropout));
+        $this->assertTrue(\core_analytics\model::exists($upcomingactivities));
 
         $repeated = \core_analytics\manager::update_default_models_for_component('moodle');
 
         $this->assertSame([], $repeated);
+    }
+
+    /**
+     * test_get_time_splitting_methods description
+     * @return null
+     */
+    public function test_get_time_splitting_methods() {
+        $this->resetAfterTest(true);
+
+        $all = \core_analytics\manager::get_all_time_splittings();
+        $this->assertArrayHasKey('\core\analytics\time_splitting\upcoming_week', $all);
+        $this->assertArrayHasKey('\core\analytics\time_splitting\quarters', $all);
+
+        $allforevaluation = \core_analytics\manager::get_time_splitting_methods_for_evaluation(true);
+        $this->assertArrayNotHasKey('\core\analytics\time_splitting\upcoming_week', $allforevaluation);
+        $this->assertArrayHasKey('\core\analytics\time_splitting\quarters', $allforevaluation);
+
+        $defaultforevaluation = \core_analytics\manager::get_time_splitting_methods_for_evaluation(false);
+        $this->assertArrayNotHasKey('\core\analytics\time_splitting\upcoming_week', $defaultforevaluation);
+        $this->assertArrayHasKey('\core\analytics\time_splitting\quarters', $defaultforevaluation);
+
+        $sometimesplittings = '\core\analytics\time_splitting\single_range,' .
+            '\core\analytics\time_splitting\tenths';
+        set_config('defaulttimesplittingsevaluation', $sometimesplittings, 'analytics');
+
+        $defaultforevaluation = \core_analytics\manager::get_time_splitting_methods_for_evaluation(false);
+        $this->assertArrayNotHasKey('\core\analytics\time_splitting\quarters', $defaultforevaluation);
+    }
+
+    /**
+     * Test the implementation of the {@link \core_analytics\manager::model_declaration_identifier()}.
+     */
+    public function test_model_declaration_identifier() {
+
+        $noteaching1 = $this->load_models_from_fixture_file('no_teaching');
+        $noteaching2 = $this->load_models_from_fixture_file('no_teaching');
+        $noteaching3 = $this->load_models_from_fixture_file('no_teaching');
+
+        // Same model declaration should always lead to same identifier.
+        $this->assertEquals(
+            \core_analytics\manager::model_declaration_identifier(reset($noteaching1)),
+            \core_analytics\manager::model_declaration_identifier(reset($noteaching2))
+        );
+
+        // If something is changed, the identifier should change, too.
+        $noteaching2[0]['target'] .= '_';
+        $this->assertNotEquals(
+            \core_analytics\manager::model_declaration_identifier(reset($noteaching1)),
+            \core_analytics\manager::model_declaration_identifier(reset($noteaching2))
+        );
+
+        $noteaching3[0]['indicators'][] = '\core_analytics\local\indicator\binary';
+        $this->assertNotEquals(
+            \core_analytics\manager::model_declaration_identifier(reset($noteaching1)),
+            \core_analytics\manager::model_declaration_identifier(reset($noteaching3))
+        );
+
+        // The identifier is supposed to contain PARAM_ALPHANUM only.
+        $this->assertEquals(
+            \core_analytics\manager::model_declaration_identifier(reset($noteaching1)),
+            clean_param(\core_analytics\manager::model_declaration_identifier(reset($noteaching1)), PARAM_ALPHANUM)
+        );
+        $this->assertEquals(
+            \core_analytics\manager::model_declaration_identifier(reset($noteaching2)),
+            clean_param(\core_analytics\manager::model_declaration_identifier(reset($noteaching2)), PARAM_ALPHANUM)
+        );
+        $this->assertEquals(
+            \core_analytics\manager::model_declaration_identifier(reset($noteaching3)),
+            clean_param(\core_analytics\manager::model_declaration_identifier(reset($noteaching3)), PARAM_ALPHANUM)
+        );
+    }
+
+    /**
+     * Tests for the {@link \core_analytics\manager::get_declared_target_and_indicators_instances()}.
+     */
+    public function test_get_declared_target_and_indicators_instances() {
+        $this->resetAfterTest();
+
+        $definition = $this->load_models_from_fixture_file('no_teaching');
+
+        list($target, $indicators) = \core_analytics\manager::get_declared_target_and_indicators_instances($definition[0]);
+
+        $this->assertTrue($target instanceof \core_analytics\local\target\base);
+        $this->assertNotEmpty($indicators);
+        $this->assertContainsOnlyInstancesOf(\core_analytics\local\indicator\base::class, $indicators);
     }
 }

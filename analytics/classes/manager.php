@@ -80,10 +80,23 @@ class manager {
      *
      * @throws \required_capability_exception
      * @param \context $context
+     * @param  bool $return The method returns a bool if true.
      * @return void
      */
-    public static function check_can_list_insights(\context $context) {
-        require_capability('moodle/analytics:listinsights', $context);
+    public static function check_can_list_insights(\context $context, bool $return = false) {
+        global $USER;
+
+        if ($context->contextlevel === CONTEXT_USER && $context->instanceid == $USER->id) {
+            $capability = 'moodle/analytics:listowninsights';
+        } else {
+            $capability = 'moodle/analytics:listinsights';
+        }
+
+        if ($return) {
+            return has_capability($capability, $context);
+        } else {
+            require_capability($capability, $context);
+        }
     }
 
     /**
@@ -274,22 +287,31 @@ class manager {
     }
 
     /**
-     * Returns the default time splitting methods for model evaluation.
+     * Returns the time-splitting methods for model evaluation.
      *
+     * @param  bool $all Return all the time-splitting methods that can potentially be used for evaluation or the default ones.
      * @return \core_analytics\local\time_splitting\base[]
      */
-    public static function get_time_splitting_methods_for_evaluation() {
+    public static function get_time_splitting_methods_for_evaluation(bool $all = false) {
 
-        if ($enabledtimesplittings = get_config('analytics', 'defaulttimesplittingsevaluation')) {
-            $enabledtimesplittings = array_flip(explode(',', $enabledtimesplittings));
+        if ($all === false) {
+            if ($enabledtimesplittings = get_config('analytics', 'defaulttimesplittingsevaluation')) {
+                $enabledtimesplittings = array_flip(explode(',', $enabledtimesplittings));
+            }
         }
 
         $timesplittings = self::get_all_time_splittings();
         foreach ($timesplittings as $key => $timesplitting) {
 
-            // We remove the ones that are not enabled. This also respects the default value (all methods enabled).
-            if (!empty($enabledtimesplittings) && !isset($enabledtimesplittings[$key])) {
+            if (!$timesplitting->valid_for_evaluation()) {
                 unset($timesplittings[$key]);
+            }
+
+            if ($all === false) {
+                // We remove the ones that are not enabled. This also respects the default value (all methods enabled).
+                if (!empty($enabledtimesplittings) && !isset($enabledtimesplittings[$key])) {
+                    unset($timesplittings[$key]);
+                }
             }
         }
         return $timesplittings;
@@ -552,14 +574,18 @@ class manager {
         $models = self::get_all_models();
         foreach ($models as $model) {
             $analyser = $model->get_analyser(array('notimesplitting' => true));
-            $analysables = $analyser->get_analysables();
-            if (!$analysables) {
+            $analysables = $analyser->get_analysables_iterator();
+
+            $analysableids = [];
+            foreach ($analysables as $analysable) {
+                if (!$analysable) {
+                    continue;
+                }
+                $analysableids[] = $analysable->get_id();
+            }
+            if (empty($analysableids)) {
                 continue;
             }
-
-            $analysableids = array_map(function($analysable) {
-                return $analysable->get_id();
-            }, $analysables);
 
             list($notinsql, $params) = $DB->get_in_or_equal($analysableids, SQL_PARAMS_NAMED, 'param', false);
             $params['modelid'] = $model->get_id();
@@ -589,22 +615,7 @@ class manager {
         // Just in case...
         $element = clean_param($element, PARAM_ALPHANUMEXT);
 
-        // Core analytics classes (analytics subsystem should not contain uses of the analytics API).
-        $classes = \core_component::get_component_classes_in_namespace('core', 'analytics\\' . $element);
-
-        // Plugins.
-        foreach (\core_component::get_plugin_types() as $type => $unusedplugintypepath) {
-            foreach (\core_component::get_plugin_list($type) as $pluginname => $unusedpluginpath) {
-                $frankenstyle = $type . '_' . $pluginname;
-                $classes += \core_component::get_component_classes_in_namespace($frankenstyle, 'analytics\\' . $element);
-            }
-        }
-
-        // Core subsystems.
-        foreach (\core_component::get_core_subsystems() as $subsystemname => $unusedsubsystempath) {
-            $componentname = 'core_' . $subsystemname;
-            $classes += \core_component::get_component_classes_in_namespace($componentname, 'analytics\\' . $element);
-        }
+        $classes = \core_component::get_component_classes_in_namespace(null, 'analytics\\' . $element);
 
         return $classes;
     }
@@ -673,6 +684,43 @@ class manager {
     }
 
     /**
+     * Return the list of all the models declared anywhere in this Moodle installation.
+     *
+     * Models defined by the core and core subsystems come first, followed by those provided by plugins.
+     *
+     * @return array indexed by the frankenstyle component
+     */
+    public static function load_default_models_for_all_components(): array {
+
+        $tmp = [];
+
+        foreach (\core_component::get_component_list() as $type => $components) {
+            foreach (array_keys($components) as $component) {
+                if ($loaded = static::load_default_models_for_component($component)) {
+                    $tmp[$type][$component] = $loaded;
+                }
+            }
+        }
+
+        $result = [];
+
+        if ($loaded = static::load_default_models_for_component('core')) {
+            $result['core'] = $loaded;
+        }
+
+        if (!empty($tmp['core'])) {
+            $result += $tmp['core'];
+            unset($tmp['core']);
+        }
+
+        foreach ($tmp as $components) {
+            $result += $components;
+        }
+
+        return $result;
+    }
+
+    /**
      * Validate the declaration of prediction models according the syntax expected in the component's db folder.
      *
      * The expected structure looks like this:
@@ -736,14 +784,7 @@ class manager {
      */
     public static function create_declared_model(array $definition): \core_analytics\model {
 
-        $target = static::get_target($definition['target']);
-
-        $indicators = [];
-
-        foreach ($definition['indicators'] as $indicatorname) {
-            $indicator = static::get_indicator($indicatorname);
-            $indicators[$indicator->get_id()] = $indicator;
-        }
+        list($target, $indicators) = static::get_declared_target_and_indicators_instances($definition);
 
         if (isset($definition['timesplitting'])) {
             $timesplitting = $definition['timesplitting'];
@@ -758,5 +799,35 @@ class manager {
         }
 
         return $created;
+    }
+
+    /**
+     * Returns a string uniquely representing the given model declaration.
+     *
+     * @param array $model Model declaration
+     * @return string complying with PARAM_ALPHANUM rules and starting with an 'id' prefix
+     */
+    public static function model_declaration_identifier(array $model) : string {
+        return 'id'.sha1(serialize($model));
+    }
+
+    /**
+     * Given a model definition, return actual target and indicators instances.
+     *
+     * @param array $definition See {@link self::validate_models_declaration()} for the syntax.
+     * @return array [0] => target instance, [1] => array of indicators instances
+     */
+    public static function get_declared_target_and_indicators_instances(array $definition): array {
+
+        $target = static::get_target($definition['target']);
+
+        $indicators = [];
+
+        foreach ($definition['indicators'] as $indicatorname) {
+            $indicator = static::get_indicator($indicatorname);
+            $indicators[$indicator->get_id()] = $indicator;
+        }
+
+        return [$target, $indicators];
     }
 }

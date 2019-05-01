@@ -41,11 +41,14 @@
 
     {{#forum.capabilities.create}}
         <div class="p-t-1 p-b-1">
-            <a href="{{forum.urls.create}}" class="btn btn-primary">
+            <a class="btn btn-primary" data-toggle="collapse" href="#collapseAddForm">
                 {{$discussion_create_text}}
                     {{#str}}addanewdiscussion, forum{{/str}}
                 {{/discussion_create_text}}
             </a>
+            <div class="collapse m-t-1" id="collapseAddForm">
+                {{{newdiscussionhtml}}}
+            </div>
         </div>
     {{/forum.capabilities.create}}
 
@@ -58,7 +61,6 @@
                 {{$discussion_list_header}}
                 <thead>
                     <tr>
-                        <th scope="col">&nbsp;</th>
                         <th scope="col">&nbsp;</th>
                         <th scope="col" class="p-l-0">{{#str}}discussion, mod_forum{{/str}}</th>
                         <th scope="col" class="author">{{#str}}startedby, mod_forum{{/str}}</th>
@@ -75,6 +77,7 @@
                             {{/forum.userstate.tracked}}
                         {{/forum.capabilities.viewdiscussions}}
                         <th scope="col" class="lastpost">{{#str}}lastpost, mod_forum{{/str}}</th>
+                        <th scope="col">&nbsp;</th>
                         {{#forum.capabilities.subscribe}}
                             <th scope="col" class="discussionsubscription"></th>
                         {{/forum.capabilities.subscribe}}
@@ -90,27 +93,11 @@
                                 {{#discussion.pinned}}
                                     {{#pix}}i/pinned, mod_forum, {{#str}}discussionpinned, mod_forum{{/str}}{{/pix}}
                                 {{/discussion.pinned}}
-                            </td>
-                            <td scope="col" class="timed p-0 text-center align-middle">
-                                {{#discussion.timed.istimed}}
-                                    <div class="timedpost">
-                                        {{#pix}}
-                                            i/calendar, moodle,
-                                            {{#discussion.times.start}}
-{{!                                           }}{{#str}} displaystart, mod_forum {{/str}}: {{#userdate}}{{.}}, {{#str}}strftimerecentfull {{/str}}{{/userdate}}
-                                            {{/discussion.times.start}}
-                                            {{#discussion.times.end}}
-{{!                                           }}{{#str}} displayend, mod_forum {{/str}}: {{#userdate}}{{.}}, {{#str}} strftimerecentfull {{/str}}{{/userdate}}
-                                            {{/discussion.times.end}}
-                                            {{#discussion.timed.visible}}
-{{!                                           }}{{#str}} timedvisible, mod_forum {{/str}}
-                                            {{/discussion.timed.visible}}
-                                            {{^discussion.timed.visible}}
-{{!                                           }}{{#str}} timedhidden, mod_forum {{/str}}
-                                            {{/discussion.timed.visible}}
-                                        {{/pix}}
-                                    </div>
-                                {{/discussion.timed.istimed}}
+                                {{^discussion.pinned}}
+                                    {{#discussion}}
+                                        {{> mod_forum/forum_discussion_favourite_toggle}}
+                                    {{/discussion}}
+                                {{/discussion.pinned}}
                             </td>
                             <td scope="col" class="topic p-0 align-middle">
                                 <a class="p-3 p-l-0 w-100 h-100 d-block" href="{{discussion.urls.view}}">{{{discussion.name}}}</a>
@@ -208,9 +195,37 @@
                                     </div>
                                 {{/latestpostid}}
                             </td>
+                            <td scope="col" class="timed p-0 text-center align-middle">
+                                {{#discussion.timed.istimed}}
+                                <div class="timedpost">
+                                    {{#pix}}
+                                    i/calendar, moodle,
+                                    {{#discussion.times.start}}
+                                    {{!                                           }}{{#str}} displaystart, mod_forum {{/str}}: {{#userdate}}{{.}}, {{#str}}strftimerecentfull {{/str}}{{/userdate}}
+                                    {{/discussion.times.start}}
+                                    {{#discussion.times.end}}
+                                    {{!                                           }}{{#str}} displayend, mod_forum {{/str}}: {{#userdate}}{{.}}, {{#str}} strftimerecentfull {{/str}}{{/userdate}}
+                                    {{/discussion.times.end}}
+                                    {{#discussion.timed.visible}}
+                                    {{!                                           }}{{#str}} timedvisible, mod_forum {{/str}}
+                                    {{/discussion.timed.visible}}
+                                    {{^discussion.timed.visible}}
+                                    {{!                                           }}{{#str}} timedhidden, mod_forum {{/str}}
+                                    {{/discussion.timed.visible}}
+                                    {{/pix}}
+                                </div>
+                                {{/discussion.timed.istimed}}
+                            </td>
                             <td scope="col" class="p-0 align-middle">
                                 {{#discussion}}
-                                    {{> mod_forum/discussion_subscription_toggle}}
+                                    <div class="d-flex flex-wrap">
+                                        <div class="p1-1">
+                                            {{> mod_forum/discussion_subscription_toggle}}
+                                        </div>
+                                        <div class="p1-1 m-t-1" data-container='discussion-tools'>
+                                            {{> mod_forum/forum_action_menu}}
+                                        </div>
+                                    </div>
                                 {{/discussion}}
                             </td>
                         </tr>

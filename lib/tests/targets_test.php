@@ -28,6 +28,10 @@ global $CFG;
 
 require_once($CFG->dirroot . '/completion/criteria/completion_criteria.php');
 require_once($CFG->dirroot . '/completion/criteria/completion_criteria_activity.php');
+require_once($CFG->dirroot . '/lib/grade/grade_item.php');
+require_once($CFG->dirroot . '/lib/grade/grade_grade.php');
+require_once($CFG->dirroot . '/lib/grade/grade_category.php');
+require_once($CFG->dirroot . '/lib/grade/constants.php');
 
 /**
  * Unit tests for core targets.
@@ -56,7 +60,7 @@ class core_analytics_targets_testcase extends advanced_testcase {
                     'enablecompletion' => 1,
                     'startdate' => mktime(0, 0, 0, 10, 24, $year + 1)
                 ],
-                'isvalid' => get_string('coursenotyetstarted')
+                'isvalid' => get_string('coursenotyetstarted', 'course')
             ],
             'coursenostudents' => [
                 'params' => [
@@ -64,7 +68,7 @@ class core_analytics_targets_testcase extends advanced_testcase {
                     'startdate' => mktime(0, 0, 0, 10, 24, $year - 2),
                     'enddate' => mktime(0, 0, 0, 10, 24, $year - 1)
                 ],
-                'isvalid' => get_string('nocoursestudents')
+                'isvalid' => get_string('nocoursestudents', 'course')
             ],
             'coursenosections' => [
                 'params' => [
@@ -72,7 +76,7 @@ class core_analytics_targets_testcase extends advanced_testcase {
                     'format' => 'social',
                     'students' => true
                 ],
-                'isvalid' => get_string('nocoursesections')
+                'isvalid' => get_string('nocoursesections', 'course')
             ],
             'coursenoendtime' => [
                 'params' => [
@@ -81,7 +85,7 @@ class core_analytics_targets_testcase extends advanced_testcase {
                     'enddate' => 0,
                     'students' => true
                 ],
-                'isvalid' => get_string('nocourseendtime')
+                'isvalid' => get_string('nocourseendtime', 'course')
             ],
             'courseendbeforestart' => [
                 'params' => [
@@ -89,7 +93,7 @@ class core_analytics_targets_testcase extends advanced_testcase {
                     'enddate' => mktime(0, 0, 0, 10, 23, $year - 2),
                     'students' => true
                 ],
-                'isvalid' => get_string('errorendbeforestart', 'analytics')
+                'isvalid' => get_string('errorendbeforestart', 'course')
             ],
             'coursetoolong' => [
                 'params' => [
@@ -98,7 +102,7 @@ class core_analytics_targets_testcase extends advanced_testcase {
                     'enddate' => mktime(0, 0, 0, 10, 23, $year),
                     'students' => true
                 ],
-                'isvalid' => get_string('coursetoolong', 'analytics')
+                'isvalid' => get_string('coursetoolong', 'course')
             ],
             'coursealreadyfinished' => [
                 'params' => [
@@ -107,7 +111,7 @@ class core_analytics_targets_testcase extends advanced_testcase {
                     'enddate' => mktime(0, 0, 0, 10, 23, $year - 1),
                     'students' => true
                 ],
-                'isvalid' => get_string('coursealreadyfinished'),
+                'isvalid' => get_string('coursealreadyfinished', 'course'),
                 'fortraining' => false
             ],
             'coursenotyetfinished' => [
@@ -117,7 +121,7 @@ class core_analytics_targets_testcase extends advanced_testcase {
                     'enddate' => mktime(0, 0, 0, $month + 2, 23, $year),
                     'students' => true
                 ],
-                'isvalid' => get_string('coursenotyetfinished')
+                'isvalid' => get_string('coursenotyetfinished', 'course')
             ],
             'coursenocompletion' => [
                 'params' => [
@@ -203,7 +207,7 @@ class core_analytics_targets_testcase extends advanced_testcase {
             $criterion->update_config($criteriadata);
         }
 
-        $target = new \core\analytics\target\course_completion();
+        $target = new \core_course\analytics\target\course_completion();
 
         // Test valid analysables.
 
@@ -238,7 +242,7 @@ class core_analytics_targets_testcase extends advanced_testcase {
         $course = $this->getDataGenerator()->create_course($courserecord);
         $this->getDataGenerator()->enrol_user($user->id, $course->id, null, 'manual', $timestart, $timeend);
 
-        $target = new \core\analytics\target\course_completion();
+        $target = new \core_course\analytics\target\course_completion();
         $analyser = new \core\analytics\analyser\student_enrolments(1, $target, [], [], []);
         $analysable = new \core_analytics\course($course);
 
@@ -299,7 +303,7 @@ class core_analytics_targets_testcase extends advanced_testcase {
         $data = $this->setup_competencies_environment();
 
         $analysable = new \core_analytics\course($data['course']);
-        $target = new \core\analytics\target\course_competencies();
+        $target = new \core_course\analytics\target\course_competencies();
 
         $this->assertTrue($target->is_valid_analysable($analysable));
 
@@ -314,7 +318,7 @@ class core_analytics_targets_testcase extends advanced_testcase {
 
         $data = $this->setup_competencies_environment();
 
-        $target = new \core\analytics\target\course_competencies();
+        $target = new \core_course\analytics\target\course_competencies();
         $analyser = new \core\analytics\analyser\student_enrolments(1, $target, [], [], []);
         $analysable = new \core_analytics\course($data['course']);
 
@@ -326,7 +330,7 @@ class core_analytics_targets_testcase extends advanced_testcase {
         $target->add_sample_data($samplesdata);
         $sampleid = reset($sampleids);
 
-        $class = new ReflectionClass('\core\analytics\target\course_competencies');
+        $class = new ReflectionClass('\core_course\analytics\target\course_competencies');
         $method = $class->getMethod('calculate_sample');
         $method->setAccessible(true);
 
@@ -340,5 +344,96 @@ class core_analytics_targets_testcase extends advanced_testcase {
         }
         // Method calculate_sample() returns 0 when the user has achieved all the competencies assigned to the course.
         $this->assertEquals(0, $method->invoke($target, $sampleid, $analysable));
+    }
+
+    /**
+     * Test the specific conditions of a valid analysable for the course_gradetopass target.
+     */
+    public function test_core_target_course_gradetopass_analysable() {
+        global $DB;
+
+        $this->resetAfterTest(true);
+        $now = time();
+
+        $dg = $this->getDataGenerator();
+
+        // Course without grade to pass set.
+        $course1 = $dg->create_course(array('startdate' => $now - WEEKSECS, 'enddate' => $now - DAYSECS));
+        $student1 = $dg->create_user();
+        $studentrole = $DB->get_record('role', array('shortname' => 'student'));
+        $dg->enrol_user($student1->id, $course1->id, $studentrole->id);
+
+        $analysable = new \core_analytics\course($course1);
+        $target = new \core_course\analytics\target\course_gradetopass();
+        $this->assertEquals(get_string('gradetopassnotset', 'course'), $target->is_valid_analysable($analysable));
+
+        // Set grade to pass.
+        $courseitem = grade_item::fetch_course_item($course1->id);
+        $courseitem->gradepass = 50;
+        $DB->update_record('grade_items', $courseitem);
+        // Since the grade to pass value is cached in the target, a new one it is instanciated.
+        $target = new \core_course\analytics\target\course_gradetopass();
+        $this->assertTrue($target->is_valid_analysable($analysable));
+
+    }
+
+    /**
+     * Test the target value calculation of the course_gradetopass target.
+     */
+    public function test_core_target_course_gradetopass_calculate() {
+        global $DB;
+
+        $this->resetAfterTest(true);
+
+        $dg = $this->getDataGenerator();
+        $course1 = $dg->create_course();
+        // Set grade to pass.
+        $student1 = $dg->create_user();
+        $student2 = $dg->create_user();
+        $student3 = $dg->create_user();
+        $studentrole = $DB->get_record('role', array('shortname' => 'student'));
+        $dg->enrol_user($student1->id, $course1->id, $studentrole->id);
+        $dg->enrol_user($student2->id, $course1->id, $studentrole->id);
+        $dg->enrol_user($student3->id, $course1->id, $studentrole->id);
+
+        // get_all_samples() does not guarantee any order, so let's
+        // explicitly define the expectations here for later comparing.
+        // Expectations format being array($userid => expectation, ...)
+        $expectations = [];
+
+        $courseitem = grade_item::fetch_course_item($course1->id);
+        // Student1 (< gradepass) fails, so it's non achieved sample.
+        $courseitem->update_final_grade($student1->id, 30);
+        $expectations[$student1->id] = 1;
+
+        // Student2 (> gradepass) passes, so it's achieved sample.
+        $courseitem->update_final_grade($student2->id, 60);
+        $expectations[$student2->id] = 0;
+
+        // Student 3 (has no grade) fails, so it's non achieved sample.
+        $expectations[$student3->id] = 1;
+
+        $courseitem->gradepass = 50;
+        $DB->update_record('grade_items', $courseitem);
+
+        $target = new \core_course\analytics\target\course_gradetopass();
+        $analyser = new \core\analytics\analyser\student_enrolments(1, $target, [], [], []);
+        $analysable = new \core_analytics\course($course1);
+
+        $class = new ReflectionClass('\core\analytics\analyser\student_enrolments');
+        $method = $class->getMethod('get_all_samples');
+        $method->setAccessible(true);
+
+        list($sampleids, $samplesdata) = $method->invoke($analyser, $analysable);
+        $target->add_sample_data($samplesdata);
+
+        $class = new ReflectionClass('\core_course\analytics\target\course_gradetopass');
+        $method = $class->getMethod('calculate_sample');
+        $method->setAccessible(true);
+
+        // Verify all the expectations are fulfilled.
+        foreach ($sampleids as $sampleid => $key) {
+            $this->assertEquals($expectations[$samplesdata[$key]['user']->id], $method->invoke($target, $sampleid, $analysable));
+        }
     }
 }

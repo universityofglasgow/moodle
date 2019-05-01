@@ -34,6 +34,8 @@ $prune   = optional_param('prune', 0, PARAM_INT);
 $name    = optional_param('name', '', PARAM_CLEAN);
 $confirm = optional_param('confirm', 0, PARAM_INT);
 $groupid = optional_param('groupid', null, PARAM_INT);
+$subject = optional_param('subject', '', PARAM_TEXT);
+$prefilledpost = optional_param('post', '', PARAM_TEXT);
 
 $PAGE->set_url('/mod/forum/post.php', array(
     'reply' => $reply,
@@ -163,9 +165,9 @@ if (!empty($forum)) {
     $post->forum         = $forum->id;
     $post->discussion    = 0;           // Ie discussion # not defined yet.
     $post->parent        = 0;
-    $post->subject       = '';
+    $post->subject       = $subject;
     $post->userid        = $USER->id;
-    $post->message       = '';
+    $post->message       = $prefilledpost;
     $post->messageformat = editors_get_preferred_format();
     $post->messagetrust  = 0;
     $post->groupid = $groupid;
@@ -215,6 +217,11 @@ if (!empty($forum)) {
                     'returnurl' => '/mod/forum/view.php?f=' . $forum->id)),
                     get_string('youneedtoenrol'));
             }
+
+            // The forum has been locked. Just redirect back to the discussion page.
+            if (forum_discussion_is_locked($forum, $discussion)) {
+                redirect(new moodle_url('/mod/forum/discuss.php', array('d' => $discussion->id)));
+            }
         }
         print_error('nopostforum', 'forum');
     }
@@ -249,10 +256,10 @@ if (!empty($forum)) {
     $post->forum       = $forum->id;
     $post->discussion  = $parent->discussion;
     $post->parent      = $parent->id;
-    $post->subject     = $parent->subject;
+    $post->subject     = $subject ? $subject : $parent->subject;
     $post->userid      = $USER->id;
-    $post->message     = '';
     $post->parentpostauthor = $parent->userid;
+    $post->message     = $prefilledpost;
     $canreplyprivately = $capabilitymanager->can_reply_privately_to_post($USER, $parententity);
 
     $post->groupid = ($discussion->groupid == -1) ? 0 : $discussion->groupid;
@@ -718,26 +725,8 @@ $postid = empty($post->id) ? null : $post->id;
 $draftideditor = file_get_submitted_draft_itemid('message');
 $editoropts = mod_forum_post_form::editor_options($modcontext, $postid);
 $currenttext = file_prepare_draft_area($draftideditor, $modcontext->id, 'mod_forum', 'post', $postid, $editoropts, $post->message);
-
-$manageactivities = has_capability('moodle/course:manageactivities', $coursecontext);
-if (\mod_forum\subscriptions::subscription_disabled($forum) && !$manageactivities) {
-    // User does not have permission to subscribe to this discussion at all.
-    $discussionsubscribe = false;
-} else if (\mod_forum\subscriptions::is_forcesubscribed($forum)) {
-    // User does not have permission to unsubscribe from this discussion at all.
-    $discussionsubscribe = true;
-} else {
-    if (isset($discussion) && \mod_forum\subscriptions::is_subscribed($USER->id, $forum, $discussion->id, $cm)) {
-        // User is subscribed to the discussion - continue the subscription.
-        $discussionsubscribe = true;
-    } else if (!isset($discussion) && \mod_forum\subscriptions::is_subscribed($USER->id, $forum, null, $cm)) {
-        // Starting a new discussion, and the user is subscribed to the forum - subscribe to the discussion.
-        $discussionsubscribe = true;
-    } else {
-        // User is not subscribed to either forum or discussion. Follow user preference.
-        $discussionsubscribe = $USER->autosubscribe;
-    }
-}
+$discussionid = isset($discussion) ? $discussion->id : null;
+$discussionsubscribe = \mod_forum\subscriptions::get_user_default_subscription($forum, $coursecontext, $cm, $discussionid);
 
 $mformpost->set_data(
     array(
@@ -779,14 +768,14 @@ if ($mformpost->is_cancelled()) {
     } else {
         redirect($urlfactory->get_discussion_view_url_from_discussion($discussionentity));
     }
-} else if ($fromform = $mformpost->get_data()) {
+} else if ($mformpost->is_submitted() && !$mformpost->no_submit_button_pressed()) {
 
     if (empty($SESSION->fromurl)) {
         $errordestination = $urlfactory->get_forum_view_url_from_forum($forumentity);
     } else {
         $errordestination = $SESSION->fromurl;
     }
-
+    $fromform = $mformpost->get_data();
     $fromform->itemid        = $fromform->message['itemid'];
     $fromform->messageformat = $fromform->message['format'];
     $fromform->message       = $fromform->message['text'];
@@ -966,6 +955,7 @@ if ($mformpost->is_cancelled()) {
 
         $discussion = $fromform;
         $discussion->name = $fromform->subject;
+        $discussion->timelocked = 0;
 
         $newstopic = false;
         if ($forum->type == 'news' && !$fromform->parent) {
