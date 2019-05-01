@@ -189,7 +189,7 @@ class api {
     public static function extract($guid) {
         $config = get_config('local_corehr');
         if (empty($config->wsdlextract)) {
-            return get_string('notconfigured', 'local_corehr');
+            return false;
         }
         try {
             $client = new SoapClient($config->wsdlextract, array('trace' => 1, 'exceptions' => 0));
