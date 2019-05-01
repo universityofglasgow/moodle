@@ -60,6 +60,10 @@ class single implements renderable, templatable {
 
         $fullname = ucwords(strtolower($result['givenname'] . ' ' . $result['sn']));
 
+        // Student?
+        $dn = $result['dn'];
+        $isstudent = strpos($dn, 'ou=student') !== false;
+
         // Do they have an email.
         $mailinfo = \report_guid\lib::get_email($result);
 
@@ -111,7 +115,6 @@ class single implements renderable, templatable {
         }
 
         // Find CoreHR data.
-        $isstudent = strpos($mailinfo['mail'], 'student') !== false;
         if (!$isstudent) {
             $corehr = \local_corehr\api::get_extract($username);
             $iscorehr = $corehr !== false;        

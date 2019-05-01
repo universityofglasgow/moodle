@@ -161,7 +161,7 @@ class lib {
         }
 
         // Check if we got any results.
-        if (ldap_count_entries( $dv, $search) < 1) {
+        if (ldap_count_entries($dv, $search) < 1) {
             return array();
         }
 
@@ -171,37 +171,58 @@ class lib {
             return false;
         }
 
+        //echo "<pre>"; var_dump($results); die;
+
         // Unravel results.
-        $results = self::cleanup_entry( $results );
+        //$results = array_map(function($entry) use ($dv) {
+        //    return $entry->dn = ldap_get_dn($dv, $entry);
+        //}, $results);
+        $results = self::format_ldap( $results );
 
         return $results;
     }
 
-    public static function cleanup_entry($entry) {
-        $retentry = array();
-        for ($i = 0; $i < $entry['count']; $i++) {
-            if (is_array($entry[$i])) {
-                $subtree = $entry[$i];
+    /**
+     * Process weirdly formatted LDAP results into something
+     * We can display. 
+     * @param array $entries
+     */
+    public static function format_ldap($entries) {
+    
+        // First entry is the count, don't need it
+        array_shift($entries);
 
-                // This condition should be superfluous so just take the recursive call
-                // adapted to your situation in order to increase perf..
-                if ( !empty($subtree['dn']) && !isset($retentry[$subtree['dn']])) {
-                    $retentry[$subtree['dn']] = self::cleanup_entry($subtree);
-                } else {
-                    $retentry[] = self::cleanup_entry($subtree);
+        $formattedldap = [];
+
+        foreach ($entries as $entry) {
+            $newentry = [];
+            foreach ($entry as $name => $value) {
+
+                // Numeric fields don't contain data
+                // plus check really is an array
+                if (!is_array($value)) {
+                    continue;
                 }
-            } else {
-                $attribute = $entry[$i];
-                if ( $entry[$attribute]['count'] == 1 ) {
-                    $retentry[$attribute] = $entry[$attribute][0];
+
+                // First element is spurious count
+                array_shift($value);
+
+                // Either store the single data value
+                // Or the array of data. 
+                if (count($value) == 1) {
+                    $newentry[$name] = $value[0];
                 } else {
-                    for ($j = 0; $j < $entry[$attribute]['count']; $j++) {
-                        $retentry[$attribute][] = $entry[$attribute][$j];
-                    }
+                    $newentry[$name] = $value;
                 }
             }
+
+            // Add dn value, which doesn't look like other data. 
+            $newentry['dn'] = $entry['dn'];
+
+            $formattedldap[] = $newentry;
         }
-        return $retentry;
+
+        return $formattedldap;
     }
 
     /**
