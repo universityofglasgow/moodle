@@ -70,7 +70,7 @@ class ldaplist implements renderable, templatable {
 
             // Check that this isn't an array (it shouldn't be).
             if (is_array($guid)) {
-                $guid = report_guid_search::array_to_guid($guid);
+                $guid = \report_guid\lib::array_to_guid($guid);
             }
 
             $mailinfo = \report_guid\lib::get_email($result);
