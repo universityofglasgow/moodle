@@ -358,9 +358,10 @@ class lib {
         foreach ($rows as $name => $row) {
             if (is_array( $row )) {
                 $html .= '<dt class="col-sm-3">' . $name . '</dt>';
-                $html .= '<dd class="col-sm-7">' . self::array_prettyprint( $row ) . '</dd>';;
+                $html .= '<dd class="col-sm-9">' . self::array_prettyprint( $row ) . '</dd>';;
             } else {
-                $html .= '<dt class="col-sm-3">' . $name . '</dt><dd class="col-sm-7">' . $row . '</dd>';
+                $row = empty(trim($row)) ? '-' : $row;
+                $html .= '<dt class="col-sm-3">' . $name . '</dt><dd class="col-sm-9">' . $row . '</dd>';
             }
         }
         $html .= '</dl>';

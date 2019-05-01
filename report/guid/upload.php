@@ -18,7 +18,7 @@
  * GUID report
  *
  * @package    report_guid
- * @copyright  2013 Howard Miller
+ * @copyright  2013-19 Howard Miller
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -28,7 +28,7 @@ require_once($CFG->libdir . '/formslib.php');
 require_once($CFG->libdir . '/csvlib.class.php');
 
 // Configuration.
-$config = report_guid_search::settings();
+$config = report_guid\lib::settings();
 $ldaphost = $config->host_url;
 $dn = $config->contexts;
 
@@ -38,10 +38,10 @@ $output = $PAGE->get_renderer('report_guid');
 $output->set_guid_config($config);
 
 // Start the page.
-admin_externalpage_setup('reportguid', '', null, '', array('pagelayout' => 'report'));
-echo $OUTPUT->header();
+admin_externalpage_setup('reportguid', '', null, '', ['pagelayout' => 'report']);
+echo $output->header();
 
-echo $OUTPUT->heading(get_string('heading', 'report_guid'));
+echo $output->heading(get_string('heading', 'report_guid'));
 
 // Check we have ldap.
 if (!function_exists( 'ldap_connect' )) {
@@ -65,24 +65,19 @@ if ($mform->is_cancelled()) {
     if ($cir->get_error()) {
         $link = new moodle_url( '/report/guid/upload.php' );
         notice( 'Error reading CSV file - ' . $cir->get_error(), $link );
-        print_footer();
-        die;
     }
 
     // Notify line count or error.
     if ($count > 0) {
-        echo "<p><strong>".get_string('numbercsvlines', 'report_guid', $count)."</strong></p>";
+        echo "<p><strong>" . get_string('numbercsvlines', 'report_guid', $count) . "</strong></p>";
     } else {
-        echo $OUTPUT->notification( get_string('emptycsv', 'report_guid') );
+        echo $output->notification(get_string('emptycsv', 'report_guid') );
     }
 
     // Count created.
     $createdcount = 0;
     $errorcount = 0;
     $existscount = 0;
-
-    // Configuration.
-    $config = report_guid_search::settings();
 
     // Iterate over lines in csv.
     $cir->init();
@@ -108,32 +103,32 @@ if ($mform->is_cancelled()) {
         echo "<p><strong>'$guid'</strong> ";
 
         // Try to find or make an account.
-        if (!$user = $DB->get_record( 'user', array('username' => strtolower($guid)) )) {
+        if (!$user = $DB->get_record( 'user', ['username' => strtolower($guid)] )) {
 
             // Need to find them in ldap.
-            $result = report_guid_search::ldapsearch( $config, "{$config->user_attribute}=$guid" );
+            $result = report_guid\lib::ldapsearch( $config, "{$config->user_attribute}=$guid" );
             if (empty($result)) {
-                echo "<span class=\"label label-warning\">".get_string('nouser', 'report_guid')."</span> ";
+                echo "<span class=\"label label-warning\">" . get_string('nouser', 'report_guid') . "</span> ";
                 $errorcount++;
                 continue;
             }
 
             // Sanity check.
             if (count($result) > 1) {
-                echo "<span class=\"label label-warning\">".get_string('multipleresults', 'report_guid')."</span>";
+                echo "<span class=\"label label-warning\">" . get_string('multipleresults', 'report_guid') . "</span>";
                 $errorcount++;
                 continue;
             }
 
             // Create account.
             $result = array_shift( $result );
-            $user = report_guid_search::create_user_from_ldap( $result );
-            $link = new moodle_url( '/user/view.php', array('id' => $user->id) );
+            $user = report_guid\lib::create_user_from_ldap( $result );
+            $link = new moodle_url( '/user/view.php', ['id' => $user->id]);
             echo "<span class=\"label label-success\">".
                 get_string('accountcreated', 'report_guid', "<a href=\"$link\">" . fullname($user) . "</a>") . "</span>";
             $createdcount++;
         } else {
-            $link = new moodle_url( '/user/view.php', array('id' => $user->id) );
+            $link = new moodle_url('/user/view.php', ['id' => $user->id]);
             echo "<span class=\"label label-warning\">".
                 get_string('accountexists', 'report_guid', "<a href=\"$link\">" . fullname($user) . "</a>"). "</span";
             $existscount++;
@@ -142,13 +137,14 @@ if ($mform->is_cancelled()) {
         echo "</p>";
     }
     echo "<ul class=\"label\">";
-    echo "<li><strong>".get_string('countnewaccounts', 'report_guid', $createdcount)."</strong></li>";
-    echo "<li><strong>".get_string('countexistingaccounts', 'report_guid', $existscount)."</strong></li>";
-    echo "<li><strong>".get_string('counterrors', 'report_guid', $errorcount)."</strong></li>";
+    echo "<li><strong>" . get_string('countnewaccounts', 'report_guid', $createdcount) . "</strong></li>";
+    echo "<li><strong>" . get_string('countexistingaccounts', 'report_guid', $existscount) . "</strong></li>";
+    echo "<li><strong>" . get_string('counterrors', 'report_guid', $errorcount) . "</strong></li>";
     echo "</ul>";
-    $output->continue_button();
+    $link = new moodle_url('/report/guid/index.php');
+    echo $output->continue_button($link);
 } else {
     $mform->display();
 }
 
-echo $OUTPUT->footer();
+echo $output->footer();

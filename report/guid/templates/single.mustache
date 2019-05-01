@@ -85,3 +85,21 @@
     </p>
   </div>
 </div>
+
+{{^ isstudent }}
+    <div class="card m-t-2">
+        <div class="card-body">
+            <h5 class="card-title">{{# str }}corehrresults, report_guid{{/ str }}</h5>
+            <p class="card-text">
+                {{# iscorehr }}
+                    {{{ corehr }}}
+                {{/ iscorehr }}
+                {{^ iscorehr }}
+                    <div class="alert alert-info">{{# str }}nomoodleprofile, report_guid{{/ str }}</div>
+                {{/ iscorehr }}    
+            </p>
+        </div>
+    </div>
+{{/ isstudent }}
+
+<a class="m-t-2 btn btn-primary" href="{{{ backlink }}}">{{# str }}back{{/ str }}</a>

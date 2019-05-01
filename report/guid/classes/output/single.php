@@ -108,7 +108,22 @@ class single implements renderable, templatable {
         if (!$gudatabaseerror) {
             $courses = $gudatabase->get_user_courses($username);
             $formattedcourses = \report_guid\lib::format_mycampus($courses, $username);
-        }    
+        }
+
+        // Find CoreHR data.
+        $isstudent = strpos($mailinfo['mail'], 'student') !== false;
+        if (!$isstudent) {
+            $corehr = \local_corehr\api::get_extract($username);
+            $iscorehr = $corehr !== false;        
+        } else {
+            $corehr = null;
+            $iscorehr = null;
+        }
+
+        // Reformat time
+        if ($iscorehr) {
+            $corehr->timemodified = date('r', $corehr->timemodified);
+        }
 
         return [
             'fullname' => $fullname,
@@ -122,6 +137,10 @@ class single implements renderable, templatable {
             'formattedenrolments' => $formattedenrolments,
             'nocourses' => empty($courses),
             'formattedcourses' => $formattedcourses,
+            'isstudent' => $isstudent,
+            'iscorehr' => $iscorehr,
+            'corehr' => \report_guid\lib::array_prettyprint((array)$corehr),
+            'backlink' => new \moodle_url('/report/guid'),
         ];
     }
 

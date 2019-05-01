@@ -64,67 +64,23 @@ class renderer extends plugin_renderer_base {
     }
 
     /**
-     * Continue, back to main form
-     */
-    public function continue_button() {
-        $link = new moodle_url('/report/guid/index.php');
-        echo '<div>';
-        echo '    <a class="btn btn-info" href="' . $link . '">' . get_string('continue') . '</a>';
-        echo '</div>';
-    }
-
-    /**
-     * User update confirmation
-     * @param object $user
-     */
-    public function userupdate_confirm($user) {
-        echo '<div class="alert alert-success">';
-        echo get_string('updatesuccess', 'report_guid', fullname($user));
-        echo '</div>';
-    }
-
-    /**
-     * Display list of duplicate usernames
-     * @param array $users
-     */
-    public function duplicates($users) {
-        echo '<div class="alert alert-warning">';
-        echo get_string('duplicateusers', 'report_guid');
-        echo '<ul>';
-        foreach ($users as $user) {
-            $link = new moodle_url('/user/view.php', array('id' => $user->id, 'course' => 1));
-            echo '<li><a href="' . $link . '">' . fullname($user) . '</a></li>';
-        }
-        echo '</ul>';
-        echo '</div>';
-    }
-
-    /**
      * Confirm deletion of user
      * @param object $user
      */
     public function confirmdelete($user) {
-        global $OUTPUT;
 
         $fullname = fullname($user, true);
 
-        $optionsyes = array('delete' => $user->id, 'confirm' => md5($user->id), 'sesskey' => sesskey());
+        $optionsyes = [
+            'delete' => $user->id,
+            'confirm' => md5($user->id),
+            'sesskey' => sesskey(),
+        ];
         $deleteurl = new moodle_url('/report/guid/index.php', $optionsyes);
         $cancelurl = new moodle_url('/report/guid/index.php');
-        $deletebutton = new single_button($deleteurl, get_string('delete'), 'post');
+        $deletebutton = new \single_button($deleteurl, get_string('delete'), 'post');
 
-        echo $OUTPUT->confirm(get_string('deletecheckfull', '', "'$fullname'"), $deletebutton, $cancelurl);
-    }
-
-    /**
-     * Deleted message
-     * @param object $user
-     */
-    public function deleted($user) {
-        $fullname = fullname($user, true);
-        echo '<div class="alert alert-success">';
-        echo get_string('deleted', 'report_guid', $fullname);
-        echo '</div>';
+        echo $this->confirm(get_string('deletecheckfull', '', "'$fullname'"), $deletebutton, $cancelurl);
     }
 
     /**

@@ -18,16 +18,15 @@
  * GUID report
  *
  * @package    report_guid
- * @copyright  2017 Howard Miller
+ * @copyright  2017-19 Howard Miller
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 require_once(dirname(__FILE__) . '/../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
-//require_once($CFG->libdir . '/formslib.php');
 
 // Configuration.
-$config = report_guid_search::settings();
+$config = report_guid\lib::settings();
 
 // Renderer.
 $context = context_system::instance();
@@ -42,37 +41,36 @@ $userid = required_param('userid', PARAM_INT);
 require_login();
 require_sesskey();
 require_capability('moodle/user:update', $context);
+$link = new moodle_url('/report/guid/index.php');
 
 // User details.
-$user = $DB->get_record('user', array('id' => $userid), '*', MUST_EXIST);
+$user = $DB->get_record('user', ['id' => $userid], '*', MUST_EXIST);
 
 // Start the page.
-admin_externalpage_setup('reportguid', '', null, '', array('pagelayout' => 'report'));
-echo $OUTPUT->header();
+admin_externalpage_setup('reportguid', '', null, '', ['pagelayout' => 'report']);
+echo $output->header();
 
-echo $OUTPUT->heading(get_string('headingupdate', 'report_guid'));
+echo $output->heading(get_string('headingupdate', 'report_guid'));
 
 // Form definition.
-$mform = new \report_guid\forms\update(null, array('user' => $user));
+$mform = new \report_guid\forms\update(null, ['user' => $user]);
 
 if ($mform->is_cancelled()) {
     redirect( 'index.php' );
     die;
 } else if ($data = $mform->get_data()) {
-    $newusername = $data->newusername;
+    $newusername = trim($data->newusername);
 
     // Check for duplicate.
-    if ($users = report_guid_search::isduplicate($newusername)) {
-        $output->duplicates($users);
+    if ($DB->record_exists('user', ['username' => $newusername])) {
+        notice(get_string('duplicateusers', 'report_guid'), $link);
     } else {
         $user->username = $newusername;
         $DB->update_record('user', $user);
-
-        $output->userupdate_confirm($user);
+        notice(get_string('updatesuccess', 'report_guid', fullname($user)), $link);
     }
-    $output->continue_button();
 } else {
     $mform->display();
 }
 
-echo $OUTPUT->footer();
+echo $output->footer();

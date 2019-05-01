@@ -61,9 +61,9 @@ if ($resetbutton) {
 
 // Start the page.
 admin_externalpage_setup('reportguid', '', null, '', array('pagelayout' => 'report'));
-echo $OUTPUT->header();
+echo $output->header();
 
-echo $OUTPUT->heading(get_string('heading', 'report_guid'));
+echo $output->heading(get_string('heading', 'report_guid'));
 
 // Check we have ldap.
 if (!function_exists( 'ldap_connect' )) {
@@ -76,7 +76,8 @@ if (($action == 'create') && confirm_sesskey()) {
         $results = report_guid\lib::filter($output, '', '', $guid, '', '');
         $result = array_shift($results);
         $user = report_guid\lib::create_user_from_ldap($result);
-        notice(get_string('usercreated', 'report_guid', fullname($user)));
+        $link = new moodle_url('/report/guid/index.php', ['guid' => $guid, 'action' => 'more']);
+        notice(get_string('usercreated', 'report_guid', fullname($user)), $link);
     }
 }
 
@@ -84,20 +85,19 @@ if (($action == 'create') && confirm_sesskey()) {
 if ($delete) {
     require_sesskey();
     require_capability('moodle/user:delete', $context);
-    $user = $DB->get_record('user', array('id' => $delete));
+    $user = $DB->get_record('user', ['id' => $delete], '*', MUST_EXIST);
 
     if ($confirm != md5($user->id)) {
 
         // Confirm message.
         $output->confirmdelete($user);
-        echo $OUTPUT->footer();
+        echo $output->footer();
         die;
     } else {
         delete_user($user);
         \core\session\manager::gc(); // Remove stale sessions.
-        $output->deleted($user);
-        echo $OUTPUT->footer();
-        die;
+        $link = new moodle_url('/report/guid/index.php');
+        notice(get_string('deleted', 'report_guid', fullname($user, true)), $link);
     }
 }
 
@@ -108,7 +108,7 @@ if ($guid && ($action == 'more')) {
     $single = new report_guid\output\single($config, $result);
     echo $output->render_single($single);
 
-    echo $OUTPUT->footer();
+    echo $output->footer();
     die;
 }
 
@@ -141,5 +141,5 @@ if ($mform->is_cancelled()) {
     }
 }
 
-echo $OUTPUT->footer();
+echo $output->footer();
 
