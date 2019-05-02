@@ -47,7 +47,7 @@ $templatecontext = [
 
 include('navigation.php');
 include('accessibility.php');
-include('notifications.php');
+include('topnotifications.php');
 include('breadcrumb.php');
 include('footerlinks.php');
 
