@@ -28,6 +28,8 @@ use core_privacy\local\request\approved_contextlist;
 use core_privacy\local\request\contextlist;
 use core_privacy\local\request\helper;
 use core_privacy\local\request\writer;
+use core_privacy\local\request\userlist;
+use core_privacy\local\request\approved_userlist;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -37,7 +39,9 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2018 Howard Miller
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class provider implements \core_privacy\local\metadata\provider, \core_privacy\local\request\plugin\provider {
+class provider implements \core_privacy\local\metadata\provider,
+                          \core_privacy\local\request\plugin\provider,
+                          \core_privacy\local\request\core_userlist_provider {
 
     /**
      * Indicate that user course data is stored in local db table
@@ -57,6 +61,29 @@ class provider implements \core_privacy\local\metadata\provider, \core_privacy\l
                 'wsstatus' => 'privacy:metadata:local_corehr_log:wsstatus'
             ],
             'privacy:metadata:local_corehr_log'
+        );
+
+        $collection->add_database_table(
+            'local_corehr_extract',
+            [
+                'userid' => 'privacy:metadata:local_corehr_extract:userid',
+                'college' => 'privacy:metadata:local_corehr_extract:college',
+                'collegedesc' => 'privacy:metadata:local_corehr_extract:collegedesc',
+                'costcentre' => 'privacy:metadata:local_corehr_extract:costcentre',
+                'costcentredesc' => 'privacy:metadata:local_corehr_extract:costcentredesc',
+                'title' => 'privacy:metadata:local_corehr_extract:title',
+                'forename' => 'privacy:metadata:local_corehr_extract:forename',
+                'middlename' => 'privacy:metadata:local_corehr_extract:middlename',
+                'surname' => 'privacy:metadata:local_corehr_extract:surname',
+                'knownas' => 'privacy:metadata:local_corehr_extract:knownas',
+                'orgunitno' => 'privacy:metadata:local_corehr_extract:orgunitno',
+                'orgunitdesc' => 'privacy:metadata:local_corehr_extract:orgunitdesc',
+                'school' => 'privacy:metadata:local_corehr_extract:school',
+                'schooldesc' => 'privacy:metadata:local_corehr_extract:schooldesc',
+                'jobtitle' => 'privacy:metadata:local_corehr_extract:jobtitle',
+                'jobtitledesc' => 'privacy:metadata:local_corehr_extract:jobtitledesc',
+            ],
+            'privacy:metadata:local_corehr_extract'
         );
 
         return $collection;
@@ -88,8 +115,35 @@ class provider implements \core_privacy\local\metadata\provider, \core_privacy\l
 
         $contextlist->add_from_sql($sql, $params);
 
+        $sql = "SELECT c.id
+            FROM {context} c
+            JOIN {local_corehr_extract} lce ON lce.userid = c.instanceid
+            WHERE c.contextlevel = :contextlevel
+            AND lce.userid = :userid
+        ";
+        $params = [
+            'contextlevel' => CONTEXT_USER,
+            'userid' => $userid,
+        ];
+
+        $contextlist->add_from_sql($sql, $params);
+
         return $contextlist;
     }
+
+    /**
+     * Get the list of users who have data within a context.
+     *
+     * @param userlist $userlist The userlist containing the list of users who have data in this context/plugin combination.
+    */
+    public static function get_users_in_context(userlist $userlist) { }
+
+    /**
+     * Delete multiple users within a single context.
+     *
+     * @param approved_userlist $userlist The approved context and user information to delete information for.
+     */
+    public static function delete_data_for_users(approved_userlist $userlist) { }
 
     /**
      * Export all user data for the specified user, in the specified contexts, using the supplied exporter instance.
@@ -97,7 +151,7 @@ class provider implements \core_privacy\local\metadata\provider, \core_privacy\l
      * @param   approved_contextlist    $contextlist    The approved contexts to export information for.
      */
     public static function export_user_data(approved_contextlist $contextlist) {
-        global $DB;
+        global $DB;       
 
         if (empty($contextlist->count())) {
             return;
@@ -112,10 +166,12 @@ class provider implements \core_privacy\local\metadata\provider, \core_privacy\l
             JOIN {local_corehr_log} lcl ON lcl.courseid = co.id
             WHERE c.id $contextsql
             AND lcl.userid = :userid
+            AND c.contextlevel = :contextlevel
         ";
    
         $params = [
             'userid' => $user->id,
+            'contextlevel' => CONTEXT_COURSE
         ] + $contextparams; 
 
         $logs = $DB->get_records_sql($sql, $params);
@@ -138,8 +194,27 @@ class provider implements \core_privacy\local\metadata\provider, \core_privacy\l
 
             // Merge data
             $contextdata = (object)array_merge((array)$contextdata, $logdata);
+            writer::with_context($context)->export_data(['CoreHR'], $contextdata);   
+        }
+
+        // Get extract stuff
+        $sql = "SELECT lce.* FROM {local_corehr_extract} lce
+            JOIN {context} c ON c.instanceid = lce.userid
+            WHERE c.id $contextsql
+            AND lce.userid = :userid
+            AND c.contextlevel = :contextlevel
+        ";
+        $params['contextlevel'] = CONTEXT_USER;
+
+        $extracts = $DB->get_records_sql($sql, $params);
+        foreach ($extracts as $extract) {
+            $context = \context_user::instance($extract->userid);
+            $contextdata = helper::get_context_data($context, $user);
+
+            $contextdata = (object)array_merge((array)contextdata, (array)$extract);
             writer::with_context($context)->export_data(['CoreHR'], $contextdata);
         }
+
     }
 
     /**
@@ -150,13 +225,17 @@ class provider implements \core_privacy\local\metadata\provider, \core_privacy\l
     public static function delete_data_for_all_users_in_context(\context $context) {
         global $DB;
  
-        if ($context->contextlevel != CONTEXT_COURSE) {
-            return;
-        }
+        if ($context->contextlevel == CONTEXT_COURSE) {
  
-        // Delete all entries in the enrolment codes table for this context
-        $courseid = $context->instanceid;
-        $DB->delete_records('local_corehr_log', ['courseid' => $courseid]);
+            // Delete all entries in the enrolment codes table for this context
+            $courseid = $context->instanceid;
+            $DB->delete_records('local_corehr_log', ['courseid' => $courseid]);
+        }
+
+        if ($context->contextlevel == CONTEXT_USER) {
+            $userid = $context->instanceid;
+            $DB->delete_record('local_corehr_extract', ['userid' => $userid]);
+        }
     }
 
     /**
@@ -172,11 +251,14 @@ class provider implements \core_privacy\local\metadata\provider, \core_privacy\l
         }
         $userid = $contextlist->get_user()->id;
         foreach ($contextlist->get_contexts() as $context) {
-            if ($context->contextlevel != CONTEXT_COURSE) {
-                continue;
-            }
-            $courseid = $context->instanceid;
-            $DB->delete_records('local_corehr_log', ['courseid' => $courseid, 'userid' => $userid]);
+            if ($context->contextlevel == CONTEXT_COURSE) {
+                $courseid = $context->instanceid;
+                $DB->delete_records('local_corehr_log', ['courseid' => $courseid, 'userid' => $userid]);
+            }  
+            if ($context->contextlevel == CONTEXT_USER) {
+                $userid = $context->instanceid;
+                $DB->delete_record('local_corehr_extract', ['userid' => $userid]);
+            }  
         }
     }
 
