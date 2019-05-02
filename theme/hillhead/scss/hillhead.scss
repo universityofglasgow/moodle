@@ -92,6 +92,7 @@ nav.navbar a.navbar-brand {
     background-repeat: no-repeat;
     width: 111px;
     height: 35px;
+    margin-right: 0;
 }
 
 nav.navbar a.navbar-brand span {
@@ -388,4 +389,29 @@ nav .breadcrumb {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+}
+
+.activity > ul {
+    margin-bottom: 20px;
+    padding-left: 40px;
+}
+
+.stretchySearchBox {
+    padding-left: 20px;
+    padding-right: 20px;
+    flex: 1;
+}
+
+@include media-breakpoint-up(lg) {
+    .stretchySearchBox {
+        padding-left: 40px;
+        padding-right: 40px;
+    }
+}
+
+@include media-breakpoint-up(lg) {
+    .stretchySearchBox {
+        padding-left: 60px;
+        padding-right: 60px;
+    }
 }
