@@ -60,11 +60,13 @@
 
     <div id="page" class="container-fluid">
         {{{ accessibilityText }}}
+        
+        {{{ breadcrumb }}}
     
         {{{ output.full_header }}}
-
         <div id="page-content" class="row pb-3">
             <div id="region-main-box" class="col-12">
+                {{{ notifications }}}
                 
                 {{#hasregionmainsettingsmenu}}
                 <div id="region-main-settings-menu" class="d-print-none {{#hasblocks}}has-blocks{{/hasblocks}}">

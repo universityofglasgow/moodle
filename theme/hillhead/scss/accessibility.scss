@@ -439,7 +439,7 @@ body.hillhead-night .page-item.active a {
     border-color: #274163;
 }
 
-body.hillhead-night .page-item.disabled span, .page-item.disabled .page-link {
+body.hillhead-night .page-item.disabled span, body.hillhead-night .page-item.disabled .page-link {
     background: transparent;
     color: #274163;
     border-color: #274163;

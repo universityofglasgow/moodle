@@ -18,6 +18,8 @@ $headings-font-weight: 400;
 
 $alert-border-width: 1px;
 
+$footer-link-color: #005e8d;
+
 $hillhead-page-bg: #ebf1f5;
 $hillhead-side-bg: #e1e6eb;
 $hillhead-side-br: #d6dbdf;
@@ -53,3 +55,7 @@ $message-received-border: #C2E3A5;
 
 $blocks-column-width: 300px;
 $blocks-plus-gutter: $blocks-column-width + 20;
+
+$nav-tabs-border-color: $hillhead-card-br;
+$nav-tabs-link-hover-border-color: $hillhead-card-br;
+$nav-tabs-link-active-bg: transparent;
