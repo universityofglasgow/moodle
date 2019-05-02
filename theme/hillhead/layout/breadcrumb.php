@@ -45,9 +45,29 @@
                 $pageIcon = 'fa-calendar';
                 $pageTitle = 'Calendar';
                 break;
+            case 'course-edit':
+                $pageIcon = 'fa-pencil';
+                $pageTitle = 'Edit Course';
+                break;
+            case 'course-management':
+                $pageIcon = 'fa-pencil';
+                $pageTitle = 'Course Management';
+                break;
+            case 'course-index-category':
+                $pageIcon = 'fa-graduation-cap';
+                $pageTitle = 'Browse Courses';
+                break;
             case 'grade-report-grader-index':
                 $pageIcon = 'fa-table';
                 $pageTitle = 'Grades';
+                break;
+            case 'message-index':
+                $pageIcon = 'fa-comment';
+                $pageTitle = 'Messages';
+                break;
+            case 'message-output-popup-notifications':
+                $pageIcon = 'fa-bell';
+                $pageTitle = 'Notifications';
                 break;
             case 'user-files':
                 $pageIcon = 'fa-file-o';

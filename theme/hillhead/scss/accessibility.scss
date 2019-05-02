@@ -530,6 +530,19 @@ body.hillhead-night #gridshadebox_content {
     background-color: #121E30 !important;
 }
 
+body.hillhead-night .tabBar {
+    background-color: #1A2B41;
+    border: 1px solid #121E30;
+}
+
+body.hillhead-night .tabBar li {
+    border-color: #121E30;
+}
+
+body.hillhead-night .tabBar a {
+    color: #789BCA;
+}
+
 body.hillhead-night .mform fieldset {
     border-bottom-color: #132030;
 }
