@@ -94,7 +94,7 @@ class core_renderer extends \core_renderer {
 
         $searchinput = html_writer::tag('form', $formText, $formattrs);
 
-        return html_writer::tag('div', $searchinput, array('class' => 'hillhead-search-input-wrapper nav-link', 'id' => $id));
+        return html_writer::tag('div', $searchinput, array('class' => 'hillhead-search-input-wrapper', 'id' => $id));
     }
     
     protected function render_context_header(\context_header $contextheader) {

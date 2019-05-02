@@ -26,6 +26,7 @@ defined('MOODLE_INTERNAL') || die();
 
 user_preference_allow_ajax_update('drawer-open-nav', PARAM_ALPHA);
 require_once($CFG->libdir . '/behat/lib.php');
+require_once($CFG->dirroot . '/admin/tool/mobile/lib.php');
 
 include('extraclasses.php');
 
@@ -46,6 +47,9 @@ $templatecontext = [
 
 include('navigation.php');
 include('accessibility.php');
+include('topnotifications.php');
+include('breadcrumb.php');
+include('footerlinks.php');
 
 $templatecontext['coursenav'] = $coursenav;
 $templatecontext['coursenavexists'] = $coursenavexists;
@@ -62,6 +66,9 @@ $templatecontext['adminnavexists'] = $adminnavexists;
 $templatecontext['accessibilityText'] = $accTxt;
 $templatecontext['accessibilityButton'] = $accessibilityButton;
 $templatecontext['extrascripts'] = $extraScripts;
+$templatecontext['notifications'] = $notiftext;
+$templatecontext['breadcrumb'] = $breadcrumbLinks;
+$templatecontext['footerlinks'] = $footerLinkText;
 
 echo $OUTPUT->render_from_template('theme_hillhead/columns2', $templatecontext);
 

@@ -20,8 +20,16 @@ h4 {
     color: #003865;
 }
 
-#region-main-settings-menu.has-blocks, #region-main.has-blocks {
-    width: calc(100% - 320px);
+@include media-breakpoint-up(lg) {
+    #region-main-settings-menu.has-blocks, #region-main.has-blocks {
+        width: calc(100% - 320px);
+        display: inline-block;
+    }
+    
+    [data-region="blocks-column"] {
+        width: 300px;
+        float: right;
+    }
 }
 
 #page {
@@ -84,6 +92,7 @@ nav.navbar a.navbar-brand {
     background-repeat: no-repeat;
     width: 111px;
     height: 35px;
+    margin-right: 0;
 }
 
 nav.navbar a.navbar-brand span {
@@ -188,17 +197,12 @@ nav.navbar .dropdown > a {
     color: #577492;
 }
 
-#page-header .card {
-    background: transparent;
-    border: none;
-}
-
-#page-header .card-body {
-    padding: 0;
-}
-
 #page-header .action-menu .dropdown > a {
     color: #555;
+}
+
+#page-footer a {
+    color: $footer-link-color;
 }
 
 [data-region="blocks-column"] {
@@ -208,4 +212,206 @@ nav.navbar .dropdown > a {
 .course-content ul.topics li.section .left, .course-content ul.topics li.section .right {
     margin-top: auto;
     padding-top: 0.5em;
+}
+
+.block .block-cards .course-summaryitem {
+    background: transparent;
+    margin-bottom: 20px !important;
+    margin-top: 20px;
+}
+
+.course-summaryitem .summaryimage {
+    margin-right: 10px !important;
+}
+
+.nav-link.active,
+  .nav-item.show .nav-link  {
+      border-bottom: none;
+  }
+  
+.hillheadFooterLinks {
+    margin: 0;
+    margin-bottom: 20px;
+    padding: 0;
+}
+
+.hillheadFooterLinks li {
+    display: inline-block;
+}
+
+#page-footer p {
+    margin-bottom: 0;
+}
+
+.hillheadFooterLinks div {
+    display: inline;
+}
+
+.hillheadFooterLinks li::before {
+    display: inline-block;
+    padding-right: .5rem;
+    padding-left: .5rem;
+    color: #ACBCCE;
+    content: "\b7";
+}
+
+.hillheadFooterLinks li:first-child::before {
+    content: none;
+    padding-left: 0;
+}
+
+.hillheadFooterLinks i {
+    display: none;
+}
+
+.hillheadFooterLinks li:empty {
+    display: none;
+}
+
+#page-footer .hillheadFooterLinks li a {
+    color: #577492;
+    text-decoration: none;
+}
+
+#page-footer .hillheadFooterLinks li a:hover {
+    text-decoration: underline;
+}
+
+.alert {
+    padding: 5px 20px;
+}
+
+.alert i {
+    margin-right: 0.7em;
+}
+
+.alert-link {
+    font-weight: 500;
+    text-decoration: underline;
+}
+
+nav .breadcrumb {
+    display: none;
+}
+
+.tabBar {
+    margin-top: 20px;
+    margin-bottom: 0;
+    padding-left: 0;
+    background-color: $hillhead-card-bg;
+    border: 1px solid $hillhead-card-br;
+}
+
+.tabBar li:first-child {
+    border-left: none !important;
+    border-top: none !important;
+}
+
+.tabBar li {
+    display: block;
+    padding: 10px 15px;
+    border-top: 1px solid $hillhead-card-br;
+}
+
+.tabBar a {
+    color: #777;
+}
+
+@include media-breakpoint-up(md) {
+    .tabBar li {
+        float: left;
+        border-top: none;
+        border-left: 1px solid $hillhead-card-br;
+        max-width: 15em;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+    
+    body.drawer-open-left .tabBar li {
+        display: block;
+        float: none;
+        border-left: none;
+        border-top: 1px solid $hillhead-card-br;
+        max-width: inherit;
+    }
+    
+    .tabBar .help {
+        float: right;
+    }
+}
+
+@include media-breakpoint-up(lg) {
+    
+    body.drawer-open-left .tabBar li {
+        float: left;
+        border-top: none;
+        border-left: 1px solid $hillhead-card-br;
+        max-width: 20em;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+    
+    body.drawer-open-left .tabBar .help {
+        float: right;
+    }
+    
+    .tabBar li {
+        max-width: 20em;
+
+    }
+}
+
+@include media-breakpoint-up(xl) {
+    .tabBar li {
+        max-width: 25em;
+
+    }
+} 
+
+.tabBar i {
+    margin-right: 0.5em;
+}
+
+.activity-navigation .float-left {
+    float: none !important;
+    text-align: left;
+     overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    
+}
+
+.activity-navigation .float-right {
+    float: none !important;
+    text-align: right;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.activity > ul {
+    margin-bottom: 20px;
+    padding-left: 40px;
+}
+
+.stretchySearchBox {
+    padding-left: 20px;
+    padding-right: 20px;
+    flex: 1;
+}
+
+@include media-breakpoint-up(lg) {
+    .stretchySearchBox {
+        padding-left: 40px;
+        padding-right: 40px;
+    }
+}
+
+@include media-breakpoint-up(lg) {
+    .stretchySearchBox {
+        padding-left: 60px;
+        padding-right: 60px;
+    }
 }

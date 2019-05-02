@@ -17,31 +17,31 @@
 {{!
     Page navbar.
 }}
-<nav class="fixed-top navbar navbar-light navbar-expand moodle-has-zindex justify-content-between" aria-label="{{#str}}sitemenubar, admin{{/str}}">
+<nav class="fixed-top navbar navbar-light navbar-expand moodle-has-zindex d-flex flex-row align-items-center justify-content-between" aria-label="{{#str}}sitemenubar, admin{{/str}}">
     
-        <div class="d-flex">
-            <div data-region="drawer-toggle" class="d-inline-block mr-3">
+        <div class="">
+            <div data-region="drawer-toggle" class="d-inline-block mr-0">
                 <button aria-expanded="{{#navdraweropen}}true{{/navdraweropen}}{{^navdraweropen}}false{{/navdraweropen}}" aria-controls="nav-drawer" type="button" class="btn nav-link float-sm-left mr-1 drawer-opener" data-action="toggle-drawer" data-side="left" data-preference="drawer-open-nav">{{#pix}}i/menubars{{/pix}}<span class="sr-only">{{#str}}sidepanel, core{{/str}}</span></button>
             </div>
-            <a href="{{{ config.wwwroot }}}" class="navbar-brand {{# output.should_display_navbar_logo }}has-logo{{/ output.should_display_navbar_logo }}
+            <a href="{{{ config.wwwroot }}}" class="ml-3 navbar-brand {{# output.should_display_navbar_logo }}has-logo{{/ output.should_display_navbar_logo }}
                 {{^ output.should_display_navbar_logo }}
-                    d-none d-sm-inline
+                    d-none d-sm-inline-block
                 {{/ output.should_display_navbar_logo }}
                     ">
                 {{# output.should_display_navbar_logo }}
-                    <span class="logo d-none d-sm-inline">
+                    <span class="logo d-none d-sm-inline-block">
                         <img src="{{output.get_compact_logo_url}}" alt="{{sitename}}">
                     </span>
                 {{/ output.should_display_navbar_logo }}
-                <span class="site-name d-none d-sm-inline">{{{ sitename }}}</span>
+                <span class="site-name d-none d-sm-inline-block">{{{ sitename }}}</span>
             </a>
         </div>
         
-        <div class="d-flex flex-grow-1">
+        <div class="stretchySearchBox">
             {{{ output.search_box }}}
         </div>
         
-        <div class="d-flex">
+        <div class="">
             <ul class="nav navbar-nav ml-auto">
                 
                 

@@ -439,7 +439,7 @@ body.hillhead-night .page-item.active a {
     border-color: #274163;
 }
 
-body.hillhead-night .page-item.disabled span, .page-item.disabled .page-link {
+body.hillhead-night .page-item.disabled span, body.hillhead-night .page-item.disabled .page-link {
     background: transparent;
     color: #274163;
     border-color: #274163;
@@ -528,6 +528,19 @@ body.hillhead-night #gridmiddle-column {
 body.hillhead-night #gridshadebox_content {
     border-color: #1A2B41 !important;
     background-color: #121E30 !important;
+}
+
+body.hillhead-night .tabBar {
+    background-color: #1A2B41;
+    border: 1px solid #121E30;
+}
+
+body.hillhead-night .tabBar li {
+    border-color: #121E30;
+}
+
+body.hillhead-night .tabBar a {
+    color: #789BCA;
 }
 
 body.hillhead-night .mform fieldset {
