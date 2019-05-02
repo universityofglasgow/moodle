@@ -18,7 +18,7 @@
  * Moodle frontpage.
  *
  * @package    auth_guid
- * @copyright  2013 Howard Miller
+ * @copyright  2013-19 Howard Miller
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -96,7 +96,7 @@ class auth_plugin_guid extends auth_plugin_ldap {
         }
 
         // If we get this far (i.e. have a valid user) and debugmode
-        // is on then we'll just say they are logged in
+        // is on then we'll just say they are logged in (i.e. skip password check)
         // TESTING ONLY (obviously).
         if ($this->config->debugmode) {
             $this->ldap_close();
@@ -157,7 +157,6 @@ class auth_plugin_guid extends auth_plugin_ldap {
 
         // TODO: The user_dn tells us a lot about the user (e.g. student)
         // We should really do something with this.
-
         $search_attribs = array();
         $attrmap = $this->ldap_attributes();
         foreach ($attrmap as $key => $values) {
@@ -244,32 +243,19 @@ class auth_plugin_guid extends auth_plugin_ldap {
             }
         }
 
-        // University of Glasgow Ugly Hack
-        // Get the firstname from the email address
-        // IF the email address looks like
-        // firstname.lastname.nn@glasgow.ac.uk - otherwise don't
-        // the lastname comes from LDAP (still) as that handles double-barelled
-        // more effectively.
-        if (!empty($result['email'])) {
-            $email = $result['email'];
-            preg_match( '/^(\w+)\.(\w+)(\.\w+)?@glasgow\.ac\.uk$/', $email, $matches );
-
-            // If array has firstname and lastname then we'll use only the first
-            // because mail screws up double barelled names but LDAP doesn't (sigh!)
-            // check both as a sanity check (the mail should have both bits of the name)
-            // NOTE: this only works because we are reading these fields from LDAP on
-            // every login anyway. If you turn that off they will be ignored.
-            if (!empty( $matches[1] ) and !empty( $matches[2] )) {
-                $firstname = ucfirst( strtolower( $matches[1] ) );
-                $result[ 'firstname' ] = $firstname;
+        // Get CoreHR data and check for 'known as' name.
+        // only if not a student
+        $isstudent = strpos($user_dn, 'ou=student') !== false;
+        if (!$isstudent) {
+            $corehr = \local_corehr\api::get_extract($username);
+            if ($corehr) {
+                if (trim($corehr->knownas)) {
+                    $result['firstname'] = trim($corehr->knownas);
+                }
+                
+                $result['institution'] = $corehr->collegedesc;
+                $result['department'] = $corehr->schooldesc;
             }
-        }
-
-        // Work out the College from the costcentre code 
-        // and stick it in Institution field
-        if (!empty($user_entry[0]['costcenter'][0])) {
-            $collegecode = substr($user_entry[0]['costcenter'][0], 0, 1);
-            $result['institution'] = $this->translate_college_code($collegecode);
         }
 
         $this->ldap_close();

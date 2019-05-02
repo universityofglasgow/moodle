@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Sychronise completion data for CoreHR
+ * API for CoreHR access
  *
  * @package    local_corehr
  * @copyright  2016-19 Howard Miller
@@ -25,6 +25,8 @@
 namespace local_corehr;
 
 use SoapClient, StdClass;
+
+define('COREHR_TTL', 86400);
 
 class loginDetails {
 
@@ -187,7 +189,7 @@ class api {
     public static function extract($guid) {
         $config = get_config('local_corehr');
         if (empty($config->wsdlextract)) {
-            return get_string('notconfigured', 'local_corehr');
+            return false;
         }
         try {
             $client = new SoapClient($config->wsdlextract, array('trace' => 1, 'exceptions' => 0));
@@ -255,10 +257,12 @@ class api {
         $data->timemodified = time();
 
         if (empty($data->id)) {
-            $DB->insert_record('local_corehr_extract', $data);
+            $data->id = $DB->insert_record('local_corehr_extract', $data);
         } else {
             $DB->update_record('local_corehr_extract', $data);
         }
+
+        return $data;
     }
 
     /**
@@ -272,6 +276,34 @@ class api {
         $user = $DB->get_record('user', ['username' => $guid]);
         if ($user) {
             self::store_extract($user->id, $extract);
+        }
+    }
+
+    /**
+     * Get extract from database. Extract if does not exist
+     * @param string $guid
+     * @return object
+     */
+    public static function get_extract($guid) {
+        global $DB;
+
+        if (!$user = $DB->get_record('user', ['username' => $guid])) {
+            return false;
+        }
+        $userid = $user->id;
+
+        if ($extract = $DB->get_record('local_corehr_extract', ['userid' => $userid])) {
+            if ($extract->timemodified > (time() - COREHR_TTL)) {
+                return $extract;
+            }
+        }
+
+        $fullextract = self::extract($guid);
+        if ($fullextract) {
+            $extract = self::store_extract($userid, $fullextract);
+            return $extract;
+        } else {
+            return false;
         }
     }
 

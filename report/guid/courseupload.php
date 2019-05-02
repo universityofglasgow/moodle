@@ -18,7 +18,7 @@
  * GUID report
  *
  * @package    report_guid
- * @copyright  2017 Howard Miller
+ * @copyright  2017-19 Howard Miller
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -29,13 +29,13 @@ require_once(dirname(__FILE__) . '/classes/parsecsv.lib.php');
 require_once($CFG->dirroot . '/group/lib.php');
 
 // Configuration.
-$config = report_guid_search::settings();
+$config = report_guid\lib::settings();
 
 // Parameters.
 $courseid = required_param('id', PARAM_INT);
 
 // Security.
-$course = $DB->get_record('course', array('id' => $courseid), '*', MUST_EXIST);
+$course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
 $context = context_course::instance($courseid);
 require_login($course);
 require_capability('report/guid:courseupload', $context);
@@ -44,26 +44,26 @@ require_capability('report/guid:courseupload', $context);
 $PAGE->set_context($context);
 $output = $PAGE->get_renderer('report_guid');
 $output->set_guid_config($config);
-$url = new moodle_url('/report/guid/courseupload.php', array('id' => $courseid));
+$url = new moodle_url('/report/guid/courseupload.php', ['id' => $courseid]);
 $PAGE->set_url($url);
 
 // Start the page.
 $PAGE->set_title($course->shortname .': '. get_string('courseupload', 'report_guid'));
 $PAGE->set_heading($course->fullname);
-echo $OUTPUT->header();
+echo $output->header();
 
-echo $OUTPUT->heading(get_string('headingcourseupload', 'report_guid'));
+echo $output->heading(get_string('headingcourseupload', 'report_guid'));
 
 // Get the list of roles current user may assign.
 $roles = get_assignable_roles($context);
-$studentrole = report_guid_search::getstudentrole();
+$studentrole = report_guid\lib::getstudentrole();
 
 // Form definition.
-$mform = new report_guid_courseuploadform(null, array(
+$mform = new report_guid_courseuploadform(null, [
     'id' => $courseid,
     'roles' => $roles,
     'studentroleid' => $studentrole ? $studentrole->id : 1,
-));
+]);
 if ($mform->is_cancelled()) {
     redirect($url);
     die;
@@ -88,7 +88,7 @@ if ($mform->is_cancelled()) {
     if ($count > 0) {
         echo "<p><strong>".get_string('numbercsvlines', 'report_guid', $count)."</strong></p>";
     } else {
-        echo $OUTPUT->notification( get_string('emptycsv', 'report_guid') );
+        echo $output->notification( get_string('emptycsv', 'report_guid') );
     }
 
     // Count created.
@@ -97,7 +97,7 @@ if ($mform->is_cancelled()) {
     $existscount = 0;
 
     // Configuration.
-    if (!$config = report_guid_search::settings()) {
+    if (!$config = report_guid\lib::settings()) {
         notice('GUID enrol plugin is not configured');
     }
 
@@ -106,7 +106,7 @@ if ($mform->is_cancelled()) {
 
         // Get the username/guid from the first column,
         // and groups from any additional.
-        $groups = array();
+        $groups = [];
         $count = 0;
         foreach ($line as $item) {
             $item = trim( $item, '" ' );
@@ -128,13 +128,13 @@ if ($mform->is_cancelled()) {
         echo "<p><strong>'$usermatch'</strong> ";
 
         // Does user exist in Moodle at all?
-        if (!$user = report_guid_search::findmoodleuser($usermatch, $firstcolumn)) {
+        if (!$user = report_guid\lib::findmoodleuser($usermatch, $firstcolumn)) {
 
             // If they don't already exist then find in LDAP.
             if ($firstcolumn == 'guid') {
-                $ldap = report_guid_search::filter($output, '', '', $usermatch, '', '');
+                $ldap = report_guid\lib::filter($output, '', '', $usermatch, '', '');
             } else {
-                $ldap = report_guid_search::filter($output, '', '', '', '', $usermatch);
+                $ldap = report_guid\lib::filter($output, '', '', '', '', $usermatch);
             }
 
             if (!$ldap) {
@@ -152,7 +152,7 @@ if ($mform->is_cancelled()) {
 
             // Create the user profile from ldap if needed.
             $ldapuser = reset($ldap);
-            $user = report_guid_search::create_user_from_ldap($ldapuser);
+            $user = report_guid\lib::create_user_from_ldap($ldapuser);
 
             $output->courseuploadnote('userprofilecreated', 'success');
             $createdcount++;
@@ -176,7 +176,7 @@ if ($mform->is_cancelled()) {
         // Any remaining items on the line will be groups (if enabled).
         if ($groups && $addgroups) {
             foreach ($groups as $groupname) {
-                $groupid = report_guid_search::create_group($groupname, $courseid);
+                $groupid = report_guid\lib::create_group($groupname, $courseid);
                 if (groups_add_member($groupid, $user->id)) {
                     $output->courseuploadnote('groupadded', 'info', false, $groupname);
                 } else {
@@ -192,8 +192,11 @@ if ($mform->is_cancelled()) {
     echo "<li><strong>".get_string('countexistingaccounts', 'report_guid', $existscount)."</strong></li>";
     echo "<li><strong>".get_string('counterrors', 'report_guid', $errorcount)."</strong></li>";
     echo "</ul>";
+
+    $link = new moodle_url('/course/view.php', ['id' => $courseid]);
+    echo $output->continue_button($link);
 } else {
     $mform->display();
 }
 
-echo $OUTPUT->footer();
+echo $output->footer();
