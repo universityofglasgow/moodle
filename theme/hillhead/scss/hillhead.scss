@@ -415,3 +415,12 @@ nav .breadcrumb {
         padding-right: 60px;
     }
 }
+
+.usermenu>span.login {
+    color: $hillhead-page-bg;
+}
+
+.usermenu>span.login>a, .usermenu>span.login>a:hover {
+    color: $hillhead-page-bg;
+    text-decoration: underline;
+}

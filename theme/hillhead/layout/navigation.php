@@ -29,7 +29,7 @@ if($isAdmin) {
     $PAGE->flatnav->add($courseDirFlat);
 }
 
-
+require_once('starredcourses.php');
 
 $flatnav = $PAGE->flatnav;
 
@@ -51,6 +51,9 @@ $othernavexists = false;
 $adminnav = Array();
 $adminnavexists = false;
 
+$starredCourses = Array();
+$starredCoursesExists = false;
+
 foreach($flatnav as $navitem) {
     
     switch($navitem->type) {
@@ -65,6 +68,10 @@ foreach($flatnav as $navitem) {
         case 30:
             $thiscoursenav[] = $navitem;
             $thiscoursenavexists = true;
+            break;
+        case 69:
+            $starredCourses[] = $navitem;
+            $starredCoursesExists = true;
             break;
         default:
             switch($navitem->key) {

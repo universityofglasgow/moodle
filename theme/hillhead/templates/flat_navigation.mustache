@@ -77,6 +77,26 @@
 </ul>
 {{/sitenavexists}}
 
+{{#starrednavexists}}
+<h2>Starred Courses</h2>
+<ul>
+{{#starrednav}}
+    <li>
+        <a href="{{{action}}}">
+            <div class="media">
+                {{#icon.pix}}
+                    <span class="media-left">
+                        {{#pix}}{{{icon.pix}}}, {{{icon.component}}}, {{{icon.alt}}}{{/pix}}
+                    </span>
+                {{/icon.pix}}
+                <span class="media-body">{{{text}}}</span>
+            </div>
+        </a>
+    </li>
+{{/starrednav}}
+</ul>
+{{/starrednavexists}}
+
 {{#coursenavexists}}
 <h2>My Courses</h2>
 <ul>
@@ -98,7 +118,7 @@
 {{/coursenavexists}}
 
 {{#settingsnavexists}}
-<h2>Settings</h2>
+<h2>Course Settings</h2>
 <ul>
 {{#settingsnav}}
     <li>
@@ -118,7 +138,7 @@
 {{/settingsnavexists}}
 
 {{#thiscoursenavexists}}
-<h2>This Course</h2>
+<h2>Course Sections</h2>
 <ul>
 {{#thiscoursenav}}
     <li>

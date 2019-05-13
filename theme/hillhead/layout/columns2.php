@@ -51,6 +51,8 @@ include('topnotifications.php');
 include('breadcrumb.php');
 include('footerlinks.php');
 
+$templatecontext['starrednav'] = $starredCourses;
+$templatecontext['starrednavexists'] = $starredCoursesExists;
 $templatecontext['coursenav'] = $coursenav;
 $templatecontext['coursenavexists'] = $coursenavexists;
 $templatecontext['sitenav'] = $sitenav;
