@@ -26,6 +26,9 @@ define([], function() {
         subscription: {
             toggle: "[data-type='subscription-toggle'][data-action='toggle']",
         },
+        summary: {
+            actions: "[data-container='discussion-summary-actions']"
+        },
         post: {
             post: '[data-region="post"]',
             action: '[data-region="post-action"]',
@@ -33,15 +36,19 @@ define([], function() {
             forumCoreContent: "[data-region-content='forum-post-core']",
             forumContent: "[data-content='forum-post']",
             forumSubject: "[data-region-content='forum-post-core-subject']",
+            inpageReplyButton: "button",
             inpageReplyLink: "[data-action='collapsible-link']",
             inpageReplyContent: "[data-content='inpage-reply-content']",
             inpageReplyForm: "form[data-content='inpage-reply-form']",
             inpageSubmitBtn: "[data-action='forum-inpage-submit']",
+            inpageSubmitBtnText: "[data-region='submit-text']",
+            loadingIconContainer: "[data-region='loading-icon-container']",
             repliesContainer: "[data-region='replies-container']",
             modeSelect: "select[name='mode']"
         },
         lock: {
             toggle: "[data-action='toggle'][data-type='lock-toggle']",
+            icon: "[data-region='locked-icon']"
         },
         favourite: {
             toggle: "[data-type='favorite-toggle'][data-action='toggle']",

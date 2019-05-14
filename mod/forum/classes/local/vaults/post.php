@@ -63,10 +63,10 @@ class post extends db_table_vault {
      *
      * @param string|null $wheresql Where conditions for the SQL
      * @param string|null $sortsql Order by conditions for the SQL
-     * @param \stdClass|null $user The user object
+     * @param int|null $userid The user ID
      * @return string
      */
-    protected function generate_get_records_sql(string $wheresql = null, string $sortsql = null, stdClass $user = null) : string {
+    protected function generate_get_records_sql(string $wheresql = null, string $sortsql = null, ?int $userid = null) : string {
         $table = self::TABLE;
         $alias = $this->get_table_alias();
         $fields = $alias . '.*';
@@ -355,42 +355,51 @@ class post extends db_table_vault {
     }
 
     /**
-     * Get a mapping of the most recent post in each discussion based on post creation time.
+     * Get a mapping of the most recent post record in each discussion based on post creation time.
      *
-     * @param   stdClass    $user The user to fetch counts for
-     * @param   int[]       $discussionids The list of discussions to fetch counts for
-     * @param   bool        $canseeprivatereplies Whether this user can see all private replies or not
-     * @return  int[]       The post id of the most recent post for each discussions returned in an associative array
+     * @param stdClass $user
+     * @param array $discussionids
+     * @param bool $canseeprivatereplies
+     * @return array
+     * @throws \coding_exception
+     * @throws \dml_exception
      */
-    public function get_latest_post_id_for_discussion_ids(
-            stdClass $user, array $discussionids, bool $canseeprivatereplies) : array {
-        global $CFG;
+    public function get_latest_posts_for_discussion_ids(
+        stdClass $user, array $discussionids, bool $canseeprivatereplies) : array {
 
         if (empty($discussionids)) {
             return [];
         }
 
-        $alias = $this->get_table_alias();
         list($insql, $params) = $this->get_db()->get_in_or_equal($discussionids, SQL_PARAMS_NAMED);
 
         [
             'where' => $privatewhere,
             'params' => $privateparams,
-        ] = $this->get_private_reply_sql($user, $canseeprivatereplies);
+        ] = $this->get_private_reply_sql($user, $canseeprivatereplies, "mp");
 
         $sql = "
-            SELECT p.discussion, MAX(p.id)
-              FROM {" . self::TABLE . "} p
-              JOIN (
-                SELECT mp.discussion, MAX(mp.created) AS created
-                  FROM {" . self::TABLE . "} mp
-                 WHERE mp.discussion {$insql}
-              GROUP BY mp.discussion
-              ) lp ON lp.discussion = p.discussion AND lp.created = p.created
-             WHERE 1 = 1 {$privatewhere}
-          GROUP BY p.discussion";
+            SELECT posts.*
+            FROM {" . self::TABLE . "} posts
+            JOIN (
+                SELECT p.discussion, MAX(p.id) as latestpostid
+                FROM {" . self::TABLE . "} p
+                JOIN (
+                    SELECT mp.discussion, MAX(mp.created) AS created
+                      FROM {" . self::TABLE . "} mp
+                     WHERE mp.discussion {$insql} {$privatewhere}
+                  GROUP BY mp.discussion
+                ) lp ON lp.discussion = p.discussion AND lp.created = p.created
+            GROUP BY p.discussion
+          ) plp on plp.discussion = posts.discussion AND plp.latestpostid = posts.id";
 
-        return $this->get_db()->get_records_sql_menu($sql, array_merge($params, $privateparams));
+        $records = $this->get_db()->get_records_sql($sql, array_merge($params, $privateparams));
+        $entities = $this->transform_db_records_to_entities($records);
+
+        return array_reduce($entities, function($carry, $entity) {
+            $carry[$entity->get_discussion_id()] = $entity;
+            return $carry;
+        }, []);
     }
 
     /**
@@ -400,11 +409,12 @@ class post extends db_table_vault {
      * @param   bool        $canseeprivatereplies Whether this user can see all private replies or not
      * @return  array       The SQL WHERE clause, and parameters to use in the SQL.
      */
-    private function get_private_reply_sql(stdClass $user, bool $canseeprivatereplies) {
+    private function get_private_reply_sql(stdClass $user, bool $canseeprivatereplies, $posttablealias = "p") {
         $params = [];
         $privatewhere = '';
         if (!$canseeprivatereplies) {
-            $privatewhere = ' AND (p.privatereplyto = :privatereplyto OR p.userid = :privatereplyfrom OR p.privatereplyto = 0)';
+            $privatewhere = " AND ({$posttablealias}.privatereplyto = :privatereplyto OR " .
+                "{$posttablealias}.userid = :privatereplyfrom OR {$posttablealias}.privatereplyto = 0)";
             $params['privatereplyto'] = $user->id;
             $params['privatereplyfrom'] = $user->id;
         }
@@ -413,5 +423,32 @@ class post extends db_table_vault {
             'where' => $privatewhere,
             'params' => $params,
         ];
+    }
+
+    /**
+     * Get a mapping of the first post in each discussion based on post creation time.
+     *
+     * @param   int[]        $discussionids The list of discussions to fetch counts for
+     * @return  stdClass[]   The post object of the first post for each discussions returned in an associative array
+     */
+    public function get_first_post_for_discussion_ids(array $discussionids) : array {
+
+        if (empty($discussionids)) {
+            return [];
+        }
+
+        list($insql, $params) = $this->get_db()->get_in_or_equal($discussionids, SQL_PARAMS_NAMED);
+
+        $sql = "
+            SELECT p.*
+              FROM {" . self::TABLE . "} p
+              JOIN (
+                SELECT mp.discussion, MIN(mp.created) AS created
+                  FROM {" . self::TABLE . "} mp
+                 WHERE mp.discussion {$insql}
+              GROUP BY mp.discussion
+              ) lp ON lp.discussion = p.discussion AND lp.created = p.created";
+
+        return $this->get_db()->get_records_sql($sql, $params);
     }
 }

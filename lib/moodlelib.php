@@ -137,13 +137,16 @@ define('PARAM_FILE',   'file');
  *
  * Note that you should not use PARAM_FLOAT for numbers typed in by the user.
  * It does not work for languages that use , as a decimal separator.
- * Instead, do something like
- *     $rawvalue = required_param('name', PARAM_RAW);
- *     // ... other code including require_login, which sets current lang ...
- *     $realvalue = unformat_float($rawvalue);
- *     // ... then use $realvalue
+ * Use PARAM_LOCALISEDFLOAT instead.
  */
 define('PARAM_FLOAT',  'float');
+
+/**
+ * PARAM_LOCALISEDFLOAT - a localised real/floating point number.
+ * This is preferred over PARAM_FLOAT for numbers typed in by the user.
+ * Cleans localised numbers to computer readable numbers; false for invalid numbers.
+ */
+define('PARAM_LOCALISEDFLOAT',  'localisedfloat');
 
 /**
  * PARAM_HOST - expected fully qualified domain name (FQDN) or an IPv4 dotted quad (IP address)
@@ -842,6 +845,10 @@ function clean_param($param, $type) {
         case PARAM_FLOAT:
             // Convert to float.
             return (float)$param;
+
+        case PARAM_LOCALISEDFLOAT:
+            // Convert to float.
+            return unformat_float($param, true);
 
         case PARAM_ALPHA:
             // Remove everything not `a-z`.
@@ -2692,6 +2699,11 @@ function require_login($courseorid = null, $autologinguest = true, $cm = null, $
                 $authplugin = get_auth_plugin($authname);
                 $authplugin->pre_loginpage_hook();
                 if (isloggedin()) {
+                    if ($cm) {
+                        $modinfo = get_fast_modinfo($course);
+                        $cm = $modinfo->get_cm($cm->id);
+                    }
+                    set_access_log_user();
                     break;
                 }
             }
@@ -7076,11 +7088,20 @@ function get_string_manager($forcereload=false) {
     if ($singleton === null) {
         if (empty($CFG->early_install_lang)) {
 
+            $transaliases = array();
             if (empty($CFG->langlist)) {
                  $translist = array();
             } else {
                 $translist = explode(',', $CFG->langlist);
                 $translist = array_map('trim', $translist);
+                // Each language in the $CFG->langlist can has an "alias" that would substitute the default language name.
+                foreach ($translist as $i => $value) {
+                    $parts = preg_split('/\s*\|\s*/', $value, 2);
+                    if (count($parts) == 2) {
+                        $transaliases[$parts[0]] = $parts[1];
+                        $translist[$i] = $parts[0];
+                    }
+                }
             }
 
             if (!empty($CFG->config_php_settings['customstringmanager'])) {
@@ -7090,7 +7111,7 @@ function get_string_manager($forcereload=false) {
                     $implements = class_implements($classname);
 
                     if (isset($implements['core_string_manager'])) {
-                        $singleton = new $classname($CFG->langotherroot, $CFG->langlocalroot, $translist);
+                        $singleton = new $classname($CFG->langotherroot, $CFG->langlocalroot, $translist, $transaliases);
                         return $singleton;
 
                     } else {
@@ -7103,7 +7124,7 @@ function get_string_manager($forcereload=false) {
                 }
             }
 
-            $singleton = new core_string_manager_standard($CFG->langotherroot, $CFG->langlocalroot, $translist);
+            $singleton = new core_string_manager_standard($CFG->langotherroot, $CFG->langlocalroot, $translist, $transaliases);
 
         } else {
             $singleton = new core_string_manager_install();
@@ -7365,10 +7386,12 @@ class emoticon_manager {
     /**
      * Returns the currently enabled emoticons
      *
+     * @param boolean $selectable - If true, only return emoticons that should be selectable from a list.
      * @return array of emoticon objects
      */
-    public function get_emoticons() {
+    public function get_emoticons($selectable = false) {
         global $CFG;
+        $notselectable = ['martin', 'egg'];
 
         if (empty($CFG->emoticons)) {
             return array();
@@ -7380,6 +7403,14 @@ class emoticon_manager {
             // Something is wrong with the format of stored setting.
             debugging('Invalid format of emoticons setting, please resave the emoticons settings form', DEBUG_NORMAL);
             return array();
+        }
+        if ($selectable) {
+            foreach ($emoticons as $index => $emote) {
+                if (in_array($emote->altidentifier, $notselectable)) {
+                    // Skip this one.
+                    unset($emoticons[$index]);
+                }
+            }
         }
 
         return $emoticons;

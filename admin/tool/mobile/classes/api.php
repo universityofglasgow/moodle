@@ -99,7 +99,7 @@ class api {
                     $lang = array();
                     if (!empty($addoninfo['lang'])) {
                         $stringmanager = get_string_manager();
-                        $langs = $stringmanager->get_list_of_translations();
+                        $langs = $stringmanager->get_list_of_translations(true);
                         foreach ($langs as $langid => $langname) {
                             foreach ($addoninfo['lang'] as $stringinfo) {
                                 $lang[$langid][$stringinfo[0]] =
@@ -443,7 +443,7 @@ class api {
                 'NoDelegate_CoreCoursesDownload' => new lang_string('downloadcourses', 'tool_mobile'),
             ),
             "$user" => array(
-                'CoreCourseOptionsDelegate_AddonBlog' => new lang_string('blog', 'blog'),
+                'CoreUserDelegate_AddonBlog:blogs' => new lang_string('blog', 'blog'),
                 '$mmUserDelegate_mmaBadges' => new lang_string('badges', 'badges'),
                 '$mmUserDelegate_mmaCompetency:learningPlan' => new lang_string('competencies', 'competency'),
                 '$mmUserDelegate_mmaCourseCompletion:viewCompletion' => new lang_string('coursecompletion', 'completion'),

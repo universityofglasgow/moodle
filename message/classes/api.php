@@ -352,9 +352,14 @@ class api {
         }
 
         // Let's get those non-contacts.
-        // If site wide messaging is enabled, we just fetch any matched users which are non-contacts.
-        if ($CFG->messagingallusers) {
-            $sql = "SELECT u.id
+        // Because we can't achieve all the required visibility checks in SQL, we'll iterate through the non-contact records
+        // and stop once we have enough matching the 'visible' criteria.
+        // TODO: MDL-63983 - Improve the performance of non-contact searches when site-wide messaging is disabled (default).
+
+        // Use a local generator to achieve this iteration.
+        $getnoncontactusers = function ($limitfrom = 0, $limitnum = 0) use($fullname, $exclude, $params, $excludeparams) {
+            global $DB;
+            $sql = "SELECT u.*
                   FROM {user} u
                  WHERE u.deleted = 0
                    AND u.confirmed = 1
@@ -365,73 +370,53 @@ class api {
                                     WHERE (mc.userid = u.id AND mc.contactid = :userid1)
                                        OR (mc.userid = :userid2 AND mc.contactid = u.id))
               ORDER BY " . $DB->sql_fullname();
+            while ($records = $DB->get_records_sql($sql, $params + $excludeparams, $limitfrom, $limitnum)) {
+                yield $records;
+                $limitfrom += $limitnum;
+            }
+        };
 
-            $foundusers = $DB->get_records_sql($sql, $params + $excludeparams, $limitfrom, $limitnum);
-        } else {
-            require_once($CFG->dirroot . '/user/lib.php');
-            // If site-wide messaging is disabled, then we should only be able to search for users who we are allowed to see.
-            // Because we can't achieve all the required visibility checks in SQL, we'll iterate through the non-contact records
-            // and stop once we have enough matching the 'visible' criteria.
-            // TODO: MDL-63983 - Improve the performance of non-contact searches when site-wide messaging is disabled (default).
+        // Fetch in batches of $limitnum * 2 to improve the chances of matching a user without going back to the DB.
+        // The generator cannot function without a sensible limiter, so set one if this is not set.
+        $batchlimit = ($limitnum == 0) ? 20 : $limitnum;
 
-            // Use a local generator to achieve this iteration.
-            $getnoncontactusers = function ($limitfrom = 0, $limitnum = 0) use($fullname, $exclude, $params, $excludeparams) {
-                global $DB;
-                $sql = "SELECT u.*
-                      FROM {user} u
-                     WHERE u.deleted = 0
-                       AND u.confirmed = 1
-                       AND " . $DB->sql_like($fullname, ':search', false) . "
-                       AND u.id $exclude
-                       AND NOT EXISTS (SELECT mc.id
-                                         FROM {message_contacts} mc
-                                        WHERE (mc.userid = u.id AND mc.contactid = :userid1)
-                                           OR (mc.userid = :userid2 AND mc.contactid = u.id))
-                  ORDER BY " . $DB->sql_fullname();
-                while ($records = $DB->get_records_sql($sql, $params + $excludeparams, $limitfrom, $limitnum)) {
-                    yield $records;
-                    $limitfrom += $limitnum;
-                }
-            };
+        // We need to make the offset param work with the generator.
+        // Basically, if we want to get say 10 records starting at the 40th record, we need to see 50 records and return only
+        // those after the 40th record. We can never pass the method's offset param to the generator as we need to manage the
+        // position within those valid records ourselves.
+        // See MDL-63983 dealing with performance improvements to this area of code.
+        $noofvalidseenrecords = 0;
+        $returnedusers = [];
+        foreach ($getnoncontactusers(0, $batchlimit) as $users) {
+            foreach ($users as $id => $user) {
+                // User visibility checks: only return users who are visible to the user performing the search.
+                // Which visibility check to use depends on the 'messagingallusers' (site wide messaging) setting:
+                // - If enabled, return matched users whose profiles are visible to the current user anywhere (site or course).
+                // - If disabled, only return matched users whose course profiles are visible to the current user.
+                $userdetails = \core_message\helper::search_get_user_details($user);
 
-            // Fetch in batches of $limitnum * 2 to improve the chances of matching a user without going back to the DB.
-            // The generator cannot function without a sensible limiter, so set one if this is not set.
-            $batchlimit = ($limitnum == 0) ? 20 : $limitnum;
-
-            // We need to make the offset param work with the generator.
-            // Basically, if we want to get say 10 records starting at the 40th record, we need to see 50 records and return only
-            // those after the 40th record. We can never pass the method's offset param to the generator as we need to manage the
-            // position within those valid records ourselves.
-            // See MDL-63983 dealing with performance improvements to this area of code.
-            $noofvalidseenrecords = 0;
-            $returnedusers = [];
-            foreach ($getnoncontactusers(0, $batchlimit) as $users) {
-                foreach ($users as $id => $user) {
-                    $userdetails = \user_get_user_details_courses($user);
-
-                    // Return the user only if the searched field is returned.
-                    // Otherwise it means that the $USER was not allowed to search the returned user.
-                    if (!empty($userdetails) and !empty($userdetails['fullname'])) {
-                        // We know we've matched, but only save the record if it's within the offset area we need.
-                        if ($limitfrom == 0) {
-                            // No offset specified, so just save.
+                // Return the user only if the searched field is returned.
+                // Otherwise it means that the $USER was not allowed to search the returned user.
+                if (!empty($userdetails) and !empty($userdetails['fullname'])) {
+                    // We know we've matched, but only save the record if it's within the offset area we need.
+                    if ($limitfrom == 0) {
+                        // No offset specified, so just save.
+                        $returnedusers[$id] = $user;
+                    } else {
+                        // There is an offset in play.
+                        // If we've passed enough records already (> offset value), then we can save this one.
+                        if ($noofvalidseenrecords >= $limitfrom) {
                             $returnedusers[$id] = $user;
-                        } else {
-                            // There is an offset in play.
-                            // If we've passed enough records already (> offset value), then we can save this one.
-                            if ($noofvalidseenrecords >= $limitfrom) {
-                                $returnedusers[$id] = $user;
-                            }
                         }
-                        if (count($returnedusers) == $limitnum) {
-                            break 2;
-                        }
-                        $noofvalidseenrecords++;
                     }
+                    if (count($returnedusers) == $limitnum) {
+                        break 2;
+                    }
+                    $noofvalidseenrecords++;
                 }
             }
-            $foundusers = $returnedusers;
         }
+        $foundusers = $returnedusers;
 
         $noncontacts = [];
         if (!empty($foundusers)) {
@@ -817,8 +802,11 @@ class api {
             // If not set, the context is always context_user.
             if (is_null($conversation->contextid)) {
                 $convcontext = \context_user::instance($userid);
+                // We'll need to check the capability to delete messages for all users in context system when contextid is null.
+                $contexttodeletemessageforall = \context_system::instance();
             } else {
                 $convcontext = \context::instance_by_id($conversation->contextid);
+                $contexttodeletemessageforall = $convcontext;
             }
             $conv->name = format_string($conversation->conversationname, true, ['context' => $convcontext]);
 
@@ -834,6 +822,8 @@ class api {
 
             // Add the most recent message information.
             $conv->messages = [];
+            // Add if the user has to allow delete messages for all users in the conversation.
+            $conv->candeletemessagesforallusers = has_capability('moodle/site:deleteanymessage',  $contexttodeletemessageforall);
             if ($conversation->smallmessage) {
                 $msg = new \stdClass();
                 $msg->id = $conversation->messageid;
@@ -998,6 +988,9 @@ class api {
             $ismuted = true;
         }
 
+        // Get the context of the conversation. This will be used to check if the user can delete all messages in the conversation.
+        $deleteallcontext = empty($conversation->contextid) ? $systemcontext : \context::instance_by_id($conversation->contextid);
+
         return (object) [
             'id' => $conversation->id,
             'name' => $conversation->name,
@@ -1010,7 +1003,8 @@ class api {
             'unreadcount' => $unreadcount,
             'ismuted' => $ismuted,
             'members' => $members,
-            'messages' => $messages['messages']
+            'messages' => $messages['messages'],
+            'candeletemessagesforallusers' => has_capability('moodle/site:deleteanymessage', $deleteallcontext)
         ];
     }
 
@@ -3324,6 +3318,9 @@ class api {
     public static function delete_all_conversation_data(int $conversationid) {
         global $DB;
 
+        $conv = $DB->get_record('message_conversations', ['id' => $conversationid], 'id, contextid');
+        $convcontext = !empty($conv->contextid) ? \context::instance_by_id($conv->contextid) : null;
+
         $DB->delete_records('message_conversations', ['id' => $conversationid]);
         $DB->delete_records('message_conversation_members', ['conversationid' => $conversationid]);
         $DB->delete_records('message_conversation_actions', ['conversationid' => $conversationid]);
@@ -3337,6 +3334,66 @@ class api {
 
             // Delete the messages now.
             $DB->delete_records('messages', ['conversationid' => $conversationid]);
+        }
+
+        // Delete all favourite records for all users relating to this conversation.
+        $service = \core_favourites\service_factory::get_service_for_component('core_message');
+        $service->delete_favourites_by_type_and_item('message_conversations', $conversationid, $convcontext);
+    }
+
+    /**
+     * Checks if a user can delete a message for all users.
+     *
+     * @param int $userid the user id of who we want to delete the message for all users
+     * @param int $messageid The message id
+     * @return bool Returns true if a user can delete the message for all users, false otherwise.
+     */
+    public static function can_delete_message_for_all_users(int $userid, int $messageid) : bool {
+        global $DB;
+
+        $sql = "SELECT mc.id, mc.contextid
+                  FROM {message_conversations} mc
+            INNER JOIN {messages} m
+                    ON mc.id = m.conversationid
+                 WHERE m.id = :messageid";
+        $conversation = $DB->get_record_sql($sql, ['messageid' => $messageid]);
+
+        if (!empty($conversation->contextid)) {
+            return has_capability('moodle/site:deleteanymessage',
+                \context::instance_by_id($conversation->contextid), $userid);
+        }
+
+        return has_capability('moodle/site:deleteanymessage', \context_system::instance(), $userid);
+    }
+    /**
+     * Delete a message for all users.
+     *
+     * This function does not verify any permissions.
+     *
+     * @param int $messageid The message id
+     * @return void
+     */
+    public static function delete_message_for_all_users(int $messageid) {
+        global $DB, $USER;
+
+        if (!$DB->record_exists('messages', ['id' => $messageid])) {
+            return false;
+        }
+
+        // Get all members in the conversation where the message belongs.
+        $membersql = "SELECT mcm.id, mcm.userid
+                        FROM {message_conversation_members} mcm
+                  INNER JOIN {messages} m
+                          ON mcm.conversationid = m.conversationid
+                       WHERE m.id = :messageid";
+        $params = [
+            'messageid' => $messageid
+        ];
+        $members = $DB->get_records_sql($membersql, $params);
+        if ($members) {
+            foreach ($members as $member) {
+                self::delete_message($member->userid, $messageid);
+            }
         }
     }
 }

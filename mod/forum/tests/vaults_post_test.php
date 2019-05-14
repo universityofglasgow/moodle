@@ -734,12 +734,92 @@ class mod_forum_vaults_post_testcase extends advanced_testcase {
     }
 
     /**
-     * Test get_latest_post_id_for_discussion_ids.
+     * Test get_latest_posts_for_discussion_ids.
      *
-     * @covers ::get_latest_post_id_for_discussion_ids
+     * @covers ::get_latest_posts_for_discussion_ids
      * @covers ::<!public>
      */
-    public function test_get_latest_post_id_for_discussion_ids() {
+    public function test_get_latest_posts_for_discussion_ids() {
+        $this->resetAfterTest();
+
+        $datagenerator = $this->getDataGenerator();
+        $course = $datagenerator->create_course();
+        [$teacher, $otherteacher] = $this->helper_create_users($course, 2, 'teacher');
+        [$user, $user2] = $this->helper_create_users($course, 2, 'student');
+        $forum = $datagenerator->create_module('forum', ['course' => $course->id]);
+        [$discussion1, $post1] = $this->helper_post_to_forum($forum, $user);
+        $post2 = $this->helper_reply_to_post($post1, $user);
+        $post3 = $this->helper_reply_to_post($post1, $user);
+        $post4 = $this->helper_reply_to_post($post2, $user);
+        [$discussion2, $post5] = $this->helper_post_to_forum($forum, $user);
+        $post6 = $this->helper_reply_to_post($post5, $user);
+        [$discussion3, $post7] = $this->helper_post_to_forum($forum, $user);
+        $post8 = $this->helper_post_to_discussion($forum, $discussion3, $teacher, [
+            'privatereplyto' => $user->id,
+        ]);
+
+        $ids = $this->vault->get_latest_posts_for_discussion_ids($user, [$discussion1->id], false);
+        $this->assertCount(1, $ids);
+        $this->assertEquals($post4->id, $ids[$discussion1->id]->get_id());
+
+        $ids = $this->vault->get_latest_posts_for_discussion_ids($user,
+            [$discussion1->id, $discussion2->id], false);
+        $this->assertCount(2, $ids);
+        $this->assertEquals($post4->id, $ids[$discussion1->id]->get_id());
+        $this->assertEquals($post6->id, $ids[$discussion2->id]->get_id());
+
+        $ids = $this->vault->get_latest_posts_for_discussion_ids($user,
+            [$discussion1->id, $discussion2->id, $discussion3->id], false);
+        $this->assertCount(3, $ids);
+        $this->assertEquals($post4->id, $ids[$discussion1->id]->get_id());
+        $this->assertEquals($post6->id, $ids[$discussion2->id]->get_id());
+        $this->assertEquals($post8->id, $ids[$discussion3->id]->get_id());
+
+        // Checks the user who doesn't have access to the private reply.
+        $ids = $this->vault->get_latest_posts_for_discussion_ids($user2,
+            [$discussion1->id, $discussion2->id, $discussion3->id], false);
+        $this->assertCount(3, $ids);
+        $this->assertEquals($post4->id, $ids[$discussion1->id]->get_id());
+        $this->assertEquals($post6->id, $ids[$discussion2->id]->get_id());
+        $this->assertEquals($post7->id, $ids[$discussion3->id]->get_id());
+
+        // Checks the user with the private reply to.
+        $ids = $this->vault->get_latest_posts_for_discussion_ids($user, [
+            $discussion1->id,
+            $discussion2->id,
+            $discussion3->id,
+            $discussion3->id + 1000
+        ], false);
+        $this->assertCount(3, $ids);
+        $this->assertEquals($post4->id, $ids[$discussion1->id]->get_id());
+        $this->assertEquals($post6->id, $ids[$discussion2->id]->get_id());
+        $this->assertEquals($post8->id, $ids[$discussion3->id]->get_id());
+    }
+
+    /**
+     * Test get_latest_posts_for_discussion_ids when no discussion ids were provided.
+     *
+     * @covers ::get_latest_posts_for_discussion_ids
+     * @covers ::<!public>
+     */
+    public function test_get_latest_posts_for_discussion_ids_empty() {
+        $this->resetAfterTest();
+
+        $datagenerator = $this->getDataGenerator();
+        $user = $datagenerator->create_user();
+        $course = $datagenerator->create_course();
+        $forum = $datagenerator->create_module('forum', ['course' => $course->id]);
+
+        $this->assertEquals([], $this->vault->get_latest_posts_for_discussion_ids($user, [], false));
+    }
+
+    /**
+     * Test get_first_post_for_discussion_ids.
+     *
+     * @covers ::get_first_post_for_discussion_ids
+     * @covers ::<!public>
+     */
+    public function test_get_first_post_for_discussion_ids() {
         $this->resetAfterTest();
 
         $datagenerator = $this->getDataGenerator();
@@ -754,42 +834,40 @@ class mod_forum_vaults_post_testcase extends advanced_testcase {
         $post6 = $this->helper_reply_to_post($post5, $user);
         [$discussion3, $post7] = $this->helper_post_to_forum($forum, $user);
 
-        $ids = $this->vault->get_latest_post_id_for_discussion_ids($user, [$discussion1->id], false);
-        $this->assertCount(1, $ids);
-        $this->assertEquals($post4->id, $ids[$discussion1->id]);
+        $firstposts = $this->vault->get_first_post_for_discussion_ids([$discussion1->id]);
+        $this->assertCount(1, $firstposts);
+        $this->assertEquals($post1->id, reset($firstposts)->id);
 
-        $ids = $this->vault->get_latest_post_id_for_discussion_ids($user,
-            [$discussion1->id, $discussion2->id], false);
-        $this->assertCount(2, $ids);
-        $this->assertEquals($post4->id, $ids[$discussion1->id]);
-        $this->assertEquals($post6->id, $ids[$discussion2->id]);
+        $firstposts = $this->vault->get_first_post_for_discussion_ids([$discussion1->id, $discussion2->id]);
+        $this->assertCount(2, $firstposts);
+        $this->assertEquals($post1->id, $firstposts[$post1->id]->id);
+        $this->assertEquals($post5->id, $firstposts[$post5->id]->id);
 
-        $ids = $this->vault->get_latest_post_id_for_discussion_ids($user,
-            [$discussion1->id, $discussion2->id, $discussion3->id], false);
-        $this->assertCount(3, $ids);
-        $this->assertEquals($post4->id, $ids[$discussion1->id]);
-        $this->assertEquals($post6->id, $ids[$discussion2->id]);
-        $this->assertEquals($post7->id, $ids[$discussion3->id]);
+        $firstposts = $this->vault->get_first_post_for_discussion_ids([$discussion1->id, $discussion2->id, $discussion3->id]);
+        $this->assertCount(3, $firstposts);
+        $this->assertEquals($post1->id, $firstposts[$post1->id]->id);
+        $this->assertEquals($post5->id, $firstposts[$post5->id]->id);
+        $this->assertEquals($post7->id, $firstposts[$post7->id]->id);
 
-        $ids = $this->vault->get_latest_post_id_for_discussion_ids($user, [
+        $firstposts = $this->vault->get_first_post_for_discussion_ids([
             $discussion1->id,
             $discussion2->id,
             $discussion3->id,
             $discussion3->id + 1000
-        ], false);
-        $this->assertCount(3, $ids);
-        $this->assertEquals($post4->id, $ids[$discussion1->id]);
-        $this->assertEquals($post6->id, $ids[$discussion2->id]);
-        $this->assertEquals($post7->id, $ids[$discussion3->id]);
+        ]);
+        $this->assertCount(3, $firstposts);
+        $this->assertEquals($post1->id, $firstposts[$post1->id]->id);
+        $this->assertEquals($post5->id, $firstposts[$post5->id]->id);
+        $this->assertEquals($post7->id, $firstposts[$post7->id]->id);
     }
 
     /**
-     * Test get_latest_post_id_for_discussion_ids when no discussion ids were provided.
+     * Test get_first_post_for_discussion_ids when no discussion ids were provided.
      *
-     * @covers ::get_latest_post_id_for_discussion_ids
+     * @covers ::get_first_post_for_discussion_ids
      * @covers ::<!public>
      */
-    public function test_get_latest_post_id_for_discussion_ids_empty() {
+    public function test_get_first_post_for_discussion_ids_empty() {
         $this->resetAfterTest();
 
         $datagenerator = $this->getDataGenerator();
@@ -797,6 +875,6 @@ class mod_forum_vaults_post_testcase extends advanced_testcase {
         $course = $datagenerator->create_course();
         $forum = $datagenerator->create_module('forum', ['course' => $course->id]);
 
-        $this->assertEquals([], $this->vault->get_latest_post_id_for_discussion_ids($user, [], false));
+        $this->assertEquals([], $this->vault->get_first_post_for_discussion_ids([]));
     }
 }

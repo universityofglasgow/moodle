@@ -156,6 +156,11 @@ class post extends exporter {
                         'null' => NULL_ALLOWED,
                         'description' => 'Whether the user can control the read status of the post',
                     ],
+                    'canreplyprivately' => [
+                        'type' => PARAM_BOOL,
+                        'null' => NULL_ALLOWED,
+                        'description' => 'Whether the user can post a private reply',
+                    ]
                 ]
             ],
             'urls' => [
@@ -333,6 +338,7 @@ class post extends exporter {
         $forum = $this->related['forum'];
         $discussion = $this->related['discussion'];
         $author = $this->related['author'];
+        $authorcontextid = $this->related['authorcontextid'];
         $user = $this->related['user'];
         $readreceiptcollection = $this->related['readreceiptcollection'];
         $rating = $this->related['rating'];
@@ -354,6 +360,7 @@ class post extends exporter {
         $canreply = $capabilitymanager->can_reply_to_post($user, $discussion, $post);
         $canexport = $capabilitymanager->can_export_post($user, $post);
         $cancontrolreadstatus = $capabilitymanager->can_manually_control_post_read_status($user);
+        $canreplyprivately = $capabilitymanager->can_reply_privately_to_post($user, $post);
 
         $urlfactory = $this->related['urlfactory'];
         $viewurl = $canview ? $urlfactory->get_view_post_url_from_post($post) : null;
@@ -368,7 +375,13 @@ class post extends exporter {
         $markasunreadurl = $cancontrolreadstatus ? $urlfactory->get_mark_post_as_unread_url_from_post($post) : null;
         $discussurl = $canview ? $urlfactory->get_discussion_view_url_from_post($post) : null;
 
-        $authorexporter = new author_exporter($author, $authorgroups, ($canview && !$isdeleted), $this->related);
+        $authorexporter = new author_exporter(
+            $author,
+            $authorcontextid,
+            $authorgroups,
+            ($canview && !$isdeleted),
+            $this->related
+        );
         $exportedauthor = $authorexporter->export($output);
         // Only bother loading the content if the user can see it.
         $loadcontent = $canview && !$isdeleted;
@@ -410,7 +423,8 @@ class post extends exporter {
                 'split' => $cansplit,
                 'reply' => $canreply,
                 'export' => $canexport,
-                'controlreadstatus' => $cancontrolreadstatus
+                'controlreadstatus' => $cancontrolreadstatus,
+                'canreplyprivately' => $canreplyprivately
             ],
             'urls' => [
                 'view' => $viewurl ? $viewurl->out(false) : null,
@@ -448,6 +462,7 @@ class post extends exporter {
             'forum' => 'mod_forum\local\entities\forum',
             'discussion' => 'mod_forum\local\entities\discussion',
             'author' => 'mod_forum\local\entities\author',
+            'authorcontextid' => 'int?',
             'user' => 'stdClass',
             'context' => 'context',
             'authorgroups' => 'stdClass[]',
