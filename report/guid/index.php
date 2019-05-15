@@ -67,7 +67,7 @@ echo $output->heading(get_string('heading', 'report_guid'));
 
 // Check we have ldap.
 if (!function_exists( 'ldap_connect' )) {
-    error(get_string('ldapnotloaded', 'report_guid'));
+    print_error(get_string('ldapnotloaded', 'report_guid'));
 }
 
 // Check for user create.

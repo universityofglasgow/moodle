@@ -44,8 +44,8 @@ echo $output->header();
 echo $output->heading(get_string('heading', 'report_guid'));
 
 // Check we have ldap.
-if (!function_exists( 'ldap_connect' )) {
-    error( 'ldap drivers are not loaded' );
+if (!function_exists('ldap_connect')) {
+    print_error(get_string('ldapnotloaded', 'report_guid'));
 }
 
 // Form definition.

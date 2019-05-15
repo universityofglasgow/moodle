@@ -193,8 +193,8 @@ class api {
         }
         try {
             $client = new SoapClient($config->wsdlextract, array('trace' => 1, 'exceptions' => 0));
-        } catch (Exception $e) {
-            return $e->getMessage();
+        } catch (\Throwable $e) {
+            return false;
         }
 
         // Construct parameters
