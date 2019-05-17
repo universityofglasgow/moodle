@@ -73,6 +73,8 @@
                 $pageIcon = 'fa-file-o';
                 $pageTitle = 'Private Files';
                 break;
+            default:
+                $pageShow = false;
         }
         
         if($pageShow) {

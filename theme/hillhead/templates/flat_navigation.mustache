@@ -97,7 +97,8 @@
 </ul>
 {{/starrednavexists}}
 
-{{#coursenavexists}}
+{{^starrednavexists}}
+    {{#coursenavexists}}
 <h2>My Courses</h2>
 <ul>
 {{#coursenav}}
@@ -115,7 +116,8 @@
     </li>
 {{/coursenav}}
 </ul>
-{{/coursenavexists}}
+    {{/coursenavexists}}
+{{/starrednavexists}}
 
 {{#settingsnavexists}}
 <h2>Course Settings</h2>

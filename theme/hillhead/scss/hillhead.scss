@@ -167,13 +167,13 @@ nav.navbar .dropdown > a {
     padding: 0;
 }
 
-.pagelayout-course #region-main {
+#page-course-view-topics #region-main, #page-course-view-weeks #region-main {
     background: transparent;
     border: none;
     padding: 0;
 }
 
-#page-course-view-topics .course-content ul.topics li.section {
+#page-course-view-topics .course-content ul.topics li.section, #page-course-view-weeks .course-content ul.weeks li.section {
     border: 1px solid $hillhead-card-br;
     background-color: #fff;
     padding-bottom: 0;
@@ -181,12 +181,12 @@ nav.navbar .dropdown > a {
     margin-bottom: 20px;
 }
 
-#page-course-view-topics ul.topics li.section .sectionname {
+#page-course-view-topics ul.topics li.section .sectionname, #page-course-view-weeks ul.weeks li.section .sectionname  {
     padding: 7px 20px;
     border-bottom: 1px solid $hillhead-card-br;
 }
 
-#page-course-view-topics .course-content ul.topics li.section .left, #page-course-view-topics .course-content ul.topics li.section .right {
+#page-course-view-topics .course-content ul.topics li.section .left, #page-course-view-topics .course-content ul.topics li.section .right, #page-course-view-weeks .course-content ul.weeks li.section .left, #page-course-view-weeks .course-content ul.weeks li.section .right {
     //padding: 5px 20px;
 }
 
@@ -209,7 +209,7 @@ nav.navbar .dropdown > a {
     display: inline-block;
 }
 
-.course-content ul.topics li.section .left, .course-content ul.topics li.section .right {
+.course-content ul.topics li.section .left, .course-content ul.topics li.section .right, .course-content ul.weeks li.section .left, .course-content ul.weeks li.section .right {
     margin-top: auto;
     padding-top: 0.5em;
 }
