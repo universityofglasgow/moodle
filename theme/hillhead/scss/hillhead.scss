@@ -32,8 +32,16 @@ h4 {
     }
 }
 
+.hillheadLogoContainer {
+    height: 35px;
+}
+
 #page {
     padding: 0 $card-spacer-x;
+}
+
+#page-my-index {
+    background-color: $hillhead-page-bg;
 }
 
 nav.navbar.fixed-top {
@@ -73,17 +81,17 @@ nav.navbar button.btn {
 }
 
 nav.navbar button.drawer-opener {
-    width: 37px;
-    height: 37px;
-    padding: 4px;
-    background: transparent;
+    width: 35px;
+    height: 35px;
+    padding: 6px 4px;
+    background-color: #003865;
     border: none;
 }
 
 nav.navbar button.drawer-opener i.icon {
-    font-size: 29px;
-    width: 29px;
-    height: 29px;
+    font-size: 24px;
+    width: auto;
+    height: auto;
 }
 
 nav.navbar a.navbar-brand {
