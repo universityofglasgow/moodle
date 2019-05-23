@@ -66,6 +66,7 @@ $string['privacy:metadata:sortorder'] = 'Sort order';
 $string['removefavourite'] = 'Remove favourite';
 $string['reorderfullname'] = 'Course full name';
 $string['reorderid'] = 'Course id';
+$string['reorderiddesc'] = 'Course id desc';
 $string['reordernone'] = 'Drag-and-drop order';
 $string['reordershortname'] = 'Course short name';
 $string['setmaxcourses'] = "Set maximum courses";

@@ -160,6 +160,7 @@ class main implements renderable, templatable {
             BLOCKS_COURSE_OVERVIEW_REORDER_FULLNAME => get_string('reorderfullname', 'block_course_overview'),
             BLOCKS_COURSE_OVERVIEW_REORDER_SHORTNAME => get_string('reordershortname', 'block_course_overview'),
             BLOCKS_COURSE_OVERVIEW_REORDER_ID => get_string('reorderid', 'block_course_overview'),
+            BLOCKS_COURSE_OVERVIEW_REORDER_IDDESC => get_string('reorderiddesc', 'block_course_overview'),
         ];
 
         // Courses reorder select.
