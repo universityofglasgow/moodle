@@ -7,11 +7,31 @@
     
     require_login();
     
-    if($value=='clear') {
-        unset_user_preference($setting);
+    $allowedPreferences = Array(
+        'theme_hillhead_contrast'       => true,
+        'theme_hillhead_font'           => true,
+        'theme_hillhead_bold'           => true,
+        'theme_hillhead_spacing'        => true,
+        'theme_hillhead_stripstyles'    => true,
+        'theme_hillhead_size'           => true,
+        'theme_hillhead_readtome'       => true,
+        'theme_hillhead_readalert'      => true
+    );
+    
+    if(array_key_exists($setting, $allowedPreferences)) {
+        if($value=='clear') {
+            unset_user_preference($setting);
+        } else {
+            set_user_preference($setting, $value);
+        }
     } else {
-        set_user_preference($setting, $value);
+        if($setting == 'theme_hillhead_reset_accessibility') {
+            foreach($allowedPreferences as $unset=>$pointlessTrue) {
+                unset_user_preference($unset);
+            }
+        }
     }
+    
     
     header('Location: '.$_SERVER['HTTP_REFERER']);
     
