@@ -32,6 +32,7 @@ define('BLOCKS_COURSE_OVERVIEW_REORDER_NONE', '0');
 define('BLOCKS_COURSE_OVERVIEW_REORDER_FULLNAME', '1');
 define('BLOCKS_COURSE_OVERVIEW_REORDER_SHORTNAME', '2');
 define('BLOCKS_COURSE_OVERVIEW_REORDER_ID', '3');
+define('BLOCKS_COURSE_OVERVIEW_REORDER_IDDESC', '4');
 
 define('BLOCKS_COURSE_OVERVIEW_DEFAULT_FAVOURITES', '1');
 define('BLOCKS_COURSE_OVERVIEW_DEFAULT_COURSES', '2');
@@ -210,6 +211,8 @@ function block_course_overview_get_sorted_courses($favourites, $keepfavourites =
             $sort = 'shortname ASC';
         } else if ($sortorder == BLOCKS_COURSE_OVERVIEW_REORDER_ID) {
             $sort = 'id ASC';
+        } else if ($sortorder == BLOCKS_COURSE_OVERVIEW_REORDER_IDDESC) {
+            $sort = 'id DESC';
         } else {
             $sort = 'visible DESC,sortorder ASC';
         }

@@ -42,7 +42,10 @@ define(['jquery', 'jqueryui'], function($, UI) {
                     });
 
                     // Send new sortorder.
-                    var activetab = $(".block_course_overview .nav-tabs .active").data("tabname");
+                    var activetab = $(".block_course_overview .nav-item.active a").data("tabname");
+                    if (!activetab) {
+                        var activetab = $(".block_course_overview .nav-tabs .active").data("tabname");
+                    }
                     var data = {
                         sesskey : M.cfg.sesskey,
                         tab : activetab,
