@@ -8,6 +8,7 @@
     require_login();
     
     $allowedPreferences = Array(
+        'theme_hillhead_accessibility'  => true,
         'theme_hillhead_contrast'       => true,
         'theme_hillhead_font'           => true,
         'theme_hillhead_bold'           => true,
