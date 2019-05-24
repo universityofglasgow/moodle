@@ -21,7 +21,17 @@ h4 {
 }
 
 @include media-breakpoint-up(lg) {
-    #region-main-settings-menu.has-blocks, #region-main.has-blocks {
+    body.drawer-open-left #region-main-settings-menu.has-blocks, body.drawer-open-left #region-main.has-blocks {
+        width: 100%;
+        float: none;
+    }
+    
+    body.drawer-open-left [data-region="blocks-column"] {
+        width: 100%;
+        float: none;
+    }
+
+    html body:not(.drawer-open-left) #region-main-settings-menu.has-blocks, body:not(.drawer-open-left) #region-main.has-blocks {
         width: calc(100% - 320px);
         display: inline-block;
     }
@@ -29,6 +39,23 @@ h4 {
     [data-region="blocks-column"] {
         width: 300px;
         float: right;
+    }
+}
+
+@include media-breakpoint-up(xl) {
+    
+    // Please forgive the !important tags. Boost by default shows two columns
+    // in a 1024x768 screen and that's just too small. Overriding that caused
+    // a selector specificity war that I just don't have time for.
+    
+    #region-main-settings-menu.has-blocks, html body #region-main.has-blocks {
+        width: calc(100% - 320px) !important;
+        display: inline-block !important;
+    }
+    
+    [data-region="blocks-column"] {
+        width: 300px !important;
+        float: right !important;
     }
 }
 
