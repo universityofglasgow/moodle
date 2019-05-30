@@ -103,6 +103,11 @@ abstract class element {
     protected $showposxy;
 
     /**
+     * @var edit_element_form Element edit form instance.
+     */
+    private $editelementform;
+
+    /**
      * Constructor.
      *
      * @param \stdClass $element the element data
@@ -230,7 +235,7 @@ abstract class element {
      * This function renders the form elements when adding a customcert element.
      * Can be overridden if more functionality is needed.
      *
-     * @param edit_element_form $mform the edit_form instance.
+     * @param \MoodleQuickForm $mform the edit_form instance.
      */
     public function render_form_elements($mform) {
         // Render the common elements.
@@ -240,6 +245,7 @@ abstract class element {
             element_helper::render_form_element_position($mform);
         }
         element_helper::render_form_element_width($mform);
+        element_helper::render_form_element_refpoint($mform);
     }
 
     /**
@@ -421,4 +427,27 @@ abstract class element {
             return $this->element->$name;
         }
     }
+
+    /**
+     * Set edit form instance for the custom cert element.
+     *
+     * @param \mod_customcert\edit_element_form $editelementform
+     */
+    public function set_edit_element_form(edit_element_form $editelementform) {
+        $this->editelementform = $editelementform;
+    }
+
+    /**
+     * Get edit form instance for the custom cert element.
+     *
+     * @return \mod_customcert\edit_element_form
+     */
+    public function get_edit_element_form() {
+        if (empty($this->editelementform)) {
+            throw new \coding_exception('Edit element form instance is not set.');
+        }
+
+        return $this->editelementform;
+    }
+
 }

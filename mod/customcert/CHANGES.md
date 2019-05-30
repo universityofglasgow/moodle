@@ -4,7 +4,25 @@ All notable changes to this project will be documented in this file.
 
 Note - All hash comments refer to the issue number. Eg. #169 refers to https://github.com/markn86/moodle-mod_customcert/issues/169.
 
-## [3.4.7] - 2018-12-31
+## [3.6.2] - 2019-05-28
+
+### Changed
+
+- Always send emails from the 'noreplyuser' (#165).
+
+### Added
+
+- Added QR code element (#146).
+- Added Date range element (#185).
+- Added the number of certificates issued above the report (#266).
+- Added new capability to control who can be issued a certificate (#270).
+
+### Fixed
+
+- Failures when running unit tests for multiple activities (#282).
+- Check that a certificate is valid before downloading on 'My certificates' page (#269).
+
+## [3.6.1] - 2018-12-31
 
 ### Changed
 
@@ -16,7 +34,7 @@ Note - All hash comments refer to the issue number. Eg. #169 refers to https://g
 - Use course module context when calling format_string/text (#200).
 - Exception being thrown when adding the 'teachername' element to site template (#261).
 
-## [3.4.6] - 2018-12-20
+## [3.5.5] - 2018-12-20
 ### Added
 
 - GDPR: Add support for removal of users from a context (see MDL-62560) (#252).
@@ -42,7 +60,7 @@ Note - All hash comments refer to the issue number. Eg. #169 refers to https://g
 - Removed incorrect course reset logic (#223).
 - Description strings referring to the wrong setting (#254).
 
-## [3.4.5] - 2018-07-13
+## [3.5.4] - 2018-07-13
 ### Fixed
 
 - Use custom fonts if present (#211).
@@ -57,23 +75,22 @@ Note - All hash comments refer to the issue number. Eg. #169 refers to https://g
   - One big change here is combining the report and activity view page into one.
 - Allow short dates with leading zeros (#210).
 
-## [3.4.4] - 2018-06-26
+## [3.5.3] - 2018-06-26
 ### Fixed
 
 - Respect filters in the 'My certificates' and 'Verify certificate' pages (#197).
 - Fixed reference to 'mod/certificate' capability.
-- Provided access to necessary web services for mobile functionality to the local_mobile plugin (#202).
 
 ### Changed
 
 - Multiple UX improvements to both the browser and mobile views (#203).
 
-## [3.4.3] - 2018-06-07
+## [3.5.2] - 2018-06-07
 ### Fixed
 
 - Hotfix to prevent misalignment of 'text' elements after last release (#196).
 
-## [3.4.2] - 2018-06-06
+## [3.5.1] - 2018-06-06
 ### Added
 - Mobile app support (#70).
 ```

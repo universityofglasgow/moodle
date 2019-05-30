@@ -54,25 +54,10 @@ class attendance_webservices_tests extends advanced_testcase {
      * Setup class.
      */
     public function setUp() {
-        global $DB;
-
         $this->category = $this->getDataGenerator()->create_category();
         $this->course = $this->getDataGenerator()->create_course(array('category' => $this->category->id));
 
-        $record = new stdClass();
-        $record->course = $this->course->id;
-        $record->name = "Attendance";
-        $record->grade = 100;
-
-        $DB->insert_record('attendance', $record);
-
-        $this->getDataGenerator()->create_module('attendance', array('course' => $this->course->id));
-
-        $moduleid = $DB->get_field('modules', 'id', array('name' => 'attendance'));
-        $cm = $DB->get_record('course_modules', array('course' => $this->course->id, 'module' => $moduleid));
-        $context = context_course::instance($this->course->id);
-        $att = $DB->get_record('attendance', array('id' => $cm->instance), '*', MUST_EXIST);
-        $this->attendance = new mod_attendance_structure($att, $cm, $this->course, $context);
+        $this->attendance = $this->create_attendance();
 
         $this->create_and_enrol_users();
 
@@ -94,6 +79,17 @@ class attendance_webservices_tests extends advanced_testcase {
         $this->sessions[] = $session;
 
         $this->attendance->add_sessions($this->sessions);
+    }
+
+    /**
+     * Create new attendance activity.
+     */
+    private function create_attendance() {
+        global $DB;
+        $att = $this->getDataGenerator()->create_module('attendance', array('course' => $this->course->id));
+        $cm = $DB->get_record('course_modules', array('id' => $att->cmid));
+        unset($att->cmid);
+        return new mod_attendance_structure($att, $cm, $this->course);
     }
 
     /** Creating 10 students and 1 teacher. */
@@ -123,6 +119,25 @@ class attendance_webservices_tests extends advanced_testcase {
         $this->assertEquals($course->fullname, $this->course->fullname);
         $attendanceinstance = array_pop($course->attendance_instances);
         $this->assertEquals(count($attendanceinstance['today_sessions']), 2);
+    }
+
+    public function test_get_courses_with_today_sessions_multiple_instances() {
+        $this->resetAfterTest(true);
+
+        // Make another attendance.
+        $second = $this->create_attendance();
+
+        // Just add the same session.
+        $secondsession = clone $this->sessions[0];
+        $secondsession->sessdate += 3600;
+
+        $second->add_sessions([$secondsession]);
+
+        $courseswithsessions = attendance_handler::get_courses_with_today_sessions($this->teacher->id);
+        $this->assertTrue(is_array($courseswithsessions));
+        $this->assertEquals(count($courseswithsessions), 1);
+        $course = array_pop($courseswithsessions);
+        $this->assertEquals(count($course->attendance_instances), 2);
     }
 
     public function test_get_session() {
@@ -157,12 +172,20 @@ class attendance_webservices_tests extends advanced_testcase {
         }
 
         // Add a session that's identical to the first, but with a group.
-        $session = $this->sessions[0];
+        $midnight = usergetmidnight(time()); // Check if this test is running during midnight.
+        $session = clone $this->sessions[0];
         $session->groupid = $group->id;
         $session->sessdate += 3600; // Make sure it appears second in the list.
-        $this->attendance->add_sessions($this->sessions);
+        $this->attendance->add_sessions([$session]);
 
         $courseswithsessions = attendance_handler::get_courses_with_today_sessions($this->teacher->id);
+
+        // This test is fragile when running over midnight - check that it is still the same day, if not, run this again.
+        // This isn't really ideal code, but will hopefully still give a valid test.
+        if (empty($courseswithsessions) && $midnight !== usergetmidnight(time())) {
+            $this->attendance->add_sessions([$session]);
+            $courseswithsessions = attendance_handler::get_courses_with_today_sessions($this->teacher->id);
+        }
 
         $course = array_pop($courseswithsessions);
         $attendanceinstance = array_pop($course->attendance_instances);

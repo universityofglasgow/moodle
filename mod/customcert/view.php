@@ -43,6 +43,7 @@ require_login($course, false, $cm);
 $context = context_module::instance($cm->id);
 require_capability('mod/customcert:view', $context);
 
+$canreceive = has_capability('mod/customcert:receiveissue', $context);
 $canmanage = has_capability('mod/customcert:manage', $context);
 $canviewreport = has_capability('mod/customcert:viewreport', $context);
 
@@ -134,11 +135,14 @@ if (!$downloadown && !$downloadissue) {
     }
 
     // Create the button to download the customcert.
-    $linkname = get_string('getcustomcert', 'customcert');
-    $link = new moodle_url('/mod/customcert/view.php', array('id' => $cm->id, 'downloadown' => true));
-    $downloadbutton = new single_button($link, $linkname, 'post', true);
-    $downloadbutton->class .= ' m-b-1';  // Seems a bit hackish, ahem.
-    $downloadbutton = $OUTPUT->render($downloadbutton);
+    $downloadbutton = '';
+    if ($canreceive) {
+        $linkname = get_string('getcustomcert', 'customcert');
+        $link = new moodle_url('/mod/customcert/view.php', array('id' => $cm->id, 'downloadown' => true));
+        $downloadbutton = new single_button($link, $linkname, 'post', true);
+        $downloadbutton->class .= ' m-b-1';  // Seems a bit hackish, ahem.
+        $downloadbutton = $OUTPUT->render($downloadbutton);
+    }
 
     // Output all the page data.
     echo $OUTPUT->header();
@@ -147,13 +151,14 @@ if (!$downloadown && !$downloadissue) {
     echo $issuehtml;
     echo $downloadbutton;
     if (isset($reporttable)) {
-        echo $OUTPUT->heading(get_string('listofissues', 'customcert'), 3);
+        $numissues = \mod_customcert\certificate::get_number_of_issues($customcert->id, $cm, $groupmode);
+        echo $OUTPUT->heading(get_string('listofissues', 'customcert', $numissues), 3);
         groups_print_activity_menu($cm, $pageurl);
         echo $reporttable->out($perpage, false);
     }
     echo $OUTPUT->footer($course);
     exit();
-} else { // Output to pdf.
+} else if ($canreceive) { // Output to pdf.
     // Set the userid value of who we are downloading the certificate for.
     $userid = $USER->id;
     if ($downloadown) {

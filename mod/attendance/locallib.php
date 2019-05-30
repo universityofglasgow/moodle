@@ -634,18 +634,26 @@ function attendance_construct_sessions_data_for_add($formdata, mod_attendance_st
                     $sess->absenteereport = $absenteereport;
                     $sess->studentpassword = '';
                     $sess->includeqrcode = 0;
+                    if (!empty($formdata->usedefaultsubnet)) {
+                        $sess->subnet = $att->subnet;
+                    } else {
+                        $sess->subnet = $formdata->subnet;
+                    }
+                    $sess->automark = $formdata->automark;
+                    $sess->automarkcompleted = 0;
+                    if (!empty($formdata->preventsharedip)) {
+                        $sess->preventsharedip = $formdata->preventsharedip;
+                    }
+                    if (!empty($formdata->preventsharediptime)) {
+                        $sess->preventsharediptime = $formdata->preventsharediptime;
+                    }
+
                     if (isset($formdata->studentscanmark)) { // Students will be able to mark their own attendance.
                         $sess->studentscanmark = 1;
-                        if (!empty($formdata->usedefaultsubnet)) {
-                            $sess->subnet = $att->subnet;
-                        } else {
-                            $sess->subnet = $formdata->subnet;
-                        }
-                        $sess->automark = $formdata->automark;
                         if (isset($formdata->autoassignstatus)) {
                             $sess->autoassignstatus = 1;
                         }
-                        $sess->automarkcompleted = 0;
+
                         if (!empty($formdata->randompassword)) {
                             $sess->studentpassword = attendance_random_string();
                         } else if (!empty($formdata->studentpassword)) {
@@ -654,18 +662,6 @@ function attendance_construct_sessions_data_for_add($formdata, mod_attendance_st
                         if (!empty($formdata->includeqrcode)) {
                             $sess->includeqrcode = $formdata->includeqrcode;
                         }
-                        if (!empty($formdata->preventsharedip)) {
-                            $sess->preventsharedip = $formdata->preventsharedip;
-                        }
-                        if (!empty($formdata->preventsharediptime)) {
-                            $sess->preventsharediptime = $formdata->preventsharediptime;
-                        }
-                    } else {
-                        $sess->subnet = '';
-                        $sess->automark = 0;
-                        $sess->automarkcompleted = 0;
-                        $sess->preventsharedip = 0;
-                        $sess->preventsharediptime = '';
                     }
                     $sess->statusset = $formdata->statusset;
 
@@ -695,6 +691,22 @@ function attendance_construct_sessions_data_for_add($formdata, mod_attendance_st
         $sess->absenteereport = $absenteereport;
         $sess->includeqrcode = 0;
 
+        if (!empty($formdata->usedefaultsubnet)) {
+            $sess->subnet = $att->subnet;
+        } else {
+            $sess->subnet = $formdata->subnet;
+        }
+
+        if (!empty($formdata->automark)) {
+            $sess->automark = $formdata->automark;
+        }
+        if (!empty($formdata->preventsharedip)) {
+            $sess->preventsharedip = $formdata->preventsharedip;
+        }
+        if (!empty($formdata->preventsharediptime)) {
+            $sess->preventsharediptime = $formdata->preventsharediptime;
+        }
+
         if (isset($formdata->studentscanmark) && !empty($formdata->studentscanmark)) {
             // Students will be able to mark their own attendance.
             $sess->studentscanmark = 1;
@@ -708,21 +720,6 @@ function attendance_construct_sessions_data_for_add($formdata, mod_attendance_st
             }
             if (!empty($formdata->includeqrcode)) {
                 $sess->includeqrcode = $formdata->includeqrcode;
-            }
-            if (!empty($formdata->usedefaultsubnet)) {
-                $sess->subnet = $att->subnet;
-            } else {
-                $sess->subnet = $formdata->subnet;
-            }
-
-            if (!empty($formdata->automark)) {
-                $sess->automark = $formdata->automark;
-            }
-            if (!empty($formdata->preventsharedip)) {
-                $sess->preventsharedip = $formdata->preventsharedip;
-            }
-            if (!empty($formdata->preventsharediptime)) {
-                $sess->preventsharediptime = $formdata->preventsharediptime;
             }
         }
         $sess->statusset = $formdata->statusset;
@@ -1044,4 +1041,36 @@ function construct_session_full_date_time($datetime, $duration) {
     $sessinfo .= ' '.attendance_construct_session_time($datetime, $duration);
 
     return $sessinfo;
+}
+
+/**
+ * Render the session password.
+ *
+ * @param stdClass $session
+ */
+function attendance_renderpassword($session) {
+    echo html_writer::tag('h2', get_string('passwordgrp', 'attendance'));
+    echo html_writer::span($session->studentpassword, 'student-password');
+}
+
+/**
+ * Render the session QR code.
+ *
+ * @param stdClass $session
+ */
+function attendance_renderqrcode($session) {
+    global $CFG;
+
+    if (strlen($session->studentpassword) > 0) {
+        $qrcodeurl = $CFG->wwwroot . '/mod/attendance/attendance.php?qrpass=' . $session->studentpassword .
+            '&sessid=' . $session->id;
+    } else {
+        $qrcodeurl = $CFG->wwwroot . '/mod/attendance/attendance.php?sessid=' . $session->id;
+    }
+
+    echo html_writer::tag('h3', get_string('qrcode', 'attendance'));
+
+    $barcode = new TCPDF2DBarcode($qrcodeurl, 'QRCODE');
+    $image = $barcode->getBarcodePngData(15, 15);
+    echo html_writer::img('data:image/png;base64,' . base64_encode($image), get_string('qrcode', 'attendance'));
 }
