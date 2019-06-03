@@ -53,10 +53,18 @@ class renderer extends \mod_hsuforum_renderer {
      * @return string
      */
     public function format_message_text($cm, $post) {
+        $includetoken = (defined('PHPUNIT_TEST') && PHPUNIT_TEST) ? false : true;
         $context = \context_module::instance($cm->id);
-        $message = file_rewrite_pluginfile_urls($post->message, 'pluginfile.php',
+        $message = file_rewrite_pluginfile_urls(
+            $post->message,
+            'pluginfile.php',
             $context->id,
-            'mod_hsuforum', 'post', $post->id);
+            'mod_hsuforum',
+            'post',
+            $post->id,
+            [
+                'includetoken' => $includetoken,
+            ]);
         $options = new \stdClass();
         $options->para = true;
         $options->context = $context;

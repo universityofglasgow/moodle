@@ -26,9 +26,7 @@ defined('MOODLE_INTERNAL') || die();
 
 /** Include required files */
 require_once($CFG->libdir.'/filelib.php');
-//require_once($CFG->libdir.'/eventslib.php');
 require_once($CFG->dirroot.'/user/selector/lib.php');
-use mod_hsuforum\renderables\discussion_dateform;
 use mod_hsuforum\renderables\advanced_editor;
 /// CONSTANTS ///////////////////////////////////////////////////////////
 
@@ -329,11 +327,12 @@ function hsuforum_delete_instance($id) {
 
     hsuforum_delete_read_records_for_forum($forum->id);
 
+    hsuforum_grade_item_delete($forum);
+
+    // We must delete the module record after we delete the grade item.
     if (!$DB->delete_records('hsuforum', array('id'=>$forum->id))) {
         $result = false;
     }
-
-    hsuforum_grade_item_delete($forum);
 
     return $result;
 }
@@ -697,6 +696,12 @@ function hsuforum_cron() {
                     if (!isset($discussionsubscribers[$post->discussion][$userto->id])) {
                         continue; // user does not subscribe to this forum
                     }
+                }
+
+                $coursecontext = context_course::instance($course->id);
+                if (!$course->visible and !has_capability('moodle/course:viewhiddencourses', $coursecontext, $userto->id)) {
+                    // The course is hidden and the user does not have access to it.
+                    continue;
                 }
 
                 // Don't send email if the forum is Q&A and the user has not posted.
@@ -1305,12 +1310,20 @@ function hsuforum_user_outline($course, $user, $mod, $forum) {
         $result->info = get_string("numposts", "hsuforum", $count->postcount);
         $result->time = $count->lastpost;
         if ($grade) {
-            $result->info .= ', ' . get_string('grade') . ': ' . $grade->str_long_grade;
+            if (!$grade->hidden || has_capability('moodle/grade:viewhidden', context_course::instance($course->id))) {
+                $result->info .= ', ' . get_string('grade') . ': ' . $grade->str_long_grade;
+            } else {
+                $result->info = get_string('grade') . ': ' . get_string('hidden', 'grades');
+            }
         }
         return $result;
     } else if ($grade) {
         $result = new stdClass();
-        $result->info = get_string('grade') . ': ' . $grade->str_long_grade;
+        if (!$grade->hidden || has_capability('moodle/grade:viewhidden', context_course::instance($course->id))) {
+            $result->info = get_string('grade') . ': ' . $grade->str_long_grade;
+        } else {
+            $result->info = get_string('grade') . ': ' . get_string('hidden', 'grades');
+        }
 
         //datesubmitted == time created. dategraded == time modified or time overridden
         //if grade was last modified by the user themselves use date graded. Otherwise use date submitted
@@ -1342,9 +1355,13 @@ function hsuforum_user_complete($course, $user, $mod, $forum) {
     $grades = grade_get_grades($course->id, 'mod', 'hsuforum', $forum->id, $user->id);
     if (!empty($grades->items[0]->grades)) {
         $grade = reset($grades->items[0]->grades);
-        echo $OUTPUT->container(get_string('grade').': '.$grade->str_long_grade);
-        if ($grade->str_feedback) {
-            echo $OUTPUT->container(get_string('feedback').': '.$grade->str_feedback);
+        if (!$grade->hidden || has_capability('moodle/grade:viewhidden', context_course::instance($course->id))) {
+            echo $OUTPUT->container(get_string('grade').': '.$grade->str_long_grade);
+            if ($grade->str_feedback) {
+                echo $OUTPUT->container(get_string('feedback').': '.$grade->str_feedback);
+            }
+        } else {
+            echo $OUTPUT->container(get_string('grade') . ': ' . get_string('hidden', 'grades'));
         }
     }
 
@@ -3545,6 +3562,99 @@ function hsuforum_get_course_forum($courseid, $type) {
 }
 
 /**
+ * Return a static array of posts that are open.
+ *
+ * @return array
+ */
+function hsuforum_post_nesting_cache() {
+    static $nesting = array();
+    return $nesting;
+}
+
+/**
+ * Return true for the first time this post was started
+ *
+ * @param int $id The id of the post to start
+ * @return bool
+ */
+function hsuforum_should_start_post_nesting($id) {
+    $cache = hsuforum_post_nesting_cache();
+    if (!array_key_exists($id, $cache)) {
+        $cache[$id] = 1;
+        return true;
+    } else {
+        $cache[$id]++;
+        return false;
+    }
+}
+
+/**
+ * Return true when all the opens are nested with a close.
+ *
+ * @param int $id The id of the post to end
+ * @return bool
+ */
+function hsuforum_should_end_post_nesting($id) {
+    $cache = hsuforum_post_nesting_cache();
+    if (!array_key_exists($id, $cache)) {
+        return true;
+    } else {
+        $cache[$id]--;
+        if ($cache[$id] == 0) {
+            unset($cache[$id]);
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * Start a forum post container
+ *
+ * @param object $post The post to print.
+ * @param bool $return Return the string or print it
+ * @return string
+ */
+function hsuforum_print_post_start($post, $return = false) {
+    $output = '';
+
+    if (hsuforum_should_start_post_nesting($post->id)) {
+        $attributes = [
+            'id' => 'p'.$post->id,
+            'tabindex' => -1,
+            'class' => 'relativelink'
+        ];
+        $output .= html_writer::start_tag('article', $attributes);
+    }
+    if ($return) {
+        return $output;
+    }
+    echo $output;
+    return;
+}
+
+/**
+ * End a forum post container
+ *
+ * @param object $post The post to print.
+ * @param bool $return Return the string or print it
+ * @return string
+ */
+function hsuforum_print_post_end($post, $return = false) {
+    $output = '';
+
+    if (hsuforum_should_end_post_nesting($post->id)) {
+        $output .= html_writer::end_tag('article');
+    }
+    if ($return) {
+        return $output;
+    }
+    echo $output;
+    return;
+}
+
+
+/**
  * Return rating related permissions
  *
  * @param string $options the context id
@@ -4240,7 +4350,7 @@ function hsuforum_add_new_post($post, $mform, $unused=null, \mod_hsuforum\upload
  * @param \mod_hsuforum\upload_file $uploader
  * @return bool
  */
-function hsuforum_update_post($newpost, $mform, &$message, \mod_hsuforum\upload_file $uploader = null) {
+function hsuforum_update_post($newpost, $mform, &$message = null, \mod_hsuforum\upload_file $uploader = null) {
     global $USER, $CFG, $DB;
 
     $post       = $DB->get_record('hsuforum_posts', array('id' => $newpost->id));
@@ -4269,16 +4379,6 @@ function hsuforum_update_post($newpost, $mform, &$message, \mod_hsuforum\upload_
     }
     $post->modified = time();
 
-    // Last post modified tracking.
-    $discussion->timemodified = $post->modified;
-    $discussion->usermodified = $USER->id;
-    $DB->update_record('hsuforum_posts', $post);
-
-    if (empty($post->privatereply)) {
-        $discussion->timemodified = $post->modified; // last modified tracking
-        $discussion->usermodified = $post->userid; // last modified tracking
-    }
-
     if (!$post->parent) {   // Post is a discussion starter - update discussion title and times too
         $discussion->name      = $post->subject;
         $discussion->timestart = $post->timestart;
@@ -4296,7 +4396,8 @@ function hsuforum_update_post($newpost, $mform, &$message, \mod_hsuforum\upload_
 
     $post->message = file_save_draft_area_files($draftid, $context->id, 'mod_hsuforum', 'post', $post->id,
             mod_hsuforum_post_form::editor_options($context, $post->id), $post->message);
-    $DB->set_field('hsuforum_posts', 'message', $post->message, array('id'=>$post->id));
+    $DB->update_record('hsuforum_posts', $post);
+    // Note: Discussion modified time/user are intentionally not updated, to enable them to track the latest new post.
     $DB->update_record('hsuforum_discussions', $discussion);
 
     hsuforum_add_attachment($post, $forum, $cm, $mform, $message, $uploader);
@@ -5582,7 +5683,11 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
     } else if (!$canstart && $groupmode and !has_capability('moodle/site:accessallgroups', $context)) {
         // inform users why they can not post new discussion
         if (!$currentgroup) {
-            echo $OUTPUT->notification(get_string('cannotadddiscussionall', 'hsuforum'), 'error hsuforum-cannot-post');
+            if (!has_capability('mod/hsuforum:canposttomygroups', $context)) {
+                echo $OUTPUT->notification(get_string('cannotadddiscussiongroup', 'hsuforum'));
+            } else {
+                echo $OUTPUT->notification(get_string('cannotadddiscussionall', 'hsuforum'));
+            }
         } else if (!groups_is_member($currentgroup)) {
             echo $OUTPUT->notification(get_string('cannotadddiscussion', 'hsuforum'), 'error hsuforum-cannot-post');
         }
@@ -6017,7 +6122,7 @@ function hsuforum_print_recent_mod_activity($activity, $courseid, $detail, $modn
     $output .= html_writer::link($discussionurl, $content->subject);
     $output .= html_writer::end_div();
 
-    $timestamp = userdate($activity->timestamp);
+    $timestamp = userdate_htmltime($activity->timestamp);
     if ($authorhidden) {
         $authornamedate = $timestamp;
     } else {
@@ -7014,7 +7119,7 @@ function hsuforum_get_grading_types(){
  * @return array
  */
 function hsuforum_get_extra_capabilities() {
-    return array('moodle/site:accessallgroups', 'moodle/site:viewfullnames', 'moodle/site:trustcontent', 'moodle/rating:view', 'moodle/rating:viewany', 'moodle/rating:viewall', 'moodle/rating:rate');
+    return ['moodle/rating:view', 'moodle/rating:viewany', 'moodle/rating:viewall', 'moodle/rating:rate'];
 }
 
 /**
@@ -8002,18 +8107,10 @@ function hsuforum_get_cm_forum($cm) {
  * @author Rafael Becerra
  *
  * @param $string
- * @return object
+ * @return int
  */
 function hsuforum_word_count($string) {
-    $string = preg_replace('/<\s*\/?[a-z0-9]+(\s*[a-z\-0-9]+)*(\s*[a-z\-0-9]+\="[^"]*")*\s*\/?>/ims', ' ', $string);
-    $string = html_entity_decode($string);
-    $novalidchars = ['<', '>', '=', '!', '&lt;', '|', '@', '#', '$',
-        '%', '^', '&', '*', '(', ')', '-', '+', '=', '.', '{', '}',
-        '[', ']', '~', ';', ':', '"', '\\', '/', ',', '?', '¿', 'nbsp'];
-    foreach ($novalidchars as $char) {
-        $string = str_replace($char, ' ', $string);
-    }
-    return count(preg_split('/\w\b/u', $string)) - 1;
+    return count_words(html_to_text(clean_text(htmlspecialchars(clean_text($string)))));
 }
 
 /**
@@ -8918,22 +9015,19 @@ function mod_hsuforum_get_completion_active_rule_descriptions($cm) {
     foreach ($cm->customdata['customcompletionrules'] as $key => $val) {
         switch ($key) {
             case 'completiondiscussions':
-                if (empty($val)) {
-                    continue;
+                if (!empty($val)) {
+                    $descriptions[] = get_string('completiondiscussionsdesc', 'hsuforum', $val);
                 }
-                $descriptions[] = get_string('completiondiscussionsdesc', 'hsuforum', $val);
                 break;
             case 'completionreplies':
-                if (empty($val)) {
-                    continue;
+                if (!empty($val)) {
+                    $descriptions[] = get_string('completionrepliesdesc', 'hsuforum', $val);
                 }
-                $descriptions[] = get_string('completionrepliesdesc', 'hsuforum', $val);
                 break;
             case 'completionposts':
-                if (empty($val)) {
-                    continue;
+                if (!empty($val)) {
+                    $descriptions[] = get_string('completionpostsdesc', 'hsuforum', $val);
                 }
-                $descriptions[] = get_string('completionpostsdesc', 'hsuforum', $val);
                 break;
             default:
                 break;

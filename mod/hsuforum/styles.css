@@ -831,10 +831,6 @@ FUN WITH FORMS
     margin-bottom: 1em;
 }
 
-#discussion_dateform {
-    display: none;
-}
-
 .dateformtarget {
     margin-bottom: 1em;
 }
@@ -923,3 +919,10 @@ the use of id^="" */
     margin: auto;
 }
 
+/* Recover data-placeholder attribute from for post message div*/
+[contenteditable]:empty:before {
+    content: attr(data-placeholder);
+    color: grey;
+    display: inline-block;
+    mix-blend-mode: difference;
+}

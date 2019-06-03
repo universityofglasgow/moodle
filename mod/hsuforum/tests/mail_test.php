@@ -251,7 +251,6 @@ class mod_hsuforum_mail_testcase extends advanced_testcase {
     }
 
     public function test_cron_message_includes_courseid() {
-        $this->markTestSkipped('Skipped to merge 3.6 on our Master branch');
         $this->resetAfterTest(true);
 
         // Create a course, with a forum.
@@ -284,7 +283,13 @@ class mod_hsuforum_mail_testcase extends advanced_testcase {
 
         // Reset the message sink for other tests.
         $this->helper->messagesink = $this->redirectMessages();
+        // Notification has been marked as read, so now first event should be a 'notification_viewed' one.
         $event = reset($events);
+        $this->assertInstanceOf('\core\event\notification_viewed', $event);
+
+        // And next event should be the 'notification_sent' one.
+        $event = $events[1];
+        $this->assertInstanceOf('\core\event\notification_sent', $event);
         $this->assertEquals($course->id, $event->other['courseid']);
     }
 
@@ -1093,7 +1098,7 @@ class mod_hsuforum_mail_testcase extends advanced_testcase {
             '<div class="attachments">( *\n *)?<a href',
             '<div class="subject">\n.*HTML text and image', '>Moodle Forum',
             '<p>Welcome to Moodle, '
-                .'<img src="'.$CFG->wwwroot.'/pluginfile.php/\d+/mod_hsuforum/post/\d+/'
+            .'<img src="'.$CFG->wwwroot.'/pluginfile.php/\d+/mod_hsuforum/post/\d+/'
                 .'Screen%20Shot%202016-03-22%20at%205\.54\.36%20AM%20%281%29\.png"'
                 .' alt="" width="200" height="393" class="img-responsive" />!</p>',
             '>Love Moodle', '>1\d1');
