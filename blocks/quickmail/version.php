@@ -1,4 +1,5 @@
 <?php
+
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -16,13 +17,13 @@
 
 /**
  * @package    block_quickmail
- * @copyright  2008-2017 Louisiana State University
- * @copyright  2008-2017 Adam Zapletal, Chad Mazilly, Philip Cali, Robert Russo
+ * @copyright  2008 onwards Louisiana State University
+ * @copyright  2008 onwards Chad Mazilly, Robert Russo, Jason Peak, Dave Elliott, Adam Zapletal, Philip Cali
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$plugin->version = 2017122001;
-$plugin->requires = 2013051400;
-$plugin->release = "v1.7.6";
+$plugin->version = 2019012400;
+$plugin->requires = 2016052300;
+$plugin->release = "v2.2.0";
 $plugin->maturity = MATURITY_STABLE; 
 $plugin->component = 'block_quickmail';
