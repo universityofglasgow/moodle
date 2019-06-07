@@ -168,8 +168,9 @@ class assign_submission_helixassign extends assign_submission_plugin {
         global $DB, $USER;
         $helixassignsubmission = $this->get_helixassign_submission($submission->id);
 
-        if ($data->helixassign_activated!=1)
+        if ($data->helixassign_activated!=1) {
             return true;
+        }
 
         $params = array(
             'context' => context_module::instance($this->assignment->get_course_module()->id),
@@ -370,6 +371,7 @@ class assign_submission_helixassign extends assign_submission_plugin {
      */
     public function is_empty(stdClass $submission) {
         $helixassignsubmission = $this->get_helixassign_submission($submission->id);
+
         if ($helixassignsubmission) {
             return helixmedia_is_preid_empty($helixassignsubmission->preid, $this, $submission->userid);
         }

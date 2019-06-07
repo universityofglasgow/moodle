@@ -15,11 +15,13 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package   turnitintooltwo
+ * @package   plagiarism_turnitin
  * @copyright 2012 iParadigms LLC
  */
 
 defined('MOODLE_INTERNAL') || die();
+
+require_once($CFG->dirroot.'/plagiarism/turnitin/lib.php');
 
 /**
  * @global moodle_database $DB
@@ -90,7 +92,6 @@ function xmldb_plagiarism_turnitin_upgrade($oldversion) {
                 }
             }
         }
-
         upgrade_plugin_savepoint(true, 2014012405, 'plagiarism', 'turnitin');
     }
 
@@ -185,6 +186,7 @@ function xmldb_plagiarism_turnitin_upgrade($oldversion) {
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
         }
+        upgrade_plugin_savepoint(true, 2016011101, ‘plagiarism’, ‘turnitin’);
     }
 
     if ($oldversion < 2016011104) {
@@ -193,6 +195,7 @@ function xmldb_plagiarism_turnitin_upgrade($oldversion) {
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
         }
+        upgrade_plugin_savepoint(true, 2016011104, ‘plagiarism’, ‘turnitin’);
     }
 
     if ($oldversion < 2016011105) {
@@ -236,9 +239,10 @@ function xmldb_plagiarism_turnitin_upgrade($oldversion) {
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
         }
+        upgrade_plugin_savepoint(true, 2016091402, ‘plagiarism’, ‘turnitin’);
     }
 
-    if ($oldversion < 2017013101) {
+    if ($oldversion < 2017012601) {
         $table = new xmldb_table('plagiarism_turnitin_files');
 
         // Due to an inconsistency with install and upgrade scripts, some users will
@@ -265,9 +269,11 @@ function xmldb_plagiarism_turnitin_upgrade($oldversion) {
 
         // Remove old PP event from the database if it exists.
         $DB->delete_records('task_scheduled', array('component' => 'plagiarism_turnitin', 'classname' => '\plagiarism_turnitin\task\plagiarism_turnitin_task'));
+
+        upgrade_plugin_savepoint(true, 2017012601, 'plagiarism', 'turnitin');
     }
 
-    if ($oldversion < 2017012601) {
+    if ($oldversion < 2017013101) {
         // Add new column that has to be unique.
         $table = new xmldb_table('plagiarism_turnitin_config');
         $field = new xmldb_field('config_hash', XMLDB_TYPE_CHAR, '100', null, null, null, null, 'value');
@@ -281,6 +287,119 @@ function xmldb_plagiarism_turnitin_upgrade($oldversion) {
         // Add hash as key after update.
         $key = new xmldb_key('config_hash', XMLDB_KEY_UNIQUE, array('config_hash'));
         $dbman->add_key($table, $key);
+
+        upgrade_plugin_savepoint(true, 2017013101, 'plagiarism', 'turnitin');
+    }
+
+    if ($oldversion < 2019031301) {
+        // Reset all error code 13s so that we are on a clean slate with the new implementation.
+        $DB->execute("UPDATE ".$CFG->prefix."plagiarism_turnitin_files SET statuscode = 'success', errorcode = NULL WHERE errorcode = 13");
+
+        upgrade_plugin_savepoint(true, 2019031301, 'plagiarism', 'turnitin');
+    }
+
+    if ($oldversion < 2019050201) {
+        // If V2 is installed, copy the settings across to PP.
+        if ($DB->get_record('config_plugins', array('plugin' => 'mod_turnitintooltwo'))) {
+            // Get the settings for the V2 plugin.
+            $data = get_config('turnitintooltwo');
+
+            $properties = array("accountid", "secretkey", "apiurl", "enablediagnostic", "usegrademark",
+                "enablepeermark", "useerater", "transmatch", "repositoryoption", "agreement", "enablepseudo", "pseudofirstname",
+                "pseudolastname", "lastnamegen", "pseudosalt", "pseudoemaildomain", "useanon");
+
+            foreach ($properties as $property) {
+                plagiarism_plugin_turnitin::plagiarism_set_config($data, $property);
+            }
+        }
+
+        // Define table plagiarism_turnitin_courses to be created.
+        $table = new xmldb_table('plagiarism_turnitin_courses');
+
+        // Adding fields to table plagiarism_turnitin_courses.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('courseid', XMLDB_TYPE_INTEGER, '10', null, false, null, null, 'id');
+        $table->add_field('ownerid', XMLDB_TYPE_INTEGER, '10', null, false, null, null, 'courseid');
+        $table->add_field('turnitin_ctl', XMLDB_TYPE_TEXT, null, null, false, null, null, 'ownerid');
+        $table->add_field('turnitin_cid', XMLDB_TYPE_INTEGER, '10', null, false, null, null, 'turnitin_ctl');
+
+        // Adding keys and indexes to table plagiarism_turnitin_courses.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+        $table->add_index('courseid', XMLDB_INDEX_UNIQUE, array('courseid'));
+
+        // Conditionally launch create table for plagiarism_turnitin_courses.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // If V2 is installed, copy the courses across from V2.
+        if ($DB->get_record('config_plugins', array('plugin' => 'mod_turnitintooltwo'))) {
+            $ppcourses = $DB->get_records('turnitintooltwo_courses', array('course_type' => 'PP'), 'id ASC', 'courseid, ownerid, turnitin_ctl, turnitin_cid');
+            try {
+                $DB->insert_records('plagiarism_turnitin_courses', $ppcourses);
+            } catch (Exception $e) {
+                plagiarism_turnitin_activitylog('Unable to copy course tables during version upgrade because they already exist.', 'PP_UPGRADE');
+            }
+
+            // Clean up old data, but only if the number of courses inserted matches the number of courses we wanted to insert.
+            if ($DB->count_records('plagiarism_turnitin_courses') == count($ppcourses)) {
+                $DB->delete_records('turnitintooltwo_courses', array("course_type" => "PP"));
+            }
+        }
+
+        // Define table file_conversion to be created.
+        $table = new xmldb_table('plagiarism_turnitin_peermark');
+
+        // Adding fields to table plagiarism_turnitin_peermark.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('parent_tii_assign_id', XMLDB_TYPE_INTEGER, '10', null, true, null, null, 'id');
+        $table->add_field('title', XMLDB_TYPE_TEXT, null, null, false, null, null, 'parent_tii_assign_id');
+        $table->add_field('tiiassignid', XMLDB_TYPE_INTEGER, '10', null, true, null, null, 'title');
+        $table->add_field('dtstart', XMLDB_TYPE_INTEGER, '10', null, true, null, null, 'tiiassignid');
+        $table->add_field('dtdue', XMLDB_TYPE_INTEGER, '10', null, true, null, null, 'dtstart');
+        $table->add_field('dtpost', XMLDB_TYPE_INTEGER, '10', null, true, null, null, 'dtdue');
+        $table->add_field('maxmarks', XMLDB_TYPE_INTEGER, '10', null, true, null, null, 'maxmarks');
+
+        // Adding keys and indexes to table plagiarism_turnitin_peermark.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+        $table->add_index('parent_tii_assign_id', XMLDB_INDEX_NOTUNIQUE, array('parent_tii_assign_id'));
+        $table->add_index('tiiassignid', XMLDB_INDEX_NOTUNIQUE, array('tiiassignid'));
+
+        // Conditionally launch create table for plagiarism_turnitin_peermark.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Define table plagiarism_turnitin_users to be created.
+        $table = new xmldb_table('plagiarism_turnitin_users');
+
+        // Adding fields to table plagiarism_turnitin_users.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', null, false, null, null, 'id');
+        $table->add_field('turnitin_uid', XMLDB_TYPE_INTEGER, '10', null, false, null, null, 'userid');
+        $table->add_field('turnitin_utp', XMLDB_TYPE_INTEGER, '10', null, false, null, 0, 'turnitin_uid');
+        $table->add_field('instructor_rubrics', XMLDB_TYPE_TEXT, null, null, false, null, null, 'turnitin_utp');
+        $table->add_field('user_agreement_accepted', XMLDB_TYPE_INTEGER, '1', null, false, null, 0, 'instructor_rubrics');
+
+        // Adding keys and indexes to table plagiarism_turnitin_users.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+        $table->add_index('userid', XMLDB_INDEX_UNIQUE, array('userid'));
+
+        // Conditionally launch create table for plagiarism_turnitin_users.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // If V2 is installed, copy the users across from V2.
+        if ($DB->get_record('config_plugins', array('plugin' => 'mod_turnitintooltwo'))) {
+            $ppusers = $DB->get_records('turnitintooltwo_users', null, 'id ASC', 'userid, turnitin_uid, turnitin_utp, instructor_rubrics, user_agreement_accepted');
+            try {
+                $DB->insert_records('plagiarism_turnitin_users', $ppusers);
+            } catch (Exception $e) {
+                plagiarism_turnitin_activitylog('Unable to copy users table during version upgrade because they already exist.', 'PP_UPGRADE');
+            }
+        }
+        upgrade_plugin_savepoint(true, 2019050201, 'plagiarism', 'turnitin');
     }
 
     return $result;
