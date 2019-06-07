@@ -13,6 +13,8 @@ if($canSeeGUIDReport) {
     $PAGE->flatnav->add($guidFlat);
 }
 
+require_once('starredcourses.php');
+
 if($isAdmin) {
     $purgeLink = new moodle_url('/admin/purgecaches.php?confirm=1&sesskey='.sesskey().'&returnurl='.$PAGE->url->out_as_local_url(false));
     $purgeNav = navigation_node::create('Purge All Caches', $purgeLink);
@@ -20,16 +22,14 @@ if($isAdmin) {
     $purgeFlat->key = 'purgecaches';
     $purgeFlat->icon = new pix_icon('t/delete', 'Purge All Caches', 'moodle');
     $PAGE->flatnav->add($purgeFlat);
-    
-    $courseDirLink = new moodle_url('/course');
-    $courseDirNav = navigation_node::create('Browse Courses', $courseDirLink);
-    $courseDirFlat = new flat_navigation_node($courseDirNav, 0);
-    $courseDirFlat->key = 'allcourses';
-    $courseDirFlat->icon = new pix_icon('hillhead/allcourses', 'Browse Courses', 'moodle');
-    $PAGE->flatnav->add($courseDirFlat);
 }
-
-require_once('starredcourses.php');
+    
+$courseDirLink = new moodle_url('/course');
+$courseDirNav = navigation_node::create('Browse Courses', $courseDirLink);
+$courseDirFlat = new flat_navigation_node($courseDirNav, 0);
+$courseDirFlat->key = 'allcourses';
+$courseDirFlat->icon = new pix_icon('hillhead/allcourses', 'Browse Courses', 'moodle');
+$PAGE->flatnav->add($courseDirFlat);
 
 $flatnav = $PAGE->flatnav;
 
@@ -103,6 +103,7 @@ foreach($flatnav as $navitem) {
                     break;
                 case 'allcourses':
                     $coursenav[] = $navitem;
+                    $starredCourses[] = $navitem;
                     $coursenavexists = true;
                     break;
                 default:
