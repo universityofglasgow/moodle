@@ -19,17 +19,19 @@
  *
  * @package    report
  * @subpackage anonymous
- * @copyright  2013 Howard Miller
+ * @copyright  2013-2019 Howard Miller
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once(dirname(__FILE__) . '/html2text/html2text.php');
-require_once(dirname(__FILE__) . '/forceutf8/src/ForceUTF8/Encoding.php');
+namespace report_anonymous;
 
-use \ForceUTF8\Encoding;
+define('FILENAME_SHORTEN', 30);
+
+//use \ForceUTF8\Encoding;
 use \assignfeedback_editpdf\document_services;
+use stdClass;
 
-class report_anonymous {
+class lib {
 
     /**
      * get blind assignments for this course
@@ -39,88 +41,15 @@ class report_anonymous {
     public static function get_assignments($id) {
         global $DB;
 
-        $assignments = $DB->get_records('assign', array('course' => $id));
+        $assignments = $DB->get_records('assign', ['course' => $id]);
 
-        // add URKUND and feedback status
-        foreach ($assignments as $assignment) {
-            $assignment->urkundenabled = self::urkund_enabled($assignment->id);
-            if ($plugin_config = $DB->get_record('assign_plugin_config', array('assignment' => $assignment->id, 'plugin' => 'file', 'subtype' => 'assignfeedback', 'name' => 'enabled'))) {
-                $assignment->assignfeedback_file_enabled = $plugin_config->value == 1;
-            } else {
-                $assignment->assignfeedback_file_enabled = false;
-            }
-
-	    // Check if it has any grades yet (if not we won't display it)
-            $assignment->hasgrades = (self::count_grades($assignment->id) != 0) || self::anySubmissions($assignment->id);
+        // add plagiarism and feedback status
+        foreach ($assignments as $assid => $assignment) {
+            $assignment->urkundenabled = self::urkund_enabled($assid);
+            $assignment->turnitinenabled = self::turnitin_enabled($assid);
         }
 
         return $assignments;
-    }
-
-    /**
-     * Check for any submissions
-     * @param int $assignmentid
-     * @return boolean
-     */
-    protected static function anySubmissions($assignmentid) {
-        global $DB;
-
-	$submissions = $DB->count_records('assign_submission', array('assignment' => $assignmentid, 'status' => 'submitted'));
-
-	return $submissions != 0; 
-    }
-
-    /** 
-     * Estimate submission return time from number of attempts
-     * @param int $attempts 
-     * @return int return time in minutes
-     */
-    private static function get_returntime($attempts) {
-       
-        // cron interval (minutes)
-        $croninterval = 5;
-
-        // Urkund retry table
-        $attemptTimes = Array(
-             '1'    => '0',
-             '2'    => '5',
-             '3'    => '10',
-             '4'    => '15',
-             '5'    => '30',
-             '6'    => '60',
-             '7'    => '90',
-             '8'    => '120',
-             '9'    => '240',
-             '10'   => '360',
-             '11'   => '480',
-             '12'   => '600',
-             '13'   => '720',
-             '14'   => '960',
-             '15'   => '1200',
-             '16'   => '1440',
-             '17'   => '1680',
-             '18'   => '1920',
-             '19'   => '2160',
-             '20'   => '2400',
-             '21'   => '2640',
-             '22'   => '2880',
-             '23'   => '3660',
-             '24'   => '3840',
-             '25'   => '4320',
-             '26'   => '4800',
-             '27'   => '5280',
-             '28'   => '5760',
-             '29'   => '6240'
-        );
-
-        // Estimate time
-        if (!$attempts) {
-            return $croninterval;
-        } else if (array_key_exists($attempts, $attemptTimes)) {
-            return $attemptTimes[$attempts] + (2 * $croninterval);
-        } else {
-            return false;
-        }
     }
 
     /**
@@ -132,16 +61,6 @@ class report_anonymous {
      */
     public static function allowed_to_view($assignid, $assignments) {
         return array_key_exists($assignid, $assignments);
-    }
-
-    /**
-     * Get the list of potential users for the assignment activity
-     * @param object $context current role context
-     * @return array list of users
-     */
-    public static function get_assign_users($context) {
-        $currentgroup = null;
-        return get_enrolled_users($context, "mod/assign:submit", $currentgroup);
     }
 
     /**
@@ -157,122 +76,240 @@ class report_anonymous {
             JOIN {groups_members} gm ON (gg.id = gm.groupid)
             WHERE gg.courseid = ?
             AND gm.userid = ?';
-        if (!$groups = $DB->get_records_sql($sql, array($courseid, $userid))) {
+        if (!$groups = $DB->get_records_sql($sql, [$courseid, $userid])) {
             return '-';
         } else {
-            $names = array();
+            $names = [];
+            $ids = [];
             foreach ($groups as $group) {
-                $names[] = $group->name;
+                $names[] = shorten_text($group->name, 30);
+                $ids[] = $group->id;
             }
-            return implode(', ', $names);
+            return [implode(', ', $names), $ids];
         }
     }
 
     /**
-     * Find user's allocated marker if there is one
-     * @param int $assignid assignment id
-     * @param int $userid 
-     * @return string formatted user name or '-'
+     * Get Urkund score
+     * If multiple scores, get the latest
+     * @param int $assid
+     * @param int $cmid 
+     * @param int $userid
+     * @return int
      */
-    public static function get_allocatedmarker($assignid, $userid) {
+    protected static function get_urkund_score($assid, $cmid, $userid) {
+        global $DB; 
+
+        if (self::urkund_enabled($assid)) {
+            if ($urkunds = $DB->get_records('plagiarism_urkund_files', ['cm' => $cmid, 'userid' => $userid, 'statuscode' => 'Analyzed'], 'id DESC')) {
+                return reset($urkunds);
+            } 
+            if ($urkunds = $DB->get_records('plagiarism_urkund_files', ['cm' => $cmid, 'relateduserid' => $userid, 'statuscode' => 'Analyzed'], 'id DESC')) {
+                return reset($urkunds);
+            }  
+            return null;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Get Turnitin score
+     * If multiple scores, get the latest
+     * @param int $assid
+     * @param int $cmid 
+     * @param int $userid
+     * @return int
+     */
+    protected static function get_turnitin_score($assid, $cmid, $userid) {
+        global $DB; 
+
+        if (self::turnitin_enabled($assid)) {
+            if ($turnitins = $DB->get_records('plagiarism_turnitin_files', ['cm' => $cmid, 'userid' => $userid, 'statuscode' => 'success'], 'id DESC')) {
+                return reset($turnitins);
+            }  
+            return null;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Get file submission plugin 
+     * and check it is enabled
+     * @param object $assign
+     * @return mixed
+     */
+    public static function get_submission_plugin_files($assign) {
+        $filesubmission = $assign->get_submission_plugin_by_type('file');
+        if ($filesubmission->is_enabled()) {
+            return $filesubmission;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Get files for user
+     * @param object $assign
+     * @param object $filesubmission
+     * @param object $submission
+     * @param int $userid
+     * @return array
+     */
+    protected static function get_submission_files($assign, $filesubmission, $submission, $userid) {
+        if (!$filesubmission || !$submission) {
+            return '-';
+        }
+
+        $fs = get_file_storage();
+        $context = $assign->get_context();
+        $files = $fs->get_area_files(
+            $context->id,
+            'assignsubmission_file',
+            'submission_files',
+            $submission->id
+        );
+
+        if ($files) {
+            $filenames = [];
+            foreach ($files as $file) {
+                if ($file->get_filename() == '.') {
+                    continue;
+                }
+                $filenames[] = shorten_text($file->get_filename(), FILENAME_SHORTEN);
+            }
+            return implode(', ', $filenames);
+        }
+
+        return '-';
+    }
+    
+    /**
+     * Get feedback
+     * @param object $assign
+     * @param object $filesubmission
+     * @param object $submission
+     * @param int $userid
+     * @return array
+     */
+    protected static function get_feedback_files($assign, $filesubmission, $submission, $userid) {
+        if (!$filesubmission || !$submission) {
+            return '-';
+        }
+
+        $fs = get_file_storage();
+        $context = $assign->get_context();
+        //echo "<pre>"; var_dump($context); die;
+        $files = $fs->get_area_files(
+            $context->id,
+            'assignsubmission_file',
+            'submission_files',
+            $submission->id
+        );
+
+        if ($files) {
+            $filenames = [];
+            foreach ($files as $file) {
+                if ($file->get_filename() == '.') {
+                    continue;
+                }
+                $filenames[] = $file->get_filename();
+            }
+            return implode(', ', $filenames);
+        }
+
+        return '-';
+    }
+    /**
+     * Get the name of the allocated marker
+     * @param object $grade
+     * @return string
+     */
+    protected static function get_grader($grade) {
         global $DB;
 
-        if ($flags = $DB->get_record('assign_user_flags', array('userid' => $userid, 'assignment' => $assignid))) {
-            if ($flags->allocatedmarker) {
-                if ($user = $DB->get_record('user', array('id' => $flags->allocatedmarker))) {
-                    return fullname($user);
-                } 
+        if (empty($grade)) {
+            return '-';
+        }
+
+        if ($grade->grader > 0) {
+            if ($user = $DB->get_record('user', ['id' => $grade->grader])) {
+                return fullname($user);
             }
         }
+
         return '-';
     }
 
     /**
-     * Strip HTML from feedback comments for export
-     * @param string $feedback
-     * @return string sanitised feedback
+     * Get assign object
+     * @param object $course
+     * @param int $assignid
+     * @return object
      */
-    private static function sanitise_feedback($feedback) {
-        if (!$feedback) {
-            return '-';
-        }
-        $errorlevel = error_reporting();
-        error_reporting(0);
-        $text = convert_html_to_text($feedback);
-        error_reporting($errorlevel);
-        $text = Encoding::fixUTF8($text);
+    public static function get_assign($course, $assignid) {
 
-        return $text;
+        // get course module
+        $cm = get_coursemodule_from_instance('assign', $assignid);
+
+        // Create assignment object
+        $coursemodulecontext = \context_module::instance($cm->id);
+        $assign = new \assign($coursemodulecontext, $cm, $course);
+
+        return $assign;
     }
 
     /**
-     * Load a count of grades.
-     *
-     * @param int assignid
-     * @return int number of grades
+     * Add assignment data
+     * @param int $assid
+     * @param int $cmid
+     * @param assign $assign
+     * @param array $submissions
+     * @return array
      */
-    public static function count_grades($assignid) {
-        global $DB;
+    public static function add_assignment_data($courseid, $assid, $cmid, $assign, $submissions) {
 
-        $cm = get_coursemodule_from_instance('assign', $assignid, 0, false, MUST_EXIST);
-        $context = context_module::instance($cm->id);
-        list($esql, $params) = get_enrolled_sql($context, 'mod/assign:submit', 0, true);
+        // Report date format
+        $dateformat = get_string('strftimedatetimeshort', 'langconfig');
 
-        $params['assignid'] = $assignid;
+        // Get sub plugins
+        $filesubmission = self::get_submission_plugin_files($assign);
 
-        $sql = 'SELECT COUNT(g.userid)
-                   FROM {assign_grades} g
-                   JOIN(' . $esql . ') e ON e.id = g.userid
-                   WHERE g.assignment = :assignid';
+        // Get instance
+        $instance = $assign->get_instance();
 
-        return $DB->count_records_sql($sql, $params);
-    }
-
-    /**
-     * Find  grades for the submission
-     * @param int $courseid
-     * @param int $assignid assignment id
-     * @param array $users
-     * @return string grade or '-' if no grade
-     */
-    public static function get_grades($courseid, $assignid, $users) {
-        global $DB;
-        
-        // convert user array to list of ids
-        $userids = array_keys($users);
-
-        // Get grade info
-        $gradeinfo = grade_get_grades($courseid, 'mod', 'assign', $assignid);
-        $gradeinfo = $gradeinfo->items[0];
-        if (!empty($gradeinfo->scaleid)) {
-            $scale = $DB->get_record('scale', array('id' => $gradeinfo->scaleid), '*', MUST_EXIST);
-            $scaleitems = explode(',', $scale->scale);
-            $scaleitems = array_map('trim', $scaleitems);
-        } else {
-            $scaleitems = null;
-        }
-
-        // Get grade objects for chosen assignment
-        $grades = array();
-        $usergrades = grade_get_grades($courseid, 'mod', 'assign', $assignid, array_keys($users));
-        foreach ($users as $user) {
-            $finalgrade = $usergrades->items[0]->grades[$user->id];
-            $grade = $finalgrade->grade;
-            $feedback = $finalgrade->feedback;
-            if ($grade === null) {
-                $grade = '-'; 
-            } else if ($scaleitems) {
-                $grade = $scaleitems[(int)$grade - 1];
+        foreach ($submissions as $submission) {
+            $userid = $submission->id;
+            if ($instance->teamsubmission) {
+                $usersubmission = $assign->get_group_submission($userid, 0, false);
             } else {
-                $grade = rtrim($grade, '0.');
+                $usersubmission = $assign->get_user_submission($userid, false);
             }
-            $record = new stdClass;
-            $record->grade = $grade;
-            $record->feedback = self::sanitise_feedback($feedback);
-            $grades[$user->id] = $record;
+            if ($usersubmission) {
+                $submission->created = userdate($usersubmission->timecreated, $dateformat);
+                $submission->modified = userdate($usersubmission->timemodified, $dateformat);
+                $submission->status = $usersubmission->status;
+                $submissionid = $usersubmission->id;
+                $grade = $assign->get_user_grade($userid, false);
+                $gradevalue = empty($grade) ? null : $grade->grade;
+                $displaygrade = $assign->display_grade($gradevalue, false, $userid);
+                $submission->grade = $displaygrade;
+                $submission->grader = self::get_grader($grade);
+            } else {
+                $submission->created = '-';
+                $submission->modified = '-';
+                $submission->status = '-';
+                $submission->grade = '-';
+            }
+            //echo "<pre>"; var_dump($usersubmission); die;
+            list($submission->groups, $submission->groupids) = self::get_user_groups($userid, $courseid);
+            $submission->urkund = self::get_urkund_score($assid, $cmid, $userid);
+            $submission->turnitin = self::get_turnitin_score($assid, $cmid, $userid);
+            $submission->files = self::get_submission_files($assign, $filesubmission, $usersubmission, $userid);
         }
 
-        return $grades;
+        return $submissions;
     }
 
     /**
@@ -305,7 +342,7 @@ class report_anonymous {
         global $DB;
 
         $fs = get_file_storage();
-        $context = context_system::instance();
+        $context = \context_system::instance();
         $path = '/pdf/';
 
         // Get the possible assignment submission plugins
@@ -391,79 +428,6 @@ class report_anonymous {
     }
 
     /**
-     * get the user's submissions (or null for none)
-     * @param int $assignid assignment id
-     * @param array $users list of user objects
-     * @return array list of submissions indexed by user (null where not submitted)
-     */
-    public static function get_submissions($assignid, $users, $group) {
-        global $DB;
-
-        // Is Urkund in use
-        $urkund = self::urkund_enabled($assignid);
-
-        $submissions = array();
-        foreach ($users as $user) {
-
-            // is user in group
-            if ($group) {
-                if (!groups_is_member($group, $user->id)) {
-                    continue;
-                }
-            }
-            $instance = new stdClass;
-          
-            // Check if this user has a participant number
-            if ($mapping = $DB->get_record('assign_user_mapping', array('assignment' => $assignid, 'userid' => $user->id))) {
-                $user->participantid = $mapping->id;
-            } else {
-                $user->participantid = '-';
-            }
-            $instance->user = $user;
-            if ($submission = $DB->get_record('assign_submission', array('userid' => $user->id, 'assignment' => $assignid))) {
-                $instance->submission = $submission;
-            } else {
-                $instance->submission = null;
-            }
-
-            // check if this user has an allocated marker
-            $instance->allocatedmarker = self::get_allocatedmarker($assignid, $user->id);
-
-            // Get submission files
-            $instance->convertedfiles = !empty(self::get_converted_files($assignid, $user->id)) || 
-                !empty(self::get_combined_pdf($assignid, $user->id));
-
-            // check for urkund files
-            if ($urkund) {
-                $files = self::urkund_files($assignid, $user->id);
-                if (!empty($files)) {
-                    foreach ($files as $file) {
-                        $urkundinstance = clone $instance;
-                        $urkundinstance->urkundstatus = self::urkund_status($file->statuscode);
-                        $urkundinstance->urkundfilename = $file->filename;
-                        $urkundinstance->urkundscore = $file->similarityscore;
-                        $urkundinstance->submittedonbehalf = null;
-                        $urkundinstance->returntime = self::get_returntime($file->attempt);
-                        $urkundinstance->urkundtimesubmitted = $file->timesubmitted;
-                        if ($file->relateduserid) {
-                            if ($subuser = $DB->get_record('user', array('id' => $file->userid))) {
-                                $urkundinstance->submittedonbehalf = fullname($subuser);
-                            }
-                        }
-                        $submissions[] = $urkundinstance;
-                    }
-                } else {
-                    $submissions[] = $instance;
-                }
-            } else {
-                $submissions[] = $instance;
-            }
-        }
-
-        return $submissions;
-    }
-
-    /**
      * Organise submission/user data into displayable form
      */
     public static function datatodisplay($submissions, $grades, $courseid, $showname=false) {
@@ -502,7 +466,7 @@ class report_anonymous {
 
             // Name
             if ($showname) {
-                $userurl = new moodle_url('/user/view.php', array('id' => $s->user->id, 'course' => $courseid));
+                $userurl = new \moodle_url('/user/view.php', ['id' => $s->user->id, 'course' => $courseid]);
                 $record->name = "<a href=\"$userurl\">".fullname($s->user)."</a>";
                 $record->fullname = fullname($s->user);
             } else {
@@ -553,11 +517,50 @@ class report_anonymous {
      * @return boolean
      */
     public static function urkund_enabled($assignmentid) {
-        global $DB;
+        global $CFG, $DB;
+
+        // Is plagiarism enabled?
+        if (empty($CFG->enableplagiarism)) {
+            return false;
+        }
+
+        // Is the Urkund plugin installed?
+        $plugininfo = \core_plugin_manager::instance()->get_plugin_info('plagiarism_urkund');
+        if (!$plugininfo) {
+            return false;
+        }
         
         $cm = get_coursemodule_from_instance('assign', $assignmentid);
-        if ($urkund = $DB->get_record('plagiarism_urkund_config', array('cm' => $cm->id, 'name' => 'use_urkund'))) {
+        if ($urkund = $DB->get_record('plagiarism_urkund_config', ['cm' => $cm->id, 'name' => 'use_urkund'])) {
             if ($urkund->value) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Is Turnitin enabled on this assignment
+     * @param int $assignmentid
+     * @return boolean
+     */
+    public static function turnitin_enabled($assignmentid) {
+        global $CFG, $DB;
+
+        // Is plagiarism enabled?
+        if (empty($CFG->enableplagiarism)) {
+            return false;
+        }
+
+        // Is the Urkund plugin installed?
+        $plugininfo = \core_plugin_manager::instance()->get_plugin_info('plagiarism_turnitin');
+        if (!$plugininfo) {
+            return false;
+        }
+        
+        $cm = get_coursemodule_from_instance('assign', $assignmentid);
+        if ($turnitin = $DB->get_record('plagiarism_turnitin_config', ['cm' => $cm->id, 'name' => 'use_turnitin'])) {
+            if ($turnitin->value) {
                 return true;
             }
         }

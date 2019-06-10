@@ -1,0 +1,58 @@
+<h3>{{# str }}anonymousassignments, report_anonymous{{/ str }}</h3>
+
+{{^ isassignments }}
+    <div class="alert alert-warning">{{# str }}noassignments, report_anonymous{{/ str }}</div>
+{{/ isassignments }}
+
+{{# isassignments }}
+    <div class="alert alert-primary">{{# str }}selectassignment, report_anonymous{{/ str }}</div>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>{{# str }}name{{/ str }}</th>
+                <th>{{# str }}status{{/ str }}</th>
+                <th>{{# str }}groupmode{{/ str }}</th>
+                {{# enableplagiarism }}
+                    <th>{{# str }}plagiarism, report_anonymous{{/ str }}</th>
+                {{/ enableplagiarism }}
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {{# assignments }}
+                <tr>
+                    <td>{{ name }}</td>
+                    <td class="h5">
+                        {{# blindmarking }}
+                            <span class="badge badge-secondary">{{# str }}blindmarkingon, report_anonymous{{/ str }}</span>
+                        {{/ blindmarking }}
+                        {{# revealidentities }}
+                            <span class="badge badge-success">{{# str }}revealidentities, report_anonymous{{/ str }}</span>
+                        {{/ revealidentities }}
+                        {{# markingworkflow }}
+                            <span class="badge badge-warning">{{# str }}workflowon, report_anonymous{{/ str }}</span>
+                        {{/ markingworkflow }}
+                        {{# markingallocation }}
+                            <span class="badge badge-primary">{{# str }}allocationon, report_anonymous{{/ str }}</span>
+                        {{/ markingallocation }}
+                        {{# groupsubmission }}
+                            <span class="badge badge-dark">{{# str }}groupsubmission, report_anonymous{{/ str }}</span>
+                        {{/ groupsubmission }}
+                    </td>
+                    <td>{{ groupmode }}</td>
+                    {{# enableplagiarism }}
+                        <td>
+                            {{# urkundenabled }}{{# pix }}urkund, report_anonymous, {{# str }}urkundenabled, report_anonymous{{/ str }}{{/ pix }}{{/ urkundenabled}}
+                            {{# turnitinenabled }}{{# pix }}turnitin, report_anonymous, {{# str }}turnitinenabled, report_anonymous{{/ str }}{{/ pix }}{{/ turnitinenabled}}
+                        </td>
+                    {{/ enableplagiarism }}
+                    <td>
+                        <a href="{{{ showlink }}}" class="btn btn-primary"><i class="fa fa-list"></i> {{# str }}show{{/ str }}</a>
+                        <a href="{{{ exportlink }}}" class="btn btn-success"><i class="fa fa-share-square-o"></i> {{# str }}export, report_anonymous{{/ str }}</a>
+                    </td>
+                </tr>
+            {{/ assignments }}
+        </tbody>
+    </table>
+{{/ isassignments }}

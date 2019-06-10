@@ -1,0 +1,69 @@
+
+<h2>{{ assignment.name }}</h2>
+
+<div class="card">
+    <div class="card-body">
+        {{# groupselect }}
+            <form>
+                <div class="form-group">
+                    <label for="groupfilter">{{# str }}group, report_anonymous{{/ str }}</label>
+                    <select class="form-control" id="groupfilter" name="groupfilter">
+                        <option value="0">{{# str }}all{{/ str }}</option>
+                        {{# groups }}
+                            <option value="{{ id }}">{{ name }}</option>
+                        {{/ groups }}
+                    </select>
+                </div>
+            </form>
+        {{/ groupselect }}
+    </div>
+</div>
+
+<table class="table table-striped">
+    <thead>
+        <th>{{# str }}username{{/ str }}</th>
+        <th>{{# str }}groups{{/ str }}</th>
+        <th>{{# str }}status{{/ str }}</th>
+        <th>{{# str }}grade{{/ str }}</th>
+        {{# urkundenabled }}
+            <th>{{# str }}urkund, report_anonymous{{/ str }}</th>
+        {{/ urkundenabled }}
+        {{# turnitinenabled }}
+            <th>{{# str }}turnitin, report_anonymous{{/ str }}</th>
+        {{/ turnitinenabled }}
+        {{# assignment.markingallocation }}
+            <th>{{# str }}allocatedmarker, report_anonymous{{/ str }}</th>
+        {{/ assignment.markingallocation }}
+        <th>{{# str }}modified{{/ str }}</th>
+        <th class="w-25">Files</th>
+    </thead>
+    <tbody>
+        {{# submissions }}
+            <tr class="group_0 {{# groupids }}group_{{ . }} {{/ groupids}}">
+                <td>{{ fullname }}</td>
+                <td>{{ groups }}</td>
+                <td>{{ status }}</td>
+                <td>{{{ grade }}}</td>
+                {{# urkundenabled }}
+                    <td>
+                        {{# urkund }}
+                            {{# pix }}urkund, report_anonymous, {{# str }}urkund, report_anonymous{{/ str }}{{/ pix }}{{ urkund.similarityscore }}
+                        {{/ urkund }}
+                    </td>
+                {{/ urkundenabled }}
+                {{# turnitinenabled }}
+                    <td>
+                        {{# turnitin }}
+                            {{# pix }}turnitin, report_anonymous, {{# str }}turnitin, report_anonymous{{/ str }}{{/ pix }}{{ turnitin.similarityscore }}
+                        {{/ turnitin }}
+                    </td>
+                {{/ turnitinenabled }}
+                {{# assignment.markingallocation }}
+                    <td>{{ grader }}</td>
+                {{/ assignment.markingallocation }}
+                <td>{{ modified }}</td>
+                <td class="w-25">{{ files }}</td>
+            </tr>
+        {{/ submissions }}
+    <tbody>
+</table>

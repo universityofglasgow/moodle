@@ -17,6 +17,7 @@
 /**
  * Anonymous report
  *
+ * @copyright  2019 Howard Miller (howardsmiller@gmail.com)
  * @package    report
  * @subpackage anonymous
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -25,14 +26,11 @@
 define('REPORT_PAGESIZE', 20);
 
 require(dirname(__FILE__).'/../../config.php');
-require_once(dirname(__FILE__).'/locallib.php');
 require_once($CFG->dirroot . '/mod/assign/locallib.php');
-require_once($CFG->libdir.'/tablelib.php');
 
 // Parameters.
 $id = required_param('id', PARAM_INT);
 $assignid = optional_param('assign', 0, PARAM_INT);
-$reveal = optional_param('reveal', 0, PARAM_INT);
 $export = optional_param('export', 0, PARAM_INT);
 $page = optional_param('page', 0, PARAM_INT);
 $tsort = optional_param('tsort', 'idnumber', PARAM_ALPHA);
@@ -45,7 +43,6 @@ $url = new moodle_url('/report/anonymous/index.php', array('id' => $id));
 $fullurl = new moodle_url('/report/anonymous/index.php', array(
     'id' => $id,
     'assign' => $assignid,
-    'reveal' => $reveal,
     'group' => $group,
 ));
 
@@ -73,26 +70,36 @@ if (!$export) {
     $PAGE->set_title($course->shortname .': '. get_string('pluginname', 'report_anonymous'));
     $PAGE->set_heading($course->fullname);
 
-    echo $OUTPUT->header();
+    echo $output->header();
 }
 
 // Get assignments
-$assignments = report_anonymous::get_assignments($id);
+$assignments = report_anonymous\lib::get_assignments($id);
 
 // Has a link been submitted?
 if ($assignid) {
-    // get course module
+
+    // Filters
+    $PAGE->requires->js_call_amd('report_anonymous/anonymous', 'init');
+
+    // Create assignment object
+    $assign = \report_anonymous\lib::get_assign($course, $assignid);
+
+    // Participants
+    $submissions = $assign->list_participants_with_filter_status_and_group($group);
     $cm = get_coursemodule_from_instance('assign', $assignid);
+    $submissions = report_anonymous\lib::add_assignment_data($course->id, $assignid, $cm->id, $assign, $submissions);
 
     // group mode
     $groupmode = groups_get_activity_groupmode($cm, $course);
 
-    if (!report_anonymous::allowed_to_view($assignid, $assignments)) {
+    if (!report_anonymous\lib::allowed_to_view($assignid, $assignments)) {
         notice(get_string('notallowed', 'report_anonymous'), $url);
     }
 
-    $assignment = $DB->get_record('assign', array('id' => $assignid), '*', MUST_EXIST);
-    $urkund = report_anonymous::urkund_enabled($assignid);
+    $assignment = $DB->get_record('assign', ['id' => $assignid], '*', MUST_EXIST);
+    $urkund = report_anonymous\lib::urkund_enabled($assignid);
+    $turnitin = report_anonymous\lib::turnitin_enabled($assignid);
 
     // Reveal always if not blindmarking
     if (!$assignment->blindmarking) {
@@ -103,25 +110,27 @@ if ($assignid) {
     if ($assignment->blindmarking) {
         assign::allocate_unique_ids($assignid);
     }
-    $users = report_anonymous::get_assign_users($context);
-    $grades = report_anonymous::get_grades($course->id, $assignid, $users);
-    $submissions = report_anonymous::get_submissions($assignid, $users, $group);
-    $displaysubs = report_anonymous::datatodisplay($submissions, $grades, $id, $reveal);
-    $displaysubs = report_anonymous::sort_submissions($displaysubs, $tdir, $tsort);
+
     if ($export) {
         $filename = "anonymous_{$assignment->name}.xls";
         report_anonymous::export($assignment, $displaysubs, $reveal, $filename, $urkund);
         die;
     }
-    $output->actions($context, $fullurl, $reveal, $assignment);
-    groups_print_activity_menu($cm, $fullurl);
-    $output->report($id, $assignment, $displaysubs, $reveal, $urkund, $fullurl);
-    $output->back_button($url);
+
+    // Display report
+    $reportassign = new report_anonymous\output\reportassign($course, $context, $fullurl, $submissions, $assignment);
+    echo $output->render_reportassign($reportassign);
+
+    //$output->actions($context, $fullurl, $reveal, $assignment);
+    //groups_print_activity_menu($cm, $fullurl);
+    //$output->report($id, $assignment, $displaysubs, $reveal, $urkund, $fullurl);
+    //$output->back_button($url);
 } else {
 
     // List of activities to select.
-    $output->list_assign($fullurl, $assignments);
+    $listassign = new report_anonymous\output\listassign($course, $fullurl, $assignments);
+    echo $output->render_listassign($listassign);
 }
 
-echo $OUTPUT->footer();
+echo $output->footer();
 

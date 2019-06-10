@@ -23,60 +23,14 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-class report_anonymous_renderer extends plugin_renderer_base {
+namespace report_anonymous\output;
 
-    /**
-     * Show the assignment activities available
-     * @param string $url base url
-     * @param array $assignments
-     */
-    public function list_assign($url, $assignments) {
-        global $OUTPUT;
+defined('MOODLE_INTERNAL') || die;
 
-        echo "<h3>" . get_string('anonymousassignments', 'report_anonymous') . "</h3>";
-        echo '<div class="alert alert-info">' . get_string('selectassignment', 'report_anonymous') . '</div>';
-        if (empty($assignments)) {
-            echo "<div class=\"alert alert-warning\">" . get_string('noassignments', 'report_anonymous') . "</div>";
-            return;
-        }
-    
-        // There are some to show
-        $table = new html_table();
-        $table->head = array(
-            get_string('name'),
-            get_string('status'),
-            get_string('urkundstatus', 'report_anonymous'),
-        );
-        foreach ($assignments as $assignment) {
-            $assignurl = clone $url;
-            $assignurl->params(array('mod' => 'assign', 'assign' => $assignment->id));
-            $line = array();
-            $line[] = '<b>' . $assignment->name . '</b>';
-            if ($assignment->blindmarking) {
-                $line[] = get_string('anonymous', 'report_anonymous');
-            } else {
-                $line[] = '-';
-            }
-            if ($assignment->urkundenabled) {
-                $line[] =  '<img src="' . $OUTPUT->image_url('urkund', 'report_anonymous') . '" />';
-            } else {
-                $line[] = ' ';
-            }
-            if ($assignment->hasgrades) {
-                $buttons = '<a class="btn btn-info" href="' . $assignurl . '">' . get_string('show') . '</a>&nbsp;';
-                if ($assignment->assignfeedback_file_enabled) {
-                    $assignurl->params(array('action' => 'feedback'));
-                    $buttons .= '<a class="btn btn-success" href="' . $assignurl . '">' . get_string('downloadfeedback', 'report_anonymous') . '</a>';
-                }
-                $line[] = $buttons;
-            } else {
-                $line[] = '<i>' . get_string('nogrades', 'report_anonymous') . '</i>';
-            }
-            $table->data[] = $line;
-        }
+use plugin_renderer_base;
+use moodle_url;
 
-        echo html_writer::table($table);
-    }
+class renderer extends plugin_renderer_base {
 
     /**
      * Limit urkund filename
@@ -256,6 +210,24 @@ class report_anonymous_renderer extends plugin_renderer_base {
         echo "<div style=\"margin-top: 20px;\">";
         echo "<a class=\"btn btn-success\" href=\"$url\">" . get_string('backtolist', 'report_anonymous') . "</a>";
         echo "</div>";
+    }
+
+    /**
+     * Render assignmentlist
+     * @param renderer_base $listassign
+     * @return string
+     */
+    public function render_listassign(listassign $listassign) {
+        return $this->render_from_template('report_anonymous/listassign', $listassign->export_for_template($this));
+    }
+
+    /**
+     * Render assignment report
+     * @param renderer_base $reportassign
+     * @return string
+     */
+    public function render_reportassign(reportassign $reportassign) {
+        return $this->render_from_template('report_anonymous/reportassign', $reportassign->export_for_template($this));
     }
 
 }
