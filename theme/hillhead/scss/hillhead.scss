@@ -439,7 +439,14 @@ nav .breadcrumb {
 
 .section .content ul {
     margin-bottom: 20px;
-    padding-left: 40px;
+    padding-left: 20px;
+}
+
+@include media-breakpoint-up(md) {
+    .section .content ul {
+        margin-bottom: 20px;
+        padding-left: 40px;
+    }
 }
 
 .stretchySearchBox {
@@ -469,4 +476,11 @@ nav .breadcrumb {
 .usermenu>span.login>a, .usermenu>span.login>a:hover {
     color: $hillhead-page-bg;
     text-decoration: underline;
+}
+
+div#gridshadebox_content.absolute {
+    top: 75px !important;
+    z-index: 9999;
+    left: 40px !important;
+    right: 40px !important;
 }
