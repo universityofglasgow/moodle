@@ -213,7 +213,7 @@ nav.navbar .dropdown > a {
     padding: 0;
 }
 
-#page-course-view-topics #region-main, #page-course-view-weeks #region-main {
+#page-course-view-topics:not(.path-user) #region-main, #page-course-view-weeks:not(.path-user) #region-main {
     background: transparent;
     border: none;
     padding: 0;
