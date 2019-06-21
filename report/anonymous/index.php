@@ -32,12 +32,8 @@ require_once($CFG->dirroot . '/mod/assign/locallib.php');
 $id = required_param('id', PARAM_INT);
 $assignid = optional_param('assign', 0, PARAM_INT);
 $export = optional_param('export', 0, PARAM_INT);
-$page = optional_param('page', 0, PARAM_INT);
-$tsort = optional_param('tsort', 'idnumber', PARAM_ALPHA);
-$tdir = optional_param('tdir', 'asc', PARAM_ALPHA);
 $group = optional_param('group', 0, PARAM_INT);
-$action = optional_param('action', '', PARAM_ALPHA);
-$userid = optional_param('userid', 0, PARAM_INT);
+$dump = optional_param('dump', 0, PARAM_INT);
 
 $url = new moodle_url('/report/anonymous/index.php', array('id' => $id));
 $fullurl = new moodle_url('/report/anonymous/index.php', array(
@@ -59,38 +55,44 @@ $context = context_course::instance($course->id);
 require_capability('mod/assign:grade', $context);
 require_capability('report/anonymous:view', $context);
 
-// Download feedback files?
-// Avoid headers and stuff
-if ($assignid && ($action == 'feedback')) {
-    report_anonymous::feedback_files($assignid);
-    redirect($url);
-}
-
-if (!$export) {
+if (!$export && !$dump) {
     $PAGE->set_title($course->shortname .': '. get_string('pluginname', 'report_anonymous'));
     $PAGE->set_heading($course->fullname);
 
     echo $output->header();
 }
 
-// Get assignments
+// Get assignments.
 $assignments = report_anonymous\lib::get_assignments($id);
 
 // Has a link been submitted?
 if ($assignid) {
 
-    // Filters
+    // Filters.
     $PAGE->requires->js_call_amd('report_anonymous/anonymous', 'init');
 
-    // Create assignment object
+    // Create assignment object.
     $assign = \report_anonymous\lib::get_assign($course, $assignid);
 
-    // Participants
+    // Participants.
     $submissions = $assign->list_participants_with_filter_status_and_group($group);
     $cm = get_coursemodule_from_instance('assign', $assignid);
     $submissions = report_anonymous\lib::add_assignment_data($course->id, $assignid, $cm->id, $assign, $submissions);
 
-    // group mode
+    // Data dump.
+    if ($dump) {
+        $params = [
+            'submissions' => optional_param('submissions', 0, PARAM_INT),
+            'feedbackfiles' => optional_param('feedbackfiles', 0, PARAM_INT),
+            'feedbackcomments' => optional_param('feedbackcomments', 0, PARAM_INT),
+            'annotatedpdfs' => optional_param('annotatedpdfs', 0, PARAM_INT),
+        ];
+        $files = report_anonymous\lib::get_all_files($assign, $cm->id, $submissions, $params);
+        report_anonymous\lib::download_feedback_files($files, $assignid);
+        die;
+    }
+
+    // Group mode.
     $groupmode = groups_get_activity_groupmode($cm, $course);
 
     if (!report_anonymous\lib::allowed_to_view($assignid, $assignments)) {
@@ -101,30 +103,20 @@ if ($assignid) {
     $urkund = report_anonymous\lib::urkund_enabled($assignid);
     $turnitin = report_anonymous\lib::turnitin_enabled($assignid);
 
-    // Reveal always if not blindmarking
-    if (!$assignment->blindmarking) {
-        $reveal = true;
-    }
-
-    // allocate ids if required
+    // Allocate ids if required.
     if ($assignment->blindmarking) {
         assign::allocate_unique_ids($assignid);
     }
 
     if ($export) {
         $filename = "anonymous_{$assignment->name}.xls";
-        report_anonymous::export($assignment, $displaysubs, $reveal, $filename, $urkund);
+        report_anonymous\lib::export($assignment, $filename, $submissions);
         die;
     }
 
-    // Display report
+    // Display report.
     $reportassign = new report_anonymous\output\reportassign($course, $context, $fullurl, $submissions, $assignment);
     echo $output->render_reportassign($reportassign);
-
-    //$output->actions($context, $fullurl, $reveal, $assignment);
-    //groups_print_activity_menu($cm, $fullurl);
-    //$output->report($id, $assignment, $displaysubs, $reveal, $urkund, $fullurl);
-    //$output->back_button($url);
 } else {
 
     // List of activities to select.

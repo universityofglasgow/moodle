@@ -48,8 +48,11 @@
                         </td>
                     {{/ enableplagiarism }}
                     <td>
-                        <a href="{{{ showlink }}}" class="btn btn-primary"><i class="fa fa-list"></i> {{# str }}show{{/ str }}</a>
-                        <a href="{{{ exportlink }}}" class="btn btn-success"><i class="fa fa-share-square-o"></i> {{# str }}export, report_anonymous{{/ str }}</a>
+                        <div class="btn-group">
+                            <a href="{{{ showlink }}}" class="btn btn-sm btn-primary"><i class="fa fa-list"></i> {{# str }}show{{/ str }}</a>
+                            <a href="{{{ exportlink }}}" class="btn btn-sm btn-success"><i class="fa fa-share-square-o"></i> {{# str }}export, report_anonymous{{/ str }}</a>
+                            <a href="{{{ dumplink }}}" class="btn btn-sm btn-warning"><i class="fa fa-download"></i> {{# str }}download{{/ str }}</a>
+                        </div>
                     </td>
                 </tr>
             {{/ assignments }}

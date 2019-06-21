@@ -7,7 +7,7 @@
             <form>
                 <div class="form-group">
                     <label for="groupfilter">{{# str }}group, report_anonymous{{/ str }}</label>
-                    <select class="form-control" id="groupfilter" name="groupfilter">
+                    <select class="form-control col-sm-3" id="groupfilter" name="groupfilter">
                         <option value="0">{{# str }}all{{/ str }}</option>
                         {{# groups }}
                             <option value="{{ id }}">{{ name }}</option>
@@ -22,7 +22,12 @@
 <table class="table table-striped">
     <thead>
         <th>{{# str }}username{{/ str }}</th>
-        <th>{{# str }}groups{{/ str }}</th>
+        {{# profilefields }}
+            <th>{{{ . }}}</th>
+        {{/ profilefields }}
+        {{# groupselect }}
+            <th>{{# str }}groups{{/ str }}</th>
+        {{/ groupselect }}
         <th>{{# str }}status{{/ str }}</th>
         <th>{{# str }}grade{{/ str }}</th>
         {{# urkundenabled }}
@@ -35,13 +40,18 @@
             <th>{{# str }}allocatedmarker, report_anonymous{{/ str }}</th>
         {{/ assignment.markingallocation }}
         <th>{{# str }}modified{{/ str }}</th>
-        <th class="w-25">Files</th>
+        <th class="w-25">{{# str }}files{{/ str }}</th>
     </thead>
     <tbody>
         {{# submissions }}
             <tr class="group_0 {{# groupids }}group_{{ . }} {{/ groupids}}">
                 <td>{{ fullname }}</td>
-                <td>{{ groups }}</td>
+                {{# profiledata }}
+                    <td>{{ . }}</td>
+                {{/ profiledata }}
+                {{# groupselect }}
+                    <td>{{ groups }}</td>
+                {{/ groupselect }}
                 <td>{{ status }}</td>
                 <td>{{{ grade }}}</td>
                 {{# urkundenabled }}

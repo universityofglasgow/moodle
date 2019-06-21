@@ -53,12 +53,17 @@ class reportassign implements renderable, templatable {
     }
 
     /**
-     * Process data into formatted table
+     * Profile fields
+     * @return array
      */
-    protected function format_submissions() {
-        global $DB;
+    protected function get_profilefields() {
+        $fields = explode(',', get_config('report_anonymous', 'profilefields'));
+        $profilefields = [];
+        foreach ($fields as $field) {
+            $profilefields[] = get_string($field);
+        }
 
-
+        return $profilefields;
     }
 
     public function export_for_template(renderer_base $output) {
@@ -68,7 +73,6 @@ class reportassign implements renderable, templatable {
         $cm = get_coursemodule_from_instance('assign', $this->assignment->id);
         $groupmode = $cm->groupmode;
         $groups = groups_get_all_groups($this->course->id);
-        //echo "<pre>"; var_dump($groups); die;
 
         return [
             'canrevealnames' => has_capability('report/anonymous:shownames', $this->context) && $this->assignment->blindmarking,
@@ -81,6 +85,7 @@ class reportassign implements renderable, templatable {
             'urkundenabled' => \report_anonymous\lib::urkund_enabled($this->assignment->id),
             'groupselect' => $groupmode != 0,
             'groups' => array_values($groups),
+            'profilefields' => $this->get_profilefields(),
         ];
     }
 

@@ -25,9 +25,10 @@
 
 namespace report_anonymous;
 
+defined('MOODLE_INTERNAL') || die;
+
 define('FILENAME_SHORTEN', 30);
 
-//use \ForceUTF8\Encoding;
 use \assignfeedback_editpdf\document_services;
 use stdClass;
 
@@ -43,7 +44,7 @@ class lib {
 
         $assignments = $DB->get_records('assign', ['course' => $id]);
 
-        // add plagiarism and feedback status
+        // Add plagiarism and feedback status.
         foreach ($assignments as $assid => $assignment) {
             $assignment->urkundenabled = self::urkund_enabled($assid);
             $assignment->turnitinenabled = self::turnitin_enabled($assid);
@@ -77,7 +78,7 @@ class lib {
             WHERE gg.courseid = ?
             AND gm.userid = ?';
         if (!$groups = $DB->get_records_sql($sql, [$courseid, $userid])) {
-            return '-';
+            return ['-', []];
         } else {
             $names = [];
             $ids = [];
@@ -93,20 +94,24 @@ class lib {
      * Get Urkund score
      * If multiple scores, get the latest
      * @param int $assid
-     * @param int $cmid 
+     * @param int $cmid
      * @param int $userid
      * @return int
      */
     protected static function get_urkund_score($assid, $cmid, $userid) {
-        global $DB; 
+        global $DB;
 
         if (self::urkund_enabled($assid)) {
-            if ($urkunds = $DB->get_records('plagiarism_urkund_files', ['cm' => $cmid, 'userid' => $userid, 'statuscode' => 'Analyzed'], 'id DESC')) {
+            if ($urkunds = $DB->get_records('plagiarism_urkund_files',
+                ['cm' => $cmid, 'userid' => $userid, 'statuscode' => 'Analyzed'], 'id DESC')) {
                 return reset($urkunds);
-            } 
-            if ($urkunds = $DB->get_records('plagiarism_urkund_files', ['cm' => $cmid, 'relateduserid' => $userid, 'statuscode' => 'Analyzed'], 'id DESC')) {
+            }
+
+            // If the submission was "on behalf of"...
+            if ($urkunds = $DB->get_records('plagiarism_urkund_files',
+                ['cm' => $cmid, 'relateduserid' => $userid, 'statuscode' => 'Analyzed'], 'id DESC')) {
                 return reset($urkunds);
-            }  
+            }
             return null;
         } else {
             return null;
@@ -117,17 +122,18 @@ class lib {
      * Get Turnitin score
      * If multiple scores, get the latest
      * @param int $assid
-     * @param int $cmid 
+     * @param int $cmid
      * @param int $userid
      * @return int
      */
     protected static function get_turnitin_score($assid, $cmid, $userid) {
-        global $DB; 
+        global $DB;
 
         if (self::turnitin_enabled($assid)) {
-            if ($turnitins = $DB->get_records('plagiarism_turnitin_files', ['cm' => $cmid, 'userid' => $userid, 'statuscode' => 'success'], 'id DESC')) {
+            if ($turnitins = $DB->get_records('plagiarism_turnitin_files',
+                ['cm' => $cmid, 'userid' => $userid, 'statuscode' => 'success'], 'id DESC')) {
                 return reset($turnitins);
-            }  
+            }
             return null;
         } else {
             return null;
@@ -135,7 +141,7 @@ class lib {
     }
 
     /**
-     * Get file submission plugin 
+     * Get file submission plugin
      * and check it is enabled
      * @param object $assign
      * @return mixed
@@ -184,7 +190,7 @@ class lib {
 
         return '-';
     }
-    
+
     /**
      * Get feedback
      * @param object $assign
@@ -200,7 +206,6 @@ class lib {
 
         $fs = get_file_storage();
         $context = $assign->get_context();
-        //echo "<pre>"; var_dump($context); die;
         $files = $fs->get_area_files(
             $context->id,
             'assignsubmission_file',
@@ -221,6 +226,7 @@ class lib {
 
         return '-';
     }
+
     /**
      * Get the name of the allocated marker
      * @param object $grade
@@ -250,14 +256,182 @@ class lib {
      */
     public static function get_assign($course, $assignid) {
 
-        // get course module
+        // Get course module.
         $cm = get_coursemodule_from_instance('assign', $assignid);
 
-        // Create assignment object
+        // Create assignment object.
         $coursemodulecontext = \context_module::instance($cm->id);
         $assign = new \assign($coursemodulecontext, $cm, $course);
 
         return $assign;
+    }
+
+    /**
+     * Add extra profile data
+     * @param array $profilefields
+     * @param array $submission
+     * @return array
+     */
+    protected static function get_profile_data($profilefields, $submission) {
+        $profiledata = [];
+        foreach ($profilefields as $field) {
+            if (!empty($submission->$field)) {
+                $profiledata[] = $submission->$field;
+            } else {
+                $profiledata[] = '-';
+            }
+        }
+
+        return $profiledata;
+    }
+
+    /**
+     * Add files from area to zipfiles list
+     * @param array $zipfiles
+     * @param string $path
+     * @param int $contextid,
+     * @param string $component
+     * @param string $filearea
+     * @param int $itemid
+     * @return array
+     */
+    private static function add_files_zipfiles($zipfiles, $path, $contextid, $component, $filearea, $itemid) {
+        $fs = get_file_storage();
+        $files = $fs->get_area_files(
+            $contextid,
+            $component,
+            $filearea,
+            $itemid
+        );
+        foreach ($files as $file) {
+            $filepath = $file->get_filepath();
+            $filename = $file->get_filename();
+            if ($filename == '.') {
+                continue;
+            }
+            $zipfiles[$path . $filepath . $filename] = $file;
+        }
+
+        return $zipfiles;
+    }
+
+    /**
+     * Get feedback
+     * @param object $assign
+     * @param int $cmid
+     * @param array $submissions
+     * @param array $params
+     */
+    public static function get_all_files($assign, $cmid, $submissions, $params) {
+        $context = $assign->get_context();
+        $instance = $assign->get_instance();
+        $fs = get_file_storage();
+        $zipfiles = [];
+
+        // Don't make a tar-bomb.
+        $folder = trim(shorten_text($instance->name, 30));
+        $zipfiles[$folder] = null;
+
+        foreach ($submissions as $submission) {
+            $userid = $submission->id;
+
+            // Submission.
+            if ($instance->teamsubmission) {
+                $usersubmission = $assign->get_group_submission($userid, 0, false);
+            } else {
+                $usersubmission = $assign->get_user_submission($userid, false);
+            }
+
+            // Grade.
+            $grade = $assign->get_user_grade($userid, true);
+
+            $userid = $submission->id;
+            $username = $submission->username;
+            $fullname = $submission->fullname;
+
+            // User directory constructed to guarantee uniqueness.
+            $userdir = "$folder/$fullname - $username";
+
+            // Each user has a directory.
+            $zipfiles[$userdir] = null;
+
+            // If there was no submission then just forget it.
+            if (!$usersubmission) {
+                continue;
+            }
+
+            // Submission.
+            if ($params['submissions']) {
+                $submissiondir = $userdir . '/submissions';
+                $zipfiles[$submissiondir] = null;
+                $zipfiles = self::add_files_zipfiles(
+                    $zipfiles,
+                    $submissiondir,
+                    $context->id,
+                    'assignsubmission_file',
+                    'submission_files',
+                    $usersubmission->id
+                );
+            }
+
+            // Feedback files.
+            if ($params['feedbackfiles']) {
+                $feedbackdir = $userdir . '/feedbackfiles';
+                $zipfiles[$feedbackdir] = null;
+                $zipfiles = self::add_files_zipfiles(
+                    $zipfiles,
+                    $feedbackdir,
+                    $context->id,
+                    'assignfeedback_file',
+                    'feedback_files',
+                    $grade->id
+                );
+                $zipfiles = self::add_files_zipfiles(
+                    $zipfiles,
+                    $feedbackdir,
+                    $context->id,
+                    'assignfeedback_file',
+                    'feedback_files_batch',
+                    $grade->id
+                );
+                $zipfiles = self::add_files_zipfiles(
+                    $zipfiles,
+                    $feedbackdir,
+                    $context->id,
+                    'assignfeedback_file',
+                    'feedback_files_import',
+                    $grade->id
+                );
+            }
+
+            if ($params['annotatedpdfs']) {
+                $feedbackdir = $userdir . '/annotatedpdfs';
+                $zipfiles[$feedbackdir] = null;
+                $zipfiles = self::add_files_zipfiles(
+                    $zipfiles,
+                    $feedbackdir,
+                    $context->id,
+                    'assignfeedback_editpdf',
+                    'download',
+                    $grade->id
+                );
+            }
+
+            if ($params['feedbackcomments']) {
+                $feedbackdir = $userdir . '/feedbackcomments';
+                $zipfiles[$feedbackdir] = null;
+                $plugin = $assign->get_feedback_plugin_by_type('comments');
+                $text = $plugin->text_for_gradebook($grade);
+                $format = $plugin->format_for_gradebook($grade);
+                if ($text) {
+                    $formattedtext = format_text($text, $format);
+                    $commentfilename = $feedbackdir . '/comments.html';
+                    $zipfiles[$commentfilename] = [$formattedtext];
+                }
+            }
+        }
+
+        return $zipfiles;
     }
 
     /**
@@ -270,14 +444,20 @@ class lib {
      */
     public static function add_assignment_data($courseid, $assid, $cmid, $assign, $submissions) {
 
-        // Report date format
+        // Report date format.
         $dateformat = get_string('strftimedatetimeshort', 'langconfig');
 
-        // Get sub plugins
+        // Get sub plugins.
         $filesubmission = self::get_submission_plugin_files($assign);
 
-        // Get instance
+        // Get instance.
         $instance = $assign->get_instance();
+
+        // Feedbackplugins.
+        $feedbackplugins = $assign->get_feedback_plugins();
+
+        // Profile fields.
+        $profilefields = explode(',', get_config('report_anonymous', 'profilefields'));
 
         foreach ($submissions as $submission) {
             $userid = $submission->id;
@@ -302,11 +482,14 @@ class lib {
                 $submission->status = '-';
                 $submission->grade = '-';
             }
-            //echo "<pre>"; var_dump($usersubmission); die;
             list($submission->groups, $submission->groupids) = self::get_user_groups($userid, $courseid);
             $submission->urkund = self::get_urkund_score($assid, $cmid, $userid);
             $submission->turnitin = self::get_turnitin_score($assid, $cmid, $userid);
             $submission->files = self::get_submission_files($assign, $filesubmission, $usersubmission, $userid);
+            $submission->profiledata = self::get_profile_data($profilefields, $submission);
+
+            // User fields.
+            $profilefields = explode(',', get_config('report_anonymous', 'profilefields'));
         }
 
         return $submissions;
@@ -334,184 +517,6 @@ class lib {
     }
 
     /**
-     * Get converted pdf files associated with user
-     * @param int $assignid assignment id
-     * @param int $userid id user id
-     */
-    public static function get_converted_files($assignid, $userid) {
-        global $DB;
-
-        $fs = get_file_storage();
-        $context = \context_system::instance();
-        $path = '/pdf/';
-
-        // Get the possible assignment submission plugins
-        $assignment = self::get_assignment_from_param($assignid);
-        $plugins = $assignment->get_submission_plugins();
-
-        // Get submission and user
-        if ($assignment->get_instance()->teamsubmission) {
-            $submission = $assignment->get_group_submission($userid, 0, false);
-        } else {
-            $submission = $assignment->get_user_submission($userid, false);
-        }
-        if (!$submission) {
-            return false;
-        }
-        $user = $DB->get_record('user', array('id' => $userid));
-
-        // run through active plugins
-        $files = array();
-        foreach ($plugins as $plugin) {
-            if ($plugin->is_enabled() && $plugin->is_visible()) {
-                $pluginfiles = $plugin->get_files($submission, $user);
-                foreach ($pluginfiles as $filename => $file) {
-                    if ($file instanceof \stored_file) {
-                        if ($file->get_mimetype() !== 'application/pdf') {
-                            $conversion = $fs->get_file($context->id, 'core', 'documentconversion', 0, $path, $file->get_contenthash());
-                            if ($conversion) {
-                                $files[$filename] = $conversion;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        return $files;
-    }
-
-    /**
-     * Find combined pdf
-     * @param int $assignid assignment id
-     * @param int $userid id user id
-     */
-    public static function get_combined_pdf($assignid, $userid) {
-        $fs = get_file_storage();
-        $assignment = self::get_assignment_from_param($assignid);
-        $grade = $assignment->get_user_grade($userid, true, -1);
-        if ($assignment->get_instance()->teamsubmission) {
-            $submission = $assignment->get_group_submission($userid, 0, false);
-        } else {
-            $submission = $assignment->get_user_submission($userid, false);
-        }
-
-        $contextid = $assignment->get_context()->id;
-        $component = 'assignfeedback_editpdf';
-        $filearea = document_services::COMBINED_PDF_FILEAREA;
-        $itemid = $grade->id;
-        $filepath = '/';
-        $filename = document_services::COMBINED_PDF_FILENAME;
-
-        $combinedpdf = $fs->get_file($contextid, $component, $filearea, $itemid, $filepath, $filename);
-
-        return $combinedpdf;
-    }
-
-    /**
-     * Delete converted PDFs
-     * @param int $assignid assignment id
-     * @param int $userid id user id
-     */
-    public static function delete_pdfs($assignid, $userid) {
-        $fs = get_file_storage();
-        $files = self::get_converted_files($assignid, $userid);
-        foreach ($files as $file) {
-            $file->delete();
-        }
-
-        // Now need to delete the combined pdf (the thing you mark) if there is one
-        $combinedpdf = self::get_combined_pdf($assignid, $userid);
-        if ($combinedpdf) {
-            $combinedpdf->delete();
-        }
-    }
-
-    /**
-     * Organise submission/user data into displayable form
-     */
-    public static function datatodisplay($submissions, $grades, $courseid, $showname=false) {
-        $output = array();
-
-        foreach ($submissions as $s) {
-            $record = new stdClass;
-
-            // Matric/ID Number
-            if ($s->user->idnumber) {
-                $record->idnumber = $s->user->idnumber;
-            } else {
-                $record->idnumber = '-';
-            }
-
-            // Participant number
-            $record->participantid = $s->user->participantid;
-
-            // Submitted (timemodified retained for sort)
-            if ($s->submission) {
-                $filetime = empty($s->urkundtimesubmitted) ? $s->submission->timemodified : $s->urkundtimesubmitted;
-                $record->date = date('d/m/Y H:i', $filetime);
-                if ($s->submission->status == 'new') {
-                    $record->date = '-';
-                    $record->status = '-';
-                    $record->timemodified = 0;
-                } else {
-                    $record->status = $s->submission->status == 'new' ? '-' : $s->submission->status;
-                    $record->timemodified = $s->submission->timemodified;
-                }
-            } else {
-                $record->date = '-';
-                $record->status = '-';
-                $record->timemodified = 0;
-            }
-
-            // Name
-            if ($showname) {
-                $userurl = new \moodle_url('/user/view.php', ['id' => $s->user->id, 'course' => $courseid]);
-                $record->name = "<a href=\"$userurl\">".fullname($s->user)."</a>";
-                $record->fullname = fullname($s->user);
-            } else {
-                $record->name = get_string('hidden', 'report_anonymous');
-                $record->fullname = '-';
-            }
-
-            // If submitted on behalf of (by urkund)
-            if (!empty($s->submittedonbehalf)) {
-                $record->name .= ' (' . $s->submittedonbehalf . ')';
-            }
-
-            // EMail
-            $record->email = $s->user->email;
-
-            // UserID
-            $record->userid = $s->user->id;
-
-            // Group(s)
-            $record->groups = self::get_user_groups($s->user->id, $courseid);
-
-            // Allocated marker
-            $record->allocatedmarker = $s->allocatedmarker;
-
-            // Grade
-            $record->grade = $grades[$s->user->id]->grade;
-
-            // Feedback
-            $record->feedback = $grades[$s->user->id]->feedback;
-
-            $record->urkundfilename = isset($s->urkundfilename) ? $s->urkundfilename : '-';
-            $record->urkundstatus = isset($s->urkundstatus) ? $s->urkundstatus : '-';
-            $record->urkundscore = isset($s->urkundscore) ? $s->urkundscore : '-';
-            $record->returntime = isset($s->returntime) ? $s->returntime : '-';
-
-            // Converted PDFs
-            $record->convertedfiles = $s->convertedfiles;
-      
-            $output[] = $record;
-        }
-
-        return $output;
-    }
-
-    /**
      * Is Urkund enabled on this assignment
      * @param int $assignmentid
      * @return boolean
@@ -529,7 +534,7 @@ class lib {
         if (!$plugininfo) {
             return false;
         }
-        
+
         $cm = get_coursemodule_from_instance('assign', $assignmentid);
         if ($urkund = $DB->get_record('plagiarism_urkund_config', ['cm' => $cm->id, 'name' => 'use_urkund'])) {
             if ($urkund->value) {
@@ -557,7 +562,7 @@ class lib {
         if (!$plugininfo) {
             return false;
         }
-        
+
         $cm = get_coursemodule_from_instance('assign', $assignmentid);
         if ($turnitin = $DB->get_record('plagiarism_turnitin_config', ['cm' => $cm->id, 'name' => 'use_turnitin'])) {
             if ($turnitin->value) {
@@ -567,93 +572,27 @@ class lib {
         return false;
     }
 
-    /** 
-     * Get Urkund status, filename and similarity
-     * @param int $assignmentid
-     * @param int $userid
-     * @return array of files or false
-     */
-    public static function urkund_files($assignmentid, $userid) {
-        global $DB;
-
-        $cm = get_coursemodule_from_instance('assign', $assignmentid);
-        if ($files = $DB->get_records('plagiarism_urkund_files', array('cm' => $cm->id, 'userid' => $userid))) {
-            return $files;
-        } else {
-
-            // if this was "submitted on behalf of" then record will refer to 'relateduserid'
-            if ($files = $DB->get_records('plagiarism_urkund_files', array('cm' => $cm->id, 'relateduserid' => $userid))) {
-                return $files;
-            }
-        }
-        return false;
-    }
-
     /**
-     * Translate Urkund status code
-     * @param string $statuscode
-     * @return string 
+     * Export assignment data
+     * @param object $assignment
+     * @param string $filename
+     * @param array $submissions
      */
-    public static function urkund_status($statuscode) {
-        $codes = array(
-            '200' => get_string('statusprocessed', 'report_anonymous'),
-            '202' => get_string('statusaccepted', 'report_anonymous'),
-            '202-old' => get_string('statusacceptedold', 'report_anonymous'),
-            '400' => get_string('statusbadrequest', 'report_anonymous'),
-            '404' => get_string('statusnotfound', 'report_anonymous'),
-            '410' => get_string('statusgone', 'report_anonymous'),
-            '415' => get_string('statusunsupported', 'report_anonymous'),
-            '413' => get_string('statustoolarge', 'report_anonymous'),
-            '444' => get_string('statusnoreceiver', 'report_anonymous'),
-            '613' => get_string('statusinvalid', 'report_anonymous'),
-            'Analyzed' => get_string('statusanalyzed', 'report_anonymous'),
-            'Pending' => get_string('statuspending', 'report_anonymous'),
-            'Rejected' => get_string('statusrejected', 'report_anonymous'),
-            'Error' => get_string('statuserror', 'report_anonymous'),
-            'timeout' => get_string('statustimeout', 'report_anonymous'),
-        );
-        if (isset($codes[$statuscode])) {
-            return $codes[$statuscode];
-        } else {
-            return get_string('statusother', 'report_anonymous', $statuscode);
-        }
-    }
-
-    /**
-     * sort users using callback
-     */
-    public static function sort_submissions($submissions, $dir, $fieldname) {
-        if ($fieldname=='name') {
-            $fieldname = 'fullname';
-        }
-        if ($fieldname=='date') {
-            $fieldname = 'timemodified';
-        }
-        uasort($submissions, function($a, $b) use ($fieldname, $dir) {
-            if ($fieldname == 'urkundscore') {
-                if ($dir=='asc') {
-                    return ($a->$fieldname > $b->$fieldname) ? 1 : -1;
-                } else {
-                    return ($b->$fieldname > $a->$fieldname) ? 1 : -1;
-                }
-            } else {
-                if ($dir=='asc') {
-                    return strcasecmp($a->$fieldname, $b->$fieldname);
-                } else {
-                    return strcasecmp($b->$fieldname, $a->$fieldname);
-                }
-            }
-        });
-        return $submissions;
-    }
-
-    public static function export($assignment, $submissions, $reveal, $filename, $urkund) {
+    public static function export($assignment, $filename, $submissions) {
         global $CFG;
         require_once($CFG->dirroot.'/lib/excellib.class.php');
 
-        $workbook = new MoodleExcelWorkbook("-");
+        // Profile fields.
+        $profilefields = explode(',', get_config('report_anonymous', 'profilefields'));
+
+        // Group mode?
+        $cm = get_coursemodule_from_instance('assign', $assignment->id);
+        $groupmode = $cm->groupmode;
+
+        $workbook = new \MoodleExcelWorkbook("-");
         // Sending HTTP headers.
         $workbook->send($filename);
+
         // Adding the worksheet.
         $myxls = $workbook->add_worksheet(get_string('workbook', 'report_anonymous'));
 
@@ -664,48 +603,52 @@ class lib {
         // Headers.
         $i = 0;
         $myxls->write_string(3, $i++, '#');
-        $myxls->write_string(3, $i++, get_string('idnumber', 'report_anonymous'));
-        $myxls->write_string(3, $i++, get_string('participantnumber', 'report_anonymous'));
-        $myxls->write_string(3, $i++, get_string('status', 'report_anonymous'));
-        $myxls->write_string(3, $i++, get_string('submitdate', 'report_anonymous'));
-        $myxls->write_string(3, $i++, get_string('name', 'report_anonymous'));
-        $myxls->write_string(3, $i++, get_string('email', 'report_anonymous'));
-        $myxls->write_string(3, $i++, get_string('group', 'report_anonymous'));
-        $myxls->write_string(3, $i++, get_string('allocatedmarker', 'report_anonymous'));
-        $myxls->write_string(3, $i++, get_string('grade', 'report_anonymous'));
-        $myxls->write_string(3, $i++, get_string('feedback', 'report_anonymous'));
-        if ($urkund) {
-            $myxls->write_string(3, $i++, get_string('urkundfile', 'report_anonymous'));
-            $myxls->write_string(3, $i++, get_string('urkundstatus', 'report_anonymous'));
-            $myxls->write_string(3, $i++, get_string('urkundscore', 'report_anonymous'));
-            $myxls->write_string(3, $i++, get_string('returntime', 'report_anonymous'));
+        $myxls->write_string(3, $i++, get_string('username'));
+        foreach ($profilefields as $profilefield) {
+            $myxls->write_string(3, $i++, get_string($profilefield));
         }
+        if ($groupmode) {
+            $myxls->write_string(3, $i++, get_string('groups'));
+        }
+        $myxls->write_string(3, $i++, get_string('status'));
+        $myxls->write_string(3, $i++, get_string('grade'));
+        if ($urkundenabled = self::urkund_enabled($assignment->id)) {
+            $myxls->write_string(3, $i++, get_string('urkund', 'report_anonymous'));
+        }
+        if ($turnitinenabled = self::turnitin_enabled($assignment->id)) {
+            $myxls->write_string(3, $i++, get_string('turnitin', 'report_anonymous'));
+        }
+        if ($assignment->markingallocation) {
+            $myxls->write_string(3, $i++, get_string('allocatedmarker', 'report_anonymous'));
+        }
+        $myxls->write_string(3, $i++, get_string('modified'));
+        $myxls->write_string(3, $i++, get_string('files'));
 
         // Add some data.
         $row = 4;
         foreach ($submissions as $s) {
             $i = 0;
             $myxls->write_number($row, $i++, $row);
-            $myxls->write_string($row, $i++, $s->idnumber);
-            $myxls->write_string($row, $i++, $s->participantid);
-            $myxls->write_string($row, $i++, $s->status);
-            $myxls->write_string($row, $i++, $s->date);
             $myxls->write_string($row, $i++, $s->fullname);
-            $myxls->write_string($row, $i++, $s->email);
-            $myxls->write_string($row, $i++, $s->groups);
-            $myxls->write_string($row, $i++, $s->allocatedmarker);
-            if (is_numeric($s->grade)) {
-                $myxls->write_number($row, $i++, $s->grade);
-            } else {
-                $myxls->write_string($row, $i++, $s->grade);
+            foreach ($s->profiledata as $value) {
+                $myxls->write_string($row, $i++, $value);
             }
-            $myxls->write_string($row, $i++, $s->feedback);
-            if ($urkund) {
-                $myxls->write_string($row, $i++, $s->urkundfilename);
-                $myxls->write_string($row, $i++, $s->urkundstatus);
-                $myxls->write_string($row, $i++, $s->urkundscore);
-                $myxls->write_number($row, $i++, $s->returntime);
+            if ($groupmode) {
+                $myxls->write_string($row, $i++, $s->groups);
             }
+            $myxls->write_string($row, $i++, $s->status);
+            $myxls->write_string($row, $i++, $s->grade);
+            if ($urkundenabled) {
+                $myxls->write_string($row, $i++, $s->urkund->similarityscore);
+            }
+            if ($turnitinenabled) {
+                $myxls->write_string($row, $i++, $s->turnitin->similarityscore);
+            }
+            if ($assignment->markingallocation) {
+                $myxls->write_string($row, $i++, $s->grader);
+            }
+            $myxls->write_string($row, $i++, $s->modified);
+            $myxls->write_string($row, $i++, $s->files);
             $row++;
         }
         $workbook->close();
@@ -719,11 +662,11 @@ class lib {
     private static function get_zipfilename($assignid) {
         global $DB;
 
-        // Get assignment and course
+        // Get assignment and course.
         $assign = $DB->get_record('assign', array('id' => $assignid), '*', MUST_EXIST);
         $course = $DB->get_record('course', array('id' => $assign->course), '*', MUST_EXIST);
 
-        // Construct out of bits
+        // Construct out of bits.
         $zipfilename = clean_filename(implode('_', array(
             $course->shortname,
             $assign->name,
@@ -748,7 +691,7 @@ class lib {
         $tempzip = tempnam($CFG->tempdir . '/', 'assignment_');
 
         // Zip files.
-        $zipper = new zip_packer();
+        $zipper = new \zip_packer();
         if ($zipper->archive_to_pathname($filesforzipping, $tempzip)) {
             return $tempzip;
         }
@@ -757,53 +700,17 @@ class lib {
 
     /**
      * Download feedback files
+     * @param array $files;
      * @param int assignid
      */
-    public static function feedback_files($assignid) {
+    public static function download_feedback_files($files, $assignid) {
         global $DB;
 
-        $cm = get_coursemodule_from_instance('assign', $assignid, 0, false, MUST_EXIST);
-        $context = context_module::instance($cm->id);
-
-        // find the feedback files
-        $fs = get_file_storage();
-        $files = $fs->get_area_files($context->id, 'assignfeedback_file', 'feedback_files');
-        if (!$files) {
-            return;
-        }
-
-        // Zipfiles array of 'path/name in zip' => file_object.
-        $zipfiles = array(); 
-
-        // Build zipfiles array
-        foreach ($files as $f) {
-
-            // Skip those pesky . files
-            if ($f->get_filename() == '.') {
-                continue;
-            }
-
-            // use itemid (maps to id in assign_grades) to track down user
-            $grade = $DB->get_record('assign_grades', array('id' => $f->get_itemid()), '*', MUST_EXIST);
-            $user = $DB->get_record('user', array('id' => $grade->userid), '*', MUST_EXIST);
-
-            // Try to create a unique filename from idnumber or username
-            $prefix = $user->idnumber ? $user->idnumber : $user->username;
-            $filename = $prefix . '_' . $f->get_filename();
-        
-            $zipfiles[$filename] = $f;   
-        }
-
-        // No point if there are no files
-        if (count($zipfiles) == 0) {
-            return;
-        }
-
-        // Pack zip file for export
-        if ($zip = self::pack_files($zipfiles)) {
+        // Pack zip file for export.
+        if ($zip = self::pack_files($files)) {
             $zipfilename = self::get_zipfilename($assignid);
             send_temp_file($zip, $zipfilename);
         }
-    }    
+    }
 
 }

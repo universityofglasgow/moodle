@@ -41,6 +41,7 @@ class listassign implements renderable, templatable {
     protected $assignments;
 
     public function __construct($course, $fullurl, $assignments) {
+        $this->course = $course;
         $this->fullurl = $fullurl;
         $this->assignments = $assignments;
     }
@@ -73,13 +74,14 @@ class listassign implements renderable, templatable {
             $assign = \report_anonymous\lib::get_assign($this->course, $assid);
             $assignment->showlink = new \moodle_url($this->fullurl, ['assign' => $assid]);
             $assignment->exportlink = new \moodle_url($this->fullurl, ['assign' => $assid, 'export' => 1]);
+            $assignment->dumplink = new \moodle_url('/report/anonymous/dump.php', ['assign' => $assid, 'id' => $this->course->id]);
             $assignment->groupsubmission = $assign->get_instance()->teamsubmission;
 
-            // Groups
+            // Groups.
             $cm = get_coursemodule_from_instance('assign', $assid);
             $assignment->groupmode = self::groupmode_name($cm->groupmode);
         }
-        
+
         return array_values($assignments);
     }
 

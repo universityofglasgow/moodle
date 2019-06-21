@@ -15,40 +15,41 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * This file contains functions used by the participation report
+ * Settings
  *
  * @package    report
  * @subpackage anonymous
- * @copyright  2013 Howard Miller
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace report_anonymous\output;
-
 defined('MOODLE_INTERNAL') || die;
 
-use plugin_renderer_base;
-use moodle_url;
+if ($hassiteconfig) {
 
-class renderer extends plugin_renderer_base {
+    $settings = new admin_settingpage('report_anonymous_settings', new lang_string('pluginname', 'report_anonymous'));
 
-    /**
-     * Render assignmentlist
-     * @param renderer_base $listassign
-     * @return string
-     */
-    public function render_listassign(listassign $listassign) {
-        return $this->render_from_template('report_anonymous/listassign', $listassign->export_for_template($this));
+    $rawchoices = [
+        'email',
+        'idnumber',
+        'phone1',
+        'phone2',
+        'institution',
+        'department',
+        'address',
+        'country',
+        'lastip',
+    ];
+    $choices = [];
+    foreach ($rawchoices as $choice) {
+        $choices[$choice] = new lang_string($choice);
     }
 
-    /**
-     * Render assignment report
-     * @param renderer_base $reportassign
-     * @return string
-     */
-    public function render_reportassign(reportassign $reportassign) {
-        return $this->render_from_template('report_anonymous/reportassign', $reportassign->export_for_template($this));
-    }
+    $settings->add(new admin_setting_configmulticheckbox(
+        'report_anonymous/profilefields',
+        new lang_string('profilefields', 'report_anonymous'),
+        new lang_string('profilefields_desc', 'report_anonymous'),
+        ['email', 'idnumber'],
+        $choices
+    ));
 
 }
-
