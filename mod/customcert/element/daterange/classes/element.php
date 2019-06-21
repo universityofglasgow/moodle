@@ -77,32 +77,37 @@ class element extends \mod_customcert\element {
     /**
      * Date - Issue
      */
-    const DATE_ISSUE = 1;
+    const DATE_ISSUE = -1;
 
     /**
      * Date - Completion
      */
-    const DATE_COMPLETION = 2;
+    const DATE_COMPLETION = -2;
 
     /**
      * Date - Course start
      */
-    const DATE_COURSE_START = 3;
+    const DATE_COURSE_START = -3;
 
     /**
      * Date - Course end
      */
-    const DATE_COURSE_END = 4;
+    const DATE_COURSE_END = -4;
 
     /**
      * Date - Course grade date
      */
-    const DATE_COURSE_GRADE = 5;
+    const DATE_COURSE_GRADE = -5;
+
+    /**
+     * Date - Course current date
+     */
+    const DATE_CURRENT_DATE = -6;
 
     /**
      * This function renders the form elements when adding a customcert element.
      *
-     * @param \mod_customcert\edit_element_form $mform the edit_form instance
+     * @param \MoodleQuickForm $mform the edit form instance
      */
     public function render_form_elements($mform) {
         global $COURSE;
@@ -110,6 +115,7 @@ class element extends \mod_customcert\element {
         // Get the possible date options.
         $dateoptions = array();
         $dateoptions[self::DATE_ISSUE] = get_string('issueddate', 'customcertelement_daterange');
+        $dateoptions[self::DATE_CURRENT_DATE] = get_string('currentdate', 'customcertelement_daterange');
         $dateoptions[self::DATE_COMPLETION] = get_string('completiondate', 'customcertelement_daterange');
         $dateoptions[self::DATE_COURSE_START] = get_string('coursestartdate', 'customcertelement_daterange');
         $dateoptions[self::DATE_COURSE_END] = get_string('courseenddate', 'customcertelement_daterange');
@@ -178,6 +184,7 @@ class element extends \mod_customcert\element {
         $rangeoptions['startdate']['type'] = PARAM_INT;
         $rangeoptions['enddate']['type'] = PARAM_INT;
         $rangeoptions['recurring']['type'] = PARAM_INT;
+        $rangeoptions['recurring']['helpbutton'] = ['recurring', 'customcertelement_daterange'];
         $rangeoptions['datestring']['type'] = PARAM_NOTAGS;
         $rangeoptions['rangedelete']['type'] = PARAM_BOOL;
 
@@ -209,7 +216,7 @@ class element extends \mod_customcert\element {
     /**
      * Sets the data on the form when editing an element.
      *
-     * @param \mod_customcert\edit_element_form $mform the edit_form instance
+     * @param \MoodleQuickForm $mform the edit form instance
      */
     public function definition_after_data($mform) {
         if (!empty($this->get_data()) && !$mform->isSubmitted()) {
@@ -345,6 +352,10 @@ class element extends \mod_customcert\element {
                     $date = $issue->timecreated;
                     break;
 
+                case self::DATE_CURRENT_DATE:
+                    $date = time();
+                    break;
+
                 case self::DATE_COMPLETION:
                     // Get the last completion date.
                     $sql = "SELECT MAX(c.timecompleted) as timecompleted
@@ -442,6 +453,8 @@ class element extends \mod_customcert\element {
     }
 
     /**
+     * Returns whether or not a range is recurring.
+     *
      * @param \stdClass $range Range object.
      *
      * @return bool
@@ -597,6 +610,7 @@ class element extends \mod_customcert\element {
     /**
      * Format date string based on different types of placeholders.
      *
+     * @param string $datestring The date string
      * @param array $formatdata A list of format data.
      *
      * @return string

@@ -2,6 +2,7 @@ language: php
 
 # For javascript behat tests we need sudo
 sudo: true
+dist: trusty
 
 cache:
   directories:
@@ -9,7 +10,7 @@ cache:
     - $HOME/.npm
 
 php:
- - 7.0
+ - 7.1
  - 7.2
 
 addons:
@@ -21,7 +22,7 @@ addons:
 
 env:
  global:
-  - MOODLE_BRANCH=MOODLE_36_STABLE
+  - MOODLE_BRANCH=MOODLE_37_STABLE
   - IGNORE_NAMES=mobile_*.mustache # Mobile mustache has specific syntax, ignore their templates
  matrix:
   - DB=pgsql

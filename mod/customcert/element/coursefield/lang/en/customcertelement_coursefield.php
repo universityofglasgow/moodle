@@ -15,19 +15,15 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Code fragment to define the version of the customcert module
+ * Strings for component 'customcertelement_coursefield', language 'en'.
  *
- * @package    mod_customcert
- * @copyright  2013 Mark Nelson <markn@moodle.com>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or late
+ * @package    customcertelement_coursefield
+ * @copyright  2019 Catalyst IT
+ * @author     Dan Marsden
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden.');
-
-$plugin->version   = 2019052001; // The current module version (Date: YYYYMMDDXX).
-$plugin->requires  = 2019052000; // Requires this Moodle version (3.7).
-$plugin->cron      = 0; // Period for cron to check this module (secs).
-$plugin->component = 'mod_customcert';
-
-$plugin->maturity  = MATURITY_STABLE;
-$plugin->release   = "3.7.1"; // User-friendly version number.
+$string['pluginname'] = 'Course field';
+$string['privacy:metadata'] = 'The course field plugin does not store any personal data.';
+$string['coursefield'] = 'Course field';
+$string['coursefield_help'] = 'This is the course field that will be displayed on the PDF.';

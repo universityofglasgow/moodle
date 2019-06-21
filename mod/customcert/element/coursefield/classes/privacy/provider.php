@@ -15,18 +15,33 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version details
+ * Privacy Subsystem implementation for customcertelement_coursefield.
  *
- * @package    filter
- * @subpackage generico
- * @copyright  2014 Justin Hunt <poodllsupport@gmail.com>
+ * @package    customcertelement_coursefield
+ * @copyright  2019 Catalyst IT
+ * @author     Dan Marsden
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace customcertelement_coursefield\privacy;
+
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2019061400;        // The current plugin version (Date: YYYYMMDDXX)
-$plugin->requires  = 2011070100;        // Requires this Moodle version
-$plugin->component = 'filter_generico'; // Full name of the plugin (used for diagnostics)
-$plugin->maturity  = MATURITY_STABLE;
-$plugin->release   = 'Version 1.4.09(Build 2019061400)';
+/**
+ * Privacy Subsystem for customcertelement_coursefield implementing null_provider.
+ *
+ * @copyright  2019 Catalyst IT
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class provider implements \core_privacy\local\metadata\null_provider {
+
+    /**
+     * Get the language string identifier with the component's language
+     * file to explain why this plugin stores no data.
+     *
+     * @return  string
+     */
+    public static function get_reason() : string {
+        return 'privacy:metadata';
+    }
+}
