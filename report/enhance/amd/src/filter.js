@@ -24,18 +24,18 @@ define(['jquery', 'core/templates', 'core/ajax', 'core/notification'], function(
             try {
                 var filter = localStorage.getItem('selected-filter');
                 if (filter === null) {
-                    filter = ".filter-status-1, .filter-status-2, .filter-status-3, .filter-status-4, .filter-status-5, .filter-status-6, .filter-status-9";
+                    filter = ".filter-status-1, .filter-status-2, .filter-status-3," +
+                        " .filter-status-4, .filter-status-5, .filter-status-6, .filter-status-9";
                 }
-                    $(".filter-all").hide();
-                    $(filter).show();
-                    if($(filter).length == 0) {
-                        $(".bottom-button").hide();
-                    } else {
-                        $(".bottom-button").show();
-                    }
-                    $('.active').removeClass("active");
-                    $("[data-filter='" + filter + "']").addClass("active");
+                $(".filter-all").hide();
+                $(filter).show();
+                if ($(filter).length == 0) {
+                    $(".bottom-button").hide();
+                } else {
+                    $(".bottom-button").show();
                 }
+                $('.active').removeClass("active");
+                $("[data-filter='" + filter + "']").addClass("active");
             } catch (error) {
                 return false;
             }

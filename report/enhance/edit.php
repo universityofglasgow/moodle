@@ -38,7 +38,7 @@ $PAGE->set_pagelayout('admin');
 // Find course
 $course = $DB->get_record('course', array('id' => $courseid), '*', MUST_EXIST);
 
-// If editing existing 
+// If editing existing
 if ($id) {
     $request = $DB->get_record('report_enhance', array('id' => $id), '*', MUST_EXIST);
 } else {
@@ -82,6 +82,7 @@ if ($form->is_cancelled()) {
         $DB->update_record('report_enhance', $request);
     } else {
         $id = $DB->insert_record('report_enhance', $request);
+        $request->id = $id;
         \report_enhance\email::newrequest($USER, $request);
     }
 
