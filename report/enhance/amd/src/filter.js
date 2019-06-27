@@ -23,7 +23,9 @@ define(['jquery', 'core/templates', 'core/ajax', 'core/notification'], function(
 
             try {
                 var filter = localStorage.getItem('selected-filter');
-                if (filter) {
+                if (filter === null) {
+                    filter = ".filter-status-1, .filter-status-2, .filter-status-3, .filter-status-4, .filter-status-5, .filter-status-6, .filter-status-9";
+                }
                     $(".filter-all").hide();
                     $(filter).show();
                     if($(filter).length == 0) {
