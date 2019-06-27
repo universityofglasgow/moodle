@@ -21,6 +21,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+$string['activerequests'] = 'Currently Active';
 $string['addvote'] = 'Add my vote';
 $string['allrequests'] = 'All requests';
 $string['approved'] = 'Approved';
@@ -44,8 +45,9 @@ $string['desirability_help'] = '<ul><li>Benefit - will the proposal bring a desi
 $string['developmentinprogress'] = 'Accepted, Development in Progress';
 $string['edit'] = 'Edit';
 $string['enhance:view'] = 'View list of enhancement requests';
+$string['export'] = 'Export to Spreadsheet';
 $string['filterstatus'] = 'Filter on status';
-$string['findid'] = 'Find ID';
+$string['findid'] = 'Jump to ID';
 $string['go'] = 'Go';
 $string['gotanidea'] ='Got an idea for something that would make Moodle better? You can submit it to the VLE Enhancement Board for consideration. Projects that are approved will be added to Moodle in due course.';
 $string['headline'] = 'One line headline or summary';

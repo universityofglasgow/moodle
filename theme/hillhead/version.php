@@ -25,7 +25,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2018042001;
+$plugin->version   = 2019062100;
 $plugin->requires  = 2016112900;
 $plugin->component = 'theme_hillhead';
 $plugin->dependencies = [

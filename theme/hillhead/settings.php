@@ -76,6 +76,19 @@ if ($ADMIN->fulltree) {
     $setting = new admin_setting_configselect($name, $title, $description, $default, $choices);                                                                                                                                                                                     
     $page->add($setting);
     
+    $name = 'theme_hillhead/hillhead_old_browser_alerts';                                                                                                   
+    $title = get_string('hillhead_old_browser_alerts', 'theme_hillhead');                                                                                   
+    $description = get_string('hillhead_old_browser_alerts_desc', 'theme_hillhead');
+    
+    $choices = Array(
+        'enabled' => get_string('hillhead_old_browser_alerts_on', 'theme_hillhead'),
+        'disabled' => get_string('hillhead_old_browser_alerts_off', 'theme_hillhead')
+    );                                                                     
+    $default = 'disabled';
+    
+    $setting = new admin_setting_configselect($name, $title, $description, $default, $choices);                                                                                                                                                                                     
+    $page->add($setting);
+    
     $name = 'theme_hillhead/hillhead_notification_type';                                                                                                   
     $title = get_string('hillhead_notification_type', 'theme_hillhead');                                                                                   
     $description = get_string('hillhead_notification_type_desc', 'theme_hillhead');

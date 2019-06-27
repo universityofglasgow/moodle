@@ -4,6 +4,13 @@
 $isAdmin = has_capability('moodle/site:config', $siteContext);
 $canSeeGUIDReport = has_capability('report/guid:view', $siteContext);
 
+$enhanceLink = new moodle_url('/report/enhance/index.php?id=1');
+$enhanveNav = navigation_node::create('VLE Enhancement Requests', $enhanceLink);
+$enhanveNavFlat = new flat_navigation_node($enhanveNav, 0);
+$enhanveNavFlat->key = 'vleenhancements';
+$enhanveNavFlat->icon = new pix_icon('hillhead/vleenhancements', 'VLE Enhancement Requests', 'moodle');
+$PAGE->flatnav->add($enhanveNavFlat);
+
 if($canSeeGUIDReport) {
     $guidReportLink = new moodle_url('/report/guid/index.php');
     $guidReportNav = navigation_node::create('GUID Report', $guidReportLink);
@@ -96,6 +103,7 @@ foreach($flatnav as $navitem) {
                 case 'purgecaches':
                 case 'guidreport':
                 case 'addblock':
+                case 'vleenhancements':
                     $adminnav[] = $navitem;
                     $adminnavexists = true;
                     break;
