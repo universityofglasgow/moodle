@@ -115,3 +115,4 @@ $string['enhance:editall'] = 'Edit All Enhancement Requests';
 $string['enhance:emailnotifynew'] = 'Get told about new submissions';
 $string['enhance:review'] = 'Review Enhancement Requests';
 $string['rollover:view'] = 'View Enhancement Requests';
+$string['workbook'] = 'VLE Enhancement Requests';
