@@ -61,7 +61,7 @@ $string['messageprovider:newrequest'] = 'Notifications of new Enhancement Reques
 $string['moreinfo'] = 'More information';
 $string['moreinformation'] = 'Further Information Needed';
 $string['new'] = 'New';
-$string['notifynewfull'] = '<p>A new VLE Enhancement Request has been logged.<p><h3>Description</h3><p>{$a->description}</p>';
+$string['notifynewfull'] = '<p>A new VLE Enhancement Request has been logged by {$a->username}. <p><h3>Description</h3><p>{$a->description}.</p> <p>View it in <a href="{$a->link}">Moodle</a>.</p>';
 $string['notifynewsubject'] = 'A new VLE Enhancement Request has been logged';
 $string['pending'] = 'Pending';
 $string['pendingreview'] = 'Pending Review';

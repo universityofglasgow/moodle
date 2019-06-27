@@ -85,7 +85,9 @@
             <a href="{{{ formurl }}}" class="btn btn-success btn-block"><i class="fa fa-plus-circle"></i> {{# str }}submitnew, report_enhance{{/ str }}</a>
         </div>
         <div class="col-sm-4 ml-auto">
-            <a href="{{{ exporturl }}}" class="btn btn-warning btn-block"><i class="fa fa-table"></i> {{# str }}export, report_enhance{{/ str }}</a>
+            {{# reviewer }}
+                <a href="{{{ exporturl }}}" class="btn btn-warning btn-block"><i class="fa fa-table"></i> {{# str }}export, report_enhance{{/ str }}</a>
+            {{/ reviewer }}
         </div>
     </div>
 
@@ -110,7 +112,7 @@
 
                 </div>
                 <div class="status-description">
-                    <h4 class="headline"><a href="{{{ more }}}">{{ headline }}</a></h4>
+                    <h4 class="headline"><a class="save-link" href="{{{ more }}}">{{ headline }}</a></h4>
                     <p class="information">Submitted {{ timeago }} ago by {{username}} </p>
                     <div class="media-footer">
                         <ul class="enhancement-links">

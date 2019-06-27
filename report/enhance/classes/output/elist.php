@@ -94,6 +94,7 @@ class elist implements renderable, templatable {
             'exporturl' => new \moodle_url('/report/enhance/index.php', ['courseid' => $this->course->id, 'export' => 1]),
             'requests' => array_values($this->requests),
             'status' => $output->single_select('', 'filterstatus', $this->statuses, '', array('' => 'choosedots'), null, ['class' => 'form-control']),
+            'reviewer' => has_capability('report/enhance:review', context_course::instance($this->course->id)),
         ];
     }
 
