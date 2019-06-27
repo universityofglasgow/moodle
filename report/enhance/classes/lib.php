@@ -95,14 +95,23 @@ class lib {
 
     /**
      * Get list of priorities
+     * @param $html if true add html formatting (default)
      * @return array
      */
-    public static function getpriorities() {
-        return [
-            0 => '<i class="text-success fa fa-arrow-down"></i> ' . get_string('lowpriority', 'report_enhance'),
-            1 => '<i class="text-warning fa fa-arrow-right"></i> ' .get_string('mediumpriority', 'report_enhance'),
-            2 => '<i class="text-danger fa fa-arrow-up"></i> ' .get_string('highpriority', 'report_enhance'),
-        ];
+    public static function getpriorities($html = true) {
+        if ($html) {
+            return [
+                0 => '<i class="text-success fa fa-arrow-down"></i> ' . get_string('lowpriority', 'report_enhance'),
+                1 => '<i class="text-warning fa fa-arrow-right"></i> ' . get_string('mediumpriority', 'report_enhance'),
+                2 => '<i class="text-danger fa fa-arrow-up"></i> ' . get_string('highpriority', 'report_enhance'),
+            ];
+        } else {
+            return [
+                0 => get_string('lowpriority', 'report_enhance'),
+                1 => get_string('mediumpriority', 'report_enhance'),
+                2 => get_string('highpriority', 'report_enhance'),
+            ];
+        }
     }
 
     /**
@@ -118,6 +127,91 @@ class lib {
         if ($name) {
             $PAGE->navbar->add($name, $url);
         }
+    }
+
+    /**
+     * Format requests for export
+     * @param array $requests
+     * @return array
+     */
+    protected static function format_for_export($requests) {
+        global $DB;
+
+        $status = new \report_enhance\status;
+        $priorities = self::getpriorities(false);
+
+        foreach ($requests as $request) {
+            $user = $DB->get_record('user', ['id' => $request->userid], '*', MUST_EXIST);
+            $request->username = fullname($user);
+            $request->userdate = userdate($request->timecreated);
+            $request->statusformatted = $status->getStatus($request->status);
+            $request->priorityformatted = $priorities[$request->priority];
+            list($request->votes) = \report_enhance\lib::getvotes($request);
+        }
+
+        return $requests;
+    }
+
+    /**
+     * Export to Excel
+     * @param string $filename
+     * @param array $requests
+     */
+    public static function export($filename, $requests) {
+        global $CFG;
+
+        require_once($CFG->dirroot . '/lib/excellib.class.php');
+
+        // Format the requests for output
+        $requests = self::format_for_export($requests);
+
+        $workbook = new \MoodleExcelWorkbook("-");
+
+        // Sending HTTP headers.
+        $workbook->send($filename);
+
+        // Adding the worksheet.
+        $myxls = $workbook->add_worksheet(get_string('workbook', 'report_enhance'));
+
+        // Headers.
+        $i = 0;
+        $myxls->write_string(1, $i++, get_string('requestnumber', 'report_enhance'));
+        $myxls->write_string(1, $i++, get_string('submittedby', 'report_enhance'));
+        $myxls->write_string(1, $i++, get_string('submittedon', 'report_enhance'));
+        $myxls->write_string(1, $i++, get_string('department', 'report_enhance'));
+        $myxls->write_string(1, $i++, get_string('status', 'report_enhance'));
+        $myxls->write_string(1, $i++, get_string('votes', 'report_enhance'));
+        $myxls->write_string(1, $i++, get_string('priority', 'report_enhance'));
+        $myxls->write_string(1, $i++, get_string('description', 'report_enhance'));
+        $myxls->write_string(1, $i++, get_string('benefits', 'report_enhance'));
+        $myxls->write_string(1, $i++, get_string('desirability', 'report_enhance'));
+        $myxls->write_string(1, $i++, get_string('impact', 'report_enhance'));
+        $myxls->write_string(1, $i++, get_string('viability', 'report_enhance'));
+        $myxls->write_string(1, $i++, get_string('result', 'report_enhance'));
+        $myxls->write_string(1, $i++, get_string('reviewernotes', 'report_enhance'));
+
+        // Add some data.
+        $row = 2;
+        foreach ($requests as $request) {
+            $i = 0;
+            $myxls->write_string($row, $i++, $request->id);
+            $myxls->write_string($row, $i++, $request->username);
+            $myxls->write_string($row, $i++, $request->userdate);
+            $myxls->write_string($row, $i++, $request->department);
+            $myxls->write_string($row, $i++, $request->statusformatted);
+            $myxls->write_number($row, $i++, $request->votes);
+            $myxls->write_string($row, $i++, $request->priorityformatted);
+            $myxls->write_string($row, $i++, html_to_text($request->description, 0, false));
+            $myxls->write_string($row, $i++, html_to_text($request->benefits, 0, false));
+            $myxls->write_string($row, $i++, html_to_text($request->desirability, 0, false));
+            $myxls->write_string($row, $i++, html_to_text($request->impact, 0, false));
+            $myxls->write_string($row, $i++, html_to_text($request->viability, 0, false));
+            $myxls->write_string($row, $i++, html_to_text($request->result, 0, false));
+            $myxls->write_string($row, $i++, html_to_text($request->reviewernotes, 0, false));
+
+            $row++;
+        }
+        $workbook->close();
     }
 
 }

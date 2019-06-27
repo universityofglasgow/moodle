@@ -72,7 +72,7 @@ class more implements renderable, templatable {
         return $request;
     }
 
-    /** 
+    /**
      * Export data for list of enhancements
      */
     public function export_for_template(renderer_base $output) {
@@ -81,7 +81,7 @@ class more implements renderable, templatable {
         return [
             'request' => $this->request,
             'back' => new \moodle_url('/report/enhance/index.php', ['courseid' => $this->course->id]),
-	    'editurl' => new \moodle_url('/report/enhance/edit.php', ['courseid' => $this->course->id, 'id' => $this->request->id]),
+	        'editurl' => new \moodle_url('/report/enhance/edit.php', ['courseid' => $this->course->id, 'id' => $this->request->id]),
             'reviewurl' => new \moodle_url('/report/enhance/review.php', ['courseid' => $this->course->id, 'id' => $this->request->id]),
             'allowedit' => has_capability('report/enhance:editall', $this->context) ||
                 ($this->request->userid == $USER->id && ($this->request->status == ENHANCE_STATUS_NEW || $this->request->status == ENHANCE_STATUS_MOREINFORMATION)),

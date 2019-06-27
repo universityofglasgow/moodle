@@ -26,6 +26,7 @@ require(dirname(__FILE__).'/../../config.php');
 
 // params
 $courseid = optional_param('courseid', 1, PARAM_INT);
+$export = optional_param('export', 0, PARAM_INT);
 
 // Page setup.
 $url = new moodle_url('/report/enhance/index.php', ['courseid' => $courseid]);
@@ -44,6 +45,14 @@ $output = $PAGE->get_renderer('report_enhance');;
 
 // Get requests
 $requests = $DB->get_records('report_enhance', null, 'id desc');
+
+// Export
+if ($export) {
+    $datepart = date('Y-m-d');
+    $filename = "vleenhancements-$datepart.xls";
+    \report_enhance\lib::export($filename, $requests);
+    die;
+}
 
 $PAGE->set_title(get_string('pluginname', 'report_enhance'));
 $PAGE->set_heading($course->fullname);
