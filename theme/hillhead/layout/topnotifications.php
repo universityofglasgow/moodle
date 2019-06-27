@@ -26,6 +26,48 @@ if(empty($_SESSION['SESSION']->hillhead_notifications) || !array_key_exists(md5(
     $notiftext = '';
 }
 
+$hillheadoldbrowseralerts = get_config('theme_hillhead', 'hillhead_old_browser_alerts');
+
+if($hillheadoldbrowseralerts == 'enabled') {
+    $userAgentFlags = Array(
+        'windows-xp'			=>'/(Windows NT 5.1)|(Windows XP)/',
+		'firefox-1-51'          => '/Firefox\/([0-9]|[1-4][0-9]|5[0-1])\b/',
+		'safari-1-7'			=> '/AppleWebKit\/([0-9][0-9]|[0-5][0-9][0-9])\b/',
+		'ie-5-10'               =>  '/MSIE ([5-9]|10)\b/'
+	);
+	
+	$friendlyNames = Array(
+    	'windows-xp'			=> 'Windows XP',
+		'firefox-1-51'			=> 'an old version of Firefox',
+		'safari-1-7'            => 'an old version of Safari',
+		'ie-5-10'               => 'an old version of Internet Explorer'
+    );
+    
+	$flags = Array();
+		
+	foreach ($userAgentFlags as $flag=>$regex) {
+		if(preg_match($regex, $_SERVER['HTTP_USER_AGENT'])) {
+			$flags[$flag] = $flag;
+		}
+	}
+	
+	foreach($flags as $flag) {
+    	$oldBrowserText = '<strong>You\'re using '.$friendlyNames[$flag].'</strong>.&ensp;';
+    	switch($flag) {
+        	case 'windows-xp':
+        	    $oldBrowserText .= 'Windows XP is obsolete and hasn\'t received security updates since 2014.';
+        	    break;
+            default:
+                $oldBrowserText .= 'This is an old browser and isn\'t supported by Moodle. Some things might be broken or might not look right.';
+                break;
+    	}
+    	
+    	$notiftext .= '<div class="alert alert-danger"><i class="fa fa-exclamation-triangle"></i><span>'.$oldBrowserText.'</span></div>';
+	}
+	
+	
+}
+
 $hillheadsmartalerts = get_config('theme_hillhead', 'hillhead_smart_alerts');
 
 if((substr($PAGE->pagetype, 0, 11) == 'course-view') && ($hillheadsmartalerts == 'enabled')) {

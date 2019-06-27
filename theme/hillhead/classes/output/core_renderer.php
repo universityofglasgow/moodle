@@ -85,7 +85,7 @@ class core_renderer extends \core_renderer {
         
         $formText = '<label for="header-search-form-input" class="accesshide">Search for:</label><div class="input-group">
       <input type="text" name="q" id="header-search-form-input" class="form-control" placeholder="Search Moodle">
-      <span class="input-group-btn">
+      <span class="input-group-append">
         <button class="btn btn-default" type="submit"><i class="fa fa-search"></i><span class="d-none d-md-inline"> Search</span></button>
       </span>
     </div>';

@@ -55,7 +55,8 @@ class icon_system_fontawesome extends \core\output\icon_system_fontawesome {
             'core:req'                          => 'fa-asterisk text-warning',
             'core:i/section'                    => 'fa-folder-open',
             'core:hillhead/allcourses'          => 'fa-sitemap',
-            'core:hillhead/starred'             => 'fa-star'
+            'core:hillhead/starred'             => 'fa-star',
+            'core:hillhead/vleenhancements'     => 'fa-magic'
         );
         
         $merged = array_merge($iconmap, $overrides);
