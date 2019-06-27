@@ -53,10 +53,10 @@
             </form>
         </div>
     </div>
-    
+
     <h4>Filter By Status</h4>
-    
-    <ul class="nav nav-pills filter-list m-b-1">        
+
+    <ul class="nav nav-pills filter-list m-b-1">
         <li class="nav-item">
             <a class="nav-link" href="#" data-filter=".filter-status-1"><i class="fa fa-star-o"></i> {{# str }}new, report_enhance{{/ str }}</a>
         </li>
@@ -79,22 +79,22 @@
             <a class="nav-link" href="#" data-filter=".filter-status-8"><i class="fa fa-thumbs-o-down"></i> {{# str }}rejected, report_enhance{{/ str }}</a>
         </li>
     </ul>
-    
+
     <div class="row">
         <div class="col-sm-4">
-            <a href="{{ formurl }}" class="btn btn-success btn-block"><i class="fa fa-plus-circle"></i> {{# str }}submitnew, report_enhance{{/ str }}</a>
+            <a href="{{{ formurl }}}" class="btn btn-success btn-block"><i class="fa fa-plus-circle"></i> {{# str }}submitnew, report_enhance{{/ str }}</a>
         </div>
         <div class="col-sm-4 ml-auto">
-            <a href="#" class="btn btn-default btn-block"><i class="fa fa-table"></i> {{# str }}export, report_enhance{{/ str }}</a>
+            <a href="{{{ exporturl }}}" class="btn btn-warning btn-block"><i class="fa fa-table"></i> {{# str }}export, report_enhance{{/ str }}</a>
         </div>
     </div>
-    
+
 </div>
 </div>
 </section>
 <div class="row">
     <div class="col">
-        
+
     </div>
 </div>
 <div class="enhancement-list">
@@ -107,7 +107,7 @@
                         <i class="fa fa-{{ statusicon }}"></i>
                     </span>
                     <span class="statustext">{{ statusformatted }}</span>
-                
+
                 </div>
                 <div class="status-description">
                     <h4 class="headline"><a href="{{{ more }}}">{{ headline }}</a></h4>

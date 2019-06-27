@@ -58,7 +58,7 @@ class elist implements renderable, templatable {
         global $DB, $USER;
 
         $status = new \report_enhance\status();
-        
+
         $context = context_course::instance($this->course->id);
 
         foreach ($requests as $request) {
@@ -82,27 +82,28 @@ class elist implements renderable, templatable {
         return $requests;
     }
 
-    /** 
+    /**
      * Export data for list of enhancements
      */
     public function export_for_template(renderer_base $output) {
 
         return [
             'course' => $this->course,
-            'formurl' => new \moodle_url('/report/enhance/edit.php', array('courseid' => $this->course->id)),
-            'moreurl' => new \moodle_url('/report/enhance/more.php', array('courseid' => $this->course->id)),
+            'formurl' => new \moodle_url('/report/enhance/edit.php', ['courseid' => $this->course->id]),
+            'moreurl' => new \moodle_url('/report/enhance/more.php', ['courseid' => $this->course->id]),
+            'exporturl' => new \moodle_url('/report/enhance/index.php', ['courseid' => $this->course->id, 'export' => 1]),
             'requests' => array_values($this->requests),
             'status' => $output->single_select('', 'filterstatus', $this->statuses, '', array('' => 'choosedots'), null, ['class' => 'form-control']),
         ];
     }
-    
+
     public static function ago($ptime) {
         $etime = time() - $ptime;
-        
+
         if ($etime < 1) {
             return '0 seconds';
         }
-        
+
         $a = array( 12 * 30 * 24 * 60 * 60  =>  'year',
                     30 * 24 * 60 * 60       =>  'month',
                     7 * 24 * 60 * 60 		=>  'week',
@@ -111,7 +112,7 @@ class elist implements renderable, templatable {
                     60                      =>  'minute',
                     1                       =>  'second'
                     );
-        
+
         foreach ($a as $secs => $str) {
             $d = $etime / $secs;
             if ($d >= 1) {
