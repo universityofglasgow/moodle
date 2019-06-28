@@ -51,6 +51,10 @@ if ($export) {
     $datepart = date('Y-m-d');
     $filename = "vleenhancements-$datepart.xls";
     \report_enhance\lib::export($filename, $requests);
+
+    // Trigger event.
+    $event = \report_enhance\event\enhancement_export::create(array('context' => $context));
+    $event->trigger();
     die;
 }
 
@@ -66,3 +70,6 @@ echo $output->render($elist);
 
 echo $OUTPUT->footer();
 
+// Trigger a report viewed event.
+$event = \report_enhance\event\report_viewed::create(array('context' => $context));
+$event->trigger();

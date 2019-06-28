@@ -80,10 +80,24 @@ if ($form->is_cancelled()) {
     $request->timemodified = time();
     if ($id) {
         $DB->update_record('report_enhance', $request);
+
+            // Log event
+            $event = \report_enhance\event\enhancement_edited::create([
+                'context' => $context,
+                'objectid' => $id,
+            ]);
+            $event->trigger();
     } else {
         $id = $DB->insert_record('report_enhance', $request);
         $request->id = $id;
         \report_enhance\email::newrequest($USER, $request);
+
+        // Log event
+        $event = \report_enhance\event\enhancement_logged::create([
+            'context' => $context,
+            'objectid' => $id,
+        ]);
+        $event->trigger();
     }
 
     // Attachments
