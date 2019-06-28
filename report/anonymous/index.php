@@ -88,6 +88,14 @@ if ($assignid) {
             'annotatedpdfs' => optional_param('annotatedpdfs', 0, PARAM_INT),
         ];
         $files = report_anonymous\lib::get_all_files($assign, $cm->id, $submissions, $params);
+
+        // Trigger an assignment viewed event.
+        $event = \report_anonymous\event\assignment_dump::create([
+            'context' => $context,
+            'objectid' => $assignid,
+        ]);
+        $event->trigger();
+
         report_anonymous\lib::download_feedback_files($files, $assignid);
         die;
     }
@@ -111,18 +119,38 @@ if ($assignid) {
     if ($export) {
         $filename = "anonymous_{$assignment->name}.xls";
         report_anonymous\lib::export($assignment, $filename, $submissions);
+
+        // Trigger an assignment viewed event.
+        $event = \report_anonymous\event\assignment_export::create([
+            'context' => $context,
+            'objectid' => $assignid,
+        ]);
+        $event->trigger();
+
         die;
     }
 
     // Display report.
     $reportassign = new report_anonymous\output\reportassign($course, $context, $fullurl, $submissions, $assignment);
     echo $output->render_reportassign($reportassign);
+
+    // Trigger an assignment viewed event.
+    $event = \report_anonymous\event\assignment_viewed::create([
+        'context' => $context,
+        'objectid' => $assignid,
+    ]);
+    $event->trigger();
 } else {
 
     // List of activities to select.
     $listassign = new report_anonymous\output\listassign($course, $fullurl, $assignments);
     echo $output->render_listassign($listassign);
+
+    // Trigger a report viewed event.
+    $event = \report_anonymous\event\report_viewed::create(['context' => $context]);
+    $event->trigger();
 }
 
 echo $output->footer();
+
 

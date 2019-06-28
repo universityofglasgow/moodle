@@ -24,10 +24,8 @@
 
 defined('MOODLE_INTERNAL') || die;
 
-$plugin->version   = 2017080300;
-$plugin->requires  = 2012061700;
+$plugin->version   = 2019072100;
+$plugin->requires  = 2019052000;
 $plugin->component = 'report_anonymous';
 $plugin->maturity = MATURITY_STABLE;
-$plugin->dependencies = array(
-    'plagiarism_urkund' => 2016061600,
-);
+
