@@ -666,6 +666,10 @@ class lib {
         // Profile fields.
         $profilefields = explode(',', get_config('report_assign', 'profilefields'));
 
+        // Plagiarism plugins?
+        $isturnitin = !empty(\core_plugin_manager::instance()->get_plugin_info('plagiarism_turnitin'));
+        $isurkund = !empty(\core_plugin_manager::instance()->get_plugin_info('plagiarism_urkund'));
+
         $workbook = new \MoodleExcelWorkbook("-");
 
         // Sending HTTP headers.
@@ -685,8 +689,12 @@ class lib {
         $myxls->write_string(1, $i++, get_string('groups'));
         $myxls->write_string(1, $i++, get_string('status'));
         $myxls->write_string(1, $i++, get_string('grade'));
-        $myxls->write_string(1, $i++, get_string('urkund', 'report_assign'));
-        $myxls->write_string(1, $i++, get_string('turnitin', 'report_assign'));
+        if ($isurkund) {
+            $myxls->write_string(1, $i++, get_string('urkund', 'report_assign'));
+        }
+        if ($isturnitin) {
+            $myxls->write_string(1, $i++, get_string('turnitin', 'report_assign'));
+        }
         $myxls->write_string(1, $i++, get_string('allocatedmarker', 'report_assign'));
         $myxls->write_string(1, $i++, get_string('modified'));
         $myxls->write_string(1, $i++, get_string('files'));
@@ -704,8 +712,12 @@ class lib {
             $myxls->write_string($row, $i++, isset($s->groups) ? $s->groups : '-');
             $myxls->write_string($row, $i++, $s->status);
             $myxls->write_string($row, $i++, html_entity_decode($s->grade));
-            $myxls->write_string($row, $i++, isset($s->urkund->similarityscore) ? $s->urkund->similarityscore : '-');
-            $myxls->write_string($row, $i++, isset($s->turnitin->similarityscore) ? $s->turnitin->similarityscore : '-');
+            if ($isurkund) {
+                $myxls->write_string($row, $i++, isset($s->urkund->similarityscore) ? $s->urkund->similarityscore : '-');
+            }
+            if ($isturnitin) {
+                $myxls->write_string($row, $i++, isset($s->turnitin->similarityscore) ? $s->turnitin->similarityscore : '-');
+            }
             $myxls->write_string($row, $i++, isset($s->grader) ? $s->grader : '-');
             $myxls->write_string($row, $i++, $s->modified);
             $myxls->write_string($row, $i++, $s->files);
