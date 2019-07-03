@@ -31,7 +31,7 @@ require_once(__DIR__.'/turnitintooltwo_class.class.php');
 require_once($CFG->libdir . "/gradelib.php");
 
 // Constants.
-define('TURNITINTOOLTWO_MAX_FILE_UPLOAD_SIZE', 41943040);
+define('TURNITINTOOLTWO_MAX_FILE_UPLOAD_SIZE', 104857600);
 define('TURNITINTOOLTWO_DEFAULT_PSEUDO_DOMAIN', '@tiimoodle.com');
 define('TURNITINTOOLTWO_DEFAULT_PSEUDO_FIRSTNAME', get_string('defaultcoursestudent'));
 define('TURNITINTOOLTWO_SUBMISSION_GET_LIMIT', 100);
@@ -69,24 +69,22 @@ $tiiintegrationids = array(0 => get_string('nointegration', 'turnitintooltwo'), 
  * @param int $cmid Course module id
  */
 function turnitintooltwo_add_to_log($courseid, $eventname, $link, $desc, $cmid, $userid = 0) {
-    global $CFG, $USER;
-    if ( ( property_exists( $CFG, 'branch' ) AND ( $CFG->branch < 27 ) ) || ( !property_exists( $CFG, 'branch' ) ) ) {
-        add_to_log($courseid, "turnitintooltwo", $eventname, $link, $desc, $cmid);
-    } else {
-        $eventname = str_replace(' ', '_', $eventname);
-        $eventpath = '\mod_turnitintooltwo\event\\'.$eventname;
+    global $USER;
 
-        $data = array(
-            'objectid' => $cmid,
-            'context' => ( $cmid == 0 ) ? context_course::instance($courseid) : context_module::instance($cmid),
-            'other' => array('desc' => $desc)
-        );
-        if (!empty($userid) && ($userid != $USER->id)) {
-            $data['relateduserid'] = $userid;
-        }
-        $event = $eventpath::create($data);
-        $event->trigger();
+
+    $eventname = str_replace(' ', '_', $eventname);
+    $eventpath = '\mod_turnitintooltwo\event\\'.$eventname;
+
+    $data = array(
+        'objectid' => $cmid,
+        'context' => ( $cmid == 0 ) ? context_course::instance($courseid) : context_module::instance($cmid),
+        'other' => array('desc' => $desc)
+    );
+    if (!empty($userid) && ($userid != $USER->id)) {
+        $data['relateduserid'] = $userid;
     }
+    $event = $eventpath::create($data);
+    $event->trigger();
 }
 
 /**
@@ -104,6 +102,7 @@ function turnitintooltwo_supports($feature) {
         case FEATURE_GRADE_OUTCOMES:
         case FEATURE_BACKUP_MOODLE2:
         case FEATURE_SHOW_DESCRIPTION:
+        case FEATURE_CONTROLS_GRADE_VISIBILITY:
             return true;
         default:
             return null;
@@ -114,18 +113,10 @@ function turnitintooltwo_supports($feature) {
  * @return int the plugin version for use within the plugin.
  */
 function turnitintooltwo_get_version() {
-    global $DB, $CFG;
-    $pluginversion = '';
+    global $DB;
+    $version = $DB->get_record('config_plugins', array('plugin' => 'mod_turnitintooltwo', 'name' => 'version'));
 
-    if ($CFG->branch >= 26) {
-        $module = $DB->get_record('config_plugins', array('plugin' => 'mod_turnitintooltwo', 'name' => 'version'));
-        $pluginversion = $module->value;
-    } else {
-        $module = $DB->get_record('modules', array('name' => 'turnitintooltwo'));
-        $pluginversion = $module->version;
-    }
-
-    return $pluginversion;
+    return $version->value;
 }
 
 /**
@@ -241,9 +232,16 @@ function turnitintooltwo_grade_item_update($turnitintooltwo, $grades = null) {
         $params['gradetype'] = GRADE_TYPE_NONE;
     }
 
+    // Get the latest part, for the post date and set the default hidden value on grade item.
     $lastpart = $DB->get_record('turnitintooltwo_parts', array('turnitintooltwoid' => $turnitintooltwo->id), 'max(dtpost)');
     $lastpart = current($lastpart);
     $params['hidden'] = $lastpart;
+
+    // There should always be a $cm unless this is called on module creation.
+    if (!empty($cm)) {
+        // The value of hidden should be 1 if The Turnitin activity is visible so the post date should be used.
+        $params['hidden'] = ($cm->visible) ? $lastpart : 1;
+    }
     $params['grademin']  = 0;
 
     return grade_update('mod/turnitintooltwo', $turnitintooltwo->course, 'mod', 'turnitintooltwo',
@@ -336,14 +334,18 @@ function turnitintooltwo_duplicate_recycle($courseid, $action, $renewdates = nul
     }
 
     foreach ($turnitintooltwos as $turnitintooltwo) {
-        if (!$parts = $DB->get_records('turnitintooltwo_parts', array('turnitintooltwoid' => $turnitintooltwo->id,
-                                                                            'deleted' => 0))) {
+        if (!$parts = $DB->get_records('turnitintooltwo_parts', array('turnitintooltwoid' => $turnitintooltwo->id))) {
             turnitintooltwo_print_error('partgeterror', 'turnitintooltwo', null, null, __FILE__, __LINE__);
             exit();
         }
 
         foreach ($parts as $part) {
             $partsarray[$courseid][$turnitintooltwo->id][$part->id]['tiiassignid'] = $part->tiiassignid;
+
+            if ($action == "UNTOUCHED") {
+                $turnitintooltwoassignment = new turnitintooltwo_assignment($turnitintooltwo->id);
+                turnitintooltwo_update_event($turnitintooltwoassignment->turnitintooltwo, $part);
+            }
         }
 
         /* Set legacy to 0 for all TII2s so that we can have all recreated assignments on the same TII class.
@@ -359,6 +361,11 @@ function turnitintooltwo_duplicate_recycle($courseid, $action, $renewdates = nul
                 turnitintooltwo_activitylog("Assignment updated (".$turnitintooltwo->id.")", "REQUEST");
             }
         }
+    }
+
+    // We don't want to go any further if Turnitin Assignments aren't going to be touched.
+    if ($action == "UNTOUCHED") {
+        return array();
     }
 
     $currentcourse = turnitintooltwo_assignment::get_course_data($courseid);
@@ -570,15 +577,20 @@ function turnitintooltwo_reset_part_update($part, $i) {
  * @return array The Result of the turnitintooltwo_duplicate_recycle call
  */
 function turnitintooltwo_reset_userdata($data) {
-    $status = array();
-
     $renew_dates = isset($data->renew_assignment_dates) ? 1 : null;
 
-    if ($data->reset_turnitintooltwo == 0) {
-        $status = turnitintooltwo_duplicate_recycle($data->courseid, 'NEWCLASS', $renew_dates);
-    } else if ($data->reset_turnitintooltwo == 1) {
-        $status = turnitintooltwo_duplicate_recycle($data->courseid, 'OLDCLASS', $renew_dates);
+    $action = 'UNTOUCHED';
+    switch ($data->reset_turnitintooltwo) {
+        case 0:
+            $action = 'NEWCLASS';
+            break;
+        case 1:
+            $action = 'OLDCLASS';
+            break;
     }
+
+    $status = turnitintooltwo_duplicate_recycle($data->courseid, $action, $renew_dates);
+
     return $status;
 }
 
@@ -1712,22 +1724,33 @@ function turnitintooltwo_override_repository($submitpapersto) {
  */
 function mod_turnitintooltwo_core_calendar_provide_event_action(calendar_event $event,
                                                                 \core_calendar\action_factory $factory) {
+    global $DB, $USER;
     $cm = get_fast_modinfo($event->courseid)->instances['turnitintooltwo'][$event->instance];
-
-    if (!empty($cm->customdata['timeclose']) && $cm->customdata['timeclose'] < time()) {
-        // The assignment has closed so the user can no longer submit anything.
-        return null;
-    }
+    $isinstructor = (has_capability('mod/turnitintooltwo:grade', context_module::instance($cm->id)));
 
     // Restore object from cached values in $cm, we only need id, timeclose and timeopen.
     $customdata = $cm->customdata ?: [];
     $customdata['id'] = $cm->instance;
     $data = (object)($customdata + ['timeclose' => 0, 'timeopen' => 0]);
+    $assignmentpart = $DB->get_record('turnitintooltwo_parts', array('turnitintooltwoid' => $customdata['id']), 'max(dtpost)');
+    
+    // Check whether the logged in user has a submission, should always be false for Instructors.
+    $hassubmission = false;
+    if (!$isinstructor) { 
+        $queryparams = array('userid' => $USER->id, 'turnitintooltwoid' => $customdata['id']);
+        $hassubmission = $DB->get_records('turnitintooltwo_submissions', $queryparams);
+    }
+
+    if ((!empty($cm->customdata['timeclose']) && $cm->customdata['timeclose'] < time()) ||
+        $assignmentpart->max < time() || !empty($hassubmission))  {
+        // The assignment has closed so the user can no longer submit anything.
+        return null;
+    }
 
     // Check that the activity is open.
     list($actionable, $warnings) = mod_turnitintooltwo_get_availability_status($data, true, context_module::instance($cm->id));
 
-    $identifier = (has_capability('mod/turnitintooltwo:grade', context_module::instance($cm->id))) ? 'allsubmissions' : 'addsubmission';
+    $identifier = ($isinstructor) ? 'allsubmissions' : 'addsubmission';
     return $factory->create_instance(
         get_string($identifier, 'turnitintooltwo'),
         new \moodle_url('/mod/turnitintooltwo/view.php', array('id' => $cm->id)),
@@ -1784,14 +1807,15 @@ function turnitintooltwo_update_event($turnitintooltwo, $part, $courseparam = fa
         $dbparams[] = $turnitintooltwo->course;
     }
     try {
-        // Update event for assignment part.
+        // Create event data.
+        $updatedevent = new stdClass();
+        $updatedevent->userid = $USER->id;
+        $updatedevent->name = $turnitintooltwo->name." - ".$part->partname;
+        $updatedevent->timestart = $part->dtdue;
+
+        // Create/Update event for assignment part.
         if ($event = $DB->get_record_select("event", $dbselect, $dbparams)) {
-            // Update the event.
-            $updatedevent = new stdClass();
             $updatedevent->id = $event->id;
-            $updatedevent->userid = $USER->id;
-            $updatedevent->name = $turnitintooltwo->name." - ".$part->partname;
-            $updatedevent->timestart = $part->dtdue;
 
             if ($CFG->branch >= 33) {
                 $updatedevent->timesort = $part->dtdue;
@@ -1804,6 +1828,9 @@ function turnitintooltwo_update_event($turnitintooltwo, $part, $courseparam = fa
             }
 
             $DB->update_record('event', $updatedevent);
+        } else {
+            $turnitintooltwoassignment = new turnitintooltwo_assignment($turnitintooltwo->id);
+            $turnitintooltwoassignment->create_event($turnitintooltwo->id, $part->partname, $part->dtdue);
         }
     } catch (Exception $e) {
         turnitintooltwo_comms::handle_exceptions($e, 'turnitintooltwoupdateerror', false);
