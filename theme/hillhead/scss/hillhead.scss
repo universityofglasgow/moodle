@@ -502,3 +502,7 @@ div#gridshadebox_content.absolute {
     color: #666;
     text-decoration: none;
 }
+
+.course-content ul.ctopics li.section .content .toggle span, .course-content ul.ctopics li.section .content.sectionhidden {
+    color: inherit;
+}
