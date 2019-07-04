@@ -38,7 +38,7 @@ $PAGE->set_pagelayout('admin');
 // Find course
 $course = $DB->get_record('course', array('id' => $courseid), '*', MUST_EXIST);
 
-// If editing existing 
+// If editing existing
 if ($id) {
     $request = $DB->get_record('report_enhance', array('id' => $id), '*', MUST_EXIST);
 } else {
@@ -80,9 +80,24 @@ if ($form->is_cancelled()) {
     $request->timemodified = time();
     if ($id) {
         $DB->update_record('report_enhance', $request);
+
+            // Log event
+            $event = \report_enhance\event\enhancement_edited::create([
+                'context' => $context,
+                'objectid' => $id,
+            ]);
+            $event->trigger();
     } else {
         $id = $DB->insert_record('report_enhance', $request);
+        $request->id = $id;
         \report_enhance\email::newrequest($USER, $request);
+
+        // Log event
+        $event = \report_enhance\event\enhancement_logged::create([
+            'context' => $context,
+            'objectid' => $id,
+        ]);
+        $event->trigger();
     }
 
     // Attachments

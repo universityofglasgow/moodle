@@ -80,3 +80,9 @@ echo $output->render($more);
 
 echo $OUTPUT->footer();
 
+// Trigger a enhancement viewed event.
+$event = \report_enhance\event\enhancement_viewed::create([
+    'context' => $context,
+    'objectid' => $id,
+]);
+$event->trigger();

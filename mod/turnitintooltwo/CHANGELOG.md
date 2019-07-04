@@ -1,3 +1,53 @@
+### Date:		2019-Jul-02
+### Release:	v2019070201
+
+#### :zap: What's new
+
+---
+
+#### Moodle 3.7 support and course overview bug fixes
+
+We've been working on supporting Moodle 3.7 and improving the course overview area. 
+
+We've given the student and instructor views a refresh, and squashed some bugs that were affecting the Moodle timeline and student submissions. The details of the bug fixes are below.
+
+#### :wrench: Fixes and enhancements
+
+---
+
+#### Moodle timeline bug resolved
+
+There was a bug impacting the Moodle timeline that occurred when resetting courses with new assignment dates. As a result of this bug, after resetting, the new assignment wasn’t visible. This has now been resolved.
+
+#### Overdue messaging bug resolved
+
+Students were experiencing a bug that was causing the 'Recently Overdue' message to display even after students had submitted to the assignment. The message would only disappear once the submission has been graded. The message no longer displays once the student has submitted.
+
+---
+
+### Date:		2019-May-01
+### Release:	v2019050101
+
+#### :wrench: Fixes and enhancements
+
+#### Migration tool modal improvements
+
+We've made sure that the modal displays when using our migration tool. If your migration is successful, then a green notification box will be displayed to confirm this.
+
+#### Download student file button visibility
+We’ve been improving usability by clarifying available options to instructors. Previously, the download student files button was hidden until a student was selected. We’ve now made the button visible at all times, but it is only possible to invoke the button once a student has been selected.
+
+#### Migration bugs resolved
+There were some bugs affecting the migration process. One was causing assignment parts that had been deleted in V1 to reappear after the migration to V2. The other was placing new parts of migrated assignments in the incorrect class within Turnitin. These issues have been resolved.
+
+#### Student grades hidden until post date
+Now students will be unable to see grades in the Moodle grade book until the post date has passed. Big thanks to Neill Magill for the pull request with the fix to this issue!
+
+#### Privacy settings updates
+We now carry over privacy settings from Moodle V1 to Moodle V2 when the user migrates.
+
+---
+
 ### Date:		2019-January-24
 ### Release:	v2019012401
 

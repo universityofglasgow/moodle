@@ -30,7 +30,7 @@ class email {
     /**
      * Send message
      *
-     * Message elements 
+     * Message elements
      *  component string Component name. must exist in message_providers
      *  name string Message type name. must exist in message_providers
      *  userfrom object|int The user sending the message
@@ -57,11 +57,18 @@ class email {
      * @param object $request request db object
      */
     public static function newrequest($requestor, $request) {
-        global $CFG;
+        global $CFG, $DB;
 
         // Find users with report/enhance:emailnotifynew
         $context = \context_system::instance();
         $users = get_users_by_capability($context, 'report/enhance:emailnotifynew');
+
+        // Get user details
+        $user = $DB->get_record('user', ['id' => $request->userid], '*', MUST_EXIST);
+        $request->username = fullname($user);
+
+        // Link
+        $request->link = new \moodle_url('/report/enhance/more.php', ['courseid' => 1, 'id' => $request->id]);
 
         foreach ($users as $user) {
             $elements = [

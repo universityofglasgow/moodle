@@ -32,7 +32,7 @@ function local_gumenu_extend_settings_navigation(settings_navigation $nav, conte
     // check that the user has *any* capability needed here. This is so
     // we don't display the category if not needed
     $caps = array(
-        'report/anonymous:view',
+        'report/assign:view',
         'report/guid:courseupload',
         'report/guenrol:view',
         'moodle/course:enrolconfig',
@@ -68,13 +68,13 @@ function local_gumenu_extend_settings_navigation(settings_navigation $nav, conte
     $uofgnode = $courseadminnode->add_node(new navigation_node($props));
 
     // Add a link to anonymous report
-    if (has_capability('report/anonymous:view', $context)) {
+    if (has_capability('report/assign:view', $context)) {
         $props = array(
-            'text' => get_string('pluginname', 'report_anonymous'),
-            'shorttext' => 'uofganonymous',
+            'text' => get_string('pluginname', 'report_assign'),
+            'shorttext' => 'uofgassign',
             'type' => navigation_node::TYPE_CUSTOM,
-            'action' => new moodle_url('/report/anonymous/index.php', array('id' => $courseid)),
-            'key' => 'uofganonymous',
+            'action' => new moodle_url('/report/assign/index.php', array('id' => $courseid)),
+            'key' => 'uofgassign',
         );
         $uofgnode->add_node(new navigation_node($props));
     }
