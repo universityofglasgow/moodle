@@ -1,4 +1,6 @@
 <?php
+    
+    global $DB;
 
     $breadcrumbLinks = '<ul class="tabBar">';
     
@@ -8,11 +10,19 @@
     
     if(isset($COURSE) && $COURSE->id != 1) {
         $breadcrumbLinks .= '<li><a href="'.$CFG->wwwroot.'/course/view.php?id='.$COURSE->id.'"><i class="fa fa-graduation-cap"></i> '.$COURSE->fullname.'</a></li>';
+
         if($PAGE->cm) {
+            $sectionDetails = $DB->get_record('course_sections', ['id' => $PAGE->cm->section], '*', IGNORE_MISSING);
+            $breadcrumbLinks .= '<li><a href="'.$CFG->wwwroot.'/course/view.php?id='.$COURSE->id.'&section='.$sectionDetails->section.'"><i class="fa fa-list"></i> '.$sectionDetails->name.'</a></li>';
             $breadcrumbLinks .= '<li><a href="'.$PAGE->cm->url.'"><i class="fa fa-bookmark"></i> '.$PAGE->cm->name.'</a></li>';
         } else {
-            // We're in a course, but not within a module
-            $isOtherPage = true;
+            if(isset($_GET['section'])) {
+                $sectionDetails = $DB->get_record('course_sections', ['course' => $COURSE->id, 'section' => $_GET['section']], '*', IGNORE_MISSING);
+                $breadcrumbLinks .= '<li><a href="'.$CFG->wwwroot.'/course/view.php?id='.$COURSE->id.'&section='.$_GET['section'].'"><i class="fa fa-list"></i> '.$sectionDetails->name.'</a></li>';
+            } else {
+                // We're in a course, but not within a module
+                $isOtherPage = true;
+            }
         }
     } else {
         // We're in some sort of side-wide context
