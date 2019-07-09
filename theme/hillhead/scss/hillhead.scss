@@ -236,6 +236,11 @@ nav.navbar .dropdown > a {
     border-bottom: 1px solid $hillhead-card-br;
 }
 
+#page-course-view-topics ul.topics li.section .section-modchooser, #page-course-view-weeks ul.weeks li.section .section-modchooser  {
+    padding: 7px 20px;
+    border-top: 1px solid $hillhead-card-br;
+}
+
 #page-course-view-topics .course-content ul.topics li.section .left, #page-course-view-topics .course-content ul.topics li.section .right, #page-course-view-weeks .course-content ul.weeks li.section .left, #page-course-view-weeks .course-content ul.weeks li.section .right {
     //padding: 5px 20px;
 }
@@ -268,6 +273,11 @@ nav.navbar .dropdown > a {
     background: transparent;
     margin-bottom: 20px !important;
     margin-top: 20px;
+}
+
+.block_recentlyaccesseditems img.icon {
+    width: 24px;
+    height: 24px;
 }
 
 .course-summaryitem .summaryimage {
