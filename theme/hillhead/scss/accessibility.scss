@@ -49,6 +49,20 @@ body.hillhead-size-180 {
     font-size: 180%;
 }
 
+body.hillhead-size-120 .choosercontainer #chooseform .option label, body.hillhead-size-140 .choosercontainer #chooseform .option label, body.hillhead-size-160 .choosercontainer #chooseform .option label, body.hillhead-size-180 .choosercontainer #chooseform .option label {
+    font-size: inherit;   
+}
+
+body.hillhead-size-120 .choosercontainer #chooseform .option .typename, body.hillhead-size-140 .choosercontainer #chooseform .option .typename, body.hillhead-size-160 .choosercontainer #chooseform .option .typename, body.hillhead-size-180 .choosercontainer #chooseform .option .typename {
+    //display: inline !important;
+    width: inherit;
+    padding-left: 0.5em;
+}
+
+body.hillhead-size-120 .choosercontainer #chooseform .option .modicon, body.hillhead-size-140 .choosercontainer #chooseform .option .modicon, body.hillhead-size-160 .choosercontainer #chooseform .option .modicon, body.hillhead-size-180 .choosercontainer #chooseform .option .modicon {
+    display: none;
+}
+
 body.hillhead-spacing * {
     line-height: 2rem;
 }
