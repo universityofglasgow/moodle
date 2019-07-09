@@ -32,7 +32,7 @@ if($hillheadoldbrowseralerts == 'enabled') {
     $userAgentFlags = Array(
         'windows-xp'			=>'/(Windows NT 5.1)|(Windows XP)/',
 		'firefox-1-51'          => '/Firefox\/([0-9]|[1-4][0-9]|5[0-1])\b/',
-		'safari-1-7'			=> '/AppleWebKit\/([0-9][0-9]|[0-5][0-9][0-9])\b/',
+		'safari-1-7'			=> '/AppleWebKit\/([0-9][0-9]|[0-4][0-9][0-9]|5[0-2][0-9])\b/',
 		'ie-5-10'               =>  '/MSIE ([5-9]|10)\b/'
 	);
 	
@@ -59,6 +59,7 @@ if($hillheadoldbrowseralerts == 'enabled') {
         	    break;
             default:
                 $oldBrowserText .= 'This is an old browser and isn\'t supported by Moodle. Some things might be broken or might not look right.';
+                //$oldBrowserText .= 'Debug Information: '.$_SERVER['HTTP_USER_AGENT'].print_r($flags, true);
                 break;
     	}
     	

@@ -28,7 +28,9 @@
     } else {
         if($setting == 'theme_hillhead_reset_accessibility') {
             foreach($allowedPreferences as $unset=>$pointlessTrue) {
-                unset_user_preference($unset);
+                if($unset != 'theme_hillhead_accessibility') {
+                    unset_user_preference($unset);
+                }
             }
         }
     }
