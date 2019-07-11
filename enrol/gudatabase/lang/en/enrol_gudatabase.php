@@ -22,6 +22,8 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+$string['allowunenrol'] = 'Allow unenrol features';
+$string['allowunenrol_desc'] = 'Enable remove from course/group features at instance level';
 $string['autherror'] = 'An error occurred processing UofG automatic enrolment - additional information has been logged';
 $string['cannotunenrol'] = 'You are not permitted to unenrol yourself from this course. You must unenrol in MyCampus first and then wait at
     least 24 hours before trying again.';
