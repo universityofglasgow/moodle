@@ -38,6 +38,7 @@ use context_course;
 use context_system;
 use pix_icon;
 use action_menu_filler;
+use action_menu_link;
 use action_menu_link_secondary;
 use core_text;
 
@@ -153,4 +154,198 @@ class core_renderer extends \core_renderer {
 
         return $html;
     }
+    
+        /**
+     * Construct a user menu, returning HTML that can be echoed out by a
+     * layout file.
+     *
+     * @param stdClass $user A user object, usually $USER.
+     * @param bool $withlinks true if a dropdown should be built.
+     * @return string HTML fragment.
+     */
+    public function user_menu($user = null, $withlinks = null) {
+        global $USER, $CFG;
+        require_once($CFG->dirroot . '/user/lib.php');
+
+        if (is_null($user)) {
+            $user = $USER;
+        }
+
+        // Note: this behaviour is intended to match that of core_renderer::login_info,
+        // but should not be considered to be good practice; layout options are
+        // intended to be theme-specific. Please don't copy this snippet anywhere else.
+        if (is_null($withlinks)) {
+            $withlinks = empty($this->page->layout_options['nologinlinks']);
+        }
+
+        // Add a class for when $withlinks is false.
+        $usermenuclasses = 'usermenu';
+        if (!$withlinks) {
+            $usermenuclasses .= ' withoutlinks';
+        }
+
+        $returnstr = "";
+
+        // If during initial install, return the empty return string.
+        if (during_initial_install()) {
+            return $returnstr;
+        }
+
+        $loginpage = $this->is_login_page();
+        $loginurl = get_login_url();
+        // If not logged in, show the typical not-logged-in string.
+        if (!isloggedin()) {
+            $returnstr = get_string('loggedinnot', 'moodle');
+            if (!$loginpage) {
+                $returnstr .= " (<a href=\"$loginurl\">" . get_string('login') . '</a>)';
+            }
+            return html_writer::div(
+                html_writer::span(
+                    $returnstr,
+                    'login'
+                ),
+                $usermenuclasses
+            );
+
+        }
+
+        // If logged in as a guest user, show a string to that effect.
+        if (isguestuser()) {
+            $returnstr = get_string('loggedinasguest');
+            if (!$loginpage && $withlinks) {
+                $returnstr .= " (<a href=\"$loginurl\">".get_string('login').'</a>)';
+            }
+
+            return html_writer::div(
+                html_writer::span(
+                    $returnstr,
+                    'login'
+                ),
+                $usermenuclasses
+            );
+        }
+        
+        $extraMenuItems = Array();
+
+        // Get some navigation opts.
+        $opts = user_get_user_navigation_info($user, $this->page);
+
+        $avatarclasses = "avatars";
+        $avatarcontents = html_writer::span($opts->metadata['useravatar'], 'avatar current');
+        $usertextcontents = '';
+        
+        if (!empty($opts->metadata['asotheruser'])) {
+            $extraMenuItems[] = Array(
+                'icon' => new pix_icon('i/user', '', null, array('class' => 'iconsmall')),
+                'text' => $opts->metadata['realuserfullname'],
+                'link' => new moodle_url('/my')
+            );
+            $extraMenuItems[] = Array(
+                'icon' => new pix_icon('i/users', '', null, array('class' => 'iconsmall')),
+                'text' => get_string('loggedinas','moodle', $opts->metadata['userfullname']),
+                'link' => false
+            );
+        } else {
+            $extraMenuItems[] = Array(
+                'icon' => new pix_icon('i/user', '', null, array('class' => 'iconsmall')),
+                'text' => $opts->metadata['userfullname'],
+                'link' => new moodle_url('/my')
+            );
+        }
+        
+        
+
+        // Role.
+        if (!empty($opts->metadata['asotherrole'])) {
+            $extraMenuItems[] = Array(
+                'icon' => new pix_icon('hillhead/role', '', null, array('class' => 'iconsmall')),
+                'text' => 'Viewing as a '.$opts->metadata['rolename'],
+                'link' => false
+            );
+        }
+
+        $returnstr .= html_writer::span(
+            html_writer::span($usertextcontents, 'usertext mr-1') .
+            html_writer::span($avatarcontents, $avatarclasses),
+            'userbutton'
+        );
+
+        // Create a divider (well, a filler).
+        $divider = new action_menu_filler();
+        $divider->primary = false;
+
+        $am = new action_menu();
+        $am->set_menu_trigger(
+            $returnstr
+        );
+        
+        foreach($extraMenuItems as $menuItem) {
+            if($menuItem['link'] === false) {
+                $am->add($this->render($menuItem['icon']).$menuItem['text']);
+            } else {
+                $am->add_secondary_action(new action_menu_link_secondary($menuItem['link'], $menuItem['icon'], $menuItem['text']));
+            }
+        }
+        
+        $am->add($divider);
+                
+        $am->set_action_label(get_string('usermenu'));
+        $am->set_alignment(action_menu::TR, action_menu::BR);
+        $am->set_nowrap_on_items();
+        if ($withlinks) {
+            $navitemcount = count($opts->navitems);
+            $idx = 0;
+            foreach ($opts->navitems as $key => $value) {
+
+                switch ($value->itemtype) {
+                    case 'divider':
+                        // If the nav item is a divider, add one and skip link processing.
+                        $am->add($divider);
+                        break;
+
+                    case 'invalid':
+                        // Silently skip invalid entries (should we post a notification?).
+                        break;
+
+                    case 'link':
+                        // Process this as a link item.
+                        $pix = null;
+                        if (isset($value->pix) && !empty($value->pix)) {
+                            $pix = new pix_icon($value->pix, '', null, array('class' => 'iconsmall'));
+                        } else if (isset($value->imgsrc) && !empty($value->imgsrc)) {
+                            $value->title = html_writer::img(
+                                $value->imgsrc,
+                                $value->title,
+                                array('class' => 'iconsmall')
+                            ) . $value->title;
+                        }
+
+                        $al = new action_menu_link_secondary(
+                            $value->url,
+                            $pix,
+                            $value->title,
+                            array('class' => 'icon')
+                        );
+                        if (!empty($value->titleidentifier)) {
+                            $al->attributes['data-title'] = $value->titleidentifier;
+                        }
+                        $am->add($al);
+                        break;
+                }
+
+                $idx++;
+
+                // Add dividers after the first item and before the last item.
+                if ($idx == 1 || $idx == $navitemcount - 1) {
+                    $am->add($divider);
+                }
+            }
+        }
+
+        return html_writer::div(
+            $this->render($am),
+            $usermenuclasses
+        );
+    }
+
 }
