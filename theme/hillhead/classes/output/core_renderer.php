@@ -232,7 +232,9 @@ class core_renderer extends \core_renderer {
 
         $avatarclasses = "avatars";
         $avatarcontents = html_writer::span($opts->metadata['useravatar'], 'avatar current');
+        $dropdownAvatar = $avatarcontents;
         $usertextcontents = '';
+        $loginMenuHeader = '';
         
         if (!empty($opts->metadata['asotheruser'])) {
             $extraMenuItems[] = Array(
@@ -240,10 +242,16 @@ class core_renderer extends \core_renderer {
                 'text' => $opts->metadata['realuserfullname'],
                 'link' => new moodle_url('/my')
             );
+            $loginMenuHeader .= '<span class="loggedinuser">'.$opts->metadata['realuserfullname'].'</span>';
             $extraMenuItems[] = Array(
                 'icon' => new pix_icon('i/users', '', null, array('class' => 'iconsmall')),
                 'text' => get_string('loggedinas','moodle', $opts->metadata['userfullname']),
                 'link' => false
+            );
+            $loginMenuHeader .= '<span class="dimmed">'.get_string('loggedinas','moodle', $opts->metadata['userfullname']).'</span>';
+            $avatarcontents .= html_writer::span(
+                $opts->metadata['realuseravatar'],
+                'avatar realuser'
             );
         } else {
             $extraMenuItems[] = Array(
@@ -251,6 +259,7 @@ class core_renderer extends \core_renderer {
                 'text' => $opts->metadata['userfullname'],
                 'link' => new moodle_url('/my')
             );
+            $loginMenuHeader .= '<span class="loggedinuser">'.$opts->metadata['userfullname'].'</span>';
         }
         
         
@@ -262,6 +271,7 @@ class core_renderer extends \core_renderer {
                 'text' => 'Viewing as a '.$opts->metadata['rolename'],
                 'link' => false
             );
+            $loginMenuHeader .= '<span class="dimmed">'.'Viewing as a '.$opts->metadata['rolename'].'</span>';
         }
 
         $returnstr .= html_writer::span(
@@ -279,7 +289,11 @@ class core_renderer extends \core_renderer {
             $returnstr
         );
         
-        foreach($extraMenuItems as $menuItem) {
+        $am->add('<div class="media user-login-details">'.$dropdownAvatar.'<div class="media-body m-l-1">'.$loginMenuHeader.'</div></div>');
+        
+        $am->add($divider);
+        
+        /*foreach($extraMenuItems as $menuItem) {
             if($menuItem['link'] === false) {
                 $am->add($this->render($menuItem['icon']).$menuItem['text']);
             } else {
@@ -287,7 +301,7 @@ class core_renderer extends \core_renderer {
             }
         }
         
-        $am->add($divider);
+        $am->add($divider);*/
                 
         $am->set_action_label(get_string('usermenu'));
         $am->set_alignment(action_menu::TR, action_menu::BR);
