@@ -102,6 +102,8 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configcheckbox('enrol_gudatabase/debugdb',
         get_string('debugdb', 'enrol_database'), get_string('debugdb_desc', 'enrol_database'), 0));
 
+    $settings->add(new admin_setting_configcheckbox('enrol_gudatabase/allowunenrol',
+        get_string('allowunenrol', 'enrol_gudatabase'), get_string('allowunenrol_desc', 'enrol_gudatabase'), 0));
 
     $settings->add(new admin_setting_heading('enrol_gudatabase_remoteheader',
         get_string('settingsheaderremote', 'enrol_database'), ''));

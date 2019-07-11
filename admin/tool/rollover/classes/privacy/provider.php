@@ -17,12 +17,12 @@
 /**
  * Privacy Subsystem implementation for local_rollover
  *
- * @package    local_rollover
- * @copyright  2018 Howard Miller
+ * @package    tool_rollover
+ * @copyright  2019 Howard Miller
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_rollover\privacy;
+namespace tool_rollover\privacy;
 
 defined('MOODLE_INTERNAL') || die();
 

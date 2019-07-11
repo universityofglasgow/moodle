@@ -15,23 +15,14 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Define capabilities for local_rollover
+ * Version file for local_rollover
  *
- * @package    local_rollover
- * @copyright  2018 Howard Miller
+ * @package    tool_rollover
+ * @copyright  2019 Howard Miller
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
-$tasks = [
-    [
-        'classname' => 'local_rollover\task\rollover',
-        'blocking' => 0,
-        'minute' => '0',
-        'hour' => '*',
-        'day' => '*',
-        'dayofweek' => '*',
-        'month' => '*',
-    ],
-];
+$plugin->version = 2019070900;
+$plugin->requires = 2018051700;
+$plugin->component = 'tool_rollover';
+$plugin->description = 'UofG rollover control';

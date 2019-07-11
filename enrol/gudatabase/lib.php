@@ -841,6 +841,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         }
 
         $context = context_course::instance($course->id);
+        $config = get_config('enrol_gudatabase');
 
         // First need to get a list of possible course codes
         // we will aggregate single code from course shortname
@@ -908,7 +909,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         }
 
         // If required unenrol remaining users.
-        if (!empty($instance->customint4)) {
+        if (!empty($instance->customint4) && $config->allowunenrol) {
 
             // Get list of users enrolled in this instance.
             $enrolments = $DB->get_records('user_enrolments', array('enrolid' => $instance->id));
@@ -918,6 +919,8 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
                 if (array_key_exists($enrolment->userid, $enrolledusers)) {
                     continue;
                 } else {
+
+                    // DISABLE THIS FEATURE FOR NOW
                     $this->unenrol_user($instance, $enrolment->userid);
                 }
             }
@@ -1159,6 +1162,8 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
     public function sync_groups($course, $instance) {
         global $DB;
 
+        $config = get_config('enrol_gudatabase');
+
         // Shall we?
         if ($instance->status != ENROL_INSTANCE_ENABLED) {
             return false;
@@ -1239,7 +1244,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
                         }
 
                         // Remove group members no longer in classgroup.
-                        if (!empty($instance->customint5)) {
+                        if (!empty($instance->customint5) && $config->allowunenrol) {
                             if ($members = $DB->get_records('groups_members', array('groupid' => $groupid))) {
                                 foreach ($members as $member) {
                                     if (!in_array($member->userid, $enrolledusers)) {

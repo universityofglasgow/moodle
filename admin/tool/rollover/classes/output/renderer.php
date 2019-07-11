@@ -15,14 +15,26 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version file for local_rollover
+ * This file contains functions used by the rollover tool
  *
- * @package    local_rollover
- * @copyright  2018 Howard Miller
+ * @copyright  2019 Howard Miller
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$plugin->version = 2018052900;
-$plugin->requires = 2018051700;
-$plugin->component = 'local_rollover';
-$plugin->description = 'UofG rollover control';
+namespace tool_rollover\output;
+
+defined('MOODLE_INTERNAL') || die;
+
+use plugin_renderer_base;
+use moodle_url;
+
+class renderer extends plugin_renderer_base {
+
+    /**
+     * Render database build page
+     */
+    public function render_build(build $build) {
+        return $this->render_from_template('tool_rollover/build', $build->export_for_template($this));
+    }
+
+}

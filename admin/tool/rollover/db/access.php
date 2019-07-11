@@ -17,8 +17,8 @@
 /**
  * Define capabilities for local_rollover
  *
- * @package    local_rollover
- * @copyright  2018 Howard Miller
+ * @package    tool_rollover
+ * @copyright  2019 Howard Miller
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -27,7 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 $capabilities = array(
 
     /* Configure the course settings */
-    'local/rollover:config' => array(
+    'tool/rollover:config' => array(
 
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,

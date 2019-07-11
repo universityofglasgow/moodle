@@ -15,16 +15,16 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * locallib class
+ * tool_rollover library
  *
- * @package    local_rollover
- * @copyright  2018 Howard Miller
+ * @package    tool_rollover
+ * @copyright  2019 Howard Miller
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_rollover;
+namespace tool_rollover;
 
-require_once($CFG->libdir . '/coursecatlib.php');
+defined('MOODLE_INTERNAL') || die();
 
 // Overall rollover processing state.
 define('ROLLOVER_STATE_DISABLED', 1); // Completely disabled
@@ -36,7 +36,30 @@ define('ROLLOVER_COURSE_WAITING', 1); // scheduled but not processed
 define('ROLLOVER_COURSE_BACKUP', 2); // backup file has been created
 define('ROLLOVER_COURSE_RESTORE', 3); // archive version has been restored
 
-class locallib {
+class lib {
+
+    /**
+     * Get current status
+     * @return array
+     */
+    public static function get_current_status() {
+        global $DB;
+
+        // Count 'waiting'
+        $waiting = $DB->count_records('tool_rollover', ['state' => ROLLOVER_COURSE_WAITING]);
+
+        // Count 'backup'
+        $backup = $DB->count_records('tool_rollover', ['state' => ROLLOVER_COURSE_BACKUP]);
+
+        // Count 'restore'
+        $restore = $DB->count_records('tool_rollover', ['state' => ROLLOVER_COURSE_RESTORE]);
+
+        return [
+            'waiting' => $waiting,
+            'backup' => $backup,
+            'restore' => $restore,
+        ];
+    }
 
     /**
      * Get rollover state
@@ -46,18 +69,18 @@ class locallib {
 
         // If rollover is disabled then always reset state
         // TODO: might want to clear some db stuff too
-        if (!get_config('local_rollover', 'enable')) {
-            set_config('state', ROLLOVER_STATE_DISABLED, 'local_rollover');
+        if (!get_config('tool_rollover', 'enable')) {
+            set_config('state', ROLLOVER_STATE_DISABLED, 'tool_rollover');
             return ROLLOVER_STATE_DISABLED;
         }
 
         // If rollover is enabled then some state checks required
-        $state = get_config('local_rollover', 'state');
+        $state = get_config('tool_rollover', 'state');
         if (!$state || ($state == ROLLOVER_STATE_DISABLED)) {
-            set_config('state', ROLLOVER_STATE_START, 'local_rollover');
+            set_config('state', ROLLOVER_STATE_START, 'tool_rollover');
         }
 
-        return get_config('local_rollover', 'state');
+        return get_config('tool_rollover', 'state');
     }
 
     /**
@@ -68,10 +91,8 @@ class locallib {
         global $DB;
 
         // set state to building table
-        // set_config('state', ROLLOVER_STATE_BUILDTABLE, 'local_rollover');
-        mtrace('rollover: creating course table');
         $excludedcategories = self::get_excluded_categories();
-        $session = get_config('local_rollover', 'session');
+        $session = get_config('tool_rollover', 'session');
 
         // Keep some counts.
         $skipped = 0;
@@ -79,17 +100,15 @@ class locallib {
         $added = 0;
 
         // Which courses?
-        $sourcecategory = get_config('local_rollover', 'sourcecategory');
+        $sourcecategory = get_config('tool_rollover', 'sourcecategory');
         if ($sourcecategory) {
-            mtrace('rollover: source category specified = ' . $sourcecategory);
             $category = \coursecat::get($sourcecategory);
             $children = $category->get_all_children_ids();
             $categoryids = array_merge([$sourcecategory], $children);
-            $rs = $DB->get_recordset_list('course', 'category', $categoryids); 
+            $rs = $DB->get_recordset_list('course', 'category', $categoryids);
         } else {
 
-            // Every single course :-O        
-            mtrace('rollover: no source category specified. Examining all courses');
+            // Every single course :-O
             $rs = $DB->get_recordset('course');
         }
 
@@ -99,13 +118,13 @@ class locallib {
             if (in_array($course->category, $excludedcategories)) {
 
                 // It may already have a table entry...
-                $DB->delete_records('local_rollover', ['session' => $session, 'courseid' => $course->id]);
+                $DB->delete_records('tool_rollover', ['session' => $session, 'courseid' => $course->id]);
                 $skipped++;
                 continue;
             }
 
             // Does this already have an entry
-            if ($rollover = $DB->get_record('local_rollover', ['session' => $session, 'courseid' => $course->id])) {
+            if ($rollover = $DB->get_record('tool_rollover', ['session' => $session, 'courseid' => $course->id])) {
                 $existing++;
                 continue;
             }
@@ -119,14 +138,19 @@ class locallib {
             $rollover->filename = '';
             $rollover->timestarted = 0;
             $rollover->timecompleted = 0;
-            $DB->insert_record('local_rollover', $rollover);
+            $DB->insert_record('tool_rollover', $rollover);
             $added++;
         }
         $rs->close();
+    }
 
-        mtrace('rollover: courses skipped (excluded categories) = ' . $skipped);
-        mtrace('rollover: courses already in table  = ' . $existing);
-        mtrace('rollover: courses added = ' . $added);
+    /**
+     * Empty table
+     */
+    public static function delete_course_table() {
+        global $DB;
+
+        $DB->delete_records('tool_rollover');
     }
 
     /**
@@ -138,7 +162,7 @@ class locallib {
         global $DB;
 
         // First, get the list and grab the list of top-level categories.
-        $categoryexclude = get_config('local_rollover', 'categoryexclude');
+        $categoryexclude = get_config('tool_rollover', 'categoryexclude');
         $lines = explode(PHP_EOL, $categoryexclude);
         $categories = [];
         foreach ($lines as $line) {
@@ -151,8 +175,7 @@ class locallib {
         // Run through top-level and find all the children as well.
         $allcats = [];
         foreach ($categories as $key => $value) {
-            if (!$category = \coursecat::get((int)$value, IGNORE_MISSING)) {
-                mtrace('rollover: no such category in excluded categories list id=' . $value);
+            if (!$category = \core_course_category::get((int)$value, IGNORE_MISSING)) {
                 continue;
             }
             $children = $category->get_all_children_ids();
@@ -162,7 +185,7 @@ class locallib {
                 $allcats[$childid] = $childid;
             }
         }
-      
+
         return $allcats;
     }
 
