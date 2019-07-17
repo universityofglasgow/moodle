@@ -131,11 +131,11 @@ class main implements renderable, templatable {
         if ($this->config->showcategories != BLOCKS_COURSE_OVERVIEW_SHOWCATEGORIES_NONE) {
 
             // List category parent or categories path here.
-            $currentcategory = \coursecat::get($id, IGNORE_MISSING);
+            $currentcategory = \core_course_category::get($id, IGNORE_MISSING);
             if ($currentcategory !== null) {
                 if ($this->config->showcategories == BLOCKS_COURSE_OVERVIEW_SHOWCATEGORIES_FULL_PATH) {
                     foreach ($currentcategory->get_parents() as $categoryid) {
-                        $category = \coursecat::get($categoryid, IGNORE_MISSING);
+                        $category = \core_course_category::get($categoryid, IGNORE_MISSING);
                         if ($category !== null) {
                             $categories[] = $category->get_formatted_name();
                         }
