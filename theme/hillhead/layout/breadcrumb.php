@@ -20,12 +20,16 @@
         if(isset($COURSE->category) && $COURSE->category != 0) {
             $thisCategory = $COURSE->category;
         } else {
-            $thisCategory = $_GET['categoryid'];
+            if(isset($_GET['categoryid'])) {
+                $thisCategory = $_GET['categoryid'];
+            } else {
+                $thisCategory = 0;
+            }
         }
         
         $num = 0;
         
-        do {
+        while ($thisCategory != 0) {
             $categoryDetails = $DB->get_record('course_categories', array('id' => $thisCategory), 'id, name, parent');
             
             $categories[] = Array(
@@ -35,19 +39,22 @@
             
             $thisCategory = $categoryDetails->parent;
             
-        } while ($categoryDetails->parent != 0);
-        
-        $closestCategory = $categories[0];
-        
-        $categories = array_reverse($categories);
-        
-        $breadcrumbLinks .= '<li><a class="dropdown-toggle" href="#" id="courseCategoryBreadcrumb" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-list"></i> '.$closestCategory['name'].'</a><div class="dropdown-menu" aria-labelledby="courseCategoryBreadcrumb">';
-        
-        foreach($categories as $thisCategory) {
-            $breadcrumbLinks .= '<a class="dropdown-item" href="'.$CFG->wwwroot.'/course/index.php?categoryid='.$thisCategory['id'].'"><i class="fa fa-list"></i> '.$thisCategory['name'].'</a>';
         }
         
-        $breadcrumbLinks .= '</div></li>';
+        if(count($categories) != 0) {
+        
+            $closestCategory = $categories[0];
+            
+            $categories = array_reverse($categories);
+            
+            $breadcrumbLinks .= '<li><a class="dropdown-toggle" href="#" id="courseCategoryBreadcrumb" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-list"></i> '.$closestCategory['name'].'</a><div class="dropdown-menu" aria-labelledby="courseCategoryBreadcrumb">';
+            
+            foreach($categories as $thisCategory) {
+                $breadcrumbLinks .= '<a class="dropdown-item" href="'.$CFG->wwwroot.'/course/index.php?categoryid='.$thisCategory['id'].'"><i class="fa fa-list"></i> '.$thisCategory['name'].'</a>';
+            }
+            
+            $breadcrumbLinks .= '</div></li>';
+        }
     }
     
     if($showCourse) {
