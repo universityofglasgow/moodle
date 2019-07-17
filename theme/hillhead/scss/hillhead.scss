@@ -358,12 +358,12 @@ nav .breadcrumb {
     border: 1px solid $hillhead-card-br;
 }
 
-.tabBar li:first-child {
+.tabBar > li:first-child {
     border-left: none !important;
     border-top: none !important;
 }
 
-.tabBar li {
+.tabBar > li {
     display: block;
     padding: 10px 15px;
     border-top: 1px solid $hillhead-card-br;
@@ -428,6 +428,8 @@ nav .breadcrumb {
 
 .tabBar i {
     margin-right: 0.5em;
+    width: 1.4em;
+    text-align: center;
 }
 
 .activity-navigation .float-left {
