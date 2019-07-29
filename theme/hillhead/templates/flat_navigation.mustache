@@ -77,6 +77,26 @@
 </ul>
 {{/sitenavexists}}
 
+{{#settingsnavexists}}
+<h2>Course Settings</h2>
+<ul>
+{{#settingsnav}}
+    <li>
+        <a href="{{{action}}}">
+            <div class="media">
+                {{#icon.pix}}
+                    <span class="media-left">
+                        {{#pix}}{{{icon.pix}}}, {{{icon.component}}}, {{{icon.alt}}}{{/pix}}
+                    </span>
+                {{/icon.pix}}
+                <span class="media-body">{{{text}}}</span>
+            </div>
+        </a>
+    </li>
+{{/settingsnav}}
+</ul>
+{{/settingsnavexists}}
+
 {{#starrednavexists}}
 <h2>Starred Courses</h2>
 <ul>
@@ -97,47 +117,7 @@
 </ul>
 {{/starrednavexists}}
 
-{{^starrednavexists}}
-    {{#coursenavexists}}
-<h2>My Courses</h2>
-<ul>
-{{#coursenav}}
-    <li>
-        <a href="{{{action}}}">
-            <div class="media">
-                {{#icon.pix}}
-                    <span class="media-left">
-                        {{#pix}}{{{icon.pix}}}, {{{icon.component}}}, {{{icon.alt}}}{{/pix}}
-                    </span>
-                {{/icon.pix}}
-                <span class="media-body">{{{text}}}</span>
-            </div>
-        </a>
-    </li>
-{{/coursenav}}
-</ul>
-    {{/coursenavexists}}
-{{/starrednavexists}}
 
-{{#settingsnavexists}}
-<h2>Course Settings</h2>
-<ul>
-{{#settingsnav}}
-    <li>
-        <a href="{{{action}}}">
-            <div class="media">
-                {{#icon.pix}}
-                    <span class="media-left">
-                        {{#pix}}{{{icon.pix}}}, {{{icon.component}}}, {{{icon.alt}}}{{/pix}}
-                    </span>
-                {{/icon.pix}}
-                <span class="media-body">{{{text}}}</span>
-            </div>
-        </a>
-    </li>
-{{/settingsnav}}
-</ul>
-{{/settingsnavexists}}
 
 {{#thiscoursenavexists}}
 <h2>Course Sections</h2>

@@ -38,6 +38,16 @@ $courseDirFlat->key = 'allcourses';
 $courseDirFlat->icon = new pix_icon('hillhead/allcourses', 'Browse Courses', 'moodle');
 $PAGE->flatnav->add($courseDirFlat);
 
+$hillheadHelpLink = get_config('theme_hillhead', 'hillhead_helpcentre');
+if(!empty($hillheadHelpLink)) { 
+    $helpLink = new moodle_url($hillheadHelpLink);
+    $helpLinkHav = navigation_node::create('Help', $helpLink);
+    $helpLinkFlat = new flat_navigation_node($helpLinkHav, 0);
+    $helpLinkFlat->key = 'helplink';
+    $helpLinkFlat->icon = new pix_icon('e/help', 'Help', 'moodle');
+    $PAGE->flatnav->add($helpLinkFlat);
+}
+
 $flatnav = $PAGE->flatnav;
 
 $coursenav = Array();
@@ -96,6 +106,7 @@ foreach($flatnav as $navitem) {
                 case 'calendar':
                 case 'privatefiles';
                 case 'home':
+                case 'helplink':
                     $sitenav[] = $navitem;
                     $sitenavexists = true;
                     break;

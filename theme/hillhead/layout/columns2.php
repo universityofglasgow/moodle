@@ -48,7 +48,7 @@ $templatecontext = [
 include('navigation.php');
 include('accessibility.php');
 include('topnotifications.php');
-include('breadcrumb.php');
+//include('breadcrumb.php');
 include('footerlinks.php');
 
 $templatecontext['starrednav'] = $starredCourses;
@@ -69,7 +69,7 @@ $templatecontext['accessibilityText'] = $accTxt;
 $templatecontext['accessibilityButton'] = $accessibilityButton;
 $templatecontext['extrascripts'] = $extraScripts;
 $templatecontext['notifications'] = $notiftext;
-$templatecontext['breadcrumb'] = $breadcrumbLinks;
+//$templatecontext['breadcrumb'] = $breadcrumbLinks;
 $templatecontext['footerlinks'] = $footerLinkText;
 
 echo $OUTPUT->render_from_template('theme_hillhead/columns2', $templatecontext);
