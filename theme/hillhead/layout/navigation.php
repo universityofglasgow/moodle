@@ -1,6 +1,6 @@
 <?php
     
-    $siteContext = context_system::instance();
+$siteContext = context_system::instance();
 $isAdmin = has_capability('moodle/site:config', $siteContext);
 $canSeeGUIDReport = has_capability('report/guid:view', $siteContext);
 
@@ -22,7 +22,7 @@ if($canSeeGUIDReport) {
 
 require_once('starredcourses.php');
 
-if($isAdmin) {
+if($isAdmin && debugging('', DEBUG_DEVELOPER)) {
     $purgeLink = new moodle_url('/admin/purgecaches.php?confirm=1&sesskey='.sesskey().'&returnurl='.$PAGE->url->out_as_local_url(false));
     $purgeNav = navigation_node::create('Purge All Caches', $purgeLink);
     $purgeFlat = new flat_navigation_node($purgeNav, 0);
