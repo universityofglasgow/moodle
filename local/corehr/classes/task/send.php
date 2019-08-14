@@ -24,13 +24,14 @@
 
 namespace local_corehr\task;
 
-class send extends \core\task\scheduled_task {      
+class send extends \core\task\scheduled_task {
+
     public function get_name() {
         // Shown in admin screens
         return get_string('send', 'local_corehr');
     }
-                                                                     
-    public function execute() {       
+
+    public function execute() {
         global $DB;
 
         // Get list of possible error codes
@@ -44,10 +45,10 @@ class send extends \core\task\scheduled_task {
             if ($targettime > time()) {
                 continue;
             }
-  
+
             // Attempt to send to CoreHR
             $message = \local_corehr\api::send($status);
-   
+
             // Deal sensibly with message
             $message = trim($message);
             $status->lasttry = time();
@@ -69,5 +70,5 @@ class send extends \core\task\scheduled_task {
 
             $DB->update_record('local_corehr_status', $status);
         }
-    }                                                                                                                               
-} 
+    }
+}

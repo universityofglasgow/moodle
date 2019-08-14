@@ -208,7 +208,7 @@ class api {
         ];
 
         // Try soap call. Attempt to get some useful information if it fails.
-        $result = $client->__soapCall('getPersonByGuid', [$getPersonByGuid]);        
+        $result = $client->__soapCall('getPersonByGuid', [$getPersonByGuid]);
         if (is_a($result, 'SoapFault')) {
 
             // This doesn't appear to throw an error, but just in case
@@ -271,9 +271,9 @@ class api {
      * @param object $extract
      */
     public static function store_extract_guid($guid, $extract) {
-        global $DB;
+        global $CFG, $DB;
 
-        $user = $DB->get_record('user', ['username' => $guid]);
+        $user = $DB->get_record('user', ['username' => $guid, 'mnethostid' => $CFG->mnet_localhost_id]);
         if ($user) {
             self::store_extract($user->id, $extract);
         }
@@ -285,23 +285,27 @@ class api {
      * @return object
      */
     public static function get_extract($guid) {
-        global $DB;
+        global $CFG, $DB;
 
-        if (!$user = $DB->get_record('user', ['username' => $guid])) {
+        if (!$user = $DB->get_record('user', ['username' => $guid, 'mnethostid'=>$CFG->mnet_localhost_id])) {
             return false;
         }
         $userid = $user->id;
 
-        if ($extract = $DB->get_record('local_corehr_extract', ['userid' => $userid])) {
-            if ($extract->timemodified > (time() - COREHR_TTL)) {
-                return $extract;
+        if ($coreextract = $DB->get_record('local_corehr_extract', ['userid' => $userid])) {
+            if ($coreextract->timemodified > (time() - COREHR_TTL)) {
+                return $coreextract;
             }
         }
 
-        $fullextract = self::extract($guid);
-        if ($fullextract) {
-            $extract = self::store_extract($userid, $fullextract);
-            return $extract;
+        // Adhoc task to pull data
+        $extract = new \local_corehr\task\extract();
+        $extract->set_custom_data(['guid' => $guid]);
+        \core\task\manager::queue_adhoc_task($extract);
+
+        // If we got valid data then return that regardless
+        if ($coreextract) {
+            return $coreextract;
         } else {
             return false;
         }
@@ -337,7 +341,7 @@ class api {
      * @param int $userid User ID of completing user
      */
     public static function course_completed($courseid, $userid) {
-        global $DB;
+        global $CFG, $DB;
 
         // Is this enabled for this course
         if (!$corehr = $DB->get_record('local_corehr', array('courseid' => $courseid))) {
@@ -350,7 +354,7 @@ class api {
         self::mtrace("local_corehr: Processing completion for user=$userid, course=$courseid, coursecode=$coursecode");
 
         // Get the user.
-        $user = $DB->get_record('user', array('id' => $userid), '*', MUST_EXIST);
+        $user = $DB->get_record('user', ['id' => $userid], '*', MUST_EXIST);
 
         // Attempt to get completion data (we'll go for the newest one)
         $completions = $DB->get_records('course_completions', array(
@@ -365,7 +369,7 @@ class api {
 
         // Check if this user has already completed this
         // We don't make them do it twice (for the same course id)
-        // If we really want them to do it again then create a new course. 
+        // If we really want them to do it again then create a new course.
         if ($status = $DB->get_record('local_corehr_status', ['userid' => $userid, 'courseid' => $courseid, 'status' => 'OK'])) {
             self::log($user, $completion, $courseid, $coursecode, "Completed " . $status->id);
             return true;
@@ -397,7 +401,7 @@ class api {
 
         self::mtrace('Sending to corehr for userid = ' . $status->userid . ', coursecode = ' . $status->coursecode . ', retry = ' . $status->retrycount . ' statusid = ' . $status->id);
 
-        // staffTrainingRecord 
+        // staffTrainingRecord
         $staffTrainingRecord = new staffTrainingRecord(
             $status->personnelno,
             $status->coursecode,
@@ -432,7 +436,7 @@ class api {
         return $message;
     }
 
-    /** 
+    /**
      * Save/delete the 'coursecode' in the local_corehr table
      * A blank course code deletes the matching record
      * @param int $courseid Moodle course id
