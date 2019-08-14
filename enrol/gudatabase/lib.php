@@ -763,7 +763,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
     /**
      * Add the codes to a list also containining info
      * about how they were defined. Saved in a table
-     * and used for reporting. 
+     * and used for reporting.
      * @param array $advcodes enhanced codes
      * @param string/array $codes of codes
      * @param string $location (shortname, idnumber, plugin)
@@ -781,8 +781,8 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
             $advcode->code = $code;
             $advcode->location = $location;
             $advcode->instanceid = $instanceid;
-           
-            // Mad key is used to make sure we only include each unique code once.  
+
+            // Mad key is used to make sure we only include each unique code once.
             $advcodes[$code . $location . $instanceid] = $advcode;
         }
     }
@@ -840,6 +840,11 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
             return true;
         }
 
+        // Is enrollment allowed?
+        if (!$this->enrolment_possible($course)) {
+            return true;
+        }
+
         $context = context_course::instance($course->id);
         $config = get_config('enrol_gudatabase');
 
@@ -874,7 +879,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
             // Check against idnumber <=> matric_no if possible
             // NOTE: the username in enrol database should be correct but some
             // are not. The matricno<=>idnumber is definitive however.
-            if (!$user = $DB->get_record( 'user', array('username' => $username))) {
+            if (!$user = $DB->get_record('user', ['username' => $username, 'mnethostid' => $CFG->mnet_localhost_id])) {
 
                 // If we get here, couldn't find with username, so
                 // let's just have another go with idnumber.
@@ -955,10 +960,10 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
      * @param object $course
      * @return int instanceid
      */
-    private function check_instance( $course ) {
+    public function check_instance($course) {
 
         // Get all instances in this course.
-        $instances = enrol_get_instances( $course->id, true );
+        $instances = enrol_get_instances($course->id, true);
 
         // Search for this one.
         $found = false;
@@ -985,19 +990,19 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
      * @return boolean
      */
     protected function enrolment_possible($course) {
-    
+
         // Ignore hidden courses
         if (!$course->visible) {
             return false;
         }
 
         // Ignore courses after end date
-        // (enddata == 0 means disabled)
-        if ($course->enddate and (time() > $course->enddate)) {
+        // (enddate == 0 means disabled)
+        if ($course->enddate && (time() > $course->enddate)) {
             return false;
         }
 
-        // Ignore courses before start 
+        // Ignore courses before start
         if (time() < $course->startdate) {
             return false;
         }
@@ -1008,6 +1013,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
 
     /**
      * Called after updating/inserting course.
+     * Should set off adhoc task for course update
      *
      * @param bool $inserted true if course just inserted
      * @param object $course
@@ -1015,13 +1021,33 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
      * @return void
      */
     public function course_updated($inserted, $course, $data) {
+        $synccourse = new \enrol_gudatabase\task\sync_course();
+        $data = [
+            'newcourse' => $inserted,
+            'courseid' => $course->id,
+        ];
+        $synccourse->set_custom_data($data);
+        \core\task\manager::queue_adhoc_task($synccourse);
+
+        return true;
+    }
+
+    /**
+     * Process a single course
+     *
+     * @param bool $newcourse true if course just created
+     * @param object $course
+     * @param object $data form data
+     * @return void
+     */
+    public function process_course($newcourse, $course) {
         global $DB;
 
         // Make sure we have config.
         $this->load_config();
 
         // We want all our new courses to have this plugin.
-        if ($inserted) {
+        if ($newcourse) {
             $instanceid = $this->add_first_instance($course);
         }
 
@@ -1436,7 +1462,11 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
             $groups = array();
         }
 
-        $mform->addElement('html', '<div class="alert alert-danger">' . get_string('savewarning', 'enrol_gudatabase') . '</div>');
+        if ($this->enrolment_possible($course)) {
+            $mform->addElement('html', '<div class="alert alert-warning">' . get_string('savewarning', 'enrol_gudatabase') . '</div>');
+        } else {
+            $mform->addElement('html', '<div class="alert alert-danger">' . get_string('savedisabled', 'enrol_gudatabase') . '</div>');
+        }
 
         $mform->addElement('text', 'name', get_string('custominstancename', 'enrol'));
         $mform->setType('name', PARAM_TEXT);
@@ -1572,9 +1602,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         $data->customtext2 = serialize($groups);
 
         // Update enrolments.
-        $this->enrol_course_users($course, $instance);
-        $this->sync_groups($course, $instance);
-        cache_helper::invalidate_by_definition('core', 'groupdata', array(), array($course->id));
+        $this->course_updated(false, $course, null);
 
         return parent::update_instance($instance, $data);
     }
@@ -1666,7 +1694,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
                 $instanceid = $this->check_instance($course);
                 $updatestart = microtime(true);
                 $trace->output( "enrol_gudatabase: updating enrolments for course '{$course->shortname}'" );
-                $this->course_updated(false, $course, null);
+                $this->process_course(false, $course);
                 $updateend = microtime(true);
                 $updatetime = number_format($updateend - $updatestart, 4);
 
@@ -1720,7 +1748,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
      * @param stdClass $course course record
      */
     public function restore_sync_course($course) {
-        $this->course_updated(false, $course, null);
+        $this->process_course(false, $course);
     }
 
     /**
