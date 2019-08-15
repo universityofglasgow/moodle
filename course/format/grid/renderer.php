@@ -17,8 +17,7 @@
 /**
  * Grid Format - A topics based format that uses a grid of user selectable images to popup a light box of the section.
  *
- * @package    course/format
- * @subpackage grid
+ * @package    format_grid
  * @version    See the value of '$plugin->version' in version.php.
  * @copyright  &copy; 2012 G J Barnard in respect to modifications of standard topics format.
  * @author     G J Barnard - {@link http://about.me/gjbarnard} and
@@ -310,9 +309,11 @@ class format_grid_renderer extends format_section_renderer_base {
             echo $this->start_section_list();
 
             echo $this->section_header_onsectionpage_topic0notattop($thissection, $course);
-            // Show completion help icon.
-            $completioninfo = new completion_info($course);
-            echo $completioninfo->display_help_icon();
+            if ($course->enablecompletion) {
+                // Show completion help icon.
+                $completioninfo = new completion_info($course);
+                echo $completioninfo->display_help_icon();
+            }
 
             echo $this->courserenderer->course_section_cm_list($course, $thissection, $displaysection);
             echo $this->courserenderer->course_section_add_cm_control($course, $displaysection, $displaysection);
@@ -553,22 +554,20 @@ class format_grid_renderer extends format_section_renderer_base {
         if ($section->section && has_capability('moodle/course:setcurrentsection', $coursecontext)) {
             if ($course->marker == $section->section) {  // Show the "light globe" on/off.
                 $url->param('marker', 0);
-                $markedthissection = get_string('markedthissection', 'format_grid');
                 $highlightoff = get_string('highlightoff');
                 $controls['highlight'] = array('url' => $url, "icon" => 'i/marked',
                                                'name' => $highlightoff,
-                                               'pixattr' => array('class' => '', 'alt' => $markedthissection),
-                                               'attr' => array('class' => 'editing_highlight', 'title' => $markedthissection,
+                                               'pixattr' => array('class' => ''),
+                                               'attr' => array('class' => 'editing_highlight',
                                                'data-action' => 'removemarker'));
                 $url->param('marker', 0);
             } else {
                 $url->param('marker', $section->section);
-                $markthissection = get_string('markthissection', 'format_grid');
                 $highlight = get_string('highlight');
                 $controls['highlight'] = array('url' => $url, "icon" => 'i/marker',
                                                'name' => $highlight,
-                                               'pixattr' => array('class' => '', 'alt' => $markthissection),
-                                               'attr' => array('class' => 'editing_highlight', 'title' => $markthissection,
+                                               'pixattr' => array('class' => ''),
+                                               'attr' => array('class' => 'editing_highlight',
                                                'data-action' => 'setmarker'));
             }
         }
@@ -737,8 +736,8 @@ class format_grid_renderer extends format_section_renderer_base {
         $iswebp = (get_config('format_grid', 'defaultdisplayedimagefiletype') == 2);
 
         foreach ($sections as $section => $thissection) {
-            if (($this->section0attop) && ($section == 0)) {
-                continue;
+            if ((($this->section0attop) && ($section == 0)) || ($section > $coursenumsections)) {
+                continue;  // Section 0 at the top and not in the grid / orphaned section.
             }
 
             // Check if section is visible to user.
@@ -787,11 +786,17 @@ class format_grid_renderer extends format_section_renderer_base {
                         }
                     }
                     if ($canshow) {
-                        $sectiontitleclass .= ' content_inside';
-                        if ($this->settings['sectiontitleboxinsideposition'] == 2) {
-                            $sectiontitleclass .= ' middle';
-                        } else if ($this->settings['sectiontitleboxinsideposition'] == 3) {
-                            $sectiontitleclass .= ' bottom';
+                        $sectiontitleclass .= ' content_inside ';
+                        switch ($this->settings['sectiontitleboxinsideposition']) {
+                            case 1:
+                                $sectiontitleclass .= 'top';
+                                break;
+                            case 2:
+                                $sectiontitleclass .= 'middle';
+                                break;
+                            case 3:
+                                $sectiontitleclass .= 'bottom';
+                                break;
                         }
                     }
                 }
@@ -1043,6 +1048,10 @@ class format_grid_renderer extends format_section_renderer_base {
         foreach ($sections as $section => $thissection) {
             if (!$hascapvishidsect && !$thissection->visible && $course->hiddensections) {
                 unset($sections[$section]);
+                continue;
+            }
+            if ($section > $coursenumsections) {
+                // Orphaned section.
                 continue;
             }
 

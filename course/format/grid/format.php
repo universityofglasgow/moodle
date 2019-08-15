@@ -17,8 +17,7 @@
 /**
  * Grid Format - A topics based format that uses a grid of user selectable images to popup a light box of the section.
  *
- * @package    course/format
- * @subpackage grid
+ * @package    format_grid
  * @version    See the value of '$plugin->version' in version.php.
  * @copyright  &copy; 2012 G J Barnard in respect to modifications of standard topics format.
  * @author     G J Barnard - {@link http://about.me/gjbarnard} and
@@ -62,8 +61,8 @@ if (($marker >= 0) && has_capability('moodle/course:setcurrentsection', $coursec
     course_set_marker($course->id, $marker);
 }
 
-// Make sure section 0 is created.
-course_create_sections_if_missing($course, 0);
+// Make sure all sections are created.
+course_create_sections_if_missing($course, range(0, $course->numsections));
 
 $renderer = $PAGE->get_renderer('format_grid');
 
@@ -218,7 +217,7 @@ if ($gfsettings['sectiontitlesummarybackgroundcolour'][0] != '#') {
 echo $gfsettings['sectiontitlesummarybackgroundcolour'].';';
 echo '}';
 
-echo '.course-content ul.gridicons li .gridicon_link .image_holder .tooltip {';
+echo '.course-content ul.gridicons li .gridicon_link .tooltip.in {';
 echo 'opacity: '.$gfsettings['sectiontitlesummarybackgroundopacity'].';';
 echo '}';
 

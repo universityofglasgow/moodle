@@ -17,8 +17,7 @@
 /**
  * Collapsed Topics course format.
  *
- * @package    course/format
- * @subpackage topcoll
+ * @package    format_topcoll
  * @version    See the value of '$plugin->version' in version.php.
  * @copyright  &copy; 2015-onwards G J Barnard in respect to modifications of standard topics format.
  * @author     G J Barnard - {@link http://moodle.org/user/profile.php?id=442195}
@@ -83,7 +82,7 @@ class format_topcoll_courseformatrenderer_testcase extends advanced_testcase {
         return $property;
     }
 
-    protected function init($numsections = 1, $layoutcolumnorientation = 2) {
+    protected function init($numsections = 1, $layoutcolumnorientation = 2, $toggleallenabled = 2, $viewsinglesectionenabled = 2) {
         $this->resetAfterTest(true);
 
         set_config('theme', 'boost');
@@ -114,6 +113,8 @@ class format_topcoll_courseformatrenderer_testcase extends advanced_testcase {
         self::set_property($this->outputus, 'output', $ouroutput);
         $tcsettings = $this->courseformat->get_settings();
         $tcsettings['layoutcolumnorientation'] = $layoutcolumnorientation;
+        $tcsettings['toggleallenabled'] = $toggleallenabled;
+        $tcsettings['viewsinglesectionenabled'] = $viewsinglesectionenabled;
         self::set_property($this->outputus, 'tcsettings', $tcsettings);
     }
 
@@ -189,10 +190,13 @@ class format_topcoll_courseformatrenderer_testcase extends advanced_testcase {
         $theclass = self::call_method($this->outputus, 'section_summary',
             array($section, $this->course, null));
         $thevalue = '<li id="section-1" class="section main section-summary clearfix" role="region" aria-label="';
-        $thevalue .= 'Section 1"><div class="left side"></div><div class="right side"></div><div class="content">';
+        $thevalue .= 'Section 1"><div class="left side"></div>';
+        $thevalue .= '<div class="content">';
         $thevalue .= '<h3 class="section-title"><a href="'.$CFG->wwwroot.'/course/view.php?id=';
         $thevalue .= $this->course->id.'#section-1" class="">Section 1</a></h3><div class="summarytext"></div>';
-        $thevalue .= '<div class="section_availability"></div></div></li>';
+        $thevalue .= '<div class="section_availability"></div></div>';
+        $thevalue .= '<div class="right side"></div>';
+        $thevalue .= '</li>';
 
         $this->assertEquals($thevalue, $theclass);
     }
@@ -208,11 +212,9 @@ class format_topcoll_courseformatrenderer_testcase extends advanced_testcase {
         $theclass = self::call_method($this->outputus, 'section_header',
             array($section, $this->course, $onsectionpage));
         $thevalue = '<li id="section-1" class="section main clearfix col-sm-12 col-md-12 col-lg-12" role="region" aria-label="Section 1">';
-        $thevalue .= '<div class="left side"><span class="cps_centre">1</span></div><div class="right side">';
-        $thevalue .= '<a title="View only &#039;Topic 1&#039;" class="cps_centre" ';
-        $thevalue .= 'href="'.$CFG->wwwroot.'/course/view.php?id='.$this->course->id.'&amp;section=1">Topic<br />1</a>';
-        $thevalue .= '</div><div class="content"><div class="sectionhead toggle toggle-arrow" id="toggle-1">';
-        $thevalue .= '<span class="toggle_closed the_toggle tc-medium" role="button" aria-pressed="false">';
+        $thevalue .= '<div class="left side"><span class="cps_centre">1</span></div>';
+        $thevalue .= '<div class="content"><div class="sectionhead toggle toggle-arrow" id="toggle-1" tabindex="0">';
+        $thevalue .= '<span class="toggle_closed the_toggle tc-medium" role="button" aria-expanded="false">';
         $thevalue .= '<h3 class="sectionname">Section 1<div class="cttoggle"> - Toggle</div></h3>';
         $thevalue .= '<div class="section_availability"></div></span></div>';
         $thevalue .= '<div class="sectionbody toggledsection" id="toggledsection-1">';
@@ -221,7 +223,8 @@ class format_topcoll_courseformatrenderer_testcase extends advanced_testcase {
         $theclass = self::call_method($this->outputus, 'section_header',
             array($section, $this->course, $onsectionpage));
         $thevalue = '<li id="section-1" class="section main clearfix col-sm-12 col-md-12 col-lg-12" role="region" aria-label="Section 1">';
-        $thevalue .= '<div class="left side"></div><div class="right side"></div><div class="content">';
+        $thevalue .= '<div class="left side"></div>';
+        $thevalue .= '<div class="content">';
         $thevalue .= '<div class="section_availability"></div><div class="summary"></div>';
 
         $this->assertEquals($thevalue, $theclass);
@@ -234,10 +237,9 @@ class format_topcoll_courseformatrenderer_testcase extends advanced_testcase {
         $theclass = self::call_method($this->outputus, 'stealth_section_header',
             array(1));
         $thevalue = '<li id="section-1" class="section main clearfix orphaned hidden col-sm-12 col-md-12 col-lg-12" role="region" ';
-        $thevalue .= 'aria-label="Section 1"><div class="left side"></div><div class="right side">';
-        $thevalue .= '<a title="View only &#039;Topic 1&#039;" class="cps_centre" ';
-        $thevalue .= 'href="'.$CFG->wwwroot.'/course/view.php?id='.$this->course->id.'&amp;section=1">Topic<br />1</a>';
-        $thevalue .= '</div><div class="content"><h3 class="sectionname">Orphaned activities (section 1)</h3>';
+        $thevalue .= 'aria-label="Section 1">';
+        $thevalue .= '<div class="left side"></div>';
+        $thevalue .= '<div class="content"><h3 class="sectionname">Orphaned activities (section 1)</h3>';
 
         $this->assertEquals($thevalue, $theclass);
     }
@@ -250,76 +252,103 @@ class format_topcoll_courseformatrenderer_testcase extends advanced_testcase {
         $theclass = self::call_method($this->outputus, 'section_hidden',
             array($section, null));
         $thevalue = '<li id="section-1" class="section main clearfix hidden col-sm-12 col-md-12 col-lg-12" role="region" aria-label="Section 1">';
-        $thevalue .= '<div class="left side"><span class="cps_centre">1</span></div><div class="right side">';
+        $thevalue .= '<div class="left side"><span class="cps_centre">1</span></div>';
+        $thevalue .= '<div class="content sectionhidden"><h3 class="section-title">Not available</h3></div>';
+        $thevalue .= '<div class="right side">';
         $thevalue .= '<a title="View only &#039;Topic 1&#039;" class="cps_centre" ';
         $thevalue .= 'href="'.$CFG->wwwroot.'/course/view.php?id='.$this->course->id.'&amp;section=1">Topic<br />1</a></div>';
-        $thevalue .= '<div class="content sectionhidden"><h3 class="section-title">Not available</h3></div></li>';
+        $thevalue .= '</li>';
 
         $this->assertEquals($thevalue, $theclass);
     }
 
     public function test_print_multiple_section_page_horizontal() {
         global $CFG;
+        $activityicon = 'alt=" " role="presentation" ';
+        if ($CFG->version >= 2018120303.06) {
+            $activityicon = 'alt="" role="presentation" aria-hidden="true" ';
+        }
 
         $this->init();
         self::call_method($this->outputus, 'print_multiple_section_page',
             array($this->course, null, null, null, null, null));
         $theoutput = '<h2 class="accesshide">Section</h2><ul class="ctopics bsnewgrid">';
         $theoutput .= '<li id="section-0" class="section main clearfix" role="region" aria-label="General">';
-        $theoutput .= '<div class="left side"></div><div class="right side"></div><div class="content">';
+        $theoutput .= '<div class="left side"></div>';
+        $theoutput .= '<div class="content">';
         $theoutput .= '<div class="section_availability"></div><div class="summary"></div><ul class="section img-text">';
         $theoutput .= '<li class="activity forum modtype_forum " id="module-'.$this->cmid.'"><div><div class="mod-indent-outer">';
         $theoutput .= '<div class="mod-indent"></div><div><div class="activityinstance">';
         $theoutput .= '<a class="" onclick="" href="https://www.example.com/moodle/mod/forum/view.php?id='.$this->cmid.'">';
-        $theoutput .= '<img src="https://www.example.com/moodle/theme/image.php/_s/boost/forum/1/icon" class="iconlarge activityicon" alt=" " role="presentation" />';
+        $theoutput .= '<img src="https://www.example.com/moodle/theme/image.php/_s/boost/forum/1/icon" class="iconlarge activityicon" '.$activityicon.'/>';
         $theoutput .= '<span class="instancename">Announcements<span class="accesshide " > Forum</span></span></a></div></div>';
-        $theoutput .= '</div></div></li></ul></div></li></ul>';
+        $theoutput .= '</div></div></li></ul></div>';
+        $theoutput .= '<div class="right side"></div>';
+        $theoutput .= '</li></ul>';
         $theoutput .= '<ul class="ctopics topics bsnewgrid row">';
         $theoutput .= '<li id="section-1" class="section main clearfix col-sm-12 col-md-12 col-lg-12" role="region" aria-label="Section 1">';
-        $theoutput .= '<div class="left side"><span class="cps_centre">1</span></div><div class="right side">';
-        $theoutput .= '<a title="View only &#039;Topic 1&#039;" class="cps_centre" ';
-        $theoutput .= 'href="'.$CFG->wwwroot.'/course/view.php?id='.$this->course->id.'&amp;section=1">Topic<br />1</a>';
-        $theoutput .= '</div><div class="content"><div class="sectionhead toggle toggle-arrow" id="toggle-1">';
-        $theoutput .= '<span class="toggle_closed the_toggle tc-medium" role="button" aria-pressed="false">';
+        $theoutput .= '<div class="left side"><span class="cps_centre">1</span></div>';
+        $theoutput .= '<div class="content"><div class="sectionhead toggle toggle-arrow" id="toggle-1" tabindex="0">';
+        $theoutput .= '<span class="toggle_closed the_toggle tc-medium" role="button" aria-expanded="false">';
         $theoutput .= '<h3 class="sectionname">Section 1<div class="cttoggle"> - Toggle</div></h3>';
         $theoutput .= '<div class="section_availability"></div></span></div>';
         $theoutput .= '<div class="sectionbody toggledsection" id="toggledsection-1"><ul class="section img-text">';
-        $theoutput .= '</ul></div></div></li></ul>';
+        $theoutput .= '</ul></div></div>';
+        $theoutput .= '<div class="right side">';
+        $theoutput .= '<a title="View only &#039;Topic 1&#039;" class="cps_centre" ';
+        $theoutput .= 'href="'.$CFG->wwwroot.'/course/view.php?id='.$this->course->id.'&amp;section=1">Topic<br />1</a>';
+        $theoutput .= '</div>';
+        $theoutput .= '</li></ul>';
         $this->expectOutputString($theoutput);
     }
 
     public function test_print_multiple_section_page_vertical() {
         global $CFG;
+        $activityicon = 'alt=" " role="presentation" ';
+        if ($CFG->version >= 2018120303.06) {
+            $activityicon = 'alt="" role="presentation" aria-hidden="true" ';
+        }
 
         $this->init(1, 1);
         self::call_method($this->outputus, 'print_multiple_section_page',
             array($this->course, null, null, null, null, null));
         $theoutput = '<h2 class="accesshide">Section</h2><ul class="ctopics bsnewgrid">';
         $theoutput .= '<li id="section-0" class="section main clearfix" role="region" aria-label="General">';
-        $theoutput .= '<div class="left side"></div><div class="right side"></div><div class="content">';
+        $theoutput .= '<div class="left side"></div>';
+        $theoutput .= '<div class="content">';
         $theoutput .= '<div class="section_availability"></div><div class="summary"></div>';
         $theoutput .= '<ul class="section img-text"><li class="activity forum modtype_forum " id="module-'.$this->cmid.'"><div>';
         $theoutput .= '<div class="mod-indent-outer"><div class="mod-indent"></div><div><div class="activityinstance">';
         $theoutput .= '<a class="" onclick="" href="https://www.example.com/moodle/mod/forum/view.php?id='.$this->cmid.'">';
-        $theoutput .= '<img src="https://www.example.com/moodle/theme/image.php/_s/boost/forum/1/icon" class="iconlarge activityicon" alt=" " role="presentation" />';
+        $theoutput .= '<img src="https://www.example.com/moodle/theme/image.php/_s/boost/forum/1/icon" class="iconlarge activityicon" '.$activityicon.'/>';
         $theoutput .= '<span class="instancename">Announcements<span class="accesshide " > Forum</span></span></a>';
         $theoutput .= '</div></div></div></div></li></ul>';
-        $theoutput .= '</div></li></ul><div class="row"><ul class="ctopics topics bsnewgrid col-sm-12 col-md-12 col-lg-12">';
+        $theoutput .= '</div>';
+        $theoutput .= '<div class="right side"></div>';
+        $theoutput .= '</li></ul>';
+        $theoutput .= '<div class="row"><ul class="ctopics topics bsnewgrid col-sm-12 col-md-12 col-lg-12">';
         $theoutput .= '<li id="section-1" class="section main clearfix" role="region" aria-label="Section 1">';
-        $theoutput .= '<div class="left side"><span class="cps_centre">1</span></div><div class="right side">';
-        $theoutput .= '<a title="View only &#039;Topic 1&#039;" class="cps_centre" ';
-        $theoutput .= 'href="'.$CFG->wwwroot.'/course/view.php?id='.$this->course->id.'&amp;section=1">Topic<br />1</a>';
-        $theoutput .= '</div><div class="content"><div class="sectionhead toggle toggle-arrow" id="toggle-1">';
-        $theoutput .= '<span class="toggle_closed the_toggle tc-medium" role="button" aria-pressed="false">';
+        $theoutput .= '<div class="left side"><span class="cps_centre">1</span></div>';
+        $theoutput .= '<div class="content"><div class="sectionhead toggle toggle-arrow" id="toggle-1" tabindex="0">';
+        $theoutput .= '<span class="toggle_closed the_toggle tc-medium" role="button" aria-expanded="false">';
         $theoutput .= '<h3 class="sectionname">Section 1<div class="cttoggle"> - Toggle</div></h3>';
         $theoutput .= '<div class="section_availability"></div></span></div>';
         $theoutput .= '<div class="sectionbody toggledsection" id="toggledsection-1"><ul class="section img-text">';
-        $theoutput .= '</ul></div></div></li></ul></div>';
+        $theoutput .= '</ul></div></div>';
+        $theoutput .= '<div class="right side">';
+        $theoutput .= '<a title="View only &#039;Topic 1&#039;" class="cps_centre" ';
+        $theoutput .= 'href="'.$CFG->wwwroot.'/course/view.php?id='.$this->course->id.'&amp;section=1">Topic<br />1</a>';
+        $theoutput .= '</div>';
+        $theoutput .= '</li></ul></div>';
         $this->expectOutputString($theoutput);
     }
 
     public function test_print_multiple_section_page_no_sections_horizontal() {
         global $CFG;
+        $activityicon = 'alt=" " role="presentation" ';
+        if ($CFG->version >= 2018120303.06) {
+            $activityicon = 'alt="" role="presentation" aria-hidden="true" ';
+        }
 
         $this->init(0);
         self::call_method($this->outputus, 'print_multiple_section_page',
@@ -327,20 +356,27 @@ class format_topcoll_courseformatrenderer_testcase extends advanced_testcase {
         $theoutput = '<h2 class="accesshide">Section</h2>';
         $theoutput .= '<ul class="ctopics bsnewgrid">';
         $theoutput .= '<li id="section-0" class="section main clearfix" role="region" aria-label="General">';
-        $theoutput .= '<div class="left side"></div><div class="right side"></div><div class="content">';
+        $theoutput .= '<div class="left side"></div>';
+        $theoutput .= '<div class="content">';
         $theoutput .= '<div class="section_availability"></div><div class="summary"></div><ul class="section img-text">';
         $theoutput .= '<li class="activity forum modtype_forum " id="module-'.$this->cmid.'"><div><div class="mod-indent-outer">';
         $theoutput .= '<div class="mod-indent"></div><div><div class="activityinstance">';
         $theoutput .= '<a class="" onclick="" href="https://www.example.com/moodle/mod/forum/view.php?id='.$this->cmid.'">';
-        $theoutput .= '<img src="https://www.example.com/moodle/theme/image.php/_s/boost/forum/1/icon" class="iconlarge activityicon" alt=" " role="presentation" />';
+        $theoutput .= '<img src="https://www.example.com/moodle/theme/image.php/_s/boost/forum/1/icon" class="iconlarge activityicon" '.$activityicon.'/>';
         $theoutput .= '<span class="instancename">Announcements<span class="accesshide " > Forum</span></span></a></div></div>';
-        $theoutput .= '</div></div></li></ul></div></li>';
+        $theoutput .= '</div></div></li></ul></div>';
+        $theoutput .= '<div class="right side"></div>';
+        $theoutput .= '</li>';
         $theoutput .= '</ul>';
         $this->expectOutputString($theoutput);
     }
 
     public function test_print_multiple_section_page_no_sections_vertical() {
         global $CFG;
+        $activityicon = 'alt=" " role="presentation" ';
+        if ($CFG->version >= 2018120303.06) {
+            $activityicon = 'alt="" role="presentation" aria-hidden="true" ';
+        }
 
         $this->init(0, 1);
         self::call_method($this->outputus, 'print_multiple_section_page',
@@ -348,44 +384,62 @@ class format_topcoll_courseformatrenderer_testcase extends advanced_testcase {
         $theoutput = '<h2 class="accesshide">Section</h2>';
         $theoutput .= '<ul class="ctopics bsnewgrid">';
         $theoutput .= '<li id="section-0" class="section main clearfix" role="region" aria-label="General">';
-        $theoutput .= '<div class="left side"></div><div class="right side"></div><div class="content">';
+        $theoutput .= '<div class="left side"></div>';
+        $theoutput .= '<div class="content">';
         $theoutput .= '<div class="section_availability"></div><div class="summary"></div><ul class="section img-text">';
         $theoutput .= '<li class="activity forum modtype_forum " id="module-'.$this->cmid.'"><div><div class="mod-indent-outer">';
         $theoutput .= '<div class="mod-indent"></div><div><div class="activityinstance">';
         $theoutput .= '<a class="" onclick="" href="https://www.example.com/moodle/mod/forum/view.php?id='.$this->cmid.'">';
-        $theoutput .= '<img src="https://www.example.com/moodle/theme/image.php/_s/boost/forum/1/icon" class="iconlarge activityicon" alt=" " role="presentation" />';
-        $theoutput .= '<span class="instancename">Announcements<span class="accesshide " > Forum</span></span></a></div></div></div></div></li></ul></div></li>';
+        $theoutput .= '<img src="https://www.example.com/moodle/theme/image.php/_s/boost/forum/1/icon" class="iconlarge activityicon" '.$activityicon.'/>';
+        $theoutput .= '<span class="instancename">Announcements<span class="accesshide " > Forum</span></span></a></div></div></div></div></li></ul></div>';
+        $theoutput .= '<div class="right side"></div>';
+        $theoutput .= '</li>';
         $theoutput .= '</ul>';
         $this->expectOutputString($theoutput);
     }
 
     public function test_toggle_all() {
         global $CFG;
+        $ariahidden = '';
+        if ($CFG->version >= 2018120302.07) {
+            $ariahidden = 'aria-hidden="true" ';
+        }
 
         $this->init();
         $theclass = self::call_method($this->outputus, 'toggle_all', array());
-        $thevalue = '<li class="tcsection main clearfix" id="toggle-all"><div class="left side"><img class="icon spacer" ';
-        $thevalue .= 'width="1" height="1" alt="" src="'.$CFG->wwwroot.'/theme/image.php/_s/boost/core/1/spacer" />';
-        $thevalue .= '</div><div class="right side"><img class="icon spacer" width="1" height="1" alt="" src="';
-        $thevalue .= $CFG->wwwroot.'/theme/image.php/_s/boost/core/1/spacer" /></div><div class="content">';
+        $thevalue = '<li class="tcsection main clearfix" id="toggle-all">';
+        $thevalue .= '<div class="left side"><img class="icon spacer" ';
+        $thevalue .= 'width="1" height="1" alt="" '.$ariahidden.'src="'.$CFG->wwwroot.'/theme/image.php/_s/boost/core/1/spacer" />';
+        $thevalue .= '</div>';
+        $thevalue .= '<div class="content">';
         $thevalue .= '<div class="sectionbody toggle-arrow-hover toggle-arrow"><h4><span class="on tc-medium" id="';
-        $thevalue .= 'toggles-all-opened" role="button">Open all</span><span class="off tc-medium" id="toggles-all-closed" ';
-        $thevalue .= 'role="button">Close all</span></h4></div></div></li>';
+        $thevalue .= 'toggles-all-opened" role="button" tabindex="0">Open all</span><span class="off tc-medium" id="toggles-all-closed" ';
+        $thevalue .= 'role="button" tabindex="0">Close all</span></h4></div></div>';
+        $thevalue .= '<div class="right side"><img class="icon spacer" width="1" height="1" alt="" '.$ariahidden.'src="';
+        $thevalue .= $CFG->wwwroot.'/theme/image.php/_s/boost/core/1/spacer" /></div>';
+        $thevalue .= '</li>';
         $this->assertEquals($thevalue, $theclass);
     }
 
     public function test_display_instructions() {
         global $CFG;
+        $ariahidden = '';
+        if ($CFG->version >= 2018120302.07) {
+            $ariahidden = 'aria-hidden="true" ';
+        }
 
         $this->init();
         $theclass = self::call_method($this->outputus, 'display_instructions', array());
         $thevalue = '<li class="tcsection main clearfix" id="topcoll-display-instructions"><div class="left side">';
-        $thevalue .= '<img class="icon spacer" width="1" height="1" alt="" src="';
-        $thevalue .= $CFG->wwwroot.'/theme/image.php/_s/boost/core/1/spacer" /></div><div class="right side">';
-        $thevalue .= '<img class="icon spacer" width="1" height="1" alt="" src="';
-        $thevalue .= $CFG->wwwroot.'/theme/image.php/_s/boost/core/1/spacer" /></div><div class="content">';
+        $thevalue .= '<img class="icon spacer" width="1" height="1" alt="" '.$ariahidden.'src="';
+        $thevalue .= $CFG->wwwroot.'/theme/image.php/_s/boost/core/1/spacer" /></div>';
+        $thevalue .= '<div class="content">';
         $thevalue .= '<div class="sectionbody"><p class="topcoll-display-instructions">Instructions: Clicking on the section ';
-        $thevalue .= 'name will show / hide the section.</p></div></div></li>';
+        $thevalue .= 'name will show / hide the section.</p></div></div>';
+        $thevalue .= '<div class="right side">';
+        $thevalue .= '<img class="icon spacer" width="1" height="1" alt="" '.$ariahidden.'src="';
+        $thevalue .= $CFG->wwwroot.'/theme/image.php/_s/boost/core/1/spacer" /></div>';
+        $thevalue .= '</li>';
 
         $this->assertEquals($thevalue, $theclass);
     }

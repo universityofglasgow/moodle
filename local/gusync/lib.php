@@ -227,7 +227,9 @@ function local_gusync_processcourse( $extdb, $id, $testing ) {
             $guids[ $guid ] = $guid;
 
             // Get lastaccess for this user.
-            if ($lastaccess = $DB->get_record('user_lastaccess', array('userid' => $user->id, 'courseid' => $id))) {
+            // Oddly, index on userid, courseid is not unique
+            if ($lastaccesses = $DB->get_records('user_lastaccess', array('userid' => $user->id, 'courseid' => $id))) {
+                $lastaccess = reset($lastaccesses);
                 $timeaccess = $lastaccess->timeaccess;
             } else {
                 $timeaccess = 0;

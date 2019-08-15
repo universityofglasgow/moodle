@@ -17,8 +17,7 @@
 /**
  * Grid Format - A topics based format that uses a grid of user selectable images to popup a light box of the section.
  *
- * @package    course/format
- * @subpackage grid
+ * @package    format_grid
  * @version    See the value of '$plugin->version' in version.php.
  * @copyright  &copy; 2012+ G J Barnard in respect to modifications of standard topics format.
  * @author     G J Barnard - {@link http://about.me/gjbarnard} and
@@ -558,6 +557,7 @@ class format_grid extends format_base {
      */
     public function course_format_options($foreditform = false) {
         static $courseformatoptions = false;
+        $courseconfig = null;
 
         if ($courseformatoptions === false) {
             /* Note: Because 'admin_setting_configcolourpicker' in 'settings.php' needs to use a prefixing '#'
@@ -565,7 +565,19 @@ class format_grid extends format_base {
             $defaults = $this->get_course_format_colour_defaults();
 
             $courseconfig = get_config('moodlecourse');
+            $courseid = $this->get_courseid();
+            if ($courseid == 1) { // New course.
+                $defaultnumsections = $courseconfig->numsections;
+            } else { // Existing course that may not have 'numsections' - see get_last_section().
+                global $DB;
+                $defaultnumsections = $DB->get_field_sql('SELECT max(section) from {course_sections}
+                    WHERE course = ?', array($courseid));
+            }
             $courseformatoptions = array(
+                'numsections' => array(
+                    'default' => $defaultnumsections,
+                    'type' => PARAM_INT,
+                ),
                 'hiddensections' => array(
                     'default' => $courseconfig->hiddensections,
                     'type' => PARAM_INT
@@ -707,12 +719,19 @@ class format_grid extends format_base {
 
             $context = $this->get_context();
 
-            $courseconfig = get_config('moodlecourse');
+            if (is_null($courseconfig)) {
+                $courseconfig = get_config('moodlecourse');
+            }
             $sectionmenu = array();
             for ($i = 0; $i <= $courseconfig->maxsections; $i++) {
                 $sectionmenu[$i] = "$i";
             }
             $courseformatoptionsedit = array(
+                'numsections' => array(
+                    'label' => new lang_string('numbersections', 'format_grid'),
+                    'element_type' => 'select',
+                    'element_attributes' => array($sectionmenu),
+                ),
                 'hiddensections' => array(
                     'label' => new lang_string('hiddensections'),
                     'help' => 'hiddensections',
@@ -1175,26 +1194,28 @@ class format_grid extends format_base {
      * @return array array of references to the added form elements.
      */
     public function create_edit_form_elements(&$mform, $forsection = false) {
-        global $CFG, $COURSE, $OUTPUT, $PAGE, $USER;
+        global $CFG, $OUTPUT, $PAGE, $USER;
         MoodleQuickForm::registerElementType('gfcolourpopup', "$CFG->dirroot/course/format/grid/js/gf_colourpopup.php",
                 'MoodleQuickForm_gfcolourpopup');
 
         $elements = parent::create_edit_form_elements($mform, $forsection);
-        if (!$forsection && (empty($COURSE->id) || $COURSE->id == SITEID)) {
-            /* Add "numsections" element to the create course form - it will force new course to be prepopulated
-               with empty sections.
-               The "Number of sections" option is no longer available when editing course, instead teachers should
-               delete and add sections when needed. */
-            $courseconfig = get_config('moodlecourse');
-            $max = (int)$courseconfig->maxsections;
-            $element = $mform->addElement('select', 'numsections', get_string('numberweeks'), range(0, $max ?: 52));
-            $mform->setType('numsections', PARAM_INT);
-            if (is_null($mform->getElementValue('numsections'))) {
-                $mform->setDefault('numsections', $courseconfig->numsections);
-            }
-            array_unshift($elements, $element);
-        }
 
+        /* Increase the number of sections combo box values if the user has increased the number of sections
+           using the icon on the course page beyond course 'maxsections' or course 'maxsections' has been
+           reduced below the number of sections already set for the course on the site administration course
+           defaults page.  This is so that the number of sections is not reduced leaving unintended orphaned
+           activities / resources. */
+        if (!$forsection) {
+            $maxsections = get_config('moodlecourse', 'maxsections');
+            $numsections = $mform->getElementValue('numsections');
+            $numsections = $numsections[0];
+            if ($numsections > $maxsections) {
+                $element = $mform->getElement('numsections');
+                for ($i = $maxsections + 1; $i <= $numsections; $i++) {
+                    $element->addOption("$i", $i);
+                }
+            }
+        }
         $context = $this->get_context();
 
         $changeimagecontaineralignment = has_capability('format/grid:changeimagecontaineralignment', $context);
@@ -1507,7 +1528,7 @@ class format_grid extends format_base {
      * Updates format options for a course
      *
      * In case if course format was changed to 'Grid', we try to copy options
-     * 'coursedisplay' and 'hiddensections' from the previous format.
+     * 'coursedisplay', 'numsections' and 'hiddensections' from the previous format.
      * The layout and colour defaults will come from 'course_format_options'.
      *
      * @param stdClass|array $data return value from {@link moodleform::get_data()} or array with data.
@@ -1632,11 +1653,33 @@ class format_grid extends format_base {
                 if (!array_key_exists($key, $data)) {
                     if (array_key_exists($key, $oldcourse)) {
                         $data[$key] = $oldcourse[$key];
+                    } else if ($key === 'numsections') {
+                        // If previous format does not have the field 'numsections'
+                        // and $data['numsections'] is not set,
+                        // we fill it with the maximum section number from the DB
+                        $maxsection = $DB->get_field_sql('SELECT max(section) from {course_sections}
+                            WHERE course = ?', array($this->courseid));
+                        if ($maxsection) {
+                            // If there are no sections, or just default 0-section, 'numsections' will be set to default
+                            $data['numsections'] = $maxsection;
+                        }
                     }
                 }
             }
         }
         $changes = $this->update_format_options($data);
+
+        if ($changes && array_key_exists('numsections', $data)) {
+            // If the numsections was decreased, try to completely delete the orphaned sections (unless they are not empty).
+            $numsections = (int)$data['numsections'];
+            $maxsection = $DB->get_field_sql('SELECT max(section) from {course_sections}
+                        WHERE course = ?', array($this->courseid));
+            for ($sectionnum = $maxsection; $sectionnum > $numsections; $sectionnum--) {
+                if (!$this->delete_section($sectionnum, false)) {
+                    break;
+                }
+            }
+        }
 
         // Now we can change the displayed images if needed.
         if ($changedisplayedimages) {
@@ -1738,6 +1781,10 @@ class format_grid extends format_base {
            See CONTRIB-4784. */
         $sectionimage = $this->get_image($this->courseid, $data['id']);
         if ($sectionimage) {
+            // Set up our table to get the displayed image back.  The 'auto repair' on page reload will do the rest.
+            global $DB;
+            $DB->set_field('format_grid_icon', 'displayedimageindex', 0, array('sectionid' => $sectionimage->sectionid));
+            // We know the file is normally deleted, but just in case...
             $contextid = $this->get_context()->id;
             $fs = get_file_storage();
             $gridimagepath = $this->get_image_path();
@@ -1787,7 +1834,7 @@ class format_grid extends format_base {
             $updatedata['imagecontaineralignment'] = get_config('format_grid', 'defaultimagecontaineralignment');
             $updateimagecontaineralignment = true;
         }
-        if ($imagecontainernavigationreset && has_capability('format/grid:changeimagecontaineralignment', $context) && $resetallifall) {
+        if ($imagecontainernavigationreset && has_capability('format/grid:changeimagecontainernavigation', $context) && $resetallifall) {
             $updatedata['setsection0ownpagenogridonesection'] = get_config('format_grid', 'defaultsection0ownpagenogridonesection');
             $updateimagecontainernavigation = true;
         }
@@ -2061,7 +2108,7 @@ class format_grid extends format_base {
                 $basewidth = $width / 3;
                 break;
             case 4: // 2-3.
-                $basewidth = $width / 1;
+                $basewidth = $width / 2;
                 break;
             case 5: // 1-3.
                 $basewidth = $width;
@@ -2212,7 +2259,15 @@ class format_grid extends format_base {
             } else {
                 $newmime = $mime;
             }
-            $data = self::generate_image($tmpfilepath, $displayedimageinfo['width'], $displayedimageinfo['height'], $crop, $icbc, $newmime);
+            $debugdata = array(
+                'itemid' => $imagecontainerpathfile->get_itemid(),
+                'filename' => $imagecontainerpathfile->get_filename(),
+                'sectionimage_sectionid' => $sectionimage->sectionid,
+                'sectionimage_image' => $sectionimage->image,
+                'sectionimage_displayedimageindex' => $sectionimage->displayedimageindex,
+                'sectionimage_newimage' => $sectionimage->newimage
+            );
+            $data = self::generate_image($tmpfilepath, $displayedimageinfo['width'], $displayedimageinfo['height'], $crop, $icbc, $newmime, $debugdata);
             if (!empty($data)) {
                 // Updated image.
                 $sectionimage->displayedimageindex++;
@@ -2254,6 +2309,7 @@ class format_grid extends format_base {
                 $DB->set_field('format_grid_icon', 'displayedimageindex', $sectionimage->displayedimageindex,
                     array('sectionid' => $sectionimage->sectionid));
             } else {
+                // TODO: Determine if this can actually be called.
                 print_error('cannotconvertuploadedimagetodisplayedimage', 'format_grid',
                         $CFG->wwwroot . "/course/view.php?id=" . $this->courseid);
             }
@@ -2460,9 +2516,11 @@ class format_grid extends format_base {
      * @param bool $crop false = scale, true = crop.
      * @param array $icbc The 'imagecontainerbackgroundcolour' as an RGB array.
      * @param string $mime The mime type.
+     * @param array $debugdata Debug data if the image generation fails.
+     *
      * @return string|bool false if a problem occurs or the image data.
      */
-    private static function generate_image($filepath, $requestedwidth, $requestedheight, $crop, $icbc, $mime) {
+    private static function generate_image($filepath, $requestedwidth, $requestedheight, $crop, $icbc, $mime, $debugdata) {
         if (empty($filepath) or empty($requestedwidth) or empty($requestedheight)) {
             return false;
         }
@@ -2470,13 +2528,19 @@ class format_grid extends format_base {
         $imageinfo = getimagesize($filepath);
 
         if (empty($imageinfo)) {
+            print_error('noimageinformation', 'format_grid', '', self::debugdata_decode($debugdata), 'generate_image');
             return false;
         }
 
         $originalwidth = $imageinfo[0];
         $originalheight = $imageinfo[1];
 
-        if (empty($originalwidth) or empty($originalheight)) {
+        if (empty($originalheight)) {
+            print_error('originalheightempty', 'format_grid', '', self::debugdata_decode($debugdata), 'generate_image');
+            return false;
+        }
+        if (empty($originalwidth)) {
+            print_error('originalwidthempty', 'format_grid', '', self::debugdata_decode($debugdata), 'generate_image');
             return false;
         }
 
@@ -2489,8 +2553,7 @@ class format_grid extends format_base {
                     $filters = PNG_NO_FILTER;
                     $quality = 1;
                 } else {
-                    debugging('PNG\'s are not supported at this server, please fix the system configuration'.
-                        ' to have the GD PHP extension installed.');
+                    print_error('formatnotsupported', 'format_grid', '', 'PNG, '.self::debugdata_decode($debugdata), 'generate_image');
                     return false;
                 }
                 break;
@@ -2500,8 +2563,7 @@ class format_grid extends format_base {
                     $filters = null;
                     $quality = 90;
                 } else {
-                    debugging('JPG\'s are not supported at this server, please fix the system configuration'.
-                        ' to have the GD PHP extension installed.');
+                    print_error('formatnotsupported', 'format_grid', '', 'JPG, '.self::debugdata_decode($debugdata), 'generate_image');
                     return false;
                 }
                 break;
@@ -2513,8 +2575,7 @@ class format_grid extends format_base {
                     $filters = null;
                     $quality = 90;
                 } else {
-                    debugging('WEBP\'s are not supported at this server, please fix the system configuration'.
-                        ' to have the GD PHP extension installed.');
+                    print_error('formatnotsupported', 'format_grid', '', 'WEBP, '.self::debugdata_decode($debugdata), 'generate_image');
                     return false;
                 }
                 break;
@@ -2524,13 +2585,12 @@ class format_grid extends format_base {
                     $filters = null;
                     $quality = null;
                 } else {
-                    debugging('GIF\'s are not supported at this server, please fix the system configuration'.
-                        ' to have the GD PHP extension installed.');
+                    print_error('formatnotsupported', 'format_grid', '', 'GIF, '.self::debugdata_decode($debugdata), 'generate_image');
                     return false;
                 }
                 break;
             default:
-                debugging('Mime type \''.$mime.'\' is not supported as an image format in the Grid format.');
+                print_error('mimetypenotsupported', 'format_grid', '', $mime.', '.self::debugdata_decode($debugdata), 'generate_image');
                 return false;
         }
 
@@ -2633,6 +2693,7 @@ class format_grid extends format_base {
         ob_start();
         if (!$imagefnc($finalimage, null, $quality, $filters)) {
             ob_end_clean();
+            print_error('functionfailed', 'format_grid', '', $imagefnc.', '.self::debugdata_decode($debugdata), 'generate_image');
             return false;
         }
         $data = ob_get_clean();
@@ -2641,6 +2702,18 @@ class format_grid extends format_base {
         imagedestroy($finalimage);
 
         return $data;
+    }
+
+    private static function debugdata_decode($debugdata) {
+        $o = 'itemid > '.$debugdata['itemid'];
+        $o .= ', filename > '.$debugdata['filename'];
+        $o .= ', sectionimage_sectionid > '.$debugdata['sectionimage_sectionid'];
+        $o .= ', sectionimage_image > '.$debugdata['sectionimage_image'];
+        $o .= ', sectionimage_newimage > '.$debugdata['sectionimage_newimage'];
+        $o .= ' and sectionimage_displayedimageindex > '.$debugdata['sectionimage_displayedimageindex'].'.  ';
+        $o .= get_string('reporterror', 'format_grid');
+
+        return $o;
     }
 
     /**
@@ -2714,8 +2787,8 @@ class format_grid extends format_base {
      * @return bool
      */
     public function allow_stealth_module_visibility($cm, $section) {
-        // Allow the third visibility state inside visible sections or in section 0.
-        return !$section->section || $section->visible;
+        // Allow the third visibility state inside visible sections or in section 0, not allow in orphaned sections.
+        return !$section->section || ($section->visible && $section->section <= $this->get_course()->numsections);
     }
 
     public function section_action($section, $action, $sr) {

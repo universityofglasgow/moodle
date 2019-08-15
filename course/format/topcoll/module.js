@@ -6,8 +6,7 @@
  * Toggles are persistent on a per browser session per course basis but can be made to persist longer by a small
  * code change. Full installation instructions, code adaptions and credits are included in the 'Readme.txt' file.
  *
- * @package    course/format
- * @subpackage topcoll
+ * @package    format_topcoll
  * @version    See the value of '$plugin->version' in version.php.
  * @copyright  &copy; 2009-onwards G J Barnard in respect to modifications of standard topics format.
  * @author     G J Barnard - gjbarnard at gmail dot com and {@link http://moodle.org/user/profile.php?id=442195}
@@ -111,11 +110,16 @@ M.format_topcoll.init = function(Y, theCourseId, theToggleState, theNumSections,
     }
 
     // For some reason Y.delegate does not work on iPhones / iPad's on M3.1 with 'spans' instead of 'a' tags.
+    var toggleHeight = false;
     for (var togi = 1; togi <= this.numSections; togi++) {
         // Cope with hidden / not shown toggles.
         var toggle = Y.one("ul.ctopics #toggle-" + togi);
         if (toggle) {
             toggle.on('click', this.toggleClick, this);
+            toggle.on('key', this.toggleClick, 'enter', this);
+            if (toggleHeight === false) {
+                toggleHeight = toggle.get('offsetHeight');
+            }
         }
     }
 
@@ -124,16 +128,32 @@ M.format_topcoll.init = function(Y, theCourseId, theToggleState, theNumSections,
         var allopen = Y.one("#toggles-all-opened");
         if (allopen) {
             allopen.on('click', this.allOpenClick);
+            allopen.on('key', this.allOpenClick, 'enter');
         }
         var allclosed = Y.one("#toggles-all-closed");
         if (allclosed) {
             allclosed.on('click', this.allCloseClick);
+            allclosed.on('key', this.allCloseClick, 'enter');
         }
     } else {
         if (theOneTopicToggle !== false) {
             this.currentTopic = Y.one("ul.ctopics #toggle-" + theOneTopicToggle);
             this.currentTopicNum = theOneTopicToggle;
         }
+    }
+
+    if (toggleHeight !== false) {
+        /* Ref: https://github.com/twbs/bootstrap/issues/1768 from Adaptable theme bsoptions.js,
+           but improved such that only the toggles are affected. */
+        var topcollShiftWindow = function() {
+            if (location.hash.startsWith('#section-')) {
+                scrollBy(0, -toggleHeight);
+            }
+        };
+        if (location.hash) {
+            topcollShiftWindow();
+        }
+        window.addEventListener("hashchange", topcollShiftWindow);
     }
 };
 
@@ -153,7 +173,7 @@ M.format_topcoll.allOpenClick = function(e) {
     e.preventDefault();
     M.format_topcoll.ourYUI.all(".toggledsection").addClass('sectionopen');
     M.format_topcoll.ourYUI.all(".toggle span.the_toggle").addClass('toggle_open').removeClass('toggle_closed')
-        .setAttribute('aria-pressed', 'true');
+        .setAttribute('aria-expanded', 'true');
     M.format_topcoll.resetState(M.format_topcoll.get_max_digit());
     M.format_topcoll.save_toggles();
 };
@@ -162,7 +182,7 @@ M.format_topcoll.allCloseClick = function(e) {
     e.preventDefault();
     M.format_topcoll.ourYUI.all(".toggledsection").removeClass('sectionopen');
     M.format_topcoll.ourYUI.all(".toggle span.the_toggle").addClass('toggle_closed').removeClass('toggle_open')
-        .setAttribute('aria-pressed', 'false');
+        .setAttribute('aria-expanded', 'false');
     M.format_topcoll.resetState(M.format_topcoll.get_min_digit());
     M.format_topcoll.save_toggles();
 };
@@ -183,7 +203,7 @@ M.format_topcoll.toggle_topic = function(targetNode, toggleNum) {
     if (this.oneTopic === true) {
         if ((this.currentTopicNum !== false) && (this.currentTopicNum != toggleNum)) {
             var currentTarget = this.currentTopic.one('span.the_toggle');
-            currentTarget.addClass('toggle_closed').removeClass('toggle_open').setAttribute('aria-pressed', 'false');
+            currentTarget.addClass('toggle_closed').removeClass('toggle_open').setAttribute('aria-expanded', 'false');
             this.currentTopic.next('.toggledsection').removeClass('sectionopen');
             this.set_toggle_state(this.currentTopicNum, false);
             this.currentTopic = null;
@@ -194,7 +214,7 @@ M.format_topcoll.toggle_topic = function(targetNode, toggleNum) {
     var target = targetNode.one('span.the_toggle');
     var state;
     if (!target.hasClass('toggle_open')) {
-        target.addClass('toggle_open').removeClass('toggle_closed').setAttribute('aria-pressed', 'true');
+        target.addClass('toggle_open').removeClass('toggle_closed').setAttribute('aria-expanded', 'true');
         targetNode.next('.toggledsection').addClass('sectionopen');
         state = true;
         if (this.oneTopic === true) {
@@ -202,7 +222,7 @@ M.format_topcoll.toggle_topic = function(targetNode, toggleNum) {
             this.currentTopicNum = toggleNum;
         }
     } else {
-        target.addClass('toggle_closed').removeClass('toggle_open').setAttribute('aria-pressed', 'false');
+        target.addClass('toggle_closed').removeClass('toggle_open').setAttribute('aria-expanded', 'false');
         targetNode.next('.toggledsection').removeClass('sectionopen');
         state = false;
         if (this.oneTopic === true) {

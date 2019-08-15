@@ -17,8 +17,7 @@
 /**
  * Grid Format - A topics based format that uses a grid of user selectable images to popup a light box of the section.
  *
- * @package    course/format
- * @subpackage grid
+ * @package    format_grid
  * @version    See the value of '$plugin->version' in version.php.
  * @copyright  &copy; 2013 G J Barnard in respect to modifications of standard topics format.
  * @author     G J Barnard - {@link http://about.me/gjbarnard} and
@@ -82,19 +81,6 @@ if ($ADMIN->fulltree) {
         2 => new lang_string('crop', 'format_grid')
     );
     $settings->add(new admin_setting_configselect($name, $title, $description, $default, $choices));
-
-    // Displayed image file type - 1 = original, 2 = webp.
-    $name = 'format_grid/defaultdisplayedimagefiletype';
-    $title = get_string('defaultdisplayedimagefiletype', 'format_grid');
-    $description = get_string('defaultdisplayedimagefiletype_desc', 'format_grid');
-    $default = format_grid::get_default_image_file_type();
-    $choices = array(
-        1 => new lang_string('original', 'format_grid'),
-        2 => new lang_string('webp', 'format_grid')
-    );
-    $setting = new admin_setting_configselect($name, $title, $description, $default, $choices);
-    $setting->set_updatedcallback('grid_format_update_displayed_images');
-    $settings->add($setting);
 
     // Default border colour in hexadecimal RGB with preceding '#'.
     $name = 'format_grid/defaultbordercolour';
@@ -319,6 +305,19 @@ if ($ADMIN->fulltree) {
         2 => new lang_string('yes')   // Yes.
     );
     $settings->add(new admin_setting_configselect($name, $title, $description, $default, $choices));
+
+    // Displayed image file type - 1 = original, 2 = webp.
+    $name = 'format_grid/defaultdisplayedimagefiletype';
+    $title = get_string('defaultdisplayedimagefiletype', 'format_grid');
+    $description = get_string('defaultdisplayedimagefiletype_desc', 'format_grid');
+    $default = format_grid::get_default_image_file_type();
+    $choices = array(
+        1 => new lang_string('original', 'format_grid'),
+        2 => new lang_string('webp', 'format_grid')
+    );
+    $setting = new admin_setting_configselect($name, $title, $description, $default, $choices);
+    $setting->set_updatedcallback('grid_format_update_displayed_images');
+    $settings->add($setting);
 
     // Grey out hidden sections.
     $name = 'format_grid/defaultgreyouthidden';

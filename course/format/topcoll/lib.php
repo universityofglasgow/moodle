@@ -22,8 +22,7 @@
  * Toggles are persistent on a per browser session per course basis but can be made to persist longer by a small
  * code change. Full installation instructions, code adaptions and credits are included in the 'Readme.md' file.
  *
- * @package    course/format
- * @subpackage topcoll
+ * @package    format_topcoll
  * @version    See the value of '$plugin->version' in version.php.
  * @copyright  &copy; 2012-onwards G J Barnard in respect to modifications of standard topics format.
  * @author     G J Barnard - {@link http://moodle.org/user/profile.php?id=442195}
@@ -176,7 +175,15 @@ class format_topcoll extends format_base {
         return $o;
     }
 
-    public function get_section_dates($section, $course, $tcsettings) {
+    public function get_section_dates($section, $course = null, $tcsettings = null) {
+        if (empty($tcsettings) && empty($course)) {
+            return $this->format_topcoll_get_section_dates($section, $this->get_course());
+        }
+
+        if (empty($tcsettings)) {
+            $tcsettings = $this->get_settings();
+        }
+
         $dateformat = get_string('strftimedateshort');
         $o = '';
         if ($tcsettings['layoutstructure'] == 5) {
@@ -409,6 +416,14 @@ class format_topcoll extends format_base {
                     'default' => get_config('format_topcoll', 'defaultlayoutcolumnorientation'),
                     'type' => PARAM_INT,
                 ),
+                'toggleallenabled' => array(
+                    'default' => get_config('format_topcoll', 'defaulttoggleallenabled'),
+                    'type' => PARAM_INT,
+                ),
+                'viewsinglesectionenabled' => array(
+                    'default' => get_config('format_topcoll', 'defaultviewsinglesectionenabled'),
+                    'type' => PARAM_INT,
+                ),
                 'togglealignment' => array(
                     'default' => get_config('format_topcoll', 'defaulttogglealignment'),
                     'type' => PARAM_INT,
@@ -591,6 +606,26 @@ class format_topcoll extends format_base {
                               2 => new lang_string('columnhorizontal', 'format_topcoll')) // Default.
                     )
                 );
+                $courseformatoptionsedit['toggleallenabled'] = array(
+                    'label' => new lang_string('settoggleallenabled', 'format_topcoll'),
+                    'help' => 'settoggleallenabled',
+                    'help_component' => 'format_topcoll',
+                    'element_type' => 'select',
+                    'element_attributes' => array(
+                        array(1 => new lang_string('no'),
+                              2 => new lang_string('yes'))
+                    )
+                );
+                $courseformatoptionsedit['viewsinglesectionenabled'] = array(
+                    'label' => new lang_string('setviewsinglesectionenabled', 'format_topcoll'),
+                    'help' => 'setviewsinglesectionenabled',
+                    'help_component' => 'format_topcoll',
+                    'element_type' => 'select',
+                    'element_attributes' => array(
+                        array(1 => new lang_string('no'),
+                              2 => new lang_string('yes'))
+                    )
+                );
                 $courseformatoptionsedit['toggleiconposition'] = array(
                     'label' => new lang_string('settoggleiconposition', 'format_topcoll'),
                     'help' => 'settoggleiconposition',
@@ -630,6 +665,10 @@ class format_topcoll extends format_base {
                     'label' => get_config('format_topcoll', 'defaultlayoutcolumns'), 'element_type' => 'hidden');
                 $courseformatoptionsedit['layoutcolumnorientation'] = array(
                     'label' => get_config('format_topcoll', 'defaultlayoutcolumnorientation'), 'element_type' => 'hidden');
+                $courseformatoptionsedit['toggleallenabled'] = array(
+                    'label' => get_config('format_topcoll', 'defaulttoggleallenabled'), 'element_type' => 'hidden');
+                $courseformatoptionsedit['viewsinglesectionenabled'] = array(
+                    'label' => get_config('format_topcoll', 'defaultviewsinglesectionenabled'), 'element_type' => 'hidden');
                 $courseformatoptionsedit['toggleiconposition'] = array(
                     'label' => get_config('format_topcoll', 'defaulttoggleiconposition'), 'element_type' => 'hidden');
                 $courseformatoptionsedit['onesection'] = array(
@@ -781,7 +820,7 @@ class format_topcoll extends format_base {
                     'label' => get_config('format_topcoll', 'defaulttgfgopacity'), 'element_type' => 'hidden');
                 $courseformatoptionsedit['toggleforegroundhovercolour'] = array(
                     'label' => $defaulttgfghvrcolour, 'element_type' => 'hidden');
-                $courseformatoptionsedit['toggleforegroundhoveopacity'] = array(
+                $courseformatoptionsedit['toggleforegroundhoveropacity'] = array(
                     'label' => get_config('format_topcoll', 'defaulttgfghvropacity'), 'element_type' => 'hidden');
                 $courseformatoptionsedit['togglebackgroundcolour'] = array(
                     'label' => $defaulttgbgcolour, 'element_type' => 'hidden');
@@ -789,7 +828,7 @@ class format_topcoll extends format_base {
                     'label' => get_config('format_topcoll', 'defaulttgbgopacity'), 'element_type' => 'hidden');
                 $courseformatoptionsedit['togglebackgroundhovercolour'] = array(
                     'label' => $defaulttgbghvrcolour, 'element_type' => 'hidden');
-                $courseformatoptionsedit['togglebackgroundhoveopacity'] = array(
+                $courseformatoptionsedit['togglebackgroundhoveropacity'] = array(
                     'label' => get_config('format_topcoll', 'defaulttgbghvropacity'), 'element_type' => 'hidden');
             }
             $readme = new moodle_url('/course/format/topcoll/Readme.md');
@@ -1270,6 +1309,8 @@ class format_topcoll extends format_base {
             $updatedata['layoutstructure'] = get_config('format_topcoll', 'defaultlayoutstructure');
             $updatedata['layoutcolumns'] = get_config('format_topcoll', 'defaultlayoutcolumns');
             $updatedata['layoutcolumnorientation'] = get_config('format_topcoll', 'defaultlayoutcolumnorientation');
+            $updatedata['toggleallenabled'] = get_config('format_topcoll', 'defaulttoggleallenabled');
+            $updatedata['viewsinglesectionenabled'] = get_config('format_topcoll', 'defaultviewsinglesectionenabled');
             $updatedata['toggleiconposition'] = get_config('format_topcoll', 'defaulttoggleiconposition');
             $updatedata['onesection'] = get_config('format_topcoll', 'defaultonesection');
             $updatedata['showsectionsummary'] = get_config('format_topcoll', 'defaultshowsectionsummary');
@@ -1344,6 +1385,8 @@ class format_topcoll extends format_base {
             // Defaults taken from 'settings.php'.
             $data['displayinstructions'] = get_config('format_topcoll', 'defaultdisplayinstructions');
             $data['layoutcolumnorientation'] = get_config('format_topcoll', 'defaultlayoutcolumnorientation');
+            $data['toggleallenabled'] = get_config('format_topcoll', 'defaulttoggleallenabled');
+            $data['viewsinglesectionenabled'] = get_config('format_topcoll', 'defaultviewsinglesectionenabled');
             $data['showsectionsummary'] = get_config('format_topcoll', 'defaultshowsectionsummary');
             $data['togglealignment'] = get_config('format_topcoll', 'defaulttogglealignment');
             $data['toggleallhover'] = get_config('format_topcoll', 'defaulttoggleallhover');

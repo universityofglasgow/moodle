@@ -15,16 +15,32 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Grid Format - A topics based format that uses a grid of user selectable images to popup a light box of the section.
+ * Search area for mod_zoom activities.
  *
- * @package    course/format
- * @subpackage grid
- * @version    See the value of '$plugin->version' in version.php.
- * @copyright  &copy; 2013 G J Barnard in respect to modifications of standard topics format.
- * @author     G J Barnard - {@link http://about.me/gjbarnard} and
- *                           {@link http://moodle.org/user/profile.php?id=442195}
+ * @package    mod_zoom
+ * @copyright  2019 UC Regents
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-echo '</body>';
-echo '</html>';
+namespace mod_zoom\search;
+
+defined('MOODLE_INTERNAL') || die();
+
+/**
+ * Search area for mod_zoom activities.
+ *
+ * @package    mod_zoom
+ * @copyright  2019 UC Regents
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class activity extends \core_search\base_activity {
+
+    /**
+     * Returns true if this area uses file indexing.
+     *
+     * @return bool
+     */
+    public function uses_file_indexing() {
+        return true;
+    }
+}

@@ -43,7 +43,7 @@ class auth_plugin_guid extends auth_plugin_ldap {
         $this->config->start_tls = false;
     }
 
-    /** 
+    /**
      * translate college code to name
      * (No point translating these strings)
      * @param int $code single digit of cost centre code
@@ -192,7 +192,7 @@ class auth_plugin_guid extends auth_plugin_ldap {
 
         // University of Glasgow Ugly Hack
         // if 'mail' field is empty consider using 'homeemailaddress'
-        // field (if not empty). 
+        // field (if not empty).
         // As this is their
         // private email address they will need their email
         // visibility set to hidden. This will be stored for later
@@ -252,7 +252,7 @@ class auth_plugin_guid extends auth_plugin_ldap {
                 if (trim($corehr->knownas)) {
                     $result['firstname'] = trim($corehr->knownas);
                 }
-                
+
                 $result['institution'] = $corehr->collegedesc;
                 $result['department'] = $corehr->schooldesc;
             }
@@ -358,7 +358,7 @@ class auth_plugin_guid extends auth_plugin_ldap {
 
         // make sure it points to *this* site
         if (strpos($urltogo, $CFG->wwwroot) === 0 or strpos($urltogo, str_replace('http://', 'https://', $CFG->wwwroot)) === 0) {
-            
+
             // If the user is already logged in, we just want to go to 'urltogo' with no further messing
             if (isloggedin() and !isguestuser()) {
 

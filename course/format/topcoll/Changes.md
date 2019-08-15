@@ -1,7 +1,35 @@
 ﻿Version Information
 ===================
+Version 3.7.1.0
+  1. Add missing Moodle define.
+  2. Fix "Collapsed Topic Content/EditMenu Overlap" - https://moodle.org/mod/forum/discuss.php?d=388969.
+  3. Fix error with analytic - get_section_dates function - thanks to https://github.com/tuanngocnguyen for the patch - #65.
+  4. Improve accessibility by having the 'left', 'content' and 'right' section areas in that order rather than 'left', 'right' and 'content'
+     which makes the tab order wrong.
+
+Version 3.7.0.1
+  1. Beta version for Moodle 3.7 based on 3.6.0.3.
+
+Version 3.6.0.3
+  1. Apply MDL-64819 - #61.
+  2. Fix phpunit tests for MDL-64492 - thanks to Rossco Hellmans for the patch - #59.
+  3. Added SVG version of one section icon - thanks to Luca Bösch for the patch - #60.
+  4. New: Accordion/Collapsed Topic aria attributes improvements - thanks to John Y for the patch - #62 and #63.
+  5. Fix position of activity / resource editing menu.
+  6. Change position of the window when clicking on a section anchor such that a navbar would not be in the way.
+     Thanks for the information in the Adaptable theme referencing: https://github.com/twbs/bootstrap/issues/1768.
+  7. Added the course and admin settings to enable or disable the toggle all functionality.  Reset in the 'layout'
+     area with associated capability for non-admins.
+  8. Added the course and admin settings to enable or disable the view single section functionality.  Reset in the
+     'layout' area with associated capability for non-admins.
+
 Version 3.6.0.2
   1. Fix invalid HTML in case of zero section elements - thanks to Mario Wehr for raising this - #47.
+  2. Fix: PHP Unit test failure (due to MDL-62680) - thanks to Anupama Dharmajan for the patch - #52.
+  3. Fix: Two strange input fields remain in teacher view when all capabilities are forbidden - thanks to Tobias Reischmann for the patch - #54.
+  4. Fix: Selecting specific topics breaks a section just above the selected topic - CONTRIB-7607.
+  5. New: Improve accessibility of the open and close all buttons - thanks to Rossco Hellmans for the patch - #56.
+  6. New: Based on '5', add key operation of toggles.
 
 Version 3.6.0.1
   1. Beta version for Moodle 3.6.
@@ -238,7 +266,7 @@ Version 2.8.2.2
   1. First beta version for Moodle 2.7beta.
 
 17th April 2014 Version 2.6.1.5
-  1. Fixed CONTRIB-4099 with the arrangement of the editing icon and associated functionality such that a better solution is
+  1. Fixed CONTRIB-4999 with the arrangement of the editing icon and associated functionality such that a better solution is
      applied for the specific nature of the format.
 
 28th March 2014 Version 2.6.1.4

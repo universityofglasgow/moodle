@@ -17,8 +17,7 @@
 /**
  * Grid Information
  *
- * @package    course/format
- * @subpackage Grid
+ * @package    format_grid
  * @version    See the value of '$plugin->version' in version.php.
  * @copyright  &copy; 2012 G J Barnard in respect to modifications of standard topics format.
  * @author     G J Barnard - {@link http://about.me/gjbarnard} and
@@ -42,12 +41,21 @@ class restore_format_grid_plugin extends restore_format_plugin {
      * Checks if backup file was made on Moodle before 3.3 and we should respect the 'numsections'
      * and potential "orphaned" sections in the end of the course.
      *
-     * @return bool
+     * @return bool Need to restore numsections.
      */
     protected function need_restore_numsections() {
         $backupinfo = $this->step->get_task()->get_info();
         $backuprelease = $backupinfo->backup_release;
-        return version_compare($backuprelease, '3.3', 'lt');
+        $prethreethree = version_compare($backuprelease, '3.3', 'lt');
+        if ($prethreethree) {
+            // Pre version 3.3 so, yes!
+            return true;
+        }
+        /* Post 3.3 may or may not have numsections in the backup depending on the version.
+           of Grid used.  So use the existance of 'numsections' in the course.xml
+           part of the backup to determine this. */
+        $data = $this->connectionpoint->get_data();
+        return (isset($data['tags']['numsections']));
     }
 
     /**
@@ -146,12 +154,9 @@ class restore_format_grid_plugin extends restore_format_plugin {
 
         $data = (object) $data;
 
-        /* We only process this information if the course we are restoring to
-           has 'grid' format (target format can change depending of restore options). */
-        $format = $DB->get_field('course', 'format', array('id' => $this->task->get_courseid()));
-        if ($format != 'grid') {
-            return;
-        }
+        /* Allow this to process even if not in the grid format so that our event observer on 'course_restored'
+           can perform a clean up of restored grid image files after all the data is in place in the database
+           for this to happen properly. */
 
         $data->courseid = $this->task->get_courseid();
         $data->sectionid = $this->task->get_sectionid();
@@ -194,14 +199,15 @@ class restore_format_grid_plugin extends restore_format_plugin {
      */
     public function after_restore_course() {
         if (!$this->need_restore_numsections()) {
-            // Backup file was made in Moodle 3.3 or later, we don't need to process 'numsecitons'.
-            return;
+            /* Backup file was made in Moodle 3.3 or later and does not contain 'numsections',
+               so we don't need to process 'numsections'. */
+               return;
         }
 
         $data = $this->connectionpoint->get_data();
         $backupinfo = $this->step->get_task()->get_info();
-        if ($backupinfo->original_course_format !== 'grid' || !isset($data['tags']['numsections'])) {
-            // Backup from another course format or backup file does not even have 'numsections'.
+        if ($backupinfo->original_course_format !== 'grid') {
+            // Backup from another course format.
             return;
         }
 
