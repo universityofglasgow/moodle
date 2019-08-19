@@ -44,6 +44,7 @@ $string['deleted'] = 'User \'{$a}\' has been deleted.';
 $string['duplicateusers'] = 'This username is already in use.';
 $string['email'] = 'Email address';
 $string['emptycsv'] = 'CSV file is empty';
+$string['ended'] = 'ENDED';
 $string['enrolledcourses'] = 'Enrolled';
 $string['enrolments'] = 'Enrolments for {$a}';
 $string['enrolmentsonsite'] = 'Enrolments on {$a} Moodle';

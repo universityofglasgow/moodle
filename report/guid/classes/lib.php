@@ -319,10 +319,12 @@ class lib {
         foreach ($enrolments as $enrolment) {
 
             // Check target course actually exists
-            if ($DB->record_exists('course', ['id' => $enrolment->courseid])) {
+            if ($course = $DB->get_record('course', ['id' => $enrolment->courseid])) {
                 $courselink = new \moodle_url('/course/view.php', ['id' => $enrolment->courseid]);
+                $ended = ($course->enddate) && (time() > $course->enddate);
             } else {
                 $courselink = '';
+                $ended = false;
             }    
             if (empty($enrolment->timelastaccess)) {
                 $lasttime = get_string('never');
@@ -333,6 +335,7 @@ class lib {
                 'courselink' => $courselink,
                 'name' => $enrolment->name,
                 'lastaccess' => $lasttime,
+                'ended' => $ended,
             ];
         }
 

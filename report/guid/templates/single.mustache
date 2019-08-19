@@ -45,6 +45,7 @@
                             <b>{{ name }}</b>
                         {{/ courselink }}
                         <i>({{# str }}accessed, report_guid, {{ lastaccess }}{{/ str}})</i>
+                        {{# ended }}<span class="badge badge-danger">{{# str }}ended, report_guid{{/ str }}</span>{{/ ended }}
                     </li>
                 {{/ formattedenrolments }}
             </ul>
