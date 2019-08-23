@@ -322,9 +322,11 @@ class lib {
             if ($course = $DB->get_record('course', ['id' => $enrolment->courseid])) {
                 $courselink = new \moodle_url('/course/view.php', ['id' => $enrolment->courseid]);
                 $ended = ($course->enddate) && (time() > $course->enddate);
+                $notstarted = time() < $course->startdate;
             } else {
                 $courselink = '';
                 $ended = false;
+                $notstarted = false;
             }    
             if (empty($enrolment->timelastaccess)) {
                 $lasttime = get_string('never');
@@ -336,6 +338,7 @@ class lib {
                 'name' => $enrolment->name,
                 'lastaccess' => $lasttime,
                 'ended' => $ended,
+                'notstarted' => $notstarted,
             ];
         }
 

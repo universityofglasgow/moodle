@@ -1021,6 +1021,13 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
      * @return void
      */
     public function course_updated($inserted, $course, $data) {
+
+        // We want all our new courses to have this plugin.
+        if ($inserted) {
+            $instanceid = $this->add_first_instance($course);
+        }
+
+        // Ad-hoc task to enrol users.
         $synccourse = new \enrol_gudatabase\task\sync_course();
         $data = [
             'newcourse' => $inserted,
@@ -1045,11 +1052,6 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
 
         // Make sure we have config.
         $this->load_config();
-
-        // We want all our new courses to have this plugin.
-        if ($newcourse) {
-            $instanceid = $this->add_first_instance($course);
-        }
 
         // Check if we can proceed.
         if (!$this->enrolment_possible($course)) {

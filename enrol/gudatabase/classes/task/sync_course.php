@@ -36,10 +36,13 @@ class sync_course extends \core\task\adhoc_task {
         $data = $this->get_custom_data();
         $courseid = $data->courseid;
         $newcourse = $data->newcourse;
-        $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
-        mtrace('enrol_gudatbase: processing course ' . $course->fullname);
-        $plugin->process_course($newcourse, $course);
-        \core\task\manager::clear_static_caches();
+        if ($course = $DB->get_record('course', ['id' => $courseid])) {
+            mtrace('enrol_gudatabase: processing course ' . $course->fullname);
+            $plugin->process_course($newcourse, $course);
+            \core\task\manager::clear_static_caches();
+        } else {
+            mtrace('enrol_gudatabase: warning, course no longer exists id=' . $courseid);
+        }
     }
 
 }
