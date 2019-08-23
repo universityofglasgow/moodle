@@ -68,7 +68,8 @@ class email {
         $request->username = fullname($user);
 
         // Link
-        $request->link = new \moodle_url('/report/enhance/more.php', ['courseid' => 1, 'id' => $request->id]);
+        $link = new \moodle_url('/report/enhance/more.php', ['courseid' => 1, 'id' => $request->id]);
+        $request->link = strval($link);
 
         foreach ($users as $user) {
             $elements = [
