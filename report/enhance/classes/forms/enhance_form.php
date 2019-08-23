@@ -53,6 +53,10 @@ class enhance_form extends \moodleform {
             $mform->setType('id', PARAM_INT);
         }
 
+	if (!$request) {
+            $mform->addElement('html', '<div class="alert alert-danger">' . get_string('donotuse', 'report_enhance') . '</div>');
+        }
+
         // Headline / Summary
         $headline = $mform->addElement('text', 'headline', get_string('headline', 'report_enhance'), ['size' => 80]);
         $mform->setType('headline', PARAM_RAW);

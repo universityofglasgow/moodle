@@ -43,6 +43,7 @@ $string['desirable'] = 'Desirable';
 $string['desirability'] = 'Desirability';
 $string['desirability_help'] = '<ul><li>Benefit - will the proposal bring a desired benefit to the University?</li><li>Strategy - is the proposal aligned with the University Learning and Teaching Strategy</li><li>Policy - is the proposal consistent with University policy?</li><li>Demand - how widespread is the need for the change, e.g. as shown by support from others?</li></ul>';
 $string['developmentinprogress'] = 'Accepted, Development in Progress';
+$string['donotuse'] = 'ONLY USE THIS FORM FOR ENHANCEMENTS - Any faults, bugs, performance issues, requests for account changes etc. must be reported via the IT Services Help Desk';
 $string['edit'] = 'Edit';
 $string['enhance:view'] = 'View list of enhancement requests';
 $string['eventreportviewed'] = 'VLE Enhancement report viewed';
