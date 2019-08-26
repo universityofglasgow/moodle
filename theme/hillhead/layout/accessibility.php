@@ -104,6 +104,13 @@
             'c'=>'hh-acc-ft-mn',
             't'=>'Monospace Font',
             'i'=>'fa-font'
+        ),
+        Array(
+            'o'=>'theme_hillhead_font',
+            'v'=>'dyslexic',
+            'c'=>'hh-acc-ft-dx',
+            't'=>'Dyslexia Friendly Font',
+            'i'=>'fa-font'
         )
     );
     
@@ -211,7 +218,7 @@
         );
     }
     
-    if($theme_hillhead_read_alert == 'on') {
+    /*if($theme_hillhead_read_alert == 'on') {
         $readAlertOptions = Array(
             Array(
                 'o'=>'theme_hillhead_readalert',
@@ -231,7 +238,7 @@
                 'i'=>'fa-bullhorn'
             )
         );
-    }
+    }*/
     
     if($theme_hillhead_stripstyles == 'on') {
         $stripStyleOptions = Array(
@@ -303,9 +310,10 @@
         foreach($readHighlightOptions as $opt) {
             $accTxt .= '<li><a class="hh-acc" id="'.$opt['c'].'" href="'.$CFG->wwwroot.'/theme/hillhead/accessibility.php?o='.$opt['o'].'&v='.$opt['v'].'"><i class="fa '.$opt['i'].'"></i>'.$opt['t'].'</a></li>';
         }
+        /*
         foreach($readAlertOptions as $opt) {
             $accTxt .= '<li><a class="hh-acc" id="'.$opt['c'].'" href="'.$CFG->wwwroot.'/theme/hillhead/accessibility.php?o='.$opt['o'].'&v='.$opt['v'].'"><i class="fa '.$opt['i'].'"></i>'.$opt['t'].'</a></li>';
-        }
+        }*/
         $accTxt .= '</ul>';
         $accTxt .= '</div></div></div>';
         $accTxt .= '</div>';

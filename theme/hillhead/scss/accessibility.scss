@@ -33,6 +33,10 @@ body.hillhead-font-mono {
     font-family: "Hillhead Mono", "Menlo", "Courier New", monospace !important;
 }
 
+body.hillhead-font-dyslexic {
+    font-family: "OpenDyslexic", "Helvetica", "Arial", sans-serif !important;
+}
+
 body.hillhead-size-120 {
     font-size: 120%;
 }
@@ -209,6 +213,7 @@ body.hillhead-bold * {
 #hh-acc-ft-cl { font-family: "Palatino", "Times New Roman", serif !important; }
 #hh-acc-ft-co { font-family: "Hillhead Comic", "Chalkboard", "Comic Sans", "Comic Sans MS", sans-serif !important; }
 #hh-acc-ft-mn { font-family: "Hillhead Mono", "Menlo", "Courier New", monospace !important; }
+#hh-acc-ft-dx { font-family: "OpenDyslexic", "Helvetica", "Arial", sans-serif !important; }
 
 #hh-acc-fs-10 { font-size: 1rem; }
 #hh-acc-fs-12 { font-size: 1.2rem; }
@@ -542,6 +547,10 @@ body.hillhead-night #gridmiddle-column {
 body.hillhead-night #gridshadebox_content {
     border-color: #1A2B41 !important;
     background-color: #121E30 !important;
+}
+
+body.hillhead-night .course-content ul.ctopics li.section .content .toggle, body.hillhead-night .course-content ul.ctopics li.section .content.sectionhidden {
+    background-color: #132030 !important;
 }
 
 body.hillhead-night .tabBar {

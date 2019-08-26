@@ -12,6 +12,8 @@ if ($navdraweropen) {
 
 $extraScripts = '';
 
+$theme_hillhead_stripstyles = '';
+
 $theme_hillhead_font = get_user_preferences('theme_hillhead_font');
 
 switch($theme_hillhead_font) {
@@ -24,8 +26,11 @@ switch($theme_hillhead_font) {
     case 'comic':
         $extraclasses[]='hillhead-font-comic';
         break;
-        case 'mono':
+    case 'mono':
         $extraclasses[]='hillhead-font-mono';
+        break;
+    case 'dyslexic':
+        $extraclasses[]='hillhead-font-dyslexic';
         break;
 }
 
@@ -51,30 +56,37 @@ $theme_hillhead_contrast = get_user_preferences('theme_hillhead_contrast');
 switch($theme_hillhead_contrast) {
     case 'night':
         $extraclasses[]='hillhead-night';
+        $theme_hillhead_stripstyles = 'on';
         break;
     case 'by':
         $extraclasses[]='hillhead-contrast';
         $extraclasses[]='hillhead-contrast-by';
+        $theme_hillhead_stripstyles = 'on';
         break;
     case 'yb':
         $extraclasses[]='hillhead-contrast';
         $extraclasses[]='hillhead-contrast-yb';
+        $theme_hillhead_stripstyles = 'on';
         break;
     case 'wg':
         $extraclasses[]='hillhead-contrast';
         $extraclasses[]='hillhead-contrast-wg';
+        $theme_hillhead_stripstyles = 'on';
         break;
     case 'bb':
         $extraclasses[]='hillhead-contrast';
         $extraclasses[]='hillhead-contrast-bb';
+        $theme_hillhead_stripstyles = 'on';
         break;
     case 'br':
         $extraclasses[]='hillhead-contrast';
         $extraclasses[]='hillhead-contrast-br';
+        $theme_hillhead_stripstyles = 'on';
         break;
     case 'bw':
         $extraclasses[]='hillhead-contrast';
         $extraclasses[]='hillhead-contrast-bw';
+        $theme_hillhead_stripstyles = 'on';
         break;
 }
 
@@ -110,7 +122,9 @@ switch($theme_hillhead_read_alert) {
         break;
 }
 
-$theme_hillhead_stripstyles = get_user_preferences('theme_hillhead_stripstyles');
+if($theme_hillhead_stripstyles != 'on') {
+    $theme_hillhead_stripstyles = get_user_preferences('theme_hillhead_stripstyles');
+}
 
 switch($theme_hillhead_stripstyles) {
     case 'on':
