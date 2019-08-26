@@ -1458,15 +1458,6 @@ div.dt-button-collection a.dt-button:active:not(.disabled), div.dt-button-collec
      background: #DCE9F9;
      box-shadow: inset 1px 1px 3px #666;  
  }
-
- a {
-     color: #005E8D;
-     text-decoration: none;
- }
-
- a, a:visited {
-     color: #005E8D;
- }
  
 .path-report-myfeedback .modal {
     position: fixed;
