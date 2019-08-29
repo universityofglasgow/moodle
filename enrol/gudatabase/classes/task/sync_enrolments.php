@@ -33,7 +33,6 @@ class sync_enrolments extends \core\task\scheduled_task {
     public function execute() {
         $plugin = enrol_get_plugin('gudatabase');
         $plugin->scheduled();
-        \core\task\manager::clear_static_caches();
     }
 
 }
