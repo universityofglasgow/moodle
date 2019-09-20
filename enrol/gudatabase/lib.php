@@ -1353,6 +1353,11 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
                     continue;
                 }
 
+		// If course is outside date range then do not enrol
+                if (($course->startdate > time()) || ($course->enddate < time())) {
+                    continue;
+                }
+
                 // Make sure it has this enrolment plugin.
                 $instanceid = $this->check_instance( $course );
 
