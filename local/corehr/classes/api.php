@@ -250,7 +250,7 @@ class api {
         $data->knownas = $extract->knownAs;
         $data->orgunitno = $extract->orgUnitNo;
         $data->orgunitdesc = $extract->orgUnitDesc;
-        $data->school = empty($extract->school) ? 0 : $extract->school;
+        $data->school = !is_numeric($extract->school) ? 0 : $extract->school;
         $data->schooldesc = $extract->schoolDesc;
         $data->jobtitle = $extract->jobTitle;
         $data->jobtitledesc = $extract->jobTitleDesc;
