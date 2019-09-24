@@ -8,7 +8,7 @@
     
     $footerLinks['Moodle Inspector'] = 'https://moodleinspector.gla.ac.uk';
     
-    $footerLinks['Accessibility'] = 'https://www.gla.ac.uk/explore/accessibility/';
+    $footerLinks['Accessibility'] = 'https://www.gla.ac.uk/explore/accessibility/statements/moodle';
     
     $footerLinks['Privacy and Cookies'] = 'https://www.gla.ac.uk/legal/privacy/';
     
