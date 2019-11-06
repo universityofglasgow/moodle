@@ -22,6 +22,8 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+$string['allowhidden'] = 'Allow hidden course';
+$string['allowhidden_help'] = 'If enabled, automatic enrolment will function even if the course is hidden. By default hidden courses are ignored';
 $string['allowunenrol'] = 'Allow unenrol features';
 $string['allowunenrol_desc'] = 'Enable remove from course/group features at instance level';
 $string['autherror'] = 'An error occurred processing UofG automatic enrolment - additional information has been logged';
@@ -43,9 +45,9 @@ $string['defaultperiod'] = 'Default enrolment period';
 $string['defaultperiod_help'] = 'Set the default duration for enrolments';
 $string['displayaverage'] = 'Approx mean courses process each cron = {$a}';
 $string['enablegroupremove'] = 'Enable removal from groups';
-$string['enablegroupremove_help'] = 'If enabled, students will be removed from a group if they are removed from the corresponding class list in MyCampus. Otherwise they will stay in the group until removed manually.<br />WARNING: Possible loss of data if enabled';
+$string['enablegroupremove_help'] = 'If enabled, students will be removed from a group if they are removed from the corresponding class list in MyCampus. Otherwise they will stay in the group until removed manually.<br />WARNING: Possible loss of data if enabled. NOTE: A course end date MUST be set in the course settings.';
 $string['enableunenrol'] = 'Enable user unenrol';
-$string['enableunenrol_help'] = 'If enabled, students will be unenrolled shortly after they are removed from the course in MyCampus. Otherwise they will stay enrolled even if they are removed in MyCampus.<br />WARNING: Risk of data loss. If students are unenrolled their submissions and data are irrevocably deleted';
+$string['enableunenrol_help'] = 'If enabled, students will be unenrolled shortly after they are removed from the course in MyCampus. Otherwise they will stay enrolled even if they are removed in MyCampus.<br />WARNING: Risk of data loss. If students are unenrolled their submissions and data are irrevocably deleted. NOTE: A course end date MUST be set in the course settings.';
 $string['enrolenddate'] = 'Enrol end date';
 $string['enrolenddate_help'] = 'If enabled, users will be unenrolled (or their role changed) after this date/time. Note that this only applies to users enrolled AFTER this is set or changed.';
 $string['enrolmentdisabled'] = '<b>Enrolment is disabled for this course</b> See <a href="{$a}">Enrolment Report</a> for more information.';
@@ -63,6 +65,7 @@ $string['legacycodes'] = 'Valid codes defined in course settings (shortname and 
 $string['mainsettings'] = 'Main settings';
 $string['newwarning'] = 'Click \'Add method\' and then re-edit to define codes and groups.';
 $string['nocourseinfo'] = 'No course info';
+$string['noenddatealert'] = 'There is no end date set in the course settings. Please consider adding one to ensure enrolment works properly';
 $string['nolegacycodes'] = 'There are no active and valid codes defined for this course';
 $string['patience'] = 'Please be patient while this process completes. For course with large numbers of students, it may take some time';
 $string['pluginname'] = 'UofG Enrolment database';
@@ -73,6 +76,7 @@ $string['privacy:metadata:enrol_gudatabase_users:courseid'] = 'The ID of the cou
 $string['privacy:metadata:enrol_gudatabase_users:timeupdated'] = 'The time that the enrolment was last updated';
 $string['privacy:metadata:enrol_gudatabase_users:userid'] = 'The ID of the user being enrolled on the course';
 $string['processinginstance'] = 'Processing plugin instance \'{$a}\'';
+$string['removewarning'] = '<b>DANGER:</b> Enabling the next two settings can cause you to irreversibly delete student data. Only enable if you know what you are doing!';
 $string['savedisabled'] = 'Users will NOT be enrolled on this course at the moment. If you think this is wrong check that the course is visible and that the current date is between the course start and end dates.';
 $string['savewarning'] = 'Saving this page will queue updates to all enrolments and groups for this course in the background. It will take several minutes for participant lists to change. Please be patient.';
 $string['settingsclasslist'] = 'Class list table';

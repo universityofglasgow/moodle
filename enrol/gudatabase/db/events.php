@@ -32,4 +32,17 @@ $observers = array(
         'callback' => 'enrol_gudatabase_observer::course_reset_ended',
     ),
 
+    // // Trigger a course created event.
+    // $event = \core\event\course_created::create(array(
+    //     'objectid' => $course->id,
+    //     'context' => context_course::instance($course->id),
+    //     'other' => array('shortname' => $course->shortname,
+    //         'fullname' => $course->fullname)
+    // ));
+
+    [
+        'eventname' => '\core\event\course_created',
+        'callback' => 'enrol_gudatabase_observer::course_created',
+    ],
+
 );

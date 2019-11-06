@@ -44,4 +44,38 @@ class enrol_gudatabase_observer {
         $DB->delete_records('enrol_gudatabase_codes', array('courseid' => $courseid));
         return;
     }
+
+    /**
+     * Triggered when a course is created
+     */
+    public static function course_created(\core\event\course_created $event) {
+        global $DB, $USER;
+
+        $courseid = $event->objectid;
+        $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
+
+	// get default course length
+        $courseconfig = get_config('moodlecourse');
+        
+        // how many days is current end
+        $currentlength = $course->enddate - time();
+
+        // Check if this is 'close' as Moodle does some odd things with timestamp
+        // calculation
+        if (abs($currentlength - $courseconfig->courseduration) < 3 * 86400) {
+
+            // Set to end of july
+            $month = date('m');
+            $year = date('Y');
+            if ($month > 7) {
+                $year++;
+            }
+            $future = strtotime("$year-07-31");
+            $course->enddate = $future;
+            $DB->update_record('course', $course);
+        }
+
+        return;
+    }
+
 }

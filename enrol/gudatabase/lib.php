@@ -32,6 +32,7 @@
  * customint3 - 0/1, also get codes from shortname/idnumber if = 1
  * customint4 - 0/1, allow unenrol if = 1
  * customint5 - 0/1, allow remove from groups if = 1
+ * customint6 - 0/1, allow enrol/unenrol even if course hidden if = 1
  *
  * customtext1 - code list
  * customtext2 - (serialised) groups enabled
@@ -213,7 +214,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
      * @param string $code (list of) course codes
      * @return array array of course codes
      */
-    public function split_code( $code ) {
+    public function split_code($code) {
 
         // Split on comma or space.
         $codes = preg_split("/[\s,]+/", $code, null, PREG_SPLIT_NO_EMPTY );
@@ -227,7 +228,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
      * @param string $userid user id
      * @return array
      */
-    public function external_enrolments( $codes=null, $userid=null ) {
+    public function external_enrolments($codes=null, $userid=null) {
         global $CFG, $DB;
 
         // Codes and userid can't both be null.
@@ -379,6 +380,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         $extdb->Close();
         return $matricnos;
     }
+
     /**
      * get course information from
      * external database
@@ -841,7 +843,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         }
 
         // Is enrollment allowed?
-        if (!$this->enrolment_possible($course)) {
+        if (!$this->enrolment_possible($course, $instance)) {
             return true;
         }
 
@@ -914,7 +916,8 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         }
 
         // If required unenrol remaining users.
-        if (!empty($instance->customint4) && $config->allowunenrol) {
+        // Only works if enddate is set
+        if (!empty($instance->customint4) && $this->get_config('allowunenrol') && !empty($course->enddate)) {
 
             // Get list of users enrolled in this instance.
             $enrolments = $DB->get_records('user_enrolments', array('enrolid' => $instance->id));
@@ -948,7 +951,8 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         $fields['customint2'] = 0; // course code groups
         $fields['customint3'] = 1; // honour settings codes
         $fields['customint4'] = 0; // allow unenrol
-        $fields['customint5'] = 0; // allow renove from groups
+        $fields['customint5'] = 0; // allow remove from groups
+        $fields['customint6'] = 0; // allow instance if course hidden
         $fields['customtext1'] = ''; // course codes
         $fields['customtext2'] = ''; // serialised group enrolments.
         return $this->add_instance($course, $fields);
@@ -987,12 +991,13 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
      * Do not do anything if course outside of date range
      * or not visible
      * @param object $course
+     * @param object $instance (if we know it)
      * @return boolean
      */
-    protected function enrolment_possible($course) {
+    protected function enrolment_possible($course, $instance = null) {
 
-        // Ignore hidden courses
-        if (!$course->visible) {
+        // Ignore hidden courses, unless customint6 = 1, in which case skip this check
+        if (empty($instance->customint6) && !$course->visible) {
             return false;
         }
 
@@ -1198,7 +1203,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         }
 
         // Check if we can proceed.
-        if (!$this->enrolment_possible($course)) {
+        if (!$this->enrolment_possible($course, $instance)) {
             return false;
         }
 
@@ -1207,9 +1212,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
 
         // Get group settings from instance.
         // Nothing to do if this doesn't work.
-        if (!$selectedgroups = unserialize($instance->customtext2)) {
-            return false;
-        }
+        $selectedgroups = unserialize($instance->customtext2);
 
         // Synchronise course groups.
         if ($instance->customint2) {
@@ -1272,7 +1275,8 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
                         }
 
                         // Remove group members no longer in classgroup.
-                        if (!empty($instance->customint5) && $config->allowunenrol) {
+                        // There MUST be an end date
+                        if (!empty($instance->customint5) && $this->get_config('allowunenrol') && !empty($course->enddate)) {
                             if ($members = $DB->get_records('groups_members', array('groupid' => $groupid))) {
                                 foreach ($members as $member) {
                                     if (!in_array($member->userid, $enrolledusers)) {
@@ -1282,6 +1286,79 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
                             }
                         }
                     }
+                }
+            }
+        }
+
+        $this->group_cleanup($course, $instance, $selectedgroups);
+    }
+
+    /**
+     * Group cleanup.
+     * If group removal is enabled, check for class groups that have been removed or disabled 
+     * and remove users as required
+     * @param object $course
+     * @param object $instance
+     * @param array $selectedgroups
+     */
+    public function group_cleanup($course, $instance, $selectedgroups) {
+        global $DB;
+
+        // Must be enabled in this plugin, sitewide AND the course must have an end date
+        if (empty($instance->customint5) || !$this->get_config('allowunenrol') || empty($course->enddate)) {
+            return;
+        }
+
+        // Get the course codes used in the groups table
+        $sql = "select distinct substring_index(originalname, ' ', 1) from {enrol_gudatabase_groups} where courseid=:courseid";
+        if ($coursecodes = $DB->get_records_sql($sql, ['courseid' => $course->id])) {
+            foreach ($coursecodes as $code => $junk) {
+                
+                // Is this course code valid?
+                if (array_key_exists($code, $selectedgroups)) {
+                    continue;
+                }
+
+                // Code is not in use so find associated groups.
+                $sql = "select distinct groupid from {enrol_gudatabase_groups} where substring_index(originalname, ' ', 1) = :code";
+                if ($groupids = $DB->get_records_sql($sql, ['code' => $code])) {
+                    foreach ($groupids as $groupid => $morejunk) {
+                        groups_delete_group($groupid);
+                        $DB->delete_records('enrol_gudatabase_groups', ['groupid' => $groupid]);
+                    }
+                } 
+            }
+        }
+
+        // Find any groups in the database that are no longer selected
+        if ($savedgroups = $DB->get_records('enrol_gudatabase_groups', ['courseid' => $course->id])) {
+            foreach ($savedgroups as $savedgroup) {
+            
+                // if it's just a coursecode then it's a classgroup
+                // don't touch those.
+                if (strpos($savedgroup->originalname, ' ') === false) {
+                    if (!$instance->customint2) {
+                        groups_delete_group($savedgroup->groupid);
+                        $DB->delete_records('enrol_gudatabase_groups', ['id' => $savedgroup->id]);
+                    }
+                    continue;
+                }
+
+                // if this group exists then do nothing
+                $found = false;
+                foreach ($selectedgroups as $code => $classes) {
+
+                    foreach ($classes as $class => $selected) {
+                        $groupbasename = "{$code} {$class}";
+                        if ($selected && (strpos($savedgroup->originalname, $groupbasename) !== false)) {
+                            $found = true;
+                            break;
+                        }
+                    }
+                }
+                if (!$found) {
+                    groups_delete_group($savedgroup->groupid);
+                    $DB->delete_records('enrol_gudatabase_groups', ['id' => $savedgroup->id]);
                 }
             }
         }
@@ -1469,10 +1546,14 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
             $groups = array();
         }
 
-        if ($this->enrolment_possible($course)) {
-            $mform->addElement('html', '<div class="alert alert-warning">' . get_string('savewarning', 'enrol_gudatabase') . '</div>');
+        if ($this->enrolment_possible($course, $instance)) {
+            $mform->addElement('html', '<div class="alert alert-info">' . get_string('savewarning', 'enrol_gudatabase') . '</div>');
         } else {
             $mform->addElement('html', '<div class="alert alert-danger">' . get_string('savedisabled', 'enrol_gudatabase') . '</div>');
+        }
+
+        if (empty($course->enddate)) {
+            $mform->addElement('html', '<div class="alert alert-warning">' . get_string('noenddatealert', 'enrol_gudatabase') . '</div>');
         }
 
         $mform->addElement('text', 'name', get_string('custominstancename', 'enrol'));
@@ -1491,6 +1572,10 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         $mform->addElement('select', 'customint3', get_string('settingscodes', 'enrol_gudatabase'), $yesno);
         $mform->addHelpButton('customint3', 'settingscodes', 'enrol_gudatabase');
         $mform->setDefault('customint3', 0);
+
+        $mform->addElement('select', 'customint6', get_string('allowhidden', 'enrol_gudatabase'), $yesno);
+        $mform->addHelpButton('customint6', 'allowhidden', 'enrol_gudatabase');
+        $mform->setDefault('customint6', 0);
 
         if ($instance->id) {
             $roles = get_default_enrol_roles($context, $instance->roleid);
@@ -1515,6 +1600,8 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         $mform->setDefault('expireroleid', $this->get_config('expireroleid'));
         $mform->addHelpButton('expireroleid', 'expirerole', 'enrol_gudatabase');
 
+	$mform->addElement('html','<div class="alert alert-danger">' . get_string('removewarning', 'enrol_gudatabase') . '</div>');
+
         if (has_capability('enrol/gudatabase:enableunenrol', $context)) {
             $mform->addElement('select', 'customint4', get_string('enableunenrol', 'enrol_gudatabase'), $yesno);
             $mform->setDefault('customint4', 0);
@@ -1533,7 +1620,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
             $instance->customint3 = 0;
         }
 
-        $mform->addElement('html', $output->print_codes($course->id, $codes, $instance->customint3, $this->enrolment_possible($course)));
+        $mform->addElement('html', $output->print_codes($course->id, $codes, $instance->customint3, $this->enrolment_possible($course, $instance)));
 
         $mform->addElement('textarea', 'customtext1', get_string('codelist', 'enrol_gudatabase'),
             'rows="15" cols="25" style="height: auto; width:auto;"');
@@ -1561,7 +1648,8 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
             $description = $coursedescriptions[$code];
             $mform->addElement('html', "<h3>$code ($description)</h3>");
             foreach ($classes as $class) {
-                $selector = "{$code}_{$class}";
+                $classnospace = str_replace(' ', '_', $class);
+                $selector = "{$code}_{$classnospace}";
                 $mform->addElement('advcheckbox', $selector, $class, '');
                 $mform->setDefault($selector, !empty($groups[$code][$class]));
             }
@@ -1597,7 +1685,8 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         foreach ($codeclasses as $code => $codeclass) {
             $groups[$code] = array();
             foreach ($codeclass as $class) {
-                $selector = "{$code}_{$class}";
+                $classnospace = str_replace(' ', '_', $class);
+                $selector = "{$code}_{$classnospace}";
 
                 // If code has just been added, expected classes are not on the form.
                 if (!isset($data->$selector)) {
