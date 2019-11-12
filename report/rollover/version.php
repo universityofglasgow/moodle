@@ -28,5 +28,4 @@ $plugin->version   = 2018061500;
 $plugin->requires  = 2018051700;
 $plugin->component = 'report_rollover';
 $plugin->dependencies = array(
-    'local_rollover' => ANY_VERSION,
 );
