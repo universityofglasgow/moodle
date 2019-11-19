@@ -14,20 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * IomadBoost
- *
- * @package    theme_iomadboost
- * @copyright  2017 E-Learn Design Ltd http://www.e-learndesign.co.uk
- * @author     Howard Miller
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2019111900;
-$plugin->requires  = 2016112900;
-$plugin->component = 'theme_hillhead';
-$plugin->dependencies = [
-    'theme_boost' => '2017111300',
-];
+$definitions = array(
+    'fontawesomeiconmapping' => array(
+        'mode' => cache_store::MODE_APPLICATION,
+        'simplekeys' => true,
+        'simpledata' => true,
+        'staticacceleration' => true,
+        'staticaccelerationsize' => 1
+    ),
+);
