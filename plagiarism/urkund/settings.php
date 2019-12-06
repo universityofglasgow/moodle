@@ -49,8 +49,8 @@ if (($data = $mform->get_data()) && confirm_sesskey()) {
         $data->urkund_use = 0;
     }
 
-    $mods = core_component::get_plugin_list('mod');
-    foreach ($mods as $mod => $modname) {
+    $supportedmodules = urkund_supported_modules();
+    foreach ($supportedmodules as $mod) {
         if (plugin_supports('mod', $mod, FEATURE_PLAGIARISM)) {
             $modstring = 'urkund_enable_mod_' . $mod;
             if (!isset($data->$modstring)) {
@@ -64,6 +64,9 @@ if (($data = $mform->get_data()) && confirm_sesskey()) {
     }
     if (!isset($data->urkund_hidefilename)) {
         $data->urkund_hidefilename = 0;
+    }
+    if (!isset($data->urkund_userpref)) {
+        $data->urkund_userpref = 0;
     }
     foreach ($data as $field => $value) {
         if (strpos($field, 'urkund') === 0) {

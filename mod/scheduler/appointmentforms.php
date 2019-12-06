@@ -1,8 +1,21 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Appointment-related forms of the scheduler module
- * (using Moodle formslib)
+ * Appointment-related forms of the scheduler module (using Moodle formslib)
  *
  * @package    mod_scheduler
  * @copyright  2016 Henning Bostelmann and others (see README.txt)
@@ -10,6 +23,9 @@
  */
 
 defined('MOODLE_INTERNAL') || die();
+
+use \mod_scheduler\model\appointment;
+use \mod_scheduler\permission\scheduler_permissions;
 
 require_once($CFG->libdir.'/formslib.php');
 
@@ -23,19 +39,19 @@ require_once($CFG->libdir.'/formslib.php');
 class scheduler_editappointment_form extends moodleform {
 
     /**
-     * @var scheduler_appointment the appointment being edited
+     * @var appointment the appointment being edited
      */
     protected $appointment;
 
-   /**
+    /**
      * @var bool whether to distribute grade to all group members
      */
     protected $distribute;
 
     /**
-     * @var whether the teacher can edit grades
+     * @var array permissions of the teacher
      */
-    protected $editgrade;
+    protected $permissions;
 
     /**
      * @var array options for notes fields
@@ -45,21 +61,24 @@ class scheduler_editappointment_form extends moodleform {
     /**
      * Create a new edit appointment form
      *
-     * @param scheduler_appointment $appointment the appointment to edit
+     * @param appointment $appointment the appointment to edit
      * @param mixed $action the action attribute for the form
-     * @param bool $editgrade whether the grade can be edited
+     * @param scheduler_permissions $permissions
      * @param bool $distribute whether to distribute grades to all group members
      */
-    public function __construct(scheduler_appointment $appointment, $action, $editgrade, $distribute) {
+    public function __construct(appointment $appointment, $action, scheduler_permissions $permissions, $distribute) {
         $this->appointment = $appointment;
         $this->distribute = $distribute;
-        $this->editgrade = $editgrade;
+        $this->permissions = $permissions;
         $this->noteoptions = array('trusttext' => true, 'maxfiles' => -1, 'maxbytes' => 0,
-                                   'context' => $appointment->get_scheduler()->get_context(),
+                                   'context' => $permissions->get_context(),
                                    'subdirs' => false, 'collapsed' => true);
         parent::__construct($action, null);
     }
 
+    /**
+     * Form definition
+     */
     protected function definition() {
 
         global $output;
@@ -67,14 +86,20 @@ class scheduler_editappointment_form extends moodleform {
         $mform = $this->_form;
         $scheduler = $this->appointment->get_scheduler();
 
+        $candistribute = false;
+
         // Seen tickbox.
         $mform->addElement('checkbox', 'attended', get_string('attended', 'scheduler'));
+        if (!$this->permissions->can_edit_attended($this->appointment)) {
+            $mform->freeze('attended');
+        }
 
         // Grade.
-        if ($scheduler->scale != 0) {
-            if ($this->editgrade) {
+        if ($scheduler->uses_grades()) {
+            if ($this->permissions->can_edit_grade($this->appointment)) {
                 $gradechoices = $output->grading_choices($scheduler);
                 $mform->addElement('select', 'grade', get_string('grade', 'scheduler'), $gradechoices);
+                $candistribute = true;
             } else {
                 $gradetext = $output->format_grade($scheduler, $this->appointment->grade);
                 $mform->addElement('static', 'gradedisplay', get_string('grade', 'scheduler'), $gradetext);
@@ -82,16 +107,30 @@ class scheduler_editappointment_form extends moodleform {
         }
         // Appointment notes (visible to teacher and/or student).
         if ($scheduler->uses_appointmentnotes()) {
-            $mform->addElement('editor', 'appointmentnote_editor', get_string('appointmentnote', 'scheduler'),
-                               array('rows' => 3, 'columns' => 60), $this->noteoptions);
-            $mform->setType('appointmentnote', PARAM_RAW); // Must be PARAM_RAW for rich text editor content.
+            if ($this->permissions->can_edit_notes($this->appointment)) {
+                $mform->addElement('editor', 'appointmentnote_editor', get_string('appointmentnote', 'scheduler'),
+                                   array('rows' => 3, 'columns' => 60), $this->noteoptions);
+                $mform->setType('appointmentnote', PARAM_RAW); // Must be PARAM_RAW for rich text editor content.
+                $candistribute = true;
+            } else {
+                $note = $output->format_notes($this->appointment->appointmentnote, $this->appointment->appointmentnoteformat,
+                                              $scheduler->get_context(), 'appointmentnote', $this->appointment->id);
+                $mform->addElement('static', 'appointmentnote_display', get_string('appointmentnote', 'scheduler'), $note);
+            }
         }
         if ($scheduler->uses_teachernotes()) {
-            $mform->addElement('editor', 'teachernote_editor', get_string('teachernote', 'scheduler'),
-                               array('rows' => 3, 'columns' => 60), $this->noteoptions);
-            $mform->setType('teachernote', PARAM_RAW); // Must be PARAM_RAW for rich text editor content.
+            if ($this->permissions->can_edit_notes($this->appointment)) {
+                $mform->addElement('editor', 'teachernote_editor', get_string('teachernote', 'scheduler'),
+                                   array('rows' => 3, 'columns' => 60), $this->noteoptions);
+                $mform->setType('teachernote', PARAM_RAW); // Must be PARAM_RAW for rich text editor content.
+                $candistribute = true;
+            } else {
+                $note = $output->format_notes($this->appointment->teachernote, $this->appointment->teachernoteformat,
+                                              $scheduler->get_context(), 'teachernote', $this->appointment->id);
+                $mform->addElement('static', 'teachernote_display', get_string('teachernote', 'scheduler'), $note);
+            }
         }
-        if ($this->distribute && ($scheduler->uses_appointmentnotes() || $scheduler->uses_teachernotes() || $this->editgrade) ) {
+        if ($this->distribute && $candistribute) {
             $mform->addElement('checkbox', 'distribute', get_string('distributetoslot', 'scheduler'));
             $mform->setDefault('distribute', false);
         }
@@ -99,6 +138,14 @@ class scheduler_editappointment_form extends moodleform {
         $this->add_action_buttons();
     }
 
+    /**
+     * Form validation.
+     *
+     * @param array $data array of ("fieldname"=>value) of submitted data
+     * @param array $files array of uploaded files "element_name"=>tmp_file_path
+     * @return array of "element_name"=>"error_description" if there are errors,
+     *         or an empty array if everything is OK (true allowed for backwards compatibility too).
+     */
     public function validation($data, $files) {
         $errors = parent::validation($data, $files);
 
@@ -108,10 +155,10 @@ class scheduler_editappointment_form extends moodleform {
     /**
      * Prepare form data from an appointment record
      *
-     * @param scheduler_appointment $appointment appointment to edit
+     * @param appointment $appointment appointment to edit
      * @return stdClass form data
      */
-    public function prepare_appointment_data(scheduler_appointment $appointment) {
+    public function prepare_appointment_data(appointment $appointment) {
         $newdata = clone($appointment->get_data());
         $context = $this->appointment->get_scheduler()->get_context();
 
@@ -127,9 +174,9 @@ class scheduler_editappointment_form extends moodleform {
      * Save form data into appointment record
      *
      * @param stdClass $formdata data extracted from form
-     * @param scheduler_appointment $appointment appointment to update
+     * @param appointment $appointment appointment to update
      */
-    public function save_appointment_data(stdClass $formdata, scheduler_appointment $appointment) {
+    public function save_appointment_data(stdClass $formdata, appointment $appointment) {
         $scheduler = $appointment->get_scheduler();
         $cid = $scheduler->context->id;
         $appointment->set_data($formdata);

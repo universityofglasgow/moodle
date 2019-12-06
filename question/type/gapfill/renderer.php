@@ -15,7 +15,6 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
-et_a *
  * @package    qtype_gapfill
  * @copyright  2017 Marcus Green
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -86,7 +85,7 @@ class qtype_gapfill_renderer extends qtype_with_combined_feedback_renderer {
                     /* the question->id is necessary to make a draggable potential answer unique for multi question quiz pages */
                     $answeroptions .= '<span id="pa:_' . $question->id . '_' . $potentialanswerid++
                             . '" class= "' . $cssclasses . '">' .
-                            $potentialanswer . "</span>&nbsp;";
+                            $potentialanswer . "</span>";
                 }
             }
             $answeroptions .= "<br/><br/>";
@@ -200,6 +199,7 @@ class qtype_gapfill_renderer extends qtype_with_combined_feedback_renderer {
         if ($question->answerdisplay == "dropdown") {
             $inputattributes['class'] = $inputclass;
             $inputattributes['type'] = "select";
+            $inputattribues['selected'] = $currentanswer;
             /* if the size attribute is left in android chrome
              *  doesn't show the down arrows in select
              */
@@ -370,7 +370,7 @@ class qtype_gapfill_renderer extends qtype_with_combined_feedback_renderer {
     public function get_dropdown_list() {
         /* convert things like &gt; to > etc */
         foreach ($this->allanswers as $key => $value) {
-            $this->allanswers[$key] = htmlspecialchars_decode($value);
+            $this->allanswers[$key] = htmlspecialchars_decode(trim($value));
         }
         // Make the key and value the same in the array.
         $selectoptions = array_combine($this->allanswers, $this->allanswers);

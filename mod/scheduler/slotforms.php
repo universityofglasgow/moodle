@@ -1,8 +1,21 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Slot-related forms of the scheduler module
- * (using Moodle formslib)
+ * Slot-related forms of the scheduler module (using Moodle formslib)
  *
  * @package    mod_scheduler
  * @copyright  2013 Henning Bostelmann and others (see README.txt)
@@ -10,6 +23,9 @@
  */
 
 defined('MOODLE_INTERNAL') || die();
+
+use \mod_scheduler\model\scheduler;
+use \mod_scheduler\model\slot;
 
 require_once($CFG->libdir.'/formslib.php');
 
@@ -23,7 +39,7 @@ require_once($CFG->libdir.'/formslib.php');
 abstract class scheduler_slotform_base extends moodleform {
 
     /**
-     * @var scheduler_instance the scheduler that this form refers to
+     * @var scheduler the scheduler that this form refers to
      */
     protected $scheduler;
 
@@ -46,12 +62,12 @@ abstract class scheduler_slotform_base extends moodleform {
      * Create a new form
      *
      * @param mixed $action the action attribute for the form
-     * @param scheduler_instance $scheduler
+     * @param scheduler $scheduler
      * @param object $cm unused
      * @param array $usergroups groups to filter for
      * @param array $customdata
      */
-    public function __construct($action, scheduler_instance $scheduler, $cm, $usergroups, $customdata=null) {
+    public function __construct($action, scheduler $scheduler, $cm, $usergroups, $customdata=null) {
         $this->scheduler = $scheduler;
         $this->usergroups = $usergroups;
         $this->noteoptions = array('trusttext' => true, 'maxfiles' => -1, 'maxbytes' => 0,
@@ -141,6 +157,14 @@ abstract class scheduler_slotform_base extends moodleform {
         $this->hasduration = true;
     }
 
+    /**
+     * Form validation
+     *
+     * @param array $data array of ("fieldname"=>value) of submitted data
+     * @param array $files array of uploaded files "element_name"=>tmp_file_path
+     * @return array of "element_name"=>"error_description" if there are errors,
+     *         or an empty array if everything is OK (true allowed for backwards compatibility too).
+     */
     public function validation($data, $files) {
         $errors = parent::validation($data, $files);
 
@@ -171,6 +195,9 @@ class scheduler_editslot_form extends scheduler_slotform_base {
      */
     protected $slotid;
 
+    /**
+     * Form definition
+     */
     protected function definition() {
 
         global $DB, $output;
@@ -223,13 +250,13 @@ class scheduler_editslot_form extends scheduler_slotform_base {
 
         // Choose student.
         $students = $this->scheduler->get_available_students($this->usergroups);
-        $studentsmenu = array('0' => get_string('choosedots'));
+        $studentchoices = array();
         if ($students) {
             foreach ($students as $astudent) {
-                $studentsmenu[$astudent->id] = fullname($astudent);
+                $studentchoices[$astudent->id] = fullname($astudent);
             }
         }
-        $grouparray[] = $mform->createElement('select', 'studentid', '', $studentsmenu);
+        $grouparray[] = $mform->createElement('searchableselector', 'studentid', '', $studentchoices);
         $grouparray[] = $mform->createElement('hidden', 'appointid', 0);
 
         // Seen tickbox.
@@ -256,9 +283,8 @@ class scheduler_editslot_form extends scheduler_slotform_base {
                                                    array('rows' => 3, 'columns' => 60), $this->noteoptions);
         }
 
-        // Tickbox to remove the student
+        // Tickbox to remove the student.
         $repeatarray[] = $mform->createElement('advcheckbox', 'deletestudent', '', get_string('deleteonsave', 'scheduler'));
-
 
         if (isset($this->_customdata['repeats'])) {
             $repeatno = $this->_customdata['repeats'];
@@ -287,6 +313,14 @@ class scheduler_editslot_form extends scheduler_slotform_base {
 
     }
 
+    /**
+     * Form validation
+     *
+     * @param array $data array of ("fieldname"=>value) of submitted data
+     * @param array $files array of uploaded files "element_name"=>tmp_file_path
+     * @return array of "element_name"=>"error_description" if there are errors,
+     *         or an empty array if everything is OK (true allowed for backwards compatibility too).
+     */
     public function validation($data, $files) {
         global $output;
 
@@ -345,10 +379,10 @@ class scheduler_editslot_form extends scheduler_slotform_base {
     /**
      * Fill the form data from an existing slot
      *
-     * @param scheduler_slot $slot
+     * @param slot $slot
      * @return stdClass form data
      */
-    public function prepare_formdata(scheduler_slot $slot) {
+    public function prepare_formdata(slot $slot) {
 
         $context = $slot->get_scheduler()->get_context();
 
@@ -398,16 +432,16 @@ class scheduler_editslot_form extends scheduler_slotform_base {
      * Save a slot object, updating it with data from the form
      * @param int $slotid
      * @param mixed $data form data
-     * @return scheduler_slot the updated slot
+     * @return slot the updated slot
      */
     public function save_slot($slotid, $data) {
 
         $context = $this->scheduler->get_context();
 
         if ($slotid) {
-            $slot = scheduler_slot::load_by_id($slotid, $this->scheduler);
+            $slot = slot::load_by_id($slotid, $this->scheduler);
         } else {
-            $slot = new scheduler_slot($this->scheduler);
+            $slot = new slot($this->scheduler);
         }
 
         // Set data fields from input form.
@@ -436,8 +470,7 @@ class scheduler_editslot_form extends scheduler_slotform_base {
                     $app = $slot->get_appointment($data->appointid[$i]);
                     $slot->remove_appointment($app);
                 }
-            }
-            else if ($data->studentid[$i] > 0) {
+            } else if ($data->studentid[$i] > 0) {
                 $app = null;
                 if ($data->appointid[$i]) {
                     $app = $slot->get_appointment($data->appointid[$i]);
@@ -487,6 +520,9 @@ class scheduler_editslot_form extends scheduler_slotform_base {
  */
 class scheduler_addsession_form extends scheduler_slotform_base {
 
+    /**
+     * Form definition
+     */
     protected function definition() {
 
         global $DB;
@@ -582,6 +618,14 @@ class scheduler_addsession_form extends scheduler_slotform_base {
 
     }
 
+    /**
+     * Form validation
+     *
+     * @param array $data array of ("fieldname"=>value) of submitted data
+     * @param array $files array of uploaded files "element_name"=>tmp_file_path
+     * @return array of "element_name"=>"error_description" if there are errors,
+     *         or an empty array if everything is OK (true allowed for backwards compatibility too).
+     */
     public function validation($data, $files) {
         $errors = parent::validation($data, $files);
 
@@ -598,7 +642,7 @@ class scheduler_addsession_form extends scheduler_slotform_base {
         $starttime = $data['starthour'] * 60 + $data['startminute'];
         $endtime = $data['endhour'] * 60 + $data['endminute'];
         if ($starttime > $endtime) {
-            $errors['endtime'] = get_string('negativerange', 'scheduler');
+            $errors['timerange'] = get_string('negativerange', 'scheduler');
         }
 
         // First slot is in the past.

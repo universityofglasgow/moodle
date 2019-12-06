@@ -390,7 +390,7 @@ class format_grid_renderer extends format_section_renderer_base {
 
         echo html_writer::start_tag('ul', array('class' => $gridiconsclass));
         // Print all of the image containers.
-        $this->make_block_icon_topics($coursecontext->id, $sections, $course, $editing, $hascapvishidsect, $urlpicedit);
+        $shownsections = $this->make_block_icon_topics($coursecontext->id, $sections, $course, $editing, $hascapvishidsect, $urlpicedit);
         echo html_writer::end_tag('ul');
 
         echo html_writer::end_tag('div');
@@ -513,17 +513,19 @@ class format_grid_renderer extends format_section_renderer_base {
             $sectionredirect = $this->courseformat->get_view_url(null)->out(true);
         }
 
-        // Initialise the shade box functionality:...
-        $PAGE->requires->js_init_call('M.format_grid.init', array(
-            $PAGE->user_is_editing(),
-            $sectionredirect,
-            $coursenumsections,
-            $this->initialsection,
-            json_encode($this->shadeboxshownarray)));
-        if (!$PAGE->user_is_editing()) {
-            // Initialise the key control functionality...
-            $PAGE->requires->yui_module('moodle-format_grid-gridkeys', 'M.format_grid.gridkeys.init',
-                array(array('rtl' => $rtl)), null, true);
+        if ($shownsections) {
+            // Initialise the shade box functionality:...
+            $PAGE->requires->js_init_call('M.format_grid.init', array(
+                $PAGE->user_is_editing(),
+                $sectionredirect,
+                count($this->shadeboxshownarray),
+                $this->initialsection,
+                json_encode($this->shadeboxshownarray)));
+            if (!$PAGE->user_is_editing()) {
+                // Initialise the key control functionality...
+                $PAGE->requires->yui_module('moodle-format_grid-gridkeys', 'M.format_grid.gridkeys.init',
+                    array(array('rtl' => $rtl)), null, true);
+            }
         }
     }
 
@@ -699,6 +701,8 @@ class format_grid_renderer extends format_section_renderer_base {
 
     /**
      * Makes the grid image containers.
+     *
+     * @return int Number of shown sections.
      */
     private function make_block_icon_topics($contextid, $sections, $course, $editing, $hascapvishidsect,
             $urlpicedit) {
@@ -735,6 +739,7 @@ class format_grid_renderer extends format_section_renderer_base {
         // Are we using WebP for the displayed image?
         $iswebp = (get_config('format_grid', 'defaultdisplayedimagefiletype') == 2);
 
+        $shownsections = 0;
         foreach ($sections as $section => $thissection) {
             if ((($this->section0attop) && ($section == 0)) || ($section > $coursenumsections)) {
                 continue;  // Section 0 at the top and not in the grid / orphaned section.
@@ -752,6 +757,7 @@ class format_grid_renderer extends format_section_renderer_base {
             }
 
             if ($showsection || $sectiongreyedout) {
+                $shownsections++;
                 // We now know the value for the grid shade box shown array.
                 $this->shadeboxshownarray[$section] = 2;
 
@@ -969,6 +975,8 @@ class format_grid_renderer extends format_section_renderer_base {
                 $this->shadeboxshownarray[$section] = 1;
             }
         }
+
+        return $shownsections;
     }
 
     private function make_block_icon_topics_editing($thissection, $contextid, $urlpicedit) {

@@ -1,5 +1,10 @@
 ﻿Version Information
 ===================
+Version 3.7.1.1 - 17/11/2019
+  1. Fix Collapsed topics format zoom issue - CONTRIB-7893.
+  2. Adjust position of 'view only' icon.
+  3. More accessible open all / close all - #67.
+
 Version 3.7.1.0
   1. Add missing Moodle define.
   2. Fix "Collapsed Topic Content/EditMenu Overlap" - https://moodle.org/mod/forum/discuss.php?d=388969.

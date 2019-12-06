@@ -1,4 +1,18 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * This file contains a renderer for the scheduler module
@@ -10,6 +24,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+use \mod_scheduler\model\scheduler;
+use \mod_scheduler\permission\scheduler_permissions;
+
 require_once($CFG->dirroot . '/mod/assign/locallib.php');
 
 /**
@@ -20,6 +37,12 @@ require_once($CFG->dirroot . '/mod/assign/locallib.php');
  */
 class mod_scheduler_renderer extends plugin_renderer_base {
 
+    /**
+     * Constructor method, calls the parent constructor
+     *
+     * @param moodle_page $page
+     * @param string $target one of rendering target constants
+     */
     public function __construct($page = null, $target = null) {
         if ($page) {
             parent::__construct($page, $target);
@@ -117,7 +140,7 @@ class mod_scheduler_renderer extends plugin_renderer_base {
      * @return string the formatted grade
      */
     public function format_grade($subject, $grade, $short = false) {
-        if ($subject instanceof scheduler_instance) {
+        if ($subject instanceof scheduler) {
             $scaleid = $subject->scale;
         } else {
             $scaleid = (int) $subject;
@@ -209,12 +232,12 @@ class mod_scheduler_renderer extends plugin_renderer_base {
     /**
      * Format the notes relating to an appointment (appointment notes and confidential notes).
      *
-     * @param scheduler_instance $scheduler the scheduler in whose context the appointment is
+     * @param scheduler $scheduler the scheduler in whose context the appointment is
      * @param stdClass $data database record describing the appointment
      * @param string $idfield the field in the record containing the item id
      * @return string formatted notes
      */
-    public function format_appointment_notes(scheduler_instance $scheduler, $data, $idfield = 'id') {
+    public function format_appointment_notes(scheduler $scheduler, $data, $idfield = 'id') {
         $note = '';
         $id = $data->{$idfield};
         if (isset($data->appointmentnote) && $scheduler->uses_appointmentnotes()) {
@@ -232,11 +255,11 @@ class mod_scheduler_renderer extends plugin_renderer_base {
      * Produce HTML code for a link to a user's profile.
      * That is, the full name of the user is displayed with a link to the user's course profile on it.
      *
-     * @param scheduler_instance $scheduler the scheduler in whose context the link is
+     * @param scheduler $scheduler the scheduler in whose context the link is
      * @param stdClass $user the user to link to
      * @return string HTML code of the link
      */
-    public function user_profile_link(scheduler_instance $scheduler, stdClass $user) {
+    public function user_profile_link(scheduler $scheduler, stdClass $user) {
         $profileurl = new moodle_url('/user/view.php', array('id' => $user->id, 'course' => $scheduler->course));
         return html_writer::link($profileurl, fullname($user));
     }
@@ -299,7 +322,7 @@ class mod_scheduler_renderer extends plugin_renderer_base {
     /**
      * Render the module introduction of a scheduler.
      *
-     * @param scheduler_instance $scheduler the scheduler in question
+     * @param scheduler $scheduler the scheduler in question
      * @return string rendered module info
      */
     public function mod_intro($scheduler) {
@@ -334,13 +357,15 @@ class mod_scheduler_renderer extends plugin_renderer_base {
     /**
      * Render the tab header hierarchy in the teacher view.
      *
-     * @param scheduler_instance $scheduler the scheduler in question
+     * @param scheduler $scheduler the scheduler in question
+     * @param scheduler_permissions $permissions the permissions manager (for hiding tabs)
      * @param moodle_url $baseurl base URL for the tab addresses
      * @param string $selected the selected tab
      * @param array $inactive any inactive tabs
      * @return string rendered tab tree
      */
-    public function teacherview_tabs(scheduler_instance $scheduler, moodle_url $baseurl, $selected, $inactive = null) {
+    public function teacherview_tabs(scheduler $scheduler, scheduler_permissions $permissions,
+                                     moodle_url $baseurl, $selected, $inactive = null) {
 
         $statstab = $this->teacherview_tab($baseurl, 'statistics', 'viewstatistics', 'overall');
         $statstab->subtree = array(
@@ -352,13 +377,14 @@ class mod_scheduler_renderer extends plugin_renderer_base {
                         $this->teacherview_tab($baseurl, 'groupbreakdown', 'viewstatistics', 'groupbreakdown')
         );
 
-        $level1 = array(
-                        $this->teacherview_tab($baseurl, 'myappointments', 'view', 'myappointments'),
-                        $this->teacherview_tab($baseurl, 'allappointments', 'view', 'allappointments'),
-                        $this->teacherview_tab($baseurl, 'datelist', 'datelist'),
-                        $statstab,
-                        $this->teacherview_tab($baseurl, 'export', 'export')
-        );
+        $level1 = array();
+        $level1[] = $this->teacherview_tab($baseurl, 'myappointments', 'view', 'myappointments');
+        if ($permissions->can_see_all_slots()) {
+            $level1[] = $this->teacherview_tab($baseurl, 'allappointments', 'view', 'allappointments');
+        }
+        $level1[] = $this->teacherview_tab($baseurl, 'datelist', 'datelist');
+        $level1[] = $statstab;
+        $level1[] = $this->teacherview_tab($baseurl, 'export', 'export');
 
         return $this->tabtree($level1, $selected, $inactive);
     }
@@ -532,7 +558,7 @@ class mod_scheduler_renderer extends plugin_renderer_base {
                 $class = 'otherstudent';
                 $checkbox = '';
                 if ($studentlist->checkboxname) {
-                    if ($editable) {
+                    if ($student->editattended) {
                         $checkbox = html_writer::checkbox($studentlist->checkboxname, $student->entryid, $student->checked, '',
                                         array('class' => 'studentselect'));
                     } else {
@@ -808,7 +834,8 @@ class mod_scheduler_renderer extends plugin_renderer_base {
 
             if ($slot->editable && $slot->isappointed) {
                 $url = new moodle_url($slotman->actionurl, array('what' => 'revokeall', 'slotid' => $slot->slotid));
-                $actions .= $this->action_icon($url, new pix_icon('s/no', get_string('revoke', 'scheduler')));
+                $confirmrevoke = new confirm_action(get_string('confirmrevoke', 'scheduler'));
+                $actions .= $this->action_icon($url, new pix_icon('s/no', get_string('revoke', 'scheduler')), $confirmrevoke);
             }
 
             if ($slot->exclusivity > 1) {
