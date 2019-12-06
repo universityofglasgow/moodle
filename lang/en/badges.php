@@ -111,7 +111,7 @@ $string['backpackemail_help'] = 'The email address associated with your backpack
 $string['backpackemailverificationpending'] = 'Verification pending';
 $string['backpackemailverifyemailbody'] = 'Hi,
 
-A new connection to your OpenBadges backpack has been requested from \'{$a->sitename}\' using your email address.
+A new connection to your badges backpack has been requested from \'{$a->sitename}\' using your email address.
 
 To confirm and activate the connection to your backpack, please go to
 
@@ -121,7 +121,7 @@ In most mail programs, this should appear as a blue link which you can just clic
 
 If you need help, please contact the site administrator,
 {$a->admin}';
-$string['backpackemailverifyemailsubject'] = '{$a}: OpenBadges Backpack email verification';
+$string['backpackemailverifyemailsubject'] = '{$a}: Badges backpack email verification';
 $string['backpackemailverifypending'] = 'A verification email has been sent to <strong>{$a}</strong>. Click on the verification link in the email to activate your Backpack connection.';
 $string['backpackemailverifysuccess'] = 'Thanks for verifying your email address. You are now connected to your backpack.';
 $string['backpackemailverifytokenmismatch'] = 'The token in the link you clicked does not match the stored token. Make sure you clicked the link in most recent email you received.';
@@ -176,7 +176,7 @@ $string['claimid'] = 'Claim URL';
 $string['clearsettings'] = 'Clear settings';
 $string['completionnotenabled'] = 'Course completion is not enabled for this course, so it cannot be included in badge criteria. Course completion may be enabled in the course settings.';
 $string['completioninfo'] = 'This badge was issued for completing: ';
-$string['configenablebadges'] = 'When enabled, this feature lets you create badges and award them to site users.';
+$string['configenablebadges'] = 'If enabled, this feature lets you create badges and award them to site users.';
 $string['configuremessage'] = 'Badge message';
 $string['connect'] = 'Connect';
 $string['connected'] = 'Connected';

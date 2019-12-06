@@ -546,6 +546,10 @@ class core_calendar_lib_testcase extends advanced_testcase {
 
         $this->setUser($user);
 
+        // In general for all courses, they don't have the ability to add course events yet.
+        $types = calendar_get_allowed_event_types();
+        $this->assertFalse($types['course']);
+
         assign_capability('moodle/calendar:manageentries', CAP_ALLOW, $roleid, $context1, true);
         assign_capability('moodle/calendar:manageentries', CAP_PROHIBIT, $roleid, $context2, true);
 
@@ -554,11 +558,19 @@ class core_calendar_lib_testcase extends advanced_testcase {
         $types = calendar_get_allowed_event_types($course1->id);
         $this->assertTrue($types['course']);
 
+        // If calling function without specified course,  there is still a course where they have it.
+        $types = calendar_get_allowed_event_types();
+        $this->assertTrue($types['course']);
+
         assign_capability('moodle/calendar:manageentries', CAP_PROHIBIT, $roleid, $context1, true);
 
         // The user only now has the correct capability in both course 1 and 2 so we
         // expect both to be in the results.
         $types = calendar_get_allowed_event_types($course3->id);
+        $this->assertFalse($types['course']);
+
+        // They now do not have permission in any course.
+        $types = calendar_get_allowed_event_types();
         $this->assertFalse($types['course']);
     }
 
@@ -582,6 +594,11 @@ class core_calendar_lib_testcase extends advanced_testcase {
         $types = calendar_get_allowed_event_types($course->id);
         $this->assertTrue($types['course']);
         $this->assertFalse($types['group']);
+
+        // Same result applies when not providing a specific course as they are only on one course.
+        $types = calendar_get_allowed_event_types();
+        $this->assertTrue($types['course']);
+        $this->assertFalse($types['group']);
     }
 
     public function test_calendar_get_allowed_event_types_group_no_groups() {
@@ -598,6 +615,12 @@ class core_calendar_lib_testcase extends advanced_testcase {
         // no groups so we shouldn't see a group type.
         $types = calendar_get_allowed_event_types($course->id);
         $this->assertTrue($types['course']);
+        $this->assertFalse($types['group']);
+
+        // Same result applies when not providing a specific course as they are only on one course.
+        $types = calendar_get_allowed_event_types();
+        $this->assertTrue($types['course']);
+        $this->assertFalse($types['group']);
     }
 
     public function test_calendar_get_allowed_event_types_group_access_all_groups() {
@@ -623,7 +646,12 @@ class core_calendar_lib_testcase extends advanced_testcase {
         // the accessallgroups capability.
         $types = calendar_get_allowed_event_types($course1->id);
         $this->assertTrue($types['group']);
+
+        // Same result applies when not providing a specific course as they are only on one course.
+        $types = calendar_get_allowed_event_types();
+        $this->assertTrue($types['group']);
     }
+
     public function test_calendar_get_allowed_event_types_group_no_access_all_groups() {
         $generator = $this->getDataGenerator();
         $user = $generator->create_user();
@@ -642,9 +670,86 @@ class core_calendar_lib_testcase extends advanced_testcase {
         // groups that they are not a member of.
         $types = calendar_get_allowed_event_types($course->id);
         $this->assertFalse($types['group']);
+
+        // Same result applies when not providing a specific course as they are only on one course.
+        $types = calendar_get_allowed_event_types();
+        $this->assertFalse($types['group']);
+
         assign_capability('moodle/calendar:manageentries', CAP_ALLOW, $roleid, $context, true);
         assign_capability('moodle/site:accessallgroups', CAP_ALLOW, $roleid, $context, true);
         $types = calendar_get_allowed_event_types($course->id);
+        $this->assertTrue($types['group']);
+
+        // Same result applies when not providing a specific course as they are only on one course.
+        $types = calendar_get_allowed_event_types();
+        $this->assertTrue($types['group']);
+    }
+
+    public function test_calendar_get_allowed_event_types_group_cap_no_groups() {
+        $generator = $this->getDataGenerator();
+        $user = $generator->create_user();
+        $course = $generator->create_course();
+        $context = context_course::instance($course->id);
+        $roleid = $generator->create_role();
+        $group = $generator->create_group(['courseid' => $course->id]);
+        $generator->enrol_user($user->id, $course->id, 'student');
+        $generator->role_assign($roleid, $user->id, $context->id);
+        assign_capability('moodle/calendar:managegroupentries', CAP_ALLOW, $roleid, $context, true);
+
+        $this->setUser($user);
+        $types = calendar_get_allowed_event_types($course->id);
+        $this->assertFalse($types['course']);
+        $this->assertFalse($types['group']);
+
+        // Check without specifying a course (same result as user only has one course).
+        $types = calendar_get_allowed_event_types();
+        $this->assertFalse($types['course']);
+        $this->assertFalse($types['group']);
+    }
+
+    public function test_calendar_get_allowed_event_types_group_cap_has_group() {
+        $generator = $this->getDataGenerator();
+        $user = $generator->create_user();
+        $course = $generator->create_course();
+        $context = context_course::instance($course->id);
+        $roleid = $generator->create_role();
+        $group = $generator->create_group(['courseid' => $course->id]);
+        $generator->enrol_user($user->id, $course->id, 'student');
+        $generator->role_assign($roleid, $user->id, $context->id);
+        groups_add_member($group, $user);
+        assign_capability('moodle/calendar:managegroupentries', CAP_ALLOW, $roleid, $context, true);
+
+        $this->setUser($user);
+        $types = calendar_get_allowed_event_types($course->id);
+        $this->assertFalse($types['course']);
+        $this->assertTrue($types['group']);
+
+        // Check without specifying a course (same result as user only has one course).
+        $types = calendar_get_allowed_event_types();
+        $this->assertFalse($types['course']);
+        $this->assertTrue($types['group']);
+    }
+
+    public function test_calendar_get_allowed_event_types_group_cap_access_all_groups() {
+        $generator = $this->getDataGenerator();
+        $user = $generator->create_user();
+        $course = $generator->create_course();
+        $context = context_course::instance($course->id);
+        $roleid = $generator->create_role();
+        $group = $generator->create_group(['courseid' => $course->id]);
+        $generator->enrol_user($user->id, $course->id, 'student');
+        $generator->role_assign($roleid, $user->id, $context->id);
+        assign_capability('moodle/calendar:managegroupentries', CAP_ALLOW, $roleid, $context, true);
+        assign_capability('moodle/site:accessallgroups', CAP_ALLOW, $roleid, $context, true);
+
+        $this->setUser($user);
+        $types = calendar_get_allowed_event_types($course->id);
+        $this->assertFalse($types['course']);
+        $this->assertTrue($types['group']);
+
+        // Check without specifying a course (same result as user only has one course).
+        $types = calendar_get_allowed_event_types();
+        $this->assertFalse($types['course']);
         $this->assertTrue($types['group']);
     }
 
@@ -771,5 +876,73 @@ class core_calendar_lib_testcase extends advanced_testcase {
         $this->assertEquals(array($courses[0]->id, SITEID), array_values($courseids));
         $this->assertEquals(array($coursegroups[$courses[0]->id][1]->id), $groupids);
         $this->assertEquals($users[1]->id, $userid);
+    }
+
+    /**
+     *  Test for calendar_view_event_allowed for course event types.
+     */
+    public function test_calendar_view_event_allowed_course_event() {
+        global $USER;
+
+        $this->setAdminUser();
+
+        $generator = $this->getDataGenerator();
+
+        // A student in a course.
+        $student = $generator->create_user();
+        // Some user not enrolled in any course.
+        $someuser = $generator->create_user();
+
+        // A course with manual enrolments.
+        $manualcourse = $generator->create_course();
+
+        // Enrol the student to the manual enrolment course.
+        $generator->enrol_user($student->id, $manualcourse->id);
+
+        // A course that allows guest access.
+        $guestcourse = $generator->create_course(
+            (object)[
+                'shortname' => 'guestcourse',
+                'enrol_guest_status_0' => ENROL_INSTANCE_ENABLED,
+                'enrol_guest_password_0' => ''
+            ]);
+
+        $manualevent = (object)[
+            'name' => 'Manual course event',
+            'description' => '',
+            'format' => 1,
+            'categoryid' => 0,
+            'courseid' => $manualcourse->id,
+            'groupid' => 0,
+            'userid' => $USER->id,
+            'modulename' => 0,
+            'instance' => 0,
+            'eventtype' => 'course',
+            'timestart' => time(),
+            'timeduration' => 86400,
+            'visible' => 1
+        ];
+        $caleventmanual = calendar_event::create($manualevent, false);
+
+        // Create a course event for the course with guest access.
+        $guestevent = clone $manualevent;
+        $guestevent->name = 'Guest course event';
+        $guestevent->courseid = $guestcourse->id;
+        $caleventguest = calendar_event::create($guestevent, false);
+
+        // Viewing as admin.
+        $this->assertTrue(calendar_view_event_allowed($caleventmanual));
+        $this->assertTrue(calendar_view_event_allowed($caleventguest));
+
+        // Viewing as someone enrolled in a course.
+        $this->setUser($student);
+        $this->assertTrue(calendar_view_event_allowed($caleventmanual));
+
+        // Viewing as someone not enrolled in any course.
+        $this->setUser($someuser);
+        // Viewing as someone not enrolled in a course without guest access on.
+        $this->assertFalse(calendar_view_event_allowed($caleventmanual));
+        // Viewing as someone not enrolled in a course with guest access on.
+        $this->assertTrue(calendar_view_event_allowed($caleventguest));
     }
 }

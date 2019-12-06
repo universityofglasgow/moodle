@@ -140,6 +140,13 @@ class mod_assign_external_testcase extends externallib_advanced_testcase {
 
         $this->resetAfterTest(true);
 
+        // Enable multilang filter to on content and heading.
+        filter_set_global_state('multilang', TEXTFILTER_ON);
+        filter_set_applies_to_strings('multilang', 1);
+        // Set WS filtering.
+        $wssettings = external_settings::get_instance();
+        $wssettings->set_filter(true);
+
         $category = self::getDataGenerator()->create_category(array(
             'name' => 'Test category'
         ));
@@ -166,7 +173,7 @@ class mod_assign_external_testcase extends externallib_advanced_testcase {
         // Create the assignment module with links to a filerecord.
         $assign1 = self::getDataGenerator()->create_module('assign', array(
             'course' => $course1->id,
-            'name' => 'lightwork assignment',
+            'name' => '<span lang="en" class="multilang">English</span><span lang="es" class="multilang">Español</span>',
             'intro' => 'the assignment intro text here <a href="@@PLUGINFILE@@/intro.txt">link</a>',
             'introformat' => FORMAT_HTML,
             'markingworkflow' => 1,
@@ -221,7 +228,7 @@ class mod_assign_external_testcase extends externallib_advanced_testcase {
         $assignment = $course['assignments'][0];
         $this->assertEquals($assign1->id, $assignment['id']);
         $this->assertEquals($course1->id, $assignment['course']);
-        $this->assertEquals('lightwork assignment', $assignment['name']);
+        $this->assertEquals('English', $assignment['name']);
         $this->assertContains('the assignment intro text here', $assignment['intro']);
         $this->assertNotEmpty($assignment['configs']);
         // Check the url of the file attatched.
@@ -249,7 +256,7 @@ class mod_assign_external_testcase extends externallib_advanced_testcase {
         $assignment = $course['assignments'][0];
         $this->assertEquals($assign1->id, $assignment['id']);
         $this->assertEquals($course1->id, $assignment['course']);
-        $this->assertEquals('lightwork assignment', $assignment['name']);
+        $this->assertEquals('English', $assignment['name']);
         $this->assertArrayNotHasKey('intro', $assignment);
         $this->assertArrayNotHasKey('introattachments', $assignment);
         $this->assertEquals(1, $assignment['markingworkflow']);
@@ -287,7 +294,7 @@ class mod_assign_external_testcase extends externallib_advanced_testcase {
         $assignment = $course['assignments'][0];
         $this->assertEquals($assign1->id, $assignment['id']);
         $this->assertEquals($course1->id, $assignment['course']);
-        $this->assertEquals('lightwork assignment', $assignment['name']);
+        $this->assertEquals('English', $assignment['name']);
         $this->assertArrayNotHasKey('intro', $assignment);
         $this->assertArrayNotHasKey('introattachments', $assignment);
         $this->assertEquals(1, $assignment['markingworkflow']);
@@ -2226,6 +2233,65 @@ class mod_assign_external_testcase extends externallib_advanced_testcase {
         $this->assertTrue(isset($result['feedback']));
         $this->assertTrue(isset($result['feedback']['grade']));
         $this->assertEquals($teacher->id, $result['feedback']['grade']['grader']);
+    }
+
+    /**
+     * Test get_submission_status with override for student.
+     */
+    public function test_get_submission_status_with_override() {
+        global $DB;
+
+        $this->resetAfterTest(true);
+
+        list($assign, $instance, $student1, $student2, $teacher, $g1, $g2) = $this->create_submission_for_testing_status();
+
+        $overridedata = new \stdClass();
+        $overridedata->assignid = $assign->get_instance()->id;
+        $overridedata->userid = $student1->id;
+        $overridedata->allowsubmissionsfromdate = time() + YEARSECS;
+        $DB->insert_record('assign_overrides', $overridedata);
+
+        $result = mod_assign_external::get_submission_status($assign->get_instance()->id);
+        // We expect debugging because of the $PAGE object, this won't happen in a normal WS request.
+        $this->assertDebuggingCalled();
+        $result = external_api::clean_returnvalue(mod_assign_external::get_submission_status_returns(), $result);
+
+        $this->assertCount(0, $result['warnings']);
+        $this->assertFalse(isset($result['gradingsummary']));
+        $this->assertFalse(isset($result['feedback']));
+        $this->assertFalse(isset($result['previousattempts']));
+
+        $this->assertTrue($result['lastattempt']['submissionsenabled']);
+        $this->assertFalse($result['lastattempt']['canedit']);  // False because of override.
+        $this->assertFalse($result['lastattempt']['cansubmit']);
+        $this->assertFalse($result['lastattempt']['locked']);
+        $this->assertFalse($result['lastattempt']['graded']);
+        $this->assertEmpty($result['lastattempt']['extensionduedate']);
+        $this->assertFalse($result['lastattempt']['blindmarking']);
+        $this->assertCount(0, $result['lastattempt']['submissiongroupmemberswhoneedtosubmit']);
+        $this->assertEquals('notgraded', $result['lastattempt']['gradingstatus']);
+
+        // Same assignment but user without override.
+        $this->setUser($student2);
+
+        $result = mod_assign_external::get_submission_status($assign->get_instance()->id);
+        $result = external_api::clean_returnvalue(mod_assign_external::get_submission_status_returns(), $result);
+
+        // The submission is now in draft mode.
+        $this->assertCount(0, $result['warnings']);
+        $this->assertFalse(isset($result['gradingsummary']));
+        $this->assertFalse(isset($result['feedback']));
+        $this->assertFalse(isset($result['previousattempts']));
+
+        $this->assertTrue($result['lastattempt']['submissionsenabled']);
+        $this->assertTrue($result['lastattempt']['canedit']);  // True because there is not override for this user.
+        $this->assertFalse($result['lastattempt']['cansubmit']);
+        $this->assertFalse($result['lastattempt']['locked']);
+        $this->assertFalse($result['lastattempt']['graded']);
+        $this->assertEmpty($result['lastattempt']['extensionduedate']);
+        $this->assertFalse($result['lastattempt']['blindmarking']);
+        $this->assertCount(0, $result['lastattempt']['submissiongroupmemberswhoneedtosubmit']);
+        $this->assertEquals('notgraded', $result['lastattempt']['gradingstatus']);
     }
 
     /**
