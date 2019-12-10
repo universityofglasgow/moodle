@@ -42,6 +42,9 @@ class config extends \moodleform {
         $mform->setType('coursecode', PARAM_TEXT);
         $mform->addHelpButton('coursecode', 'coursecode', 'local_corehr');
 
+        $mform->addElement('advcheckbox', 'enrolallstaff', get_string('enrolallstaff', 'local_corehr'));
+        $mform->addHelpButton('enrolallstaff', 'enrolallstaff', 'local_corehr');
+
         $this->add_action_buttons();
     }
 

@@ -258,6 +258,12 @@ class auth_plugin_guid extends auth_plugin_ldap {
             }
         }
 
+        // Check for 'proper' staff for CoreHR auto enrol
+        $isstaff = strpos($user_dn, 'ou=staff') !== false;
+        if ($isstaff) {
+            \local_corehr\api::auto_enrol($username);
+        }
+
         $this->ldap_close();
         $result['dn'] = $user_dn;
         $result['uid'] = $uid;

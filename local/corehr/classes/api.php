@@ -280,6 +280,33 @@ class api {
     }
 
     /**
+     * Auto enrol courses
+     * Automatically enrol staff user on selected courses 
+     * @param string $guid
+     */
+    public static function auto_enrol($guid) {
+        global $CFG, $DB;
+
+        // Horrible bodge:
+        // Assume student role id
+        $studentroleid = 5;
+
+        if (!$user = $DB->get_record('user', ['username' => $guid, 'mnethostid'=>$CFG->mnet_localhost_id])) {
+            return false;
+        }
+        if (!$courses = $DB->get_records('local_corehr', ['enrolallstaff' => 1])) {
+            return false;
+        }
+        foreach ($courses as $corecourse) {
+            $context = \context_course::instance($corecourse->courseid);
+            if (is_enrolled($context, $user, '', true)) {
+                continue;
+            }
+            enrol_try_internal_enrol($corecourse->courseid, $user->id, $studentroleid);
+        }
+    }
+
+    /**
      * Get extract from database. Extract if does not exist
      * @param string $guid
      * @return object
@@ -437,12 +464,13 @@ class api {
     }
 
     /**
-     * Save/delete the 'coursecode' in the local_corehr table
+     * Save/delete the 'coursecode' and 'enrolallstaff' in the local_corehr table
      * A blank course code deletes the matching record
      * @param int $courseid Moodle course id
+     * @param int $enrolallstaff 
      * @param string $coursecode CoreHR course identifier (or empty)
      */
-    public static function savecoursecode($courseid, $coursecode) {
+    public static function savecoursecode($courseid, $coursecode, $enrolallstaff) {
         global $DB;
 
         // find existing record
@@ -457,11 +485,13 @@ class api {
         // update or insert
         if ($corehr) {
             $corehr->coursecode = $coursecode;
+            $corehr->enrolallstaff = $enrolallstaff;
             $DB->update_record('local_corehr', $corehr);
         } else {
             $corehr = new stdClass;
             $corehr->courseid = $courseid;
             $corehr->coursecode = $coursecode;
+            $corehr->enrolallstaff = $enrolallstaff;
             $DB->insert_record('local_corehr', $corehr);
         }
 
