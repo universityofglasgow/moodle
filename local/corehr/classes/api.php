@@ -482,6 +482,11 @@ class api {
             return;
         }
 
+        // Only update or insert if we have a coursecode
+        if (!$coursecode) {
+            return;
+        }
+
         // update or insert
         if ($corehr) {
             $corehr->coursecode = $coursecode;
