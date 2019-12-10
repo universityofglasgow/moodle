@@ -1,4 +1,18 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * Steps definitions related with the scheduler activity.
@@ -44,6 +58,8 @@ class behat_mod_scheduler extends behat_base {
         $this->execute('behat_general::i_click_on', array('Add slots', 'link'));
         $this->execute('behat_general::click_link', 'Add single slot');
 
+        $this->execute('behat_forms::i_expand_all_fieldsets');
+
         $rows = array();
         $rows[] = array('starttime[day]', date("j", $startdate));
         $rows[] = array('starttime[month]', date("F", $startdate));
@@ -52,7 +68,12 @@ class behat_mod_scheduler extends behat_base {
         $rows[] = array('starttime[minute]', $mins);
         $rows[] = array('duration', '45');
         foreach ($fielddata->getRows() as $row) {
-            $rows[] = $row;
+            if ($row[0] == 'studentid[0]') {
+                $this->execute('behat_forms::i_open_the_autocomplete_suggestions_list');
+                $this->execute('behat_forms::i_click_on_item_in_the_autocomplete_list', $row[1]);
+            } else {
+                $rows[] = $row;
+            }
         }
         $this->execute('behat_forms::i_set_the_following_fields_to_these_values', new TableNode($rows));
 
@@ -110,13 +131,13 @@ class behat_mod_scheduler extends behat_base {
 
         $home = $this->escape(get_string('sitehome'));
 
-        $this->execute('behat_data_generators::the_following_exist', array('users',
+        $this->execute('behat_data_generators::the_following_entities_exist', array('users',
                         new TableNode(array(
                             array('username', 'firstname', 'lastname', 'email'),
                             array('globalmanager1', 'GlobalManager', '1', 'globalmanager1@example.com')
                         )) ) );
 
-        $this->execute('behat_data_generators::the_following_exist', array('system role assigns',
+        $this->execute('behat_data_generators::the_following_entities_exist', array('system role assigns',
                         new TableNode(array(
                             array('user', 'role'),
                             array('globalmanager1', 'manager')
@@ -134,5 +155,25 @@ class behat_mod_scheduler extends behat_base {
         $this->execute('behat_general::i_click_on', array('Save changes', 'button'));
         $this->execute('behat_auth::i_log_out');
 
+    }
+
+    /**
+     * Select item from the nth autocomplete list.
+     *
+     * @Given /^I click on "([^"]*)" item in autocomplete list number (\d+)$/
+     *
+     * @param string $item
+     * @param int $listnumber
+     */
+    public function i_click_on_item_in_the_nth_autocomplete_list($item, $listnumber) {
+
+        $downarrowtarget = "(//span[contains(@class,'form-autocomplete-downarrow')])[$listnumber]";
+        $this->execute('behat_general::i_click_on', [$downarrowtarget, 'xpath_element']);
+
+        $xpathtarget = "(//ul[@class='form-autocomplete-suggestions']//*[contains(concat('|', string(.), '|'),'|" . $item . "|')])[$listnumber]";
+
+        $this->execute('behat_general::i_click_on', [$xpathtarget, 'xpath_element']);
+
+        $this->execute('behat_general::i_press_key_in_element', ['13', 'body', 'xpath_element']);
     }
 }

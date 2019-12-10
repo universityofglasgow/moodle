@@ -292,7 +292,7 @@ class analytics_model_testcase extends advanced_testcase {
 
         $this->resetAfterTest(true);
 
-        set_config('modeltimelimit', 1, 'analytics');
+        set_config('modeltimelimit', 2, 'analytics');
 
         $courses = array();
         for ($i = 0; $i < 5; $i++) {
@@ -492,6 +492,61 @@ class analytics_model_testcase extends advanced_testcase {
         $data = $this->model->export($output);
         $this->assertEquals($data->name['displayvalue'], $this->model->get_target()->get_name());
         $this->assertEquals($data->name['value'], '');
+    }
+
+    /**
+     * Tests model::get_samples()
+     *
+     * @return null
+     */
+    public function test_get_samples() {
+        $this->resetAfterTest();
+
+        if (!PHPUNIT_LONGTEST) {
+            $this->markTestSkipped('PHPUNIT_LONGTEST is not defined');
+        }
+
+        // 10000 should be enough to make oracle and mssql fail, if we want pgsql to fail we need around 70000
+        // users, that is a few minutes just to create the users.
+        $nusers = 10000;
+
+        $userids = [];
+        for ($i = 0; $i < $nusers; $i++) {
+            $user = $this->getDataGenerator()->create_user();
+            $userids[] = $user->id;
+        }
+
+        $upcomingactivities = null;
+        foreach (\core_analytics\manager::get_all_models() as $model) {
+            if (get_class($model->get_target()) === 'core_user\\analytics\\target\\upcoming_activities_due') {
+                $upcomingactivities = $model;
+            }
+        }
+
+        list($sampleids, $samplesdata) = $upcomingactivities->get_samples($userids);
+        $this->assertCount($nusers, $sampleids);
+        $this->assertCount($nusers, $samplesdata);
+
+        $subset = array_slice($userids, 0, 100);
+        list($sampleids, $samplesdata) = $upcomingactivities->get_samples($subset);
+        $this->assertCount(100, $sampleids);
+        $this->assertCount(100, $samplesdata);
+
+        $subset = array_slice($userids, 0, 2);
+        list($sampleids, $samplesdata) = $upcomingactivities->get_samples($subset);
+        $this->assertCount(2, $sampleids);
+        $this->assertCount(2, $samplesdata);
+
+        $subset = array_slice($userids, 0, 1);
+        list($sampleids, $samplesdata) = $upcomingactivities->get_samples($subset);
+        $this->assertCount(1, $sampleids);
+        $this->assertCount(1, $samplesdata);
+
+        // Unexisting, so nothing returned, but still 2 arrays.
+        list($sampleids, $samplesdata) = $upcomingactivities->get_samples([1231231231231231]);
+        $this->assertEmpty($sampleids);
+        $this->assertEmpty($samplesdata);
+
     }
 
     /**

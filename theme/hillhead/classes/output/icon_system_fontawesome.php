@@ -64,4 +64,29 @@ class icon_system_fontawesome extends \core\output\icon_system_fontawesome {
         
         return $merged;
     }
+    
+    public function get_icon_name_map() {
+        if ($this->map === []) {
+            $cache = \cache::make('theme_hillhead', 'fontawesomeiconmapping');
+
+            $this->map = $cache->get('mapping');
+
+            if (empty($this->map)) {
+                $this->map = $this->get_core_icon_map();
+                $callback = 'get_fontawesome_icon_map';
+
+                if ($pluginsfunction = get_plugins_with_function($callback)) {
+                    foreach ($pluginsfunction as $plugintype => $plugins) {
+                        foreach ($plugins as $pluginfunction) {
+                            $pluginmap = $pluginfunction();
+                            $this->map += $pluginmap;
+                        }
+                    }
+                }
+                $cache->set('mapping', $this->map);
+            }
+
+        }
+        return $this->map;
+    }
 }

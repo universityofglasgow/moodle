@@ -46,6 +46,7 @@
 
 .course-content ul.ctopics li.section.main,
 .course-content ul.ctopics li.tcsection {
+    border-bottom: 0;
     list-style: none;
     margin: 4px 1px 1px 1px;
     padding: 0;
@@ -542,6 +543,7 @@ body#page-course-edit.lang-en_ar select#id_toggleiconset option {
 
 .course-content ul.ctopics li.section .right {
     line-height: 1.3;
+    margin-top: 1rem;
 }
 
 .course-content ul.ctopics li.section .right a {
@@ -609,7 +611,7 @@ body.format-topcoll.editing.jsenabled #region-main ul.ctopics .moodle-actionmenu
 
 /* -- The section name in a Toggle and hidden section -- */
 .course-content ul.ctopics li.section .content .toggle,
-.course-content ul.ctopics li.section .content.sectionhidden  {
+.course-content ul.ctopics li.section .content.sectionhidden {
     display: block;
     padding: 0;
     text-align: left;
@@ -622,7 +624,7 @@ body.format-topcoll.editing.jsenabled #region-main ul.ctopics .moodle-actionmenu
 }
 
 /* -- The padding of a hidden section -- */
-.course-content ul.ctopics li.section .content.sectionhidden  {
+.course-content ul.ctopics li.section .content.sectionhidden {
     padding: 6px 0 6px 0;
 }
 

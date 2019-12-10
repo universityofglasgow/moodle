@@ -432,7 +432,7 @@ class mod_assign_external extends external_api {
                         'id' => $module->assignmentid,
                         'cmid' => $module->id,
                         'course' => $module->course,
-                        'name' => $module->name,
+                        'name' => external_format_string($module->name, $context),
                         'nosubmissions' => $module->nosubmissions,
                         'submissiondrafts' => $module->submissiondrafts,
                         'sendnotifications' => $module->sendnotifications,
@@ -462,9 +462,10 @@ class mod_assign_external extends external_api {
 
                     // Return or not intro and file attachments depending on the plugin settings.
                     if ($assign->show_intro()) {
-
-                        list($assignment['intro'], $assignment['introformat']) = external_format_text($module->intro,
-                            $module->introformat, $context->id, 'mod_assign', 'intro', null);
+                        $options = array('noclean' => true);
+                        list($assignment['intro'], $assignment['introformat']) =
+                            external_format_text($module->intro, $module->introformat, $context->id, 'mod_assign', 'intro', null,
+                                $options);
                         $assignment['introfiles'] = external_util::get_area_files($context->id, 'mod_assign', 'intro', false,
                                                                                     false);
 
@@ -527,7 +528,7 @@ class mod_assign_external extends external_api {
                 'id' => new external_value(PARAM_INT, 'assignment id'),
                 'cmid' => new external_value(PARAM_INT, 'course module id'),
                 'course' => new external_value(PARAM_INT, 'course id'),
-                'name' => new external_value(PARAM_TEXT, 'assignment name'),
+                'name' => new external_value(PARAM_RAW, 'assignment name'),
                 'nosubmissions' => new external_value(PARAM_INT, 'no submissions'),
                 'submissiondrafts' => new external_value(PARAM_INT, 'submissions drafts'),
                 'sendnotifications' => new external_value(PARAM_INT, 'send notifications'),
@@ -2349,6 +2350,8 @@ class mod_assign_external extends external_api {
         if (!$assign->can_view_submission($user->id)) {
             throw new required_capability_exception($context, 'mod/assign:viewgrades', 'nopermission', '');
         }
+
+        $assign->update_effective_access($user->id);
 
         $gradingsummary = $lastattempt = $feedback = $previousattempts = null;
 

@@ -1,4 +1,18 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * Export scheduler data to a file.
@@ -43,7 +57,7 @@ if ($data) {
     }
     $userid = $USER->id;
     if (isset($data->includewhom) && $data->includewhom == 'all') {
-        require_capability('mod/scheduler:canseeotherteachersbooking', $context);
+        $permissions->ensure($permissions->can_see_all_slots());
         $userid = 0;
     }
     $pageperteacher = isset($data->paging) && $data->paging == 'perteacher';
@@ -57,7 +71,7 @@ if (!$data || $preview) {
 
     // Print top tabs.
     $taburl = new moodle_url('/mod/scheduler/view.php', array('id' => $scheduler->cmid, 'what' => 'export'));
-    echo $output->teacherview_tabs($scheduler, $taburl, 'export');
+    echo $output->teacherview_tabs($scheduler, $permissions, $taburl, 'export');
 
     if ($groupmode) {
         groups_print_activity_menu($scheduler->cm, $taburl);
@@ -76,6 +90,7 @@ if (!$data || $preview) {
                         $data->content,
                         $userid,
                         $currentgroupid,
+                        $data->timerange,
                         $data->includeemptyslots,
                         $pageperteacher);
 
@@ -114,6 +129,7 @@ $export->build($scheduler,
                $data->content,
                $userid,
                $currentgroupid,
+               $data->timerange,
                $data->includeemptyslots,
                $pageperteacher);
 

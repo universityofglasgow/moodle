@@ -565,6 +565,7 @@ function bigbluebuttonbn_process_pre_save(&$bigbluebuttonbn) {
  * @return void
  **/
 function bigbluebuttonbn_process_pre_save_instance(&$bigbluebuttonbn) {
+    require_once(__DIR__.'/locallib.php');
     $bigbluebuttonbn->timemodified = time();
     if ((integer)$bigbluebuttonbn->instance == 0) {
         $bigbluebuttonbn->meetingid = 0;
@@ -719,6 +720,7 @@ function bigbluebuttonbn_process_post_save_completion($bigbluebuttonbn) {
           );
     }
 }
+
 /**
  * Get a full path to the file attached as a preuploaded presentation
  * or if there is none, set the presentation field will be set to blank.

@@ -48,9 +48,11 @@ class provider implements
         \core_privacy\local\metadata\provider,
 
         // This plugin is a core_user_data_provider.
-        \core_privacy\local\request\plugin\provider {
+        \core_privacy\local\request\plugin\provider,
 
+        \core_privacy\local\request\core_userlist_provider {
 
+    /** @var mixed */
     private static $renderer;
 
     /**
@@ -197,7 +199,7 @@ class provider implements
      * Will return null if the context was not found.
      *
      * @param \context $context the context of the scheduler.
-     * @return \scheduler_instance scheduler object, or null if not found.
+     * @return \mod_scheduler\model\scheduler scheduler object, or null if not found.
      */
     private static function load_scheduler_for_context(\context $context) {
         global $DB;
@@ -214,7 +216,7 @@ class provider implements
         $params = ['cmid' => $context->instanceid, 'modname' => 'scheduler'];
         $rec = $DB->get_record_sql($sql, $params);
         if ($rec) {
-            return \scheduler_instance::load_by_id($rec->schedulerid);
+            return \mod_scheduler\model\scheduler::load_by_id($rec->schedulerid);
         } else {
             return null;
         }
@@ -267,7 +269,7 @@ class provider implements
                 self::export_scheduler($context, $user);
                 // Start new scheduler module.
                 $context = \context_module::instance($row->cmid);
-                $scheduler = \scheduler_instance::load_by_id($row->schedulerid);
+                $scheduler = \mod_scheduler\model\scheduler::load_by_id($row->schedulerid);
             }
 
             if (!$lastrow || $row->slotid != $lastrow->slotid) {
@@ -282,6 +284,18 @@ class provider implements
         self::export_scheduler($context, $user);
     }
 
+    /**
+     * format_note
+     *
+     * @param string $notetext
+     * @param int $noteformat
+     * @param string $filearea
+     * @param int $id
+     * @param \context $context
+     * @param content_writer $wrc
+     * @param string $exportarea
+     * @return string
+     */
     private static function format_note($notetext, $noteformat, $filearea, $id,
             \context $context, content_writer $wrc, $exportarea) {
         $message = $notetext;
@@ -329,7 +343,7 @@ class provider implements
      * Export one appointment in a scheduler (one record in {scheduler_appointment} table)
      *
      * @param \context $context
-     * @param \scheduler_instance $scheduler
+     * @param \mod_scheduler\model\scheduler $scheduler
      * @param \stdClass $user
      * @param \stdClass $record
      */

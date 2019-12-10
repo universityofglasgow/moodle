@@ -2,6 +2,9 @@ language: php
 
 sudo: true
 
+services:
+  - mysql
+
 addons:
   firefox: "47.0.1"
   postgresql: "9.4"
@@ -19,7 +22,7 @@ php:
 
 env:
   global:
-    - MOODLE_BRANCH=master
+    - MOODLE_BRANCH=MOODLE_37_STABLE
     - MUSTACHE_IGNORE_NAMES=mobile_teacher_form.mustache
   matrix:
     - DB=pgsql
@@ -32,6 +35,7 @@ before_install:
   - cd ../..
   - composer create-project -n --no-dev --prefer-dist blackboard-open-source/moodle-plugin-ci ci ^2
   - export PATH="$(cd ci/bin; pwd):$(cd ci/vendor/bin; pwd):$PATH"
+  - PATH=$(echo "$PATH" | sed -e 's/:\/usr\/local\/lib\/jvm\/openjdk11\/bin//') JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-amd64
 
 install:
   - moodle-plugin-ci install

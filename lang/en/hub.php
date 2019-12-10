@@ -82,7 +82,7 @@ $string['errorbadimageheightwidth'] = 'The image should have a maximum size of {
 $string['errorcourseinfo'] = 'An error occurred when retrieving course metadata from {$a}. Please try again to retrieve the course metadata by reloading this page later. Otherwise you can decide to continue the registration process with the following default metadata. ';
 $string['errorcoursepublish'] = 'An error occurred during the course publication ({$a}). Please try again later.';
 $string['errorcoursewronglypublished'] = 'A publication error has been returned by Moodle.net. Please try again later.';
-$string['errorotherhubsnotsupported'] = 'This page can no longer be used for registration with sites other than Moodle.net';
+$string['errorotherhubsnotsupported'] = 'This page can no longer be used for registration with custom sites directories.';
 $string['errorregistration'] = 'An error occurred during registration, please try again later. ({$a})';
 $string['errorunpublishcourses'] = 'Due to an unexpected error, the courses could not be deleted from Moodle.net. Try again later (recommended) or contact Moodle.net administrator.';
 $string['errorws'] = '{$a}';
@@ -119,7 +119,7 @@ $string['notregisteredonhub'] = 'Your administrator needs to register this site 
 $string['operation'] = 'Actions';
 $string['participantnumberaverage'] = 'Average number of participants ({$a})';
 $string['policyagreed'] = 'Privacy notice and data processing agreement';
-$string['policyagreeddesc'] = 'I agree to the <a href="{$a}" target="_blank">Privacy notice and data processing agreement</a> for Moodle.net';
+$string['policyagreeddesc'] = 'I agree to the <a href="{$a}" target="_blank">Privacy notice and data processing agreement</a>';
 $string['postaladdress'] = 'Postal address';
 $string['postaladdress_help'] = 'Postal address of this site, or of the entity represented by this site.';
 $string['postsnumber'] = 'Number of posts ({$a})';
@@ -140,6 +140,19 @@ $string['registrationinfo'] = 'Registration information';
 $string['registereduserdevices'] = 'Number of users with registered mobile devices ({$a})';
 $string['registeredactiveuserdevices'] = 'Number of active users with registered mobile devices which are receiving notifications ({$a})';
 $string['registersite'] = 'Register with {$a}';
+$string['registerwithmoodleorg'] = 'Register your site';
+$string['registerwithmoodleorgupdate'] = 'Update your site registration';
+$string['registerwithmoodleorgcomplete'] = 'Complete your site registration';
+$string['registerwithmoodleorginfo'] = 'We\'d love to stay in touch and provide you with important things for your Moodle site! By registering:
+
+* You can subscribe to receive notifications of new Moodle releases, security alerts and other important news.
+* You can access and activate mobile push notifications from your Moodle site through our free Moodle app.
+* You are contributing to our Moodle statistics of the worldwide community, which help us improve Moodle and our community sites.
+* If you wish, your site can be included in the list of registered Moodle sites in your country.';
+$string['registerwithmoodleorginfoapp'] = 'About the Moodle app';
+$string['registerwithmoodleorginfostats'] = 'Moodle statistics';
+$string['registerwithmoodleorginfosites'] = 'Other sites in my country';
+$string['registerwithmoodleorgremove'] = 'Unregistering your site';
 $string['registrationconfirmed'] = 'Site registration confirmed';
 $string['registrationconfirmedon'] = 'Thank you for registering your site. Registration information will be kept up to date by the \'Site registration\' scheduled task.';
 $string['removefromhub'] = 'Remove from Moodle.net';
@@ -161,10 +174,10 @@ $string['shareon'] = 'Upload this course to {$a}';
 $string['sharepublication_help'] = 'A backup of this course will be available on Moodle.net for people to restore and use on their own site.';
 $string['siteadmin'] = 'Administrator';
 $string['siteadmin_help'] = 'The full name of the site administrator.';
-$string['sitecommnews'] = 'Updates about Moodle news and features';
-$string['sitecommnews_help'] = 'You have the option of subscribing to our low volume email list including a newsletter about happenings in the Moodle community. ';
-$string['sitecommnewsno'] = 'No, I do not want to receive any email from Moodle HQ';
-$string['sitecommnewsyes'] = 'Yes please, include me in Moodle’s regular e-newsletter updates';
+$string['sitecommnews'] = 'Moodle newsletter';
+$string['sitecommnews_help'] = 'You have the option of subscribing to our Moodle newsletter. You may unsubscribe at any time.';
+$string['sitecommnewsno'] = 'No, I do not wish to receive any emails';
+$string['sitecommnewsyes'] = 'Yes, I would like to receive the Moodle newsletter';
 $string['sitecountry'] = 'Country';
 $string['sitecountry_help'] = 'The country your organisation or institution is located in.';
 $string['sitedesc'] = 'Description';
@@ -186,8 +199,8 @@ $string['siteprivacypublished'] = 'Only display my site name';
 $string['siteprivacylinked'] = 'Display my site name with the link';
 $string['siteregistrationcontact'] = 'Display contact form';
 $string['siteregistrationcontact_help'] = 'If you allow it, other people in our Moodle community (who need a login account) can contact you via a form on our Moodle community site. However, they will never be able to see your email address.';
-$string['siteregistrationemail'] = 'Notifications about important security and technical issues.';
-$string['siteregistrationemail_help'] = 'You have the option of subscribing to our low volume email list for important news (on security issues or new releases).';
+$string['siteregistrationemail'] = 'Notifications of new Moodle releases, security alerts and other important news';
+$string['siteregistrationemail_help'] = 'You have the option of subscribing to our low-volume mailing list for notifications of new Moodle releases, security alerts and other important news. You may unsubscribe at any time.';
 $string['siteregistrationupdated'] = 'Site registration updated';
 $string['siterelease'] = 'Moodle release';
 $string['sitereleasenum'] = 'Moodle release ({$a})';
@@ -215,10 +228,11 @@ $string['unregisterfrom'] = 'Unregister from {$a}';
 $string['unregistrationerror'] = 'An error occurred when the site tried to unregister from Moodle.net: {$a}';
 $string['update'] = 'Update';
 $string['updatesite'] = 'Update registration on {$a}';
+$string['updatesiteregistration'] = 'Update registration';
 $string['updatestatus'] = 'Check it now.';
 $string['usedifferentemail'] = 'Use different email';
-$string['unregisterexplained'] = 'If the site with URL {$a} is registered on Moodle.net its registration will be removed.';
-$string['urlalreadyregistered'] = 'Your site seems to be already registered on Moodle.net, which means something has gone wrong. Please contact the Moodle.net administrator to reset your registration so you can try again.';
+$string['unregisterexplained'] = 'If the site with URL {$a} is registered, then its registration will be removed.';
+$string['urlalreadyregistered'] = 'Your site seems to be already registered, which means something has gone wrong. Please contact the Moodle.net administrator to reset your registration so you can try again.';
 $string['usersnumber'] = 'Number of users ({$a})';
 $string['wrongtoken'] = 'The registration failed for some unknown reason (network?). Please try again.';
 

@@ -82,7 +82,7 @@ $string['mobileappearance'] = 'Mobile appearance';
 $string['mobileauthentication'] = 'Mobile authentication';
 $string['mobilecssurl'] = 'CSS';
 $string['mobilefeatures'] = 'Mobile features';
-$string['mobilenotificationsdisabledwarning'] = 'Mobile notifications are not enabled. They should be enabled in Manage message outputs.';
+$string['mobilenotificationsdisabledwarning'] = 'Mobile notifications are not enabled. They should be enabled in Notification settings.';
 $string['mobilesettings'] = 'Mobile settings';
 $string['offlineuse'] = 'Offline use';
 $string['pluginname'] = 'Moodle app tools';
@@ -91,7 +91,7 @@ $string['readingthisemailgettheapp'] = 'Reading this in an email? <a href="{$a}"
 $string['remoteaddons'] = 'Remote add-ons';
 $string['selfsignedoruntrustedcertificatewarning'] = 'It seems that the HTTPS certificate is self-signed or not trusted. The mobile app will only work with trusted sites.';
 $string['setuplink'] = 'App download page';
-$string['setuplink_desc'] = 'URL of page with links to download the mobile app from the App Store and Google Play.';
+$string['setuplink_desc'] = 'URL of page with options to download the mobile app from the App Store and Google Play. The app download page link is displayed in the page footer and in a user\'s profile. Leave blank to not display a link.';
 $string['smartappbanners'] = 'App Banners';
 $string['typeoflogin'] = 'Type of login';
 $string['typeoflogin_desc'] = 'If the site uses a SSO authentication method, then select via a browser window or via an embedded browser. An embedded browser provides a better user experience, though it doesn\'t work with all SSO plugins.';

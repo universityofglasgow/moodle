@@ -1,8 +1,21 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Appointment booking form of the scheduler module
- * (using Moodle formslib)
+ * Appointment booking form of the scheduler module (using Moodle formslib)
  *
  * @package    mod_scheduler
  * @copyright  2016 Henning Bostelmann and others (see README.txt)
@@ -11,24 +24,45 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+use \mod_scheduler\model\slot;
+use \mod_scheduler\model\appointment;
+
 require_once($CFG->libdir.'/formslib.php');
 
 /**
  * Student-side form to book or edit an appointment in a selected slot
+ *
+ * @package    mod_scheduler
+ * @copyright  2016 Henning Bostelmann and others (see README.txt)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class scheduler_booking_form extends moodleform {
 
+    /** @var mixed */
     protected $slot;
+    /** @var mixed */
     protected $appointment = null;
+    /** @var mixed */
     protected $uploadoptions;
+    /** @var mixed */
     protected $existing;
 
-    public function __construct(scheduler_slot $slot, $action, $existing = false) {
+    /**
+     * scheduler_booking_form constructor.
+     *
+     * @param slot $slot
+     * @param mixed $action
+     * @param bool $existing
+     */
+    public function __construct(slot $slot, $action, $existing = false) {
         $this->slot = $slot;
         $this->existing = $existing;
         parent::__construct($action, null);
     }
 
+    /**
+     * Form definition
+     */
     protected function definition() {
 
         global $CFG, $output;
@@ -76,6 +110,14 @@ class scheduler_booking_form extends moodleform {
         $this->add_action_buttons(true, $submitlabel);
     }
 
+    /**
+     * Form validation
+     *
+     * @param array $data array of ("fieldname"=>value) of submitted data
+     * @param array $files array of uploaded files "element_name"=>tmp_file_path
+     * @return array of "element_name"=>"error_description" if there are errors,
+     *         or an empty array if everything is OK (true allowed for backwards compatibility too).
+     */
     public function validation($data, $files) {
         $errors = parent::validation($data, $files);
 
@@ -94,7 +136,13 @@ class scheduler_booking_form extends moodleform {
         return $errors;
     }
 
-    public function prepare_booking_data(scheduler_appointment $appointment) {
+    /**
+     * prepare_booking_data
+     *
+     * @param appointment $appointment
+     * @return stdClass
+     */
+    public function prepare_booking_data(appointment $appointment) {
         $this->appointment = $appointment;
 
         $newdata = clone($appointment->get_data());
@@ -109,7 +157,13 @@ class scheduler_booking_form extends moodleform {
         return $newdata;
     }
 
-    public function save_booking_data(stdClass $formdata, scheduler_appointment $appointment) {
+    /**
+     * save_booking_data
+     *
+     * @param stdClass $formdata
+     * @param appointment $appointment
+     */
+    public function save_booking_data(stdClass $formdata, appointment $appointment) {
         $scheduler = $appointment->get_scheduler();
         if ($scheduler->uses_studentnotes() && isset($formdata->studentnote_editor)) {
             $editor = $formdata->studentnote_editor;

@@ -2,6 +2,12 @@ language: php
 
 sudo: required
 
+
+services:
+  mysql
+
+dist: bionic
+
 addons:
   firefox: "47.0.1"
   postgresql: "9.4"
@@ -18,9 +24,8 @@ php:
  - 7.1
 
 env: 
-  - MOODLE_BRANCH=MOODLE_34_STABLE DB=pgsql IGNORE_PATHS=mobile_src
-  - MOODLE_BRANCH=MOODLE_32_STABLE DB=mysqli IGNORE_PATHS=mobile_src
-  - MOODLE_BRANCH=master DB=pgsql IGNORE_PATHS=mobile_src
+  - MOODLE_BRANCH=MOODLE_36_STABLE DB=pgsql IGNORE_PATHS=mobile_src
+  - MOODLE_BRANCH=MOODLE_37_STABLE DB=mysqli IGNORE_PATHS=mobile_src
 
 before_install:
   - phpenv config-rm xdebug.ini
@@ -41,4 +46,5 @@ script:
   - moodle-plugin-ci mustache
   - moodle-plugin-ci grunt
   - moodle-plugin-ci phpunit
-  - moodle-plugin-ci behat
+ - moodle-plugin-ci behat
+ 

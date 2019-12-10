@@ -2004,7 +2004,7 @@ function bigbluebuttonbn_send_notification_recording_ready($bigbluebuttonbn) {
         ' &quot;' . $bigbluebuttonbn->name . '&quot; '.
         get_string('email_body_recording_ready_is_ready', 'bigbluebuttonbn').'.</p>';
     $context = context_course::instance($bigbluebuttonbn->course);
-    \mod_bigbluebuttonbn\locallib\notifier::notification_send($context, $sender, $bigbluebuttonbn, $messagetext);
+    \mod_bigbluebuttonbn\locallib\notifier::notification_send($sender, $bigbluebuttonbn, $messagetext);
 }
 
 /**
@@ -2033,7 +2033,7 @@ function bigbluebuttonbn_is_bn_server() {
  */
 function bigbluebuttonbn_import_get_courses_for_select(array $bbbsession) {
     if ($bbbsession['administrator']) {
-        $courses = get_courses('all', 'c.fullname ASC', 'c.id,c.shortname,c.fullname');
+        $courses = get_courses('all', 'c.fullname ASC');
         // It includes the name of the site as a course (category 0), so remove the first one.
         unset($courses['1']);
     } else {
@@ -2382,7 +2382,7 @@ function bigbluebuttonbn_get_instance_type_profiles_create_allowed($room, $recor
  */
 function bigbluebuttonbn_get_instance_profiles_array($profiles = []) {
     $profilesarray = array();
-    foreach ($profiles as $profile) {
+    foreach ($profiles as $key => $profile) {
         $profilesarray[$profile['id']] = $profile['name'];
     }
     return $profilesarray;

@@ -1,4 +1,18 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * Message formatting from templates.
@@ -9,6 +23,9 @@
  */
 
 defined ( 'MOODLE_INTERNAL' ) || die ();
+
+use \mod_scheduler\model\scheduler;
+use \mod_scheduler\model\slot;
 
 /**
  * Message functionality for scheduler module
@@ -68,17 +85,15 @@ class scheduler_messenger {
      * Sends a message based on a template.
      * Several template substitution values are automatically filled by this routine.
      *
-     * @uses $CFG
-     * @uses $SITE
      * @param string $modulename
      *            name of the module that sends the message
      * @param string $messagename
      *            name of the message in messages.php
      * @param int $isnotification
      *            1 for notifications, 0 for personal messages
-     * @param user $sender
+     * @param stdClass $sender
      *            A {@link $USER} object describing the sender
-     * @param user $recipient
+     * @param stdClass $recipient
      *            A {@link $USER} object describing the recipient
      * @param object $course
      *            The course that the activity is in. Can be null.
@@ -134,8 +149,8 @@ class scheduler_messenger {
      * Construct an array with subtitution rules for mail templates, relating to
      * a single appointment. Any of the parameters can be null.
      *
-     * @param scheduler_instance $scheduler The scheduler instance
-     * @param scheduler_slot $slot The slot data as an MVC object, may be null
+     * @param scheduler $scheduler The scheduler instance
+     * @param slot $slot The slot data as an MVC object, may be null
      * @param user $teacher A {@link $USER} object describing the attendant (teacher)
      * @param user $student A {@link $USER} object describing the attendee (student)
      * @param object $course A course object relating to the ontext of the message
@@ -143,7 +158,7 @@ class scheduler_messenger {
      *                          (used for determining the message language)
      * @return array A hash with mail template substitutions
      */
-    public static function get_scheduler_variables(scheduler_instance $scheduler,  $slot,
+    public static function get_scheduler_variables(scheduler $scheduler,  $slot,
                                                    $teacher, $student, $course, $recipient) {
 
         global $CFG;
@@ -187,7 +202,7 @@ class scheduler_messenger {
     /**
      * Send a notification message about a scheduler slot.
      *
-     * @param scheduler_slot $slot the slot that the notification relates to
+     * @param slot $slot the slot that the notification relates to
      * @param string $messagename name of message as in db/message.php
      * @param string $template template name to use (language string up to prefix/postfix)
      * @param stdClass $sender user record for sender
@@ -196,7 +211,7 @@ class scheduler_messenger {
      * @param stdClass $student user record for student
      * @param stdClass $course course record
      */
-    public static function send_slot_notification(scheduler_slot $slot, $messagename, $template,
+    public static function send_slot_notification(slot $slot, $messagename, $template,
                                                   stdClass $sender, stdClass $recipient,
                                                   stdClass $teacher, stdClass $student, stdClass $course) {
         $vars = self::get_scheduler_variables($slot->get_scheduler(), $slot, $teacher, $student, $course, $recipient);

@@ -1,4 +1,18 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * Unit tests for the MVC model classes
@@ -9,6 +23,9 @@
  */
 
 defined('MOODLE_INTERNAL') || die();
+
+use \mod_scheduler\model\scheduler;
+use \mod_scheduler\model\appointment_factory;
 
 global $CFG;
 require_once($CFG->dirroot . '/mod/scheduler/locallib.php');
@@ -74,12 +91,12 @@ class mod_scheduler_model_testcase extends advanced_testcase {
     /**
      * Test loading a scheduler instance from the database
      */
-    public function test_scheduler_instance() {
+    public function test_scheduler() {
         global $DB;
 
         $dbdata = $DB->get_record('scheduler', array('id' => $this->schedulerid));
 
-        $instance = scheduler_instance::load_by_coursemodule_id($this->moduleid);
+        $instance = scheduler::load_by_coursemodule_id($this->moduleid);
 
         $this->assertEquals( $dbdata->name, $instance->get_name());
 
@@ -93,9 +110,9 @@ class mod_scheduler_model_testcase extends advanced_testcase {
 
         global $DB;
 
-        $instance = scheduler_instance::load_by_coursemodule_id($this->moduleid);
+        $instance = scheduler::load_by_coursemodule_id($this->moduleid);
         $slot = array_values($instance->get_slots())[0];
-        $factory = new scheduler_appointment_factory($slot);
+        $factory = new appointment_factory($slot);
 
         $user = $this->getdataGenerator()->create_user();
 
