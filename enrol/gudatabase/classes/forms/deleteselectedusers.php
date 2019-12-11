@@ -33,4 +33,4 @@ require_once("$CFG->dirroot/enrol/bulkchange_forms.php");
  * @copyright 2019 Howard Miller
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class deleteselectedusers extends enrol_bulk_enrolment_confirm_form {}
+class deleteselectedusers extends \enrol_bulk_enrolment_confirm_form {}
