@@ -1936,6 +1936,27 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
     }
 
     /**
+     * The gudatabase plugin has a delete bulk operation
+     * @param course_enrolment_manager $manager
+     * @return array
+     */
+    public function get_bulk_operations(course_enrolment_manager $manager) {
+	global $CFG, $DB;
+
+	$course = $manager->get_course();
+        if ($this->enrolment_possible($course)) {
+            return [];
+        }
+
+        $context = $manager->get_context();
+        $bulkoperations = array();
+        if (has_capability("enrol/gudatabase:unenrol", $context)) {
+            $bulkoperations['deleteselectedusers'] = new \enrol_gudatabase\deleteselectedusers_operation($manager, $this);
+        }
+        return $bulkoperations;
+    }
+
+    /**
      * Test plugin settings, print info to output.
      */
     public function test_settings() {
