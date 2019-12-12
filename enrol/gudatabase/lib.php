@@ -994,7 +994,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
      * @param object $instance (if we know it)
      * @return boolean
      */
-    protected function enrolment_possible($course, $instance = null) {
+    public function enrolment_possible($course, $instance = null) {
 
         // Ignore hidden courses, unless customint6 = 1, in which case skip this check
         if (empty($instance->customint6) && !$course->visible) {

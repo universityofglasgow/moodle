@@ -47,6 +47,9 @@ $plugin = enrol_get_plugin('gudatabase');
 if ($instances = $DB->get_records('enrol', array('courseid' => $courseid, 'enrol' => 'gudatabase'))) {
     foreach ($instances as $instance) {
         echo get_string('processinginstance', 'enrol_gudatabase', $plugin->get_instance_name($instance)) . "\n";
+        if (!$plugin->enrolment_possible($course, $instance)) {
+            echo get_string('enrolmentnotpossible', 'enrol_gudatabase') . "\n";
+        }
         echo get_string('syncusers', 'enrol_gudatabase') . "\n";
         $plugin->enrol_course_users($course, $instance);
         echo get_string('syncgroups', 'enrol_gudatabase') . "\n";
