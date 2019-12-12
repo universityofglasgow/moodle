@@ -1243,44 +1243,46 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         }
 
         // Run through selected groups and classes.
-        foreach ($selectedgroups as $code => $selectedgroup) {
-            foreach ($selectedgroup as $class => $enabled) {
-                if ($enabled) {
-                    $groupbasename = "{$code} {$class}";
-                    $matricnos = $this->external_class_users($code, $class);
-                    $classgroups = $this->convert_matricnos($matricnos);
+        if ($selectedgroups) {
+            foreach ($selectedgroups as $code => $selectedgroup) {
+                foreach ($selectedgroup as $class => $enabled) {
+                    if ($enabled) {
+                        $groupbasename = "{$code} {$class}";
+                        $matricnos = $this->external_class_users($code, $class);
+                        $classgroups = $this->convert_matricnos($matricnos);
 
-                    foreach ($classgroups as $classgroupcode => $memberids) {
-                        $groupname = "$groupbasename $classgroupcode";
+                        foreach ($classgroups as $classgroupcode => $memberids) {
+                            $groupname = "$groupbasename $classgroupcode";
 
-                        // See if group exists, if not create it.
-                        if (!$groupid = $this->get_local_groupid($groupname, $course->id, $instance->id)) {
-                            $group = $this->create_group($groupname, $course);
+                            // See if group exists, if not create it.
+                            if (!$groupid = $this->get_local_groupid($groupname, $course->id, $instance->id)) {
+                                $group = $this->create_group($groupname, $course);
 
-                            // When creating a group also add to local group list.
-                            $this->get_local_groupid($groupname, $course->id, $instance->id);
-                        } else {
-                            $group = groups_get_group($groupid);
-                        }
-
-                        // Find all the users for this group combination.
-                        $enrolledusers = array();
-                        foreach ($memberids as $memberid) {
-                            if ($user = $DB->get_record('user', array('idnumber' => $memberid))) {
-
-                                // Add to the group.
-                                groups_add_member($group, $user);
-                                $enrolledusers[$user->id] = $user->id;
+                                // When creating a group also add to local group list.
+                                $this->get_local_groupid($groupname, $course->id, $instance->id);
+                            } else {
+                                $group = groups_get_group($groupid);
                             }
-                        }
 
-                        // Remove group members no longer in classgroup.
-                        // There MUST be an end date
-                        if (!empty($instance->customint5) && $this->get_config('allowunenrol') && !empty($course->enddate)) {
-                            if ($members = $DB->get_records('groups_members', array('groupid' => $groupid))) {
-                                foreach ($members as $member) {
-                                    if (!in_array($member->userid, $enrolledusers)) {
-                                        groups_remove_member($groupid, $member->userid);
+                            // Find all the users for this group combination.
+                            $enrolledusers = array();
+                            foreach ($memberids as $memberid) {
+                                if ($user = $DB->get_record('user', array('idnumber' => $memberid))) {
+
+                                    // Add to the group.
+                                    groups_add_member($group, $user);
+                                    $enrolledusers[$user->id] = $user->id;
+                                }
+                            }
+
+                            // Remove group members no longer in classgroup.
+                            // There MUST be an end date
+                            if (!empty($instance->customint5) && $this->get_config('allowunenrol') && !empty($course->enddate)) {
+                                if ($members = $DB->get_records('groups_members', array('groupid' => $groupid))) {
+                                    foreach ($members as $member) {
+                                        if (!in_array($member->userid, $enrolledusers)) {
+                                            groups_remove_member($groupid, $member->userid);
+                                        }
                                     }
                                 }
                             }
@@ -1303,6 +1305,11 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
      */
     public function group_cleanup($course, $instance, $selectedgroups) {
         global $DB;
+
+        // Make sure it's an array
+        if (!$selectedgroups) {
+            $selectedgroups = [];
+        }
 
         // Must be enabled in this plugin, sitewide AND the course must have an end date
         if (empty($instance->customint5) || !$this->get_config('allowunenrol') || empty($course->enddate)) {
