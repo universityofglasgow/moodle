@@ -1,0 +1,117 @@
+{{!                                                                                                                                 
+    This file is part of Moodle - http://moodle.org/                                                                                
+                                                                                                                                    
+    Moodle is free software: you can redistribute it and/or modify                                                                  
+    it under the terms of the GNU General Public License as published by                                                            
+    the Free Software Foundation, either version 3 of the License, or                                                               
+    (at your option) any later version.                                                                                             
+                                                                                                                                    
+    Moodle is distributed in the hope that it will be useful,                                                                       
+    but WITHOUT ANY WARRANTY; without even the implied warranty of                                                                  
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                                                                   
+    GNU General Public License for more details.                                                                                    
+                                                                                                                                    
+    You should have received a copy of the GNU General Public License                                                               
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.                                                                 
+}}                                                                                                                                  
+{{!                                                                                                                                 
+    @report_guid/ldaplist                                                                                                         
+                                                                                                                                    
+    Display list of search results                                                                                                       
+}}
+
+<h3>{{# str }}ldapresults, report_guid{{/ str }}</h3>
+
+{{# ldapresultsempty }}
+    <div class="alert alert-warning">
+        {{# str }}noresults, report_guid{{/ str }}
+    </div>
+{{/ ldapresultsempty }}
+
+{{^ ldapresultsempty }}
+    {{# toomanyldapresults }}
+        <div class="alert alert-warning">
+            {{# str }}toomanyldap, report_guid{{/ str }}
+        </div>
+    {{/ toomanyldapresults }}
+
+    {{^ toomanyldapresults }}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>{{# str }}username{{/ str }}</th>
+                    <th>{{# str }}firstname{{/ str }}</th>
+                    <th>{{# str }}lastname{{/ str }}</th>
+                    <th>{{# str }}email{{/ str }}</th>
+                    <th> </th>
+                </tr>
+            </thead>
+            <tbody>
+                {{# results }}
+                    <tr>
+                        <td>{{{ username }}}</td>
+                        <td>{{ firstname }}</td>
+                        <td>{{ lastname }}</td>
+                        <td>{{{ mail }}}</td>
+                        <td>{{{ buttons }}}</td>
+                    </tr>
+                {{/ results }}
+            </tbody>
+        </table>
+
+        <div class="alert alert-success">
+            {{# str }}numberofresults, report_guid, {{ resultcount }}{{/ str }}
+        </div>
+    {{/ toomanyldapresults }}
+{{/ ldapresultsempty }}
+
+<h3>{{# str }}userresults, report_guid{{/ str }}</h3>
+
+{{# userresultsempty }}
+    <div class="alert alert-warning">
+        {{# str }}nouserresults, report_guid{{/ str }}
+    </div>
+{{/ userresultsempty }}
+
+{{^ userresultsempty }}
+    {{# toomanyuserresults }}
+        <div class="alert alert-warning">
+            {{# str }}toomanyuser, report_guid{{/ str }}
+        </div>
+    {{/ toomanyuserresults }}
+
+    {{^ toomanyuserresults }}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>{{# str }}username{{/ str }}</th>
+                    <th>{{# str }}authentication{{/ str }}
+                    <th>{{# str }}firstname{{/ str }}</th>
+                    <th>{{# str }}lastname{{/ str }}</th>
+                    <th>{{# str }}email{{/ str }}</th>
+                    <th>{{# str }}enrolledcourses, report_guid{{/ str }}</th>
+                    <th>{{# str }}lastlogin{{/ str }}</th>
+                    <th> </th>
+                </tr>
+            </thead>
+            <tbody>
+                {{# users }}
+                    <tr>
+                        <td>{{{ username }}}</td>
+                        <td>{{ auth }}</td>
+                        <td>{{ firstname }}</td>
+                        <td>{{ lastname }}</td>
+                        <td>{{{ mail }}}</td>
+                        <td>{{ enrolcount }}</td>
+                        <td>{{ lastlogin }}</td>
+                        <td>{{{ buttons }}}</td>
+                    </tr>
+                {{/ users }}
+            </tbody>
+        </table>
+
+        <div class="alert alert-success">
+            {{# str }}numberofresults, report_guid, {{ usercount }}{{/ str }}
+        </div>
+    {{/ toomanyuserresults }}
+{{/ userresultsempty }}

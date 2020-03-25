@@ -1,0 +1,469 @@
+This script describes steps to test OU Blog standard functionality. It is intended to cover most of the UI and features.
+
+NOTE: In this test case, the word 'blog' always refers to the OU blog.
+
+Some test steps in this script follow on from each other and aren't independent. In these cases the prerequisite steps are listed.
+
+Initial setup
+=============
+
+This test case requires:
+
+- a user with administration rights
+- a user with student rights
+- a test course.
+
+The test server must have debugging set to DEVELOPER level and to display
+errors; during all parts of the test script, there should be no debugging
+warnings.
+
+CRE Creating blog and data
+==========================
+
+CRE01 / admin.
+   Enter test course and turn editing on.
+   Create a blog called CRE01 which is a whole-course blog (no groups) and
+   visible to anyone in the world.
+   Set 'Allow comments' to Comments not allowed.
+
+CRE02 / admin.
+   Enter test course and turn editing on.
+   Create a blog called CRE02 which should have individual mode set to 'Separate individual blogs'.
+
+INT Testing Intro display
+(Requires CRE)
+=========================
+
+INT01 / admin
+   Enter blog "CRE01".
+   Select 'Edit settings' link in the Administration block.
+   Add any text and any uploaded image into the Intro field.
+   Select 'Show intro when posting' checkbox.
+   Select 'Save and display' to save changes.
+-- Verify intro text and image added are now displayed in the top block to the side of the blog posts area.
+
+INT02 / admin
+   Select the 'New blog post' button.
+-- Verify intro text and image added are displayed at the top of the new post page.
+   Enter some text into the 'Message' field.
+   Select 'Add post' button to save the new post and return to main blog view.
+-- Verify post created is displayed at the top of the posts area.
+-- Verify post created is top of the list in the 'My participation summary' panel in the 'Blog usage' block.
+   Select 'Edit' link within post just created.
+-- Verify intro text and image added are displayed at the top of the new post page.
+   Select 'Cancel' to return to main blog view.
+
+INT03 / admin
+   Select 'Edit settings' link in the Administration block.
+   Select 'Show intro when posting' checkbox (making it not checked).
+   Select 'Save and display' to save changes.
+   Select the 'New blog post' button.
+-- Verify intro text and image added are NOT displayed at the top of the new post page.
+   Return to test course home page.
+
+COM Testing adding comments
+(Requires CRE)
+===========================
+
+COM1 / admin
+   Enter blog "CRE01".
+   Select the 'New blog post' button.
+   Enter 'COM1' into the title field.
+   Enter some text and an uploaded image into the 'Message' field.
+   Select 'Add post' button to save the new post and return to main blog view.
+-- Verify 'Add your comment' link is not shown against post COM1.
+
+COM02 / admin
+   Select 'Edit settings' link in the Administration block.
+   Set 'Allow comments' drop down to 'Yes, from everybody (even if not logged in)'.
+   Select 'Save and display' to save changes.
+   Select 'Edit' against post 'COM1'.
+   Set 'Allow comments' to 'Yes, from logged-in users'.
+   Select 'Save changes'.
+-- Verify 'Add your comment' link is shown against post COM1.
+
+COM03 / admin
+   Select 'Add your comment' link against post COM1.
+-- Verify 'New comment' screen is shown with 'Post' (collapsed) and 'New comment' (expanded) sections.
+   Select 'Post' section to expand.
+-- Verify COM1 post is shown correctly, checking display of image and user information.
+   Enter some text into the 'Add your comment' field.
+   Select 'Add comment' button.
+-- Verify returned to blog main view and post COM1 has a '1 comment' link.
+
+
+SSP Session save post test.
+(Requires CRE)
+===========================
+
+Note; Tests pre-save check on saving a blog post. Checking that the user has a valid session
+and if not will stop the save from occurring and 'Alert' the user that it would fail.
+
+SSP01 / admin
+   Enter test course and open blog "CRE01" in a new tab.
+
+SSP02 / admin
+   Select 'Edit' and make some changes on the first blog post.
+
+SSP03 / admin
+   Open the course home page in a new browser tab
+
+SSP04 / admin
+   Select to 'Sign out' of SAMS from the OU top bar,
+   (For non-SAMS sites such as ttdev, access /login/logout.php and log out instead)
+   Close the new tab
+
+SSP05 / admin
+   Return to the tab with the blog 'Update post' page open.
+   Click 'Save changes' to save the blog post.
+-- Confirm that you are presented with a 'popup alert box' labled 'Post cannot be saved.',
+   containing the following warning;
+   'Unfortunately, your changes cannot be saved at this time.
+   This is due to a network error; the website is temporarily unavailable or you have been signed out. </p>
+   Saving has been disabled on this blog.
+   In order to retain any changes you must copy the edited blog content,
+   access the Edit page again and then paste in your changes.'
+   Click the 'Ok' button.
+-- Confirm that the 'Save changes' button is disabled.
+-- Confirm that the 'Cancel' button is not disabled.
+
+SSP06 / admin
+   Copy the blog post contents with changes.
+
+SSP07 / admin
+   Click the 'Cancel' button.
+-- Confirm that you are presented with the login page.
+
+SSP08 / admin
+   Login as admin user.
+-- Verify that you are returned to the 'Update post' page for the first blog post.
+   Paste in your changes.
+   Click 'Save changes' to save the blog post.
+-- Confirm that the page refreshes and the changes are apparent in the edited first post
+   on the main blog page.
+
+
+TAG Testing post tags
+(Requires CRE)
+=====================
+
+TAG01 / admin
+   Enter blog 'CRE01'.
+   Select the 'New blog post' button.
+   Enter 'TAG1' into the title field.
+   Enter some text into message field and "tag1, tag2, btag2" into the tags field.
+   Select 'Add post' button to save the new post and return to main blog view.
+-- Verify 'btag2 (1)', 'tag1 (1)' and 'tag2 (1)' are now shown in the 'tags' tag cloud.
+
+TAG02 / admin
+   Select 'edit' link for post TAG1 to edit the post just created.
+   Select the tags field.
+-- Verify no tag choices are shown on field focus.
+   Delete all text in the tags field.
+-- Verify tag choice 'btag2 [1 posts]', 'tag1 [1 posts]' and 'tag2 [1 posts]' is shown.
+   Select 'tag1 [1posts]'
+-- Verify tags field now contains 'tag1,' and tag choice is now showing as
+   'btag2 [1 posts]', 'tag2 [1 posts]'.
+
+TAG03 / admin
+   Enter blog 'CRE02'.
+   Select the 'New blog post' button.
+   Enter 'ADMIN_TAG1' into the title field.
+   Enter some text into message field and "tag3, tag4" into the tags field.
+   Select 'Add post' button to save the new post and return to main blog view.
+-- Verify 'tag3 (1)' and 'tag4 (1)' are now shown in the 'tags' tag cloud.
+   Select the 'New blog post' button.
+   Select the tags field.
+-- Verify tag choice 'tag3 [1 posts]' and 'tag4 [1 posts]' is shown.
+   Type 'ta' into tags field.
+-- Verify tag choice 'tag3 [1 posts]' and 'tag4 [1 posts]' is shown.
+   Type 'tag3' into tags field.
+-- Verify tag choice 'tag3 [1 posts]' is shown.
+   Select tag 'tag3'.
+-- Verify tags field contains 'tag3, ' and tag choice 'tag4 [1 posts]' is shown.
+   Select tag 'tag4'.
+-- Verify tags field contains 'tag3, tag4, ' and no tag choice is shown.
+
+TAG04 / student [change]
+   Enter blog 'CRE02'.
+   Select the 'New blog post' button.
+   Select the tags field.
+-- Verify no tag choices are shown on field focus.
+
+TAG Testing post tag order
+==========================
+
+TAG05 / admin
+   Enter blog 'CRE01'.
+-- Cofirm that the 'tags' tag cloud contains the label 'Order:' followed by a help icon and
+   that beneath this is a label 'Alphabetical', the default order, followed by a
+   verticle divider and link 'Use' above the existing tags 'btag2 (1)', 'tag1 (1)' and 'tag2 (1)'.
+
+TAG06 / admin
+   Click the help icon to display the tag cloud, order help text.
+-- Confirm it matches the following,
+   "You can choose to display the list of tags used ordered either in alphabetical order
+   or by number of posts used in. Select the two links to switch between ordering methods,
+   this choice is remembered and will be used on subsequent views."
+
+TAG07 / admin
+   Edit the first 'untitled post' and add the tags 'atag1, btag2'.
+   Select 'Save changes'.
+-- Verify 'atag1(1) btag2(2) tag1 (1) tag2 (1)' are now shown
+   in the 'tags' tag cloud, possibly with btags in larger emboldend text.
+
+TAG08 / admin
+   Edit the COM1 post and add the tags 'atag1, btag2'.
+   Select 'Save changes'.
+-- Verify 'atag1 (2) btag2 (3) tag1 (1) tag2 (1) ' are now shown in the 'tags' tag cloud,
+   with btag2 and atag1 in larger emboldend text.
+
+TAG09 / admin
+   Edit the TAG1 post and add the tags 'atag1, ctag3'.
+   Select 'Save changes'.
+-- Verify 'atag1 (3) btag2 (3) ctag3 (1) tag1 (1) tag2 (1)' are now shown in the 'tags' tag cloud,
+   with btag2 and atag1 in larger emboldend text.
+
+TAG10 / admin
+   Select the 'New blog post' button.
+   Enter 'TAG2' into the title field.
+   Enter some text into message field and "tag1, btag2" into the tags field.
+   Select 'Add post' button to save the new post and return to main blog view.
+-- Verify that the tag order is alphabetical 'atag1 (3) btag2 (4) ctag3 (1) tag1 (2)
+   tag2 (1)' shown in the 'tags' tag cloud.
+
+TAG11 / admin
+   Click the link 'Use' to change the order to popular use order.
+-- Confirm that the 'Use' link becomes a label.
+-- Confirm that the 'Alphabetical' label becomes a link.
+-- Verify that 'btag2 (4) atag1 (3) tag1 (2) tag2 (1) ctag3 (1)' are now shown
+   in the 'tags' tag cloud, possibly with some tags in larger emboldend text.
+   Retrun to the course main page.
+   Re enter blog CRE01
+-- Confirm that the link is currently 'Alphabetical'.
+-- Confirm that the tag order is still popular use order 'btag2 (4) atag1 (3) tag1 (1)
+   tag2 (1) ctag3 (1)' as before.
+
+TAG12 / admin
+   Click the link 'Alphabetical' to change the current order to alphabetical order.
+-- Confirm that 'Use' becomes the link.
+-- Verify that tag cloud now shows 'atag1 (3) btag2 (4) ctag3 (1) tag1 (2) tag2 (1)'
+   possibly with some tags in larger emboldend text.
+   Return to the course main page.
+   Re enter blog CRE01
+-- Confirm that the link is currently 'USE'.
+-- Confirm that the tag order is alphabetical 'atag1 (3) btag2 (4) ctag3 (1) tag1 (2)
+   tag2 (1)' as before.
+
+BTAG Testing Blog level tags
+(Requires CRE + TAG)
+===========================
+
+BTAG01 / admin
+   Enter blog 'CRE01'.
+   Select 'Edit settings' link in the Administration block.
+   Scroll down to find the 'General' field entry, 'Tags' with help icon.
+   Enter the tags 'cre01tag01, cre01tag02'.
+-- Click 'Save and display'.
+
+BTAG02 / admin
+-- Click the 'Edit' button on post 'TAG1'.
+   Scroll to the Tags (separated by commas) entry field.
+   Click to, or otherwise, enter the Tags field.
+-- Confirm that the field dropdown is displayed, and contains the pre existing tag
+   'btag2' the two new blog tag entries 'cre01tag01 Set 0 posts' and
+   'cre01tag02 Set 0 posts'.
+
+BTAG03 / admin
+   Delete tag 'tag1,' from the Tags field.
+-- Verify that the drop down now contains the extra entry 'tag1 1 posts'.
+   Click the dropdown entry 'cre01tag02 Set 0 posts'.
+-- Verify that the Tags field now contains 'tag2, atag1, ctag3, cre01tag02, '
+   and that the dropdown now only displays the three entries
+   'btag2 2 posts', 'cre01tag01 Set 0 posts' and 'tag1 2 posts'.
+   Click 'Save changes'.
+
+Return to the course main page.
+
+BTAG04 / admin
+   Create a new blog, enter the blog name as 'CRE03'.
+   Enter any text as the Intro.
+   Leaving all other settings at their defaults, scroll down find to the
+   'Tags' entry field.
+   Click the help icon to display the tag cloud, order help text.
+-- Confirm help text is displayed in a popup.
+   Close the popup.
+   Enter the tags 'CRE03TAG01, CRE03TAG02'.
+   Click 'Save and display'.
+
+BTAG05 / admin
+   Create a new post, enter the blog name as 'BTAG07'.
+   Enter the message 'Testing the predefined Set Blog tags'.
+   Scroll to and enter the Tags (separated by commas) field.
+-- Confirm that 'cre03tag01 Set 0 posts' and 'cre03tag02 Set 0 posts'
+   are the only entries in the tag choice drop down, the two tags created on the blog.
+   Select the tag 'cre03tag01 Set 0 posts'.
+-- Confirm that the page refreshes and that the tag appears in the field but
+   not in the choice drop down.
+   Along side 'cre03tag01,' enter the tag 'btag07' in the Tags field.
+   Click 'Add post'.
+-- Confirm that the 'Tags' tag cloud contains the two tags 'cre03tag01,' and 'btag07'.
+   in the default 'Alphabetical' order.
+
+BTAG06 / admin
+   Create a new post, enter the blog name as 'TAG08'
+   Enter the message 'Testing the predefined Set Blog tags appear
+   along side user entered tags'.
+   Scroll to and enter the Tags (separated by commas) field.
+-- Confirm that 'btag07 1 posts', 'cre03tag01 Set 1 posts' and 'cre03tag02 Set 0 posts'
+   are the only entries in the drop down.
+   Slowly, enter the tag 'btag08,' into the Tags field.
+   Select the tag 'cre03tag02 Set 0 posts'.
+-- Confirm that 'btag07 1 posts' and 'cre03tag01 Set 1 posts' are the only
+   entries displayed in the choice drop down.
+   Click 'Add post'.
+
+BTAG07 / admin
+-- Confirm that the display of the Tag cloud matches those tags entered,
+   'btag07(1) btag08(1) cre03tag01(1) cre03tag02(1)'.
+
+BTAG08 / admin
+   Select 'Edit settings' link in the Administration block.
+   Scroll down to find the 'Tags' heading field entry, 'Tags' with help icon.
+   Click the help icon beside 'Tag options'.
+-- Confirm it shows a help popup.
+   Overwrite the tags in the tag field with 'cre03settag01, cre03settag02'.
+   Change the 'Tag options' dropdown to 'Allow pre-defined tags only'.
+   Click 'Save and display'.
+
+BTAG09 / admin
+   Create a new post, enter the title as 'TAG09'
+   Enter the message 'Testing the predefined Set Blog tags appear
+   rather than user entered tags'.
+-- Confirm that beneath the 'Message' box there is a label
+   'You may only enter the 'Set' tags: cre03settag01,cre03settag02'.
+   Enter the Tags (separated by commas) field.
+-- Confirm that 'cre03settag01 Set 0 posts', 'cre03settag02 Set 0 posts'
+   are the only entries in the drop down.
+   Select the tag 'cre03settag02 Set 0 posts'.
+-- Confirm that 'cre03settag01 Set 0 posts' is now the only entry displayed
+   in the choice drop down selector.
+
+BTAG10 / admin
+   In the tag field enter the tag 'tag01' after the set tag 'cre03settag02'
+   Click 'Add post'.
+-- Confirm that the page refreshes with a warning above the tag entry field,
+   'Only 'Set' tags are allowed to be entered'.
+   In the tag field, delete the tag 'tag01' and select 'cre03settag01 Set 0 posts'
+   from the choice drop down selector.
+   Click 'Add post' (after filling in any other required fields).
+
+BTAG11/ admin
+-- Confirm that the display of the Tag cloud matches those tags entered,
+   'btag07(1) btag08(1) cre03settag01(1) cre03settag02(1) cre03tag01(1) cre03tag02(1)'.
+
+BTAG12/ admin
+   Edit the TAG08 post.
+-- Confirm that beneath the 'Message' box there is a label
+   'You may only enter the 'Set' tags: cre03settag01,cre03settag02'.
+-- Confirm the existing tags are 'btag08', 'cre03tag02',
+   Enter the Tags (separated by commas) field.
+-- Confirm that 'cre03settag01 Set 1 posts', 'cre03settag02 Set 1 posts'
+   are the only entries in the drop down.
+   Click the 'Save changes' button.
+-- Confirm that the page refreshes with a warning above the tag entry field,
+   'Only 'Set' tags are allowed to be entered'.
+   In the tag field, delete the tags 'btag08' and 'cre03tag02' then select
+   'cre03settag02 Set 1 post' from the choice drop down selector.
+   Click the 'Save changes' button.
+
+BTAG13/ admin
+-- Confirm that the display of the Tag cloud matches those tags entered,
+   'btag07(1) cre03settag01(1) cre03settag02(2) cre03tag01(1)'.
+
+BTAG14 / admin
+   Select 'Edit settings' link in the Administration block.
+   Scroll down to find the 'Tags' heading.
+   Change the 'Tag options' dropdown to 'Must enter tags'.
+   Click 'Save and display'.
+   Create a new post.
+   In the post leave 'Tags' field empty.
+   Click 'Add post'.
+-- Confirm 'Required' message is shown against 'Tags' field.
+
+BTAG15 / admin
+   Select 'Edit settings' link in the Administration block.
+   Scroll down to find the 'Tags' heading.
+   Change the 'Tag options' dropdown to 'Must enter pre-defined tags only'.
+   Click 'Save and display'.
+   Create a new post 'TAG10'.
+   In the post leave 'Tags' field empty.
+   Click 'Add post'.
+-- Confirm 'Required' message is shown against 'Tags' field.
+-- Confirm 'Only 'Set' tags are allowed to be entered' message is shown against 'Tags' field.
+   Enter 'cre03settag01' into Tags field.
+   Click 'Add post'.
+-- Confirm no warnings shown against 'Tags' field.
+
+
+PAG Testing blog display pagination.
+===================================
+
+Note Requires a blog, which contains multiples of the number of posts per page
+     ie 20. Please use the Admininistrator's Personal blog and/or Course Blogtest Blog B.WC.
+
+PAG01 / admin
+   Enter either blog "B.WC" or Admin personal blog (/mod/oublog/view.php).
+   For the course blog.
+-- Confirm that the 'New blog post' and 'Participation by user' buttons are displayed
+   at the top of the blog posts area.
+   For the Admin user's blog.
+-- Confirm that the 'New blog post' and 'Import post' (if feature enabled) buttons are displayed
+   at the top of the blog posts area.
+-- Verify that beneath these buttons, when more than 20 posts are available,
+   above the first post and below the last post is a moodle standard pagination bar
+   which resembles the following.
+
+           Page: 1|2|3   Next ->
+                   - -   ----
+
+-- Confirm that there are a maximum of 20 posts visible.
+
+PAG02 / admin
+-- Verify that clicking any 'number' link or the 'Next->' link causes the page to be
+   refreshed and should now show a range of different posts, and that the standard
+   pagination bar now resembles the following, depending upon link clicked.
+
+           <- Previous   1|2|3    Next ->
+              --------   -   -   ----
+
+PAG Testing Personal blog display pagination.
+=============================================
+
+Note Tests the 'Personal blog' all posts page, which contains multiples of the number
+     of posts per page ie 20.
+     Please use the Admininistrator's Personal blog to access the allposts.php.
+
+PAG01 / admin
+   Enter Admin personal blog via /mod/oublog/view.php.
+   Click the 'View site entries' link.
+-- Confirm that the 'New blog post' and 'Import post' buttons are not displayed
+   at the top of the blog posts area.
+
+-- Verify that above the first post and below the last post is a moodle standard
+   pagination bar which resembles the following, depending upon the number of posts.
+
+           Page: 1|2|3|    Next ->
+                   - -     ----
+
+-- Confirm that there are 20 posts visible by various users.
+
+PAG02 / admin
+-- Verify that clicking any 'number' link or the 'Next->' link causes the page to be
+   refreshed and should now show a range of different posts, and that the standard
+   pagination bar now resembles the following, depending upon link clicked.
+
+           <- Previous   1|2|3|   Next ->
+              --------   -   -    ----
+
+Test ends.

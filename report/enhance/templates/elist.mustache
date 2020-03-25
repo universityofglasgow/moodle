@@ -1,0 +1,133 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template report_ehnace/elist
+
+    This template renders the list of enhancements area for report_enhance
+
+    Example context (json):
+    {}
+}}
+
+<p>{{# str }}gotanidea, report_enhance{{/ str }}</p>
+<div class="form-group m-b-0">
+    <h4>Quick Filters</h4>
+    <div class="row">
+        <div class="col-sm-7">
+            <ul class="nav nav-pills filter-list m-b-1">
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-filter=".filter-all"><i class="fa fa-list"></i> {{# str }}allrequests, report_enhance{{/ str }}</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-filter=".filter-status-1, .filter-status-2, .filter-status-3, .filter-status-4, .filter-status-5, .filter-status-6, .filter-status-9"><i class="fa fa-rocket"></i> {{# str }}activerequests, report_enhance{{/ str }}</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-filter=".filter-me"><i class="fa fa-user"></i> {{# str }}submittedbyme, report_enhance{{/ str }}</a>
+                </li>
+            </ul>
+        </div>
+        <div class="col-sm-5">
+            <form class="form-inline pull-right" action="{{ moreurl }}">
+                <input type="hidden" name="courseid" value="{{ course.id }}">
+                <label for="inputidfilter">{{# str }}findid, report_enhance{{/ str }}</label>:&ensp;
+                <div class="input-group">
+                    <input id="inputidfilter" class="form-control" type="number" name="id" style="width: 6em;">
+                    <span class="input-group-append">
+                        <button class="btn btn-default" type="submit"><i class="fa fa-arrow-circle-right"></i> {{# str }}go, report_enhance{{/ str }}</button>
+                    </span>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <h4>Filter By Status</h4>
+
+    <ul class="nav nav-pills filter-list m-b-1">
+        <li class="nav-item">
+            <a class="nav-link" href="#" data-filter=".filter-status-1"><i class="fa fa-star-o"></i> {{# str }}new, report_enhance{{/ str }}</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#" data-filter=".filter-status-2"><i class="fa fa-clock-o"></i> {{# str }}pendingreview, report_enhance{{/ str }}</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#" data-filter=".filter-status-2, .filter-status-3, filter-status-4"><i class="fa fa-gavel"></i> {{# str }}underreview, report_enhance{{/ str }}</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#" data-filter=".filter-status-9"><i class="fa fa-heart"></i> {{# str }}desirable, report_enhance{{/ str }}</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#" data-filter=".filter-status-5, .filter-status-6"><i class="fa fa-gear"></i> {{# str }}indevelopment, report_enhance{{/ str }}</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#" data-filter=".filter-status-7"><i class="fa fa-check-circle"></i> {{# str }}completed, report_enhance{{/ str }}</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#" data-filter=".filter-status-8"><i class="fa fa-thumbs-o-down"></i> {{# str }}rejected, report_enhance{{/ str }}</a>
+        </li>
+    </ul>
+
+    <div class="row">
+        <div class="col-sm-4">
+            <a href="{{{ formurl }}}" class="btn btn-success btn-block"><i class="fa fa-plus-circle"></i> {{# str }}submitnew, report_enhance{{/ str }}</a>
+        </div>
+        <div class="col-sm-4 ml-auto">
+            {{# reviewer }}
+                <a href="{{{ exporturl }}}" class="btn btn-warning btn-block"><i class="fa fa-table"></i> {{# str }}export, report_enhance{{/ str }}</a>
+            {{/ reviewer }}
+        </div>
+    </div>
+
+</div>
+</div>
+</section>
+<div class="row">
+    <div class="col">
+
+    </div>
+</div>
+<div class="enhancement-list">
+    {{# requests }}
+        <div class="card m-t-1 filter-all {{ cardclasses }}">
+            <div class="holder">
+                <div class="status-icon status-{{ statuscolour }}">
+                    <span class="statusidnumber">{{ id }}</span>
+                    <span class="statusicon">
+                        <i class="fa fa-{{ statusicon }}"></i>
+                    </span>
+                    <span class="statustext">{{ statusformatted }}</span>
+
+                </div>
+                <div class="status-description">
+                    <h4 class="headline"><a class="save-link" href="{{{ more }}}">{{ headline }}</a></h4>
+                    <p class="information">Submitted {{ timeago }} ago by {{username}} </p>
+                    <div class="media-footer">
+                        <ul class="enhancement-links">
+                            <li><a class="save-link" href="{{{ more }}}"><i class="fa fa-info-circle"></i> {{# str }}moreinfo, report_enhance{{/ str }}</a></li>
+                            {{# allowedit }}
+                            <li><a class="save-link" href="{{{ link }}}"><i class="fa fa-pencil"></i> {{# str }}edit, report_enhance{{/ str }}</a></li>
+                            {{/ allowedit }}
+                            {{# allowreview }}
+                            <li><a class="save-link" href="{{{ review }}}"><i class="fa fa-list"></i> {{# str }}review, report_enhance{{/ str }}</a></li>
+                            {{/ allowreview }}
+                            <li class="enhance_votes">{{> report_enhance/votes }}</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {{/ requests }}
+<a href="{{ formurl }}" class="btn btn-success m-t-1 bottom-button"><i class="fa fa-plus-circle"></i> {{# str }}submitnew, report_enhance{{/ str }}</a>

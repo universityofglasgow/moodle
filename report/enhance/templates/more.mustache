@@ -1,0 +1,174 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template report_ehnace/elist
+
+    This template renders the form for new/edit requests
+
+    Example context (json):
+    {}
+}}
+
+<h1 class="m-b-1">{{ request.headline }}</h1>
+
+<dl class="row">
+    <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}requestnumber, report_enhance{{/ str }}</dt>
+    <dd class="col-xs-8 col-sm-9 col-lg-10">{{ request.id }}</dd>
+</dl>
+
+<dl class="row">
+    <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}submittedby, report_enhance{{/ str }}</dt>
+    <dd class="col-xs-8 col-sm-9 col-lg-10">{{{ userpicture }}} <a href="{{{ userlink }}}">{{ request.username }}</a></dd>
+</dl>
+
+<dl class="row">
+    <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}submittedon, report_enhance{{/ str }}</dt>
+    <dd class="col-xs-8 col-sm-9 col-lg-10">{{ request.userdate }}</dd>
+</dl>
+
+{{#request.department}}
+<dl class="row">
+    <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}department, report_enhance{{/ str }}</dt>
+    <dd class="col-xs-8 col-sm-9 col-lg-10">{{ request.department }}</dd>
+</dl>
+{{/request.department}}
+
+<dl class="row">
+    <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}status, report_enhance{{/ str }}</dt>
+    <dd class="col-xs-8 col-sm-9 col-lg-10"><span class="inline-status status-{{ request.statuscolour }}"><i class="fa fa-{{ request.statusicon }}"></i> {{ request.statusformatted }}</span></dd>
+</dl>
+
+<dl class="row">
+    <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}votes, report_enhance{{/ str }}</dt>
+    <dd class="col-xs-8 col-sm-9 col-lg-10">
+        {{ request.votes }}
+        {{# reviewer }}{{# request.votes }}(<a href="{{{ voteslink }}}">{{# str }}voters, report_enhance{{/ str }}</a>){{/ request.votes }}{{/ reviewer }}
+    </dd>
+</dl>
+
+<dl class="row m-b-0">
+    <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}priority, report_enhance{{/ str }}</dt>
+    <dd class="col-xs-8 col-sm-9 col-lg-10">
+        {{{ priority }}}
+    </dd>
+</dl>
+
+</div>
+</section>
+<div>
+
+{{#request.description}}
+<div class="card m-t-1 m-b-1">
+<div class="card-body">
+<dl class="row m-b-0">
+    <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}description, report_enhance{{/ str }}</dt>
+    <dd class="col-xs-8 col-sm-9 col-lg-10">{{{ request.description }}}</dd>
+</dl>
+</div>
+</div>
+{{/request.description}}
+
+{{#request.benefits}}
+<div class="card m-b-1">
+<div class="card-body">
+<dl class="row m-b-0">
+    <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}benefits, report_enhance{{/ str }}</dt>
+    <dd class="col-xs-8 col-sm-9 col-lg-10">{{{ request.benefits }}}</dd>
+</dl>
+</div>
+</div>
+{{/request.benefits}}
+
+{{#request.desirability}}
+<div class="card m-b-1">
+<div class="card-body">
+<dl class="row m-b-0">
+    <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}desirability, report_enhance{{/ str }}</dt>
+    <dd class="col-xs-8 col-sm-9 col-lg-10">{{{ request.desirability }}}</dd>
+</dl>
+</div>
+</div>
+{{/request.desirability}}
+
+{{#request.impact}}
+<div class="card m-b-1">
+<div class="card-body">
+<dl class="row m-b-0">
+    <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}impact, report_enhance{{/ str }}</dt>
+    <dd class="col-xs-8 col-sm-9 col-lg-10">{{{ request.impact }}}</dd>
+</dl>
+</div>
+</div>
+{{/request.impact}}
+
+{{#request.viability}}
+<div class="card m-b-1">
+<div class="card-body">
+<dl class="row m-b-0">
+    <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}viability, report_enhance{{/ str }}</dt>
+    <dd class="col-xs-8 col-sm-9 col-lg-10">{{{ request.viability }}}</dd>
+</dl>
+</div>
+</div>
+{{/request.viability}}
+
+{{#request.result}}
+    <div class="card m-b-1">
+    <div class="card-body">
+        <dl class="row m-b-0">
+        <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}result, report_enhance{{/ str }}</dt>
+        <dd class="col-xs-8 col-sm-9 col-lg-10">{{{ request.result }}}</dd>
+        </dl>
+    </div>
+    </div>
+{{/request.result}}
+
+{{# reviewer }}
+    <div class="card m-b-1">
+    <div class="card-body">
+        <dl class="row m-b-0">
+        <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}reviewernotes, report_enhance{{/ str }}</dt>
+        <dd class="col-xs-8 col-sm-9 col-lg-10">{{{ request.reviewernotes }}}</dd>
+        </dl>
+    </div>
+    </div>
+{{/ reviewer }}
+
+{{# hasattachments }}
+    <div class="card m-b-1">
+        <div class="card-body">
+        <dl class="row m-b-0">
+        <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}attachments, report_enhance{{/ str }}</dt>
+        <dd class="col-xs-8 col-sm-9 col-lg-10">
+            <ul>
+                {{# attachments }}
+                    <li><a href="{{{ url }}}">{{ name }}</li>
+                {{/ attachments }}
+            </ul>
+        </dd>
+        </dl>
+    </div>
+    </div>
+{{/ hasattachments }}
+
+<a class="btn btn-primary" href="{{{ back }}}">{{# str }}back{{/ str }}</a>
+{{# allowedit }}
+    <a class="btn btn-warning" href="{{{ editurl }}}">{{# str }}edit, report_enhance{{/ str }}</a>
+{{/ allowedit }}
+{{# allowreview }}
+    <a class="btn btn-warning" href="{{{ reviewurl }}}">{{# str }}review, report_enhance{{/ str }}</a>
+{{/ allowreview }}
