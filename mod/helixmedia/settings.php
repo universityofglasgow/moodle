@@ -11,12 +11,12 @@
 require_once($CFG->dirroot.'/mod/helixmedia/lib.php');
 require_once($CFG->dirroot.'/mod/lti/locallib.php');
 
-
 if ($PAGE->pagetype=="admin-setting-modsettinghelixmedia") {
     require_once($CFG->dirroot.'/mod/helixmedia/locallib.php');
     $settings->add(new admin_setting_heading('helixmedia/version_check', get_string("version_check_title", "mod_helixmedia"),
-    helixmedia_version_check()));
+        helixmedia_version_check()));
 }
+
 $settings->add(new admin_setting_heading('helixmedia/settings_header', get_string("lti_settings_title", "mod_helixmedia"),''));
 
 $settings->add(new admin_setting_configtext('helixmedia/launchurl', get_string("launch_url", "helixmedia"),
@@ -58,13 +58,5 @@ $settings->add(new admin_setting_configtext('helixmedia/modal_delay', get_string
 $settings->add(new admin_setting_configcheckbox('helixmedia/forcedebug', get_string('forcedebug', 'helixmedia'), get_string('forcedebug_help', 'helixmedia'), 0));
 
 $settings->add(new admin_setting_configcheckbox('helixmedia/restrictdebug', get_string('restrictdebug', 'helixmedia'), get_string('restrictdebug_help', 'helixmedia'), 1));
-
-if ($PAGE->pagetype=="admin-setting-modsettinghelixmedia") {
-
-    $settings->add(new admin_setting_heading('helixmedia/repo_migrate', get_string("repo_migrate_title", "mod_helixmedia"),
-        "<p>".get_string("repo_migrate_message", "mod_helixmedia")."</p>".
-        "<p style='text-align:center;font-weight:bold;'>".
-        "<a href='".$CFG->wwwroot."/mod/helixmedia/migrate.php'>".get_string("repo_migrate_link", "mod_helixmedia")."</a></p>"));
-}
 
 ?>

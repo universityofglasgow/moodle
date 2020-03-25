@@ -1,5 +1,5 @@
 <?php
-// This file is part of the customcert module for Moodle - http://moodle.org/
+// This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -15,13 +15,32 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Definition of sub-plugins.
+ * Attempt submitted event
  *
- * @package    mod_customcert
- * @copyright  2013 Mark Nelson <markn@moodle.com>
+ * @package    mod_hvp
+ * @copyright  2020 Joubel AS <contact@joubel.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace mod_hvp\event;
+
 defined('MOODLE_INTERNAL') || die();
 
-$subplugins = array('customcertelement' => 'mod/customcert/element');
+/**
+ * The mod_hvp instance list viewed event class.
+ *
+ * @package    mod_hvp
+ * @copyright  @copyright  2016 Joubel AS <contact@joubel.com>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class attempt_submitted extends \core\event\base
+{
+
+    /**
+     * @inheritDoc
+     */
+    protected function init() {
+        $this->data['crud'] = 'u';
+        $this->data['edulevel'] = self::LEVEL_PARTICIPATING;
+    }
+}

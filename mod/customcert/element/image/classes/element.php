@@ -382,14 +382,14 @@ class element extends \mod_customcert\element {
         // Loop through the files uploaded in the system context.
         if ($files = $fs->get_area_files(\context_system::instance()->id, 'mod_customcert', 'image', false, 'filename', false)) {
             foreach ($files as $hash => $file) {
-                $arrfiles[$file->get_id()] = $file->get_filename();
+                $arrfiles[$file->get_id()] = get_string('systemimage', 'customcertelement_image', $file->get_filename());
             }
         }
         // Loop through the files uploaded in the course context.
         if ($files = $fs->get_area_files(\context_course::instance($COURSE->id)->id, 'mod_customcert', 'image', false,
             'filename', false)) {
             foreach ($files as $hash => $file) {
-                $arrfiles[$file->get_id()] = $file->get_filename();
+                $arrfiles[$file->get_id()] = get_string('courseimage', 'customcertelement_image', $file->get_filename());
             }
         }
 
@@ -397,5 +397,58 @@ class element extends \mod_customcert\element {
         $arrfiles = array('0' => get_string('noimage', 'customcert')) + $arrfiles;
 
         return $arrfiles;
+    }
+
+    /**
+     * This handles copying data from another element of the same type.
+     *
+     * @param \stdClass $data the form data
+     * @return bool returns true if the data was copied successfully, false otherwise
+     */
+    public function copy_element($data) {
+        global $COURSE, $DB, $SITE;
+
+        $imagedata = json_decode($data->data);
+
+        // If we are in the site context we don't have to do anything, the image is already there.
+        if ($COURSE->id == $SITE->id) {
+            return true;
+        }
+
+        $coursecontext = \context_course::instance($COURSE->id);
+        $systemcontext = \context_system::instance();
+
+        $fs = get_file_storage();
+
+        // If the course file doesn't exist, copy the system file to the course context.
+        if (!$coursefile = $fs->get_file(
+            $coursecontext->id,
+            'mod_customcert',
+            $imagedata->filearea,
+            $imagedata->itemid,
+            $imagedata->filepath,
+            $imagedata->filename
+        )) {
+            $systemfile = $fs->get_file(
+                $systemcontext->id,
+                'mod_customcert',
+                $imagedata->filearea,
+                $imagedata->itemid,
+                $imagedata->filepath,
+                $imagedata->filename
+            );
+
+            // We want to update the context of the file if it doesn't exist in the course context.
+            $fieldupdates = [
+                'contextid' => $coursecontext->id
+            ];
+            $coursefile = $fs->create_file_from_storedfile($fieldupdates, $systemfile);
+        }
+
+        // Set the image to the copied file in the course.
+        $imagedata->fileid = $coursefile->get_id();
+        $DB->set_field('customcert_elements', 'data', $this->save_unique_data($imagedata), ['id' => $this->get_id()]);
+
+        return true;
     }
 }

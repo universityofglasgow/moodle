@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -16,19 +15,26 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * This file contains the version information for the helixassign submission plugin
+ * Defines message providers (types of message sent) for the hvp module.
  *
- * @package    assignsubmission_helixassign
- * @copyright Streaming LTD 2013
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package   mod_hvp
+ * @copyright 2020 Joubel AS <contact@joubel.com>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2020012101;
-$plugin->requires  = 2018051700;
-$plugin->component = 'assignsubmission_helixassign';
-$plugin->maturity = MATURITY_STABLE;
-$plugin->dependencies = array(
-    'mod_helixmedia' => '2020012101'
+$messageproviders = array(
+    // Notify teacher that a student has submitted an attempt.
+    'submission' => array(
+        'capability' => 'mod/hvp:emailnotifysubmission'
+    ),
+
+    // Confirm a student's quiz attempt.
+    'confirmation' => array(
+        'capability' => 'mod/hvp:emailconfirmsubmission',
+        'defaults' => array(
+            'airnotifier' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_LOGGEDIN + MESSAGE_DEFAULT_LOGGEDOFF,
+        ),
+    ),
 );

@@ -1113,7 +1113,8 @@ function attendance_renderqrcode($session) {
     global $CFG;
 
     if (strlen($session->studentpassword) > 0) {
-        $qrcodeurl = $CFG->wwwroot . '/mod/attendance/attendance.php?qrpass=' . $session->studentpassword . '&sessid=' . $session->id;
+        $qrcodeurl = $CFG->wwwroot . '/mod/attendance/attendance.php?qrpass=' .
+            $session->studentpassword . '&sessid=' . $session->id;
     } else {
         $qrcodeurl = $CFG->wwwroot . '/mod/attendance/attendance.php?sessid=' . $session->id;
     }
@@ -1136,7 +1137,8 @@ function attendance_generate_passwords($session) {
     $password = array();
 
     for ($i = 0; $i < 30; $i++) {
-        array_push($password, array("attendanceid" => $session->id, "password" => mt_rand(1000, 10000), "expirytime" => time() + ($attconfig->rotateqrcodeinterval * $i)));
+        array_push($password, array("attendanceid" => $session->id,
+            "password" => mt_rand(1000, 10000), "expirytime" => time() + ($attconfig->rotateqrcodeinterval * $i)));
     }
 
     $DB->insert_records('attendance_rotate_passwords', $password);
@@ -1148,8 +1150,7 @@ function attendance_generate_passwords($session) {
  * @param stdClass $session
  */
 function attendance_renderqrcoderotate($session) {
-    echo html_writer::tag('h3', get_string('qrcode', 'attendance'));
-    // load requered js
+    // Load required js.
     echo html_writer::tag('script', '',
         [
             'src' => 'js/qrcode/qrcode.min.js',
@@ -1162,12 +1163,17 @@ function attendance_renderqrcoderotate($session) {
             'type' => 'text/javascript'
         ]
     );
-    echo html_writer::tag('div', '', ['id' => 'qrcode']); // div to display qr code
-    // js to start the password manager
+    echo html_writer::tag('div', '', ['id' => 'rotate-time']); // Div to display timer.
+    echo html_writer::tag('h3', get_string('passwordgrp', 'attendance'));
+    echo html_writer::tag('div', '', ['id' => 'text-password']); // Div to display password.
+    echo html_writer::tag('h3', get_string('qrcode', 'attendance'));
+    echo html_writer::tag('div', '', ['id' => 'qrcode']); // Div to display qr code.
+    // Js to start the password manager.
     echo '
     <script type="text/javascript">
         let qrCodeRotate = new attendance_QRCodeRotate();
-        qrCodeRotate.start(' . $session->id . ', document.getElementById("qrcode"));
+        qrCodeRotate.start(' . $session->id . ', document.getElementById("qrcode"), document.getElementById("text-password"),
+        document.getElementById("rotate-time"));
     </script>';
 }
 

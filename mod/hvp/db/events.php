@@ -1,5 +1,5 @@
 <?php
-// This file is part of the customcert module for Moodle - http://moodle.org/
+// This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -15,15 +15,24 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * This file contains the version information for the image plugin.
+ * Add event handlers for H5P
  *
- * @package    customcertelement_image
- * @copyright  2013 Mark Nelson <markn@moodle.com>
+ * @package    mod_hvp
+ * @category   event
+ * @copyright  2020 Joubel AS <contact@joubel.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden.');
 
-$plugin->version   = 2019111800; // The current module version (Date: YYYYMMDDXX).
-$plugin->requires  = 2019111800; // Requires this Moodle version (3.8).
-$plugin->component = 'customcertelement_image';
+defined('MOODLE_INTERNAL') || die();
+
+$observers = array(
+
+    // Handle attempt submitted event, as a way to send confirmation messages asynchronously.
+    array(
+        'eventname'   => '\mod_hvp\event\attempt_submitted',
+        'includefile' => '/mod/hvp/locallib.php',
+        'callback'    => 'hvp_attempt_submitted_handler',
+        'internal'    => false
+    ),
+);
