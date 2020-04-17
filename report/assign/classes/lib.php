@@ -293,7 +293,7 @@ class lib {
             } else {
                 $profiledata[] = '-';
             }
-        }
+	}
 
         return $profiledata;
     }
@@ -526,8 +526,9 @@ class lib {
         // Feedbackplugins.
         $feedbackplugins = $assign->get_feedback_plugins();
 
-        // Profile fields.
-        $profilefields = explode(',', get_config('report_assign', 'profilefields'));
+	// Profile fields.
+	$profilecfg = get_config('report_assign', 'profilefields');
+	$profilefields = empty($profilecfg) ? [] : explode(',', $profilecfg);
 
         foreach ($submissions as $submission) {
             $userid = $submission->id;
@@ -568,7 +569,7 @@ class lib {
             $submission->urkund = self::get_urkund_score($assid, $cmid, $userid);
             $submission->turnitin = self::get_turnitin_score($assid, $cmid, $userid);
             $submission->files = self::get_submission_files($assign, $filesubmission, $usersubmission, $userid);
-            $submission->profiledata = self::get_profile_data($profilefields, $submission);
+	    $submission->profiledata = self::get_profile_data($profilefields, $submission);
 
             // User fields.
             $profilefields = explode(',', get_config('report_assign', 'profilefields'));

@@ -49,9 +49,11 @@
         {{# submissions }}
             <tr class="group_0 {{# groupids }}group_{{ . }} {{/ groupids}}">
                 <td>{{ fullname }}</td> 
-                {{# profiledata }}
-                    <td>{{ . }}</td>
-                {{/ profiledata }}
+                {{# showprofilefields }}
+                    {{# profiledata }}
+                        <td>{{ . }}</td>
+                    {{/ profiledata }}
+                {{/ showprofilefields }}
                 {{# groupselect }}
                     <td>{{ groups }}</td>
                 {{/ groupselect }}
