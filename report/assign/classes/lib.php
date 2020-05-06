@@ -535,7 +535,9 @@ class lib {
                 $submission->modified = '-';
                 $submission->status = '-';
                 $submission->grade = '-';
+                $submission->grader = '-';
             }
+            $submission->participantno = empty($submission->recordid) ? '-' : $submission->recordid;
             list($submission->groups, $submission->groupids) = self::get_user_groups($userid, $courseid);
             $submission->urkund = self::get_urkund_score($assid, $cmid, $userid);
             $submission->turnitin = self::get_turnitin_score($assid, $cmid, $userid);
@@ -662,6 +664,7 @@ class lib {
         $i = 0;
         $myxls->write_string(3, $i++, '#');
         $myxls->write_string(3, $i++, get_string('username'));
+        $myxls->write_string(3, $i++, get_string('participantno', 'report_assign'));
         foreach ($profilefields as $profilefield) {
             $myxls->write_string(3, $i++, get_string($profilefield));
         }
@@ -687,12 +690,16 @@ class lib {
 
         // Add some data.
         $row = 4;
+        $linecount = 1;
         foreach ($submissions as $s) {
             $i = 0;
-            $myxls->write_number($row, $i++, $row);
+            $myxls->write_number($row, $i++, $linecount++);
             $myxls->write_string($row, $i++, $s->fullname);
-            foreach ($s->profiledata as $value) {
-                $myxls->write_string($row, $i++, $value);
+            $myxls->write_string($row, $i++, $s->participantno);
+            if ($fields != '') {
+                foreach ($s->profiledata as $value) {
+                    $myxls->write_string($row, $i++, $value);
+                }
             }
             if ($groupmode) {
                 $myxls->write_string($row, $i++, $s->groups);
@@ -730,7 +737,8 @@ class lib {
         require_once($CFG->dirroot.'/lib/excellib.class.php');
 
         // Profile fields.
-        $profilefields = explode(',', get_config('report_assign', 'profilefields'));
+        $fields = get_config('report_assign', 'profilefields');
+        $profilefields = explode(',', $fields);
 
         // Plagiarism plugins?
         $isturnitin = !empty(\core_plugin_manager::instance()->get_plugin_info('plagiarism_turnitin'));
@@ -749,8 +757,11 @@ class lib {
         $myxls->write_string(1, $i++, '#');
         $myxls->write_string(1, $i++, get_string('assignmentname', 'report_assign'));
         $myxls->write_string(1, $i++, get_string('username'));
-        foreach ($profilefields as $profilefield) {
-            $myxls->write_string(1, $i++, get_string($profilefield));
+        $myxls->write_string(1, $i++, get_string('participantno', 'report_assign'));
+        if ($fields != '') {
+            foreach ($profilefields as $profilefield) {
+                $myxls->write_string(1, $i++, get_string($profilefield));
+            }
         }
         $myxls->write_string(1, $i++, get_string('groups'));
         $myxls->write_string(1, $i++, get_string('status'));
@@ -769,13 +780,17 @@ class lib {
 
         // Add some data.
         $row = 2;
+        $linecount = 1;
         foreach ($submissions as $s) {
             $i = 0;
-            $myxls->write_number($row, $i++, $row);
+            $myxls->write_number($row, $i++, $linecount++);
             $myxls->write_string($row, $i++, $s->assignmentname);
             $myxls->write_string($row, $i++, $s->fullname);
-            foreach ($s->profiledata as $value) {
-                $myxls->write_string($row, $i++, $value);
+            $myxls->write_string($row, $i++, $s->participantno);
+            if ($fields != '') {
+                foreach ($s->profiledata as $value) {
+                    $myxls->write_string($row, $i++, $value);
+                }
             }
             $myxls->write_string($row, $i++, isset($s->groups) ? $s->groups : '-');
             $myxls->write_string($row, $i++, $s->status);
