@@ -72,6 +72,7 @@ $templatecontext['extrascripts'] = $extraScripts;
 $templatecontext['notifications'] = $notiftext;
 //$templatecontext['breadcrumb'] = $breadcrumbLinks;
 $templatecontext['footerlinks'] = $footerLinkText;
+$templatecontext['starposturl'] = $starPostURL;
 
 $PAGE->requires->js_call_amd('theme_hillhead/starredcourses', 'init');
 

@@ -99,7 +99,7 @@
 
 {{#starrednavexists}}
 <h2>Starred Courses <span class="badgeHolder"><a class="sidebarBadge" href="#" id="rearrangeSidebar" style="display: none;">Edit</a><a class="sidebarBadge" href="#" id="saveSidebar" style="display: none;">Save</a></span></h2>
-<ul id="starredCourses" class="m-b-0">
+<ul id="starredCourses" class="m-b-0" save="{{{starposturl}}}">
 {{#starrednav}}
     <li courseid="{{courseid}}" {{{starredOrdering}}}>
         <a href="{{{action}}}">
@@ -136,7 +136,7 @@
 {{^starrednavexists}}
 <h2>Courses</h2>
 <ul>
-{{#starrednav}}
+{{#coursenav}}
     <li id="starredCourses">
         <a href="{{{action}}}">
             <div class="media">
@@ -149,7 +149,7 @@
             </div>
         </a>
     </li>
-{{/starrednav}}
+{{/coursenav}}
 </ul>
 {{/starrednavexists}}
 

@@ -48,6 +48,8 @@ if(!empty($hillheadHelpLink)) {
     $PAGE->flatnav->add($helpLinkFlat);
 }
 
+$starPostURL = new moodle_url('/theme/hillhead/starred.php');
+
 $flatnav = $PAGE->flatnav;
 
 $coursenav = Array();

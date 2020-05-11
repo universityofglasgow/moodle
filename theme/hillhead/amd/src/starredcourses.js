@@ -26,7 +26,7 @@ define(['jquery', 'jqueryui'], function($) {
                     courseOrder.push(new Number($(this).attr("courseid")));
                 });
                 
-                $.post('/theme/hillhead/starred.php', {o: courseOrder.join(',')});
+                $.post($("#starredCourses").attr("save"), {o: courseOrder.join(',')});
                 
                 $("#saveSidebar").hide();
                 $("#rearrangeSidebar").show();
