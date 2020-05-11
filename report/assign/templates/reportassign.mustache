@@ -21,6 +21,9 @@
 <table class="table table-striped">
     <thead>
         <th>{{# str }}username{{/ str }}</th>
+        {{# blindmarking }}
+            <th>{{# str }}participantno, report_assign{{/ str }}</th>
+        {{/ blindmarking }}
         {{# profilefields }}
             <th>{{{ . }}}</th>
         {{/ profilefields }}
@@ -48,6 +51,9 @@
         {{# submissions }}
             <tr class="group_0 {{# groupids }}group_{{ . }} {{/ groupids}}">
                 <td>{{ fullname }}</td>
+                {{# blindmarking }}
+                    <td>{{ participantno }}</td>
+                {{/ blindmarking }}
                 {{# profilefields }}
                     {{# profiledata }}
                         <td>{{ . }}</td>
