@@ -10,10 +10,12 @@
         
         $favourites = $userservice->find_favourites_by_type('core_course', 'courses', 0, 15);
         
-        usort($favourites, function($a, $b) {
-            if ($a->ordering == $b->ordering) return 0;
-            return ($a->ordering > $b->ordering) ? -1 : 1;
-        });
+        $rawStarredOrder = explode(",", get_user_preferences('theme_hillhead_starorder', ""));
+        $starredOrder = Array();
+        
+        foreach($rawStarredOrder as $index=>$course) {
+            $starredOrder[$course] = $index;
+        }
         
         foreach($favourites as $favourite) {
             
@@ -24,6 +26,10 @@
                 $thisCourseFlat->key = 'starredcourse-'.$favourite->itemid;
                 $thisCourseFlat->icon = new pix_icon('hillhead/starred', $thisCourseDetails->fullname, 'moodle');
                 $thisCourseFlat->type = 69;
+                if(array_key_exists($favourite->itemid, $starredOrder)) {
+                    $thisCourseFlat->starredOrdering = ' order="'.$starredOrder[$favourite->itemid].'"';
+                }
+                $thisCourseFlat->courseid = $favourite->itemid;
                 $PAGE->flatnav->add($thisCourseFlat);
             }
         }

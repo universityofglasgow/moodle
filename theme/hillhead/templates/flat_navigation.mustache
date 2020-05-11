@@ -98,10 +98,46 @@
 {{/settingsnavexists}}
 
 {{#starrednavexists}}
-<h2>Starred Courses</h2>
+<h2>Starred Courses <span class="badgeHolder"><a class="sidebarBadge" href="#" id="rearrangeSidebar" style="display: none;">Edit</a><a class="sidebarBadge" href="#" id="saveSidebar" style="display: none;">Save</a></span></h2>
+<ul id="starredCourses" class="m-b-0">
+{{#starrednav}}
+    <li courseid="{{courseid}}" {{{starredOrdering}}}>
+        <a href="{{{action}}}">
+            <div class="media">
+                {{#icon.pix}}
+                    <span class="media-left">
+                        {{#pix}}{{{icon.pix}}}, {{{icon.component}}}, {{{icon.alt}}}{{/pix}}
+                    </span>
+                {{/icon.pix}}
+                <span class="media-body">{{{text}}}</span>
+            </div>
+        </a>
+    </li>
+{{/starrednav}}
+</ul>
+<ul>
+{{#starrednavbottom}}
+    <li>
+        <a href="{{{action}}}" {{{starredOrdering}}} courseid="{{courseid}}">
+            <div class="media">
+                {{#icon.pix}}
+                    <span class="media-left">
+                        {{#pix}}{{{icon.pix}}}, {{{icon.component}}}, {{{icon.alt}}}{{/pix}}
+                    </span>
+                {{/icon.pix}}
+                <span class="media-body">{{{text}}}</span>
+            </div>
+        </a>
+    </li>
+{{/starrednavbottom}}
+</ul>
+{{/starrednavexists}}
+
+{{^starrednavexists}}
+<h2>Courses</h2>
 <ul>
 {{#starrednav}}
-    <li>
+    <li id="starredCourses">
         <a href="{{{action}}}">
             <div class="media">
                 {{#icon.pix}}
@@ -116,8 +152,6 @@
 {{/starrednav}}
 </ul>
 {{/starrednavexists}}
-
-
 
 {{#thiscoursenavexists}}
 <h2>Course Sections</h2>
