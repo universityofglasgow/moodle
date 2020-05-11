@@ -5,7 +5,7 @@ define(['jquery', 'jqueryui'], function($) {
             
             $("#starredCourses").each(function() {
                $(this).html($(this).children('li').sort(function(a, b){
-                    return ($(b).data('order')) < ($(a).data('order')) ? 1 : -1;
+                    return ($(b).attr('order')) < ($(a).attr('order')) ? 1 : -1;
                 }));
             });
             
