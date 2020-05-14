@@ -524,3 +524,20 @@ div#gridshadebox_content.absolute {
     color: #888;
     font-size: 0.9em;
 }
+
+.sidebarBadge {
+    float: right;
+    display: inline-block;
+    background-color: #577492;
+    color: $hillhead-side-bg;
+    text-transform: none;
+    padding: 4px 8px 2px 8px;
+    border-radius: 1em;
+    text-decoration: none;
+    margin-top: -4px;
+}
+
+.sidebarBadge:hover {
+    color: $hillhead-side-bg;
+    text-decoration: none;
+}

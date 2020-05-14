@@ -52,6 +52,7 @@ include('topnotifications.php');
 include('footerlinks.php');
 
 $templatecontext['starrednav'] = $starredCourses;
+$templatecontext['starrednavbottom'] = $starredCoursesBottom;
 $templatecontext['starrednavexists'] = $starredCoursesExists;
 $templatecontext['coursenav'] = $coursenav;
 $templatecontext['coursenavexists'] = $coursenavexists;
@@ -71,6 +72,9 @@ $templatecontext['extrascripts'] = $extraScripts;
 $templatecontext['notifications'] = $notiftext;
 //$templatecontext['breadcrumb'] = $breadcrumbLinks;
 $templatecontext['footerlinks'] = $footerLinkText;
+$templatecontext['starposturl'] = $starPostURL;
+
+$PAGE->requires->js_call_amd('theme_hillhead/starredcourses', 'init');
 
 echo $OUTPUT->render_from_template('theme_hillhead/columns2', $templatecontext);
 

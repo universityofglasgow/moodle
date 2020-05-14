@@ -48,6 +48,8 @@ if(!empty($hillheadHelpLink)) {
     $PAGE->flatnav->add($helpLinkFlat);
 }
 
+$starPostURL = new moodle_url('/theme/hillhead/starred.php');
+
 $flatnav = $PAGE->flatnav;
 
 $coursenav = Array();
@@ -69,7 +71,9 @@ $adminnav = Array();
 $adminnavexists = false;
 
 $starredCourses = Array();
+$starredCoursesBottom = Array();
 $starredCoursesExists = false;
+
 
 foreach($flatnav as $navitem) {
     
@@ -122,7 +126,7 @@ foreach($flatnav as $navitem) {
                     break;
                 case 'allcourses':
                     $coursenav[] = $navitem;
-                    $starredCourses[] = $navitem;
+                    $starredCoursesBottom[] = $navitem;
                     $coursenavexists = true;
                     break;
                 default:
