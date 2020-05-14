@@ -160,7 +160,8 @@ if ($assignid) {
 
     // Display report.
     $showparticipantnumber = $assignment->blindmarking && !$assign->is_blind_marking();
-    $reportassign = new report_assign\output\reportassign($course, $context, $fullurl, $submissions, $assignment, $showparticipantnumber);
+    $extensionsok = report_assign\lib::is_extension_allowed($assign);
+    $reportassign = new report_assign\output\reportassign($course, $context, $fullurl, $submissions, $assignment, $showparticipantnumber, $extensionsok);
     echo $output->render_reportassign($reportassign);
 
     // Trigger an assignment viewed event.

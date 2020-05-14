@@ -103,6 +103,17 @@ class lib {
     }
 
     /**
+     * Can extensions be granted for assignment
+     * @param object $assignment
+     * @return boolean
+     */
+    public static function is_extension_allowed($assignment) {
+        return ($assignment->get_instance()->duedate ||
+                $assignment->get_instance()->cutoffdate) &&
+                has_capability('mod/assign:grantextension', $assignment->get_context());
+    }
+
+    /**
      * Get Urkund score
      * If multiple scores, get the latest
      * @param int $assid
