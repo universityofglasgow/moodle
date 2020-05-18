@@ -24,8 +24,8 @@
 
 defined('MOODLE_INTERNAL') || die;
 
-$plugin->version   = 2020051500;
-$plugin->requires  = 2018051800;
+$plugin->version   = 2020051801;
+$plugin->requires  = 2018051700;
 $plugin->release   = '1.2.7';
 $plugin->component = 'report_assign';
 $plugin->maturity = MATURITY_STABLE;
