@@ -1,4 +1,3 @@
-assign/gradingtable.php:53:    /** @var boolean $hasgrantextension - Only do the capability check once for the entire table */
 <?php
 // This file is part of Moodle - http://moodle.org/
 //
@@ -23,7 +22,7 @@ assign/gradingtable.php:53:    /** @var boolean $hasgrantextension - Only do the
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die;
+defined('MOODLE_INTERNAL') || die;   
 
 /**
  * Assign functions
@@ -33,22 +32,81 @@ defined('MOODLE_INTERNAL') || die;
 class report_assign_external extends external_api {
 
     /**
-     * Describes the parameters for save_user_extensions
+     * Describes the parameters for get_user_flags
      * @return external_function_parameters
+     */
+    public static function get_user_flags_parameters() {
+        return new external_function_parameters(
+            array(
+                'assignmentid' => new external_value(PARAM_INT, 'Assignment instance id'),
+                'userid' => new external_value(PARAM_INT, 'User ID'),
+            )
+        );
+    }
+
+    /**
+     * Returns user flag information from assign_user_flags for the requested assignment ids
+     * @param int $assignmentid
+     * @param int $userid
+     * @return array flags
+     */
+    public static function get_user_flags($assignmentid, $userid) {
+        global $DB;
+        $params = self::validate_parameters(self::get_user_flags_parameters(),
+                        ['assignmentid' => $assignmentid, 'userid' => $userid]);
+
+        $userflag = [];
+        if ($flags = $DB->get_record('assign_user_flags', ['userid' => $userid, 'assignment' => $assignmentid])) {     
+            $userflag['id'] = $flags->id;
+            $userflag['userid'] = $flags->userid;
+            $userflag['locked'] = $flags->locked;
+            $userflag['mailed'] = $flags->mailed;
+            $userflag['extensionduedate'] = $flags->extensionduedate;
+            $userflag['workflowstate'] = $flags->workflowstate;
+            $userflag['allocatedmarker'] = $flags->allocatedmarker;            
+        } else {
+            $userflag['id'] = 0;
+            $userflag['userid'] = 0;
+            $userflag['locked'] = 0;
+            $userflag['mailed'] = 0;
+            $userflag['extensionduedate'] = 0;
+            $userflag['workflowstate'] = '';
+            $userflag['allocatedmarker'] = 0; 
+        }
+        error_log('UF: HERE' . print_r($userflag, true) );
+
+        return $userflag;
+    }
+
+    /**
+     * Describes the get_user_flags return value
+     * @return external_single_structure
      * @since  Moodle 2.6
      */
-    public static function save_user_extensions_parameters() {
+    public static function get_user_flags_returns() {
+        return new external_single_structure(
+                    array(
+                        'id'               => new external_value(PARAM_INT, 'user flag id'),
+                        'userid'           => new external_value(PARAM_INT, 'student id'),
+                        'locked'           => new external_value(PARAM_INT, 'locked'),
+                        'mailed'           => new external_value(PARAM_INT, 'mailed'),
+                        'extensionduedate' => new external_value(PARAM_INT, 'extension due date'),
+                        'workflowstate'    => new external_value(PARAM_ALPHA, 'marking workflow state', VALUE_OPTIONAL),
+                        'allocatedmarker'  => new external_value(PARAM_INT, 'allocated marker')
+                    )
+        );
+    }
+
+    /**
+     * Describes the parameters for save_user_extensions
+     * @return external_function_parameters
+     */
+    public static function save_user_extension_parameters() {
         return new external_function_parameters(
             array(
                 'assignmentid' => new external_value(PARAM_INT, 'The assignment id to operate on'),
-                'userids' => new external_multiple_structure(
-                    new external_value(PARAM_INT, 'user id'),
-                    '1 or more user ids',
-                    VALUE_REQUIRED),
-                'dates' => new external_multiple_structure(
-                    new external_value(PARAM_INT, 'dates'),
-                    '1 or more extension dates (timestamp)',
-                    VALUE_REQUIRED),
+                'userid' => new external_value(PARAM_INT, 'User ID'),
+                'date' => new external_value(PARAM_INT, 'Extension date (timestamp)')
             )
         );
     }
@@ -57,52 +115,48 @@ class report_assign_external extends external_api {
      * Grant extension dates to students for an assignment.
      *
      * @param int $assignmentid The id of the assignment
-     * @param array $userids Array of user ids to grant extensions to
-     * @param array $dates Array of extension dates
-     * @return array of warnings for each extension date that could not be granted
-     * @since Moodle 2.6
+     * @param int $userid
+     * @param int $date timestamp
+     * @return string new user date
      */
-    public static function save_user_extensions($assignmentid, $userids, $dates) {
-        global $CFG;
+    public static function save_user_extension($assignmentid, $userid, $date) {
+        global $CFG, $DB;
 
-        $params = self::validate_parameters(self::save_user_extensions_parameters(),
+        $params = self::validate_parameters(self::save_user_extension_parameters(),
                         array('assignmentid' => $assignmentid,
-                              'userids' => $userids,
-                              'dates' => $dates));
+                              'userid' => $userid,
+                              'date' => $date));
 
-        if (count($params['userids']) != count($params['dates'])) {
-            $detail = 'Length of userids and dates parameters differ.';
-            $warnings[] = self::generate_warning($params['assignmentid'],
-                                                 'invalidparameters',
-                                                 $detail);
+        if (!$flags = $DB->get_record('assign_user_flags', ['userid' => $userid, 'assignment' => $assignmentid])) {
+            $flags = new stdClass();
+            $flags->assignment = $assignmentid;
+            $flags->userid = $userid;
+            $flags->locked = 0;
+            $flags->extensionduedate = $date;
+            $flags->workflowstate = '';
+            $flags->allocatedmarker = 0;
 
-            return $warnings;
+            // The mailed flag can be one of 3 values: 0 is unsent, 1 is sent and 2 is do not send yet.
+            // This is because students only want to be notified about certain types of update (grades and feedback).
+            $flags->mailed = 2;
+
+            $fid = $DB->insert_record('assign_user_flags', $flags);
+        } else {
+            $flags->extensionduedate = $date;
+            $DB->update_record('assign_user_flags', $flags);
         }
 
-        list($assignment, $course, $cm, $context) = self::validate_assign($params['assignmentid']);
-
-        $warnings = array();
-        foreach ($params['userids'] as $idx => $userid) {
-            $duedate = $params['dates'][$idx];
-            if (!$assignment->save_user_extension($userid, $duedate)) {
-                $detail = 'User id: ' . $userid . ', Assignment id: ' . $params['assignmentid'] . ', Extension date: ' . $duedate;
-                $warnings[] = self::generate_warning($params['assignmentid'],
-                                                     'couldnotgrantextensions',
-                                                     $detail);
-            }
-        }
-
-        return $warnings;
+        $dateformat = get_string('strftimedatetimeshort', 'langconfig');
+        return userdate($date, $dateformat);
     }
 
     /**
      * Describes the return value for save_user_extensions
      *
-     * @return external_single_structure
-     * @since Moodle 2.6
+     * @return external_value
      */
-    public static function save_user_extensions_returns() {
-        return new external_warnings();
+    public static function save_user_extension_returns() {
+        return new external_value(PARAM_TEXT, 'user date');
     }
 
 }

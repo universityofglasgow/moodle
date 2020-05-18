@@ -24,7 +24,7 @@
 
 $functions = array(
 
-'mod_assign_save_user_extension' => array(
+'report_assign_save_user_extension' => array(
                 'classname' => 'report_assign_external',
                 'methodname' => 'save_user_extension',
                 'classpath' => 'report/assign/externallib.php',
@@ -32,5 +32,14 @@ $functions = array(
                 'type' => 'write',
                 'ajax' => true,
         ),
+
+'report_assign_get_user_flags' => array(
+            'classname' => 'report_assign_external',
+            'methodname' => 'get_user_flags',
+            'classpath' => 'report/assign/externallib.php',
+            'description' => 'Get user flags',
+            'type' => 'read',
+            'ajax' => true,
+    ),
 
 );

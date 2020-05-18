@@ -519,6 +519,8 @@ class lib {
 
         foreach ($submissions as $submission) {
             $userid = $submission->id;
+            $submission->assignmentid = $assid;
+            $submission->userid = $userid;
             $userflags = $assign->get_user_flags($userid, false);
             list($submission->workflow, $submission->marker) = self::get_workflow($userflags);
             if ($instance->teamsubmission) {

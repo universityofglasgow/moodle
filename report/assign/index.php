@@ -96,11 +96,11 @@ if ($exportall) {
 // Has a link been submitted?
 if ($assignid) {
 
-    // Filters.
-    $PAGE->requires->js_call_amd('report_assign/filter', 'init');
-
     // Create assignment object.
     $assign = \report_assign\lib::get_assign($course, $assignid);
+
+    // Javascript
+    $PAGE->requires->js_call_amd('report_assign/filter', 'init', [$assign->get_instance()->duedate]);
 
     // Participants.
     $submissions = $assign->list_participants_with_filter_status_and_group($group);
