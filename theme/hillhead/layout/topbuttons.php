@@ -3,9 +3,8 @@
     $topButtons = '<div class="btn-toolbar d-flex justify-content-between m-b-1">';
     
     $topButtons .= '<div class="btn-holder">';
-    
-    $coursecontext = get_context_instance(CONTEXT_COURSE, $COURSE->id);
-    
+        
+    $coursecontext = context_course::instance($COURSE->id);
     $usercontext = context_user::instance($USER->id);
     $ufservice = \core_favourites\service_factory::get_service_for_user_context($usercontext);
     
