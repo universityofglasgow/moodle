@@ -26,16 +26,10 @@ defined('MOODLE_INTERNAL') || die();
 
 user_preference_allow_ajax_update('drawer-open-nav', PARAM_ALPHA);
 require_once($CFG->libdir . '/behat/lib.php');
+require_once($CFG->dirroot . '/admin/tool/mobile/lib.php');
 
-if (isloggedin()) {
-    $navdraweropen = (get_user_preferences('drawer-open-nav', 'true') == 'true');
-} else {
-    $navdraweropen = false;
-}
-$extraclasses = [];
-if ($navdraweropen) {
-    $extraclasses[] = 'drawer-open-left';
-}
+include('extraclasses.php');
+
 $bodyattributes = $OUTPUT->body_attributes($extraclasses);
 $blockshtml = $OUTPUT->blocks('side-pre');
 $hasblocks = strpos($blockshtml, 'data-block=') !== false;
@@ -51,10 +45,38 @@ $templatecontext = [
     'hasregionmainsettingsmenu' => !empty($regionmainsettingsmenu)
 ];
 
-$OUTPUT->full_header = '<div><h1>Ass</h1></div>';
+include('navigation.php');
+include('accessibility.php');
+include('topnotifications.php');
+include('breadcrumb.php');
+include('footerlinks.php');
+include('topbuttons.php');
 
-$nav = $PAGE->flatnav;
-$templatecontext['flatnavigation'] = $nav;
-$templatecontext['firstcollectionlabel'] = $nav->get_collectionlabel();
+$templatecontext['starrednav'] = $starredCourses;
+$templatecontext['starrednavbottom'] = $starredCoursesBottom;
+$templatecontext['starrednavexists'] = $starredCoursesExists;
+$templatecontext['coursenav'] = $coursenav;
+$templatecontext['coursenavexists'] = $coursenavexists;
+$templatecontext['sitenav'] = $sitenav;
+$templatecontext['sitenavexists'] = $sitenavexists;
+$templatecontext['thiscoursenav'] = $thiscoursenav;
+$templatecontext['thiscoursenavexists'] = $thiscoursenavexists;
+$templatecontext['settingsnav'] = $settingsnav;
+$templatecontext['settingsnavexists'] = $settingsnavexists;
+$templatecontext['othernav'] = $othernav;
+$templatecontext['othernavexists'] = $othernavexists;
+$templatecontext['adminnav'] = $adminnav;
+$templatecontext['adminnavexists'] = $adminnavexists;
+$templatecontext['accessibilityText'] = $accTxt;
+$templatecontext['accessibilityButton'] = $accessibilityButton;
+$templatecontext['extrascripts'] = $extraScripts;
+$templatecontext['notifications'] = $notiftext;
+$templatecontext['breadcrumb'] = $breadcrumbLinks;
+$templatecontext['footerlinks'] = $footerLinkText;
+$templatecontext['starposturl'] = $starPostURL;
+$templatecontext['topbuttons'] = $topButtons;
+
+$PAGE->requires->js_call_amd('theme_hillhead/starredcourses', 'init');
+
 echo $OUTPUT->render_from_template('theme_hillhead/course', $templatecontext);
 

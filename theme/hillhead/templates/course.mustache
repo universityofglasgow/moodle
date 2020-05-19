@@ -59,16 +59,21 @@
     {{> theme_hillhead/navbar }}
 
     <div id="page" class="container-fluid">
+        {{{ accessibilityText }}}
+        
+        {{{ breadcrumb }}}
+    
         {{{ output.full_header }}}
-
-        <div id="page-content" class="not-card row pb-3">
+        <div id="page-content" class="row pb-3">
             <div id="region-main-box" class="col-12">
+                {{{ notifications }}}
                 
                 {{#hasregionmainsettingsmenu}}
                 <div id="region-main-settings-menu" class="d-print-none {{#hasblocks}}has-blocks{{/hasblocks}}">
                     <div> {{{ output.region_main_settings_menu }}} </div>
                 </div>
                 {{/hasregionmainsettingsmenu}}
+                {{{topbuttons}}}
                 <section id="region-main" {{#hasblocks}}class="has-blocks mb-3"{{/hasblocks}} aria-label="{{#str}}content{{/str}}">
 
                     {{#hasregionmainsettingsmenu}}
@@ -92,7 +97,7 @@
     {{> theme_hillhead/nav-drawer }}
     {{> theme_hillhead/footer }}
 </div>
-
+{{{ extrascripts }}}
 </body>
 </html>
 {{#js}}
