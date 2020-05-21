@@ -71,77 +71,40 @@ body.hillhead-spacing * {
     line-height: 2rem;
 }
 
-body.hillhead-contrast-yb {
-    background: #000 !important;
+@mixin accessibility-theme($class, $background, $foreground) {
+    
+    body.hillhead-#{$class} {
+        background: $background !important;
+    }
+    
+    body.hillhead-#{$class} * {
+        background: $background !important;
+        color: $foreground !important;
+        border-color: $foreground !important;
+        border-radius: 0 !important;
+        text-shadow: none !important;
+    }
+    
+    body.hillhead-#{$class} .video-js,
+    body.hillhead-#{$class} .vjs-poster,
+    body.hillhead-#{$class} .vjs-video,
+    body.hillhead-#{$class} .vjs-text-track-display,
+    body.hillhead-#{$class} .vjs-text-track-display > div {
+        background: transparent !important;
+    }
 }
 
-body.hillhead-contrast-yb * {
-    background: #000 !important;
-    color: #cc0 !important;
-    border-color: #cc0 !important;
-    border-radius: 0;
-    text-shadow: none !important;
-}
+@include accessibility-theme(contrast-yb, #cc0, #000);
 
-body.hillhead-contrast-by {
-    background: #ee6 !important;
-}
+@include accessibility-theme(contrast-by, #ee6, #111);
 
-body.hillhead-contrast-by * {
-    background: #ee6 !important;
-    color: #111 !important;
-    border-color: #111 !important;
-    border-radius: 0;
-    text-shadow: none !important;
-}
+@include accessibility-theme(contrast-wg, #666, #eee);
 
-body.hillhead-contrast-wg {
-    background: #666 !important;
-}
+@include accessibility-theme(contrast-bb, #B9D9EE, #111);
 
-body.hillhead-contrast-wg * {
-    background: #666 !important;
-    color: #eee !important;
-    border-color: #eee !important;
-    border-radius: 0;
-    text-shadow: none !important;
-}
+@include accessibility-theme(contrast-br, #EEB9B9, #111);
 
-body.hillhead-contrast-bb {
-    background: #B9D9EE !important;
-}
-
-body.hillhead-contrast-bb * {
-    background: #B9D9EE !important;
-    color: #111 !important;
-    border-color: #111 !important;
-    border-radius: 0;
-    text-shadow: none !important;
-}
-
-body.hillhead-contrast-br {
-    background: #EEB9B9 !important;
-}
-
-body.hillhead-contrast-br * {
-    background: #EEB9B9 !important;
-    color: #111 !important;
-    border-color: #111 !important;
-    border-radius: 0;
-    text-shadow: none !important;
-}
-
-body.hillhead-contrast-bw {
-    background: #f6f6f6 !important;
-}
-
-body.hillhead-contrast-bw * {
-    background: #f6f6f6 !important;
-    color: #111 !important;
-    border-color: #111 !important;
-    border-radius: 0;
-    text-shadow: none !important;
-}
+@include accessibility-theme(contrast-bw, #f6f6f6, #111);
 
 body.hillhead-contrast #nav-drawer {
     border-right-width: 1px;
