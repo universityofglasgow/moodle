@@ -46,6 +46,9 @@ define('BLOCKS_COURSE_OVERVIEW_DEFAULT_COURSES', '2');
 function block_course_overview_get_overviews($courses) {
     global $CFG;
 
+    // This is no longer supported
+    return array();
+
     // Tab may not have any courses.
     if (!$courses) {
         return array();
