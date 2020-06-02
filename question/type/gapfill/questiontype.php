@@ -39,6 +39,13 @@ require_once($CFG->dirroot . '/question/engine/lib.php');
 class qtype_gapfill extends question_type {
 
     /**
+     * @return bool whether the quiz statistics report can analyse
+     * all the student responses. See questiontypebase for more
+     */
+    public function can_analyse_responses() {
+          return false;
+    }
+    /**
      * data used by export_to_xml (among other things possibly
      * @return array
      */
@@ -174,7 +181,6 @@ class qtype_gapfill extends question_type {
          * value for the whole question. Value for
          * each gap can be only 0 or 1
          */
-        $ua = array_unique($gaps);
         $form->defaultmark = count($gaps);
         return parent::save_question($question, $form);
     }
@@ -184,7 +190,7 @@ class qtype_gapfill extends question_type {
      * @return void
      */
     public function find_standard_scripts() {
-        global $CFG, $PAGE;
+        global $PAGE;
         parent::find_standard_scripts();
         $PAGE->requires->js_call_amd('qtype_gapfill/dragdrop', 'init');
     }
@@ -218,7 +224,7 @@ class qtype_gapfill extends question_type {
          */
         $delim = self::get_delimit_array($delimitchars);
         $fieldregex = '/.*?\\' . $delim["l"] . '(.*?)\\' . $delim["r"] . '/';
-        $matches = array();
+        $matches = [];
         preg_match_all($fieldregex, $questiontext, $matches);
         return $matches[1];
     }
