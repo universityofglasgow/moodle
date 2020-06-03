@@ -82,8 +82,8 @@ class enhance_form extends \moodleform {
         }
 
         // College or School
-        $department = $mform->addElement('text', 'department', get_string('department', 'report_enhance'), ['size' => 80]);
-        $mform->setType('department', PARAM_ALPHA);
+        $department = $mform->addElement('text', 'department', get_string('department', 'report_enhance'), ['size' => 55, 'maxlength' => 50]);
+        $mform->setType('department', PARAM_TEXT);
         $mform->addRule('department', null, 'required', null, 'client');
         if ($request) {
             $department->setValue($request->department);

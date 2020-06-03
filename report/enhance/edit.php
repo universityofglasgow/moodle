@@ -76,7 +76,7 @@ if ($form->is_cancelled()) {
     $request->headline = $data->headline;
     $request->description = $data->description['text'];
     $request->benefits = $data->benefits['text'];
-    $request->department = $data->department;
+    $request->department = substr($data->department, 0, 50);
     $request->timemodified = time();
     if ($id) {
         $DB->update_record('report_enhance', $request);
