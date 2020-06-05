@@ -44,6 +44,7 @@ $string['notenrolled'] = 'Not enrolled';
 $string['notices'] = 'Notices';
 $string['nousers'] = 'No users to display';
 $string['notvisible'] = '<b>Automatic enrolment disabled!</b> This course is hidden.';
+$string['notpossible'] = 'Enrolment is "not possible" for this course';
 $string['oktoremove'] = 'Ok to unenrol users?';
 $string['oktorevert'] = 'Are you sure you want to unenrol all MyCampus users?';
 $string['page-report-guenrol-x'] = 'Any participation report';
