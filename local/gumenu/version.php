@@ -22,7 +22,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$plugin->version = 2017071400;
+$plugin->version = 2020052801;
 $plugin->requires = 2015050500;
 $plugin->description = 'GU custom course menu';
 $plugin->component = 'local_gumenu';

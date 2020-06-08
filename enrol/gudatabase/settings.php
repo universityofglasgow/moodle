@@ -102,6 +102,9 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configcheckbox('enrol_gudatabase/debugdb',
         get_string('debugdb', 'enrol_database'), get_string('debugdb_desc', 'enrol_database'), 0));
 
+    $settings->add(new admin_setting_configcheckbox('enrol_gudatabase/enforceenddate',
+        get_string('enforceenddate', 'enrol_gudatabase'), get_string('enforceenddate_desc', 'enrol_gudatabase'), 1));
+
     $settings->add(new admin_setting_configcheckbox('enrol_gudatabase/allowunenrol',
         get_string('allowunenrol', 'enrol_gudatabase'), get_string('allowunenrol_desc', 'enrol_gudatabase'), 0));
 

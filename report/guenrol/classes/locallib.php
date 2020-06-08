@@ -277,6 +277,9 @@ class locallib {
 
         if ($instances = $DB->get_records('enrol', array('courseid' => $course->id, 'enrol' => 'gudatabase'))) {
             foreach ($instances as $instance) {
+                if (!$plugin->enrolment_possible($course, $instance)) {
+                    mtrace(get_string('notpossible', 'report_guenrol'));
+                }
                 mtrace(get_string('processinginstance', 'enrol_gudatabase', $plugin->get_instance_name($instance)));
                 mtrace(get_string('syncusers', 'enrol_gudatabase'));
                 $plugin->enrol_course_users($course, $instance);

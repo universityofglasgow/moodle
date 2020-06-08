@@ -996,6 +996,11 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
      */
     public function enrolment_possible($course, $instance = null) {
 
+        // If option to enforce end date then check there is one
+        if ($this->get_config('enforceenddate') && !$course->enddate) {
+            return false;
+        }
+
         // Ignore hidden courses, unless customint6 = 1, in which case skip this check
         if (empty($instance->customint6) && !$course->visible) {
             return false;
@@ -1437,7 +1442,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
                     continue;
                 }
 
-		// If course is outside date range then do not enrol
+		        // If course is outside date range then do not enrol
                 if (($course->startdate > time()) || ($course->enddate < time())) {
                     continue;
                 }
@@ -1560,7 +1565,9 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         }
 
         if (empty($course->enddate)) {
-            $mform->addElement('html', '<div class="alert alert-warning">' . get_string('noenddatealert', 'enrol_gudatabase') . '</div>');
+            $link = new moodle_url('/course/edit.php', ['id' => $course->id]);
+            $mform->addElement('html', '<div class="alert alert-warning">' . get_string('noenddatealert', 'enrol_gudatabase') .
+                ' - <b><a href="' . $link . '">' . get_string('settings') . '</a></b></div>');
         }
 
         $mform->addElement('text', 'name', get_string('custominstancename', 'enrol'));
