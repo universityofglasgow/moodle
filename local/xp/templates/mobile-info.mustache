@@ -1,0 +1,49 @@
+{{=<% %>=}}
+<%> local_xp/mobile-css %>
+
+<style>
+.mma-xp-list ion-thumbnail img {
+    max-width: 80px;
+    max-height: 80px;
+    width: auto;
+    height: auto;
+    margin: auto;
+}
+
+.mma-xp-item-content {
+    align-self: flex-start;
+}
+.mma-xp-item-level p + p {
+    margin-top: 10px;
+}
+.mma-xp-item-level .name {
+    font-weight: bold;
+}
+</style>
+
+<%#tabs%>
+    <%> local_xp/mobile-tabs %>
+<%/tabs%>
+
+<%#instructions%>
+<ion-card>
+    <ion-item text-wrap><%{.}%></ion-item>
+</ion-card>
+<%/instructions%>
+
+<ion-list class="mma-xp-list" margin-bottom>
+    <%#levelsinfo.levels%>
+    <ion-card>
+    <ion-item class="mma-xp-item-level" text-wrap>
+        <ion-thumbnail item-start>
+            <%> local_xp/mobile-level-small %>
+        </ion-thumbnail>
+        <ion-label class="mma-xp-item-content">
+            <%#name%><p class="name"><% . %></p><%/name%>
+            <%#xprequired%><p>Requires: <%> local_xp/mobile-xp %></p><%/xprequired%>
+            <p class="desc"><% description %>&nbsp;</p>
+        </ion-label>
+    </ion-item>
+    </ion-card>
+    <%/levelsinfo.levels%>
+</ion-list>

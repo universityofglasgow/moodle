@@ -1,0 +1,56 @@
+.block_xp-xp .sign-img {
+    max-height: 100%;
+}
+.block_xp-xp .sign-img img {
+    border: none;
+    height: 18px;
+    margin: 0 3px;
+    padding: 0;
+    vertical-align: top;
+}
+.block_xp-level-progress .sign-img img {
+    margin-top: 1px;
+}
+
+.block_xp-group-ladder .grouppic {
+    margin-right: 3px;
+    max-height: 35px;
+}
+.dir-rtl .block_xp-group-ladder .grouppic {
+    margin-right: auto;
+    margin-left: 3px;
+}
+
+/**
+ * Grade filters.
+ */
+.block-xp-grade-filters-wrapper .filter-rules,
+.block-xp-grade-filters-wrapper .filters-list .filter > p {
+    margin-left: .5em;
+}
+
+/**
+ * Course rule.
+ */
+.local_xp-course-rule-widget .course-selected {
+    display: none;
+}
+.local_xp-course-rule-widget.has-course .course-selection {
+    display: none;
+}
+.local_xp-course-rule-widget.has-course .course-selected {
+    display: inline;
+}
+
+/**
+ * Grade item rule.
+ */
+.local_xp-grade-item-rule-widget .grade-item-selected {
+    display: none;
+}
+.local_xp-grade-item-rule-widget.has-grade-item .grade-item-selection {
+    display: none;
+}
+.local_xp-grade-item-rule-widget.has-grade-item .grade-item-selected {
+    display: inline;
+}
