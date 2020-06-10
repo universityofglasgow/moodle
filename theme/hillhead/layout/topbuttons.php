@@ -10,10 +10,10 @@
     
     if($ufservice->favourite_exists('core_course', 'courses', $COURSE->id, \context_course::instance($COURSE->id), 0)) {
         $starURL = new moodle_url('/theme/hillhead/course-unstar.php?id='.$COURSE->id);
-        $topButtons .= '<a class="btn btn-default m-r-1" href="'.$starURL.'"><i class="fa fa-star"></i> Unstar This Course</a>';
+        $topButtons .= '<a class="btn btn-default m-r-1" href="'.$starURL.'"><i class="fa fa-star"></i> Unstar<span class="d-none d-sm-inline"> This Course</span></a>';
     } else {
         $starURL = new moodle_url('/theme/hillhead/course-star.php?id='.$COURSE->id);
-        $topButtons .= '<a class="btn btn-default" href="'.$starURL.'"><i class="fa fa-star-o"></i> Star This Course</a>';
+        $topButtons .= '<a class="btn btn-default" href="'.$starURL.'"><i class="fa fa-star-o"></i> Star<span class="d-none d-sm-inline"> This Course</span></a>';
     }
     
     
@@ -25,14 +25,14 @@
     
         $settingsURL = new moodle_url('/course/edit.php?id='.$COURSE->id);
     
-        $topButtons .= '<a class="btn btn-primary m-r-1" href="'.$settingsURL.'"><i class="fa fa-gear"></i> Course Settings</a>';
+        $topButtons .= '<a class="btn btn-primary m-r-1" href="'.$settingsURL.'"><i class="fa fa-gear"></i> <span class="d-none d-sm-inline">Course </span>Settings</a>';
         
         $editURL = new moodle_url('/course/view.php?id='.$COURSE->id.'&sesskey='.$USER->sesskey);
         
         if($USER->editing) {
-            $topButtons .= '<a class="btn btn-success" href="'.$editURL.'&edit=off"><i class="fa fa-pencil"></i> Turn Editing Off</a>';
+            $topButtons .= '<a class="btn btn-success" href="'.$editURL.'&edit=off"><i class="fa fa-pencil"></i> <span class="d-none d-sm-inline">Turn </span>Editing Off</a>';
         } else {
-            $topButtons .= '<a class="btn btn-danger" href="'.$editURL.'&edit=on"><i class="fa fa-pencil"></i> Turn Editing On</a>';
+            $topButtons .= '<a class="btn btn-danger" href="'.$editURL.'&edit=on"><i class="fa fa-pencil"></i> <span class="d-none d-sm-inline">Turn </span>Editing On</a>';
         } 
         $topButtons .= '</div>';
     
