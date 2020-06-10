@@ -1,0 +1,35 @@
+{{=<% %>=}}
+<%#enabled%>
+<div class="mma-xp-tabs-bar header-md" margin-bottom>
+    <ion-grid no-padding>
+        <ion-row>
+            <ion-col no-padding>
+                <button ion-button clear full icon-left no-margin core-site-plugins-new-content component="local_xp" method="state_page" samePage="true" [args]="{courseid: <% courseid %>}" <%#stateactive%>active<%/stateactive%>>
+                    <ion-icon name="person"></ion-icon> <%#str%>mylevel, local_xp<%/str%>
+                </button>
+            </ion-col>
+            <%#hasinfo%>
+            <ion-col no-padding>
+                <button ion-button clear full icon-left no-margin core-site-plugins-new-content component="local_xp" method="info_page" samePage="true" [args]="{courseid: <% courseid %>}" <%#infoactive%>active<%/infoactive%>>
+                    <ion-icon name="ios-information-circle"></ion-icon> <%#str%>navinfos, block_xp<%/str%>
+                </button>
+            </ion-col>
+            <%/hasinfo%>
+            <%#hasladder%>
+            <ion-col no-padding>
+                <button ion-button clear full icon-left no-margin core-site-plugins-new-content component="local_xp" method="ladder_page" samePage="true" [args]="{courseid: <% courseid %>}" <%#ladderactive%>active<%/ladderactive%>>
+                    <ion-icon name="trophy"></ion-icon> <%#str%>ladder, block_xp<%/str%>
+                </button>
+            </ion-col>
+            <%/hasladder%>
+            <%#hasgroupladder%>
+            <ion-col no-padding>
+                <button ion-button clear full icon-left no-margin core-site-plugins-new-content component="local_xp" method="group_ladder_page" samePage="true" [args]="{courseid: <% courseid %>}" <%#groupladderactive%>active<%/groupladderactive%>>
+                    <ion-icon name="trophy"></ion-icon> <%#str%>navgroupladder, local_xp<%/str%>
+                </button>
+            </ion-col>
+            <%/hasgroupladder%>
+        </ion-row>
+    </ion-grid>
+</div>
+<%/enabled%>
