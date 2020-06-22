@@ -27,6 +27,9 @@ if ($hassiteconfig) {
             'local_corehr', get_string('pluginname', 'local_corehr'));
     $ADMIN->add('localplugins', $settings);
 
+    $settings->add(new admin_setting_heading('local_corehr/corehrws',
+        get_string('corehrwsheading', 'local_corehr'), ''));
+
     $settings->add(new admin_setting_configtext(
             'local_corehr/wsdltraining', get_string('wsdltraining', 'local_corehr'),
             get_string('configwsdltraining', 'local_corehr'), '', PARAM_URL));
@@ -42,4 +45,23 @@ if ($hassiteconfig) {
     $settings->add(new admin_setting_configpasswordunmask(
             'local_corehr/password', get_string('password', 'local_corehr'),
             '', '', PARAM_RAW));
+
+    $settings->add(new admin_setting_heading('local_corehr/campuscardws',
+            get_string('campuscardheading', 'local_corehr'), ''));
+
+    $settings->add(new admin_setting_configtext(
+            'local_corehr/campusendpoint', get_string('campusendpoint', 'local_corehr'),
+            get_string('configcampusendpoint', 'local_corehr'), '', PARAM_URL));
+
+    $settings->add(new admin_setting_configtext(
+            'local_corehr/campususername', get_string('campususername', 'local_corehr'),
+            get_string('configcampususername', 'local_corehr'), '', PARAM_ALPHANUM));
+
+    $settings->add(new admin_setting_configpasswordunmask(
+        'local_corehr/campuspassword', get_string('campuspassword', 'local_corehr'),
+        '', '', PARAM_RAW));
+
+    $settings->add(new admin_setting_configtext(
+            'local_corehr/campuscourseid', get_string('campuscourseid', 'local_corehr'),
+            get_string('configcampuscourseid', 'local_corehr'), '', PARAM_SEQUENCE));
 }
