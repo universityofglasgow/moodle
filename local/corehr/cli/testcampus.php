@@ -13,5 +13,6 @@ $config = get_config('local_corehr');
 $idnumber = isset($argv[2]) ? $argv[2] : 0;
 $campus = new \local_corehr\campus($config->campusendpoint, $config->campususername, $config->campuspassword, $idnumber);
 
-$result = $campus->get_status($argv[1]);
+//$result = $campus->get_status($argv[1]);
+$result = $campus->unban($argv[1]);
 var_dump($result);

@@ -104,5 +104,7 @@ class campus {
         curl_close($ch);
 
         list($headers, $body) = explode("\r\n\r\n", $return);
+
+        return json_decode($body);
     }
 }
