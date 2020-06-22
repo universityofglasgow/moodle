@@ -60,7 +60,7 @@ class campus {
             $idnumber = $this->idnumber;
         }
 
-        $ch = curl_init($this->endpoint . 'status/' . $idnumber);
+        $ch = curl_init($this->endpoint . 'campuscard/status/' . $idnumber);
         //curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/xml', $additionalHeaders));
         curl_setopt($ch, CURLOPT_HEADER, 1);
         curl_setopt($ch, CURLOPT_USERPWD, $this->username . ":" . $this->password);
@@ -71,6 +71,6 @@ class campus {
         $return = curl_exec($ch);
         curl_close($ch);
 
-        return $return;
+        return json_decode($return);
     }
 }
