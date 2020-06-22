@@ -71,6 +71,8 @@ class campus {
         $return = curl_exec($ch);
         curl_close($ch);
 
-        return json_decode($return);
+        list($headers, $body) = explode("\r\n\r\n", $return);
+
+        return json_decode($body);
     }
 }
