@@ -291,7 +291,7 @@ class api {
         // Assume student role id
         $studentroleid = 5;
 
-        if (!$user = $DB->get_record('user', ['username' => $guid, 'mnethostid'=>$CFG->mnet_localhost_id])) {
+        if (!$user = $DB->get_record('user', ['username' => $guid, 'mnethostid' => $CFG->mnet_localhost_id])) {
             return false;
         }
         if (!$courses = $DB->get_records('local_corehr', ['enrolallstaff' => 1])) {

@@ -32,13 +32,16 @@ class campus {
 
     protected $password = '';
 
+    protected $idnumber = 0;
+
     /**
      * Constructor
      */
-    public function __construct($endpoint, $username, $password) {
+    public function __construct($endpoint, $username, $password, $idnumber = 0) {
         $this->endpoint = $endpoint;
         $this->username = $username;
         $this->password = $password;
+        $this->idnumber = $idnumber;
     }
 
     /**
@@ -48,9 +51,13 @@ class campus {
     public function get_status($username) {
         global $DB;
 
-        $user = $DB->get_record('user', ['username' => $username], '*', MUST_EXIST);
-        if (!$idnumber = $user->idnumber) {
-            return false;
+        if (!$this->idnumber) {
+            $user = $DB->get_record('user', ['username' => $username], '*', MUST_EXIST);
+            if (!$idnumber = $user->idnumber) {
+                return false;
+            }
+        } else {
+            $idnumber = $this->idnumber;
         }
 
         $ch = curl_init($this->endpoint . 'status/' . $idnumber);
@@ -58,8 +65,8 @@ class campus {
         curl_setopt($ch, CURLOPT_HEADER, 1);
         curl_setopt($ch, CURLOPT_USERPWD, $this->username . ":" . $this->password);
         curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $payloadName);
+        //curl_setopt($ch, CURLOPT_POST, 1);
+        //curl_setopt($ch, CURLOPT_POSTFIELDS, $payloadName);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
         $return = curl_exec($ch);
         curl_close($ch);

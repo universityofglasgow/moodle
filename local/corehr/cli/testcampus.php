@@ -10,7 +10,8 @@ if (!array_key_exists(1, $argv)) {
 }
 
 $config = get_config('local_corehr');
-$campus = new \local_corehr\campus($config->campusendpoint, $config->campususername, $config->campuspassword);
+$idnumber = isset($argv[2]) ? $argv[2] : 0;
+$campus = new \local_corehr\campus($config->campusendpoint, $config->campususername, $config->campuspassword, $idnumber);
 
 $result = $campus->get_status($argv[1]);
 var_dump($result);
