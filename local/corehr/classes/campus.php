@@ -75,4 +75,34 @@ class campus {
 
         return json_decode($body);
     }
+
+    /**
+     * Unban user given username
+     * @param string $username
+     */
+    public function unban($username) {
+        global $DB;
+
+        if (!$this->idnumber) {
+            $user = $DB->get_record('user', ['username' => $username], '*', MUST_EXIST);
+            if (!$idnumber = $user->idnumber) {
+                return false;
+            }
+        } else {
+            $idnumber = $this->idnumber;
+        }
+
+        $ch = curl_init($this->endpoint . 'campuscard/unban/' . $idnumber);
+        //curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/xml', $additionalHeaders));
+        curl_setopt($ch, CURLOPT_HEADER, 1);
+        curl_setopt($ch, CURLOPT_USERPWD, $this->username . ":" . $this->password);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        //curl_setopt($ch, CURLOPT_POSTFIELDS, $payloadName);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+        $return = curl_exec($ch);
+        curl_close($ch);
+
+        list($headers, $body) = explode("\r\n\r\n", $return);
+    }
 }
