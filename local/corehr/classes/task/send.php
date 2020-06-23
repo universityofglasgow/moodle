@@ -48,6 +48,8 @@ class send extends \core\task\scheduled_task {
 
             // Attempt to send to Campus or CoreHR
             if ($status->coursecode == 'CAMPUS') {
+                $config = get_config('local_corehr');
+                $campus = new \local_corehr\campus($config->campusendpoint, $config->campususername, $config->campuspassword);
 
             } else {
                 $message = \local_corehr\api::send($status);
@@ -59,7 +61,7 @@ class send extends \core\task\scheduled_task {
                     $status->status = 'OK';
                 } else if (array_key_exists($message, $errors)) {
                     $permanent = $errors[$message];
-                    $status->error = $message;
+                    $status->error = substr($message, 0, 49);
                     if ($permanent) {
                         $status->status = 'error';
                     } else {

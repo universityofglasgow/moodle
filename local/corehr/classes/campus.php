@@ -107,13 +107,56 @@ class campus {
     }
 
     /**
+     * Are errors permanent?
+     * @param string $error 
+     * @return array
+     */
+    private function is_error_permanent($error) {
+        switch ($error) {
+            case 'INTERNAL_SERVER_ERROR':
+                return false;
+            case 'NOT_FOUND':
+                return true;
+            case 'REQUEST_TIMEOUT':
+                return false;
+            case 'RECORD_MANUALLY_BANNED':
+                return true;
+            case 'CURL_ERROR':
+                return false;
+            default:
+                return false;
+        }
+    }
+
+    /**
      * Send to campus
      * @param object $status db table record
      */
     public function send($status) {
         global $DB;
 
-        $response = unban($status->personnelno); 
+        $response = unban($status->personnelno);
+
+        // Deal sensibly with response
+        $message = trim($message->response);
+        $status->lasttry = time();
+        if ($message == 'OK') {
+            $status->status = 'OK';
+        } else {
+            $permanent = $this->is_error_permanent($message);
+            $status->error = substr($message . ' (' . $response->responseDescription . ')', 0, 49);
+            if ($permanent) {
+                $status->status = 'error';
+            } else {
+                $status->retrycount++;
+                \local_corehr\api::mtrace('local_corehr: Retry count for user ' . $status->userid . ' is now ' . $status->retrycount);
+                if ($status->retrycount > 12) {
+                    $status->status = 'timeout';
+                }
+            }
+        }
+
+        $DB->update_record('local_corehr_status', $status);
     }
 
 }
