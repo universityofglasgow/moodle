@@ -367,7 +367,7 @@ class api {
      * @param int $courseid
      * @return boolean
      */
-    protected function is_campus_course($courseid) {
+    protected static function is_campus_course($courseid) {
         $config = get_config('local_corehr');
         self::mtrace('Campus Card course(s) - ' . $config->campuscourseid);
         $ids = explode(',', $config->campuscourseid);
@@ -418,24 +418,24 @@ class api {
         // If we really want them to do it again then create a new course.
         if ($status = $DB->get_record('local_corehr_status', ['userid' => $userid, 'courseid' => $courseid, 'status' => 'OK'])) {
             self::log($user, $completion, $courseid, $coursecode, "Completed " . $status->id);
-            return true;
+        } else {
+
+            // Write details to status record
+            $status = new stdClass;
+            $status->userid = $userid;
+            $status->courseid = $courseid;
+            $status->personnelno = $user->idnumber;
+            $status->coursecode = $coursecode;
+            $status->completed = time();
+            $status->lasttry = time();
+            $status->retrycount = 0;
+            $status->status = 'pending';
+            $status->error = '';
+            $DB->insert_record('local_corehr_status', $status);
         }
 
-        // Write details to status record
-        $status = new stdClass;
-        $status->userid = $userid;
-        $status->courseid = $courseid;
-        $status->personnelno = $user->idnumber;
-        $status->coursecode = $coursecode;
-        $status->completed = time();
-        $status->lasttry = time();
-        $status->retrycount = 0;
-        $status->status = 'pending';
-        $status->error = '';
-        $DB->insert_record('local_corehr_status', $status);
-
         // Is this a campus card course?
-        if ($this->is_campus_course($courseid)) {
+        if (self::is_campus_course($courseid)) {
 
             // Write details to status record.
             // NOTE: Coursecode is just 'CAMPUS'
