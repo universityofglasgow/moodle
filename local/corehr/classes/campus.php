@@ -135,7 +135,7 @@ class campus {
     public function send($status) {
         global $DB;
 
-        $response = unban($status->personnelno);
+        $response = $this->unban($status->personnelno);
 
         // Deal sensibly with response
         $message = trim($message->response);
