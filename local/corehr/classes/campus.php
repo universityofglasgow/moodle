@@ -156,6 +156,7 @@ class campus {
             }
         }
 
+        \local_corehr\api::mtrace('updating campus card status ' . $status->status . ' ' . $status->error);
         $DB->update_record('local_corehr_status', $status);
     }
 

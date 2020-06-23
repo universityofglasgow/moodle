@@ -50,7 +50,7 @@ class send extends \core\task\scheduled_task {
             if ($status->coursecode == 'CAMPUS') {
                 $config = get_config('local_corehr');
                 $campus = new \local_corehr\campus($config->campusendpoint, $config->campususername, $config->campuspassword);
-
+                $campus->send($status);
             } else {
                 $message = \local_corehr\api::send($status);
 
