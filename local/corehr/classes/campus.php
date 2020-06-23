@@ -138,7 +138,7 @@ class campus {
         $response = $this->unban($status->personnelno);
 
         // Deal sensibly with response
-        $message = trim($message->response);
+        $message = trim($response->response);
         $status->lasttry = time();
         if ($message == 'OK') {
             $status->status = 'OK';
