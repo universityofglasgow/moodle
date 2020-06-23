@@ -12,5 +12,6 @@ if (!array_key_exists(1, $argv)) {
 $config = get_config('local_corehr');;
 $campus = new \local_corehr\campus($config->campusendpoint, $config->campususername, $config->campuspassword);
 
-$result = $campus->get_status($argv[1]);
+//$result = $campus->get_status($argv[1]);
+$result = $campus->unban($argv[1]);
 var_dump($result);
