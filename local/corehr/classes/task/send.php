@@ -46,24 +46,28 @@ class send extends \core\task\scheduled_task {
                 continue;
             }
 
-            // Attempt to send to CoreHR
-            $message = \local_corehr\api::send($status);
+            // Attempt to send to Campus or CoreHR
+            if ($status->coursecode == 'CAMPUS') {
 
-            // Deal sensibly with message
-            $message = trim($message);
-            $status->lasttry = time();
-            if ($message == 'OK') {
-                $status->status = 'OK';
-            } else if (array_key_exists($message, $errors)) {
-                $permanent = $errors[$message];
-                $status->error = $message;
-                if ($permanent) {
-                    $status->status = 'error';
-                } else {
-                    $status->retrycount++;
-                    \local_corehr\api::mtrace('local_corehr: Retry count for user ' . $status->userid . ' is now ' . $status->retrycount);
-                    if ($status->retrycount > 12) {
-                        $status->status = 'timeout';
+            } else {
+                $message = \local_corehr\api::send($status);
+
+                // Deal sensibly with message
+                $message = trim($message);
+                $status->lasttry = time();
+                if ($message == 'OK') {
+                    $status->status = 'OK';
+                } else if (array_key_exists($message, $errors)) {
+                    $permanent = $errors[$message];
+                    $status->error = $message;
+                    if ($permanent) {
+                        $status->status = 'error';
+                    } else {
+                        $status->retrycount++;
+                        \local_corehr\api::mtrace('local_corehr: Retry count for user ' . $status->userid . ' is now ' . $status->retrycount);
+                        if ($status->retrycount > 12) {
+                            $status->status = 'timeout';
+                        }
                     }
                 }
             }

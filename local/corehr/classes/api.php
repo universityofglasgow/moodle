@@ -363,6 +363,24 @@ class api {
     }
 
     /**
+     * Check if a course in list of campus card ones
+     * @param int $courseid
+     * @return boolean
+     */
+    protected function is_campus_course($courseid) {
+        $config = get_config('local_corehr');
+        $ids = explode(',', $config->campuscourseid);
+        foreach ($ids as $id) {
+            $id = trim($id);
+            if (intval($id) == $courseid) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * write completion data to CoreHR web service
      * @param int $courseid Course ID of completed course
      * @param int $userid User ID of completing user
@@ -414,6 +432,8 @@ class api {
         $status->status = 'pending';
         $status->error = '';
         $DB->insert_record('local_corehr_status', $status);
+
+        // Is this a campus card course?
 
         return;
     }

@@ -32,65 +32,53 @@ class campus {
 
     protected $password = '';
 
-    protected $idnumber = 0;
-
     /**
      * Constructor
      */
-    public function __construct($endpoint, $username, $password, $idnumber = 0) {
+    public function __construct($endpoint, $username, $password) {
         $this->endpoint = $endpoint;
         $this->username = $username;
         $this->password = $password;
-        $this->idnumber = $idnumber;
     }
 
     /**
      * Get campus card status given username (guid)
-     * @param string $username
+     * @param int $idnumber
      */
-    public function get_status($username) {
+    public function get_status($idnumber) {
         global $DB;
-
-        if (!$this->idnumber) {
-            $user = $DB->get_record('user', ['username' => $username], '*', MUST_EXIST);
-            if (!$idnumber = $user->idnumber) {
-                return false;
-            }
-        } else {
-            $idnumber = $this->idnumber;
-        }
 
         $ch = curl_init($this->endpoint . 'campuscard/status/' . $idnumber);
         //curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/xml', $additionalHeaders));
         curl_setopt($ch, CURLOPT_HEADER, 1);
         curl_setopt($ch, CURLOPT_USERPWD, $this->username . ":" . $this->password);
         curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-        //curl_setopt($ch, CURLOPT_POST, 1);
-        //curl_setopt($ch, CURLOPT_POSTFIELDS, $payloadName);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
         $return = curl_exec($ch);
+        $code = curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
+        $error = curl_error($ch);
         curl_close($ch);
 
-        list($headers, $body) = explode("\r\n\r\n", $return);
-
-        return json_decode($body);
+        if (($code == 200) && !$error) {
+            list($headers, $body) = explode("\r\n\r\n", $return);
+            return json_decode($body);
+        } else {
+            return [
+                'response' => 'CURL_ERROR',
+                'responseDescription' => $error,
+                'personID' => $idnumber,
+                'currentUserStatus' => '',
+                'HTTPCode' => $code
+            ];
+        }
     }
 
     /**
      * Unban user given username
-     * @param string $username
+     * @param string $idnumber
      */
-    public function unban($username) {
+    public function unban($idnumber) {
         global $DB;
-
-        if (!$this->idnumber) {
-            $user = $DB->get_record('user', ['username' => $username], '*', MUST_EXIST);
-            if (!$idnumber = $user->idnumber) {
-                return false;
-            }
-        } else {
-            $idnumber = $this->idnumber;
-        }
 
         $ch = curl_init($this->endpoint . 'campuscard/unban/' . $idnumber);
         //curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/xml', $additionalHeaders));
@@ -98,11 +86,34 @@ class campus {
         curl_setopt($ch, CURLOPT_USERPWD, $this->username . ":" . $this->password);
         curl_setopt($ch, CURLOPT_TIMEOUT, 30);
         curl_setopt($ch, CURLOPT_POST, 1);
-        //curl_setopt($ch, CURLOPT_POSTFIELDS, $payloadName);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
         $return = curl_exec($ch);
+        $code = curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
+        $error = curl_error($ch);
         curl_close($ch);
 
-        list($headers, $body) = explode("\r\n\r\n", $return);
+        if (($code == 200) && !$error) {
+            list($headers, $body) = explode("\r\n\r\n", $return);
+            return json_decode($body);
+        } else {
+            return [
+                'response' => 'CURL_ERROR',
+                'responseDescription' => $error,
+                'personID' => $idnumber,
+                'currentUserStatus' => '',
+                'HTTPCode' => $code
+            ];
+        }
     }
+
+    /**
+     * Send to campus
+     * @param object $status db table record
+     */
+    public function send($status) {
+        global $DB;
+
+        $response = unban($status->personnelno); 
+    }
+
 }
