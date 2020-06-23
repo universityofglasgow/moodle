@@ -369,6 +369,7 @@ class api {
      */
     protected function is_campus_course($courseid) {
         $config = get_config('local_corehr');
+        self::mtrace('Campus Card course(s) - ' . $config->campuscourseid);
         $ids = explode(',', $config->campuscourseid);
         foreach ($ids as $id) {
             $id = trim($id);
@@ -434,6 +435,24 @@ class api {
         $DB->insert_record('local_corehr_status', $status);
 
         // Is this a campus card course?
+        if ($this->is_campus_course($courseid)) {
+
+            // Write details to status record.
+            // NOTE: Coursecode is just 'CAMPUS'
+            $status = new stdClass;
+            $status->userid = $userid;
+            $status->courseid = $courseid;
+            $status->personnelno = $user->idnumber;
+            $status->coursecode = 'CAMPUS';
+            $status->completed = time();
+            $status->lasttry = time();
+            $status->retrycount = 0;
+            $status->status = 'pending';
+            $status->error = '';
+            $DB->insert_record('local_corehr_status', $status);
+
+            self::mtrace('Adding user to Campus Card queue. Userid = ' . $userid);
+        }
 
         return;
     }
