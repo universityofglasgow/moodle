@@ -181,9 +181,14 @@ nav.navbar .dropdown > a {
 }
 
 #nav-drawer ul li .media-left i {
-    width: 1.7em;
-    margin-right: 0.3em;
+    width: 24px;
+    margin-right: 8px;
     text-align: center;
+}
+
+#nav-drawer ul li .media-left img {
+    width: 16px;
+    margin-right: 16px;
 }
 
 #region-main {
