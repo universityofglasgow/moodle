@@ -59,7 +59,7 @@ $roles = get_assignable_roles($context);
 $studentrole = report_guid\lib::getstudentrole();
 
 // Form definition.
-$mform = new report_guid_courseuploadform(null, [
+$mform = new report_guid\forms\courseupload(null, [
     'id' => $courseid,
     'roles' => $roles,
     'studentroleid' => $studentrole ? $studentrole->id : 1,
@@ -73,6 +73,7 @@ if ($mform->is_cancelled()) {
     $roleid = $data->role;
     $firstcolumn = $data->firstcolumn;
     $addgroups = $data->addgroups;
+    $action = $data->action;
 
     // Get the data from the file.
     $filedata = $mform->get_file_content('csvfile');
@@ -95,6 +96,7 @@ if ($mform->is_cancelled()) {
     $createdcount = 0;
     $errorcount = 0;
     $existscount = 0;
+    $unenrolcount = 0;
 
     // Configuration.
     if (!$config = report_guid\lib::settings()) {
@@ -127,8 +129,28 @@ if ($mform->is_cancelled()) {
         // Notify...
         echo "<p><strong>'$usermatch'</strong> ";
 
-        // Does user exist in Moodle at all?
-        if (!$user = report_guid\lib::findmoodleuser($usermatch, $firstcolumn)) {
+        // Attempt to find user
+        $user = report_guid\lib::findmoodleuser($usermatch, $firstcolumn);
+
+        // If action=unenrol then we'll remove them if they exist
+        if ($action == 'unenrol') {
+            if ($user) {
+                $instances = $DB->get_records('enrol', ['courseid' => $courseid]);
+                foreach ($instances as $instance) {
+                    $plugin = enrol_get_plugin($instance->enrol);
+                    $plugin->unenrol_user($instance, $user->id);
+                }
+                $output->courseuploadnote('unenrolled', 'info', true);
+                $unenrolcount++;
+            } else {
+                $output->courseuploadnote('usernotfound', 'error', true);
+                $errorcount++;
+            }
+            continue;
+        }
+
+        // Try to create user if they don't exist
+        if (!$user) {
 
             // If they don't already exist then find in LDAP.
             if ($firstcolumn == 'guid') {
@@ -191,6 +213,9 @@ if ($mform->is_cancelled()) {
     echo "<li><strong>".get_string('countnewaccounts', 'report_guid', $createdcount)."</strong></li>";
     echo "<li><strong>".get_string('countexistingaccounts', 'report_guid', $existscount)."</strong></li>";
     echo "<li><strong>".get_string('counterrors', 'report_guid', $errorcount)."</strong></li>";
+    if ($action == 'unenrol') {
+        echo "<li><strong>".get_string('countunenrol', 'report_guid', $errorcount)."</strong></li>";
+    }
     echo "</ul>";
 
     $link = new moodle_url('/course/view.php', ['id' => $courseid]);

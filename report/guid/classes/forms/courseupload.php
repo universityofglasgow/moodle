@@ -23,9 +23,13 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace report_guid\forms;
+
 defined('MOODLE_INTERNAL') || die;
 
-class report_guid_courseuploadform extends moodleform {
+use \moodleform;
+
+class courseupload extends moodleform {
 
     public function definition() {
         global $CFG;
@@ -40,6 +44,10 @@ class report_guid_courseuploadform extends moodleform {
             'guid' => get_string('guidusername', 'report_guid'),
             'idnumber' => get_string('idnumber', 'report_guid'),
         );
+        $actions = [
+            'enrol' => get_string('enrol', 'report_guid'),
+            'unenrol' => get_string('unenrol', 'report_guid')
+        ];
 
         // File upload.
         $mform->addElement('header', 'guidcourseupload', get_string('uploadheader', 'report_guid' ) );
@@ -58,6 +66,12 @@ class report_guid_courseuploadform extends moodleform {
         // Add groups.
         $mform->addElement('selectyesno', 'addgroups', get_string('addgroups', 'report_guid'), 0);
         $mform->addHelpButton('addgroups', 'addgroups', 'report_guid');
+
+        // Unenrol
+        $mform->addElement('html', '<div class="alert alert-danger">' . get_string('unenrolwarn', 'report_guid') . '</div>');
+        $mform->addElement('select', 'action', get_string('uploadaction', 'report_guid'), $actions);
+        $mform->addHelpButton('action', 'uploadaction', 'report_guid');
+        $mform->setDefault('action', 'enrol');
 
         // Action buttons.
         $this->add_action_buttons(false, get_string('submitfile', 'report_guid'));
