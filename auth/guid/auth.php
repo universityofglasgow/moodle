@@ -27,6 +27,7 @@ if (!defined('MOODLE_INTERNAL')) {
 }
 
 require_once($CFG->dirroot.'/auth/ldap/auth.php' );
+require_once(dirname(__FILE__) . '/ldaputils.php');
 
 class auth_plugin_guid extends auth_plugin_ldap {
 
@@ -40,7 +41,7 @@ class auth_plugin_guid extends auth_plugin_ldap {
         $this->init_plugin($this->authtype);
 
         // stops notice when it isn't defined
-        // $this->config->start_tls = false;
+        //$this->config->start_tls = false;
     }
 
     /**
@@ -62,6 +63,35 @@ class auth_plugin_guid extends auth_plugin_ldap {
         } else {
             return '';
         }
+    }
+
+    /**
+     * Connect to the LDAP server, using the plugin configured
+     * settings. It's actually a wrapper around ldap_connect_moodle()
+     *
+     * @return resource A valid LDAP connection (or dies if it can't connect)
+     */
+    function ldap_connect() {
+        // Cache ldap connections. They are expensive to set up
+        // and can drain the TCP/IP ressources on the server if we
+        // are syncing a lot of users (as we try to open a new connection
+        // to get the user details). This is the least invasive way
+        // to reuse existing connections without greater code surgery.
+        if(!empty($this->ldapconnection)) {
+            $this->ldapconns++;
+            return $this->ldapconnection;
+        }
+
+        if($ldapconnection = guid_connect_moodle($this->config->host_url, $this->config->ldap_version,
+                                                 $this->config->user_type, $this->config->bind_dn,
+                                                 $this->config->bind_pw, $this->config->opt_deref,
+                                                 $debuginfo, $this->config->start_tls)) {
+            $this->ldapconns = 1;
+            $this->ldapconnection = $ldapconnection;
+            return $ldapconnection;
+        }
+
+        print_error('auth_ldap_noconnect_all', 'auth_ldap', '', $debuginfo);
     }
 
     /**
