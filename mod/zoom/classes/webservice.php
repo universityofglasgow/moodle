@@ -29,7 +29,7 @@ require_once($CFG->dirroot.'/lib/filelib.php');
 
 // Some plugins already might include this library, like mod_bigbluebuttonbn.
 // Hacky, but need to create whitelist of plugins that might have JWT library.
-// NOTE: Remove file_exists checks and the JWT library in mod when versions prior to Moodle 3.7 is no longer supported
+// NOTE: Remove file_exists checks and the JWT library in mod when versions prior to Moodle 3.7 is no longer supported.
 if (!class_exists('Firebase\JWT\JWT')) {
     if (file_exists($CFG->dirroot.'/lib/php-jwt/src/JWT.php')) {
         require_once($CFG->dirroot.'/lib/php-jwt/src/JWT.php');
@@ -42,8 +42,6 @@ if (!class_exists('Firebase\JWT\JWT')) {
     }
 }
 
-define('API_URL', 'https://api.zoom.us/v2/');
-
 /**
  * Web service class.
  *
@@ -52,6 +50,24 @@ define('API_URL', 'https://api.zoom.us/v2/');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class mod_zoom_webservice {
+
+    /**
+     * API base URL.
+     * @var string
+     */
+    const API_URL = 'https://api.zoom.us/v2/';
+
+    /**
+     * API calls: maximum number of retries.
+     * @var int
+     */
+    const MAX_RETRIES = 20;
+
+    /**
+     * API calls: maximum allowed retry wait time.
+     * @var int
+     */
+    const MAX_RETRY_WAIT = 60;
 
     /**
      * API key
@@ -84,6 +100,12 @@ class mod_zoom_webservice {
     protected static $userslist;
 
     /**
+     * Number of retries we've made for _make_call
+     * @var int
+     */
+    protected $makecallretries = 0;
+
+    /**
      * The constructor for the webservice class.
      * @throws moodle_exception Moodle exception is thrown for missing config settings.
      */
@@ -103,10 +125,10 @@ class mod_zoom_webservice {
             $this->recyclelicenses = $config->utmost;
         }
         if ($this->recyclelicenses) {
-            if (!empty($config->licensescount)) {
-                $this->numlicenses = $config->licensescount;
+            if (!empty($config->licensesnumber)) {
+                $this->numlicenses = $config->licensesnumber;
             } else {
-                throw new moodle_exception('errorwebservice', 'mod_zoom', '', get_string('zoomerr_licensescount_missing', 'zoom'));
+                throw new moodle_exception('errorwebservice', 'mod_zoom', '', get_string('zoomerr_licensesnumber_missing', 'zoom'));
             }
         }
     }
@@ -121,9 +143,35 @@ class mod_zoom_webservice {
      * @throws moodle_exception Moodle exception is thrown for curl errors.
      */
     protected function _make_call($url, $data = array(), $method = 'get') {
-        $url = API_URL . $url;
+        global $CFG;
+        $url = self::API_URL . $url;
         $method = strtolower($method);
-        $curl = new curl();
+        $proxyhost = get_config('mod_zoom', 'proxyhost');
+        $cfg = new stdClass();
+        if (!empty($proxyhost)) {
+            $cfg->proxyhost = $CFG->proxyhost;
+            $cfg->proxyport = $CFG->proxyport;
+            $cfg->proxyuser = $CFG->proxyuser;
+            $cfg->proxypassword = $CFG->proxypassword;
+            $cfg->proxytype = $CFG->proxytype;
+            // Parse string as host:port, delimited by a colon (:).
+            list($host, $port) = explode(':', $proxyhost);
+            // Temporarily set new values on the global $CFG.
+            $CFG->proxyhost = $host;
+            $CFG->proxyport = $port;
+            $CFG->proxytype = 'HTTP';
+            $CFG->proxyuser = '';
+            $CFG->proxypassword = '';
+        }
+        $curl = new curl(); // Create $curl, which implicitly uses the proxy settings from $CFG.
+        if (!empty($proxyhost)) {
+            // Restore the stored global proxy settings from above.
+            $CFG->proxyhost = $cfg->proxyhost;
+            $CFG->proxyport = $cfg->proxyport;
+            $CFG->proxyuser = $cfg->proxyuser;
+            $CFG->proxypassword = $cfg->proxypassword;
+            $CFG->proxytype = $cfg->proxytype;
+        }
         $payload = array(
             'iss' => $this->apikey,
             'exp' => time() + 40
@@ -145,12 +193,32 @@ class mod_zoom_webservice {
 
         $httpstatus = $curl->get_info()['http_code'];
         if ($httpstatus >= 400) {
-            if ($response) {
-                throw new moodle_exception('errorwebservice', 'mod_zoom', '', $response->message);
-            } else {
-                throw new moodle_exception('errorwebservice', 'mod_zoom', '', "HTTP Status $httpstatus");
+            switch($httpstatus) {
+                case 404:
+                    throw new zoom_not_found_exception($response->message);
+                case 429:
+                    $this->makecallretries += 1;
+                    if ($this->makecallretries > self::MAX_RETRIES) {
+                        throw new zoom_api_retry_failed_exception($response->message);
+                    }
+                    $timediff = strtotime($curl->get_info()['Retry-After']) - time();
+                    if ($timediff > self::MAX_RETRY_WAIT) {
+                        throw new zoom_api_retry_failed_exception($response->message);
+                    }
+                    debugging('Received 429 response, sleeping ' . strval($timediff) . ' seconds until next retry. Current retry: ' . $this->makecallretries);
+                    if ($timediff > 0) {
+                        sleep($timediff);
+                    }
+                    return _make_call($url, $data, $method);
+                default:
+                    if ($response) {
+                        throw new moodle_exception('errorwebservice', 'mod_zoom', '', $response->message);
+                    } else {
+                        throw new moodle_exception('errorwebservice', 'mod_zoom', '', "HTTP Status $httpstatus");
+                    }
             }
         }
+        $this->makecallretries = 0;
 
         return $response;
     }
@@ -180,6 +248,7 @@ class mod_zoom_webservice {
                 if ($numcalls > 0) {
                     $callresult = $this->_make_call($url, $data);
                     set_config('calls_left', $numcalls - 1, 'mod_zoom');
+                    // We can only do 1 report calls a second.
                     sleep(1);
                 }
             } else {
@@ -351,13 +420,18 @@ class mod_zoom_webservice {
         if (isset($zoom->alternative_hosts)) {
             $data['settings']['alternative_hosts'] = $zoom->alternative_hosts;
         }
+        if (isset($zoom->option_authenticated_users)) {
+            $data['settings']['meeting_authentication'] = (bool) $zoom->option_authenticated_users;
+        }
 
         if ($zoom->webinar) {
             $data['type'] = $zoom->recurring ? ZOOM_RECURRING_WEBINAR : ZOOM_SCHEDULED_WEBINAR;
         } else {
             $data['type'] = $zoom->recurring ? ZOOM_RECURRING_MEETING : ZOOM_SCHEDULED_MEETING;
-            $data['settings']['join_before_host'] = (bool) ($zoom->option_jbh);
             $data['settings']['participant_video'] = (bool) ($zoom->option_participants_video);
+            $data['settings']['join_before_host'] = (bool) ($zoom->option_jbh);
+            $data['settings']['waiting_room'] = (bool) ($zoom->option_waiting_room);
+            $data['settings']['mute_upon_entry'] = (bool) ($zoom->option_mute_upon_entry);
         }
 
         if ($data['type'] == ZOOM_SCHEDULED_MEETING || $data['type'] == ZOOM_SCHEDULED_WEBINAR) {
@@ -471,6 +545,7 @@ class mod_zoom_webservice {
      * @link https://zoom.github.io/api/#list-a-webinars-registrants
      */
     public function list_webinar_attendees($uuid) {
+        $uuid = $this->encode_uuid($uuid);
         $url = 'webinars/' . $uuid . '/registrants';
         return $this->_make_paginated_call($url, null, 'registrants');
     }
@@ -483,6 +558,7 @@ class mod_zoom_webservice {
      * @link https://zoom.github.io/api/#retrieve-a-webinar
      */
     public function get_metrics_webinar_detail($uuid) {
+        $uuid = $this->encode_uuid($uuid);
         return $this->_make_call('webinars/' . $uuid);
     }
 
@@ -490,9 +566,10 @@ class mod_zoom_webservice {
      * Get the participants who attended a meeting
      * @param string $meetinguuid The meeting or webinar's UUID.
      * @param bool $webinar Whether the meeting or webinar whose information you want is a webinar.
-     * @return stdClass The meeting report.
+     * @return array An array of meeting participant objects.
      */
     public function get_meeting_participants($meetinguuid, $webinar) {
+        $meetinguuid = $this->encode_uuid($meetinguuid);
         return $this->_make_paginated_call('report/' . ($webinar ? 'webinars' : 'meetings') . '/'
                                            . $meetinguuid . '/participants', null, 'participants');
     }
@@ -520,5 +597,26 @@ class mod_zoom_webservice {
             $uuids[] = $user->id;
         }
         return $uuids;
+    }
+
+    /**
+     * If the UUID begins with a ‘/’ or contains ‘//’ in it we need to double encode it when using it for API calls.
+     *
+     * See https://devforum.zoom.us/t/cant-retrieve-data-when-meeting-uuid-contains-double-slash/2776
+     *
+     * @param string $uuid
+     * @return string
+     */
+    public function encode_uuid($uuid) {
+        if (substr($uuid, 0, 1) === '/' || strpos($uuid, '//') !== false) {
+            // Use similar function to JS encodeURIComponent, see https://stackoverflow.com/a/1734255/6001.
+            $encodeuricomponent = function($str) {
+                $revert = array('%21' => '!', '%2A' => '*', '%27' => "'", '%28' => '(', '%29' => ')');
+                return strtr(rawurlencode($str), $revert);
+            };
+            $uuid = $encodeuricomponent($encodeuricomponent($uuid));
+        }
+
+        return $uuid;
     }
 }

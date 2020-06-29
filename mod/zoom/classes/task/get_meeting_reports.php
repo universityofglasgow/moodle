@@ -50,6 +50,12 @@ class get_meeting_reports extends \core\task\scheduled_task {
     const SIMILARNAME_THRESHOLD = 60;
 
     /**
+     * Used to determine if debugging is turned on or off for outputting messages.
+     * @var bool
+     */
+    public $debuggingenabled = false;
+
+    /**
      * Compare function for usort.
      * @param array $a One meeting/webinar object array to compare.
      * @param array $b Another meeting/webinar object array to compare.
@@ -64,36 +70,91 @@ class get_meeting_reports extends \core\task\scheduled_task {
     /**
      * Gets the meeting IDs from the queue, retrieve the information for each meeting, then remove the meeting from the queue.
      * @link https://zoom.github.io/api/#report-metric-apis
+     *
+     * @param string $paramstart    If passed, will find meetings starting on given date. Format is YYYY-MM-DD.
+     * @param string $paramend      If passed, will find meetings ending on given date. Format is YYYY-MM-DD.
+     * @param array $hostuuids      If passed, will find only meetings for given array of host uuids.
      */
-    public function execute() {
+    public function execute($paramstart = null, $paramend = null, $hostuuids = null) {
         global $CFG, $DB;
+
+        $config = get_config('mod_zoom');
+        if (empty($config->apikey)) {
+            mtrace('Skipping task - ', get_string('zoomerr_apikey_missing', 'zoom'));
+            return;
+        } else if (empty($config->apisecret)) {
+            mtrace('Skipping task - ', get_string('zoomerr_apisecret_missing', 'zoom'));
+            return;
+        }
         require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
         $service = new \mod_zoom_webservice();
 
+        $this->debuggingenabled = debugging();
+
+        $numcalls = $this->get_num_calls_left();
+        $this->debugmsg("Number of calls left: " . $numcalls);
+        if ($numcalls < 1) {
+            // If we run out of API calls here, there's no point in doing the next step, which requires API calls.
+            mtrace('Error: Zoom Report API calls have been exhausted.');
+            return;
+        }
+
         $starttime = get_config('mod_zoom', 'last_call_made_at');
+        if (empty($starttime)) {
+            // Zoom only provides data from 30 days ago.
+            $starttime = strtotime('-30 days');
+        }
 
         // Zoom requires this format when passing the to and from arguments.
         // Zoom just returns all the meetings from the day range instead of actual time range specified.
-        $end = gmdate('Y-m-d') . 'T' . gmdate('H:i:s') . 'Z';
-        $start = gmdate('Y-m-d', $starttime) . 'T' . gmdate('H:i:s', $starttime) . 'Z';
+        if (!empty($paramend)) {
+            $end = $paramend;
+        } else {
+            $endtime = time();
+            $end = gmdate('Y-m-d', $endtime) . 'T' . gmdate('H:i:s', $endtime) . 'Z';
+        }
+        if (!empty($paramstart)) {
+            $start = $paramstart;
+        } else {
+            $start = gmdate('Y-m-d', $starttime) . 'T' . gmdate('H:i:s', $starttime) . 'Z';
+        }
 
-        $activehostsuuids = $service->get_active_hosts_uuids($start, $end);
+        mtrace(sprintf('Finding meetings between %s to %s', $start, $end));
+
+        if (empty($hostuuids)) {
+            $this->debugmsg('Empty hostuuids, querying all hosts');
+            // Get all hosts.
+            $activehostsuuids = $service->get_active_hosts_uuids($start, $end);
+        } else {
+            $this->debugmsg('Hostuuids passed');
+            // Else we just want a specific hosts.
+            $activehostsuuids = $hostuuids;
+        }
         $allmeetings = array();
         $recordedallmeetings = true;
-        $cclehostrecords = $DB->get_records('zoom', null, '', 'id, host_id');
-        $cclehosts = array();
-        foreach ($cclehostrecords as $cclehostrecord) {
-            $cclehosts[] = $cclehostrecord->host_id;
-        }
+        $localhosts = $DB->get_records_menu('zoom', null, '', 'id, host_id');
+
+        mtrace("Processing " . count($activehostsuuids) . " active host uuids");
+
         // We are only allowed to use 1 report API call per second, sleep() calls are put into webservice.php.
         foreach ($activehostsuuids as $activehostsuuid) {
             // This API call returns information about meetings and webinars, don't need extra functionality for webinars.
             $usersmeetings = array();
-            if (in_array($activehostsuuid, $cclehosts)) {
-                $usersmeetings = $service->get_user_report($activehostsuuid, $start, $end);
+            if (in_array($activehostsuuid, $localhosts)) {
+                $this->debugmsg('Getting meetings for host uuid ' . $activehostsuuid);
+                try {
+                    $usersmeetings = $service->get_user_report($activehostsuuid, $start, $end);
+                } catch (\zoom_not_found_exception $e) {
+                    // Zoom API returned user not found for a user it said had,
+                    // meetings. Have to skip user.
+                    $this->debugmsg("Skipping $activehostsuuid because user does not exist on Zoom");
+                    continue;
+                }
             } else {
+                // Ignore hosts who hosted meetings outside of integration.
                 continue;
             }
+            $this->debugmsg(sprintf('Found %d meetings for user', count($usersmeetings)));
             foreach ($usersmeetings as $usermeeting) {
                 $allmeetings[] = $usermeeting;
             }
@@ -107,44 +168,25 @@ class get_meeting_reports extends \core\task\scheduled_task {
         // Sort all meetings based on start_time so that we know where to pick up again if we run out of API calls.
         usort($allmeetings, array(get_class(), 'cmp'));
 
+        mtrace("Processing " . count($allmeetings) . " meetings");
+
         foreach ($allmeetings as $meeting) {
-            if (!($DB->record_exists('zoom_meeting_details', array('uuid' => $meeting->uuid)))) {
-                // If meeting doesn't exist in the zoom database, the instance is deleted, and we don't need reports for these.
-                if (!($zoomrecord = $DB->get_record('zoom', array('meeting_id' => $meeting->id), '*', IGNORE_MULTIPLE))) {
-                    continue;
-                }
-
-                $meeting->zoomid = $zoomrecord->id;
-                $meeting->start_time = strtotime($meeting->start_time);
-                $meeting->end_time = strtotime($meeting->end_time);
-                $meeting->meeting_id = $meeting->id;
-                // Need to unset because id field in database means something different, we want it to autoincrement.
-                unset($meeting->id);
-
-                if ($this->get_num_calls_left() < 1) {
-                    mtrace('Error: Zoom Report API calls have been exhausted.');
-                    $recordedallmeetings = false;
+            if (!$this->process_meeting_reports($meeting, $service)) {
+                // If returned false, then ran out of API calls or got unrecoverable error.
+                // Try to pick up where we left off.
+                if (empty($paramstart) && empty($paramend) && empty($hostuuids)) {
+                    // Only want to resume if we were processing all reports.
+                    // Meeting start time has been converted to timestamp in process_meeting_reports().
                     set_config('last_call_made_at', $meeting->start_time - 1, 'mod_zoom');
-                    // Need to pick up from where you left off the last time the cron task ran.
-                    // This assumes that the meetings are returned in order of least recent to most recent.
-                    // According to Zoom support, this is the case.
-                    break;
                 }
-                $detailsid = $DB->insert_record('zoom_meeting_details', $meeting);
-                $iswebinar = $zoomrecord->webinar;
-                $participants = $service->get_meeting_participants($meeting->uuid, $iswebinar);
 
-                // Loop through each user to generate name->uids mapping.
-                list($names, $emails) = $this->get_enrollments($zoomrecord->course);
-
-                foreach ($participants as $rawparticipant) {
-                    $participant = $this->format_participant($rawparticipant, $detailsid, $names, $emails);
-                    $DB->insert_record('zoom_meeting_participants', $participant, false);
-                }
+                $recordedallmeetings = false;
+                break;
             }
         }
-        if ($recordedallmeetings) {
-            set_config('last_call_made_at', time(), 'mod_zoom');
+        if ($recordedallmeetings && empty($paramstart) && empty($paramend) && empty($hostuuids)) {
+            // All finished, so save the time that we set end time for the initial query.
+            set_config('last_call_made_at', $endtime, 'mod_zoom');
         }
     }
 
@@ -229,7 +271,6 @@ class get_meeting_reports extends \core\task\scheduled_task {
             'join_time' => strtotime($participant->join_time),
             'leave_time' => strtotime($participant->leave_time),
             'duration' => $participant->duration,
-            'attentiveness_score' => $participant->attentiveness_score
         );
     }
 
@@ -319,5 +360,126 @@ class get_meeting_reports extends \core\task\scheduled_task {
         } else {
             return false;
         }
+    }
+
+    /**
+     * Outputs finer grained debugging messaging if debug mode is on.
+     *
+     * @param $msg
+     */
+    public function debugmsg($msg) {
+        if ($this->debuggingenabled) {
+            mtrace($msg);
+        }
+    }
+
+    /**
+     * Saves meeting details and participants for reporting.
+     *
+     * @param array $meeting
+     * @param mod_zoom_webservice $service
+     * @return boolean
+     */
+    public function process_meeting_reports($meeting, \mod_zoom_webservice $service) {
+        global $DB;
+
+        $this->debugmsg(sprintf('Processing meeting %s|%s that occurred at %s',
+                $meeting->id, $meeting->uuid, $meeting->start_time));
+
+        // If meeting doesn't exist in the zoom database, the instance is deleted, and we don't need reports for these.
+        if (!($zoomrecord = $DB->get_record('zoom', array('meeting_id' => $meeting->id), '*', IGNORE_MULTIPLE))) {
+            mtrace('Meeting does not exist locally; skipping');
+            return true;
+        }
+
+        // Running update from cli/update_meeting_report.php pulls data from zoom_meeting_details, so no need to update.
+        $meeting->zoomid = $zoomrecord->id;
+        $meeting->start_time = strtotime($meeting->start_time);
+        $meeting->end_time = strtotime($meeting->end_time);
+        $meeting->meeting_id = $meeting->id;
+        // Need to unset because id field in database means something different, we want it to autoincrement.
+        unset($meeting->id);
+
+        // Insert or update meeting details.
+        if (!($DB->record_exists('zoom_meeting_details',
+                array('meeting_id' => $meeting->meeting_id, 'uuid' => $meeting->uuid)))) {
+            $this->debugmsg('Inserting zoom_meeting_details');
+            $detailsid = $DB->insert_record('zoom_meeting_details', $meeting);
+        } else {
+            // Details entry already exists, so update it.
+            $this->debugmsg('Updating zoom_meeting_details');
+            $detailsid = $DB->get_field('zoom_meeting_details', 'id',
+                    array('meeting_id' => $meeting->meeting_id, 'uuid' => $meeting->uuid));
+            $meeting->id = $detailsid;
+            $DB->update_record('zoom_meeting_details', $meeting);
+        }
+
+        if ($this->get_num_calls_left() < 1) {
+            mtrace('Error: Zoom Report API calls have been exhausted. Will resume later with meetings starting ' .
+                    date('r', $meeting->start_time - 1) . ' or later');
+            set_config('last_call_made_at', $meeting->start_time - 1, 'mod_zoom');
+            // Need to pick up from where you left off the last time the cron task ran.
+            return false;
+        }
+
+        try {
+            $participants = $service->get_meeting_participants($meeting->uuid, $zoomrecord->webinar);
+        } catch (\zoom_not_found_exception $ex) {
+            mtrace(sprintf('Warning: Cannot find meeting %s|%s; skipping', $meeting->meeting_id, $meeting->uuid));
+            return true;    // Not really a show stopping error.
+        }
+
+        // Loop through each user to generate name->uids mapping.
+        list($names, $emails) = $this->get_enrollments($zoomrecord->course);
+
+        $this->debugmsg(sprintf('Processing %d participants', count($participants)));
+
+        // Now try to insert participants, first drop any records for given
+        // meeting and then add. There is no unique key that we can use for
+        // knowing what users existed before.
+        try {
+            $transaction = $DB->start_delegated_transaction();
+
+            $count = $DB->count_records('zoom_meeting_participants', ['detailsid' => $detailsid]);
+            if (!empty($count)) {
+                $this->debugmsg(sprintf('Dropping previous records of %d participants', $count));
+                $DB->delete_records('zoom_meeting_participants', ['detailsid' => $detailsid]);
+            }
+
+            foreach ($participants as $rawparticipant) {
+                $this->debugmsg(sprintf('Working on %s (user_id: %d, uuid: %s)',
+                        $rawparticipant->name, $rawparticipant->user_id, $rawparticipant->id));
+                $participant = $this->format_participant($rawparticipant, $detailsid, $names, $emails);
+                $recordid = $DB->insert_record('zoom_meeting_participants', $participant, true);
+                $this->debugmsg('Inserted record ' . $recordid);
+            }
+
+            $transaction->allow_commit();
+        } catch (\dml_exception $exception) {
+            $transaction->rollback($exception);
+            mtrace('ERROR: Cannot insert zoom_meeting_participants: ' .
+                    $exception->getMessage());
+            return false;
+        }
+
+        $this->debugmsg('Finished updating meeting report');
+        return true;
+    }
+
+    /**
+     * Builds a string with key/value of given array.
+     *
+     * @param array $diff
+     * @return string
+     */
+    private function print_diffs($diff) {
+        $retval = '';
+        foreach ($diff as $key => $value) {
+            if (!empty($retval)) {
+                $retval .= ', ';
+            }
+            $retval .= "$key => $value";
+        }
+        return $retval;
     }
 }

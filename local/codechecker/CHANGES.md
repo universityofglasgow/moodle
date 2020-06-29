@@ -1,7 +1,12 @@
+Changes in version 2.9.6 (20200611) - June's Roentgenium
+--------------------------------------------------------
+- [PR#63](https://github.com/moodlehq/moodle-local_codechecker/pull/63): Make MOODLE_INTERNAL check declare() aware (Peter Burnett).
+- [PR#72](https://github.com/moodlehq/moodle-local_codechecker/pull/72): Minor php74 fixes and travis refactor.
+
 Changes in version 2.9.5 (20200401) - Poisson d'avril
 -----------------------------------------------------
 - CONTRIB-8024: Process all files as UTF-8 encoded (defined @ standard level).
-- CONTRIB-6175: Only process PHP file (defined @ standard level).
+- CONTRIB-6175: Only process PHP files (defined @ standard level).
 - [PR#69](https://github.com/moodlehq/moodle-local_codechecker/pull/69): Upgrade PHPCompatibility to 9.3.5+ (9fb3244).
 - CONTRIB-8031: Detect wrong uses of $PAGE and $OUTPUT in renderers and blocks (Tim Hunt).
 - MDLSITE-6093: Don't require MOODLE_INTERNAL check for pure 1-artifact (class, interface, trait) files.

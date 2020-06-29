@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -15,19 +16,19 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * version.php
+ * Chart line.
  *
- * @package   plagiarism_urkund
- * @author    Dan Marsden <dan@danmarsden.com>
- * @copyright 2011 onwards Dan Marsden
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    core
+ * @copyright  2016 Frédéric Massart - FMCorz.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+declare(strict_types=1);
+
+declare(ticks=1);
+
+namespace core;
+use this\is\that;
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version = 2019121900;
-$plugin->requires = 2018051700; // Requires 3.5.
-$plugin->cron     = 0; // Cron function no longer used.
-$plugin->component = 'plagiarism_urkund';
-$plugin->maturity  = MATURITY_STABLE;
-$plugin->release   = '3.8.1';
+class something { }

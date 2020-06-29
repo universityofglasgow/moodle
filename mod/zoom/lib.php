@@ -69,6 +69,14 @@ function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     global $CFG, $DB;
     require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
 
+    // Deals with password manager issues
+    $zoom->password = $zoom->meetingcode;
+    unset($zoom->meetingcode);
+
+    if (empty($zoom->requirepassword)) {
+        $zoom->password = '';
+    }
+
     $zoom->course = (int) $zoom->course;
 
     $service = new mod_zoom_webservice();
@@ -100,6 +108,15 @@ function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     // The object received from mod_form.php returns instance instead of id for some reason.
     $zoom->id = $zoom->instance;
     $zoom->timemodified = time();
+
+    // Deals with password manager issues
+    $zoom->password = $zoom->meetingcode;
+    unset($zoom->meetingcode);
+
+    if (empty($zoom->requirepassword)) {
+        $zoom->password = '';
+    }
+
     $DB->update_record('zoom', $zoom);
 
     $updatedzoomrecord = $DB->get_record('zoom', array('id' => $zoom->instance));
@@ -165,6 +182,15 @@ function populate_zoom_from_response(stdClass $zoom, stdClass $response) {
     }
     if (isset($response->settings->alternative_hosts)) {
         $newzoom->alternative_hosts = $response->settings->alternative_hosts;
+    }
+    if(isset($response->settings->mute_upon_entry)) {
+        $newzoom->option_mute_upon_entry = $response->settings->mute_upon_entry;
+    }
+    if(isset($response->settings->meeting_authentication)) {
+        $newzoom->option_authenticated_users = $response->settings->meeting_authentication;
+    }
+    if(isset($response->settings->waiting_room)) {
+        $newzoom->option_waiting_room = $response->settings->waiting_room;
     }
     $newzoom->timemodified = time();
 
@@ -334,26 +360,6 @@ function zoom_calendar_item_delete(stdClass $zoom) {
 }
 
 /* Gradebook API */
-
-/**
- * Is a given scale used by the instance of zoom?
- *
- * This function returns if a scale is being used by one zoom
- * if it has support for grading and scales.
- *
- * @param int $zoomid ID of an instance of this module
- * @param int $scaleid ID of the scale
- * @return bool true if the scale is used by the given zoom instance
- */
-function zoom_scale_used($zoomid, $scaleid) {
-    global $DB;
-
-    if ($scaleid and $DB->record_exists('zoom', array('id' => $zoomid, 'grade' => -$scaleid))) {
-        return true;
-    } else {
-        return false;
-    }
-}
 
 /**
  * Checks if scale is being used by any instance of zoom.
