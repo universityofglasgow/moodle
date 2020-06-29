@@ -1,4 +1,4 @@
-define(['jquery', 'jqueryui'], function($) {
+define(['jquery', 'jqueryui', 'theme_hillhead/jquery.ui.touch-punch-improved'], function($) {
  
     return {
         init: function() {
