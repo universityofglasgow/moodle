@@ -81,12 +81,13 @@ class campus {
         global $DB;
 
         $ch = curl_init($this->endpoint . 'campuscard/unban/' . $idnumber);
-        //curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/xml', $additionalHeaders));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json', 'Expect:'));
         curl_setopt($ch, CURLOPT_HEADER, 1);
         curl_setopt($ch, CURLOPT_USERPWD, $this->username . ":" . $this->password);
         curl_setopt($ch, CURLOPT_TIMEOUT, 30);
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, '');
         $return = curl_exec($ch);
         $code = curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
         $error = curl_error($ch);
@@ -134,6 +135,15 @@ class campus {
      */
     public function send($status) {
         global $DB;
+
+        if (!$status->personnelno) {
+            $status->status = 'error';
+            $status->error = 'Empty personnel no';
+            \local_corehr\api::mtrace('updating campus card status ' . $status->status . ' ' . $status->error);
+            $DB->update_record('local_corehr_status', $status);
+
+            return;
+        }
 
         $response = $this->unban($status->personnelno);
 
