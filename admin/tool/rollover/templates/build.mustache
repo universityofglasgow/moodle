@@ -1,0 +1,24 @@
+<div class="card">
+  <div class="card-body">
+    <h5 class="card-title">{{# str }}currentstatus, tool_rollover{{/ str }}</h5>
+
+    <div class="row">
+        <div class="col">{{# str }}countwaiting, tool_rollover{{/ str }}</div>
+        <div class="col">{{ countwaiting }}</div>
+    </div>
+    <div class="row">
+        <div class="col">{{# str }}countbackup, tool_rollover{{/ str }}</div>
+        <div class="col">{{ countbackup}}</div>
+    </div>
+    <div class="row">
+        <div class="col">{{# str }}countrestore, tool_rollover{{/ str }}</div>
+        <div class="col">{{ countrestore }}</div>
+    </div>
+
+    <div class="alert alert-primary m-t-2">{{# str }}buildhelp, tool_rollover, {{{ urlsettings }}}{{/ str }}</div>
+
+    <div class="m-t-2">
+        <a href="{{{ urlbuild }}}" class="btn btn-warning btn-lg">Populate database</a>
+    </div>
+  </div>
+</div>

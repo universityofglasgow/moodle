@@ -1,0 +1,79 @@
+{{=<% %>=}}
+
+<%> local_xp/mobile-css %>
+
+<style>
+.mma-xp-level-name {
+    font-weight: bold;
+}
+.mma-xp-state .card img {
+    width: auto;
+}
+</style>
+
+<%#tabs%>
+    <%> local_xp/mobile-tabs %>
+<%/tabs%>
+
+<div class="mma-xp-state" margin-bottom>
+    <ion-card>
+        <ion-item>
+            <div class="mma-xp-level-and-progress">
+                <%#state.level%>
+                    <%> local_xp/mobile-level %>
+                <%/state.level%>
+
+                <%#state.level.name%>
+                    <div padding class="mma-xp-level-name"><% . %></div>
+                <%/state.level.name%>
+
+                <div padding>
+                    <%#state.xp%>
+                        <%> local_xp/mobile-xp %>
+                    <%/state.xp%>
+                </div>
+
+                <div class="mma-xp-progress">
+                    <progress min="0" max="100" value="<% percentage %>" class="mma-xp-progress-bar">
+                        <div class="progress-bar-fallback" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="<% percentage %>">
+                            <span style="width: <% percentage %>%;"></span>
+                        </div>
+                    </progress>
+                    <div class="togo">
+                        <%#xptogo%>
+                            <%> local_xp/mobile-xp %>
+                        <%/xptogo%>
+                    </div>
+                </div>
+
+            </div>
+        </ion-item>
+    </ion-card>
+
+    <%#setup.block.description%>
+    <ion-card>
+        <ion-item text-wrap>
+            <p><% . %></p>
+        </ion-item>
+    </ion-card>
+    <%/setup.block.description%>
+
+    <%#showactivity%>
+    <ion-card>
+        <ion-list-header><%#str%>recentrewards, block_xp<%/str%></ion-list-header>
+
+        <%#activity%>
+            <ion-item class="mma-xp-item-activity">
+                <div item-start>
+                    <%#xp%>
+                        <%> local_xp/mobile-xp %>
+                    <%/xp%>
+                </div>
+                <p><% desc %></p>
+                <ion-note item-end><% timeago %></ion-note>
+            </ion-item>
+        <%/activity%>
+
+    </ion-card>
+    <%/showactivity%>
+</div>
