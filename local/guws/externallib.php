@@ -399,4 +399,111 @@ class local_guws_external extends external_api {
         return $results;
     }
 
+    /**
+     * Parameter definition for alarmbell query
+     * @return external_funtion_parameters
+     */
+    public static function alarmbell_query_parameters() {
+        error_log(print_r($_POST, true));
+        return new external_function_parameters([
+            'guids' => new external_multiple_structure(
+                new external_value(PARAM_TEXT, 'GUID')
+            ),
+            'eventnames' => new external_multiple_structure(
+                new external_value(PARAM_TEXT, 'Event name')
+            )
+        ]);
+    }
+
+    /**
+     * Return definition for alarmbell query
+     * @returns external_multiple_structure
+     */
+    public static function alarmbell_query_returns() {
+        return new external_multiple_structure(
+            new external_single_structure([
+                'id' => new external_value(PARAM_INT, 'Logs record ID'),
+                'guid' => new external_value(PARAM_TEXT, 'GUID'),
+                'eventname' => new external_value(PARAM_TEXT, 'Event name'),
+                'courseid' => new external_value(PARAM_INT, 'Moodle course id'),
+                'timecreated' => new external_value(PARAM_INT, 'Timestamp when logged'),
+                'ip' => new external_value(PARAM_TEXT, 'Origin IP address'),
+            ])
+        );
+    }
+
+    /**
+     * Alarm Bell Query
+     * @param array $guids
+     * @param array $eventnames
+     */
+    public static function alarmbell_query($guids, $eventnames) {
+        global $CFG, $DB;
+
+        // Check params
+        $params = self::validate_parameters(self::alarmbell_query_parameters(), ['guids' => $guids, 'eventnames' => $eventnames]);
+
+        // Get userids from guid
+        $userids = [];
+        foreach ($guids as $guid) {
+            if ($user = $DB->get_record('user', ['username' => $guid, 'mnethostid' => $CFG->mnet_localhost_id])) {
+                $userids[] = $user->id;
+            }
+        }
+
+        // If no users then no data
+        if (!userids) {
+            return [];
+        }
+
+        // Get log data
+        list($useridsql, $useridparams) = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED);
+        list($eventsql, $eventparams) = $DB->get_in_or_equal($eventnames, SQL_PARAMS_NAMED);
+        $sql = "SELECT lsl.id, uu.username AS guid, lsl.eventname, lsl.courseid, lsl.timecreated, lsl.ip from {logstore_standard_log} lsl
+            JOIN {user} uu ON uu.id = lsl.userid
+            WHERE userid $useridsql
+            AND eventname $eventsql";
+        $logs = $DB->get_records_sql($sql, $useridparams + $eventparams);
+
+        return $logs;
+    }
+
+    /**
+     * Parameter definition for portal_courses
+     * @return external_funtion_parameters
+     */
+    public static function portal_courses_parameters() {
+        return new external_function_parameters([
+            'guid' => new external_value(PARAM_TEXT, 'GUID'),
+            'maxresults' => new external_value(PARAM_INT, 'Maximum number of results required')
+        ]);
+    }
+
+    /**
+     * Return definition for portal_courses
+     * @returns external_multiple_structure
+     */
+    public static function portal_courses_returns() {
+        return new external_multiple_structure(
+            new external_single_structure([
+                'guid' => new external_value(PARAM_TEXT, 'GUID'),
+                'name' => new external_value(PARAM_TEXT, 'Course full name'),
+                'shortname' => new external_value(PARAM_TEXT, 'Course short name'),
+                'courseid' => new external_value(PARAM_INT, 'Moodle course id'),
+                'starred' => new external_value(PARAM_BOOL, 'Course is starred'),
+                'visible' => new external_value(PARAM_BOOL, 'Course is visible to students'),
+                'lastvisit' => new external_value(PARAM_INT, 'Last visited (timestamp)'),
+                'timecreated' => new external_value(PARAM_INT, 'Timestamp when logged'),
+            ])
+        );
+    }
+
+    /**
+     * `portal courses
+     * @param array $guids
+     * @param array $eventnames
+     */
+    public static function portal_courses($guids, $eventnames) {
+
+    }
 }
