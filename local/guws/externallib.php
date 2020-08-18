@@ -470,7 +470,7 @@ class local_guws_external extends external_api {
 
     /**
      * Parameter definition for portal_courses
-     * @return external_funtion_parameters
+     * @return external_function_parameters
      */
     public static function portal_courses_parameters() {
         return new external_function_parameters([
@@ -486,24 +486,101 @@ class local_guws_external extends external_api {
     public static function portal_courses_returns() {
         return new external_multiple_structure(
             new external_single_structure([
-                'guid' => new external_value(PARAM_TEXT, 'GUID'),
                 'name' => new external_value(PARAM_TEXT, 'Course full name'),
                 'shortname' => new external_value(PARAM_TEXT, 'Course short name'),
                 'courseid' => new external_value(PARAM_INT, 'Moodle course id'),
                 'starred' => new external_value(PARAM_BOOL, 'Course is starred'),
                 'visible' => new external_value(PARAM_BOOL, 'Course is visible to students'),
                 'lastvisit' => new external_value(PARAM_INT, 'Last visited (timestamp)'),
-                'timecreated' => new external_value(PARAM_INT, 'Timestamp when logged'),
             ])
         );
     }
 
     /**
      * `portal courses
-     * @param array $guids
-     * @param array $eventnames
+     * @param string $guid
+     * @param int $maxresults
      */
-    public static function portal_courses($guids, $eventnames) {
+    public static function portal_courses($guid, $maxresults) {
+        global $CFG, $DB;
 
+         // Check params
+        $params = self::validate_parameters(self::portal_courses_parameters(), ['guid' => $guid, 'maxresults' => $maxresults]);
+
+        // Find userid from GUID
+        if (!$user = $DB->get_record('user', ['username' => $guid, 'mnethostid' => $CFG->mnet_localhost_id])) {
+            return [];
+        }
+
+         // Get student's courses
+        $fields = ['id', 'fullname', 'shortname', 'visible'];
+        $courses = enrol_get_all_users_courses($user->id, false, $fields);
+        if (!$courses) {
+            return [];
+        }
+
+        // Get starred courses
+        $starorder = $DB->get_record('user_preferences', ['userid' => $user->id, 'name' => 'theme_hillhead_starorder']);
+        if ($starorder) {
+            $stars = explode(',', $starorder->value);
+        } else {
+            $stars = null;
+        }
+
+        // Build additional course data 
+        foreach ($courses as $course) {
+            if ($lastaccess = $DB->get_record('user_lastaccess', ['userid' => $user->id, 'courseid' => $course->id])) {
+                $course->lastaccess = $lastaccess->timeaccess;
+            } else {
+                $course->lastaccess = 0;
+            }
+
+            // ...because there's an index...
+            $context = context_course::instance($course->id);
+            if ($favourite = $DB->get_record('favourite', ['component' => 'core_course', 'itemtype' => 'courses', 'contextid' => $context->id, 'userid' => $user->id])) {
+                $course->starred = true;
+            } else {
+                $course->starred = false;
+            }
+        }
+
+        // sort by stars and lastaccess (in that order)
+        usort($courses, function($a, $b) use ($stars) {
+            if ($a->starred && !$b->starred) {
+                return -1;
+            }
+            if (!$a->starred && $b->starred) {
+                return 1;
+            }
+            if (!empty($stars)) {
+                $posA = array_search($a->id, $stars);
+                $posB = array_search($b->id, $stars);
+                $starsort = ($posA !== false) && ($posB !== false);
+            } else {
+                $starsort = false;
+            }
+            if ($starsort && $a->starred && $b->starred) {
+                return $posA - $posB;
+            }
+            return $b->lastaccess - $a->lastaccess;
+        });
+
+        // Get the first $maxresults
+        $courses = array_slice($courses, 0, $maxresults-1);
+
+        // Convert to required format
+        $results = [];
+        foreach ($courses as $course) {
+            $result = new stdClass();
+            $result->name = $course->fullname;
+            $result->shortname = $course->shortname;
+            $result->courseid = $course->id;
+            $result->starred = $course->starred;
+            $result->visible = $course->visible;
+            $result->lastvisit = $course->lastaccess;
+            $results[] = $result;
+        }
+
+        return $results;
     }
 }
