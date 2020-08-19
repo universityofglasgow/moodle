@@ -452,7 +452,7 @@ class local_guws_external extends external_api {
         }
 
         // If no users then no data
-        if (!userids) {
+        if (!$userids) {
             return [];
         }
 
