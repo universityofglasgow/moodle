@@ -108,7 +108,7 @@ if((substr($PAGE->pagetype, 0, 11) == 'course-view') && ($hillheadsmartalerts ==
         
             if(!empty($courseDetails->enddate) && ($courseDetails->enddate) < time()) {
                 if(empty($_SESSION['SESSION']->hillhead_notifications) || !array_key_exists(md5($courseDetails->id.'courseenddate'), $_SESSION['SESSION']->hillhead_notifications) && $canEditCourse) {
-                    $notiftext .= '<div class="alert alert-info"><a class="close" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($courseDetails->id.'courseenddate').'" aria-label="Close"><span aria-hidden="true">&times;</span></a><i class="fa fa-clock"></i><span><strong>This course\'s end date is in the past.</strong> MyCampus enrolments are frozen, and won\'t be updated. If you\'re still using this course, you can change the end date <a class="alert-link" href="edit.php?id='.$courseDetails->id.'">on the settings page</a>.</span></div>';
+                    $notiftext .= '<div class="alert alert-info"><a class="close" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($courseDetails->id.'courseenddate').'" aria-label="Close"><span aria-hidden="true">&times;</span></a><i class="fa fa-clock-o"></i><span><strong>This course\'s end date is in the past.</strong> MyCampus enrolments are frozen, and won\'t be updated. If you\'re still using this course, you can change the end date <a class="alert-link" href="edit.php?id='.$courseDetails->id.'">on the settings page</a>.</span></div>';
                     $automaticEnrolmentsDisabled = true;
                     $automaticEnrolmentsReason = 'the course\'s end date is in the past. Any old MyCampus enrolments have been frozen and won\'t be removed.';
                 }
@@ -116,9 +116,17 @@ if((substr($PAGE->pagetype, 0, 11) == 'course-view') && ($hillheadsmartalerts ==
             
             if(!empty($courseDetails->startdate) && ($courseDetails->startdate) > time()) {
                 if(empty($_SESSION['SESSION']->hillhead_notifications) || !array_key_exists(md5($courseDetails->id.'courseenddate'), $_SESSION['SESSION']->hillhead_notifications) && $canEditCourse) {
-                    $notiftext .= '<div class="alert alert-info"><a class="close" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($courseDetails->id.'courseenddate').'" aria-label="Close"><span aria-hidden="true">&times;</span></a><i class="fa fa-clock"></i><span><strong>This course\'s start date is in the future.</strong> If you\'re using this course right now, you can change the start date <a class="alert-link" href="edit.php?id='.$courseDetails->id.'">on the settings page</a>.</span></div>';
+                    $notiftext .= '<div class="alert alert-info"><a class="close" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($courseDetails->id.'courseenddate').'" aria-label="Close"><span aria-hidden="true">&times;</span></a><i class="fa fa-clock-o"></i><span><strong>This course\'s start date is in the future.</strong> If you\'re using this course right now, you can change the start date <a class="alert-link" href="edit.php?id='.$courseDetails->id.'">on the settings page</a>.</span></div>';
                     $automaticEnrolmentsDisabled = true;
                     $automaticEnrolmentsReason = 'the course\'s start date is in the future.';
+                }
+            }
+            
+            if(empty($courseDetails->enddate)) {
+                if(empty($_SESSION['SESSION']->hillhead_notifications) || !array_key_exists(md5($courseDetails->id.'courseenddate'), $_SESSION['SESSION']->hillhead_notifications) && $canEditCourse) {
+                    $notiftext .= '<div class="alert alert-danger"><a class="close" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($courseDetails->id.'courseenddate').'" aria-label="Close"><span aria-hidden="true">&times;</span></a><i class="fa fa-clock-o"></i><span><strong>This course doesn\'t have an end date.</strong> Automatic enrolments won\'t work unless you add one <a class="alert-link" href="edit.php?id='.$courseDetails->id.'">on the settings page</a>. This is to protect old courses from accidental changes.</span></div>';
+                    $automaticEnrolmentsDisabled = true;
+                    $automaticEnrolmentsReason = 'the course doesn\'t have an end date.';
                 }
             }
             
