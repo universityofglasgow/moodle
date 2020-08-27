@@ -1,49 +1,95 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/*
-EvaSys Online Surveys - Moodle Block
-Copyright (C) 2018 Soon Systems GmbH on behalf of Electric Paper Evaluationssysteme GmbH
+/**
+ * Plugin "Evaluations (EvaSys)"
+ *
+ * @package    block_onlinesurvey
+ * @copyright  2018 Soon Systems GmbH on behalf of Electric Paper Evaluationssysteme GmbH
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+defined('MOODLE_INTERNAL') || die();
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+global $CFG;
 
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
+require_once($CFG->libdir.'/filelib.php');
 
-Contact:
-Soon-Systems GmbH
-Syrlinstr. 5
-89073 Ulm
-Deutschland
-
-E-Mail: info@soon-systems.de
-*/
-
+/**
+ * Onlinesurvey SOAP client which extends the standard SoapClient class.
+ *
+ * @package    block_onlinesurvey
+ * @copyright  2018 Soon Systems GmbH on behalf of Electric Paper Evaluationssysteme GmbH
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class onlinesurvey_soap_client extends SoapClient {
+    /**
+     * @var int
+     */
     public $timeout;
+
+    /**
+     * @var bool
+     */
     public $debugmode;
+
+    /**
+     * @var bool
+     */
     public $haswarning = false;
+
+    /**
+     * @var string
+     */
     public $warnmessage = "";
 
+    /**
+     * SoapClient constructor
+     * @param string $wsdl URI of the WSDL file.
+     * @param array $options An array of options.
+     * @param int $timeout The timeout for the SOAP call.
+     * @param bool $debug A boolean which indicates if debuging is enabled.
+     */
     public function __construct($wsdl, $options, $timeout = 15, $debug = false) {
-        $this->debugmode = $debug;
         $this->timeout = $timeout;
 
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $wsdl);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
-        curl_setopt($ch, CURLOPT_TIMEOUT, $this->timeout);
+        $curl = new curl;
+        $curloptions = array(
+                'RETURNTRANSFER' => 1,
+                'FRESH_CONNECT' => true,
+                'TIMEOUT' => $this->timeout,
+        );
+        $ret = $curl->get($wsdl, '', $curloptions);
 
-        $wsdlxml = curl_exec($ch);
-        if (!$wsdlxml) {
+        if ($errornumber = $curl->get_errno()) {
+            $msgoutput = get_string('error_survey_curl_timeout_msg', 'block_onlinesurvey');
+
+            $context = context_system::instance();
+            if (has_capability('block/onlinesurvey:view_debugdetails', $context)) {
+                if (!empty($msgoutput)) {
+                    $msgoutput .= "<br><br>"."curl_errno $errornumber: $ret"; // Variable $ret now contains the error string.
+                }
+            }
+
+            if (in_array($errornumber, array(CURLE_OPERATION_TIMEDOUT, CURLE_OPERATION_TIMEOUTED))) {
+                throw new Exception("$msgoutput");
+            }
+        }
+
+        if (!$ret) {
             throw new Exception('ERROR: Could not fetch WSDL');
         }
 
@@ -52,7 +98,7 @@ class onlinesurvey_soap_client extends SoapClient {
             $urlserveraddress = $url['host'];
         }
 
-        preg_match('/<soap:address location="https*:\/\/([0-9a-z\.\-_]+)/i', $wsdlxml, $match);
+        preg_match('/<soap:address location="https*:\/\/([0-9a-z\.\-_]+)/i', $ret, $match);
         $wsdlserveraddress = null;
         if (count($match) == 2) {
             $wsdlserveraddress = $match[1];
@@ -65,31 +111,51 @@ class onlinesurvey_soap_client extends SoapClient {
                     Endpoint address: $wsdlserveraddress.";
         }
 
-        $base64 = base64_encode($wsdlxml);
+        $base64 = base64_encode($ret);
         $uri = "data:application/wsdl+xml;base64,$base64";
         parent::__construct($uri, $options);
     }
 
-    public function __doRequest($request, $location, $action, $version, $one_way = NULL) {
+    /**
+     * Performs a SOAP request
+     * @param string $request The XML SOAP request.
+     * @param string $location The URL to request.
+     * @param string $action The SOAP action.
+     * @param int $version The SOAP version.
+     * @param int $one_way [optional] If one_way is set to 1 this method returns nothing. Use this where a response is not expected.
+     * @return string The XML SOAP response.
+     */
+    public function __doRequest($request, $location, $action, $version, $one_way = null) {
         $headers = array(
             'Content-Type: text/xml;charset=UTF-8',
             "SOAPAction: \"$action\"",
             'Content-Length: ' . strlen($request)
         );
 
-        $ch = curl_init();
+        $curl = new curl;
+        $curloptions = array(
+            'RETURNTRANSFER' => 1,
+            'FRESH_CONNECT' => true,
+            'TIMEOUT' => $this->timeout,
+            'HTTPHEADER' => $headers,
+        );
+        $ret = $curl->post($location, $request, $curloptions);
 
-        // Set the url, number of POST vars, POST data.
-        curl_setopt($ch, CURLOPT_URL, $location);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $request);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
-        curl_setopt($ch, CURLOPT_TIMEOUT, $this->timeout);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        if ($errornumber = $curl->get_errno()) {
+            $msgoutput = get_string('error_survey_curl_timeout_msg', 'block_onlinesurvey');
 
-        // Execute post.
-        $ret = curl_exec($ch);
+            $context = context_system::instance();
+            if (has_capability('block/onlinesurvey:view_debugdetails', $context)) {
+                if (!empty($msgoutput)) {
+                    $msgoutput .= "<br><br>"."curl_errno $errornumber: $ret"; // Variable $ret now contains the error string.
+                }
+            }
+
+            if (in_array($errornumber, array(CURLE_OPERATION_TIMEDOUT, CURLE_OPERATION_TIMEOUTED))) {
+                throw new Exception("$msgoutput");
+            }
+        }
+
         if (!$ret) {
             $ret = '<SOAP-ENV:Envelope
                     xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
@@ -103,7 +169,6 @@ class onlinesurvey_soap_client extends SoapClient {
                         </SOAP-ENV:Body>
                     </SOAP-ENV:Envelope>';
         }
-        curl_close($ch);
         return $ret;
     }
 }

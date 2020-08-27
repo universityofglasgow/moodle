@@ -76,7 +76,7 @@ if (!$table->is_downloading($download, $exportfilename)) {
     $url = new moodle_url('/mod/attendance/coursesummary.php', array('category' => $category, 'fromcourse' => $fromcourse));
 
     if ($admin) {
-        $options = coursecat::make_categories_list('mod/attendance:viewsummaryreports');
+        $options = core_course_category::make_categories_list('mod/attendance:viewsummaryreports');
         echo $OUTPUT->single_select($url, 'category', $options, $category);
     }
 
@@ -94,8 +94,14 @@ $table->setup();
 
 // Work out direction of sort required.
 $sortcolumns = $table->get_sort_columns();
-// Now do sorting if specified.
 
+// Sanity check $sort var before including in sql. Make sure it matches a known column.
+$allowedsort = array_diff(array_keys($table->columns), $table->column_nosort);
+if (!in_array($sort, $allowedsort)) {
+    $sort = '';
+}
+
+// Now do sorting if specified.
 $orderby = ' ORDER BY percentage ASC';
 if (!empty($sort)) {
     $direction = ' DESC';

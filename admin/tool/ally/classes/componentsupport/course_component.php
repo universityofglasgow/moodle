@@ -109,7 +109,7 @@ class course_component extends component_base implements iface_html_content {
         // Add course sections.
         $rs = $this->get_course_section_summary_rows($courseid);
         foreach ($rs as $row) {
-            $sectionname = $this->get_section_name($courseid, $row);
+            $sectionname = !empty($row->name) ? $row->name : $this->get_section_name($courseid, $row);
             $array[] = new component(
                     $row->id, 'course', 'course_sections', 'summary', $courseid, $row->timemodified,
                     $row->summaryformat, $sectionname);
@@ -124,6 +124,10 @@ class course_component extends component_base implements iface_html_content {
         $recordlambda = null;
         if ($table === 'course_sections') {
             $recordlambda = function($record) {
+                if (empty($record->timemodified)) {
+                    $course = get_course($record->course);
+                    $record->timemodified = $course->timecreated;
+                }
                 if ($record->name !== null) {
                     return; // Don't bother modifying $record - we have a name already!
                 }
