@@ -919,6 +919,9 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         // Only works if enddate is set
         if (!empty($instance->customint4) && $this->get_config('allowunenrol') && !empty($course->enddate)) {
 
+            // Guard time - don't unenrol users enrolled longer than this
+            $unenrolguard = $config->unenrolguard;
+
             // Get list of users enrolled in this instance.
             $enrolments = $DB->get_records('user_enrolments', array('enrolid' => $instance->id));
 
@@ -927,6 +930,12 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
                 if (array_key_exists($enrolment->userid, $enrolledusers)) {
                     continue;
                 } else {
+
+                    // Check guard time if enabled (0 = disabled)
+                    $enrolduration = time() - $enrolment->timestart;
+                    if ($unenrolguard && ($enrolduration > $unenrolguard)) {
+                        continue;
+                    }
 
                     // DISABLE THIS FEATURE FOR NOW
                     $this->unenrol_user($instance, $enrolment->userid);
@@ -1282,9 +1291,18 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
 
                             // Remove group members no longer in classgroup.
                             // There MUST be an end date
+                            $enrolguard = $config->enrolguard;
                             if (!empty($instance->customint5) && $this->get_config('allowunenrol') && !empty($course->enddate)) {
                                 if ($members = $DB->get_records('groups_members', array('groupid' => $groupid))) {
                                     foreach ($members as $member) {
+
+                                        // Check guard time if enabled (0 = disabled)
+                                        if ($enrolment = $DB->get_record('user_enrolments', ['enrolid' => $instance->id, 'userid' => $member->userid])) {
+                                            $enrolduration = time() - $enrolment->timestart;
+                                            if ($unenrolguard && ($enrolduration > $unenrolguard)) {
+                                                continue;
+                                            }
+                                        }
                                         if (!in_array($member->userid, $enrolledusers)) {
                                             groups_remove_member($groupid, $member->userid);
                                         }
