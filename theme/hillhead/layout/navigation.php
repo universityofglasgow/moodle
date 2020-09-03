@@ -80,14 +80,16 @@ $globalcoursenavexists = false;
 $globalCourseJSON = get_config('theme_hillhead', 'hillhead_globalpinned');
 $globalCourses = json_decode($globalCourseJSON, true);
 
-foreach($globalCourses as $globalCourse) {
-    $globalcourseLink = new moodle_url('/course/view.php?id='.$globalCourse['id']);
-    $globalcourseLinkNav = navigation_node::create($globalCourse['title'], $globalcourseLink);
-    $globalcourseLinkFlat = new flat_navigation_node($globalcourseLinkNav, 0);
-    $globalcourseLinkFlat->key = 'globalcourse-'.$globalCourse['id'];
-    $globalcourseLinkFlat->icon = new pix_icon('i/course',  $globalCourse['title'], 'core');
-    $globalcoursenav[] = $globalcourseLinkFlat;
-    $globalcoursenavexists = true;
+if(isset($globalCourses)) {
+    foreach($globalCourses as $globalCourse) {
+        $globalcourseLink = new moodle_url('/course/view.php?id='.$globalCourse['id']);
+        $globalcourseLinkNav = navigation_node::create($globalCourse['title'], $globalcourseLink);
+        $globalcourseLinkFlat = new flat_navigation_node($globalcourseLinkNav, 0);
+        $globalcourseLinkFlat->key = 'globalcourse-'.$globalCourse['id'];
+        $globalcourseLinkFlat->icon = new pix_icon('i/course',  $globalCourse['title'], 'core');
+        $globalcoursenav[] = $globalcourseLinkFlat;
+        $globalcoursenavexists = true;
+    }
 }
 
 foreach($flatnav as $navitem) {
