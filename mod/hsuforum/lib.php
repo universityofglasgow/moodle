@@ -1745,7 +1745,7 @@ function hsuforum_recent_activity($course, $viewfullnames, $timestart, $forumid 
 
     if($out) {
         $out = "<div class='hsuforum-recent clearfix'>
-        <h3 class='hsuforum-recent-heading'>".get_string('newforumposts', 'hsuforum')."</h3>".$out."</div>";
+        <h4 class='hsuforum-recent-heading'>".get_string('newforumposts', 'hsuforum')."</h4>".$out."</div>";
     }
     return $out;
 }
@@ -1764,7 +1764,7 @@ function hsuforum_media_object($url, $picture, $username, $time, $subject) {
         $out .= "<a href='$url'>";
         $out .= $picture;
         $out .= "<div class=\"snap-media-body\">";
-        $out .= "<h3>".format_string($username)."</h3>";
+        $out .= "<h5>".format_string($username)."</h5>";
         $out .= "<span class=snap-media-meta>$time</span>";
         $out .= "<p>".format_string($subject)."</p></div>";
         $out .= "</a></div>";
@@ -3029,13 +3029,13 @@ LEFT OUTER JOIN {hsuforum_read} r ON (r.postid = p.id AND r.userid = ?)
               FROM {hsuforum_discussions} d
                    JOIN {hsuforum_posts} p ON p.discussion = d.id
                    JOIN {user} u ON p.userid = u.id
-        LEFT OUTER JOIN (SELECT p.discussion, COUNT(p.id) AS replies
+        LEFT OUTER JOIN (SELECT d.id AS discussion, COUNT(p.id) AS replies
                            FROM {hsuforum_posts} p
                            JOIN {hsuforum_discussions} d ON p.discussion = d.id
                           WHERE p.parent > 0
                             AND d.forum = ?
                             AND (p.privatereply = 0 OR p.privatereply = ? OR p.userid = ?)
-                          GROUP BY p.discussion) extra ON d.id = extra.discussion
+                          GROUP BY d.id) extra ON d.id = extra.discussion
               LEFT JOIN (SELECT p.discussion, p.id postid, p.userid, p.modified
                            FROM {hsuforum_discussions} d
                       LEFT JOIN {hsuforum_posts} p ON d.usermodified = p.userid AND d.id = p.discussion AND p.modified = d.timemodified
@@ -7522,7 +7522,9 @@ function hsuforum_cm_info_view(cm_info $cm) {
     $out = '';
 
     if (empty($config->hiderecentposts) && $forum->showrecent) {
-        $out .= hsuforum_recent_activity($cm->get_course(), true, 0, $forum->id, false);
+        $context = context_module::instance($cm->id);
+        $viewfullnames = has_capability('moodle/site:viewfullnames', $context);
+        $out .= hsuforum_recent_activity($cm->get_course(), $viewfullnames, 0, $forum->id, false);
     }
 
     if ($unread = hsuforum_count_forum_unread_posts($cm, $cm->get_course())) {

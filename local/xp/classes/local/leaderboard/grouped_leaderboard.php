@@ -51,6 +51,8 @@ abstract class grouped_leaderboard implements \block_xp\local\leaderboard\leader
     const ORDER_BY_POINTS = default_course_world_config::GROUP_ORDER_BY_POINTS;
     /** Order by progress. */
     const ORDER_BY_PROGRESS = default_course_world_config::GROUP_ORDER_BY_PROGRESS;
+    /** Order by points with compensation using team average. */
+    const ORDER_BY_POINTS_COMPENSATED_BY_AVG = default_course_world_config::GROUP_ORDER_BY_POINTS_COMPENSATED_BY_AVG;
 
     /** @var moodle_database The database. */
     protected $db;
@@ -77,6 +79,9 @@ abstract class grouped_leaderboard implements \block_xp\local\leaderboard\leader
     protected $groupby;
     /** @var string SQL Fragment. */
     protected $order;
+
+    /** @var int The highest member count cache. Do not use directly, use self::get_highest_member_count instead. */
+    protected $highestmembercountcache;
 
     /**
      * Constructor.
@@ -108,9 +113,7 @@ abstract class grouped_leaderboard implements \block_xp\local\leaderboard\leader
     protected function prepare_sql() {
         $teamjoin = $this->get_team_join();
 
-        $this->fields = 't.id, SUM(x.xp) AS xp, COUNT(x.userid) AS membercount';
         $this->from = "{{$this->table}} x " . $teamjoin->joins;
-
         $this->where = "x.courseid = :courseid";
         if (!empty($teamjoin->wheres)) {
             $this->where .= " AND ({$teamjoin->wheres})";
@@ -127,6 +130,12 @@ abstract class grouped_leaderboard implements \block_xp\local\leaderboard\leader
             $this->params = array_merge($this->params, $inparams);
         }
 
+        // Set the fields to fetch. We assume that get_sum_expression and get_member_count_expression
+        // do not depend on the ordering, as the ordering should likely depend on the fields themselves.
+        $sumexpr = $this->get_sum_expression();
+        $membercountexpr = $this->get_member_count_expression();
+        $this->fields = "t.id, {$sumexpr} AS xp, {$membercountexpr} AS membercount";
+
         // Set the order.
         $this->order = "";
         if ($this->ultimatexp && $this->orderby == static::ORDER_BY_PROGRESS) {
@@ -134,7 +143,7 @@ abstract class grouped_leaderboard implements \block_xp\local\leaderboard\leader
             $this->order .= "$progress DESC, ";
             $this->params = array_merge($this->params, $progressparams);
         }
-        $this->order .= "SUM(x.xp) DESC, t.id ASC";
+        $this->order .= "{$sumexpr} DESC, t.id ASC";
     }
 
     /**
@@ -160,7 +169,41 @@ abstract class grouped_leaderboard implements \block_xp\local\leaderboard\leader
                          FROM {$this->from}
                         WHERE {$this->where}
                     )";
+
         return $this->db->count_records_sql($sql, $this->params);
+    }
+
+    /**
+     * Get the highest member count amongst the groups.
+     *
+     * Note that this is cached for the instance, thus if group membership changes
+     * after this object was initialised, the results may not be accurate.
+     *
+     * @return int
+     */
+    protected function get_highest_member_count()   {
+        if ($this->highestmembercountcache === null) {
+            $sql = "SELECT MAX(q2.membercount) FROM (
+                           SELECT COUNT(x.userid) AS membercount
+                             FROM {$this->from}
+                            WHERE {$this->where}
+                         GROUP BY {$this->groupby}) q2";
+            $params = $this->params;
+            $this->highestmembercountcache = (int) $this->db->get_field_sql($sql, $params);
+        }
+        return $this->highestmembercountcache;
+    }
+
+    /**
+     * Get member count expression.
+     *
+     * @return string
+     */
+    protected function get_member_count_expression() {
+        if ($this->orderby == self::ORDER_BY_POINTS_COMPENSATED_BY_AVG) {
+            return $this->get_highest_member_count();
+        }
+        return 'COUNT(x.userid)';
     }
 
     /**
@@ -170,7 +213,8 @@ abstract class grouped_leaderboard implements \block_xp\local\leaderboard\leader
      * @return int|false False when not ranked.
      */
     protected function get_points($id) {
-        $sql = "SELECT SUM(x.xp) AS xp
+        $sumexpr = $this->get_sum_expression();
+        $sql = "SELECT {$sumexpr} AS xp
                   FROM {$this->from}
                  WHERE {$this->where}
                    AND (t.id = :teamid)
@@ -178,7 +222,6 @@ abstract class grouped_leaderboard implements \block_xp\local\leaderboard\leader
         $params = $this->params + ['teamid' => $id];
         return $this->db->get_field_sql($sql, $params);
     }
-
 
     /**
      * Get the progress of an object.
@@ -258,14 +301,15 @@ abstract class grouped_leaderboard implements \block_xp\local\leaderboard\leader
      * @return int Indexed from 0.
      */
     protected function get_position_with_xp($id, $xp) {
+        $sumexpr = $this->get_sum_expression();
         $sql = "SELECT COUNT('x')
                   FROM (
                     SELECT t.id
                       FROM {$this->from}
                      WHERE {$this->where}
                   GROUP BY {$this->groupby}
-                    HAVING (SUM(x.xp) > :posxp
-                        OR (SUM(x.xp) = :posxpeq AND t.id < :posid))
+                    HAVING ({$sumexpr} > :posxp
+                        OR ({$sumexpr} = :posxpeq AND t.id < :posid))
                        ) countx ";
         $params = $this->params + [
             'posxp' => $xp,
@@ -344,13 +388,14 @@ abstract class grouped_leaderboard implements \block_xp\local\leaderboard\leader
      * @return int Indexed from 1.
      */
     protected function get_rank_from_xp($xp) {
+        $sumexpr = $this->get_sum_expression();
         $sql = "SELECT COUNT('x')
                   FROM (
                     SELECT t.id
                       FROM {$this->from}
                      WHERE {$this->where}
                   GROUP BY {$this->groupby}
-                    HAVING (SUM(x.xp) > :posxp)
+                    HAVING ({$sumexpr} > :posxp)
                   ) countx";
         return $this->db->count_records_sql($sql, $this->params + ['posxp' => $xp]) + 1;
     }
@@ -455,6 +500,19 @@ abstract class grouped_leaderboard implements \block_xp\local\leaderboard\leader
         $params = $this->params + ['teamid' => $id];
         $record = $this->db->get_record_sql($sql, $params);
         return !$record ? null : $this->make_state_from_record($record);
+    }
+
+    /**
+     * Get the sum expression.
+     *
+     * @return string
+     */
+    protected function get_sum_expression() {
+        if ($this->orderby == self::ORDER_BY_POINTS_COMPENSATED_BY_AVG) {
+            $highestcount = $this->get_highest_member_count();
+            return "FLOOR(SUM(x.xp) * (1.0 * {$highestcount} / COUNT(x.userid)))";
+        }
+        return 'SUM(x.xp)';
     }
 
     /**

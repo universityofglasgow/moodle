@@ -15,35 +15,57 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * This file keeps track of upgrades to the onlinesurvey block
+ * Plugin "Evaluations (EvaSys)"
  *
- * Sometimes, changes between versions involve alterations to database structures
- * and other major things that may break installations.
- *
- * The upgrade function in this file will attempt to perform all the necessary
- * actions to upgrade your older installation to the current version.
- *
- * If there's something it cannot do itself, it will tell you what you need to do.
- *
- * The commands in here will all be database-neutral, using the methods of
- * database_manager class
- *
- *
- * @since Moodle 3.1
- * @package block_onlinesurvey
- * @copyright  2018 Soon Systems GmbH on behalf of Electric Paper Evaluationssysteme GmbH
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    block_onlinesurvey
+ * @copyright  2020 Alexander Bias on behalf of Electric Paper Evaluationssysteme GmbH
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
- *
- * @param int $oldversion
- * @param object $block
+ * Upgrade steps for this plugin
+ * @param int $oldversion the version we are upgrading from
+ * @return boolean
  */
-function xmldb_block_onlinesurvey_upgrade($oldversion, $block) {
-    global $CFG;
+function xmldb_block_onlinesurvey_upgrade($oldversion) {
+
+    // From now on, the setting "block_onlinesurvey|setting_survey_server" uses SOAP API Version 61 instead of Version 51.
+    if ($oldversion < 2020010903) {
+        // Check if the setting is set in this Moodle instance.
+        $oldsetting = get_config('block_onlinesurvey', 'survey_server');
+        if (!empty($oldsetting) && strpos($oldsetting, 'soapserver-v51.wsdl') !== false) {
+
+            // Replace the version in the setting.
+            $newsetting = str_replace('soapserver-v51.wsdl', 'soapserver-v61.wsdl', $oldsetting);
+
+            // Write the setting back to the DB.
+            set_config('survey_server', $newsetting, 'block_onlinesurvey');
+
+            // Show an info message that the SOAP API version has been changed automatically.
+            $message = get_string('upgrade_notice_2020010900', 'block_onlinesurvey',
+                    array ('old' => $oldsetting, 'new' => $newsetting));
+            echo html_writer::tag('div', $message, array('class' => 'alert alert-info'));
+        }
+
+        // Remember upgrade savepoint.
+        upgrade_plugin_savepoint(true, 2020010903, 'block', 'onlinesurvey');
+    }
+
+    // The setting 'additionalclass' was removed.
+    if ($oldversion < 2020052200) {
+        // Check if the setting is set in this Moodle instance.
+        $oldsetting = get_config('block_onlinesurvey', 'additionalclass');
+        if (!empty($oldsetting)) {
+
+            // Remove the setting in the DB.
+            unset_config('additionalclass', 'block_onlinesurvey');
+        }
+
+        // Remember upgrade savepoint.
+        upgrade_plugin_savepoint(true, 2020052200, 'block', 'onlinesurvey');
+    }
 
     return true;
 }

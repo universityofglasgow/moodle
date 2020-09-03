@@ -229,4 +229,158 @@ class local_xp_course_group_leaderboard_testcase extends local_xp_base_testcase 
 
         $this->assertSame(4, $l->get_count());
     }
+
+    public function test_leaderboard_with_group_compensation() {
+        $dg = $this->getDataGenerator();
+        $c1 = $dg->create_course();
+
+        $u1 = $dg->create_user();
+        $u2 = $dg->create_user();
+        $u3 = $dg->create_user();
+        $u4 = $dg->create_user();
+        $u5 = $dg->create_user();
+        $u6 = $dg->create_user();
+        $u7 = $dg->create_user();
+        $u8 = $dg->create_user();
+        $u9 = $dg->create_user();
+        $u10 = $dg->create_user();
+        $u11 = $dg->create_user();
+        $u12 = $dg->create_user();
+
+        $dg->enrol_user($u1->id, $c1->id);
+        $dg->enrol_user($u2->id, $c1->id);
+        $dg->enrol_user($u3->id, $c1->id);
+        $dg->enrol_user($u4->id, $c1->id);
+        $dg->enrol_user($u5->id, $c1->id);
+        $dg->enrol_user($u6->id, $c1->id);
+        $dg->enrol_user($u7->id, $c1->id);
+        $dg->enrol_user($u8->id, $c1->id);
+        $dg->enrol_user($u9->id, $c1->id);
+        $dg->enrol_user($u10->id, $c1->id);
+        $dg->enrol_user($u11->id, $c1->id);
+        $dg->enrol_user($u12->id, $c1->id);
+
+        // Group 1.
+        $g1 = $dg->create_group(['courseid' => $c1->id]);
+        $dg->create_group_member(['groupid' => $g1->id, 'userid' => $u1->id]);
+        $dg->create_group_member(['groupid' => $g1->id, 'userid' => $u11->id]);
+
+        // Group 2.
+        $g2 = $dg->create_group(['courseid' => $c1->id]);
+        $dg->create_group_member(['groupid' => $g2->id, 'userid' => $u2->id]);
+        $dg->create_group_member(['groupid' => $g2->id, 'userid' => $u3->id]);
+
+        // Group 3
+        $g3 = $dg->create_group(['courseid' => $c1->id]);
+        $dg->create_group_member(['groupid' => $g3->id, 'userid' => $u4->id]);
+        $dg->create_group_member(['groupid' => $g3->id, 'userid' => $u5->id]);
+        $dg->create_group_member(['groupid' => $g3->id, 'userid' => $u6->id]);
+        $dg->create_group_member(['groupid' => $g3->id, 'userid' => $u12->id]);
+
+        // Group 4.
+        $g4 = $dg->create_group(['courseid' => $c1->id]);
+        $dg->create_group_member(['groupid' => $g4->id, 'userid' => $u7->id]);
+        $dg->create_group_member(['groupid' => $g4->id, 'userid' => $u8->id]);
+        $dg->create_group_member(['groupid' => $g4->id, 'userid' => $u9->id]);
+        $dg->create_group_member(['groupid' => $g4->id, 'userid' => $u10->id]);
+
+        $w1 = $this->get_world($c1->id);
+        $s1 = $w1->get_store();
+
+        $s1->set($u1->id, 33);  // Total 33, real pos 4th, compensated pos 1st.
+        $s1->set($u2->id, 22);
+        $s1->set($u3->id, 33);  // Total 55, real pos 3rd, compensated pos 3rd.
+        $s1->set($u4->id, 11);
+        $s1->set($u5->id, 33);
+        $s1->set($u6->id, 44);  // Total 88, real pos 1st, compensated pos 2nd.
+        $s1->set($u7->id, 11);
+        $s1->set($u8->id, 11);
+        $s1->set($u9->id, 22);
+        $s1->set($u10->id, 22); // Total 66, real pos 2nd, compensated pos 4th.
+
+        $l = new course_group_leaderboard(di::get('db'), $c1->id, ['xp' => 'XP'], $w1->get_levels_info(),
+            course_group_leaderboard::ORDER_BY_POINTS_COMPENSATED_BY_AVG);
+        $ranking = $l->get_ranking(new limit(100));
+
+        $this->assertCount(4, $ranking);
+        $this->assertEquals(1, $ranking[0]->get_rank());
+        $this->assertEquals(132, $ranking[0]->get_state()->get_xp());
+        $this->assertEquals(33 + 3 * 33, $ranking[0]->get_state()->get_xp());
+        $this->assertEquals($g1->id, $ranking[0]->get_state()->get_id());
+
+        $this->assertEquals(2, $ranking[1]->get_rank());
+        $this->assertEquals(117, $ranking[1]->get_state()->get_xp());
+        $this->assertEquals(floor(88 + (1 * 88 / 3)), $ranking[1]->get_state()->get_xp());
+        $this->assertEquals($g3->id, $ranking[1]->get_state()->get_id());
+
+        $this->assertEquals(3, $ranking[2]->get_rank());
+        $this->assertEquals(110, $ranking[2]->get_state()->get_xp());
+        $this->assertEquals(floor(55 + (2 * 55 / 2)), $ranking[2]->get_state()->get_xp());
+        $this->assertEquals($g2->id, $ranking[2]->get_state()->get_id());
+
+        $this->assertEquals(4, $ranking[3]->get_rank());
+        $this->assertEquals(66, $ranking[3]->get_state()->get_xp());
+        $this->assertEquals($g4->id, $ranking[3]->get_state()->get_id());
+
+        $this->assertSame(1, $l->get_rank($g1->id)->get_rank());
+        $this->assertSame(3, $l->get_rank($g2->id)->get_rank());
+        $this->assertSame(2, $l->get_rank($g3->id)->get_rank());
+        $this->assertSame(4, $l->get_rank($g4->id)->get_rank());
+
+        $this->assertSame(0, $l->get_position($g1->id));
+        $this->assertSame(2, $l->get_position($g2->id));
+        $this->assertSame(1, $l->get_position($g3->id));
+        $this->assertSame(3, $l->get_position($g4->id));
+
+        $this->assertSame(4, $l->get_count());
+
+        // Check natural ordering.
+        $l = new course_group_leaderboard(di::get('db'), $c1->id, ['xp' => 'XP'], $w1->get_levels_info(),
+            course_group_leaderboard::ORDER_BY_POINTS);
+        $ranking = $l->get_ranking(new limit(100));
+        $this->assertSame(1, $l->get_rank($g3->id)->get_rank());
+        $this->assertSame(2, $l->get_rank($g4->id)->get_rank());
+        $this->assertSame(3, $l->get_rank($g2->id)->get_rank());
+        $this->assertSame(4, $l->get_rank($g1->id)->get_rank());
+
+        // Assign points to two that did not have scores before.
+        $s1->set($u11->id, 11);
+        $s1->set($u12->id, 11);
+
+        $l = new course_group_leaderboard(di::get('db'), $c1->id, ['xp' => 'XP'], $w1->get_levels_info(),
+            course_group_leaderboard::ORDER_BY_POINTS_COMPENSATED_BY_AVG);
+        $ranking = $l->get_ranking(new limit(100));
+
+        $this->assertCount(4, $ranking);
+        $this->assertEquals(1, $ranking[0]->get_rank());
+        $this->assertEquals(110, $ranking[0]->get_state()->get_xp());
+        $this->assertEquals(floor(55 + (2 * 55 / 2)), $ranking[0]->get_state()->get_xp());
+        $this->assertEquals($g2->id, $ranking[0]->get_state()->get_id());
+
+        $this->assertEquals(2, $ranking[1]->get_rank());
+        $this->assertEquals(99, $ranking[1]->get_state()->get_xp());
+        $this->assertEquals(floor(99 + (0 * 99 / 4)), $ranking[1]->get_state()->get_xp());
+        $this->assertEquals($g3->id, $ranking[1]->get_state()->get_id());
+
+        $this->assertEquals(3, $ranking[2]->get_rank());
+        $this->assertEquals(88, $ranking[2]->get_state()->get_xp());
+        $this->assertEquals(floor(44 + (2 * 44 / 2)), $ranking[2]->get_state()->get_xp());
+        $this->assertEquals($g1->id, $ranking[2]->get_state()->get_id());
+
+        $this->assertEquals(4, $ranking[3]->get_rank());
+        $this->assertEquals(66, $ranking[3]->get_state()->get_xp());
+        $this->assertEquals($g4->id, $ranking[3]->get_state()->get_id());
+
+        $this->assertSame(3, $l->get_rank($g1->id)->get_rank());
+        $this->assertSame(1, $l->get_rank($g2->id)->get_rank());
+        $this->assertSame(2, $l->get_rank($g3->id)->get_rank());
+        $this->assertSame(4, $l->get_rank($g4->id)->get_rank());
+
+        $this->assertSame(2, $l->get_position($g1->id));
+        $this->assertSame(0, $l->get_position($g2->id));
+        $this->assertSame(1, $l->get_position($g3->id));
+        $this->assertSame(3, $l->get_position($g4->id));
+
+        $this->assertSame(4, $l->get_count());
+    }
 }

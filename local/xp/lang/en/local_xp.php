@@ -38,6 +38,7 @@ $string['clicktoselectgradeitem'] = 'Click to select a grade item';
 $string['courseselector'] = 'Course selector';
 $string['csvisempty'] = 'The CSV file is empty.';
 $string['csvline'] = 'Line';
+$string['csvfieldseparator'] = 'Field separator for CSV';
 $string['csvfile'] = 'CSV file';
 $string['csvfile_help'] = 'The CSV file must contain the columns __user__ and __points__. The column __message__ is optional and can be used when notifications are enabled. Note that the __user__ column understands user IDs, email addresses and usernames.';
 $string['csvmissingcolumns'] = 'The CSV is missing the following column(s): {$a}.';
@@ -49,7 +50,10 @@ For instance you could upload the image of a carrot for the users to be rewarded
 $string['currencysignformhelp'] = 'The image uploaded here will be displayed next to the points as a substitute for the reference to experience points. The recommended image height is 18 pixels.';
 $string['displaygroupidentity'] = 'Display teams identity';
 $string['enablecheatguard'] = 'Enable cheat guard';
-$string['enablecheatguard_help'] = 'The cheat guard prevents students from being rewarded once they reach certain limits.';
+$string['enablecheatguard_help'] = 'The cheat guard prevents students from being rewarded once they reach certain limits.
+
+[More info](https://levelup.plus/docs/article/level-up-cheat-guard?ref=localxp_help)
+';
 $string['errorunknowncourse'] = 'Error: unknown course';
 $string['errorunknowngradeitem'] = 'Error: unknown grade item';
 $string['filtergradeitems'] = 'Filter grade items';
@@ -82,14 +86,13 @@ $string['groupladder'] = 'Team ladder';
 $string['groupladdercols'] = 'Ladder columns';
 $string['groupladdercols_help'] = 'This setting determines which columns are displayed aside from the teams ranks and names.
 
-The __Points__ column displays the sum of the points earned by all team members.
-You may want to remove the _Points_ column when teams are unbalanced.
-This can be the case when some teams accumulate considerably more points than others, for example due to having more members.
+The __Points__ column displays the points of the team.
+This value may have been compensated depending on the _Ranking strategy_ chosen.
 
 The __Progress__ column displays the overall progression of the team towards all of its members reaching the ultimate level.
 In other words, the progress can only attain 100% when all team members are at the maximum level. Note that the number of
-points remaining, displayed next to the progress bar, may be confusing when teams are unbalanced as teams with more members
-will have more points remaining than others, even though their progressions may be similar.
+points remaining, displayed next to the progress bar, may be confusing when teams are unbalanced and points not compensated
+as teams with more members will have more points remaining than others, even though their progressions may be similar.
 
 Press the CTRL or CMD key while clicking to select more than one column, or to unselect a selected column.';
 $string['groupladdersource'] = 'Team up students using';
@@ -99,13 +102,16 @@ When set to _Nothing_ the team ladder will not be available.
 
 To limit the _Course groups_ that appear in the leaderboard, you may create a new grouping containing the relevant groups, and then set this grouping as the _Default grouping_ in the course settings.';
 $string['groupname'] = 'Team name';
-$string['grouporderby'] = 'Order by';
+$string['grouporderby'] = 'Ranking strategy';
 $string['grouporderby_help'] = 'Determines what is the basis for ranking the teams.
 
 When set to __Points__, the teams are ranked based on the sum of the points of its members.
 
-When set to __Progress__, the teams are ranked based on their overall progression towards all of its members reaching the ultimate level. You may want to use _Progress_ when the teams are unbalanced, for example when some teams have a lot more members than others.';
+When set to __Points (with compensation)__, the points of teams with less members than others are compensated using their team\'s average per member. For example, if a team lacks 3 members, they receive points equal to three times their average per member. This creates a balanced ranking where all teams have equal chances.
+
+When set to __Progress__, the teams are ranked based on their overall progression towards all of its members reaching the ultimate level, without compensating their points. You may want to use _Progress_ when the teams are unbalanced, for example when some teams have a lot more members than others.';
 $string['grouppoints'] = 'Points';
+$string['grouppointswithcompensation'] = 'Points (with compensation)';
 $string['groupsourcecoursegroups'] = 'Course groups';
 $string['groupsourcecohorts'] = 'Cohorts';
 $string['groupsourceiomadcompanies'] = 'IOMAD companies';

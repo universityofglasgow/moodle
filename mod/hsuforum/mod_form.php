@@ -238,13 +238,21 @@ class mod_hsuforum_mod_form extends moodleform_mod {
                 $mform->disabledIf('advancedgradingmethod_'.$areaname, 'gradetype', 'neq', HSUFORUM_GRADETYPE_MANUAL);
             }
         }
-        $mform->disabledIf('gradepass', 'gradetype', 'neq', HSUFORUM_GRADETYPE_MANUAL);
+        $mform->disabledIf('gradepass_hsuforum', 'gradetype', 'neq', HSUFORUM_GRADETYPE_MANUAL);
 
-        $key = array_search('scale', $mform->_dependencies['assessed']['eq'][0]);
-        if ($key !== false) {
-            unset($mform->_dependencies['assessed']['eq'][0][$key]);
+        $reflection = new ReflectionClass($mform);
+        $property = $reflection->getProperty('_hideifs');
+        $property->setAccessible(true);
+        $dependencies = $property->getValue($mform);
+
+        if (isset($dependencies['assessed'])) {
+            $key = array_search('scale', $dependencies['assessed']['eq'][0]);
+            if ($key !== false) {
+                unset($dependencies['assessed']['eq'][0][$key]);
+                $property->setValue($mform, $dependencies);
+            }
         }
-        $mform->disabledIf('gradecat', 'gradetype', 'eq', HSUFORUM_GRADETYPE_NONE);
+        $mform->disabledIf('gradecat_hsuforum', 'gradetype', 'eq', HSUFORUM_GRADETYPE_NONE);
 //-------------------------------------------------------------------------------
 // buttons
         $this->add_action_buttons();
@@ -258,8 +266,98 @@ class mod_hsuforum_mod_form extends moodleform_mod {
 
     function standard_grading_coursemodule_elements() {
         $this->_features->rating = false;
-        parent::standard_grading_coursemodule_elements();
+        $this->standard_hsuforum_grading_coursemodule_elements();
         $this->_features->rating = true;
+    }
+
+    public function standard_hsuforum_grading_coursemodule_elements() {
+        global $COURSE, $CFG;
+        $mform =& $this->_form;
+        $isupdate = !empty($this->_cm);
+        $gradeoptions = array('isupdate' => $isupdate,
+            'currentgrade' => false,
+            'hasgrades' => false,
+            'canrescale' => $this->_features->canrescale,
+            'useratings' => $this->_features->rating);
+
+        if ($this->_features->hasgrades) {
+
+            if (!$this->_features->rating || $this->_features->gradecat) {
+                $mform->addElement('header', 'modstandardgrade', get_string('grade'));
+            }
+
+            //if supports grades and grades arent being handled via ratings
+            if (!$this->_features->rating) {
+
+                if ($isupdate) {
+                    $gradeitem = grade_item::fetch(array('itemtype' => 'mod',
+                        'itemmodule' => $this->_cm->modname,
+                        'iteminstance' => $this->_cm->instance,
+                        'itemnumber' => 0,
+                        'courseid' => $COURSE->id));
+                    if ($gradeitem) {
+                        $gradeoptions['currentgrade'] = $gradeitem->grademax;
+                        $gradeoptions['currentgradetype'] = $gradeitem->gradetype;
+                        $gradeoptions['currentscaleid'] = $gradeitem->scaleid;
+                        $gradeoptions['hasgrades'] = $gradeitem->has_grades();
+                    }
+                }
+                $mform->addElement('modgrade', 'grade', get_string('grade'), $gradeoptions);
+                $mform->addHelpButton('grade', 'modgrade', 'grades');
+                $mform->setDefault('grade', $CFG->gradepointdefault);
+            }
+
+            if ($this->_features->advancedgrading
+                and !empty($this->current->_advancedgradingdata['methods'])
+                and !empty($this->current->_advancedgradingdata['areas'])) {
+
+                if (count($this->current->_advancedgradingdata['areas']) == 1) {
+                    // if there is just one gradable area (most cases), display just the selector
+                    // without its name to make UI simplier
+                    $areadata = reset($this->current->_advancedgradingdata['areas']);
+                    $areaname = key($this->current->_advancedgradingdata['areas']);
+                    $mform->addElement('select', 'advancedgradingmethod_'.$areaname,
+                        get_string('gradingmethod', 'core_grading'), $this->current->_advancedgradingdata['methods']);
+                    $mform->addHelpButton('advancedgradingmethod_'.$areaname, 'gradingmethod', 'core_grading');
+                    if (!$this->_features->rating) {
+                        $mform->hideIf('advancedgradingmethod_'.$areaname, 'grade[modgrade_type]', 'eq', 'none');
+                    }
+
+                } else {
+                    // the module defines multiple gradable areas, display a selector
+                    // for each of them together with a name of the area
+                    $areasgroup = array();
+                    foreach ($this->current->_advancedgradingdata['areas'] as $areaname => $areadata) {
+                        $areasgroup[] = $mform->createElement('select', 'advancedgradingmethod_'.$areaname,
+                            $areadata['title'], $this->current->_advancedgradingdata['methods']);
+                        $areasgroup[] = $mform->createElement('static', 'advancedgradingareaname_'.$areaname, '', $areadata['title']);
+                    }
+                    $mform->addGroup($areasgroup, 'advancedgradingmethodsgroup', get_string('gradingmethods', 'core_grading'),
+                        array(' ', '<br />'), false);
+                }
+            }
+
+            if ($this->_features->gradecat) {
+                $mform->addElement('select', 'gradecat_hsuforum',
+                    get_string('gradecategoryonmodform', 'grades'),
+                    grade_get_categories_menu($COURSE->id, $this->_outcomesused));
+                $mform->addHelpButton('gradecat_hsuforum', 'gradecategoryonmodform', 'grades');
+                if (!$this->_features->rating) {
+                    $mform->hideIf('gradecat_hsuforum', 'grade[modgrade_type]', 'eq', 'none');
+                }
+            }
+
+            // Grade to pass.
+            $mform->addElement('text', 'gradepass_hsuforum', get_string('gradepass', 'grades'));
+            $mform->addHelpButton('gradepass_hsuforum', 'gradepass', 'grades');
+            $mform->setDefault('gradepass_hsuforum', '');
+            $mform->setType('gradepass_hsuforum', PARAM_RAW);
+            if (!$this->_features->rating) {
+                $mform->hideIf('gradepass_hsuforum', 'grade[modgrade_type]', 'eq', 'none');
+            } else {
+                $mform->hideIf('gradepass_hsuforum', 'assessed', 'eq', '0');
+            }
+        }
     }
 
     function definition_after_data() {

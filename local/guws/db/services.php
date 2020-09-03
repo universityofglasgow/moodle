@@ -33,15 +33,6 @@ $services = array(
             'restrictedusers' => 1,
             'enabled' => 1,
         ),
-
-        // Define service for GRMS
-        'AMS' => array(
-            'functions' => [],
-            'requiredcapability' => '',
-            'restrictedusers' => 1,
-            'enabled' => 1,
-        ),
-
 );
 
 $functions = array(
@@ -72,5 +63,19 @@ $functions = array(
         'classpath'   => 'local/guws/externallib.php',
         'description' => 'Upload assignment grades and feedback.',
         'type'        => 'write',
+    ),
+    'local_guws_alarmbell_query' => array(
+        'classname'   => 'local_guws_external',
+        'methodname'  => 'alarmbell_query',
+        'classpath'   => 'local/guws/externallib.php',
+        'description' => 'Query log info for Alarm Bell project',
+        'type'        => 'read',
+    ),
+    'local_guws_portal_courses' => array(
+        'classname'   => 'local_guws_external',
+        'methodname'  => 'portal_courses',
+        'classpath'   => 'local/guws/externallib.php',
+        'description' => 'Get list of courses for portal ',
+        'type'        => 'read',
     ),
 );

@@ -132,9 +132,11 @@ class config extends \block_xp\form\config {
         $mform->disabledIf('groupidentitymode', 'enablegroupladder', 'eq', 0);
         unset($el);
 
-        // Group ladder order.
+        // Group ladder order by.
         $el = $mform->createElement('select', 'grouporderby', get_string('grouporderby', 'local_xp'), [
             default_course_world_config::GROUP_ORDER_BY_POINTS => get_string('grouppoints', 'local_xp'),
+            default_course_world_config::GROUP_ORDER_BY_POINTS_COMPENSATED_BY_AVG =>
+                get_string('grouppointswithcompensation', 'local_xp'),
             default_course_world_config::GROUP_ORDER_BY_PROGRESS => get_string('progress', 'block_xp'),
         ]);
         $mform->insertElementBefore($el, 'hdrcheating');
