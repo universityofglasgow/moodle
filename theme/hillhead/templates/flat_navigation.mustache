@@ -135,9 +135,10 @@
 
 {{^starrednavexists}}
 <h2>Courses</h2>
+{{#coursenavexists}}
 <ul>
 {{#coursenav}}
-    <li id="starredCourses">
+    <li>
         <a href="{{{action}}}">
             <div class="media">
                 {{#icon.pix}}
@@ -151,12 +152,16 @@
     </li>
 {{/coursenav}}
 </ul>
+{{/coursenavexists}}
+{{^coursenavexists}}
+<p><strong>Oh dear, you don't have any courses.</strong> You should speak to your lecturers about this.</p>
+{{/coursenavexists}}
 {{/starrednavexists}}
 
-{{#thiscoursenavexists}}
-<h2>Course Sections</h2>
+{{#globalcoursenavexists}}
+<h2>Important Resources</h2>
 <ul>
-{{#thiscoursenav}}
+{{#globalcoursenav}}
     <li>
         <a href="{{{action}}}">
             <div class="media">
@@ -169,9 +174,9 @@
             </div>
         </a>
     </li>
-{{/thiscoursenav}}
+{{/globalcoursenav}}
 </ul>
-{{/thiscoursenavexists}}
+{{/globalcoursenavexists}}
 
 {{#adminnavexists}}
 <h2>Administration</h2>

@@ -60,6 +60,15 @@ if ($ADMIN->fulltree) {
     // Must add the page after definiting all the settings!                                                                         
     $settings->add($page);                                                                                                          
  
+    $page = new admin_settingpage('theme_hillhead_sidebar', get_string('sidebar', 'theme_hillhead'));
+ 
+    $setting = new admin_setting_configtextarea('theme_hillhead/hillhead_globalpinned',                                                              
+        get_string('hillhead_globalpinned', 'theme_hillhead'), get_string('hillhead_globalpinned_desc', 'theme_hillhead'), '', PARAM_RAW);                                                                                            
+    $page->add($setting);
+ 
+    // Must add the page after definiting all the settings!    
+    $settings->add($page);   
+ 
     // Advanced settings.                                                                                                           
     $page = new admin_settingpage('theme_hillhead_notifications', get_string('notificationsettings', 'theme_hillhead'));      
     
@@ -70,6 +79,19 @@ if ($ADMIN->fulltree) {
     $choices = Array(
         'enabled' => get_string('hillhead_smart_alerts_on', 'theme_hillhead'),
         'disabled' => get_string('hillhead_smart_alerts_off', 'theme_hillhead')
+    );                                                                     
+    $default = 'disabled';
+    
+    $setting = new admin_setting_configselect($name, $title, $description, $default, $choices);                                                                                                                                                                                     
+    $page->add($setting);      
+    
+    $name = 'theme_hillhead/hillhead_student_course_alert';                                                                                                   
+    $title = get_string('hillhead_student_course_alert', 'theme_hillhead');                                                                                   
+    $description = get_string('hillhead_student_course_alert_desc', 'theme_hillhead');
+    
+    $choices = Array(
+        'enabled' => get_string('hillhead_student_course_alert_on', 'theme_hillhead'),
+        'disabled' => get_string('hillhead_student_course_alert_off', 'theme_hillhead')
     );                                                                     
     $default = 'disabled';
     
