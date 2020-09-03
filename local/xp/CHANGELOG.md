@@ -1,6 +1,27 @@
 Changelog
 =========
 
+v1.10.0
+-------
+
+New features
+
+- The points of teams with less members can be compensated in the leaderboard
+- Administrators can enforce the anonymity of the leaderboards
+- Add support for the new capability to control access to the logs
+
+Bug fixes
+
+- Fixed an error when sending an award notification using Moodle 3.2 and older
+
+v1.9.1
+------
+
+Bug fixes
+
+- Import was not available with Moodle 3.3 and older (Pro, Multi)
+- Corrected invalid reference to a language string
+
 v1.9.0
 ------
 

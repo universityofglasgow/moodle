@@ -75,6 +75,7 @@ class default_course_world_navigation_factory implements course_world_navigation
         $courseid = $world->get_courseid();
         $urlresolver = $this->resolver;
         $renderer = \block_xp\di::get('renderer');
+        $accessperms = $world->get_access_permissions();
 
         if ($world->get_config()->get('enableinfos')) {
             $links[] = [
@@ -91,17 +92,21 @@ class default_course_world_navigation_factory implements course_world_navigation
             ];
         }
 
-        if ($world->get_access_permissions()->can_manage()) {
+        if ($accessperms->can_manage()) {
             $links[] = [
                 'id' => 'report',
                 'url' => $urlresolver->reverse('report', ['courseid' => $courseid]),
                 'text' => get_string('navreport', 'block_xp')
             ];
+        }
+        if ($accessperms instanceof \block_xp\local\permission\access_logs_permissions && $accessperms->can_access_logs()) {
             $links[] = [
                 'id' => 'log',
                 'url' => $urlresolver->reverse('log', ['courseid' => $courseid]),
                 'text' => get_string('navlog', 'block_xp')
             ];
+        }
+        if ($accessperms->can_manage()) {
             $links[] = [
                 'id' => 'levels',
                 'url' => $urlresolver->reverse('levels', ['courseid' => $courseid]),
@@ -131,8 +136,13 @@ class default_course_world_navigation_factory implements course_world_navigation
             //   $CFG->forced_plugin_settings = ['block_xp' => ['enablepromoincourses' => 0]];
             //
             // @codingStandardsIgnoreEnd
-            if ($this->adminconfig->get('enablepromoincourses')) {
+            $pluginman = \core_plugin_manager::instance();
+            $localxp = $pluginman->get_plugin_info('local_xp');
+            if ($this->adminconfig->get('enablepromoincourses') || $localxp) {
                 $star = $renderer->pix_icon('star', '', 'block_xp', ['class' => 'icon']);
+                if ($localxp) {
+                    $star = '';
+                }
 
                 $hasnew = '';
                 if (\block_xp\local\controller\promo_controller::has_new_content()) {

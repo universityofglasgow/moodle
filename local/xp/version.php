@@ -27,11 +27,11 @@ defined('MOODLE_INTERNAL') || die();
 
 $localxpdistro = 'Pro';
 
-$plugin->version      = 2020043000;
+$plugin->version      = 2020090300;
 $plugin->requires     = 2016052300;   // Moodle 3.1.0.
 $plugin->component    = 'local_xp';
 $plugin->maturity     = MATURITY_STABLE;
-$plugin->release      = "1.9.0 ($localxpdistro)";
+$plugin->release      = "1.10.0 ($localxpdistro)";
 $plugin->dependencies = [
-    'block_xp' => 2020043003
+    'block_xp' => 2020090300
 ];

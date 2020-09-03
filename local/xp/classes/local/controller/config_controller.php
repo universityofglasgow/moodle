@@ -43,10 +43,7 @@ class config_controller extends \block_xp\local\controller\config_controller {
      * @return moodleform
      */
     protected function define_form($withblockconfig = false) {
-        return new \local_xp\form\config($this->pageurl->out(false), [
-            'showblockconfig' => $withblockconfig,
-            'world' => $this->world,
-        ]);
+        return new \local_xp\form\config($this->pageurl->out(false), parent::define_form_customdata());
     }
 
 }

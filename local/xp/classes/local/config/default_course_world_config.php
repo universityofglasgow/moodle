@@ -65,6 +65,8 @@ class default_course_world_config extends immutable_config {
     const GROUP_ORDER_BY_POINTS = 1;
     /** THe group ladder ordering by progress. */
     const GROUP_ORDER_BY_PROGRESS = 2;
+    /** THe group ladder ordering by points with compensation using the team's average. */
+    const GROUP_ORDER_BY_POINTS_COMPENSATED_BY_AVG = 3;
 
     /**
      * Constructor.
