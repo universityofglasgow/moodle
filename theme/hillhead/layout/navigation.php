@@ -77,6 +77,12 @@ $starredCoursesExists = false;
 $globalcoursenav = Array();
 $globalcoursenavexists = false;
 
+$globalCourseHeader = get_config('theme_hillhead', 'hillhead_globalpinned_heading');
+
+if(empty($globalCourseHeader)) {
+    $globalCourseHeader = 'Important Resources';
+}
+
 $globalCourseJSON = get_config('theme_hillhead', 'hillhead_globalpinned');
 $globalCourses = json_decode($globalCourseJSON, true);
 

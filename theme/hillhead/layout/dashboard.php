@@ -51,7 +51,11 @@ include('topnotifications.php');
 //include('breadcrumb.php');
 include('footerlinks.php');
 
-$notiftext .= '<div class="alert alert-info alert-jumbo"><a class="close" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5('DashboardNoCourseWarning').'" aria-label="Close"><span aria-hidden="true">&times;</span></a><h3><i class="fa fa-info-circle"></i>Can\'t see one of your courses?</h3><p>Most lecturers make their courses available to students within the first week of a new semester. However, sometimes lecturers need a bit of time to update the material in their courses or to take backups of last year\'s students\' work. There might be a delay in these cases.</p><p>If you can\'t see something you expect to see in Moodle, it\'s best to double check with your lecturer. They\'re the ones who decide which courses you have access to. <strong>The IT Helpdesk can\'t add you to courses.</strong></p></div>';
+$dashboardNotification = get_config('theme_hillhead', 'hillhead_student_course_alert');
+
+if($dashboardNotification == 'enabled') {
+    $notiftext .= '<div class="alert alert-info alert-jumbo"><a class="close" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5('DashboardNoCourseWarning').'" aria-label="Close"><span aria-hidden="true">&times;</span></a><h3><i class="fa fa-info-circle"></i>Can\'t see one of your courses?</h3>'.get_config('theme_hillhead', 'hillhead_student_course_alert_text').'</div>';
+}
 
 $templatecontext['starrednav'] = $starredCourses;
 $templatecontext['starrednavbottom'] = $starredCoursesBottom;
@@ -68,6 +72,7 @@ $templatecontext['othernav'] = $othernav;
 $templatecontext['othernavexists'] = $othernavexists;
 $templatecontext['adminnav'] = $adminnav;
 $templatecontext['adminnavexists'] = $adminnavexists;
+$templatecontext['globalcoursenavheading'] = $globalCourseHeader;
 $templatecontext['globalcoursenav'] = $globalcoursenav;
 $templatecontext['globalcoursenavexists'] = $globalcoursenavexists;
 $templatecontext['accessibilityText'] = $accTxt;
