@@ -67,6 +67,7 @@ $templatecontext['othernav'] = $othernav;
 $templatecontext['othernavexists'] = $othernavexists;
 $templatecontext['adminnav'] = $adminnav;
 $templatecontext['adminnavexists'] = $adminnavexists;
+$templatecontext['globalcoursenavheading'] = $globalCourseHeader;
 $templatecontext['globalcoursenav'] = $globalcoursenav;
 $templatecontext['globalcoursenavexists'] = $globalcoursenavexists;
 $templatecontext['accessibilityText'] = $accTxt;

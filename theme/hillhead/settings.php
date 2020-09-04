@@ -62,6 +62,10 @@ if ($ADMIN->fulltree) {
  
     $page = new admin_settingpage('theme_hillhead_sidebar', get_string('sidebar', 'theme_hillhead'));
  
+    $setting = new admin_setting_configtext('theme_hillhead/hillhead_globalpinned_heading',                                                              
+        get_string('hillhead_globalpinned_heading', 'theme_hillhead'), get_string('hillhead_globalpinned_heading_desc', 'theme_hillhead'), 'Important Resources', PARAM_RAW);                                                                                            
+    $page->add($setting);
+ 
     $setting = new admin_setting_configtextarea('theme_hillhead/hillhead_globalpinned',                                                              
         get_string('hillhead_globalpinned', 'theme_hillhead'), get_string('hillhead_globalpinned_desc', 'theme_hillhead'), '', PARAM_RAW);                                                                                            
     $page->add($setting);
@@ -96,6 +100,10 @@ if ($ADMIN->fulltree) {
     $default = 'disabled';
     
     $setting = new admin_setting_configselect($name, $title, $description, $default, $choices);                                                                                                                                                                                     
+    $page->add($setting);
+    
+    $setting = new admin_setting_configtextarea('theme_hillhead/hillhead_student_course_alert_text',                                                              
+        get_string('hillhead_student_course_alert_text', 'theme_hillhead'), get_string('hillhead_student_course_alert_text_desc', 'theme_hillhead'), '<p>Most lecturers make their courses available to students within the first week of a new semester. However, sometimes lecturers need a bit of time to update the material in their courses or to take backups of last year\'s students\' work. There might be a delay in these cases.</p><p>If you can\'t see something you expect to see in Moodle, it\'s best to double check with your lecturer. They\'re the ones who decide which courses you have access to. <strong>The IT Helpdesk can\'t add you to courses.</strong></p>', PARAM_RAW);                                                                                            
     $page->add($setting);
     
     $name = 'theme_hillhead/hillhead_old_browser_alerts';                                                                                                   
