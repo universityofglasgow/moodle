@@ -41,7 +41,7 @@ $PAGE->flatnav->add($courseDirFlat);
 $hillheadHelpLink = get_config('theme_hillhead', 'hillhead_helpcentre');
 if(!empty($hillheadHelpLink)) { 
     $helpLink = new moodle_url($hillheadHelpLink);
-    $helpLinknav = navigation_node::create('Help', $helpLink);
+    $helpLinkNav = navigation_node::create('Help', $helpLink);
     $helpLinkFlat = new flat_navigation_node($helpLinkNav, 0);
     $helpLinkFlat->key = 'helplink';
     $helpLinkFlat->icon = new pix_icon('e/help', 'Help', 'moodle');
