@@ -996,6 +996,21 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
     }
 
     /**
+     * Enrolment guard - is enrolment allowed?
+     * @param object $course
+     * @return boolean
+     */
+    public function enrolment_guard($course) {
+        $enrolguard = $this->get_config('enrolguard');
+        if (!$enrolguard) {
+            return true;
+        }
+
+        // As long as we're before course start date + guard time it's all good
+        return time() < ($course->startdate + $enrolguard);
+    }
+
+    /**
      * Check if automatic enrolment possible.
      * Do not do anything if course outside of date range
      * or not visible
@@ -1023,6 +1038,11 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
 
         // Ignore courses before start
         if (time() < $course->startdate) {
+            return false;
+        }
+
+        // Ignore courses where enrolguard applies
+        if (!$this->enrolment_guard($course)) {
             return false;
         }
 
@@ -1586,6 +1606,10 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
             $link = new moodle_url('/course/edit.php', ['id' => $course->id]);
             $mform->addElement('html', '<div class="alert alert-warning">' . get_string('noenddatealert', 'enrol_gudatabase') .
                 ' - <b><a href="' . $link . '">' . get_string('settings') . '</a></b></div>');
+        }
+
+        if (!$this->enrolment_guard($course)) {
+            $mform->addElement('html', '<div class="alert alert-danger">' . get_string('enrolguardwarning', 'enrol_gudatabase') . '</div>');
         }
 
         $mform->addElement('text', 'name', get_string('custominstancename', 'enrol'));
