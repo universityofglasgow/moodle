@@ -19,14 +19,18 @@
     
     $topButtons .= '</div>';
     
+    $topButtons .= '<div class="btn-holder">';
+    
     if(has_capability('moodle/course:update', $coursecontext)) {
-       
-        $topButtons .= '<div class="btn-holder">';
     
         $settingsURL = new moodle_url('/course/edit.php?id='.$COURSE->id);
     
         $topButtons .= '<a class="btn btn-primary m-r-1" href="'.$settingsURL.'"><i class="fa fa-gear"></i> <span class="d-none d-sm-inline">Course </span>Settings</a>';
-        
+    
+    }
+    
+    if(has_capability('moodle/course:manageactivities', $coursecontext)) {
+       
         $editURL = new moodle_url('/course/view.php?id='.$COURSE->id.'&sesskey='.$USER->sesskey);
         
         if($USER->editing) {
@@ -34,9 +38,10 @@
         } else {
             $topButtons .= '<a class="btn btn-danger" href="'.$editURL.'&edit=on"><i class="fa fa-pencil"></i> <span class="d-none d-sm-inline">Turn </span>Editing On</a>';
         } 
-        $topButtons .= '</div>';
-    
+
     }
+    
+    $topButtons .= '</div>';
     $topButtons .= '</div>';
     
 ?>
