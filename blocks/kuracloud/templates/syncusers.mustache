@@ -1,0 +1,109 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+
+    @template block_kuracloud/syncusers
+
+    syncuser content.
+
+    Classes required for JS:
+    * -
+
+    Data attributes required for JS:
+    * -
+
+    Context variables required for this template:
+    * toupdate
+    * toadd
+    * todelete
+    * torestore
+    * toupdatecount
+    * toaddcount
+    * todeltecount
+    * torestorecount
+
+    Example context (json):
+    {
+        "toBeSupplied": [
+        ]
+    }
+}}
+<div>
+
+
+    {{^ has_changes }}
+        <p><strong>{{# str }}nosyncusers, block_kuracloud {{/ str }}</strong></p>
+    {{/ has_changes }}
+
+    {{# has_changes }}
+        <p><strong>{{# str }}confirmsyncusers, block_kuracloud {{/ str}}</strong></p>
+
+        {{# has_toadd }}
+            {{# str }}toaddcount, block_kuracloud, {{ toaddcount }} {{/ str }}
+            <ul>
+            {{# toadd }}
+                <li>{{.}}</li>
+            {{/ toadd }}
+            {{^ toadd }}
+                <li><em>{{# str }}morethan, block_kuracloud, {{ max_items }} {{/ str }}</em></li>
+            {{/ toadd }}
+
+            </ul>
+        {{/ has_toadd }}
+
+
+        {{# has_toupdate }}
+            {{# str }}toupdatecount, block_kuracloud, {{ toupdatecount }} {{/ str }}
+            <ul>
+            {{# toupdate }}
+                <li>{{.}}</li>
+            {{/ toupdate }}
+            {{^ toupdate }}
+                <li><em>{{# str }}morethan, block_kuracloud, {{ max_items }} {{/ str }}</em></li>
+            {{/ toupdate }}
+
+            </ul>
+        {{/ has_toupdate }}
+
+
+        {{# has_todelete }}
+            {{# str }}todeletecount, block_kuracloud, {{ todeletecount }} {{/ str }}
+            <ul>
+            {{# todelete }}
+                <li>{{.}}</li>
+            {{/ todelete }}
+            {{^ todelete }}
+                <li><em>{{# str }}morethan, block_kuracloud, {{ max_items }} {{/ str }}</em></li>
+            {{/ todelete }}
+
+            </ul>
+        {{/ has_todelete }}
+
+        {{# has_torestore }}
+            {{# str }}torestorecount, block_kuracloud, {{ torestorecount }} {{/ str }}
+            <ul>
+            {{# torestore }}
+                <li>{{.}}</li>
+            {{/ torestore }}
+            {{^ torestore }}
+                <li><em>{{# str }}morethan, block_kuracloud, {{ max_items }} {{/ str }}</em></li>
+            {{/ torestore }}
+
+            </ul>
+        {{/ has_torestore }}
+    {{/ has_changes }}
+</div>

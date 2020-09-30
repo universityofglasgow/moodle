@@ -1,0 +1,62 @@
+# https://blackboard-open-source.github.io/moodle-plugin-ci/
+# https://libraries.io/packagist/blackboard-open-source%2Fmoodle-plugin-ci
+
+# Issues with mustache test on xenial, stick with trusty until fixes land in moodle-plugin-ci
+# https://github.com/blackboard-open-source/moodle-plugin-ci/issues/91
+dist: trusty
+
+language: php
+
+sudo: false
+
+addons:
+  firefox: "47.0.1"
+  postgresql: "9.3"
+
+services:
+  - mysql
+  - postgresql
+
+cache:
+  directories:
+    - $HOME/.composer/cache
+    - $HOME/.npm
+
+php:
+  # - 5.6
+  # - 7.0
+  - 7.1
+
+env:
+  matrix:
+    - DB=mysqli MOODLE_BRANCH=MOODLE_35_STABLE
+    - DB=mysqli MOODLE_BRANCH=MOODLE_37_STABLE
+    - DB=mysqli MOODLE_BRANCH=MOODLE_38_STABLE
+    - DB=mysqli MOODLE_BRANCH=MOODLE_39_STABLE
+
+before_install:
+  - phpenv config-rm xdebug.ini
+  - nvm install 14.4.0
+  - nvm use 14.4.0
+  - cd ../..
+  - composer create-project -n --no-dev --prefer-dist blackboard-open-source/moodle-plugin-ci ci ^2
+  - export PATH="$(cd ci/bin; pwd):$(cd ci/vendor/bin; pwd):$PATH"
+
+install:
+  - moodle-plugin-ci install
+
+script:
+  - moodle-plugin-ci phplint
+  # PHP Copy/Paste Detector.
+  # Detects some duplicated code in api.php. Disabling test until ready to refactor.
+  # - moodle-plugin-ci phpcpd
+  # PHP Mess Detector
+  # Detects a noisy number of violations, but leaving active to pickup errors.
+  - moodle-plugin-ci phpmd
+  - moodle-plugin-ci codechecker
+  - moodle-plugin-ci validate
+  - moodle-plugin-ci savepoints
+  - moodle-plugin-ci mustache
+  - moodle-plugin-ci grunt
+  - moodle-plugin-ci phpunit
+  - moodle-plugin-ci behat
