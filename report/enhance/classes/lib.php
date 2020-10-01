@@ -176,6 +176,7 @@ class lib {
         // Headers.
         $i = 0;
         $myxls->write_string(1, $i++, get_string('requestnumber', 'report_enhance'));
+        $myxls->write_string(1, $i++, get_string('headline', 'report_enhance'));
         $myxls->write_string(1, $i++, get_string('submittedby', 'report_enhance'));
         $myxls->write_string(1, $i++, get_string('submittedon', 'report_enhance'));
         $myxls->write_string(1, $i++, get_string('department', 'report_enhance'));
@@ -195,6 +196,7 @@ class lib {
         foreach ($requests as $request) {
             $i = 0;
             $myxls->write_string($row, $i++, $request->id);
+            $myxls->write_string($row, $i++, $request->headline);
             $myxls->write_string($row, $i++, $request->username);
             $myxls->write_string($row, $i++, $request->userdate);
             $myxls->write_string($row, $i++, $request->department);
