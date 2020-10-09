@@ -1,0 +1,62 @@
+$font-family-sans-serif: "Hillhead", "Ubuntu", "Trebuchet MS", Arial, sans-serif;
+
+$spacer: 20px;
+$border-width: 1px;
+$navbar-height: 55px;
+$footer-min-height: 192px;
+$grid-gutter-width: 20px;
+
+$breadcrumb-divider: "›";
+$breadcrumb-divider-rtl: "‹";
+
+$enable-rounded: true;
+$enable-shadows: true;
+$enable-gradients: false;
+
+$font-size-base: 0.9rem;
+$headings-font-weight: 400;
+
+$alert-border-width: 1px;
+
+$hillhead-footer-color: #005e8d;
+
+$hillhead-page-bg: #ebf1f5;
+$hillhead-side-bg: #e1e6eb;
+$hillhead-side-br: #d6dbdf;
+$hillhead-card-bg: #ffffff;
+$hillhead-card-br: #e1e6eb;
+
+$hillhead-blue: #005398;
+$hillhead-cobalt: #0075b0;
+$hillhead-grey: #4f5961;
+$hillhead-leaf: #00643d;
+$hillhead-main: #003865;
+
+$brand-primary: #ff00ff;
+
+$drawer-bg: $hillhead-side-bg;
+
+$body-bg: $hillhead-page-bg;
+
+$card-border-radius:       0;
+$card-border-color:        $hillhead-card-br;
+$card-spacer-y: 20px;
+$card-spacer-x: 20px;
+
+$btn-primary-color:              $hillhead-cobalt;
+
+$btn-secondary-color:              $hillhead-grey;
+
+$message-sent-background: #B9E6F9;
+$message-sent-border: #A3CADB;
+
+$message-received-background: #DFEFD1;
+$message-received-border: #C2E3A5;
+
+$blocks-column-width: 300px;
+$blocks-plus-gutter: $blocks-column-width + 20;
+
+$nav-tabs-border-color: $hillhead-card-br;
+$nav-tabs-link-hover-border-color: $hillhead-card-br;
+$nav-tabs-link-active-bg: transparent;
+

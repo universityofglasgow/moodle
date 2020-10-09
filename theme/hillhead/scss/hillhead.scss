@@ -1,0 +1,633 @@
+$hillhead-blue: #005398;
+
+h1 {
+    font-size: 1.5rem;
+    color: #003865;
+}
+
+h2 {
+    font-size: 1.4rem;
+    color: #003865;
+}
+
+h3 {
+    font-size: 1.3rem;
+    color: #003865;
+}
+
+h4 {
+    font-size: 1.2rem;
+    color: #003865;
+}
+
+h5 {
+    font-size: 1.1rem;
+    color: #003865;
+}
+
+h6 {
+    font-size: 1rem;
+    color: #003865;
+}
+
+@include media-breakpoint-up(lg) {
+    body.drawer-open-left #region-main-settings-menu.has-blocks, body.drawer-open-left #region-main.has-blocks {
+        width: 100%;
+        float: none;
+    }
+    
+    body.drawer-open-left [data-region="blocks-column"] {
+        width: 100%;
+        float: none;
+    }
+
+    html body:not(.drawer-open-left) #region-main-settings-menu.has-blocks, body:not(.drawer-open-left) #region-main.has-blocks {
+        width: calc(100% - 320px);
+        display: inline-block;
+    }
+    
+    [data-region="blocks-column"] {
+        width: 300px;
+        float: right;
+    }
+}
+
+@include media-breakpoint-up(xl) {
+    
+    // Please forgive the !important tags. Boost by default shows two columns
+    // in a 1024x768 screen and that's just too small. Overriding that caused
+    // a selector specificity war that I just don't have time for.
+    
+    #region-main-settings-menu.has-blocks, html body #region-main.has-blocks {
+        width: calc(100% - 320px) !important;
+        display: inline-block !important;
+    }
+    
+    [data-region="blocks-column"] {
+        width: 300px !important;
+        float: right !important;
+    }
+}
+
+.hillheadLogoContainer {
+    height: 35px;
+}
+
+#page {
+    padding: 0 $card-spacer-x;
+}
+
+#page-my-index {
+    background-color: $hillhead-page-bg;
+}
+
+nav.navbar.fixed-top {
+    background-color: $hillhead-blue;
+}
+
+nav.navbar .popover-region {
+    margin-right: 20px;
+}
+
+nav.navbar .popover-region-toggle {
+    width: auto;
+}
+
+nav.navbar .nav-item .nav-link > i.icon {
+    font-size: 24px;
+    line-height: 35px;
+    height: auto;
+}
+
+nav.navbar-expand .navbar-nav .nav-link {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+nav.navbar button.btn {
+    margin-right: 0;
+    color: $hillhead-page-bg;
+    background: $hillhead-main;
+    border: 1px solid $hillhead-main;
+    padding: 7px 10px;
+    box-shadow: none;
+}
+
+nav.navbar button.drawer-opener {
+    width: 35px;
+    height: 35px;
+    padding: 6px 4px;
+    background-color: #003865;
+    border: none;
+}
+
+.navbar-light .navbar-nav .nav-link, .navbar-light .navbar-nav .nav-link:hover, .navbar-light .navbar-nav .nav-link:active {
+    color: #fff;
+}
+
+nav.navbar button.drawer-opener i.icon {
+    font-size: 24px;
+    width: auto;
+    height: auto;
+}
+
+nav.navbar a.navbar-brand {
+    background-image: url([[pix:theme|gu-logo-retina]]);
+    background-size: 111px 35px;
+    background-repeat: no-repeat;
+    width: 111px;
+    height: 35px;
+    margin-right: 0;
+}
+
+nav.navbar a.navbar-brand span {
+    display: none !important;
+}
+
+nav.navbar img.userpicture {
+    margin-right: 0;
+}
+
+nav.navbar .dropdown > a {
+    color: $hillhead-page-bg;
+}
+
+#nav-drawer {
+    border-right: 1px solid #d6dbdf;
+}
+
+#nav-drawer h2 {
+    font-size: 0.8em;
+    color: #577492;
+    margin-bottom: 5px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+#nav-drawer ul {
+    margin-bottom: 20px;
+    list-style: none;
+    padding-left: 0;
+}
+
+#nav-drawer ul li {
+    font-weight: 300;
+    margin-bottom: 3px;
+}
+
+#nav-drawer ul li a {
+    color: #384B5E;
+    text-decoration: none;
+}
+
+#nav-drawer ul li .media-left i {
+    width: 24px;
+    margin-right: 8px;
+    text-align: center;
+}
+
+#nav-drawer ul li .media-left img {
+    width: 16px;
+    margin-right: 12px;
+    margin-left: 4px;
+}
+
+#region-main {
+    background-color: #fff;
+}
+
+#page-content.not-card .region-main {
+    background: transparent;
+    border: none;
+    padding: 0;
+}
+
+.block-header {
+    padding: 7px 20px;
+    border-bottom: 1px solid $hillhead-card-br;
+}
+
+.block-header h3, .block-header h5 {
+    margin-bottom: 0;
+}
+
+.block-body {
+    padding: 20px;
+}
+
+.block-body .card-body {
+    padding: 0;
+}
+
+#page-course-view-topics:not(.path-user) #region-main, #page-course-view-weeks:not(.path-user) #region-main {
+    background: transparent;
+    border: none;
+    padding: 0;
+}
+
+#page-course-view-topics .course-content ul.topics li.section, #page-course-view-weeks .course-content ul.weeks li.section {
+    border: 1px solid $hillhead-card-br;
+    background-color: #fff;
+    padding-bottom: 0;
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+#page-course-view-topics ul.topics li.section .sectionname, #page-course-view-weeks ul.weeks li.section .sectionname  {
+    padding: 7px 20px;
+    border-bottom: 1px solid $hillhead-card-br;
+}
+
+#page-course-view-topics ul.topics li.section .section-modchooser, #page-course-view-weeks ul.weeks li.section .section-modchooser  {
+    padding: 7px 20px;
+    border-top: 1px solid $hillhead-card-br;
+}
+
+#page-course-view-topics .course-content ul.topics li.section .left, #page-course-view-topics .course-content ul.topics li.section .right, #page-course-view-weeks .course-content ul.weeks li.section .left, #page-course-view-weeks .course-content ul.weeks li.section .right {
+    //padding: 5px 20px;
+}
+
+#page-footer {
+    border-top: 1px solid $hillhead-side-br;
+    padding-top: 20px;
+    margin: 20px;
+    color: #577492;
+}
+
+#page-header .action-menu .dropdown > a {
+    color: #555;
+}
+
+#page-footer a {
+    color: $hillhead-footer-color;
+}
+
+[data-region="blocks-column"] {
+    display: inline-block;
+}
+
+.course-content ul.topics li.section .left, .course-content ul.topics li.section .right, .course-content ul.weeks li.section .left, .course-content ul.weeks li.section .right {
+    margin-top: auto;
+    padding-top: 0.5em;
+}
+
+.block .block-cards .course-summaryitem {
+    background: transparent;
+    margin-bottom: 20px !important;
+    margin-top: 20px;
+}
+
+.block_recentlyaccesseditems img.icon {
+    width: 24px;
+    height: 24px;
+}
+
+.course-summaryitem .summaryimage {
+    margin-right: 10px !important;
+}
+
+.nav-link.active,
+  .nav-item.show .nav-link  {
+      border-bottom: none;
+  }
+  
+.hillheadFooterLinks {
+    margin: 0;
+    margin-bottom: 20px;
+    padding: 0;
+}
+
+.hillheadFooterLinks li {
+    display: inline-block;
+}
+
+#page-footer p {
+    margin-bottom: 0;
+}
+
+.hillheadFooterLinks div {
+    display: inline;
+}
+
+.hillheadFooterLinks li::before {
+    display: inline-block;
+    padding-right: .5rem;
+    padding-left: .5rem;
+    color: #ACBCCE;
+    content: "\b7";
+}
+
+.hillheadFooterLinks li:first-child::before {
+    content: none;
+    padding-left: 0;
+}
+
+.hillheadFooterLinks i {
+    display: none;
+}
+
+.hillheadFooterLinks li:empty {
+    display: none;
+}
+
+#page-footer .hillheadFooterLinks li a {
+    color: #577492;
+    text-decoration: none;
+}
+
+#page-footer .hillheadFooterLinks li a:hover {
+    text-decoration: underline;
+}
+
+.alert {
+    padding: 5px 20px;
+}
+
+.alert i {
+    margin-right: 0.7em;
+}
+
+.alert-link {
+    font-weight: 500;
+    text-decoration: underline;
+}
+
+.tabBar {
+    margin-top: 20px;
+    margin-bottom: 0;
+    padding-left: 0;
+    background-color: $hillhead-card-bg;
+    border: 1px solid $hillhead-card-br;
+}
+
+.tabBar > li:first-child {
+    border-left: none !important;
+    border-top: none !important;
+}
+
+.tabBar > li {
+    display: block;
+    padding: 10px 15px;
+    border-top: 1px solid $hillhead-card-br;
+}
+
+.tabBar a {
+    color: #777;
+}
+
+@include media-breakpoint-up(md) {
+    .tabBar li {
+        float: left;
+        border-top: none;
+        border-left: 1px solid $hillhead-card-br;
+        max-width: 15em;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+    
+    body.drawer-open-left .tabBar li {
+        display: block;
+        float: none;
+        border-left: none;
+        border-top: 1px solid $hillhead-card-br;
+        max-width: inherit;
+    }
+    
+    .tabBar .help {
+        float: right;
+    }
+}
+
+@include media-breakpoint-up(lg) {
+    
+    body.drawer-open-left .tabBar li {
+        float: left;
+        border-top: none;
+        border-left: 1px solid $hillhead-card-br;
+        max-width: 20em;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+    
+    body.drawer-open-left .tabBar .help {
+        float: right;
+    }
+    
+    .tabBar li {
+        max-width: 20em;
+
+    }
+}
+
+@include media-breakpoint-up(xl) {
+    .tabBar li {
+        max-width: 25em;
+
+    }
+} 
+
+.tabBar i {
+    margin-right: 0.5em;
+    width: 1.4em;
+    text-align: center;
+}
+
+.activity-navigation .float-left {
+    float: none !important;
+    text-align: left;
+     overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    
+}
+
+.activity-navigation .float-right {
+    float: none !important;
+    text-align: right;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.section .content ul {
+    margin-bottom: 20px;
+    padding-left: 20px;
+}
+
+@include media-breakpoint-up(md) {
+    .section .content ul {
+        margin-bottom: 20px;
+        padding-left: 40px;
+    }
+}
+
+.stretchySearchBox {
+    padding-left: 20px;
+    padding-right: 20px;
+    flex: 1;
+}
+
+@include media-breakpoint-up(lg) {
+    .stretchySearchBox {
+        padding-left: 40px;
+        padding-right: 40px;
+    }
+}
+
+@include media-breakpoint-up(lg) {
+    .stretchySearchBox {
+        padding-left: 60px;
+        padding-right: 60px;
+    }
+}
+
+.usermenu>span.login {
+    color: $hillhead-page-bg;
+}
+
+.usermenu>span.login>a, .usermenu>span.login>a:hover {
+    color: $hillhead-page-bg;
+    text-decoration: underline;
+}
+
+div#gridshadebox_content.absolute {
+    top: 75px !important;
+    z-index: 9999;
+    left: 40px !important;
+    right: 40px !important;
+}
+
+.availability-list .availability-eye {
+    padding: 3px 5px;
+    border: 1px solid #999;
+    border-radius: 4px;
+    background-color: #eee;
+}
+
+.availability-list .availability-eye::after {
+    content: " Show/Hide" !important;
+    display: inline;
+    color: #666;
+    text-decoration: none;
+}
+
+.course-content ul.ctopics li.section .content .toggle span, .course-content ul.ctopics li.section .content.sectionhidden {
+    color: inherit;
+}
+
+.dashboard-card-deck.fixed-width-cards .dashboard-card {
+    width: 250px;
+}
+
+.user-login-details span {
+    display: block;
+    line-height: 1.3em;
+}
+
+.user-login-details .dimmed {
+    color: #888;
+    font-size: 0.9em;
+}
+
+.sidebarBadge {
+    float: right;
+    display: inline-block;
+    background-color: #577492;
+    color: $hillhead-side-bg;
+    text-transform: none;
+    padding: 4px 8px 2px 8px;
+    border-radius: 1em;
+    text-decoration: none;
+    margin-top: -4px;
+}
+
+.sidebarBadge:hover {
+    color: $hillhead-side-bg;
+    text-decoration: none;
+}
+
+.path-mod-book .block__fake li {
+clear: both;
+list-style: none;
+margin-top: .5em;
+}
+
+.course-content ul.gridicons li .icon_content.content_inside {
+    box-sizing: content-box;
+}
+
+body.hillhead-spacing .course-content ul.gridicons li .icon_content {
+    line-height: 1.4em !important;
+}
+
+body#page-mod-lti-mod button[disabled="disabled"] {
+    display: none;
+}
+
+.submissionstatustable .portfolio-add-link, td[id^="mod_assign_grading"] .portfolio-add-link {
+    display: none;
+}
+
+#gridshadebox_content ul.gtopics {
+    margin: 0 !important;
+   padding: 20px !important;
+}
+
+nav .breadcrumb {
+display: flex;
+}
+
+h4 {
+    font-size: 1.2rem;
+    color: #003865;
+}
+
+h6 {
+    font-size: 1rem;
+    color: #003865;
+}
+
+body.hillhead-night .course-content ul.ctopics li.section .content .toggle span, body.hillhead-night .course-content ul.ctopics li.section .content.sectionhidden .toggle span, body.hillhead-night .course-content ul.ctopics li.section .content .toggle span:hover, body.hillhead-night .course-content ul.ctopics li.section .content.sectionhidden .toggle span:hover {
+   color: #c4d6ee !important;
+}
+
+.que .formulation i {
+margin-right: 0;
+}
+
+body.format-topcoll .sectionhead a {
+color: inherit;
+}
+
+.table-gordon th, .table-gordon td {
+border: 1px solid #333;
+}
+
+#page-course-view-topics .course-content ul.topics li.section.current, #page-course-view-weeks .course-content ul.weeks li.section.current {
+background-color: #ffffee;
+}
+
+.alert-jumbo {
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.alert-jumbo h3 {
+    font-size: 1.2em;
+    margin-bottom: 10px;
+    color: #2f6473;
+}
+
+.alert-jumbo p {
+    margin-bottom: 10px;
+}
+
+.alert-jumbo p:last-child {
+    margin-bottom: 0;
+}
+
+.region_main_settings_menu_proxy {
+    background: transparent;
+}
