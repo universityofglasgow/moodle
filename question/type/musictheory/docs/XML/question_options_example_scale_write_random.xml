@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<options
+  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+  xsi:noNamespaceSchemaLocation='question_options_schema.xsd'>
+  <scale-write-random>
+    <displaykeysignature>true</displaykeysignature>
+    <clef-random>
+      <clef>treble</clef>
+    </clef-random>
+    <scaletype-random>
+      <scaletype>natural</scaletype>
+      <scaletype>harmonic</scaletype>
+    </scaletype-random>
+  </scale-write-random>
+</options>

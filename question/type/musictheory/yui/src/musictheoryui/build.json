@@ -1,0 +1,40 @@
+{
+  "name": "moodle-qtype_musictheory-musictheoryui",
+  "builds": {
+    "moodle-qtype_musictheory-musictheoryui": {
+      "jsfiles": [
+        "YUI_init.js",
+        "./MusThGUI/MusThGUI.js",
+        "./MusThGUI/GUIState.js",
+        "./MusThGUI/Render.js",
+        "./MusThGUI/Renderer.js",
+        "./MusThGUI/Control.js",
+        "./MusThGUI/Controller.js",
+        "./MusThGUI/CoordManager.js",
+        "./MusThGUI/StaffSystem.js",
+        "./MusThGUI/Staff.js",
+        "./MusThGUI/NoteCol.js",
+        "./MusThGUI/TwoVoiceNoteCol.js",
+        "./MusThGUI/KeySign.js",
+        "./MusThGUI/KeySignAcc.js",
+        "./MusThGUI/Note.js",
+        "./MusThGUI/State.js",
+        "./MusThGUI/StaffSystemRend.js",
+        "./MusThGUI/StaffRend.js",
+        "./MusThGUI/KeySignRend.js",
+        "./MusThGUI/NoteColRend.js",
+        "./MusThGUI/NoteRend.js",
+        "./MusThGUI/Toolbar.js",
+        "./MusThGUI/ToolbarBtn.js",
+        "./MusThGUI/ToolbarRend.js",
+        "./MusThGUI/ToolbarBtnRend.js",
+        "./MusThGUI/FiguredBass.js",
+        "./MusThGUI/FiguredBassRow.js",
+        "./MusThGUI/FiguredBassRend.js",
+        "./MusThGUI/TextInput.js",
+        "./MusThGUI/GlyphProvider.js",
+        "./MusThGUI/InputDialog.js"
+      ]
+    }
+  }
+}
