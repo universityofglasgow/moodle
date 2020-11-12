@@ -25,9 +25,16 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version      = 2020111216.15;
-$plugin->requires     = 2019111804.11;   // Moodle 3.8.4.
-$plugin->component    = 'local_gugcat';
-
-$plugin->maturity     = MATURITY_STABLE;
-
+$capabilities = [
+    'moodle/gugcat:view' => [
+        'riskbitmask' => RISK_PERSONAL,
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_COURSE,
+        'archetypes' => [
+            'manager' => CAP_ALLOW,
+            'coursecreator' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
+            'teacher' => CAP_ALLOW
+        ]
+    ]
+];

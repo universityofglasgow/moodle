@@ -23,20 +23,21 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once '../../config.php';
-global $USER, $DB, $CFG;
 
-$PAGE->set_url('/local/gugcat/index.php');
+require_once(__DIR__ . '/../../config.php');
+
 $PAGE->set_context(context_system::instance());
-
-require_login();
-
-$strpagetitle = get_string('gugcat', 'local_gugcat');
-$strpageheading = get_string('gugcat', 'local_gugcat');
-
-$PAGE->set_title($strpagetitle);
-$PAGE->set_heading($strpageheading);
+$PAGE->set_url(new moodle_url('/local/gugcat/'));
+$PAGE->set_title(get_string('gugcat', 'local_gugcat'));
+$PAGE->navbar->ignore_active();
+$PAGE->navbar->add(get_string('gugcat', 'local_gugcat'), new moodle_url('/local/gugcat'));
 
 echo $OUTPUT->header();
+
+$templateContext = (object)[
+    'texttodisplay' => 'here is some text'
+];
+
+echo $OUTPUT->render_from_template('local_gugcat/index', $templateContext);
 
 echo $OUTPUT->footer();

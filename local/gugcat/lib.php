@@ -23,11 +23,17 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+function local_gugcat_extend_navigation_course($parentnode, $course, $context) {
+    $url = new moodle_url('/local/gugcat/index.php');
+    $gugcat = get_string('gugcat', 'local_gugcat');
+    $icon = new pix_icon('my-media', '', 'local_mymedia');
+    $main_node = $parentnode->add($gugcat, $url, navigation_node::TYPE_CONTAINER, $gugcat, 'gugcat', $icon);
+}
 
-$plugin->version      = 2020111216.15;
-$plugin->requires     = 2019111804.11;   // Moodle 3.8.4.
-$plugin->component    = 'local_gugcat';
-
-$plugin->maturity     = MATURITY_STABLE;
-
+function local_gugcat_extend_navigation($navigation){
+    $url = new moodle_url('/local/gugcat/index.php');
+    $gugcat = get_string('gugcat', 'local_gugcat');
+    $icon = new pix_icon('my-media', '', 'local_mymedia');
+    $main_node = $navigation->add($gugcat, $url, navigation_node::TYPE_CONTAINER, $gugcat, 'gugcat', $icon);
+    $main_node->showinflatnavigation = true;
+}
