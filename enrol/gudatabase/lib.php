@@ -1997,12 +1997,12 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
      * @return array
      */
     public function get_bulk_operations(course_enrolment_manager $manager) {
-	global $CFG, $DB;
+	    global $CFG, $DB;
 
-	$course = $manager->get_course();
-        if ($this->enrolment_possible($course)) {
-            return [];
-        }
+	    $course = $manager->get_course();
+        //if ($this->enrolment_possible($course)) {
+        //    return [];
+        //}
 
         $context = $manager->get_context();
         $bulkoperations = array();
