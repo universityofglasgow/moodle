@@ -25,3 +25,4 @@
 
  $string['pluginname'] = 'UofG Grade Capture and Aggregation Tool';
  $string['gugcat'] = 'Grade Capture and Aggregation Tool';
+ $string['navname'] = 'Grade Capture and Aggregation';

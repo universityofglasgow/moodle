@@ -25,14 +25,14 @@
 
 function local_gugcat_extend_navigation_course($parentnode, $course, $context) {
     $url = new moodle_url('/local/gugcat/index.php');
-    $gugcat = get_string('gugcat', 'local_gugcat');
+    $gugcat = get_string('navname', 'local_gugcat');
     $icon = new pix_icon('my-media', '', 'local_mymedia');
     $main_node = $parentnode->add($gugcat, $url, navigation_node::TYPE_CONTAINER, $gugcat, 'gugcat', $icon);
 }
 
 function local_gugcat_extend_navigation($navigation){
     $url = new moodle_url('/local/gugcat/index.php');
-    $gugcat = get_string('gugcat', 'local_gugcat');
+    $gugcat = get_string('navname', 'local_gugcat');
     $icon = new pix_icon('my-media', '', 'local_mymedia');
     $main_node = $navigation->add($gugcat, $url, navigation_node::TYPE_CONTAINER, $gugcat, 'gugcat', $icon);
     $main_node->showinflatnavigation = true;
