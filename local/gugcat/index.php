@@ -28,7 +28,9 @@ global $USER, $DB, $CFG;
 
 $PAGE->set_url('/local/gugcat/index.php');
 $PAGE->set_context(context_system::instance());
+$PAGE->requires->css('/local/gugcat/gcsa.css');
 
+$PAGE->set_title($strpagetitle);
 require_login();
 
 $strpagetitle = get_string('gugcat', 'local_gugcat');
@@ -37,6 +39,27 @@ $strpageheading = get_string('gugcat', 'local_gugcat');
 $PAGE->set_title($strpagetitle);
 $PAGE->set_heading($strpageheading);
 
-echo $OUTPUT->header();
+//testing course id = 1
+$courseid = optional_param('id', 1, PARAM_INT);
+if (!$course = $DB->get_record('course', array('id' => $courseid))) {
+    print_error('invalidcourseid');
+}
+$PAGE->set_course($course);
+$context_course = context_course::instance($course->id);
+$students = get_role_users(5 , $context_course);
+$modinfo = get_fast_modinfo($courseid);
+$mods = $modinfo->get_cms();
 
+$templatecontext = (object)[
+    'title' =>get_string('title', 'local_gugcat'),
+    'assessmenttabstr' =>get_string('assessmentlvlscore', 'local_gugcat'),
+    'overviewtabstr' =>get_string('overviewaggregrade', 'local_gugcat'),
+    'addsavebtnstr' =>get_string('saveallgrade', 'local_gugcat'),
+    'approvebtnstr' =>get_string('approvegrades', 'local_gugcat'),
+    'students' => array_values($students),
+    'activities' => array_values($mods)
+];
+
+echo $OUTPUT->header();
+echo $OUTPUT->render_from_template('local_gugcat/index', $templatecontext);
 echo $OUTPUT->footer();

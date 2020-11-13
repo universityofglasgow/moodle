@@ -1,0 +1,163 @@
+.container{
+    margin: 0;
+    padding: 0;
+    font-size: 80%;
+}
+
+.title{
+    font-weight: bold;
+}
+
+/* Table style */
+.table{
+    margin-bottom: 0;
+}
+
+th{
+   background-color: #005c8a;
+   color: white;
+   font-weight: 500;
+}
+
+tr:nth-child(even){
+    background-color: #e6eaee;
+}
+
+td, th{
+    text-align: center;
+    padding: 1em 1.5em;
+}
+
+i{
+    color: #8c8c8c;
+    cursor: pointer;
+}
+
+/* Tab Links style */
+.tablink {
+    border-radius: .5em .5em 0 0 ;
+    background-color: #c4c4c4;
+    border: 0;
+    outline: none;
+    cursor: pointer;
+    padding: 14px 16px;
+    width: auto;
+    font-weight: bold;
+}
+
+.tablink:hover {
+    opacity: 0.8;
+}
+
+.tablink.active{
+    background-color: #005c8a;
+    color: white;
+}
+
+/* Tab Content style */
+.tabcontent{
+    border: 1px solid black;
+    border-radius: 0 1em 0 0 ;
+    overflow: hidden;
+    white-space: nowrap;
+    position: relative;
+}
+
+/* Tab Content Header style */
+
+.tabcontent-header{
+    padding: 1.5em;
+}
+
+/* Buttons style */
+.btn-default{
+    background-color: transparent;
+    border: 1px solid #005c8a;
+    color: #005c8a;
+    border-radius: 0.5em;
+    font-weight: 400;
+    font-size: inherit;
+    outline: none;
+}
+
+.btn-default:hover{
+    background-color: #005c8a;
+    color: white;
+}
+
+.btn-add{
+    background-color: #005c8a;
+    color: white;
+}
+
+.btn-approve{
+    border: 1px solid #006630;
+    background-color: #006630;
+    color: white;
+}
+
+.btn-approve:hover{
+    background-color: #006630;
+    color: white;
+    opacity: 0.8;
+}
+
+.btn-download, .btn-approve{
+    float: right;
+}
+
+.btn-download, .btn-approve, .btn-add{
+    height: 40px;
+}
+
+/* Select style */
+.selectdiv {
+    position: relative;
+    float: left;
+    margin: 0 1em;
+    cursor: pointer;
+}
+  
+.selectdiv:after {
+    content: '\f078';
+    font: normal normal normal 12px/1 FontAwesome;
+    color: #005c8a;
+    right: 11px;
+    top: 6px;
+    height: 34px;
+    padding: 5% 8px 0px 8px;
+    position: absolute;
+    pointer-events: none;
+}
+  
+/* IE11 hide native button*/
+select::-ms-expand {
+    display: none;
+}
+
+.selectdiv select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    cursor: pointer;
+    display: block;
+    width: 100%;
+    max-width: 320px;
+    height: 35px;
+    float: right;
+    margin: 0 5px;
+    padding: 0px 20px 0px 10px;
+    line-height: 1.75;
+    color: #333;
+    background-color: #ffffff;
+    background-image: none;
+    border-radius: .5em;
+    border: 1px solid #8c8c8c;
+    -ms-word-break: normal;
+    word-break: normal;
+    outline: none;
+}
+
+.act-select select{
+    height: 40px;
+}

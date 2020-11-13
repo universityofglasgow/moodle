@@ -1,0 +1,139 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_test/manage
+
+    Example context (json):
+    { }
+}}
+<div class="container">
+    <h4 class="title">{{title}}</h4>
+    <button class="tablink active">{{assessmenttabstr}}</button>
+    <button class="tablink">{{overviewtabstr}}</button>
+    <button class="btn btn-default btn-approve">{{approvebtnstr}}</button>
+    <div class="tabcontent">
+        <div class="tabcontent-header">
+            <div class="selectdiv act-select">
+                <select>
+                    <option>Assignment 1: Critical essay</option>
+                    {{#activities}}
+                    <option>{{name}}</option>
+                    {{/activities}}
+                </select>
+            </div>
+            <button class="btn btn-default btn-add">{{addsavebtnstr}}</button>
+            <button class="btn btn-default btn-download">Download .csv</button>
+        </div>
+         <div class="table-responsive">          
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Candidate No.</th>
+                        <th>Student No.</th>
+                        <th>Surname</th>
+                        <th>Forename</th>
+                        <th>1st mark</th>
+                        <th>2nd mark</th>
+                        <th>Provisional grade</th>
+                        <th>Add new grade for all participants</th>
+                        <th>Reason for new grade</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>101282</td>
+                        <td>Austen</td>
+                        <td>Jane</td>
+                        <td>A1 <i class="fa fa-ellipsis-h"></i></td>
+                        <td>A2 <i class="fa fa-ellipsis-h"></i></td>
+                        <td><b>A2</b></td>
+                        <td>
+                            <div class="selectdiv">
+                                <select>
+                                    <option>Choose grade</option>
+                                </select>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="selectdiv">
+                                <select>
+                                    <option>Select reason</option>
+                                </select>
+                            </div>
+                        </td>
+                        <td><button class="btn btn-default">Add Grade</button></td>
+                    </tr> 
+                    <tr>
+                        <td>2</td>
+                        <td>101283</td>
+                        <td>Barrie</td>
+                        <td>James</td>
+                        <td>B3 <i class="fa fa-ellipsis-h"></i></td>
+                        <td>A2 <i class="fa fa-ellipsis-h"></i></td>
+                        <td><b>A2</b></td>
+                        <td>
+                            <div class="selectdiv">
+                                <select>
+                                    <option>Choose grade</option>
+                                </select>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="selectdiv">
+                                <select>
+                                    <option>Select reason</option>
+                                </select>
+                            </div>
+                        </td>
+                        <td><button class="btn btn-default">Add Grade</button></td>
+                    </tr> 
+                    {{#students}}
+                    <tr>
+                        <td>{{id}}</td>
+                        <td>101282</td>
+                        <td>{{lastname}}</td>
+                        <td>{{firstname}}</td>
+                        <td>A1 <i class="fa fa-ellipsis-h"></i></td>
+                        <td>A2 <i class="fa fa-ellipsis-h"></i></td>
+                        <td><b>A2</b></td>
+                        <td>
+                            <div class="selectdiv">
+                                <select>
+                                    <option>Choose grade</option>
+                                </select>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="selectdiv">
+                                <select>
+                                    <option>Select reason</option>
+                                </select>
+                            </div>
+                        </td>
+                        <td><button class="btn btn-default">Add Grade</button></td>
+                    </tr>  
+                    {{/students}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+
