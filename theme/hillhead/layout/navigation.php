@@ -111,7 +111,7 @@ foreach($flatnav as $navitem) {
             break;
         case 30:
             $thiscoursenav[] = $navitem;
-            //$thiscoursenavexists = true;
+            $thiscoursenavexists = true;
             break;
         case 69:
             $starredCourses[] = $navitem;
@@ -152,6 +152,12 @@ foreach($flatnav as $navitem) {
                     $coursenav[] = $navitem;
                     $starredCoursesBottom[] = $navitem;
                     $coursenavexists = true;
+                    break;
+                case 'mymedia': // Not sure this belongs here
+                case 'gugcat':
+                    case 30:
+                    $thiscoursenav[] = $navitem;
+                    $thiscoursenavexists = true;
                     break;
                 default:
                     $othernav[] = $navitem;
