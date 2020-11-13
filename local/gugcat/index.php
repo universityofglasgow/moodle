@@ -25,19 +25,35 @@
 
 
 require_once(__DIR__ . '/../../config.php');
-
 $PAGE->set_context(context_system::instance());
 $PAGE->set_url(new moodle_url('/local/gugcat/'));
 $PAGE->set_title(get_string('gugcat', 'local_gugcat'));
 $PAGE->navbar->ignore_active();
 $PAGE->navbar->add(get_string('navname', 'local_gugcat'), new moodle_url('/local/gugcat'));
+$PAGE->requires->css('/local/gugcat/gcsa.css');
 
-echo $OUTPUT->header();
+//testing course id = 1
+$courseid = optional_param('id', 1, PARAM_INT);
+if (!$course = $DB->get_record('course', array('id' => $courseid))) {
+    print_error('invalidcourseid');
+}
+$PAGE->set_course($course);
+$PAGE->set_heading($course->fullname);
+$context_course = context_course::instance($course->id);
+$students = get_role_users(5 , $context_course);
+$modinfo = get_fast_modinfo($courseid);
+$mods = $modinfo->get_cms();
 
-$templateContext = (object)[
-    'texttodisplay' => 'here is some text'
+$templatecontext = (object)[
+    'title' =>get_string('title', 'local_gugcat'),
+    'assessmenttabstr' =>get_string('assessmentlvlscore', 'local_gugcat'),
+    'overviewtabstr' =>get_string('overviewaggregrade', 'local_gugcat'),
+    'addsavebtnstr' =>get_string('saveallgrade', 'local_gugcat'),
+    'approvebtnstr' =>get_string('approvegrades', 'local_gugcat'),
+    'students' => array_values($students),
+    'activities' => array_values($mods)
 ];
 
-echo $OUTPUT->render_from_template('local_gugcat/index', $templateContext);
-
+echo $OUTPUT->header();
+echo $OUTPUT->render_from_template('local_gugcat/index', $templatecontext);
 echo $OUTPUT->footer();

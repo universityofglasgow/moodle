@@ -23,6 +23,12 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
- $string['pluginname'] = 'UofG Grade Capture and Aggregation Tool';
- $string['gugcat'] = 'Grade Capture and Aggregation Tool';
- $string['navname'] = 'Grade Capture and Aggregation';
+$string['pluginname'] = 'UofG Grade Capture and Aggregation Tool';
+$string['gugcat'] = 'Grade Capture and Aggregation Tool';
+$string['title'] = 'Grade capture and score aggregation';
+$string['assessmentlvlscore'] = 'Assessment Level Score';
+$string['overviewaggregrade'] = 'Overview & Aggregated Grade';
+$string['addallnewgrade'] = 'Add new grade for all participants';
+$string['saveallgrade'] = 'Save all participants grades';
+$string['approvegrades'] = 'Approve provisional grades';
+$string['navname'] = 'Grade Capture and Aggregation';
