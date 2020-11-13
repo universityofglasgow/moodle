@@ -15,20 +15,25 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Language EN
+ * Version file.
  *
- * @package    local_gugrader
+ * @package    local_gugcat
  * @copyright  2020
  * @author     Accenture
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['pluginname'] = 'UofG Grade Capture and Aggregation Tool';
-$string['gugcat'] = 'Grade Capture and Aggregation Tool';
-$string['title'] = 'Grade capture and score aggregation';
-$string['assessmentlvlscore'] = 'Assessment Level Score';
-$string['overviewaggregrade'] = 'Overview & Aggregated Grade';
-$string['addallnewgrade'] = 'Add new grade for all participants';
-$string['saveallgrade'] = 'Save all participants grades';
-$string['approvegrades'] = 'Approve provisional grades';
-$string['navname'] = 'Grade Capture and Aggregation';
+function local_gugcat_extend_navigation_course($parentnode, $course, $context) {
+    $url = new moodle_url('/local/gugcat/index.php');
+    $gugcat = get_string('navname', 'local_gugcat');
+    $icon = new pix_icon('my-media', '', 'local_mymedia');
+    $main_node = $parentnode->add($gugcat, $url, navigation_node::TYPE_CONTAINER, $gugcat, 'gugcat', $icon);
+}
+
+function local_gugcat_extend_navigation($navigation){
+    $url = new moodle_url('/local/gugcat/index.php');
+    $gugcat = get_string('navname', 'local_gugcat');
+    $icon = new pix_icon('my-media', '', 'local_mymedia');
+    $main_node = $navigation->add($gugcat, $url, navigation_node::TYPE_CONTAINER, $gugcat, 'gugcat', $icon);
+    $main_node->showinflatnavigation = true;
+}

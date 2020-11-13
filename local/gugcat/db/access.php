@@ -15,20 +15,26 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Language EN
+ * Version file.
  *
- * @package    local_gugrader
+ * @package    local_gugcat
  * @copyright  2020
  * @author     Accenture
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['pluginname'] = 'UofG Grade Capture and Aggregation Tool';
-$string['gugcat'] = 'Grade Capture and Aggregation Tool';
-$string['title'] = 'Grade capture and score aggregation';
-$string['assessmentlvlscore'] = 'Assessment Level Score';
-$string['overviewaggregrade'] = 'Overview & Aggregated Grade';
-$string['addallnewgrade'] = 'Add new grade for all participants';
-$string['saveallgrade'] = 'Save all participants grades';
-$string['approvegrades'] = 'Approve provisional grades';
-$string['navname'] = 'Grade Capture and Aggregation';
+defined('MOODLE_INTERNAL') || die();
+
+$capabilities = [
+    'moodle/gugcat:view' => [
+        'riskbitmask' => RISK_PERSONAL,
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_COURSE,
+        'archetypes' => [
+            'manager' => CAP_ALLOW,
+            'coursecreator' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
+            'teacher' => CAP_ALLOW
+        ]
+    ]
+];

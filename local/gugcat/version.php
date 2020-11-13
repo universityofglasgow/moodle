@@ -17,7 +17,7 @@
 /**
  * Version file.
  *
- * @package    local_gugrader
+ * @package    local_gugcat
  * @copyright  2020
  * @author     Accenture
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -25,7 +25,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version      = 2020110501;
+$plugin->version      = 2020111216.15;
 $plugin->requires     = 2019111804.11;   // Moodle 3.8.4.
 $plugin->component    = 'local_gugcat';
 

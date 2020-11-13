@@ -23,21 +23,14 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once '../../config.php';
-global $USER, $DB, $CFG;
 
-$PAGE->set_url('/local/gugcat/index.php');
+require_once(__DIR__ . '/../../config.php');
 $PAGE->set_context(context_system::instance());
+$PAGE->set_url(new moodle_url('/local/gugcat/'));
+$PAGE->set_title(get_string('gugcat', 'local_gugcat'));
+$PAGE->navbar->ignore_active();
+$PAGE->navbar->add(get_string('navname', 'local_gugcat'), new moodle_url('/local/gugcat'));
 $PAGE->requires->css('/local/gugcat/gcsa.css');
-
-$PAGE->set_title($strpagetitle);
-require_login();
-
-$strpagetitle = get_string('gugcat', 'local_gugcat');
-$strpageheading = get_string('gugcat', 'local_gugcat');
-
-$PAGE->set_title($strpagetitle);
-$PAGE->set_heading($strpageheading);
 
 //testing course id = 1
 $courseid = optional_param('id', 1, PARAM_INT);
@@ -45,6 +38,7 @@ if (!$course = $DB->get_record('course', array('id' => $courseid))) {
     print_error('invalidcourseid');
 }
 $PAGE->set_course($course);
+$PAGE->set_heading($course->fullname);
 $context_course = context_course::instance($course->id);
 $students = get_role_users(5 , $context_course);
 $modinfo = get_fast_modinfo($courseid);
