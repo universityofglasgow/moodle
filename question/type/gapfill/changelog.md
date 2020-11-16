@@ -1,3 +1,22 @@
+### Version 2.10 of the Moodle Gapfill question type Oct 2020
+Removed an end_div tag because it broke the display of blocks in quiz.
+Thanks to Eliot Hoving of the UCL University in the UK for reporting this.
+
+### Version 2.09 of the Moodle Gapfill question type Sep 2020
+Singleuse draggbles was always on because javascript interpreted "0" as true.
+The file renderer.php now casts it to Boolean (true or false) so singleuse draggables
+is only on when the setting is clicked. My thanks to Mrs Summers for reporting this
+and helping to identify where the problem was and also to Matthias Giger for testing.
+
+### Version 2.08 of the Moodle Gapfill question type Sep 2020
+Removed missing nullable parameter type ?int, as it breaks on PHP 7.0 which is supported at least
+up till Moodle 3.5. The optionsaftertext setting did not work on Mobile, fixed by adding
+a missing a closing div tag . Discarded the code in upgrade.php that changed default datatype of singleuse. It would have applied to a tiny number of users and not actually break anything.
+
+### Version 2.07 of the Moodle Gapfill question type Sep 2020
+Discard changes to mobile that were supposed to make singleuse work, they broke how it worked on mobile. Added class to put space under answeroptions in
+mobile.
+
 ### Version 2.06 of the Moodle Gapfill question type Aug 2020
 New setting singleuse. Draggables are removed from the list of options once they are dropped into a gap. Set on and off through a "singleuse" checkbox in the editing form.
 Also works in mobile app.
