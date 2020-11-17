@@ -1126,8 +1126,6 @@ class mod_oublog_renderer extends plugin_renderer_base {
                     if (!$forexport) {
                         $output .= '<a href="deletecomment.php?comment=' .
                                 $comment->id . $cmparam . $referurlparam  . '">' . $strdelete.'</a>';
-                    } else {
-                        $output .= $strdelete;
                     }
                 }
             }
@@ -1744,12 +1742,12 @@ EOF;
         if (!empty($issharedblog) && $issharedblog) {
             $sharemode = true;
             $extraparams['cmid'] = $childcmid;
+            $masterblog = $oublog;
+            $childdata = oublog_get_blog_data_base_on_cmid_of_childblog($childcmid, $masterblog);
+            $oublog = $childdata['ousharedblog'];
+            $cm = $childdata['cm'];
         }
-
-        // Call early to cache group mode - stops debugging warning from oublog_get_posts later.
-        $cm->activitygroupmode = oublog_get_activity_groupmode($cm, $COURSE);
         $context = context_module::instance($cm->id);
-        $modcontext = $context;
         if (empty($oubloguserid)) {
             $oubloguserid = null;
         }
@@ -1758,7 +1756,7 @@ EOF;
         }
         list($posts, $recordcount) = oublog_get_posts($oublog,
                 $context, $offset, $cm, $currentgroup, $currentindividual,
-                $oubloguserid, null, $canaudit, null, null, OUBLOG_POSTS_PER_PAGE_EXPORT, $orderby);
+                $oubloguserid, null, $canaudit, null, $masterblog, OUBLOG_POSTS_PER_PAGE_EXPORT, $orderby);
         $data = [];
         foreach ($posts as $post) {
             $onerow = [];

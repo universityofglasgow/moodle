@@ -1,14 +1,15 @@
 Moodle Code Checker
 ===================
 
-[![Build Status](https://travis-ci.org/moodlehq/moodle-local_codechecker.svg?branch=master)](https://travis-ci.org/moodlehq/moodle-local_codechecker)
+[![Build Status](https://travis-ci.com/moodlehq/moodle-local_codechecker.svg?branch=master)](https://travis-ci.com/moodlehq/moodle-local_codechecker)
 
 Information
 -----------
 
-This Moodle plugin uses the Pear CodeSniffer library to
-check that code follows the Moodle coding guidelines, available @
-<http://docs.moodle.org/en/Development:Coding_style>.
+This Moodle plugin uses the [PHP CodeSniffer](https://github.com/squizlabs/PHP_CodeSniffer) tool to
+check that code follows the [Moodle coding style](http://docs.moodle.org/dev/Coding_style). It
+implements and reuses a set of 'sniffs' that check many aspects of the code,
+including the awesome [PHPCompatibility](https://github.com/PHPCompatibility/PHPCompatibility) ones.
 
 It was created by developers at the Open University, including Sam Marshall,
 Tim Hunt and Jenny Gray. It is now maintained by Moodle HQ.
