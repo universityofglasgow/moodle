@@ -20,7 +20,8 @@ define(['jquery', 'jqueryui', 'theme_hillhead/jquery.ui.touch-punch-improved'], 
                 $("#starredCourses").disableSelection();
                 $("#starredCourses li .media").each(function() {
                     var link = $(this).parent().attr("href").replace("/course/view", "/theme/hillhead/course-unstar");
-                    $(this).append('<span class="media-right"><a class="unpinCourseBadge" href="'+link+'"><i class="fa fa-trash"></i></a></span>');
+                    var title = "Unstar " + $(this).find(".media-body").text();
+                    $(this).append('<span class="media-right"><a class="unpinCourseBadge" href="'+link+'" title="'+title+'"><i class="fa fa-trash"></i></a></span>');
                 });
                 return false;
             });
