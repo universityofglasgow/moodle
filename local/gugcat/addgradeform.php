@@ -25,10 +25,11 @@
  */
 
 require_once(__DIR__ . '/../../config.php');
-require_once($CFG->dirroot.'/local/gugcat/classes/form/form.php');
+require_once($CFG->dirroot.'/local/gugcat/classes/form/addgradeform.php');
 $PAGE->navbar->ignore_active();
 $PAGE->navbar->add(get_string('navname', 'local_gugcat'), new moodle_url('/local/gugcat'));
 
+//this is temporary while we are still working on the navigation to pass the course id.
 $courseid = optional_param('id', 1, PARAM_INT);
 if (!$course = $DB->get_record('course', array('id' => $courseid))) {
     print_error('invalidcourseid');
@@ -37,16 +38,16 @@ if (!$course = $DB->get_record('course', array('id' => $courseid))) {
 $PAGE->set_course($course);
 require_login($course);
 $context = context_course::instance($course->id);
-$PAGE->requires->css('/local/gugcat/styles/form.css') ;
+$PAGE->requires->css('/local/gugcat/styles/addgradeform.css') ;
 
 
-$PAGE->set_url(new moodle_url('/local/gugcat/form.php'));
+$PAGE->set_url(new moodle_url('/local/gugcat/addgradeform.php'));
 $PAGE->set_context(context_system::instance());
 $PAGE->set_title(get_string('title', 'local_gugcat'));
 $PAGE->set_course($course);
 $PAGE->set_heading($course->fullname);
 
-$mform = new form();
+$mform = new addgradeform();
 
 if ($fromform = $mform->get_data()) {
     redirect($CFG->wwwroot . '/local/gugcat/index.php');
@@ -61,6 +62,6 @@ $templatecontext = (object)[
  ];
 
 echo $OUTPUT->header();
-echo $OUTPUT->render_from_template('local_gugcat/form', $templatecontext);
+echo $OUTPUT->render_from_template('local_gugcat/addgradeform', $templatecontext);
 $mform->display();
 echo $OUTPUT->footer();

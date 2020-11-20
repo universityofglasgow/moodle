@@ -23,7 +23,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 require_once("$CFG->libdir/formslib.php");
-class form extends moodleform {
+class addgradeform extends moodleform {
     //Add elements to form
     public function definition() {
         global $CFG;
