@@ -77,7 +77,7 @@
                                 </select>
                             </div>
                         </td>
-                        <td><button class="btn btn-default">Add Grade</button></td>
+                        <td><button class="btn btn-default" id="btn-newgrade">Add Grade</button></td>
                     </tr> 
                     <tr>
                         <td>2</td>
@@ -101,7 +101,7 @@
                                 </select>
                             </div>
                         </td>
-                        <td><button class="btn btn-default">Add Grade</button></td>
+                        <td><button class="btn btn-default" id="btn-newgrade">Add Grade</button></td>
                     </tr> 
                     {{#students}}
                     <tr>
@@ -126,7 +126,7 @@
                                 </select>
                             </div>
                         </td>
-                        <td><button class="btn btn-default">Add Grade</button></td>
+                        <td><button class="btn btn-default" id="btn-newgrade">Add Grade</button></td>
                     </tr>  
                     {{/students}}
                 </tbody>
@@ -221,6 +221,10 @@
 </div>
 {{#js}}
     $(function(){
+        $("#btn-newgrade").click(function(){
+            console.log("I am clicked");
+            window.location.href='form.php';
+        });
         $("#btn-assessment").click(function(){
             $("#btn-overview").removeClass("active");
             $(".tab-2").fadeOut();
