@@ -43,8 +43,8 @@ $PAGE->set_course($course);
 $PAGE->set_heading($course->fullname);
 
 require_login($course);
-$context_course = context_course::instance($course->id);
-$students = get_enrolled_users($context_course, 'mod/coursework:submit');
+$coursecontext = context_course::instance($course->id);
+$students = get_enrolled_users($coursecontext, 'mod/coursework:submit');
 
 echo $OUTPUT->header();
 
