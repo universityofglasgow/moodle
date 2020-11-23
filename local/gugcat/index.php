@@ -25,11 +25,7 @@
 
 
 require_once(__DIR__ . '/../../config.php');
-require_once($CFG->dirroot. '/grade/querylib.php');
-require_once($CFG->libdir.'/gradelib.php');
-
-global $DB;
-
+require_once('grade_capture_item.php');
 $PAGE->set_context(context_system::instance());
 $PAGE->set_url(new moodle_url('/local/gugcat/'));
 $PAGE->set_title(get_string('gugcat', 'local_gugcat'));
@@ -37,133 +33,38 @@ $PAGE->navbar->ignore_active();
 $PAGE->navbar->add(get_string('navname', 'local_gugcat'), new moodle_url('/local/gugcat'));
 $PAGE->requires->css('/local/gugcat/styles/gcsa.css');
 
-//testing course id = 1
-$courseid = optional_param('id', 1, PARAM_INT);
+//testing course id = 2
+$courseid = optional_param('courseid', 2, PARAM_INT); //change to required
+$activityid = optional_param('activityid', null, PARAM_INT);
 if (!$course = $DB->get_record('course', array('id' => $courseid))) {
     print_error('invalidcourseid');
 }
 $PAGE->set_course($course);
 $PAGE->set_heading($course->fullname);
-$context_course = context_course::instance($course->id);
-$students = get_role_users(5 , $context_course);
-$modinfo = get_fast_modinfo($courseid);
-$mods = $modinfo->get_cms();
 
-$ass_no_one = null;
-$ass_no_two = null;
-$arr_of_students = array();
-$arr_of_students_with_assignments = array();
+require_login($course);
+$coursecontext = context_course::instance($course->id);
+$students = get_enrolled_users($coursecontext, 'mod/coursework:submit');
 
-foreach($students as $keys => $student){
-    // Store the fetched data to the array of arr_of_students
-    $arr_of_students[$student->id] = (integer)$student->id;
-}
+echo $OUTPUT->header();
 
-$implode_user_id = implode(",", $arr_of_students);
-
-
-$first_assigmnent_sql = $DB->get_records_sql("SELECT DISTINCT assignment FROM `mdl_assign_grades` WHERE userid IN('$implode_user_id') LIMIT 1 OFFSET 0");
-$second_assigment_sql = $DB->get_records_sql("SELECT DISTINCT assignment FROM `mdl_assign_grades` WHERE userid IN('$implode_user_id') LIMIT 1 OFFSET 1");
-
-foreach($first_assigmnent_sql as $ass_1){
-    foreach($ass_1 as $ass_value){
-        $ass_no_one = $ass_value;
-    }
-}
-
-foreach($second_assigment_sql as $ass_2){
-    foreach($ass_2 as $ass_value){
-        $ass_no_two = $ass_value;
-    }
-}
-
-// Assignment no 1.
-$assign_one_grading_info = grade_get_grades($course->id, 'mod', 'assign', (integer)$ass_no_one, array_keys($arr_of_students));
-// Assignment no 2.
-$assign_two_grading_info = grade_get_grades($course->id, 'mod', 'assign', (integer)$ass_no_two, array_keys($arr_of_students));
-// Exam no 1.
-$exam_one_grading_info = grade_get_grades($course->id, 'mod', 'quiz', 1, array_keys($arr_of_students));
-// Exam no 2.
-$exam_two_grading_info = grade_get_grades($course->id, 'mod', 'quiz', 2, array_keys($arr_of_students));
-
-
-foreach($students as $student_key => $student_value){
-    if(sizeof($student) >= 1){
-        $result = grade_get_course_grades($course->id, $student_value->id);
-
-        $arr_of_students_with_assignments[$student_key] = (object) [
-            "id"            => $student_value->id,
-            "forename"      => $student_value->firstname,
-            "surname"       => $student_value->lastname
-        ];
-
-        foreach($assign_one_grading_info->items[0] as $ass1_value){
-            if(sizeof($ass1_value) >= 1){
-                $arr_of_students_with_assignments[$student_key] = (object) [
-                    "id"               => $student_value->id,
-                    "forename"         => $student_value->firstname,
-                    "surname"          => $student_value->lastname,
-                    "assignment1"      => $ass1_value[$student_value->id]->grade,
-                    "aggregate_grade"  => $result->grades[$student_value->id]->str_grade
-                ];
-
-                foreach($assign_two_grading_info->items[0] as $ass2_value){
-                    if(sizeof($ass2_value) >= 1){
-                        $arr_of_students_with_assignments[$student_key] = (object) [
-                            "id"               => $student_value->id,
-                            "forename"         => $student_value->firstname,
-                            "surname"          => $student_value->lastname,
-                            "assignment1"      => $ass1_value[$student_value->id]->grade,
-                            "assignment2"      => $ass2_value[$student_value->id]->grade,
-                            "aggregate_grade"  => $result->grades[$student_value->id]->str_grade
-                        ];
-
-                        foreach($exam_one_grading_info->items[0] as $exam1_value){
-                            if(sizeof($exam1_value) >= 1){
-                                $arr_of_students_with_assignments[$student_key] = (object) [
-                                    "id"               => $student_value->id,
-                                    "forename"         => $student_value->firstname,
-                                    "surname"          => $student_value->lastname,
-                                    "assignment1"      => $ass1_value[$student_value->id]->grade,
-                                    "assignment2"      => $ass2_value[$student_value->id]->grade,
-                                    "exam1"            => $exam1_value[$student_value->id]->grade,
-                                    "aggregate_grade"  => $result->grades[$student_value->id]->str_grade
-                                ];
-                                
-                                foreach($exam_two_grading_info->items[0] as $exam2_value){
-                                    if(sizeof($exam2_value) >= 1){
-                                        $arr_of_students_with_assignments[$student_key] = (object) [
-                                            "id"               => $student_value->id,
-                                            "forename"         => $student_value->firstname,
-                                            "surname"          => $student_value->lastname,
-                                            "assignment1"      => $ass1_value[$student_value->id]->grade,
-                                            "assignment2"      => $ass2_value[$student_value->id]->grad,
-                                            "exam1"            => $exam1_value[$student_value->id]->grade,
-                                            "exam2"            => $exam2_value[$student_value->id]->grade,
-                                            "aggregate_grade"  => $result->grades[$student_value->id]->str_grade
-                                        ];
-                                    }
-                                }
-
-                            }
-                        }
-                    }
-                }      
-            }
-        }
-    }
-}
+$activities = get_activities($courseid, $activityid);
+$selectedmodule = is_null($activityid) ? array_pop(array_reverse($modules)) : $modules[$activityid];
+$rows = get_rows($course, $selectedmodule , $students);
+$columns = get_columns();
 
 $templatecontext = (object)[
     'title' =>get_string('title', 'local_gugcat'),
     'assessmenttabstr' =>get_string('assessmentlvlscore', 'local_gugcat'),
     'overviewtabstr' =>get_string('overviewaggregrade', 'local_gugcat'),
-    'addsavebtnstr' =>get_string('saveallgrade', 'local_gugcat'),
+    'saveallbtnstr' =>get_string('saveallnewgrade', 'local_gugcat'),
     'approvebtnstr' =>get_string('approvegrades', 'local_gugcat'),
-    'students' => array_values($arr_of_students_with_assignments),
-    'activities' => array_values($mods)
+    'addallgrdstr' =>get_string('addallnewgrade', 'local_gugcat'),
+    'reasonnewgrdstr' =>get_string('reasonnewgrade', 'local_gugcat'),
+    'rows' => $rows,
+    'columns' => $columns,
+    'activities' => $activities
 ];
 
-echo $OUTPUT->header();
 echo $OUTPUT->render_from_template('local_gugcat/index', $templatecontext);
 echo $OUTPUT->footer();

@@ -8,9 +8,14 @@
     font-weight: bold;
 }
 
+.togglemultigrd{
+    display: none;
+}
+
 /* Table style */
 .table {
     margin-bottom: 0;
+    font-size: 90%;
 }
 
 th {
@@ -59,7 +64,6 @@ i {
     border: 1px solid black;
     border-radius: 0 1em 0 0 ;
     overflow: hidden;
-    white-space: nowrap;
     position: relative;
 }
 
@@ -106,29 +110,27 @@ i {
     float: right;
 }
 
-.btn-download, 
-.btn-approve, 
-.btn-add {
+.btn-download, .btn-approve, .btn-add {
     height: 40px;
 }
 
 /* Select style */
 .selectdiv {
     position: relative;
-    float: left;
-    margin: 0 1em;
+    margin: auto;
     cursor: pointer;
+    width: fit-content;
 }
 
 .selectdiv:after {
     content: '\f078';
     font: normal normal normal 12px/1 FontAwesome;
     color: #005c8a;
-    right: 11px;
-    top: 6px;
-    height: 34px;
-    padding: 5% 8px 0px 8px;
     position: absolute;
+    right: 5px;
+    top: 30%;
+    height: 34px;
+    padding: 0 8px;
     pointer-events: none;
 }
 
@@ -143,12 +145,9 @@ select::-ms-expand {
     appearance: none;
     cursor: pointer;
     display: block;
-    width: 100%;
-    max-width: 320px;
-    height: 35px;
-    float: right;
+    height: 32px;
     margin: 0 5px;
-    padding: 0px 20px 0px 10px;
+    padding: 0px 24px 0px 10px;
     line-height: 1.75;
     color: #333;
     background-color: #ffffff;
@@ -160,8 +159,12 @@ select::-ms-expand {
     outline: none;
 }
 
-.act-select select {
+.tabcontent-header >.selectdiv select{
     height: 40px;
+}
+
+.tabcontent-header >.selectdiv{
+    float: left;
 }
 
 .tr-header {

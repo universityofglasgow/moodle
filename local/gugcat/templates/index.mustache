@@ -25,110 +25,66 @@
     <button class="tablink active" id="btn-assessment">{{assessmenttabstr}}</button>
     <button class="tablink" id="btn-overview">{{overviewtabstr}}</button>
     <button class="btn btn-default btn-approve">{{approvebtnstr}}</button>
-    <div class="tabcontent tab-1" style="d">
+    <div class="tabcontent tab-1">
         <div class="tabcontent-header">
-            <div class="selectdiv act-select">
-                <select>
-                    <option>Assignment 1: Critical essay</option>
+            <div class="selectdiv">
+                <select id="select-activity">
                     {{#activities}}
-                    <option>{{name}}</option>
+                    <option {{selected}} value={{id}} >{{name}}</option>
                     {{/activities}}
                 </select>
             </div>
-            <button class="btn btn-default btn-add">{{addsavebtnstr}}</button>
+            <button id="saveaddbtn" class="btn btn-default btn-add">{{addallgrdstr}}</button>
             <button class="btn btn-default btn-download">Download .csv</button>
         </div>
-        <div class="table-responsive">          
-            <table class="table">
+         <div class="table-responsive">          
+            <table id="gradecapturelist" class="table">
                 <thead>
                     <tr>
-                        <th>Candidate No.</th>
-                        <th>Student No.</th>
-                        <th>Surname</th>
-                        <th>Forename</th>
-                        <th>1st mark</th>
-                        <th>2nd mark</th>
-                        <th>Provisional grade</th>
-                        <th>Add new grade for all participants</th>
-                        <th>Reason for new grade</th>
-                        <th></th>
+                    {{#columns}}
+                    <th>{{.}}</th>
+                    {{/columns}}
+                    <th class="togglemultigrd">
+                        {{addallgrdstr}}
+                    </th>
+                    <th class="togglemultigrd">
+                        {{reasonnewgrdstr}}
+                    </th>
+                    <th>Provisional Grade</th>
+                    <th></th>
                     </tr>
                 </thead>
                 <tbody>
+                    {{#rows}}
                     <tr>
-                        <td>1</td>
-                        <td>101282</td>
-                        <td>Austen</td>
-                        <td>Jane</td>
-                        <td>A1 <i class="fa fa-ellipsis-h"></i></td>
-                        <td>A2 <i class="fa fa-ellipsis-h"></i></td>
-                        <td><b>A2</b></td>
-                        <td>
+                        <td>{{cnum}}</td>
+                        <td>{{studentno}}</td>
+                        <td>{{surname}}</td>
+                        <td>{{forename}}</td>
+                        <td>{{firstgrade}} <i class="fa fa-ellipsis-h"></i></td>
+                        {{#grades}}
+                            <td> 
+                            {{grade}}<i class="fa fa-ellipsis-h"></i>
+                            </td>
+                        {{/grades}}
+                        <td class="togglemultigrd">
                             <div class="selectdiv">
                                 <select>
                                     <option>Choose grade</option>
                                 </select>
                             </div>
                         </td>
-                        <td>
+                        <td class="togglemultigrd">
                             <div class="selectdiv">
                                 <select>
                                     <option>Select reason</option>
                                 </select>
                             </div>
                         </td>
-                        <td><button class="btn btn-default" id="btn-newgrade">Add Grade</button></td>
-                    </tr> 
-                    <tr>
-                        <td>2</td>
-                        <td>101283</td>
-                        <td>Barrie</td>
-                        <td>James</td>
-                        <td>B3 <i class="fa fa-ellipsis-h"></i></td>
-                        <td>A2 <i class="fa fa-ellipsis-h"></i></td>
-                        <td><b>A2</b></td>
-                        <td>
-                            <div class="selectdiv">
-                                <select>
-                                    <option>Choose grade</option>
-                                </select>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="selectdiv">
-                                <select>
-                                    <option>Select reason</option>
-                                </select>
-                            </div>
-                        </td>
-                        <td><button class="btn btn-default" id="btn-newgrade">Add Grade</button></td>
-                    </tr> 
-                    {{#students}}
-                    <tr>
-                        <td>{{id}}</td>
-                        <td>101282</td>
-                        <td>{{lastname}}</td>
-                        <td>{{firstname}}</td>
-                        <td>A1 <i class="fa fa-ellipsis-h"></i></td>
-                        <td>A2 <i class="fa fa-ellipsis-h"></i></td>
-                        <td><b>A2</b></td>
-                        <td>
-                            <div class="selectdiv">
-                                <select>
-                                    <option>Choose grade</option>
-                                </select>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="selectdiv">
-                                <select>
-                                    <option>Select reason</option>
-                                </select>
-                            </div>
-                        </td>
-                        <td><button class="btn btn-default" id="btn-newgrade">Add Grade</button></td>
+                        <td><b>{{provisionalgrade}}</b></td>
+                        <td><button class="btn btn-default btn-newgrade">Add Grade</button></td>
                     </tr>  
-                    {{/students}}
+                    {{/rows}}
                 </tbody>
             </table>
         </div>
@@ -221,9 +177,25 @@
 </div>
 {{#js}}
     $(function(){
-        $("#btn-newgrade").click(function(){
-            window.location.href='addgradeform.php';
+        $("#select-activity").on("change", function () { 
+            window.location.href = "index.php?activityid="+$("#select-activity").val();
         });
+
+        $("#saveaddbtn").on("click", function(e) {
+            e.preventDefault();
+            $(this).toggleClass("togglebtn");
+            if($(this).hasClass("togglebtn")){
+                $(this).text("{{saveallbtnstr}}");    
+            } else {
+                $(this).text("{{addallgrdstr}}");
+            }
+            $(".togglemultigrd").toggle();
+        });
+
+        $(".btn-newgrade").click(function(){
+            window.location.href="addgradeform.php";
+        });
+        
         $("#btn-assessment").click(function(){
             $("#btn-overview").removeClass("active");
             $(".tab-2").fadeOut();
