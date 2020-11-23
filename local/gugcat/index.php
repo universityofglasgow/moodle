@@ -31,11 +31,11 @@ $PAGE->set_url(new moodle_url('/local/gugcat/'));
 $PAGE->set_title(get_string('gugcat', 'local_gugcat'));
 $PAGE->navbar->ignore_active();
 $PAGE->navbar->add(get_string('navname', 'local_gugcat'), new moodle_url('/local/gugcat'));
-$PAGE->requires->css('/local/gugcat/gcsa.css');
+$PAGE->requires->css('/local/gugcat/styles/gcsa.css');
 
 //testing course id = 2
+$courseid = optional_param('courseid', 2, PARAM_INT); //change to required
 $activityid = optional_param('activityid', null, PARAM_INT);
-$courseid = 2;
 if (!$course = $DB->get_record('course', array('id' => $courseid))) {
     print_error('invalidcourseid');
 }

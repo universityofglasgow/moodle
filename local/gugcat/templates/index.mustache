@@ -22,10 +22,10 @@
 }}
 <div class="container">
     <h4 class="title">{{title}}</h4>
-    <button class="tablink active">{{assessmenttabstr}}</button>
-    <button class="tablink">{{overviewtabstr}}</button>
+    <button class="tablink active" id="btn-assessment">{{assessmenttabstr}}</button>
+    <button class="tablink" id="btn-overview">{{overviewtabstr}}</button>
     <button class="btn btn-default btn-approve">{{approvebtnstr}}</button>
-    <div class="tabcontent">
+    <div class="tabcontent tab-1">
         <div class="tabcontent-header">
             <div class="selectdiv">
                 <select id="select-activity">
@@ -82,30 +82,145 @@
                             </div>
                         </td>
                         <td><b>{{provisionalgrade}}</b></td>
-                        <td><button class="btn btn-default">Add Grade</button></td>
+                        <td><button class="btn btn-default btn-newgrade">Add Grade</button></td>
                     </tr>  
                     {{/rows}}
                 </tbody>
             </table>
         </div>
     </div>
+    <div class="tabcontent tab-2">
+        <div class="tabcontent-header">
+            <button class="btn btn-default btn-download">Download .csv</button>
+            <br/><br/>
+        </div>
+        <div class="table-responsive">          
+            <table class="table">
+                <thead>
+                    <tr class="tr-header">
+                        <th scope="col" class="th-font">
+                            Candidate <br/>&nbsp;&nbsp;No.
+                        </th>
+                        <th scope="col" class="th-font">
+                            Student <br/>&nbsp;No.
+                        </th>
+                        <th scope="col" class="th-font">
+                            Surname
+                            <br/><br/>
+                        </th>
+                        <th scope="col" class="th-font">
+                            Forename
+                            <br/><br/>
+                        </th>
+                        <th scope="col" class="th-font">
+                            Assignment 1:<br/>Critical Essay
+                        </th>
+                        <th scope="col" class="th-font">
+                            Assignment 2: <br>Quiz
+                        </th>
+                        <th scope="col" class="th-font">
+                            Exam 1
+                            <br/><br/>
+                        </th>
+                        <th scope="col" class="th-font">
+                            Exam 2
+                            <br/><br/>
+                        </th>
+                        <th scope="col" class="th-font">
+                            <span class="th-aggregate-grade">
+                                Aggregate Grade &nbsp;&nbsp;
+                                <i class="fa fa-cog" aria-hidden="true"></i>
+                            </span>
+                            <br/><br/>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#students}}
+                    <tr>
+                        <td>{{id}}</th>
+                        <td>{{id}}</td>
+                        <td>{{surname}}</td>
+                        <td>{{forename}}</td>
+                        <td>{{assignment1}}
+                            <i class="fa fa-ellipsis-h ellipsis-h-color" aria-hidden="true" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></i>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                <a class="dropdown-item" href="#">Ammend Grades</a>
+                                <a class="dropdown-item" href="#">Historical Ammendments</a>
+                            </div>
+                        </td>
+                        <td>{{assignment2}} 
+                            <i class="fa fa-ellipsis-h ellipsis-h-color" aria-hidden="true" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></i>
+                        </td>
+                        <td>{{exam1}} 
+                            <i class="fa fa-ellipsis-h ellipsis-h-color" aria-hidden="true" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></i>
+                        </td>
+                        <td>{{exam2}}
+                            <i class="fa fa-ellipsis-h ellipsis-h-color" aria-hidden="true" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></i>
+                        </td>
+                        <td class="td-9">
+                            <span class="td-9-aggregate-grade">
+                                {{aggregate_grade}} 
+                                <i class="fa fa-ellipsis-h ellipsis-h-color" aria-hidden="true" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></i>
+                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                    <a class="dropdown-item" href="#">Ammend Grades</a>
+                                    <a class="dropdown-item" href="#">Historical Ammendments</a>
+                                </div>
+                            </span>
+                        </td>
+                    </tr>
+                    {{/students}}
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 {{#js}}
-require(['jquery'], function($) {
-    $('#select-activity').on('change', function () { 
-        window.location.href = 'index.php?activityid='+$('#select-activity').val();
+    $(function(){
+        $("#select-activity").on("change", function () { 
+            window.location.href = "index.php?activityid="+$("#select-activity").val();
+        });
+
+        $("#saveaddbtn").on("click", function(e) {
+            e.preventDefault();
+            $(this).toggleClass("togglebtn");
+            if($(this).hasClass("togglebtn")){
+                $(this).text("{{saveallbtnstr}}");    
+            } else {
+                $(this).text("{{addallgrdstr}}");
+            }
+            $(".togglemultigrd").toggle();
+        });
+
+        $(".btn-newgrade").click(function(){
+            window.location.href="addgradeform.php";
+        });
+        
+        $("#btn-assessment").click(function(){
+            $("#btn-overview").removeClass("active");
+            $(".tab-2").fadeOut();
+
+            $(".btn-approve").show();
+
+            $(this).addClass("active");
+            $(".tab-1").fadeIn();
+        });
+
+        $("#btn-overview").click(function(){
+            $("#btn-assessment").removeClass("active");
+            $(".tab-1").fadeOut();
+            
+            $(".tab-2").css({
+                "display": "block"
+            });
+            
+            $(".btn-approve").hide();
+
+            $(this).addClass("active");
+            $(".tab-2").fadeIn();
+        });
     });
-    $('#saveaddbtn').on('click', function(e) {
-        e.preventDefault();
-        $(this).toggleClass('togglebtn');
-        if($(this).hasClass('togglebtn')){
-            $(this).text('{{saveallbtnstr}}');    
-        } else {
-            $(this).text('{{addallgrdstr}}');
-        }
-        $('.togglemultigrd').toggle();
-    });
-});
 {{/js}}
+
 
 

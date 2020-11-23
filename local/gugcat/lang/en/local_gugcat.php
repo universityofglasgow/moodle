@@ -33,3 +33,5 @@ $string['saveallnewgrade'] = 'Save all participants grades';
 $string['approvegrades'] = 'Approve provisional grades';
 $string['reasonnewgrade'] = 'Reason for new grade';
 $string['navname'] = 'Grade Capture and Aggregation';
+$string['addnewgrade'] = 'Add new grade';
+$string['confirmgrade'] = 'Confirm new grade';
