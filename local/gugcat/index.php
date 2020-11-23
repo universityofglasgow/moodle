@@ -35,7 +35,7 @@ $PAGE->set_url(new moodle_url('/local/gugcat/'));
 $PAGE->set_title(get_string('gugcat', 'local_gugcat'));
 $PAGE->navbar->ignore_active();
 $PAGE->navbar->add(get_string('navname', 'local_gugcat'), new moodle_url('/local/gugcat'));
-$PAGE->requires->css('/local/gugcat/gcsa.css');
+$PAGE->requires->css('/local/gugcat/styles/gcsa.css');
 
 //testing course id = 1
 $courseid = optional_param('id', 1, PARAM_INT);
