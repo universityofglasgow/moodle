@@ -92,7 +92,7 @@
 </div>
 {{#js}}
 require(['jquery'], function($) {
-    $(document).on('change', '#select-activity', function () { 
+    $('#select-activity').on('change', function () { 
         window.location.href = 'index.php?activityid='+$('#select-activity').val();
     });
     $('#saveaddbtn').on('click', function(e) {
