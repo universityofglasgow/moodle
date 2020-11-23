@@ -25,6 +25,7 @@
 
 
 require_once(__DIR__ . '/../../config.php');
+require_once('grade_capture_item.php');
 $PAGE->set_context(context_system::instance());
 $PAGE->set_url(new moodle_url('/local/gugcat/'));
 $PAGE->set_title(get_string('gugcat', 'local_gugcat'));
@@ -32,28 +33,38 @@ $PAGE->navbar->ignore_active();
 $PAGE->navbar->add(get_string('navname', 'local_gugcat'), new moodle_url('/local/gugcat'));
 $PAGE->requires->css('/local/gugcat/gcsa.css');
 
-//testing course id = 1
-$courseid = optional_param('id', 1, PARAM_INT);
+//testing course id = 2
+$activityid = optional_param('activityid', null, PARAM_INT);
+$courseid = 2;
 if (!$course = $DB->get_record('course', array('id' => $courseid))) {
     print_error('invalidcourseid');
 }
 $PAGE->set_course($course);
 $PAGE->set_heading($course->fullname);
+
+require_login($course);
 $context_course = context_course::instance($course->id);
-$students = get_role_users(5 , $context_course);
-$modinfo = get_fast_modinfo($courseid);
-$mods = $modinfo->get_cms();
+$students = get_enrolled_users($context_course, 'mod/coursework:submit');
+
+echo $OUTPUT->header();
+
+$activities = get_activities($courseid, $activityid);
+$selectedmodule = is_null($activityid) ? array_pop(array_reverse($modules)) : $modules[$activityid];
+$rows = get_rows($course, $selectedmodule , $students);
+$columns = get_columns();
 
 $templatecontext = (object)[
     'title' =>get_string('title', 'local_gugcat'),
     'assessmenttabstr' =>get_string('assessmentlvlscore', 'local_gugcat'),
     'overviewtabstr' =>get_string('overviewaggregrade', 'local_gugcat'),
-    'addsavebtnstr' =>get_string('saveallgrade', 'local_gugcat'),
+    'saveallbtnstr' =>get_string('saveallnewgrade', 'local_gugcat'),
     'approvebtnstr' =>get_string('approvegrades', 'local_gugcat'),
-    'students' => array_values($students),
-    'activities' => array_values($mods)
+    'addallgrdstr' =>get_string('addallnewgrade', 'local_gugcat'),
+    'reasonnewgrdstr' =>get_string('reasonnewgrade', 'local_gugcat'),
+    'rows' => $rows,
+    'columns' => $columns,
+    'activities' => $activities
 ];
 
-echo $OUTPUT->header();
 echo $OUTPUT->render_from_template('local_gugcat/index', $templatecontext);
 echo $OUTPUT->footer();
