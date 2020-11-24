@@ -33,12 +33,10 @@ $PAGE->navbar->ignore_active();
 $PAGE->navbar->add(get_string('navname', 'local_gugcat'), new moodle_url('/local/gugcat'));
 $PAGE->requires->css('/local/gugcat/styles/gcsa.css');
 
-//testing course id = 2
-$courseid = optional_param('courseid', 2, PARAM_INT); //change to required
+$courseid = required_param('id', PARAM_INT);
 $activityid = optional_param('activityid', null, PARAM_INT);
-if (!$course = $DB->get_record('course', array('id' => $courseid))) {
-    print_error('invalidcourseid');
-}
+$course = $DB->get_record('course', ['id' => $id], '*', MUST_EXIST);
+
 $PAGE->set_course($course);
 $PAGE->set_heading($course->fullname);
 
