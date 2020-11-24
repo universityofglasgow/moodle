@@ -35,7 +35,7 @@ $PAGE->requires->css('/local/gugcat/styles/gcsa.css');
 
 $courseid = required_param('id', PARAM_INT);
 $activityid = optional_param('activityid', null, PARAM_INT);
-$course = $DB->get_record('course', ['id' => $id], '*', MUST_EXIST);
+$course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
 
 $PAGE->set_course($course);
 $PAGE->set_heading($course->fullname);
