@@ -25,44 +25,35 @@
 
 
 require_once(__DIR__ . '/../../config.php');
+require_once($CFG->dirroot . '/local/gugcat/locallib.php');
 require_once('grade_capture_item.php');
 $PAGE->set_context(context_system::instance());
 $PAGE->set_url(new moodle_url('/local/gugcat/'));
 $PAGE->set_title(get_string('gugcat', 'local_gugcat'));
 $PAGE->navbar->ignore_active();
 $PAGE->navbar->add(get_string('navname', 'local_gugcat'), new moodle_url('/local/gugcat'));
-$PAGE->requires->css('/local/gugcat/styles/gcsa.css');
+
+$PAGE->requires->js_call_amd('local_gugcat/main', 'init');
+$PAGE->requires->css('/local/gugcat/styles/gugcat.css');
 
 $courseid = required_param('id', PARAM_INT);
 $activityid = optional_param('activityid', null, PARAM_INT);
 $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
 
+require_login($course);
+
 $PAGE->set_course($course);
 $PAGE->set_heading($course->fullname);
 
-require_login($course);
 $coursecontext = context_course::instance($course->id);
 $students = get_enrolled_users($coursecontext, 'mod/coursework:submit');
+$activities = local_gugcat::get_activities($courseid, $activityid);
+$mods = array_reverse($modules);
+$selectedmodule = is_null($activityid) ? array_pop($mods) : $modules[$activityid];
+$rows = local_gugcat::get_rows($course, $selectedmodule , $students);
+$columns = local_gugcat::get_columns();
 
 echo $OUTPUT->header();
-
-$activities = get_activities($courseid, $activityid);
-$selectedmodule = is_null($activityid) ? array_pop(array_reverse($modules)) : $modules[$activityid];
-$rows = get_rows($course, $selectedmodule , $students);
-$columns = get_columns();
-
-$templatecontext = (object)[
-    'title' =>get_string('title', 'local_gugcat'),
-    'assessmenttabstr' =>get_string('assessmentlvlscore', 'local_gugcat'),
-    'overviewtabstr' =>get_string('overviewaggregrade', 'local_gugcat'),
-    'saveallbtnstr' =>get_string('saveallnewgrade', 'local_gugcat'),
-    'approvebtnstr' =>get_string('approvegrades', 'local_gugcat'),
-    'addallgrdstr' =>get_string('addallnewgrade', 'local_gugcat'),
-    'reasonnewgrdstr' =>get_string('reasonnewgrade', 'local_gugcat'),
-    'rows' => $rows,
-    'columns' => $columns,
-    'activities' => $activities
-];
-
-echo $OUTPUT->render_from_template('local_gugcat/index', $templatecontext);
+$renderer = $PAGE->get_renderer('local_gugcat');
+echo $renderer->display_grade_capture($activities, $rows, $columns);
 echo $OUTPUT->footer();
