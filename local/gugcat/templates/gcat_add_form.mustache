@@ -23,49 +23,49 @@
     
     }
 }}
-<div class="new-grade-container">
-    <h4>{{title}}</h4>
-    <button class="tablink active" id="btn-assessment">{{assessmentlvlscore}}</button>
-    <button class="tablink">{{overviewaggregrade}}</button>
-    <div class="form-container">
-        <div class="header"> 
-            <h4 class="new-grade-header">{{addnewgrade}}</h4>
-        </div>
+
+<div class="form-container">
+    <div class="header"> 
+        <h4 class="new-grade-header">{{addnewgrade}}</h4>
+    </div>
+    {{#course}}
         <div class="form-group row">
             <div class="col-md-3">
             <label>Course</label>
             </div>
             <div class="col-md-9 form-inline">
-            <span>Assignment 1: Critical Essay</span></div>
+            <span>{{fullname}}</span></div>
         </div> 
+    {{/course}}
+    {{#section}}
         <div class="form-group row">
             <div class="col-md-3">
             <label>Assessment</label>
             </div>
-            <div class="col-md-9 form-inline">Critical Essay</div>
-        </div> 
+            <div class="col-md-9 form-inline">{{section}}</div>
+        </div>
+    {{/section}} 
+    {{#lastname}}
         <div class="form-group row">
             <div class="col-md-3">
             <label>Surname</label>
             </div>
-            <div class="col-md-9 form-inline">Austen</div>
+            <div class="col-md-9 form-inline felement"> {{lastname}}</div>
         </div> 
+    {{/lastname}}
+    {{#firstname}}
         <div class="form-group row">
             <div class="col-md-3">
             <label>Forname</label>
             </div>
-            <div class="col-md-9 form-inline">Jane</div>
+            <div class="col-md-9 form-inline felement"> {{firstname}}</div>
         </div> 
+    {{/firstname}}
+    {{#gradeinfo}}
         <div class="form-group row">
             <div class="col-md-3">
             <label>1st Grade</label>
             </div>
-            <div class="col-md-9 form-inline">A1</div>
-        </div> 
-    </div>
+        <div class="col-md-9 form-inline felement">{{grade}}</div>
+    {{/gradeinfo}}
 </div>
-{{#js}}
-    $("#btn-assessment").click(function(){
-        window.location.href='index.php';
-    });
-{{/js}}

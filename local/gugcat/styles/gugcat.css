@@ -167,34 +167,63 @@ select::-ms-expand {
     float: left;
 }
 
-.tr-header {
-    background-color:#005c8a;color:white
+/* Add grade form style *****************************/
+
+.mform label, .form-container label, .add-grade-title{
+    font-weight: bold;
 }
 
-.th-font, td {
-    font-size: 11px;
+
+.form-container{
+    padding: 1em 1em 0 1em;
 }
 
-.ellipsis-h-color {
-    color: #b9b9b9;
+.form-container, .mform-container {
+    max-width: 80%;  
 }
 
-.tab-2 {
-    display: none;
+.mform {
+    padding: 0 1em;
 }
 
-.fa-cog {
-    font-size: 12px;
-    color: white;
+.mform select{
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+
+    display: block;
+    width: 100%;
+    max-width: 150px;
+    padding: 0px 15px;
+    font-size: 13px;
+    line-height: 1.75;
+    color: #333;
+    background-color: #ffffff;
+    background-image: none;
+    border-radius: .5em;
+    border: 1px solid #8c8c8c;
+    -ms-word-break: normal;
+    word-break: normal;
+    outline: none;
 }
 
-.th-aggregate-grade,
-.td-9-aggregate-grade {
-    position:relative;
-    left:20%;
+.mform select::after {
+    content: '\f078';
+    font: normal normal normal 12px/1 FontAwesome;
+    color: #005c8a;
+    right: 11px;
+    top: 6px;
+    height: 34px;
+    padding: 5% 8px 0px 8px;
+    position: absolute;
+    pointer-events: none;
 }
 
-/* override the properties of bootstrap dropdown-item */
-.dropdown-item {
-    font-size: 12px;
+.form-inline .input-group, .form-inline .custom-select {
+    width: 150px;
+}
+
+#fitem_id_submitbutton .btn{
+     border-radius: .5em !important; 
+     margin-left: auto;
 }
