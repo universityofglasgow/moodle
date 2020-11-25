@@ -27,6 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 require_once($CFG->dirroot.'/local/gugcat/lib.php');
+require_once($CFG->dirroot.'/local/gugcat/locallib.php');
 
 class local_gugcat_testcase extends advanced_testcase {
 

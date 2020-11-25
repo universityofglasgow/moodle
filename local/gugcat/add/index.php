@@ -24,28 +24,28 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once(__DIR__ . '/../../config.php');
+require_once(__DIR__ . '/../../../config.php');
 require_once($CFG->dirroot.'/local/gugcat/classes/form/addgradeform.php');
+
+$PAGE->set_context(context_system::instance());
+$PAGE->set_url(new moodle_url('/local/gugcat/add/index.php'));
+$PAGE->set_title(get_string('gugcat', 'local_gugcat'));
 $PAGE->navbar->ignore_active();
 $PAGE->navbar->add(get_string('navname', 'local_gugcat'), new moodle_url('/local/gugcat'));
 
-//this is temporary while we are still working on the navigation to pass the course id.
-$courseid = optional_param('id', 1, PARAM_INT);
-if (!$course = $DB->get_record('course', array('id' => $courseid))) {
-    print_error('invalidcourseid');
-}
+$PAGE->requires->css('/local/gugcat/styles/gugcat.css');
 
-$PAGE->set_course($course);
+$courseid = required_param('id', PARAM_INT);
+$activityid = required_param('activityid', PARAM_INT);
+$studentid = required_param('studentid', PARAM_INT);
+$course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
+
 require_login($course);
-$context = context_course::instance($course->id);
-$PAGE->requires->css('/local/gugcat/styles/addgradeform.css') ;
 
-
-$PAGE->set_url(new moodle_url('/local/gugcat/addgradeform.php'));
-$PAGE->set_context(context_system::instance());
-$PAGE->set_title(get_string('title', 'local_gugcat'));
 $PAGE->set_course($course);
 $PAGE->set_heading($course->fullname);
+
+$context = context_course::instance($course->id);
 
 $mform = new addgradeform();
 
@@ -53,15 +53,10 @@ if ($fromform = $mform->get_data()) {
     redirect($CFG->wwwroot . '/local/gugcat/index.php');
 }
 
-$templatecontext = (object)[
-
-    'assessmentlvlscore' =>get_string('assessmentlvlscore', 'local_gugcat'),
-    'overviewaggregrade' =>get_string('overviewaggregrade', 'local_gugcat'),
-    'addnewgrade' =>get_string('addnewgrade', 'local_gugcat'),
-    'confirmgrade' =>get_string('confirmgrade', 'local_gugcat'),
- ];
-
 echo $OUTPUT->header();
-echo $OUTPUT->render_from_template('local_gugcat/addgradeform', $templatecontext);
+$renderer = $PAGE->get_renderer('local_gugcat');
+echo $renderer->display_add_grade_form();
 $mform->display();
 echo $OUTPUT->footer();
+
+

@@ -54,10 +54,12 @@ class addgradeform extends moodleform {
         $mform->addElement('select', 'grade', 'Grade', ['0' => "A1", "1" => "A2"], ['class' => 'mform-custom']); 
         $mform->setType('grade', PARAM_NOTAGS); 
         $mform->setDefault('grade', "Select Grade");
+
+        $mform->addElement('html', '</div>');
         
         $this->add_action_buttons(false, get_string('confirmgrade', 'local_gugcat'), ['class' => 'float-right']);
 
-        $mform->addElement('html', '</div>');
+        
     }    
         
     function validation($data, $files) {
