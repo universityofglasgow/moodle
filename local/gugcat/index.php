@@ -50,10 +50,9 @@ $students = get_enrolled_users($coursecontext, 'mod/coursework:submit');
 $activities = local_gugcat::get_activities($courseid, $activityid);
 $mods = array_reverse($modules);
 $selectedmodule = is_null($activityid) ? array_pop($mods) : $modules[$activityid];
+$prvgradeid = local_gugcat::get_prv_grade_id($courseid, $selectedmodule->id);
 $rows = local_gugcat::get_rows($course, $selectedmodule , $students);
 $columns = local_gugcat::get_columns();
-
-$prvgradeid = local_gugcat::get_prv_grade_id($courseid, $selectedmodule->id);
 
 echo $OUTPUT->header();
 $renderer = $PAGE->get_renderer('local_gugcat');

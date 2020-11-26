@@ -32,7 +32,8 @@ class local_gugcat {
     /**
      * Database tables.
      */
-    const TBL_GRADE_ITEMS = 'grade_items';
+    const TBL_GRADE_ITEMS  = 'grade_items';
+    const TBL_GRADE_GRADES = 'grade_grades';
 
     public static $REASONS = array(
         0=>"Good Cause",
@@ -47,11 +48,32 @@ class local_gugcat {
     );
 
     public static $GRADES = array(
-        0=>"A1",
-        1=>"A2",
-        2=>"B1",
-        3=>"B2"
+        22=>"A1",
+        21=>"A2",
+        20=>"A3",
+        19=>"A4",
+        18=>"A5",
+        17=>"B1",
+        16=>"B2",
+        15=>"B3",
+        14=>"C1",
+        13=>"C2",
+        12=>"C3",
+        11=>"D1",
+        10=>"D2",
+        9 =>"D3",
+        8 =>"E1",
+        7 =>"E2",
+        6 =>"E3",
+        5 =>"F1",
+        4 =>"F2",
+        3 =>"F3",
+        2 =>"G1",
+        1 =>"G2",
+        0 =>"H"
     );
+
+    
     /**
      * Returns all activities/modules for specific course
      *
@@ -129,28 +151,33 @@ class local_gugcat {
      */
     public static function get_rows($course, $module, $students){
         $captureitems = array();
-        global $gradeitems;
+        global $gradeitems, $prvgradeid;
         $grading_info = grade_get_grades($course->id, 'mod', $module->modname, $module->instance, array_keys($students));
         $gradeitems = self::get_grade_items($course, $module);
         $i = 1;
         foreach ($students as $student) {
-            $firstgrade = $grading_info->items[0]->grades[$student->id]->grade;
+            $firstgrade = self::convert_grade($grading_info->items[0]->grades[$student->id]->grade);
             $gradecaptureitem = new grade_capture_item();
             $gradecaptureitem->cnum = $i;
             $gradecaptureitem->studentno = $student->id;
             $gradecaptureitem->surname = $student->lastname;
             $gradecaptureitem->forename = $student->firstname;
             $gradecaptureitem->firstgrade = $firstgrade;
-            $gradecaptureitem->provisionalgrade = $firstgrade;
     
             if(!empty($gradeitems)){
                 $gradecaptureitem->grades = array();
                 foreach ($gradeitems as $item) {
-                    $rawgrade = ( $item->grades[$student->id]->finalgrade);
-                    $grade = is_null($rawgrade) ? 'N/A' : $rawgrade;
-                    array_push($gradecaptureitem->grades, $grade);
+                    if($item->id === $prvgradeid){
+                        $gradecaptureitem->provisionalgrade = self::convert_grade(( $item->grades[$student->id]->finalgrade));
+                    }else{
+                        $rawgrade = ( $item->grades[$student->id]->finalgrade);
+                        $grade = is_null($rawgrade) ? 'N/A' : self::convert_grade($rawgrade);
+                        array_push($gradecaptureitem->grades, $grade);
+                    }
                 }
-            } 
+            } else{
+                $gradecaptureitem->provisionalgrade = self::convert_grade($firstgrade);
+            }
     
             array_push($captureitems, $gradecaptureitem);
             $i++;
@@ -163,13 +190,15 @@ class local_gugcat {
      *
      */
     public static function get_columns(){
-        global $gradeitems, $selectedmodule;
+        global $gradeitems, $selectedmodule, $prvgradeid;
         $date = date("(j/n/Y)", strtotime(userdate($selectedmodule->added)));
         $firstgrade = get_string('gradebookgrade', 'local_gugcat').'<br>'.$date;
         $columns = array($firstgrade);
         foreach ($gradeitems as $item) {
-            array_push($columns, $item->itemname);        
+            $columns[$item->id] = $item->itemname;
         }
+        //remove provisional column
+        unset($columns[$prvgradeid]);
         return $columns;
     }
 
@@ -213,12 +242,21 @@ class local_gugcat {
         }
         
         else {
-            return $gradeitemid;
+            return $gradeitemid->id;
         }
     }
     
-    public static function add_grades($userid, $itemid, $grades){
+    public static function add_update_grades($userid, $itemid, $grades){
+        global $DB;
         global $USER;
+
+        $params = array(
+            'userid' => $userid,
+            'itemid' => $itemid,
+            'rawgrade' => null,
+            'finalgrade' => null
+        );
+
         $grade = new grade_grade();
         $grade->itemid = $itemid;
         $grade->userid = $userid;
@@ -239,7 +277,24 @@ class local_gugcat {
         $grade->timemodified = time();
         $grade->aggregationstatus = "used";
         $grade->aggregationweight = "100.000"; 
-        $grade->insert();
+
+        if(!$gradeid = $DB->get_field(self::TBL_GRADE_GRADES, 'id', $params)){
+        return $grade->insert();
+        }
+        else{
+        $grade->id = $gradeid;
+        return $grade->update();
+        }
+    }
+
+    public static function convert_grade($grade){
+        $final_grade = intval($grade);
+        if (!($final_grade > 23 || $final_grade < 0)){
+            return $convertedgrade = self::$GRADES[$final_grade];
+        }
+        else {
+            return $convertedgrade = self::$GRADES[0]; 
+        }
     }
 
 }
