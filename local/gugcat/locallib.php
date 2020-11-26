@@ -25,9 +25,15 @@
 
 defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir.'/gradelib.php');
+require_once($CFG->dirroot . '/grade/querylib.php');
 
 class local_gugcat {
-
+     
+    /**
+     * Database tables.
+     */
+    const TBL_GRADE_ITEMS  = 'grade_items';
+    const TBL_GRADE_GRADES = 'grade_grades';
 
     public static $REASONS = array(
         0=>"Good Cause",
@@ -40,6 +46,34 @@ class local_gugcat {
         7=>"Conduct Penalty",
         8=>"Other"
     );
+
+    public static $GRADES = array(
+        22=>"A1",
+        21=>"A2",
+        20=>"A3",
+        19=>"A4",
+        18=>"A5",
+        17=>"B1",
+        16=>"B2",
+        15=>"B3",
+        14=>"C1",
+        13=>"C2",
+        12=>"C3",
+        11=>"D1",
+        10=>"D2",
+        9 =>"D3",
+        8 =>"E1",
+        7 =>"E2",
+        6 =>"E3",
+        5 =>"F1",
+        4 =>"F2",
+        3 =>"F3",
+        2 =>"G1",
+        1 =>"G2",
+        0 =>"H"
+    );
+
+    
     /**
      * Returns all activities/modules for specific course
      *
@@ -48,8 +82,7 @@ class local_gugcat {
      */
     public static function get_activities($courseid, $activityid){
         global $modules;
-        $modinfo = get_fast_modinfo($courseid);
-        $mods = $modinfo->get_cms();
+        $mods = grade_get_gradable_activities($courseid);
         $activities = array();
         $assignments = array_filter($mods, function($mod){
             return (isset($mod->modname) && ($mod->modname === 'assign')) ? true : false;
@@ -93,12 +126,8 @@ class local_gugcat {
      */
     public static function get_grade_items($course, $module){
         global $DB;
-        $courseiddb = $DB->sql_compare_text('courseid') . ' = ' . $DB->sql_compare_text(':courseid');
-        $iteminfodb = $DB->sql_compare_text('iteminfo') . ' = '  . $DB->sql_compare_text(':iteminfo');
-        $gradeitems = $DB->get_records_select('grade_items', $courseiddb . ' AND ' . $iteminfodb, [
-            'courseid' => $course->id,
-            'iteminfo' => $module->id,
-        ]);
+        $select = 'courseid = '.$course->id.' AND '.self::compare_iteminfo();
+        $gradeitems = $DB->get_records_select(self::TBL_GRADE_ITEMS, $select, ['iteminfo' => $module->id]);
         $sort = 'id';
         $fields = 'userid, id, finalgrade, timemodified';
         foreach($gradeitems as $item) {
@@ -106,6 +135,11 @@ class local_gugcat {
         }
         
         return $gradeitems;
+    }
+
+    public static function compare_iteminfo(){
+        global $DB;
+        return $DB->sql_compare_text('iteminfo') . ' = :iteminfo';
     }
 
     /**
@@ -117,28 +151,33 @@ class local_gugcat {
      */
     public static function get_rows($course, $module, $students){
         $captureitems = array();
-        global $gradeitems;
+        global $gradeitems, $prvgradeid;
         $grading_info = grade_get_grades($course->id, 'mod', $module->modname, $module->instance, array_keys($students));
         $gradeitems = self::get_grade_items($course, $module);
         $i = 1;
         foreach ($students as $student) {
-            $firstgrade = $grading_info->items[0]->grades[$student->id]->grade;
+            $firstgrade = self::convert_grade($grading_info->items[0]->grades[$student->id]->grade);
             $gradecaptureitem = new grade_capture_item();
             $gradecaptureitem->cnum = $i;
             $gradecaptureitem->studentno = $student->id;
             $gradecaptureitem->surname = $student->lastname;
             $gradecaptureitem->forename = $student->firstname;
             $gradecaptureitem->firstgrade = $firstgrade;
-            $gradecaptureitem->provisionalgrade = $firstgrade;
     
             if(!empty($gradeitems)){
                 $gradecaptureitem->grades = array();
                 foreach ($gradeitems as $item) {
-                    $rawgrade = ( $item->grades[$student->id]->finalgrade);
-                    $grade = is_null($rawgrade) ? 'N/A' : $rawgrade;
-                    array_push($gradecaptureitem->grades, (object)['grade' => $grade]);
+                    if($item->id === $prvgradeid){
+                        $gradecaptureitem->provisionalgrade = self::convert_grade(( $item->grades[$student->id]->finalgrade));
+                    }else{
+                        $rawgrade = ( $item->grades[$student->id]->finalgrade);
+                        $grade = is_null($rawgrade) ? 'N/A' : self::convert_grade($rawgrade);
+                        array_push($gradecaptureitem->grades, $grade);
+                    }
                 }
-            } 
+            } else{
+                $gradecaptureitem->provisionalgrade = self::convert_grade($firstgrade);
+            }
     
             array_push($captureitems, $gradecaptureitem);
             $i++;
@@ -149,20 +188,24 @@ class local_gugcat {
     /**
      * Returns columns for grade capture table
      *
-     * @param mixed $course
-     * @param mixed $module
-     * @param mixed $students
      */
     public static function get_columns(){
-        $columns = array();
-        $columns = [
-             '1st Grade'
-        ];
-        global $gradeitems;
+        global $gradeitems, $selectedmodule, $prvgradeid;
+        $date = date("(j/n/Y)", strtotime(userdate($selectedmodule->added)));
+        $firstgrade = get_string('gradebookgrade', 'local_gugcat').'<br>'.$date;
+        $columns = array($firstgrade);
         foreach ($gradeitems as $item) {
-            array_push($columns, $item->itemname);        
+            $columns[$item->id] = $item->itemname;
         }
+        //remove provisional column
+        // unset($columns[$prvgradeid]);
         return $columns;
+    }
+
+    public static function get_prv_grade_id($courseid, $modid){
+        $pgrd_str = get_string('provisionalgrd', 'local_gugcat');
+        $prvgrdid = self::add_grades_items($courseid, $pgrd_str, $modid);
+        return $prvgrdid;
     }
 
     public static function add_grades_items($courseid, $reason, $modid){
@@ -171,8 +214,15 @@ class local_gugcat {
         $categoryid = $DB->get_field('grade_categories', 'id', array('courseid' => $courseid, 'parent' => null), MUST_EXIST);
     
         // check if gradeitem already exists using $reason, $courseid, $activityid
-        if(!$gradeitemid = $DB->get_field('grade_items', 'id', array('courseid' => $courseid, 'categoryid' => $categoryid, 'itemname' => $reason))){
-             // create new gradeitem
+        $select = 'courseid = :courseid AND '.self::compare_iteminfo(). ' AND categoryid = :categoryid AND itemname = :itemname ';
+        $params = [
+            'courseid' => $courseid,
+            'categoryid' => $categoryid,
+            'itemname' => $reason,
+            'iteminfo' => $modid
+        ];
+        if(!$gradeitemid = $DB->get_record_select(self::TBL_GRADE_ITEMS, $select, $params, 'id')){
+            //  create new gradeitem
              $gradeitem = new grade_item(array('id'=>0, 'courseid'=>$courseid));
         
              $gradeitem->weightoverride = 0;
@@ -192,13 +242,20 @@ class local_gugcat {
         }
         
         else {
-            return $gradeitemid;
+            return $gradeitemid->id;
         }
     }
     
     public static function add_update_grades($userid, $itemid, $grades){
         global $DB;
         global $USER;
+
+        $params = array(
+            'userid' => $userid,
+            'itemid' => $itemid,
+            'rawgrade' => null,
+            'finalgrade' => null
+        );
 
         $grade = new grade_grade();
         $grade->itemid = $itemid;
@@ -221,12 +278,22 @@ class local_gugcat {
         $grade->aggregationstatus = "used";
         $grade->aggregationweight = "100.000"; 
 
-        if(!$gradeid = $DB->get_field('grade_grades', 'id', array('userid'=>$userid, 'itemid'=>$itemid, 'rawgrade'=>null, 'finalgrade'=>null))){
+        if(!$gradeid = $DB->get_field(self::TBL_GRADE_GRADES, 'id', $params)){
         return $grade->insert();
         }
         else{
         $grade->id = $gradeid;
         return $grade->update();
+        }
+    }
+
+    public static function convert_grade($grade){
+        $final_grade = intval($grade);
+        if (!($final_grade > 23 || $final_grade < 0)){
+            return $convertedgrade = self::$GRADES[$final_grade];
+        }
+        else {
+            return $convertedgrade = self::$GRADES[0]; 
         }
     }
 

@@ -4,10 +4,6 @@
     font-size: 80%;
 }
 
-.title {
-    font-weight: bold;
-}
-
 .togglemultigrd{
     display: none;
 }
@@ -16,6 +12,10 @@
 .table {
     margin-bottom: 0;
     font-size: 90%;
+}
+
+.table thead th {
+    vertical-align: middle;
 }
 
 th {
@@ -73,6 +73,11 @@ i {
     padding: 1.5em;
 }
 
+button.tablink, button.tablink:focus{
+    outline: 0;
+    box-shadow: none;
+    border: 0;
+}
 /* Buttons style */
 .btn-default {
     background-color: transparent;
@@ -169,12 +174,16 @@ select::-ms-expand {
 
 /* Add grade form style *****************************/
 
-.mform label, .form-container label, .add-grade-title{
+.mform label, .form-container label, .title{
     font-weight: bold;
 }
 
 .form-container{
     padding: 1em 1em 0 1em;
+}
+
+.mform-container {
+    max-width: 80%;  
 }
 
 .mform select{
@@ -217,4 +226,14 @@ select::-ms-expand {
 #fitem_id_submitbutton .btn{
      border-radius: .5em !important; 
      margin-left: auto;
+}
+
+/* tbl Select reason style*/
+.multi-select-reason{
+    display: none;
+}
+
+/* display only the first select reason dropdown */
+tbody > tr:first-child > td > .multi-select-reason {
+    display: block;
 }

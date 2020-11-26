@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version file.
+ * Library file.
  *
  * @package    local_gugcat
  * @copyright  2020
@@ -26,42 +26,28 @@
 function local_gugcat_extend_navigation_course($parentnode, $course, $context) {
     $url = new moodle_url('/local/gugcat/index.php', array('id' => $course->id));
     $gugcat = get_string('navname', 'local_gugcat');
-    $icon = new pix_icon('my-media', '', 'local_mymedia');
-    $main_node = $parentnode->add($gugcat, $url, navigation_node::TYPE_CONTAINER, $gugcat, 'gugcat', $icon);
+    $icon = new pix_icon('t/grades', '');
+    $currentCourseNode = $parentnode->add($gugcat, $url, navigation_node::NODETYPE_LEAF, $gugcat, 'gugcat', $icon);
 }
 
 function local_gugcat_extend_navigation($navigation){
-    global $COURSE;
+    global $USER, $COURSE;
 
-    if (empty($COURSE->id)) {
+    if (empty($USER->id)) {
+        return;
+    }
+
+    if ($COURSE->id < 2) {
         return;
     }    
+
+    $nodehome = $navigation->get('home');
+    if (empty($nodehome)){
+        $nodehome = $navigation;
+    }
     
-    // Check the current page context.  If the context is not of a course or module then we are in another area of Moodle and return void.
-    $context = context::instance_by_id($COURSE->id);
-    $isvalidcontext = ($context instanceof context_course || $context instanceof context_module) ? true : false;
-    if (!$isvalidcontext) {
-        return;
-    }
-
-    // If the context is a module then get the parent context.
-    $coursecontext = null;
-    if ($context instanceof context_module) {
-        $coursecontext = $context->get_course_context();
-    } else {
-        $coursecontext = $context;
-    }
-
-    $url = new moodle_url('/local/gugcat/index.php', array('id' => $COURSE->id));
     $gugcat = get_string('navname', 'local_gugcat');
     $icon = new pix_icon('t/grades', '');
-
-    $currentCourseNode = $navigation->find('currentcourse', $navigation::TYPE_ROOTNODE);
-    if (isNodeNotEmpty($currentCourseNode)) {
-        // we have a 'current course' node, add the link to it.
-        $currentCourseNode->add($gugcat, $url, navigation_node::NODETYPE_LEAF, $gugcat, 'gugcat', $icon);
-    }    
-
-    $main_node = $navigation->add($gugcat, $url, navigation_node::TYPE_CONTAINER, $gugcat, 'gugcat', $icon);
-    $main_node->showinflatnavigation = true;
+    $currentCourseNode = $nodehome->add($gugcat, new moodle_url('/local/gugcat/index.php', array('id' => $COURSE->id)), navigation_node::NODETYPE_LEAF, $gugcat, 'gugcat', $icon);
+    $currentCourseNode->showinflatnavigation = true;    
 }

@@ -22,6 +22,13 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 define(['jquery', 'core/str' ], function($, Str) {
+
+    //Returns boolean on check of the current url and match it to the path params
+    var checkCurrentUrl = function(path) {
+        var url = window.location.pathname;
+        return url.match(path);
+    }
+
     return {
         init: function() {
             $("#select-activity").on("change", function () { 
@@ -30,10 +37,11 @@ define(['jquery', 'core/str' ], function($, Str) {
                 window.location.search = urlParams;
             });
     
-            $("#btn-saveadd").on("click", function(e) {
+            $("#btn-saveadd").click(function(e) {
                 e.preventDefault();
                 var _this = $("#btn-saveadd");
                 _this.toggleClass("togglebtn");
+                _this.hide();
                 var keys = [
                     {
                         key: 'addallnewgrade',
@@ -45,6 +53,7 @@ define(['jquery', 'core/str' ], function($, Str) {
                     }
                 ];
                 Str.get_strings(keys).then(function(langStrings) {
+                    _this.show();
                     if(_this.hasClass("togglebtn")){
                         _this.text(langStrings[1]);   
                     } else {
@@ -55,8 +64,15 @@ define(['jquery', 'core/str' ], function($, Str) {
             });
 
             $("#btn-assessmenttab").click(function(){
-                history.back();
+                if(checkCurrentUrl('gugcat/add')){
+                    history.back();
+                }
             });
+
+            // Hide elements on add grade form page 
+            if(checkCurrentUrl('gugcat/add')){
+                $("#btn-approve").hide();
+            }
         }
     };
 });
