@@ -1,7 +1,18 @@
 History
 =============
-Version 3.7.1.1 - 17/11/2019
+Version 3.8.1.0 - 14/11/20
+  1. Fix 'Same color setting for "set or change img" as currentselectedimagecontainertextcolor in editing on' - #106.
+  2. Fix scroll bar in main region when editing in Boost.
+  3. Remove redundant 'defaultcoursedisplay' setting - #119.
+  4. Tidy up old strings.
+  5. Apply 'Add index to courseid format_grid_icon could improve performance' - #122,
+     thanks to John (https://github.com/yao9394) for the patch.
+  6. Fix summary tooltip dismissing itself when floating over the section name.  If you find it is still an issue, then
+     consider using the 'sectiontitlesummarymaxlength' setting.
+
+Version 3.8.0.1 - 17/11/2019
   1. Fix section one not shown - #105.
+  2. Moodle 3.8 version based on V3.7.1.1.
 
 Version 3.7.1.0
   1. Reduced size of Tooltip JS - #94.
