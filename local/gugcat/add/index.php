@@ -72,7 +72,7 @@ if ($fromform = $mform->get_data()) {
         $gradereason = local_gugcat::$REASONS[$fromform->reasons];
     }
 
-    $gradeitemid = local_gugcat::add_grades_items($courseid, $gradereason, $mods->id);
+    $gradeitemid = local_gugcat::add_grade_item($courseid, $gradereason, $mods->id);
     $grades = local_gugcat::add_update_grades($studentid, $gradeitemid, $fromform->grade);
     $provisionalgrade = local_gugcat::add_update_grades($studentid, $prvgradeid, $fromform->grade);
 

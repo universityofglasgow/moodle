@@ -63,6 +63,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
     }
 
     private function display_table($rows, $columns) {
+        $grades = array_values(local_gugcat::$GRADES);
         global $CFG, $selectedmodule, $courseid;
         $html = '<div class="table-responsive">';
         $html .= '<table class="table">';
@@ -94,7 +95,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
                 }
                 $html .= '<td class="togglemultigrd">
                             '.$this->display_custom_select(
-                                local_gugcat::$GRADES,
+                                $grades,
                                 get_string('choosegrade', 'local_gugcat')).'
                         </td>';
                 $html .= '<td class="togglemultigrd">

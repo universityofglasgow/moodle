@@ -204,11 +204,11 @@ class local_gugcat {
 
     public static function get_prv_grade_id($courseid, $modid){
         $pgrd_str = get_string('provisionalgrd', 'local_gugcat');
-        $prvgrdid = self::add_grades_items($courseid, $pgrd_str, $modid);
+        $prvgrdid = self::add_grade_item($courseid, $pgrd_str, $modid);
         return $prvgrdid;
     }
 
-    public static function add_grades_items($courseid, $reason, $modid){
+    public static function add_grade_item($courseid, $reason, $modid){
         global $DB;
         //get category id
         $categoryid = $DB->get_field('grade_categories', 'id', array('courseid' => $courseid, 'parent' => null), MUST_EXIST);
@@ -290,10 +290,10 @@ class local_gugcat {
     public static function convert_grade($grade){
         $final_grade = intval($grade);
         if (!($final_grade > 23 || $final_grade < 0)){
-            return $convertedgrade = self::$GRADES[$final_grade];
+            return self::$GRADES[$final_grade];
         }
         else {
-            return $convertedgrade = self::$GRADES[0]; 
+            return self::$GRADES[0]; 
         }
     }
 
