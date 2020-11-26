@@ -198,7 +198,7 @@ class local_gugcat {
             $columns[$item->id] = $item->itemname;
         }
         //remove provisional column
-        // unset($columns[$prvgradeid]);
+        unset($columns[$prvgradeid]);
         return $columns;
     }
 
