@@ -94,7 +94,7 @@ body.hillhead-spacing * {
     }
 }
 
-@include accessibility-theme(contrast-yb, #cc0, #000);
+@include accessibility-theme(contrast-yb, #000, #ee6);
 
 @include accessibility-theme(contrast-by, #ee6, #111);
 
@@ -105,6 +105,8 @@ body.hillhead-spacing * {
 @include accessibility-theme(contrast-br, #EEB9B9, #111);
 
 @include accessibility-theme(contrast-bw, #f6f6f6, #111);
+
+@include accessibility-theme(contrast-wb, #111, #f6f6f6);
 
 body.hillhead-contrast #nav-drawer {
     border-right-width: 1px;
@@ -192,6 +194,7 @@ body.hillhead-bold * {
 #hh-acc-th-bb, #hh-acc-th-bb i  { background-color: #B9D9EE !important; color: #111 !important; }
 #hh-acc-th-bw, #hh-acc-th-bw i  { background-color: #f6f6f6 !important; color: #111 !important; }
 #hh-acc-th-nt, #hh-acc-th-nt i { background-color: #121E30 !important; color: #eee !important; }
+#hh-acc-th-wb, #hh-acc-th-wb i { background-color: #111 !important; color: #f6f6f6 !important; }
 
 #hh-acc-fb-on { font-weight: 700 !important; }
 #hh-acc-fb-of { font-weight: 300 !important; }

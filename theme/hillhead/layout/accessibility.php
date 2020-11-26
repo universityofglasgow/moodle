@@ -27,6 +27,13 @@
     $accessibleColourOptions = Array(
         Array(
             'o'=>'theme_hillhead_contrast',
+            'v'=>'wb',
+            'c'=>'hh-acc-th-wb',
+            't'=>'White on Black Theme',
+            'i'=>'fa-low-vision'
+        ),
+        Array(
+            'o'=>'theme_hillhead_contrast',
             'v'=>'yb',
             'c'=>'hh-acc-th-yb',
             't'=>'Yellow on Black Theme',
