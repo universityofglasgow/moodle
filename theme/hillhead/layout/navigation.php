@@ -128,6 +128,8 @@ foreach($flatnav as $navitem) {
                 case 'competencies':
                 case 'grades':
                 case 'key_report_allylti':
+                case 'kalturacoursegallerylink-allcourses';
+                case 'kalturacoursegallerylink-mycourses';
                     $settingsnav[] = $navitem;
                     $settingsnavexists = true;
                     break;
