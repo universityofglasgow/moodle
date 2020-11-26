@@ -44,7 +44,7 @@ $courseid = required_param('id', PARAM_INT);
 $activityid = required_param('activityid', PARAM_INT);
 $studentid = required_param('studentid', PARAM_INT);
 $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
-$student = $DB->get_records('user', array('id'=>$studentid, 'deleted'=>0), MUST_EXIST);
+$student = $DB->get_record('user', array('id'=>$studentid, 'deleted'=>0), '*', MUST_EXIST);
 
 require_login($course);
 
@@ -63,7 +63,7 @@ $final_grade = $grading_info->items[0]->grades[$studentid];
 $mform = new addgradeform(null, array('id'=>$courseid, 'activityid'=>$activityid, 'studentid'=>$studentid));
 if ($fromform = $mform->get_data()) {
 
-    if($fromform->reasons == 7) {
+    if($fromform->reasons == 8) {
         $gradereason = $fromform->otherreason;
     }
     else{
@@ -71,14 +71,14 @@ if ($fromform = $mform->get_data()) {
     }
 
     $gradeitemid = local_gugcat::add_grades_items($courseid, $gradereason, $mods->id);
-    $grades = local_gugcat::add_grades($studentid, $gradeitemid, "77.000000");
+    $grades = local_gugcat::add_update_grades($studentid, $gradeitemid, "77.000000");
 
-    redirect($CFG->wwwroot . '/local/gugcat/index.php?id='.$courseid.'activityid'.$activityid);
+    redirect($CFG->wwwroot . '/local/gugcat/index.php?id='.$courseid.'&activityid='.$activityid);
 }
 
 echo $OUTPUT->header();
 $renderer = $PAGE->get_renderer('local_gugcat');
-echo $renderer->display_add_grade_form($course, $mods->name, $final_grade, $student[$studentid]->firstname, $student[$studentid]->lastname);
+echo $renderer->display_add_grade_form($course, $mods->name, $final_grade, $student->firstname, $student->lastname);
 $mform->display();
 echo $OUTPUT->footer();
 

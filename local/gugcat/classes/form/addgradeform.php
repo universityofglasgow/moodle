@@ -40,7 +40,7 @@ class addgradeform extends moodleform {
 
         $mform->addElement('text', 'otherreason', 'Others', ['class' => 'mform-custom']); 
         $mform->setType('otherreason', PARAM_NOTAGS); 
-        $mform->hideIf('otherreason', 'reasons', 'neq', 7); 
+        $mform->hideIf('otherreason', 'reasons', 'neq', 8); 
         $mform->setDefault('otherreason', "Please Specify");
 
         $mform->addElement('select', 'grade', 'Grade', ['0' => "A1", "1" => "A2"], ['class' => 'mform-custom']); 

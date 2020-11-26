@@ -37,7 +37,8 @@ class local_gugcat {
         4=>"Third Grade",
         5=>"Agreed Grade",
         6=>"Moderated Grade",
-        7=>"Other"
+        7=>"Conduct Penalty",
+        8=>"Other"
     );
     /**
      * Returns all activities/modules for specific course
@@ -195,8 +196,10 @@ class local_gugcat {
         }
     }
     
-    public static function add_grades($userid, $itemid, $grades){
+    public static function add_update_grades($userid, $itemid, $grades){
+        global $DB;
         global $USER;
+
         $grade = new grade_grade();
         $grade->itemid = $itemid;
         $grade->userid = $userid;
@@ -217,7 +220,14 @@ class local_gugcat {
         $grade->timemodified = time();
         $grade->aggregationstatus = "used";
         $grade->aggregationweight = "100.000"; 
-        $grade->insert();
+
+        if(!$gradeid = $DB->get_field('grade_grades', 'id', array('userid'=>$userid, 'itemid'=>$itemid, 'rawgrade'=>null, 'finalgrade'=>null))){
+        return $grade->insert();
+        }
+        else{
+        $grade->id = $gradeid;
+        return $grade->update();
+        }
     }
 
 }
