@@ -183,12 +183,8 @@ select::-ms-expand {
     padding: 1em 1em 0 1em;
 }
 
-.form-container, .mform-container {
+.mform-container {
     max-width: 80%;  
-}
-
-.mform {
-    padding: 0 1em;
 }
 
 .mform select{

@@ -53,6 +53,8 @@ $selectedmodule = is_null($activityid) ? array_pop($mods) : $modules[$activityid
 $rows = local_gugcat::get_rows($course, $selectedmodule , $students);
 $columns = local_gugcat::get_columns();
 
+$prvgradeid = local_gugcat::get_prv_grade_id($courseid, $selectedmodule->id);
+
 echo $OUTPUT->header();
 $renderer = $PAGE->get_renderer('local_gugcat');
 echo $renderer->display_grade_capture($activities, $rows, $columns);

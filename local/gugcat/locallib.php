@@ -28,6 +28,11 @@ require_once($CFG->libdir.'/gradelib.php');
 require_once($CFG->dirroot . '/grade/querylib.php');
 
 class local_gugcat {
+     
+    /**
+     * Database tables.
+     */
+    const TBL_GRADE_ITEMS = 'grade_items';
 
     public static $REASONS = array(
         0=>"Good Cause",
@@ -37,7 +42,8 @@ class local_gugcat {
         4=>"Third Grade",
         5=>"Agreed Grade",
         6=>"Moderated Grade",
-        7=>"Other"
+        7=>"Conduct Penalty",
+        8=>"Other"
     );
 
     public static $GRADES = array(
@@ -98,12 +104,8 @@ class local_gugcat {
      */
     public static function get_grade_items($course, $module){
         global $DB;
-        $courseiddb = $DB->sql_compare_text('courseid') . ' = ' . $DB->sql_compare_text(':courseid');
-        $iteminfodb = $DB->sql_compare_text('iteminfo') . ' = '  . $DB->sql_compare_text(':iteminfo');
-        $gradeitems = $DB->get_records_select('grade_items', $courseiddb . ' AND ' . $iteminfodb, [
-            'courseid' => $course->id,
-            'iteminfo' => $module->id,
-        ]);
+        $select = 'courseid = '.$course->id.' AND '.self::compare_iteminfo();
+        $gradeitems = $DB->get_records_select(self::TBL_GRADE_ITEMS, $select, ['iteminfo' => $module->id]);
         $sort = 'id';
         $fields = 'userid, id, finalgrade, timemodified';
         foreach($gradeitems as $item) {
@@ -111,6 +113,11 @@ class local_gugcat {
         }
         
         return $gradeitems;
+    }
+
+    public static function compare_iteminfo(){
+        global $DB;
+        return $DB->sql_compare_text('iteminfo') . ' = :iteminfo';
     }
 
     /**
@@ -166,14 +173,27 @@ class local_gugcat {
         return $columns;
     }
 
+    public static function get_prv_grade_id($courseid, $modid){
+        $pgrd_str = get_string('provisionalgrd', 'local_gugcat');
+        $prvgrdid = self::add_grades_items($courseid, $pgrd_str, $modid);
+        return $prvgrdid;
+    }
+
     public static function add_grades_items($courseid, $reason, $modid){
         global $DB;
         //get category id
         $categoryid = $DB->get_field('grade_categories', 'id', array('courseid' => $courseid, 'parent' => null), MUST_EXIST);
     
         // check if gradeitem already exists using $reason, $courseid, $activityid
-        if(!$gradeitemid = $DB->get_field('grade_items', 'id', array('courseid' => $courseid, 'categoryid' => $categoryid, 'itemname' => $reason))){
-             // create new gradeitem
+        $select = 'courseid = :courseid AND '.self::compare_iteminfo(). ' AND categoryid = :categoryid AND itemname = :itemname ';
+        $params = [
+            'courseid' => $courseid,
+            'categoryid' => $categoryid,
+            'itemname' => $reason,
+            'iteminfo' => $modid
+        ];
+        if(!$gradeitemid = $DB->get_record_select(self::TBL_GRADE_ITEMS, $select, $params, 'id')){
+            //  create new gradeitem
              $gradeitem = new grade_item(array('id'=>0, 'courseid'=>$courseid));
         
              $gradeitem->weightoverride = 0;
