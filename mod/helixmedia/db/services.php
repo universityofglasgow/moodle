@@ -15,31 +15,23 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Post-install code for the submission_helixassign module.
+ * This file contains helixmedia external webservices
  *
- * @package assignsubmission_helixassign
- * @copyright Streaming LTD 2013
+ * @package    mod
+ * @subpackage helixmedia
+ * @author     Tim Williams (For Streaming LTD)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+defined('MOODLE_INTERNAL') || die;
 
-
-/**
- * Code run after the assignsubmission_helixassign module database tables have been created.
- * Moves the plugin to the top of the list (of 3)
- * @return bool
- */
-function xmldb_assignsubmission_helixassign_install() {
-    global $CFG;
-
-    require_once($CFG->dirroot . '/mod/assign/adminlib.php');
-    $pluginmanager = new assign_plugin_manager('assignsubmission');
-
-    $pluginmanager->move_plugin('helixassign', 'up');
-    $pluginmanager->move_plugin('helixassign', 'up');
-
-    return true;
-}
-
-
+$functions = [
+    'mod_helixmedia_get_launch_data' => [
+        'classname'     => 'mod_helixmedia_external',
+        'methodname'    => 'get_launch_data',
+        'description'   => 'Returns launch data for the plugin',
+        'type'          => 'read',
+        'capabilities'  => 'mod/helixmedia:view',
+        'services'      => [MOODLE_OFFICIAL_MOBILE_SERVICE, 'local_mobile'],
+    ],
+];

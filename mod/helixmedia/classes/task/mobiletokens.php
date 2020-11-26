@@ -15,31 +15,40 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Post-install code for the submission_helixassign module.
+ * This file defines the version of helixmedia
  *
- * @package assignsubmission_helixassign
- * @copyright Streaming LTD 2013
+ * @package    mod
+ * @subpackage helixmedia
+ * @copyright  2013 Tim Williams (For Streaming LTD)
+ * @author     Tim Williams
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
+namespace mod_helixmedia\task;
 
 /**
- * Code run after the assignsubmission_helixassign module database tables have been created.
- * Moves the plugin to the top of the list (of 3)
- * @return bool
+ * Cleanup task for HelixMedia;
  */
-function xmldb_assignsubmission_helixassign_install() {
-    global $CFG;
 
-    require_once($CFG->dirroot . '/mod/assign/adminlib.php');
-    $pluginmanager = new assign_plugin_manager('assignsubmission');
 
-    $pluginmanager->move_plugin('helixassign', 'up');
-    $pluginmanager->move_plugin('helixassign', 'up');
 
-    return true;
+class mobiletokens extends \core\task\scheduled_task {
+
+    /**
+     * Return the task's name as shown in admin screens.
+     *
+     * @return string
+     */
+    public function get_name() {
+        return get_string('mobiletokens', 'mod_helixmedia');
+    }
+
+    /**
+     * Execute the task.
+     */
+    public function execute() {
+        global $DB;
+        $dayago = time() - (24 * 60 * 60);
+        $DB->delete_records_select("helixmedia_mobile", "timecreated < ".$dayago);
+    }
 }
-
-
