@@ -166,4 +166,60 @@ class local_gugcat {
         return $columns;
     }
 
+    public static function add_grades_items($courseid, $reason, $modid){
+        global $DB;
+        //get category id
+        $categoryid = $DB->get_field('grade_categories', 'id', array('courseid' => $courseid, 'parent' => null), MUST_EXIST);
+    
+        // check if gradeitem already exists using $reason, $courseid, $activityid
+        if(!$gradeitemid = $DB->get_field('grade_items', 'id', array('courseid' => $courseid, 'categoryid' => $categoryid, 'itemname' => $reason))){
+             // create new gradeitem
+             $gradeitem = new grade_item(array('id'=>0, 'courseid'=>$courseid));
+        
+             $gradeitem->weightoverride = 0;
+             $gradeitem->gradepass = 0;
+             $gradeitem->grademin = 0;
+             $gradeitem->gradetype = 1;
+             $gradeitem->display =0;
+             $gradeitem->outcomeid = null;
+             $gradeitem->categoryid = $categoryid;
+             $gradeitem->iteminfo = $modid;
+             $gradeitem->itemname = $reason;
+             $gradeitem->iteminstance= null;
+             $gradeitem->itemmodule=null;
+             $gradeitem->itemtype = 'manual'; // All new items to be manual only.
+     
+             return $gradeitem->insert();
+        }
+        
+        else {
+            return $gradeitemid;
+        }
+    }
+    
+    public static function add_grades($userid, $itemid, $grades){
+        global $USER;
+        $grade = new grade_grade();
+        $grade->itemid = $itemid;
+        $grade->userid = $userid;
+        $grade->rawgrade = $grades;
+        $grade->rawgrademax = "100.000";
+        $grade->rawgrademin = "0.00000";
+        $grade->usermodified = $USER->id;
+        $grade->finalgrade = $grades;
+        $grade->hidden = "0";
+        $grade->locked = "0";
+        $grade->locktime = "0";
+        $grade->exported = "0";
+        $grade->overridden = "0";
+        $grade->excluded = "0";
+        $grade->feedbackformat = "0";
+        $grade->informationformat = "0";
+        $grade->timecreated = time();
+        $grade->timemodified = time();
+        $grade->aggregationstatus = "used";
+        $grade->aggregationweight = "100.000"; 
+        $grade->insert();
+    }
+
 }
