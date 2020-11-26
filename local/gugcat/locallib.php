@@ -28,6 +28,17 @@ require_once($CFG->libdir.'/gradelib.php');
 
 class local_gugcat {
 
+
+    public static $REASONS = array(
+        0=>"Good Cause",
+        1=>"Late Penalty",
+        2=>"Capped Grade",
+        3=>"Second Grade",
+        4=>"Third Grade",
+        5=>"Agreed Grade",
+        6=>"Moderated Grade",
+        7=>"Other"
+    );
     /**
      * Returns all activities/modules for specific course
      *
@@ -151,6 +162,62 @@ class local_gugcat {
             array_push($columns, $item->itemname);        
         }
         return $columns;
+    }
+
+    public static function add_grades_items($courseid, $reason, $modid){
+        global $DB;
+        //get category id
+        $categoryid = $DB->get_field('grade_categories', 'id', array('courseid' => $courseid, 'parent' => null), MUST_EXIST);
+    
+        // check if gradeitem already exists using $reason, $courseid, $activityid
+        if(!$gradeitemid = $DB->get_field('grade_items', 'id', array('courseid' => $courseid, 'categoryid' => $categoryid, 'itemname' => $reason))){
+             // create new gradeitem
+             $gradeitem = new grade_item(array('id'=>0, 'courseid'=>$courseid));
+        
+             $gradeitem->weightoverride = 0;
+             $gradeitem->gradepass = 0;
+             $gradeitem->grademin = 0;
+             $gradeitem->gradetype = 1;
+             $gradeitem->display =0;
+             $gradeitem->outcomeid = null;
+             $gradeitem->categoryid = $categoryid;
+             $gradeitem->iteminfo = $modid;
+             $gradeitem->itemname = $reason;
+             $gradeitem->iteminstance= null;
+             $gradeitem->itemmodule=null;
+             $gradeitem->itemtype = 'manual'; // All new items to be manual only.
+     
+             return $gradeitem->insert();
+        }
+        
+        else {
+            return $gradeitemid;
+        }
+    }
+    
+    public static function add_grades($userid, $itemid, $grades){
+        global $USER;
+        $grade = new grade_grade();
+        $grade->itemid = $itemid;
+        $grade->userid = $userid;
+        $grade->rawgrade = $grades;
+        $grade->rawgrademax = "100.000";
+        $grade->rawgrademin = "0.00000";
+        $grade->usermodified = $USER->id;
+        $grade->finalgrade = $grades;
+        $grade->hidden = "0";
+        $grade->locked = "0";
+        $grade->locktime = "0";
+        $grade->exported = "0";
+        $grade->overridden = "0";
+        $grade->excluded = "0";
+        $grade->feedbackformat = "0";
+        $grade->informationformat = "0";
+        $grade->timecreated = time();
+        $grade->timemodified = time();
+        $grade->aggregationstatus = "used";
+        $grade->aggregationweight = "100.000"; 
+        $grade->insert();
     }
 
 }
