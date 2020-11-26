@@ -40,10 +40,16 @@ class local_gugcat_renderer extends plugin_renderer_base {
         return $html;
     }
 
-    public function display_add_grade_form() {
+    public function display_add_grade_form($course, $activity, $final_grade, $firstname, $lastname) {
         $html = $this->header();
         $html .= $this->render_from_template('local_gugcat/gcat_add_form', (object)[
-            'addnewgrade' =>get_string('addnewgrade', 'local_gugcat')
+            'addnewgrade' =>get_string('addnewgrade', 'local_gugcat'),
+            'course' => $course,
+            'section' => $activity,
+            'firstname' => $firstname,
+            'lastname' => $lastname,
+            'gradeinfo' => $final_grade
+
         ]);
         return $html;
     }
