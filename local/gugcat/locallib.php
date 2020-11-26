@@ -25,9 +25,27 @@
 
 defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir.'/gradelib.php');
+require_once($CFG->dirroot . '/grade/querylib.php');
 
 class local_gugcat {
 
+    public static $REASONS = array(
+        0=>"Good Cause",
+        1=>"Late Penalty",
+        2=>"Capped Grade",
+        3=>"Second Grade",
+        4=>"Third Grade",
+        5=>"Agreed Grade",
+        6=>"Moderated Grade",
+        7=>"Other"
+    );
+
+    public static $GRADES = array(
+        0=>"A1",
+        1=>"A2",
+        2=>"B1",
+        3=>"B2"
+    );
     /**
      * Returns all activities/modules for specific course
      *
@@ -36,8 +54,7 @@ class local_gugcat {
      */
     public static function get_activities($courseid, $activityid){
         global $modules;
-        $modinfo = get_fast_modinfo($courseid);
-        $mods = $modinfo->get_cms();
+        $mods = grade_get_gradable_activities($courseid);
         $activities = array();
         $assignments = array_filter($mods, function($mod){
             return (isset($mod->modname) && ($mod->modname === 'assign')) ? true : false;
@@ -124,7 +141,7 @@ class local_gugcat {
                 foreach ($gradeitems as $item) {
                     $rawgrade = ( $item->grades[$student->id]->finalgrade);
                     $grade = is_null($rawgrade) ? 'N/A' : $rawgrade;
-                    array_push($gradecaptureitem->grades, (object)['grade' => $grade]);
+                    array_push($gradecaptureitem->grades, $grade);
                 }
             } 
     
@@ -137,16 +154,12 @@ class local_gugcat {
     /**
      * Returns columns for grade capture table
      *
-     * @param mixed $course
-     * @param mixed $module
-     * @param mixed $students
      */
     public static function get_columns(){
-        $columns = array();
-        $columns = [
-             '1st Grade'
-        ];
-        global $gradeitems;
+        global $gradeitems, $selectedmodule;
+        $date = date("(j/n/Y)", strtotime(userdate($selectedmodule->added)));
+        $firstgrade = get_string('gradebookgrade', 'local_gugcat').'<br>'.$date;
+        $columns = array($firstgrade);
         foreach ($gradeitems as $item) {
             array_push($columns, $item->itemname);        
         }

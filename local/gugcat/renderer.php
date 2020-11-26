@@ -24,6 +24,8 @@
  */
 
 defined('MOODLE_INTERNAL') || die();
+require_once(__DIR__ . '/../../config.php');
+require_once($CFG->dirroot.'/local/gugcat/classes/form/addgradeform.php');
 
 class local_gugcat_renderer extends plugin_renderer_base {
 
@@ -48,9 +50,10 @@ class local_gugcat_renderer extends plugin_renderer_base {
         return $html;
     }
 
-    public function display_select($options, $class =null, $id = null) {
+    public function display_custom_select($options, $default = null, $class = null, $id = null) {
         $html = $this->render_from_template('local_gugcat/gcat_custom_select', (object)[
-            'options' => array('Select'),
+            'default' => $default ,
+            'options' => $options,
             'class' => $class,
             'id' => $id,
         ]);
@@ -84,22 +87,19 @@ class local_gugcat_renderer extends plugin_renderer_base {
                 $html .= '<td>'.$row->surname.'</td>';
                 $html .= '<td>'.$row->forename.'</td>';
                 $html .= '<td>'.$row->firstgrade.'</td>';
-                foreach((array) $row->grades as $grd) {
-                    $html .= '<td>'.$grd->grade.'</td>';
+                foreach((array) $row->grades as $grade) {
+                    $html .= '<td>'.$grade.'</td>';
                 }
                 $html .= '<td class="togglemultigrd">
-                            <div class="selectdiv">
-                                <select>
-                                    <option>Choose grade</option>
-                                </select>
-                            </div>
+                            '.$this->display_custom_select(
+                                local_gugcat::$GRADES,
+                                get_string('choosegrade', 'local_gugcat')).'
                         </td>';
                 $html .= '<td class="togglemultigrd">
-                            <div class="selectdiv">
-                                <select>
-                                    <option>Select reason</option>
-                                </select>
-                            </div>
+                            '.$this->display_custom_select(
+                                local_gugcat::$REASONS,
+                                get_string('selectreason', 'local_gugcat'),
+                                'multi-select-reason').'
                         </td>';
                 $html .= '<td><b>'.$row->provisionalgrade.'</b></td>';
                 $html .= '<td>
