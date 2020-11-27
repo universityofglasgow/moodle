@@ -821,6 +821,7 @@ class format_grid_renderer extends format_section_renderer_base {
                         }
                         $sectiontitleattribues['title'] = $summary;
                         $sectiontitleattribues['data-toggle'] = 'gridtooltip';
+                        $sectiontitleattribues['data-container'] = '#gridbox-'.$thissection->section;
                         $sectiontitleattribues['data-placement'] = $this->courseformat->get_set_show_section_title_summary_position();
                     }
                 }
@@ -831,6 +832,7 @@ class format_grid_renderer extends format_section_renderer_base {
                    'div' to a 'nav' tag (www.w3.org/TR/2010/WD-html5-20100624/sections.html#the-nav-element) when I'm
                    that all browsers support it against the browser requirements of Moodle. */
                 $liattributes = array(
+                    'id' => 'gridbox-'.$thissection->section,
                     'role' => 'region',
                     'aria-labelledby' => 'gridsectionname-'.$thissection->section
                 );
@@ -993,11 +995,7 @@ class format_grid_renderer extends format_section_renderer_base {
                 'role' => 'link',
                 'aria-label' => $streditimagealt)
             ),
-            html_writer::empty_tag('img', array(
-                'src' => $urlpicedit,
-                'alt' => $streditimagealt,
-                'role' => 'img',
-                'aria-label' => $streditimagealt)).'&nbsp;'.$streditimage,
+            $this->output->pix_icon('t/edit', $streditimagealt).'&nbsp;'.$streditimage,
             array('title' => $streditimagealt)
         );
     }

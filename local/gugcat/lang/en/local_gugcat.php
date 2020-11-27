@@ -23,15 +23,27 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['pluginname'] = 'UofG Grade Capture and Aggregation Tool';
-$string['gugcat'] = 'Grade Capture and Aggregation Tool';
-$string['title'] = 'Grade capture and score aggregation';
-$string['assessmentlvlscore'] = 'Assessment Level Score';
-$string['overviewaggregrade'] = 'Overview & Aggregated Grade';
 $string['addallnewgrade'] = 'Add new grade for all participants';
-$string['saveallnewgrade'] = 'Save all participants grades';
-$string['approvegrades'] = 'Approve provisional grades';
-$string['reasonnewgrade'] = 'Reason for new grade';
-$string['navname'] = 'Grade Capture and Aggregation';
+$string['addgrade'] = 'Add grade';
 $string['addnewgrade'] = 'Add new grade';
+$string['approvegrades'] = 'Approve provisional grades';
+$string['assessmentlvlscore'] = 'Assessment Level Score';
+$string['candidateno'] = 'Candidate No.';
+$string['choosegrade'] = 'Choose grade';
 $string['confirmgrade'] = 'Confirm new grade';
+$string['downloadcsv'] = 'Download .csv';
+$string['forename'] = 'Forename';
+$string['gugcat'] = 'Grade Capture and Aggregation Tool';
+$string['gradebookgrade'] = 'Gradebook Grade ';
+$string['navname'] = 'Grade Capture and Aggregation';
+$string['nograde'] = 'No grade';
+$string['overviewaggregrade'] = 'Overview & Aggregated Grade';
+$string['pluginname'] = 'UofG Grade Capture and Aggregation Tool';
+$string['provisionalgrd'] = 'Provisional Grade';
+$string['reasonnewgrade'] = 'Reason for new grade';
+$string['saveallnewgrade'] = 'Save all participants grades';
+$string['selectreason'] = 'Select reason';
+$string['studentno'] = 'Student No.';
+$string['surname'] = 'Surname';
+$string['title'] = 'Grade capture and score aggregation';
+

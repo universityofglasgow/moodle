@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<options
+  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+  xsi:noNamespaceSchemaLocation='question_options_schema.xsd'>
+  <chordquality-identify-random>
+    <clef-random>
+      <clef>treble</clef>
+    </clef-random>
+    <chordquality-random>
+      <chordquality>major</chordquality>
+      <chordquality>minor</chordquality>
+    </chordquality-random>
+  </chordquality-identify-random>
+
+</options>

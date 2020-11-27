@@ -1,0 +1,239 @@
+.container {
+    margin: 0;
+    padding: 0;
+    font-size: 80%;
+}
+
+.togglemultigrd{
+    display: none;
+}
+
+/* Table style */
+.table {
+    margin-bottom: 0;
+    font-size: 90%;
+}
+
+.table thead th {
+    vertical-align: middle;
+}
+
+th {
+    background-color: #005c8a;
+    color: white;
+    font-weight: 500;
+}
+
+tr:nth-child(even) {
+    background-color: #e6eaee;
+}
+
+td, th {
+    text-align: center;
+    padding: 1em 1.5em;
+}
+
+i {
+    color: #8c8c8c;
+    cursor: pointer;
+}
+
+/* Tab Links style */
+.tablink {
+    border-radius: .5em .5em 0 0 ;
+    background-color: #c4c4c4;
+    border: 0;
+    outline: none;
+    cursor: pointer;
+    padding: 14px 16px;
+    width: auto;
+    font-weight: bold;
+}
+
+.tablink:hover {
+    opacity: 0.8;
+}
+
+.tablink.active {
+    background-color: #005c8a;
+    color: white;
+}
+
+/* Tab Content style */
+.tabcontent {
+    border: 1px solid black;
+    border-radius: 0 1em 0 0 ;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Tab Content Header style */
+
+.tabcontent-header {
+    padding: 1.5em;
+}
+
+button.tablink, button.tablink:focus{
+    outline: 0;
+    box-shadow: none;
+    border: 0;
+}
+/* Buttons style */
+.btn-default {
+    background-color: transparent;
+    border: 1px solid #005c8a;
+    color: #005c8a;
+    border-radius: 0.5em;
+    font-weight: 400;
+    font-size: inherit;
+    outline: none;
+}
+
+.btn-default:hover {
+    background-color: #005c8a;
+    color: white;
+}
+
+.btn-add {
+    background-color: #005c8a;
+    color: white;
+}
+
+.btn-approve {
+    border: 1px solid #006630;
+    background-color: #006630;
+    color: white;
+}
+
+.btn-approve:hover {
+    background-color: #006630;
+    color: white;
+    opacity: 0.8;
+}
+
+.btn-download, .btn-approve {
+    float: right;
+}
+
+.btn-download, .btn-approve, .btn-add {
+    height: 40px;
+}
+
+/* Select style */
+.selectdiv {
+    position: relative;
+    margin: auto;
+    cursor: pointer;
+    width: fit-content;
+}
+
+.selectdiv:after {
+    content: '\f078';
+    font: normal normal normal 12px/1 FontAwesome;
+    color: #005c8a;
+    position: absolute;
+    right: 5px;
+    top: 30%;
+    height: 34px;
+    padding: 0 8px;
+    pointer-events: none;
+}
+
+/* IE11 hide native button*/
+select::-ms-expand {
+    display: none;
+}
+
+.selectdiv select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    cursor: pointer;
+    display: block;
+    height: 32px;
+    margin: 0 5px;
+    padding: 0px 24px 0px 10px;
+    line-height: 1.75;
+    color: #333;
+    background-color: #ffffff;
+    background-image: none;
+    border-radius: .5em;
+    border: 1px solid #8c8c8c;
+    -ms-word-break: normal;
+    word-break: normal;
+    outline: none;
+}
+
+.tabcontent-header >.selectdiv select{
+    height: 40px;
+}
+
+.tabcontent-header >.selectdiv{
+    float: left;
+}
+
+/* Add grade form style *****************************/
+
+.mform label, .form-container label, .title{
+    font-weight: bold;
+}
+
+.form-container{
+    padding: 1em 1em 0 1em;
+}
+
+.mform-container {
+    max-width: 80%;  
+}
+
+.mform select{
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+
+    display: block;
+    width: 100%;
+    max-width: 150px;
+    padding: 0px 15px;
+    font-size: 13px;
+    line-height: 1.75;
+    color: #333;
+    background-color: #ffffff;
+    background-image: none;
+    border-radius: .5em;
+    border: 1px solid #8c8c8c;
+    -ms-word-break: normal;
+    word-break: normal;
+    outline: none;
+}
+
+.mform select::after {
+    content: '\f078';
+    font: normal normal normal 12px/1 FontAwesome;
+    color: #005c8a;
+    right: 11px;
+    top: 6px;
+    height: 34px;
+    padding: 5% 8px 0px 8px;
+    position: absolute;
+    pointer-events: none;
+}
+
+.form-inline .input-group, .form-inline .custom-select {
+    width: 150px;
+}
+
+#fitem_id_submitbutton .btn{
+     border-radius: .5em !important; 
+     margin-left: auto;
+}
+
+/* tbl Select reason style*/
+.multi-select-reason{
+    display: none;
+}
+
+/* display only the first select reason dropdown */
+tbody > tr:first-child > td > .multi-select-reason {
+    display: block;
+}
