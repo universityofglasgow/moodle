@@ -26,15 +26,15 @@
 
 require_once(__DIR__ . '/../../config.php');
 require_once($CFG->dirroot . '/local/gugcat/locallib.php');
-require_once('grade_capture_item.php');
+
 $PAGE->set_context(context_system::instance());
 $PAGE->set_url(new moodle_url('/local/gugcat/'));
 $PAGE->set_title(get_string('gugcat', 'local_gugcat'));
 $PAGE->navbar->ignore_active();
 $PAGE->navbar->add(get_string('navname', 'local_gugcat'), new moodle_url('/local/gugcat'));
 
-$PAGE->requires->js_call_amd('local_gugcat/main', 'init');
 $PAGE->requires->css('/local/gugcat/styles/gugcat.css');
+$PAGE->requires->js_call_amd('local_gugcat/main', 'init');
 
 $courseid = required_param('id', PARAM_INT);
 $activityid = optional_param('activityid', null, PARAM_INT);
@@ -51,8 +51,8 @@ $activities = local_gugcat::get_activities($courseid, $activityid);
 $mods = array_reverse($modules);
 $selectedmodule = is_null($activityid) ? array_pop($mods) : $modules[$activityid];
 $prvgradeid = local_gugcat::get_prv_grade_id($courseid, $selectedmodule->id);
-$rows = local_gugcat::get_rows($course, $selectedmodule , $students);
-$columns = local_gugcat::get_columns();
+$rows = local_gugcat::grade_capture_get_rows($course, $selectedmodule, $students);
+$columns = local_gugcat::grade_capture_get_columns($selectedmodule);
 
 echo $OUTPUT->header();
 $renderer = $PAGE->get_renderer('local_gugcat');

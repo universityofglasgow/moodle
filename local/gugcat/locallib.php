@@ -26,6 +26,9 @@
 defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir.'/gradelib.php');
 require_once($CFG->dirroot . '/grade/querylib.php');
+require_once($CFG->libdir.'/grade/grade_item.php');
+require_once($CFG->libdir.'/grade/grade_grade.php');
+require_once('grade_capture_item.php');
 
 class local_gugcat {
      
@@ -124,7 +127,7 @@ class local_gugcat {
      * @param mixed $course
      * @param mixed $module
      */
-    public static function get_grade_items($course, $module){
+    public static function get_grade_grade_items($course, $module){
         global $DB;
         $select = 'courseid = '.$course->id.' AND '.self::compare_iteminfo();
         $gradeitems = $DB->get_records_select(self::TBL_GRADE_ITEMS, $select, ['iteminfo' => $module->id]);
@@ -149,34 +152,30 @@ class local_gugcat {
      * @param mixed $module
      * @param mixed $students
      */
-    public static function get_rows($course, $module, $students){
+    public static function grade_capture_get_rows($course, $module, $students){
         $captureitems = array();
         global $gradeitems, $prvgradeid;
         $grading_info = grade_get_grades($course->id, 'mod', $module->modname, $module->instance, array_keys($students));
-        $gradeitems = self::get_grade_items($course, $module);
+        $gradeitems = self::get_grade_grade_items($course, $module);
         $i = 1;
         foreach ($students as $student) {
-            $firstgrade = self::convert_grade($grading_info->items[0]->grades[$student->id]->grade);
+            $firstgrade = $grading_info->items[0]->grades[$student->id]->grade;
             $gradecaptureitem = new grade_capture_item();
             $gradecaptureitem->cnum = $i;
             $gradecaptureitem->studentno = $student->id;
             $gradecaptureitem->surname = $student->lastname;
             $gradecaptureitem->forename = $student->firstname;
-            $gradecaptureitem->firstgrade = $firstgrade;
-    
-            if(!empty($gradeitems)){
-                $gradecaptureitem->grades = array();
-                foreach ($gradeitems as $item) {
-                    if($item->id === $prvgradeid){
-                        $gradecaptureitem->provisionalgrade = self::convert_grade(( $item->grades[$student->id]->finalgrade));
-                    }else{
-                        $rawgrade = ( $item->grades[$student->id]->finalgrade);
-                        $grade = is_null($rawgrade) ? 'N/A' : self::convert_grade($rawgrade);
-                        array_push($gradecaptureitem->grades, $grade);
-                    }
+            $gradecaptureitem->firstgrade = self::convert_grade($firstgrade);
+            $gradecaptureitem->grades = array();
+            foreach ($gradeitems as $item) {
+                $rawgrade = $item->grades[$student->id]->finalgrade;
+                if($item->id === $prvgradeid){
+                    $grade = is_null($rawgrade) ? $firstgrade : $rawgrade;
+                    $gradecaptureitem->provisionalgrade = self::convert_grade($grade);
+                }else{
+                    $grade = is_null($rawgrade) ? 'N/A' : self::convert_grade($rawgrade);
+                    array_push($gradecaptureitem->grades, $grade);
                 }
-            } else{
-                $gradecaptureitem->provisionalgrade = self::convert_grade($firstgrade);
             }
     
             array_push($captureitems, $gradecaptureitem);
@@ -189,9 +188,10 @@ class local_gugcat {
      * Returns columns for grade capture table
      *
      */
-    public static function get_columns(){
-        global $gradeitems, $selectedmodule, $prvgradeid;
-        $date = date("(j/n/Y)", strtotime(userdate($selectedmodule->added)));
+    public static function grade_capture_get_columns($module){
+        //global $gradeitems from get rows function
+        global $gradeitems, $prvgradeid;
+        $date = date("(j/n/Y)", strtotime(userdate($module->added)));
         $firstgrade = get_string('gradebookgrade', 'local_gugcat').'<br>'.$date;
         $columns = array($firstgrade);
         foreach ($gradeitems as $item) {

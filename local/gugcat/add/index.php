@@ -25,9 +25,6 @@
  */
 
 require_once(__DIR__ . '/../../../config.php');
-require_once($CFG->libdir.'/gradelib.php');
-require_once($CFG->libdir.'/grade/grade_item.php');
-require_once($CFG->libdir.'/grade/grade_grade.php');
 require_once($CFG->dirroot . '/local/gugcat/locallib.php');
 require_once($CFG->dirroot.'/local/gugcat/classes/form/addgradeform.php');
 
@@ -50,17 +47,14 @@ require_login($course);
 $PAGE->set_course($course);
 $PAGE->set_heading($course->fullname);
 
-$context = context_course::instance($course->id);
-
 $modinfo = get_fast_modinfo($courseid);
-$mods = $modinfo->get_cm($activityid);
-
+$module = $modinfo->get_cm($activityid);
 
 // get 1st grade
-$grading_info = grade_get_grades($courseid, 'mod', $mods->modname, $mods->instance, $studentid);
+$grading_info = grade_get_grades($courseid, 'mod', $module->modname, $module->instance, $studentid);
 $gbgrade = $grading_info->items[0]->grades[$studentid]->grade;
 $convertedgrade = local_gugcat::convert_grade($gbgrade);
-$prvgradeid = local_gugcat::get_prv_grade_id($courseid, $mods->id);
+$prvgradeid = local_gugcat::get_prv_grade_id($courseid, $module->id);
 
 $mform = new addgradeform(null, array('id'=>$courseid, 'activityid'=>$activityid, 'studentid'=>$studentid));
 if ($fromform = $mform->get_data()) {
@@ -72,7 +66,7 @@ if ($fromform = $mform->get_data()) {
         $gradereason = local_gugcat::$REASONS[$fromform->reasons];
     }
 
-    $gradeitemid = local_gugcat::add_grade_item($courseid, $gradereason, $mods->id);
+    $gradeitemid = local_gugcat::add_grade_item($courseid, $gradereason, $module->id);
     $grades = local_gugcat::add_update_grades($studentid, $gradeitemid, $fromform->grade);
     $provisionalgrade = local_gugcat::add_update_grades($studentid, $prvgradeid, $fromform->grade);
 
@@ -81,7 +75,7 @@ if ($fromform = $mform->get_data()) {
 
 echo $OUTPUT->header();
 $renderer = $PAGE->get_renderer('local_gugcat');
-echo $renderer->display_add_grade_form($course, $mods->name, $convertedgrade, $student);
+echo $renderer->display_add_grade_form($course, $module->name, $convertedgrade, $student);
 $mform->display();
 echo $OUTPUT->footer();
 
