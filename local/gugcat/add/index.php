@@ -41,7 +41,7 @@ $courseid = required_param('id', PARAM_INT);
 $activityid = required_param('activityid', PARAM_INT);
 $studentid = required_param('studentid', PARAM_INT);
 $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
-$student = $DB->get_records('user', array('id'=>$studentid, 'deleted'=>0), MUST_EXIST);
+$student = $DB->get_record('user', array('id'=>$studentid, 'deleted'=>0), '*', MUST_EXIST);
 require_login($course);
 
 $PAGE->set_course($course);
@@ -78,7 +78,7 @@ if ($fromform = $mform->get_data()) {
 
 echo $OUTPUT->header();
 $renderer = $PAGE->get_renderer('local_gugcat');
-echo $renderer->display_add_grade_form($course, $module->name, $convertedgrade, $student[$studentid], $gradeversions);
+echo $renderer->display_add_grade_form($course, $module->name, $convertedgrade, $student, $gradeversions);
 $mform->display();
 echo $OUTPUT->footer();
 
