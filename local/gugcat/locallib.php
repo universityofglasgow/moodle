@@ -297,8 +297,6 @@ class local_gugcat {
         return $grade->update();
     }
 
-
-
     public static function convert_grade($grade){
         $final_grade = intval($grade);
         if (!($final_grade > 23 || $final_grade < 0)){
@@ -307,6 +305,17 @@ class local_gugcat {
         else {
             return self::$GRADES[0]; 
         }
+    }
+
+    public static function filter_grade_version($gradeitems, $studentid, $prvgradeid){
+        foreach($gradeitems as $gradeitem){
+            if(is_null($gradeitem->grades[$studentid]->finalgrade)) {
+                unset($gradeitems[$gradeitem->id]);
+            }
+        }
+        unset($gradeitems[$prvgradeid]);
+        
+        return $gradeitems;
     }
 
 }
