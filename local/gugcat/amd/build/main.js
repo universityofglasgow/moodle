@@ -57,6 +57,7 @@ define(['jquery', 'core/str' ], function($, Str) {
                     if(_this.hasClass("togglebtn")){
                         _this.text(langStrings[1]);   
                     } else {
+                        $("#multigradesform").submit();
                         _this.text(langStrings[0]); 
                     }
                 })
@@ -67,6 +68,20 @@ define(['jquery', 'core/str' ], function($, Str) {
                 if(checkCurrentUrl('gugcat/add')){
                     history.back();
                 }
+                alert("hi");
+            });
+
+            $("#select-grade-reason").on("change", function () { 
+                var $selected = $(this).find("option:selected");
+                if($selected.val() === 'Other'){
+                    $("#input-reason").show();
+                }else{
+                    $("#input-reason").hide();
+                }
+            });
+
+            $('#input-reason').on('input', function(e){
+                $(".input-reason").val($(this).val());
             });
 
             // Hide elements on add grade form page 

@@ -25,10 +25,10 @@
 }}
 
 <div class="selectdiv {{class}}">
-    <select id={{id}}>
+    <select id="{{id}}" name="{{name}}" required>
         {{#default}}<option selected disabled="disabled">{{default}}</option>{{/default}}
         {{#options}}
-        <option value={{.}} >{{.}}</option>
+        <option value="{{.}}">{{.}}</option>
         {{/options}}
     </select>
 </div>

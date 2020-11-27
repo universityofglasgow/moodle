@@ -27,8 +27,12 @@
 require_once(__DIR__ . '/../../config.php');
 require_once($CFG->dirroot . '/local/gugcat/locallib.php');
 
+$courseid = required_param('id', PARAM_INT);
+$activityid = optional_param('activityid', null, PARAM_INT);
+
+require_login($courseid);
 $PAGE->set_context(context_system::instance());
-$PAGE->set_url(new moodle_url('/local/gugcat/'));
+$PAGE->set_url(new moodle_url('/local/gugcat/index.php', array('id' => $courseid)));
 $PAGE->set_title(get_string('gugcat', 'local_gugcat'));
 $PAGE->navbar->ignore_active();
 $PAGE->navbar->add(get_string('navname', 'local_gugcat'), new moodle_url('/local/gugcat'));
@@ -36,11 +40,7 @@ $PAGE->navbar->add(get_string('navname', 'local_gugcat'), new moodle_url('/local
 $PAGE->requires->css('/local/gugcat/styles/gugcat.css');
 $PAGE->requires->js_call_amd('local_gugcat/main', 'init');
 
-$courseid = required_param('id', PARAM_INT);
-$activityid = optional_param('activityid', null, PARAM_INT);
 $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
-
-require_login($course);
 
 $PAGE->set_course($course);
 $PAGE->set_heading($course->fullname);
@@ -51,10 +51,45 @@ $activities = local_gugcat::get_activities($courseid, $activityid);
 $mods = array_reverse($activities);
 $selectedmodule = is_null($activityid) ? array_pop($mods) : $activities[$activityid];
 $prvgradeid = local_gugcat::get_prv_grade_id($courseid, $selectedmodule->id);
+
+//---------submit multiple add
+if (!empty($_POST)){
+    if (isset($_POST['grades']) && !empty($_POST['reason'])){
+        $grades = $_POST['grades'];
+        $reason = $_POST['reason'];
+        if(array_column($grades,'grade')){
+
+            //reason: other selected
+            if($reason === get_string('reasonother', 'local_gugcat')){
+                if(!empty($_POST['input-reason'])){
+                    $reason = $_POST['input-reason'];
+                }else{
+                    print_error('errorrequired', 'local_gugcat', $PAGE->url);
+                }
+            }
+
+            // $gradeitemid = local_gugcat::add_grade_item($courseid, $reason, $selectedmodule->id);
+            foreach ($grades as $item) {
+                if(isset($item['grade'])){
+                    $grade = array_search($item['grade'], local_gugcat::$GRADES);
+                    // local_gugcat::add_update_grades($item['id'], $gradeitemid, $grade);
+                    // local_gugcat::update_grade($item['id'], $prvgradeid, $grade);
+                }
+            }
+
+        }else{
+            //no grades added
+            print_error('errorgraderequired', 'local_gugcat', $PAGE->url);
+        }
+    }else{
+        print_error('errorrequired', 'local_gugcat', $PAGE->url);
+    }
+}
+
 $rows = local_gugcat::grade_capture_get_rows($course, $selectedmodule, $students);
 $columns = local_gugcat::grade_capture_get_columns($selectedmodule);
 
 echo $OUTPUT->header();
 $renderer = $PAGE->get_renderer('local_gugcat');
-echo $renderer->display_grade_capture($activities, $rows, $columns);
+echo $renderer->display_grade_capture($activities, $rows, $columns, $selectedmodule->id, $courseid);
 echo $OUTPUT->footer();
