@@ -68,7 +68,7 @@ if ($fromform = $mform->get_data()) {
 
     $gradeitemid = local_gugcat::add_grade_item($courseid, $gradereason, $module->id);
     $grades = local_gugcat::add_update_grades($studentid, $gradeitemid, $fromform->grade);
-    $provisionalgrade = local_gugcat::add_update_grades($studentid, $prvgradeid, $fromform->grade);
+    $provisionalgrade = local_gugcat::update_grade($studentid, $prvgradeid, $fromform->grade);
 
     redirect($CFG->wwwroot . '/local/gugcat/index.php?id='.$courseid.'&amp;activityid='.$activityid);
 }

@@ -76,7 +76,6 @@ class local_gugcat {
         0 =>"H"
     );
 
-    
     /**
      * Returns all activities/modules for specific course
      *
@@ -252,13 +251,53 @@ class local_gugcat {
         $grade->aggregationweight = "100.000"; 
 
         if(!$gradeid = $DB->get_field(self::TBL_GRADE_GRADES, 'id', $params)){
+        //creates grade objects for other users in DB 
         return $grade->insert();
         }
         else{
+        //updates empty grade objects in database
         $grade->id = $gradeid;
         return $grade->update();
         }
     }
+
+    public static function update_grade($userid, $itemid, $grades){
+        global $DB;
+        global $USER;
+        
+        $params = array(
+            'userid'=>$userid,
+            'itemid'=>$itemid
+        );
+        //gets id for existing grade
+        $gradeid = $DB->get_field(self::TBL_GRADE_GRADES, 'id', $params);
+
+        $grade = new grade_grade();
+        $grade->id = $gradeid;
+        $grade->itemid = $itemid;
+        $grade->userid = $userid;
+        $grade->rawgrade = $grades;
+        $grade->rawgrademax = "100.000";
+        $grade->rawgrademin = "0.00000";
+        $grade->usermodified = $USER->id;
+        $grade->finalgrade = $grades;
+        $grade->hidden = "0";
+        $grade->locked = "0";
+        $grade->locktime = "0";
+        $grade->exported = "0";
+        $grade->overridden = "0";
+        $grade->excluded = "0";
+        $grade->feedbackformat = "0";
+        $grade->informationformat = "0";
+        $grade->timecreated = time();
+        $grade->timemodified = time();
+        $grade->aggregationstatus = "used";
+        $grade->aggregationweight = "100.000"; 
+        //updates existing grade
+        return $grade->update();
+    }
+
+
 
     public static function convert_grade($grade){
         $final_grade = intval($grade);
