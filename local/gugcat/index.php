@@ -68,12 +68,12 @@ if (!empty($_POST)){
                 }
             }
 
-            // $gradeitemid = local_gugcat::add_grade_item($courseid, $reason, $selectedmodule->id);
+            $gradeitemid = local_gugcat::add_grade_item($courseid, $reason, $selectedmodule->id);
             foreach ($grades as $item) {
                 if(isset($item['grade'])){
                     $grade = array_search($item['grade'], local_gugcat::$GRADES);
-                    // local_gugcat::add_update_grades($item['id'], $gradeitemid, $grade);
-                    // local_gugcat::update_grade($item['id'], $prvgradeid, $grade);
+                    local_gugcat::add_update_grades($item['id'], $gradeitemid, $grade);
+                    local_gugcat::update_grade($item['id'], $prvgradeid, $grade);
                 }
             }
 
