@@ -36,6 +36,7 @@ $string['forename'] = 'Forename';
 $string['gugcat'] = 'Grade Capture and Aggregation Tool';
 $string['gradebookgrade'] = 'Gradebook Grade ';
 $string['navname'] = 'Grade Capture and Aggregation';
+$string['nograde'] = 'No grade';
 $string['overviewaggregrade'] = 'Overview & Aggregated Grade';
 $string['pluginname'] = 'UofG Grade Capture and Aggregation Tool';
 $string['provisionalgrd'] = 'Provisional Grade';

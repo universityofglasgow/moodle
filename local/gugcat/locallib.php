@@ -84,39 +84,11 @@ class local_gugcat {
      * @param int $activityid
      */
     public static function get_activities($courseid, $activityid){
-        global $modules;
         $mods = grade_get_gradable_activities($courseid);
         $activities = array();
-        $assignments = array_filter($mods, function($mod){
-            return (isset($mod->modname) && ($mod->modname === 'assign')) ? true : false;
-        });
-        $i = 1;
-        foreach($assignments as $value) {
-            $modules[$value->id] = $value;
-            $activity = new stdClass();
-            $activity->id = $value->id;
-            $activity->name = "Assignment ".$i.": ".$value->name;
-            $activity->modname = $value->modname;
-            $activity->instance = $value->instance;
-            $activity->selected = (strval($activityid) === $value->id)? 'selected' : '';
-            array_push($activities, $activity);
-            $i++;
-        }
-    
-        $quizzes = array_filter($mods, function($mod){
-            return (isset($mod->modname) && ($mod->modname === 'quiz')) ? true : false;
-        });
-        $i = 1;
-        foreach($quizzes as $value) {
-            $modules[$value->id] = $value;
-            $activity = new stdClass();
-            $activity->name = "Quiz ".$i.": ".$value->name;
-            $activity->id = $value->id;
-            $activity->modname = $value->modname;
-            $activity->instance = $value->instance;
-            $activity->selected = (strval($activityid) === $value->id)? 'selected' : '';
-            array_push($activities, $activity);
-            $i++;
+        foreach($mods as $value) {
+            $activities[$value->id] = $value;
+            $activities[$value->id]->selected = (strval($activityid) === $value->id)? 'selected' : '';
         }
         return $activities;
     }
@@ -159,19 +131,20 @@ class local_gugcat {
         $gradeitems = self::get_grade_grade_items($course, $module);
         $i = 1;
         foreach ($students as $student) {
-            $firstgrade = $grading_info->items[0]->grades[$student->id]->grade;
+            $gbgrade = $grading_info->items[0]->grades[$student->id]->grade;
+            $firstgrade = is_null($gbgrade) ? get_string('nograde', 'local_gugcat') : self::convert_grade($gbgrade);
             $gradecaptureitem = new grade_capture_item();
             $gradecaptureitem->cnum = $i;
             $gradecaptureitem->studentno = $student->id;
             $gradecaptureitem->surname = $student->lastname;
             $gradecaptureitem->forename = $student->firstname;
-            $gradecaptureitem->firstgrade = self::convert_grade($firstgrade);
+            $gradecaptureitem->firstgrade = $firstgrade;
             $gradecaptureitem->grades = array();
             foreach ($gradeitems as $item) {
                 $rawgrade = $item->grades[$student->id]->finalgrade;
                 if($item->id === $prvgradeid){
-                    $grade = is_null($rawgrade) ? $firstgrade : $rawgrade;
-                    $gradecaptureitem->provisionalgrade = self::convert_grade($grade);
+                    $grade = is_null($rawgrade) ? $firstgrade : self::convert_grade($rawgrade);
+                    $gradecaptureitem->provisionalgrade = $grade;
                 }else{
                     $grade = is_null($rawgrade) ? 'N/A' : self::convert_grade($rawgrade);
                     array_push($gradecaptureitem->grades, $grade);

@@ -28,12 +28,14 @@ defined('MOODLE_INTERNAL') || die();
 class local_gugcat_renderer extends plugin_renderer_base {
 
     public function display_grade_capture($activities, $rows, $columns) {
+        //reindex activities array
+        $activities_ = array_values($activities);
         $html = $this->header();
         $html .= $this->render_from_template('local_gugcat/gcat_tab_header', (object)[
             'addallgrdstr' =>get_string('addallnewgrade', 'local_gugcat'),
             'downloadcsvstr' =>get_string('downloadcsv', 'local_gugcat'),
             'saveallbtnstr' =>get_string('saveallnewgrade', 'local_gugcat'),
-            'activities' => $activities,
+            'activities' => $activities_,
         ]);
         $html .= $this->display_table($rows, $columns);
         $html .= $this->footer();
