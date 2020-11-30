@@ -48,22 +48,20 @@ $PAGE->set_heading($course->fullname);
 
 // Display appropriate form
 if ($action == 'userdownload') {
+    $process = new \report_gudata\userdownload($course);
     $form = new \report_gudata\forms\userdownload(null, [
         'id' => $courseid,
         'action' => $action,
     ]);
 } else {
+    $process = new report_gudata\logsdownload($course);
     $form = new \report_gudata\forms\logsdownload(null, [
         'id' => $courseid,
         'action' => $action,
     ]);   
 }
 if ($data = $form->get_data()) {
-    if ($action == 'userdownload') {
-        $process = new \report_gudata\userdownload($course);
-    } else {
-        $process = new report_gudata\logsdownload($course);
-    }
+    $process->set_data($data);
     $process->execute();
 }
 $main = new \report_gudata\output\main('/report/gudata/index.php', $course, $action, $form);

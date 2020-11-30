@@ -41,6 +41,10 @@ class logsdownload extends \moodleform {
         $mform->addElement('hidden', 'action', $data['action']);
         $mform->setType('action', PARAM_ALPHA);
 
+        // Dates.
+        $mform->addElement('date_time_selector', 'logstart', get_string('from'), ['optional' => true]);
+        $mform->addElement('date_time_selector', 'logend', get_string('to'), ['optional' => true]);
+
         // Submit and download
         $mform->addElement('submit', 'submit', get_string('downloadlogs', 'report_gudata'));
     }

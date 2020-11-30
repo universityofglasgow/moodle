@@ -31,8 +31,18 @@ class userdownload {
 
     private $course;
 
+    private $data;
+
     public function __construct($course) {
         $this->course = $course;
+    }
+
+    /**
+     * Set data from form
+     * @param array $data
+     */
+    public function set_data($data) {
+        $this->data = $data;
     }
 
     /**
