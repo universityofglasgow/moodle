@@ -89,12 +89,14 @@ class logsdownload {
         }
 
         $detail = '';
+        $moduletype = '';
         if ($log->contextlevel == CONTEXT_MODULE) {
             $cm = $this->modinfo->get_cm($log->contextinstanceid);
             $detail = $cm->get_formatted_name();
+            $moduletype = $cm->get_module_type_name();
         }
 
-        return [$context, $detail];
+        return [$context, $detail, $moduletype];
     }
 
     /**
@@ -146,7 +148,7 @@ class logsdownload {
         // Make logs more human readable.
         foreach ($logs as $log) {
             $log->eventname = $this->trim_event($log->eventname);
-            list($log->context, $log->detail) = $this->get_context($log);
+            list($log->context, $log->detail, $log->moduletype) = $this->get_context($log);
             $log->relateduser = $this->get_relateduser($log);
         }
         //echo "<pre>"; var_dump($logs); die;
@@ -164,6 +166,7 @@ class logsdownload {
             'course id',
             'course name',
             'context level',
+            'module type',
             'context name',
             'related user',
         ];
@@ -179,6 +182,7 @@ class logsdownload {
                 $log->courseid,
                 $log->fullname,
                 $log->context,
+                $log->moduletype,
                 $log->detail,
                 $log->relateduser,
             ];
