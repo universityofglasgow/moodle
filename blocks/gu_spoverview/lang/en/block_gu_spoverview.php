@@ -23,8 +23,14 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['gu_spoverview'] = 'Your assessments at a glance';
+$string['assignment_sn'] = 'Assignment';
+$string['assignment_pl'] = 'Assignments';
+$string['assessment_sn'] = 'Assessment';
+$string['assessment_pl'] = 'Assessments';
 $string['gu_spoverview:addinstance'] = 'Add a new Assessments Overview block';
 $string['gu_spoverview:myaddinstance'] = 'Add a new Assessments Overview block to Dashboard';
-$string['pluginname'] = 'UofG Assessments Overview';
-$string['sample_text'] = 'Your assessments at a glance UI goes here';
+$string['marked'] = ' marked';
+$string['overdue'] = 'Overdue';
+$string['pluginname'] = 'Your assessments at a glance';
+$string['submitted'] = ' submitted';
+$string['tobesubmitted'] = 'To be submitted / attended';

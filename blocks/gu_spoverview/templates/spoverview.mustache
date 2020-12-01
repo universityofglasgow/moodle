@@ -16,65 +16,30 @@
 }}
 {{!
     @template block_gu_spoverview/spoverview
+
+    This template renders the content of the UofG Assessments Overview block.
 }}
-<div>
-    <span class="lbl-student-name">Hi Annie</span>
-</div>
-<div>
-    <span class="lbl-new-assessment primary-color">
-        Welcome to your new assesment and feedback portal
-    </span>
-</div>
-<div class="assessment-glance-wrapper">
-    <div>
-        <span class="lbl-assessments-at-a-glance primary-color">
-            Your assessments at a glance
-        </span>
-    </div>
-    <div>
-        <div class="assignment-submitted-wrapper">
-            <center>
-                <div class="content-wrapper">
-                    <img src="{{assignment_svg_path}}"/>
-                    <br/><br/>
-                    <span class="lbl-assignment-submitted-count primary-color">{{assignment_submitted_count}}</span>
-                    <br/>
-                    <span class="lbl-assignment-submitted primary-color">Assigment submitted</span>
-                </div>
-            </center>
+<div class="assessments-overview">
+    <div class="row">
+        <div class="assessment-item assessment-submitted col-md-3 col-sm-6 col-xs-12">
+            <img src="{{assess_submitted_icon}}" alt="{{assess_submitted_str}}" class="assessment-item-icon"/>
+            <h4 class="assessment-item-count color-primary">{{assess_submitted_count}}</h4>
+            <h5 class="assessment-item-label color-primary">{{assess_submitted_str}}</h5>
         </div>
-        <div class="to-be-submitted-wrapper">
-            <center>
-                <div class="content-wrapper">
-                    <img src="{{to_be_submitted_svg_path}}"/>
-                    <br/><br/>
-                    <span class="lbl-to-be-submitted-count primary-color">{{to_be_submitted}}</span>
-                    <br/>
-                    <span class="lbl-to-be-submitted primary-color">To be submitted / attended</span>
-                </div>
-            </center>
+        <div class="assessment-item assessment-tosubmit col-md-3 col-sm-6 col-xs-12">
+            <img src="{{assess_tosubmit_icon}}" alt="{{assess_tosubmit_str}}" class="assessment-item-icon"/>
+            <h4 class="assessment-item-count color-primary">{{assess_tosubmit_count}}</h4>
+            <h5 class="assessment-item-label color-primary">{{assess_tosubmit_str}}</h5>
         </div>
-        <div class="overdue-wrapper">
-            <center>
-                <div class="content-wrapper">
-                    <img src="{{overdue_svg_path}}"/>
-                    <br/><br/>
-                    <span class="lbl-overdue-count primary-color">{{due_date}}</span>
-                    <br/>
-                    <span class="lbl-overdue primary-color">Overdue</span>
-                </div>
-            </center>
+        <div class="assessment-item assessment-overdue col-md-3 col-sm-6 col-xs-12">
+            <img src="{{assess_overdue_icon}}" alt="{{assess_overdue_str}}" class="assessment-item-icon"/>
+            <h4 class="assessment-item-count color-primary">{{assess_overdue_count}}</h4>
+            <h5 class="assessment-item-label color-primary">{{assess_overdue_str}}</h5>
         </div>
-        <div class="assessments-marked-wrapper">
-            <center>
-                <div class="content-wrapper">
-                    <img src="{{assessment_marked_svg_path}}"/>
-                    <br/><br/>
-                    <span class="lbl-assessments-marked-count primary-color">{{marked_assessment_count}}</span>
-                    <br/>
-                    <span class="lbl-assessments-marked primary-color">Assessment marked</span>
-                </div>
-            </center>
+        <div class="assessment-item assessment-marked col-md-3 col-sm-6 col-xs-12">
+            <img src="{{assess_marked_icon}}" alt="{{assess_marked_str}}" class="assessment-item-icon"/>
+            <h4 class="assessment-item-count color-primary">{{assess_marked_count}}</h4>
+            <h5 class="assessment-item-label color-primary">{{assess_marked_str}}</h5>
         </div>
     </div>
 </div>
