@@ -231,9 +231,35 @@ select::-ms-expand {
 /* tbl Select reason style*/
 .multi-select-reason{
     display: none;
+    width: 100%;
+}
+
+.multi-select-reason select{
+    margin: 0;
+}
+
+.input-reason{
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    height: 32px;
+    margin-top: 5px;
+    padding: 0px 10px;
+    line-height: 1.75;
+    color: #333;
+    background-color: #ffffff;
+    background-image: none;
+    border-radius: .5em;
+    border: 1px solid #8c8c8c;
+    -ms-word-break: normal;
+    word-break: normal;
+    outline: none;
+    display: none;
+    width: 100%;
 }
 
 /* display only the first select reason dropdown */
 tbody > tr:first-child > td > .multi-select-reason {
     display: block;
 }
+

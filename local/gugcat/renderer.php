@@ -29,6 +29,8 @@ class local_gugcat_renderer extends plugin_renderer_base {
 
     public function display_grade_capture($activities, $rows, $columns) {
         //reindex activities array
+        $courseid = $this->page->course->id;
+        $modid = $this->page->cm->id;
         $activities_ = array_values($activities);
         $html = $this->header();
         $html .= $this->render_from_template('local_gugcat/gcat_tab_header', (object)[
@@ -37,7 +39,9 @@ class local_gugcat_renderer extends plugin_renderer_base {
             'saveallbtnstr' =>get_string('saveallnewgrade', 'local_gugcat'),
             'activities' => $activities_,
         ]);
+        $html .= '<form action="index.php?id=' . $courseid . '&amp;activityid=' . $modid . '" method="post" id="multigradesform">';
         $html .= $this->display_table($rows, $columns);
+        $html .= '</form>';
         $html .= $this->footer();
         return $html;
     }
@@ -55,12 +59,13 @@ class local_gugcat_renderer extends plugin_renderer_base {
         return $html;
     }
 
-    public function display_custom_select($options, $default = null, $class = null, $id = null) {
+    public function display_custom_select($options, $name = null, $default = null, $class = null, $id = null) {
         $html = $this->render_from_template('local_gugcat/gcat_custom_select', (object)[
             'default' => $default ,
             'options' => $options,
             'class' => $class,
             'id' => $id,
+            'name' => $name,
         ]);
         return $html;
     }
@@ -97,20 +102,25 @@ class local_gugcat_renderer extends plugin_renderer_base {
                     $html .= '<td>'.$grade.'</td>';
                 }
                 $html .= '<td class="togglemultigrd">
+                            <input type="hidden" name="grades['.$row->studentno.'][id]" value="'.$row->studentno.'" />
                             '.$this->display_custom_select(
                                 $grades,
+                                'grades['.$row->studentno.'][grade]',
                                 get_string('choosegrade', 'local_gugcat')).'
                         </td>';
                 $html .= '<td class="togglemultigrd">
                             '.$this->display_custom_select(
                                 local_gugcat::$REASONS,
+                                'reason',
                                 get_string('selectreason', 'local_gugcat'),
-                                'multi-select-reason').'
+                                'multi-select-reason',
+                                'select-grade-reason').'
+                                <input name="reason" value="" class="input-reason" id="input-reason" type="text"/>
                         </td>';
                 $html .= '<td><b>'.$row->provisionalgrade.'</b></td>';
                 $html .= '<td>
                             <a href="'.$CFG->wwwroot.'/local/gugcat/add/index.php?id='.$courseid.'&amp;activityid='.$selectedmodule->id.'&amp;studentid='.$row->studentno.'">
-                                <button class="btn btn-default">
+                                <button type="button" class="btn btn-default">
                                 '.get_string('addgrade', 'local_gugcat').'
                                 </button>
                             </a>

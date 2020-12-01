@@ -28,8 +28,14 @@ require_once(__DIR__ . '/../../../config.php');
 require_once($CFG->dirroot . '/local/gugcat/locallib.php');
 require_once($CFG->dirroot.'/local/gugcat/classes/form/addgradeform.php');
 
+$courseid = required_param('id', PARAM_INT);
+$activityid = required_param('activityid', PARAM_INT);
+$studentid = required_param('studentid', PARAM_INT);
+
+require_login($courseid);
 $PAGE->set_context(context_system::instance());
-$PAGE->set_url(new moodle_url('/local/gugcat/add/index.php'));
+$urlparams = array('id' => $courseid, 'activityid' => $activityid, 'studentid' => $studentid);
+$PAGE->set_url(new moodle_url('/local/gugcat/add/index.php', $urlparams));
 $PAGE->set_title(get_string('gugcat', 'local_gugcat'));
 $PAGE->navbar->ignore_active();
 $PAGE->navbar->add(get_string('navname', 'local_gugcat'), new moodle_url('/local/gugcat'));
@@ -37,12 +43,8 @@ $PAGE->navbar->add(get_string('navname', 'local_gugcat'), new moodle_url('/local
 $PAGE->requires->css('/local/gugcat/styles/gugcat.css');
 $PAGE->requires->js_call_amd('local_gugcat/main', 'init');
 
-$courseid = required_param('id', PARAM_INT);
-$activityid = required_param('activityid', PARAM_INT);
-$studentid = required_param('studentid', PARAM_INT);
 $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
 $student = $DB->get_record('user', array('id'=>$studentid, 'deleted'=>0), '*', MUST_EXIST);
-require_login($course);
 
 $PAGE->set_course($course);
 $PAGE->set_heading($course->fullname);
