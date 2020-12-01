@@ -1,0 +1,94 @@
+body{
+    background-color: #F7F9FC;
+}
+
+.lbl-student-name {
+    font-family: Arial;
+    font-style: normal;
+    font-size: 25px;
+    line-height: 28.75px;
+}
+
+.lbl-new-assessment {
+    font-family: Poppins;
+    font-style: normal;
+    font-weight: bold;
+    font-size: 31px;
+    line-height: 46px;
+}
+
+.lbl-assessments-at-a-glance {
+    font-family: PT Sans;
+}
+
+.assessment-glance-wrapper {
+    position: absolute;
+    width: 75%;
+    top: -50px;
+    height: 216px;
+    background: #FFFFFF;
+    border-radius: 8px;
+}
+
+.assignment-submitted-wrapper, 
+.to-be-submitted-wrapper,
+.overdue-wrapper {
+    position: relative;
+    width: 24.9%;
+    height: 146px;
+    float: left;
+    border-right: 1px solid #9393A0;
+}
+
+.assessments-marked-wrapper {
+    position: relative;
+    width: 24.9%;
+    float: left;
+}
+
+.content-wrapper {
+    width: 70%;
+    position: relative;
+    top: 10px;
+}
+
+.lbl-assignment-submitted-count,
+.lbl-to-be-submitted-count,
+.lbl-overdue-count,
+.lbl-assessments-marked-count {
+    font-family: PT Sans;
+    font-weight: 700;
+    font-style:  normal;
+    font-size:  25px;
+    line-height: 32.35px;
+    position: relative;
+}
+
+.lbl-assignment-submitted,
+.lbl-to-be-submitted,
+.lbl-overdue,
+.lbl-assessments-marked {
+    font-family: arial;
+    font-weight: 400;
+    font-style:  normal;
+    font-size:  13px;
+    line-height: 14.95px;
+    position: relative;
+    top: 10px;
+}
+
+/* fonts */
+@font-face {
+    font-family: Poppins;
+    src: url(fonts/Poppins-Black.ttf);
+}
+
+@font-face {
+    font-family: PT Sans;
+    src: url(fonts/PTSans-Regular.ttf);
+}
+
+/* colors */
+.primary-color {
+    color: #003865;
+}

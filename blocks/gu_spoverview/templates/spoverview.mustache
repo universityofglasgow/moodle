@@ -1,0 +1,80 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template block_gu_spoverview/spoverview
+}}
+<div>
+    <span class="lbl-student-name">Hi Annie</span>
+</div>
+<div>
+    <span class="lbl-new-assessment primary-color">
+        Welcome to your new assesment and feedback portal
+    </span>
+</div>
+<div class="assessment-glance-wrapper">
+    <div>
+        <span class="lbl-assessments-at-a-glance primary-color">
+            Your assessments at a glance
+        </span>
+    </div>
+    <div>
+        <div class="assignment-submitted-wrapper">
+            <center>
+                <div class="content-wrapper">
+                    <img src="{{assignment_svg_path}}"/>
+                    <br/><br/>
+                    <span class="lbl-assignment-submitted-count primary-color">{{assignment_submitted_count}}</span>
+                    <br/>
+                    <span class="lbl-assignment-submitted primary-color">Assigment submitted</span>
+                </div>
+            </center>
+        </div>
+        <div class="to-be-submitted-wrapper">
+            <center>
+                <div class="content-wrapper">
+                    <img src="{{to_be_submitted_svg_path}}"/>
+                    <br/><br/>
+                    <span class="lbl-to-be-submitted-count primary-color">{{to_be_submitted}}</span>
+                    <br/>
+                    <span class="lbl-to-be-submitted primary-color">To be submitted / attended</span>
+                </div>
+            </center>
+        </div>
+        <div class="overdue-wrapper">
+            <center>
+                <div class="content-wrapper">
+                    <img src="{{overdue_svg_path}}"/>
+                    <br/><br/>
+                    <span class="lbl-overdue-count primary-color">{{due_date}}</span>
+                    <br/>
+                    <span class="lbl-overdue primary-color">Overdue</span>
+                </div>
+            </center>
+        </div>
+        <div class="assessments-marked-wrapper">
+            <center>
+                <div class="content-wrapper">
+                    <img src="{{assessment_marked_svg_path}}"/>
+                    <br/><br/>
+                    <span class="lbl-assessments-marked-count primary-color">{{marked_assessment_count}}</span>
+                    <br/>
+                    <span class="lbl-assessments-marked primary-color">Assessment marked</span>
+                </div>
+            </center>
+        </div>
+    </div>
+</div>
