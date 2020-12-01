@@ -68,7 +68,6 @@ define(['jquery', 'core/str' ], function($, Str) {
                 if(checkCurrentUrl('gugcat/add')){
                     history.back();
                 }
-                alert("hi");
             });
 
             $("#select-grade-reason").on("change", function () { 

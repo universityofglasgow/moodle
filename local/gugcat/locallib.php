@@ -140,13 +140,15 @@ class local_gugcat {
             $gradecaptureitem->firstgrade = $firstgrade;
             $gradecaptureitem->grades = array();
             foreach ($gradeitems as $item) {
-                $rawgrade = $item->grades[$student->id]->finalgrade;
-                if($item->id === $prvgradeid){
-                    $grade = is_null($rawgrade) ? $firstgrade : self::convert_grade($rawgrade);
-                    $gradecaptureitem->provisionalgrade = $grade;
-                }else{
-                    $grade = is_null($rawgrade) ? 'N/A' : self::convert_grade($rawgrade);
-                    array_push($gradecaptureitem->grades, $grade);
+                if(isset($item->grades[$student->id])){
+                    $rawgrade = $item->grades[$student->id]->finalgrade;
+                    if($item->id === $prvgradeid){
+                        $grade = is_null($rawgrade) ? $firstgrade : self::convert_grade($rawgrade);
+                        $gradecaptureitem->provisionalgrade = $grade;
+                    }else{
+                        $grade = is_null($rawgrade) ? 'N/A' : self::convert_grade($rawgrade);
+                        array_push($gradecaptureitem->grades, $grade);
+                    }
                 }
             }
     
