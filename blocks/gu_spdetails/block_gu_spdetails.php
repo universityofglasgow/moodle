@@ -43,12 +43,42 @@ class block_gu_spdetails extends block_base {
      *       See myoverview plugin for reference.
      */
     public function get_content() {
+        global $OUTPUT, $DB, $USER;
         if ($this->content !== null) {
           return $this->content;
         }
 
+        $data = $DB->get_records_sql('SELECT 
+                                        ROW_NUMBER() OVER(ORDER BY mdl_grade_items.itemname) AS RowNumber,
+                                        mdl_course.fullname,
+                                        mdl_grade_items.itemname,
+                                        mdl_grade_items.aggregationcoef2 * 100 as `weight`,
+                                        "duedate",
+                                        "status",
+                                        mdl_grade_grades.finalgrade,
+                                        mdl_grade_grades.feedback
+                                    FROM
+                                        mdl_grade_items,
+                                        mdl_course,
+                                        mdl_course_categories,
+                                        mdl_grade_grades
+                                    WHERE
+                                        mdl_grade_items.courseid = mdl_course.id AND
+                                        mdl_grade_items.categoryid = mdl_course_categories.id AND
+                                        mdl_grade_grades.itemid = mdl_grade_items.id AND
+                                        mdl_grade_grades.userid = ?', [$USER->id]);
+
+        $dataArray = array();
+        foreach ($data as $row){
+            array_push($dataArray, $row);
+        }
+
+        $templatecontext = (array)[
+            'data' => $dataArray
+        ];
+
         $this->content         = new stdClass();
-        $this->content->text   = get_string('sample_text', 'block_gu_spdetails');
+        $this->content->text   = $OUTPUT->render_from_template('block_gu_spdetails/spdetails', $templatecontext);
      
         return $this->content;
     }

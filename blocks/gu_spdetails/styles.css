@@ -1,0 +1,110 @@
+.gu_spdetails_title{
+    font-family: Poppins;
+    font-style: normal;
+    font-weight: 600;
+    font-size: 20px;
+    line-height: 30px;
+    color: #003865;
+}
+
+.gu_spdetails_box{
+    border: 1px solid #E0E2E9;
+    box-sizing: border-box;
+    border-radius: 16px;
+}
+
+.gu_spdetails_col{
+    display: flex;
+    flex-flow: row;
+}
+
+.gu_spdetails_tab_active{
+    padding: 6px 10px 6px 10px;
+    border-bottom: 2px solid #005C8A;
+}
+
+.gu_spdetails_tab_active p{
+    color: #005C8A;
+}
+
+.gu_spdetails_tab_inactive{
+    padding: 6px 10px 6px 10px;
+    border-bottom: 2px solid #E0E2E9;
+}
+
+.gu_spdetails_tab_inactive p{
+    color: #9393A0;
+}
+
+.gu_spdetails_tab_name{
+    font-family: PT Sans;
+    font-style: normal;
+    font-weight: bold;
+    font-size: 16px;
+    line-height: 21px;
+}
+
+.gu_spdetails_label_sort{
+    font-family: PT Sans;
+    font-style: normal;
+    font-weight: bold;
+    font-size: 13px;
+    line-height: 17px;
+    color: #000000;
+}
+
+.gu_spdetails_sort_selected{
+    font-family: PT Sans;
+    font-style: normal;
+    font-weight: normal;
+    font-size: 16px;
+    line-height: 21px;
+    color: #9393A0;
+}
+
+.gu_spdetails_table{
+    width: 100%;
+}
+
+.gu_spdetails_table tr th{
+    font-family: PT Sans;
+    font-style: normal;
+    font-weight: bold;
+    font-size: 13px;
+    line-height: 17px;
+    color: #71717B;
+}
+
+.gu_spdetails_table_value_link{
+    text-decoration-line: underline;
+    color: #005C8A;
+}
+
+.gu_spdetails_table tr td{
+    font-family: Arial;
+    font-style: normal;
+    font-weight: normal;
+    font-size: 13px;
+    line-height: 15px;
+
+    color: #505057;
+}
+
+.gu_spdetails_table_value_grade{
+    font-family: Arial;
+    font-style: normal;
+    font-weight: bold;
+    font-size: 13px;
+    line-height: 15px;
+
+    color: #006630;
+}
+
+.gu_spdetails_alternative_view{
+    font-family: Source Sans Pro;
+    font-style: normal;
+    font-weight: 600;
+    font-size: 12px;
+    line-height: 150%;
+    color: #9393A0;
+}
