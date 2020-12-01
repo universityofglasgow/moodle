@@ -52,6 +52,7 @@ if ($action == 'userdownload') {
     $form = new \report_gudata\forms\userdownload(null, [
         'id' => $courseid,
         'action' => $action,
+        'roles' => $process->get_filter_roles(),
     ]);
 } else {
     $process = new report_gudata\logsdownload($course);

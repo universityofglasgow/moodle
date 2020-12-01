@@ -33,8 +33,11 @@ class userdownload {
 
     private $data;
 
+    private $roles;
+
     public function __construct($course) {
         $this->course = $course;
+        $this->roles = $this->load_roles();
     }
 
     /**
@@ -43,6 +46,32 @@ class userdownload {
      */
     public function set_data($data) {
         $this->data = $data;
+    }
+
+    /**
+     * Get the list of roles that can be filtered
+     * @return array
+     */
+    private function load_roles() {
+        $context = \context_course::instance($this->course->id);
+        $roles = get_roles_used_in_context($context);
+
+        // Add the correct names
+        foreach ($roles as $role) {
+            if (!$role->name) {
+                $role->name = role_get_name($role, $context);
+            }
+        }
+        
+        return $roles;
+    }
+
+    /**
+     * Roles getter
+     * @return array
+     */
+    public function get_filter_roles() {
+        return $this->roles;
     }
 
     /**
@@ -71,6 +100,35 @@ class userdownload {
     }
 
     /**
+     * Check if user role in selected list
+     * @param array $userroles 
+     * @return boolean true = ok
+     */
+    private function is_role_selected($userroles) {
+        foreach ($userroles as $userrole) {
+            $formfield = $userrole->shortname;
+            if (!empty($this->data->$formfield)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Return roles in readable form
+     * @param array $userroles
+     * @return string
+     */
+    private function format_roles($userroles) {
+        $names = [];
+        foreach ($userroles as $userrole) {
+            $names[] = $this->roles[$userrole->roleid]->name;
+        }
+
+        return implode(', ', $names);
+    }
+
+    /**
      * Execute the download
      */
     public function execute() {
@@ -78,14 +136,21 @@ class userdownload {
 
         $context = \context_course::instance($this->course->id);
         $fields = 'u.id, u.username, u.firstname, u.lastname, u.email, u.idnumber';
-        $users = get_enrolled_users($context, '', 0, $fields);
+        $rawusers = get_enrolled_users($context, '', 0, $fields);
 
         // Find groups
         $maxgroup = 0;
-        foreach ($users as $user) {
+        $users = [];
+        foreach ($rawusers as $user) {
             $user->names = $this->get_groups($this->course->id, $user->id);
             $count = count($user->names);
             $maxgroup = max($count, $maxgroup);
+            $userroles = get_user_roles($context, $user->id, false);
+            if (!$this->is_role_selected($userroles)) {
+                continue;
+            }
+            $user->roles = $this->format_roles($userroles);
+            $users[$user->id] = $user;
         }
 
         // Export
@@ -99,6 +164,7 @@ class userdownload {
             'firstname',
             'lastname',
             'email',
+            'roles',
             'course1',
         ];
         for ($i=1; $i<=$maxgroup; $i++) {
@@ -114,6 +180,7 @@ class userdownload {
                 $user->firstname,
                 $user->lastname,
                 $user->email,
+                $user->roles,
                 $this->course->shortname,
             ];
             foreach ($user->names as $name) {

@@ -29,3 +29,4 @@ $string['logsdownload'] = 'Logs download';
 $string['pluginname'] = 'UofG data report';
 $string['privacy:metadata'] = 'The UofG data report does not store any personal data';
 $string['userdownload'] = 'User download';
+$string['userdownloadpreamble'] = 'Download course participants and groups to CSV.';

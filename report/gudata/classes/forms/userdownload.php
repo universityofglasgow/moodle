@@ -41,6 +41,14 @@ class userdownload extends \moodleform {
         $mform->addElement('hidden', 'action', $data['action']);
         $mform->setType('action', PARAM_ALPHA);
 
+        // select
+        $mform->addElement('html', '<div class="alert alert-primary">' . get_string('userdownloadpreamble', 'report_gudata') . '</div>');
+        $roles = $data['roles'];
+        foreach ($roles as $id => $role) {
+            $mform->addElement('advcheckbox', $role->shortname, $role->name);
+            $mform->setDefault($role->shortname, 1);
+        }
+
         // Submit and download
         $mform->addElement('submit', 'submit', get_string('downloaduser', 'report_gudata'));
     }
