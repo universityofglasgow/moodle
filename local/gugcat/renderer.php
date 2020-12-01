@@ -27,8 +27,10 @@ defined('MOODLE_INTERNAL') || die();
 
 class local_gugcat_renderer extends plugin_renderer_base {
 
-    public function display_grade_capture($activities, $rows, $columns, $modid, $courseid) {
+    public function display_grade_capture($activities, $rows, $columns) {
         //reindex activities array
+        $courseid = $this->page->course->id;
+        $modid = $this->page->cm->id;
         $activities_ = array_values($activities);
         $html = $this->header();
         $html .= $this->render_from_template('local_gugcat/gcat_tab_header', (object)[
@@ -113,7 +115,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
                                 get_string('selectreason', 'local_gugcat'),
                                 'multi-select-reason',
                                 'select-grade-reason').'
-                                <input name="input-reason" value="" class="input-reason" id="input-reason" type="text"/>
+                                <input name="reason" value="" class="input-reason" id="input-reason" type="text"/>
                         </td>';
                 $html .= '<td><b>'.$row->provisionalgrade.'</b></td>';
                 $html .= '<td>

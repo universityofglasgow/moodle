@@ -50,24 +50,15 @@ $students = get_enrolled_users($coursecontext, 'mod/coursework:submit');
 $activities = local_gugcat::get_activities($courseid, $activityid);
 $mods = array_reverse($activities);
 $selectedmodule = is_null($activityid) ? array_pop($mods) : $activities[$activityid];
+$PAGE->set_cm($selectedmodule);
 $prvgradeid = local_gugcat::get_prv_grade_id($courseid, $selectedmodule->id);
 
-//---------submit multiple add
+//---------submit multiple add grades
 if (!empty($_POST)){
     if (isset($_POST['grades']) && !empty($_POST['reason'])){
         $grades = $_POST['grades'];
         $reason = $_POST['reason'];
         if(array_column($grades,'grade')){
-
-            //reason: other selected
-            if($reason === get_string('reasonother', 'local_gugcat')){
-                if(!empty($_POST['input-reason'])){
-                    $reason = $_POST['input-reason'];
-                }else{
-                    print_error('errorrequired', 'local_gugcat', $PAGE->url);
-                }
-            }
-
             $gradeitemid = local_gugcat::add_grade_item($courseid, $reason, $selectedmodule->id);
             foreach ($grades as $item) {
                 if(isset($item['grade'])){
@@ -76,9 +67,13 @@ if (!empty($_POST)){
                     local_gugcat::update_grade($item['id'], $prvgradeid, $grade);
                 }
             }
-
+            $message = get_string('successaddall', 'local_gugcat');
+            \core\notification::add($message, \core\output\notification::NOTIFY_SUCCESS);
+            unset($_POST);
+            header("Location: ".$_SERVER['REQUEST_URI']);
+            exit;
         }else{
-            //no grades added
+            //no grades selected
             print_error('errorgraderequired', 'local_gugcat', $PAGE->url);
         }
     }else{
@@ -91,5 +86,5 @@ $columns = local_gugcat::grade_capture_get_columns($selectedmodule);
 
 echo $OUTPUT->header();
 $renderer = $PAGE->get_renderer('local_gugcat');
-echo $renderer->display_grade_capture($activities, $rows, $columns, $selectedmodule->id, $courseid);
+echo $renderer->display_grade_capture($activities, $rows, $columns);
 echo $OUTPUT->footer();

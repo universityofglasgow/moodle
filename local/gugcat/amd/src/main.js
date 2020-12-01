@@ -73,7 +73,9 @@ define(['jquery', 'core/str' ], function($, Str) {
 
             $("#select-grade-reason").on("change", function () { 
                 var $selected = $(this).find("option:selected");
+                $(".input-reason").val($selected.val());
                 if($selected.val() === 'Other'){
+                    $(".input-reason").val("");
                     $("#input-reason").show();
                 }else{
                     $("#input-reason").hide();

@@ -47,6 +47,7 @@ $string['reasonother'] = 'Other';
 $string['saveallnewgrade'] = 'Save all participants grades';
 $string['selectreason'] = 'Select reason';
 $string['studentno'] = 'Student No.';
+$string['successaddall'] = 'Successfully added grades for all participants.';
 $string['surname'] = 'Surname';
 $string['title'] = 'Grade capture and score aggregation';
 
