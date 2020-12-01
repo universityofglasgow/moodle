@@ -1,4 +1,17 @@
-<?php
+ bnnnnnnnnnnn  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ <?php
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -35,6 +48,7 @@ function local_gumenu_extend_settings_navigation(settings_navigation $nav, conte
         'report/assign:view',
         'report/guid:courseupload',
         'report/guenrol:view',
+        'report/gudata:view',
         'moodle/course:enrolconfig',
         'moodle/course:enrolreview',
         'local/corehr:config',
@@ -99,6 +113,18 @@ function local_gumenu_extend_settings_navigation(settings_navigation $nav, conte
             'type' => navigation_node::TYPE_CUSTOM,
             'action' => new moodle_url('/report/guid/courseupload.php', array('id' => $courseid)),
             'key' => 'uofcourseupload',
+        );
+        $uofgnode->add_node(new navigation_node($props));
+    }
+
+    // Add a link to UofG data report
+    if (has_capability('report/gudata:view', $context)) {
+        $props = array(
+            'text' => get_string('pluginname', 'report_gudata'),
+            'shorttext' => 'uofgdata',
+            'type' => navigation_node::TYPE_CUSTOM,
+            'action' => new moodle_url('/report/gudata/index.php', array('id' => $courseid)),
+            'key' => 'uofgdata',
         );
         $uofgnode->add_node(new navigation_node($props));
     }
