@@ -54,7 +54,7 @@ class userdownload {
      */
     private function load_roles() {
         $context = \context_course::instance($this->course->id);
-        $roles = get_roles_used_in_context($context);
+        $roles = get_roles_used_in_context($context, false);
 
         // Add the correct names
         foreach ($roles as $role) {
