@@ -299,7 +299,7 @@ class local_gugcat {
 
     public static function convert_grade($grade){
         $final_grade = intval($grade);
-        if (!($final_grade > 23 || $final_grade < 0)){
+        if (!($final_grade >= 22 || $final_grade < 0)){
             return self::$GRADES[$final_grade];
         }
         else {
