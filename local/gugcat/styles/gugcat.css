@@ -12,10 +12,15 @@
 .table {
     margin-bottom: 0;
     font-size: 90%;
+    text-align: center;
 }
 
-.table thead th {
+.table thead th, .table td{
     vertical-align: middle;
+}
+
+.table td{
+    padding: .30rem;
 }
 
 th {
@@ -26,11 +31,6 @@ th {
 
 tr:nth-child(even) {
     background-color: #e6eaee;
-}
-
-td, th {
-    text-align: center;
-    padding: 1em 1.5em;
 }
 
 i {
@@ -83,10 +83,11 @@ button.tablink, button.tablink:focus{
     background-color: transparent;
     border: 1px solid #005c8a;
     color: #005c8a;
-    border-radius: 0.5em;
+    border-radius: 8px;
     font-weight: 400;
     font-size: inherit;
     outline: none;
+    white-space: nowrap;
 }
 
 .btn-default:hover {
@@ -157,7 +158,7 @@ select::-ms-expand {
     color: #333;
     background-color: #ffffff;
     background-image: none;
-    border-radius: .5em;
+    border-radius: 8px;
     border: 1px solid #8c8c8c;
     -ms-word-break: normal;
     word-break: normal;
@@ -249,7 +250,7 @@ select::-ms-expand {
     color: #333;
     background-color: #ffffff;
     background-image: none;
-    border-radius: .5em;
+    border-radius: 10px;
     border: 1px solid #8c8c8c;
     -ms-word-break: normal;
     word-break: normal;
@@ -261,5 +262,29 @@ select::-ms-expand {
 /* display only the first select reason dropdown */
 tbody > tr:first-child > td > .multi-select-reason {
     display: block;
+}
+
+/* Grade discrepancy style */
+.grade-discrepancy{
+    background-color: rgba(179, 12, 0, 0.49);
+    border-radius: 8px;
+    pointer-events: none;    
+}
+
+td > .grade-discrepancy{
+    width: 40px;
+    height: 32px;
+    margin: auto;
+    line-height: 32px;
+}
+
+.btn.grade-discrepancy{
+    width: 110px;
+    height: 40px;
+    max-width: 124px;
+    font-size: 11px;
+    word-break: break-word;
+    display: inline-block;
+    line-height: 11px;
 }
 

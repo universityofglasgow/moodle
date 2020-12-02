@@ -67,7 +67,7 @@ if ($fromform = $mform->get_data()) {
         $gradereason = $fromform->otherreason;
     }
     else{
-        $gradereason = local_gugcat::$REASONS[$fromform->reasons];
+        $gradereason = local_gugcat::get_reasons()[$fromform->reasons];
     }
 
     $gradeitemid = local_gugcat::add_grade_item($courseid, $gradereason, $module->id);

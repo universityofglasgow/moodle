@@ -37,6 +37,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
             'addallgrdstr' =>get_string('addallnewgrade', 'local_gugcat'),
             'downloadcsvstr' =>get_string('downloadcsv', 'local_gugcat'),
             'saveallbtnstr' =>get_string('saveallnewgrade', 'local_gugcat'),
+            'grddiscrepancystr' => get_string('gradediscrepancy', 'local_gugcat'),
             'activities' => $activities_,
         ]);
         $html .= '<form action="index.php?id=' . $courseid . '&amp;activityid=' . $modid . '" method="post" id="multigradesform">';
@@ -97,9 +98,13 @@ class local_gugcat_renderer extends plugin_renderer_base {
                 $html .= '<td>'.$row->studentno.'</td>';
                 $html .= '<td>'.$row->surname.'</td>';
                 $html .= '<td>'.$row->forename.'</td>';
-                $html .= '<td>'.$row->firstgrade.'</td>';
-                foreach((array) $row->grades as $grade) {
-                    $html .= '<td>'.$grade.'</td>';
+                $html .= '<td>'. (($row->discrepancy) 
+                    ? '<div class="grade-discrepancy">'.$row->firstgrade.'</div>' 
+                    : $row->firstgrade ) .'</td>';
+                foreach((array) $row->grades as $item) {
+                    $html .= '<td>'. (($item->discrepancy) 
+                        ? '<div class="grade-discrepancy">'.$item->grade.'</div>' 
+                        : $item->grade ).'</td>';
                 }
                 $html .= '<td class="togglemultigrd">
                             <input type="hidden" name="grades['.$row->studentno.'][id]" value="'.$row->studentno.'" />
@@ -110,7 +115,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
                         </td>';
                 $html .= '<td class="togglemultigrd">
                             '.$this->display_custom_select(
-                                local_gugcat::$REASONS,
+                                local_gugcat::get_reasons(),
                                 'reason',
                                 get_string('selectreason', 'local_gugcat'),
                                 'multi-select-reason',
@@ -121,7 +126,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
                 $html .= '<td>
                             <a href="'.$CFG->wwwroot.'/local/gugcat/add/index.php?id='.$courseid.'&amp;activityid='.$selectedmodule->id.'&amp;studentid='.$row->studentno.'">
                                 <button type="button" class="btn btn-default">
-                                '.get_string('addgrade', 'local_gugcat').'
+                                '.get_string('addnewgrade', 'local_gugcat').'
                                 </button>
                             </a>
                         </td>';
