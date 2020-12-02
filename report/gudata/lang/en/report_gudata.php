@@ -26,6 +26,7 @@ $string['downloadlogs'] = 'Start logs download';
 $string['downloaduser'] = 'Start user data download';
 $string['gudata:view'] = 'View Course Users form';
 $string['logsdownload'] = 'Logs download';
+$string['logsdownloadpreamble'] = 'Download summary of course logs to CSV';
 $string['pluginname'] = 'UofG data report';
 $string['privacy:metadata'] = 'The UofG data report does not store any personal data';
 $string['userdownload'] = 'User download';
