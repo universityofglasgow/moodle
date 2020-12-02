@@ -88,39 +88,23 @@ class block_gu_spoverview extends block_base {
                                                     AND FROM_UNIXTIME(asn.duedate) < NOW()
                                                     AND gg.finalgrade IS NULL");
 
-        // Query to retrieve all assignments with grade and feedback
-        $assignments_marked = $DB->get_records_sql("SELECT DISTINCT i.itemname 
-                                                    FROM `mdl_course_modules` cm 
-                                                    INNER JOIN `mdl_modules` m ON m.id = cm.module 
-                                                    INNER JOIN `mdl_grade_items` i ON i.courseid = cm.course 
-                                                    INNER JOIN `mdl_assign` asn ON asn.name = i.itemname 
-                                                    INNER JOIN `mdl_grade_grades` g ON g.itemid = i.id 
-                                                    INNER JOIN `mdl_user` u ON u.id = g.userid 
-                                                    WHERE m.name IN ('assign') 
-                                                    AND i.itemmodule IS NOT NULL AND u.id = $student_id 
-                                                    AND FROM_UNIXTIME(i.timemodified, '%Y') = $current_yr 
-                                                    AND g.finalgrade IS NOT NULL 
-                                                    AND g.feedback IS NOT NULL");
+        // Query for all the assessments
+        $assessments_marked      = $DB->get_records_sql("SELECT DISTINCT cm.id, cm.instance, cm.course, i.itemname, i.itemmodule, g.userid, g.finalgrade 
+                                                        FROM `mdl_course_modules` cm 
+                                                        INNER JOIN `mdl_modules` m ON m.id = cm.module 
+                                                        INNER JOIN `mdl_grade_items` i on i.courseid = cm.course 
+                                                        INNER JOIN mdl_grade_grades g on g.itemid = i.id 
+                                                        WHERE m.name IN ('assign', 'quiz', 'survey', 'wiki', 'workshop') 
+                                                        AND itemtype = 'mod' 
+                                                        AND itemmodule IN ('assign', 'quiz', 'survey', 'wiki', 'workshop') 
+                                                        AND g.finalgrade > 0 AND g.userid = $student_id");
 
-        // Query to retrieve all quizzes with grade and feedback
-        $quizzes_marked = $DB->get_records_sql("SELECT DISTINCT i.itemname 
-                                                FROM `mdl_course_modules` cm 
-                                                INNER JOIN `mdl_modules` m ON m.id = cm.module 
-                                                INNER JOIN `mdl_grade_items` i ON i.courseid = cm.course 
-                                                INNER JOIN `mdl_quiz` q ON q.name = i.itemname 
-                                                INNER JOIN `mdl_grade_grades` g ON g.itemid = i.id 
-                                                INNER JOIN `mdl_user` u ON u.id = g.userid 
-                                                WHERE m.name IN ('quiz') 
-                                                AND i.itemmodule IS NOT NULL AND u.id = $student_id 
-                                                AND FROM_UNIXTIME(i.timemodified, '%Y') = $current_yr 
-                                                AND g.finalgrade IS NOT NULL 
-                                                AND g.feedback IS NOT NULL");
 
         // Set assignment/assessment count variables
         $assign_submitted_count = (int) sizeof($assignments_submitted);
         $assign_tosubmit_count = (int) sizeof($assignments) - (int) sizeof($assignments_submitted);
         $assign_overdue_count = (int) sizeof($assignments_overdue);
-        $assess_marked_count = (int) sizeof($assignments_marked) + (int) sizeof($quizzes_marked);
+        $assess_marked_count = sizeof($assessments_marked);
 
         // Set singular/plural strings for Assignment and Assessment
         $assign_str = ($assign_submitted_count == 1) ? get_string('assignment_sn', $tpl) : get_string('assignment_pl', $tpl);
