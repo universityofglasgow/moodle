@@ -131,7 +131,7 @@ class local_gugcat {
         $i = 1;
         foreach ($students as $student) {
             $gbgrade = $grading_info->items[0]->grades[$student->id]->grade;
-            $firstgrade = is_null($gbgrade) ? get_string('nograde', 'local_gugcat') : self::convert_grade($gbgrade);
+            $firstgrade = is_null($gbgrade) ? get_string('nograde', 'local_gugcat') : self::convert_grade($gbgrade-1);
             $gradecaptureitem = new grade_capture_item();
             $gradecaptureitem->cnum = $i;
             $gradecaptureitem->studentno = $student->id;
@@ -301,7 +301,7 @@ class local_gugcat {
 
     public static function convert_grade($grade){
         $final_grade = intval($grade);
-        if (!($final_grade >= 22 || $final_grade < 0)){
+        if (!($final_grade > 22 || $final_grade < 0)){
             return self::$GRADES[$final_grade];
         }
         else {
