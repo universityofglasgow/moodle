@@ -27,7 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 
 class local_gugcat_renderer extends plugin_renderer_base {
 
-    public function display_grade_capture($activities, $rows, $columns, $scaleid) {
+    public function display_grade_capture($activities, $rows, $columns) {
         //reindex activities array
         $courseid = $this->page->course->id;
         $modid = $this->page->cm->id;
@@ -41,13 +41,13 @@ class local_gugcat_renderer extends plugin_renderer_base {
             'activities' => $activities_,
         ]);
         $html .= '<form action="index.php?id=' . $courseid . '&amp;activityid=' . $modid . '" method="post" id="multigradesform">';
-        $html .= $this->display_table($rows, $columns, $scaleid);
+        $html .= $this->display_table($rows, $columns);
         $html .= '</form>';
         $html .= $this->footer();
         return $html;
     }
 
-    public function display_add_grade_form($course, $activity, $gbgrade, $student, $gradeversions, $scaleid) {
+    public function display_add_grade_form($course, $activity, $gbgrade, $student, $gradeversions) {
         $html = $this->header();
         $html .= $this->render_from_template('local_gugcat/gcat_add_form', (object)[
             'addnewgrade' =>get_string('addnewgrade', 'local_gugcat'),
@@ -56,7 +56,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
             'student' => $student,
             'gbgrade' => $gbgrade
         ]);
-        $html .= $this->display_form_grade_version($gradeversions, $student->id, $scaleid);
+        $html .= $this->display_form_grade_version($gradeversions, $student->id);
         return $html;
     }
 
@@ -71,8 +71,8 @@ class local_gugcat_renderer extends plugin_renderer_base {
         return $html;
     }
 
-    private function display_table($rows, $columns, $scaleid) {
-        $grades = array_values(local_gugcat::get_grade_scale($scaleid));
+    private function display_table($rows, $columns) {
+        $grades = array_values(local_gugcat::$GRADES);
         global $CFG, $selectedmodule, $courseid;
         $html = '<div class="table-responsive">';
         $html .= '<table class="table">';
@@ -139,14 +139,14 @@ class local_gugcat_renderer extends plugin_renderer_base {
         return $html;
     }
 
-    private function display_form_grade_version($gradeversions, $studentid, $scaleid){
+    private function display_form_grade_version($gradeversions, $studentid){
         $html = '<div class="mform-container">';
         foreach ($gradeversions as $gradeversion){
             $html .= '   <div class="form-group row">';
             $html .= '   <div class="col-md-3">';
             $html .= '         <label>'.$gradeversion->itemname.'</label>';
             $html .= '   </div>';
-            $html .= '   <div class="col-md-9 form-inline felement">'.local_gugcat::convert_grade($gradeversion->grades[$studentid]->finalgrade, $scaleid).'</div>';
+            $html .= '   <div class="col-md-9 form-inline felement">'.local_gugcat::convert_grade($gradeversion->grades[$studentid]->finalgrade).'</div>';
             $html .= '  </div>';
         }
         $html .= '</div>';
