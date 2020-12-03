@@ -36,19 +36,8 @@ class local_gugcat {
      * Database tables.
      */
     const TBL_GRADE_ITEMS  = 'grade_items';
+    const TBL_GRADE_CATEGORIES  = 'grade_categories';
     const TBL_GRADE_GRADES = 'grade_grades';
-
-    public static $REASONS = array(
-        0=>"Good Cause",
-        1=>"Late Penalty",
-        2=>"Capped Grade",
-        3=>"Second Grade",
-        4=>"Third Grade",
-        5=>"Agreed Grade",
-        6=>"Moderated Grade",
-        7=>"Conduct Penalty",
-        8=>"Other"
-    );
 
     public static $GRADES = array(
         22=>"A1",
@@ -75,6 +64,20 @@ class local_gugcat {
         1 =>"G2",
         0 =>"H"
     );
+
+    public static function get_reasons(){
+        return array(
+            0=>get_string('gi_goodcause', 'local_gugcat'),
+            1=>get_string('gi_latepenalty', 'local_gugcat'),
+            2=>get_string('gi_cappedgrade', 'local_gugcat'),
+            3=>get_string('gi_secondgrade', 'local_gugcat'),
+            4=>get_string('gi_thirdgrade', 'local_gugcat'),
+            5=>get_string('gi_agreedgrade', 'local_gugcat'),
+            6=>get_string('gi_moderatedgrade', 'local_gugcat'),
+            7=>get_string('gi_conductpenalty', 'local_gugcat'),
+            8=>get_string('reasonother', 'local_gugcat')
+        );
+    }
 
     /**
      * Returns all activities/modules for specific course
@@ -103,7 +106,7 @@ class local_gugcat {
         $select = 'courseid = '.$course->id.' AND '.self::compare_iteminfo();
         $gradeitems = $DB->get_records_select(self::TBL_GRADE_ITEMS, $select, ['iteminfo' => $module->id]);
         $sort = 'id';
-        $fields = 'userid, id, finalgrade, timemodified';
+        $fields = 'userid, itemid, id, finalgrade, timemodified';
         foreach($gradeitems as $item) {
             $item->grades = $DB->get_records('grade_grades', array('itemid' => $item->id), $sort, $fields);
         }
@@ -128,6 +131,13 @@ class local_gugcat {
         global $gradeitems, $prvgradeid;
         $grading_info = grade_get_grades($course->id, 'mod', $module->modname, $module->instance, array_keys($students));
         $gradeitems = self::get_grade_grade_items($course, $module);
+
+        //---------ids needed for grade discrepancy
+        if(!$agreedgradeid = self::get_grade_item_id($course->id, $module->id, get_string('gi_agreedgrade', 'local_gugcat'))){
+            $secondgradeid = self::get_grade_item_id($course->id, $module->id, get_string('gi_secondgrade', 'local_gugcat'));
+            $thirdgradeid = self::get_grade_item_id($course->id, $module->id, get_string('gi_thirdgrade', 'local_gugcat'));    
+        };
+
         $i = 1;
         foreach ($students as $student) {
             $gbgrade = $grading_info->items[0]->grades[$student->id]->grade;
@@ -146,8 +156,20 @@ class local_gugcat {
                         $grade = is_null($rawgrade) ? $firstgrade : self::convert_grade($rawgrade);
                         $gradecaptureitem->provisionalgrade = $grade;
                     }else{
+                        $grdobj = new stdClass();
                         $grade = is_null($rawgrade) ? 'N/A' : self::convert_grade($rawgrade);
-                        array_push($gradecaptureitem->grades, $grade);
+                        $grdobj->grade = $grade;
+                        $grdobj->discrepancy = false;
+                        //check grade discrepancy
+                        if(!$agreedgradeid && $gbgrade){
+                            if($item->id === $secondgradeid || $item->id === $thirdgradeid){
+                                $grdobj->discrepancy = is_null($rawgrade) ? false : (($rawgrade != $gbgrade) ? true : false);
+                            }
+                        }
+                        if($grdobj->discrepancy){
+                            $gradecaptureitem->discrepancy = true;
+                        }
+                        array_push($gradecaptureitem->grades, $grdobj);
                     }
                 }
             }
@@ -182,23 +204,28 @@ class local_gugcat {
         return $prvgrdid;
     }
 
-    public static function add_grade_item($courseid, $reason, $modid){
+    public static function get_grade_item_id($courseid, $modid, $itemname){
         global $DB;
-        //get category id
-        $categoryid = $DB->get_field('grade_categories', 'id', array('courseid' => $courseid, 'parent' => null), MUST_EXIST);
-    
-        // check if gradeitem already exists using $reason, $courseid, $activityid
-        $select = 'courseid = :courseid AND '.self::compare_iteminfo(). ' AND categoryid = :categoryid AND itemname = :itemname ';
+        $select = 'courseid = :courseid AND '.self::compare_iteminfo(). ' AND itemname = :itemname ';
         $params = [
             'courseid' => $courseid,
-            'categoryid' => $categoryid,
-            'itemname' => $reason,
+            'itemname' => $itemname,
             'iteminfo' => $modid
         ];
-        if(!$gradeitemid = $DB->get_record_select(self::TBL_GRADE_ITEMS, $select, $params, 'id')){
-            //  create new gradeitem
+        return $DB->get_field_select(self::TBL_GRADE_ITEMS, 'id', $select, $params);
+    }
+
+    public static function add_grade_item($courseid, $reason, $modid){
+        global $DB;
+    
+        // check if gradeitem already exists using $reason, $courseid, $activityid
+        if(!$gradeitemid = self::get_grade_item_id($courseid, $modid, $reason)){
+            // create new gradeitem
              $gradeitem = new grade_item(array('id'=>0, 'courseid'=>$courseid));
-        
+            
+             // get category id
+             $categoryid = $DB->get_field(self::TBL_GRADE_CATEGORIES, 'id', array('courseid' => $courseid, 'parent' => null), MUST_EXIST);
+
              $gradeitem->weightoverride = 0;
              $gradeitem->gradepass = 0;
              $gradeitem->grademin = 0;
@@ -216,7 +243,7 @@ class local_gugcat {
         }
         
         else {
-            return $gradeitemid->id;
+            return $gradeitemid;
         }
     }
     

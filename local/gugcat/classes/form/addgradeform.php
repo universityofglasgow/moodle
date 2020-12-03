@@ -34,7 +34,7 @@ class addgradeform extends moodleform {
         $mform = $this->_form; // Don't forget the underscore! 
         $mform->addElement('html', '<div class="mform-container">');
 
-        $mform->addElement('select', 'reasons', 'Reason for additional grade', local_gugcat::$REASONS,['class' => 'mform-custom']); 
+        $mform->addElement('select', 'reasons', 'Reason for additional grade', local_gugcat::get_reasons(),['class' => 'mform-custom']); 
         $mform->setType('reasons', PARAM_NOTAGS); 
         $mform->setDefault('reasons', "Select Reason");   
 
