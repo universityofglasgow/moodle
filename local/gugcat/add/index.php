@@ -74,8 +74,8 @@ if ($fromform = $mform->get_data()) {
     $grades = local_gugcat::add_update_grades($studentid, $gradeitemid, $fromform->grade);
     $provisionalgrade = local_gugcat::update_grade($studentid, $prvgradeid, $fromform->grade);
     
-
-    redirect($CFG->wwwroot . '/local/gugcat/index.php?id='.$courseid.'&amp;activityid='.$activityid);
+    header("Location:" .$CFG->wwwroot . '/local/gugcat/index.php?id='.$courseid.'&amp;activityid='.$activityid);
+    exit;
 }   
 
 echo $OUTPUT->header();
