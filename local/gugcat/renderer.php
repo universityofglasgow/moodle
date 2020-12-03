@@ -154,7 +154,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
     }
 
     private function header() {
-        $html = '<div class="container">';
+        $html = '<div class="gcat-container">';
         $html .= '<h4 class="title">'.get_string('title', 'local_gugcat').'</h4>';
         $html .= $this->render_from_template('local_gugcat/gcat_tabs', (object)[
             'assessmenttabstr' =>get_string('assessmentlvlscore', 'local_gugcat'),

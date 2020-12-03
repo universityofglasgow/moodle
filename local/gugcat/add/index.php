@@ -52,13 +52,16 @@ $PAGE->set_heading($course->fullname);
 $modinfo = get_fast_modinfo($courseid);
 $module = $modinfo->get_cm($activityid);
 
-local_gugcat::set_prv_grade_id($courseid, $module->id);
+$scaleid = local_gugcat::get_scaleid($module);
+local_gugcat::set_grade_scale($scaleid);
+local_gugcat::set_prv_grade_id($courseid, $module->id, $scaleid);
 // get 1st grade
 $grading_info = grade_get_grades($courseid, 'mod', $module->modname, $module->instance, $studentid);
 $gbgrade = $grading_info->items[0]->grades[$studentid]->grade;
 $convertedgrade = local_gugcat::convert_grade($gbgrade);
 $gradeitems = local_gugcat::get_grade_grade_items($course, $module);
 $gradeversions = local_gugcat::filter_grade_version($gradeitems, $studentid);
+
 
 $mform = new addgradeform(null, array('id'=>$courseid, 'activityid'=>$activityid, 'studentid'=>$studentid));
 if ($fromform = $mform->get_data()) {
@@ -70,7 +73,7 @@ if ($fromform = $mform->get_data()) {
         $gradereason = local_gugcat::get_reasons()[$fromform->reasons];
     }
 
-    $gradeitemid = local_gugcat::add_grade_item($courseid, $gradereason, $module->id);
+    $gradeitemid = local_gugcat::add_grade_item($courseid, $gradereason, $module->id, $scaleid);
     $grades = local_gugcat::add_update_grades($studentid, $gradeitemid, $fromform->grade);
     
     header("Location:" .$CFG->wwwroot . '/local/gugcat/index.php?id='.$courseid.'&amp;activityid='.$activityid);
