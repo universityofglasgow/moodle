@@ -39,6 +39,7 @@ class local_gugcat {
     const TBL_GRADE_CATEGORIES  = 'grade_categories';
     const TBL_GRADE_GRADES = 'grade_grades';
 
+    public static $PRVGRADEID = null; 
     public static $GRADES = array(
         22=>"A1",
         21=>"A2",
@@ -128,7 +129,7 @@ class local_gugcat {
      */
     public static function grade_capture_get_rows($course, $module, $students){
         $captureitems = array();
-        global $gradeitems, $prvgradeid;
+        global $gradeitems;
         $grading_info = grade_get_grades($course->id, 'mod', $module->modname, $module->instance, array_keys($students));
         $gradeitems = self::get_grade_grade_items($course, $module);
 
@@ -148,11 +149,12 @@ class local_gugcat {
             $gradecaptureitem->surname = $student->lastname;
             $gradecaptureitem->forename = $student->firstname;
             $gradecaptureitem->firstgrade = $firstgrade;
+            $gradecaptureitem->discrepancy = false;
             $gradecaptureitem->grades = array();
             foreach ($gradeitems as $item) {
                 if(isset($item->grades[$student->id])){
                     $rawgrade = $item->grades[$student->id]->finalgrade;
-                    if($item->id === $prvgradeid){
+                    if($item->id === self::$PRVGRADEID){
                         $grade = is_null($rawgrade) ? $firstgrade : self::convert_grade($rawgrade);
                         $gradecaptureitem->provisionalgrade = $grade;
                     }else{
@@ -186,7 +188,7 @@ class local_gugcat {
      */
     public static function grade_capture_get_columns($module){
         //global $gradeitems from get rows function
-        global $gradeitems, $prvgradeid;
+        global $gradeitems;
         $date = date("(j/n/Y)", strtotime(userdate($module->added)));
         $firstgrade = get_string('gradebookgrade', 'local_gugcat').'<br>'.$date;
         $columns = array($firstgrade);
@@ -194,14 +196,13 @@ class local_gugcat {
             $columns[$item->id] = $item->itemname;
         }
         //remove provisional column
-        unset($columns[$prvgradeid]);
+        unset($columns[self::$PRVGRADEID]);
         return $columns;
     }
 
-    public static function get_prv_grade_id($courseid, $modid){
+    public static function set_prv_grade_id($courseid, $modid){
         $pgrd_str = get_string('provisionalgrd', 'local_gugcat');
-        $prvgrdid = self::add_grade_item($courseid, $pgrd_str, $modid);
-        return $prvgrdid;
+        self::$PRVGRADEID = self::add_grade_item($courseid, $pgrd_str, $modid);
     }
 
     public static function get_grade_item_id($courseid, $modid, $itemname){
@@ -247,9 +248,11 @@ class local_gugcat {
         }
     }
     
-    public static function add_update_grades($userid, $itemid, $grades){
-        global $DB;
-        global $USER;
+    public static function add_update_grades($userid, $itemid, $grade){
+        global $DB, $USER;
+
+        //update provisional grade
+        self::update_grade($userid, self::$PRVGRADEID, $grade);
 
         $params = array(
             'userid' => $userid,
@@ -258,41 +261,40 @@ class local_gugcat {
             'finalgrade' => null
         );
 
-        $grade = new grade_grade();
-        $grade->itemid = $itemid;
-        $grade->userid = $userid;
-        $grade->rawgrade = $grades;
-        $grade->rawgrademax = "100.000";
-        $grade->rawgrademin = "0.00000";
-        $grade->usermodified = $USER->id;
-        $grade->finalgrade = $grades;
-        $grade->hidden = "0";
-        $grade->locked = "0";
-        $grade->locktime = "0";
-        $grade->exported = "0";
-        $grade->overridden = "0";
-        $grade->excluded = "0";
-        $grade->feedbackformat = "0";
-        $grade->informationformat = "0";
-        $grade->timecreated = time();
-        $grade->timemodified = time();
-        $grade->aggregationstatus = "used";
-        $grade->aggregationweight = "100.000"; 
+        $grade_ = new grade_grade();
+        $grade_->itemid = $itemid;
+        $grade_->userid = $userid;
+        $grade_->rawgrade = $grade;
+        $grade_->rawgrademax = "100.000";
+        $grade_->rawgrademin = "0.00000";
+        $grade_->usermodified = $USER->id;
+        $grade_->finalgrade = $grade;
+        $grade_->hidden = "0";
+        $grade_->locked = "0";
+        $grade_->locktime = "0";
+        $grade_->exported = "0";
+        $grade_->overridden = "0";
+        $grade_->excluded = "0";
+        $grade_->feedbackformat = "0";
+        $grade_->informationformat = "0";
+        $grade_->timecreated = time();
+        $grade_->timemodified = time();
+        $grade_->aggregationstatus = "used";
+        $grade_->aggregationweight = "100.000"; 
 
         if(!$gradeid = $DB->get_field(self::TBL_GRADE_GRADES, 'id', $params)){
         //creates grade objects for other users in DB 
-        return $grade->insert();
+        return $grade_->insert();
         }
         else{
         //updates empty grade objects in database
-        $grade->id = $gradeid;
-        return $grade->update();
+        $grade_->id = $gradeid;
+        return $grade_->update();
         }
     }
 
-    public static function update_grade($userid, $itemid, $grades){
-        global $DB;
-        global $USER;
+    public static function update_grade($userid, $itemid, $grade){
+        global $DB, $USER;
         
         $params = array(
             'userid'=>$userid,
@@ -301,29 +303,27 @@ class local_gugcat {
         //gets id for existing grade
         $gradeid = $DB->get_field(self::TBL_GRADE_GRADES, 'id', $params);
 
-        $grade = new grade_grade();
-        $grade->id = $gradeid;
-        $grade->itemid = $itemid;
-        $grade->userid = $userid;
-        $grade->rawgrade = $grades;
-        $grade->rawgrademax = "100.000";
-        $grade->rawgrademin = "0.00000";
-        $grade->usermodified = $USER->id;
-        $grade->finalgrade = $grades;
-        $grade->hidden = "0";
-        $grade->locked = "0";
-        $grade->locktime = "0";
-        $grade->exported = "0";
-        $grade->overridden = "0";
-        $grade->excluded = "0";
-        $grade->feedbackformat = "0";
-        $grade->informationformat = "0";
-        $grade->timecreated = time();
-        $grade->timemodified = time();
-        $grade->aggregationstatus = "used";
-        $grade->aggregationweight = "100.000"; 
+        $grade_ = new grade_grade();
+        $grade_->id = $gradeid;
+        $grade_->itemid = $itemid;
+        $grade_->userid = $userid;
+        $grade_->rawgrade = $grade;
+        $grade_->rawgrademax = "100.000";
+        $grade_->rawgrademin = "0.00000";
+        $grade_->usermodified = $USER->id;
+        $grade_->finalgrade = $grade;
+        $grade_->hidden = "0";
+        $grade_->locked = "0";
+        $grade_->locktime = "0";
+        $grade_->exported = "0";
+        $grade_->overridden = "0";
+        $grade_->excluded = "0";
+        $grade_->feedbackformat = "0";
+        $grade_->informationformat = "0";
+        $grade_->timecreated = time();
+        $grade_->timemodified = time();
         //updates existing grade
-        return $grade->update();
+        return $grade_->update();
     }
 
     public static function convert_grade($grade){
@@ -336,13 +336,13 @@ class local_gugcat {
         }
     }
 
-    public static function filter_grade_version($gradeitems, $studentid, $prvgradeid){
+    public static function filter_grade_version($gradeitems, $studentid){
         foreach($gradeitems as $gradeitem){
             if(is_null($gradeitem->grades[$studentid]->finalgrade)) {
                 unset($gradeitems[$gradeitem->id]);
             }
         }
-        unset($gradeitems[$prvgradeid]);
+        unset($gradeitems[self::$PRVGRADEID]);
         
         return $gradeitems;
     }

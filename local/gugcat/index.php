@@ -51,7 +51,9 @@ $activities = local_gugcat::get_activities($courseid, $activityid);
 $mods = array_reverse($activities);
 $selectedmodule = is_null($activityid) ? array_pop($mods) : $activities[$activityid];
 $PAGE->set_cm($selectedmodule);
-$prvgradeid = local_gugcat::get_prv_grade_id($courseid, $selectedmodule->id);
+
+//populate provisional grade id and set it to static
+local_gugcat::set_prv_grade_id($courseid, $selectedmodule->id);
 
 //---------submit multiple add grades
 if (!empty($_POST)){
@@ -64,7 +66,6 @@ if (!empty($_POST)){
                 if(isset($item['grade'])){
                     $grade = array_search($item['grade'], local_gugcat::$GRADES);
                     local_gugcat::add_update_grades($item['id'], $gradeitemid, $grade);
-                    local_gugcat::update_grade($item['id'], $prvgradeid, $grade);
                 }
             }
             $message = get_string('successaddall', 'local_gugcat');
