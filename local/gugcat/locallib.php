@@ -162,9 +162,7 @@ class local_gugcat {
                         $grdobj->discrepancy = false;
                         //check grade discrepancy
                         if(!$agreedgradeid && $gbgrade){
-                            if($item->id === $secondgradeid){
-                                $grdobj->discrepancy = is_null($rawgrade) ? false : (($rawgrade != $gbgrade) ? true : false);
-                            }else if($item->id === $thirdgradeid){
+                            if($item->id === $secondgradeid || $item->id === $thirdgradeid){
                                 $grdobj->discrepancy = is_null($rawgrade) ? false : (($rawgrade != $gbgrade) ? true : false);
                             }
                         }
