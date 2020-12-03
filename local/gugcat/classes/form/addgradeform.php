@@ -43,7 +43,7 @@ class addgradeform extends moodleform {
         $mform->hideIf('otherreason', 'reasons', 'neq', 8); 
         $mform->setDefault('otherreason', "Please Specify");
 
-        $mform->addElement('select', 'grade', 'Grade', local_gugcat::$GRADES, ['class' => 'mform-custom']); 
+        $mform->addElement('select', 'grade', 'Grade', local_gugcat::get_grade_scale($this->_customdata['gradeitem']), ['class' => 'mform-custom']); 
         $mform->setType('grade', PARAM_NOTAGS); 
         $mform->setDefault('grade', "Select Grade");
         $mform->addElement('html', '</div>');

@@ -58,12 +58,14 @@ $scaleid = reset($initialgradeitem)->scaleid;
 $grading_info = grade_get_grades($courseid, 'mod', $module->modname, $module->instance, $studentid);
 $gbgrade = $grading_info->items[0]->grades[$studentid]->grade;
 $convertedgrade = local_gugcat::convert_grade($gbgrade);
+
 $prvgradeid = local_gugcat::get_prv_grade_id($courseid, $module->id, $scaleid);
 $gradeitems = local_gugcat::get_grade_grade_items($course, $module);
 $gradeversions = local_gugcat::filter_grade_version($gradeitems, $studentid, $prvgradeid);
 local_gugcat::get_grade_scale($scaleid);
 
-$mform = new addgradeform(null, array('id'=>$courseid, 'activityid'=>$activityid, 'studentid'=>$studentid));
+
+$mform = new addgradeform(null, array('id'=>$courseid, 'activityid'=>$activityid, 'studentid'=>$studentid, 'gradeitem'=>$scaleid));
 if ($fromform = $mform->get_data()) {
 
     if($fromform->reasons == 8) {

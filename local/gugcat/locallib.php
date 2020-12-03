@@ -197,6 +197,7 @@ class local_gugcat {
 
         //get scale size for max grade
         $scalesize = sizeof(self::$GRADES);
+
         // check if gradeitem already exists using $reason, $courseid, $activityid
         if(!$gradeitemid = self::get_grade_item_id($courseid, $modid, $reason)){
             // create new gradeitem
@@ -307,8 +308,10 @@ class local_gugcat {
         return $grade->update();
     }
 
+
     public static function convert_grade($grade){
         $scale = self::$GRADES;
+
         $final_grade = intval($grade);
         if ($final_grade >= array_key_last($scale) && $final_grade <= array_key_first($scale)){
             return $scale[$final_grade];
@@ -334,7 +337,7 @@ class local_gugcat {
 
         $scale = $DB->get_record('scale', array('id'=>$scaleid), '*');
         $scalegrades = make_menu_from_list($scale->scale); 
-
+      
         self::$GRADES = $scalegrades;
     }
 
