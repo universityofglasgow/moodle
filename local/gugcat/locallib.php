@@ -152,15 +152,26 @@ class local_gugcat {
             foreach ($gradeitems as $item) {
                 if(isset($item->grades[$student->id])){
                     $rawgrade = $item->grades[$student->id]->finalgrade;
-                    // echo '<pre>';
-                    // var_dump($item->grades[$student->id]);
-                    // echo '</pre>';
                     if($item->id === $prvgradeid){
                         $grade = is_null($rawgrade) ? $firstgrade : self::convert_grade($rawgrade);
                         $gradecaptureitem->provisionalgrade = $grade;
                     }else{
+                        $grdobj = new stdClass();
                         $grade = is_null($rawgrade) ? 'N/A' : self::convert_grade($rawgrade);
-                        array_push($gradecaptureitem->grades, (object)['grade' => $grade, 'discrepancy' => true]);
+                        $grdobj->grade = $grade;
+                        $grdobj->discrepancy = false;
+                        //check grade discrepancy
+                        if(!$agreedgradeid && $gbgrade){
+                            if($item->id === $secondgradeid){
+                                $grdobj->discrepancy = is_null($rawgrade) ? false : (($rawgrade != $gbgrade) ? true : false);
+                            }else if($item->id === $thirdgradeid){
+                                $grdobj->discrepancy = is_null($rawgrade) ? false : (($rawgrade != $gbgrade) ? true : false);
+                            }
+                        }
+                        if($grdobj->discrepancy){
+                            $gradecaptureitem->discrepancy = true;
+                        }
+                        array_push($gradecaptureitem->grades, $grdobj);
                     }
                 }
             }

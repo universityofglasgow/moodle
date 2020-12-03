@@ -85,6 +85,11 @@ define(['jquery', 'core/str' ], function($, Str) {
                 $(".input-reason").val($(this).val());
             });
 
+            //Show 'grade discrepancy' when grade discrepancy exist
+            if($('td > .grade-discrepancy').length > 0){
+                $("#btn-grddisc").show();
+            }
+
             // Hide elements on add grade form page 
             if(checkCurrentUrl('gugcat/add')){
                 $("#btn-approve").hide();
