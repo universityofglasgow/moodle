@@ -177,9 +177,6 @@ class local_gugcat {
             array_push($captureitems, $gradecaptureitem);
             $i++;
         }
-            // echo '<pre>';
-            // var_dump($captureitems);
-            // echo '</pre>';
         return $captureitems;
     }
 
