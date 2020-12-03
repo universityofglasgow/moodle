@@ -52,9 +52,9 @@ $mods = array_reverse($activities);
 $selectedmodule = is_null($activityid) ? array_pop($mods) : $activities[$activityid];
 $PAGE->set_cm($selectedmodule);
 $scaleid = local_gugcat::get_scaleid($selectedmodule);
+//populate $GRADES with scales
+local_gugcat::set_grade_scale($scaleid);
 $prvgradeid = local_gugcat::get_prv_grade_id($courseid, $selectedmodule->id, $scaleid);
-//populate $GRADE with scales
-local_gugcat::get_grade_scale($scaleid);
 
 
 //---------submit multiple add grades
@@ -66,7 +66,7 @@ if (!empty($_POST)){
             $gradeitemid = local_gugcat::add_grade_item($courseid, $reason, $selectedmodule->id, $scaleid);
             foreach ($grades as $item) {
                 if(isset($item['grade'])){
-                    $grade = array_search($item['grade'], local_gugcat::get_grade_scale($scaleid));
+                    $grade = array_search($item['grade'], local_gugcat::$GRADES);
                     local_gugcat::add_update_grades($item['id'], $gradeitemid, $grade);
                     local_gugcat::update_grade($item['id'], $prvgradeid, $grade);
                 }
@@ -90,5 +90,5 @@ $columns = local_gugcat::grade_capture_get_columns($selectedmodule);
 
 echo $OUTPUT->header();
 $renderer = $PAGE->get_renderer('local_gugcat');
-echo $renderer->display_grade_capture($activities, $rows, $columns, $scaleid);
+echo $renderer->display_grade_capture($activities, $rows, $columns);
 echo $OUTPUT->footer();

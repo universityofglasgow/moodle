@@ -52,20 +52,19 @@ $PAGE->set_heading($course->fullname);
 $modinfo = get_fast_modinfo($courseid);
 $module = $modinfo->get_cm($activityid);
 
-$initialgradeitem = grade_get_grade_items_for_activity($module);
-$scaleid = reset($initialgradeitem)->scaleid;
+
+$scaleid = local_gugcat::get_scaleid($module);
+local_gugcat::set_grade_scale($scaleid);
 // get 1st grade
 $grading_info = grade_get_grades($courseid, 'mod', $module->modname, $module->instance, $studentid);
 $gbgrade = $grading_info->items[0]->grades[$studentid]->grade;
 $convertedgrade = local_gugcat::convert_grade($gbgrade);
-
 $prvgradeid = local_gugcat::get_prv_grade_id($courseid, $module->id, $scaleid);
 $gradeitems = local_gugcat::get_grade_grade_items($course, $module);
 $gradeversions = local_gugcat::filter_grade_version($gradeitems, $studentid, $prvgradeid);
-local_gugcat::get_grade_scale($scaleid);
 
 
-$mform = new addgradeform(null, array('id'=>$courseid, 'activityid'=>$activityid, 'studentid'=>$studentid, 'gradeitem'=>$scaleid));
+$mform = new addgradeform(null, array('id'=>$courseid, 'activityid'=>$activityid, 'studentid'=>$studentid));
 if ($fromform = $mform->get_data()) {
 
     if($fromform->reasons == 8) {
@@ -85,7 +84,7 @@ if ($fromform = $mform->get_data()) {
 
 echo $OUTPUT->header();
 $renderer = $PAGE->get_renderer('local_gugcat');
-echo $renderer->display_add_grade_form($course, $module->name, $convertedgrade, $student, $gradeversions, $scaleid);
+echo $renderer->display_add_grade_form($course, $module->name, $convertedgrade, $student, $gradeversions);
 $mform->display();
 echo $OUTPUT->footer();
 

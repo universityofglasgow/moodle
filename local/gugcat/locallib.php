@@ -105,7 +105,6 @@ class local_gugcat {
     public static function grade_capture_get_rows($course, $module, $students){
         $captureitems = array();
         global $gradeitems, $prvgradeid;
-        $scaleid = self::get_scaleid($module);
         $grading_info = grade_get_grades($course->id, 'mod', $module->modname, $module->instance, array_keys($students));
         $gradeitems = self::get_grade_grade_items($course, $module);
 
@@ -118,7 +117,7 @@ class local_gugcat {
         $i = 1;
         foreach ($students as $student) {
             $gbgrade = $grading_info->items[0]->grades[$student->id]->grade;
-            $firstgrade = is_null($gbgrade) ? get_string('nograde', 'local_gugcat') : self::convert_grade($gbgrade, $scaleid);
+            $firstgrade = is_null($gbgrade) ? get_string('nograde', 'local_gugcat') : self::convert_grade($gbgrade);
             $gradecaptureitem = new grade_capture_item();
             $gradecaptureitem->cnum = $i;
             $gradecaptureitem->studentno = $student->id;
@@ -130,11 +129,11 @@ class local_gugcat {
                 if(isset($item->grades[$student->id])){
                     $rawgrade = $item->grades[$student->id]->finalgrade;
                     if($item->id === $prvgradeid){
-                        $grade = is_null($rawgrade) ? $firstgrade : self::convert_grade($rawgrade, $scaleid);
+                        $grade = is_null($rawgrade) ? $firstgrade : self::convert_grade($rawgrade);
                         $gradecaptureitem->provisionalgrade = $grade;
                     }else{
                         $grdobj = new stdClass();
-                        $grade = is_null($rawgrade) ? 'N/A' : self::convert_grade($rawgrade, $scaleid);
+                        $grade = is_null($rawgrade) ? 'N/A' : self::convert_grade($rawgrade);
                         $grdobj->grade = $grade;
                         $grdobj->discrepancy = false;
                         //check grade discrepancy
@@ -197,7 +196,6 @@ class local_gugcat {
 
         //get scale size for max grade
         $scalesize = sizeof(self::$GRADES);
-
         // check if gradeitem already exists using $reason, $courseid, $activityid
         if(!$gradeitemid = self::get_grade_item_id($courseid, $modid, $reason)){
             // create new gradeitem
@@ -308,10 +306,8 @@ class local_gugcat {
         return $grade->update();
     }
 
-
     public static function convert_grade($grade){
         $scale = self::$GRADES;
-
         $final_grade = intval($grade);
         if ($final_grade >= array_key_last($scale) && $final_grade <= array_key_first($scale)){
             return $scale[$final_grade];
@@ -332,12 +328,12 @@ class local_gugcat {
         return $gradeitems;
     }
 
-    public static function get_grade_scale($scaleid){
+    public static function set_grade_scale($scaleid){
         global $DB;
 
         $scale = $DB->get_record('scale', array('id'=>$scaleid), '*');
         $scalegrades = make_menu_from_list($scale->scale); 
-      
+
         self::$GRADES = $scalegrades;
     }
 
