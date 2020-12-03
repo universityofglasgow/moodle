@@ -52,15 +52,18 @@ $PAGE->set_heading($course->fullname);
 $modinfo = get_fast_modinfo($courseid);
 $module = $modinfo->get_cm($activityid);
 
+$initialgradeitem = grade_get_grade_items_for_activity($module);
+$scaleid = reset($initialgradeitem)->scaleid;
 // get 1st grade
 $grading_info = grade_get_grades($courseid, 'mod', $module->modname, $module->instance, $studentid);
 $gbgrade = $grading_info->items[0]->grades[$studentid]->grade;
-$convertedgrade = local_gugcat::convert_grade($gbgrade);
-$prvgradeid = local_gugcat::get_prv_grade_id($courseid, $module->id);
+$convertedgrade = local_gugcat::convert_grade($gbgrade, $scaleid);
+$prvgradeid = local_gugcat::get_prv_grade_id($courseid, $module->id, $scaleid);
 $gradeitems = local_gugcat::get_grade_grade_items($course, $module);
 $gradeversions = local_gugcat::filter_grade_version($gradeitems, $studentid, $prvgradeid);
 
-$mform = new addgradeform(null, array('id'=>$courseid, 'activityid'=>$activityid, 'studentid'=>$studentid));
+
+$mform = new addgradeform(null, array('id'=>$courseid, 'activityid'=>$activityid, 'studentid'=>$studentid, 'gradeitem'=>$scaleid));
 if ($fromform = $mform->get_data()) {
 
     if($fromform->reasons == 8) {
@@ -70,7 +73,7 @@ if ($fromform = $mform->get_data()) {
         $gradereason = local_gugcat::get_reasons()[$fromform->reasons];
     }
 
-    $gradeitemid = local_gugcat::add_grade_item($courseid, $gradereason, $module->id);
+    $gradeitemid = local_gugcat::add_grade_item($courseid, $gradereason, $module->id, $scaleid);
     $grades = local_gugcat::add_update_grades($studentid, $gradeitemid, $fromform->grade);
     $provisionalgrade = local_gugcat::update_grade($studentid, $prvgradeid, $fromform->grade);
     
@@ -80,7 +83,7 @@ if ($fromform = $mform->get_data()) {
 
 echo $OUTPUT->header();
 $renderer = $PAGE->get_renderer('local_gugcat');
-echo $renderer->display_add_grade_form($course, $module->name, $convertedgrade, $student, $gradeversions);
+echo $renderer->display_add_grade_form($course, $module->name, $convertedgrade, $student, $gradeversions, $scaleid);
 $mform->display();
 echo $OUTPUT->footer();
 
