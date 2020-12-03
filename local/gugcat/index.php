@@ -51,7 +51,8 @@ $activities = local_gugcat::get_activities($courseid, $activityid);
 $mods = array_reverse($activities);
 $selectedmodule = is_null($activityid) ? array_pop($mods) : $activities[$activityid];
 $PAGE->set_cm($selectedmodule);
-$prvgradeid = local_gugcat::get_prv_grade_id($courseid, $selectedmodule->id);
+$scaleid = local_gugcat::get_scaleid($selectedmodule);
+$prvgradeid = local_gugcat::get_prv_grade_id($courseid, $selectedmodule->id, $scaleid);
 
 //---------submit multiple add grades
 if (!empty($_POST)){
@@ -59,10 +60,10 @@ if (!empty($_POST)){
         $grades = $_POST['grades'];
         $reason = $_POST['reason'];
         if(array_column($grades,'grade')){
-            $gradeitemid = local_gugcat::add_grade_item($courseid, $reason, $selectedmodule->id);
+            $gradeitemid = local_gugcat::add_grade_item($courseid, $reason, $selectedmodule->id, $scaleid);
             foreach ($grades as $item) {
                 if(isset($item['grade'])){
-                    $grade = array_search($item['grade'], local_gugcat::$GRADES);
+                    $grade = array_search($item['grade'], local_gugcat::get_grade_scale($scaleid));
                     local_gugcat::add_update_grades($item['id'], $gradeitemid, $grade);
                     local_gugcat::update_grade($item['id'], $prvgradeid, $grade);
                 }
@@ -86,5 +87,5 @@ $columns = local_gugcat::grade_capture_get_columns($selectedmodule);
 
 echo $OUTPUT->header();
 $renderer = $PAGE->get_renderer('local_gugcat');
-echo $renderer->display_grade_capture($activities, $rows, $columns);
+echo $renderer->display_grade_capture($activities, $rows, $columns, $scaleid);
 echo $OUTPUT->footer();

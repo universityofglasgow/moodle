@@ -39,32 +39,6 @@ class local_gugcat {
     const TBL_GRADE_CATEGORIES  = 'grade_categories';
     const TBL_GRADE_GRADES = 'grade_grades';
 
-    public static $GRADES = array(
-        22=>"A1",
-        21=>"A2",
-        20=>"A3",
-        19=>"A4",
-        18=>"A5",
-        17=>"B1",
-        16=>"B2",
-        15=>"B3",
-        14=>"C1",
-        13=>"C2",
-        12=>"C3",
-        11=>"D1",
-        10=>"D2",
-        9 =>"D3",
-        8 =>"E1",
-        7 =>"E2",
-        6 =>"E3",
-        5 =>"F1",
-        4 =>"F2",
-        3 =>"F3",
-        2 =>"G1",
-        1 =>"G2",
-        0 =>"H"
-    );
-
     public static function get_reasons(){
         return array(
             0=>get_string('gi_goodcause', 'local_gugcat'),
@@ -129,6 +103,7 @@ class local_gugcat {
     public static function grade_capture_get_rows($course, $module, $students){
         $captureitems = array();
         global $gradeitems, $prvgradeid;
+        $scaleid = self::get_scaleid($module);
         $grading_info = grade_get_grades($course->id, 'mod', $module->modname, $module->instance, array_keys($students));
         $gradeitems = self::get_grade_grade_items($course, $module);
 
@@ -141,7 +116,7 @@ class local_gugcat {
         $i = 1;
         foreach ($students as $student) {
             $gbgrade = $grading_info->items[0]->grades[$student->id]->grade;
-            $firstgrade = is_null($gbgrade) ? get_string('nograde', 'local_gugcat') : self::convert_grade($gbgrade-1);
+            $firstgrade = is_null($gbgrade) ? get_string('nograde', 'local_gugcat') : self::convert_grade($gbgrade, $scaleid);
             $gradecaptureitem = new grade_capture_item();
             $gradecaptureitem->cnum = $i;
             $gradecaptureitem->studentno = $student->id;
@@ -153,11 +128,11 @@ class local_gugcat {
                 if(isset($item->grades[$student->id])){
                     $rawgrade = $item->grades[$student->id]->finalgrade;
                     if($item->id === $prvgradeid){
-                        $grade = is_null($rawgrade) ? $firstgrade : self::convert_grade($rawgrade);
+                        $grade = is_null($rawgrade) ? $firstgrade : self::convert_grade($rawgrade, $scaleid);
                         $gradecaptureitem->provisionalgrade = $grade;
                     }else{
                         $grdobj = new stdClass();
-                        $grade = is_null($rawgrade) ? 'N/A' : self::convert_grade($rawgrade);
+                        $grade = is_null($rawgrade) ? 'N/A' : self::convert_grade($rawgrade, $scaleid);
                         $grdobj->grade = $grade;
                         $grdobj->discrepancy = false;
                         //check grade discrepancy
@@ -198,9 +173,9 @@ class local_gugcat {
         return $columns;
     }
 
-    public static function get_prv_grade_id($courseid, $modid){
+    public static function get_prv_grade_id($courseid, $modid, $scaleid){
         $pgrd_str = get_string('provisionalgrd', 'local_gugcat');
-        $prvgrdid = self::add_grade_item($courseid, $pgrd_str, $modid);
+        $prvgrdid = self::add_grade_item($courseid, $pgrd_str, $modid, $scaleid);
         return $prvgrdid;
     }
 
@@ -215,9 +190,11 @@ class local_gugcat {
         return $DB->get_field_select(self::TBL_GRADE_ITEMS, 'id', $select, $params);
     }
 
-    public static function add_grade_item($courseid, $reason, $modid){
+    public static function add_grade_item($courseid, $reason, $modid, $scaleid){
         global $DB;
-    
+
+        //get scale size for max grade
+        $scalesize = sizeof(self::get_grade_scale($scaleid));
         // check if gradeitem already exists using $reason, $courseid, $activityid
         if(!$gradeitemid = self::get_grade_item_id($courseid, $modid, $reason)){
             // create new gradeitem
@@ -228,8 +205,9 @@ class local_gugcat {
 
              $gradeitem->weightoverride = 0;
              $gradeitem->gradepass = 0;
-             $gradeitem->grademin = 0;
-             $gradeitem->gradetype = 1;
+             $gradeitem->grademin = 1;
+             $gradeitem->grademax = $scalesize;
+             $gradeitem->gradetype = 2;
              $gradeitem->display =0;
              $gradeitem->outcomeid = null;
              $gradeitem->categoryid = $categoryid;
@@ -237,6 +215,7 @@ class local_gugcat {
              $gradeitem->itemname = $reason;
              $gradeitem->iteminstance= null;
              $gradeitem->itemmodule=null;
+             $gradeitem->scaleid = $scaleid;
              $gradeitem->itemtype = 'manual'; // All new items to be manual only.
      
              return $gradeitem->insert();
@@ -326,13 +305,14 @@ class local_gugcat {
         return $grade->update();
     }
 
-    public static function convert_grade($grade){
+    public static function convert_grade($grade, $scaleid){
+        $scale = self::get_grade_scale($scaleid);
         $final_grade = intval($grade);
-        if (!($final_grade > 22 || $final_grade < 0)){
-            return self::$GRADES[$final_grade];
+        if ($final_grade >= array_key_last($scale) && $final_grade <= array_key_first($scale)){
+            return $scale[$final_grade];
         }
         else {
-            return self::$GRADES[0]; 
+            return $grade; 
         }
     }
 
@@ -346,5 +326,23 @@ class local_gugcat {
         
         return $gradeitems;
     }
+
+    public static function get_grade_scale($scaleid){
+        global $DB;
+
+        $scale = $DB->get_record('scale', array('id'=>$scaleid), '*');
+        $scalegrades = make_menu_from_list($scale->scale); 
+
+        return $scalegrades;
+    }
+
+    public static function get_scaleid($module){
+        
+        $initialgradeitem = grade_get_grade_items_for_activity($module);
+        //to get the first gradeitem scaleid
+        return reset($initialgradeitem)->scaleid;
+    }
+
+
 
 }
