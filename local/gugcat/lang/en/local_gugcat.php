@@ -37,6 +37,7 @@ $string['errorgraderequired'] = 'Add atleast one grade.';
 $string['forename'] = 'Forename';
 $string['gugcat'] = 'Grade Capture and Aggregation Tool';
 $string['gradebookgrade'] = 'Gradebook Grade ';
+$string['gradediscrepancy'] = 'Grade Discrepancy';
 $string['navname'] = 'Grade Capture and Aggregation';
 $string['nograde'] = 'Null – awaiting grading';
 $string['overviewaggregrade'] = 'Overview & Aggregated Grade';
@@ -51,3 +52,12 @@ $string['successaddall'] = 'Successfully added grades for all participants.';
 $string['surname'] = 'Surname';
 $string['title'] = 'Grade capture and score aggregation';
 
+// Grade item names
+$string['gi_agreedgrade'] = 'Agreed Grade';
+$string['gi_cappedgrade'] = 'Capped Grade';
+$string['gi_conductpenalty'] = 'Conduct Penalty';
+$string['gi_goodcause'] = 'Good Cause';
+$string['gi_latepenalty'] = 'Late Penalty';
+$string['gi_moderatedgrade'] = 'Moderated Grade';
+$string['gi_secondgrade'] = 'Second Grade';
+$string['gi_thirdgrade'] = 'Third Grade';

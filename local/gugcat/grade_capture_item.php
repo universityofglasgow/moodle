@@ -29,12 +29,6 @@ defined('MOODLE_INTERNAL') || die();
 class grade_capture_item{
 
     /**
-     * The id of the user/ student.
-     * @var int $id
-     */
-    public $id;
-
-    /**
      * The student number from student info.
      * @var int $studentno
      */
@@ -59,54 +53,6 @@ class grade_capture_item{
     public $firstgrade;
 
     /**
-     * The second grade of the student in a specific activity.
-     * @var string $secondgrade
-     */
-    public $secondgrade;
-
-    /**
-     * The third grade of the student in a specific activity.
-     * @var string $thirdgrade
-     */
-    public $thirdgrade;
-
-    /**
-     * The good cause grade of the student in a specific activity.
-     * @var string $goodcausegrade
-     */
-    public $goodcausegrade;
-
-    /**
-     * The late penalty grade of the student in a specific activity.
-     * @var string $latepenaltygrade
-     */
-    public $latepenaltygrade;
-
-    /**
-     * The capped grade of the student in a specific activity.
-     * @var string $cappedgrade
-     */
-    public $cappedgrade;
-
-    /**
-     * The agreed grade of the student in a specific activity.
-     * @var string $agreedgrade
-     */
-    public $agreedgrade;
-
-    /**
-     * The moderate grade of the student in a specific activity.
-     * @var string $moderategrade
-     */
-    public $moderategrade;
-
-    /**
-     * The custom grade of the student given by the staff in a specific activity.
-     * @var array $othergrade
-     */
-    public $othergrade;
-
-    /**
      * The provisional grade of the student that needs to be approve in a specific activity.
      * @var string $provisionalgrade
      */
@@ -117,4 +63,10 @@ class grade_capture_item{
      * @var array $grades
      */
     public $grades;
+
+    /**
+     * Boolean value if 1st/2nd/3rd grades of the student have discrepancies.
+     * @var boolean $discrepancy
+     */
+    public $discrepancy;
 }
