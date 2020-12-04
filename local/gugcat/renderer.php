@@ -28,20 +28,74 @@ defined('MOODLE_INTERNAL') || die();
 class local_gugcat_renderer extends plugin_renderer_base {
 
     public function display_grade_capture($activities, $rows, $columns) {
-        //reindex activities array
         $courseid = $this->page->course->id;
         $modid = $this->page->cm->id;
+        $addformurl = new moodle_url('/local/gugcat/add/index.php', array('id' => $courseid, 'activityid' => $modid));
+        //reindex activities and grades array
         $activities_ = array_values($activities);
+        $grades = array_values(local_gugcat::$GRADES);
+        //grade capture columns and rows in html
+        $htmlcolumns = null;
+        $htmlrows = null;
+        foreach ($columns as $col) {
+            $htmlcolumns .= '<th>'.$col.'</th>';
+        }
+        $htmlcolumns .= '          <th class="togglemultigrd">'.get_string('addallnewgrade', 'local_gugcat').'</th>';
+        $htmlcolumns .= '          <th class="togglemultigrd">'.get_string('reasonnewgrade', 'local_gugcat').'</th>';
+        $htmlcolumns .= '          <th>'.get_string('provisionalgrd', 'local_gugcat').'</th>';
+        $htmlcolumns .= '          <th></th>';
+        //grade capture rows
+        foreach ($rows as $row) {
+            $addformurl->param('studentid', $row->studentno);
+            $htmlrows .= '<tr>';
+            $htmlrows .= '<td>'.$row->cnum.'</td>';
+            $htmlrows .= '<td>'.$row->studentno.'</td>';
+            $htmlrows .= '<td>'.$row->surname.'</td>';
+            $htmlrows .= '<td>'.$row->forename.'</td>';
+            $htmlrows .= '<td>'. (($row->discrepancy) 
+                ? '<div class="grade-discrepancy">'.$row->firstgrade.'</div>' 
+                : $row->firstgrade ) .'</td>';
+            foreach((array) $row->grades as $item) {
+                $htmlrows .= '<td>'. (($item->discrepancy) 
+                    ? '<div class="grade-discrepancy">'.$item->grade.'</div>' 
+                    : $item->grade ).'</td>';
+            }
+            $htmlrows .= '<td class="togglemultigrd">
+                        <input type="hidden" name="grades['.$row->studentno.'][id]" value="'.$row->studentno.'" />
+                        '.$this->display_custom_select(
+                            $grades,
+                            'grades['.$row->studentno.'][grade]',
+                            get_string('choosegrade', 'local_gugcat')).'
+                    </td>';
+            $htmlrows .= '<td class="togglemultigrd">
+                        '.$this->display_custom_select(
+                            local_gugcat::get_reasons(),
+                            'reason',
+                            get_string('selectreason', 'local_gugcat'),
+                            'multi-select-reason',
+                            'select-grade-reason').'
+                            <input name="reason" value="" class="input-reason" id="input-reason" type="text"/>
+                    </td>';
+            $htmlrows .= '<td><b>'.$row->provisionalgrade.'</b></td>';
+            $htmlrows .= '<td>
+                            <button type="button" class="btn btn-default" onclick="location.href=\''.$addformurl.'\'">
+                                '.get_string('addnewgrade', 'local_gugcat').'
+                            </button>
+                    </td>';
+            $htmlrows .= '</tr>';
+        }
+
         $html = $this->header();
         $html .= $this->render_from_template('local_gugcat/gcat_tab_header', (object)[
             'addallgrdstr' =>get_string('addallnewgrade', 'local_gugcat'),
             'downloadcsvstr' =>get_string('downloadcsv', 'local_gugcat'),
             'saveallbtnstr' =>get_string('saveallnewgrade', 'local_gugcat'),
             'grddiscrepancystr' => get_string('gradediscrepancy', 'local_gugcat'),
+            'displayactivities' => true,
             'activities' => $activities_,
         ]);
         $html .= '<form action="index.php?id=' . $courseid . '&amp;activityid=' . $modid . '" method="post" id="multigradesform">';
-        $html .= $this->display_table($rows, $columns);
+        $html .= $this->display_table($htmlrows, $htmlcolumns);
         $html .= '</form>';
         $html .= $this->footer();
         return $html;
@@ -56,7 +110,48 @@ class local_gugcat_renderer extends plugin_renderer_base {
             'student' => $student,
             'gbgrade' => $gbgrade
         ]);
-        $html .= $this->display_form_grade_version($gradeversions, $student->id);
+        $html .= '<div class="mform-container">';
+        foreach ($gradeversions as $gradeversion){
+            $html .= '   <div class="form-group row">';
+            $html .= '   <div class="col-md-3">';
+            $html .= '         <label>'.$gradeversion->itemname.'</label>';
+            $html .= '   </div>';
+            $html .= '   <div class="col-md-9 form-inline felement">'.local_gugcat::convert_grade($gradeversion->grades[$student->id]->finalgrade).'</div>';
+            $html .= '  </div>';
+        }
+        $html .= '</div>';
+        return $html;
+    }
+
+    public function display_aggregation_tool($rows, $activities) {
+        $htmlcolumns = null;
+        $htmlrows = null;
+        foreach ($activities as $act) {
+            $htmlcolumns .= '<th>'.$act->name.'</th>';
+        }
+        $htmlcolumns .= '<th>'.get_string('requiresresit', 'local_gugcat').'</th>';
+        $htmlcolumns .= '<th>'.get_string('aggregatedgrade', 'local_gugcat')
+                    .'<i class="fa fa-cog"></i></th>';
+        //grade capture rows
+        foreach ($rows as $row) {
+            $htmlrows .= '<tr>';
+            $htmlrows .= '<td>'.$row->cnum.'</td>';
+            $htmlrows .= '<td>'.$row->studentno.'</td>';
+            $htmlrows .= '<td>'.$row->surname.'</td>';
+            $htmlrows .= '<td>'.$row->forename.'</td>';
+            foreach((array) $row->grades as $grade) {
+                $htmlrows .= '<td>'.$grade.'</td>';
+            }
+            $htmlrows .= '<td></td>';
+            $htmlrows .= '<td></td>';
+            $htmlrows .= '</tr>';
+        }
+        $html = $this->header();
+        $html .= $this->render_from_template('local_gugcat/gcat_tab_header', (object)[
+            'downloadcsvstr' =>get_string('downloadcsv', 'local_gugcat'),
+        ]);
+        $html .= $this->display_table($htmlrows, $htmlcolumns);
+        $html .= $this->footer();
         return $html;
     }
 
@@ -72,8 +167,6 @@ class local_gugcat_renderer extends plugin_renderer_base {
     }
 
     private function display_table($rows, $columns) {
-        $grades = array_values(local_gugcat::$GRADES);
-        global $CFG, $selectedmodule, $courseid;
         $html = '<div class="table-responsive">';
         $html .= '<table class="table">';
         $html .= '  <thead>';
@@ -82,56 +175,11 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $html .= '          <th>'.get_string('studentno', 'local_gugcat').'</th>';
         $html .= '          <th>'.get_string('surname', 'local_gugcat').'</th>';
         $html .= '          <th>'.get_string('forename', 'local_gugcat').'</th>';
-        foreach ($columns as $col) {
-            $html .= '<th>'.$col.'</th>';
-        }
-        $html .= '          <th class="togglemultigrd">'.get_string('addallnewgrade', 'local_gugcat').'</th>';
-        $html .= '          <th class="togglemultigrd">'.get_string('reasonnewgrade', 'local_gugcat').'</th>';
-        $html .= '          <th>'.get_string('provisionalgrd', 'local_gugcat').'</th>';
-        $html .= '          <th></th>';
+        $html .= $columns;
         $html .= '      </tr>';
         $html .= '  </thead>';
         $html .= '  <tbody>';
-        foreach ($rows as $row) {
-            $html .= '<tr>';
-                $html .= '<td>'.$row->cnum.'</td>';
-                $html .= '<td>'.$row->studentno.'</td>';
-                $html .= '<td>'.$row->surname.'</td>';
-                $html .= '<td>'.$row->forename.'</td>';
-                $html .= '<td>'. (($row->discrepancy) 
-                    ? '<div class="grade-discrepancy">'.$row->firstgrade.'</div>' 
-                    : $row->firstgrade ) .'</td>';
-                foreach((array) $row->grades as $item) {
-                    $html .= '<td>'. (($item->discrepancy) 
-                        ? '<div class="grade-discrepancy">'.$item->grade.'</div>' 
-                        : $item->grade ).'</td>';
-                }
-                $html .= '<td class="togglemultigrd">
-                            <input type="hidden" name="grades['.$row->studentno.'][id]" value="'.$row->studentno.'" />
-                            '.$this->display_custom_select(
-                                $grades,
-                                'grades['.$row->studentno.'][grade]',
-                                get_string('choosegrade', 'local_gugcat')).'
-                        </td>';
-                $html .= '<td class="togglemultigrd">
-                            '.$this->display_custom_select(
-                                local_gugcat::get_reasons(),
-                                'reason',
-                                get_string('selectreason', 'local_gugcat'),
-                                'multi-select-reason',
-                                'select-grade-reason').'
-                                <input name="reason" value="" class="input-reason" id="input-reason" type="text"/>
-                        </td>';
-                $html .= '<td><b>'.$row->provisionalgrade.'</b></td>';
-                $html .= '<td>
-                            <a href="'.$CFG->wwwroot.'/local/gugcat/add/index.php?id='.$courseid.'&amp;activityid='.$selectedmodule->id.'&amp;studentid='.$row->studentno.'">
-                                <button type="button" class="btn btn-default">
-                                '.get_string('addnewgrade', 'local_gugcat').'
-                                </button>
-                            </a>
-                        </td>';
-            $html .= '</tr>';
-        }
+        $html .= $rows;
         $html .= '  </tbody>';
         $html .= '</table>';
         $html .= '</div>';
@@ -139,27 +187,19 @@ class local_gugcat_renderer extends plugin_renderer_base {
         return $html;
     }
 
-    private function display_form_grade_version($gradeversions, $studentid){
-        $html = '<div class="mform-container">';
-        foreach ($gradeversions as $gradeversion){
-            $html .= '   <div class="form-group row">';
-            $html .= '   <div class="col-md-3">';
-            $html .= '         <label>'.$gradeversion->itemname.'</label>';
-            $html .= '   </div>';
-            $html .= '   <div class="col-md-9 form-inline felement">'.local_gugcat::convert_grade($gradeversion->grades[$studentid]->finalgrade).'</div>';
-            $html .= '  </div>';
-        }
-        $html .= '</div>';
-        return $html;
-    }
-
     private function header() {
+        $courseid = $this->page->course->id;
+        $assessmenturl = new moodle_url('/local/gugcat/index.php', array('id' => $courseid));
+        $assessmenturl.= $this->page->cm ? '&activityid='.$this->page->cm->id : null;
+        $overviewurl = new moodle_url('/local/gugcat/overview/index.php', array('id' => $courseid));
         $html = '<div class="gcat-container">';
         $html .= '<h4 class="title">'.get_string('title', 'local_gugcat').'</h4>';
         $html .= $this->render_from_template('local_gugcat/gcat_tabs', (object)[
             'assessmenttabstr' =>get_string('assessmentlvlscore', 'local_gugcat'),
             'overviewtabstr' =>get_string('overviewaggregrade', 'local_gugcat'),
             'approvebtnstr' =>get_string('approvegrades', 'local_gugcat'),
+            'assessmenturl' =>$assessmenturl,
+            'overviewurl' =>$overviewurl,
         ]);
         $html .= '<div class="tabcontent">';
 

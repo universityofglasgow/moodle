@@ -36,6 +36,12 @@ i {
     cursor: pointer;
 }
 
+.fa.fa-cog {
+    color: white;
+    margin: 0 5px;
+    font-size: small;
+}
+
 /* Tab Links style */
 .tablink {
     border-radius: .5em .5em 0 0 ;
@@ -108,6 +114,10 @@ button.tablink, button.tablink:focus{
     background-color: #006630;
     color: white;
     opacity: 0.8;
+}
+
+.btn-download{
+    margin-bottom: 1.5em;
 }
 
 .btn-download, .btn-approve {
