@@ -23,9 +23,10 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use local_gugcat\grade_capture;
 
 require_once(__DIR__ . '/../../config.php');
-require_once($CFG->dirroot . '/local/gugcat/locallib.php');
+require_once('locallib.php');
 
 $courseid = required_param('id', PARAM_INT);
 $activityid = optional_param('activityid', null, PARAM_INT);
@@ -51,7 +52,6 @@ $activities = local_gugcat::get_activities($courseid, $activityid);
 $mods = array_reverse($activities);
 $selectedmodule = is_null($activityid) ? array_pop($mods) : $activities[$activityid];
 $PAGE->set_cm($selectedmodule);
-
 
 $scaleid = local_gugcat::get_scaleid($selectedmodule);
 //populate $GRADES with scales
@@ -87,8 +87,8 @@ if (!empty($_POST)){
     }
 }
 
-$rows = local_gugcat::grade_capture_get_rows($course, $selectedmodule, $students);
-$columns = local_gugcat::grade_capture_get_columns($selectedmodule);
+$rows = grade_capture::get_rows($course, $selectedmodule, $students);
+$columns = grade_capture::get_columns($selectedmodule);
 
 echo $OUTPUT->header();
 $renderer = $PAGE->get_renderer('local_gugcat');

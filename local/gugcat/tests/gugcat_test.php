@@ -23,6 +23,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use local_gugcat\grade_capture;
+
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
@@ -78,7 +80,7 @@ class local_gugcat_testcase extends advanced_testcase {
         $date = date("(j/n/Y)", strtotime(userdate($this->cm->added)));
         $firstgrade = get_string('gradebookgrade', 'local_gugcat').'<br>'.$date;
 
-        $columns = local_gugcat::grade_capture_get_columns($this->cm);
+        $columns = grade_capture::get_columns($this->cm);
         $this->assertContains($firstgrade, $columns);
     }
 
@@ -93,7 +95,7 @@ class local_gugcat_testcase extends advanced_testcase {
         global $gradeitems, $prvgradeid;
         $gradeitems = array();
         $prvgradeid = $this->provisionalgi->id;
-        $rows = local_gugcat::grade_capture_get_rows($this->course, $this->cm, $this->students);
+        $rows = grade_capture::get_rows($this->course, $this->cm, $this->students);
         $row = $rows[0];
         $this->assertEquals($row->cnum, 1);
         $this->assertEquals($row->studentno, $this->student->id);

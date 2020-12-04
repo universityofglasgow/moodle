@@ -21,12 +21,13 @@
  * @author     Accenture
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+namespace local_gugcat;
 defined('MOODLE_INTERNAL') || die();
  /**
- * Class representing a grade capture item.
+ * Class representing a gcat item.
  */
 
-class grade_capture_item{
+class gcat_item{
 
     /**
      * The student number from student info.
