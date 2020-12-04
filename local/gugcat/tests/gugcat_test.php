@@ -129,6 +129,13 @@ class local_gugcat_testcase extends advanced_testcase {
         $this->assertEquals( $id, $sndgradegi->id);
     }
 
+    public function test_add_grade_item(){
+        $sndgradestr = get_string('gi_secondgrade', 'local_gugcat');
+        $gradeitemid = local_gugcat::add_grade_item($this->course->id, $sndgradestr, $this->cm->id, 1);
+        $id = local_gugcat::get_grade_item_id($this->course->id, $this->cm->id, $sndgradestr);
+        $this->assertEquals($gradeitemid, $id);
+    }
+
     public function test_if_record_of_user_not_empty() {
         global $DB;
 

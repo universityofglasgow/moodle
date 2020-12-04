@@ -228,7 +228,7 @@ class local_gugcat {
     public static function convert_grade($grade){
         $scale = self::$GRADES;
         $final_grade = intval($grade);
-        if ($final_grade >= key(array_Reverse($scale)) && $final_grade <= key($scale)){
+        if ($final_grade >= key(array_slice($scale, -1, 1, true)) && $final_grade <= key($scale)){
             return $scale[$final_grade];
         }
         else {
@@ -250,9 +250,10 @@ class local_gugcat {
     public static function set_grade_scale($scaleid){
         global $DB;
 
-        $scale = $DB->get_record('scale', array('id'=>$scaleid), '*');
+        $scalegrades = array();
+        if($scale = $DB->get_record('scale', array('id'=>$scaleid), '*')){
         $scalegrades = make_menu_from_list($scale->scale); 
-
+        }
         self::$GRADES = $scalegrades;
     }
 
