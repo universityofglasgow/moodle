@@ -14,38 +14,41 @@
 {{!
     @template block_gu_spdetails/spdetails
 }}
-<p class="gu_spdetails_title">Your assessments details</p>
+<p class="gu_spdetails_title">{{title}}</p>
 <div class="gu_spdetails_box">
     <div class="gu_spdetails_col">
-        <div class="gu_spdetails_tab_active"><p>Currently enrolled in</p></div>
-        <div class="gu_spdetails_tab_inactive"><p>Past courses</p></div>
+        <div class="gu_spdetails_tab_active"><p>{{currentenrolled}}</p></div>
+        <div class="gu_spdetails_tab_inactive"><p>{{pastcourse}}</p></div>
     </div>
-    <label class="mdb-main-label">Sort by</label>
+    <label class="mdb-main-label">{{sortby}}</label>
     <select class="mdb-select md-form">
-        <option value="1">Course</option>
-        <option value="2">Option 2</option>
-        <option value="3">Option 3</option>
-        <option value="4">Option 4</option>
-        <option value="5">Option 5</option>
+        {{#sortbyoptions}}
+            <option value="{{value}}">{{text}}</option>
+        {{/sortbyoptions}}
     </select>
     <table style="width: 100%">
         <tr>
-            <th>Course</th>
-            <th>Assessment</th>
-            <th>Weight</th>
-            <th>Due Date</th>
-            <th>Status</th>
-            <th>Your Grade</th>
-            <th>Feedback</th>
+            <th>{{courselbl}}</th>
+            <th>{{assessmentlbl}}</th>
+            <th>{{weightlbl}}</th>
+            <th>{{duedatelbl}}</th>
+            <th>{{statuslbl}}</th>
+            <th>{{gradelbl}}</th>
+            <th>{{feedbacklbl}}</th>
         </tr>
         {{#data}}
         <tr>
-            <td class="gu_spdetails_table_value_link">{{fullname}}</td>
-            <td class="gu_spdetails_table_value_link">{{itemname}}</td>
-            <td>{{weight}}</td>
-            <td></td>
-            <td></td>
-            <td>{{finalgrade}}</td>
+            <td class="gu_spdetails_table_value_link"><a href="{{courselink}}">{{fullname}}</a></td>
+            <td class="gu_spdetails_table_value_link"><a href="{{activitylink}}">{{itemname}}</a></td>
+            <td>{{formatted.weight}}%</td>
+            <td>{{formatted.duedate}}</td>
+                {{#formatted.statuslink}}
+                    <td class="gu_spdetails_table_value_link"><a href="{{formatted.statuslink}}">{{formatted.status}}</a></td>
+                {{/formatted.statuslink}}
+                {{^formatted.statuslink}}
+                    <td>{{formatted.status}}</td>
+                {{/formatted.statuslink}}
+            <td>{{formatted.finalgrade}}</td>
             <td>{{feedback}}</td>
         </tr>
         {{/data}}

@@ -28,3 +28,26 @@ $string['gu_spdetails:addinstance'] = 'Add a new Assessments Details block';
 $string['gu_spdetails:myaddinstance'] = 'Add a new Assessments Details block to Dashboard';
 $string['pluginname'] = 'UofG Assessments Details';
 $string['sample_text'] = 'Your assessments details UI goes here';
+$string['strfdates'] = "%B %d";
+
+//Labels
+$string['currentenrolled'] = "Currently enrolled in";
+$string['pastcourse'] = "Past courses";
+$string['sortby'] = "Sort by";
+
+//Table header
+$string['course'] = "Course";
+$string['assessment'] = "Assessment";
+$string['weight'] = "Weight";
+$string['duedate'] = "Due Date";
+$string['status'] = "Status";
+$string['grade'] = "Your Grade";
+$string['feedback'] = "Feedback";
+
+//Values
+$string['nograde'] = 'To be graded';
+$string['submitted'] = 'Submitted';
+$string['submitassessment'] = 'Submit Assessment';
+$string['overdue'] = 'Overdue';
+$string['notopen'] = 'Submission Not Open';
+$string['due'] = 'Due ';

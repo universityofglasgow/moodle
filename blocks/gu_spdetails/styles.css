@@ -75,7 +75,12 @@
     color: #71717B;
 }
 
-.gu_spdetails_table_value_link{
+.gu_spdetails_table_value_link a:visited{
+    text-decoration-line: underline;
+    color: #005C8A;
+}
+
+.gu_spdetails_table_value_link a:link{
     text-decoration-line: underline;
     color: #005C8A;
 }
