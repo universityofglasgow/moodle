@@ -36,7 +36,7 @@ require_once('gcat_item.php');
 class grade_aggregation{
 
      /**
-     * Returns rows for grade capture table
+     * Returns rows for grade aggreation table
      *
      * @param mixed $course
      * @param mixed $module
@@ -69,23 +69,5 @@ class grade_aggregation{
             $i++;
         }
         return $rows;
-    }
-
-    /**
-     * Returns columns for grade capture table
-     *
-     */
-    public static function get_columns($module){
-        //global $gradeitems from get rows function
-        global $gradeitems;
-        $date = date("(j/n/Y)", strtotime(userdate($module->added)));
-        $firstgrade = get_string('gradebookgrade', 'local_gugcat').'<br>'.$date;
-        $columns = array($firstgrade);
-        foreach ($gradeitems as $item) {
-            $columns[$item->id] = $item->itemname;
-        }
-        //remove provisional column
-        unset($columns[local_gugcat::$PRVGRADEID]);
-        return $columns;
     }
 }
