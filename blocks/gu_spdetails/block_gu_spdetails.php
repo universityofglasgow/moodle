@@ -91,7 +91,7 @@ class block_gu_spdetails extends block_base {
         foreach ($data as $row){
             //links
             $row->courselink   = new moodle_url('/course/view.php', array('id' => $row->course));
-            $row->activitylink = new moodle_url('/' . $row->itemtype . '/' . $row->itemmodule . '/view.php', array('id' => $row->id + 1));
+            $row->activitylink = new moodle_url('/mod/assign/view.php', array('id' => $row->id));
             
             //truncate floats to int
             $row->formatted->weight = strval(intval($row->weight));
@@ -99,7 +99,7 @@ class block_gu_spdetails extends block_base {
             if (time() <= $row->gradingduedate && empty($row->finalgrade)){
                 $row->formatted->finalgrade = get_string('due', $languageString) . userdate($row->gradingduedate,  get_string('strfdates', $languageString));
             } else if (!empty($row->finalgrade)){
-                $row->formatted->finalgrade = strval($row->finalgrade);
+                $row->formatted->finalgrade = strval(intval($row->finalgrade));
             } else if (time() > $row->gradingduedate && empty($row->finalgrade)) {
                 $row->formatted->finalgrade = get_string('nograde', $languageString);
             }
