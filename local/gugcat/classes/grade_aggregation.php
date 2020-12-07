@@ -47,6 +47,7 @@ class grade_aggregation{
         $gradebook = array();
         foreach ($modules as $mod) {
             $mod_grades = grade_get_grades($course->id, 'mod', $mod->modname, $mod->instance, array_keys($students));
+            $mod_grades->scaleid= local_gugcat::get_scaleid($mod);
             array_push($gradebook, $mod_grades);
         }
 
@@ -60,6 +61,7 @@ class grade_aggregation{
             $gradecaptureitem->grades = array();
             foreach ($gradebook as $item) {
                 $gb = $item->items[0]->grades[$student->id];
+                local_gugcat::set_grade_scale($item->scaleid);
                 if(isset($gb)){
                     $grade = is_null($gb->grade) ? get_string('nograde', 'local_gugcat') : local_gugcat::convert_grade($gb->grade);
                     array_push($gradecaptureitem->grades, $grade);

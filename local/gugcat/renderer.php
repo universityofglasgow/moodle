@@ -140,9 +140,9 @@ class local_gugcat_renderer extends plugin_renderer_base {
             $htmlrows .= '<td>'.$row->surname.'</td>';
             $htmlrows .= '<td>'.$row->forename.'</td>';
             foreach((array) $row->grades as $grade) {
-                $htmlrows .= '<td>'.$grade.'</td>';
+                $htmlrows .= '<td>'.$grade.((strpos($grade, 'Null') !== false) ? null : $this->context_actions()).'</td>';
             }
-            $htmlrows .= '<td></td>';
+            $htmlrows .= '<td><i class="fa fa-times-circle"></i></td>';
             $htmlrows .= '<td></td>';
             $htmlrows .= '</tr>';
         }
@@ -184,6 +184,15 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $html .= '</table>';
         $html .= '</div>';
 
+        return $html;
+    }
+
+    private function context_actions() {
+        $html = '<i class="fa fa-ellipsis-h" data-toggle="dropdown" ></i>';
+        $html .= '<ul class="dropdown-menu">';
+        $html .=    '<li class="dropdown-item">'.get_string('amendgrades', 'local_gugcat').'</li>';
+        $html .=    '<li class="dropdown-item">'.get_string('historicalamendments', 'local_gugcat').'</li>';
+        $html .= '</ul>';
         return $html;
     }
 
