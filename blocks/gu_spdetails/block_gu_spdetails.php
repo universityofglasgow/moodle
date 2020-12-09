@@ -31,142 +31,6 @@ class block_gu_spdetails extends block_base {
         $this->title = get_string('pluginname', 'block_gu_spdetails');
     }
 
-    public function hide_header() {
-        return TRUE;
-    }
-
-    /**
-     * Returns the contents.
-     *
-     * @return stdClass contents of block
-     * @todo Create a renderer for assessments block.
-     *       See myoverview plugin for reference.
-     */
-    public function get_content() {
-        global $OUTPUT, $DB, $USER;
-        if ($this->content !== null) {
-          return $this->content;
-        }
-
-        $languageString = 'block_gu_spdetails';
-
-        $data = $DB->get_records_sql('SELECT DISTINCT
-                                        cm.id,
-                                        c.shortname,
-                                        c.fullname,
-                                        a.course,
-                                        i.itemname,
-                                        m.name,
-                                        i.aggregationcoef2 * 100 `weight`,
-                                        a.duedate,
-                                        a.allowsubmissionsfromdate,
-                                        asb.status,
-                                        a.gradingduedate,
-                                        g.finalgrade,
-                                        g.feedback
-                                    FROM
-                                        `mdl_course_modules` cm
-                                            INNER JOIN
-                                        `mdl_course` c ON c.id = cm.course
-                                            INNER JOIN
-                                        `mdl_modules` m ON m.id = cm.module
-                                            INNER JOIN
-                                        `mdl_grade_items` i ON i.courseid = cm.course
-                                            INNER JOIN
-                                        `mdl_assign` a ON a.id = cm.instance
-                                            AND a.name = i.itemname
-                                            INNER JOIN
-                                        `mdl_grade_grades` g ON g.itemid = i.id
-                                            INNER JOIN
-                                        `mdl_user` u ON u.id = g.userid
-                                            INNER JOIN
-                                        `mdl_assign_submission` asb ON asb.userid = g.userid
-                                            AND asb.assignment = a.id
-                                    WHERE
-                                        m.name IN ("assign")
-                                            AND i.itemmodule IS NOT NULL
-                                            AND u.id = ?', [$USER->id]);
-
-        $dataArray = array();
-        foreach ($data as $row){
-            //links
-            $row->courselink   = new moodle_url('/course/view.php', array('id' => $row->course));
-            $row->activitylink = new moodle_url('/mod/assign/view.php', array('id' => $row->id));
-            
-            //truncate floats to int
-            $row->formatted->weight = strval(intval($row->weight));
-
-            if (time() <= $row->gradingduedate && empty($row->finalgrade)){
-                $row->formatted->finalgrade = get_string('due', $languageString) . userdate($row->gradingduedate,  get_string('strfdates', $languageString));
-            } else if (!empty($row->finalgrade)){
-                $row->formatted->finalgrade = strval(intval($row->finalgrade));
-            } else if (time() > $row->gradingduedate && empty($row->finalgrade)) {
-                $row->formatted->finalgrade = get_string('nograde', $languageString);
-            }
-
-            //status
-            $statuslink = null;
-            if ($row->status == 'submitted') {
-                    $status = get_string('submitted', $languageString);
-                }
-            else {
-                if ($row->allowsubmissionsfromdate < time()) {
-                    $status = get_string('notopen', $languageString);
-                } else {
-                    if ($row->duedate <= time()) {
-                        $status = get_string('submitassessment', $languageString);
-                        $status_url = new moodle_url('/mod/assign/view.php', array('id' => $row->id));
-                    } else {
-                        $status = get_string('overdue', $languageString);
-                    }
-                }
-            }
-            $row->formatted->status = $status;
-            $row->formatted->statuslink = $status_url;
-            //Unix date to actual date
-            $row->formatted->duedate = userdate($row->duedate,  get_string('strfdates', $languageString));
-            
-            array_push($dataArray, $row);
-        }
-
-        $templatecontext = (array)[
-            //Labels
-            'title'             => get_string('gu_spdetails', $languageString),
-            'currentenrolled'   => get_string('currentenrolled', $languageString),
-            'pastcourse'        => get_string('pastcourse', $languageString),
-            'sortby'            => get_string('sortby', $languageString),
-
-            //header name
-            'courselbl'         => get_string('course', $languageString),
-            'assessmentlbl'     => get_string('assessment', $languageString),
-            'weightlbl'         => get_string('weight', $languageString),
-            'duedatelbl'        => get_string('duedate', $languageString),
-            'statuslbl'         => get_string('status', $languageString),
-            'gradelbl'          => get_string('grade', $languageString),
-            'feedbacklbl'       => get_string('feedback', $languageString),
-            
-            //Records retrieved from DBS
-            'data' => $dataArray,
-
-            //Sort by Options
-            'sortbyoptions' => array(
-                (object) [
-                    'value' => 1,
-                    'text'  => get_string('course', $languageString)
-                ],
-                (object) [
-                    'value' => 2,
-                    'text'  => get_string('duedate', $languageString)
-                ]
-            )
-        ];
-
-        $this->content         = new stdClass();
-        $this->content->text   = $OUTPUT->render_from_template('block_gu_spdetails/spdetails', $templatecontext);
-     
-        return $this->content;
-    }
-
     /**
      * Locations where block can be displayed.
      *
@@ -174,5 +38,340 @@ class block_gu_spdetails extends block_base {
      */
     public function applicable_formats() {
         return array('my' => true);
+    }
+
+    /**
+     * Returns the contents.
+     *
+     * @todo Move foreach($assessments as $a) to a new method
+     * @return stdClass contents of block
+     */
+    public function get_content() {
+        global  $USER, $OUTPUT;
+        $lang = 'block_gu_spdetails';
+        $userid = $USER->id;
+
+        $courses = enrol_get_all_users_courses($userid, true);
+        $courseids = array_column($courses, 'id');
+        $activities = array('assign', 'quiz', 'survey', 'wiki', 'workshop');
+
+        $assessments = (count($courseids) > 0) ? self::retrieve_assessments($courseids, $activities) :
+                                                 array();
+        $hasassessments = !empty($assessments) ? true : false;
+        $assessments_data = array();
+
+        foreach($assessments as $a) {
+            $a->courserecord = self::retrieve_courserecord($a->course);
+            $a->courserecord->coursename = $a->courserecord->shortname.' '.$a->courserecord->fullname;
+            $a->courserecord->url = self::return_courseurl($a->course);
+
+            $a->assessment = self::retrieve_assessmentrecord($a->name, $a->instance);
+            $submission = self::retrieve_submission($a->name, $a->instance, $userid);
+            $submission->status = property_exists($submission, 'status') ? $submission->status : null;
+            $a->submission = self::return_status($submission->status,
+                                                 $a->assessment->startdate,
+                                                 $a->assessment->duedate);
+            $a->assessment->url = self::return_assessmenturl($a->name, $a->id, $a->submission->hasurl);
+
+            $a->formatted = new stdClass;
+            $a->formatted->weight = intval($a->assessment->weight).'%';
+            $a->formatted->duedate = userdate($a->assessment->duedate,  get_string('convertdate', $lang));
+
+            $a->assessment->gradeid = array_key_exists('gradeid', $a->assessment) ? $a->assessment->gradeid : null;
+            $a->grades = self::retrieve_grades($a->name, $a->assessment->gradeid, $userid);
+            $a->grades->finalgrade = property_exists($a->grades, 'finalgrade') ? $a->grades->finalgrade : null;
+            $a->grades->feedback = property_exists($a->grades, 'feedback') ? $a->grades->feedback : null;
+            $a->grades->gradetext = self::return_grade($a->grades->finalgrade, $a->assessment->gradingduedate);
+            $a->feedback = self::return_feedback($a->grades->feedback, $a->assessment->gradingduedate);
+            array_push($assessments_data, $a);
+        }
+
+        $templatecontext = (array)[
+            'assessments'       => $assessments,
+            'data'              => $assessments_data,
+            'hasassessments'    => $hasassessments,
+            'header_course'     => get_string('header_course', $lang),
+            'header_assessment' => get_string('header_assessment', $lang),
+            'header_weight'     => get_string('header_weight', $lang),
+            'header_duedate'    => get_string('header_duedate', $lang),
+            'header_status'     => get_string('header_status', $lang),
+            'header_grade'      => get_string('header_grade', $lang),
+            'header_feedback'   => get_string('header_feedback', $lang),
+            'noassessments'     => get_string('noassessments', $lang),
+            'noassessments_img' => '../blocks/gu_spdetails/pix/assignment.svg'
+        ];
+
+        $this->content         = new stdClass;
+        $this->content->text   = $OUTPUT->render_from_template('block_gu_spdetails/spdetails', $templatecontext);
+     
+        return $this->content;
+    }
+
+    /**
+     * Retrieves specific Course Modules from database.
+     *
+     * @param array $courseids Course IDs
+     * @param array $activities Array of Activities (e.g. 'assign', 'quiz') 
+     * @return array $assessments Course Modules 
+     */
+    public static function retrieve_assessments($courseids, $activities) {
+        global $DB;
+
+        $assessments = array();
+        list($inactivities, $aparams) = $DB->get_in_or_equal($activities, SQL_PARAMS_NAMED);
+        list($incourses, $cparams) = $DB->get_in_or_equal($courseids, SQL_PARAMS_NAMED);
+
+        $params = array();
+        $params += $aparams;
+        $params += $cparams;
+
+        $sql = "SELECT DISTINCT mcm.id, mcm.course, mcm.instance, mm.name,
+                    mcm.completionexpected
+                    FROM `mdl_course_modules` mcm
+                    JOIN `mdl_modules` mm ON mm.id = mcm.module
+                    WHERE mm.name {$inactivities}
+                    AND mcm.course {$incourses}";
+
+        if ($assessments = $DB->get_records_sql($sql, $params)){
+            return $assessments;
+        } else {
+            return $assessments;
+        }
+    }
+
+    /**
+     * Retrieves Course object based on a specific Course ID.
+     *
+     * @param int $courseid Course ID
+     * @return mixed $courseinfo Course object containing a course's `fullname` and `shortname`
+     *  if a record is found, false if otherwise
+     */
+    public static function retrieve_courserecord($courseid) {
+        global $DB;
+
+        $courserecord = $DB->get_record('course', array('id' => $courseid), 'fullname, shortname');
+        return $courserecord;
+    }
+
+    /**
+     * Retrieves Assessment object based on Activity Name and Activity Instance.
+     *
+     * @todo Update `workshop` DB query, needs JOIN with `grade_items`
+     * @param string $name Activity Name (e.g. 'assign', 'quiz')
+     * @param int $instance Activity Instance
+     * @return mixed $courseinfo Assessment object if the Activity Name matches a case
+     *  and a corresponding record is found, false if no record is found
+     */
+    public static function retrieve_assessmentrecord($name, $instance) {
+        global $DB;
+        $assessmentrecord = new stdClass;
+
+        switch($name) {
+            case 'assign':
+                $sql = "SELECT ma.name as `name`,
+                        ma.allowsubmissionsfromdate as `startdate`,
+                        ma.duedate, ma.gradingduedate, mgi.id as `gradeid`,
+                        mgi.aggregationcoef as `weight01`, mgi.aggregationcoef2 as `weight`
+                        FROM `mdl_assign` ma
+                        JOIN `mdl_grade_items` mgi ON mgi.iteminstance = ma.id
+                        AND mgi.itemmodule = ?
+                        WHERE ma.id = ?";
+                $assessmentrecord = $DB->get_record_sql($sql, array($name, $instance));
+                break;
+            case 'quiz':
+                $sql = "SELECT mq.name as `name`,
+                        mq.timeopen as `startdate`,
+                        mq.timeclose as `duedate`,
+                        (mq.timeclose + (86400 * 14)) as `gradingduedate`,
+                        mgi.aggregationcoef as `weight01`, mgi.aggregationcoef2 as `weight`
+                        FROM `mdl_quiz` mq
+                        JOIN `mdl_grade_items` mgi ON mgi.iteminstance = mq.id
+                        AND mgi.itemmodule = ?
+                        WHERE mq.id = ?";
+                $assessmentrecord = $DB->get_record_sql($sql, array($name, $instance));
+                break;
+            case 'survey':
+                $assessmentrecord = $DB->get_record('survey', array('id' => $instance), 'name');
+                break;
+            case 'wiki':
+                $assessmentrecord = $DB->get_record('wiki', array('id' => $instance), 'name');
+                break;
+            case 'workshop':
+                // Query needs update
+                $assessmentrecord = $DB->get_record('workshop', array('id' => $instance), 'name');
+                break;
+            default:
+                $assessmentrecord->name = null;
+                break;
+        }
+
+        return $assessmentrecord;
+    }
+
+    /**
+     * Returns Course URL
+     *
+     * @param int $courseid Course ID
+     * @return string $courseurl Course URL
+     */
+    public static function return_courseurl($courseid) {
+        global $CFG;
+        
+        $courseurl = $CFG->wwwroot."/course/view.php?id=".$courseid;
+        return $courseurl;
+    }
+
+    /**
+     * Returns Assessment URL
+     *
+     * @param string $name Activity Name (e.g. 'assign', 'quiz')
+     * @param int $id Activity Module ID
+     * @param boolean $hasurl Submission object hasurl
+     * @return string $assessmenturl Assessment URL
+     */
+    public static function return_assessmenturl($name, $id, $hasurl) {
+        global $CFG;
+
+        $assessmenturl = $hasurl ?
+            $CFG->wwwroot."/mod/".$name."/view.php?id=".$id."&action=editsubmission" :
+            $CFG->wwwroot."/mod/".$name."/view.php?id=".$id;
+        return $assessmenturl;
+    }
+
+    /**
+     * Retrieves Assessment Status from database.
+     *
+     * @todo Query for Quiz, Survey, Wiki, Workshop activity types
+     * @param string $name Activity Name (e.g. 'assign', 'quiz')
+     * @param int $instance Activity Instance
+     * @param int $userid User ID
+     * @return stdClass $status Assessment Status object if the Activity has a corresponding
+     *  Submission table and a corresponding record is found, return empty object if no
+     *  record is found
+     */
+    public static function retrieve_submission($name, $instance, $userid) {
+        global $DB;
+
+        switch($name) {
+            case 'assign':
+                $statusrecord = $DB->get_record('assign_submission',
+                                                array('assignment' => $instance, 'userid' => $userid),
+                                                'status');
+
+                $statusrecord = is_bool($statusrecord) ? new stdClass : $statusrecord;
+                break;
+            // case 'quiz': 
+            // case 'survey':
+            // case 'wiki':
+            // case 'workshop':
+            default:
+                $statusrecord = new stdClass;
+                break;
+        }
+
+        return $statusrecord;
+    }
+
+    /**
+     * Returns actual Assessment Status text to display on UI
+     *  and corresponding class element modifier.
+     *
+     * @param string $status Assessment Status (e.g. 'new', 'submitted')
+     * @param int $startdate Start Date for activity to be started
+     * @param int $enddate Due Date
+     * @return stdClass $submission Object containing Status text and class suffix
+     */
+    public static function return_status($status, $startdate, $enddate) {
+        global $DB;
+        $lang = 'block_gu_spdetails';
+        $submission = new stdClass;
+        $submission->hasurl = false;
+
+        if($status == 'submitted') {
+            $submission->status = $status;
+            $submission->suffix = $status;
+        }else{
+            if(time() > $startdate) {
+                $submission->status = (time() <= $enddate) ? get_string('status_tosubmit', $lang) :
+                                                             get_string('status_overdue', $lang);
+                $submission->suffix = (time() <= $enddate) ? get_string('class_tosubmit', $lang) :
+                                                             get_string('status_overdue', $lang);
+                $submission->hasurl = (time() <= $enddate) ? true : false;
+            }else{
+                $submission->status = get_string('status_notopen', $lang);
+                $submission->suffix = get_string('class_notopen', $lang);
+            }
+        }
+
+        return $submission;
+    }
+
+    /**
+     * Retrieves Grades from database.
+     *
+     * @param string $name Activity Name (e.g. 'assign', 'quiz')
+     * @param int $gradeid Grade ID
+     * @param int $userid User ID
+     * @return stdClass $gradesrecord Grades object if the Activity has a corresponding
+     *  Grade Grades table and a corresponding record is found, return empty object if no
+     *  record is found
+     */
+    public static function retrieve_grades($name, $gradeid, $userid) {
+        global $DB;
+
+        switch($name) {
+            case 'assign':
+                $gradesrecord = $DB->get_record('grade_grades',
+                                                array('itemid' => $gradeid, 'userid' => $userid),
+                                                'finalgrade, feedback');
+
+                $gradesrecord = is_bool($gradesrecord) ? new stdClass : $gradesrecord;
+                break;
+            // case 'quiz': 
+            // case 'survey':
+            // case 'wiki':
+            // case 'workshop':
+            default:
+                $gradesrecord = new stdClass;
+                break;
+        }
+
+        return $gradesrecord;
+    }
+
+    /**
+     * Returns Grade or Grading Due Date text
+     *
+     * @param float $grade
+     * @param int $gradingduedate
+     * @return mixed $gradetext float value of Grade if the assessment is graded, otherwise return
+     *  the Grading Due Date string
+     */
+    public static function return_grade($grade, $gradingduedate) {
+        global $DB;
+        $lang = 'block_gu_spdetails';
+        $gradetext = $grade ? $grade :
+                     get_string('due', $lang).userdate($gradingduedate,  get_string('convertdate', $lang));
+        return $gradetext;
+    }
+
+    /**
+     * Returns Feedback object containing (bool) hasurl and (string) text
+     *
+     * @param string $feedback
+     * @param int $gradingduedate
+     * @return stdClass $feedbackrecord Feedback object containing (bool) `hasurl` to determine
+     *  if a feedback is already provided and (string) `text` to display on UI
+     */
+    public static function return_feedback($feedback, $gradingduedate) {
+        global $DB;
+        $lang = 'block_gu_spdetails';
+        $feedbackrecord = new stdClass;
+        $feedbackrecord->hasurl = false;
+
+        $feedbackrecord->hasurl = $feedback ? true : false;
+        $feedbackrecord->text = $feedback ? get_string('readfeedback', $lang) :
+                    get_string('due', $lang).userdate($gradingduedate,  get_string('convertdate', $lang));
+        return $feedbackrecord;
     }
 }

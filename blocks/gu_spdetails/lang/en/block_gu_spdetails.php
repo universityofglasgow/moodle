@@ -23,31 +23,22 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['gu_spdetails'] = 'Your assessments details';
+$string['class_notopen'] = 'notopen';
+$string['class_tosubmit'] = 'tosubmit';
+$string['convertdate'] = "%B %d";
+$string['due'] = 'Due ';
+$string['header_assessment'] = "Assessment";
+$string['header_course'] = "Course";
+$string['header_duedate'] = "Due Date";
+$string['header_feedback'] = "Feedback";
+$string['header_grade'] = "Your Grade";
+$string['header_status'] = "Status";
+$string['header_weight'] = "Weight";
 $string['gu_spdetails:addinstance'] = 'Add a new Assessments Details block';
 $string['gu_spdetails:myaddinstance'] = 'Add a new Assessments Details block to Dashboard';
-$string['pluginname'] = 'UofG Assessments Details';
-$string['sample_text'] = 'Your assessments details UI goes here';
-$string['strfdates'] = "%B %d";
-
-//Labels
-$string['currentenrolled'] = "Currently enrolled in";
-$string['pastcourse'] = "Past courses";
-$string['sortby'] = "Sort by";
-
-//Table header
-$string['course'] = "Course";
-$string['assessment'] = "Assessment";
-$string['weight'] = "Weight";
-$string['duedate'] = "Due Date";
-$string['status'] = "Status";
-$string['grade'] = "Your Grade";
-$string['feedback'] = "Feedback";
-
-//Values
-$string['nograde'] = 'To be graded';
-$string['submitted'] = 'Submitted';
-$string['submitassessment'] = 'Submit Assessment';
-$string['overdue'] = 'Overdue';
-$string['notopen'] = 'Submission Not Open';
-$string['due'] = 'Due ';
+$string['noassessments'] = 'No upcoming assessments due';
+$string['pluginname'] = 'Your Assessments details';
+$string['readfeedback'] = 'Read feedback';
+$string['status_notopen'] = 'submission not open';
+$string['status_overdue'] = 'overdue';
+$string['status_tosubmit'] = 'submit assessment';
