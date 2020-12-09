@@ -59,10 +59,15 @@ local_gugcat::set_grade_scale($scaleid);
 //populate provisional grade id and set it to static
 local_gugcat::set_prv_grade_id($courseid, $selectedmodule->id, $scaleid);
 
-
-//---------submit multiple add grades
+//---------on submit grade capture
 if (!empty($_POST)){
-    if (isset($_POST['grades']) && !empty($_POST['reason'])){
+    // release provisional grade
+    if (isset($_POST['release']) && isset($_POST['grades'])){
+        grade_capture::release_prv_grade($courseid, $selectedmodule, $_POST['grades']);
+        unset($_POST);
+        header("Location: ".$_SERVER['REQUEST_URI']);
+        exit;
+    }else if (isset($_POST['grades']) && !empty($_POST['reason'])){
         $grades = $_POST['grades'];
         $reason = $_POST['reason'];
         if(array_column($grades,'grade')){

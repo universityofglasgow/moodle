@@ -40,18 +40,18 @@ class local_gugcat_renderer extends plugin_renderer_base {
         foreach ($columns as $col) {
             $htmlcolumns .= '<th>'.$col.'</th>';
         }
-        $htmlcolumns .= '          <th class="togglemultigrd">'.get_string('addallnewgrade', 'local_gugcat').'</th>';
-        $htmlcolumns .= '          <th class="togglemultigrd">'.get_string('reasonnewgrade', 'local_gugcat').'</th>';
-        $htmlcolumns .= '          <th>'.get_string('provisionalgrd', 'local_gugcat').'</th>';
-        $htmlcolumns .= '          <th></th>';
+        $htmlcolumns .= html_writer::tag('th', get_string('addallnewgrade', 'local_gugcat'), array('class' => 'togglemultigrd'));
+        $htmlcolumns .= html_writer::tag('th', get_string('reasonnewgrade', 'local_gugcat'), array('class' => 'togglemultigrd'));
+        $htmlcolumns .= html_writer::tag('th', get_string('provisionalgrd', 'local_gugcat'));
+        $htmlcolumns .= html_writer::empty_tag('th');
         //grade capture rows
         foreach ($rows as $row) {
             $addformurl->param('studentid', $row->studentno);
-            $htmlrows .= '<tr>';
-            $htmlrows .= '<td>'.$row->cnum.'</td>';
-            $htmlrows .= '<td>'.$row->studentno.'</td>';
-            $htmlrows .= '<td>'.$row->surname.'</td>';
-            $htmlrows .= '<td>'.$row->forename.'</td>';
+            $htmlrows .= html_writer::start_tag('tr');
+            $htmlrows .= html_writer::tag('td', $row->cnum);
+            $htmlrows .= html_writer::tag('td', $row->studentno);
+            $htmlrows .= html_writer::tag('td', $row->surname);
+            $htmlrows .= html_writer::tag('td', $row->forename);
             $htmlrows .= '<td>'. (($row->discrepancy) 
                 ? '<div class="grade-discrepancy">'.$row->firstgrade.'</div>' 
                 : $row->firstgrade ) .'</td>';
@@ -76,13 +76,15 @@ class local_gugcat_renderer extends plugin_renderer_base {
                             'select-grade-reason').'
                             <input name="reason" value="" class="input-reason" id="input-reason" type="text"/>
                     </td>';
-            $htmlrows .= '<td><b>'.$row->provisionalgrade.'</b></td>';
+            $htmlrows .= '<td><b>'.$row->provisionalgrade.'</b>
+                        <input type="hidden" name="grades['.$row->studentno.'][provisional]" value="'.((strpos($row->provisionalgrade, 'Null') !== false) ? null : $row->provisionalgrade).'" />
+                        </td>';
             $htmlrows .= '<td>
                             <button type="button" class="btn btn-default" onclick="location.href=\''.$addformurl.'\'">
                                 '.get_string('addnewgrade', 'local_gugcat').'
                             </button>
                     </td>';
-            $htmlrows .= '</tr>';
+            $htmlrows .= html_writer::end_tag('tr');
         }
 
         $html = $this->header();
@@ -96,6 +98,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
         ]);
         $html .= '<form action="index.php?id=' . $courseid . '&amp;activityid=' . $modid . '" method="post" id="multigradesform">';
         $html .= $this->display_table($htmlrows, $htmlcolumns);
+        $html .= html_writer::empty_tag('button', array('id' => 'release-submit', 'name' => 'release', 'type' => 'submit'));
         $html .= '</form>';
         $html .= $this->footer();
         return $html;
@@ -129,22 +132,21 @@ class local_gugcat_renderer extends plugin_renderer_base {
         foreach ($activities as $act) {
             $htmlcolumns .= '<th>'.$act->name.'</th>';
         }
-        $htmlcolumns .= '<th>'.get_string('requiresresit', 'local_gugcat').'</th>';
-        $htmlcolumns .= '<th>'.get_string('aggregatedgrade', 'local_gugcat')
-                    .'<i class="fa fa-cog"></i></th>';
+        $htmlcolumns .= html_writer::tag('th', get_string('requiresresit', 'local_gugcat'));
+        $htmlcolumns .= html_writer::tag('th', get_string('aggregatedgrade', 'local_gugcat').'<i class="fa fa-cog"></i></th>');
         //grade capture rows
         foreach ($rows as $row) {
-            $htmlrows .= '<tr>';
-            $htmlrows .= '<td>'.$row->cnum.'</td>';
-            $htmlrows .= '<td>'.$row->studentno.'</td>';
-            $htmlrows .= '<td>'.$row->surname.'</td>';
-            $htmlrows .= '<td>'.$row->forename.'</td>';
+            $htmlrows .= html_writer::start_tag('tr');
+            $htmlrows .= html_writer::tag('td', $row->cnum);
+            $htmlrows .= html_writer::tag('td', $row->studentno);
+            $htmlrows .= html_writer::tag('td', $row->surname);
+            $htmlrows .= html_writer::tag('td', $row->forename);
             foreach((array) $row->grades as $grade) {
                 $htmlrows .= '<td>'.$grade.((strpos($grade, 'Null') !== false) ? null : $this->context_actions()).'</td>';
             }
             $htmlrows .= '<td><i class="fa fa-times-circle"></i></td>';
-            $htmlrows .= '<td></td>';
-            $htmlrows .= '</tr>';
+            $htmlrows .= html_writer::empty_tag('td');
+            $htmlrows .= html_writer::end_tag('tr');
         }
         $html = $this->header();
         $html .= $this->render_from_template('local_gugcat/gcat_tab_header', (object)[
@@ -167,28 +169,28 @@ class local_gugcat_renderer extends plugin_renderer_base {
     }
 
     private function display_table($rows, $columns) {
-        $html = '<div class="table-responsive">';
-        $html .= '<table class="table">';
-        $html .= '  <thead>';
-        $html .= '      <tr>';
-        $html .= '          <th>'.get_string('candidateno', 'local_gugcat').'</th>';
-        $html .= '          <th>'.get_string('studentno', 'local_gugcat').'</th>';
-        $html .= '          <th>'.get_string('surname', 'local_gugcat').'</th>';
-        $html .= '          <th>'.get_string('forename', 'local_gugcat').'</th>';
+        $html = html_writer::start_tag('div', array('class' => 'table-responsive'));
+        $html .= html_writer::start_tag('table', array('class' => 'table'));
+        $html .= html_writer::start_tag('thead');
+        $html .= html_writer::start_tag('tr');
+        $html .= html_writer::tag('th', get_string('candidateno', 'local_gugcat'));
+        $html .= html_writer::tag('th', get_string('studentno', 'local_gugcat'));
+        $html .= html_writer::tag('th', get_string('surname', 'local_gugcat'));
+        $html .= html_writer::tag('th', get_string('forename', 'local_gugcat'));
         $html .= $columns;
-        $html .= '      </tr>';
-        $html .= '  </thead>';
-        $html .= '  <tbody>';
+        $html .= html_writer::end_tag('tr');
+        $html .= html_writer::end_tag('thead');
+        $html .= html_writer::start_tag('tbody');
         $html .= $rows;
-        $html .= '  </tbody>';
-        $html .= '</table>';
-        $html .= '</div>';
+        $html .= html_writer::end_tag('tbody');
+        $html .= html_writer::end_tag('table');
+        $html .= html_writer::end_tag('div');
 
         return $html;
     }
 
     private function context_actions() {
-        $html = '<i class="fa fa-ellipsis-h" data-toggle="dropdown" ></i>';
+        $html = html_writer::empty_tag('i', array('class' => 'fa fa-ellipsis-h', 'data-toggle' => 'dropdown'));
         $html .= '<ul class="dropdown-menu">';
         $html .=    '<li class="dropdown-item">'.get_string('amendgrades', 'local_gugcat').'</li>';
         $html .=    '<li class="dropdown-item">'.get_string('historicalamendments', 'local_gugcat').'</li>';
@@ -201,22 +203,22 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $assessmenturl = new moodle_url('/local/gugcat/index.php', array('id' => $courseid));
         $assessmenturl.= $this->page->cm ? '&activityid='.$this->page->cm->id : null;
         $overviewurl = new moodle_url('/local/gugcat/overview/index.php', array('id' => $courseid));
-        $html = '<div class="gcat-container">';
-        $html .= '<h4 class="title">'.get_string('title', 'local_gugcat').'</h4>';
+        $html = html_writer::start_tag('div', array('class' => 'gcat-container'));
+        $html .= html_writer::tag('h4', get_string('title', 'local_gugcat'), array('class' => 'title'));
         $html .= $this->render_from_template('local_gugcat/gcat_tabs', (object)[
             'assessmenttabstr' =>get_string('assessmentlvlscore', 'local_gugcat'),
             'overviewtabstr' =>get_string('overviewaggregrade', 'local_gugcat'),
-            'approvebtnstr' =>get_string('approvegrades', 'local_gugcat'),
+            'releaseprvgrdstr' =>get_string('releaseprvgrades', 'local_gugcat'),
             'assessmenturl' =>$assessmenturl,
             'overviewurl' =>$overviewurl,
         ]);
-        $html .= '<div class="tabcontent">';
-
+        $html .= html_writer::start_tag('div', array('class' => 'tabcontent'));
         return $html;
     }
 
     private function footer() {
-        $html = '</div></div>';
+        $html = html_writer::end_tag('div');
+        $html .= html_writer::end_tag('div');
         return $html;
     }
 

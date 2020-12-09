@@ -23,6 +23,9 @@
  */
 namespace local_gugcat;
 
+use assign;
+use context_module;
+use grade_item;
 use local_gugcat;
 use stdClass;
 
@@ -114,4 +117,51 @@ class grade_capture{
         unset($columns[local_gugcat::$PRVGRADEID]);
         return $columns;
     }
+
+    /**
+     * Function in releasing provisional grades
+     *
+     */
+    public static function release_prv_grade($courseid, $cm, $grades){
+        global $USER, $DB, $CFG;
+        $data = new stdClass();
+        $data->courseid = $courseid;
+        $data->itemmodule = $cm->modname;
+        $data->itemname = $cm->name;
+        $data->iteminstance = $cm->instance;
+        //get grade item
+        $gradeitem = new grade_item($data, true);
+
+        foreach ($grades as $grd) {
+            if(!empty($grd['provisional'])){
+                $rawgrade = array_search($grd['provisional'], local_gugcat::$GRADES);
+                $rawgrade = $rawgrade ? $rawgrade : $grd['provisional'];
+                $userid = $grd['id'];
+                if($cm->modname === 'assign'){
+                    require_once($CFG->dirroot . '/mod/assign/locallib.php');
+                    $assign = new assign(context_module::instance($cm->id), $cm, $courseid);
+                    //update workflow state
+                    $flags = $assign->get_user_flags($userid, false);
+                    $flags->workflowstate = ASSIGN_MARKING_WORKFLOW_STATE_RELEASED;
+                    $assign->update_user_flags($flags); //update user flag
+            
+                    // update assign grade
+                    if ($grade = $DB->get_record(local_gugcat::TBL_ASSIGN_GRADES, array('userid'=>$userid, 'assignment'=>$cm->instance))) {
+                        $grade->grade = $rawgrade;
+                        $grade->grader = $USER->id;
+                        $grade->workflowstate = $flags->workflowstate;
+                        $assign->update_grade($grade); 
+                    }
+                    
+                }else{         
+                    //update grade from gradebook
+                    $gradeitem->update_final_grade($userid, $rawgrade, null, false, FORMAT_MOODLE, $USER->id);
+                }
+            }
+        }
+        //unhide gradeitem 
+        $gradeitem->hidden = 0;
+        $gradeitem->update();
+    }
+
 }

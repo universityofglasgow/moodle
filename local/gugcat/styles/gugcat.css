@@ -318,4 +318,10 @@ td > .grade-discrepancy{
     font-size: 11px;
     padding: .2rem;
     cursor: pointer;
+    font-family:  'PT Sans', sans-serif;
+}
+
+#release-submit {
+    position: absolute;
+    visibility: hidden;
 }

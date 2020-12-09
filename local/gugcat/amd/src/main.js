@@ -79,6 +79,11 @@ define(['jquery', 'core/str' ], function($, Str) {
                 $(".input-reason").val($(this).val());
             });
 
+            $("#btn-release").click(function(e) {
+                e.preventDefault();
+                $("#release-submit").click();
+            });
+
             //Show 'grade discrepancy' when grade discrepancy exist
             if($("td > .grade-discrepancy").length > 0){
                 $("#btn-grddisc").show();
@@ -86,9 +91,9 @@ define(['jquery', 'core/str' ], function($, Str) {
 
             // Hide elements on add grade form page 
             if(checkCurrentUrl("gugcat/add")){
-                $("#btn-approve").hide();
+                $("#btn-release").hide();
             }else if(checkCurrentUrl("gugcat/overview")){
-                $("#btn-approve").hide();
+                $("#btn-release").hide();
                 $("#btn-overviewtab").addClass("active");
                 $("#btn-assessmenttab").removeClass("active");
             }

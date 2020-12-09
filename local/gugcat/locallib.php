@@ -37,6 +37,7 @@ class local_gugcat {
     const TBL_GRADE_ITEMS  = 'grade_items';
     const TBL_GRADE_CATEGORIES  = 'grade_categories';
     const TBL_GRADE_GRADES = 'grade_grades';
+    const TBL_ASSIGN_GRADES = 'assign_grades';
 
     public static $GRADES = array();
     public static $PRVGRADEID = null;
