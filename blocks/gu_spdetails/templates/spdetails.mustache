@@ -48,14 +48,19 @@
                             {{formatted.duedate}}
                         </td>
                         <td>
-                            {{#submission.hasurl}}
-                                <a href="{{assessment.url}}" class="status-link">
+                            {{#submission}}
+                                {{#submission.hasurl}}
+                                    <a href="{{assessment.url}}" class="status-link">
+                                        <span class="status-item status-{{submission.suffix}}">{{submission.status}}</span>
+                                    </a>
+                                {{/submission.hasurl}}
+                                {{^submission.hasurl}}
                                     <span class="status-item status-{{submission.suffix}}">{{submission.status}}</span>
-                                </a>
-                            {{/submission.hasurl}}
-                            {{^submission.hasurl}}
-                                <span class="status-item status-{{submission.suffix}}">{{submission.status}}</span>
-                            {{/submission.hasurl}}
+                                {{/submission.hasurl}}
+                            {{/submission}}
+                            {{^submission}}
+                                -
+                            {{/submission}}
                         </td>
                         <td>{{grades.gradetext}}</td>
                         <td>
