@@ -91,7 +91,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
         //start displaying the table
         $html = $this->header();
         $html .= $this->render_from_template('local_gugcat/gcat_tab_header', (object)[
-            'addallgrdstr' =>get_string('addallnewgrade', 'local_gugcat'),
+            'addallgrdstr' =>get_string('addmultigrades', 'local_gugcat'),
             'downloadcsvstr' =>get_string('downloadcsv', 'local_gugcat'),
             'saveallbtnstr' =>get_string('saveallnewgrade', 'local_gugcat'),
             'grddiscrepancystr' => get_string('gradediscrepancy', 'local_gugcat'),
@@ -144,7 +144,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
             $htmlrows .= html_writer::tag('td', $row->surname);
             $htmlrows .= html_writer::tag('td', $row->forename);
             foreach((array) $row->grades as $grade) {
-                $htmlrows .= '<td>'.$grade.((strpos($grade, 'Null') !== false) ? null : $this->context_actions()).'</td>';
+                $htmlrows .= '<td>'.$grade.((strpos($grade, 'No grade') !== false) ? null : $this->context_actions()).'</td>';
             }
             $htmlrows .= '<td><i class="fa fa-times-circle"></i></td>';
             $htmlrows .= html_writer::empty_tag('td');
