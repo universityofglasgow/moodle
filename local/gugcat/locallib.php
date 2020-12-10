@@ -37,6 +37,7 @@ class local_gugcat {
     const TBL_GRADE_ITEMS  = 'grade_items';
     const TBL_GRADE_CATEGORIES  = 'grade_categories';
     const TBL_GRADE_GRADES = 'grade_grades';
+    const TBL_ASSIGN_GRADES = 'assign_grades';
 
     public static $GRADES = array();
     public static $PRVGRADEID = null;
@@ -140,18 +141,13 @@ class local_gugcat {
              $gradeitem->itemtype = 'manual'; // All new items to be manual only.
      
              return $gradeitem->insert();
-        }
-        
-        else {
+        }else {
             return $gradeitemid;
         }
     }
     
     public static function add_update_grades($userid, $itemid, $grade){
-        global $DB, $USER;
-
-        //update provisional grade
-        self::update_grade($userid, self::$PRVGRADEID, $grade);
+        global $USER;
 
         $params = array(
             'userid' => $userid,
@@ -160,68 +156,43 @@ class local_gugcat {
             'finalgrade' => null
         );
 
-        $grade_ = new grade_grade();
+        $grade_ = new grade_grade($params, true);
         $grade_->itemid = $itemid;
         $grade_->userid = $userid;
         $grade_->rawgrade = $grade;
-        $grade_->rawgrademax = "100.000";
-        $grade_->rawgrademin = "0.00000";
         $grade_->usermodified = $USER->id;
         $grade_->finalgrade = $grade;
-        $grade_->hidden = "0";
-        $grade_->locked = "0";
-        $grade_->locktime = "0";
-        $grade_->exported = "0";
-        $grade_->overridden = "0";
-        $grade_->excluded = "0";
-        $grade_->feedbackformat = "0";
-        $grade_->informationformat = "0";
-        $grade_->timecreated = time();
-        $grade_->timemodified = time();
-        $grade_->aggregationstatus = "used";
-        $grade_->aggregationweight = "100.000"; 
-
-        if(!$gradeid = $DB->get_field(self::TBL_GRADE_GRADES, 'id', $params)){
-        //creates grade objects for other users in DB 
-        return $grade_->insert();
+        $grade_->hidden = 0;
+      
+        if(empty($grade_->id)){
+            //creates grade objects for other users in DB 
+            $grade_->timecreated = time();
+            $grade_->timemodified = time();
+            //if insert successful - update provisional grade
+            return ($grade_->insert()) ? self::update_grade($userid, self::$PRVGRADEID, $grade) : false;
+            
         }
         else{
-        //updates empty grade objects in database
-        $grade_->id = $gradeid;
-        return $grade_->update();
+            //updates empty grade objects in database
+            $grade_->timemodified = time();
+            //if update successful - update provisional grade
+            return ($grade_->update()) ? self::update_grade($userid, self::$PRVGRADEID, $grade) : false;
         }
+        
     }
 
     public static function update_grade($userid, $itemid, $grade){
-        global $DB, $USER;
-        
-        $params = array(
-            'userid'=>$userid,
-            'itemid'=>$itemid
-        );
-        //gets id for existing grade
-        $gradeid = $DB->get_field(self::TBL_GRADE_GRADES, 'id', $params);
+        global $USER;
 
-        $grade_ = new grade_grade();
-        $grade_->id = $gradeid;
-        $grade_->itemid = $itemid;
-        $grade_->userid = $userid;
+        //get grade grade, true
+        $grade_ = new grade_grade(array('userid' => $userid, 'itemid' => $itemid), true);
         $grade_->rawgrade = $grade;
-        $grade_->rawgrademax = "100.000";
-        $grade_->rawgrademin = "0.00000";
         $grade_->usermodified = $USER->id;
         $grade_->finalgrade = $grade;
-        $grade_->hidden = "0";
-        $grade_->locked = "0";
-        $grade_->locktime = "0";
-        $grade_->exported = "0";
-        $grade_->overridden = "0";
-        $grade_->excluded = "0";
-        $grade_->feedbackformat = "0";
-        $grade_->informationformat = "0";
-        $grade_->timecreated = time();
+        $grade_->itemid = $itemid;
+        $grade_->userid = $userid;
         $grade_->timemodified = time();
-        //updates existing grade
+        //update existing grade
         return $grade_->update();
     }
 
@@ -264,6 +235,8 @@ class local_gugcat {
         return reset($initialgradeitem)->scaleid;
     }
 
-
-
+    public static function notify_success($stridentifier){
+        $message = get_string($stridentifier, 'local_gugcat');
+        \core\notification::add($message, \core\output\notification::NOTIFY_SUCCESS);
+    }
 }
