@@ -98,6 +98,7 @@ class local_gugcat {
     public static function set_prv_grade_id($courseid, $modid, $scaleid){
         $pgrd_str = get_string('provisionalgrd', 'local_gugcat');
         self::$PRVGRADEID = self::add_grade_item($courseid, $pgrd_str, $modid, $scaleid);
+        return self::$PRVGRADEID;
     }
 
     public static function get_grade_item_id($courseid, $modid, $itemname){
