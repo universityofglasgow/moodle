@@ -4,15 +4,15 @@
     color: #005C8A;
 }
 
-.assessment-item {
+.assessments-item {
     text-align: center;
 }
 
-.assessment-item-icon {
+.assessments-item-icon {
     margin: 10px 0;
 }
 
-.assessment-item-count {
+.assessments-item-count {
     font-family: 'PT Sans', sans-serif;
     font-size: 25px;
     font-weight: 700;
@@ -20,58 +20,58 @@
     margin-bottom: 8px;
 }
 
-.assessment-item-label {
+.assessments-item-label {
     font-family: 'Arial',sans-serif;
     font-size: 13px;
     line-height: 14.95px;
 }
 
-.block-region .assessment-item {
+.block-region .assessments-item {
     border-bottom: 1px solid #e1e6eb;
     padding-top: 10px;
     padding-bottom: 10px;
 }
 
-.block-region .assessment-item:last-child {
+.block-region .assessments-item:last-child {
     border-bottom: 0;
 }
 
 
 /** Mobile-responsive CSS **/
 @media (min-width: 576px) {
-    .block-region .assessment-item {
+    .block-region .assessments-item {
         border-right: 1px solid #e1e6eb;
     }
 
-    .block-region .assessment-item:nth-child(even) {
+    .block-region .assessments-item:nth-child(even) {
         border-right: 0;
     }
 
-    .block-region .assessment-item:nth-child(3),
-    .block-region .assessment-item:nth-child(4) {
+    .block-region .assessments-item:nth-child(3),
+    .block-region .assessments-item:nth-child(4) {
         border-bottom: 0;
     }
 }
 
 @media (min-width: 768px) {
-    .block-region .assessment-item {
+    .block-region .assessments-item {
         border-right: 1px solid #e1e6eb;
         border-bottom: 0;
         padding-top: 0;
         padding-bottom: 0;
     }
 
-    .block-region .assessment-item:nth-child(even) {
+    .block-region .assessments-item:nth-child(even) {
         border-right: 1px solid #e1e6eb;
     }
 
-    .block-region .assessment-item:last-child {
+    .block-region .assessments-item:last-child {
         border-right: 0;
     }
 }
 
 @media (min-width: 992px) {
-    #block-region-side-pre.block-region .assessment-item {
+    #block-region-side-pre.block-region .assessments-item {
         border-right: 1px solid #e1e6eb;
         border-bottom: 1px solid #e1e6eb;
         flex: 0 0 50%;
@@ -80,12 +80,12 @@
         padding-bottom: 10px;
     }
 
-    #block-region-side-pre.block-region .assessment-item:nth-child(even) {
+    #block-region-side-pre.block-region .assessments-item:nth-child(even) {
         border-right: 0;
     }
 
-    #block-region-side-pre.block-region .assessment-item:nth-child(3),
-    #block-region-side-pre.block-region .assessment-item:nth-child(4) {
+    #block-region-side-pre.block-region .assessments-item:nth-child(3),
+    #block-region-side-pre.block-region .assessments-item:nth-child(4) {
         border-bottom: 0;
     }
 }

@@ -20,7 +20,6 @@
  * @package    block_gu_spoverview
  * @copyright  2020 Accenture
  * @author     Franco Louie Magpusao <franco.l.magpusao@accenture.com>
- * @author     Alejandro de Guzman <a.g.de.guzman@accenture.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -33,12 +32,12 @@ class block_gu_spoverview extends block_base {
     }
 
     /**
-     * Allow the block to have a configuration page
+     * Locations where block can be displayed.
      *
-     * @return boolean
+     * @return array
      */
-    public function has_config() {
-        return true;
+    public function applicable_formats() {
+        return array('my' => true);
     }
 
     /**
@@ -50,79 +49,52 @@ class block_gu_spoverview extends block_base {
         global $USER, $DB, $PAGE, $OUTPUT;
 
         $PAGE->requires->css('/blocks/gu_spoverview/styles.css');
+        $lang = 'block_gu_spoverview';
+        $userid = $USER->id;
 
-        $student_id = $USER->id;
-        $tpl = 'block_gu_spoverview';
-        $current_yr = date("Y");
+        $courses = enrol_get_all_users_courses($userid, true);
+        $courseids = array_column($courses, 'id');
 
-        // Query to retrieve all assignments where status is submitted
-        $assignments_submitted = $DB->get_records_sql("SELECT * FROM `mdl_assign_submission` 
-                                                     WHERE FROM_UNIXTIME(timecreated, '%Y') = $current_yr 
-                                                     AND userid = $student_id AND status='submitted'");
+        $assignments = (count($courseids) > 0) ? self::get_user_assignments($userid, $courseids) : array();
+        $assignments_submitted = 0;
+        $assignments_tosubmit = 0;
+        $assignments_overdue = 0;
+        $assessments_marked = (count($courseids) > 0) ? self::get_user_assessments_count($userid, $courseids) : 0;
 
-        // Query to retrieve all assignments of a specific student
-        $assignments = $DB->get_records_sql("SELECT DISTINCT i.itemname 
-                                            FROM `mdl_course_modules` cm 
-                                            INNER JOIN `mdl_modules` m ON m.id = cm.module 
-                                            INNER JOIN `mdl_grade_items` i ON i.courseid = cm.course
-                                            INNER JOIN 	`mdl_assign` asn ON asn.name = i.itemname 
-                                            INNER JOIN `mdl_grade_grades` g ON g.itemid = i.id 
-                                            INNER JOIN `mdl_user` u ON u.id = g.userid 
-                                            WHERE m.name IN ('assign') 
-                                            AND i.itemmodule IS NOT NULL AND u.id = $student_id 
-                                            AND FROM_UNIXTIME(i.timemodified, '%Y') = $current_yr"); 
-
-        // Query to retrieve all assignments that are not yet submitted and due date is past current date
-        $assignments_overdue = $DB->get_records_sql("SELECT  DISTINCT i.itemname
-                                                    FROM `mdl_course_modules` cm 
-                                                    INNER JOIN `mdl_modules` m ON m.id = cm.module 
-                                                    INNER JOIN `mdl_grade_items` i ON i.courseid = cm.course 
-                                                    INNER JOIN `mdl_grade_grades` g ON g.itemid = i.id
-                                                    INNER JOIN `mdl_user` u ON u.id = g.userid
-                                                    INNER JOIN 	`mdl_assign` asn ON asn.name = i.itemname
-                                                    INNER JOIN `mdl_grade_grades` gg ON gg.userid = $student_id
-                                                    INNER JOIN `mdl_assign_submission` asub ON (asub.assignment = asn.id AND asub.status <> 'submitted')  
-                                                    WHERE m.name IN ('assign') 
-                                                    AND i.itemmodule IS NOT NULL AND u.id = $student_id
-                                                    AND FROM_UNIXTIME(i.timemodified, '%Y') = $current_yr 
-                                                    AND FROM_UNIXTIME(asn.duedate) < NOW()
-                                                    AND gg.finalgrade IS NULL");
-
-        // Query for all the assessments
-        $assessments_marked      = $DB->get_records_sql("SELECT DISTINCT cm.id, cm.instance, cm.course, i.itemname, i.itemmodule, g.userid, g.finalgrade 
-                                                        FROM `mdl_course_modules` cm 
-                                                        INNER JOIN `mdl_modules` m ON m.id = cm.module 
-                                                        INNER JOIN `mdl_grade_items` i on i.courseid = cm.course 
-                                                        INNER JOIN mdl_grade_grades g on g.itemid = i.id 
-                                                        WHERE m.name IN ('assign', 'quiz', 'survey', 'wiki', 'workshop') 
-                                                        AND itemtype = 'mod' 
-                                                        AND itemmodule IN ('assign', 'quiz', 'survey', 'wiki', 'workshop') 
-                                                        AND g.finalgrade > 0 AND g.userid = $student_id");
-
-
-        // Set assignment/assessment count variables
-        $assign_submitted_count = (int) sizeof($assignments_submitted);
-        $assign_tosubmit_count = (int) sizeof($assignments) - (int) sizeof($assignments_submitted);
-        $assign_overdue_count = (int) sizeof($assignments_overdue);
-        $assess_marked_count = sizeof($assessments_marked);
+        foreach ($assignments as $assignment) {
+            if($assignment->status != 'submitted') {
+                if(time() > $assignment->startdate) {
+                    if(($assignment->duedate > 0 && time() <= $assignment->duedate)
+                        || ($assignment->cutoffdate > 0 && time() <= $assignment->cutoffdate)
+                        || (($assignment->extensionduedate > 0 || !is_null($assignment->extensionduedate))
+                             && time() <= $assignment->extensionduedate)) {
+                        $assignments_tosubmit++;
+                    }else{
+                        $assignments_overdue++;
+                    }
+                }
+            }else{
+                $assignments_submitted++;
+            }
+        }
 
         // Set singular/plural strings for Assignment and Assessment
-        $assign_str = ($assign_submitted_count == 1) ? get_string('assignment_sn', $tpl) : get_string('assignment_pl', $tpl);
-        $assess_str = ($assess_marked_count == 1) ? get_string('assessment_sn', $tpl) : get_string('assessment_pl', $tpl);
+        $assignment_str = ($assignments_submitted == 1) ? get_string('assignment', $lang) : get_string('assignments', $lang);
+        $assessment_str = ($assessments_marked == 1) ? get_string('assessment', $lang) : get_string('assessments', $lang);
 
         $templatecontext = (object)[
-            'assess_submitted_count'        => $assign_submitted_count,
-            'assess_tosubmit_count'         => $assign_tosubmit_count,
-            'assess_overdue_count'          => $assign_overdue_count,
-            'assess_marked_count'           => $assess_marked_count,
-            'assess_submitted_icon'         => '../blocks/gu_spoverview/pix/assessments_submitted.svg',
-            'assess_tosubmit_icon'          => '../blocks/gu_spoverview/pix/assessments_tosubmit.svg',
-            'assess_overdue_icon'           => '../blocks/gu_spoverview/pix/assessments_overdue.svg',
-            'assess_marked_icon'            => '../blocks/gu_spoverview/pix/assessments_marked.svg',
-            'assess_submitted_str'          => $assign_str.get_string('submitted', $tpl),
-            'assess_tosubmit_str'           => get_string('tobesubmitted', $tpl),
-            'assess_overdue_str'            => get_string('overdue', $tpl),
-            'assess_marked_str'             => $assess_str.get_string('marked', $tpl),
+            'assessments_submitted'        => $assignments_submitted,
+            'assessments_tosubmit'         => $assignments_tosubmit,
+            'assessments_overdue'          => $assignments_overdue,
+            'assessments_marked'           => $assessments_marked,
+            'assessments_submitted_icon'   => '../blocks/gu_spoverview/pix/assessments_submitted.svg',
+            'assessments_tosubmit_icon'    => '../blocks/gu_spoverview/pix/assessments_tosubmit.svg',
+            'assessments_overdue_icon'     => '../blocks/gu_spoverview/pix/assessments_overdue.svg',
+            'assessments_marked_icon'      => '../blocks/gu_spoverview/pix/assessments_marked.svg',
+            'assessments_submitted_str'    => $assignment_str.get_string('submitted', $lang),
+            'assessments_tosubmit_str'     => get_string('tobesubmitted', $lang),
+            'assessments_overdue_str'      => get_string('overdue', $lang),
+            'assessments_marked_str'       => $assessment_str.get_string('marked', $lang),
         ];
 
         $this->content = new stdClass;
@@ -132,11 +104,48 @@ class block_gu_spoverview extends block_base {
     }
 
     /**
-     * Locations where block can be displayed.
-     *
-     * @return array
+     * Returns all user assignments including submission status and extension due date.
+     * 
+     * @param int $userid
+     * @param array $courseids
+     * @return stdClass Assignment objects if records are returned,
+     *  otherwise return empty object
      */
-    public function applicable_formats() {
-        return array('my' => true);
+    public static function get_user_assignments($userid, $courseids) {
+        global $DB;
+        $params = array($userid, $userid);
+        $incourseids = implode(',', $courseids);
+
+        $sql = "SELECT ma.name, ma.allowsubmissionsfromdate as `startdate`,
+                ma.duedate, ma.cutoffdate, mas.status, mauf.extensionduedate
+                FROM `mdl_assign` ma
+                LEFT JOIN `mdl_assign_submission` mas ON ma.id = mas.assignment AND mas.userid = ?
+                LEFT JOIN `mdl_assign_user_flags` mauf ON ma.id = mauf.assignment AND mauf.userid = ?
+                WHERE ma.course IN (".$incourseids.")";
+
+        $assignments = ($assignments = $DB->get_records_sql($sql, $params)) ? $assignments : new stdClass;
+        return $assignments;
+    }
+
+    /**
+     * Returns count of graded assessments (activity modules)
+     * 
+     * @param int $userid
+     * @param array $courseids
+     * @return int Count of Assessment records
+     */
+    public static function get_user_assessments_count($userid, $courseids) {
+        global $DB;
+        $params = array($userid, 'mod');
+        $incourseids = implode(',', $courseids);
+
+        $sql = "SELECT mgi.itemname, mgg.finalgrade
+                FROM `mdl_grade_items` mgi
+                JOIN `mdl_grade_grades` mgg ON mgi.id = mgg.itemid AND mgg.userid = ? AND mgg.finalgrade IS NOT NULL
+                WHERE mgi.itemtype = ? AND mgi.courseid IN (".$incourseids.")";
+
+        $assessments = ($assessments = $DB->get_records_sql($sql, $params)) ? $assessments : array();
+        $assessments_count = count($assessments);
+        return $assessments_count;
     }
 }

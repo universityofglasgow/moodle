@@ -23,10 +23,10 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['assignment_sn'] = 'Assignment';
-$string['assignment_pl'] = 'Assignments';
-$string['assessment_sn'] = 'Assessment';
-$string['assessment_pl'] = 'Assessments';
+$string['assignment'] = 'Assignment';
+$string['assignments'] = 'Assignments';
+$string['assessment'] = 'Assessment';
+$string['assessments'] = 'Assessments';
 $string['gu_spoverview:addinstance'] = 'Add a new Assessments Overview block';
 $string['gu_spoverview:myaddinstance'] = 'Add a new Assessments Overview block to Dashboard';
 $string['marked'] = ' marked';
