@@ -97,6 +97,29 @@ define(['jquery', 'core/str' ], function($, Str) {
                 $("#btn-overviewtab").addClass("active");
                 $("#btn-assessmenttab").removeClass("active");
             }
+
+            if(!($(".gradeitems").text().includes("Moodle Grade"))){
+                $("#btn-saveadd").hide();
+                $(".addnewgrade").hide();
+            }else{
+                $("#btn-saveadd").show();
+                $(".addnewgrade").show();
+            }
+
+            $("#btn-import").click(function(e) {
+                e.preventDefault();
+                if($(".gradeitems").text().includes("Moodle Grade")){
+                    var confirmation = confirm("Please note that grades have already been imported from Moodle. If you continue you will overwrite all grades. Do you wish to continue?");
+                    if(confirmation == true) {
+                    $(".importgrades").val("import");
+                    $("#multigradesform").submit();
+                    }
+                }
+                else{
+                    $(".importgrades").val("import");
+                    $("#multigradesform").submit();
+                }
+            });
         }
     };
 });

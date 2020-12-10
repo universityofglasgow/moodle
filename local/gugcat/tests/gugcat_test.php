@@ -86,7 +86,6 @@ class local_gugcat_testcase extends advanced_testcase {
 
     public function test_check_prv_grade_item() {
         $prvgradeid = $this->provisionalgi->id;
-
         local_gugcat::set_prv_grade_id($this->course->id, $this->cm->id, 1);
         $this->assertEquals(local_gugcat::$PRVGRADEID, $prvgradeid);
     }

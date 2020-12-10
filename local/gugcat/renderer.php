@@ -38,7 +38,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $htmlcolumns = null;
         $htmlrows = null;
         foreach ($columns as $col) {
-            $htmlcolumns .= html_writer::tag('th', $col);
+            $htmlcolumns .= html_writer::tag('th', $col, array('class'=>'gradeitems'));
         }
         $htmlcolumns .= html_writer::tag('th', get_string('addallnewgrade', 'local_gugcat'), array('class' => 'togglemultigrd'));
         $htmlcolumns .= html_writer::tag('th', get_string('reasonnewgrade', 'local_gugcat'), array('class' => 'togglemultigrd'));
@@ -82,7 +82,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
                     </td>';
             $htmlrows .= '<td><b>'.$row->provisionalgrade.'</b></td>';
             $htmlrows .= '<td>
-                            <button type="button" class="btn btn-default" onclick="location.href=\''.$addformurl.'\'">
+                            <button type="button" class="btn btn-default addnewgrade" onclick="location.href=\''.$addformurl.'\'">
                                 '.get_string('addnewgrade', 'local_gugcat').'
                             </button>
                     </td>';
@@ -95,36 +95,37 @@ class local_gugcat_renderer extends plugin_renderer_base {
             'downloadcsvstr' =>get_string('downloadcsv', 'local_gugcat'),
             'saveallbtnstr' =>get_string('saveallnewgrade', 'local_gugcat'),
             'grddiscrepancystr' => get_string('gradediscrepancy', 'local_gugcat'),
+            'importgradesstr' => get_string('importgrades', 'local_gugcat'),
             'displayactivities' => true,
             'activities' => $activities_,
         ]);
         $html .= html_writer::start_tag('form', array('id' => 'multigradesform', 'method' => 'post', 'action' => $actionurl));
         $html .= $this->display_table($htmlrows, $htmlcolumns);
         $html .= html_writer::empty_tag('button', array('id' => 'release-submit', 'name' => 'release', 'type' => 'submit'));
+        $html .= html_writer::empty_tag('input', array( 'type'=>'hidden', 'id'=>'importgrades', 'name'=> 'importgrades', 'value'=>'import'));
         $html .= html_writer::end_tag('form');
         $html .= $this->footer();
         return $html;
     }
 
-    public function display_add_grade_form($course, $activity, $gbgrade, $student, $gradeversions) {
+    public function display_add_grade_form($course, $activity, $student, $gradeversions) {
         $html = $this->header();
         $html .= $this->render_from_template('local_gugcat/gcat_add_form', (object)[
             'addnewgrade' =>get_string('addnewgrade', 'local_gugcat'),
             'course' => $course,
             'section' => $activity,
-            'student' => $student,
-            'gbgrade' => $gbgrade
+            'student' => $student
         ]);
-        $html .= '<div class="mform-container">';
-        foreach ($gradeversions as $gradeversion){
-            $html .= '   <div class="form-group row">';
-            $html .= '   <div class="col-md-3">';
-            $html .= '         <label>'.$gradeversion->itemname.'</label>';
-            $html .= '   </div>';
-            $html .= '   <div class="col-md-9 form-inline felement">'.local_gugcat::convert_grade($gradeversion->grades[$student->id]->finalgrade).'</div>';
-            $html .= '  </div>';
+        $html .= html_writer::start_tag('div', array('class'=>'mform-container'));
+        foreach($gradeversions as $gradeversion){
+            $html .= html_writer::start_tag('div', array('class'=>'form-group row'));
+            $html .= html_writer::start_tag('div', array('class'=> 'col-md-3'));
+            $html .= html_writer::tag('label', $gradeversion->itemname);
+            $html .= html_writer::end_tag('div');
+            $html .= html_writer::div(local_gugcat::convert_grade($gradeversion->grades[$student->id]->finalgrade), 'col-md-9 form-inline felement');
+            $html .= html_writer::end_tag('div');
         }
-        $html .= '</div>';
+        $html .= html_writer::end_tag('div');
         return $html;
     }
 
