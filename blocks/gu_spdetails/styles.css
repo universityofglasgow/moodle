@@ -1,0 +1,89 @@
+@import url('https://fonts.googleapis.com/css2?family=PT+Sans&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro&display=swap');
+
+.assessments-table {
+    color: #555;
+    font-family: 'Arial',sans-serif;
+    font-size: 13px;
+    line-height: 14.95px;
+}
+
+.assessments-table thead th,
+.assessments-table tbody td {
+    padding: 7.5px;
+    vertical-align: middle;
+}
+
+.table.assessments-table thead th {
+    border-color: transparent;
+    color: #777;
+    font-family: 'PT Sans', sans-serif;
+    font-size: 13px;
+    line-height: 16.82px;
+}
+
+.assessments-table tbody td {
+    color: #555;
+}
+
+.assessments-table tbody td a {
+    color: #058;
+    text-decoration: underline;
+}
+
+.assessments-table tbody td a:hover {
+    color: #058;
+    text-decoration: underline;
+}
+
+.status-link,
+.status-link:hover {
+    text-decoration: none;
+}
+
+.status-link:hover .status-item {
+    opacity: 0.9;
+    transition: opacity 0.3s ease; 
+}
+
+.status-item {
+    background-color: transparent;
+    border: 1px solid #ccc;
+    border-radius: 2px;
+    color: #ccc;
+    display: inline-block;
+    font-family: 'Source Sans Pro', sans-serif;
+    font-weight: 600;
+    font-size: 12px;
+    line-height: 18px;
+    text-align: center;
+    text-transform: uppercase;
+    padding: 3px 12px;
+}
+
+.status-submitted {
+    border-color: #183;
+    color: #183;
+}
+
+.status-tosubmit {
+    background-color: #183;
+    border-color: #183;
+    color: #fff;
+    opacity: 1;
+}
+
+.status-overdue {
+    border-color: #f46;
+    color: #f46;
+}
+
+.assessments-img-empty {
+    width: 65px;
+    height: 65px;
+}
+
+.assessments-text-empty {
+    color: #677;
+    margin: 1rem 0;
+}

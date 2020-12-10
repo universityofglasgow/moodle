@@ -1,0 +1,45 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template block_gu_spoverview/spoverview
+
+    This template renders the content of the UofG Assessments Overview block.
+}}
+<div class="assessments-overview">
+    <div class="row">
+        <div class="assessments-item assessments-submitted col-md-3 col-sm-6 col-xs-12">
+            <img src="{{assessments_submitted_icon}}" alt="{{assessments_submitted_str}}" class="assessments-item-icon"/>
+            <h4 class="assessments-item-count color-primary">{{assessments_submitted}}</h4>
+            <h5 class="assessments-item-label color-primary">{{assessments_submitted_str}}</h5>
+        </div>
+        <div class="assessments-item assessments-tosubmit col-md-3 col-sm-6 col-xs-12">
+            <img src="{{assessments_tosubmit_icon}}" alt="{{assessments_tosubmit_str}}" class="assessments-item-icon"/>
+            <h4 class="assessments-item-count color-primary">{{assessments_tosubmit}}</h4>
+            <h5 class="assessments-item-label color-primary">{{assessments_tosubmit_str}}</h5>
+        </div>
+        <div class="assessments-item assessments-overdue col-md-3 col-sm-6 col-xs-12">
+            <img src="{{assessments_overdue_icon}}" alt="{{assessments_overdue_str}}" class="assessments-item-icon"/>
+            <h4 class="assessments-item-count color-primary">{{assessments_overdue}}</h4>
+            <h5 class="assessments-item-label color-primary">{{assessments_overdue_str}}</h5>
+        </div>
+        <div class="assessments-item assessments-marked col-md-3 col-sm-6 col-xs-12">
+            <img src="{{assessments_marked_icon}}" alt="{{assessments_marked_str}}" class="assessments-item-icon"/>
+            <h4 class="assessments-item-count color-primary">{{assessments_marked}}</h4>
+            <h5 class="assessments-item-label color-primary">{{assessments_marked_str}}</h5>
+        </div>
+    </div>
+</div>
