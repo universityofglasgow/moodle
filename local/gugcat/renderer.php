@@ -38,7 +38,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $htmlcolumns = null;
         $htmlrows = null;
         foreach ($columns as $col) {
-            $htmlcolumns .= '<th>'.$col.'</th>';
+            $htmlcolumns .= html_writer::tag('th', $col);
         }
         $htmlcolumns .= html_writer::tag('th', get_string('addallnewgrade', 'local_gugcat'), array('class' => 'togglemultigrd'));
         $htmlcolumns .= html_writer::tag('th', get_string('reasonnewgrade', 'local_gugcat'), array('class' => 'togglemultigrd'));
@@ -46,8 +46,14 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $htmlcolumns .= html_writer::empty_tag('th');
         //grade capture rows
         foreach ($rows as $row) {
+            //url action form
+            $actionurl = 'index.php?id=' . $courseid . '&activityid=' . $modid;
+            //url to add grade form page
             $addformurl->param('studentid', $row->studentno);
             $htmlrows .= html_writer::start_tag('tr');
+            //hidden inputs for id and provisional grades
+            $htmlrows .= html_writer::empty_tag('input', array('name' => 'grades['.$row->studentno.'][id]', 'type' => 'hidden', 'value' => $row->studentno));
+            $htmlrows .= html_writer::empty_tag('input', array('name' => 'grades['.$row->studentno.'][provisional]', 'type' => 'hidden', 'value' => ((strpos($row->provisionalgrade, 'Null') !== false) ? null : $row->provisionalgrade)));
             $htmlrows .= html_writer::tag('td', $row->cnum);
             $htmlrows .= html_writer::tag('td', $row->studentno);
             $htmlrows .= html_writer::tag('td', $row->surname);
@@ -60,15 +66,13 @@ class local_gugcat_renderer extends plugin_renderer_base {
                     ? '<div class="grade-discrepancy">'.$item->grade.'</div>' 
                     : $item->grade ).'</td>';
             }
-            $htmlrows .= '<td class="togglemultigrd">
-                        <input type="hidden" name="grades['.$row->studentno.'][id]" value="'.$row->studentno.'" />
-                        '.$this->display_custom_select(
+            $htmlrows .= '<td class="togglemultigrd">'
+                        .$this->display_custom_select(
                             $grades,
                             'grades['.$row->studentno.'][grade]',
                             get_string('choosegrade', 'local_gugcat')).'
                     </td>';
-            $htmlrows .= '<td class="togglemultigrd">
-                        '.$this->display_custom_select(
+            $htmlrows .= '<td class="togglemultigrd">'.$this->display_custom_select(
                             local_gugcat::get_reasons(),
                             'reason',
                             get_string('selectreason', 'local_gugcat'),
@@ -76,9 +80,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
                             'select-grade-reason').'
                             <input name="reason" value="" class="input-reason" id="input-reason" type="text"/>
                     </td>';
-            $htmlrows .= '<td><b>'.$row->provisionalgrade.'</b>
-                        <input type="hidden" name="grades['.$row->studentno.'][provisional]" value="'.((strpos($row->provisionalgrade, 'Null') !== false) ? null : $row->provisionalgrade).'" />
-                        </td>';
+            $htmlrows .= '<td><b>'.$row->provisionalgrade.'</b></td>';
             $htmlrows .= '<td>
                             <button type="button" class="btn btn-default" onclick="location.href=\''.$addformurl.'\'">
                                 '.get_string('addnewgrade', 'local_gugcat').'
@@ -86,7 +88,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
                     </td>';
             $htmlrows .= html_writer::end_tag('tr');
         }
-
+        //start displaying the table
         $html = $this->header();
         $html .= $this->render_from_template('local_gugcat/gcat_tab_header', (object)[
             'addallgrdstr' =>get_string('addallnewgrade', 'local_gugcat'),
@@ -96,10 +98,10 @@ class local_gugcat_renderer extends plugin_renderer_base {
             'displayactivities' => true,
             'activities' => $activities_,
         ]);
-        $html .= '<form action="index.php?id=' . $courseid . '&amp;activityid=' . $modid . '" method="post" id="multigradesform">';
+        $html .= html_writer::start_tag('form', array('id' => 'multigradesform', 'method' => 'post', 'action' => $actionurl));
         $html .= $this->display_table($htmlrows, $htmlcolumns);
         $html .= html_writer::empty_tag('button', array('id' => 'release-submit', 'name' => 'release', 'type' => 'submit'));
-        $html .= '</form>';
+        $html .= html_writer::end_tag('form');
         $html .= $this->footer();
         return $html;
     }
@@ -130,7 +132,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $htmlcolumns = null;
         $htmlrows = null;
         foreach ($activities as $act) {
-            $htmlcolumns .= '<th>'.$act->name.'</th>';
+            $htmlcolumns .= html_writer::tag('th', $act->name);
         }
         $htmlcolumns .= html_writer::tag('th', get_string('requiresresit', 'local_gugcat'));
         $htmlcolumns .= html_writer::tag('th', get_string('aggregatedgrade', 'local_gugcat').'<i class="fa fa-cog"></i></th>');
@@ -191,10 +193,10 @@ class local_gugcat_renderer extends plugin_renderer_base {
 
     private function context_actions() {
         $html = html_writer::empty_tag('i', array('class' => 'fa fa-ellipsis-h', 'data-toggle' => 'dropdown'));
-        $html .= '<ul class="dropdown-menu">';
-        $html .=    '<li class="dropdown-item">'.get_string('amendgrades', 'local_gugcat').'</li>';
-        $html .=    '<li class="dropdown-item">'.get_string('historicalamendments', 'local_gugcat').'</li>';
-        $html .= '</ul>';
+        $html .= html_writer::start_tag('ul', array('class' => 'dropdown-menu'));
+        $html .= html_writer::tag('li', get_string('amendgrades', 'local_gugcat'), array('class' => 'dropdown-item'));
+        $html .= html_writer::tag('li', get_string('historicalamendments', 'local_gugcat'), array('class' => 'dropdown-item'));
+        $html .= html_writer::end_tag('ul');
         return $html;
     }
 

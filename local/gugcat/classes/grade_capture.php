@@ -143,7 +143,7 @@ class grade_capture{
                     //update workflow state
                     $flags = $assign->get_user_flags($userid, false);
                     $flags->workflowstate = ASSIGN_MARKING_WORKFLOW_STATE_RELEASED;
-                    $assign->update_user_flags($flags); //update user flag
+                    $assign->update_user_flags($flags); 
             
                     // update assign grade
                     if ($grade = $DB->get_record(local_gugcat::TBL_ASSIGN_GRADES, array('userid'=>$userid, 'assignment'=>$cm->instance))) {

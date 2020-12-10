@@ -64,6 +64,7 @@ if (!empty($_POST)){
     // release provisional grade
     if (isset($_POST['release']) && isset($_POST['grades'])){
         grade_capture::release_prv_grade($courseid, $selectedmodule, $_POST['grades']);
+        local_gugcat::notify_success('successrelease');
         unset($_POST);
         header("Location: ".$_SERVER['REQUEST_URI']);
         exit;
@@ -78,8 +79,7 @@ if (!empty($_POST)){
                     local_gugcat::add_update_grades($item['id'], $gradeitemid, $grade);
                 }
             }
-            $message = get_string('successaddall', 'local_gugcat');
-            \core\notification::add($message, \core\output\notification::NOTIFY_SUCCESS);
+            local_gugcat::notify_success('successaddall');
             unset($_POST);
             header("Location: ".$_SERVER['REQUEST_URI']);
             exit;

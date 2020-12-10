@@ -53,6 +53,7 @@ $string['saveallnewgrade'] = 'Save all participants grades';
 $string['selectreason'] = 'Select reason';
 $string['studentno'] = 'Student No.';
 $string['successaddall'] = 'Successfully added grades for all participants.';
+$string['successrelease'] = 'Successfully released provisional grades';
 $string['surname'] = 'Surname';
 $string['title'] = 'Grade Capture & Course Grade Aggregation';
 
