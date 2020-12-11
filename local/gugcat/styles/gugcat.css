@@ -140,6 +140,10 @@ button.tablink, button.tablink:focus{
     height: 40px;
 }
 
+#btn-saveadd, .addnewgrade{
+    display: none;
+}
+
 /* Select style */
 .selectdiv {
     position: relative;
