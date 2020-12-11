@@ -53,7 +53,7 @@ $modinfo = get_fast_modinfo($courseid);
 $module = $modinfo->get_cm($activityid);
 $PAGE->set_cm($module);
 
-$scaleid = local_gugcat::get_scaleid($courseid, $module);
+$scaleid = local_gugcat::get_scaleid($module);
 local_gugcat::set_grade_scale($scaleid);
 local_gugcat::set_prv_grade_id($courseid, $module->id, $scaleid);
 $grading_info = grade_get_grades($courseid, 'mod', $module->modname, $module->instance, $studentid);

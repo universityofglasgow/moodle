@@ -53,7 +53,7 @@ $mods = array_reverse($activities);
 $selectedmodule = is_null($activityid) ? array_pop($mods) : $activities[$activityid];
 $PAGE->set_cm($selectedmodule);
 
-$scaleid = local_gugcat::get_scaleid($courseid, $selectedmodule);
+$scaleid = local_gugcat::get_scaleid($selectedmodule);
 //populate $GRADES with scales
 local_gugcat::set_grade_scale($scaleid);
 //populate provisional grade id and set it to static

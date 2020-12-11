@@ -232,10 +232,9 @@ class local_gugcat {
         self::$GRADES = $scalegrades;
     }
 
-    public static function get_scaleid($courseid, $module){
+    public static function get_scaleid($module){
         global $DB;
         $params = array(
-            'courseid'      => $courseid,
             'iteminstance'  => $module->instance,
             'itemmodule'    => $module->modname
         );
@@ -248,7 +247,7 @@ class local_gugcat {
         \core\notification::add($message, \core\output\notification::NOTIFY_SUCCESS);
     }
         
-    public static function update_workflow_state_inreview($assign, $userid, $statetype){
+    public static function update_workflow_state($assign, $userid, $statetype){
         //update workflow state to in review
         $assign_user_flags = $assign->get_user_flags($userid, true);
         $assign_user_flags->workflowstate = $statetype;
@@ -274,7 +273,7 @@ class local_gugcat {
             if(strcmp($module->modname, 'assign') == 0){
                 $grade = $DB->get_record(self::TBL_ASSIGN_GRADES, $params, '*');
                 $assign->update_grade($grade);
-                self::update_workflow_state_inreview($assign, $student->id, ASSIGN_MARKING_WORKFLOW_STATE_INREVIEW);
+                self::update_workflow_state($assign, $student->id, ASSIGN_MARKING_WORKFLOW_STATE_INREVIEW);
             }
             else{
                 $grading_info = grade_get_grades($courseid, 'mod', $module->modname, $module->instance, $student->id);
