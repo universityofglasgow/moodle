@@ -28,16 +28,18 @@ require_once($CFG->libdir.'/gradelib.php');
 require_once($CFG->dirroot . '/grade/querylib.php');
 require_once($CFG->libdir.'/grade/grade_item.php');
 require_once($CFG->libdir.'/grade/grade_grade.php');
+require_once($CFG->dirroot.'/mod/assign/locallib.php');
 
 class local_gugcat {
      
     /**
      * Database tables.
      */
+    const TBL_ASSIGN_GRADES = 'assign_grades';
     const TBL_GRADE_ITEMS  = 'grade_items';
     const TBL_GRADE_CATEGORIES  = 'grade_categories';
     const TBL_GRADE_GRADES = 'grade_grades';
-    const TBL_ASSIGN_GRADES = 'assign_grades';
+    const TBL_SCALE = 'scale';
 
     public static $GRADES = array();
     public static $PRVGRADEID = null;
@@ -132,11 +134,13 @@ class local_gugcat {
              $gradeitem->grademax = $scalesize;
              $gradeitem->gradetype = 2;
              $gradeitem->display =0;
+             $gradeitem->hidden = 1;
              $gradeitem->outcomeid = null;
              $gradeitem->categoryid = $categoryid;
              $gradeitem->iteminfo = $modid;
              $gradeitem->itemname = $reason;
              $gradeitem->iteminstance= null;
+             $gradeitem->timemodified = null;
              $gradeitem->itemmodule=null;
              $gradeitem->scaleid = $scaleid;
              $gradeitem->itemtype = 'manual'; // All new items to be manual only.
@@ -179,7 +183,6 @@ class local_gugcat {
             //if update successful - update provisional grade
             return ($grade_->update()) ? self::update_grade($userid, self::$PRVGRADEID, $grade) : false;
         }
-        
     }
 
     public static function update_grade($userid, $itemid, $grade){
@@ -230,14 +233,54 @@ class local_gugcat {
     }
 
     public static function get_scaleid($module){
-        
-        $initialgradeitem = grade_get_grade_items_for_activity($module);
-        //to get the first gradeitem scaleid
-        return reset($initialgradeitem)->scaleid;
+        global $DB;
+        $params = array(
+            'iteminstance'  => $module->instance,
+            'itemmodule'    => $module->modname
+        );
+        $scaleid = $DB->get_field(self::TBL_GRADE_ITEMS, 'scaleid', $params, IGNORE_MISSING);
+        return $scaleid;
     }
 
     public static function notify_success($stridentifier){
         $message = get_string($stridentifier, 'local_gugcat');
         \core\notification::add($message, \core\output\notification::NOTIFY_SUCCESS);
+    }
+        
+    public static function update_workflow_state($assign, $userid, $statetype){
+        //update workflow state to in review
+        $assign_user_flags = $assign->get_user_flags($userid, true);
+        $assign_user_flags->workflowstate = $statetype;
+        $assign->update_user_flags($assign_user_flags);
+    }
+    
+    public static function import_from_gradebook($courseid, $module, $students, $scaleid){
+        global $DB;
+        $mggradeitemid = local_gugcat::add_grade_item($courseid, get_string('moodlegrade', 'local_gugcat'), $module->id, $scaleid);
+
+        $gradeitem_ = new grade_item(array('id'=>$mggradeitemid), true);
+        $gradeitem_->timemodified = time();
+        //update timemodified gradeitem
+        $gradeitem_->update();
+
+        $assign = new assign(context_module::instance($module->id), $module, $courseid);
+        foreach($students as $student){
+            $params = array(
+                'assignment' => $module->instance,
+                'userid'     => $student->id
+            );
+
+            if(strcmp($module->modname, 'assign') == 0){
+                $grade = $DB->get_record(self::TBL_ASSIGN_GRADES, $params, '*');
+                $assign->update_grade($grade);
+                self::update_workflow_state($assign, $student->id, ASSIGN_MARKING_WORKFLOW_STATE_INREVIEW);
+            }
+            else{
+                $grading_info = grade_get_grades($courseid, 'mod', $module->modname, $module->instance, $student->id);
+                $grade = $grading_info->items[0]->grades[$student->id]->grade;
+            }
+            self::update_grade($student->id, $mggradeitemid, $grade->grade);
+            self::update_grade($student->id, self::$PRVGRADEID, $grade->grade);
+        } 
     }
 }

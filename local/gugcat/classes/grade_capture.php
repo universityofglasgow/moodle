@@ -46,10 +46,12 @@ class grade_capture{
      * @param mixed $students
      */
     public static function get_rows($course, $module, $students){
+        global $DB;
         $captureitems = array();
         global $gradeitems;
         $grading_info = grade_get_grades($course->id, 'mod', $module->modname, $module->instance, array_keys($students));
         $gradeitems = local_gugcat::get_grade_grade_items($course, $module);
+        $firstgradeid = local_gugcat::get_grade_item_id($course->id, $module->id, get_string('moodlegrade', 'local_gugcat'));
 
         //---------ids needed for grade discrepancy
         if(!$agreedgradeid = local_gugcat::get_grade_item_id($course->id, $module->id, get_string('gi_agreedgrade', 'local_gugcat'))){
@@ -59,8 +61,8 @@ class grade_capture{
 
         $i = 1;
         foreach ($students as $student) {
-            $gbgrade = $grading_info->items[0]->grades[$student->id]->grade;
-            $firstgrade = is_null($gbgrade) ? get_string('nograde', 'local_gugcat') : local_gugcat::convert_grade($gbgrade);
+            if($gbgrade = $DB->get_field(local_gugcat::TBL_GRADE_GRADES, 'finalgrade', array('userid'=>$student->id, 'itemid' => $firstgradeid)));
+            $firstgrade = is_null($gbgrade) || $gbgrade == "" ? get_string('nogradeimport', 'local_gugcat') : local_gugcat::convert_grade($gbgrade);
             $gradecaptureitem = new gcat_item();
             $gradecaptureitem->cnum = $i;
             $gradecaptureitem->studentno = $student->id;
@@ -69,11 +71,12 @@ class grade_capture{
             $gradecaptureitem->firstgrade = $firstgrade;
             $gradecaptureitem->discrepancy = false;
             $gradecaptureitem->grades = array();
+            unset($gradeitems[$firstgradeid]->grades[$student->id]);
             foreach ($gradeitems as $item) {
                 if(isset($item->grades[$student->id])){
                     $rawgrade = $item->grades[$student->id]->finalgrade;
                     if($item->id === local_gugcat::$PRVGRADEID){
-                        $grade = is_null($rawgrade) ? $firstgrade : local_gugcat::convert_grade($rawgrade);
+                        $grade = is_null($rawgrade) || $rawgrade == "" ? $gbgrade : local_gugcat::convert_grade($rawgrade);
                         $gradecaptureitem->provisionalgrade = $grade;
                     }else{
                         $grdobj = new stdClass();
@@ -104,14 +107,20 @@ class grade_capture{
      * Returns columns for grade capture table
      *
      */
-    public static function get_columns($module){
+    public static function get_columns($moduleid, $courseid){
         //global $gradeitems from get rows function
         global $gradeitems;
-        $date = date("(j/n/Y)", strtotime(userdate($module->added)));
-        $firstgrade = get_string('gradebookgrade', 'local_gugcat').'<br>'.$date;
-        $columns = array($firstgrade);
+        $columns = array();
+        if(!$firstgradeid = local_gugcat::get_grade_item_id($courseid, $moduleid, get_string('moodlegrade', 'local_gugcat'))){
+            $firstgrade = get_string('moodlegrade', 'local_gugcat').'<br>[Date]';
+            $columns = array($firstgrade);
+        }
         foreach ($gradeitems as $item) {
-            $columns[$item->id] = $item->itemname;
+            if($item->itemname == get_string('moodlegrade', 'local_gugcat')){
+                $columns[$item->id] = $item->itemname.'<br>'.date("[j/n/Y]", strtotime(userdate($item->timemodified)));
+            }else{
+                $columns[$item->id] = $item->itemname;
+            }
         }
         //remove provisional column
         unset($columns[local_gugcat::$PRVGRADEID]);

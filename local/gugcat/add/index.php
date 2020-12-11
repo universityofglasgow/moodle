@@ -56,10 +56,7 @@ $PAGE->set_cm($module);
 $scaleid = local_gugcat::get_scaleid($module);
 local_gugcat::set_grade_scale($scaleid);
 local_gugcat::set_prv_grade_id($courseid, $module->id, $scaleid);
-// get 1st grade
 $grading_info = grade_get_grades($courseid, 'mod', $module->modname, $module->instance, $studentid);
-$gbgrade = $grading_info->items[0]->grades[$studentid]->grade;
-$convertedgrade = is_null($gbgrade) ? get_string('nograde', 'local_gugcat') : local_gugcat::convert_grade($gbgrade);
 $gradeitems = local_gugcat::get_grade_grade_items($course, $module);
 $gradeversions = local_gugcat::filter_grade_version($gradeitems, $studentid);
 
@@ -77,13 +74,13 @@ if ($fromform = $mform->get_data()) {
     $gradeitemid = local_gugcat::add_grade_item($courseid, $gradereason, $module->id, $scaleid);
     $grades = local_gugcat::add_update_grades($studentid, $gradeitemid, $fromform->grade);
     
-    header("Location:" .$CFG->wwwroot . '/local/gugcat/index.php?id='.$courseid.'&amp;activityid='.$activityid);
+    header("Location:" .$CFG->wwwroot . '/local/gugcat/index.php?id='.$courseid.'&activityid='.$activityid);
     exit;
 }   
 
 echo $OUTPUT->header();
 $renderer = $PAGE->get_renderer('local_gugcat');
-echo $renderer->display_add_grade_form($course, $module->name, $convertedgrade, $student, $gradeversions);
+echo $renderer->display_add_grade_form($course, $module->name, $student, $gradeversions);
 $mform->display();
 echo $OUTPUT->footer();
 
