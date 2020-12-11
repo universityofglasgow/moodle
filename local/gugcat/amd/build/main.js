@@ -98,7 +98,7 @@ define(['jquery', 'core/str' ], function($, Str) {
                 $("#btn-assessmenttab").removeClass("active");
             }
 
-            if(!($(".gradeitems").text().includes("Moodle Grade"))){
+            if(($(".gradeitems").text().includes("Moodle Grade[Date]"))){
                 $("#btn-saveadd").hide();
                 $(".addnewgrade").hide();
             }else{
@@ -108,16 +108,14 @@ define(['jquery', 'core/str' ], function($, Str) {
 
             $("#btn-import").click(function(e) {
                 e.preventDefault();
-                if($(".gradeitems").text().includes("Moodle Grade")){
+                if(!$(".gradeitems").text().includes("Moodle Grade[Date]")){
                     var confirmation = confirm("Please note that grades have already been imported from Moodle. If you continue you will overwrite all grades. Do you wish to continue?");
                     if(confirmation == true) {
-                    $(".importgrades").val("import");
-                    $("#multigradesform").submit();
+                    $("#importgrades-submit").click();
                     }
                 }
                 else{
-                    $(".importgrades").val("import");
-                    $("#multigradesform").submit();
+                    $("#importgrades-submit").click();
                 }
             });
         }

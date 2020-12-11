@@ -35,7 +35,6 @@ class local_gugcat {
     /**
      * Database tables.
      */
-    const TBL_ASSIGN_USER_FLAGS = 'assign_user_flags';
     const TBL_ASSIGN_GRADES = 'assign_grades';
     const TBL_GRADE_ITEMS  = 'grade_items';
     const TBL_GRADE_CATEGORIES  = 'grade_categories';
@@ -135,11 +134,13 @@ class local_gugcat {
              $gradeitem->grademax = $scalesize;
              $gradeitem->gradetype = 2;
              $gradeitem->display =0;
+             $gradeitem->hidden = 1;
              $gradeitem->outcomeid = null;
              $gradeitem->categoryid = $categoryid;
              $gradeitem->iteminfo = $modid;
              $gradeitem->itemname = $reason;
              $gradeitem->iteminstance= null;
+             $gradeitem->timemodified = null;
              $gradeitem->itemmodule=null;
              $gradeitem->scaleid = $scaleid;
              $gradeitem->itemtype = 'manual'; // All new items to be manual only.
@@ -256,47 +257,31 @@ class local_gugcat {
     
     public static function import_from_gradebook($courseid, $module, $students, $scaleid){
         global $DB;
-        $assign = new assign(context_module::instance($module->id), $module, $courseid);
-        if(!$gradeitemid = self::get_grade_item_id($courseid, $module->id, get_string('moodlegrade', 'local_gugcat'))){
-            foreach($students as $student){
-                $params = array(
-                    'assignment' => $module->instance,
-                    'userid'     => $student->id
-                );
-                
-                if(strcmp($module->modname, 'assign') == 0){
-                    $grade = $DB->get_record(self::TBL_ASSIGN_GRADES, $params, '*');
-                    $assign->update_grade($grade);
-                    self::update_workflow_state_inreview($assign, $student->id, ASSIGN_MARKING_WORKFLOW_STATE_INREVIEW);
-                }
-                else{
-                    $grading_info = grade_get_grades($courseid, 'mod', $module->modname, $module->instance, $student->id);
-                    $grade = $grading_info->items[0]->grades[$student->id]->grade;
-                }
-                $gradeitem = self::add_grade_item($courseid, get_string('moodlegrade', 'local_gugcat'), $module->id, $scaleid);
-                self::add_update_grades($student->id, $gradeitem, $grade->grade);
-                self::update_grade($student->id, self::$PRVGRADEID, $grade->grade);
-            }
-        }
-        else{
-            foreach($students as $student){
-                $params = array(
-                    'assignment' => $module->instance,
-                    'userid'     => $student->id
-                );
+        $mggradeitemid = local_gugcat::add_grade_item($courseid, get_string('moodlegrade', 'local_gugcat'), $module->id, $scaleid);
 
-                if(strcmp($module->modname, 'assign') == 0){
-                    $grade = $DB->get_record(self::TBL_ASSIGN_GRADES, $params, '*');
-                    $assign->update_grade($grade);
-                    self::update_workflow_state_inreview($assign, $student->id, ASSIGN_MARKING_WORKFLOW_STATE_INREVIEW);
-                }
-                else{
-                    $grading_info = grade_get_grades($courseid, 'mod', $module->modname, $module->instance, $student->id);
-                    $grade = $grading_info->items[0]->grades[$student->id]->grade;
-                }
-                self::update_grade($student->id, $gradeitemid, $grade->grade);
-                self::update_grade($student->id, self::$PRVGRADEID, $grade->grade);
+        $gradeitem_ = new grade_item(array('id'=>$mggradeitemid), true);
+        $gradeitem_->timemodified = time();
+        //update timemodified gradeitem
+        $gradeitem_->update();
+
+        $assign = new assign(context_module::instance($module->id), $module, $courseid);
+        foreach($students as $student){
+            $params = array(
+                'assignment' => $module->instance,
+                'userid'     => $student->id
+            );
+
+            if(strcmp($module->modname, 'assign') == 0){
+                $grade = $DB->get_record(self::TBL_ASSIGN_GRADES, $params, '*');
+                $assign->update_grade($grade);
+                self::update_workflow_state_inreview($assign, $student->id, ASSIGN_MARKING_WORKFLOW_STATE_INREVIEW);
             }
-        }   
+            else{
+                $grading_info = grade_get_grades($courseid, 'mod', $module->modname, $module->instance, $student->id);
+                $grade = $grading_info->items[0]->grades[$student->id]->grade;
+            }
+            self::update_grade($student->id, $mggradeitemid, $grade->grade);
+            self::update_grade($student->id, self::$PRVGRADEID, $grade->grade);
+        } 
     }
 }

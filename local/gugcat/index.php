@@ -58,7 +58,6 @@ $scaleid = local_gugcat::get_scaleid($courseid, $selectedmodule);
 local_gugcat::set_grade_scale($scaleid);
 //populate provisional grade id and set it to static
 local_gugcat::set_prv_grade_id($courseid, $selectedmodule->id, $scaleid);
-
 //---------submit multiple add grades
 if (!empty($_POST)){
     // release provisional grade
@@ -88,7 +87,7 @@ if (!empty($_POST)){
             print_error('errorgraderequired', 'local_gugcat', $PAGE->url);
         }
     }
-    elseif(!empty($_POST['importgrades'])){
+    elseif(isset($_POST['importgrades'])){
         local_gugcat::import_from_gradebook($courseid, $selectedmodule, $students, $scaleid);
         local_gugcat::notify_success('successimport');
         unset($_POST);

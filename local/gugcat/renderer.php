@@ -102,7 +102,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $html .= html_writer::start_tag('form', array('id' => 'multigradesform', 'method' => 'post', 'action' => $actionurl));
         $html .= $this->display_table($htmlrows, $htmlcolumns);
         $html .= html_writer::empty_tag('button', array('id' => 'release-submit', 'name' => 'release', 'type' => 'submit'));
-        $html .= html_writer::empty_tag('input', array( 'type'=>'hidden', 'id'=>'importgrades', 'name'=> 'importgrades', 'value'=>'import'));
+        $html .= html_writer::empty_tag('button', array('id'=>'importgrades-submit', 'name'=> 'importgrades', 'type'=>'submit'));
         $html .= html_writer::end_tag('form');
         $html .= $this->footer();
         return $html;

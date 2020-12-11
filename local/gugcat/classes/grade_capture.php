@@ -110,15 +110,14 @@ class grade_capture{
     public static function get_columns($moduleid, $courseid){
         //global $gradeitems from get rows function
         global $gradeitems;
-
         $columns = array();
         if(!$firstgradeid = local_gugcat::get_grade_item_id($courseid, $moduleid, get_string('moodlegrade', 'local_gugcat'))){
-            $firstgrade = get_string('gradebookgrade', 'local_gugcat');
+            $firstgrade = get_string('moodlegrade', 'local_gugcat').'<br>[Date]';
             $columns = array($firstgrade);
         }
         foreach ($gradeitems as $item) {
             if($item->itemname == get_string('moodlegrade', 'local_gugcat')){
-                $columns[$item->id] = $item->itemname.'<br>'.date("(j/n/Y)", strtotime(userdate($item->timecreated)));
+                $columns[$item->id] = $item->itemname.'<br>'.date("[j/n/Y]", strtotime(userdate($item->timemodified)));
             }else{
                 $columns[$item->id] = $item->itemname;
             }
