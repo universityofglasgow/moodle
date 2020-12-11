@@ -55,9 +55,11 @@ $PAGE->set_cm($selectedmodule);
 
 $scaleid = local_gugcat::get_scaleid($selectedmodule);
 //populate $GRADES with scales
+local_gugcat::$STUDENTS = $students;
+//populate $STUDENTS 
 local_gugcat::set_grade_scale($scaleid);
 //populate provisional grade id and set it to static
-local_gugcat::set_prv_grade_id($courseid, $selectedmodule->id, $scaleid);
+local_gugcat::set_prv_grade_id($courseid, $selectedmodule, $scaleid);
 //---------submit multiple add grades
 if (!empty($_POST)){
     // release provisional grade
@@ -71,7 +73,7 @@ if (!empty($_POST)){
         $grades = $_POST['grades'];
         $reason = $_POST['reason'];
         if(array_column($grades,'grade')){
-            $gradeitemid = local_gugcat::add_grade_item($courseid, $reason, $selectedmodule->id, $scaleid);
+            $gradeitemid = local_gugcat::add_grade_item($courseid, $reason, $selectedmodule, $scaleid);
             foreach ($grades as $item) {
                 if(isset($item['grade'])){
                     $grade = array_search($item['grade'], local_gugcat::$GRADES);
@@ -88,7 +90,7 @@ if (!empty($_POST)){
         }
     }
     elseif(isset($_POST['importgrades'])){
-        local_gugcat::import_from_gradebook($courseid, $selectedmodule, $students, $scaleid);
+        grade_capture::import_from_gradebook($courseid, $selectedmodule, $students, $scaleid);
         local_gugcat::notify_success('successimport');
         unset($_POST);
         header("Location: ".$_SERVER['REQUEST_URI']);
@@ -99,7 +101,7 @@ if (!empty($_POST)){
 }
 
 $rows = grade_capture::get_rows($course, $selectedmodule, $students);
-$columns = grade_capture::get_columns($selectedmodule->id, $courseid);
+$columns = grade_capture::get_columns();
 
 echo $OUTPUT->header();
 $renderer = $PAGE->get_renderer('local_gugcat');

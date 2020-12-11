@@ -114,7 +114,6 @@ button.tablink, button.tablink:focus{
 .btn-add-import {
     background-color: #005c8a;
     color: white;
-    width: 250px;
 }
 
 .btn-approve {
@@ -324,7 +323,7 @@ td > .grade-discrepancy{
     font-family:  'PT Sans', sans-serif;
 }
 
-#release-submit {
+#release-submit, #importgrades-submit {
     position: absolute;
     visibility: hidden;
 }

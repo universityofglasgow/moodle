@@ -43,6 +43,7 @@ class local_gugcat {
 
     public static $GRADES = array();
     public static $PRVGRADEID = null;
+    public static $STUDENTS = array();
 
     public static function get_reasons(){
         return array(
@@ -98,9 +99,9 @@ class local_gugcat {
         return $DB->sql_compare_text('iteminfo') . ' = :iteminfo';
     }
 
-    public static function set_prv_grade_id($courseid, $modid, $scaleid){
+    public static function set_prv_grade_id($courseid, $mod, $scaleid){
         $pgrd_str = get_string('provisionalgrd', 'local_gugcat');
-        self::$PRVGRADEID = self::add_grade_item($courseid, $pgrd_str, $modid, $scaleid);
+        self::$PRVGRADEID = self::add_grade_item($courseid, $pgrd_str, $mod, $scaleid);
         return self::$PRVGRADEID;
     }
 
@@ -115,13 +116,13 @@ class local_gugcat {
         return $DB->get_field_select(self::TBL_GRADE_ITEMS, 'id', $select, $params);
     }
 
-    public static function add_grade_item($courseid, $reason, $modid, $scaleid){
+    public static function add_grade_item($courseid, $reason, $mod, $scaleid){
         global $DB;
 
         //get scale size for max grade
         $scalesize = sizeof(self::$GRADES);
         // check if gradeitem already exists using $reason, $courseid, $activityid
-        if(!$gradeitemid = self::get_grade_item_id($courseid, $modid, $reason)){
+        if(!$gradeitemid = self::get_grade_item_id($courseid, $mod->id, $reason)){
             // create new gradeitem
              $gradeitem = new grade_item(array('id'=>0, 'courseid'=>$courseid));
             
@@ -137,15 +138,16 @@ class local_gugcat {
              $gradeitem->hidden = 1;
              $gradeitem->outcomeid = null;
              $gradeitem->categoryid = $categoryid;
-             $gradeitem->iteminfo = $modid;
+             $gradeitem->iteminfo = $mod->id;
              $gradeitem->itemname = $reason;
              $gradeitem->iteminstance= null;
              $gradeitem->timemodified = null;
              $gradeitem->itemmodule=null;
              $gradeitem->scaleid = $scaleid;
-             $gradeitem->itemtype = 'manual'; // All new items to be manual only.
-     
-             return $gradeitem->insert();
+             $gradeitem->itemtype = 'manual'; // All new items to be manual only. 
+             $gradeitemid = $gradeitem->insert();
+             grade_get_grades($courseid, 'mod', $mod->modname, $mod->instance, array_keys(self::$STUDENTS));
+             return $gradeitemid;
         }else {
             return $gradeitemid;
         }
@@ -176,8 +178,7 @@ class local_gugcat {
             //if insert successful - update provisional grade
             return ($grade_->insert()) ? self::update_grade($userid, self::$PRVGRADEID, $grade) : false;
             
-        }
-        else{
+        }else{
             //updates empty grade objects in database
             $grade_->timemodified = time();
             //if update successful - update provisional grade
@@ -253,34 +254,5 @@ class local_gugcat {
         $assign_user_flags->workflowstate = $statetype;
         $assign->update_user_flags($assign_user_flags);
     }
-    
-    public static function import_from_gradebook($courseid, $module, $students, $scaleid){
-        global $DB;
-        $mggradeitemid = local_gugcat::add_grade_item($courseid, get_string('moodlegrade', 'local_gugcat'), $module->id, $scaleid);
 
-        $gradeitem_ = new grade_item(array('id'=>$mggradeitemid), true);
-        $gradeitem_->timemodified = time();
-        //update timemodified gradeitem
-        $gradeitem_->update();
-
-        $assign = new assign(context_module::instance($module->id), $module, $courseid);
-        foreach($students as $student){
-            $params = array(
-                'assignment' => $module->instance,
-                'userid'     => $student->id
-            );
-
-            if(strcmp($module->modname, 'assign') == 0){
-                $grade = $DB->get_record(self::TBL_ASSIGN_GRADES, $params, '*');
-                $assign->update_grade($grade);
-                self::update_workflow_state($assign, $student->id, ASSIGN_MARKING_WORKFLOW_STATE_INREVIEW);
-            }
-            else{
-                $grading_info = grade_get_grades($courseid, 'mod', $module->modname, $module->instance, $student->id);
-                $grade = $grading_info->items[0]->grades[$student->id]->grade;
-            }
-            self::update_grade($student->id, $mggradeitemid, $grade->grade);
-            self::update_grade($student->id, self::$PRVGRADEID, $grade->grade);
-        } 
-    }
 }
