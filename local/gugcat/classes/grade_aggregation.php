@@ -47,7 +47,7 @@ class grade_aggregation{
         $rows = array();
         $gradebook = array();
         foreach ($modules as $mod) {
-            $scaleid = local_gugcat::get_scaleid($course->id, $mod);
+            $scaleid = local_gugcat::get_scaleid($mod);
             $mod->scaleid =  $scaleid;
             $mod->grades = new stdClass();
 
