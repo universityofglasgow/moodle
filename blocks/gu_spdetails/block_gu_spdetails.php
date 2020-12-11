@@ -66,6 +66,12 @@ class block_gu_spdetails extends block_base {
             $a->courserecord->url = self::return_courseurl($a->course);
 
             $a->assessment = self::retrieve_assessmentrecord($a->name, $a->instance);
+            $a->assessment->startdate = property_exists($a->assessment, 'startdate') ? $a->assessment->startdate : null;
+            $a->assessment->duedate = property_exists($a->assessment, 'duedate') ? $a->assessment->duedate : null;
+            $a->assessment->weight = property_exists($a->assessment, 'weight') ? $a->assessment->weight : null;
+            $a->assessment->gradeid = property_exists($a->assessment, 'gradeid') ? $a->assessment->gradeid : null;
+            $a->assessment->gradingduedate = property_exists($a->assessment, 'gradingduedate') ?
+                                             $a->assessment->gradingduedate : null;
             $submission = self::retrieve_submission($a->name, $a->instance, $userid);
             $submission->status = property_exists($submission, 'status') ? $submission->status : null;
             $a->submission = self::return_status($submission->status,
@@ -73,7 +79,9 @@ class block_gu_spdetails extends block_base {
                                                  $a->assessment->duedate);
             $a->assessment->url = self::return_assessmenturl($a->name, $a->id, $a->submission->hasurl);
 
-            $a->formatted = new stdClass;
+            $a->formatted = new stdClass();
+            $a->grades = new stdClass();
+            $a->feedback = new stdClass();
             if ($a->name == 'wiki' || $a->name == 'survey'){
 
                 if ($a->submission->status != 'submitted') {
@@ -81,17 +89,22 @@ class block_gu_spdetails extends block_base {
                 }
 
                 if ($a->completionexpected == 0){
-                    $a->formatted->duedate = '-';
+                    $a->formatted->duedate = get_string('emptyvalue', $lang);
                 } else {
-                    $a->formatted->duedate = userdate($a->completionexpected,  get_string('convertdate', $lang));
+                    $a->formatted->duedate = $a->assessment->duedate ?
+                                             userdate($a->assessment->duedate,  get_string('convertdate', $lang)) :
+                                             get_string('emptyvalue', $lang);
                 }
 
-                $a->formatted->weight = "-";
-                $a->grades->gradetext = "-";
-                $a->feedback->text = "-";
+                $a->formatted->weight = get_string('emptyvalue', $lang);
+                $a->grades->gradetext = get_string('emptyvalue', $lang);
+                $a->feedback->text = get_string('emptyvalue', $lang);
             } else {
-                $a->formatted->weight = intval($a->assessment->weight * 100).'%';
-                $a->formatted->duedate = $a->assessment->duedate == 0 ? '-' : userdate($a->assessment->duedate,  get_string('convertdate', $lang));
+                $a->formatted->weight = $a->assessment->weight ? (($a->assessment->weight) * 100).'%' :
+                                         get_string('emptyvalue', $lang);
+                $a->formatted->duedate = $a->assessment->duedate ?
+                                         userdate($a->assessment->duedate,  get_string('convertdate', $lang)) :
+                                         get_string('emptyvalue', $lang);
                 $a->grades = self::retrieve_grades($a->name, $a->assessment->gradeid, $userid);
                 if ($a->name == 'quiz') {
                     $a->grades->feedback = $a->assessment->feedback;
@@ -99,15 +112,19 @@ class block_gu_spdetails extends block_base {
                 $a->grades->finalgrade = property_exists($a->grades, 'finalgrade') ? $a->grades->finalgrade : null;
                 $a->assessment->gradeid = array_key_exists('gradeid', $a->assessment) ? $a->assessment->gradeid : null;
                 $a->grades->feedback = property_exists($a->grades, 'feedback') ? $a->grades->feedback : null;
-                $a->grades->gradetext = self::return_grade($a->grades->finalgrade, $a->assessment->gradingduedate);
-                $a->feedback = self::return_feedback($a->grades->feedback, $a->assessment->gradingduedate);
+                $a->grades->gradetext = ($a->assessment->gradingduedate) ?
+                                        self::return_grade($a->grades->finalgrade, $a->assessment->gradingduedate) :
+                                        get_string('emptyvalue', $lang);
+                $a->feedback = ($a->assessment->gradingduedate) ?
+                               self::return_feedback($a->grades->feedback, $a->assessment->gradingduedate) :
+                               get_string('emptyvalue', $lang);
             }
 
             array_push($assessments_data, $a);
         }
 
         $templatecontext = (array)[
-            'assessments'       => $assessments,
+            'assessments'       => json_encode($assessments_data),
             'data'              => $assessments_data,
             'hasassessments'    => $hasassessments,
             'header_course'     => get_string('header_course', $lang),
@@ -121,7 +138,7 @@ class block_gu_spdetails extends block_base {
             'noassessments_img' => '../blocks/gu_spdetails/pix/assignment.svg'
         ];
 
-        $this->content         = new stdClass;
+        $this->content         = new stdClass();
         $this->content->text   = $OUTPUT->render_from_template('block_gu_spdetails/spdetails', $templatecontext);
      
         return $this->content;
@@ -184,11 +201,10 @@ class block_gu_spdetails extends block_base {
      */
     public static function retrieve_assessmentrecord($name, $instance) {
         global $DB;
-        $assessmentrecord = new stdClass;
 
         switch($name) {
             case 'assign':
-                $sql = "SELECT ma.name as `name`,
+                $sql = "SELECT ma.name,
                         ma.allowsubmissionsfromdate as `startdate`,
                         ma.duedate, ma.gradingduedate, mgi.id as `gradeid`,
                         mgi.aggregationcoef as `weight01`, mgi.aggregationcoef2 as `weight`
@@ -196,10 +212,11 @@ class block_gu_spdetails extends block_base {
                         JOIN `mdl_grade_items` mgi ON mgi.iteminstance = ma.id
                         AND mgi.itemmodule = ?
                         WHERE ma.id = ?";
-                $assessmentrecord = $DB->get_record_sql($sql, array($name, $instance));
+                $assessmentrecord = ($assessmentrecord = $DB->get_record_sql($sql, array($name, $instance))) ?
+                                    $assessmentrecord : new stdClass;
                 break;
             case 'quiz':
-                $sql = "SELECT mq.name as `name`,
+                $sql = "SELECT DISTINCT mq.name,
                         mq.timeopen as `startdate`,
                         mq.timeclose as `duedate`,
                         (mq.timeclose + (86400 * 14)) as `gradingduedate`,
@@ -210,21 +227,12 @@ class block_gu_spdetails extends block_base {
                         AND mgi.itemmodule = ?
                         JOIN `mdl_grade_grades` mgg ON mgg.itemid = mgi.id
                         WHERE mq.id = ?";
-                $assessmentrecord = $DB->get_record_sql($sql, array($name, $instance));
-                break;
-            case 'survey':
-                $assessmentrecord = $DB->get_record('survey', array('id' => $instance), 'name');
-                break;
-            case 'wiki':
-                $assessmentrecord = $DB->get_record('wiki', array('id' => $instance), 'name');
-                break;
-            case 'workshop':
-                $assessmentrecord = $DB->get_record('workshop', array('id' => $instance),
-                                                    'name, id as `gradeid`, submissionstart as `startdate`, ' .
-                                                    'submissionend as `duedate`, assessmentend as `gradingduedate`');
+                $assessmentrecord = ($assessmentrecord = $DB->get_record_sql($sql, array($name, $instance))) ?
+                                     $assessmentrecord : new stdClass();
                 break;
             default:
-                $assessmentrecord->name = null;
+                $assessmentrecord = ($assessmentrecord = $DB->get_record($name, array('id' => $instance), 'name')) ?
+                                 $assessmentrecord : new stdClass();
                 break;
         }
 
@@ -280,27 +288,22 @@ class block_gu_spdetails extends block_base {
                 $statusrecord = $DB->get_record('assign_submission',
                                                 array('assignment' => $instance, 'userid' => $userid),
                                                 'status');
-
-                $statusrecord = is_bool($statusrecord) ? new stdClass : $statusrecord;
+                $statusrecord = is_bool($statusrecord) ? new stdClass() : $statusrecord;
                 break;
             case 'quiz': 
                 $record = $DB->get_record('quiz_grades',
                                                 array('quiz' => $instance, 'userid' => $userid));
-
+                $statusrecord = new stdClass();
                 $statusrecord->status = $record ? 'submitted' : null ;
                 break;
             case 'survey':
                 $record = $DB->get_record('survey_answers',
                                                 array('survey' => $instance, 'userid' => $userid));
-                $statusrecord->status = $record ? 'submitted' : null ;
-                break;
-            case 'workshop':
-                $record = $DB->get_record('workshop_submissions',
-                                                array('workshopid' => $instance, 'authorid' => $userid));
+                $statusrecord = new stdClass();                             
                 $statusrecord->status = $record ? 'submitted' : null ;
                 break;
             default:
-                $statusrecord = new stdClass;
+                $statusrecord = new stdClass();
                 break;
         }
 
@@ -319,14 +322,14 @@ class block_gu_spdetails extends block_base {
     public static function return_status($status, $startdate, $enddate) {
         global $DB;
         $lang = 'block_gu_spdetails';
-        $submission = new stdClass;
+        $submission = new stdClass();
         $submission->hasurl = false;
 
         if($status == 'submitted') {
             $submission->status = $status;
             $submission->suffix = $status;
         }else{
-            if(time() > $startdate) {
+            if(time() > $startdate && $enddate) {
                 $submission->status = (time() <= $enddate) ? get_string('status_tosubmit', $lang) :
                                                              get_string('status_overdue', $lang);
                 $submission->suffix = (time() <= $enddate) ? get_string('class_tosubmit', $lang) :
@@ -349,8 +352,7 @@ class block_gu_spdetails extends block_base {
      * @param int $userid User ID
      * @return stdClass $gradesrecord Grades object if the Activity has a corresponding
      *  Grade Grades table and a corresponding record is found, return empty object if no
-     *  record is found.
-     *  Wiki and Survey has no grades.
+     *  record is found
      */
     public static function retrieve_grades($name, $gradeid, $userid) {
         global $DB;
@@ -361,7 +363,7 @@ class block_gu_spdetails extends block_base {
                                                 array('itemid' => $gradeid, 'userid' => $userid),
                                                 'finalgrade, feedback');
 
-                $gradesrecord = is_bool($gradesrecord) ? new stdClass : $gradesrecord;
+                $gradesrecord = is_bool($gradesrecord) ? new stdClass() : $gradesrecord;
                 break;
             case 'quiz':
                 $gradesrecord = $DB->get_record('quiz_grades',
@@ -369,15 +371,8 @@ class block_gu_spdetails extends block_base {
                                                 '*');
                 $gradesrecord->finalgrade = $gradesrecord->grade;
                 break;
-            case 'workshop':
-                $gradesrecord = $DB->get_record('workshop_submissions',
-                                                array('workshopid' => $gradeid, 'authorid' => $userid),
-                                                'grade as `finalgrade`, feedbackauthor as `feedback`');
-
-                $gradesrecord = is_bool($gradesrecord) ? new stdClass : $gradesrecord;
-                break;
             default:
-                $gradesrecord = new stdClass;
+                $gradesrecord = new stdClass();
                 break;
         }
 
@@ -395,14 +390,16 @@ class block_gu_spdetails extends block_base {
     public static function return_grade($grade, $gradingduedate) {
         global $DB;
         $lang = 'block_gu_spdetails';
-        $gradetext = $grade ? $grade :
+
+        $gradetext = ($grade) ? $grade : 
                      get_string('due', $lang).userdate($gradingduedate,  get_string('convertdate', $lang));
-        return $gradingduedate == 0 ? '-' : $gradetext;
+        return $gradetext;
     }
 
     /**
      * Returns Feedback object containing (bool) hasurl and (string) text
      *
+     * @todo Return Feedback for Workshop
      * @param string $feedback
      * @param int $gradingduedate
      * @return stdClass $feedbackrecord Feedback object containing (bool) `hasurl` to determine
@@ -411,15 +408,12 @@ class block_gu_spdetails extends block_base {
     public static function return_feedback($feedback, $gradingduedate) {
         global $DB;
         $lang = 'block_gu_spdetails';
-        $feedbackrecord = new stdClass;
+        $feedbackrecord = new stdClass();
         $feedbackrecord->hasurl = false;
 
         $feedbackrecord->hasurl = $feedback ? true : false;
-        $feedbackrecord->text = $feedback ? get_string('readfeedback', $lang) :
-                                get_string('due', $lang).userdate($gradingduedate, get_string('convertdate', $lang));
-        if ($gradingduedate == 0){
-            $feedbackrecord->text = '-';
-        }
+        $feedbackrecord->text = $feedback ? get_string('readfeedback', $lang) : 
+                                 get_string('due', $lang).userdate($gradingduedate,  get_string('convertdate', $lang));
         return $feedbackrecord;
     }
 }
