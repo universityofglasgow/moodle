@@ -98,10 +98,7 @@ define(['jquery', 'core/str' ], function($, Str) {
                 $("#btn-assessmenttab").removeClass("active");
             }
 
-            if(($(".gradeitems").text().includes("Moodle Grade[Date]"))){
-                $("#btn-saveadd").hide();
-                $(".addnewgrade").hide();
-            }else{
+            if(!($(".gradeitems").text().includes("Moodle Grade[Date]"))){
                 $("#btn-saveadd").show();
                 $(".addnewgrade").show();
             }
