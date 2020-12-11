@@ -91,7 +91,7 @@ class block_gu_spdetails extends block_base {
                 if ($a->completionexpected == 0){
                     $a->formatted->duedate = get_string('emptyvalue', $lang);
                 } else {
-                    $a->formatted->duedate = $a->assessment->duedate ?
+                    $a->formatted->duedate = ($a->assessment->duedate) ?
                                              userdate($a->assessment->duedate,  get_string('convertdate', $lang)) :
                                              get_string('emptyvalue', $lang);
                 }
@@ -100,9 +100,9 @@ class block_gu_spdetails extends block_base {
                 $a->grades->gradetext = get_string('emptyvalue', $lang);
                 $a->feedback->text = get_string('emptyvalue', $lang);
             } else {
-                $a->formatted->weight = $a->assessment->weight ? (($a->assessment->weight) * 100).'%' :
+                $a->formatted->weight = ($a->assessment->weight) ? (($a->assessment->weight) * 100).'%' :
                                          get_string('emptyvalue', $lang);
-                $a->formatted->duedate = $a->assessment->duedate ?
+                $a->formatted->duedate = ($a->assessment->duedate) ?
                                          userdate($a->assessment->duedate,  get_string('convertdate', $lang)) :
                                          get_string('emptyvalue', $lang);
                 $a->grades = self::retrieve_grades($a->name, $a->assessment->gradeid, $userid);
@@ -213,7 +213,7 @@ class block_gu_spdetails extends block_base {
                         AND mgi.itemmodule = ?
                         WHERE ma.id = ?";
                 $assessmentrecord = ($assessmentrecord = $DB->get_record_sql($sql, array($name, $instance))) ?
-                                    $assessmentrecord : new stdClass;
+                                    $assessmentrecord : new stdClass();
                 break;
             case 'quiz':
                 $sql = "SELECT DISTINCT mq.name,
@@ -272,7 +272,7 @@ class block_gu_spdetails extends block_base {
     /**
      * Retrieves Assessment Status from database.
      *
-     * @todo Query for Quiz, Survey, Wiki, Workshop activity types
+     * @todo Query for Workshop activity type
      * @param string $name Activity Name (e.g. 'assign', 'quiz')
      * @param int $instance Activity Instance
      * @param int $userid User ID
@@ -391,7 +391,7 @@ class block_gu_spdetails extends block_base {
         global $DB;
         $lang = 'block_gu_spdetails';
 
-        $gradetext = ($grade) ? $grade : 
+        $gradetext = $grade ? $grade : 
                      get_string('due', $lang).userdate($gradingduedate,  get_string('convertdate', $lang));
         return $gradetext;
     }

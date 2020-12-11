@@ -18,6 +18,11 @@ define(['jquery', 'jqueryui', 'theme_hillhead/jquery.ui.touch-punch-improved'], 
                 $("#starredCourses i").addClass("fa-arrows");
                 $("#starredCourses").sortable({cancel: '.allcourses'});
                 $("#starredCourses").disableSelection();
+                $("#starredCourses li .media").each(function() {
+                    var link = $(this).parent().attr("href").replace("/course/view", "/theme/hillhead/course-unstar");
+                    var title = "Unstar " + $(this).find(".media-body").text();
+                    $(this).append('<span class="media-right"><a class="unpinCourseBadge" href="'+link+'" title="'+title+'"><i class="fa fa-trash"></i></a></span>');
+                });
                 return false;
             });
             $("#saveSidebar").click(function() {
@@ -32,6 +37,7 @@ define(['jquery', 'jqueryui', 'theme_hillhead/jquery.ui.touch-punch-improved'], 
                 $("#rearrangeSidebar").show();
                 $("#starredCourses i").addClass("fa-star");
                 $("#starredCourses i").removeClass("fa-arrows");
+                 $("#starredCourses .media-right").remove();
                 return false;
             });
         }

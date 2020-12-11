@@ -23,42 +23,39 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 require_once("$CFG->libdir/formslib.php");
+require_once($CFG->dirroot . '/local/gugcat/locallib.php');
 class addgradeform extends moodleform {
     //Add elements to form
     public function definition() {
         global $CFG;
  
-        $reasons = array(
-            0=>"Good Cause",
-            1=>"Late Penalty",
-            2=>"Capped Grade",
-            3=>"Second Grade",
-            4=>"Third Grade",
-            5=>"Agreed Grade",
-            6=>"Moderated Grade",
-            7=>"Other"
-        );
+       
 
         $mform = $this->_form; // Don't forget the underscore! 
         $mform->addElement('html', '<div class="mform-container">');
 
-        $mform->addElement('select', 'reasons', 'Reason for additional grade', $reasons,['class' => 'mform-custom']); 
+        $mform->addElement('select', 'reasons', 'Reason for additional grade', local_gugcat::get_reasons(),['class' => 'mform-custom']); 
         $mform->setType('reasons', PARAM_NOTAGS); 
         $mform->setDefault('reasons', "Select Reason");   
 
-        $mform->addElement('text', 'other-reason', 'Others', ['class' => 'mform-custom']); 
-        $mform->setType('other-reason', PARAM_NOTAGS); 
-        $mform->hideIf('other-reason', 'reasons', 'neq', 7); 
-        $mform->setDefault('other-reason', "Please Specify");
+        $mform->addElement('text', 'otherreason', 'Others', ['class' => 'mform-custom']); 
+        $mform->setType('otherreason', PARAM_NOTAGS); 
+        $mform->hideIf('otherreason', 'reasons', 'neq', 8); 
+        $mform->setDefault('otherreason', "Please Specify");
 
-        $mform->addElement('select', 'grade', 'Grade', ['0' => "A1", "1" => "A2"], ['class' => 'mform-custom']); 
+        $mform->addElement('select', 'grade', 'Grade', local_gugcat::$GRADES, ['class' => 'mform-custom']); 
         $mform->setType('grade', PARAM_NOTAGS); 
         $mform->setDefault('grade', "Select Grade");
-
         $mform->addElement('html', '</div>');
         
         $this->add_action_buttons(false, get_string('confirmgrade', 'local_gugcat'), ['class' => 'float-right']);
-
+        //hidden params
+        $mform->addElement('hidden', 'studentid', $this->_customdata['studentid']);
+        $mform->setType('studentid', PARAM_ACTION);
+        $mform->addElement('hidden', 'id', $this->_customdata['id']);
+        $mform->setType('id', PARAM_ACTION);
+        $mform->addElement('hidden', 'activityid', $this->_customdata['activityid']);
+        $mform->setType('activityid', PARAM_ACTION);
         
     }    
         

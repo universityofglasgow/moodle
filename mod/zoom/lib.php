@@ -44,6 +44,7 @@ defined('MOODLE_INTERNAL') || die();
 function zoom_supports($feature) {
     switch($feature) {
         case FEATURE_BACKUP_MOODLE2:
+        case FEATURE_COMPLETION_TRACKS_VIEWS:
         case FEATURE_GRADE_HAS_GRADE:
         case FEATURE_GROUPINGS:
         case FEATURE_GROUPMEMBERSONLY:
@@ -68,20 +69,24 @@ function zoom_supports($feature) {
 function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     global $CFG, $DB;
     require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
+    $service = new mod_zoom_webservice();
 
-    // Deals with password manager issues
+    // Deals with password manager issues.
     $zoom->password = $zoom->meetingcode;
     unset($zoom->meetingcode);
 
-    if (empty($zoom->requirepassword)) {
-        $zoom->password = '';
-    }
-
     $zoom->course = (int) $zoom->course;
 
-    $service = new mod_zoom_webservice();
     $response = $service->create_meeting($zoom);
     $zoom = populate_zoom_from_response($zoom, $response);
+    if (!empty($zoom->schedule_for)) {
+        // Wait until after receiving a successful response from zoom to update the host
+        // based on the schedule_for field. Zoom handles the schedule for on their
+        // end, but returns the host as the person who created the meeting, not the person
+        // that it was scheduled for.
+        $correcthostzoomuser = $service->get_user($zoom->schedule_for);
+        $zoom->host_id = $correcthostzoomuser->id;
+    }
 
     $zoom->id = $DB->insert_record('zoom', $zoom);
 
@@ -104,18 +109,15 @@ function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
 function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     global $CFG, $DB;
     require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
+    $service = new mod_zoom_webservice();
 
     // The object received from mod_form.php returns instance instead of id for some reason.
     $zoom->id = $zoom->instance;
     $zoom->timemodified = time();
 
-    // Deals with password manager issues
+    // Deals with password manager issues.
     $zoom->password = $zoom->meetingcode;
     unset($zoom->meetingcode);
-
-    if (empty($zoom->requirepassword)) {
-        $zoom->password = '';
-    }
 
     $DB->update_record('zoom', $zoom);
 
@@ -124,9 +126,15 @@ function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     $zoom->webinar = $updatedzoomrecord->webinar;
 
     // Update meeting on Zoom.
-    $service = new mod_zoom_webservice();
     try {
         $service->update_meeting($zoom);
+        if (!empty($zoom->schedule_for)) {
+            // Only update this if we actually get a valid user.
+            if ($correcthostzoomuser = $service->get_user($zoom->schedule_for)) {
+                $zoom->host_id = $correcthostzoomuser->id;
+                $DB->update_record('zoom', $zoom);
+            }
+        }
     } catch (moodle_exception $error) {
         return false;
     }
@@ -183,13 +191,13 @@ function populate_zoom_from_response(stdClass $zoom, stdClass $response) {
     if (isset($response->settings->alternative_hosts)) {
         $newzoom->alternative_hosts = $response->settings->alternative_hosts;
     }
-    if(isset($response->settings->mute_upon_entry)) {
+    if (isset($response->settings->mute_upon_entry)) {
         $newzoom->option_mute_upon_entry = $response->settings->mute_upon_entry;
     }
-    if(isset($response->settings->meeting_authentication)) {
+    if (isset($response->settings->meeting_authentication)) {
         $newzoom->option_authenticated_users = $response->settings->meeting_authentication;
     }
-    if(isset($response->settings->waiting_room)) {
+    if (isset($response->settings->waiting_room)) {
         $newzoom->option_waiting_room = $response->settings->waiting_room;
     }
     $newzoom->timemodified = time();
@@ -523,8 +531,6 @@ function zoom_get_file_info($browser, $areas, $course, $cm, $context, $filearea,
  * @param array $options additional options affecting the file serving
  */
 function zoom_pluginfile($course, $cm, $context, $filearea, array $args, $forcedownload, array $options=array()) {
-    global $DB, $CFG;
-
     if ($context->contextlevel != CONTEXT_MODULE) {
         send_file_not_found();
     }

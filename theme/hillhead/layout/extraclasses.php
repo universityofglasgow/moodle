@@ -88,6 +88,11 @@ switch($theme_hillhead_contrast) {
         $extraclasses[]='hillhead-contrast-bw';
         $theme_hillhead_stripstyles = 'on';
         break;
+    case 'wb':
+        $extraclasses[]='hillhead-contrast';
+        $extraclasses[]='hillhead-contrast-wb';
+        $theme_hillhead_stripstyles = 'on';
+        break;
 }
 
 $theme_hillhead_bold = get_user_preferences('theme_hillhead_bold');
