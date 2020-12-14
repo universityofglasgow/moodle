@@ -40,6 +40,7 @@ $string['forename'] = 'Forename';
 $string['gugcat'] = 'Grade Capture and Aggregation Tool';
 $string['gradebookgrade'] = 'Gradebook Grade ';
 $string['gradediscrepancy'] = 'Grade Discrepancy';
+$string['hidefromstudent'] = 'Hide from student';
 $string['historicalamendments'] = 'Historical Amendments';
 $string['importgrades'] = 'Import Grades from Moodle';
 $string['moodlegrade'] = 'Moodle Grade';
