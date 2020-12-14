@@ -178,7 +178,7 @@ class local_gugcat {
             $grade_->timecreated = time();
             $grade_->timemodified = time();
             //if insert successful - update provisional grade
-            return (!$grade_->insert()) ? false : (self::$PRVGRADEID ? self::update_grade($userid, self::$PRVGRADEID, $grade) : false);
+            return (!$grade_->insert()) ? false : ((self::$PRVGRADEID && !is_null($grade)) ? (self::update_grade($userid, self::$PRVGRADEID, $grade)) : false);
             
         }else{
             //updates empty grade objects in database
@@ -216,7 +216,8 @@ class local_gugcat {
 
     public static function filter_grade_version($gradeitems, $studentid){
         foreach($gradeitems as $gradeitem){
-            if(is_null($gradeitem->grades[$studentid]->finalgrade)) {
+            $finalgrade = (isset($gradeitem->grades[$studentid]) ? $gradeitem->grades[$studentid]->finalgrade : null); 
+            if(is_null($finalgrade)) {
                 unset($gradeitems[$gradeitem->id]);
             }
         }
