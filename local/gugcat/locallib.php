@@ -216,7 +216,8 @@ class local_gugcat {
 
     public static function filter_grade_version($gradeitems, $studentid){
         foreach($gradeitems as $gradeitem){
-            if(is_null($gradeitem->grades[$studentid]->finalgrade)) {
+            $finalgrade = (isset($gradeitem->grades[$studentid]) ? $gradeitem->grades[$studentid]->finalgrade : null); 
+            if(is_null($finalgrade)) {
                 unset($gradeitems[$gradeitem->id]);
             }
         }
