@@ -142,7 +142,7 @@ class block_gu_spoverview extends block_base {
         $params = array($userid, 'mod');
         $incourseids = implode(',', $courseids);
 
-        $sql = "SELECT mgi.itemname, mgg.finalgrade
+        $sql = "SELECT DISTINCT mgi.id, mgi.itemname, mgg.finalgrade
                 FROM `mdl_grade_items` mgi
                 JOIN `mdl_grade_grades` mgg ON mgi.id = mgg.itemid AND mgg.userid = ? AND mgg.finalgrade IS NOT NULL
                 WHERE mgi.itemtype = ? AND mgi.courseid IN (".$incourseids.")";
