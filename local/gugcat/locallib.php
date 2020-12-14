@@ -178,7 +178,7 @@ class local_gugcat {
             $grade_->timecreated = time();
             $grade_->timemodified = time();
             //if insert successful - update provisional grade
-            return (!$grade_->insert()) ? false : (self::$PRVGRADEID ? self::update_grade($userid, self::$PRVGRADEID, $grade) : false);
+            return (!$grade_->insert()) ? false : ((self::$PRVGRADEID && !is_null($grade)) ? (self::update_grade($userid, self::$PRVGRADEID, $grade)) : false);
             
         }else{
             //updates empty grade objects in database
