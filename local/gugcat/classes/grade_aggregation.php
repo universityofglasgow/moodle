@@ -49,17 +49,17 @@ class grade_aggregation{
         foreach ($modules as $mod) {
             $scaleid = local_gugcat::get_scaleid($mod);
             $mod->scaleid =  $scaleid;
-            $mod->grades = new stdClass();
+            $grades = new stdClass();
 
             //get provisional grades
-            $prvgrdid = local_gugcat::set_prv_grade_id($course->id, $mod->id, $scaleid);
+            $prvgrdid = local_gugcat::set_prv_grade_id($course->id, $mod, $scaleid);
             $sort = 'id';
             $fields = 'userid, itemid, id, finalgrade, timemodified';
-            $mod->grades->provisional = $DB->get_records('grade_grades', array('itemid' => $prvgrdid), $sort, $fields);
+            $grades->provisional = $DB->get_records('grade_grades', array('itemid' => $prvgrdid), $sort, $fields);
             //get grades from gradebook
             $gbgrades = grade_get_grades($course->id, 'mod', $mod->modname, $mod->instance, array_keys($students));
-            $mod->grades->gradebook = $gbgrades->items[0]->grades;
-
+            $grades->gradebook = isset($gbgrades->items[0]) ? $gbgrades->items[0]->grades : null;
+            $mod->grades = $grades;
             array_push($gradebook, $mod);
         }
 
@@ -72,8 +72,9 @@ class grade_aggregation{
             $gradecaptureitem->forename = $student->firstname;
             $gradecaptureitem->grades = array();
             foreach ($gradebook as $item) {
-                $pg = $item->grades->provisional[$student->id];
-                $gb = $item->grades->gradebook[$student->id];
+                $grades = $item->grades;
+                $pg = isset($grades->provisional[$student->id]) ? $grades->provisional[$student->id] : null;
+                $gb = isset($grades->gradebook[$student->id]) ? $grades->gradebook[$student->id] : null;
                 $grd = (isset($pg) && !is_null($pg->finalgrade)) ? $pg->finalgrade : ((isset($gb) && !is_null($gb->grade)) ? $gb->grade : null);
                 local_gugcat::set_grade_scale($item->scaleid);
                 $grade = is_null($grd) ? get_string('nograderecorded', 'local_gugcat') : local_gugcat::convert_grade($grd);
