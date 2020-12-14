@@ -74,20 +74,11 @@ class block_gu_spdetails extends block_base {
                                              $a->assessment->gradingduedate : null;
             $submission = self::retrieve_submission($a->name, $a->instance, $userid);
             $submission->status = property_exists($submission, 'status') ? $submission->status : null;
-            $a->submission = self::return_status($submission->status,
-                                                 $a->assessment->startdate,
-                                                 $a->assessment->duedate);
-            $a->assessment->url = self::return_assessmenturl($a->name, $a->id, $a->submission->hasurl);
 
             $a->formatted = new stdClass();
             $a->grades = new stdClass();
             $a->feedback = new stdClass();
-            if ($a->name == 'wiki' || $a->name == 'survey'){
-
-                if ($a->submission->status != 'submitted') {
-                    $a->submission = null;
-                }
-
+            if ($a->name == 'wiki' || $a->name == 'forum'){
                 if ($a->completionexpected == 0){
                     $a->formatted->duedate = get_string('emptyvalue', $lang);
                 } else {
@@ -99,6 +90,10 @@ class block_gu_spdetails extends block_base {
                 $a->formatted->weight = get_string('emptyvalue', $lang);
                 $a->grades->gradetext = get_string('emptyvalue', $lang);
                 $a->feedback->text = get_string('emptyvalue', $lang);
+                $a->submission = new stdClass();
+                $a->submission->status = get_string('status_contribute', $lang);
+                $a->submission->suffix = get_string('status_contribute', $lang);
+                $a->submission->hasurl = true;
             } else {
                 $a->formatted->weight = ($a->assessment->weight) ? (($a->assessment->weight) * 100).'%' :
                                          get_string('emptyvalue', $lang);
@@ -118,7 +113,13 @@ class block_gu_spdetails extends block_base {
                 $a->feedback = ($a->assessment->gradingduedate) ?
                                self::return_feedback($a->grades->feedback, $a->assessment->gradingduedate) :
                                get_string('emptyvalue', $lang);
+
+                $a->submission = self::return_status($submission->status,
+                                                     $a->assessment->startdate,
+                                                     $a->assessment->duedate,
+                                                     $a->grades->finalgrade);
             }
+            $a->assessment->url = self::return_assessmenturl($a->name, $a->id, $a->submission->hasurl);
 
             array_push($assessments_data, $a);
         }
@@ -317,17 +318,18 @@ class block_gu_spdetails extends block_base {
      * @param string $status Assessment Status (e.g. 'new', 'submitted')
      * @param int $startdate Start Date for activity to be started
      * @param int $enddate Due Date
+     * @param float $grade Final Grade
      * @return stdClass $submission Object containing Status text and class suffix
      */
-    public static function return_status($status, $startdate, $enddate) {
+    public static function return_status($status, $startdate, $enddate, $grade) {
         global $DB;
         $lang = 'block_gu_spdetails';
         $submission = new stdClass();
         $submission->hasurl = false;
 
         if($status == 'submitted') {
-            $submission->status = $status;
-            $submission->suffix = $status;
+            $submission->status = ($grade) ? get_string('status_graded', $lang) : $status;
+            $submission->suffix = ($grade) ? get_string('status_graded', $lang) : $status;
         }else{
             if(time() > $startdate && $enddate) {
                 $submission->status = (time() <= $enddate) ? get_string('status_tosubmit', $lang) :
@@ -369,6 +371,7 @@ class block_gu_spdetails extends block_base {
                 $gradesrecord = $DB->get_record('quiz_grades',
                                                 array('quiz' => $gradeid, 'userid' => $userid),
                                                 '*');
+                $gradesrecord = is_bool($gradesrecord) ? new stdClass() : $gradesrecord;
                 $gradesrecord->finalgrade = $gradesrecord->grade;
                 break;
             default:

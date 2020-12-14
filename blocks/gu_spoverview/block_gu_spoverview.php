@@ -119,7 +119,7 @@ class block_gu_spoverview extends block_base {
         $params = array($userid, $userid);
         $incourseids = implode(',', $courseids);
 
-        $sql = "SELECT ma.name, ma.allowsubmissionsfromdate as `startdate`,
+        $sql = "SELECT DISTINCT ma.id, ma.name, ma.allowsubmissionsfromdate as `startdate`,
                 ma.duedate, ma.cutoffdate, mas.status, mauf.extensionduedate
                 FROM `mdl_assign` ma
                 LEFT JOIN `mdl_assign_submission` mas ON ma.id = mas.assignment AND mas.userid = ?
