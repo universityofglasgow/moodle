@@ -43,6 +43,7 @@ class local_gugcat {
 
     public static $GRADES = array();
     public static $PRVGRADEID = null;
+    public static $STUDENTS = array();
 
     public static function get_reasons(){
         return array(
@@ -98,7 +99,7 @@ class local_gugcat {
         return $DB->sql_compare_text('iteminfo') . ' = :iteminfo';
     }
 
-    public static function set_prv_grade_id($courseid, $mod, $scaleid, $students = null){
+    public static function set_prv_grade_id($courseid, $mod, $scaleid){
         $pgrd_str = get_string('provisionalgrd', 'local_gugcat');
         self::$PRVGRADEID = self::add_grade_item($courseid, $pgrd_str, $mod, $scaleid);
         return self::$PRVGRADEID;
@@ -145,6 +146,9 @@ class local_gugcat {
              $gradeitem->scaleid = $scaleid;
              $gradeitem->itemtype = 'manual'; // All new items to be manual only. 
              $gradeitemid = $gradeitem->insert();
+            foreach(self::$STUDENTS as $student){
+                self::add_update_grades($student->id, $gradeitemid, null);
+            }
              return $gradeitemid;
         }else {
             return $gradeitemid;
@@ -174,7 +178,7 @@ class local_gugcat {
             $grade_->timecreated = time();
             $grade_->timemodified = time();
             //if insert successful - update provisional grade
-            return ($grade_->insert()) ? self::update_grade($userid, self::$PRVGRADEID, $grade) : false;
+            return (!$grade_->insert()) ? false : (self::$PRVGRADEID ? self::update_grade($userid, self::$PRVGRADEID, $grade) : false);
             
         }else{
             //updates empty grade objects in database
