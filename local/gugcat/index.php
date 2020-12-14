@@ -55,8 +55,6 @@ $PAGE->set_cm($selectedmodule);
 
 $scaleid = local_gugcat::get_scaleid($selectedmodule);
 //populate $GRADES with scales
-local_gugcat::$STUDENTS = $students;
-//populate $STUDENTS 
 local_gugcat::set_grade_scale($scaleid);
 //populate provisional grade id and set it to static
 local_gugcat::set_prv_grade_id($courseid, $selectedmodule, $scaleid);

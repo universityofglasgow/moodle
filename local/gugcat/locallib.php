@@ -43,7 +43,6 @@ class local_gugcat {
 
     public static $GRADES = array();
     public static $PRVGRADEID = null;
-    public static $STUDENTS = array();
 
     public static function get_reasons(){
         return array(
@@ -99,7 +98,7 @@ class local_gugcat {
         return $DB->sql_compare_text('iteminfo') . ' = :iteminfo';
     }
 
-    public static function set_prv_grade_id($courseid, $mod, $scaleid){
+    public static function set_prv_grade_id($courseid, $mod, $scaleid, $students = null){
         $pgrd_str = get_string('provisionalgrd', 'local_gugcat');
         self::$PRVGRADEID = self::add_grade_item($courseid, $pgrd_str, $mod, $scaleid);
         return self::$PRVGRADEID;
@@ -146,7 +145,6 @@ class local_gugcat {
              $gradeitem->scaleid = $scaleid;
              $gradeitem->itemtype = 'manual'; // All new items to be manual only. 
              $gradeitemid = $gradeitem->insert();
-             grade_get_grades($courseid, 'mod', $mod->modname, $mod->instance, array_keys(self::$STUDENTS));
              return $gradeitemid;
         }else {
             return $gradeitemid;
