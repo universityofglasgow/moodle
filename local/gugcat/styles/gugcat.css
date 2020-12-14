@@ -1,5 +1,6 @@
 .gcat-container {
-    font-size: 80%;
+    font-size: 90%;
+    font-family:  'PT Sans', sans-serif;
 }
 
 .togglemultigrd{
@@ -9,7 +10,7 @@
 /* Table style */
 .table {
     margin-bottom: 0;
-    font-size: 90%;
+    font-size: 80%;
     text-align: center;
 }
 
@@ -31,9 +32,26 @@ tr:nth-child(even) {
     background-color: #e6eaee;
 }
 
-i {
+/* Icons style */
+td > i, th > i {
     color: #8c8c8c;
     cursor: pointer;
+}
+
+.fa-cog {
+    color: white;
+    margin: 0 5px;
+    font-size: small;
+    cursor: none;
+}
+
+.fa-times-circle{
+    font-size: 20px;
+}
+
+.fa-ellipsis-h{
+    font-size: 13px;
+    margin-left: 2px;
 }
 
 /* Tab Links style */
@@ -110,6 +128,10 @@ button.tablink, button.tablink:focus{
     opacity: 0.8;
 }
 
+.btn-download{
+    margin-bottom: 1.5em;
+}
+
 .btn-download, .btn-approve {
     float: right;
 }
@@ -128,11 +150,11 @@ button.tablink, button.tablink:focus{
 
 .selectdiv:after {
     content: '\f078';
-    font: normal normal normal 12px/1 FontAwesome;
-    color: #005c8a;
+    font: normal normal normal 10px/1 FontAwesome;
+    color: #C3C5CB;;
     position: absolute;
     right: 5px;
-    top: 30%;
+    top: 35%;
     height: 34px;
     padding: 0 8px;
     pointer-events: none;
@@ -157,7 +179,7 @@ select::-ms-expand {
     background-color: #ffffff;
     background-image: none;
     border-radius: 8px;
-    border: 1px solid #8c8c8c;
+    border: 1px solid #E0E2E9;
     -ms-word-break: normal;
     word-break: normal;
     outline: none;
@@ -230,7 +252,7 @@ select::-ms-expand {
 /* tbl Select reason style*/
 .multi-select-reason{
     display: none;
-    width: 100%;
+    /* width: 100%; */
 }
 
 .multi-select-reason select{
@@ -249,12 +271,12 @@ select::-ms-expand {
     background-color: #ffffff;
     background-image: none;
     border-radius: 10px;
-    border: 1px solid #8c8c8c;
+    border: 1px solid #E0E2E9;
     -ms-word-break: normal;
     word-break: normal;
     outline: none;
     display: none;
-    width: 100%;
+    width: auto;
 }
 
 /* display only the first select reason dropdown */
@@ -286,3 +308,20 @@ td > .grade-discrepancy{
     line-height: 11px;
 }
 
+/* Context-action style */
+.dropdown-menu {
+    font-size: 12px;
+    padding: .2rem 0;
+}
+
+.dropdown-item {
+    font-size: 11px;
+    padding: .2rem;
+    cursor: pointer;
+    font-family:  'PT Sans', sans-serif;
+}
+
+#release-submit {
+    position: absolute;
+    visibility: hidden;
+}

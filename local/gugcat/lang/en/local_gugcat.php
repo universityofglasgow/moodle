@@ -25,8 +25,10 @@
 
 $string['addallnewgrade'] = 'Add new grade for all participants';
 $string['addgrade'] = 'Add grade';
+$string['addmultigrades'] = 'Add multiple grades';
 $string['addnewgrade'] = 'Add new grade';
-$string['approvegrades'] = 'Approve provisional grades';
+$string['aggregatedgrade'] = 'Aggregated Grade';
+$string['amendgrades'] = 'Amend Grades';
 $string['assessmentlvlscore'] = 'Assessment Level Score';
 $string['candidateno'] = 'Candidate No.';
 $string['choosegrade'] = 'Choose grade';
@@ -38,19 +40,24 @@ $string['forename'] = 'Forename';
 $string['gugcat'] = 'Grade Capture and Aggregation Tool';
 $string['gradebookgrade'] = 'Gradebook Grade ';
 $string['gradediscrepancy'] = 'Grade Discrepancy';
+$string['historicalamendments'] = 'Historical Amendments';
 $string['navname'] = 'Grade Capture and Aggregation';
 $string['nograde'] = 'Null – awaiting grading';
+$string['nograderecorded'] = 'No grade recorded';
 $string['overviewaggregrade'] = 'Overview & Aggregated Grade';
 $string['pluginname'] = 'UofG Grade Capture and Aggregation Tool';
 $string['provisionalgrd'] = 'Provisional Grade';
 $string['reasonnewgrade'] = 'Reason for new grade';
 $string['reasonother'] = 'Other';
-$string['saveallnewgrade'] = 'Save all participants grades';
+$string['releaseprvgrades'] = 'Release provisional grades';
+$string['requiresresit'] = 'Requires Resit';
+$string['saveallnewgrade'] = 'Save multiple grades';
 $string['selectreason'] = 'Select reason';
 $string['studentno'] = 'Student No.';
 $string['successaddall'] = 'Successfully added grades for all participants.';
+$string['successrelease'] = 'Successfully released provisional grades';
 $string['surname'] = 'Surname';
-$string['title'] = 'Grade capture and score aggregation';
+$string['title'] = 'Grade Capture & Course Grade Aggregation';
 
 // Grade item names
 $string['gi_agreedgrade'] = 'Agreed Grade';

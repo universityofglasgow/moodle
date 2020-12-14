@@ -51,6 +51,7 @@ $PAGE->set_heading($course->fullname);
 
 $modinfo = get_fast_modinfo($courseid);
 $module = $modinfo->get_cm($activityid);
+$PAGE->set_cm($module);
 
 $scaleid = local_gugcat::get_scaleid($module);
 local_gugcat::set_grade_scale($scaleid);
@@ -58,7 +59,7 @@ local_gugcat::set_prv_grade_id($courseid, $module->id, $scaleid);
 // get 1st grade
 $grading_info = grade_get_grades($courseid, 'mod', $module->modname, $module->instance, $studentid);
 $gbgrade = $grading_info->items[0]->grades[$studentid]->grade;
-$convertedgrade = local_gugcat::convert_grade($gbgrade);
+$convertedgrade = is_null($gbgrade) ? get_string('nograde', 'local_gugcat') : local_gugcat::convert_grade($gbgrade);
 $gradeitems = local_gugcat::get_grade_grade_items($course, $module);
 $gradeversions = local_gugcat::filter_grade_version($gradeitems, $studentid);
 

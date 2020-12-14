@@ -64,12 +64,6 @@ define(['jquery', 'core/str' ], function($, Str) {
                 $(".togglemultigrd").toggle();
             });
 
-            $("#btn-assessmenttab").click(function(){
-                if(checkCurrentUrl('gugcat/add')){
-                    history.back();
-                }
-            });
-
             $("#select-grade-reason").on("change", function () { 
                 var $selected = $(this).find("option:selected");
                 $(".input-reason").val($selected.val());
@@ -81,18 +75,27 @@ define(['jquery', 'core/str' ], function($, Str) {
                 }
             });
 
-            $('#input-reason').on('input', function(e){
+            $("#input-reason").on("input", function(e){
                 $(".input-reason").val($(this).val());
             });
 
+            $("#btn-release").click(function(e) {
+                e.preventDefault();
+                $("#release-submit").click();
+            });
+
             //Show 'grade discrepancy' when grade discrepancy exist
-            if($('td > .grade-discrepancy').length > 0){
+            if($("td > .grade-discrepancy").length > 0){
                 $("#btn-grddisc").show();
             }
 
             // Hide elements on add grade form page 
-            if(checkCurrentUrl('gugcat/add')){
-                $("#btn-approve").hide();
+            if(checkCurrentUrl("gugcat/add")){
+                $("#btn-release").hide();
+            }else if(checkCurrentUrl("gugcat/overview")){
+                $("#btn-release").hide();
+                $("#btn-overviewtab").addClass("active");
+                $("#btn-assessmenttab").removeClass("active");
             }
         }
     };

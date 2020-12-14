@@ -23,9 +23,10 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use local_gugcat\grade_capture;
 
 require_once(__DIR__ . '/../../config.php');
-require_once($CFG->dirroot . '/local/gugcat/locallib.php');
+require_once('locallib.php');
 
 $courseid = required_param('id', PARAM_INT);
 $activityid = optional_param('activityid', null, PARAM_INT);
@@ -52,17 +53,22 @@ $mods = array_reverse($activities);
 $selectedmodule = is_null($activityid) ? array_pop($mods) : $activities[$activityid];
 $PAGE->set_cm($selectedmodule);
 
-
 $scaleid = local_gugcat::get_scaleid($selectedmodule);
 //populate $GRADES with scales
 local_gugcat::set_grade_scale($scaleid);
 //populate provisional grade id and set it to static
 local_gugcat::set_prv_grade_id($courseid, $selectedmodule->id, $scaleid);
 
-
-//---------submit multiple add grades
+//---------on submit grade capture
 if (!empty($_POST)){
-    if (isset($_POST['grades']) && !empty($_POST['reason'])){
+    // release provisional grade
+    if (isset($_POST['release']) && isset($_POST['grades'])){
+        grade_capture::release_prv_grade($courseid, $selectedmodule, $_POST['grades']);
+        local_gugcat::notify_success('successrelease');
+        unset($_POST);
+        header("Location: ".$_SERVER['REQUEST_URI']);
+        exit;
+    }else if (isset($_POST['grades']) && !empty($_POST['reason'])){
         $grades = $_POST['grades'];
         $reason = $_POST['reason'];
         if(array_column($grades,'grade')){
@@ -73,8 +79,7 @@ if (!empty($_POST)){
                     local_gugcat::add_update_grades($item['id'], $gradeitemid, $grade);
                 }
             }
-            $message = get_string('successaddall', 'local_gugcat');
-            \core\notification::add($message, \core\output\notification::NOTIFY_SUCCESS);
+            local_gugcat::notify_success('successaddall');
             unset($_POST);
             header("Location: ".$_SERVER['REQUEST_URI']);
             exit;
@@ -87,8 +92,8 @@ if (!empty($_POST)){
     }
 }
 
-$rows = local_gugcat::grade_capture_get_rows($course, $selectedmodule, $students);
-$columns = local_gugcat::grade_capture_get_columns($selectedmodule);
+$rows = grade_capture::get_rows($course, $selectedmodule, $students);
+$columns = grade_capture::get_columns($selectedmodule);
 
 echo $OUTPUT->header();
 $renderer = $PAGE->get_renderer('local_gugcat');
