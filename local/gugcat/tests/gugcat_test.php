@@ -80,14 +80,13 @@ class local_gugcat_testcase extends advanced_testcase {
         $date = date("(j/n/Y)", strtotime(userdate($this->cm->added)));
         $firstgrade = get_string('gradebookgrade', 'local_gugcat').'<br>'.$date;
 
-        $columns = grade_capture::get_columns($this->cm);
+        $columns = grade_capture::get_columns();
         $this->assertContains($firstgrade, $columns);
     }
 
     public function test_check_prv_grade_item() {
         $prvgradeid = $this->provisionalgi->id;
-
-        local_gugcat::set_prv_grade_id($this->course->id, $this->cm->id, 1);
+        local_gugcat::set_prv_grade_id($this->course->id, $this->cm, 1);
         $this->assertEquals(local_gugcat::$PRVGRADEID, $prvgradeid);
     }
 
@@ -131,7 +130,7 @@ class local_gugcat_testcase extends advanced_testcase {
 
     public function test_add_grade_item(){
         $sndgradestr = get_string('gi_secondgrade', 'local_gugcat');
-        $gradeitemid = local_gugcat::add_grade_item($this->course->id, $sndgradestr, $this->cm->id, 1);
+        $gradeitemid = local_gugcat::add_grade_item($this->course->id, $sndgradestr, $this->cm, 1);
         $id = local_gugcat::get_grade_item_id($this->course->id, $this->cm->id, $sndgradestr);
         $this->assertEquals($gradeitemid, $id);
     }

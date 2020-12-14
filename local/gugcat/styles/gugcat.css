@@ -111,7 +111,7 @@ button.tablink, button.tablink:focus{
     color: white;
 }
 
-.btn-add {
+.btn-add-import {
     background-color: #005c8a;
     color: white;
 }
@@ -136,8 +136,12 @@ button.tablink, button.tablink:focus{
     float: right;
 }
 
-.btn-download, .btn-approve, .btn-add {
+.btn-download, .btn-approve, .btn-add-import {
     height: 40px;
+}
+
+#btn-saveadd, .addnewgrade{
+    display: none;
 }
 
 /* Select style */
@@ -195,16 +199,17 @@ select::-ms-expand {
 
 /* Add grade form style *****************************/
 
-.mform label, .form-container label, .title{
+.mform-container label, .form-container label, .title{
     font-weight: bold;
 }
 
 .form-container{
-    padding: 1em 1em 0 1em;
+    padding: 1em 0 0;
 }
 
-.mform-container {
+.mform-container, .form-container{
     max-width: 80%;  
+    padding-left: 1em;
 }
 
 .mform select{
@@ -245,8 +250,9 @@ select::-ms-expand {
 }
 
 #fitem_id_submitbutton .btn{
-     border-radius: .5em !important; 
-     margin-left: auto;
+    border-radius: .5em;
+    margin-left: auto;
+    margin-right: 1em;
 }
 
 /* tbl Select reason style*/
@@ -321,7 +327,7 @@ td > .grade-discrepancy{
     font-family:  'PT Sans', sans-serif;
 }
 
-#release-submit {
+#release-submit, #importgrades-submit {
     position: absolute;
     visibility: hidden;
 }

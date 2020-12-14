@@ -28,19 +28,22 @@ require_once($CFG->libdir.'/gradelib.php');
 require_once($CFG->dirroot . '/grade/querylib.php');
 require_once($CFG->libdir.'/grade/grade_item.php');
 require_once($CFG->libdir.'/grade/grade_grade.php');
+require_once($CFG->dirroot.'/mod/assign/locallib.php');
 
 class local_gugcat {
      
     /**
      * Database tables.
      */
+    const TBL_ASSIGN_GRADES = 'assign_grades';
     const TBL_GRADE_ITEMS  = 'grade_items';
     const TBL_GRADE_CATEGORIES  = 'grade_categories';
     const TBL_GRADE_GRADES = 'grade_grades';
-    const TBL_ASSIGN_GRADES = 'assign_grades';
+    const TBL_SCALE = 'scale';
 
     public static $GRADES = array();
     public static $PRVGRADEID = null;
+    public static $STUDENTS = array();
 
     public static function get_reasons(){
         return array(
@@ -96,9 +99,9 @@ class local_gugcat {
         return $DB->sql_compare_text('iteminfo') . ' = :iteminfo';
     }
 
-    public static function set_prv_grade_id($courseid, $modid, $scaleid){
+    public static function set_prv_grade_id($courseid, $mod, $scaleid){
         $pgrd_str = get_string('provisionalgrd', 'local_gugcat');
-        self::$PRVGRADEID = self::add_grade_item($courseid, $pgrd_str, $modid, $scaleid);
+        self::$PRVGRADEID = self::add_grade_item($courseid, $pgrd_str, $mod, $scaleid);
         return self::$PRVGRADEID;
     }
 
@@ -113,13 +116,13 @@ class local_gugcat {
         return $DB->get_field_select(self::TBL_GRADE_ITEMS, 'id', $select, $params);
     }
 
-    public static function add_grade_item($courseid, $reason, $modid, $scaleid){
+    public static function add_grade_item($courseid, $reason, $mod, $scaleid){
         global $DB;
 
         //get scale size for max grade
         $scalesize = sizeof(self::$GRADES);
         // check if gradeitem already exists using $reason, $courseid, $activityid
-        if(!$gradeitemid = self::get_grade_item_id($courseid, $modid, $reason)){
+        if(!$gradeitemid = self::get_grade_item_id($courseid, $mod->id, $reason)){
             // create new gradeitem
              $gradeitem = new grade_item(array('id'=>0, 'courseid'=>$courseid));
             
@@ -132,16 +135,21 @@ class local_gugcat {
              $gradeitem->grademax = $scalesize;
              $gradeitem->gradetype = 2;
              $gradeitem->display =0;
+             $gradeitem->hidden = 1;
              $gradeitem->outcomeid = null;
              $gradeitem->categoryid = $categoryid;
-             $gradeitem->iteminfo = $modid;
+             $gradeitem->iteminfo = $mod->id;
              $gradeitem->itemname = $reason;
              $gradeitem->iteminstance= null;
+             $gradeitem->timemodified = null;
              $gradeitem->itemmodule=null;
              $gradeitem->scaleid = $scaleid;
-             $gradeitem->itemtype = 'manual'; // All new items to be manual only.
-     
-             return $gradeitem->insert();
+             $gradeitem->itemtype = 'manual'; // All new items to be manual only. 
+             $gradeitemid = $gradeitem->insert();
+            foreach(self::$STUDENTS as $student){
+                self::add_update_grades($student->id, $gradeitemid, null);
+            }
+             return $gradeitemid;
         }else {
             return $gradeitemid;
         }
@@ -170,16 +178,14 @@ class local_gugcat {
             $grade_->timecreated = time();
             $grade_->timemodified = time();
             //if insert successful - update provisional grade
-            return ($grade_->insert()) ? self::update_grade($userid, self::$PRVGRADEID, $grade) : false;
+            return (!$grade_->insert()) ? false : (self::$PRVGRADEID ? self::update_grade($userid, self::$PRVGRADEID, $grade) : false);
             
-        }
-        else{
+        }else{
             //updates empty grade objects in database
             $grade_->timemodified = time();
             //if update successful - update provisional grade
             return ($grade_->update()) ? self::update_grade($userid, self::$PRVGRADEID, $grade) : false;
         }
-        
     }
 
     public static function update_grade($userid, $itemid, $grade){
@@ -230,14 +236,25 @@ class local_gugcat {
     }
 
     public static function get_scaleid($module){
-        
-        $initialgradeitem = grade_get_grade_items_for_activity($module);
-        //to get the first gradeitem scaleid
-        return reset($initialgradeitem)->scaleid;
+        global $DB;
+        $params = array(
+            'iteminstance'  => $module->instance,
+            'itemmodule'    => $module->modname
+        );
+        $scaleid = $DB->get_field(self::TBL_GRADE_ITEMS, 'scaleid', $params, IGNORE_MISSING);
+        return $scaleid;
     }
 
     public static function notify_success($stridentifier){
         $message = get_string($stridentifier, 'local_gugcat');
         \core\notification::add($message, \core\output\notification::NOTIFY_SUCCESS);
     }
+        
+    public static function update_workflow_state($assign, $userid, $statetype){
+        //update workflow state to in review
+        $assign_user_flags = $assign->get_user_flags($userid, true);
+        $assign_user_flags->workflowstate = $statetype;
+        $assign->update_user_flags($assign_user_flags);
+    }
+
 }
