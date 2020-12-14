@@ -28,6 +28,8 @@ defined('MOODLE_INTERNAL') || die();
 class block_gu_spoverview extends block_base {
 
     public function init() {
+        global $DB;
+        
         $this->title = get_string('pluginname', 'block_gu_spoverview');
     }
 
@@ -80,6 +82,7 @@ class block_gu_spoverview extends block_base {
                 $assignments_submitted++;
             }
         }
+
 
         // Set singular/plural strings for Assignment and Assessment
         $assignment_str = ($assignments_submitted == 1) ? get_string('assignment', $lang) : get_string('assignments', $lang);
