@@ -208,7 +208,7 @@ class block_gu_spdetails extends block_base {
                 $sql = "SELECT ma.name,
                         ma.allowsubmissionsfromdate as `startdate`,
                         ma.duedate, ma.gradingduedate, mgi.id as `gradeid`,
-                        mgi.aggregationcoef as `weight01`, mgi.aggregationcoef2 as `weight`
+                        mgi.aggregationcoef as `weight`, mgi.aggregationcoef2 as `weight01`
                         FROM `mdl_assign` ma
                         JOIN `mdl_grade_items` mgi ON mgi.iteminstance = ma.id
                         AND mgi.itemmodule = ?
@@ -221,7 +221,7 @@ class block_gu_spdetails extends block_base {
                         mq.timeopen as `startdate`,
                         mq.timeclose as `duedate`,
                         (mq.timeclose + (86400 * 14)) as `gradingduedate`,
-                        mgi.aggregationcoef as `weight01`, mgi.aggregationcoef2 as `weight`,
+                        mgi.aggregationcoef as `weight`, mgi.aggregationcoef2 as `weight01`,
                         mq.id as `gradeid`, mgg.feedback
                         FROM `mdl_quiz` mq
                         JOIN `mdl_grade_items` mgi ON mgi.iteminstance = mq.id
@@ -372,7 +372,7 @@ class block_gu_spdetails extends block_base {
                                                 array('quiz' => $gradeid, 'userid' => $userid),
                                                 '*');
                 $gradesrecord = is_bool($gradesrecord) ? new stdClass() : $gradesrecord;
-                $gradesrecord->finalgrade = $gradesrecord->grade;
+                $gradesrecord->finalgrade = property_exists($gradesrecord, 'grade') ? $gradesrecord->grade : null;
                 break;
             default:
                 $gradesrecord = new stdClass();
