@@ -49,7 +49,6 @@ class grade_capture{
         $captureitems = array();
         global $gradeitems, $firstgradeid;
         $gradeitems = array();
-        grade_get_grades($course->id, 'mod', $module->modname, $module->instance, array_keys($students));
         if($firstgradeid = local_gugcat::get_grade_item_id($course->id, $module->id, get_string('moodlegrade', 'local_gugcat'))){
             $gradeitems = local_gugcat::get_grade_grade_items($course, $module);
             //---------ids needed for grade discrepancy
