@@ -28,8 +28,6 @@ defined('MOODLE_INTERNAL') || die();
 class block_gu_spoverview extends block_base {
 
     public function init() {
-        global $DB;
-        
         $this->title = get_string('pluginname', 'block_gu_spoverview');
     }
 
