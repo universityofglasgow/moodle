@@ -15,12 +15,20 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template local_test/manage
+    @template local_gugcat/form
+
 
     Example context (json):
-    { }
+    {
+    
+    }
 }}
 
-<button class="tablink active" id="btn-assessmenttab" onclick="location.href='{{assessmenturl}}'">{{assessmenttabstr}}</button>
-<button class="tablink" id="btn-overviewtab" onclick="location.href='{{overviewurl}}'">{{overviewtabstr}}</button>
-<button class="btn btn-default btn-approve" id="btn-release">{{releaseprvgrdstr}}</button>
+<div class="selectdiv {{class}}">
+    <select id="{{id}}" name="{{name}}" required>
+        {{#default}}<option selected disabled="disabled">{{default}}</option>{{/default}}
+        {{#options}}
+        <option value="{{.}}">{{.}}</option>
+        {{/options}}
+    </select>
+</div>

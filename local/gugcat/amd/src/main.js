@@ -22,6 +22,13 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 define(['jquery', 'core/str' ], function($, Str) {
+
+    //Returns boolean on check of the current url and match it to the path params
+    var checkCurrentUrl = function(path) {
+        var url = window.location.pathname;
+        return url.match(path);
+    }
+
     return {
         init: function() {
             $("#select-activity").on("change", function () { 
@@ -30,10 +37,11 @@ define(['jquery', 'core/str' ], function($, Str) {
                 window.location.search = urlParams;
             });
     
-            $("#btn-saveadd").on("click", function(e) {
+            $("#btn-saveadd").click(function(e) {
                 e.preventDefault();
                 var _this = $("#btn-saveadd");
                 _this.toggleClass("togglebtn");
+                _this.hide();
                 var keys = [
                     {
                         key: 'addallnewgrade',
@@ -45,17 +53,67 @@ define(['jquery', 'core/str' ], function($, Str) {
                     }
                 ];
                 Str.get_strings(keys).then(function(langStrings) {
+                    _this.show();
                     if(_this.hasClass("togglebtn")){
                         _this.text(langStrings[1]);   
                     } else {
+                        $("#multigradesform").submit();
                         _this.text(langStrings[0]); 
                     }
                 })
                 $(".togglemultigrd").toggle();
             });
 
-            $("#btn-assessmenttab").click(function(){
-                history.back();
+            $("#select-grade-reason").on("change", function () { 
+                var $selected = $(this).find("option:selected");
+                $(".input-reason").val($selected.val());
+                if($selected.val() === 'Other'){
+                    $(".input-reason").val("");
+                    $("#input-reason").show();
+                }else{
+                    $("#input-reason").hide();
+                }
+            });
+
+            $("#input-reason").on("input", function(e){
+                $(".input-reason").val($(this).val());
+            });
+
+            $("#btn-release").click(function(e) {
+                e.preventDefault();
+                $("#release-submit").click();
+            });
+
+            //Show 'grade discrepancy' when grade discrepancy exist
+            if($("td > .grade-discrepancy").length > 0){
+                $("#btn-grddisc").show();
+            }
+
+            // Hide elements on add grade form page 
+            if(checkCurrentUrl("gugcat/add")){
+                $("#btn-release").hide();
+            }else if(checkCurrentUrl("gugcat/overview")){
+                $("#btn-release").hide();
+                $("#btn-overviewtab").addClass("active");
+                $("#btn-assessmenttab").removeClass("active");
+            }
+
+            if(!($(".gradeitems").text().includes("Moodle Grade[Date]"))){
+                $("#btn-saveadd").show();
+                $(".addnewgrade").show();
+            }
+
+            $("#btn-import").click(function(e) {
+                e.preventDefault();
+                if(!$(".gradeitems").text().includes("Moodle Grade[Date]")){
+                    var confirmation = confirm("Please note that grades have already been imported from Moodle. If you continue you will overwrite all grades. Do you wish to continue?");
+                    if(confirmation == true) {
+                    $("#importgrades-submit").click();
+                    }
+                }
+                else{
+                    $("#importgrades-submit").click();
+                }
             });
         }
     };

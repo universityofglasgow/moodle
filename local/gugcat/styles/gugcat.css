@@ -1,11 +1,6 @@
-.container {
-    margin: 0;
-    padding: 0;
-    font-size: 80%;
-}
-
-.title {
-    font-weight: bold;
+.gcat-container {
+    font-size: 90%;
+    font-family:  'PT Sans', sans-serif;
 }
 
 .togglemultigrd{
@@ -15,7 +10,16 @@
 /* Table style */
 .table {
     margin-bottom: 0;
-    font-size: 90%;
+    font-size: 80%;
+    text-align: center;
+}
+
+.table thead th, .table td{
+    vertical-align: middle;
+}
+
+.table td{
+    padding: .30rem;
 }
 
 th {
@@ -28,14 +32,26 @@ tr:nth-child(even) {
     background-color: #e6eaee;
 }
 
-td, th {
-    text-align: center;
-    padding: 1em 1.5em;
-}
-
-i {
+/* Icons style */
+td > i, th > i {
     color: #8c8c8c;
     cursor: pointer;
+}
+
+.fa-cog {
+    color: white;
+    margin: 0 5px;
+    font-size: small;
+    cursor: none;
+}
+
+.fa-times-circle{
+    font-size: 20px;
+}
+
+.fa-ellipsis-h{
+    font-size: 13px;
+    margin-left: 2px;
 }
 
 /* Tab Links style */
@@ -73,15 +89,21 @@ i {
     padding: 1.5em;
 }
 
+button.tablink, button.tablink:focus{
+    outline: 0;
+    box-shadow: none;
+    border: 0;
+}
 /* Buttons style */
 .btn-default {
     background-color: transparent;
     border: 1px solid #005c8a;
     color: #005c8a;
-    border-radius: 0.5em;
+    border-radius: 8px;
     font-weight: 400;
     font-size: inherit;
     outline: none;
+    white-space: nowrap;
 }
 
 .btn-default:hover {
@@ -89,7 +111,7 @@ i {
     color: white;
 }
 
-.btn-add {
+.btn-add-import {
     background-color: #005c8a;
     color: white;
 }
@@ -106,12 +128,20 @@ i {
     opacity: 0.8;
 }
 
+.btn-download{
+    margin-bottom: 1.5em;
+}
+
 .btn-download, .btn-approve {
     float: right;
 }
 
-.btn-download, .btn-approve, .btn-add {
+.btn-download, .btn-approve, .btn-add-import {
     height: 40px;
+}
+
+#btn-saveadd, .addnewgrade{
+    display: none;
 }
 
 /* Select style */
@@ -124,11 +154,11 @@ i {
 
 .selectdiv:after {
     content: '\f078';
-    font: normal normal normal 12px/1 FontAwesome;
-    color: #005c8a;
+    font: normal normal normal 10px/1 FontAwesome;
+    color: #C3C5CB;;
     position: absolute;
     right: 5px;
-    top: 30%;
+    top: 35%;
     height: 34px;
     padding: 0 8px;
     pointer-events: none;
@@ -152,8 +182,8 @@ select::-ms-expand {
     color: #333;
     background-color: #ffffff;
     background-image: none;
-    border-radius: .5em;
-    border: 1px solid #8c8c8c;
+    border-radius: 8px;
+    border: 1px solid #E0E2E9;
     -ms-word-break: normal;
     word-break: normal;
     outline: none;
@@ -169,21 +199,17 @@ select::-ms-expand {
 
 /* Add grade form style *****************************/
 
-.mform label, .form-container label, .add-grade-title{
+.mform-container label, .form-container label, .title{
     font-weight: bold;
 }
 
-
 .form-container{
-    padding: 1em 1em 0 1em;
+    padding: 1em 0 0;
 }
 
-.form-container, .mform-container {
+.mform-container, .form-container{
     max-width: 80%;  
-}
-
-.mform {
-    padding: 0 1em;
+    padding-left: 1em;
 }
 
 .mform select{
@@ -224,6 +250,84 @@ select::-ms-expand {
 }
 
 #fitem_id_submitbutton .btn{
-     border-radius: .5em !important; 
-     margin-left: auto;
+    border-radius: .5em;
+    margin-left: auto;
+    margin-right: 1em;
+}
+
+/* tbl Select reason style*/
+.multi-select-reason{
+    display: none;
+    /* width: 100%; */
+}
+
+.multi-select-reason select{
+    margin: 0;
+}
+
+.input-reason{
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    height: 32px;
+    margin-top: 5px;
+    padding: 0px 10px;
+    line-height: 1.75;
+    color: #333;
+    background-color: #ffffff;
+    background-image: none;
+    border-radius: 10px;
+    border: 1px solid #E0E2E9;
+    -ms-word-break: normal;
+    word-break: normal;
+    outline: none;
+    display: none;
+    width: auto;
+}
+
+/* display only the first select reason dropdown */
+tbody > tr:first-child > td > .multi-select-reason {
+    display: block;
+}
+
+/* Grade discrepancy style */
+.grade-discrepancy{
+    background-color: rgba(179, 12, 0, 0.49);
+    border-radius: 8px;
+    pointer-events: none;    
+}
+
+td > .grade-discrepancy{
+    width: 40px;
+    height: 32px;
+    margin: auto;
+    line-height: 32px;
+}
+
+.btn.grade-discrepancy{
+    width: 110px;
+    height: 40px;
+    max-width: 124px;
+    font-size: 11px;
+    word-break: break-word;
+    display: none;
+    line-height: 11px;
+}
+
+/* Context-action style */
+.dropdown-menu {
+    font-size: 12px;
+    padding: .2rem 0;
+}
+
+.dropdown-item {
+    font-size: 11px;
+    padding: .2rem;
+    cursor: pointer;
+    font-family:  'PT Sans', sans-serif;
+}
+
+#release-submit, #importgrades-submit {
+    position: absolute;
+    visibility: hidden;
 }

@@ -23,6 +23,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use local_gugcat\grade_capture;
+
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
@@ -47,37 +49,92 @@ class local_gugcat_testcase extends advanced_testcase {
         $modulecontext = context_module::instance($assign->cmid);
         $assign = new assign($modulecontext, false, false);
         $this->cm = $assign->get_course_module();
+
+        //create grade items
         $this->gradeitem = new grade_item($gen->create_grade_item(['courseid' => $this->course->id, 'iteminfo' => $this->cm->id]), false);
+        $this->provisionalgi = new grade_item($gen->create_grade_item(['courseid' => $this->course->id, 
+        'iteminfo' => $this->cm->id, 
+        'itemname' => get_string('provisionalgrd', 'local_gugcat')
+        ]), false);
 
     }
 
     public function test_check_course_activities() {
-        $activities = get_activities($this->course->id, $this->cm->id);
-        $this->assertEquals($activities[0]->id, $this->cm->id);
-    }
-
-    public function test_check_columns() {
-        global $gradeitems;
-        $gradeitems = [];
-        array_push($gradeitems, $this->gradeitem);
-        $columns = get_columns();
-        $this->assertContains('Candidate no.', $columns);
-        $this->assertContains('Student no.', $columns);
-        $this->assertContains('Surname', $columns);
-        $this->assertContains('Forename', $columns);
-        $this->assertContains('1st Grade', $columns);
+        $activities = local_gugcat::get_activities($this->course->id, $this->cm->id);
+        $mods = array_reverse($activities);
+        $mod = array_pop($mods);
+        $this->assertEquals($mod->id, $this->cm->id);
     }
 
     public function test_check_course_gradeitems() {
-        global $DB;
-        $this->assertCount(1, $DB->get_records_select('grade_items',
-            $DB->sql_compare_text('courseid') . " = " . $DB->sql_compare_text(':courseid')
-            . " AND " . $DB->sql_compare_text('iteminfo') . " = " . $DB->sql_compare_text(':iteminfo'), [
-                'courseid' => $this->course->id,
-                'iteminfo' => $this->cm->id,
-            ]));
+        global $gradeitems;
+        $gradeitems = local_gugcat::get_grade_grade_items($this->course, $this->cm);
+        $this->assertCount(2, $gradeitems);
     }
- 
+
+    public function test_grade_capture_columns() {
+        global $gradeitems, $prvgradeid;
+        $gradeitems = [];
+        $prvgradeid = $this->provisionalgi->id;
+        array_push($gradeitems, $this->gradeitem);
+        $date = date("(j/n/Y)", strtotime(userdate($this->cm->added)));
+        $firstgrade = get_string('gradebookgrade', 'local_gugcat').'<br>'.$date;
+
+        $columns = grade_capture::get_columns();
+        $this->assertContains($firstgrade, $columns);
+    }
+
+    public function test_check_prv_grade_item() {
+        $prvgradeid = $this->provisionalgi->id;
+        local_gugcat::set_prv_grade_id($this->course->id, $this->cm, 1);
+        $this->assertEquals(local_gugcat::$PRVGRADEID, $prvgradeid);
+    }
+
+    public function test_grade_capture_rows() {
+        global $gradeitems, $prvgradeid;
+        $gradeitems = array();
+        $prvgradeid = $this->provisionalgi->id;
+        $rows = grade_capture::get_rows($this->course, $this->cm, $this->students);
+        $row = $rows[0];
+        $this->assertEquals($row->cnum, 1);
+        $this->assertEquals($row->studentno, $this->student->id);
+        $this->assertEquals($row->firstgrade, get_string('nograde', 'local_gugcat'));
+        $this->assertFalse($row->discrepancy);
+    }
+
+    public function test_get_grade_reasons() {
+        $reasons = local_gugcat::get_reasons();
+        $this->assertContains(get_string('gi_goodcause', 'local_gugcat'), $reasons);
+        $this->assertContains(get_string('gi_latepenalty', 'local_gugcat'), $reasons);
+        $this->assertContains(get_string('gi_cappedgrade', 'local_gugcat'), $reasons);
+        $this->assertContains(get_string('gi_secondgrade', 'local_gugcat'), $reasons);
+        $this->assertContains(get_string('gi_thirdgrade', 'local_gugcat'), $reasons);
+        $this->assertContains(get_string('gi_agreedgrade', 'local_gugcat'), $reasons);
+        $this->assertContains(get_string('gi_moderatedgrade', 'local_gugcat'), $reasons);
+        $this->assertContains(get_string('gi_conductpenalty', 'local_gugcat'), $reasons);
+        $this->assertContains(get_string('reasonother', 'local_gugcat'), $reasons);
+    }
+
+    public function test_get_grade_item_id() {
+        $gen = $this->getDataGenerator();
+        $sndgradestr = get_string('gi_secondgrade', 'local_gugcat');
+        $sndgradegi = new grade_item($gen->create_grade_item([
+            'courseid' => $this->course->id, 
+            'iteminfo' => $this->cm->id,
+            'itemname' => $sndgradestr,
+            ]), false);
+
+        $id = local_gugcat::get_grade_item_id($this->course->id, $this->cm->id, $sndgradestr);
+        $this->assertEquals( $id, $sndgradegi->id);
+    }
+
+    public function test_add_grade_item(){
+        $sndgradestr = get_string('gi_secondgrade', 'local_gugcat');
+        $gradeitemid = local_gugcat::add_grade_item($this->course->id, $sndgradestr, $this->cm, 1);
+        $id = local_gugcat::get_grade_item_id($this->course->id, $this->cm->id, $sndgradestr);
+        $this->assertEquals($gradeitemid, $id);
+    }
+
     public function test_if_record_of_user_not_empty() {
         global $DB;
 

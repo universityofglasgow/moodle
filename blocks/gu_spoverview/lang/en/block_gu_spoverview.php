@@ -15,19 +15,22 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version file.
+ * Lang strings for the UofG Assessments Overview block.
  *
- * @package    local_gugcat
- * @copyright  2020
- * @author     Accenture
+ * @package    block_gu_spoverview
+ * @copyright  2020 Accenture
+ * @author     Franco Louie Magpusao <franco.l.magpusao@accenture.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
-$plugin->version      = 2020112613.57;
-$plugin->requires     = 2019111804.11;   // Moodle 3.8.4.
-$plugin->component    = 'local_gugcat';
-
-$plugin->maturity     = MATURITY_STABLE;
-
+$string['assignment'] = 'Assignment';
+$string['assignments'] = 'Assignments';
+$string['assessment'] = 'Assessment';
+$string['assessments'] = 'Assessments';
+$string['gu_spoverview:addinstance'] = 'Add a new Your assessments at a glance block';
+$string['gu_spoverview:myaddinstance'] = 'Add a new Your assessments at a glance block to Dashboard';
+$string['marked'] = ' marked';
+$string['overdue'] = 'Overdue';
+$string['pluginname'] = 'Your assessments at a glance';
+$string['submitted'] = ' submitted';
+$string['tobesubmitted'] = 'To be submitted / attended';
