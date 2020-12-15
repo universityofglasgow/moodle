@@ -33,7 +33,7 @@ require_once($CFG->dirroot.'/mod/zoom/locallib.php');
  * @copyright  2020 UC Regents
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class error_code_test extends basic_testcase {
+class error_handling_test extends basic_testcase {
 
     /**
      * Exception for when the meeting isn't found on Zoom.
@@ -64,7 +64,7 @@ class error_code_test extends basic_testcase {
     /**
      * Setup before every test.
      */
-    public function setUp() {
+    public function setUp(): void {
         $this->meetingnotfoundexception = new zoom_not_found_exception('meeting not found', 3001);
         $this->usernotfoundexception = new zoom_not_found_exception('user not found', 1001);
         $this->invaliduserexception = new zoom_not_found_exception('invalid user found', 1120);
