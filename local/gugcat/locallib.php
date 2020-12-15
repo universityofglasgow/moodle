@@ -65,13 +65,24 @@ class local_gugcat {
      * @param int $courseid
      * @param int $activityid
      */
-    public static function get_activities($courseid, $activityid = null){
+    public static function get_activities($courseid){
+        $activityid = optional_param('activityid', null, PARAM_INT);
+        $categoryid = optional_param('categoryid', null, PARAM_INT);
         $mods = grade_get_gradable_activities($courseid);
         $activities = array();
-        foreach($mods as $value) {
-            $activities[$value->id] = $value;
-            $activities[$value->id]->selected = (strval($activityid) === $value->id)? 'selected' : '';
+        foreach($mods as $cm) {
+            $activities[$cm->id] = $cm;
+            $activities[$cm->id]->selected = (strval($activityid) === $cm->id)? 'selected' : '';
+            $activities[$cm->id]->gradeitem = grade_item::fetch(array('itemtype'=>'mod', 'itemmodule'=>$cm->modname, 'iteminstance'=>$cm->instance, 'courseid'=>$courseid, 'itemnumber'=>0));
         }
+        if(!is_null($categoryid)){
+            foreach ($activities as $key=>$activity) {
+                if ( $activity->gradeitem->categoryid !== strval($categoryid)) {
+                    unset($activities[$key]);
+                }
+            }
+        }
+
         return $activities;
     }
 
@@ -99,9 +110,9 @@ class local_gugcat {
         return $DB->sql_compare_text('iteminfo') . ' = :iteminfo';
     }
 
-    public static function set_prv_grade_id($courseid, $mod, $scaleid){
+    public static function set_prv_grade_id($courseid, $mod){
         $pgrd_str = get_string('provisionalgrd', 'local_gugcat');
-        self::$PRVGRADEID = self::add_grade_item($courseid, $pgrd_str, $mod, $scaleid);
+        self::$PRVGRADEID = self::add_grade_item($courseid, $pgrd_str, $mod);
         return self::$PRVGRADEID;
     }
 
@@ -116,40 +127,37 @@ class local_gugcat {
         return $DB->get_field_select(self::TBL_GRADE_ITEMS, 'id', $select, $params);
     }
 
-    public static function add_grade_item($courseid, $reason, $mod, $scaleid){
-        global $DB;
-
+    public static function add_grade_item($courseid, $reason, $mod){
         //get scale size for max grade
         $scalesize = sizeof(self::$GRADES);
         // check if gradeitem already exists using $reason, $courseid, $activityid
         if(!$gradeitemid = self::get_grade_item_id($courseid, $mod->id, $reason)){
+            // get category id scaleid
+            $categoryid = $mod->gradeitem->categoryid;
+            $scaleid = $mod->gradeitem->scaleid;
             // create new gradeitem
-             $gradeitem = new grade_item(array('id'=>0, 'courseid'=>$courseid));
-            
-             // get category id
-             $categoryid = $DB->get_field(self::TBL_GRADE_CATEGORIES, 'id', array('courseid' => $courseid, 'parent' => null), MUST_EXIST);
-
-             $gradeitem->weightoverride = 0;
-             $gradeitem->gradepass = 0;
-             $gradeitem->grademin = 1;
-             $gradeitem->grademax = $scalesize;
-             $gradeitem->gradetype = 2;
-             $gradeitem->display =0;
-             $gradeitem->hidden = 1;
-             $gradeitem->outcomeid = null;
-             $gradeitem->categoryid = $categoryid;
-             $gradeitem->iteminfo = $mod->id;
-             $gradeitem->itemname = $reason;
-             $gradeitem->iteminstance= null;
-             $gradeitem->timemodified = null;
-             $gradeitem->itemmodule=null;
-             $gradeitem->scaleid = $scaleid;
-             $gradeitem->itemtype = 'manual'; // All new items to be manual only. 
-             $gradeitemid = $gradeitem->insert();
+            $gradeitem = new grade_item(array('id'=>0, 'courseid'=>$courseid));
+            $gradeitem->weightoverride = 0;
+            $gradeitem->gradepass = 0;
+            $gradeitem->grademin = 1;
+            $gradeitem->grademax = $scalesize;
+            $gradeitem->gradetype = 2;
+            $gradeitem->display =0;
+            $gradeitem->hidden = 1;
+            $gradeitem->outcomeid = null;
+            $gradeitem->categoryid = $categoryid;
+            $gradeitem->iteminfo = $mod->id;
+            $gradeitem->itemname = $reason;
+            $gradeitem->iteminstance= null;
+            $gradeitem->timemodified = null;
+            $gradeitem->itemmodule=null;
+            $gradeitem->scaleid = $scaleid;
+            $gradeitem->itemtype = 'manual'; // All new items to be manual only. 
+            $gradeitemid = $gradeitem->insert();
             foreach(self::$STUDENTS as $student){
                 self::add_update_grades($student->id, $gradeitemid, null);
             }
-             return $gradeitemid;
+            return $gradeitemid;
         }else {
             return $gradeitemid;
         }
@@ -178,7 +186,10 @@ class local_gugcat {
             $grade_->timecreated = time();
             $grade_->timemodified = time();
             //if insert successful - update provisional grade
-            return (!$grade_->insert()) ? false : ((self::$PRVGRADEID && !is_null($grade)) ? (self::update_grade($userid, self::$PRVGRADEID, $grade)) : false);
+            return (!$grade_->insert()) ? false : 
+            ((self::$PRVGRADEID && !is_null($grade))
+            ? self::update_grade($userid, self::$PRVGRADEID, $grade) 
+            : false);
             
         }else{
             //updates empty grade objects in database
@@ -236,16 +247,6 @@ class local_gugcat {
         self::$GRADES = $scalegrades;
     }
 
-    public static function get_scaleid($module){
-        global $DB;
-        $params = array(
-            'iteminstance'  => $module->instance,
-            'itemmodule'    => $module->modname
-        );
-        $scaleid = $DB->get_field(self::TBL_GRADE_ITEMS, 'scaleid', $params, IGNORE_MISSING);
-        return $scaleid;
-    }
-
     public static function notify_success($stridentifier){
         $message = get_string($stridentifier, 'local_gugcat');
         \core\notification::add($message, \core\output\notification::NOTIFY_SUCCESS);
@@ -256,6 +257,20 @@ class local_gugcat {
         $assign_user_flags = $assign->get_user_flags($userid, true);
         $assign_user_flags->workflowstate = $statetype;
         $assign->update_user_flags($assign_user_flags);
+    }
+
+    public static function get_grade_categories($courseid){
+        $raw = grade_get_categories_menu($courseid);
+        $categoryid = optional_param('categoryid', null, PARAM_INT);
+        $grd_ctgs = array();
+        foreach($raw as $key=>$value) {
+            $cat = new stdClass();
+            $cat->key = ($value === get_string('uncategorised', 'grades')) ? 'null' : $key;
+            $cat->value = $value;
+            $cat->selected = ($categoryid === $key)? 'selected' : '';
+            $grd_ctgs[$key] = $cat;
+        }
+        return $grd_ctgs;
     }
 
 }

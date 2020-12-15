@@ -27,12 +27,22 @@ defined('MOODLE_INTERNAL') || die();
 
 class local_gugcat_renderer extends plugin_renderer_base {
 
-    public function display_grade_capture($activities, $rows, $columns) {
+    public function display_grade_capture($activities_, $rows, $columns) {
         $courseid = $this->page->course->id;
-        $modid = $this->page->cm->id;
+        $modid = (($this->page->cm) ? $this->page->cm->id : null);
+        $categoryid = optional_param('categoryid', null, PARAM_INT);
+        //url to add form
         $addformurl = new moodle_url('/local/gugcat/add/index.php', array('id' => $courseid, 'activityid' => $modid));
+        //url action form
+        $actionurl = 'index.php?id=' . $courseid . '&activityid=' . $modid;
+        //add category id in the url if not null
+        if(!is_null($categoryid)){
+            $addformurl->param('categoryid', $categoryid);
+            $actionurl .= '&categoryid=' . $categoryid;
+        }
+
         //reindex activities and grades array
-        $activities_ = array_values($activities);
+        $activities = array_values($activities_);
         $grades = array_values(local_gugcat::$GRADES);
         //grade capture columns and rows in html
         $htmlcolumns = null;
@@ -46,8 +56,6 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $htmlcolumns .= html_writer::empty_tag('th');
         //grade capture rows
         foreach ($rows as $row) {
-            //url action form
-            $actionurl = 'index.php?id=' . $courseid . '&activityid=' . $modid;
             //url to add grade form page
             $addformurl->param('studentid', $row->studentno);
             $htmlrows .= html_writer::start_tag('tr');
@@ -88,17 +96,18 @@ class local_gugcat_renderer extends plugin_renderer_base {
                     </td>';
             $htmlrows .= html_writer::end_tag('tr');
         }
-        //start displaying the table
-        $html = $this->header();
-        $html .= $this->render_from_template('local_gugcat/gcat_tab_header', (object)[
+        $tabheader = !empty($activities) ? (object)[
             'addallgrdstr' =>get_string('addmultigrades', 'local_gugcat'),
             'downloadcsvstr' =>get_string('downloadcsv', 'local_gugcat'),
             'saveallbtnstr' =>get_string('saveallnewgrade', 'local_gugcat'),
             'grddiscrepancystr' => get_string('gradediscrepancy', 'local_gugcat'),
             'importgradesstr' => get_string('importgrades', 'local_gugcat'),
             'displayactivities' => true,
-            'activities' => $activities_,
-        ]);
+            'activities' => $activities,
+        ] : null;
+        //start displaying the table
+        $html = $this->header();
+        $html .= $this->render_from_template('local_gugcat/gcat_tab_header', $tabheader);
         $html .= html_writer::start_tag('form', array('id' => 'multigradesform', 'method' => 'post', 'action' => $actionurl));
         $html .= $this->display_table($htmlrows, $htmlcolumns);
         $html .= html_writer::empty_tag('button', array('id' => 'release-submit', 'name' => 'release', 'type' => 'submit'));
@@ -203,11 +212,26 @@ class local_gugcat_renderer extends plugin_renderer_base {
 
     private function header() {
         $courseid = $this->page->course->id;
+        $categoryid = optional_param('categoryid', null, PARAM_INT);
+        //reindex grade category array
+        $categories = local_gugcat::get_grade_categories($courseid);
         $assessmenturl = new moodle_url('/local/gugcat/index.php', array('id' => $courseid));
         $assessmenturl.= $this->page->cm ? '&activityid='.$this->page->cm->id : null;
         $overviewurl = new moodle_url('/local/gugcat/overview/index.php', array('id' => $courseid));
+        //add category id in the url if not null
+        if(!is_null($categoryid)){
+            $assessmenturl .= '&categoryid=' . $categoryid;
+            $overviewurl .= '&categoryid=' . $categoryid;
+        }
         $html = html_writer::start_tag('div', array('class' => 'gcat-container'));
         $html .= html_writer::tag('h4', get_string('title', 'local_gugcat'), array('class' => 'title'));
+        $html .= $this->display_custom_select(
+            array_values($categories),
+            'select-category',
+            null,
+            'select-category',
+            'select-category');
+        $html .= html_writer::empty_tag('br');
         $html .= $this->render_from_template('local_gugcat/gcat_tabs', (object)[
             'assessmenttabstr' =>get_string('assessmentlvlscore', 'local_gugcat'),
             'overviewtabstr' =>get_string('overviewaggregrade', 'local_gugcat'),

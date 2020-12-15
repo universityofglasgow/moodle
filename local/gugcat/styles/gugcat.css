@@ -331,3 +331,8 @@ td > .grade-discrepancy{
     position: absolute;
     visibility: hidden;
 }
+
+.select-category, .select-category > select{
+    height: 40px;
+    margin: 0;
+}
