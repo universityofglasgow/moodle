@@ -45,6 +45,14 @@ define(['jquery', 'core/str' ], function($, Str) {
                 }else{
                     urlParams.set("categoryid", $("#select-category").val());
                 }
+                if(checkCurrentUrl("gugcat/add")){
+                    urlParams.delete("studentid");
+                    var url = window.location.pathname;
+                    url = url.replace("gugcat/add", "gugcat")+"?"+urlParams;
+                    window.location.replace(url);
+                    return;
+                }
+                
                 window.location.search = urlParams;
             });
     
