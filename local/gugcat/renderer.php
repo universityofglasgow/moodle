@@ -117,12 +117,13 @@ class local_gugcat_renderer extends plugin_renderer_base {
         return $html;
     }
 
-    public function display_add_grade_form($course, $activity, $student, $gradeversions) {
+    public function display_add_grade_form($course, $student, $gradeversions) {
+        $modname = (($this->page->cm) ? $this->page->cm->name : null);
         $html = $this->header();
         $html .= $this->render_from_template('local_gugcat/gcat_add_form', (object)[
             'addnewgrade' =>get_string('addnewgrade', 'local_gugcat'),
             'course' => $course,
-            'section' => $activity,
+            'section' => $modname,
             'student' => $student
         ]);
         $html .= html_writer::start_tag('div', array('class'=>'mform-container'));
