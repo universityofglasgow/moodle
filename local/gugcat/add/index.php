@@ -80,7 +80,7 @@ if ($fromform = $mform->get_data()) {
 
 echo $OUTPUT->header();
 $renderer = $PAGE->get_renderer('local_gugcat');
-echo $renderer->display_add_grade_form($course, $module->name, $student, $gradeversions);
+echo $renderer->display_add_grade_form($course, $student, $gradeversions);
 $mform->display();
 echo $OUTPUT->footer();
 
