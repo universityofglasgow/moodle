@@ -693,7 +693,8 @@
         "function": "f"
     },
     "assume": {
-        "function": "?"
+        "function": "?",
+        "contextvariable": "true"
     },
     "assume_external_byte_order": {
         "function": "f",
@@ -1653,7 +1654,8 @@
         "function": "s"
     },
     "declare": {
-        "function": "?"
+        "function": "?",
+        "contextvariable": "true"
     },
     "declare_constvalue": {
         "function": "f"
@@ -1929,7 +1931,7 @@
         "function": "f"
     },
     "distrib": {
-        "function": "f"
+        "function": "s"
     },
     "distribute_over": {
         "variable": "?"
@@ -2104,7 +2106,7 @@
         "function": "t"
     },
     "elem": {
-        "function": "f"
+        "function": "s"
     },
     "elementp": {
         "function": "s"
@@ -2179,7 +2181,7 @@
         "function": "f"
     },
     "entier": {
-        "function": "f"
+        "function": "s"
     },
     "epsilon": {
         "function": "s",
@@ -2575,7 +2577,7 @@
         "function": "?"
     },
     "fix": {
-        "function": "f"
+        "function": "s"
     },
     "flatten": {
         "function": "s"
@@ -4529,7 +4531,7 @@
         "function": "?"
     },
     "minor": {
-        "function": "f"
+        "function": "s"
     },
     "minpack_lsquares": {
         "function": "?"
@@ -5036,13 +5038,17 @@
         "function": "f"
     },
     "ordergreat": {
-        "function": "s"
+        "function": "s",
+        "blockexternal": "true",
+        "contextvariable": "true"
     },
     "ordergreatp": {
         "function": "s"
     },
     "orderless": {
-        "function": "s"
+        "function": "s",
+        "blockexternal": "true",
+        "contextvariable": "true"
     },
     "orderlessp": {
         "function": "s"
@@ -7074,6 +7080,10 @@
     "ssubstfirst": {
         "function": "?"
     },
+    "stack_reset_vars": {
+        "function": "?",
+        "blockexternal": "true"
+    },
     "stack_validate": {
         "function": "s"
     },
@@ -7093,6 +7103,10 @@
     },
     "stackunits_make": {
         "function": "s"
+    },
+    "stack_unit_si_declare": {
+        "function": "s",
+        "contextvariable": "true"
     },
     "stackvector": {
         "function": "s"
@@ -7478,7 +7492,8 @@
         "function": "?"
     },
     "texput": {
-        "function": "?"
+        "function": "?",
+        "contextvariable": "true"
     },
     "texsub": {
         "function": "s"

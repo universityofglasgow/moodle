@@ -27,6 +27,7 @@ defined('MOODLE_INTERNAL') || die;
 if ($ADMIN->fulltree) {
     require_once(dirname(__FILE__).'/lib.php');
     require_once(dirname(__FILE__).'/locallib.php');
+    require_once($CFG->dirroot . '/user/profile/lib.php');
 
     $tabmenu = attendance_print_settings_tabs();
 
@@ -105,6 +106,18 @@ if ($ADMIN->fulltree) {
         get_string('enablewarnings', 'attendance'),
         get_string('enablewarnings_desc', 'attendance'), 0));
 
+    $fields = array('id' => get_string('studentid', 'attendance'));
+    $customfields = profile_get_custom_fields();
+    foreach ($customfields as $field) {
+        $fields[$field->shortname] = format_string($field->name);
+    }
+
+    $settings->add(new admin_setting_configmultiselect('attendance/customexportfields',
+            new lang_string('customexportfields', 'attendance'),
+            new lang_string('customexportfields_help', 'attendance'),
+            array('id'), $fields)
+    );
+
     $name = new lang_string('mobilesettings', 'mod_attendance');
     $description = new lang_string('mobilesettings_help', 'mod_attendance');
     $settings->add(new admin_setting_heading('mobilesettings', $name, $description));
@@ -147,6 +160,9 @@ if ($ADMIN->fulltree) {
 
     $settings->add(new admin_setting_configcheckbox('attendance/includeqrcode_default',
         get_string('includeqrcode', 'attendance'), '', 0));
+
+    $settings->add(new admin_setting_configcheckbox('attendance/rotateqrcode_default',
+        get_string('rotateqrcode', 'attendance'), '', 0));
 
     $settings->add(new admin_setting_configcheckbox('attendance/autoassignstatus',
         get_string('autoassignstatus', 'attendance'), '', 0));
@@ -191,5 +207,4 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configtextarea('attendance/emailcontent',
         get_string('emailcontent', 'attendance'), get_string('emailcontent_help', 'attendance'),
         get_string('emailcontent_default', 'attendance'), PARAM_RAW));
-
 }

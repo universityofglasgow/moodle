@@ -57,6 +57,12 @@ class stack_anstest {
     protected $options;
 
     /**
+     * Special variables in the question which should be exposed to the answer test.
+     * @var cas_evaluatable[]
+     */
+    protected $contextsession = array();
+
+    /**
      * @var    float
      */
     protected $atmark;
@@ -92,9 +98,11 @@ class stack_anstest {
      * @param  string $sanskey
      * @param  string $tanskey
      */
-    public function __construct(stack_ast_container $sans, stack_ast_container $tans, $options = null, $atoption = null) {
+    public function __construct(stack_ast_container $sans, stack_ast_container $tans, $options = null, $atoption = null,
+            $contextsession = array()) {
         $this->sanskey = $sans;
         $this->tanskey = $tans;
+        $this->contextsession = $contextsession;
 
         if (!(null === $options || is_a($options, 'stack_options'))) {
             throw new stack_exception('stack_anstest: options must be stack_options or null.');
@@ -211,7 +219,7 @@ class stack_anstest {
         } else {
             return '';
         }
-        $traceline = $this->get_casfunction() . '(' . $sa . ', ' . $ta . ')';
+        $traceline = $this->get_casfunction() . '(' . $sa . ', ' . $ta;
         $atopt = '';
         if ($this->atoption && $this->atoption->get_valid()) {
             $atopt = $this->atoption->ast_to_string(null,
@@ -221,8 +229,12 @@ class stack_anstest {
             $atopt = $this->atoption->get_value();
         }
         if ($atopt != '') {
-            $traceline = $this->get_casfunction() . '(' . $sa . ', ' . $ta . ', '. $atopt .')';
+            $traceline = $this->get_casfunction() . '(' . $sa . ', ' . $ta . ', '. $atopt;
         }
+        if (stack_ans_test_controller::required_raw($this->atname)) {
+            $traceline .= ', "'. $sa . '"';
+        }
+        $traceline .= ')';
         if ($includeresult) {
             $traceline .= ' = ['.$this->atmark. ', "' . $this->atansnote .'"];';
         } else {

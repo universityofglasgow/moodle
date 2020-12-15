@@ -112,6 +112,8 @@ class single implements renderable, templatable {
         if (!$gudatabaseerror) {
             $courses = $gudatabase->get_user_courses($username);
             $formattedcourses = \report_guid\lib::format_mycampus($courses, $username);
+        } else {
+            $formattedcourses = [];
         }
 
         // Find CoreHR data.

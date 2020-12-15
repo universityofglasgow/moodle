@@ -25,7 +25,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2019103100;
+$plugin->version   = 2020120400;
 $plugin->requires  = 2018051700;
 $plugin->component = 'enrol_gudatabase';
 $plugin->maturity = MATURITY_STABLE;

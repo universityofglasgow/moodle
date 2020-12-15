@@ -114,7 +114,7 @@ class mod_attendance_structure {
      * @param stdClass $dbrecord Attandance instance data from {attendance} table
      * @param stdClass $cm       Course module record as returned by {@see get_coursemodule_from_id()}
      * @param stdClass $course   Course record from {course} table
-     * @param stdClass $context  The context of the workshop instance
+     * @param stdClass $context  The context of the attendance instance
      * @param stdClass $pageparams
      */
     public function __construct(stdClass $dbrecord, stdClass $cm, stdClass $course, stdClass $context=null, $pageparams=null) {
@@ -801,7 +801,7 @@ class mod_attendance_structure {
     public function get_users($groupid = 0, $page = 1) : array {
         global $DB;
 
-        $fields = array('username' , 'idnumber' , 'institution' , 'department');
+        $fields = array('username' , 'idnumber' , 'institution' , 'department', 'city', 'country');
         // Get user identity fields if required - doesn't return original $fields array.
         $extrafields = get_extra_user_fields($this->context, $fields);
         $fields = array_merge($fields, $extrafields);

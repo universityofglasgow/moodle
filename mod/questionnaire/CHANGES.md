@@ -1,7 +1,11 @@
 Release Notes
 
-_NOTE - The 3.9 releases will only work on Moodle 3.7, Moodle 3.8, and Moodle 3.9.
+_NOTE - The 3.9 releases will work on Moodle 3.7, Moodle 3.8, Moodle 3.9, and 3.10.
 The 3.5 releases will work on Moodle 3.7, 3.6, 3.5, 3.4 and 3.3._
+
+##### Version 3.9.1 (Build - 2020111801)
+Improvements:
+* Updates to deprecated unit test functions for 3.10.
 
 ##### Version 3.9.0 (Build - 2020062300)
 Improvements:
@@ -15,7 +19,7 @@ Improvements:
 * [PR284](https://github.com/PoetOS/moodle-mod_questionnaire/pull/284): Adding support for multilanguage in choice options.
 * [PR285](https://github.com/PoetOS/moodle-mod_questionnaire/pull/285): Allow multilanguage options to be displayed correctly in conditions.
 * [PR211](https://github.com/PoetOS/moodle-mod_questionnaire/pull/211): Improve upgrade step 2018050102.
-
+* [PR306](https://github.com/PoetOS/moodle-mod_questionnaire/pull/306): Save page responses on next and prev buttons.
 
 Bug fixes:
 
