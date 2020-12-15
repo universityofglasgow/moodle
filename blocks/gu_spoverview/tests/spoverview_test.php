@@ -199,11 +199,17 @@ class block_gu_spoverview_testcase extends advanced_testcase {
             'assessments_marked_str'       => $assessment_str.get_string('marked', $lang),
         ];
 
-        $expectedui  = file_get_contents("./blocks/gu_spoverview/tests/expected_ui.html");
-   
+        $submittedassignmentcountdom  = '<h4 class="assessments-item-count color-primary submitted-assignment-count">'.$templatecontext->assessments_submitted.'</h4>';
+        $tosubmitassignmentcountdom   = '<h4 class="assessments-item-count color-primary to-submitted-assignment-count">'.$templatecontext->assessments_tosubmit.'</h4>';
+        $overdueassignmentcountdom    = '<h4 class="assessments-item-count color-primary overdue-assignment-count">'.$templatecontext->assessments_overdue.'</h4>';
+        $markedassessmentcountdom     = '<h4 class="assessments-item-count color-primary assessment-marked-count">'.$templatecontext->assessments_marked.'</h4>';
+        
         $actualui = $OUTPUT->render_from_template('block_gu_spoverview/spoverview', $templatecontext);
 
-        $this->assertEquals($expectedui, $actualui);
+        $this->assertNotEmpty(strpos($actualui, $submittedassignmentcountdom), "assert value is true or not");
+        $this->assertNotEmpty(strpos($actualui, $tosubmitassignmentcountdom), "assert value is true or not");
+        $this->assertNotEmpty(strpos($actualui, $overdueassignmentcountdom), "assert value is true or not");
+        $this->assertNotEmpty(strpos($actualui, $markedassessmentcountdom), "assert value is true or not");
     }
 
     /**
