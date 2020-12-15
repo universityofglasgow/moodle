@@ -28,7 +28,21 @@
     <select id="{{id}}" name="{{name}}" required>
         {{#default}}<option selected disabled="disabled">{{default}}</option>{{/default}}
         {{#options}}
-        <option value="{{.}}">{{.}}</option>
+        <option 
+        {{selected}}
+        {{#key}}
+            value="{{key}}"
+        {{/key}}
+        {{^key}}
+            value="{{.}}"
+        {{/key}}>
+            {{#value}}
+                {{value}}
+            {{/value}}
+            {{^value}}
+                {{.}}
+            {{/value}}
+        </option>
         {{/options}}
     </select>
 </div>

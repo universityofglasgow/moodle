@@ -36,6 +36,25 @@ define(['jquery', 'core/str' ], function($, Str) {
                 urlParams.set("activityid", $("#select-activity").val());
                 window.location.search = urlParams;
             });
+
+            $("#select-category").on("change", function () { 
+                const urlParams = new URLSearchParams(window.location.search);
+                urlParams.delete("activityid");
+                if($("#select-category").val() === 'null'){
+                    urlParams.delete("categoryid");
+                }else{
+                    urlParams.set("categoryid", $("#select-category").val());
+                }
+                if(checkCurrentUrl("gugcat/add")){
+                    urlParams.delete("studentid");
+                    var url = window.location.pathname;
+                    url = url.replace("gugcat/add", "gugcat")+"?"+urlParams;
+                    window.location.replace(url);
+                    return;
+                }
+                
+                window.location.search = urlParams;
+            });
     
             $("#btn-saveadd").click(function(e) {
                 e.preventDefault();
