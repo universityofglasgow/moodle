@@ -33,6 +33,7 @@ $string['assessmentlvlscore'] = 'Assessment Level Score';
 $string['candidateno'] = 'Candidate No.';
 $string['choosegrade'] = 'Choose grade';
 $string['confirmgrade'] = 'Confirm new grade';
+$string['confirmimport'] = 'Please note that grades have already been imported from Moodle. If you continue, you will overwrite all the grades. Do you wish to continue?';
 $string['downloadcsv'] = 'Download .csv';
 $string['errorrequired'] = 'Failed to save grades for all participants. Grade and Reason fields are required.';
 $string['errorgraderequired'] = 'Add atleast one grade.';
