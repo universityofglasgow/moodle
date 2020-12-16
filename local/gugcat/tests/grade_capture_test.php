@@ -114,4 +114,30 @@ class grade_capture_testcase extends advanced_testcase {
         $this->assertEquals($row->firstgrade, get_string('nograde', 'local_gugcat'));
         $this->assertNotContains($mgcolumn, $columns);
     }
+
+    public function test_release_provisional_grades() {
+        $assign = $this->getDataGenerator()->create_module('assign', array('course' => $this->course->id));
+        $modinfo = get_fast_modinfo($this->course);
+        $cm = $modinfo->get_cm($assign->cmid);
+        $assign = new assign(context_module::instance($cm->id), $cm, $this->course->id);
+        $instance = $assign->get_instance();
+        $instance->instance = $instance->id;
+        $instance->markingworkflow = 1; //enable marking workflow
+        $assign->update_instance($instance);
+        $grades = array();
+        $grades[$this->student->id]['id'] = $this->student->id;
+        $grades[$this->student->id]['provisional'] = 5;
+        $expectedgrade = '5.00000';
+        //test release prv grade
+        grade_capture::release_prv_grade($this->course->id, $cm, $grades);
+        //check marking workflow to 'released'
+        $wfstate = $assign->get_user_flags($this->student->id, true);
+        $this->assertEquals($wfstate->workflowstate, 'released');
+
+        //check assign and gb grades if updated
+        $assigngrade = $assign->get_user_grade($this->student->id, false);
+        $this->assertEquals($assigngrade->grade, $expectedgrade);
+        $gbgrade = grade_get_grades($this->course->id, 'mod', $cm->modname, $cm->instance, $this->student->id);
+        $this->assertEquals($gbgrade->items[0]->grades[$this->student->id]->grade, $expectedgrade);
+    }
 }

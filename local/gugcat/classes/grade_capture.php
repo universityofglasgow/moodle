@@ -79,6 +79,8 @@ class grade_capture{
                 $gradecaptureitem->firstgrade = is_null($fg) ? get_string('nograde', 'local_gugcat') : local_gugcat::convert_grade($fg);
                 $gradecaptureitem->provisionalgrade = is_null($pg) ? get_string('nograde', 'local_gugcat') : local_gugcat::convert_grade($pg);
                 $agreedgrade = (!$agreedgradeid) ? null : (isset($gradeitems[$agreedgradeid]->grades[$student->id]) ? $gradeitems[$agreedgradeid]->grades[$student->id]->finalgrade : null);
+                $sndgrade = (!$secondgradeid) ? null : (isset($gradeitems[$secondgradeid]->grades[$student->id]) ? $gradeitems[$secondgradeid]->grades[$student->id]->finalgrade : null);
+                $trdgrade = (!$thirdgradeid) ? null : (isset($gradeitems[$thirdgradeid]->grades[$student->id]) ? $gradeitems[$thirdgradeid]->grades[$student->id]->finalgrade : null);
 
                 foreach ($gradeitems as $item) {
                     if($item->id != local_gugcat::$PRVGRADEID && $item->id != $firstgradeid){
@@ -91,7 +93,10 @@ class grade_capture{
                         //check grade discrepancy, compare to first grade and agreed grade
                         if(is_null($agreedgrade) && $fg){
                             if($item->id === $secondgradeid || $item->id === $thirdgradeid){
-                                $grdobj->discrepancy = is_null($rawgrade) ? false : (($rawgrade != $fg) ? true : false);
+                                $grdobj->discrepancy = is_null($rawgrade) ? false 
+                                : (($rawgrade != $fg) ? true //compare to first grade
+                                : ((!is_null($sndgrade) && $rawgrade != $sndgrade) ? true //compare to 2nd grade
+                                : ((!is_null($trdgrade) && $rawgrade != $trdgrade) ? true : false))); //compare to 3rd grade
                             }
                         }
                         if($grdobj->discrepancy){
@@ -163,7 +168,6 @@ class grade_capture{
                         }
                         $grade->grade = $rawgrade;
                         $grade->grader = $USER->id;
-                        $grade->workflowstate = ASSIGN_MARKING_WORKFLOW_STATE_RELEASED;
                         $assign->update_grade($grade); 
                     }
                     
