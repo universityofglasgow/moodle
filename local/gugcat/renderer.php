@@ -88,7 +88,8 @@ class local_gugcat_renderer extends plugin_renderer_base {
                             'select-grade-reason').'
                             <input name="reason" value="" class="input-reason" id="input-reason" type="text"/>
                     </td>';
-            $htmlrows .= '<td><b>'.$row->provisionalgrade.'</b></td>';
+            $isgradehidden = (!isset($row->hidden)) ? null: (($row->hidden) ? '<br/>('.get_string('hidden grade', 'local_gugcat').')' : '');
+            $htmlrows .= '<td><b>'.$row->provisionalgrade.'</b>'. $isgradehidden . $this->prv_grade_context_actions().'</td>';
             $htmlrows .= '<td>
                             <button type="button" class="btn btn-default addnewgrade" onclick="location.href=\''.$addformurl.'\'">
                                 '.get_string('addnewgrade', 'local_gugcat').'
@@ -210,6 +211,16 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $html .= html_writer::end_tag('ul');
         return $html;
     }
+
+    private function prv_grade_context_actions() {
+        $html = html_writer::empty_tag('i', array('class' => 'fa fa-ellipsis-h', 'data-toggle' => 'dropdown'));
+        $html .= html_writer::start_tag('ul', array('class' => 'dropdown-menu'));
+        $html .= html_writer::tag('li', get_string('amendgrades', 'local_gugcat'), array('class' => 'dropdown-item'));
+        $html .= html_writer::tag('li', get_string('historicalamendments', 'local_gugcat'), array('class' => 'dropdown-item'));
+        $html .= html_writer::tag('li', get_string('hidefromstudent', 'local_gugcat'), array('class' => 'dropdown-item'));
+        $html .= html_writer::end_tag('ul');
+        return $html;
+    }    
 
     private function header() {
         $courseid = $this->page->course->id;
