@@ -153,7 +153,7 @@ class block_gu_spdetails extends block_base {
      * @return array $assessments Course Modules 
      */
     public static function retrieve_assessments($courseids, $activities) {
-        global $DB;
+        global $DB, $CFG;
 
         $assessments = array();
         list($inactivities, $aparams) = $DB->get_in_or_equal($activities, SQL_PARAMS_NAMED);
@@ -165,8 +165,8 @@ class block_gu_spdetails extends block_base {
 
         $sql = "SELECT DISTINCT mcm.id, mcm.course, mcm.instance, mm.name,
                     mcm.completionexpected
-                    FROM `mdl_course_modules` mcm
-                    JOIN `mdl_modules` mm ON mm.id = mcm.module
+                    FROM `". $CFG->prefix ."course_modules` mcm
+                    JOIN `". $CFG->prefix ."modules` mm ON mm.id = mcm.module
                     WHERE mm.name {$inactivities}
                     AND mcm.course {$incourses}";
 
@@ -201,7 +201,7 @@ class block_gu_spdetails extends block_base {
      *  and a corresponding record is found, false if no record is found
      */
     public static function retrieve_assessmentrecord($name, $instance) {
-        global $DB;
+        global $DB, $CFG;
 
         switch($name) {
             case 'assign':
@@ -209,8 +209,8 @@ class block_gu_spdetails extends block_base {
                         ma.allowsubmissionsfromdate as `startdate`,
                         ma.duedate, ma.gradingduedate, mgi.id as `gradeid`,
                         mgi.aggregationcoef as `weight`, mgi.aggregationcoef2 as `weight01`
-                        FROM `mdl_assign` ma
-                        JOIN `mdl_grade_items` mgi ON mgi.iteminstance = ma.id
+                        FROM `". $CFG->prefix ."assign` ma
+                        JOIN `". $CFG->prefix ."grade_items` mgi ON mgi.iteminstance = ma.id
                         AND mgi.itemmodule = ?
                         WHERE ma.id = ?";
                 $assessmentrecord = ($assessmentrecord = $DB->get_record_sql($sql, array($name, $instance))) ?
@@ -223,13 +223,24 @@ class block_gu_spdetails extends block_base {
                         (mq.timeclose + (86400 * 14)) as `gradingduedate`,
                         mgi.aggregationcoef as `weight`, mgi.aggregationcoef2 as `weight01`,
                         mq.id as `gradeid`, mgg.feedback
-                        FROM `mdl_quiz` mq
-                        JOIN `mdl_grade_items` mgi ON mgi.iteminstance = mq.id
+                        FROM `". $CFG->prefix ."quiz` mq
+                        JOIN `". $CFG->prefix ."grade_items` mgi ON mgi.iteminstance = mq.id
                         AND mgi.itemmodule = ?
-                        JOIN `mdl_grade_grades` mgg ON mgg.itemid = mgi.id
+                        JOIN `". $CFG->prefix ."grade_grades` mgg ON mgg.itemid = mgi.id
                         WHERE mq.id = ?";
                 $assessmentrecord = ($assessmentrecord = $DB->get_record_sql($sql, array($name, $instance))) ?
                                      $assessmentrecord : new stdClass();
+                break;
+            case 'survey':
+                $assessmentrecord = $DB->get_record('survey', array('id' => $instance), 'name');
+                break;
+            case 'wiki':
+                $assessmentrecord = $DB->get_record('wiki', array('id' => $instance), 'name');
+                break;
+            case 'workshop':
+                $assessmentrecord = $DB->get_record('workshop', array('id' => $instance),
+                                                    'name, id as `gradeid`, submissionstart as `startdate`, ' .
+                                                    'submissionend as `duedate`, assessmentend as `gradingduedate`');
                 break;
             default:
                 $assessmentrecord = ($assessmentrecord = $DB->get_record($name, array('id' => $instance), 'name')) ?
@@ -303,6 +314,12 @@ class block_gu_spdetails extends block_base {
                 $statusrecord = new stdClass();                             
                 $statusrecord->status = $record ? 'submitted' : null ;
                 break;
+            case 'workshop':
+                $record = $DB->get_record('workshop_submissions',
+                                                array('workshopid' => $instance, 'authorid' => $userid));
+                $statusrecord = new stdClass();
+                $statusrecord->status = $record ? 'submitted' : null ;
+                break;
             default:
                 $statusrecord = new stdClass();
                 break;
@@ -354,7 +371,8 @@ class block_gu_spdetails extends block_base {
      * @param int $userid User ID
      * @return stdClass $gradesrecord Grades object if the Activity has a corresponding
      *  Grade Grades table and a corresponding record is found, return empty object if no
-     *  record is found
+     *  record is found.
+     *  Wiki and Survey has no grades.
      */
     public static function retrieve_grades($name, $gradeid, $userid) {
         global $DB;
@@ -373,6 +391,13 @@ class block_gu_spdetails extends block_base {
                                                 '*');
                 $gradesrecord = is_bool($gradesrecord) ? new stdClass() : $gradesrecord;
                 $gradesrecord->finalgrade = property_exists($gradesrecord, 'grade') ? $gradesrecord->grade : null;
+                break;
+            case 'workshop':
+                $gradesrecord = $DB->get_record('workshop_submissions',
+                                                array('workshopid' => $gradeid, 'authorid' => $userid),
+                                                'grade as `finalgrade`, feedbackauthor as `feedback`');
+
+                $gradesrecord = is_bool($gradesrecord) ? new stdClass : $gradesrecord;
                 break;
             default:
                 $gradesrecord = new stdClass();
@@ -396,7 +421,7 @@ class block_gu_spdetails extends block_base {
 
         $gradetext = $grade ? $grade : 
                      get_string('due', $lang).userdate($gradingduedate,  get_string('convertdate', $lang));
-        return $gradetext;
+        return $gradingduedate == 0 ? get_string('emptyvalue', $lang) : $gradetext;
     }
 
     /**
@@ -415,8 +440,11 @@ class block_gu_spdetails extends block_base {
         $feedbackrecord->hasurl = false;
 
         $feedbackrecord->hasurl = $feedback ? true : false;
-        $feedbackrecord->text = $feedback ? get_string('readfeedback', $lang) : 
-                                 get_string('due', $lang).userdate($gradingduedate,  get_string('convertdate', $lang));
+        $feedbackrecord->text = $feedback ? get_string('readfeedback', $lang) :
+                                get_string('due', $lang).userdate($gradingduedate, get_string('convertdate', $lang));
+        if ($gradingduedate == 0){
+            $feedbackrecord->text = get_string('emptyvalue', $lang);
+        }
         return $feedbackrecord;
     }
 }
