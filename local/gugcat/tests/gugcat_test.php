@@ -48,7 +48,9 @@ class local_gugcat_testcase extends advanced_testcase {
         $assign = $gen->create_module('assign', array('id' => 1, 'course' => $this->course->id));
         $modulecontext = context_module::instance($assign->cmid);
         $assign = new assign($modulecontext, false, false);
-        $this->cm = $assign->get_course_module();
+        $cm = local_gugcat::get_activities($this->course->id);
+        $key = key($cm);
+        $this->cm = $cm[$key];
 
         //create grade items
         $this->gradeitem = new grade_item($gen->create_grade_item(['courseid' => $this->course->id, 'iteminfo' => $this->cm->id]), false);
@@ -56,7 +58,6 @@ class local_gugcat_testcase extends advanced_testcase {
         'iteminfo' => $this->cm->id, 
         'itemname' => get_string('provisionalgrd', 'local_gugcat')
         ]), false);
-
     }
 
     public function test_check_course_activities() {
@@ -72,34 +73,10 @@ class local_gugcat_testcase extends advanced_testcase {
         $this->assertCount(2, $gradeitems);
     }
 
-    public function test_grade_capture_columns() {
-        global $gradeitems, $prvgradeid;
-        $gradeitems = [];
-        $prvgradeid = $this->provisionalgi->id;
-        array_push($gradeitems, $this->gradeitem);
-        $date = date("(j/n/Y)", strtotime(userdate($this->cm->added)));
-        $firstgrade = get_string('gradebookgrade', 'local_gugcat').'<br>'.$date;
-
-        $columns = grade_capture::get_columns();
-        $this->assertContains($firstgrade, $columns);
-    }
-
     public function test_check_prv_grade_item() {
         $prvgradeid = $this->provisionalgi->id;
         local_gugcat::set_prv_grade_id($this->course->id, $this->cm);
         $this->assertEquals(local_gugcat::$PRVGRADEID, $prvgradeid);
-    }
-
-    public function test_grade_capture_rows() {
-        global $gradeitems, $prvgradeid;
-        $gradeitems = array();
-        $prvgradeid = $this->provisionalgi->id;
-        $rows = grade_capture::get_rows($this->course, $this->cm, $this->students);
-        $row = $rows[0];
-        $this->assertEquals($row->cnum, 1);
-        $this->assertEquals($row->studentno, $this->student->id);
-        $this->assertEquals($row->firstgrade, get_string('nograde', 'local_gugcat'));
-        $this->assertFalse($row->discrepancy);
     }
 
     public function test_get_grade_reasons() {
