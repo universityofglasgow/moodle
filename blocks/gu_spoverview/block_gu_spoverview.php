@@ -81,6 +81,7 @@ class block_gu_spoverview extends block_base {
             }
         }
 
+
         // Set singular/plural strings for Assignment and Assessment
         $assignment_str = ($assignments_submitted == 1) ? get_string('assignment', $lang) : get_string('assignments', $lang);
         $assessment_str = ($assessments_marked == 1) ? get_string('assessment', $lang) : get_string('assessments', $lang);
@@ -115,15 +116,17 @@ class block_gu_spoverview extends block_base {
      *  otherwise return empty object
      */
     public static function get_user_assignments($userid, $courseids) {
-        global $DB;
+        global $DB, $CFG;
         $params = array($userid, $userid);
         $incourseids = implode(',', $courseids);
 
         $sql = "SELECT DISTINCT ma.id, ma.name, ma.allowsubmissionsfromdate as `startdate`,
                 ma.duedate, ma.cutoffdate, mas.status, mauf.extensionduedate
-                FROM `mdl_assign` ma
-                LEFT JOIN `mdl_assign_submission` mas ON ma.id = mas.assignment AND mas.userid = ?
-                LEFT JOIN `mdl_assign_user_flags` mauf ON ma.id = mauf.assignment AND mauf.userid = ?
+                FROM `{$CFG->prefix}assign` ma
+                LEFT JOIN `{$CFG->prefix}assign_submission` mas ON ma.id = mas.assignment 
+                AND mas.userid = ?
+                LEFT JOIN `{$CFG->prefix}assign_user_flags` mauf ON ma.id = mauf.assignment 
+                AND mauf.userid = ?
                 WHERE ma.course IN (".$incourseids.")";
 
         $assignments = ($assignments = $DB->get_records_sql($sql, $params)) ? $assignments : new stdClass;
@@ -138,13 +141,13 @@ class block_gu_spoverview extends block_base {
      * @return int Count of Assessment records
      */
     public static function get_user_assessments_count($userid, $courseids) {
-        global $DB;
+        global $DB, $CFG;
         $params = array($userid, 'mod');
         $incourseids = implode(',', $courseids);
 
-        $sql = "SELECT DISTINCT mgi.id, mgi.itemname, mgg.finalgrade
-                FROM `mdl_grade_items` mgi
-                JOIN `mdl_grade_grades` mgg ON mgi.id = mgg.itemid AND mgg.userid = ? AND mgg.finalgrade IS NOT NULL
+        $sql = "SELECT mgi.itemname, mgg.finalgrade
+                FROM `{$CFG->prefix}grade_items` mgi
+                JOIN `{$CFG->prefix}grade_grades` mgg ON mgi.id = mgg.itemid AND mgg.userid = ? AND mgg.finalgrade IS NOT NULL
                 WHERE mgi.itemtype = ? AND mgi.courseid IN (".$incourseids.")";
 
         $assessments = ($assessments = $DB->get_records_sql($sql, $params)) ? $assessments : array();
