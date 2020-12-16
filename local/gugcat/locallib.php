@@ -107,6 +107,7 @@ class local_gugcat {
     }
 
     public static function set_prv_grade_id($courseid, $mod){
+        if(is_null($mod)) return;
         $pgrd_str = get_string('provisionalgrd', 'local_gugcat');
         self::$PRVGRADEID = self::add_grade_item($courseid, $pgrd_str, $mod);
         return self::$PRVGRADEID;
