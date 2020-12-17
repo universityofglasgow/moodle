@@ -83,6 +83,7 @@ define(['jquery', 'core/str' ], function($, Str) {
         var btn_import = document.getElementById('btn-import');
         var import_submit = document.getElementById('importgrades-submit');
         var gcat_tbl_form = document.getElementById('multigradesform');
+        var hide_show = document.getElementsByClassName('hide-show-grade');
         switch (event.target) {
             case btn_saveadd:
                 btn_saveadd.classList.toggle('togglebtn');
@@ -111,6 +112,10 @@ define(['jquery', 'core/str' ], function($, Str) {
                 }else{
                     import_submit.click();
                 }
+                break;
+            case hide_show:
+            alert("I was clicked");
+            // hide_show_submit.click();
                 break;
             default:
                 break;
@@ -144,6 +149,7 @@ define(['jquery', 'core/str' ], function($, Str) {
                     document.querySelector('#btn-assessmenttab').classList.remove('active');
                 }else{
                     document.getElementById('btn-release').style.display = 'block';
+                    $(".hide-show-grade").show();
                 }
 
                 if(!($(".gradeitems").text().includes("Moodle Grade[Date]"))){

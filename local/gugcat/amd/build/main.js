@@ -144,12 +144,14 @@ define(['jquery', 'core/str' ], function($, Str) {
                     document.querySelector('#btn-assessmenttab').classList.remove('active');
                 }else{
                     document.getElementById('btn-release').style.display = 'block';
+                    $(".hide-show-grade").show();
                 }
 
                 if(!($(".gradeitems").text().includes("Moodle Grade[Date]"))){
                     $("#btn-saveadd").show();
                     $(".addnewgrade").show();
                 }
+
             }
         }
     };

@@ -26,6 +26,7 @@ namespace local_gugcat;
 use assign;
 use context_module;
 use grade_item;
+use grade_grade;
 use local_gugcat;
 use stdClass;
 
@@ -70,6 +71,7 @@ class grade_capture{
             $gradecaptureitem->discrepancy = false;
             $gradecaptureitem->grades = array();
             $gradecaptureitem->firstgrade = get_string('nogradeimport', 'local_gugcat');
+            $gradecaptureitem->hidden = null;
             if($firstgradeid){
                 //get first grade and provisional grade
                 $gifg = $gradeitems[$firstgradeid]->grades;
@@ -79,8 +81,12 @@ class grade_capture{
                 $gradecaptureitem->firstgrade = is_null($fg) ? get_string('nograde', 'local_gugcat') : local_gugcat::convert_grade($fg);
                 $gradecaptureitem->provisionalgrade = is_null($pg) ? get_string('nograde', 'local_gugcat') : local_gugcat::convert_grade($pg);
                 $agreedgrade = (!$agreedgradeid) ? null : (isset($gradeitems[$agreedgradeid]->grades[$student->id]) ? $gradeitems[$agreedgradeid]->grades[$student->id]->finalgrade : null);
+                $sndgrade = (!$secondgradeid) ? null : (isset($gradeitems[$secondgradeid]->grades[$student->id]) ? $gradeitems[$secondgradeid]->grades[$student->id]->finalgrade : null);
+                $trdgrade = (!$thirdgradeid) ? null : (isset($gradeitems[$thirdgradeid]->grades[$student->id]) ? $gradeitems[$thirdgradeid]->grades[$student->id]->finalgrade : null);
 
                 foreach ($gradeitems as $item) {
+                    if($item->grades[$student->id]->hidden == 1)
+                        $gradecaptureitem->hidden = true;
                     if($item->id != local_gugcat::$PRVGRADEID && $item->id != $firstgradeid){
                         $rawgrade = (isset($item->grades[$student->id])) ? $item->grades[$student->id]->finalgrade : null; 
                         $grdobj = new stdClass();
@@ -91,7 +97,10 @@ class grade_capture{
                         //check grade discrepancy, compare to first grade and agreed grade
                         if(is_null($agreedgrade) && $fg){
                             if($item->id === $secondgradeid || $item->id === $thirdgradeid){
-                                $grdobj->discrepancy = is_null($rawgrade) ? false : (($rawgrade != $fg) ? true : false);
+                                $grdobj->discrepancy = is_null($rawgrade) ? false 
+                                : (($rawgrade != $fg) ? true //compare to first grade
+                                : ((!is_null($sndgrade) && $rawgrade != $sndgrade) ? true //compare to 2nd grade
+                                : ((!is_null($trdgrade) && $rawgrade != $trdgrade) ? true : false))); //compare to 3rd grade
                             }
                         }
                         if($grdobj->discrepancy){
@@ -136,12 +145,14 @@ class grade_capture{
      *
      */
     public static function release_prv_grade($courseid, $cm, $grades){
-        global $USER, $CFG;
+        global $USER, $CFG, $DB;
         $data = new stdClass();
         $data->courseid = $courseid;
         $data->itemmodule = $cm->modname;
         $data->itemname = $cm->name;
         $data->iteminstance = $cm->instance;
+        $gradeitemid = $cm->gradeitem->id;
+
         //get grade item
         $gradeitem = new grade_item($data, true);
         if($cm->modname === 'assign'){
@@ -150,10 +161,33 @@ class grade_capture{
             $is_workflow_enabled = $assign->get_instance()->markingworkflow == 1;
         }
         foreach ($grades as $grd) {
-            if(!empty($grd['provisional'])){
+            $userid = $grd['id'];
+            $hidden = $DB->get_field(GRADE_GRADES, 'hidden', array('itemid'=>local_gugcat::$PRVGRADEID, 'userid' => $userid));
+            if(!empty($grd['provisional']) && $hidden == 0){
                 $rawgrade = array_search($grd['provisional'], local_gugcat::$GRADES);
                 $rawgrade = $rawgrade ? $rawgrade : $grd['provisional'];
-                $userid = $grd['id'];
+                switch ($rawgrade) {
+                    case NON_SUBMISSION:
+                        $feedback = NON_SUBMISSION_AC;
+                        $is_non_sub = true;
+                        $rawgrade = 0;
+                        $excluded = 0;                        
+                        break;
+                    case MEDICAL_EXEMPTION:
+                        $feedback = MEDICAL_EXEMPTION_AC;
+                        $rawgrade = null;
+                        $excluded = 1; //excluded from aggregation
+                        break;
+                    default:
+                        $is_non_sub = false;
+                        $feedback = null;
+                        $excluded = 0;
+                        break;
+                }
+                //update feedback and excluded field
+                $select = "itemid = $gradeitemid AND userid = $userid";
+                $DB->set_field_select(GRADE_GRADES, 'feedback', $feedback, $select);
+                $DB->set_field_select(GRADE_GRADES, 'excluded', $excluded, $select);
                 if($cm->modname === 'assign'){
                     // update assign grade
                     if ($grade = $assign->get_user_grade($userid, true)) {
@@ -163,10 +197,11 @@ class grade_capture{
                         }
                         $grade->grade = $rawgrade;
                         $grade->grader = $USER->id;
-                        $grade->workflowstate = ASSIGN_MARKING_WORKFLOW_STATE_RELEASED;
                         $assign->update_grade($grade); 
                     }
-                    
+                    if($is_non_sub){
+                        $DB->set_field_select(GRADE_GRADES, 'finalgrade', $rawgrade, $select);
+                    }
                 }else{         
                     //update grade from gradebook
                     $gradeitem->update_final_grade($userid, $rawgrade, null, false, FORMAT_MOODLE, $USER->id);
@@ -203,6 +238,26 @@ class grade_capture{
             local_gugcat::update_grade($student->id, $mggradeitemid, $grade);
             local_gugcat::update_grade($student->id, local_gugcat::$PRVGRADEID, $grade);
         } 
+    }
+
+    public static function hideshowgrade($userid){
+        global $USER;
+        
+        $grade_ = new grade_grade(array('userid' => $userid, 'itemid' => local_gugcat::$PRVGRADEID), true);
+        $grade_->usermodified = $USER->id;
+        $grade_->itemid = local_gugcat::$PRVGRADEID;
+        $grade_->userid = $userid;
+        $grade_->timemodified = time();
+        if($grade_->hidden == 0){
+            $grade_->hidden = 1; 
+            $message = 'hiddengrademsg';
+        }  
+        else {
+            $grade_->hidden = 0;
+            $message = 'showgrademsg';
+        }
+        local_gugcat::notify_success($message);
+        return $grade_->update();        
     }
 
 }

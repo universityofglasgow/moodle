@@ -47,22 +47,25 @@ $PAGE->set_course($course);
 $PAGE->set_heading($course->fullname);
 
 $coursecontext = context_course::instance($course->id);
-$students = get_enrolled_users($coursecontext, 'mod/coursework:submit');
 $activities = local_gugcat::get_activities($courseid);
 $selectedmodule = null;
-//populate $STUDENTS
-local_gugcat::$STUDENTS = $students;
+$groupid = 0;
+
 if(!empty($activities)){
     $mods = array_reverse($activities);
     $selectedmodule = is_null($activityid) ? array_pop($mods) : $activities[$activityid];
     $PAGE->set_cm($selectedmodule);
+    $groupid = $selectedmodule->groupingid;
 
     $scaleid = $selectedmodule->gradeitem->scaleid;
     //populate $GRADES with scales
     local_gugcat::set_grade_scale($scaleid);
-    //populate provisional grade id and set it to static
-    local_gugcat::set_prv_grade_id($courseid, $selectedmodule);
 }
+$students = get_enrolled_users($coursecontext, 'mod/coursework:submit', $groupid);
+//populate $STUDENTS
+local_gugcat::$STUDENTS = $students;
+//populate provisional grade id and set it to static
+local_gugcat::set_prv_grade_id($courseid, $selectedmodule);
 
 //---------submit grade capture table
 if (!empty($_POST)){
@@ -92,10 +95,15 @@ if (!empty($_POST)){
             //no grades selected
             print_error('errorgraderequired', 'local_gugcat', $PAGE->url);
         }
-    }
-    elseif(isset($_POST['importgrades'])){
+    }elseif(isset($_POST['importgrades'])){
         grade_capture::import_from_gradebook($courseid, $selectedmodule, $students);
         local_gugcat::notify_success('successimport');
+        unset($_POST);
+        header("Location: ".$_SERVER['REQUEST_URI']);
+        exit;
+    }elseif(isset($_POST['showhidegrade']) && !empty($_POST['rowstudentno'])){
+        $studentno = $_POST['rowstudentno'];
+        grade_capture::hideshowgrade($studentno);
         unset($_POST);
         header("Location: ".$_SERVER['REQUEST_URI']);
         exit;
