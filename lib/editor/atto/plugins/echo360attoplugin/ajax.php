@@ -18,7 +18,7 @@
  * AJAX script to return configuraton parameters for LTI launch request.
  *
  * @package   atto_echo360attoplugin
- * @copyright COPYRIGHTINFO
+ * @copyright 2020 Echo360 Inc.
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 define('AJAX_SCRIPT', true);
@@ -28,7 +28,7 @@ require($CFG->dirroot.'/lib/editor/atto/plugins/echo360attoplugin/LtiConfigurati
 use Echo360\LtiConfiguration;
 
 const ECHO360ATTOPLUGIN_NAME = 'atto_echo360attoplugin';
-const ECHO360ATTOPLUGIN_VERSION = '1.0.19';
+const ECHO360ATTOPLUGIN_VERSION = '1.0.24';
 
 $contextcourseid = required_param('contextcourseid', PARAM_INT);
 $pagetype = required_param('pagetype', PARAM_TEXT);
