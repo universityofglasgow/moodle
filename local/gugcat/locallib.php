@@ -25,10 +25,14 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-//Administrative grades
-define('CREDIT_WITHHELD_AC', 'CW');
+//tables used in db
+define('GRADE_GRADES', 'grade_grades');
+define('GRADE_ITEMS', 'grade_items');
+
+//Administrative grades at Assessment Level
+define('NON_SUBMISSION_AC', 'NS');
 define('MEDICAL_EXEMPTION_AC', 'MV');
-define('CREDIT_WITHHELD', -1);
+define('NON_SUBMISSION', -1);
 define('MEDICAL_EXEMPTION', -2);
 
 require_once($CFG->libdir.'/gradelib.php');
@@ -39,11 +43,6 @@ require_once($CFG->dirroot.'/mod/assign/locallib.php');
 
 class local_gugcat {
      
-    /**
-     * Database tables.
-     */
-    const TBL_GRADE_ITEMS  = 'grade_items';
-
     public static $GRADES = array();
     public static $PRVGRADEID = null;
     public static $STUDENTS = array();
@@ -98,11 +97,11 @@ class local_gugcat {
     public static function get_grade_grade_items($course, $module){
         global $DB;
         $select = 'courseid = '.$course->id.' AND '.self::compare_iteminfo();
-        $gradeitems = $DB->get_records_select(self::TBL_GRADE_ITEMS, $select, ['iteminfo' => $module->id]);
+        $gradeitems = $DB->get_records_select(GRADE_ITEMS, $select, ['iteminfo' => $module->id]);
         $sort = 'id';
-        $fields = 'userid, itemid, id, finalgrade, timemodified';
+        $fields = 'userid, itemid, id, finalgrade, timemodified, hidden';
         foreach($gradeitems as $item) {
-            $item->grades = $DB->get_records('grade_grades', array('itemid' => $item->id), $sort, $fields);
+            $item->grades = $DB->get_records(GRADE_GRADES, array('itemid' => $item->id), $sort, $fields);
         }
         
         return $gradeitems;
@@ -128,7 +127,7 @@ class local_gugcat {
             'itemname' => $itemname,
             'iteminfo' => $modid
         ];
-        return $DB->get_field_select(self::TBL_GRADE_ITEMS, 'id', $select, $params);
+        return $DB->get_field_select(GRADE_ITEMS, 'id', $select, $params);
     }
 
     public static function add_grade_item($courseid, $reason, $mod){
@@ -248,7 +247,7 @@ class local_gugcat {
         if($scale = $DB->get_record('scale', array('id'=>$scaleid), '*')){
         $scalegrades = make_menu_from_list($scale->scale); 
         }
-        $scalegrades[CREDIT_WITHHELD] = CREDIT_WITHHELD_AC;
+        $scalegrades[NON_SUBMISSION] = NON_SUBMISSION_AC;
         $scalegrades[MEDICAL_EXEMPTION] = MEDICAL_EXEMPTION_AC;
         self::$GRADES = $scalegrades;
     }
@@ -278,5 +277,4 @@ class local_gugcat {
         }
         return $grd_ctgs;
     }
-
 }
