@@ -45,7 +45,12 @@
                             {{formatted.weight}}
                         </td>
                         <td>
-                            {{formatted.duedate}}
+                            {{#assessment.hasextension}} 
+                                {{formatted.extensionduedate}}<span class="extended">*</span>
+                            {{/assessment.hasextension}}
+                            {{^assessment.hasextension}}
+                                {{formatted.duedate}}
+                            {{/assessment.hasextension}}
                         </td>
                         <td>
                             {{#submission}}
