@@ -89,7 +89,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
                             <input name="reason" value="" class="input-reason" id="input-reason" type="text"/>
                     </td>';
             $isgradehidden = (!isset($row->hidden)) ? null: (($row->hidden) ? '<br/>('.get_string('hiddengrade', 'local_gugcat').')' : '');
-            $htmlrows .= '<td class="provisionalgrade"><b>'.$row->provisionalgrade.'</b>'.$this->context_actions($row->studentno, $isgradehidden).'</i>'. $isgradehidden.'</td>';
+            $htmlrows .= '<td class="provisionalgrade"><b>'.$row->provisionalgrade.'</b>'.$this->context_actions($row->studentno, $isgradehidden). $isgradehidden.'</td>';
             $htmlrows .= '<td>
                             <button type="button" class="btn btn-default addnewgrade" onclick="location.href=\''.$addformurl.'\'">
                                 '.get_string('addnewgrade', 'local_gugcat').'
@@ -206,7 +206,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
     }
 
     private function context_actions($studentno, $ishidden=null) {
-        $html = html_writer::empty_tag('i', array('class' => 'fa fa-ellipsis-h', 'data-toggle' => 'dropdown'));
+        $html = html_writer::tag('i', null, array('class' => 'fa fa-ellipsis-h', 'data-toggle' => 'dropdown'));
         $html .= html_writer::start_tag('ul', array('class' => 'dropdown-menu'));
         $html .= html_writer::tag('li', get_string('amendgrades', 'local_gugcat'), array('class' => 'dropdown-item'));
         $html .= html_writer::tag('li', get_string('historicalamendments', 'local_gugcat'), array('class' => 'dropdown-item'));
