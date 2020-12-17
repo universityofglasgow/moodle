@@ -163,7 +163,11 @@ td > .grade-discrepancy{
 }
 
 /* Hide submit buttons */
-#release-submit, #importgrades-submit {
+#release-submit, #importgrades-submit, #showhidegrade-submit {
     position: absolute;
     visibility: hidden;
+}
+
+.hide-show-grade {
+    display: none;
 }

@@ -88,11 +88,12 @@ class local_gugcat_renderer extends plugin_renderer_base {
                             'select-grade-reason').'
                             <input name="reason" value="" class="input-reason" id="input-reason" type="text"/>
                     </td>';
-            $htmlrows .= '<td><b>'.$row->provisionalgrade.'</b></td>';
+            $isgradehidden = (!isset($row->hidden)) ? null: (($row->hidden) ? '<br/>('.get_string('hiddengrade', 'local_gugcat').')' : '');
+            $htmlrows .= '<td class="provisionalgrade"><b>'.$row->provisionalgrade.'</b>'.$this->context_actions($row->studentno, $isgradehidden). $isgradehidden.'</td>';
             $htmlrows .= '<td>
                             <button type="button" class="btn btn-default addnewgrade" onclick="location.href=\''.$addformurl.'\'">
                                 '.get_string('addnewgrade', 'local_gugcat').'
-                            </button>
+                            </button>     
                     </td>';
             $htmlrows .= html_writer::end_tag('tr');
         }
@@ -112,6 +113,8 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $html .= $this->display_table($htmlrows, $htmlcolumns);
         $html .= html_writer::empty_tag('button', array('id' => 'release-submit', 'name' => 'release', 'type' => 'submit'));
         $html .= html_writer::empty_tag('button', array('id'=>'importgrades-submit', 'name'=> 'importgrades', 'type'=>'submit'));
+        $html .= html_writer::empty_tag('input', array('name' => 'rowstudentno', 'type' => 'hidden', 'id'=>'studentno'));
+        $html .= html_writer::empty_tag('button', array('id'=>'showhidegrade-submit', 'name'=> 'showhidegrade', 'type'=>'submit'));
         $html .= html_writer::end_tag('form');
         $html .= $this->footer();
         return $html;
@@ -155,7 +158,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
             $htmlrows .= html_writer::tag('td', $row->surname);
             $htmlrows .= html_writer::tag('td', $row->forename);
             foreach((array) $row->grades as $grade) {
-                $htmlrows .= '<td>'.$grade.((strpos($grade, 'No grade') !== false) ? null : $this->context_actions()).'</td>';
+                $htmlrows .= '<td>'.$grade.((strpos($grade, 'No grade') !== false) ? null : $this->context_actions($row->studentno)).'</td>';
             }
             $htmlrows .= '<td><i class="fa fa-times-circle"></i></td>';
             $htmlrows .= html_writer::empty_tag('td');
@@ -202,14 +205,18 @@ class local_gugcat_renderer extends plugin_renderer_base {
         return $html;
     }
 
-    private function context_actions() {
-        $html = html_writer::empty_tag('i', array('class' => 'fa fa-ellipsis-h', 'data-toggle' => 'dropdown'));
+    private function context_actions($studentno, $ishidden=null) {
+        $html = html_writer::tag('i', null, array('class' => 'fa fa-ellipsis-h', 'data-toggle' => 'dropdown'));
         $html .= html_writer::start_tag('ul', array('class' => 'dropdown-menu'));
         $html .= html_writer::tag('li', get_string('amendgrades', 'local_gugcat'), array('class' => 'dropdown-item'));
         $html .= html_writer::tag('li', get_string('historicalamendments', 'local_gugcat'), array('class' => 'dropdown-item'));
+        $html .= html_writer::tag('li', !empty($ishidden) ? get_string('showgrade', 'local_gugcat') : get_string('hidefromstudent', 'local_gugcat'), array('class' => 'dropdown-item hide-show-grade',
+            'onclick'=>
+            'document.getElementById("studentno").value = '.$studentno.';
+            $("#showhidegrade-submit").click();'));
         $html .= html_writer::end_tag('ul');
         return $html;
-    }
+    }  
 
     private function header() {
         $courseid = $this->page->course->id;

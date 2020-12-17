@@ -95,10 +95,15 @@ if (!empty($_POST)){
             //no grades selected
             print_error('errorgraderequired', 'local_gugcat', $PAGE->url);
         }
-    }
-    elseif(isset($_POST['importgrades'])){
+    }elseif(isset($_POST['importgrades'])){
         grade_capture::import_from_gradebook($courseid, $selectedmodule, $students);
         local_gugcat::notify_success('successimport');
+        unset($_POST);
+        header("Location: ".$_SERVER['REQUEST_URI']);
+        exit;
+    }elseif(isset($_POST['showhidegrade']) && !empty($_POST['rowstudentno'])){
+        $studentno = $_POST['rowstudentno'];
+        grade_capture::hideshowgrade($studentno);
         unset($_POST);
         header("Location: ".$_SERVER['REQUEST_URI']);
         exit;
