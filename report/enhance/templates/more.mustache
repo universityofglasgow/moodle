@@ -172,3 +172,31 @@
 {{# allowreview }}
     <a class="btn btn-warning" href="{{{ reviewurl }}}">{{# str }}review, report_enhance{{/ str }}</a>
 {{/ allowreview }}
+
+{{^ hascomments }}
+    <div class="alert alert-warning">{{# str }}nocomments, report_enhance{{/ str }}</div>
+{{/ hascomments }}
+
+{{# hascomments}}
+    <div class="card m-b-1 m-t-2">
+        <div class="card-body">
+            <h5 class="card-title">{{# str }}comments, report_enhance{{/ str }}</h5>
+                {{# comments }}
+                    <div class="card-text border rounded p-1 m-b-1 bg-secondary">
+                        <p class="border-bottom">
+                            <b>{{ name }} - {{ created }}</b>
+                            {{ edited }}
+                        </p>
+                        {{{ comment }}}
+                        {{# canedit }}
+                            <a class="btn btn-sm btn-warning" href="{{{ editurl }}}">{{# str }}edit{{/ str }}</a>
+                        {{/ canedit }}
+                    </div>
+                {{/ comments }}
+        </div>
+    </div>
+{{/ hascomments }}
+
+{{# allowcomments }}
+    <a class="btn btn-primary" href="{{{ commenturl }}}">{{# str }}newcomment, report_enhance{{/ str }}</a>
+{{/ allowcomments }}

@@ -77,5 +77,34 @@ function xmldb_report_enhance_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2019020700, 'report', 'enhance');
     }
 
+    if ($oldversion < 2020121701) {
+
+        // Define table report_enhance_comment to be created.
+        $table = new xmldb_table('report_enhance_comment');
+
+        // Adding fields to table report_enhance_comment.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('enhanceid', XMLDB_TYPE_INTEGER, '11', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('userid', XMLDB_TYPE_INTEGER, '11', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('comment', XMLDB_TYPE_TEXT, null, null, null, null, null);
+        $table->add_field('timeadded', XMLDB_TYPE_INTEGER, '11', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('timeedited', XMLDB_TYPE_INTEGER, '11', null, XMLDB_NOTNULL, null, '0');
+
+        // Adding keys to table report_enhance_comment.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+
+        // Adding indexes to table report_enhance_comment.
+        $table->add_index('ix_eid', XMLDB_INDEX_NOTUNIQUE, ['enhanceid']);
+
+        // Conditionally launch create table for report_enhance_comment.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Enhance savepoint reached.
+        upgrade_plugin_savepoint(true, 2020121701, 'report', 'enhance');
+    }
+
+
     return true; //have to be in else get an unknown error
 }

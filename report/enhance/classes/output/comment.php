@@ -13,16 +13,48 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
 /**
- * Version info
+ * Main class for course listing
  *
  * @package    report_enhance
+ * @copyright  2020 Howard Miller <howardsmiller@gmail.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace report_enhance\output;
+
 defined('MOODLE_INTERNAL') || die;
 
-$plugin->version   = 2020121701;
-$plugin->requires  = 2019111800;
-$plugin->component = 'report_enhance';
+use renderable;
+use renderer_base;
+use templatable;
+
+/**
+ * Class contains data for report_enhance comment
+ *
+ * @copyright  2018 Howard Miller <howardsmiller@gmail.com>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class comment implements renderable, templatable {
+
+    private $form;
+
+    /**
+     * Constructor
+     */
+    public function __construct($form) {
+        $this->form = $form;
+    }
+
+    /** 
+     * Export data for list of enhancements
+     */
+    public function export_for_template(renderer_base $output) {
+
+        return [
+            'form' => $this->form,
+        ];
+    }
+
+}
+

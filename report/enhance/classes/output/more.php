@@ -45,14 +45,41 @@ class more implements renderable, templatable {
 
     private $attachments;
 
+    private $comments;
+
     /**
      * Constructor
      */
-    public function __construct($course, $request, $context, $attachments) {
+    public function __construct($course, $request, $context, $attachments, $comments) {
         $this->course = $course;
         $this->request = $this->format_request($request);
         $this->context = $context;
         $this->attachments = $attachments;
+        $this->comments = $comments;
+    }
+
+    /** 
+     * Format comments
+     * @param array $comments
+     * @return array
+     */
+    private function format_comments($comments) {
+        global $DB, $USER;
+
+        foreach ($comments as $comment) {
+            $user = $DB->get_record('user', ['id' => $comment->userid], '*', MUST_EXIST);
+            $comment->name = fullname($user);
+            $comment->created = userdate($comment->timeadded);
+            if ($comment->timeedited) {
+                $comment->edited = '(' . get_string('editedon', 'report_enhance', userdate($comment->timeedited)) . ')';
+            } else {
+                $comment->edited = '';
+            }
+            $comment->canedit = has_capability('report/enhance:editallcomments', $this->context) || $USER->id == $comment->userid;
+            $comment->editurl = new \moodle_url('/report/enhance/comment.php', ['courseid' => $this->course->id, 'id' => $this->request->id, 'commentid' => $comment->id]);
+        }
+
+        return array_values($comments);
     }
 
     private function format_request($request) {
@@ -86,6 +113,10 @@ class more implements renderable, templatable {
             'allowedit' => has_capability('report/enhance:editall', $this->context) ||
                 ($this->request->userid == $USER->id && ($this->request->status == ENHANCE_STATUS_NEW || $this->request->status == ENHANCE_STATUS_MOREINFORMATION)),
             'allowreview' => has_capability('report/enhance:review', $this->context),
+            'allowcomments' => has_capability('report/enhance:addcomment', $this->context),
+            'commenturl' => new \moodle_url('/report/enhance/comment.php', ['courseid' => $this->course->id, 'id' => $this->request->id]),
+            'comments' => $this->format_comments($this->comments),
+            'hascomments' => !empty($this->comments),
             'attachments' => $this->attachments,
             'hasattachments' => !empty($this->attachments),
             'userpicture' => $output->user_picture($this->request->user, ['size' => 64, 'alttext' => false]),

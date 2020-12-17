@@ -43,6 +43,9 @@ if (!$request) {
     redirect(new moodle_url('/report/enhance/index.php', ['courseid' => $courseid]));
 }
 
+// Find any comments
+$comments = $DB->get_records('report_enhance_comment', ['enhanceid' => $id]);
+
 // Get any attachments
 $fs = get_file_storage();
 $dir = $fs->get_area_tree($context->id, 'report_enhance', 'attachments', $id);
@@ -75,7 +78,7 @@ $PAGE->set_heading($course->fullname);
 \report_enhance\lib::fixnavigation(get_string('requestno', 'report_enhance', $request->id), $url);
 echo $OUTPUT->header();
 
-$more = new report_enhance\output\more($course, $request, $context, $attachments);
+$more = new report_enhance\output\more($course, $request, $context, $attachments, $comments);
 echo $output->render($more);
 
 echo $OUTPUT->footer();
