@@ -99,7 +99,7 @@ class local_gugcat {
         $select = 'courseid = '.$course->id.' AND '.self::compare_iteminfo();
         $gradeitems = $DB->get_records_select(GRADE_ITEMS, $select, ['iteminfo' => $module->id]);
         $sort = 'id';
-        $fields = 'userid, itemid, id, finalgrade, timemodified';
+        $fields = 'userid, itemid, id, finalgrade, timemodified, hidden';
         foreach($gradeitems as $item) {
             $item->grades = $DB->get_records(GRADE_GRADES, array('itemid' => $item->id), $sort, $fields);
         }
@@ -277,5 +277,4 @@ class local_gugcat {
         }
         return $grd_ctgs;
     }
-
 }

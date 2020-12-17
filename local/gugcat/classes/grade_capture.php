@@ -26,6 +26,7 @@ namespace local_gugcat;
 use assign;
 use context_module;
 use grade_item;
+use grade_grade;
 use local_gugcat;
 use stdClass;
 
@@ -70,6 +71,7 @@ class grade_capture{
             $gradecaptureitem->discrepancy = false;
             $gradecaptureitem->grades = array();
             $gradecaptureitem->firstgrade = get_string('nogradeimport', 'local_gugcat');
+            $gradecaptureitem->hidden = null;
             if($firstgradeid){
                 //get first grade and provisional grade
                 $gifg = $gradeitems[$firstgradeid]->grades;
@@ -83,6 +85,8 @@ class grade_capture{
                 $trdgrade = (!$thirdgradeid) ? null : (isset($gradeitems[$thirdgradeid]->grades[$student->id]) ? $gradeitems[$thirdgradeid]->grades[$student->id]->finalgrade : null);
 
                 foreach ($gradeitems as $item) {
+                    if($item->grades[$student->id]->hidden == 1)
+                        $gradecaptureitem->hidden = true;
                     if($item->id != local_gugcat::$PRVGRADEID && $item->id != $firstgradeid){
                         $rawgrade = (isset($item->grades[$student->id])) ? $item->grades[$student->id]->finalgrade : null; 
                         $grdobj = new stdClass();
@@ -157,8 +161,9 @@ class grade_capture{
             $is_workflow_enabled = $assign->get_instance()->markingworkflow == 1;
         }
         foreach ($grades as $grd) {
-            if(!empty($grd['provisional'])){
-                $userid = $grd['id'];
+            $userid = $grd['id'];
+            $hidden = $DB->get_field(GRADE_GRADES, 'hidden', array('itemid'=>local_gugcat::$PRVGRADEID, 'userid' => $userid));
+            if(!empty($grd['provisional']) && $hidden == 0){
                 $rawgrade = array_search($grd['provisional'], local_gugcat::$GRADES);
                 $rawgrade = $rawgrade ? $rawgrade : $grd['provisional'];
                 switch ($rawgrade) {
@@ -233,6 +238,26 @@ class grade_capture{
             local_gugcat::update_grade($student->id, $mggradeitemid, $grade);
             local_gugcat::update_grade($student->id, local_gugcat::$PRVGRADEID, $grade);
         } 
+    }
+
+    public static function hideshowgrade($userid){
+        global $USER;
+        
+        $grade_ = new grade_grade(array('userid' => $userid, 'itemid' => local_gugcat::$PRVGRADEID), true);
+        $grade_->usermodified = $USER->id;
+        $grade_->itemid = local_gugcat::$PRVGRADEID;
+        $grade_->userid = $userid;
+        $grade_->timemodified = time();
+        if($grade_->hidden == 0){
+            $grade_->hidden = 1; 
+            $message = 'hiddengrademsg';
+        }  
+        else {
+            $grade_->hidden = 0;
+            $message = 'showgrademsg';
+        }
+        local_gugcat::notify_success($message);
+        return $grade_->update();        
     }
 
 }

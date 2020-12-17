@@ -46,8 +46,8 @@ class addgradeform extends moodleform {
         $mform->addElement('select', 'grade', 'Grade', local_gugcat::$GRADES, ['class' => 'mform-custom']); 
         $mform->setType('grade', PARAM_NOTAGS); 
         $mform->setDefault('grade', "Select Grade");
+
         $mform->addElement('html', '</div>');
-        
         $this->add_action_buttons(false, get_string('confirmgrade', 'local_gugcat'), ['class' => 'float-right']);
         //hidden params
         $mform->addElement('hidden', 'studentid', $this->_customdata['studentid']);
@@ -58,7 +58,6 @@ class addgradeform extends moodleform {
         $mform->setType('activityid', PARAM_ACTION);
         $mform->addElement('hidden', 'categoryid', $this->_customdata['categoryid']);
         $mform->setType('categoryid', PARAM_ACTION);
-        
     }    
         
     function validation($data, $files) {
