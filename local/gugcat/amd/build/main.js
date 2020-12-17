@@ -144,7 +144,10 @@ define(['jquery', 'core/str' ], function($, Str) {
                     document.querySelector('#btn-assessmenttab').classList.remove('active');
                 }else{
                     document.getElementById('btn-release').style.display = 'block';
-                    $(".hide-show-grade").show();
+                    var hideshowgrade = document.querySelectorAll('.hide-show-grade');
+                    hideshowgrade.forEach(element => {
+                        element.style.display = 'block';
+                    });
                 }
 
                 if(!($(".gradeitems").text().includes("Moodle Grade[Date]"))){

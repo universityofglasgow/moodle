@@ -168,6 +168,6 @@ td > .grade-discrepancy{
     visibility: hidden;
 }
 
-#hide-show-grade {
+.hide-show-grade {
     display: none;
 }
