@@ -24,6 +24,13 @@
  */
 
 defined('MOODLE_INTERNAL') || die();
+
+//Administrative grades
+define('CREDIT_WITHHELD_AC', 'CW');
+define('MEDICAL_EXEMPTION_AC', 'MV');
+define('CREDIT_WITHHELD', -1);
+define('MEDICAL_EXEMPTION', -2);
+
 require_once($CFG->libdir.'/gradelib.php');
 require_once($CFG->dirroot . '/grade/querylib.php');
 require_once($CFG->libdir.'/grade/grade_item.php');
@@ -241,6 +248,8 @@ class local_gugcat {
         if($scale = $DB->get_record('scale', array('id'=>$scaleid), '*')){
         $scalegrades = make_menu_from_list($scale->scale); 
         }
+        $scalegrades[CREDIT_WITHHELD] = CREDIT_WITHHELD_AC;
+        $scalegrades[MEDICAL_EXEMPTION] = MEDICAL_EXEMPTION_AC;
         self::$GRADES = $scalegrades;
     }
 

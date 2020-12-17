@@ -141,12 +141,14 @@ class grade_capture{
      *
      */
     public static function release_prv_grade($courseid, $cm, $grades){
-        global $USER, $CFG;
+        global $USER, $CFG, $DB;
         $data = new stdClass();
         $data->courseid = $courseid;
         $data->itemmodule = $cm->modname;
         $data->itemname = $cm->name;
         $data->iteminstance = $cm->instance;
+        $gradeitemid = $cm->gradeitem->id;
+
         //get grade item
         $gradeitem = new grade_item($data, true);
         if($cm->modname === 'assign'){
@@ -156,9 +158,24 @@ class grade_capture{
         }
         foreach ($grades as $grd) {
             if(!empty($grd['provisional'])){
+                $userid = $grd['id'];
                 $rawgrade = array_search($grd['provisional'], local_gugcat::$GRADES);
                 $rawgrade = $rawgrade ? $rawgrade : $grd['provisional'];
-                $userid = $grd['id'];
+                switch ($rawgrade) {
+                    case CREDIT_WITHHELD:
+                        $feedback = CREDIT_WITHHELD_AC;
+                        $rawgrade = null;
+                        break;
+                    case MEDICAL_EXEMPTION:
+                        $feedback = MEDICAL_EXEMPTION_AC;
+                        $rawgrade = null;
+                        break;
+                    default:
+                        $feedback = null;
+                        break;
+                }
+                //update feedback field
+                $DB->set_field_select('grade_grades', 'feedback', $feedback, "itemid = $gradeitemid AND userid = $userid");
                 if($cm->modname === 'assign'){
                     // update assign grade
                     if ($grade = $assign->get_user_grade($userid, true)) {
