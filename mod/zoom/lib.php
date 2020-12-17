@@ -34,9 +34,7 @@ defined('MOODLE_INTERNAL') || die();
 /* Moodle core API */
 
 /**
- * Returns the information on whether the module supports a feature
- *
- * See {@link plugin_supports()} for more info.
+ * Returns the information on whether the module supports a feature.
  *
  * @param string $feature FEATURE_xx constant for requested feature
  * @return mixed true if the feature is supported, null if unknown
@@ -74,6 +72,10 @@ function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     // Deals with password manager issues.
     $zoom->password = $zoom->meetingcode;
     unset($zoom->meetingcode);
+
+    if (empty($zoom->requirepasscode)) {
+        $zoom->password = '';
+    }
 
     $zoom->course = (int) $zoom->course;
 
@@ -118,6 +120,10 @@ function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     // Deals with password manager issues.
     $zoom->password = $zoom->meetingcode;
     unset($zoom->meetingcode);
+
+    if (empty($zoom->requirepasscode)) {
+        $zoom->password = '';
+    }
 
     $DB->update_record('zoom', $zoom);
 
@@ -219,7 +225,8 @@ function zoom_delete_instance($id) {
     require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
 
     if (!$zoom = $DB->get_record('zoom', array('id' => $id))) {
-        return false;
+        // For some reason already deleted, so let Moodle take care of the rest.
+        return true;
     }
 
     // Include locallib.php for constants.
@@ -230,10 +237,12 @@ function zoom_delete_instance($id) {
         $service = new mod_zoom_webservice();
         try {
             $service->delete_meeting($zoom->meeting_id, $zoom->webinar);
+        } catch (zoom_not_found_exception $error) {
+            // Meeting not on Zoom, so continue.
+            mtrace('Meeting not on Zoom; continuing');
         } catch (moodle_exception $error) {
-            if (strpos($error, 'is not found or has expired') === false) {
-                throw $error;
-            }
+            // Some other error, so throw error.
+            throw $error;
         }
     }
 
@@ -270,8 +279,8 @@ function zoom_print_recent_activity($course, $viewfullnames, $timestart) {
  * Prepares the recent activity data
  *
  * This callback function is supposed to populate the passed array with
- * custom activity records. These records are then rendered into HTML via
- * {@link zoom_print_recent_mod_activity()}.
+ * custom activity records. These records are then rendered into HTML
+ * zoom_print_recent_mod_activity().
  *
  * Returns void, it adds items into $activities and increases $index.
  *
@@ -288,12 +297,12 @@ function zoom_get_recent_mod_activity(&$activities, &$index, $timestart, $course
 }
 
 /**
- * Prints single activity item prepared by {@link zoom_get_recent_mod_activity()}
+ * Prints single activity item prepared by zoom_get_recent_mod_activity()
  *
  * @param stdClass $activity activity record with added 'cmid' property
  * @param int $courseid the id of the course we produce the report for
  * @param bool $detail print detailed report
- * @param array $modnames as returned by {@link get_module_types_names()}
+ * @param array $modnames as returned by get_module_types_names()
  * @param bool $viewfullnames display users' full names
  * @todo implement this function
  */
@@ -323,6 +332,8 @@ function zoom_calendar_item_update(stdClass $zoom) {
     require_once($CFG->dirroot.'/calendar/lib.php');
 
     $event = new stdClass();
+    $event->type = CALENDAR_EVENT_TYPE_ACTION;
+    $event->timesort = $zoom->start_time;
     $event->name = $zoom->name;
     if ($zoom->intro) {
         $event->description = $zoom->intro;
@@ -367,6 +378,39 @@ function zoom_calendar_item_delete(stdClass $zoom) {
     }
 }
 
+/**
+ * This function receives a calendar event and returns the action associated with it, or null if there is none.
+ *
+ * This is used by block_myoverview in order to display the event appropriately. If null is returned then the event
+ * is not displayed on the block.
+ *
+ * @param calendar_event $event
+ * @param \core_calendar\action_factory $factory
+ * @param int $userid User id override
+ * @return \core_calendar\local\event\entities\action_interface|null
+ */
+function mod_zoom_core_calendar_provide_event_action(calendar_event $event,
+                                                      \core_calendar\action_factory $factory, $userid = null) {
+    global $CFG, $DB, $USER;
+
+    require_once($CFG->dirroot . '/mod/zoom/locallib.php');
+
+    if (empty($userid)) {
+        $userid = $USER->id;
+    }
+
+    $cm = get_fast_modinfo($event->courseid, $userid)->instances['zoom'][$event->instance];
+    $zoom  = $DB->get_record('zoom', array('id' => $cm->instance), '*');
+    list($inprogress, $available, $finished) = zoom_get_state($zoom);
+
+    return $factory->create_instance(
+        get_string('join_meeting', 'zoom'),
+        new \moodle_url('/mod/zoom/view.php', array('id' => $cm->id)),
+        1,
+        $available
+    );
+}
+
 /* Gradebook API */
 
 /**
@@ -390,7 +434,7 @@ function zoom_scale_used_anywhere($scaleid) {
 /**
  * Creates or updates grade item for the given zoom instance
  *
- * Needed by {@link grade_update_mod_grades()}.
+ * Needed by grade_update_mod_grades().
  *
  * @param stdClass $zoom instance object with extra cmidnumber and modname property
  * @param array $grades optional array/object of grade(s); 'reset' means reset grades in gradebook
@@ -441,7 +485,7 @@ function zoom_grade_item_delete($zoom) {
 /**
  * Update zoom grades in the gradebook
  *
- * Needed by {@link grade_update_mod_grades()}.
+ * Needed by grade_update_mod_grades().
  *
  * @param stdClass $zoom instance object with extra cmidnumber and modname property
  * @param int $userid update grade of specific user only, 0 means all participants
@@ -482,7 +526,7 @@ function zoom_update_grades(stdClass $zoom, $userid = 0) {
  * Returns the lists of all browsable file areas within the given module context
  *
  * The file area 'intro' for the activity introduction field is added automatically
- * by {@link file_browser::get_file_info_context_module()}
+ * by file_browser::get_file_info_context_module()
  *
  * @param stdClass $course
  * @param stdClass $cm

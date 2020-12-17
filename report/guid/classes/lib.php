@@ -416,8 +416,10 @@ class lib {
         $user = create_user_record( strtolower($guid), 'not cached', 'guid' );
         $user->firstname = $result[$config->field_map_firstname];
         $user->lastname = $result[$config->field_map_lastname];
-        if (!empty($result['workforceid'])) {
+        if (!empty($result['workforceid']) && !empty($config->field_map_idnumber)) {
             $user->idnumber = $result[$config->field_map_idnumber];
+        } else {
+            $user->idnumber = '';
         }
         $user->city = 'Glasgow';
         $user->country = 'GB';
