@@ -162,20 +162,27 @@ class grade_capture{
                 $rawgrade = array_search($grd['provisional'], local_gugcat::$GRADES);
                 $rawgrade = $rawgrade ? $rawgrade : $grd['provisional'];
                 switch ($rawgrade) {
-                    case CREDIT_WITHHELD:
-                        $feedback = CREDIT_WITHHELD_AC;
-                        $rawgrade = null;
+                    case NON_SUBMISSION:
+                        $feedback = NON_SUBMISSION_AC;
+                        $is_non_sub = true;
+                        $rawgrade = 0;
+                        $excluded = 0;                        
                         break;
                     case MEDICAL_EXEMPTION:
                         $feedback = MEDICAL_EXEMPTION_AC;
                         $rawgrade = null;
+                        $excluded = 1; //excluded from aggregation
                         break;
                     default:
+                        $is_non_sub = false;
                         $feedback = null;
+                        $excluded = 0;
                         break;
                 }
-                //update feedback field
-                $DB->set_field_select('grade_grades', 'feedback', $feedback, "itemid = $gradeitemid AND userid = $userid");
+                //update feedback and excluded field
+                $select = "itemid = $gradeitemid AND userid = $userid";
+                $DB->set_field_select(GRADE_GRADES, 'feedback', $feedback, $select);
+                $DB->set_field_select(GRADE_GRADES, 'excluded', $excluded, $select);
                 if($cm->modname === 'assign'){
                     // update assign grade
                     if ($grade = $assign->get_user_grade($userid, true)) {
@@ -187,7 +194,9 @@ class grade_capture{
                         $grade->grader = $USER->id;
                         $assign->update_grade($grade); 
                     }
-                    
+                    if($is_non_sub){
+                        $DB->set_field_select(GRADE_GRADES, 'finalgrade', $rawgrade, $select);
+                    }
                 }else{         
                     //update grade from gradebook
                     $gradeitem->update_final_grade($userid, $rawgrade, null, false, FORMAT_MOODLE, $USER->id);
