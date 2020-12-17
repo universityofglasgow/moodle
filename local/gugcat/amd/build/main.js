@@ -151,7 +151,6 @@ define(['jquery', 'core/str' ], function($, Str) {
                     $("#btn-saveadd").show();
                     $(".addnewgrade").show();
                 }
-
             }
         }
     };

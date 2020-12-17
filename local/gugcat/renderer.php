@@ -58,7 +58,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
         foreach ($rows as $row) {
             //url to add grade form page
             $addformurl->param('studentid', $row->studentno);
-            $htmlrows .= html_writer::start_tag('tr', array('id'=>'tablerow'));
+            $htmlrows .= html_writer::start_tag('tr');
             //hidden inputs for id and provisional grades
             $htmlrows .= html_writer::empty_tag('input', array('name' => 'grades['.$row->studentno.'][id]', 'type' => 'hidden', 'value' => $row->studentno));
             $htmlrows .= html_writer::empty_tag('input', array('name' => 'grades['.$row->studentno.'][provisional]', 'type' => 'hidden', 'value' => ((strpos($row->provisionalgrade, 'Null') !== false) ? null : $row->provisionalgrade)));
@@ -93,8 +93,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
             $htmlrows .= '<td>
                             <button type="button" class="btn btn-default addnewgrade" onclick="location.href=\''.$addformurl.'\'">
                                 '.get_string('addnewgrade', 'local_gugcat').'
-                            </button>
-                            
+                            </button>     
                     </td>';
             $htmlrows .= html_writer::end_tag('tr');
         }

@@ -27,7 +27,7 @@ require_once($CFG->dirroot . '/local/gugcat/locallib.php');
 class addgradeform extends moodleform {
     //Add elements to form
     public function definition() {
-        global $CFG, $COURSE;
+        global $CFG;
  
        
 
@@ -47,16 +47,6 @@ class addgradeform extends moodleform {
         $mform->setType('grade', PARAM_NOTAGS); 
         $mform->setDefault('grade', "Select Grade");
 
-        // $mform->addElement('textarea', 'notes', 'Notes', array('wrap'=>'virtual', 'rows'=>'5', 'columns'=>'50000'));
-        // $mform->setType('notes', PARAM_NOTAGS);
-
-        // $this->set_upload_manager(new upload_manager('upload', true, false, $COURSE, false, 0, true, true, false));
-        // $mform->addElement('file', 'upload', "ASDSAD");
-        // $mform->setType('MAX_FILE_SIZE', PARAM_INT, 8654849879);
-
-        // $mform->addElement('filepicker', 'upload', "Supporting Documents", array('subdirs'=>0));
-        // $mform->setType('MAX_FILE_SIZE', PARAM_INT, 8654849879);
-
         $mform->addElement('html', '</div>');
         $this->add_action_buttons(false, get_string('confirmgrade', 'local_gugcat'), ['class' => 'float-right']);
         //hidden params
@@ -68,7 +58,6 @@ class addgradeform extends moodleform {
         $mform->setType('activityid', PARAM_ACTION);
         $mform->addElement('hidden', 'categoryid', $this->_customdata['categoryid']);
         $mform->setType('categoryid', PARAM_ACTION);
-        
     }    
         
     function validation($data, $files) {
