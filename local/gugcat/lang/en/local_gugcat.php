@@ -52,6 +52,7 @@ $string['nograde'] = 'Null – awaiting grading';
 $string['nograderecorded'] = 'No grade recorded';
 $string['nogradeimport'] = 'Awaiting Grade Import';
 $string['overviewaggregrade'] = 'Overview & Aggregated Grade';
+$string['percentcomplete'] = '% Complete';
 $string['pluginname'] = 'UofG Grade Capture and Aggregation Tool';
 $string['provisionalgrd'] = 'Provisional Grade';
 $string['reasonnewgrade'] = 'Reason for new grade';
