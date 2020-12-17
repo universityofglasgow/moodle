@@ -1,0 +1,43 @@
+.selectdiv {
+    position: relative;
+    margin: auto;
+    cursor: pointer;
+    width: fit-content;
+}
+
+.selectdiv:after {
+    content: '\f078';
+    font: normal normal normal 10px/1 FontAwesome;
+    color: #C3C5CB;;
+    position: absolute;
+    right: 5px;
+    top: 35%;
+    height: 34px;
+    padding: 0 8px;
+    pointer-events: none;
+}
+
+/* IE11 hide native button*/
+select::-ms-expand {
+    display: none;
+}
+
+.selectdiv select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    cursor: pointer;
+    display: block;
+    height: 32px;
+    margin: 0 5px;
+    padding: 0px 24px 0px 10px;
+    line-height: 1.75;
+    color: #333;
+    background-color: #ffffff;
+    background-image: none;
+    border-radius: 8px;
+    border: 1px solid #E0E2E9;
+    -ms-word-break: normal;
+    word-break: normal;
+    outline: none;
+}
