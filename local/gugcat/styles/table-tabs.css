@@ -1,7 +1,7 @@
 /* Table style */
 .table {
     margin-bottom: 0;
-    font-size: 80%;
+    font-size: 12px;
     text-align: center;
 }
 
@@ -32,7 +32,12 @@ tr:nth-child(even) {
     cursor: pointer;
     padding: 14px 16px;
     width: auto;
-    font-weight: bold;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 21px;
+    letter-spacing: 0em;
+    text-align: center;
 }
 
 .tablink:hover {
@@ -46,7 +51,7 @@ tr:nth-child(even) {
 
 /* Tab Content style */
 .tabcontent {
-    border: 1px solid black;
+    border: 1px solid #4F5961;
     border-radius: 0 1em 0 0 ;
     overflow: hidden;
     position: relative;

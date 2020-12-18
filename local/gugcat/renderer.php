@@ -78,7 +78,8 @@ class local_gugcat_renderer extends plugin_renderer_base {
                         .$this->display_custom_select(
                             $grades,
                             'grades['.$row->studentno.'][grade]',
-                            get_string('choosegrade', 'local_gugcat')).'
+                            get_string('choosegrade', 'local_gugcat'),
+                            'multi-select-grade').'
                     </td>';
             $htmlrows .= '<td class="togglemultigrd">'.$this->display_custom_select(
                             local_gugcat::get_reasons(),
@@ -234,14 +235,13 @@ class local_gugcat_renderer extends plugin_renderer_base {
             $overviewurl .= '&categoryid=' . $categoryid;
         }
         $html = html_writer::start_tag('div', array('class' => 'gcat-container'));
-        $html .= html_writer::tag('h4', get_string('title', 'local_gugcat'), array('class' => 'title'));
+        $html .= html_writer::tag('span', get_string('title', 'local_gugcat'), array('class' => 'gcat-title'));
         $html .= $this->display_custom_select(
             array_values($categories),
             'select-category',
             null,
             'select-category',
             'select-category');
-        $html .= html_writer::empty_tag('br');
         $html .= $this->render_from_template('local_gugcat/gcat_tabs', (object)[
             'assessmenttabstr' =>get_string('assessmentlvlscore', 'local_gugcat'),
             'overviewtabstr' =>get_string('overviewaggregrade', 'local_gugcat'),
