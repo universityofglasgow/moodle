@@ -61,7 +61,7 @@ if(!empty($activities)){
     //populate $GRADES with scales
     local_gugcat::set_grade_scale($scaleid);
 }
-$students = get_enrolled_users($coursecontext, 'mod/coursework:submit', $groupid);
+$students = get_enrolled_users($coursecontext, 'mod/assign:submit', $groupid);
 //populate $STUDENTS
 local_gugcat::$STUDENTS = $students;
 //populate provisional grade id and set it to static
@@ -95,10 +95,15 @@ if (!empty($_POST)){
             //no grades selected
             print_error('errorgraderequired', 'local_gugcat', $PAGE->url);
         }
-    }
-    elseif(isset($_POST['importgrades'])){
+    }elseif(isset($_POST['importgrades'])){
         grade_capture::import_from_gradebook($courseid, $selectedmodule, $students);
         local_gugcat::notify_success('successimport');
+        unset($_POST);
+        header("Location: ".$_SERVER['REQUEST_URI']);
+        exit;
+    }elseif(isset($_POST['showhidegrade']) && !empty($_POST['rowstudentno'])){
+        $studentno = $_POST['rowstudentno'];
+        grade_capture::hideshowgrade($studentno);
         unset($_POST);
         header("Location: ".$_SERVER['REQUEST_URI']);
         exit;

@@ -23,6 +23,7 @@
  */
 namespace local_gugcat;
 
+use grade_grade;
 use local_gugcat;
 use stdClass;
 
@@ -48,13 +49,14 @@ class grade_aggregation{
         $gradebook = array();
         foreach ($modules as $mod) {
             $mod->scaleid = $mod->gradeitem->scaleid;
+            $mod->gradeitemid = $mod->gradeitem->id;
             $grades = new stdClass();
 
             //get provisional grades
             $prvgrdid = local_gugcat::set_prv_grade_id($course->id, $mod);
             $sort = 'id';
             $fields = 'userid, itemid, id, finalgrade, timemodified';
-            $grades->provisional = $DB->get_records('grade_grades', array('itemid' => $prvgrdid), $sort, $fields);
+            $grades->provisional = $DB->get_records(GRADE_GRADES, array('itemid' => $prvgrdid), $sort, $fields);
             //get grades from gradebook
             $gbgrades = grade_get_grades($course->id, 'mod', $mod->modname, $mod->instance, array_keys($students));
             $grades->gradebook = isset($gbgrades->items[0]) ? $gbgrades->items[0]->grades : null;
@@ -70,6 +72,7 @@ class grade_aggregation{
             $gradecaptureitem->surname = $student->lastname;
             $gradecaptureitem->forename = $student->firstname;
             $gradecaptureitem->grades = array();
+            $floatweight = 0;
             foreach ($gradebook as $item) {
                 $grades = $item->grades;
                 $pg = isset($grades->provisional[$student->id]) ? $grades->provisional[$student->id] : null;
@@ -77,8 +80,15 @@ class grade_aggregation{
                 $grd = (isset($pg) && !is_null($pg->finalgrade)) ? $pg->finalgrade : ((isset($gb) && !is_null($gb->grade)) ? $gb->grade : null);
                 local_gugcat::set_grade_scale($item->scaleid);
                 $grade = is_null($grd) ? get_string('nograderecorded', 'local_gugcat') : local_gugcat::convert_grade($grd);
+                if(!is_null($grd) && $grade !== NON_SUBMISSION_AC && $grade !== MEDICAL_EXEMPTION_AC){
+                    $gg = new grade_grade(array('userid'=>$student->id, 'itemid'=>$item->gradeitemid), true);
+                    $floatweight += (float)$gg->get_aggregationweight();
+                }
+                $gradecaptureitem->nonsubmission = ($grade === NON_SUBMISSION_AC) ? true : false;
+                $gradecaptureitem->medicalexemption = ($grade === MEDICAL_EXEMPTION_AC) ? true : false;
                 array_push($gradecaptureitem->grades, $grade);
             }
+            $gradecaptureitem->completed = round((float)$floatweight * 100 ) . '%';
             array_push($rows, $gradecaptureitem);
             $i++;
         }

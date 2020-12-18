@@ -138,12 +138,17 @@ define(['jquery', 'core/str' ], function($, Str) {
                     grddisc.style.display = 'inline-block';
                 }
 
+
                 // Hide elements on add grade form page 
                 if(checkCurrentUrl("gugcat/overview")){
                     document.querySelector('#btn-overviewtab').classList.add('active');
                     document.querySelector('#btn-assessmenttab').classList.remove('active');
                 }else{
                     document.getElementById('btn-release').style.display = 'block';
+                    var hideshowgrade = document.querySelectorAll('.hide-show-grade');
+                    hideshowgrade.forEach(element => {
+                        element.style.display = 'block';
+                    });
                 }
 
                 if(!($(".gradeitems").text().includes("Moodle Grade[Date]"))){

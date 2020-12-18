@@ -46,13 +46,14 @@ class grade_capture_testcase extends advanced_testcase {
         $gen->enrol_user($this->student->id, $this->course->id, 'student');
         $gen->enrol_user($this->teacher->id, $this->course->id, 'editingteacher');
         $this->students = get_enrolled_users($this->coursecontext, 'mod/coursework:submit');
-        $assign = $gen->create_module('assign', array('id' => 1, 'course' => $this->course->id));
-        $modulecontext = context_module::instance($assign->cmid);
-        $assign = new assign($modulecontext, false, false);
+        $gen->create_module('assign', array('id' => 1, 'course' => $this->course->id));
 
         $cm = local_gugcat::get_activities($this->course->id);
         $key = key($cm);
         $this->cm = $cm[$key];
+        $modinfo = get_fast_modinfo($this->course);
+        $cm_info = $modinfo->get_cm($this->cm->id);
+        $this->assign = new assign(context_module::instance($cm_info->id), $cm_info, $this->course->id);
 
         //create grade items
         $this->gradeitem = new grade_item($gen->create_grade_item(['courseid' => $this->course->id, 'iteminfo' => $this->cm->id]), false);
@@ -116,10 +117,7 @@ class grade_capture_testcase extends advanced_testcase {
     }
 
     public function test_release_provisional_grades() {
-        $assign = $this->getDataGenerator()->create_module('assign', array('course' => $this->course->id));
-        $modinfo = get_fast_modinfo($this->course);
-        $cm = $modinfo->get_cm($assign->cmid);
-        $assign = new assign(context_module::instance($cm->id), $cm, $this->course->id);
+        $assign = $this->assign;
         $instance = $assign->get_instance();
         $instance->instance = $instance->id;
         $instance->markingworkflow = 1; //enable marking workflow
@@ -129,7 +127,7 @@ class grade_capture_testcase extends advanced_testcase {
         $grades[$this->student->id]['provisional'] = 5;
         $expectedgrade = '5.00000';
         //test release prv grade
-        grade_capture::release_prv_grade($this->course->id, $cm, $grades);
+        grade_capture::release_prv_grade($this->course->id, $this->cm, $grades);
         //check marking workflow to 'released'
         $wfstate = $assign->get_user_flags($this->student->id, true);
         $this->assertEquals($wfstate->workflowstate, 'released');
@@ -137,7 +135,50 @@ class grade_capture_testcase extends advanced_testcase {
         //check assign and gb grades if updated
         $assigngrade = $assign->get_user_grade($this->student->id, false);
         $this->assertEquals($assigngrade->grade, $expectedgrade);
-        $gbgrade = grade_get_grades($this->course->id, 'mod', $cm->modname, $cm->instance, $this->student->id);
+        $gbgrade = grade_get_grades($this->course->id, 'mod', $this->cm->modname, $this->cm->instance, $this->student->id);
         $this->assertEquals($gbgrade->items[0]->grades[$this->student->id]->grade, $expectedgrade);
+    }
+
+    public function test_capture_admin_grades() {
+        //set grade scale first
+        local_gugcat::set_grade_scale(3);
+        $scale = local_gugcat::$GRADES;
+        //check scale has NS and MV
+        $this->assertContains(NON_SUBMISSION_AC, $scale);
+        $this->assertContains(MEDICAL_EXEMPTION_AC, $scale);
+        $this->assertArrayHasKey(NON_SUBMISSION, $scale);
+        $this->assertArrayHasKey(MEDICAL_EXEMPTION, $scale);
+        //add second student
+        $gen = $this->getDataGenerator();
+        $this->student2 = $gen->create_user();
+        $gen->enrol_user($this->student2->id, $this->course->id, 'student');
+
+        $assign = $this->assign;
+        $cm = $this->cm;
+        $grades = array();
+        //first student grade = NS
+        $grades[$this->student->id]['id'] = $this->student->id;
+        $grades[$this->student->id]['provisional'] = NON_SUBMISSION;
+        $expectedgrade1 = '0.00000';
+        //2nd student grade = MV
+        $grades[$this->student2->id]['id'] = $this->student2->id;
+        $grades[$this->student2->id]['provisional'] = MEDICAL_EXEMPTION;
+        $expectedgrade2 = null;
+
+        //test release prv grade
+        grade_capture::release_prv_grade($this->course->id, $cm, $grades);
+
+        //check 1st student assign grade
+        $assigngrade1 = $assign->get_user_grade($this->student->id, false);
+        $this->assertEquals($assigngrade1->grade, $expectedgrade1);
+        //check 2nd student assign grade
+        $assigngrade2 = $assign->get_user_grade($this->student2->id, false);
+        $this->assertEquals($assigngrade2->grade, $expectedgrade2);
+
+        //check gradebook grades
+        $gbgrades = grade_get_grades($this->course->id, 'mod', $cm->modname, $cm->instance, array($this->student->id ,$this->student2->id));
+        $items = $gbgrades->items[0]->grades;
+        $this->assertEquals($items[$this->student->id]->grade, $expectedgrade1); //first student grade === 0.00000
+        $this->assertEquals($items[$this->student2->id]->grade, $expectedgrade2); //2nd student grade === null
     }
 }
