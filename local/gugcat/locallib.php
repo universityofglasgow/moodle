@@ -166,7 +166,7 @@ class local_gugcat {
         }
     }
     
-    public static function add_update_grades($userid, $itemid, $grade){
+    public static function add_update_grades($userid, $itemid, $grade, $notes = null, $gradedocs = null){
         global $USER;
 
         $params = array(
@@ -182,6 +182,8 @@ class local_gugcat {
         $grade_->rawgrade = $grade;
         $grade_->usermodified = $USER->id;
         $grade_->finalgrade = $grade;
+        $grade_->feedback = $notes;
+        $grade_->information = $gradedocs;
         $grade_->hidden = 0;
       
         if(empty($grade_->id)){
