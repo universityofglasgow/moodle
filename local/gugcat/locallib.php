@@ -185,6 +185,7 @@ class local_gugcat {
         $grade_->feedback = $notes;
         $grade_->information = $gradedocs;
         $grade_->hidden = 0;
+        $grade_->excluded = 1;
       
         if(empty($grade_->id)){
             //creates grade objects for other users in DB 
