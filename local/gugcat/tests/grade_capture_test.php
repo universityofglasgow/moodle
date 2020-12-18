@@ -181,4 +181,18 @@ class grade_capture_testcase extends advanced_testcase {
         $this->assertEquals($items[$this->student->id]->grade, $expectedgrade1); //first student grade === 0.00000
         $this->assertEquals($items[$this->student2->id]->grade, $expectedgrade2); //2nd student grade === null
     }
+
+    public function test_hideshow_grade() {
+        global $gradeitems, $prvgradeid;
+        $gradeitems = array();
+        $prvgradeid = $this->provisionalgi->id;
+        grade_capture::get_rows($this->course, $this->cm, $this->students);
+        $mggradeitemstr = get_string('moodlegrade', 'local_gugcat');
+        $mggradeitem = local_gugcat::add_grade_item($this->course->id, $mggradeitemstr, $this->cm); 
+        local_gugcat::add_update_grades($this->student->id, $mggradeitem, "5.00000");
+        grade_capture::hideshowgrade($this->student->id);
+        $firstrows = grade_capture::get_rows($this->course, $this->cm, $this->students);
+        $firstrow = $firstrows[0];
+        $this->assertTrue($firstrow->hidden);
+    }
 }
