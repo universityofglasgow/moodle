@@ -59,3 +59,35 @@ textarea#id_notes.form-control {
     width: 350px;
     height: 100px;
 }
+
+.btn.btn-secondary.fp-btn-choose{
+    background: white;
+    border-radius: 5px;
+    border: 1px solid #000;
+}
+
+.mdl-left.w-100{
+    border: 1px solid #000;
+    max-width: 350px;
+    padding: 0.5em;
+    border-radius: 5px;
+    max-height: 70px;
+}
+
+.mdl-left .filepicker-filelist{
+    position: relative;
+    border: none;
+    margin: 0;
+}
+
+.filepicker-filename {
+    margin-top: 0.5em;
+}
+
+.filepicker-filelist .filepicker-container, .filemanager.fm-noitems .fm-empty-container {
+    border: none;
+}
+
+.dndupload-arrow, .dndupload-message {
+    display: none;
+}
