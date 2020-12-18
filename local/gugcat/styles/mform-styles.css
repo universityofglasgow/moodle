@@ -54,3 +54,8 @@
     margin-left: auto;
     margin-right: 1em;
 }
+
+textarea#id_notes.form-control {
+    width: 350px;
+    height: 100px;
+}
