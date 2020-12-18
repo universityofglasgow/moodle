@@ -1,0 +1,61 @@
+
+.mform-container label, .form-container label, .title{
+    font-weight: bold;
+}
+
+.form-container{
+    padding: 1em 0 0;
+}
+
+.mform-container, .form-container{
+    max-width: 80%;  
+    padding-left: 1em;
+}
+
+.mform select{
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+
+    display: block;
+    width: 100%;
+    max-width: 150px;
+    padding: 0px 15px;
+    font-size: 13px;
+    line-height: 1.75;
+    color: #333;
+    background-color: #ffffff;
+    background-image: none;
+    border-radius: .5em;
+    border: 1px solid #8c8c8c;
+    -ms-word-break: normal;
+    word-break: normal;
+    outline: none;
+}
+
+.mform select::after {
+    content: '\f078';
+    font: normal normal normal 12px/1 FontAwesome;
+    color: #005c8a;
+    right: 11px;
+    top: 6px;
+    height: 34px;
+    padding: 5% 8px 0px 8px;
+    position: absolute;
+    pointer-events: none;
+}
+
+.form-inline .input-group, .form-inline .custom-select {
+    width: 150px;
+}
+
+#fitem_id_submitbutton .btn{
+    border-radius: .5em;
+    margin-left: auto;
+    margin-right: 1em;
+}
+
+textarea#id_notes.form-control {
+    width: 350px;
+    height: 100px;
+}

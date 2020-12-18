@@ -61,11 +61,13 @@
     padding: 3px 12px;
 }
 
-.status-submitted {
+.status-submitted,
+.status-graded {
     border-color: #183;
     color: #183;
 }
 
+.status-contribute,
 .status-tosubmit {
     background-color: #183;
     border-color: #183;
@@ -86,4 +88,8 @@
 .assessments-text-empty {
     color: #677;
     margin: 1rem 0;
+}
+
+.extended {
+    color: #f46;
 }

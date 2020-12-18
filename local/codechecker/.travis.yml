@@ -53,17 +53,14 @@ jobs:
       env: MOODLE_BRANCH=MOODLE_38_STABLE  DB=pgsql
     - php: 7.1
       env: MOODLE_BRANCH=MOODLE_37_STABLE  DB=mysqli
-    - php: 7.1
-      env: MOODLE_BRANCH=MOODLE_33_STABLE  DB=mysqli
-    - php: 7.1
-      env: MOODLE_BRANCH=MOODLE_32_STABLE  DB=pgsql NODE_VERSION=8.9
 
-    - php: 7.0
-      env: MOODLE_BRANCH=MOODLE_36_STABLE  DB=pgsql
-    - php: 7.0
-      env: MOODLE_BRANCH=MOODLE_35_STABLE  DB=mysqli
-    - php: 7.0
-      env: MOODLE_BRANCH=MOODLE_34_STABLE  DB=pgsql
+    # Cannot test with Moodle 3.2 and 3.3 any more because the new composer 2
+    # does require all components to be named properly (case-sensitively) and
+    # those branches have phpunit/Dbunit, failing. See MDL-64725.
+
+    # Cannot test with PHP 7.0 any more because we are now using the :void return type.
+    # Note that, still, the plugin will work ok, it's just the phpunit tests which cannot
+    # be executed with that PHP versions.
 
 before_install:
   - phpenv config-rm xdebug.ini
@@ -79,10 +76,11 @@ script:
   - moodle-plugin-ci phplint
   - moodle-plugin-ci phpcpd
   - moodle-plugin-ci phpmd
-  - moodle-plugin-ci codechecker
+    # - moodle-plugin-ci codechecker # Heh, cannot check codechecker 3 with codechecker 2!
   - moodle-plugin-ci validate
   - moodle-plugin-ci savepoints
   - moodle-plugin-ci mustache
   - moodle-plugin-ci grunt
+  - moodle-plugin-ci phpdoc
   - moodle-plugin-ci phpunit
   - moodle-plugin-ci behat

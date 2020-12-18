@@ -34,20 +34,25 @@ class addgradeform extends moodleform {
         $mform = $this->_form; // Don't forget the underscore! 
         $mform->addElement('html', '<div class="mform-container">');
 
-        $mform->addElement('select', 'reasons', 'Reason for additional grade', local_gugcat::get_reasons(),['class' => 'mform-custom']); 
+        $mform->addElement('select', 'reasons', get_string('reasonaddgrade', 'local_gugcat'), local_gugcat::get_reasons(),['class' => 'mform-custom']); 
         $mform->setType('reasons', PARAM_NOTAGS); 
         $mform->setDefault('reasons', "Select Reason");   
 
-        $mform->addElement('text', 'otherreason', 'Others', ['class' => 'mform-custom']); 
+        $mform->addElement('text', 'otherreason', get_string('reasonother', 'local_gugcat'), ['class' => 'mform-custom']); 
         $mform->setType('otherreason', PARAM_NOTAGS); 
         $mform->hideIf('otherreason', 'reasons', 'neq', 8); 
         $mform->setDefault('otherreason', "Please Specify");
 
-        $mform->addElement('select', 'grade', 'Grade', local_gugcat::$GRADES, ['class' => 'mform-custom']); 
+        $mform->addElement('select', 'grade', get_string('grade', 'local_gugcat'), local_gugcat::$GRADES, ['class' => 'mform-custom']); 
         $mform->setType('grade', PARAM_NOTAGS); 
         $mform->setDefault('grade', "Select Grade");
+
+        $mform->addElement('textarea', 'notes', get_string('notes', 'local_gugcat'));
+        $mform->setType('notes', PARAM_NOTAGS);
+
+        $mform->addElement('filepicker', 'userfile', get_string('supportingdocument', 'local_gugcat'), null, array('maxbytes' => 10485760, 'maxfiles' => 1,'accepted_types' => '*'));
+
         $mform->addElement('html', '</div>');
-        
         $this->add_action_buttons(false, get_string('confirmgrade', 'local_gugcat'), ['class' => 'float-right']);
         //hidden params
         $mform->addElement('hidden', 'studentid', $this->_customdata['studentid']);
@@ -56,7 +61,8 @@ class addgradeform extends moodleform {
         $mform->setType('id', PARAM_ACTION);
         $mform->addElement('hidden', 'activityid', $this->_customdata['activityid']);
         $mform->setType('activityid', PARAM_ACTION);
-        
+        $mform->addElement('hidden', 'categoryid', $this->_customdata['categoryid']);
+        $mform->setType('categoryid', PARAM_ACTION);
     }    
         
     function validation($data, $files) {

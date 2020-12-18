@@ -25,11 +25,11 @@
 
 defined('MOODLE_INTERNAL') || die;
 
-$plugin->version   = 2017120401;
+$plugin->version   = 2020120400;
 $plugin->requires  = 2014111000;
 $plugin->component = 'report_guid';
 $plugin->dependencies = array(
-    'enrol_gudatabase' => 2015070900,
+    'enrol_gudatabase' => 2020120400,
     'auth_guid' => ANY_VERSION,
     'local_gusync' => ANY_VERSION,
 );

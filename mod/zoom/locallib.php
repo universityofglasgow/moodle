@@ -74,7 +74,7 @@ class zoom_not_found_exception extends moodle_exception {
     public function __construct($response, $errorcode) {
         $this->response = $response;
         $this->zoomerrorcode = $errorcode;
-        parent::__construct('errorwebservice_notfound', 'mod_zoom');
+        parent::__construct('errorwebservice_notfound', 'zoom');
     }
 }
 
@@ -99,7 +99,7 @@ class zoom_bad_request_exception extends moodle_exception {
     public function __construct($response, $errorcode) {
         $this->response = $response;
         $this->zoomerrorcode = $errorcode;
-        parent::__construct('errorwebservice_badrequest', 'mod_zoom', '', $response);
+        parent::__construct('errorwebservice_badrequest', 'zoom', '', $response);
     }
 }
 
@@ -127,10 +127,45 @@ class zoom_api_retry_failed_exception extends moodle_exception {
         $a = new stdClass();
         $a->response = $response;
         $a->maxretries = mod_zoom_webservice::MAX_RETRIES;
-        parent::__construct('zoomerr_maxretries', 'mod_zoom', '', $a);
+        parent::__construct('zoomerr_maxretries', 'zoom', '', $a);
     }
 }
 
+/**
+ * Exceeded daily API limit.
+ *
+ * @copyright  2020 UC Regents
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class zoom_api_limit_exception extends moodle_exception {
+    /**
+     * Web service response.
+     * @var string
+     */
+    public $response = null;
+
+    /**
+     * Unix timestamp of next time to API can be called.
+     * @var int
+     */
+    public $retryafter = null;
+
+    /**
+     * Constructor
+     * @param string $response  Web service response
+     * @param int $errorcode    Web service response error code
+     * @param int $retryafter   Unix timestamp of next time to API can be called.
+     */
+    public function __construct($response, $errorcode, $retryafter) {
+        $this->response = $response;
+        $this->zoomerrorcode = $errorcode;
+        $this->retryafter = $retryafter;
+        $a = new stdClass();
+        $a->response = $response;
+        parent::__construct('zoomerr_apilimit', 'zoom', '',
+                userdate($retryafter, get_string('strftimedaydatetime', 'core_langconfig')));
+    }
+}
 
 /**
  * Terminate the current script with a fatal error.
@@ -246,7 +281,36 @@ function zoom_get_sessions_for_display($meetingid) {
         $uuid = $instance->uuid;
         $participantlist = zoom_get_participants_report($instance->id);
         $sessions[$uuid]['participants'] = $participantlist;
-        $sessions[$uuid]['count'] = count($participantlist);
+
+        $uniquevalues = [];
+        $uniqueparticipantcount = 0;
+        foreach ($participantlist as $participant) {
+            $unique = true;
+            if ($participant->uuid != null) {
+                if (array_key_exists($participant->uuid, $uniquevalues)) {
+                    $unique = false;
+                } else {
+                    $uniquevalues[$participant->uuid] = true;
+                }
+            }
+            if ($participant->userid != null) {
+                if (!$unique || !array_key_exists($participant->userid, $uniquevalues)) {
+                    $uniquevalues[$participant->userid] = true;
+                } else {
+                    $unique = false;
+                }
+            }
+            if ($participant->user_email != null) {
+                if (!$unique || !array_key_exists($participant->user_email, $uniquevalues)) {
+                    $uniquevalues[$participant->user_email] = true;
+                } else {
+                    $unique = false;
+                }
+            }
+            $uniqueparticipantcount += $unique ? 1 : 0;
+        }
+
+        $sessions[$uuid]['count'] = $uniqueparticipantcount;
         $sessions[$uuid]['topic'] = $instance->topic;
         $sessions[$uuid]['duration'] = $instance->duration;
         $sessions[$uuid]['starttime'] = userdate($instance->start_time, $format);

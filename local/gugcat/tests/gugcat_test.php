@@ -48,7 +48,9 @@ class local_gugcat_testcase extends advanced_testcase {
         $assign = $gen->create_module('assign', array('id' => 1, 'course' => $this->course->id));
         $modulecontext = context_module::instance($assign->cmid);
         $assign = new assign($modulecontext, false, false);
-        $this->cm = $assign->get_course_module();
+        $cm = local_gugcat::get_activities($this->course->id);
+        $key = key($cm);
+        $this->cm = $cm[$key];
 
         //create grade items
         $this->gradeitem = new grade_item($gen->create_grade_item(['courseid' => $this->course->id, 'iteminfo' => $this->cm->id]), false);
@@ -56,7 +58,23 @@ class local_gugcat_testcase extends advanced_testcase {
         'iteminfo' => $this->cm->id, 
         'itemname' => get_string('provisionalgrd', 'local_gugcat')
         ]), false);
+    }
 
+    public function test_get_grade_categories() {
+        //create grade categories
+        $gen = $this->getDataGenerator();
+        $cid = $this->course->id;
+        $gc1a = new grade_category($gen->create_grade_category(['courseid' => $cid]), false);
+        $gc1b = new grade_category($gen->create_grade_category(['courseid' => $cid]), false);
+        $gc2c = new grade_category($gen->create_grade_category(['courseid' => $cid]), false);
+
+        $categories = local_gugcat::get_grade_categories($this->course->id);
+        //check if uncategorised is included
+        $this->assertCount(4, $categories);
+        //check category ids
+        $this->assertArrayHasKey($gc1a->id, $categories);
+        $this->assertArrayHasKey($gc1b->id, $categories);
+        $this->assertArrayHasKey($gc2c->id, $categories);
     }
 
     public function test_check_course_activities() {
@@ -72,35 +90,10 @@ class local_gugcat_testcase extends advanced_testcase {
         $this->assertCount(2, $gradeitems);
     }
 
-    public function test_grade_capture_columns() {
-        global $gradeitems, $prvgradeid;
-        $gradeitems = [];
-        $prvgradeid = $this->provisionalgi->id;
-        array_push($gradeitems, $this->gradeitem);
-        $date = date("(j/n/Y)", strtotime(userdate($this->cm->added)));
-        $firstgrade = get_string('gradebookgrade', 'local_gugcat').'<br>'.$date;
-
-        $columns = grade_capture::get_columns($this->cm);
-        $this->assertContains($firstgrade, $columns);
-    }
-
     public function test_check_prv_grade_item() {
         $prvgradeid = $this->provisionalgi->id;
-
-        local_gugcat::set_prv_grade_id($this->course->id, $this->cm->id, 1);
+        local_gugcat::set_prv_grade_id($this->course->id, $this->cm);
         $this->assertEquals(local_gugcat::$PRVGRADEID, $prvgradeid);
-    }
-
-    public function test_grade_capture_rows() {
-        global $gradeitems, $prvgradeid;
-        $gradeitems = array();
-        $prvgradeid = $this->provisionalgi->id;
-        $rows = grade_capture::get_rows($this->course, $this->cm, $this->students);
-        $row = $rows[0];
-        $this->assertEquals($row->cnum, 1);
-        $this->assertEquals($row->studentno, $this->student->id);
-        $this->assertEquals($row->firstgrade, get_string('nograde', 'local_gugcat'));
-        $this->assertFalse($row->discrepancy);
     }
 
     public function test_get_grade_reasons() {
@@ -131,192 +124,8 @@ class local_gugcat_testcase extends advanced_testcase {
 
     public function test_add_grade_item(){
         $sndgradestr = get_string('gi_secondgrade', 'local_gugcat');
-        $gradeitemid = local_gugcat::add_grade_item($this->course->id, $sndgradestr, $this->cm->id, 1);
+        $gradeitemid = local_gugcat::add_grade_item($this->course->id, $sndgradestr, $this->cm);
         $id = local_gugcat::get_grade_item_id($this->course->id, $this->cm->id, $sndgradestr);
         $this->assertEquals($gradeitemid, $id);
-    }
-
-    public function test_if_record_of_user_not_empty() {
-        global $DB;
-
-        $this->resetAfterTest();
-
-        $course = $this->getDataGenerator()->create_course(array('name'=>'Advanced Programming'));
-        $courserecord = $DB->get_records('course');
-        $this->assertNotEmpty($courserecord, 'empty');
-    }
-
-    public function check_the_data_of_student_if_empty_or_not() {
-        global $DB;
-
-        $this->resetAfterTest();
-
-        // Create two users.
-        $user1 = $this->getDataGenerator()->create_user();
-        $user2 = $this->getDataGenerator()->create_user();
-
-        // Add the course creator role to the course contact and assign a user to that role.
-        $course = $this->getDataGenerator()->create_course(array('name'=>'Advanced Programming'));
-        $coursecontext = context_course::instance($course->id);
-
-        // Enrol users 1 and 2 in first course.
-        $this->getDataGenerator()->enrol_user($user1->id, $course->id);
-        $this->getDataGenerator()->enrol_user($user2->id, $course->id);
-
-        $students = get_role_users(5 , $coursecontext);
-
-        $this->assertNotEmpty($students, 'empty');
-    }
-
-    public function check_the_data_of_first_assignment_if_empty_or_not() {
-        global $DB;
-
-        $this->resetAfterTest();
-
-        // Create five users.
-        $user1 = $this->getDataGenerator()->create_user();
-        $user2 = $this->getDataGenerator()->create_user();
-
-        // Add the course creator role to the course contact and assign a user to that role.
-        $course = $this->getDataGenerator()->create_course(array('name'=>'Advanced Programming'));
-        $coursecontext = context_course::instance($course->id);
-
-        // Enrol users 1 and 2 in first course.
-        $this->getDataGenerator()->enrol_user($user1->id, $course->id);
-        $this->getDataGenerator()->enrol_user($user2->id, $course->id);
-
-        $students = get_role_users(5 , $coursecontext);
-
-        $ass_no_one = null;
-        $arr_of_students = array();
-        $arr_of_students_with_assignments = array();
-
-        foreach($students as $keys => $student){
-            // Store the fetched data to the array of arr_of_students
-            $arr_of_students[$student->id] = (integer)$student->id;
-        }
-
-        $implode_user_id = implode(",", $arr_of_students);
-
-        $first_assigmnent_sql = $DB->get_records_sql("SELECT DISTINCT assignment FROM `mdl_assign_grades` WHERE userid IN('$implode_user_id') LIMIT 1 OFFSET 0");
-
-        foreach($first_assigmnent_sql as $ass_1){
-            foreach($ass_1 as $ass_value){
-                $ass_no_one = $ass_value;
-            }
-        }
-
-        // Assignment no 1.
-        $assign_one_grading_info = grade_get_grades($course->id, 'mod', 'assign', (integer)$ass_no_one, array_keys($arr_of_students));
-
-        $this->assertNotEmpty($assign_one_grading_info, 'empty');
-    }
-
-    public function check_the_data_of_second_assignment_if_empty_or_not() {
-        global $DB;
-
-        $this->resetAfterTest();
-
-        // Create five users.
-        $user1 = $this->getDataGenerator()->create_user();
-        $user2 = $this->getDataGenerator()->create_user();
-
-        // Add the course creator role to the course contact and assign a user to that role.
-        $course = $this->getDataGenerator()->create_course(array('name'=>'Advanced Programming'));
-        $coursecontext = context_course::instance($course->id);
-
-        // Enrol users 1 and 2 in first course.
-        $this->getDataGenerator()->enrol_user($user1->id, $course->id);
-        $this->getDataGenerator()->enrol_user($user2->id, $course->id);
-
-        $students = get_role_users(5 , $coursecontext);
-
-        $ass_no_two = null;
-        $arr_of_students = array();
-        $arr_of_students_with_assignments = array();
-
-        foreach($students as $keys => $student){
-            // Store the fetched data to the array of arr_of_students
-            $arr_of_students[$student->id] = (integer)$student->id;
-        }
-
-        $implode_user_id = implode(",", $arr_of_students);
-
-        $second_assigment_sql = $DB->get_records_sql("SELECT DISTINCT assignment FROM `mdl_assign_grades` WHERE userid IN('$implode_user_id') LIMIT 1 OFFSET 1");
-
-        foreach($second_assigment_sql as $ass_2){
-            foreach($ass_2 as $ass_value){
-                $ass_no_two = $ass_value;
-            }
-        }
-
-        // Assignment no 2.
-        $assign_two_grading_info = grade_get_grades($course->id, 'mod', 'assign', (integer)$ass_no_two, array_keys($arr_of_students));
-
-        $this->assertNotEmpty($assign_two_grading_info, 'empty');
-    }
-
-    public function check_the_data_of_first_exam_if_empty_or_not() {
-        global $DB;
-
-        $this->resetAfterTest();
-
-        // Create five users.
-        $user1 = $this->getDataGenerator()->create_user();
-        $user2 = $this->getDataGenerator()->create_user();
-
-        // Add the course creator role to the course contact and assign a user to that role.
-        $course = $this->getDataGenerator()->create_course(array('name'=>'Advanced Programming'));
-        $coursecontext = context_course::instance($course->id);
-
-        // Enrol users 1 and 2 in first course.
-        $this->getDataGenerator()->enrol_user($user1->id, $course->id);
-        $this->getDataGenerator()->enrol_user($user2->id, $course->id);
-
-        $students = get_role_users(5 , $coursecontext);
-
-        $arr_of_students = array();
-
-        foreach($students as $keys => $student){
-            // Store the fetched data to the array of arr_of_students
-            $arr_of_students[$student->id] = (integer)$student->id;
-        }
-
-        // Exam no 1.
-        $exam_one_grading_info = grade_get_grades($course->id, 'mod', 'quiz', 1, array_keys($arr_of_students));
-
-        $this->assertNotEmpty($exam_one_grading_info, 'empty');
-    }
-
-    public function check_the_data_of_second_exam_if_empty_or_not() {
-        global $DB;
-
-        $this->resetAfterTest();
-
-        // Create five users.
-        $user1 = $this->getDataGenerator()->create_user();
-        $user2 = $this->getDataGenerator()->create_user();
-
-        // Add the course creator role to the course contact and assign a user to that role.
-        $course = $this->getDataGenerator()->create_course(array('name'=>'Advanced Programming'));
-        $coursecontext = context_course::instance($course->id);
-
-        // Enrol users 1 and 2 in first course.
-        $this->getDataGenerator()->enrol_user($user1->id, $course->id);
-        $this->getDataGenerator()->enrol_user($user2->id, $course->id);
-
-        $students = get_role_users(5 , $coursecontext);
-
-        $arr_of_students = array();
-
-        foreach($students as $keys => $student){
-            // Store the fetched data to the array of arr_of_students
-            $arr_of_students[$student->id] = (integer)$student->id;
-        }
-
-        // Exam no 2.
-        $exam_two_grading_info = grade_get_grades($course->id, 'mod', 'quiz', 2, array_keys($arr_of_students));
-
-        $this->assertNotEmpty($exam_two_grading_info, 'empty');
     }
 }

@@ -24,12 +24,22 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+global $CFG;
+
+require_once('config.php');
+require_once($CFG->dirroot .'/blocks/moodleblock.class.php');
+require_once($CFG->dirroot .'/blocks/gu_spoverview/block_gu_spoverview.php');
+
 class block_gu_spoverview_testcase extends advanced_testcase {
 
     /**
      * Setup test data.
      */
     public function setUp(){
+        global $DB;
+
+        $this->spoverview = new block_gu_spoverview();
+    
         $this->resetAfterTest(true);
 
         $gen = $this->getDataGenerator();
@@ -37,45 +47,39 @@ class block_gu_spoverview_testcase extends advanced_testcase {
         $this->student = $gen->create_user();
         $this->teacher = $gen->create_user();
 
-        $this->category = $gen->create_category(array('id' => 1));
+        $this->category = $gen->create_category();
+        $this->course = $this->getDataGenerator()->create_course(array('name'=>'Some course', 'category'=>$this->category->id));
 
-        $this->course = $gen->create_course(array(
-                                    'id'       => 1, 
-                                    'name'     => 'Sample course', 
-                                    'category' => $this->category->id
-                                )
-                        );
-
-        $this->coursecontext = context_course::instance($this->course->id);
+        $this->assign1 = $this->getDataGenerator()->create_module('assign', array('course' => $this->course->id, 'duedate' => time() - 10));
+        $this->assign2 = $this->getDataGenerator()->create_module('assign', array('course' => $this->course->id, 'duedate' => time() + 60 * 60));
+        $this->assign3 = $this->getDataGenerator()->create_module('assign', array('course' => $this->course->id, 'duedate' => time() + 30 * 30));
 
         $gen->enrol_user($this->student->id, $this->course->id, 'student');
         $gen->enrol_user($this->teacher->id, $this->course->id, 'editingteacher');
 
-        $this->assign1 = $gen->create_module('assign', 
-            array(
-                'course' => $this->course->id,
-                'duedate' => time() * 30 * 30,
-                'status' => 'new'
-            )
-        );
+        $DB->insert_record('assign_submission', array(
+            'assignment' => $this->assign1->id,
+            'userid' => $this->student->id,
+            'attemptnumber' => 0,
+            'status' => 'new'
+        ));
 
-        $modulecontext1 = context_module::instance($this->assign1->cmid);
-        $assign1 = new assign($modulecontext1, false, false);
+        $DB->insert_record('assign_submission', array(
+            'assignment' => $this->assign2->id,
+            'userid' => $this->student->id,
+            'attemptnumber' => 0,
+            'status' => 'new'
+        ));
 
-        $this->assign2 = $gen->create_module('assign', 
-            array(
-                'course' => $this->course->id,
-                'duedate' => time() - 10,
-                'status' => 'new'
-            )
-        );
-
-        $modulecontext2 = context_module::instance($this->assign2->cmid);
-        $assign2 = new assign($modulecontext2, false, false);
+        $DB->insert_record('assign_submission', array(
+            'assignment' => $this->assign3->id,
+            'userid' => $this->student->id,
+            'attemptnumber' => 0,
+            'status' => 'submitted'
+        ));
     }   
 
-
-    public function test_to_get_different_type_of_assignment(){
+    public function test_to_get_count_of_assignment(){
         $assignments_submitted = 0;
         $assignments_tosubmit = 0;
         $assignments_overdue = 0;
@@ -83,7 +87,7 @@ class block_gu_spoverview_testcase extends advanced_testcase {
         $courses = enrol_get_all_users_courses($this->student->id, true);
         $courseids = array_column($courses, 'id');
 
-        $assignments = (count($courseids) > 0) ? self::get_user_assignments($this->student->id, $courseids) : 0;
+        $assignments = (count($courseids) > 0) ? $this->spoverview->get_user_assignments($this->student->id, $courseids) : 0;
 
         foreach ($assignments as $assignment) {
             if($assignment->status != 'submitted') {
@@ -95,7 +99,7 @@ class block_gu_spoverview_testcase extends advanced_testcase {
                         $assignments_tosubmit++;
                     }else{
                         if($assignment->duedate != 0 || $assignment->cutoffdate != 0
-                            || $assignment->extensionduedate != 0) {
+                            || $assignment->extensionduedate != 0 || ($assignment->duedate >= time() && $assignment->cutoffdate <= time())) {
                             $assignments_overdue++;
                         }
                     }
@@ -110,7 +114,7 @@ class block_gu_spoverview_testcase extends advanced_testcase {
 
         $this->assertGreaterThanOrEqual(1, $assignments_tosubmit);
         $this->assertGreaterThanOrEqual(1, $assignments_overdue);
-        $this->assertGreaterThanOrEqual(0, $assignments_submitted);
+        $this->assertGreaterThanOrEqual(1, $assignments_submitted);
 
         $this->assertContains(
             $this->course->id, 
@@ -122,10 +126,11 @@ class block_gu_spoverview_testcase extends advanced_testcase {
     public function test_check_marked_assignment(){
         $courses = enrol_get_all_users_courses($this->student->id, true);
         $courseids = array_column($courses, 'id');
-        $assessments_marked = (count($courseids) > 0) ? self::get_user_assessments_count($this->student->id, $courseids) : 0;
+        $assessments_marked = (count($courseids) > 0) ? $this->spoverview->get_user_assessments_count($this->student->id, $courseids) : 0;
 
         $this->assertNotEmpty($courses, 'empty');
         $this->assertGreaterThanOrEqual(0, $assessments_marked);
+
         $this->assertContains(
             $this->course->id, 
             $courseids, 
@@ -133,24 +138,15 @@ class block_gu_spoverview_testcase extends advanced_testcase {
         );
     }
 
-    public function test_check_user_assignments(){
-        $courses = enrol_get_all_users_courses($this->student->id, true);
-        $courseids = array_column($courses, 'id');
-        $assignments = (count($courseids) > 0) ? self::get_user_assignments($this->student->id, $courseids) : array();
+    public function test_applicable_formats(){
+        $returned = $this->spoverview->applicable_formats();
 
-        $this->assertNotEmpty($assignments , 'empty');
-        $this->assertNotEmpty($courses, 'empty');
-        $this->assertContains(
-            $this->course->id, 
-            $courseids, 
-            "courseids array doesn't contains same course id"
-        );
+        $this->assertEquals($returned, array('my' => true));
     }
 
-    public function test_user_interface_content(){
-        global $OUTPUT;
-
+    public function test_get_content(){
         $lang = 'block_gu_spoverview';
+
         $assignments_submitted = 0;
         $assignments_tosubmit = 0;
         $assignments_overdue = 0;
@@ -158,8 +154,11 @@ class block_gu_spoverview_testcase extends advanced_testcase {
         $courses = enrol_get_all_users_courses($this->student->id, true);
         $courseids = array_column($courses, 'id');
 
-        $assignments = (count($courseids) > 0) ? self::get_user_assignments($this->student->id, $courseids) : array();
-        $assessments_marked = (count($courseids) > 0) ? self::get_user_assessments_count($this->student->id, $courseids) : 0;
+        $assignments = (count($courseids) > 0) ? $this->spoverview->get_user_assignments($this->student->id, $courseids) : 0;
+        $assessments_marked = (count($courseids) > 0) ? $this->spoverview->get_user_assessments_count($this->student->id, $courseids) : 0;
+
+        $assignment_str = ($assignments_submitted == 1) ? get_string('assignment', $lang) : get_string('assignments', $lang);
+        $assessment_str = ($assessments_marked == 1) ? get_string('assessment', $lang) : get_string('assessments', $lang);
 
         foreach ($assignments as $assignment) {
             if($assignment->status != 'submitted') {
@@ -171,7 +170,7 @@ class block_gu_spoverview_testcase extends advanced_testcase {
                         $assignments_tosubmit++;
                     }else{
                         if($assignment->duedate != 0 || $assignment->cutoffdate != 0
-                            || $assignment->extensionduedate != 0) {
+                            || $assignment->extensionduedate != 0 || ($assignment->duedate >= time() && $assignment->cutoffdate <= time())) {
                             $assignments_overdue++;
                         }
                     }
@@ -181,86 +180,15 @@ class block_gu_spoverview_testcase extends advanced_testcase {
             }
         }
 
-        $assignment_str = ($assignments_submitted == 1) ? get_string('assignment', $lang) : get_string('assignments', $lang);
-        $assessment_str = ($assessments_marked == 1) ? get_string('assessment', $lang) : get_string('assessments', $lang);
+        $html = $this->spoverview->get_content();
 
-        $templatecontext = (object)[
-            'assessments_submitted'        => $assignments_submitted,
-            'assessments_tosubmit'         => $assignments_tosubmit,
-            'assessments_overdue'          => $assignments_overdue,
-            'assessments_marked'           => $assessments_marked,
-            'assessments_submitted_icon'   => '../blocks/gu_spoverview/pix/assessments_submitted.svg',
-            'assessments_tosubmit_icon'    => '../blocks/gu_spoverview/pix/assessments_tosubmit.svg',
-            'assessments_overdue_icon'     => '../blocks/gu_spoverview/pix/assessments_overdue.svg',
-            'assessments_marked_icon'      => '../blocks/gu_spoverview/pix/assessments_marked.svg',
-            'assessments_submitted_str'    => $assignment_str.get_string('submitted', $lang),
-            'assessments_tosubmit_str'     => get_string('tobesubmitted', $lang),
-            'assessments_overdue_str'      => get_string('overdue', $lang),
-            'assessments_marked_str'       => $assessment_str.get_string('marked', $lang),
-        ];
+        $this->assertSame(get_string('pluginname', 'block_gu_spoverview'), $this->spoverview->title);
+        $this->assertStringContainsString((string)$assignments_submitted, $html->text);
+        $this->assertStringContainsString((string)$assignments_tosubmit, $html->text);
+        $this->assertStringContainsString((string)$assignments_overdue, $html->text);
+        $this->assertStringContainsString((string)$assessments_marked, $html->text);
 
-        $submittedassignmentcountdom  = '<h4 class="assessments-item-count color-primary submitted-assignment-count">'.$templatecontext->assessments_submitted.'</h4>';
-        $tosubmitassignmentcountdom   = '<h4 class="assessments-item-count color-primary to-submitted-assignment-count">'.$templatecontext->assessments_tosubmit.'</h4>';
-        $overdueassignmentcountdom    = '<h4 class="assessments-item-count color-primary overdue-assignment-count">'.$templatecontext->assessments_overdue.'</h4>';
-        $markedassessmentcountdom     = '<h4 class="assessments-item-count color-primary assessment-marked-count">'.$templatecontext->assessments_marked.'</h4>';
-        
-        $actualui = $OUTPUT->render_from_template('block_gu_spoverview/spoverview', $templatecontext);
-
-        $this->assertNotEmpty(strpos($actualui, $submittedassignmentcountdom), "assert value is true or not");
-        $this->assertNotEmpty(strpos($actualui, $tosubmitassignmentcountdom), "assert value is true or not");
-        $this->assertNotEmpty(strpos($actualui, $overdueassignmentcountdom), "assert value is true or not");
-        $this->assertNotEmpty(strpos($actualui, $markedassessmentcountdom), "assert value is true or not");
-    }
-
-    /**
-     * Returns all user assignments including submission status and extension due date.
-     * 
-     * @param int $userid
-     * @param array $courseids
-     * @return stdClass Assignment objects if records are returned,
-     *  otherwise return empty object
-     */
-    public static function get_user_assignments($userid, $courseids) {
-        global $DB, $CFG;
-
-        $params = array($userid, $userid);
-        $incourseids = implode(',', $courseids);
-
-        $sql = "SELECT ma.name, ma.allowsubmissionsfromdate as `startdate`,
-                ma.duedate, ma.cutoffdate, mas.status, mauf.extensionduedate
-                FROM `{$CFG->prefix}assign` ma
-                LEFT JOIN `{$CFG->prefix}assign_submission` mas ON ma.id = mas.assignment 
-                AND mas.userid = ?
-                LEFT JOIN `{$CFG->prefix}assign_user_flags` mauf ON ma.id = mauf.assignment 
-                AND mauf.userid = ?
-                WHERE ma.course IN (".$incourseids.")";
-
-        $assignments = ($assignments = $DB->get_records_sql($sql, $params)) ? $assignments : new stdClass;
-        return $assignments;
-    }
-
-    /**
-     * Returns count of graded assessments (activity modules)
-     * 
-     * @param int $userid
-     * @param array $courseids
-     * @return int Count of Assessment records
-     */
-    public static function get_user_assessments_count($userid, $courseids) {
-        global $DB, $CFG;
-        $params = array($userid, 'mod');
-        $incourseids = implode(',', $courseids);
-
-        $sql = "SELECT mgi.itemname, mgg.finalgrade
-                FROM `{$CFG->prefix}grade_items` mgi
-                JOIN `{$CFG->prefix}grade_grades` mgg ON mgi.id = mgg.itemid 
-                AND mgg.userid = ? 
-                AND mgg.finalgrade IS NOT NULL
-                WHERE mgi.itemtype = ? 
-                AND mgi.courseid IN (".$incourseids.")";
-
-        $assessments = ($assessments = $DB->get_records_sql($sql, $params)) ? $assessments : array();
-        $assessments_count = count($assessments);
-        return $assessments_count;
-    }
+        $this->assertStringContainsString($assignment_str, $html->text);
+        $this->assertStringContainsString($assessment_str, $html->text);
+    }    
 }
