@@ -64,10 +64,11 @@ class more implements renderable, templatable {
      * @return array
      */
     private function format_comments($comments) {
-        global $DB, $USER;
+        global $DB, $USER, $output;
 
         foreach ($comments as $comment) {
             $user = $DB->get_record('user', ['id' => $comment->userid], '*', MUST_EXIST);
+            $comment->avatar = $output->user_picture($user, ['size' => 42]);
             $comment->name = fullname($user);
             $comment->created = userdate($comment->timeadded);
             if ($comment->timeedited) {

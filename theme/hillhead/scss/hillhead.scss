@@ -30,6 +30,15 @@ h6 {
     color: #003865;
 }
 
+.bg-secondary {
+    background-color: $hillhead-page-bg !important;
+    border-color: $hillhead-page-bg !important;
+}
+
+.bg-secondary .border-bottom {
+    border-color: #fff !important;
+}
+
 @include media-breakpoint-up(lg) {
     body.drawer-open-left #region-main-settings-menu.has-blocks, body.drawer-open-left #region-main.has-blocks {
         width: 100%;

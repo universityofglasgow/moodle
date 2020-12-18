@@ -182,15 +182,22 @@
         <div class="card-body">
             <h5 class="card-title">{{# str }}comments, report_enhance{{/ str }}</h5>
                 {{# comments }}
-                    <div class="card-text border rounded p-1 m-b-1 bg-secondary">
-                        <p class="border-bottom">
-                            <b>{{ name }} - {{ created }}</b>
-                            {{ edited }}
-                        </p>
+                    <div class="card-text border rounded p-2 m-b-1 bg-secondary">
+                        <div class="border-bottom mb-2 pb-2">
+                            <div class="media">
+                                <div class="mr-1">
+                                    {{{avatar}}}
+                                </div>
+                                <div class="media-body">
+                                    {{# canedit }}
+                                        <a class="float-right" href="{{{ editurl }}}"><i class="fa fa-pencil"></i> {{# str }}edit{{/ str }}</a>
+                                    {{/ canedit }}
+                                    <p class="m-0">{{name}}</p>
+                                    <p class="m-0">{{created}} {{edited}}</p>
+                                </div>
+                            </div>
+                        </div>
                         {{{ comment }}}
-                        {{# canedit }}
-                            <a class="btn btn-sm btn-warning" href="{{{ editurl }}}">{{# str }}edit{{/ str }}</a>
-                        {{/ canedit }}
                     </div>
                 {{/ comments }}
         </div>
