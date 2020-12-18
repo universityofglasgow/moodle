@@ -61,7 +61,7 @@ if(!empty($activities)){
     //populate $GRADES with scales
     local_gugcat::set_grade_scale($scaleid);
 }
-$students = get_enrolled_users($coursecontext, 'mod/assign:submit', $groupid);
+$students = get_enrolled_users($coursecontext, 'moodle/competency:coursecompetencygradable', $groupid);
 //populate $STUDENTS
 local_gugcat::$STUDENTS = $students;
 //populate provisional grade id and set it to static
