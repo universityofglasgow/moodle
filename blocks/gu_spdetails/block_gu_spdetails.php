@@ -65,9 +65,13 @@ class block_gu_spdetails extends block_base {
             $a->courserecord->coursename = $a->courserecord->shortname.' '.$a->courserecord->fullname;
             $a->courserecord->url = self::return_courseurl($a->course);
 
-            $a->assessment = self::retrieve_assessmentrecord($a->name, $a->instance);
+            $a->assessment = self::retrieve_assessmentrecord($a->name, $a->instance, $userid);
             $a->assessment->startdate = property_exists($a->assessment, 'startdate') ? $a->assessment->startdate : null;
             $a->assessment->duedate = property_exists($a->assessment, 'duedate') ? $a->assessment->duedate : null;
+            $a->assessment->overrideduedate = property_exists($a->assessment, 'overrideduedate') ? $a->assessment->overrideduedate : null;
+            $a->assessment->actualduedate = ($a->assessment->overrideduedate) ? $a->assessment->overrideduedate : $a->assessment->duedate;
+            $a->assessment->extensionduedate = ($a->name == 'assign') ? self::retrieve_extendedduedate($userid, $a->instance) : null;
+            $a->assessment->hasextension = ($a->assessment->extensionduedate) ? true : false;
             $a->assessment->weight = property_exists($a->assessment, 'weight') ? $a->assessment->weight : null;
             $a->assessment->gradeid = property_exists($a->assessment, 'gradeid') ? $a->assessment->gradeid : null;
             $a->assessment->gradingduedate = property_exists($a->assessment, 'gradingduedate') ?
@@ -82,8 +86,8 @@ class block_gu_spdetails extends block_base {
                 if ($a->completionexpected == 0){
                     $a->formatted->duedate = get_string('emptyvalue', $lang);
                 } else {
-                    $a->formatted->duedate = ($a->assessment->duedate) ?
-                                             userdate($a->assessment->duedate,  get_string('convertdate', $lang)) :
+                    $a->formatted->duedate = ($a->assessment->actualduedate) ?
+                                             userdate($a->assessment->actualduedate,  get_string('convertdate', $lang)) :
                                              get_string('emptyvalue', $lang);
                 }
 
@@ -97,9 +101,12 @@ class block_gu_spdetails extends block_base {
             } else {
                 $a->formatted->weight = ($a->assessment->weight) ? (($a->assessment->weight) * 100).'%' :
                                          get_string('emptyvalue', $lang);
-                $a->formatted->duedate = ($a->assessment->duedate) ?
-                                         userdate($a->assessment->duedate,  get_string('convertdate', $lang)) :
+                $a->formatted->duedate = ($a->assessment->actualduedate) ?
+                                         userdate($a->assessment->actualduedate,  get_string('convertdate', $lang)) :
                                          get_string('emptyvalue', $lang);
+                $a->formatted->extensionduedate = ($a->assessment->extensionduedate) ?
+                                                  userdate($a->assessment->extensionduedate,  get_string('convertdate', $lang)) :
+                                                  null;
                 $a->grades = self::retrieve_grades($a->name, $a->assessment->gradeid, $userid);
                 if ($a->name == 'quiz') {
                     $a->grades->feedback = $a->assessment->feedback;
@@ -153,7 +160,7 @@ class block_gu_spdetails extends block_base {
      * @return array $assessments Course Modules 
      */
     public static function retrieve_assessments($courseids, $activities) {
-        global $DB;
+        global $DB, $CFG;
 
         $assessments = array();
         list($inactivities, $aparams) = $DB->get_in_or_equal($activities, SQL_PARAMS_NAMED);
@@ -165,8 +172,8 @@ class block_gu_spdetails extends block_base {
 
         $sql = "SELECT DISTINCT mcm.id, mcm.course, mcm.instance, mm.name,
                     mcm.completionexpected
-                    FROM `mdl_course_modules` mcm
-                    JOIN `mdl_modules` mm ON mm.id = mcm.module
+                    FROM `". $CFG->prefix ."course_modules` mcm
+                    JOIN `". $CFG->prefix ."modules` mm ON mm.id = mcm.module
                     WHERE mm.name {$inactivities}
                     AND mcm.course {$incourses}";
 
@@ -200,36 +207,58 @@ class block_gu_spdetails extends block_base {
      * @return mixed $courseinfo Assessment object if the Activity Name matches a case
      *  and a corresponding record is found, false if no record is found
      */
-    public static function retrieve_assessmentrecord($name, $instance) {
-        global $DB;
+    public static function retrieve_assessmentrecord($name, $instance, $userid) {
+        global $DB, $CFG;
 
         switch($name) {
             case 'assign':
-                $sql = "SELECT ma.name,
+                $sql = "SELECT ma.id, ma.name,
                         ma.allowsubmissionsfromdate as `startdate`,
-                        ma.duedate, ma.gradingduedate, mgi.id as `gradeid`,
-                        mgi.aggregationcoef as `weight`, mgi.aggregationcoef2 as `weight01`
-                        FROM `mdl_assign` ma
-                        JOIN `mdl_grade_items` mgi ON mgi.iteminstance = ma.id
-                        AND mgi.itemmodule = ?
+                        ma.duedate, ma.cutoffdate, ma.gradingduedate,
+                        mgi.id as `gradeid`, mgi.aggregationcoef as `weight`,
+                        mao.allowsubmissionsfromdate as `overridestartdate`,
+                        mao.duedate as `overrideduedate`,
+                        mao.cutoffdate as `overridecutoffdate`
+                        FROM `". $CFG->prefix ."assign` ma
+                        JOIN `". $CFG->prefix ."grade_items` mgi
+                        ON mgi.iteminstance = ma.id AND mgi.itemmodule = ?
+                        LEFT JOIN `". $CFG->prefix ."assign_overrides` mao
+                        ON mao.userid = ? AND mao.assignid = ?
                         WHERE ma.id = ?";
-                $assessmentrecord = ($assessmentrecord = $DB->get_record_sql($sql, array($name, $instance))) ?
-                                    $assessmentrecord : new stdClass();
+                $assessmentrecord = ($assessmentrecord = $DB->get_record_sql($sql,
+                                     array($name, $userid, $instance, $instance))) ?
+                                     $assessmentrecord : new stdClass();
                 break;
             case 'quiz':
-                $sql = "SELECT DISTINCT mq.name,
+                $sql = "SELECT DISTINCT mq.id as `gradeid`, mq.name,
                         mq.timeopen as `startdate`,
-                        mq.timeclose as `duedate`,
+                        mq.timeclose as `duedate`, mq.timelimit,
                         (mq.timeclose + (86400 * 14)) as `gradingduedate`,
-                        mgi.aggregationcoef as `weight`, mgi.aggregationcoef2 as `weight01`,
-                        mq.id as `gradeid`, mgg.feedback
-                        FROM `mdl_quiz` mq
-                        JOIN `mdl_grade_items` mgi ON mgi.iteminstance = mq.id
-                        AND mgi.itemmodule = ?
-                        JOIN `mdl_grade_grades` mgg ON mgg.itemid = mgi.id
+                        mgi.aggregationcoef as `weight`, mgg.feedback,
+                        mqo.timeopen as `overridestartdate`,
+                        mqo.timeclose as `overrideduedate`,
+                        mqo.timelimit as `overridelimit`
+                        FROM `". $CFG->prefix ."quiz` mq
+                        JOIN `". $CFG->prefix ."grade_items` mgi
+                        ON mgi.iteminstance = mq.id AND mgi.itemmodule = ?
+                        JOIN `". $CFG->prefix ."grade_grades` mgg ON mgg.itemid = mgi.id
+                        LEFT JOIN `". $CFG->prefix ."quiz_overrides` mqo
+                        ON mqo.userid = ? AND mqo.quiz = ?
                         WHERE mq.id = ?";
-                $assessmentrecord = ($assessmentrecord = $DB->get_record_sql($sql, array($name, $instance))) ?
+                $assessmentrecord = ($assessmentrecord = $DB->get_record_sql($sql,
+                                     array($name, $userid, $instance, $instance))) ?
                                      $assessmentrecord : new stdClass();
+                break;
+            case 'survey':
+                $assessmentrecord = $DB->get_record('survey', array('id' => $instance), 'name');
+                break;
+            case 'wiki':
+                $assessmentrecord = $DB->get_record('wiki', array('id' => $instance), 'name');
+                break;
+            case 'workshop':
+                $assessmentrecord = $DB->get_record('workshop', array('id' => $instance),
+                                                    'name, id as `gradeid`, submissionstart as `startdate`, ' .
+                                                    'submissionend as `duedate`, assessmentend as `gradingduedate`');
                 break;
             default:
                 $assessmentrecord = ($assessmentrecord = $DB->get_record($name, array('id' => $instance), 'name')) ?
@@ -303,6 +332,12 @@ class block_gu_spdetails extends block_base {
                 $statusrecord = new stdClass();                             
                 $statusrecord->status = $record ? 'submitted' : null ;
                 break;
+            case 'workshop':
+                $record = $DB->get_record('workshop_submissions',
+                                                array('workshopid' => $instance, 'authorid' => $userid));
+                $statusrecord = new stdClass();
+                $statusrecord->status = $record ? 'submitted' : null ;
+                break;
             default:
                 $statusrecord = new stdClass();
                 break;
@@ -354,7 +389,8 @@ class block_gu_spdetails extends block_base {
      * @param int $userid User ID
      * @return stdClass $gradesrecord Grades object if the Activity has a corresponding
      *  Grade Grades table and a corresponding record is found, return empty object if no
-     *  record is found
+     *  record is found.
+     *  Wiki and Survey has no grades.
      */
     public static function retrieve_grades($name, $gradeid, $userid) {
         global $DB;
@@ -373,6 +409,13 @@ class block_gu_spdetails extends block_base {
                                                 '*');
                 $gradesrecord = is_bool($gradesrecord) ? new stdClass() : $gradesrecord;
                 $gradesrecord->finalgrade = property_exists($gradesrecord, 'grade') ? $gradesrecord->grade : null;
+                break;
+            case 'workshop':
+                $gradesrecord = $DB->get_record('workshop_submissions',
+                                                array('workshopid' => $gradeid, 'authorid' => $userid),
+                                                'grade as `finalgrade`, feedbackauthor as `feedback`');
+
+                $gradesrecord = is_bool($gradesrecord) ? new stdClass : $gradesrecord;
                 break;
             default:
                 $gradesrecord = new stdClass();
@@ -396,7 +439,7 @@ class block_gu_spdetails extends block_base {
 
         $gradetext = $grade ? $grade : 
                      get_string('due', $lang).userdate($gradingduedate,  get_string('convertdate', $lang));
-        return $gradetext;
+        return $gradingduedate == 0 ? get_string('emptyvalue', $lang) : $gradetext;
     }
 
     /**
@@ -415,8 +458,22 @@ class block_gu_spdetails extends block_base {
         $feedbackrecord->hasurl = false;
 
         $feedbackrecord->hasurl = $feedback ? true : false;
-        $feedbackrecord->text = $feedback ? get_string('readfeedback', $lang) : 
-                                 get_string('due', $lang).userdate($gradingduedate,  get_string('convertdate', $lang));
+        $feedbackrecord->text = $feedback ? get_string('readfeedback', $lang) :
+                                get_string('due', $lang).userdate($gradingduedate, get_string('convertdate', $lang));
+        if ($gradingduedate == 0){
+            $feedbackrecord->text = get_string('emptyvalue', $lang);
+        }
         return $feedbackrecord;
+    }
+
+    public static function retrieve_extendedduedate($userid, $assignid) {
+        global $DB, $CFG;
+
+        $extensionduedaterecord = ($extensionduedaterecord = $DB->get_record('assign_user_flags',
+                                array('userid' => $userid, 'assignment' => $assignid), 'id, extensionduedate')) ?
+                                $extensionduedaterecord : new stdClass();
+        $extensionduedate = property_exists($extensionduedaterecord, 'extensionduedate') ?
+                            $extensionduedaterecord->extensionduedate : null;
+        return $extensionduedate;
     }
 }
