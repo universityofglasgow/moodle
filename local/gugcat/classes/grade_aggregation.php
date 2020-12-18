@@ -83,7 +83,6 @@ class grade_aggregation{
                 if(!is_null($grd) && $grade !== NON_SUBMISSION_AC && $grade !== MEDICAL_EXEMPTION_AC){
                     $gg = new grade_grade(array('userid'=>$student->id, 'itemid'=>$item->gradeitemid), true);
                     $floatweight += (float)$gg->get_aggregationweight();
-                    $grades = $item->grades;
                 }
                 $gradecaptureitem->nonsubmission = ($grade === NON_SUBMISSION_AC) ? true : false;
                 $gradecaptureitem->medicalexemption = ($grade === MEDICAL_EXEMPTION_AC) ? true : false;
