@@ -71,7 +71,7 @@ class block_gu_spoverview extends block_base {
                         $assignments_tosubmit++;
                     }else{
                         if($assignment->duedate != 0 || $assignment->cutoffdate != 0
-                            || $assignment->extensionduedate != 0) {
+                            || $assignment->extensionduedate != 0 || ($assignment->duedate >= time() && $assignment->cutoffdate <= time())) {
                             $assignments_overdue++;
                         }
                     }

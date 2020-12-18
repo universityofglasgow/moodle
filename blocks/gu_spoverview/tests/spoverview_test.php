@@ -99,7 +99,7 @@ class block_gu_spoverview_testcase extends advanced_testcase {
                         $assignments_tosubmit++;
                     }else{
                         if($assignment->duedate != 0 || $assignment->cutoffdate != 0
-                            || $assignment->extensionduedate != 0) {
+                            || $assignment->extensionduedate != 0 || ($assignment->duedate >= time() && $assignment->cutoffdate <= time())) {
                             $assignments_overdue++;
                         }
                     }
@@ -170,7 +170,7 @@ class block_gu_spoverview_testcase extends advanced_testcase {
                         $assignments_tosubmit++;
                     }else{
                         if($assignment->duedate != 0 || $assignment->cutoffdate != 0
-                            || $assignment->extensionduedate != 0) {
+                            || $assignment->extensionduedate != 0 || ($assignment->duedate >= time() && $assignment->cutoffdate <= time())) {
                             $assignments_overdue++;
                         }
                     }
