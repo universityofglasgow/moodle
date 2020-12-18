@@ -2,13 +2,15 @@ require(['jquery'], function($) { $(document).ready(function(){
     
     // Remove custom styles from topic sections
     
-    $("li.section ul.section *").each(function() {
+    $("ul.weeks li.section .content *").each(function() {
         $(this).removeAttr("style").removeAttr("bgcolor").removeAttr("style");
     });
     
-    // Remove custom styles from section summaries
+    $("ul.topics li.section .content *").each(function() {
+        $(this).removeAttr("style").removeAttr("bgcolor").removeAttr("style");
+    });
     
-    $("li.section div.summary *").each(function() {
+    $("ul.gtopics li.section .content *").each(function() {
         $(this).removeAttr("style").removeAttr("bgcolor").removeAttr("style");
     });
     

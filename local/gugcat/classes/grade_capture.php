@@ -49,13 +49,16 @@ class grade_capture{
         $captureitems = array();
         global $gradeitems, $firstgradeid;
         $gradeitems = array();
-        if($firstgradeid = local_gugcat::get_grade_item_id($course->id, $module->id, get_string('moodlegrade', 'local_gugcat'))){
-            $gradeitems = local_gugcat::get_grade_grade_items($course, $module);
-            //---------ids needed for grade discrepancy
-            $agreedgradeid = local_gugcat::get_grade_item_id($course->id, $module->id, get_string('gi_agreedgrade', 'local_gugcat'));
-            $secondgradeid = local_gugcat::get_grade_item_id($course->id, $module->id, get_string('gi_secondgrade', 'local_gugcat'));
-            $thirdgradeid = local_gugcat::get_grade_item_id($course->id, $module->id, get_string('gi_thirdgrade', 'local_gugcat'));    
-            
+        if(isset($module)){
+            grade_get_grades($course->id, 'mod', $module->modname, $module->instance, array_keys($students));
+            if($firstgradeid = local_gugcat::get_grade_item_id($course->id, $module->id, get_string('moodlegrade', 'local_gugcat'))){
+                $gradeitems = local_gugcat::get_grade_grade_items($course, $module);
+                //---------ids needed for grade discrepancy
+                $agreedgradeid = local_gugcat::get_grade_item_id($course->id, $module->id, get_string('gi_agreedgrade', 'local_gugcat'));
+                $secondgradeid = local_gugcat::get_grade_item_id($course->id, $module->id, get_string('gi_secondgrade', 'local_gugcat'));
+                $thirdgradeid = local_gugcat::get_grade_item_id($course->id, $module->id, get_string('gi_thirdgrade', 'local_gugcat'));    
+                
+            }
         }
         $i = 1;
         foreach ($students as $student) {
@@ -76,6 +79,8 @@ class grade_capture{
                 $gradecaptureitem->firstgrade = is_null($fg) ? get_string('nograde', 'local_gugcat') : local_gugcat::convert_grade($fg);
                 $gradecaptureitem->provisionalgrade = is_null($pg) ? get_string('nograde', 'local_gugcat') : local_gugcat::convert_grade($pg);
                 $agreedgrade = (!$agreedgradeid) ? null : (isset($gradeitems[$agreedgradeid]->grades[$student->id]) ? $gradeitems[$agreedgradeid]->grades[$student->id]->finalgrade : null);
+                $sndgrade = (!$secondgradeid) ? null : (isset($gradeitems[$secondgradeid]->grades[$student->id]) ? $gradeitems[$secondgradeid]->grades[$student->id]->finalgrade : null);
+                $trdgrade = (!$thirdgradeid) ? null : (isset($gradeitems[$thirdgradeid]->grades[$student->id]) ? $gradeitems[$thirdgradeid]->grades[$student->id]->finalgrade : null);
 
                 foreach ($gradeitems as $item) {
                     if($item->id != local_gugcat::$PRVGRADEID && $item->id != $firstgradeid){
@@ -88,7 +93,10 @@ class grade_capture{
                         //check grade discrepancy, compare to first grade and agreed grade
                         if(is_null($agreedgrade) && $fg){
                             if($item->id === $secondgradeid || $item->id === $thirdgradeid){
-                                $grdobj->discrepancy = is_null($rawgrade) ? false : (($rawgrade != $fg) ? true : false);
+                                $grdobj->discrepancy = is_null($rawgrade) ? false 
+                                : (($rawgrade != $fg) ? true //compare to first grade
+                                : ((!is_null($sndgrade) && $rawgrade != $sndgrade) ? true //compare to 2nd grade
+                                : ((!is_null($trdgrade) && $rawgrade != $trdgrade) ? true : false))); //compare to 3rd grade
                             }
                         }
                         if($grdobj->discrepancy){
@@ -133,12 +141,14 @@ class grade_capture{
      *
      */
     public static function release_prv_grade($courseid, $cm, $grades){
-        global $USER, $DB, $CFG;
+        global $USER, $CFG, $DB;
         $data = new stdClass();
         $data->courseid = $courseid;
         $data->itemmodule = $cm->modname;
         $data->itemname = $cm->name;
         $data->iteminstance = $cm->instance;
+        $gradeitemid = $cm->gradeitem->id;
+
         //get grade item
         $gradeitem = new grade_item($data, true);
         if($cm->modname === 'assign'){
@@ -148,20 +158,33 @@ class grade_capture{
         }
         foreach ($grades as $grd) {
             if(!empty($grd['provisional'])){
+                $userid = $grd['id'];
                 $rawgrade = array_search($grd['provisional'], local_gugcat::$GRADES);
                 $rawgrade = $rawgrade ? $rawgrade : $grd['provisional'];
-                $userid = $grd['id'];
+                switch ($rawgrade) {
+                    case CREDIT_WITHHELD:
+                        $feedback = CREDIT_WITHHELD_AC;
+                        $rawgrade = null;
+                        break;
+                    case MEDICAL_EXEMPTION:
+                        $feedback = MEDICAL_EXEMPTION_AC;
+                        $rawgrade = null;
+                        break;
+                    default:
+                        $feedback = null;
+                        break;
+                }
+                //update feedback field
+                $DB->set_field_select('grade_grades', 'feedback', $feedback, "itemid = $gradeitemid AND userid = $userid");
                 if($cm->modname === 'assign'){
-                    //update workflow state marking worklow is enabled
-                    if($is_workflow_enabled){
-                        local_gugcat::update_workflow_state($assign, $userid, ASSIGN_MARKING_WORKFLOW_STATE_RELEASED);
-                    }
-                    
                     // update assign grade
-                    if ($grade = $DB->get_record(local_gugcat::TBL_ASSIGN_GRADES, array('userid'=>$userid, 'assignment'=>$cm->instance))) {
+                    if ($grade = $assign->get_user_grade($userid, true)) {
+                        //update workflow state marking worklow is enabled
+                        if($is_workflow_enabled){
+                            local_gugcat::update_workflow_state($assign, $userid, ASSIGN_MARKING_WORKFLOW_STATE_RELEASED);
+                        }
                         $grade->grade = $rawgrade;
                         $grade->grader = $USER->id;
-                        $grade->workflowstate = ASSIGN_MARKING_WORKFLOW_STATE_RELEASED;
                         $assign->update_grade($grade); 
                     }
                     
@@ -176,8 +199,8 @@ class grade_capture{
         $gradeitem->update();
     }
 
-    public static function import_from_gradebook($courseid, $module, $students, $scaleid){
-        $mggradeitemid = local_gugcat::add_grade_item($courseid, get_string('moodlegrade', 'local_gugcat'), $module, $scaleid);
+    public static function import_from_gradebook($courseid, $module, $students){
+        $mggradeitemid = local_gugcat::add_grade_item($courseid, get_string('moodlegrade', 'local_gugcat'), $module);
 
         $gradeitem_ = new grade_item(array('id'=>$mggradeitemid), true);
         $gradeitem_->timemodified = time();

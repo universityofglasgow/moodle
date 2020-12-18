@@ -7,11 +7,13 @@ How to report bugs and make suggestions is described on the [community](../About
 
 ## Version 4.4
 
+1. Caching validation.
+2. Compiled PRTs.
+3. 4. CASText2.
+
 ## Maxima side PRTs.
 
-* Move all functions to Maxima.
 * Change behaviour of UnitsAbsolute in response to discussion of issue #448.
-* Make use of the Maxima function `sig_figs_from_str(strexp)` in utils.mac which returns the number of decimal places/significant figures in a variable (useful when providing feedback).  Needed for the refactoring.
 
 ## For "inputs 2"?
 
@@ -21,7 +23,6 @@ How to report bugs and make suggestions is described on the [community](../About
 * Update MCQ to accept units.
 * Add a base N check to the numeric input.
 * Refactor DB of 'insterStars' and remove stack_input_factory::convert_legacy_insert_stars.  Really use new values throughout.  See [Future plans for syntax of answers and STACK](Syntax_Future.md)
-* Refactor numerical answer tests to make proper use of ast.
 
 ## Other
 

@@ -47,12 +47,11 @@ class grade_aggregation{
         $rows = array();
         $gradebook = array();
         foreach ($modules as $mod) {
-            $scaleid = local_gugcat::get_scaleid($mod);
-            $mod->scaleid =  $scaleid;
+            $mod->scaleid = $mod->gradeitem->scaleid;
             $grades = new stdClass();
 
             //get provisional grades
-            $prvgrdid = local_gugcat::set_prv_grade_id($course->id, $mod, $scaleid);
+            $prvgrdid = local_gugcat::set_prv_grade_id($course->id, $mod);
             $sort = 'id';
             $fields = 'userid, itemid, id, finalgrade, timemodified';
             $grades->provisional = $DB->get_records('grade_grades', array('itemid' => $prvgrdid), $sort, $fields);

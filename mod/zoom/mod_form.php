@@ -47,9 +47,14 @@ class mod_zoom_mod_form extends moodleform_mod {
         global $PAGE, $USER;
         $config = get_config('mod_zoom');
         $PAGE->requires->js_call_amd("mod_zoom/form", 'init');
+
+        $isnew = empty($this->_cm);
+
         $service = new mod_zoom_webservice();
         $zoomuser = $service->get_user($USER->email);
-        if ($zoomuser === false) {
+
+        // If creating a new instance, but the Zoom user does not exist.
+        if ($isnew && $zoomuser === false) {
             // Assume user is using Zoom for the first time.
             $errstring = 'zoomerr_usernotfound';
             // After they set up their account, the user should continue to the page they were on.
@@ -57,24 +62,22 @@ class mod_zoom_mod_form extends moodleform_mod {
             zoom_fatal_error($errstring, 'mod_zoom', $nexturl, $config->zoomurl);
         }
 
-        // If updating, ensure we can get the meeting on Zoom.
-        $isnew = empty($this->_cm);
-
         // Array of emails and proper names of Moodle users in this course that
         // can add Zoom meetings, and the user can schedule.
         $scheduleusers = [];
 
-        // This will either be false (they can't) or the list of users they can schedule.
-        $canschedule = $service->get_schedule_for_users($USER->email);
-        $canschedule[$zoomuser->id] = new stdClass();
-        $canschedule[$zoomuser->id]->email = $USER->email;
+        $canschedule = false;
+        if ($zoomuser !== false) {
+            // Get the array of users they can schedule.
+            $canschedule = $service->get_schedule_for_users($USER->email);
+        }
+
         if (!empty($canschedule)) {
-            // Get list of schedule for users if supported.
-            // List of users who can use Zoom mod in this class.
-            // We can use $this->context as this is set either to the constructor
-            // or the activity's context if it is an existing activity. This is
-            // good as the cap could be overridden in the activity permissions.
-            $moodleusers = get_enrolled_users($this->context, 'mod/zoom:addinstance', 0, 'u.*', 'lastname');
+            // Add the current user.
+            $canschedule[$zoomuser->id] = new stdClass();
+            $canschedule[$zoomuser->id]->email = $USER->email;
+
+            // If the activity exists and the current user is not the current host.
             if (!$isnew && $zoomuser->id !== $this->current->host_id) {
                 // Get intersection of current host's schedulers and $USER's schedulers to prevent zoom errors.
                 $currenthostschedulers = $service->get_schedule_for_users($this->current->host_id);
@@ -86,6 +89,11 @@ class mod_zoom_mod_form extends moodleform_mod {
                 }
                 $canschedule = array_intersect_key($canschedule, $currenthostschedulers);
             }
+
+            // Get list of users who can add Zoom activities in this context.
+            $moodleusers = get_enrolled_users($this->context, 'mod/zoom:addinstance', 0, 'u.*', 'lastname');
+
+            // Check each potential host to see if they are a valid host.
             foreach ($canschedule as $zoomuserinfo) {
                 $zoomemail = strtolower($zoomuserinfo->email);
                 if (isset($scheduleusers[$zoomemail])) {
@@ -197,8 +205,17 @@ class mod_zoom_mod_form extends moodleform_mod {
         $regex = '/^[a-zA-Z0-9@_*-]{1,10}$/';
         $mform->addRule('meetingcode', get_string('err_invalid_password', 'mod_zoom'), 'regex', $regex, 'client');
         $mform->setDefault('meetingcode', strval(rand(100000, 999999)));
-        $mform->addRule('meetingcode', null, 'required', null, 'client');
+        $mform->disabledIf('meetingcode', 'requirepasscode', 'notchecked');
         $mform->addElement('static', 'passwordrequirements', '', get_string('err_password', 'mod_zoom'));
+
+        // Add password requirement prompt.
+        $mform->addElement('advcheckbox', 'requirepasscode', get_string('requirepasscode', 'zoom'));
+
+        if (isset($this->current->meetingcode) && strval($this->current->meetingcode) === "") {
+            $mform->setDefault('requirepasscode', 0);
+        } else {
+            $mform->setDefault('requirepasscode', 1);
+        }
 
         // Add host/participants video (checked by default).
         $mform->addGroup(array(
@@ -279,6 +296,7 @@ class mod_zoom_mod_form extends moodleform_mod {
 
         // Add standard elements, common to all modules.
         $this->standard_coursemodule_elements();
+        $this->apply_admin_defaults();
 
         // Add standard buttons, common to all modules.
         $this->add_action_buttons();
@@ -314,7 +332,7 @@ class mod_zoom_mod_form extends moodleform_mod {
         require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
         $service = new mod_zoom_webservice();
 
-        if (empty($data['meetingcode'])) {
+        if (!empty($data['requirepasscode']) && empty($data['meetingcode'])) {
             $errors['meetingcode'] = get_string('err_password_required', 'mod_zoom');
         }
         if (isset($data['schedule_for']) &&  $data['schedule_for'] !== $USER->email) {

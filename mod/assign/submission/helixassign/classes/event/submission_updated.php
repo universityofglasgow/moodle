@@ -63,15 +63,10 @@ class submission_updated extends \mod_assign\event\submission_updated {
     }
 
     /**
-     * Custom validation.
+     * Gets the object mapping
      *
-     * @throws \coding_exception
-     * @return void
+     * @return The object mapping
      */
-    protected function validate_data() {
-        parent::validate_data();
-    }
-
     public static function get_objectid_mapping() {
         // No mapping available for 'assignsubmission_helixassign'.
         return array('db' => 'assignsubmission_helixassign', 'restore' => \core\event\base::NOT_MAPPED);

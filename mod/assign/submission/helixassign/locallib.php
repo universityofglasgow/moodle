@@ -1,5 +1,18 @@
 <?php
-
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * This file contains the definition for the library class for helixassign submission plugin
@@ -14,14 +27,14 @@
 defined('MOODLE_INTERNAL') || die();
 global $CFG;
 
-require_once ($CFG->dirroot.'/mod/helixmedia/lib.php');
-require_once ($CFG->dirroot.'/mod/helixmedia/locallib.php');
+require_once($CFG->dirroot.'/mod/helixmedia/lib.php');
+require_once($CFG->dirroot.'/mod/helixmedia/locallib.php');
 
 /**
  * library class for helixassign submission plugin extending submission plugin base class
  *
  * @package assignsubmission_helixassign
- * 
+ *
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class assign_submission_helixassign extends assign_submission_plugin {
@@ -35,20 +48,20 @@ class assign_submission_helixassign extends assign_submission_plugin {
     }
 
 
-   /**
-    * Get helixassign submission information from the database
-    *
-    * @param  int $submissionid
-    * @return mixed
-    */
+    /**
+     * Get helixassign submission information from the database
+     *
+     * @param  int $submissionid
+     * @return mixed
+     */
     private function get_helixassign_submission($submissionid) {
         global $DB;
-        $aid=$this->assignment->get_instance()->id;
-        if ($aid)
-        {
-            $ret=$DB->get_record('assignsubmission_helixassign', array('assignment'=>$aid, 'submission'=>$submissionid));
-            if ($ret)
+        $aid = $this->assignment->get_instance()->id;
+        if ($aid) {
+            $ret = $DB->get_record('assignsubmission_helixassign', array('assignment' => $aid, 'submission' => $submissionid));
+            if ($ret) {
                 return $ret;
+            }
         }
 
         return false;
@@ -63,25 +76,22 @@ class assign_submission_helixassign extends assign_submission_plugin {
     public function get_settings(MoodleQuickForm $mform) {
         global $PAGE, $DB;
 
-        if (!has_capability('assignsubmission/helixassign:can_use', $PAGE->context))
-        {
-            $add=optional_param("add", "none", PARAM_TEXT);
-            if ($add=="none")
-            {
-                $aid=$this->assignment->get_instance()->id;
-                $pl_conf=$DB->get_record('assign_plugin_config',
-                    array('assignment'=>$aid, 'plugin'=>'helixassign', 'subtype'=>'assignsubmission', 'name'=>'enabled'));
+        if (!has_capability('assignsubmission/helixassign:can_use', $PAGE->context)) {
+            $add = optional_param("add", "none", PARAM_TEXT);
+            if ($add == "none") {
+                $aid = $this->assignment->get_instance()->id;
+                $plconf = $DB->get_record('assign_plugin_config',
+                    array('assignment' => $aid, 'plugin' => 'helixassign', 'subtype' => 'assignsubmission', 'name' => 'enabled'));
 
-                $disable='';
-                if (!$pl_conf->value)
-                    $disable='ha.checked=false;';
-            }
-            else
-            {
-                $disable='ha.checked=false;';
+                $disable = '';
+                if (!$plconf->value) {
+                    $disable = 'ha.checked=false;';
+                }
+            } else {
+                $disable = 'ha.checked=false;';
             }
 
-            $mform->addElement('html', 
+            $mform->addElement('html',
                 '<script type="text/javascript">'.
                 'var ha=document.getElementById("id_assignsubmission_helixassign_enabled");'.
                 $disable.
@@ -115,21 +125,21 @@ class assign_submission_helixassign extends assign_submission_plugin {
         if ($submission) {
             $helixassignsubmission = $this->get_helixassign_submission($submission->id);
             if ($helixassignsubmission) {
-                $preid=$helixassignsubmission->preid;
-                $param="e_assign=".$helixassignsubmission->preid;
+                $preid = $helixassignsubmission->preid;
+                $param = "e_assign=".$helixassignsubmission->preid;
                 $mform->setDefault('helixassign_preid', $helixassignsubmission->preid);
             }
         }
 
         if (!isset($param)) {
-            $preid=helixmedia_preallocate_id();
-            $param="n_assign=".$preid."&aid=".$PAGE->cm->id;
+            $preid = helixmedia_preallocate_id();
+            $param = "n_assign=".$preid."&aid=".$PAGE->cm->id;
             $mform->setDefault('helixassign_preid', $preid);
         }
 
-        $html=helixmedia_get_modal_dialog($preid, "type=".HML_LAUNCH_STUDENT_SUBMIT_THUMBNAILS."&".$param,
+        $html = helixmedia_get_modal_dialog($preid, "type=".HML_LAUNCH_STUDENT_SUBMIT_THUMBNAILS."&".$param,
                 "type=".HML_LAUNCH_STUDENT_SUBMIT."&".$param);
-        $html.="<script type='text/javascript'>\n".
+        $html .= "<script type='text/javascript'>\n".
             "document.addEventListener('DOMContentLoaded', function() {\n".
             "var cbtn=document.getElementById('id_cancel');\n".
             "if (cbtn!=null) {\n".
@@ -164,11 +174,11 @@ class assign_submission_helixassign extends assign_submission_plugin {
       * @param stdClass $data
       * @return bool
       */
-     public function save(stdClass $submission, stdClass $data) {
+    public function save(stdClass $submission, stdClass $data) {
         global $DB, $USER;
         $helixassignsubmission = $this->get_helixassign_submission($submission->id);
 
-        if ($data->helixassign_activated!=1) {
+        if ($data->helixassign_activated != 1) {
             return true;
         }
 
@@ -217,10 +227,10 @@ class assign_submission_helixassign extends assign_submission_plugin {
         } else {
             $helixassignsubmission = new stdClass();
             $helixassignsubmission->assignment = $this->assignment->get_instance()->id;
-            $pre_rec=$DB->get_record('helixmedia_pre', array('id'=>$data->helixassign_preid));
-            $helixassignsubmission->preid = $pre_rec->id;
-            $helixassignsubmission->submission= $submission->id;
-            $helixassignsubmission->servicesalt = $pre_rec->servicesalt;
+            $prerec = $DB->get_record('helixmedia_pre', array('id' => $data->helixassign_preid));
+            $helixassignsubmission->preid = $prerec->id;
+            $helixassignsubmission->submission = $submission->id;
+            $helixassignsubmission->servicesalt = $prerec->servicesalt;
             $helixassignsubmission->id = $DB->insert_record('assignsubmission_helixassign', $helixassignsubmission);
             $params['objectid'] = $helixassignsubmission->id;
             $event = \assignsubmission_helixassign\event\submission_created::create($params);
@@ -244,17 +254,16 @@ class assign_submission_helixassign extends assign_submission_plugin {
 
             global $PAGE;
 
-            $type=HML_LAUNCH_STUDENT_SUBMIT_PREVIEW;
-            $thumb_type=HML_LAUNCH_STUDENT_SUBMIT_THUMBNAILS;
-            if (has_capability('mod/assign:grade', $PAGE->context))
-            {
-                $type=HML_LAUNCH_VIEW_SUBMISSIONS;
-                $thumb_type=HML_LAUNCH_VIEW_SUBMISSIONS_THUMBNAILS;
+            $type = HML_LAUNCH_STUDENT_SUBMIT_PREVIEW;
+            $thumbtype = HML_LAUNCH_STUDENT_SUBMIT_THUMBNAILS;
+            if (has_capability('mod/assign:grade', $PAGE->context)) {
+                $type = HML_LAUNCH_VIEW_SUBMISSIONS;
+                $thumbtype = HML_LAUNCH_VIEW_SUBMISSIONS_THUMBNAILS;
             }
 
-            $param="e_assign=".$helixassignsubmission->preid."&userid=".$submission->userid;
+            $param = "e_assign=".$helixassignsubmission->preid."&userid=".$submission->userid;
             return helixmedia_get_modal_dialog($helixassignsubmission->preid,
-                "type=".$thumb_type."&".$param,
+                "type=".$thumbtype."&".$param,
                 "type=".$type."&".$param, "margin-left:auto;margin-right:auto;",
                 get_string('view_submission', 'assignsubmission_helixassign'), -1, -1, -1, "false");
         }
@@ -278,12 +287,11 @@ class assign_submission_helixassign extends assign_submission_plugin {
 
             global $PAGE;
 
-            $type=HML_LAUNCH_STUDENT_SUBMIT_PREVIEW;
-            $thumb_type=HML_LAUNCH_STUDENT_SUBMIT_THUMBNAILS;
-            if (has_capability('mod/assign:grade', $PAGE->context))
-            {
-                $type=HML_LAUNCH_VIEW_SUBMISSIONS;
-                $thumb_type=HML_LAUNCH_VIEW_SUBMISSIONS_THUMBNAILS;
+            $type = HML_LAUNCH_STUDENT_SUBMIT_PREVIEW;
+            $thumbtype = HML_LAUNCH_STUDENT_SUBMIT_THUMBNAILS;
+            if (has_capability('mod/assign:grade', $PAGE->context)) {
+                $type = HML_LAUNCH_VIEW_SUBMISSIONS;
+                $thumbtype = HML_LAUNCH_VIEW_SUBMISSIONS_THUMBNAILS;
             }
 
             $splitline = false;
@@ -291,9 +299,9 @@ class assign_submission_helixassign extends assign_submission_plugin {
                  $splitline = true;
             }
 
-            $param="e_assign=".$helixassignsubmission->preid."&userid=".$submission->userid;
+            $param = "e_assign=".$helixassignsubmission->preid."&userid=".$submission->userid;
             return helixmedia_get_modal_dialog($helixassignsubmission->preid,
-                "type=".$thumb_type."&".$param,
+                "type=".$thumbtype."&".$param,
                 "type=".$type."&".$param, "margin-left:auto;margin-right:auto;",
                 "moodle-lti-viewsub-btn.png", "", "", -1, "false", true);
         }
@@ -302,7 +310,7 @@ class assign_submission_helixassign extends assign_submission_plugin {
             .get_string('nosubmission', 'assignsubmission_helixassign')."</p></div>";
     }
 
-     /**
+    /**
      * Return true if this plugin can upgrade an old Moodle 2.2 assignment of this type and version.
      *
      * @param string $type old assignment subtype
@@ -357,14 +365,14 @@ class assign_submission_helixassign extends assign_submission_plugin {
      */
     public function delete_instance() {
         global $DB;
-        // will throw exception on failure
-        $DB->delete_records('assignsubmission_helixassign', array('assignment'=>$this->assignment->get_instance()->id));
+        // Will throw exception on failure.
+        $DB->delete_records('assignsubmission_helixassign', array('assignment' => $this->assignment->get_instance()->id));
 
         return true;
     }
 
     /**
-     * Has anything been submitted? 
+     * Has anything been submitted?
      *
      * @param stdClass $submission
      * @return bool
@@ -378,7 +386,6 @@ class assign_submission_helixassign extends assign_submission_plugin {
 
         return true;
     }
-
 }
 
 

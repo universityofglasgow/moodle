@@ -1,0 +1,65 @@
+/* Table style */
+.table {
+    margin-bottom: 0;
+    font-size: 80%;
+    text-align: center;
+}
+
+.table thead th, .table td{
+    vertical-align: middle;
+}
+
+.table td{
+    padding: .30rem;
+}
+
+th {
+    background-color: #005c8a;
+    color: white;
+    font-weight: 500;
+}
+
+tr:nth-child(even) {
+    background-color: #e6eaee;
+}
+
+/* Tab Links style */
+.tablink {
+    border-radius: .5em .5em 0 0 ;
+    background-color: #c4c4c4;
+    border: 0;
+    outline: none;
+    cursor: pointer;
+    padding: 14px 16px;
+    width: auto;
+    font-weight: bold;
+}
+
+.tablink:hover {
+    opacity: 0.8;
+}
+
+.tablink.active {
+    background-color: #005c8a;
+    color: white;
+}
+
+/* Tab Content style */
+.tabcontent {
+    border: 1px solid black;
+    border-radius: 0 1em 0 0 ;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Tab Content Header style */
+
+.tabcontent-header {
+    padding: 1.5em;
+}
+
+button.tablink, button.tablink:focus{
+    outline: 0;
+    box-shadow: none;
+    border: 0;
+}
