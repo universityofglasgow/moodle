@@ -35,6 +35,7 @@ class local_gugcat_testcase extends advanced_testcase {
 
     public function setUp() {
         $this->resetAfterTest();
+        global $DB;
 
         $gen = $this->getDataGenerator();
         $this->student = $gen->create_user();
@@ -58,6 +59,11 @@ class local_gugcat_testcase extends advanced_testcase {
         'iteminfo' => $this->cm->id, 
         'itemname' => get_string('provisionalgrd', 'local_gugcat')
         ]), false);
+
+        $DB->insert_record('grade_grades', array(
+            'itemid' => $this->gradeitem->id,
+            'userid' => $this->student->id
+        ));
     }
 
     public function test_get_grade_categories() {
@@ -127,5 +133,45 @@ class local_gugcat_testcase extends advanced_testcase {
         $gradeitemid = local_gugcat::add_grade_item($this->course->id, $sndgradestr, $this->cm);
         $id = local_gugcat::get_grade_item_id($this->course->id, $this->cm->id, $sndgradestr);
         $this->assertEquals($gradeitemid, $id);
+    }
+
+    public function test_add_grade(){
+        global $gradeitems, $prvgradeid;
+        $gradeitems = array();
+        $expectedgrade = '5.00000';
+        $prvgradeid = $this->provisionalgi->id;
+        grade_capture::get_rows($this->course, $this->cm, $this->students);
+        $mggradeitemstr = get_string('moodlegrade', 'local_gugcat');
+        $mggradeitem = local_gugcat::add_grade_item($this->course->id, $mggradeitemstr, $this->cm); 
+        local_gugcat::add_update_grades($this->student->id, $mggradeitem, $expectedgrade);
+        $firstrows = grade_capture::get_rows($this->course, $this->cm, $this->students);
+        $firstrow = $firstrows[0];
+        $this->assertEquals($firstrow->firstgrade, $expectedgrade);
+    }
+
+    public function test_add_grade_notes(){
+        global $gradeitems, $prvgradeid, $DB;
+        $gradeitems = array();
+        $expectednotes = 'testnote';
+        $prvgradeid = $this->provisionalgi->id;
+        grade_capture::get_rows($this->course, $this->cm, $this->students);
+        $mggradeitemstr = get_string('moodlegrade', 'local_gugcat');
+        $mggradeitem = local_gugcat::add_grade_item($this->course->id, $mggradeitemstr, $this->cm); 
+        local_gugcat::add_update_grades($this->student->id, $mggradeitem, '5.00000', $expectednotes);
+        $notes = $DB->get_field('grade_grades', 'feedback', array('userid'=>$this->student->id, 'itemid'=>$mggradeitem));
+        $this->assertEquals($notes, $expectednotes);
+    }
+
+    public function test_add_grade_document(){
+        global $gradeitems, $prvgradeid, $DB;
+        $gradeitems = array();
+        $documentitemid = '524106396';
+        $prvgradeid = $this->provisionalgi->id;
+        grade_capture::get_rows($this->course, $this->cm, $this->students);
+        $mggradeitemstr = get_string('moodlegrade', 'local_gugcat');
+        $mggradeitem = local_gugcat::add_grade_item($this->course->id, $mggradeitemstr, $this->cm); 
+        local_gugcat::add_update_grades($this->student->id, $mggradeitem, '5.00000', null, $documentitemid);
+        $notes = $DB->get_field('grade_grades', 'information', array('userid'=>$this->student->id, 'itemid'=>$mggradeitem));
+        $this->assertEquals($notes, $documentitemid);
     }
 }
