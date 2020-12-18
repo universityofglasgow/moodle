@@ -46,7 +46,7 @@ $PAGE->set_course($course);
 $PAGE->set_heading($course->fullname);
 
 $coursecontext = context_course::instance($course->id);
-$students = get_enrolled_users($coursecontext, 'mod/coursework:submit');
+$students = get_enrolled_users($coursecontext, 'moodle/competency:coursecompetencygradable');
 $activities = local_gugcat::get_activities($courseid);
 
 $rows = grade_aggregation::get_rows($course, $activities, $students);
