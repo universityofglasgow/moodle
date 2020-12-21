@@ -68,7 +68,7 @@
 }
 
 .status-contribute,
-.status-tosubmit {
+.status-submit {
     background-color: #183;
     border-color: #183;
     color: #fff;
@@ -92,4 +92,16 @@
 
 .extended {
     color: #f46;
+}
+
+.header-sortable {
+    cursor: pointer;
+}
+
+.rotateimg180 {
+    -webkit-transform:rotate(180deg);
+    -moz-transform: rotate(180deg);
+    -ms-transform: rotate(180deg);
+    -o-transform: rotate(180deg);
+    transform: rotate(180deg);
 }

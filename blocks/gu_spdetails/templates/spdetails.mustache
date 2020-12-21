@@ -16,13 +16,20 @@
 }}
 {{#hasassessments}}
     <div class="assessments-details-container table-responsive">
-        <table class="table assessments-table">
+        <table class="table assessments-table" id="block_spdetails_table">
             <thead>
                 <tr>
-                    <th scope="col">{{header_course}}</th>
+                    <th scope="col" class="header-sortable" onclick="sortByCourse(this)">
+                        {{header_course}}
+                        <img src="{{downarrow_img}}" id="gu_spdetails_tableheader_course">
+                    </th>
                     <th scope="col">{{header_assessment}}</th>
+                    <th scope="col">{{header_type}}</th>
                     <th scope="col">{{header_weight}}</th>
-                    <th scope="col">{{header_duedate}}</th>
+                    <th scope="col" class="header-sortable" onclick="sortByDate(this)" id="gu_spdetails_tableheader_duedate">
+                        {{header_duedate}}
+                        <img src="{{downarrow_img}}">
+                    </th>
                     <th scope="col">{{header_status}}</th>
                     <th scope="col">{{header_grade}}</th>
                     <th scope="col">{{header_feedback}}</th>
@@ -42,7 +49,13 @@
                             </a>
                         </td>
                         <td>
+                            {{assessment.categoryname}}
+                        </td>
+                        <td>
                             {{formatted.weight}}
+                        </td>
+                        <td style="display:none;">
+                            {{assessment.actualduedate}}
                         </td>
                         <td>
                             {{#assessment.hasextension}} 

@@ -47,13 +47,13 @@ class block_gu_spdetails extends block_base {
      * @return stdClass contents of block
      */
     public function get_content() {
-        global  $USER, $OUTPUT;
+        global $CFG, $USER, $OUTPUT;
         $lang = 'block_gu_spdetails';
         $userid = $USER->id;
 
         $courses = enrol_get_all_users_courses($userid, true);
         $courseids = array_column($courses, 'id');
-        $activities = array('assign', 'quiz', 'survey', 'wiki', 'workshop');
+        $activities = array('assign', 'quiz', 'workshop');
 
         $assessments = (count($courseids) > 0) ? self::retrieve_assessments($courseids, $activities) :
                                                  array();
@@ -66,6 +66,11 @@ class block_gu_spdetails extends block_base {
             $a->courserecord->url = self::return_courseurl($a->course);
 
             $a->assessment = self::retrieve_assessmentrecord($a->name, $a->instance, $userid);
+            $a->assessment->categoryname = property_exists($a->assessment, 'categoryname') ?
+                                           (($a->assessment->categoryname != '?') ?
+                                           $a->assessment->categoryname :
+                                           get_string('emptyvalue', $lang)) :
+                                           get_string('emptyvalue', $lang);
             $a->assessment->startdate = property_exists($a->assessment, 'startdate') ? $a->assessment->startdate : null;
             $a->assessment->duedate = property_exists($a->assessment, 'duedate') ? $a->assessment->duedate : null;
             $a->assessment->overrideduedate = property_exists($a->assessment, 'overrideduedate') ? $a->assessment->overrideduedate : null;
@@ -82,50 +87,32 @@ class block_gu_spdetails extends block_base {
             $a->formatted = new stdClass();
             $a->grades = new stdClass();
             $a->feedback = new stdClass();
-            if ($a->name == 'wiki' || $a->name == 'forum'){
-                if ($a->completionexpected == 0){
-                    $a->formatted->duedate = get_string('emptyvalue', $lang);
-                } else {
-                    $a->formatted->duedate = ($a->assessment->actualduedate) ?
-                                             userdate($a->assessment->actualduedate,  get_string('convertdate', $lang)) :
-                                             get_string('emptyvalue', $lang);
-                }
-
-                $a->formatted->weight = get_string('emptyvalue', $lang);
-                $a->grades->gradetext = get_string('emptyvalue', $lang);
-                $a->feedback->text = get_string('emptyvalue', $lang);
-                $a->submission = new stdClass();
-                $a->submission->status = get_string('status_contribute', $lang);
-                $a->submission->suffix = get_string('status_contribute', $lang);
-                $a->submission->hasurl = true;
-            } else {
-                $a->formatted->weight = ($a->assessment->weight) ? (($a->assessment->weight) * 100).'%' :
-                                         get_string('emptyvalue', $lang);
-                $a->formatted->duedate = ($a->assessment->actualduedate) ?
-                                         userdate($a->assessment->actualduedate,  get_string('convertdate', $lang)) :
-                                         get_string('emptyvalue', $lang);
-                $a->formatted->extensionduedate = ($a->assessment->extensionduedate) ?
-                                                  userdate($a->assessment->extensionduedate,  get_string('convertdate', $lang)) :
-                                                  null;
-                $a->grades = self::retrieve_grades($a->name, $a->assessment->gradeid, $userid);
-                if ($a->name == 'quiz') {
-                    $a->grades->feedback = $a->assessment->feedback;
-                }
-                $a->grades->finalgrade = property_exists($a->grades, 'finalgrade') ? $a->grades->finalgrade : null;
-                $a->assessment->gradeid = array_key_exists('gradeid', $a->assessment) ? $a->assessment->gradeid : null;
-                $a->grades->feedback = property_exists($a->grades, 'feedback') ? $a->grades->feedback : null;
-                $a->grades->gradetext = ($a->assessment->gradingduedate) ?
-                                        self::return_grade($a->grades->finalgrade, $a->assessment->gradingduedate) :
+            $a->formatted->weight = ($a->assessment->weight) ? (($a->assessment->weight) * 100).'%' :
                                         get_string('emptyvalue', $lang);
-                $a->feedback = ($a->assessment->gradingduedate) ?
-                               self::return_feedback($a->grades->feedback, $a->assessment->gradingduedate) :
-                               get_string('emptyvalue', $lang);
-
-                $a->submission = self::return_status($submission->status,
-                                                     $a->assessment->startdate,
-                                                     $a->assessment->duedate,
-                                                     $a->grades->finalgrade);
+            $a->formatted->duedate = ($a->assessment->actualduedate) ?
+                                        userdate($a->assessment->actualduedate,  get_string('convertdate', $lang)) :
+                                        get_string('emptyvalue', $lang);
+            $a->formatted->extensionduedate = ($a->assessment->extensionduedate) ?
+                                                userdate($a->assessment->extensionduedate,  get_string('convertdate', $lang)) :
+                                                null;
+            $a->grades = self::retrieve_grades($a->name, $a->assessment->gradeid, $userid);
+            if ($a->name == 'quiz') {
+                $a->grades->feedback = $a->assessment->feedback;
             }
+            $a->grades->finalgrade = property_exists($a->grades, 'finalgrade') ? $a->grades->finalgrade : null;
+            $a->assessment->gradeid = array_key_exists('gradeid', $a->assessment) ? $a->assessment->gradeid : null;
+            $a->grades->feedback = property_exists($a->grades, 'feedback') ? $a->grades->feedback : null;
+            $a->grades->gradetext = ($a->assessment->gradingduedate) ?
+                                    self::return_grade($a->grades->finalgrade, $a->assessment->gradingduedate) :
+                                    get_string('emptyvalue', $lang);
+            $a->feedback = ($a->assessment->gradingduedate) ?
+                            self::return_feedback($a->grades->feedback, $a->assessment->gradingduedate) :
+                            get_string('emptyvalue', $lang);
+
+            $a->submission = self::return_status($submission->status,
+                                                    $a->assessment->startdate,
+                                                    $a->assessment->duedate,
+                                                    $a->grades->finalgrade);
             $a->assessment->url = self::return_assessmenturl($a->name, $a->id, $a->submission->hasurl);
 
             array_push($assessments_data, $a);
@@ -137,17 +124,25 @@ class block_gu_spdetails extends block_base {
             'hasassessments'    => $hasassessments,
             'header_course'     => get_string('header_course', $lang),
             'header_assessment' => get_string('header_assessment', $lang),
+            'header_type'       => get_string('header_type', $lang),
             'header_weight'     => get_string('header_weight', $lang),
             'header_duedate'    => get_string('header_duedate', $lang),
             'header_status'     => get_string('header_status', $lang),
             'header_grade'      => get_string('header_grade', $lang),
             'header_feedback'   => get_string('header_feedback', $lang),
             'noassessments'     => get_string('noassessments', $lang),
-            'noassessments_img' => '../blocks/gu_spdetails/pix/assignment.svg'
+            'noassessments_img' => '../blocks/gu_spdetails/pix/assignment.svg',
+            'downarrow_img'     => '../blocks/gu_spdetails/pix/down-arrow.svg'
         ];
 
         $this->content         = new stdClass();
         $this->content->text   = $OUTPUT->render_from_template('block_gu_spdetails/spdetails', $templatecontext);
+
+        //adding js/css file
+        global $PAGE;
+
+        $PAGE->requires->js( new moodle_url($CFG->wwwroot . '/blocks/gu_spdetails/lib.js'));
+        $PAGE->requires->css('/blocks/gu_spdetails/styles.css');
      
         return $this->content;
     }
@@ -218,10 +213,13 @@ class block_gu_spdetails extends block_base {
                         mgi.id as `gradeid`, mgi.aggregationcoef as `weight`,
                         mao.allowsubmissionsfromdate as `overridestartdate`,
                         mao.duedate as `overrideduedate`,
-                        mao.cutoffdate as `overridecutoffdate`
+                        mao.cutoffdate as `overridecutoffdate`,
+                        mgc.fullname as `categoryname`
                         FROM `". $CFG->prefix ."assign` ma
                         JOIN `". $CFG->prefix ."grade_items` mgi
                         ON mgi.iteminstance = ma.id AND mgi.itemmodule = ?
+                        JOIN `". $CFG->prefix ."grade_categories` mgc
+						ON mgc.id = mgi.categoryid AND mgc.courseid = mgi.courseid
                         LEFT JOIN `". $CFG->prefix ."assign_overrides` mao
                         ON mao.userid = ? AND mao.assignid = ?
                         WHERE ma.id = ?";
@@ -237,23 +235,21 @@ class block_gu_spdetails extends block_base {
                         mgi.aggregationcoef as `weight`, mgg.feedback,
                         mqo.timeopen as `overridestartdate`,
                         mqo.timeclose as `overrideduedate`,
-                        mqo.timelimit as `overridelimit`
+                        mqo.timelimit as `overridelimit`,
+                        mgc.fullname as `categoryname`
                         FROM `". $CFG->prefix ."quiz` mq
                         JOIN `". $CFG->prefix ."grade_items` mgi
                         ON mgi.iteminstance = mq.id AND mgi.itemmodule = ?
-                        JOIN `". $CFG->prefix ."grade_grades` mgg ON mgg.itemid = mgi.id
+                        JOIN `". $CFG->prefix ."grade_grades` mgg
+                        ON mgg.itemid = mgi.id
+                        JOIN `". $CFG->prefix ."grade_categories` mgc
+						ON mgc.id = mgi.categoryid AND mgc.courseid = mgi.courseid
                         LEFT JOIN `". $CFG->prefix ."quiz_overrides` mqo
                         ON mqo.userid = ? AND mqo.quiz = ?
                         WHERE mq.id = ?";
                 $assessmentrecord = ($assessmentrecord = $DB->get_record_sql($sql,
                                      array($name, $userid, $instance, $instance))) ?
                                      $assessmentrecord : new stdClass();
-                break;
-            case 'survey':
-                $assessmentrecord = $DB->get_record('survey', array('id' => $instance), 'name');
-                break;
-            case 'wiki':
-                $assessmentrecord = $DB->get_record('wiki', array('id' => $instance), 'name');
                 break;
             case 'workshop':
                 $assessmentrecord = $DB->get_record('workshop', array('id' => $instance),
@@ -326,12 +322,6 @@ class block_gu_spdetails extends block_base {
                 $statusrecord = new stdClass();
                 $statusrecord->status = $record ? 'submitted' : null ;
                 break;
-            case 'survey':
-                $record = $DB->get_record('survey_answers',
-                                                array('survey' => $instance, 'userid' => $userid));
-                $statusrecord = new stdClass();                             
-                $statusrecord->status = $record ? 'submitted' : null ;
-                break;
             case 'workshop':
                 $record = $DB->get_record('workshop_submissions',
                                                 array('workshopid' => $instance, 'authorid' => $userid));
@@ -367,9 +357,9 @@ class block_gu_spdetails extends block_base {
             $submission->suffix = ($grade) ? get_string('status_graded', $lang) : $status;
         }else{
             if(time() > $startdate && $enddate) {
-                $submission->status = (time() <= $enddate) ? get_string('status_tosubmit', $lang) :
+                $submission->status = (time() <= $enddate) ? get_string('status_submit', $lang) :
                                                              get_string('status_overdue', $lang);
-                $submission->suffix = (time() <= $enddate) ? get_string('class_tosubmit', $lang) :
+                $submission->suffix = (time() <= $enddate) ? get_string('status_submit', $lang) :
                                                              get_string('status_overdue', $lang);
                 $submission->hasurl = (time() <= $enddate) ? true : false;
             }else{
@@ -390,7 +380,6 @@ class block_gu_spdetails extends block_base {
      * @return stdClass $gradesrecord Grades object if the Activity has a corresponding
      *  Grade Grades table and a corresponding record is found, return empty object if no
      *  record is found.
-     *  Wiki and Survey has no grades.
      */
     public static function retrieve_grades($name, $gradeid, $userid) {
         global $DB;
