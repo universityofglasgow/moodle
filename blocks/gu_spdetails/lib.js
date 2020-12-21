@@ -1,7 +1,3 @@
-function alertShow(){
-    alert("js is working");
-}
-
 courseIsAscending = true;
 dateIsAscending = true;
 
