@@ -24,13 +24,13 @@
  */
 
 $string['class_notopen'] = 'notopen';
-$string['class_tosubmit'] = 'tosubmit';
 $string['convertdate'] = "%B %d";
 $string['due'] = 'Due ';
-$string['emptyvalue'] = '-';
+$string['emptyvalue'] = '—';
 $string['header_assessment'] = "Assessment";
 $string['header_course'] = "Course";
 $string['header_duedate'] = "Due Date";
+$string['header_type'] = "Assessment Type";
 $string['header_feedback'] = "Feedback";
 $string['header_grade'] = "Your Grade";
 $string['header_status'] = "Status";
@@ -45,4 +45,4 @@ $string['status_contribute'] = 'contribute';
 $string['status_graded'] = 'graded';
 $string['status_notopen'] = 'submission not open';
 $string['status_overdue'] = 'overdue';
-$string['status_tosubmit'] = 'submit assessment';
+$string['status_submit'] = 'submit';

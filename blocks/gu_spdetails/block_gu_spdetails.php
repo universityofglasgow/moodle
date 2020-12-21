@@ -47,7 +47,7 @@ class block_gu_spdetails extends block_base {
      * @return stdClass contents of block
      */
     public function get_content() {
-        global  $USER, $OUTPUT;
+        global $CFG, $USER, $OUTPUT;
         $lang = 'block_gu_spdetails';
         $userid = $USER->id;
 
@@ -66,6 +66,11 @@ class block_gu_spdetails extends block_base {
             $a->courserecord->url = self::return_courseurl($a->course);
 
             $a->assessment = self::retrieve_assessmentrecord($a->name, $a->instance, $userid);
+            $a->assessment->categoryname = property_exists($a->assessment, 'categoryname') ?
+                                           (($a->assessment->categoryname != '?') ?
+                                           $a->assessment->categoryname :
+                                           get_string('emptyvalue', $lang)) :
+                                           get_string('emptyvalue', $lang);
             $a->assessment->startdate = property_exists($a->assessment, 'startdate') ? $a->assessment->startdate : null;
             $a->assessment->duedate = property_exists($a->assessment, 'duedate') ? $a->assessment->duedate : null;
             $a->assessment->overrideduedate = property_exists($a->assessment, 'overrideduedate') ? $a->assessment->overrideduedate : null;
@@ -137,6 +142,7 @@ class block_gu_spdetails extends block_base {
             'hasassessments'    => $hasassessments,
             'header_course'     => get_string('header_course', $lang),
             'header_assessment' => get_string('header_assessment', $lang),
+            'header_type'       => get_string('header_type', $lang),
             'header_weight'     => get_string('header_weight', $lang),
             'header_duedate'    => get_string('header_duedate', $lang),
             'header_status'     => get_string('header_status', $lang),
@@ -225,10 +231,13 @@ class block_gu_spdetails extends block_base {
                         mgi.id as `gradeid`, mgi.aggregationcoef as `weight`,
                         mao.allowsubmissionsfromdate as `overridestartdate`,
                         mao.duedate as `overrideduedate`,
-                        mao.cutoffdate as `overridecutoffdate`
+                        mao.cutoffdate as `overridecutoffdate`,
+                        mgc.fullname as `categoryname`
                         FROM `". $CFG->prefix ."assign` ma
                         JOIN `". $CFG->prefix ."grade_items` mgi
                         ON mgi.iteminstance = ma.id AND mgi.itemmodule = ?
+                        JOIN `". $CFG->prefix ."grade_categories` mgc
+						ON mgc.id = mgi.categoryid AND mgc.courseid = mgi.courseid
                         LEFT JOIN `". $CFG->prefix ."assign_overrides` mao
                         ON mao.userid = ? AND mao.assignid = ?
                         WHERE ma.id = ?";
@@ -244,11 +253,15 @@ class block_gu_spdetails extends block_base {
                         mgi.aggregationcoef as `weight`, mgg.feedback,
                         mqo.timeopen as `overridestartdate`,
                         mqo.timeclose as `overrideduedate`,
-                        mqo.timelimit as `overridelimit`
+                        mqo.timelimit as `overridelimit`,
+                        mgc.fullname as `categoryname`
                         FROM `". $CFG->prefix ."quiz` mq
                         JOIN `". $CFG->prefix ."grade_items` mgi
                         ON mgi.iteminstance = mq.id AND mgi.itemmodule = ?
-                        JOIN `". $CFG->prefix ."grade_grades` mgg ON mgg.itemid = mgi.id
+                        JOIN `". $CFG->prefix ."grade_grades` mgg
+                        ON mgg.itemid = mgi.id
+                        JOIN `". $CFG->prefix ."grade_categories` mgc
+						ON mgc.id = mgi.categoryid AND mgc.courseid = mgi.courseid
                         LEFT JOIN `". $CFG->prefix ."quiz_overrides` mqo
                         ON mqo.userid = ? AND mqo.quiz = ?
                         WHERE mq.id = ?";
@@ -374,9 +387,9 @@ class block_gu_spdetails extends block_base {
             $submission->suffix = ($grade) ? get_string('status_graded', $lang) : $status;
         }else{
             if(time() > $startdate && $enddate) {
-                $submission->status = (time() <= $enddate) ? get_string('status_tosubmit', $lang) :
+                $submission->status = (time() <= $enddate) ? get_string('status_submit', $lang) :
                                                              get_string('status_overdue', $lang);
-                $submission->suffix = (time() <= $enddate) ? get_string('class_tosubmit', $lang) :
+                $submission->suffix = (time() <= $enddate) ? get_string('status_submit', $lang) :
                                                              get_string('status_overdue', $lang);
                 $submission->hasurl = (time() <= $enddate) ? true : false;
             }else{

@@ -24,6 +24,7 @@
                         <img src="{{downarrow_img}}" id="gu_spdetails_tableheader_course">
                     </th>
                     <th scope="col">{{header_assessment}}</th>
+                    <th scope="col">{{header_type}}</th>
                     <th scope="col">{{header_weight}}</th>
                     <th scope="col" class="header-sortable" onclick="sortByDate(this)" id="gu_spdetails_tableheader_duedate">
                         {{header_duedate}}
@@ -46,6 +47,9 @@
                             <a href="{{assessment.url}}">
                                 {{assessment.name}}
                             </a>
+                        </td>
+                        <td>
+                            {{assessment.categoryname}}
                         </td>
                         <td>
                             {{formatted.weight}}
