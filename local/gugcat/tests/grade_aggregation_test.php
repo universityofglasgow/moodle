@@ -47,13 +47,18 @@ class grade_aggregation_testcase extends advanced_testcase {
         $gen->enrol_user($this->student2->id, $this->course->id, 'student');
         $gen->enrol_user($this->teacher->id, $this->course->id, 'editingteacher');
         $this->students = get_enrolled_users($this->coursecontext, 'mod/coursework:submit');
-        $this->cm = $gen->create_module('assign', ['id'=> 1, 'course' => $this->course->id]);
-        $this->cm->modname = $this->cm->name;
-        $this->cm->instance = 1;
-        $this->cm->scaleid = 3;
+        $gen->create_module('assign', array('id' => 1, 'course' => $this->course->id));
+
+        $cm = local_gugcat::get_activities($this->course->id);
+        $key = key($cm);
+        $this->cm = $cm[$key];
+        $modinfo = get_fast_modinfo($this->course);
+        $cm_info = $modinfo->get_cm($this->cm->id);
+        $this->assign = new assign(context_module::instance($cm_info->id), $cm_info, $this->course->id);
     }
 
     public function test_grade_aggregation_rows() {
+        global $DB;
         $gen = $this->getDataGenerator();
         //create provisional grade item
         $this->provisionalgi = new grade_item($gen->create_grade_item([
@@ -62,22 +67,60 @@ class grade_aggregation_testcase extends advanced_testcase {
             'itemname' => get_string('provisionalgrd', 'local_gugcat')
             ]), false);
         // Give a prv grade to the students.
-        $this->provisionalgi->update_final_grade($this->student1->id, 5);
-        $this->provisionalgi->update_final_grade($this->student2->id, 10);
+        // $this->provisionalgi->update_final_grade($this->student1->id, 5);
+        // $this->provisionalgi->update_final_grade($this->student2->id, 10);
 
+        //add grades to students so  aggregation weight in grade_grades
+        $gradeitemid = $this->cm->gradeitem->id;
+        $user1 = $this->student1->id;
+        $user2 = $this->student2->id;
+        $data = [];
+        $data[] = [//1st student grade for main activity
+            'itemid' => $gradeitemid,
+            'userid' => $user1,
+            'excluded' => 0,
+            'rawgrade' => 17,
+            'finalgrade' => 17
+        ];
+        $data[] = [//2nd student grade for main activity 
+            'itemid' => $gradeitemid,
+            'userid' => $user2,
+            'excluded' => 0,
+            'rawgrade' => 22,
+            'finalgrade' => 22
+        ];
+        $data[] = [//1st student grade for provisional grade
+            'itemid' => $this->provisionalgi->id,
+            'userid' => $user1,
+            'excluded' => 1,
+            'rawgrade' => 5,
+            'finalgrade' => 5
+        ];
+        $data[] = [//2nd student grade for provisional grade
+            'itemid' => $this->provisionalgi->id,
+            'userid' => $user2,
+            'excluded' => 1,
+            'rawgrade' => 10,
+            'finalgrade' => 10
+        ];
+        $DB->insert_records('grade_grades', $data);
+        
         $modules = array($this->cm);
-
         $rows = grade_aggregation::get_rows($this->course, $modules, $this->students);
+        $expectedcompleted = "100%"; //expected completed percent since there's only one activity
         $this->assertCount(2, $rows);
         //assert each rows that it has the provisional grade
-        $row1 = $rows[0];
-        $this->assertEquals($row1->cnum, 1);
-        $this->assertEquals($row1->studentno, $this->student1->id);
-        $this->assertContains('5.00000', $row1->grades);
-        $row2 = $rows[1];
-        $this->assertEquals($row2->cnum, 2);
-        $this->assertEquals($row2->studentno, $this->student2->id);
-        $this->assertContains('10.00000', $row2->grades);
+        $row1 = $rows[1];
+        $this->assertEquals($row1->cnum, 2);
+        $this->assertEquals($row1->studentno, $this->student2->id);
+        $this->assertContains('10.00000', $row1->grades);
+        $this->assertEquals($row1->completed, $expectedcompleted);
+        $row2 = $rows[0];
+        $this->assertEquals($row2->cnum, 1);
+        $this->assertEquals($row2->studentno, $this->student1->id);
+        $this->assertContains('5.00000', $row2->grades);
+        $this->assertEquals($row2->completed, $expectedcompleted);
+
     }
 
 }
