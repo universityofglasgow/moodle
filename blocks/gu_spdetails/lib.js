@@ -36,10 +36,10 @@ function sortTable(index, isAscending = true) {
             shouldSwitch = false;
             x = rows[i].getElementsByTagName("TD")[index];
             y = rows[i + 1].getElementsByTagName("TD")[index];
-            if (isAscending && x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+            if (isAscending && x.innerText.toLowerCase() > y.innerText.toLowerCase()) {
                 shouldSwitch = true;
                 break;
-            } else if (!isAscending && x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()){
+            } else if (!isAscending && x.innerText.toLowerCase() < y.innerText.toLowerCase()){
                 shouldSwitch = true;
                 break;
             }
