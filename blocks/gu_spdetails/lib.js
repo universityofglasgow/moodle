@@ -2,7 +2,7 @@ courseIsAscending = true;
 dateIsAscending = true;
 
 function sortByDate(header){
-    sortTable(3, dateIsAscending);
+    sortTable(4, dateIsAscending);
     dateIsAscending = !dateIsAscending;
 
     headerIcon = header.lastElementChild;
