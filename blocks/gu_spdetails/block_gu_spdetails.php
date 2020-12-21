@@ -143,11 +143,18 @@ class block_gu_spdetails extends block_base {
             'header_grade'      => get_string('header_grade', $lang),
             'header_feedback'   => get_string('header_feedback', $lang),
             'noassessments'     => get_string('noassessments', $lang),
-            'noassessments_img' => '../blocks/gu_spdetails/pix/assignment.svg'
+            'noassessments_img' => '../blocks/gu_spdetails/pix/assignment.svg',
+            'downarrow_img'     => '../blocks/gu_spdetails/pix/down-arrow.svg'
         ];
 
         $this->content         = new stdClass();
         $this->content->text   = $OUTPUT->render_from_template('block_gu_spdetails/spdetails', $templatecontext);
+
+        //adding js/css file
+        global $PAGE;
+
+        $PAGE->requires->js( new moodle_url($CFG->wwwroot . '/blocks/gu_spdetails/lib.js'));
+        $PAGE->requires->css('/blocks/gu_spdetails/styles.css');
      
         return $this->content;
     }
