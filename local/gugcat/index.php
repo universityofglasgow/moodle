@@ -50,18 +50,30 @@ $coursecontext = context_course::instance($course->id);
 $activities = local_gugcat::get_activities($courseid);
 $selectedmodule = null;
 $groupid = 0;
+$groups = null;
 
 if(!empty($activities)){
     $mods = array_reverse($activities);
     $selectedmodule = is_null($activityid) ? array_pop($mods) : $activities[$activityid];
     $PAGE->set_cm($selectedmodule);
-    $groupid = $selectedmodule->groupingid;
+    $groupingid = $selectedmodule->groupingid;
+    $groups = groups_get_all_groups($course->id, $userid=0, $groupingid, $fields='g.*');
 
     $scaleid = $selectedmodule->gradeitem->scaleid;
     //populate $GRADES with scales
     local_gugcat::set_grade_scale($scaleid);
 }
-$students = get_enrolled_users($coursecontext, 'mod/assign:submit', $groupid);
+
+if (!empty($groups)){
+    $students = Array();
+    foreach ($groups as $group) {
+        $groupstudents = get_enrolled_users($coursecontext, 'moodle/competency:coursecompetencygradable', $group->id);
+        array_push($students, ...$groupstudents);
+    }
+}else{
+    $students = get_enrolled_users($coursecontext, 'moodle/competency:coursecompetencygradable', $groupid);
+}
+
 //populate $STUDENTS
 local_gugcat::$STUDENTS = $students;
 //populate provisional grade id and set it to static
