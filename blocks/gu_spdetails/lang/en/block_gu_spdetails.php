@@ -46,3 +46,6 @@ $string['status_graded'] = 'graded';
 $string['status_notopen'] = 'submission not open';
 $string['status_overdue'] = 'overdue';
 $string['status_submit'] = 'submit';
+$string['sort'] = "Sort by ";
+$string['sort_course'] = "Course";
+$string['sort_date'] = "Date";

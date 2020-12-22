@@ -16,6 +16,13 @@
 }}
 {{#hasassessments}}
     <div class="assessments-details-container table-responsive">
+        <div class="assessments-details-sort">
+            <label>{{sort}}</label>
+            <select oninput="sortTable(parseInt(this.value), true)">
+                <option value="0">{{sort_course}}</option>
+                <option value="4">{{sort_date}}</option>
+            </select>
+        </div>
         <table class="table assessments-table" id="block_spdetails_table">
             <thead>
                 <tr>

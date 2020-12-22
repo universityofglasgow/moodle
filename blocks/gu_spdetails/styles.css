@@ -105,3 +105,21 @@
     -o-transform: rotate(180deg);
     transform: rotate(180deg);
 }
+
+.assessments-details-sort {
+    padding: 0 7.5px;
+}
+
+.assessments-details-sort label {
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.assessments-details-sort select {
+    border-color: #eee;
+    border-radius: 8px;
+    color: #99a;
+    font-size: 14px;
+    margin-left: 15px;
+    padding: 10px;
+}

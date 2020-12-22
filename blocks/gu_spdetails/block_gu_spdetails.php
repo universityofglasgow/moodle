@@ -131,6 +131,9 @@ class block_gu_spdetails extends block_base {
             'header_grade'      => get_string('header_grade', $lang),
             'header_feedback'   => get_string('header_feedback', $lang),
             'noassessments'     => get_string('noassessments', $lang),
+            'sort'              => get_string('sort', $lang),
+            'sort_course'       => get_string('sort_course', $lang),
+            'sort_date'         => get_string('sort_date', $lang),
             'noassessments_img' => '../blocks/gu_spdetails/pix/assignment.svg',
             'downarrow_img'     => '../blocks/gu_spdetails/pix/down-arrow.svg'
         ];

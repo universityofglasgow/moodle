@@ -194,63 +194,70 @@ class block_gu_spdetails_testcase extends advanced_testcase {
     }
 
     public function test_retrieve_assessmentrecord(){
-        global $DB, $CFG;
+        global $DB, $CFG, $USER;
+        $userid = $USER->id;
 
-        $assignSQL = "SELECT ma.name,
-                            ma.allowsubmissionsfromdate as `startdate`,
-                            ma.duedate, ma.gradingduedate, mgi.id as `gradeid`,
-                            mgi.aggregationcoef as `weight`, mgi.aggregationcoef2 as `weight01`
-                            FROM `". $CFG->prefix ."assign` ma
-                            JOIN `". $CFG->prefix ."grade_items` mgi ON mgi.iteminstance = ma.id
-                            AND mgi.itemmodule = ?
-                            WHERE ma.id = ?";
+        $assignSQL = "SELECT ma.id, ma.name,
+                        ma.allowsubmissionsfromdate as `startdate`,
+                        ma.duedate, ma.cutoffdate, ma.gradingduedate,
+                        mgi.id as `gradeid`, mgi.aggregationcoef as `weight`,
+                        mao.allowsubmissionsfromdate as `overridestartdate`,
+                        mao.duedate as `overrideduedate`,
+                        mao.cutoffdate as `overridecutoffdate`,
+                        mgc.fullname as `categoryname`
+                        FROM `". $CFG->prefix ."assign` ma
+                        JOIN `". $CFG->prefix ."grade_items` mgi
+                        ON mgi.iteminstance = ma.id AND mgi.itemmodule = ?
+                        JOIN `". $CFG->prefix ."grade_categories` mgc
+                        ON mgc.id = mgi.categoryid AND mgc.courseid = mgi.courseid
+                        LEFT JOIN `". $CFG->prefix ."assign_overrides` mao
+                        ON mao.userid = ? AND mao.assignid = ?
+                        WHERE ma.id = ?";
 
-        $quizSQL = "SELECT DISTINCT mq.name,
-                            mq.timeopen as `startdate`,
-                            mq.timeclose as `duedate`,
-                            (mq.timeclose + (86400 * 14)) as `gradingduedate`,
-                            mgi.aggregationcoef as `weight`, mgi.aggregationcoef2 as `weight01`,
-                            mq.id as `gradeid`, mgg.feedback
-                            FROM `". $CFG->prefix ."quiz` mq
-                            JOIN `". $CFG->prefix ."grade_items` mgi ON mgi.iteminstance = mq.id
-                            AND mgi.itemmodule = ?
-                            JOIN `". $CFG->prefix ."grade_grades` mgg ON mgg.itemid = mgi.id
-                            WHERE mq.id = ?";
+        $quizSQL = "SELECT DISTINCT mq.id as `gradeid`, mq.name,
+                        mq.timeopen as `startdate`,
+                        mq.timeclose as `duedate`, mq.timelimit,
+                        (mq.timeclose + (86400 * 14)) as `gradingduedate`,
+                        mgi.aggregationcoef as `weight`, mgg.feedback,
+                        mqo.timeopen as `overridestartdate`,
+                        mqo.timeclose as `overrideduedate`,
+                        mqo.timelimit as `overridelimit`,
+                        mgc.fullname as `categoryname`
+                        FROM `". $CFG->prefix ."quiz` mq
+                        JOIN `". $CFG->prefix ."grade_items` mgi
+                        ON mgi.iteminstance = mq.id AND mgi.itemmodule = ?
+                        JOIN `". $CFG->prefix ."grade_grades` mgg
+                        ON mgg.itemid = mgi.id
+                        JOIN `". $CFG->prefix ."grade_categories` mgc
+                        ON mgc.id = mgi.categoryid AND mgc.courseid = mgi.courseid
+                        LEFT JOIN `". $CFG->prefix ."quiz_overrides` mqo
+                        ON mqo.userid = ? AND mqo.quiz = ?
+                        WHERE mq.id = ?";
 
         //assignment
-        $expectedAssign = $DB->get_record_sql($assignSQL, array('assign', $this->assign->id));
-        $assignReturn = $this->spdetails->retrieve_assessmentrecord('assign', $this->assign->id);
+        $expectedAssign = $DB->get_record_sql($assignSQL, array('assign', $userid, $this->assign->id, $this->assign->id));
+        $assignReturn = $this->spdetails->retrieve_assessmentrecord('assign', $this->assign->id, $userid);
         $this->assertEquals($assignReturn, $expectedAssign);
-        $this->assertEquals(new stdClass(), $this->spdetails->retrieve_assessmentrecord('assign', -1));
+        $this->assertEquals(new stdClass(), $this->spdetails->retrieve_assessmentrecord('assign', -1, $userid));
 
         //quiz
-        $expectedQuiz = $DB->get_record_sql($quizSQL, array('quiz', $this->quiz->id));
-        $quizReturn = $this->spdetails->retrieve_assessmentrecord('quiz', $this->quiz->id);
+        $expectedQuiz = $DB->get_record_sql($quizSQL, array('quiz', $userid, $this->quiz->id, $this->quiz->id));
+        $quizReturn = $this->spdetails->retrieve_assessmentrecord('quiz', $this->quiz->id, $userid);
         $this->assertEquals($quizReturn, $expectedQuiz);
-        $this->assertEquals(new stdClass(), $this->spdetails->retrieve_assessmentrecord('quiz', -1));
-
-        //survey
-        $expectedSurvey = $DB->get_record('survey', array('id' => $this->survey->id), 'name');
-        $surveyReturn = $this->spdetails->retrieve_assessmentrecord('survey', $this->survey->id);
-        $this->assertEquals($surveyReturn, $expectedSurvey);
-
-        //wiki
-        $expectedWiki = $DB->get_record('wiki', array('id' => $this->wiki->id), 'name');
-        $wikiReturn = $this->spdetails->retrieve_assessmentrecord('wiki', $this->wiki->id);
-        $this->assertEquals($wikiReturn, $expectedWiki);
+        $this->assertEquals(new stdClass(), $this->spdetails->retrieve_assessmentrecord('quiz', -1, $userid));
 
         //workshop
         $expectedWorkshop = $DB->get_record('workshop', array('id' => $this->workshop->id),
                                                                     'name, id as `gradeid`, submissionstart as `startdate`, ' .
                                                                     'submissionend as `duedate`, assessmentend as `gradingduedate`');
-        $workshopReturn = $this->spdetails->retrieve_assessmentrecord('workshop', $this->workshop->id);
+        $workshopReturn = $this->spdetails->retrieve_assessmentrecord('workshop', $this->workshop->id, $userid);
         $this->assertEquals($workshopReturn, $expectedWorkshop);
 
         //default (attendance)
         $expectedDefault1 = $DB->get_record('attendance', array('id' => $this->attendance->id), 'name');
-        $defaultReturn1 = $this->spdetails->retrieve_assessmentrecord('attendance', $this->attendance->id);
+        $defaultReturn1 = $this->spdetails->retrieve_assessmentrecord('attendance', $this->attendance->id, $userid);
         $this->assertEquals($defaultReturn1, $expectedDefault1);
-        $this->assertEquals(new stdClass(), $this->spdetails->retrieve_assessmentrecord('attendance', -1));
+        $this->assertEquals(new stdClass(), $this->spdetails->retrieve_assessmentrecord('attendance', -1, $userid));
     }
 
     public function test_return_courseurl(){
@@ -294,12 +301,6 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $this->assertEquals($returnedQuiz1->status, 'submitted');
         $this->assertEquals($returnedQuiz2->status, null);
 
-        //survey
-        $returnedSurvey1 = $this->spdetails->retrieve_submission('survey', $this->survey->id, $userid);
-        $returnedSurvey2 = $this->spdetails->retrieve_submission('survey', $this->notsubmittedsurvey->id, $userid);
-        $this->assertEquals($returnedSurvey1->status, 'submitted');
-        $this->assertEquals($returnedSurvey2->status, null);
-
         //workshop
         $returnedWorkshop1 = $this->spdetails->retrieve_submission('workshop', $this->workshop->id, $userid);
         $returnedWorkshop2 = $this->spdetails->retrieve_submission('workshop', $this->notsubmittedworkshop->id, $userid);
@@ -326,8 +327,8 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $submission2 = $this->spdetails->return_status('', time() - 1, time() + 1, 10);
         $expected2 = new stdClass();
         $expected2->hasurl = true;
-        $expected2->status = get_string('status_tosubmit', $lang);
-        $expected2->suffix = get_string('class_tosubmit', $lang);
+        $expected2->status = get_string('status_submit', $lang);
+        $expected2->suffix = get_string('status_submit', $lang);
 
         $this->assertEquals($submission2, $expected2);
 
