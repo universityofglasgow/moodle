@@ -136,7 +136,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
             $html .= html_writer::start_tag('div', array('class'=> 'col-md-3'));
             $html .= html_writer::tag('label', $gradeversion->itemname);
             $html .= html_writer::end_tag('div');
-            $html .= html_writer::div(local_gugcat::convert_grade($gradeversion->grades[$student->id]->finalgrade), 'col-md-9 form-inline felement');
+            $html .= html_writer::div(local_gugcat::convert_grade($gradeversion->grades[$student->id]->grade), 'col-md-9 form-inline felement');
             $html .= html_writer::end_tag('div');
         }
         $html .= html_writer::end_tag('div');
@@ -164,7 +164,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
             }
             $htmlrows .= '<td><i class="fa fa-times-circle"></i></td>';
             $htmlrows .= html_writer::tag('td', $row->completed);
-            $htmlrows .= html_writer::empty_tag('td');
+            $htmlrows .= html_writer::tag('td', $row->aggregatedgrade);
             $htmlrows .= html_writer::end_tag('tr');
         }
         $html = $this->header();

@@ -76,19 +76,19 @@ class grade_capture{
                 //get first grade and provisional grade
                 $gifg = $gradeitems[$firstgradeid]->grades;
                 $gipg = $gradeitems[intval(local_gugcat::$PRVGRADEID)]->grades;
-                $fg = (isset($gifg[$student->id])) ? $gifg[$student->id]->finalgrade : null;
-                $pg = (isset($gipg[$student->id])) ? $gipg[$student->id]->finalgrade : null;
+                $fg = (isset($gifg[$student->id])) ? $gifg[$student->id]->grade : null;
+                $pg = (isset($gipg[$student->id])) ? $gipg[$student->id]->grade : null;
                 $gradecaptureitem->firstgrade = is_null($fg) ? get_string('nograde', 'local_gugcat') : local_gugcat::convert_grade($fg);
                 $gradecaptureitem->provisionalgrade = is_null($pg) ? get_string('nograde', 'local_gugcat') : local_gugcat::convert_grade($pg);
-                $agreedgrade = (!$agreedgradeid) ? null : (isset($gradeitems[$agreedgradeid]->grades[$student->id]) ? $gradeitems[$agreedgradeid]->grades[$student->id]->finalgrade : null);
-                $sndgrade = (!$secondgradeid) ? null : (isset($gradeitems[$secondgradeid]->grades[$student->id]) ? $gradeitems[$secondgradeid]->grades[$student->id]->finalgrade : null);
-                $trdgrade = (!$thirdgradeid) ? null : (isset($gradeitems[$thirdgradeid]->grades[$student->id]) ? $gradeitems[$thirdgradeid]->grades[$student->id]->finalgrade : null);
+                $agreedgrade = (!$agreedgradeid) ? null : (isset($gradeitems[$agreedgradeid]->grades[$student->id]) ? $gradeitems[$agreedgradeid]->grades[$student->id]->grade : null);
+                $sndgrade = (!$secondgradeid) ? null : (isset($gradeitems[$secondgradeid]->grades[$student->id]) ? $gradeitems[$secondgradeid]->grades[$student->id]->grade : null);
+                $trdgrade = (!$thirdgradeid) ? null : (isset($gradeitems[$thirdgradeid]->grades[$student->id]) ? $gradeitems[$thirdgradeid]->grades[$student->id]->grade : null);
 
                 foreach ($gradeitems as $item) {
                     if($item->grades[$student->id]->hidden == 1)
                         $gradecaptureitem->hidden = true;
                     if($item->id != local_gugcat::$PRVGRADEID && $item->id != $firstgradeid){
-                        $rawgrade = (isset($item->grades[$student->id])) ? $item->grades[$student->id]->finalgrade : null; 
+                        $rawgrade = (isset($item->grades[$student->id])) ? $item->grades[$student->id]->grade : null; 
                         $grdobj = new stdClass();
                         $grade = is_null($rawgrade) ? 'N/A' : local_gugcat::convert_grade($rawgrade);
                         $grdobj->grade = $grade;

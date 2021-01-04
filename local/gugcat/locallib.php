@@ -102,11 +102,14 @@ class local_gugcat {
         $select = 'courseid = '.$course->id.' AND '.self::compare_iteminfo();
         $gradeitems = $DB->get_records_select(GRADE_ITEMS, $select, ['iteminfo' => $module->id]);
         $sort = 'id';
-        $fields = 'userid, itemid, id, finalgrade, timemodified, hidden';
+        $fields = 'userid, itemid, id, rawgrade, finalgrade, timemodified, hidden';
         foreach($gradeitems as $item) {
-            $item->grades = $DB->get_records(GRADE_GRADES, array('itemid' => $item->id), $sort, $fields);
+            $grades_arr = $DB->get_records(GRADE_GRADES, array('itemid' => $item->id), $sort, $fields);
+            foreach($grades_arr as $grditem) {
+                $grditem->grade = is_null($grditem->finalgrade) ? $grditem->rawgrade : $grditem->finalgrade;
+            }
+            $item->grades = $grades_arr;
         }
-        
         return $gradeitems;
     }
 
@@ -202,7 +205,7 @@ class local_gugcat {
         $grade_->userid = $userid;
         $grade_->rawgrade = $grade;
         $grade_->usermodified = $USER->id;
-        $grade_->finalgrade = $grade;
+        $grade_->finalgrade = self::is_admin_grade($grade) ? null : $grade;
         $grade_->feedback = $notes;
         $grade_->information = $gradedocs;
         $grade_->hidden = 0;
@@ -233,9 +236,10 @@ class local_gugcat {
         $grade_ = new grade_grade(array('userid' => $userid, 'itemid' => $itemid), true);
         $grade_->rawgrade = $grade;
         $grade_->usermodified = $USER->id;
-        $grade_->finalgrade = $grade;
+        $grade_->finalgrade = self::is_admin_grade($grade) ? null : $grade;
         $grade_->itemid = $itemid;
         $grade_->userid = $userid;
+        $grade_->excluded = 1;
         $grade_->timemodified = time();
         //update existing grade
         return $grade_->update();
@@ -254,7 +258,7 @@ class local_gugcat {
 
     public static function filter_grade_version($gradeitems, $studentid){
         foreach($gradeitems as $gradeitem){
-            $finalgrade = (isset($gradeitem->grades[$studentid]) ? $gradeitem->grades[$studentid]->finalgrade : null); 
+            $finalgrade = (isset($gradeitem->grades[$studentid]) ? $gradeitem->grades[$studentid]->grade : null); 
             if(is_null($finalgrade)) {
                 unset($gradeitems[$gradeitem->id]);
             }
@@ -300,5 +304,16 @@ class local_gugcat {
             $grd_ctgs[$key] = $cat;
         }
         return $grd_ctgs;
+    }
+
+    public static function is_admin_grade($grade){
+        switch ($grade) {
+            case NON_SUBMISSION:
+                return true;
+            case MEDICAL_EXEMPTION:
+                return true;
+            default:
+                return false;
+        }
     }
 }

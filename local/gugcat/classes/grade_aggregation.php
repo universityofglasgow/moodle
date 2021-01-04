@@ -55,7 +55,7 @@ class grade_aggregation{
             //get provisional grades
             $prvgrdid = local_gugcat::set_prv_grade_id($course->id, $mod);
             $sort = 'id';
-            $fields = 'userid, itemid, id, finalgrade, timemodified';
+            $fields = 'userid, itemid, id, rawgrade, finalgrade, timemodified';
             $grades->provisional = $DB->get_records(GRADE_GRADES, array('itemid' => $prvgrdid), $sort, $fields);
             //get grades from gradebook
             $gbgrades = grade_get_grades($course->id, 'mod', $mod->modname, $mod->instance, array_keys($students));
@@ -77,7 +77,9 @@ class grade_aggregation{
                 $grades = $item->grades;
                 $pg = isset($grades->provisional[$student->id]) ? $grades->provisional[$student->id] : null;
                 $gb = isset($grades->gradebook[$student->id]) ? $grades->gradebook[$student->id] : null;
-                $grd = (isset($pg) && !is_null($pg->finalgrade)) ? $pg->finalgrade : ((isset($gb) && !is_null($gb->grade)) ? $gb->grade : null);
+                $grd = (isset($pg) && !is_null($pg->finalgrade)) ? $pg->finalgrade 
+                : (isset($pg) && !is_null($pg->rawgrade) ? $pg->rawgrade 
+                : ((isset($gb) && !is_null($gb->grade)) ? $gb->grade : null));                
                 $scaleid = $item->scaleid;
                 if (is_null($scaleid) && local_gugcat::is_grademax22($item->gradeitem->gradetype, $item->gradeitem->grademax)){
                     $scaleid = local_gugcat::get_gcat_scaleid();
@@ -88,6 +90,7 @@ class grade_aggregation{
                     $gg = new grade_grade(array('userid'=>$student->id, 'itemid'=>$item->gradeitemid), true);
                     $floatweight += (float)$gg->get_aggregationweight();
                 }
+                $gradecaptureitem->aggregatedgrade = in_array(get_string('nograderecorded', 'local_gugcat'), $gradecaptureitem->grades) ? get_string('missinggrade', 'local_gugcat') : null;
                 $gradecaptureitem->nonsubmission = ($grade === NON_SUBMISSION_AC) ? true : false;
                 $gradecaptureitem->medicalexemption = ($grade === MEDICAL_EXEMPTION_AC) ? true : false;
                 array_push($gradecaptureitem->grades, $grade);
