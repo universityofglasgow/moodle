@@ -153,6 +153,12 @@ class grade_capture{
         $data->iteminstance = $cm->instance;
         $gradeitemid = $cm->gradeitem->id;
 
+        //set offset value for max 22 points grade
+        $gradescaleoffset = 0;
+        if (local_gugcat::is_grademax22($cm->gradeitem->gradetype, $cm->gradeitem->grademax)){
+            $gradescaleoffset = 1;
+        }
+
         //get grade item
         $gradeitem = new grade_item($data, true);
         if($cm->modname === 'assign'){
@@ -182,6 +188,7 @@ class grade_capture{
                         $is_non_sub = false;
                         $feedback = null;
                         $excluded = 0;
+                        $rawgrade = $rawgrade - $gradescaleoffset;
                         break;
                 }
                 //update feedback and excluded field
@@ -222,6 +229,10 @@ class grade_capture{
         $gradeitem_->update();
         $grade = null;
         $gbgrades = grade_get_grades($courseid, 'mod', $module->modname, $module->instance, array_keys($students));
+        $gradescaleoffset = 0;
+        if (local_gugcat::is_grademax22($module->gradeitem->gradetype, $module->gradeitem->grademax)){
+            $gradescaleoffset = 1;
+        }
 
         foreach($students as $student){
             $gbg = $gbgrades->items[0]->grades[$student->id];//gradebook grade record
@@ -242,11 +253,11 @@ class grade_capture{
             if(strcmp($module->modname, 'assign') == 0){
                 $assign = new assign(context_module::instance($module->id), $module, $courseid);
                 $asgrd = $assign->get_user_grade($student->id, false);
-                $grade = !is_null($admingrade) ? $admingrade : (($asgrd) ? $asgrd->grade : null);
+                $grade = !is_null($admingrade) ? $admingrade : (($asgrd) ? ($asgrd->grade +  $gradescaleoffset) : null);
                 local_gugcat::update_workflow_state($assign, $student->id, ASSIGN_MARKING_WORKFLOW_STATE_INREVIEW);
             }else{
                 $gbgrade = $gbg->grade;
-                $grade = !is_null($admingrade) ? $admingrade : ((isset($gbgrade)) ? $gbgrade : null);
+                $grade = !is_null($admingrade) ? $admingrade : ((isset($gbgrade)) ? ($gbgrade + $gradescaleoffset) : null);
             }
             local_gugcat::update_grade($student->id, $mggradeitemid, $grade);
             local_gugcat::update_grade($student->id, local_gugcat::$PRVGRADEID, $grade);
