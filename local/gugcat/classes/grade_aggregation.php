@@ -78,7 +78,11 @@ class grade_aggregation{
                 $pg = isset($grades->provisional[$student->id]) ? $grades->provisional[$student->id] : null;
                 $gb = isset($grades->gradebook[$student->id]) ? $grades->gradebook[$student->id] : null;
                 $grd = (isset($pg) && !is_null($pg->finalgrade)) ? $pg->finalgrade : ((isset($gb) && !is_null($gb->grade)) ? $gb->grade : null);
-                local_gugcat::set_grade_scale($item->scaleid);
+                $scaleid = $item->scaleid;
+                if (empty($scaleid) && local_gugcat::is_grademax22($item->gradeitem->gradetype, $item->gradeitem->grademax)){
+                    $scaleid = local_gugcat::get_gcat_scaleid();
+                }
+                local_gugcat::set_grade_scale($scaleid);
                 $grade = is_null($grd) ? get_string('nograderecorded', 'local_gugcat') : local_gugcat::convert_grade($grd);
                 if(!is_null($grd) && $grade !== NON_SUBMISSION_AC && $grade !== MEDICAL_EXEMPTION_AC){
                     $gg = new grade_grade(array('userid'=>$student->id, 'itemid'=>$item->gradeitemid), true);

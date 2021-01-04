@@ -60,6 +60,14 @@ if(!empty($activities)){
     $groups = groups_get_all_groups($course->id, $userid=0, $groupingid, $fields='g.*');
 
     $scaleid = $selectedmodule->gradeitem->scaleid;
+    if (empty($scaleid)){
+        $gradetype = $selectedmodule->gradeitem->gradetype;
+        $grademax = $selectedmodule->gradeitem->grademax;
+        if (local_gugcat::is_grademax22($gradetype, $grademax)){
+            $scaleid = local_gugcat::get_gcat_scaleid();
+        }        
+    }
+
     //populate $GRADES with scales
     local_gugcat::set_grade_scale($scaleid);
 }

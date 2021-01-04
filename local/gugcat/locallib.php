@@ -35,6 +35,8 @@ define('MEDICAL_EXEMPTION_AC', 'MV');
 define('NON_SUBMISSION', -1);
 define('MEDICAL_EXEMPTION', -2);
 
+define('GCAT_SCALE', 'UofG 22-Point Scale (Do NOT use if you are grading in Feedback Studio)');
+
 require_once($CFG->libdir.'/gradelib.php');
 require_once($CFG->dirroot . '/grade/querylib.php');
 require_once($CFG->libdir.'/grade/grade_item.php');
@@ -107,6 +109,15 @@ class local_gugcat {
         return $gradeitems;
     }
 
+    /**
+     * Returns the scale id used for GCAT
+     */
+    public static function get_gcat_scaleid(){
+        global $DB;
+        $gcat_scale = $DB->get_record('scale', array('name' => GCAT_SCALE, 'courseid' => '0'),'id');
+        return $gcat_scale->id;
+    }
+
     public static function compare_iteminfo(){
         global $DB;
         return $DB->sql_compare_text('iteminfo') . ' = :iteminfo';
@@ -130,6 +141,13 @@ class local_gugcat {
         return $DB->get_field_select(GRADE_ITEMS, 'id', $select, $params);
     }
 
+    public static function is_grademax22($gradetype, $grademax){
+        if ($gradetype == GRADE_TYPE_VALUE && $grademax == 22){
+            return true;
+        }
+        return false;
+    }
+
     public static function add_grade_item($courseid, $reason, $mod){
         //get scale size for max grade
         $scalesize = sizeof(self::$GRADES);
@@ -138,6 +156,9 @@ class local_gugcat {
             // get category id scaleid
             $categoryid = $mod->gradeitem->categoryid;
             $scaleid = $mod->gradeitem->scaleid;
+            if (self::is_grademax22($mod->gradeitem->gradetype, $mod->gradeitem->grademax)){
+                $scaleid = self::get_gcat_scaleid();
+            }
             // create new gradeitem
             $gradeitem = new grade_item(array('id'=>0, 'courseid'=>$courseid));
             $gradeitem->weightoverride = 0;
