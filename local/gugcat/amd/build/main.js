@@ -82,7 +82,7 @@ define(['jquery', 'core/str' ], function($, Str) {
                 }
                 mformReason.focus();
                 break;
-        default:
+            default:
                 break;
         }
     }
