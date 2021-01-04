@@ -149,8 +149,8 @@ class local_gugcat_renderer extends plugin_renderer_base {
         foreach ($activities as $act) {
             $htmlcolumns .= html_writer::tag('th', $act->name);
         }
-        $htmlcolumns .= html_writer::tag('th', get_string('percentcomplete', 'local_gugcat'));
         $htmlcolumns .= html_writer::tag('th', get_string('requiresresit', 'local_gugcat'));
+        $htmlcolumns .= html_writer::tag('th', get_string('percentcomplete', 'local_gugcat'));
         $htmlcolumns .= html_writer::tag('th', get_string('aggregatedgrade', 'local_gugcat').'<i class="fa fa-cog"></i></th>');
         //grade capture rows
         foreach ($rows as $row) {
@@ -162,8 +162,8 @@ class local_gugcat_renderer extends plugin_renderer_base {
             foreach((array) $row->grades as $grade) {
                 $htmlrows .= '<td>'.$grade.((strpos($grade, 'No grade') !== false) ? null : $this->context_actions($row->studentno)).'</td>';
             }
-            $htmlrows .= html_writer::tag('td', $row->completed);
             $htmlrows .= '<td><i class="fa fa-times-circle"></i></td>';
+            $htmlrows .= html_writer::tag('td', $row->completed);
             $htmlrows .= html_writer::empty_tag('td');
             $htmlrows .= html_writer::end_tag('tr');
         }
