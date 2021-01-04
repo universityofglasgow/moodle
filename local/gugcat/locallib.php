@@ -28,6 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 //tables used in db
 define('GRADE_GRADES', 'grade_grades');
 define('GRADE_ITEMS', 'grade_items');
+define('SCALE', 'scale');
 
 //Administrative grades at Assessment Level
 define('NON_SUBMISSION_AC', 'NS');
@@ -114,8 +115,7 @@ class local_gugcat {
      */
     public static function get_gcat_scaleid(){
         global $DB;
-        $gcat_scale = $DB->get_record('scale', array('name' => GCAT_SCALE, 'courseid' => '0'),'id');
-        return $gcat_scale->id;
+        return $DB->get_field(SCALE, 'id', array('name' => GCAT_SCALE, 'courseid' => '0'));
     }
 
     public static function compare_iteminfo(){
