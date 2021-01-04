@@ -79,7 +79,7 @@ class grade_aggregation{
                 $gb = isset($grades->gradebook[$student->id]) ? $grades->gradebook[$student->id] : null;
                 $grd = (isset($pg) && !is_null($pg->finalgrade)) ? $pg->finalgrade : ((isset($gb) && !is_null($gb->grade)) ? $gb->grade : null);
                 $scaleid = $item->scaleid;
-                if (empty($scaleid) && local_gugcat::is_grademax22($item->gradeitem->gradetype, $item->gradeitem->grademax)){
+                if (is_null($scaleid) && local_gugcat::is_grademax22($item->gradeitem->gradetype, $item->gradeitem->grademax)){
                     $scaleid = local_gugcat::get_gcat_scaleid();
                 }
                 local_gugcat::set_grade_scale($scaleid);
