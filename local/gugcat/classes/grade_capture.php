@@ -221,19 +221,32 @@ class grade_capture{
         //update timemodified gradeitem
         $gradeitem_->update();
         $grade = null;
-        $gbgrades = ($module->modname === 'assign') ? null : grade_get_grades($courseid, 'mod', $module->modname, $module->instance, array_keys($students));
-        
+        $gbgrades = grade_get_grades($courseid, 'mod', $module->modname, $module->instance, array_keys($students));
+
         foreach($students as $student){
+            $gbg = $gbgrades->items[0]->grades[$student->id];//gradebook grade record
+            //check feedback if admin grade, MV or NS
+            $feedback = $gbg->feedback;
+            switch ($feedback) {
+                case NON_SUBMISSION_AC:
+                    $admingrade = NON_SUBMISSION;                     
+                    break;
+                case MEDICAL_EXEMPTION_AC:
+                    $admingrade = MEDICAL_EXEMPTION;
+                    break;
+                default:
+                    $admingrade = null;
+                    break;
+            }
             //check if assignment
             if(strcmp($module->modname, 'assign') == 0){
                 $assign = new assign(context_module::instance($module->id), $module, $courseid);
                 $asgrd = $assign->get_user_grade($student->id, false);
-                $grade = ($asgrd) ? $asgrd->grade : null;
+                $grade = !is_null($admingrade) ? $admingrade : (($asgrd) ? $asgrd->grade : null);
                 local_gugcat::update_workflow_state($assign, $student->id, ASSIGN_MARKING_WORKFLOW_STATE_INREVIEW);
-            }
-            else{
-                $gbg = $gbgrades->items[0]->grades[$student->id]->grade;
-                $grade = (isset($gbg)) ? $gbg : null;
+            }else{
+                $gbgrade = $gbg->grade;
+                $grade = !is_null($admingrade) ? $admingrade : ((isset($gbgrade)) ? $gbgrade : null);
             }
             local_gugcat::update_grade($student->id, $mggradeitemid, $grade);
             local_gugcat::update_grade($student->id, local_gugcat::$PRVGRADEID, $grade);
