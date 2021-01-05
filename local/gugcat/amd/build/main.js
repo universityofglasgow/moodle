@@ -41,6 +41,7 @@ define(['jquery', 'core/str' ], function($, Str) {
         var activities = document.getElementById('select-activity');
         var grade_reason = document.getElementById('select-grade-reason');
         var input_reason = document.getElementById('input-reason');
+        var mform_grade_reason = document.getElementById('id_reasons');
         switch (event.target) {
             case categories:
                 urlParams.delete("activityid");
@@ -71,6 +72,18 @@ define(['jquery', 'core/str' ], function($, Str) {
                 }else{
                     input_reason.style.display = 'none';
                 }
+                break;
+            case mform_grade_reason:
+                var selectedOption = event.target.value;
+                var mformReason = document.getElementById('id_otherreason');
+                mformReason.value = selectedOption;
+                if(selectedOption = '8'){
+                    mformReason.value = '';
+                    mformReason.required = true;
+                }
+                else
+                    mformReason.required = false;
+                mformReason.focus();
                 break;
             default:
                 break;
@@ -153,6 +166,15 @@ define(['jquery', 'core/str' ], function($, Str) {
                 if(!($(".gradeitems").text().includes("Moodle Grade[Date]"))){
                     $("#btn-saveadd").show();
                     $(".addnewgrade").show();
+                }
+
+                if(checkCurrentUrl("gugcat/add")){
+                    //Add placeholder
+                    var mformReason = document.getElementById('id_otherreason');
+                    var mformNotes = document.getElementById('id_notes');
+                    mformReason.placeholder = "Please Specify";
+                    mformNotes.placeholder = "Specify reason(s) for ammendment";
+                    mformNotes.required = true;
                 }
             }
         }

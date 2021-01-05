@@ -47,6 +47,7 @@ $string['hiddengrade'] = 'Hidden grade';
 $string['hiddengrademsg'] = 'The grade is now hidden to the student';
 $string['historicalamendments'] = 'Historical Amendments';
 $string['importgrades'] = 'Import Grades from Moodle';
+$string['missinggrade'] = 'Missing grade(s)';
 $string['moodlegrade'] = 'Moodle Grade';
 $string['navname'] = 'Grade Capture and Aggregation';
 $string['nograde'] = 'Null – awaiting grading';

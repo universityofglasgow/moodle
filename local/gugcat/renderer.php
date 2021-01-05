@@ -90,7 +90,12 @@ class local_gugcat_renderer extends plugin_renderer_base {
                             <input name="reason" value="" class="input-reason" id="input-reason" type="text"/>
                     </td>';
             $isgradehidden = (!isset($row->hidden)) ? null: (($row->hidden) ? '<br/>('.get_string('hiddengrade', 'local_gugcat').')' : '');
-            $htmlrows .= '<td class="provisionalgrade"><b>'.$row->provisionalgrade.'</b>'.$this->context_actions($row->studentno, $isgradehidden). $isgradehidden.'</td>';
+            if(is_null($row->provisionalgrade) || $row->provisionalgrade == '' || 
+                $row->provisionalgrade == get_string('nograde', 'local_gugcat') || 
+                $row->provisionalgrade == get_string('missinggrade', 'local_gugcat'))
+                $htmlrows .= '<td class="provisionalgrade"><b>'.$row->provisionalgrade.'</b>'. $isgradehidden.'</td>';
+            else
+                $htmlrows .= '<td class="provisionalgrade"><b>'.$row->provisionalgrade.'</b>'.$this->context_actions($row->studentno, $isgradehidden).  $isgradehidden.'</td>';
             $htmlrows .= '<td>
                             <button type="button" class="btn btn-default addnewgrade" onclick="location.href=\''.$addformurl.'\'">
                                 '.get_string('addnewgrade', 'local_gugcat').'
@@ -134,9 +139,12 @@ class local_gugcat_renderer extends plugin_renderer_base {
         foreach($gradeversions as $gradeversion){
             $html .= html_writer::start_tag('div', array('class'=>'form-group row'));
             $html .= html_writer::start_tag('div', array('class'=> 'col-md-3'));
-            $html .= html_writer::tag('label', $gradeversion->itemname);
+            if ($gradeversion->itemname == get_string('moodlegrade', 'local_gugcat'))
+                $html .= html_writer::tag('label', $gradeversion->itemname. date(" [j/n/Y]", strtotime(userdate($gradeversion->timemodified))));
+            else 
+                $html .= html_writer::tag('label', $gradeversion->itemname);
             $html .= html_writer::end_tag('div');
-            $html .= html_writer::div(local_gugcat::convert_grade($gradeversion->grades[$student->id]->finalgrade), 'col-md-9 form-inline felement');
+            $html .= html_writer::div(local_gugcat::convert_grade($gradeversion->grades[$student->id]->grade), 'col-md-9 form-inline felement');
             $html .= html_writer::end_tag('div');
         }
         $html .= html_writer::end_tag('div');
@@ -149,8 +157,8 @@ class local_gugcat_renderer extends plugin_renderer_base {
         foreach ($activities as $act) {
             $htmlcolumns .= html_writer::tag('th', $act->name);
         }
-        $htmlcolumns .= html_writer::tag('th', get_string('percentcomplete', 'local_gugcat'));
         $htmlcolumns .= html_writer::tag('th', get_string('requiresresit', 'local_gugcat'));
+        $htmlcolumns .= html_writer::tag('th', get_string('percentcomplete', 'local_gugcat'));
         $htmlcolumns .= html_writer::tag('th', get_string('aggregatedgrade', 'local_gugcat').'<i class="fa fa-cog"></i></th>');
         //grade capture rows
         foreach ($rows as $row) {
@@ -162,9 +170,9 @@ class local_gugcat_renderer extends plugin_renderer_base {
             foreach((array) $row->grades as $grade) {
                 $htmlrows .= '<td>'.$grade.((strpos($grade, 'No grade') !== false) ? null : $this->context_actions($row->studentno)).'</td>';
             }
-            $htmlrows .= html_writer::tag('td', $row->completed);
             $htmlrows .= '<td><i class="fa fa-times-circle"></i></td>';
-            $htmlrows .= html_writer::empty_tag('td');
+            $htmlrows .= html_writer::tag('td', $row->completed);
+            $htmlrows .= html_writer::tag('td', $row->aggregatedgrade);
             $htmlrows .= html_writer::end_tag('tr');
         }
         $html = $this->header();

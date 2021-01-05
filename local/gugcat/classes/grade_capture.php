@@ -76,19 +76,19 @@ class grade_capture{
                 //get first grade and provisional grade
                 $gifg = $gradeitems[$firstgradeid]->grades;
                 $gipg = $gradeitems[intval(local_gugcat::$PRVGRADEID)]->grades;
-                $fg = (isset($gifg[$student->id])) ? $gifg[$student->id]->finalgrade : null;
-                $pg = (isset($gipg[$student->id])) ? $gipg[$student->id]->finalgrade : null;
+                $fg = (isset($gifg[$student->id])) ? $gifg[$student->id]->grade : null;
+                $pg = (isset($gipg[$student->id])) ? $gipg[$student->id]->grade : null;
                 $gradecaptureitem->firstgrade = is_null($fg) ? get_string('nograde', 'local_gugcat') : local_gugcat::convert_grade($fg);
                 $gradecaptureitem->provisionalgrade = is_null($pg) ? get_string('nograde', 'local_gugcat') : local_gugcat::convert_grade($pg);
-                $agreedgrade = (!$agreedgradeid) ? null : (isset($gradeitems[$agreedgradeid]->grades[$student->id]) ? $gradeitems[$agreedgradeid]->grades[$student->id]->finalgrade : null);
-                $sndgrade = (!$secondgradeid) ? null : (isset($gradeitems[$secondgradeid]->grades[$student->id]) ? $gradeitems[$secondgradeid]->grades[$student->id]->finalgrade : null);
-                $trdgrade = (!$thirdgradeid) ? null : (isset($gradeitems[$thirdgradeid]->grades[$student->id]) ? $gradeitems[$thirdgradeid]->grades[$student->id]->finalgrade : null);
+                $agreedgrade = (!$agreedgradeid) ? null : (isset($gradeitems[$agreedgradeid]->grades[$student->id]) ? $gradeitems[$agreedgradeid]->grades[$student->id]->grade : null);
+                $sndgrade = (!$secondgradeid) ? null : (isset($gradeitems[$secondgradeid]->grades[$student->id]) ? $gradeitems[$secondgradeid]->grades[$student->id]->grade : null);
+                $trdgrade = (!$thirdgradeid) ? null : (isset($gradeitems[$thirdgradeid]->grades[$student->id]) ? $gradeitems[$thirdgradeid]->grades[$student->id]->grade : null);
 
                 foreach ($gradeitems as $item) {
                     if($item->grades[$student->id]->hidden == 1)
                         $gradecaptureitem->hidden = true;
                     if($item->id != local_gugcat::$PRVGRADEID && $item->id != $firstgradeid){
-                        $rawgrade = (isset($item->grades[$student->id])) ? $item->grades[$student->id]->finalgrade : null; 
+                        $rawgrade = (isset($item->grades[$student->id])) ? $item->grades[$student->id]->grade : null; 
                         $grdobj = new stdClass();
                         $grade = is_null($rawgrade) ? 'N/A' : local_gugcat::convert_grade($rawgrade);
                         $grdobj->grade = $grade;
@@ -153,6 +153,12 @@ class grade_capture{
         $data->iteminstance = $cm->instance;
         $gradeitemid = $cm->gradeitem->id;
 
+        //set offset value for max 22 points grade
+        $gradescaleoffset = 0;
+        if (local_gugcat::is_grademax22($cm->gradeitem->gradetype, $cm->gradeitem->grademax)){
+            $gradescaleoffset = 1;
+        }
+
         //get grade item
         $gradeitem = new grade_item($data, true);
         if($cm->modname === 'assign'){
@@ -182,6 +188,7 @@ class grade_capture{
                         $is_non_sub = false;
                         $feedback = null;
                         $excluded = 0;
+                        $rawgrade = $rawgrade - $gradescaleoffset;
                         break;
                 }
                 //update feedback and excluded field
@@ -221,19 +228,36 @@ class grade_capture{
         //update timemodified gradeitem
         $gradeitem_->update();
         $grade = null;
-        $gbgrades = ($module->modname === 'assign') ? null : grade_get_grades($courseid, 'mod', $module->modname, $module->instance, array_keys($students));
-        
+        $gbgrades = grade_get_grades($courseid, 'mod', $module->modname, $module->instance, array_keys($students));
+        $gradescaleoffset = 0;
+        if (local_gugcat::is_grademax22($module->gradeitem->gradetype, $module->gradeitem->grademax)){
+            $gradescaleoffset = 1;
+        }
+
         foreach($students as $student){
+            $gbg = $gbgrades->items[0]->grades[$student->id];//gradebook grade record
+            //check feedback if admin grade, MV or NS
+            $feedback = $gbg->feedback;
+            switch ($feedback) {
+                case NON_SUBMISSION_AC:
+                    $admingrade = NON_SUBMISSION;                     
+                    break;
+                case MEDICAL_EXEMPTION_AC:
+                    $admingrade = MEDICAL_EXEMPTION;
+                    break;
+                default:
+                    $admingrade = null;
+                    break;
+            }
             //check if assignment
             if(strcmp($module->modname, 'assign') == 0){
                 $assign = new assign(context_module::instance($module->id), $module, $courseid);
                 $asgrd = $assign->get_user_grade($student->id, false);
-                $grade = ($asgrd) ? $asgrd->grade : null;
+                $grade = !is_null($admingrade) ? $admingrade : (($asgrd) ? ($asgrd->grade +  $gradescaleoffset) : null);
                 local_gugcat::update_workflow_state($assign, $student->id, ASSIGN_MARKING_WORKFLOW_STATE_INREVIEW);
-            }
-            else{
-                $gbg = $gbgrades->items[0]->grades[$student->id]->grade;
-                $grade = (isset($gbg)) ? $gbg : null;
+            }else{
+                $gbgrade = $gbg->grade;
+                $grade = !is_null($admingrade) ? $admingrade : ((isset($gbgrade)) ? ($gbgrade + $gradescaleoffset) : null);
             }
             local_gugcat::update_grade($student->id, $mggradeitemid, $grade);
             local_gugcat::update_grade($student->id, local_gugcat::$PRVGRADEID, $grade);
