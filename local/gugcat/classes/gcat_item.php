@@ -82,4 +82,16 @@ class gcat_item{
      * @var boolean $nonsubmission
      */
     public $nonsubmission;
+    
+    /**
+     * The string percentage of the accomplish assessment of the student
+     *@var string $completed
+     */
+    public $completed;
+    
+    /**
+     * The formated aggregated grade of the student, can also be string 'missing grade'
+     * @var string $aggregatedgrade
+     */
+    public $aggregatedgrade;
 }
