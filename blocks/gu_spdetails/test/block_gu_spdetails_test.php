@@ -422,4 +422,19 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $this->assertEquals($expected3, $this->spdetails->return_feedback(true, 0));
     }
 
+    public function test_return_categoryname(){
+        $lang = 'block_gu_spdetails';
+
+        $expected1 = get_string("formative", $lang);
+        $expected2 = get_string("summative", $lang);
+        $expected3 = "Random Words";
+        $expected4 = get_string("emptyvalue", $lang);
+
+        $this->assertEquals($expected1, $this->spdetails->return_categoryname("Formative 123111"));
+        $this->assertEquals($expected2, $this->spdetails->return_categoryname("Summative 123111"));
+        $this->assertEquals($expected3, $this->spdetails->return_categoryname("Random Words"));
+        $this->assertEquals($expected4, $this->spdetails->return_categoryname(null));
+        $this->assertEquals($expected4, $this->spdetails->return_categoryname('?'));
+    }
+
 }

@@ -49,3 +49,5 @@ $string['status_submit'] = 'submit';
 $string['sort'] = "Sort by ";
 $string['sort_course'] = "Course";
 $string['sort_date'] = "Date";
+$string['formative'] = "Formative";
+$string['summative'] = "Summative";
