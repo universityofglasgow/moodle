@@ -188,7 +188,7 @@ class grade_capture{
                         $is_non_sub = false;
                         $feedback = null;
                         $excluded = 0;
-                        $rawgrade = $rawgrade - $gradescaleoffset;
+                        $rawgrade = !is_null($rawgrade) ? ($rawgrade - $gradescaleoffset) : $rawgrade;
                         break;
                 }
                 //update feedback and excluded field
@@ -253,7 +253,7 @@ class grade_capture{
             if(strcmp($module->modname, 'assign') == 0){
                 $assign = new assign(context_module::instance($module->id), $module, $courseid);
                 $asgrd = $assign->get_user_grade($student->id, false);
-                $grade = !is_null($admingrade) ? $admingrade : (($asgrd) ? ($asgrd->grade +  $gradescaleoffset) : null);
+                $grade = !is_null($admingrade) ? $admingrade : (($asgrd && !is_null($asgrd->grade)) ? ($asgrd->grade + $gradescaleoffset) : null);
                 local_gugcat::update_workflow_state($assign, $student->id, ASSIGN_MARKING_WORKFLOW_STATE_INREVIEW);
             }else{
                 $gbgrade = $gbg->grade;
