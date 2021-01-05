@@ -49,6 +49,31 @@ class local_gugcat {
     public static $GRADES = array();
     public static $PRVGRADEID = null;
     public static $STUDENTS = array();
+    public static $SCHED_B = array(
+        22 =>"A0",
+        21 =>"A0",
+        20 =>"A0",
+        19 =>"A0",
+        18 =>"A0",
+        17 =>"B0",
+        16 =>"B0",
+        15 =>"B0",
+        14 =>"C0",
+        13 =>"C0",
+        12 =>"C0",
+        11 =>"D0",
+        10 =>"D0",
+        9 =>"D0",
+        8 =>"E0",
+        7 =>"E0",
+        6 =>"E0",
+        5 =>"F0",
+        4 =>"F0",
+        3 =>"F0",
+        2 =>"G0",
+        1 =>"G0",
+        0 =>"H"
+    );
 
     public static function get_reasons(){
         return array(
@@ -245,8 +270,8 @@ class local_gugcat {
         return $grade_->update();
     }
 
-    public static function convert_grade($grade){
-        $scale = self::$GRADES;
+    public static function convert_grade($grade, $scale_ = null){
+        $scale = is_null($scale_) ? self::$GRADES : $scale_;
         $final_grade = intval($grade);
         if ($final_grade >= key(array_slice($scale, -1, 1, true)) && $final_grade <= key($scale)){
             return $scale[$final_grade];
