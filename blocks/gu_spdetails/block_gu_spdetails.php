@@ -66,11 +66,9 @@ class block_gu_spdetails extends block_base {
             $a->courserecord->url = self::return_courseurl($a->course);
 
             $a->assessment = self::retrieve_assessmentrecord($a->name, $a->instance, $userid);
-            $a->assessment->categoryname = property_exists($a->assessment, 'categoryname') ?
-                                           (($a->assessment->categoryname != '?') ?
-                                           $a->assessment->categoryname :
-                                           get_string('emptyvalue', $lang)) :
-                                           get_string('emptyvalue', $lang);
+            $a->assessment->categoryname =  property_exists($a->assessment, 'categoryname') ? 
+                                            self::return_categoryname($a->assessment->categoryname) : 
+                                            get_string("emptyvalue", $lang);
             $a->assessment->startdate = property_exists($a->assessment, 'startdate') ? $a->assessment->startdate : null;
             $a->assessment->duedate = property_exists($a->assessment, 'duedate') ? $a->assessment->duedate : null;
             $a->assessment->overrideduedate = property_exists($a->assessment, 'overrideduedate') ? $a->assessment->overrideduedate : null;
@@ -467,5 +465,21 @@ class block_gu_spdetails extends block_base {
         $extensionduedate = property_exists($extensionduedaterecord, 'extensionduedate') ?
                             $extensionduedaterecord->extensionduedate : null;
         return $extensionduedate;
+    }
+
+    public static function return_categoryname($categoryname){
+        $lang = 'block_gu_spdetails';
+        $patternFormative = "/\bformative\b/i";
+        $patternSummative = "/\bsummative\b/i";
+        
+        if (preg_match($patternFormative, $categoryname)){
+            return get_string("formative", $lang);
+        } else if (preg_match($patternSummative, $categoryname)){
+            return get_string("summative", $lang);
+        } else if (!is_null($categoryname) && $categoryname != '?'){
+            return $categoryname;
+        } else {
+            return get_string("emptyvalue", $lang);
+        }
     }
 }
