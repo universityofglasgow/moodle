@@ -41,7 +41,6 @@ class addgradeform extends moodleform {
         $mform->addElement('text', 'otherreason', get_string('reasonother', 'local_gugcat').'*', ['class' => 'mform-custom']); 
         $mform->setType('otherreason', PARAM_NOTAGS); 
         $mform->hideIf('otherreason', 'reasons', 'neq', 8); 
-        $mform->setDefault('otherreason', "Please Specify");
 
         $mform->addElement('select', 'grade', get_string('grade', 'local_gugcat'), local_gugcat::$GRADES, ['class' => 'mform-custom']); 
         $mform->setType('grade', PARAM_NOTAGS); 
@@ -54,9 +53,7 @@ class addgradeform extends moodleform {
 
         $mform->addElement('html', '</div>');
         $this->add_action_buttons(false, get_string('confirmgrade', 'local_gugcat'), ['class' => 'float-right']);
-        $mform->disabledIf('submitbutton', 'otherreason', 'eq', NULL);
-        $mform->disabledIf('submitbutton', 'notes', 'eq', NULL);
-        
+
         //hidden params
         $mform->addElement('hidden', 'studentid', $this->_customdata['studentid']);
         $mform->setType('studentid', PARAM_ACTION);
