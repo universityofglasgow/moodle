@@ -175,9 +175,6 @@ define(['jquery', 'core/str' ], function($, Str) {
                     mformReason.placeholder = "Please Specify";
                     mformNotes.placeholder = "Specify reason(s) for ammendment";
                     mformNotes.required = true;
-
-                    
-
                 }
             }
         }
