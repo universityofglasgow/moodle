@@ -107,7 +107,7 @@ class block_gu_spdetails extends block_base {
             $a->assessment->gradeid = array_key_exists('gradeid', $a->assessment) ? $a->assessment->gradeid : null;
             $a->grades->feedback = property_exists($a->grades, 'feedback') ? $a->grades->feedback : null;
             $a->grades->gradetext = ($a->assessment->gradingduedate) ?
-                                    self::return_grade($a->grades->finalgrade, $a->assessment->gradingduedate) :
+                                    self::return_grade($a->grades->finalgrade, $a->assessment->gradingduedate, $a->assessment) :
                                     get_string('emptyvalue', $lang);
             $a->feedback = ($a->assessment->gradingduedate) ?
                             self::return_feedback($a->grades->feedback, $a->assessment->gradingduedate) :
@@ -228,7 +228,8 @@ class block_gu_spdetails extends block_base {
                         mao.allowsubmissionsfromdate as `overridestartdate`,
                         mao.duedate as `overrideduedate`,
                         mao.cutoffdate as `overridecutoffdate`,
-                        mgc.fullname as `categoryname`
+                        mgc.fullname as `categoryname`,
+                        mgi.scaleid
                         FROM `". $CFG->prefix ."assign` ma
                         JOIN `". $CFG->prefix ."grade_items` mgi
                         ON mgi.iteminstance = ma.id AND mgi.itemmodule = ?
@@ -433,15 +434,31 @@ class block_gu_spdetails extends block_base {
      *
      * @param float $grade
      * @param int $gradingduedate
+     * @param object $assessment
      * @return mixed $gradetext float value of Grade if the assessment is graded, otherwise return
      *  the Grading Due Date string
      */
-    public static function return_grade($grade, $gradingduedate) {
+    public static function return_grade($grade, $gradingduedate, $assessment) {
         global $DB;
         $lang = 'block_gu_spdetails';
 
         $gradetext = $grade ? $grade : 
-                     get_string('due', $lang).userdate($gradingduedate,  get_string('convertdate', $lang));
+                     get_string('due', $lang).userdate($gradingduedate, get_string('convertdate', $lang));
+        if (property_exists($assessment, "scaleid") && !is_null($assessment->scaleid)){
+            $dbScale = $DB->get_record('scale', array('id'=> $assessment->scaleid));
+            if ($dbScale){
+                $scale = make_menu_from_list($dbScale->scale);
+                $scaleid = (int)$grade;
+                if (isset($scale[$scaleid])){
+                    $val = explode(':', $scale[$scaleid]);
+                    $gradetext = $val[0];
+                } else {
+                    $gradetext = get_string('due', $lang).userdate($gradingduedate, get_string('convertdate', $lang));
+                }
+            } else {
+                $gradetext = get_string('due', $lang).userdate($gradingduedate, get_string('convertdate', $lang));
+            }
+        }
         return $gradingduedate == 0 ? get_string('emptyvalue', $lang) : $gradetext;
     }
 
