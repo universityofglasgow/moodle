@@ -62,8 +62,14 @@ class block_gu_spdetails extends block_base {
 
         foreach($assessments as $a) {
             $a->courserecord = self::retrieve_courserecord($a->course);
-            $a->courserecord->coursename = $a->courserecord->shortname.' '.$a->courserecord->fullname;
             $a->courserecord->url = self::return_courseurl($a->course);
+
+            $info = get_fast_modinfo($a->course);
+            $mod = $info->get_cm($a->id);
+            $a->info = $info;
+            $a->isVisible = $mod->uservisible;
+
+            $a->courserecord->coursename = ($a->sectionavailability) ? $a->sectionname : $a->courserecord->fullname;
 
             $a->assessment = self::retrieve_assessmentrecord($a->name, $a->instance, $userid);
             $a->assessment->categoryname =  property_exists($a->assessment, 'categoryname') ? 
@@ -113,7 +119,10 @@ class block_gu_spdetails extends block_base {
                                                     $a->grades->finalgrade);
             $a->assessment->url = self::return_assessmenturl($a->name, $a->id, $a->submission->hasurl);
 
-            array_push($assessments_data, $a);
+            // only add assessments that are not restricted
+            if($a->isVisible) {
+                array_push($assessments_data, $a);
+            }
         }
 
         $templatecontext = (array)[
@@ -167,9 +176,13 @@ class block_gu_spdetails extends block_base {
         $params += $cparams;
 
         $sql = "SELECT DISTINCT mcm.id, mcm.course, mcm.instance, mm.name,
-                    mcm.completionexpected
+                    mcm.completionexpected, mcs.section,
+                    mcs.name as `sectionname`,
+                    mcs.availability as `sectionavailability`
                     FROM `". $CFG->prefix ."course_modules` mcm
                     JOIN `". $CFG->prefix ."modules` mm ON mm.id = mcm.module
+                    LEFT JOIN `". $CFG->prefix ."course_sections` mcs
+                    ON mcs.id = mcm.section
                     WHERE mm.name {$inactivities}
                     AND mcm.course {$incourses}";
 
