@@ -79,7 +79,10 @@ define(['jquery', 'core/str' ], function($, Str) {
                 mformReason.value = selectedOption;
                 if(selectedOption = '8'){
                     mformReason.value = '';
+                    mformReason.required = true;
                 }
+                else
+                    mformReason.required = false;
                 mformReason.focus();
                 break;
             default:
@@ -171,6 +174,10 @@ define(['jquery', 'core/str' ], function($, Str) {
                     var mformNotes = document.getElementById('id_notes');
                     mformReason.placeholder = "Please Specify";
                     mformNotes.placeholder = "Specify reason(s) for ammendment";
+                    mformNotes.required = true;
+
+                    
+
                 }
             }
         }
