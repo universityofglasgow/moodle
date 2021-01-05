@@ -145,7 +145,7 @@ class block_gu_spdetails_testcase extends advanced_testcase {
 
         $html = $this->spdetails->get_content();
 
-        $coursename = $this->course->shortname . ' ' . $this->course->fullname;
+        $coursename = $this->course->fullname;
         $assignname = $this->assign->name;
         $assignweight = $DB->get_record('grade_items', array('iteminstance'=> $this->assign->id), 'aggregationcoef')->aggregationcoef;
         $assignduedate = $this->assign->duedate;
@@ -170,9 +170,13 @@ class block_gu_spdetails_testcase extends advanced_testcase {
 
 
         $sql = "SELECT DISTINCT mcm.id, mcm.course, mcm.instance, mm.name,
-                    mcm.completionexpected
+                    mcm.completionexpected, mcs.section,
+                    mcs.name as `sectionname`,
+                    mcs.availability as `sectionavailability`
                     FROM `". $CFG->prefix ."course_modules` mcm
                     JOIN `". $CFG->prefix ."modules` mm ON mm.id = mcm.module
+                    LEFT JOIN `". $CFG->prefix ."course_sections` mcs
+                    ON mcs.id = mcm.section
                     WHERE mm.name {$inactivities}
                     AND mcm.course {$incourses}";
 
@@ -204,7 +208,8 @@ class block_gu_spdetails_testcase extends advanced_testcase {
                         mao.allowsubmissionsfromdate as `overridestartdate`,
                         mao.duedate as `overrideduedate`,
                         mao.cutoffdate as `overridecutoffdate`,
-                        mgc.fullname as `categoryname`
+                        mgc.fullname as `categoryname`,
+                        mgi.scaleid
                         FROM `". $CFG->prefix ."assign` ma
                         JOIN `". $CFG->prefix ."grade_items` mgi
                         ON mgi.iteminstance = ma.id AND mgi.itemmodule = ?
@@ -389,6 +394,7 @@ class block_gu_spdetails_testcase extends advanced_testcase {
     }
 
     public function test_return_grade(){
+        global $DB;
         $lang = 'block_gu_spdetails';
         $grade = 10;
 
@@ -396,9 +402,25 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $expected2 = get_string('due', $lang).userdate(time(),  get_string('convertdate', $lang));
         $expected3 = get_string('emptyvalue', $lang);
 
-        $this->assertEquals($expected1, $this->spdetails->return_grade($grade, time()));
-        $this->assertEquals($expected2, $this->spdetails->return_grade(false, time()));
-        $this->assertEquals($expected3, $this->spdetails->return_grade(false, 0));
+        $this->assertEquals($expected1, $this->spdetails->return_grade($grade, time(), new stdClass()));
+        $this->assertEquals($expected2, $this->spdetails->return_grade(false, time(), new stdClass()));
+        $this->assertEquals($expected3, $this->spdetails->return_grade(false, 0, new stdClass()));
+
+        //with scale
+        $assessment1 = new stdClass();
+        $assessment1->scaleid = 1;
+        $assessment2 = new stdClass();
+        $assessment2->scaleid = -1;
+        $grade = 1;
+
+        $record = $DB->get_record('scale', array('id'=> 1));
+        $scale = make_menu_from_list($record->scale);
+        $expectedScale1 = $scale[$grade];
+        $expectedScale2 = get_string('due', $lang).userdate(time(),  get_string('convertdate', $lang));
+
+        $this->assertEquals($expectedScale1, $this->spdetails->return_grade($grade, time(), $assessment1));
+        $this->assertEquals($expectedScale2, $this->spdetails->return_grade($grade + 22, time(), $assessment1));
+        $this->assertEquals($expectedScale2, $this->spdetails->return_grade($grade, time(), $assessment2));
     }
 
     public function test_return_feedback(){
