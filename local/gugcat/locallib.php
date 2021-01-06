@@ -28,6 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 //tables used in db
 define('GRADE_GRADES', 'grade_grades');
 define('GRADE_ITEMS', 'grade_items');
+define('GRADE_CATEGORIES', 'grade_categories');
 define('SCALE', 'scale');
 
 //Administrative grades at Assessment Level
@@ -37,6 +38,7 @@ define('NON_SUBMISSION', -1);
 define('MEDICAL_EXEMPTION', -2);
 
 define('GCAT_SCALE', 'UofG 22-Point Scale (Do NOT use if you are grading in Feedback Studio)');
+define('GCAT_GRADE_CATEGORY', 'DO NOT USE');
 
 require_once($CFG->libdir.'/gradelib.php');
 require_once($CFG->dirroot . '/grade/querylib.php');
@@ -151,13 +153,29 @@ class local_gugcat {
         return false;
     }
 
-    public static function add_grade_item($courseid, $itemname, $mod){
+    public static function get_gcat_grade_category_id($courseid){
+        global $DB;
+        $categoryid = $DB->get_field(GRADE_CATEGORIES, 'id', array('fullname' => GCAT_GRADE_CATEGORY, 'courseid' => $courseid));
+        if (empty($categoryid)){
+            $grade_category = new grade_category(array('courseid'=>$courseid), false);
+            $grade_category->apply_default_settings();
+            $grade_category->apply_forced_settings();
+            $grade_category->fullname = GCAT_GRADE_CATEGORY;
+            $grade_category->hidden = 1;
+            grade_category::set_properties($grade_category, $grade_category->get_record_data());
+            $grade_category->insert();
+            $categoryid = $grade_category->id;
+        }
+        return $categoryid;
+    }
+
+    public static function add_grade_item($courseid, $reason, $mod){
         //get scale size for max grade
         $scalesize = sizeof(self::$GRADES);
         // check if gradeitem already exists using $reason, $courseid, $activityid
-        if(!$gradeitemid = self::get_grade_item_id($courseid, $mod->id, $itemname)){
-            // get category id scaleid
-            $categoryid = $mod->gradeitem->categoryid;
+        if(!$gradeitemid = self::get_grade_item_id($courseid, $mod->id, $reason)){
+            //get GCAT grade category id
+            $categoryid = self::get_gcat_grade_category_id($courseid);
             $scaleid = $mod->gradeitem->scaleid;
             if (self::is_grademax22($mod->gradeitem->gradetype, $mod->gradeitem->grademax)){
                 $scaleid = self::get_gcat_scaleid();
@@ -294,6 +312,8 @@ class local_gugcat {
 
     public static function get_grade_categories($courseid){
         $raw = grade_get_categories_menu($courseid);
+        $gcat_category_id = self::get_gcat_grade_category_id($courseid);
+        unset($raw[$gcat_category_id]);
         $categoryid = optional_param('categoryid', null, PARAM_INT);
         $grd_ctgs = array();
         foreach($raw as $key=>$value) {
