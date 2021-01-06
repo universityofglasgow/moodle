@@ -506,8 +506,6 @@ class block_gu_spdetails extends block_base {
             return get_string("formative", $lang);
         } else if (preg_match($patternSummative, $categoryname)){
             return get_string("summative", $lang);
-        } else if (!is_null($categoryname) && $categoryname != '?'){
-            return $categoryname;
         } else {
             return get_string("emptyvalue", $lang);
         }
