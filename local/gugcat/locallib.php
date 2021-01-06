@@ -49,31 +49,6 @@ class local_gugcat {
     public static $GRADES = array();
     public static $PRVGRADEID = null;
     public static $STUDENTS = array();
-    public static $SCHED_B = array(
-        22 =>"A0",
-        21 =>"A0",
-        20 =>"A0",
-        19 =>"A0",
-        18 =>"A0",
-        17 =>"B0",
-        16 =>"B0",
-        15 =>"B0",
-        14 =>"C0",
-        13 =>"C0",
-        12 =>"C0",
-        11 =>"D0",
-        10 =>"D0",
-        9 =>"D0",
-        8 =>"E0",
-        7 =>"E0",
-        6 =>"E0",
-        5 =>"F0",
-        4 =>"F0",
-        3 =>"F0",
-        2 =>"G0",
-        1 =>"G0",
-        0 =>"H"
-    );
 
     public static function get_reasons(){
         return array(
@@ -176,11 +151,11 @@ class local_gugcat {
         return false;
     }
 
-    public static function add_grade_item($courseid, $reason, $mod){
+    public static function add_grade_item($courseid, $itemname, $mod){
         //get scale size for max grade
         $scalesize = sizeof(self::$GRADES);
         // check if gradeitem already exists using $reason, $courseid, $activityid
-        if(!$gradeitemid = self::get_grade_item_id($courseid, $mod->id, $reason)){
+        if(!$gradeitemid = self::get_grade_item_id($courseid, $mod->id, $itemname)){
             // get category id scaleid
             $categoryid = $mod->gradeitem->categoryid;
             $scaleid = $mod->gradeitem->scaleid;
@@ -199,7 +174,7 @@ class local_gugcat {
             $gradeitem->outcomeid = null;
             $gradeitem->categoryid = $categoryid;
             $gradeitem->iteminfo = $mod->id;
-            $gradeitem->itemname = $reason;
+            $gradeitem->itemname = $itemname;
             $gradeitem->iteminstance= null;
             $gradeitem->timemodified = null;
             $gradeitem->itemmodule=null;
@@ -270,8 +245,8 @@ class local_gugcat {
         return $grade_->update();
     }
 
-    public static function convert_grade($grade, $scale_ = null){
-        $scale = is_null($scale_) ? self::$GRADES : $scale_;
+    public static function convert_grade($grade){
+        $scale = self::$GRADES;
         $final_grade = intval($grade);
         if ($final_grade >= key(array_slice($scale, -1, 1, true)) && $final_grade <= key($scale)){
             return $scale[$final_grade];

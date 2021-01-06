@@ -152,6 +152,15 @@ class local_gugcat_renderer extends plugin_renderer_base {
     }
 
     public function display_aggregation_tool($rows, $activities) {
+        $courseid = $this->page->course->id;
+        $categoryid = optional_param('categoryid', null, PARAM_INT);
+        //url to grade form
+        $gradeformurl = new moodle_url('/local/gugcat/overview/gradeform/index.php', array('id' => $courseid));
+        //add category id in the url if not null
+        if(!is_null($categoryid)){
+            $gradeformurl .= '&categoryid=' . $categoryid;
+        }
+        
         $htmlcolumns = null;
         $htmlrows = null;
         foreach ($activities as $act) {
@@ -162,6 +171,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $htmlcolumns .= html_writer::tag('th', get_string('aggregatedgrade', 'local_gugcat').'<i class="fa fa-cog"></i></th>');
         //grade capture rows
         foreach ($rows as $row) {
+            $gradeformurl .= '&studentid=' . $row->studentno;
             $htmlrows .= html_writer::start_tag('tr');
             $htmlrows .= html_writer::tag('td', $row->cnum);
             $htmlrows .= html_writer::tag('td', $row->studentno);
@@ -172,7 +182,9 @@ class local_gugcat_renderer extends plugin_renderer_base {
             }
             $htmlrows .= '<td><i class="fa fa-times-circle"></i></td>';
             $htmlrows .= html_writer::tag('td', $row->completed);
-            $htmlrows .= html_writer::tag('td', $row->aggregatedgrade);
+            $htmlrows .= ($row->aggregatedgrade != get_string('missinggrade', 'local_gugcat')) 
+            ? html_writer::start_tag('td').$row->aggregatedgrade.$this->context_actions($row->studentno, null, true, $gradeformurl).html_writer::end_tag('td')
+            : html_writer::tag('td', $row->aggregatedgrade);
             $htmlrows .= html_writer::end_tag('tr');
         }
         $html = $this->header();
@@ -216,15 +228,22 @@ class local_gugcat_renderer extends plugin_renderer_base {
         return $html;
     }
 
-    private function context_actions($studentno, $ishidden=null) {
+    private function context_actions($studentno, $ishidden=null, $is_aggregrade = false, $link = null) {
         $html = html_writer::tag('i', null, array('class' => 'fa fa-ellipsis-h', 'data-toggle' => 'dropdown'));
         $html .= html_writer::start_tag('ul', array('class' => 'dropdown-menu'));
-        $html .= html_writer::tag('li', get_string('amendgrades', 'local_gugcat'), array('class' => 'dropdown-item'));
-        $html .= html_writer::tag('li', get_string('historicalamendments', 'local_gugcat'), array('class' => 'dropdown-item'));
-        $html .= html_writer::tag('li', !empty($ishidden) ? get_string('showgrade', 'local_gugcat') : get_string('hidefromstudent', 'local_gugcat'), array('class' => 'dropdown-item hide-show-grade',
-            'onclick'=>
-            'document.getElementById("studentno").value = '.$studentno.';
-            $("#showhidegrade-submit").click();'));
+        if($is_aggregrade){
+            $adjustlink = $link . '&setting=' . ADJUST_WEIGHT_FORM;
+            $overridelink = $link . '&setting=' . OVERRIDE_GRADE_FORM;
+            $html .= html_writer::tag('li', get_string('adjustcourseweight', 'local_gugcat'), array('class' => 'dropdown-item', 'onclick' => 'location.href=\''.$adjustlink.'\''));
+            $html .= html_writer::tag('li', get_string('overrideggregrade', 'local_gugcat'), array('class' => 'dropdown-item', 'onclick' => 'location.href=\''.$overridelink.'\''));
+        }else{
+            $html .= html_writer::tag('li', get_string('amendgrades', 'local_gugcat'), array('class' => 'dropdown-item'));
+            $html .= html_writer::tag('li', get_string('historicalamendments', 'local_gugcat'), array('class' => 'dropdown-item'));
+            $html .= html_writer::tag('li', !empty($ishidden) ? get_string('showgrade', 'local_gugcat') : get_string('hidefromstudent', 'local_gugcat'), array('class' => 'dropdown-item hide-show-grade',
+                'onclick'=>
+                'document.getElementById("studentno").value = '.$studentno.';
+                $("#showhidegrade-submit").click();'));
+        }
         $html .= html_writer::end_tag('ul');
         return $html;
     }  

@@ -24,11 +24,17 @@
 namespace local_gugcat;
 
 use grade_grade;
+use grade_item;
 use local_gugcat;
 use stdClass;
 
 defined('MOODLE_INTERNAL') || die();
 require_once('gcat_item.php');
+
+//grade form settings
+define('ADJUST_WEIGHT_FORM', 0);
+define('OVERRIDE_GRADE_FORM', 1);
+
 
  /**
  * Grade capture class.
@@ -45,6 +51,9 @@ class grade_aggregation{
      */
     public static function get_rows($course, $modules, $students){
         global $DB;
+        //get grade item id for aggregated grade
+        $aggradeid = self::get_aggregated_gi($course->id);
+
         $rows = array();
         $gradebook = array();
         foreach ($modules as $mod) {
@@ -101,10 +110,36 @@ class grade_aggregation{
             $gradecaptureitem->completed = round((float)$floatweight * 100 ) . '%';
             $gradecaptureitem->aggregatedgrade = in_array(get_string('nograderecorded', 'local_gugcat'), $gradecaptureitem->grades) 
             ? get_string('missinggrade', 'local_gugcat') 
-            : ((($sumaggregated/$sumgrade) > 0.5) ? local_gugcat::convert_grade($sumaggregated) : local_gugcat::convert_grade($sumaggregated, local_gugcat::$SCHED_B)) .' ('.number_format($sumaggregated, 2).')';
+            : local_gugcat::convert_grade($sumaggregated) .' ('.number_format($sumaggregated, 2).')';
             array_push($rows, $gradecaptureitem);
+            local_gugcat::update_grade($student->id, $aggradeid, $sumaggregated);
             $i++;
         }
         return $rows;
     }
+
+    /**
+     * Returns aggregation grade item id
+     * @param string $courseid
+     */
+    public static function get_aggregated_gi($courseid){
+        $params = [
+            'courseid' => $courseid,
+            'itemtype' => 'manual',
+            'hidden' => 1,
+            'itemname' => get_string('aggregatedgrade', 'local_gugcat'),
+        ];
+        $gradeitem = new grade_item($params, true);
+        //creates grade item if id does not exist
+        if($gradeitem->id){
+            return $gradeitem->id;
+        }else{
+            $gradeitemid = $gradeitem->insert();
+            foreach(local_gugcat::$STUDENTS as $student){
+                local_gugcat::add_update_grades($student->id, $gradeitemid, null);
+            }
+            return $gradeitemid;
+        }
+    }
+
 }
