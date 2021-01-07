@@ -53,6 +53,18 @@ $capabilities = array(
         'archetypes' => array(
         ),
     ),
+    'report/enhance:addcomment' => array(
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => array(
+        ),
+    ),
+    'report/enhance:editallcomments' => array(
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => array(
+        ),
+    ),
 
 );
 

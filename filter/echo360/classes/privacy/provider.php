@@ -15,14 +15,14 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Privacy Subsystem implementation for atto_echo360attoplugin.
+ * Privacy Subsystem implementation for filter_echo360.
  *
- * @package    atto_echo360attoplugin
+ * @package    filter_echo360
  * @copyright  2020 Echo360 Inc.
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace atto_echo360attoplugin\privacy;
+namespace filter_echo360\privacy;
 
 use core_privacy\local\metadata\collection;
 use core_privacy\local\request\approved_contextlist;
@@ -34,7 +34,7 @@ use core_privacy\local\request\userlist;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Privacy Subsystem for atto_echo360attoplugin implementing metadata, plugin providers.
+ * Privacy Subsystem for filter_echo360 implementing metadata, plugin providers.
  *
  * @copyright  2020 Echo360 Inc.
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later

@@ -610,10 +610,11 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
      * so we can use in cron and reports
      * NB: we will check it exists here too
      * @param object $course
+     * @param object $instance
      * @param array list of 'enhanced' codes
      * @return array list of 'real' codes
      */
-    public function save_codes($course, $advcodes) {
+    public function save_codes($course, $instance, $advcodes) {
         global $CFG, $DB;
 
         // Track codes that are deemed to exist.
@@ -665,7 +666,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         foreach ($advcodes as $advcode) {
             $codes[] = $advcode->code;
         }
-        $entries = $DB->get_records( 'enrol_gudatabase_codes', array( 'courseid' => $course->id ));
+        $entries = $DB->get_records( 'enrol_gudatabase_codes', ['courseid' => $course->id, 'instanceid' => $instance->id]);
         if (!empty($entries)) {
             foreach ($entries as $entry) {
                 if (!in_array($entry->code, $codes)) {
@@ -823,7 +824,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
             $this->log_codes($advcodes, $mcodes, 'plugin', $instance->id);
             $codes = array_merge($codes, $mcodes);
         }
-        $verifiedcodes = $this->save_codes($course, $advcodes);
+        $verifiedcodes = $this->save_codes($course, $instance, $advcodes);
         return $verifiedcodes;
     }
 
@@ -1435,6 +1436,10 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
     public function process_user_enrolments($user, $print = false) {
         global $CFG, $DB;
 
+        // GUID report
+        // If we're running this from the report, we want to exclude some checks
+        $guidreport = $print; 
+
         // Trace.
         if ($print) {
             $trace = new text_progress_trace();
@@ -1455,6 +1460,9 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         if (empty($enrolments)) {
             return true;
         }
+
+        // Get all the courses that the user is enrolled on.
+        $userscourses = enrol_get_users_courses($user->id);
 
         // There could be duplicate courses going this way, so we'll
         // build an array to filter them out.
@@ -1484,14 +1492,24 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
             foreach ($uniquecourses as $courseid => $code) {
 
                 if ($print) {
-                    $trace->output('Processing code ' . $code->code);
+                    $trace->output('Processing course id ' . $courseid);
                 }
 
-                // Find last updated time for this user/course. If it was last updated within 24 hours
+                // If user is already enrolled on the course then don't bother
+                if (array_key_exists($courseid, $userscourses)) {
+                    if ($print) {
+                        $trace->output('    User is already enrolled in course');
+                    }
+                    if (!$guidreport) {
+                        continue;
+                    }
+                }
+
+                // Find last updated time for this user/course. If it was last updated within 4 hours
                 // then we won't do it again.
-                // Skip if 'admin' run (we're always doing it)
-                if (false) {
-                    $dayago = time() - (24 * 60 * 60);
+                // Skip if guidreport run (we're always doing it)
+                if (!$guidreport) {
+                    $dayago = time() - (4 * 60 * 60);
                     if ($gudusers = $DB->get_record('enrol_gudatabase_users', array('userid' => $user->id, 'courseid' => $courseid))) {
                         if ($gudusers->timeupdated > $dayago) {
                             continue;
@@ -1537,6 +1555,9 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
 
                     // Now need to confirm that this instance is the one that defined this code.
                     $instcodes = $this->get_codes($course, $instance);
+                    if ($print) {
+                        $trace->output('        Instance id ' . $instance->id . '. Number of codes ' . count($instcodes));
+                    }
                     if (empty($instcodes) || !in_array($code->code, $instcodes)) {
                         continue;
                     }
