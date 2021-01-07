@@ -87,7 +87,14 @@
                                 -
                             {{/submission}}
                         </td>
-                        <td>{{grades.gradetext}}</td>
+                        <td>
+                            {{#isScale}}
+                                <span class="grade-scale">{{grades.gradetext}}</span>
+                            {{/isScale}}
+                            {{^isScale}}
+                                {{grades.gradetext}}
+                            {{/isScale}}
+                        </td>
                         <td>
                             {{#feedback.hasurl}}
                                 <a href="{{assessment.url}}">
