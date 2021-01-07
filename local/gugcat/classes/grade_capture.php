@@ -220,7 +220,7 @@ class grade_capture{
         $gradeitem->update();
     }
 
-    public static function import_from_gradebook($courseid, $module, $students){
+    public static function import_from_gradebook($courseid, $module, $students, $activities){
         $mggradeitemid = local_gugcat::add_grade_item($courseid, get_string('moodlegrade', 'local_gugcat'), $module);
 
         $gradeitem_ = new grade_item(array('id'=>$mggradeitemid), true);
@@ -228,6 +228,9 @@ class grade_capture{
         //update timemodified gradeitem
         $gradeitem_->update();
         $grade = null;
+        //every time import is clicked, weights from the main activity will be copied to provisional grade items
+        self::set_provisional_weights($courseid, $activities, $students);
+        
         $gbgrades = grade_get_grades($courseid, 'mod', $module->modname, $module->instance, array_keys($students));
         $gradescaleoffset = 0;
         if (local_gugcat::is_grademax22($module->gradeitem->gradetype, $module->gradeitem->grademax)){
@@ -282,6 +285,26 @@ class grade_capture{
         }
         local_gugcat::notify_success($message);
         return $grade_->update();        
+    }
+
+    /**
+     * Copy weights from main activity grade item to provisional grade item
+     *
+     */
+    public static function set_provisional_weights($courseid, $activities, $students){
+        foreach ($activities as $mod) {
+            $maingrdeid = $mod->gradeitem->id; 
+            $prvgrdid = local_gugcat::get_grade_item_id($courseid, $mod->id, get_string('provisionalgrd', 'local_gugcat'));
+            // $weightcoef1 = $mod->gradeitem->aggregationcoef; //Aggregation coeficient used for weighted averages or extra credit
+            // $weightcoef2 = $mod->gradeitem->aggregationcoef2; //Aggregation coeficient used for weighted averages only
+            // $weight = ((float)$weightcoef1 > 0) ? (float)$weightcoef1 : (float)$weightcoef2;
+            foreach ($students as $student) {
+                $gg = new grade_grade(array('userid'=>$student->id, 'itemid'=>$maingrdeid), true); //get aggregation weight from grade_grades main activity
+                $prvgg = new grade_grade(array('userid'=>$student->id, 'itemid'=>$prvgrdid)); //init grade_grade for provisional 
+                $prvgg->set_aggregationweight((float)$gg->get_aggregationweight()); //update weight from the main activity
+                $prvgg->set_aggregationstatus('excluded');//update aggregation status for provisional grade_grades
+            }
+        }
     }
 
 }

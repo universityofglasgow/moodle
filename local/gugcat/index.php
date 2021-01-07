@@ -116,7 +116,7 @@ if (!empty($_POST)){
             print_error('errorgraderequired', 'local_gugcat', $PAGE->url);
         }
     }elseif(isset($_POST['importgrades'])){
-        grade_capture::import_from_gradebook($courseid, $selectedmodule, $students);
+        grade_capture::import_from_gradebook($courseid, $selectedmodule, $students, $activities);
         local_gugcat::notify_success('successimport');
         unset($_POST);
         header("Location: ".$_SERVER['REQUEST_URI']);
