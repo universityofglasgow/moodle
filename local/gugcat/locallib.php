@@ -169,42 +169,52 @@ class local_gugcat {
         return $categoryid;
     }
 
-    public static function add_grade_item($courseid, $reason, $mod){
-        //get scale size for max grade
-        $scalesize = sizeof(self::$GRADES);
-        // check if gradeitem already exists using $reason, $courseid, $activityid
-        if(!$gradeitemid = self::get_grade_item_id($courseid, $mod->id, $reason)){
-            //get GCAT grade category id
-            $categoryid = self::get_gcat_grade_category_id($courseid);
-            $scaleid = $mod->gradeitem->scaleid;
-            if (self::is_grademax22($mod->gradeitem->gradetype, $mod->gradeitem->grademax)){
-                $scaleid = self::get_gcat_scaleid();
+    public static function add_grade_item($courseid, $itemname, $mod){
+        $params = [
+            'courseid' => $courseid,
+            'itemtype' => 'manual',
+            'hidden' => 1,
+            'weightoverride' => 1,
+            'categoryid' => self::get_gcat_grade_category_id($courseid),
+            'itemname' => get_string('aggregatedgrade', 'local_gugcat'),
+        ];
+        if(is_null($mod)){
+            //creates grade item that has no module
+            $gradeitem = new grade_item($params, true);
+            if($gradeitem->id){
+                return $gradeitem->id;
+            }else{
+                $gradeitemid = $gradeitem->insert();
+                foreach(local_gugcat::$STUDENTS as $student){
+                    local_gugcat::add_update_grades($student->id, $gradeitemid, null);
+                }
+                return $gradeitemid;
             }
-            // create new gradeitem
-            $gradeitem = new grade_item(array('id'=>0, 'courseid'=>$courseid));
-            $gradeitem->weightoverride = 0;
-            $gradeitem->gradepass = 0;
-            $gradeitem->grademin = 1;
-            $gradeitem->grademax = $scalesize;
-            $gradeitem->gradetype = 2;
-            $gradeitem->display =0;
-            $gradeitem->hidden = 1;
-            $gradeitem->outcomeid = null;
-            $gradeitem->categoryid = $categoryid;
-            $gradeitem->iteminfo = $mod->id;
-            $gradeitem->itemname = $itemname;
-            $gradeitem->iteminstance= null;
-            $gradeitem->timemodified = null;
-            $gradeitem->itemmodule=null;
-            $gradeitem->scaleid = $scaleid;
-            $gradeitem->itemtype = 'manual'; // All new items to be manual only. 
-            $gradeitemid = $gradeitem->insert();
-            foreach(self::$STUDENTS as $student){
-                self::add_update_grades($student->id, $gradeitemid, null);
+        }else{
+            // check if gradeitem already exists using $itemname, $courseid, $activityid
+            if(!$gradeitemid = self::get_grade_item_id($courseid, $mod->id, $itemname)){
+                $scaleid = $mod->gradeitem->scaleid;
+                if (self::is_grademax22($mod->gradeitem->gradetype, $mod->gradeitem->grademax)){
+                    $scaleid = self::get_gcat_scaleid();
+                }
+                $params_mod = [
+                    'scaleid' => $scaleid,
+                    'grademin' => 1,
+                    'grademax' => sizeof(self::$GRADES),
+                    'gradetype' => 2,
+                    'iteminfo' => $mod->id,
+                    'itemname' => $itemname
+                ];
+                // create new gradeitem
+                $gradeitem = new grade_item(array_merge($params, $params_mod));
+                $gradeitemid = $gradeitem->insert();
+                foreach(self::$STUDENTS as $student){
+                    self::add_update_grades($student->id, $gradeitemid, null);
+                }
+                return $gradeitemid;
+            }else {
+                return $gradeitemid;
             }
-            return $gradeitemid;
-        }else {
-            return $gradeitemid;
         }
     }
     
