@@ -101,7 +101,7 @@ class grade_aggregation{
             $gradecaptureitem->completed = round((float)$floatweight * 100 ) . '%';
             $gradecaptureitem->aggregatedgrade = in_array(get_string('nograderecorded', 'local_gugcat'), $gradecaptureitem->grades) 
             ? get_string('missinggrade', 'local_gugcat') 
-            : ((($sumaggregated/$sumgrade) > 0.5) ? local_gugcat::convert_grade($sumaggregated) : local_gugcat::convert_grade($sumaggregated, local_gugcat::$SCHED_B)) ." ($sumaggregated)";
+            : ((($sumaggregated/$sumgrade) > 0.5) ? local_gugcat::convert_grade($sumaggregated) : local_gugcat::convert_grade($sumaggregated, local_gugcat::$SCHED_B)) .' ('.number_format($sumaggregated, 2).')';
             array_push($rows, $gradecaptureitem);
             $i++;
         }
