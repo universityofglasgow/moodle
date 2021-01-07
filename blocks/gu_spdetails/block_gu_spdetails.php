@@ -104,11 +104,12 @@ class block_gu_spdetails extends block_base {
             if ($a->name == 'quiz') {
                 $a->grades->feedback = $a->assessment->feedback;
             }
+            $a->grades->grademax = array_key_exists('grademax', $a->assessment) ? $a->assessment->grademax : null;
             $a->grades->finalgrade = property_exists($a->grades, 'finalgrade') ? $a->grades->finalgrade : null;
             $a->assessment->gradeid = array_key_exists('gradeid', $a->assessment) ? $a->assessment->gradeid : null;
             $a->grades->feedback = property_exists($a->grades, 'feedback') ? $a->grades->feedback : null;
             $a->grades->gradetext = ($a->assessment->gradingduedate) ?
-                                    self::return_grade($a->grades->finalgrade, $a->assessment->gradingduedate, $a->assessment) :
+                                    self::return_grade($a->grades->finalgrade, $a->assessment->gradingduedate, $a->assessment, $a->grades->grademax) :
                                     get_string('emptyvalue', $lang);
             $a->feedback = ($a->assessment->gradingduedate) ?
                             self::return_feedback($a->grades->feedback, $a->assessment->gradingduedate) :
@@ -228,7 +229,7 @@ class block_gu_spdetails extends block_base {
                 $sql = "SELECT ma.id, ma.name,
                         ma.allowsubmissionsfromdate as `startdate`,
                         ma.duedate, ma.cutoffdate, ma.gradingduedate,
-                        mgi.id as `gradeid`, mgi.aggregationcoef as `weight`,
+                        mgi.id as `gradeid`, mgi.aggregationcoef as `weight`, mgi.grademax,
                         mao.allowsubmissionsfromdate as `overridestartdate`,
                         mao.duedate as `overrideduedate`,
                         mao.cutoffdate as `overridecutoffdate`,
@@ -251,7 +252,7 @@ class block_gu_spdetails extends block_base {
                         mq.timeopen as `startdate`,
                         mq.timeclose as `duedate`, mq.timelimit,
                         (mq.timeclose + (86400 * 14)) as `gradingduedate`,
-                        mgi.aggregationcoef as `weight`, mgg.feedback,
+                        mgi.aggregationcoef as `weight`, mgg.feedback, mgi.grademax,
                         mqo.timeopen as `overridestartdate`,
                         mqo.timeclose as `overrideduedate`,
                         mqo.timelimit as `overridelimit`,
@@ -442,11 +443,13 @@ class block_gu_spdetails extends block_base {
      * @return mixed $gradetext float value of Grade if the assessment is graded, otherwise return
      *  the Grading Due Date string
      */
-    public static function return_grade($grade, $gradingduedate, $assessment) {
+    public static function return_grade($grade, $gradingduedate, $assessment, $grademax) {
         global $DB;
         $lang = 'block_gu_spdetails';
+        $scalegrade = (property_exists($assessment, "scaleid") && !is_null($assessment->scaleid)) ? $grade : round(($grade / $grademax) * 100, 2).'%';
+        $gradepercentage = ($grademax) ? $scalegrade : round($grade, 2).'%';
 
-        $gradetext = $grade ? $grade : 
+        $gradetext = $grade ? $gradepercentage : 
                      get_string('due', $lang).userdate($gradingduedate, get_string('convertdate', $lang));
         if (property_exists($assessment, "scaleid") && !is_null($assessment->scaleid)){
             $dbScale = $DB->get_record('scale', array('id'=> $assessment->scaleid));

@@ -3,26 +3,33 @@ dateIsAscending = true;
 
 function sortByDate(header){
     sortTable(4, dateIsAscending);
+    saveSorts("date", dateIsAscending);
     dateIsAscending = !dateIsAscending;
 
     headerIcon = header.lastElementChild;
     if (dateIsAscending) {
-        headerIcon.classList.add("rotateimg180")
+        headerIcon.classList.add("rotateimg180");
     } else {
-        headerIcon.classList.remove("rotateimg180")
+        headerIcon.classList.remove("rotateimg180");
     }
 }
 
 function sortByCourse(header){
     sortTable(0, courseIsAscending);
+    saveSorts("course", courseIsAscending);
     courseIsAscending = !courseIsAscending;
 
     headerIcon = header.lastElementChild;
     if (courseIsAscending) {
-        headerIcon.classList.add("rotateimg180")
+        headerIcon.classList.add("rotateimg180");
     } else {
-        headerIcon.classList.remove("rotateimg180")
+        headerIcon.classList.remove("rotateimg180");
     }
+}
+
+function saveSorts(sortedBy, isAscending){
+    localStorage["sortedBy"] = sortedBy;
+    localStorage["isAscending"] = isAscending;
 }
 
 function sortTable(index, isAscending = true) {
@@ -50,3 +57,19 @@ function sortTable(index, isAscending = true) {
         }
     }
 }
+
+window.addEventListener("DOMContentLoaded", ()=>{
+    sortedBy = localStorage["sortedBy"];
+    isAscending = localStorage["isAscending"] == "true";
+
+    switch (sortedBy) {
+        case "date" :
+            dateIsAscending = isAscending;
+            sortByDate(document.getElementById("gu_spdetails_tableheader_duedate"));
+            break;
+        case "course" :
+            courseIsAscending = isAscending;
+            sortByCourse(document.getElementById("gu_spdetails_tableheader_course"));
+            break;
+    }
+});
