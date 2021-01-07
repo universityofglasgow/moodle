@@ -140,7 +140,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
             $html .= html_writer::start_tag('div', array('class'=>'form-group row'));
             $html .= html_writer::start_tag('div', array('class'=> 'col-md-3'));
             if ($gradeversion->itemname == get_string('moodlegrade', 'local_gugcat'))
-                $html .= html_writer::tag('label', $gradeversion->itemname. date(" [j/n/Y]", strtotime(userdate($gradeversion->timemodified))));
+                $html .= html_writer::tag('label', $gradeversion->itemname. date(" j/n/Y", strtotime(userdate($gradeversion->timemodified))));
             else 
                 $html .= html_writer::tag('label', $gradeversion->itemname);
             $html .= html_writer::end_tag('div');
@@ -171,7 +171,6 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $htmlcolumns .= html_writer::tag('th', get_string('aggregatedgrade', 'local_gugcat').'<i class="fa fa-cog"></i></th>');
         //grade capture rows
         foreach ($rows as $row) {
-            $gradeformurl .= '&studentid=' . $row->studentno;
             $htmlrows .= html_writer::start_tag('tr');
             $htmlrows .= html_writer::tag('td', $row->cnum);
             $htmlrows .= html_writer::tag('td', $row->studentno);
@@ -207,6 +206,17 @@ class local_gugcat_renderer extends plugin_renderer_base {
         return $html;
     }
 
+    public function display_overview_adjust_grade_form($student) {
+        $modname = (($this->page->cm) ? $this->page->cm->name : null);
+        $html = $this->header();
+        $html .= $this->render_from_template('local_gugcat/ag_override_form', (object)[
+            'overridetitle' =>get_string('overridestudgrade', 'local_gugcat'),
+            'candidate' => '1',
+            'student' => $student
+        ]);
+        return $html;
+    }
+
     private function display_table($rows, $columns) {
         $html = html_writer::start_tag('div', array('class' => 'table-responsive'));
         $html .= html_writer::start_tag('table', array('class' => 'table'));
@@ -232,8 +242,8 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $html = html_writer::tag('i', null, array('class' => 'fa fa-ellipsis-h', 'data-toggle' => 'dropdown'));
         $html .= html_writer::start_tag('ul', array('class' => 'dropdown-menu'));
         if($is_aggregrade){
-            $adjustlink = $link . '&setting=' . ADJUST_WEIGHT_FORM;
-            $overridelink = $link . '&setting=' . OVERRIDE_GRADE_FORM;
+            $adjustlink = $link . '&setting=' . ADJUST_WEIGHT_FORM .'&studentid=' . $studentno;
+            $overridelink = $link . '&setting=' . OVERRIDE_GRADE_FORM.'&studentid=' . $studentno;
             $html .= html_writer::tag('li', get_string('adjustcourseweight', 'local_gugcat'), array('class' => 'dropdown-item', 'onclick' => 'location.href=\''.$adjustlink.'\''));
             $html .= html_writer::tag('li', get_string('overrideggregrade', 'local_gugcat'), array('class' => 'dropdown-item', 'onclick' => 'location.href=\''.$overridelink.'\''));
         }else{

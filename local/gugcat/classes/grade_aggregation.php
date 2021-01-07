@@ -81,6 +81,7 @@ class grade_aggregation{
             $gradecaptureitem->surname = $student->lastname;
             $gradecaptureitem->forename = $student->firstname;
             $gradecaptureitem->grades = array();
+            $gbaggregatedgrade = $DB->get_record(GRADE_GRADES, array('itemid'=>$aggradeid, 'userid'=>$student->id));
             $floatweight = 0;
             $sumaggregated = 0;
             $sumgrade = 0;
@@ -108,11 +109,18 @@ class grade_aggregation{
                 array_push($gradecaptureitem->grades, $grade);
             }
             $gradecaptureitem->completed = round((float)$floatweight * 100 ) . '%';
-            $gradecaptureitem->aggregatedgrade = in_array(get_string('nograderecorded', 'local_gugcat'), $gradecaptureitem->grades) 
-            ? get_string('missinggrade', 'local_gugcat') 
-            : local_gugcat::convert_grade($sumaggregated) .' ('.number_format($sumaggregated, 2).')';
+            if($gbaggregatedgrade->overridden == 0){
+                $gradecaptureitem->aggregatedgrade = in_array(get_string('nograderecorded', 'local_gugcat'), $gradecaptureitem->grades) 
+                ? get_string('missinggrade', 'local_gugcat') 
+                : local_gugcat::convert_grade($sumaggregated) .' ('.number_format($sumaggregated, 2).')';
+                local_gugcat::update_grade($student->id, $aggradeid, $sumaggregated);
+            }
+            else{
+                $gradecaptureitem->aggregatedgrade = in_array(get_string('nograderecorded', 'local_gugcat'), $gradecaptureitem->grades) 
+                ? get_string('missinggrade', 'local_gugcat') : local_gugcat::convert_grade($gbaggregatedgrade->finalgrade).' ('.number_format($gbaggregatedgrade->finalgrade, 2).')';
+                
+            }
             array_push($rows, $gradecaptureitem);
-            local_gugcat::update_grade($student->id, $aggradeid, $sumaggregated);
             $i++;
         }
         return $rows;

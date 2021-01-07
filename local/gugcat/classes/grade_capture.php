@@ -220,7 +220,7 @@ class grade_capture{
         $gradeitem->update();
     }
 
-    public static function import_from_gradebook($courseid, $module, $students, $activities){
+    public static function import_from_gradebook($courseid, $module, $students){
         $mggradeitemid = local_gugcat::add_grade_item($courseid, get_string('moodlegrade', 'local_gugcat'), $module);
 
         $gradeitem_ = new grade_item(array('id'=>$mggradeitemid), true);
