@@ -28,12 +28,17 @@ defined('MOODLE_INTERNAL') || die();
 //tables used in db
 define('GRADE_GRADES', 'grade_grades');
 define('GRADE_ITEMS', 'grade_items');
+define('GRADE_CATEGORIES', 'grade_categories');
+define('SCALE', 'scale');
 
 //Administrative grades at Assessment Level
 define('NON_SUBMISSION_AC', 'NS');
 define('MEDICAL_EXEMPTION_AC', 'MV');
 define('NON_SUBMISSION', -1);
 define('MEDICAL_EXEMPTION', -2);
+
+define('GCAT_SCALE', 'UofG 22-Point Scale (Do NOT use if you are grading in Feedback Studio)');
+define('GCAT_GRADE_CATEGORY', 'DO NOT USE');
 
 require_once($CFG->libdir.'/gradelib.php');
 require_once($CFG->dirroot . '/grade/querylib.php');
@@ -46,6 +51,31 @@ class local_gugcat {
     public static $GRADES = array();
     public static $PRVGRADEID = null;
     public static $STUDENTS = array();
+    public static $SCHED_B = array(
+        22 =>"A0",
+        21 =>"A0",
+        20 =>"A0",
+        19 =>"A0",
+        18 =>"A0",
+        17 =>"B0",
+        16 =>"B0",
+        15 =>"B0",
+        14 =>"C0",
+        13 =>"C0",
+        12 =>"C0",
+        11 =>"D0",
+        10 =>"D0",
+        9 =>"D0",
+        8 =>"E0",
+        7 =>"E0",
+        6 =>"E0",
+        5 =>"F0",
+        4 =>"F0",
+        3 =>"F0",
+        2 =>"G0",
+        1 =>"G0",
+        0 =>"H"
+    );
 
     public static function get_reasons(){
         return array(
@@ -99,12 +129,23 @@ class local_gugcat {
         $select = 'courseid = '.$course->id.' AND '.self::compare_iteminfo();
         $gradeitems = $DB->get_records_select(GRADE_ITEMS, $select, ['iteminfo' => $module->id]);
         $sort = 'id';
-        $fields = 'userid, itemid, id, finalgrade, timemodified, hidden';
+        $fields = 'userid, itemid, id, rawgrade, finalgrade, timemodified, hidden';
         foreach($gradeitems as $item) {
-            $item->grades = $DB->get_records(GRADE_GRADES, array('itemid' => $item->id), $sort, $fields);
+            $grades_arr = $DB->get_records(GRADE_GRADES, array('itemid' => $item->id), $sort, $fields);
+            foreach($grades_arr as $grditem) {
+                $grditem->grade = is_null($grditem->finalgrade) ? $grditem->rawgrade : $grditem->finalgrade;
+            }
+            $item->grades = $grades_arr;
         }
-        
         return $gradeitems;
+    }
+
+    /**
+     * Returns the scale id used for GCAT
+     */
+    public static function get_gcat_scaleid(){
+        global $DB;
+        return $DB->get_field(SCALE, 'id', array('name' => GCAT_SCALE, 'courseid' => '0'));
     }
 
     public static function compare_iteminfo(){
@@ -130,14 +171,40 @@ class local_gugcat {
         return $DB->get_field_select(GRADE_ITEMS, 'id', $select, $params);
     }
 
+    public static function is_grademax22($gradetype, $grademax){
+        if ($gradetype == GRADE_TYPE_VALUE && $grademax == 22){
+            return true;
+        }
+        return false;
+    }
+
+    public static function get_gcat_grade_category_id($courseid){
+        global $DB;
+        $categoryid = $DB->get_field(GRADE_CATEGORIES, 'id', array('fullname' => GCAT_GRADE_CATEGORY, 'courseid' => $courseid));
+        if (empty($categoryid)){
+            $grade_category = new grade_category(array('courseid'=>$courseid), false);
+            $grade_category->apply_default_settings();
+            $grade_category->apply_forced_settings();
+            $grade_category->fullname = GCAT_GRADE_CATEGORY;
+            $grade_category->hidden = 1;
+            grade_category::set_properties($grade_category, $grade_category->get_record_data());
+            $grade_category->insert();
+            $categoryid = $grade_category->id;
+        }
+        return $categoryid;
+    }
+
     public static function add_grade_item($courseid, $reason, $mod){
         //get scale size for max grade
         $scalesize = sizeof(self::$GRADES);
         // check if gradeitem already exists using $reason, $courseid, $activityid
         if(!$gradeitemid = self::get_grade_item_id($courseid, $mod->id, $reason)){
-            // get category id scaleid
-            $categoryid = $mod->gradeitem->categoryid;
+            //get GCAT grade category id
+            $categoryid = self::get_gcat_grade_category_id($courseid);
             $scaleid = $mod->gradeitem->scaleid;
+            if (self::is_grademax22($mod->gradeitem->gradetype, $mod->gradeitem->grademax)){
+                $scaleid = self::get_gcat_scaleid();
+            }
             // create new gradeitem
             $gradeitem = new grade_item(array('id'=>0, 'courseid'=>$courseid));
             $gradeitem->weightoverride = 0;
@@ -181,7 +248,7 @@ class local_gugcat {
         $grade_->userid = $userid;
         $grade_->rawgrade = $grade;
         $grade_->usermodified = $USER->id;
-        $grade_->finalgrade = $grade;
+        $grade_->finalgrade = self::is_admin_grade($grade) ? null : $grade;
         $grade_->feedback = $notes;
         $grade_->information = $gradedocs;
         $grade_->hidden = 0;
@@ -212,16 +279,17 @@ class local_gugcat {
         $grade_ = new grade_grade(array('userid' => $userid, 'itemid' => $itemid), true);
         $grade_->rawgrade = $grade;
         $grade_->usermodified = $USER->id;
-        $grade_->finalgrade = $grade;
+        $grade_->finalgrade = self::is_admin_grade($grade) ? null : $grade;
         $grade_->itemid = $itemid;
         $grade_->userid = $userid;
+        $grade_->excluded = 1;
         $grade_->timemodified = time();
         //update existing grade
         return $grade_->update();
     }
 
-    public static function convert_grade($grade){
-        $scale = self::$GRADES;
+    public static function convert_grade($grade, $scale_ = null){
+        $scale = is_null($scale_) ? self::$GRADES : $scale_;
         $final_grade = intval($grade);
         if ($final_grade >= key(array_slice($scale, -1, 1, true)) && $final_grade <= key($scale)){
             return $scale[$final_grade];
@@ -233,7 +301,7 @@ class local_gugcat {
 
     public static function filter_grade_version($gradeitems, $studentid){
         foreach($gradeitems as $gradeitem){
-            $finalgrade = (isset($gradeitem->grades[$studentid]) ? $gradeitem->grades[$studentid]->finalgrade : null); 
+            $finalgrade = (isset($gradeitem->grades[$studentid]) ? $gradeitem->grades[$studentid]->grade : null); 
             if(is_null($finalgrade)) {
                 unset($gradeitems[$gradeitem->id]);
             }
@@ -269,6 +337,8 @@ class local_gugcat {
 
     public static function get_grade_categories($courseid){
         $raw = grade_get_categories_menu($courseid);
+        $gcat_category_id = self::get_gcat_grade_category_id($courseid);
+        unset($raw[$gcat_category_id]);
         $categoryid = optional_param('categoryid', null, PARAM_INT);
         $grd_ctgs = array();
         foreach($raw as $key=>$value) {
@@ -279,5 +349,16 @@ class local_gugcat {
             $grd_ctgs[$key] = $cat;
         }
         return $grd_ctgs;
+    }
+
+    public static function is_admin_grade($grade){
+        switch ($grade) {
+            case NON_SUBMISSION:
+                return true;
+            case MEDICAL_EXEMPTION:
+                return true;
+            default:
+                return false;
+        }
     }
 }

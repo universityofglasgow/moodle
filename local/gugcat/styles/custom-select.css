@@ -47,3 +47,13 @@ select::-ms-expand {
     letter-spacing: 0em;
     text-align: left;
 }
+
+select option {
+    background: white;
+    color: #9393A0;
+}
+
+option:checked {
+    background: #005C8A;
+    color: white;
+}

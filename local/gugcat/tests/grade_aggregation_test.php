@@ -74,6 +74,13 @@ class grade_aggregation_testcase extends advanced_testcase {
         $gradeitemid = $this->cm->gradeitem->id;
         $user1 = $this->student1->id;
         $user2 = $this->student2->id;
+        //student provisonal grades
+        $s1grd =  5;
+        $s2grd =  10;
+        //expected grades
+        $exp_s1grd =  '10.00000';
+        $exp_s2grd = '5.00000';
+
         $data = [];
         $data[] = [//1st student grade for main activity
             'itemid' => $gradeitemid,
@@ -93,34 +100,40 @@ class grade_aggregation_testcase extends advanced_testcase {
             'itemid' => $this->provisionalgi->id,
             'userid' => $user1,
             'excluded' => 1,
-            'rawgrade' => 5,
-            'finalgrade' => 5
+            'rawgrade' => $s1grd,
+            'finalgrade' => $s1grd
         ];
         $data[] = [//2nd student grade for provisional grade
             'itemid' => $this->provisionalgi->id,
             'userid' => $user2,
             'excluded' => 1,
-            'rawgrade' => 10,
-            'finalgrade' => 10
+            'rawgrade' => $s2grd,
+            'finalgrade' => $s2grd
         ];
         $DB->insert_records('grade_grades', $data);
         
         $modules = array($this->cm);
         $rows = grade_aggregation::get_rows($this->course, $modules, $this->students);
+        //get the weight of the main activity grades
+        $gg1 = new grade_grade(array('userid'=>$this->student1->id, 'itemid'=>$gradeitemid), true); //1st student 
+        $gg2 = new grade_grade(array('userid'=>$this->student1->id, 'itemid'=>$gradeitemid), true); //2nd student 
+        $exp_aggregatedgrd1 = (float)$exp_s1grd * (float)$gg1->get_aggregationweight();
+        $exp_aggregatedgrd2 = (float)$exp_s2grd * (float)$gg2->get_aggregationweight();
         $expectedcompleted = "100%"; //expected completed percent since there's only one activity
         $this->assertCount(2, $rows);
         //assert each rows that it has the provisional grade
         $row1 = $rows[1];
         $this->assertEquals($row1->cnum, 2);
         $this->assertEquals($row1->studentno, $this->student2->id);
-        $this->assertContains('10.00000', $row1->grades);
-        $this->assertEquals($row1->completed, $expectedcompleted);
+        $this->assertContains($exp_s1grd, $row1->grades);
+        $this->assertEquals($row1->completed, $expectedcompleted); //assert complete percent
+        $this->assertStringContainsString($exp_aggregatedgrd1, $row1->aggregatedgrade); //assert aggregated grade 
         $row2 = $rows[0];
         $this->assertEquals($row2->cnum, 1);
         $this->assertEquals($row2->studentno, $this->student1->id);
-        $this->assertContains('5.00000', $row2->grades);
+        $this->assertContains($exp_s2grd, $row2->grades);
         $this->assertEquals($row2->completed, $expectedcompleted);
-
+        $this->assertStringContainsString($exp_aggregatedgrd2, $row2->aggregatedgrade);
     }
 
 }
