@@ -64,7 +64,7 @@ class grade_aggregation{
             //get provisional grades
             $prvgrdid = local_gugcat::set_prv_grade_id($course->id, $mod);
             $sort = 'id';
-            $fields = 'userid, itemid, id, rawgrade, finalgrade, aggregationstatus, aggregationweight, timemodified';
+            $fields = 'userid, itemid, id, rawgrade, finalgrade, information, timemodified';
             $grades->provisional = $DB->get_records(GRADE_GRADES, array('itemid' => $prvgrdid), $sort, $fields);
             //get grades from gradebook
             $gbgrades = grade_get_grades($course->id, 'mod', $mod->modname, $mod->instance, array_keys($students));
@@ -98,8 +98,9 @@ class grade_aggregation{
                 local_gugcat::set_grade_scale($scaleid);
                 $grade = is_null($grd) ? get_string('nograderecorded', 'local_gugcat') : local_gugcat::convert_grade($grd);
                 if(!is_null($pg) && !is_null($grd) && $grade !== MEDICAL_EXEMPTION_AC){
-                    $floatweight += ($grade === NON_SUBMISSION_AC) ? 0 : (float)$pg->aggregationweight;
-                    $sumaggregated += ($grade === NON_SUBMISSION_AC) ?( 0 * (float)$grd) : ((float)$grd * (float)$pg->aggregationweight);
+                    $weight = (float)$pg->information; //get weight from information column of provisional grades
+                    $floatweight += ($grade === NON_SUBMISSION_AC) ? 0 : $weight;
+                    $sumaggregated += ($grade === NON_SUBMISSION_AC) ?( 0 * (float)$grd) : ((float)$grd * $weight);
                     $sumgrade += ($grade === NON_SUBMISSION_AC) ? 0 : (float)$grd;
                 }
                 $gradecaptureitem->nonsubmission = ($grade === NON_SUBMISSION_AC) ? true : false;
