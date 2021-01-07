@@ -305,7 +305,7 @@ class grade_capture{
             // $weight = ((float)$weightcoef1 > 0) ? (float)$weightcoef1 : (float)$weightcoef2;
             foreach ($students as $student) {
                 $weight = $DB->get_field(GRADE_GRADES, 'aggregationweight', array('itemid' => $maingrdeid, 'userid' => $student->id));
-                $DB->set_field(GRADE_GRADES, 'feedback', $weight, array('itemid' => $prvgrdid, 'userid' => $student->id));          
+                $DB->set_field(GRADE_GRADES, 'information', $weight, array('itemid' => $prvgrdid, 'userid' => $student->id));          
             }
         }
     }
