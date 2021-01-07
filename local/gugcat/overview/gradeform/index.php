@@ -25,7 +25,7 @@
 
 require_once(__DIR__ . '/../../../../config.php');
 require_once($CFG->dirroot . '/local/gugcat/locallib.php');
-require_once($CFG->dirroot.'/local/gugcat/classes/form/coursegradeform.php');
+// require_once($CFG->dirroot.'/local/gugcat/classes/form/coursegradeform.php');
 
 $courseid = required_param('id', PARAM_INT);
 $formtype = required_param('setting', PARAM_INT);
@@ -45,8 +45,8 @@ $PAGE->set_course($course);
 $coursecontext = context_course::instance($course->id);
 $activities = local_gugcat::get_activities($courseid);
 
-$mform = new coursegradeform(null, array('id'=>$courseid, 'activities'=>$activities));
+// $mform = new coursegradeform(null, array('id'=>$courseid, 'activities'=>$activities));
 
 echo $OUTPUT->header();
-$mform->display();
+// $mform->display();
 echo $OUTPUT->footer();
