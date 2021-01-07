@@ -50,6 +50,7 @@ $students = get_enrolled_users($coursecontext, 'moodle/competency:coursecompeten
 $activities = local_gugcat::get_activities($courseid);
 
 $rows = grade_aggregation::get_rows($course, $activities, $students);
+
 echo $OUTPUT->header();
 $renderer = $PAGE->get_renderer('local_gugcat');
 echo $renderer->display_aggregation_tool($rows, $activities);
