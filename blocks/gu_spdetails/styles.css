@@ -116,10 +116,15 @@
 }
 
 .assessments-details-sort select {
-    border-color: #eee;
+    border-color: #677;
     border-radius: 8px;
-    color: #99a;
+    color: #677;
     font-size: 14px;
     margin-left: 15px;
     padding: 10px;
+}
+
+.grade-scale {
+    color: #183;
+    font-weight: 600;
 }

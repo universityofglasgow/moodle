@@ -69,7 +69,8 @@ class block_gu_spdetails extends block_base {
             $a->info = $info;
             $a->isVisible = $mod->uservisible;
 
-            $a->courserecord->coursename = ($a->sectionavailability) ? $a->sectionname : $a->courserecord->fullname;
+            $a->courserecord->coursename = ($a->sectionname) ? $a->sectionname :
+                                            (($a->section > 0) ? 'Topic '.$a->section: $a->courserecord->fullname);
 
             $a->assessment = self::retrieve_assessmentrecord($a->name, $a->instance, $userid);
             $a->assessment->categoryname =  property_exists($a->assessment, 'categoryname') ? 
@@ -118,6 +119,9 @@ class block_gu_spdetails extends block_base {
                                                     $a->assessment->duedate,
                                                     $a->grades->finalgrade);
             $a->assessment->url = self::return_assessmenturl($a->name, $a->id, $a->submission->hasurl);
+
+            $a->isScale = (property_exists($a->assessment, "scaleid") && !is_null($a->assessment->scaleid) &&
+                          (strpos($a->grades->gradetext, 'Due') === false)) ? true : false;
 
             // only add assessments that are not restricted
             if($a->isVisible) {
