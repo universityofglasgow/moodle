@@ -177,6 +177,13 @@ define(['jquery', 'core/str' ], function($, Str) {
                     mformNotes.placeholder = "Specify reason(s) for ammendment";
                     mformNotes.required = true;
                 }
+
+                if(checkCurrentUrl("gugcat/overview/gradeform")){
+                    //Add placeholder
+                    var mformNotes = document.getElementById('id_notes');
+                    mformNotes.placeholder = "Specify reason(s) for ammendment";
+                    mformNotes.required = true;
+                }
             }
         }
     };

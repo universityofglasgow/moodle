@@ -28,6 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 //tables used in db
 define('GRADE_GRADES', 'grade_grades');
 define('GRADE_ITEMS', 'grade_items');
+define('GRADE_CATEGORIES', 'grade_categories');
 define('SCALE', 'scale');
 
 //Administrative grades at Assessment Level
@@ -37,6 +38,7 @@ define('NON_SUBMISSION', -1);
 define('MEDICAL_EXEMPTION', -2);
 
 define('GCAT_SCALE', 'UofG 22-Point Scale (Do NOT use if you are grading in Feedback Studio)');
+define('GCAT_GRADE_CATEGORY', 'DO NOT USE');
 
 require_once($CFG->libdir.'/gradelib.php');
 require_once($CFG->dirroot . '/grade/querylib.php');
@@ -151,42 +153,68 @@ class local_gugcat {
         return false;
     }
 
+    public static function get_gcat_grade_category_id($courseid){
+        global $DB;
+        $categoryid = $DB->get_field(GRADE_CATEGORIES, 'id', array('fullname' => GCAT_GRADE_CATEGORY, 'courseid' => $courseid));
+        if (empty($categoryid)){
+            $grade_category = new grade_category(array('courseid'=>$courseid), false);
+            $grade_category->apply_default_settings();
+            $grade_category->apply_forced_settings();
+            $grade_category->fullname = GCAT_GRADE_CATEGORY;
+            $grade_category->hidden = 1;
+            grade_category::set_properties($grade_category, $grade_category->get_record_data());
+            $grade_category->insert();
+            $categoryid = $grade_category->id;
+        }
+        return $categoryid;
+    }
+
     public static function add_grade_item($courseid, $itemname, $mod){
-        //get scale size for max grade
-        $scalesize = sizeof(self::$GRADES);
-        // check if gradeitem already exists using $reason, $courseid, $activityid
-        if(!$gradeitemid = self::get_grade_item_id($courseid, $mod->id, $itemname)){
-            // get category id scaleid
-            $categoryid = $mod->gradeitem->categoryid;
-            $scaleid = $mod->gradeitem->scaleid;
-            if (self::is_grademax22($mod->gradeitem->gradetype, $mod->gradeitem->grademax)){
-                $scaleid = self::get_gcat_scaleid();
+        $params = [
+            'courseid' => $courseid,
+            'itemtype' => 'manual',
+            'hidden' => 1,
+            'weightoverride' => 1,
+            'categoryid' => self::get_gcat_grade_category_id($courseid),
+            'itemname' => get_string('aggregatedgrade', 'local_gugcat'),
+        ];
+        if(is_null($mod)){
+            //creates grade item that has no module
+            $gradeitem = new grade_item($params, true);
+            if($gradeitem->id){
+                return $gradeitem->id;
+            }else{
+                $gradeitemid = $gradeitem->insert();
+                foreach(local_gugcat::$STUDENTS as $student){
+                    local_gugcat::add_update_grades($student->id, $gradeitemid, null);
+                }
+                return $gradeitemid;
             }
-            // create new gradeitem
-            $gradeitem = new grade_item(array('id'=>0, 'courseid'=>$courseid));
-            $gradeitem->weightoverride = 0;
-            $gradeitem->gradepass = 0;
-            $gradeitem->grademin = 1;
-            $gradeitem->grademax = $scalesize;
-            $gradeitem->gradetype = 2;
-            $gradeitem->display =0;
-            $gradeitem->hidden = 1;
-            $gradeitem->outcomeid = null;
-            $gradeitem->categoryid = $categoryid;
-            $gradeitem->iteminfo = $mod->id;
-            $gradeitem->itemname = $itemname;
-            $gradeitem->iteminstance= null;
-            $gradeitem->timemodified = null;
-            $gradeitem->itemmodule=null;
-            $gradeitem->scaleid = $scaleid;
-            $gradeitem->itemtype = 'manual'; // All new items to be manual only. 
-            $gradeitemid = $gradeitem->insert();
-            foreach(self::$STUDENTS as $student){
-                self::add_update_grades($student->id, $gradeitemid, null);
+        }else{
+            // check if gradeitem already exists using $itemname, $courseid, $activityid
+            if(!$gradeitemid = self::get_grade_item_id($courseid, $mod->id, $itemname)){
+                $scaleid = $mod->gradeitem->scaleid;
+                if (self::is_grademax22($mod->gradeitem->gradetype, $mod->gradeitem->grademax)){
+                    $scaleid = self::get_gcat_scaleid();
+                }
+                $params_mod = [
+                    'scaleid' => $scaleid,
+                    'grademin' => 1,
+                    'grademax' => sizeof(self::$GRADES),
+                    'gradetype' => 2,
+                    'iteminfo' => $mod->id,
+                    'itemname' => $itemname
+                ];
+                // create new gradeitem
+                $gradeitem = new grade_item(array_merge($params, $params_mod));
+                $gradeitemid = $gradeitem->insert();
+                foreach(self::$STUDENTS as $student){
+                    self::add_update_grades($student->id, $gradeitemid, null);
+                }
+                return $gradeitemid;
+            }else {
+                return $gradeitemid;
             }
-            return $gradeitemid;
-        }else {
-            return $gradeitemid;
         }
     }
     
@@ -229,7 +257,7 @@ class local_gugcat {
         }
     }
 
-    public static function update_grade($userid, $itemid, $grade){
+    public static function update_grade($userid, $itemid, $grade, $notes = null, $gradedocs = null, $overridden = 0){
         global $USER;
 
         //get grade grade, true
@@ -240,7 +268,10 @@ class local_gugcat {
         $grade_->itemid = $itemid;
         $grade_->userid = $userid;
         $grade_->excluded = 1;
+        $grade_->overridden = $overridden;
         $grade_->timemodified = time();
+        if (!is_null($notes))
+            $grade_->feedback->$notes;
         //update existing grade
         return $grade_->update();
     }
@@ -294,6 +325,8 @@ class local_gugcat {
 
     public static function get_grade_categories($courseid){
         $raw = grade_get_categories_menu($courseid);
+        $gcat_category_id = self::get_gcat_grade_category_id($courseid);
+        unset($raw[$gcat_category_id]);
         $categoryid = optional_param('categoryid', null, PARAM_INT);
         $grd_ctgs = array();
         foreach($raw as $key=>$value) {

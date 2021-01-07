@@ -1,5 +1,5 @@
 
-.mform-container label, .form-container label, .title{
+.mform-container label, .form-container label, .title, .col-form-label{
     font-weight: bold;
 }
 
@@ -43,6 +43,15 @@
     padding: 5% 8px 0px 8px;
     position: absolute;
     pointer-events: none;
+}
+
+.mform-grades {
+    display: flex;
+    width: 100%;
+}
+
+.mform-activities{
+    width: 50%;
 }
 
 .form-inline .input-group, .form-inline .custom-select {
