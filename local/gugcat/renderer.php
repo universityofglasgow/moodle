@@ -176,14 +176,14 @@ class local_gugcat_renderer extends plugin_renderer_base {
             $htmlrows .= html_writer::tag('td', $row->studentno);
             $htmlrows .= html_writer::tag('td', $row->surname);
             $htmlrows .= html_writer::tag('td', $row->forename);
-            foreach((array) $row->grades as $grade) {
-                $htmlrows .= '<td>'.$grade.((strpos($grade, 'No grade') !== false) ? null : $this->context_actions($row->studentno)).'</td>';
+            foreach((array) $row->grades as $grdobj) {
+                $htmlrows .= '<td>'.$grdobj->grade.((strpos($grdobj->grade, 'No grade') !== false) ? null : $this->context_actions($row->studentno)).'</td>';
             }
             $htmlrows .= '<td><i class="fa fa-times-circle"></i></td>';
             $htmlrows .= html_writer::tag('td', $row->completed);
-            $htmlrows .= ($row->aggregatedgrade != get_string('missinggrade', 'local_gugcat')) 
-            ? html_writer::start_tag('td').$row->aggregatedgrade.$this->context_actions($row->studentno, null, true, $gradeformurl).html_writer::end_tag('td')
-            : html_writer::tag('td', $row->aggregatedgrade);
+            $htmlrows .= ($row->aggregatedgrade->display != get_string('missinggrade', 'local_gugcat')) 
+            ? html_writer::start_tag('td').$row->aggregatedgrade->display.$this->context_actions($row->studentno, null, true, $gradeformurl).html_writer::end_tag('td')
+            : html_writer::tag('td', $row->aggregatedgrade->display);
             $htmlrows .= html_writer::end_tag('tr');
         }
         $html = $this->header();
@@ -207,10 +207,10 @@ class local_gugcat_renderer extends plugin_renderer_base {
     }
 
     public function display_overview_adjust_grade_form($student) {
-        $modname = (($this->page->cm) ? $this->page->cm->name : null);
+        $setting = required_param('setting', PARAM_INT);
         $html = $this->header();
-        $html .= $this->render_from_template('local_gugcat/ag_override_form', (object)[
-            'overridetitle' =>get_string('overridestudgrade', 'local_gugcat'),
+        $html .= $this->render_from_template('local_gugcat/gcat_adjustoverride_form', (object)[
+            'title' =>get_string(($setting != 0 ? 'overridestudgrade' : 'adjustcourseweight'), 'local_gugcat'),
             'candidate' => '1',
             'student' => $student
         ]);

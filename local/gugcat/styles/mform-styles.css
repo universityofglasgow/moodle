@@ -12,6 +12,10 @@
     padding-left: 1em;
 }
 
+.mform-container{
+    position: relative;
+}
+
 .mform select{
     -webkit-appearance: none;
     -moz-appearance: none;
@@ -46,12 +50,22 @@
 }
 
 .mform-grades {
-    display: flex;
-    width: 100%;
+    position: absolute;
+    left: 45%;
+    top: -3%;
+    width: 85%;
 }
 
-.mform-activities{
-    width: 50%;
+.input-percent > div.felement:after {
+    content: '\f295';
+    font: normal normal normal 12px/1 FontAwesome;
+    color: #005c8a;
+    position: absolute;
+    left: 64px;
+    top: 38%;
+    height: 34px;
+    padding: 0 8px;
+    pointer-events: none;
 }
 
 .form-inline .input-group, .form-inline .custom-select {

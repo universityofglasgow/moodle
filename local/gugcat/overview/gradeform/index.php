@@ -48,11 +48,12 @@ $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
 $student = $DB->get_records('user', array('id'=>$studentid, 'deleted'=>0), MUST_EXIST);
 
 $PAGE->set_course($course);
-$coursecontext = context_course::instance($course->id);
+$PAGE->set_heading($course->fullname);
+
 $activities = local_gugcat::get_activities($courseid);
 $rows = grade_aggregation::get_rows($course, $activities, $student);
 
-$mform = new coursegradeform(null, array('id'=>$courseid, 'studentid'=>$studentid, 'setting'=>$formtype, 'activities'=>$activities, 'rows'=>$rows));
+$mform = new coursegradeform(null, array('id'=>$courseid, 'studentid'=>$studentid, 'setting'=>$formtype, 'student'=>$rows[0]));
 if ($fromform = $mform->get_data()) {
     
     $gradeitemid = local_gugcat::add_grade_item($courseid, get_string('aggregatedgrade', 'local_gugcat'), null);

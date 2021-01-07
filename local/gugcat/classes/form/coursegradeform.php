@@ -31,34 +31,42 @@ class coursegradeform extends moodleform {
 
         $mform = $this->_form; // Don't forget the underscore! 
         $mform->addElement('html', '<div class="mform-container">');
-
-        $i = 0;
-        foreach($this->_customdata['activities'] as $activity){
-
-            $studIndex = key($this->_customdata['rows']);
-
-            $mform->addElement('html', '<div class="mform-grades">');
-                $mform->addElement('html', '<div class="mform-activities">');
-                    if($this->_customdata['setting'] == '1'){
-                        $mform->addElement('static', $activity->name.'weight', $activity->name .' Weighting', '20%'); 
-                        $mform->setType($activity->name.'weight', PARAM_NOTAGS); 
-                    }
-                    elseif($this->_customdata['setting'] == '0'){
-                        $mform->addElement('text', $activity->name.'weight', $activity->name .' Weighting', ['class' => 'mform-custom']); 
-                        $mform->setType($activity->name.'weight', PARAM_NOTAGS); 
-                        $mform->setDefault($activity->name.'weight', '20');
-                    }
-                $mform->addElement('html', '</div>');
-                $mform->addElement('html', '<div class="mform-activities">');
-                    $mform->addElement('static', $activity->name.'grade', $activity->name .' Grade',  $this->_customdata['rows'][$studIndex]->grades[$i]); 
-                    $mform->setType($activity->name.'grade', PARAM_NOTAGS); 
-                $mform->addElement('html', '</div>');
-            $mform->addElement('html', '</div>');
-            $i++;
+        $student = $this->_customdata['student'];
+        foreach($student->grades as $grdobj){
+            if($this->_customdata['setting'] == '1'){
+                $mform->addElement('static', $grdobj->activity, $grdobj->activity.' Weighting', '20%'); 
+                $mform->setType($grdobj->activity, PARAM_NOTAGS); 
+            }elseif($this->_customdata['setting'] == '0'){
+                $attributes = array(
+                    'class' => 'input-percent',
+                    'type' => 'number',
+                    'maxlength' => '3',
+                    'minlength' => '1',
+                    'size' => '4'
+                );
+                $mform->addElement('text', $grdobj->activity, $grdobj->activity.' Weighting', $attributes);
+                $mform->setType($grdobj->activity, PARAM_INT);
+                $mform->addRule($grdobj->activity, 'Numeric', 'numeric', null, 'server');
+                $mform->setDefault($grdobj->activity, '20');
+            }
         }
+        if($this->_customdata['setting'] == '0'){
+            $mform->addElement('static', 'totalweight', 'Total Weighting', '100%'); 
+            $mform->setType('totalweight', PARAM_NOTAGS); 
+        }
+        $mform->addElement('html', '<div class="mform-grades">');
+            foreach($student->grades as $grdobj){
+                $mform->addElement('static', $grdobj->activity.'grade', $grdobj->activity .' Grade',  $grdobj->grade); 
+                $mform->setType($grdobj->activity.'grade', PARAM_NOTAGS);
+            }
+            if($this->_customdata['setting'] == '0'){
+                $mform->addElement('static', 'aggregatedgrade', 'Aggregated Grade', $student->aggregatedgrade->grade); 
+                $mform->setType('aggregatedgrade', PARAM_NOTAGS); 
+            }
+        $mform->addElement('html', '</div>');
 
         if($this->_customdata['setting'] == '1'){
-            $mform->addElement('static', 'aggregatedgrade', 'Aggregated Grade', $this->_customdata['rows'][$studIndex]->aggregatedgrade); 
+            $mform->addElement('static', 'aggregatedgrade', 'Aggregated Grade', $student->aggregatedgrade->grade); 
             $mform->setType('aggregatedgrade', PARAM_NOTAGS); 
             $mform->addElement('select', 'override', "Override Code", local_gugcat::$GRADES,['class' => 'mform-custom']); 
             $mform->setType('reasons', PARAM_NOTAGS); 

@@ -86,6 +86,7 @@ class grade_aggregation{
             $sumaggregated = 0;
             $sumgrade = 0;
             foreach ($gradebook as $item) {
+                $grdobj = new stdClass();
                 $grades = $item->grades;
                 $pg = isset($grades->provisional[$student->id]) ? $grades->provisional[$student->id] : null;
                 $gb = isset($grades->gradebook[$student->id]) ? $grades->gradebook[$student->id] : null;
@@ -98,6 +99,7 @@ class grade_aggregation{
                 }
                 local_gugcat::set_grade_scale($scaleid);
                 $grade = is_null($grd) ? get_string('nograderecorded', 'local_gugcat') : local_gugcat::convert_grade($grd);
+                $weight = 0;
                 if(!is_null($pg) && !is_null($grd) && $grade !== MEDICAL_EXEMPTION_AC){
                     $weight = (float)$pg->information; //get weight from information column of provisional grades
                     $floatweight += ($grade === NON_SUBMISSION_AC) ? 0 : $weight;
@@ -106,20 +108,23 @@ class grade_aggregation{
                 }
                 $gradecaptureitem->nonsubmission = ($grade === NON_SUBMISSION_AC) ? true : false;
                 $gradecaptureitem->medicalexemption = ($grade === MEDICAL_EXEMPTION_AC) ? true : false;
-                array_push($gradecaptureitem->grades, $grade);
+                $grdobj->activityid = $item->id;
+                $grdobj->activity = $item->name;
+                $grdobj->grade = $grade;
+                $grdobj->rawgrade = $grd;
+                $grdobj->weight = $weight;
+                array_push($gradecaptureitem->grades, $grdobj);
             }
             $gradecaptureitem->completed = round((float)$floatweight * 100 ) . '%';
-            if($gbaggregatedgrade->overridden == 0){
-                $gradecaptureitem->aggregatedgrade = in_array(get_string('nograderecorded', 'local_gugcat'), $gradecaptureitem->grades) 
+            $aggrdobj = new stdClass();
+            $aggrade = ($gbaggregatedgrade->overridden == 0) ? $sumaggregated : $gbaggregatedgrade->finalgrade;
+            ($gbaggregatedgrade->overridden == 0) ? local_gugcat::update_grade($student->id, $aggradeid, $sumaggregated) : null;
+            $aggrdobj->grade = local_gugcat::convert_grade($aggrade);
+            $aggrdobj->rawgrade = $aggrade;
+            $aggrdobj->display = in_array(get_string('nograderecorded', 'local_gugcat'), $gradecaptureitem->grades) 
                 ? get_string('missinggrade', 'local_gugcat') 
-                : local_gugcat::convert_grade($sumaggregated) .' ('.number_format($sumaggregated, 2).')';
-                local_gugcat::update_grade($student->id, $aggradeid, $sumaggregated);
-            }
-            else{
-                $gradecaptureitem->aggregatedgrade = in_array(get_string('nograderecorded', 'local_gugcat'), $gradecaptureitem->grades) 
-                ? get_string('missinggrade', 'local_gugcat') : local_gugcat::convert_grade($gbaggregatedgrade->finalgrade).' ('.number_format($gbaggregatedgrade->finalgrade, 2).')';
-                
-            }
+                : local_gugcat::convert_grade($aggrade) .' ('.number_format($aggrade, 2).')';
+            $gradecaptureitem->aggregatedgrade = $aggrdobj;
             array_push($rows, $gradecaptureitem);
             $i++;
         }
