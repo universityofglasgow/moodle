@@ -237,7 +237,6 @@ class local_gugcat {
         $grade_->feedback = $notes;
         $grade_->information = $gradedocs;
         $grade_->hidden = 0;
-        $grade_->excluded = 1;
       
         if(empty($grade_->id)){
             //creates grade objects for other users in DB 
@@ -267,7 +266,6 @@ class local_gugcat {
         $grade_->finalgrade = self::is_admin_grade($grade) ? null : $grade;
         $grade_->itemid = $itemid;
         $grade_->userid = $userid;
-        $grade_->excluded = 1;
         $grade_->timemodified = time();
         //update existing grade
         return $grade_->update();
