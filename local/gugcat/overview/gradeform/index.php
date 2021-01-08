@@ -55,7 +55,7 @@ $activities = local_gugcat::get_activities($courseid);
 $rows = grade_aggregation::get_rows($course, $activities, $studentarr);
 $student = $rows[0];
 $student->cnum = $cnum; //candidate no.
-$mform = new coursegradeform(null, array('id'=>$courseid, 'studentid'=>$studentid, 'setting'=>$formtype, 'student'=>$student, 'cnum'=>$cnum));
+$mform = new coursegradeform(null, array('id'=>$courseid, 'studentid'=>$studentid, 'setting'=>$formtype, 'student'=>$student));
 if ($fromform = $mform->get_data()) {
     
     $gradeitemid = local_gugcat::add_grade_item($courseid, get_string('aggregatedgrade', 'local_gugcat'), null);
