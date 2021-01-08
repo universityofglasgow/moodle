@@ -27,6 +27,7 @@ $string['addallnewgrade'] = 'Add new grade for all participants';
 $string['addgrade'] = 'Add grade';
 $string['addmultigrades'] = 'Add multiple grades';
 $string['addnewgrade'] = 'Add new grade';
+$string['editgrade'] = 'Edit grade';
 $string['adjustcourseweight'] = 'Adjust student\'s course weightings';
 $string['aggregatedgrade'] = 'Aggregated Grade';
 $string['amendgrades'] = 'Amend Grades';
@@ -81,6 +82,7 @@ $string['successadjustweight'] = 'Successfully adjusted course weightings';
 $string['supportingdocument'] = "Supporting Documentation";
 $string['surname'] = 'Surname';
 $string['title'] = 'Grade Capture & Course Grade Aggregation';
+$string['valuemust'] = 'Value must equal 100%';
 
 // Grade item names
 $string['gi_agreedgrade'] = 'Agreed Grade';
