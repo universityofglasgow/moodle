@@ -53,10 +53,10 @@ class coursegradeform extends moodleform {
                     'minlength' => '1',
                     'size' => '6'
                 );
-                $mform->addElement('text', $grdobj->activityid.'weight', $grdobj->activity.' Weighting', $attributes);
-                $mform->setType($grdobj->activityid.'weight', PARAM_INT);
-                $mform->addRule($grdobj->activityid.'weight', null, 'numeric', null, 'client');
-                $mform->setDefault($grdobj->activityid.'weight', $grdobj->weight);
+                $mform->addElement('text', 'weights['.$grdobj->activityid.']', $grdobj->activity.' Weighting', $attributes);
+                $mform->setType('weights['.$grdobj->activityid.']', PARAM_INT);
+                $mform->addRule('weights['.$grdobj->activityid.']', null, 'numeric', null, 'client');
+                $mform->setDefault('weights['.$grdobj->activityid.']', $grdobj->weight);
             }
         }
 
