@@ -23,8 +23,6 @@
  */
 namespace local_gugcat;
 
-use grade_grade;
-use grade_item;
 use local_gugcat;
 use stdClass;
 
@@ -112,7 +110,7 @@ class grade_aggregation{
                 $grdobj->activity = $item->name;
                 $grdobj->grade = $grade;
                 $grdobj->rawgrade = $grd;
-                $grdobj->weight = $weight;
+                $grdobj->weight =  round((float)$weight * 100 );
                 array_push($gradecaptureitem->grades, $grdobj);
             }
             $gradecaptureitem->completed = round((float)$floatweight * 100 ) . '%';

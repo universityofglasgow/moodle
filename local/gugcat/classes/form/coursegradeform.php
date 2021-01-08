@@ -44,10 +44,10 @@ class coursegradeform extends moodleform {
                     'minlength' => '1',
                     'size' => '4'
                 );
-                $mform->addElement('text', $grdobj->activity, $grdobj->activity.' Weighting', $attributes);
-                $mform->setType($grdobj->activity, PARAM_INT);
-                $mform->addRule($grdobj->activity, 'Numeric', 'numeric', null, 'server');
-                $mform->setDefault($grdobj->activity, '20');
+                $mform->addElement('text', $grdobj->activityid.'weight', $grdobj->activity.' Weighting', $attributes);
+                $mform->setType($grdobj->activityid.'weight', PARAM_INT);
+                $mform->addRule($grdobj->activityid.'weight', null, 'numeric', null, 'client');
+                $mform->setDefault($grdobj->activityid.'weight', $grdobj->weight);
             }
         }
         if($this->_customdata['setting'] == '0'){
@@ -77,7 +77,7 @@ class coursegradeform extends moodleform {
         $mform->setType('notes', PARAM_NOTAGS);
 
         $mform->addElement('html', '</div>');
-        $this->add_action_buttons(false, get_string('savechanges', 'local_gugcat'), ['class' => 'float-right']);
+        $mform->addElement('submit', 'submit', get_string('savechanges', 'local_gugcat'), ['id' => 'btn-coursegradeform', 'class' => 'btn float-right']);
 
         // hidden params
         $mform->addElement('hidden', 'studentid', $this->_customdata['studentid']);
@@ -86,6 +86,8 @@ class coursegradeform extends moodleform {
         $mform->setType('id', PARAM_ACTION);
         $mform->addElement('hidden', 'setting', $this->_customdata['setting']);
         $mform->setType('setting', PARAM_ACTION);
+        $mform->addElement('hidden', 'cnum', $student->cnum);
+        $mform->setType('cnum', PARAM_ACTION);
         
     function validation($data, $files) {
         return array();

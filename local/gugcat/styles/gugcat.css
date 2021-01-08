@@ -2,12 +2,8 @@
 @import url("mform-styles.css");
 @import url("custom-select.css");
 
-.gcat-container {
-    font-family:  'PT Sans', sans-serif;
-}
-
 .gcat-title{
-    font-size: 25px;
+    font-size: 18px;
     font-style: normal;
     font-weight: 700;
     line-height: 32px;
@@ -177,7 +173,6 @@ td > .grade-discrepancy{
     font-size: 11px;
     padding: .2rem;
     cursor: pointer;
-    font-family:  'PT Sans', sans-serif;
 }
 
 /* Hide submit buttons */

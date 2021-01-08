@@ -68,6 +68,10 @@
     pointer-events: none;
 }
 
+.input-percent > div.felement.no-after:after {
+    content: none;
+}
+
 .form-inline .input-group, .form-inline .custom-select {
     width: 150px;
 }
