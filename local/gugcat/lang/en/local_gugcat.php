@@ -49,6 +49,7 @@ $string['hiddengrade'] = 'Hidden grade';
 $string['hiddengrademsg'] = 'The grade is now hidden to the student';
 $string['historicalamendments'] = 'Historical Amendments';
 $string['importgrades'] = 'Import Grades from Moodle';
+$string['importerror'] = 'Error: You are trying to import grades which do not fall within the 22-point scale. Please ensure that the grades in Moodle fall within the 22-point scale (0-22 or A1-H0) and try again';
 $string['missinggrade'] = 'Missing grade(s)';
 $string['moodlegrade'] = 'Moodle Grade';
 $string['navname'] = 'Grade Capture and Aggregation';
