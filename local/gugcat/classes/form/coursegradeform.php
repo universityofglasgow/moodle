@@ -63,6 +63,7 @@ class coursegradeform extends moodleform {
         if($this->_customdata['setting'] == '0'){
             $mform->addElement('static', 'totalweight', 'Total Weighting', '100%'); 
             $mform->setType('totalweight', PARAM_NOTAGS); 
+            $mform->addElement('html', html_writer::tag('p', get_string('valuemust', 'local_gugcat'), array('id' => 'totalweightnote')));
         }
         $mform->addElement('html', '<div class="mform-grades">');
             foreach($student->grades as $grdobj){
