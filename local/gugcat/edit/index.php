@@ -1,4 +1,4 @@
-  
+
 <?php
 // This file is part of Moodle - http://moodle.org/
 //
@@ -37,7 +37,7 @@ $categoryid = optional_param('categoryid', null, PARAM_INT);
 require_login($courseid);
 $PAGE->set_context(context_system::instance());
 $urlparams = array('id' => $courseid, 'activityid' => $activityid, 'studentid' => $studentid);
-$PAGE->set_url(new moodle_url('/local/gugcat/add/index.php', $urlparams));
+$PAGE->set_url(new moodle_url('/local/gugcat/edit/index.php', $urlparams));
 $PAGE->set_title(get_string('gugcat', 'local_gugcat'));
 $PAGE->navbar->ignore_active();
 $PAGE->navbar->add(get_string('navname', 'local_gugcat'), new moodle_url('/local/gugcat'));
@@ -55,9 +55,6 @@ $module = local_gugcat::get_activities($courseid)[$activityid];
 $PAGE->set_cm($module);
 
 $scaleid = $module->gradeitem->scaleid;
-if (is_null($scaleid) && local_gugcat::is_grademax22($module->gradeitem->gradetype, $module->gradeitem->grademax)){
-    $scaleid = local_gugcat::get_gcat_scaleid();
-}
 local_gugcat::set_grade_scale($scaleid);
 local_gugcat::set_prv_grade_id($courseid, $module);
 $grading_info = grade_get_grades($courseid, 'mod', $module->modname, $module->instance, $studentid);
@@ -77,7 +74,6 @@ if ($fromform = $mform->get_data()) {
         file_save_draft_area_files($fromform->userfile, $PAGE->context->id, 'grade_documentation', 'attachment',
                             $fromform->userfile, array('subdirs' => 0));
     }
-    
     $gradeitemid = local_gugcat::add_grade_item($courseid, $gradereason, $module);
     $grades = local_gugcat::add_update_grades($studentid, $gradeitemid, $fromform->grade, $fromform->notes, $fromform->userfile);
     $url = '/local/gugcat/index.php?id='.$courseid.'&activityid='.$activityid;
@@ -88,7 +84,7 @@ if ($fromform = $mform->get_data()) {
 
 echo $OUTPUT->header();
 $renderer = $PAGE->get_renderer('local_gugcat');
-echo $renderer->display_add_edit_grade_form($course, $student, $gradeversions, true);
+echo $renderer->display_add_edit_grade_form($course, $student, $gradeversions, false);
 $mform->display();
 echo $OUTPUT->footer();
 

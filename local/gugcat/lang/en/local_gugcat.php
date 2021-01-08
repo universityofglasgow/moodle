@@ -27,6 +27,7 @@ $string['addallnewgrade'] = 'Add new grade for all participants';
 $string['addgrade'] = 'Add grade';
 $string['addmultigrades'] = 'Add multiple grades';
 $string['addnewgrade'] = 'Add new grade';
+$string['editgrade'] = 'Edit grade';
 $string['adjustcourseweight'] = 'Adjust student\'s course weightings';
 $string['aggregatedgrade'] = 'Aggregated Grade';
 $string['amendgrades'] = 'Amend Grades';
