@@ -35,12 +35,20 @@ require_once('gcat_item.php');
 define('ADJUST_WEIGHT_FORM', 0);
 define('OVERRIDE_GRADE_FORM', 1);
 
-
  /**
  * Grade capture class.
  */
 
 class grade_aggregation{
+
+    public static $AGGRADE = array(
+        CREDIT_WITHHELD => CREDIT_WITHHELD_AC,
+        CREDIT_REFUSED => CREDIT_REFUSED_AC,
+        CA => CA_AC,
+        UNDER_INVESTIGATION => UNDER_INVESTIGATION_AC,
+        AU => AU_AC,
+        FC => FC_AC 
+    );
 
      /**
      * Returns rows for grade aggreation table
@@ -53,7 +61,6 @@ class grade_aggregation{
         global $DB;
         //get grade item id for aggregated grade
         $aggradeid = local_gugcat::add_grade_item($course->id, get_string('aggregatedgrade', 'local_gugcat'), null);
-
         $rows = array();
         $gradebook = array();
         foreach ($modules as $mod) {
@@ -112,7 +119,7 @@ class grade_aggregation{
                 $grdobj->activity = $item->name;
                 $grdobj->grade = $grade;
                 $grdobj->rawgrade = $grd;
-                $grdobj->weight = $weight;
+                $grdobj->weight =  round((float)$weight * 100 );
                 array_push($gradecaptureitem->grades, $grdobj);
             }
             $gradecaptureitem->completed = round((float)$floatweight * 100 ) . '%';
@@ -123,7 +130,7 @@ class grade_aggregation{
             $aggrdobj->rawgrade = $aggrade;
             $aggrdobj->display = in_array(get_string('nograderecorded', 'local_gugcat'), $gradecaptureitem->grades) 
                 ? get_string('missinggrade', 'local_gugcat') 
-                : local_gugcat::convert_grade($aggrade) .' ('.number_format($aggrade, 2).')';
+                : (!strstr($aggrade, '-') ? local_gugcat::convert_grade($aggrade) .' ('.number_format($aggrade, 2).')' : local_gugcat::convert_grade($aggrade));
             $gradecaptureitem->aggregatedgrade = $aggrdobj;
             array_push($rows, $gradecaptureitem);
             $i++;

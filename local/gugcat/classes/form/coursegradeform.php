@@ -22,6 +22,9 @@
  * @author     Accenture
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+use local_gugcat\grade_aggregation;
+
 require_once("$CFG->libdir/formslib.php");
 require_once($CFG->dirroot . '/local/gugcat/locallib.php');
 class coursegradeform extends moodleform {
@@ -29,12 +32,18 @@ class coursegradeform extends moodleform {
     public function definition() {
         global $CFG;
 
+        $grade = local_gugcat::$GRADES + grade_aggregation::$AGGRADE;
+        unset($grade[NON_SUBMISSION]);
+
         $mform = $this->_form; // Don't forget the underscore! 
         $mform->addElement('html', '<div class="mform-container">');
         $student = $this->_customdata['student'];
+        if ($this->_customdata['setting'] == '1')
+            $mform->addElement('html', '<div class="mform-override">');
         foreach($student->grades as $grdobj){
+
             if($this->_customdata['setting'] == '1'){
-                $mform->addElement('static', $grdobj->activity, $grdobj->activity.' Weighting', '20%'); 
+                $mform->addElement('static', $grdobj->activity, $grdobj->activity.' Weighting', $grdobj->weight .'%'); 
                 $mform->setType($grdobj->activity, PARAM_NOTAGS); 
             }elseif($this->_customdata['setting'] == '0'){
                 $attributes = array(
@@ -50,6 +59,7 @@ class coursegradeform extends moodleform {
                 $mform->setDefault($grdobj->activity, '20');
             }
         }
+
         if($this->_customdata['setting'] == '0'){
             $mform->addElement('static', 'totalweight', 'Total Weighting', '100%'); 
             $mform->setType('totalweight', PARAM_NOTAGS); 
@@ -64,17 +74,17 @@ class coursegradeform extends moodleform {
                 $mform->setType('aggregatedgrade', PARAM_NOTAGS); 
             }
         $mform->addElement('html', '</div>');
-
+    
         if($this->_customdata['setting'] == '1'){
             $mform->addElement('static', 'aggregatedgrade', 'Aggregated Grade', $student->aggregatedgrade->grade); 
             $mform->setType('aggregatedgrade', PARAM_NOTAGS); 
-            $mform->addElement('select', 'override', "Override Code", local_gugcat::$GRADES,['class' => 'mform-custom']); 
+            $mform->addElement('html', '</div>');
+            $mform->addElement('select', 'override', "Override Code", $grade, ['class' => 'mform-custom-select']); 
             $mform->setType('reasons', PARAM_NOTAGS); 
             $mform->setDefault('reasons', "Select Reason");
         }
-        
         $mform->addElement('textarea', 'notes', get_string('notes', 'local_gugcat'));
-        $mform->setType('notes', PARAM_NOTAGS);
+        $mform->setType('notes', PARAM_NOTAGS); 
 
         $mform->addElement('html', '</div>');
         $this->add_action_buttons(false, get_string('savechanges', 'local_gugcat'), ['class' => 'float-right']);
@@ -86,6 +96,10 @@ class coursegradeform extends moodleform {
         $mform->setType('id', PARAM_ACTION);
         $mform->addElement('hidden', 'setting', $this->_customdata['setting']);
         $mform->setType('setting', PARAM_ACTION);
+        $mform->addElement('hidden', 'cnum', $student->cnum);
+        $mform->setType('cnum', PARAM_ACTION);
+        
+        
         
     function validation($data, $files) {
         return array();
