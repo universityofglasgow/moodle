@@ -121,7 +121,7 @@ class block_gu_spdetails extends block_base {
                                                     $a->grades->finalgrade);
             $a->assessment->url = self::return_assessmenturl($a->name, $a->id, $a->submission->hasurl);
 
-            $a->isScale = (((property_exists($assessment, 'gradetype') &&  $a->assessment->gradetype == 2) || $a->grades->grademax == '22') &&
+            $a->isScale = (((property_exists($a->assessment, 'gradetype') &&  $a->assessment->gradetype == 2) || $a->grades->grademax == '22') &&
                           (strpos($a->grades->gradetext, 'Due') === false)) ? true : false;
 
             // only add assessments that are not restricted
