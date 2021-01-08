@@ -48,8 +48,20 @@ $PAGE->set_heading($course->fullname);
 $coursecontext = context_course::instance($course->id);
 $students = get_enrolled_users($coursecontext, 'moodle/competency:coursecompetencygradable');
 $activities = local_gugcat::get_activities($courseid);
-
 $rows = grade_aggregation::get_rows($course, $activities, $students);
+
+if(!empty($_POST)){
+    if(isset($_POST['resit']) && !empty($_POST['rowstudentno'])){
+        $studentno = $_POST['rowstudentno'];
+        $status = grade_aggregation::require_resit($studentno);
+        unset($_POST);
+        header("Location: ".$_SERVER['REQUEST_URI']);
+        exit;
+    }else{
+        print_error('errorrequired', 'local_gugcat', $PAGE->url);
+    }
+}
+
 
 echo $OUTPUT->header();
 $renderer = $PAGE->get_renderer('local_gugcat');
