@@ -23,6 +23,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use local_gugcat\grade_aggregation;
+
 defined('MOODLE_INTERNAL') || die();
 
 //tables used in db
@@ -34,8 +36,21 @@ define('SCALE', 'scale');
 //Administrative grades at Assessment Level
 define('NON_SUBMISSION_AC', 'NS');
 define('MEDICAL_EXEMPTION_AC', 'MV');
+define('CREDIT_WITHHELD_AC', 'CW');
+define('CREDIT_REFUSED_AC','CR');
+define('CA_AC', 'CA');
+define('UNDER_INVESTIGATION_AC', '07');
+define('AU_AC', 'AU');
+define('FC_AC', 'FC');
 define('NON_SUBMISSION', -1);
 define('MEDICAL_EXEMPTION', -2);
+define('CREDIT_WITHHELD', -3);
+define('CREDIT_REFUSED', -4);
+define('CA', -5);
+define('UNDER_INVESTIGATION', -6);
+define('AU', -7);
+define('FC', -8);
+
 
 define('GCAT_SCALE', 'UofG 22-Point Scale (Do NOT use if you are grading in Feedback Studio)');
 define('GCAT_GRADE_CATEGORY', 'DO NOT USE');
@@ -276,7 +291,11 @@ class local_gugcat {
     }
 
     public static function convert_grade($grade){
-        $scale = self::$GRADES;
+        $scale = self::$GRADES + grade_aggregation::$AGGRADE;
+
+        //add admin grades in scale
+        $scale[NON_SUBMISSION] = NON_SUBMISSION_AC;
+        
         $final_grade = intval($grade);
         if ($final_grade >= key(array_slice($scale, -1, 1, true)) && $final_grade <= key($scale)){
             return ($final_grade != 0) ? $scale[$final_grade] : $final_grade;

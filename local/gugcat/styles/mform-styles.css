@@ -37,14 +37,14 @@
     outline: none;
 }
 
-.mform select::after {
+.mform-custom-select > div.felement:after {
     content: '\f078';
     font: normal normal normal 12px/1 FontAwesome;
     color: #005c8a;
-    right: 11px;
-    top: 6px;
+    left: 125px;
+    top: 32%;
     height: 34px;
-    padding: 5% 8px 0px 8px;
+    padding: 0 8px;
     position: absolute;
     pointer-events: none;
 }
@@ -61,7 +61,7 @@
     font: normal normal normal 12px/1 FontAwesome;
     color: #005c8a;
     position: absolute;
-    left: 64px;
+    left: 62px;
     top: 38%;
     height: 34px;
     padding: 0 8px;
@@ -70,6 +70,10 @@
 
 .input-percent > div.felement.no-after:after {
     content: none;
+}
+
+.mform-override {
+    color: #9393A0
 }
 
 .form-inline .input-group, .form-inline .custom-select {
