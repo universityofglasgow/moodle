@@ -94,6 +94,7 @@ define(['jquery', 'core/str' ], function($, Str) {
         var btn_saveadd = document.getElementById('btn-saveadd');
         var btn_release = document.getElementById('btn-release');
         var btn_import = document.getElementById('btn-import');
+        var btn_coursegradeform = document.getElementById('btn-coursegradeform');
         var import_submit = document.getElementById('importgrades-submit');
         var gcat_tbl_form = document.getElementById('multigradesform');
         switch (event.target) {
@@ -125,6 +126,19 @@ define(['jquery', 'core/str' ], function($, Str) {
                     import_submit.click();
                 }
                 break;
+            case btn_coursegradeform:
+                var inputarr = document.querySelectorAll('.input-percent');
+                if(inputarr.length > 0){
+                    inputarr.forEach(div => {
+                        var invalid = div.querySelector('input.is-invalid');
+                        if(invalid != null){
+                            div.querySelector('div.felement').classList.add('no-after');
+                        }else{
+                            div.querySelector('div.felement').classList.remove('no-after');
+                        }
+                    });
+                }
+                break;
             default:
                 break;
         }
@@ -134,6 +148,7 @@ define(['jquery', 'core/str' ], function($, Str) {
         init: function() {
             const GCAT = document.querySelector('.gcat-container');
             var input_reason = document.getElementById('input-reason');
+            var input_percentarr = document.querySelectorAll('.input-percent');
             if(GCAT){
                 GCAT.addEventListener('change', onChangeListeners);
                 GCAT.addEventListener('click', onClickListeners);
@@ -144,13 +159,35 @@ define(['jquery', 'core/str' ], function($, Str) {
                     });
                 }
 
+                if(input_percentarr.length > 0){
+                    input_percentarr.forEach(div => {
+                        var input = div.querySelector('input');
+                        input.addEventListener('focus', (e) => {
+                            var val = e.target.value;
+                            if(val !== "" && val.match(/^[0-9]+$/) === null){
+                                div.querySelector('div.felement').classList.add('no-after');
+                            }else{
+                                div.querySelector('div.felement').classList.remove('no-after');
+                            }
+                        });
+                        input.addEventListener('blur', (e) => {
+                            var val = e.target.value;
+                            if(val !== "" && val.match(/^[0-9]+$/) === null){
+                                div.querySelector('div.felement').classList.add('no-after');
+                            }else{
+                                div.querySelector('div.felement').classList.remove('no-after');
+                            }
+                        });
+                    });
+                    
+                }
+
                 //Show 'grade discrepancy' when grade discrepancy exist
                 var grdDiscExist = document.querySelectorAll('td .grade-discrepancy');
                 if (grdDiscExist.length > 0) {
                     var grddisc = document.getElementById('btn-grddisc');
                     grddisc.style.display = 'inline-block';
                 }
-
 
                 // Hide elements on add grade form page 
                 if(checkCurrentUrl("gugcat/overview")){

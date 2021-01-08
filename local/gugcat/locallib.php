@@ -333,6 +333,11 @@ class local_gugcat {
         $message = get_string($stridentifier, 'local_gugcat');
         \core\notification::add($message, \core\output\notification::NOTIFY_SUCCESS);
     }
+
+    public static function notify_error($stridentifier){
+        $message = get_string($stridentifier, 'local_gugcat');
+        \core\notification::add($message, \core\output\notification::NOTIFY_ERROR);
+    }
         
     public static function update_workflow_state($assign, $userid, $statetype){
         //update workflow state to in review

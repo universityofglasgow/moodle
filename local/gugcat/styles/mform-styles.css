@@ -61,11 +61,15 @@
     font: normal normal normal 12px/1 FontAwesome;
     color: #005c8a;
     position: absolute;
-    left: 64px;
+    left: 62px;
     top: 38%;
     height: 34px;
     padding: 0 8px;
     pointer-events: none;
+}
+
+.input-percent > div.felement.no-after:after {
+    content: none;
 }
 
 .mform-override {

@@ -23,8 +23,6 @@
  */
 namespace local_gugcat;
 
-use grade_grade;
-use grade_item;
 use local_gugcat;
 use stdClass;
 
@@ -128,9 +126,10 @@ class grade_aggregation{
             ($gbaggregatedgrade->overridden == 0) ? local_gugcat::update_grade($student->id, $aggradeid, $sumaggregated) : null;
             $aggrdobj->grade = local_gugcat::convert_grade($aggrade);
             $aggrdobj->rawgrade = $aggrade;
+            $adjustedgrade = (max(array_keys(local_gugcat::$GRADES)) === 23 && $aggrade > 0) ?  $aggrade-1 : $aggrade;
             $aggrdobj->display = in_array(get_string('nograderecorded', 'local_gugcat'), $gradecaptureitem->grades) 
                 ? get_string('missinggrade', 'local_gugcat') 
-                : (!strstr($aggrade, '-') ? local_gugcat::convert_grade($aggrade) .' ('.number_format($aggrade, 2).')' : local_gugcat::convert_grade($aggrade));
+                : (!strstr($aggrade, '-') ? local_gugcat::convert_grade($aggrade) .' ('.number_format($adjustedgrade, 2).')' : local_gugcat::convert_grade($aggrade));
             $gradecaptureitem->aggregatedgrade = $aggrdobj;
             array_push($rows, $gradecaptureitem);
             $i++;
