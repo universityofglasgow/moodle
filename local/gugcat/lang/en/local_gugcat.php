@@ -57,6 +57,7 @@ $string['nogradeimport'] = 'Awaiting Grade Import';
 $string['notes'] = 'Notes';
 $string['overviewaggregrade'] = 'Overview & Aggregated Grade';
 $string['overrideggregrade'] = 'Override aggregated course grade';
+$string['overridestudgrade'] = "Override student's aggregated course grade";
 $string['percentcomplete'] = '% Complete';
 $string['pluginname'] = 'UofG Grade Capture and Aggregation Tool';
 $string['provisionalgrd'] = 'Provisional Grade';

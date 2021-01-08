@@ -257,7 +257,7 @@ class local_gugcat {
         }
     }
 
-    public static function update_grade($userid, $itemid, $grade){
+    public static function update_grade($userid, $itemid, $grade, $notes = null, $gradedocs = null, $overridden = 0){
         global $USER;
 
         //get grade grade, true
@@ -267,7 +267,10 @@ class local_gugcat {
         $grade_->finalgrade = self::is_admin_grade($grade) ? null : $grade;
         $grade_->itemid = $itemid;
         $grade_->userid = $userid;
+        $grade_->overridden = $overridden;
         $grade_->timemodified = time();
+        if (!is_null($notes))
+            $grade_->feedback->$notes;
         //update existing grade
         return $grade_->update();
     }

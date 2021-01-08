@@ -23,16 +23,20 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use local_gugcat\grade_aggregation;
+
 require_once(__DIR__ . '/../../../../config.php');
 require_once($CFG->dirroot . '/local/gugcat/locallib.php');
-// require_once($CFG->dirroot.'/local/gugcat/classes/form/coursegradeform.php');
+require_once($CFG->dirroot.'/local/gugcat/classes/form/coursegradeform.php');
 
 $courseid = required_param('id', PARAM_INT);
 $formtype = required_param('setting', PARAM_INT);
+$studentid = required_param('studentid', PARAM_INT);
 
 require_login($courseid);
 $PAGE->set_context(context_system::instance());
-$PAGE->set_url(new moodle_url('/local/gugcat/overview/gradeform/index.php', array('id' => $courseid)));
+$urlparams = array('id' => $courseid, 'setting' => $formtype, 'studentid' => $studentid);
+$PAGE->set_url(new moodle_url('/local/gugcat/overview/gradeform/index.php', $urlparams));
 $PAGE->set_title(get_string('gugcat', 'local_gugcat'));
 $PAGE->navbar->ignore_active();
 $PAGE->navbar->add(get_string('navname', 'local_gugcat'), new moodle_url('/local/gugcat/overview'));
@@ -41,12 +45,28 @@ $PAGE->requires->css('/local/gugcat/styles/gugcat.css');
 $PAGE->requires->js_call_amd('local_gugcat/main', 'init');
 
 $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
-$PAGE->set_course($course);
-$coursecontext = context_course::instance($course->id);
-$activities = local_gugcat::get_activities($courseid);
+$student = $DB->get_records('user', array('id'=>$studentid, 'deleted'=>0), MUST_EXIST);
 
-// $mform = new coursegradeform(null, array('id'=>$courseid, 'activities'=>$activities));
+$PAGE->set_course($course);
+$PAGE->set_heading($course->fullname);
+
+$activities = local_gugcat::get_activities($courseid);
+$rows = grade_aggregation::get_rows($course, $activities, $student);
+
+$mform = new coursegradeform(null, array('id'=>$courseid, 'studentid'=>$studentid, 'setting'=>$formtype, 'student'=>$rows[0]));
+if ($fromform = $mform->get_data()) {
+    
+    $gradeitemid = local_gugcat::add_grade_item($courseid, get_string('aggregatedgrade', 'local_gugcat'), null);
+    if($formtype = 1)
+        $grades = local_gugcat::update_grade($studentid, $gradeitemid, $fromform->override, $fromform->notes, null, time());
+    $url = '/local/gugcat/overview/index.php?id='.$courseid;
+    header("Location:" .$CFG->wwwroot . $url);
+    exit;
+}   
+$studindex = key($student);
 
 echo $OUTPUT->header();
-// $mform->display();
+$renderer = $PAGE->get_renderer('local_gugcat');
+echo $renderer->display_overview_adjust_grade_form($student[$studindex = key($student)]);
+$mform->display();
 echo $OUTPUT->footer();

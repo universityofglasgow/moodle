@@ -140,7 +140,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
             $html .= html_writer::start_tag('div', array('class'=>'form-group row'));
             $html .= html_writer::start_tag('div', array('class'=> 'col-md-3'));
             if ($gradeversion->itemname == get_string('moodlegrade', 'local_gugcat'))
-                $html .= html_writer::tag('label', $gradeversion->itemname. date(" [j/n/Y]", strtotime(userdate($gradeversion->timemodified))));
+                $html .= html_writer::tag('label', $gradeversion->itemname. date(" j/n/Y", strtotime(userdate($gradeversion->timemodified))));
             else 
                 $html .= html_writer::tag('label', $gradeversion->itemname);
             $html .= html_writer::end_tag('div');
@@ -171,20 +171,20 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $htmlcolumns .= html_writer::tag('th', get_string('aggregatedgrade', 'local_gugcat').'<i class="fa fa-cog"></i></th>');
         //grade capture rows
         foreach ($rows as $row) {
-            $gradeformurl .= '&studentid=' . $row->studentno;
+            $gradeformurl .= '&studentid=' . $row->studentno; //add student id in the url
             $htmlrows .= html_writer::start_tag('tr');
             $htmlrows .= html_writer::tag('td', $row->cnum);
             $htmlrows .= html_writer::tag('td', $row->studentno);
             $htmlrows .= html_writer::tag('td', $row->surname);
             $htmlrows .= html_writer::tag('td', $row->forename);
-            foreach((array) $row->grades as $grade) {
-                $htmlrows .= '<td>'.$grade.((strpos($grade, 'No grade') !== false) ? null : $this->context_actions($row->studentno)).'</td>';
+            foreach((array) $row->grades as $grdobj) {
+                $htmlrows .= '<td>'.$grdobj->grade.((strpos($grdobj->grade, 'No grade') !== false) ? null : $this->context_actions($row->studentno)).'</td>';
             }
             $htmlrows .= '<td><i class="fa fa-times-circle"></i></td>';
             $htmlrows .= html_writer::tag('td', $row->completed);
-            $htmlrows .= ($row->aggregatedgrade != get_string('missinggrade', 'local_gugcat')) 
-            ? html_writer::start_tag('td').$row->aggregatedgrade.$this->context_actions($row->studentno, null, true, $gradeformurl).html_writer::end_tag('td')
-            : html_writer::tag('td', $row->aggregatedgrade);
+            $htmlrows .= ($row->aggregatedgrade->display != get_string('missinggrade', 'local_gugcat')) 
+            ? html_writer::start_tag('td').$row->aggregatedgrade->display.$this->context_actions($row->studentno, null, true, $gradeformurl).html_writer::end_tag('td')
+            : html_writer::tag('td', $row->aggregatedgrade->display);
             $htmlrows .= html_writer::end_tag('tr');
         }
         $html = $this->header();
@@ -203,6 +203,17 @@ class local_gugcat_renderer extends plugin_renderer_base {
             'class' => $class,
             'id' => $id,
             'name' => $name,
+        ]);
+        return $html;
+    }
+
+    public function display_overview_adjust_grade_form($student) {
+        $setting = required_param('setting', PARAM_INT);
+        $html = $this->header();
+        $html .= $this->render_from_template('local_gugcat/gcat_adjustoverride_form', (object)[
+            'title' =>get_string(($setting != 0 ? 'overridestudgrade' : 'adjustcourseweight'), 'local_gugcat'),
+            'candidate' => '1',
+            'student' => $student
         ]);
         return $html;
     }
