@@ -121,7 +121,7 @@ class block_gu_spdetails extends block_base {
                                                     $a->grades->finalgrade);
             $a->assessment->url = self::return_assessmenturl($a->name, $a->id, $a->submission->hasurl);
 
-            $a->isScale = (property_exists($a->assessment, "scaleid") && !is_null($a->assessment->scaleid) &&
+            $a->isScale = (($a->assessment->gradetype == 2 || $a->grades->grademax == '22') &&
                           (strpos($a->grades->gradetext, 'Due') === false)) ? true : false;
 
             // only add assessments that are not restricted
@@ -229,12 +229,12 @@ class block_gu_spdetails extends block_base {
                 $sql = "SELECT ma.id, ma.name,
                         ma.allowsubmissionsfromdate as `startdate`,
                         ma.duedate, ma.cutoffdate, ma.gradingduedate,
-                        mgi.id as `gradeid`, mgi.aggregationcoef as `weight`, mgi.grademax,
+                        mgi.id as `gradeid`, mgi.aggregationcoef as `weight`,
+                        mgi.grademax, mgi.scaleid, mgi.gradetype,
                         mao.allowsubmissionsfromdate as `overridestartdate`,
                         mao.duedate as `overrideduedate`,
                         mao.cutoffdate as `overridecutoffdate`,
-                        mgc.fullname as `categoryname`,
-                        mgi.scaleid
+                        mgc.fullname as `categoryname`
                         FROM `". $CFG->prefix ."assign` ma
                         JOIN `". $CFG->prefix ."grade_items` mgi
                         ON mgi.iteminstance = ma.id AND mgi.itemmodule = ?
@@ -252,7 +252,8 @@ class block_gu_spdetails extends block_base {
                         mq.timeopen as `startdate`,
                         mq.timeclose as `duedate`, mq.timelimit,
                         (mq.timeclose + (86400 * 14)) as `gradingduedate`,
-                        mgi.aggregationcoef as `weight`, mgg.feedback, mgi.grademax,
+                        mgi.aggregationcoef as `weight`,
+                        mgg.feedback, mgi.grademax, mgg.information,
                         mqo.timeopen as `overridestartdate`,
                         mqo.timeclose as `overrideduedate`,
                         mqo.timelimit as `overridelimit`,
@@ -408,7 +409,7 @@ class block_gu_spdetails extends block_base {
             case 'assign':
                 $gradesrecord = $DB->get_record('grade_grades',
                                                 array('itemid' => $gradeid, 'userid' => $userid),
-                                                'finalgrade, feedback');
+                                                'finalgrade, feedback, information');
 
                 $gradesrecord = is_bool($gradesrecord) ? new stdClass() : $gradesrecord;
                 break;
@@ -446,10 +447,18 @@ class block_gu_spdetails extends block_base {
     public static function return_grade($grade, $gradingduedate, $assessment, $grademax) {
         global $DB;
         $lang = 'block_gu_spdetails';
-        $scalegrade = (property_exists($assessment, "scaleid") && !is_null($assessment->scaleid)) ? $grade : round(($grade / $grademax) * 100, 2).'%';
-        $gradepercentage = ($grademax) ? $scalegrade : round($grade, 2).'%';
 
-        $gradetext = $grade ? $gradepercentage : 
+        $convertedgrade = (property_exists($assessment, 'gradetype') && $assessment->gradetype == 2) ?
+                          $grade : (
+                            ($grademax) ? (
+                                ($grademax == '22') ?
+                                self::return_22pointscale($grade) :
+                                round(($grade / $grademax) * 100, 2).'%'
+                            ) :
+                            round(($grade) * 100, 2)
+                          );
+
+        $gradetext = ($grade) ? $convertedgrade :
                      get_string('due', $lang).userdate($gradingduedate, get_string('convertdate', $lang));
         if (property_exists($assessment, "scaleid") && !is_null($assessment->scaleid)){
             $dbScale = $DB->get_record('scale', array('id'=> $assessment->scaleid));
@@ -516,5 +525,14 @@ class block_gu_spdetails extends block_base {
         } else {
             return get_string("emptyvalue", $lang);
         }
+    }
+
+    public static function return_22pointscale($grade) {
+        $values = array('H', 'G2', 'G1', 'F3', 'F2', 'F1',
+                        'E3', 'E2', 'E1', 'D3', 'D2', 'D1',
+                        'C3', 'C2', 'C1', 'B3', 'B2', 'B1',
+                        'A5', 'A4', 'A3', 'A2', 'A1');
+        $index = round($grade);
+        return $values[$index];
     }
 }
