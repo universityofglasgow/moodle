@@ -140,7 +140,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
             $html .= html_writer::start_tag('div', array('class'=>'form-group row'));
             $html .= html_writer::start_tag('div', array('class'=> 'col-md-3'));
             if ($gradeversion->itemname == get_string('moodlegrade', 'local_gugcat'))
-                $html .= html_writer::tag('label', $gradeversion->itemname. date(" [j/n/Y]", strtotime(userdate($gradeversion->timemodified))));
+                $html .= html_writer::tag('label', $gradeversion->itemname. date(" j/n/Y", strtotime(userdate($gradeversion->timemodified))));
             else 
                 $html .= html_writer::tag('label', $gradeversion->itemname);
             $html .= html_writer::end_tag('div');
