@@ -49,6 +49,7 @@ class grade_capture_testcase extends advanced_testcase {
         $gen->create_module('assign', array('id' => 1, 'course' => $this->course->id));
 
         $cm = local_gugcat::get_activities($this->course->id);
+        $this->cms = $cm;
         $key = key($cm);
         $this->cm = $cm[$key];
         $modinfo = get_fast_modinfo($this->course);
@@ -108,7 +109,7 @@ class grade_capture_testcase extends advanced_testcase {
         $firststudent = key($this->students);
         $mggradeitem = local_gugcat::add_grade_item($this->course->id, $mggradeitemstr, $this->cm); 
         $gradeid = local_gugcat::add_update_grades($this->students[$firststudent]->id, $mggradeitem, 0);
-        grade_capture::import_from_gradebook($this->course->id, $this->cm, $this->students);
+        grade_capture::import_from_gradebook($this->course->id, $this->cm, $this->students, $this->cms);
         $rows = grade_capture::get_rows($this->course, $this->cm, $this->students);
         $row = $rows[0];
         $columns = grade_capture::get_columns();

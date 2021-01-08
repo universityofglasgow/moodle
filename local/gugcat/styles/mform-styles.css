@@ -1,5 +1,5 @@
 
-.mform-container label, .form-container label, .title{
+.mform-container label, .form-container label, .title, .col-form-label{
     font-weight: bold;
 }
 
@@ -10,6 +10,10 @@
 .mform-container, .form-container{
     max-width: 80%;  
     padding-left: 1em;
+}
+
+.mform-container{
+    position: relative;
 }
 
 .mform select{
@@ -33,16 +37,43 @@
     outline: none;
 }
 
-.mform select::after {
+.mform-custom-select > div.felement:after {
     content: '\f078';
     font: normal normal normal 12px/1 FontAwesome;
     color: #005c8a;
-    right: 11px;
-    top: 6px;
+    left: 125px;
+    top: 32%;
     height: 34px;
-    padding: 5% 8px 0px 8px;
+    padding: 0 8px;
     position: absolute;
     pointer-events: none;
+}
+
+.mform-grades {
+    position: absolute;
+    left: 45%;
+    top: 0px;
+    width: 85%;
+}
+
+.input-percent > div.felement:after {
+    content: '\f295';
+    font: normal normal normal 12px/1 FontAwesome;
+    color: #005c8a;
+    position: absolute;
+    left: 62px;
+    top: 38%;
+    height: 34px;
+    padding: 0 8px;
+    pointer-events: none;
+}
+
+.input-percent > div.felement.no-after:after {
+    content: none;
+}
+
+.mform-override {
+    color: #9393A0
 }
 
 .form-inline .input-group, .form-inline .custom-select {

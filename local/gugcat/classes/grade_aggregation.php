@@ -23,18 +23,30 @@
  */
 namespace local_gugcat;
 
-use grade_grade;
 use local_gugcat;
 use stdClass;
 
 defined('MOODLE_INTERNAL') || die();
 require_once('gcat_item.php');
 
+//grade form settings
+define('ADJUST_WEIGHT_FORM', 0);
+define('OVERRIDE_GRADE_FORM', 1);
+
  /**
  * Grade capture class.
  */
 
 class grade_aggregation{
+
+    public static $AGGRADE = array(
+        CREDIT_WITHHELD => CREDIT_WITHHELD_AC,
+        CREDIT_REFUSED => CREDIT_REFUSED_AC,
+        CA => CA_AC,
+        UNDER_INVESTIGATION => UNDER_INVESTIGATION_AC,
+        AU => AU_AC,
+        FC => FC_AC 
+    );
 
      /**
      * Returns rows for grade aggreation table
@@ -45,6 +57,8 @@ class grade_aggregation{
      */
     public static function get_rows($course, $modules, $students){
         global $DB;
+        //get grade item id for aggregated grade
+        $aggradeid = local_gugcat::add_grade_item($course->id, get_string('aggregatedgrade', 'local_gugcat'), null);
         $rows = array();
         $gradebook = array();
         foreach ($modules as $mod) {
@@ -55,7 +69,7 @@ class grade_aggregation{
             //get provisional grades
             $prvgrdid = local_gugcat::set_prv_grade_id($course->id, $mod);
             $sort = 'id';
-            $fields = 'userid, itemid, id, rawgrade, finalgrade, timemodified';
+            $fields = 'userid, itemid, id, rawgrade, finalgrade, information, timemodified';
             $grades->provisional = $DB->get_records(GRADE_GRADES, array('itemid' => $prvgrdid), $sort, $fields);
             //get grades from gradebook
             $gbgrades = grade_get_grades($course->id, 'mod', $mod->modname, $mod->instance, array_keys($students));
@@ -72,10 +86,12 @@ class grade_aggregation{
             $gradecaptureitem->surname = $student->lastname;
             $gradecaptureitem->forename = $student->firstname;
             $gradecaptureitem->grades = array();
+            $gbaggregatedgrade = $DB->get_record(GRADE_GRADES, array('itemid'=>$aggradeid, 'userid'=>$student->id));
             $floatweight = 0;
             $sumaggregated = 0;
             $sumgrade = 0;
             foreach ($gradebook as $item) {
+                $grdobj = new stdClass();
                 $grades = $item->grades;
                 $pg = isset($grades->provisional[$student->id]) ? $grades->provisional[$student->id] : null;
                 $gb = isset($grades->gradebook[$student->id]) ? $grades->gradebook[$student->id] : null;
@@ -88,20 +104,33 @@ class grade_aggregation{
                 }
                 local_gugcat::set_grade_scale($scaleid);
                 $grade = is_null($grd) ? get_string('nograderecorded', 'local_gugcat') : local_gugcat::convert_grade($grd);
-                if(!is_null($grd) && $grade !== MEDICAL_EXEMPTION_AC){
-                    $gg = new grade_grade(array('userid'=>$student->id, 'itemid'=>$item->gradeitemid), true);
-                    $floatweight += (float)$gg->get_aggregationweight();
-                    $sumaggregated += ($grade === NON_SUBMISSION_AC) ?( 0 * (float)$grd) : ((float)$grd * (float)$gg->get_aggregationweight());
+                $weight = 0;
+                if(!is_null($pg) && !is_null($grd) && $grade !== MEDICAL_EXEMPTION_AC){
+                    $weight = (float)$pg->information; //get weight from information column of provisional grades
+                    $floatweight += ($grade === NON_SUBMISSION_AC) ? 0 : $weight;
+                    $sumaggregated += ($grade === NON_SUBMISSION_AC) ?( 0 * (float)$grd) : ((float)$grd * $weight);
                     $sumgrade += ($grade === NON_SUBMISSION_AC) ? 0 : (float)$grd;
                 }
                 $gradecaptureitem->nonsubmission = ($grade === NON_SUBMISSION_AC) ? true : false;
                 $gradecaptureitem->medicalexemption = ($grade === MEDICAL_EXEMPTION_AC) ? true : false;
-                array_push($gradecaptureitem->grades, $grade);
+                $grdobj->activityid = $item->id;
+                $grdobj->activity = $item->name;
+                $grdobj->grade = $grade;
+                $grdobj->rawgrade = $grd;
+                $grdobj->weight =  round((float)$weight * 100 );
+                array_push($gradecaptureitem->grades, $grdobj);
             }
             $gradecaptureitem->completed = round((float)$floatweight * 100 ) . '%';
-            $gradecaptureitem->aggregatedgrade = in_array(get_string('nograderecorded', 'local_gugcat'), $gradecaptureitem->grades) 
-            ? get_string('missinggrade', 'local_gugcat') 
-            : ((($sumaggregated/$sumgrade) > 0.5) ? local_gugcat::convert_grade($sumaggregated) : local_gugcat::convert_grade($sumaggregated, local_gugcat::$SCHED_B)) .' ('.number_format($sumaggregated, 2).')';
+            $aggrdobj = new stdClass();
+            $aggrade = ($gbaggregatedgrade->overridden == 0) ? $sumaggregated : $gbaggregatedgrade->finalgrade;
+            ($gbaggregatedgrade->overridden == 0) ? local_gugcat::update_grade($student->id, $aggradeid, $sumaggregated) : null;
+            $aggrdobj->grade = local_gugcat::convert_grade($aggrade);
+            $aggrdobj->rawgrade = $aggrade;
+            $adjustedgrade = (max(array_keys(local_gugcat::$GRADES)) === 23 && $aggrade > 0) ?  $aggrade-1 : $aggrade;
+            $aggrdobj->display = in_array(get_string('nograderecorded', 'local_gugcat'), $gradecaptureitem->grades) 
+                ? get_string('missinggrade', 'local_gugcat') 
+                : (!strstr($aggrade, '-') ? local_gugcat::convert_grade($aggrade) .' ('.number_format($adjustedgrade, 2).')' : local_gugcat::convert_grade($aggrade));
+            $gradecaptureitem->aggregatedgrade = $aggrdobj;
             array_push($rows, $gradecaptureitem);
             $i++;
         }
