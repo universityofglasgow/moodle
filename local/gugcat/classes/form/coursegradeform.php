@@ -77,7 +77,7 @@ class coursegradeform extends moodleform {
         $mform->setType('notes', PARAM_NOTAGS);
 
         $mform->addElement('html', '</div>');
-        $this->add_action_buttons(false, get_string('confirmgrade', 'local_gugcat'), ['class' => 'float-right']);
+        $this->add_action_buttons(false, get_string('savechanges', 'local_gugcat'), ['class' => 'float-right']);
 
         // hidden params
         $mform->addElement('hidden', 'studentid', $this->_customdata['studentid']);

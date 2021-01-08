@@ -32,6 +32,7 @@ require_once($CFG->dirroot.'/local/gugcat/classes/form/coursegradeform.php');
 $courseid = required_param('id', PARAM_INT);
 $formtype = required_param('setting', PARAM_INT);
 $studentid = required_param('studentid', PARAM_INT);
+$cnum = required_param('cnum', PARAM_INT);
 
 require_login($courseid);
 $PAGE->set_context(context_system::instance());
@@ -45,15 +46,16 @@ $PAGE->requires->css('/local/gugcat/styles/gugcat.css');
 $PAGE->requires->js_call_amd('local_gugcat/main', 'init');
 
 $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
-$student = $DB->get_records('user', array('id'=>$studentid, 'deleted'=>0), MUST_EXIST);
+$studentarr = $DB->get_records('user', array('id'=>$studentid, 'deleted'=>0), MUST_EXIST);
 
 $PAGE->set_course($course);
 $PAGE->set_heading($course->fullname);
 
 $activities = local_gugcat::get_activities($courseid);
-$rows = grade_aggregation::get_rows($course, $activities, $student);
-
-$mform = new coursegradeform(null, array('id'=>$courseid, 'studentid'=>$studentid, 'setting'=>$formtype, 'student'=>$rows[0]));
+$rows = grade_aggregation::get_rows($course, $activities, $studentarr);
+$student = $rows[0];
+$student->cnum = $cnum; //candidate no.
+$mform = new coursegradeform(null, array('id'=>$courseid, 'studentid'=>$studentid, 'setting'=>$formtype, 'student'=>$student));
 if ($fromform = $mform->get_data()) {
     
     $gradeitemid = local_gugcat::add_grade_item($courseid, get_string('aggregatedgrade', 'local_gugcat'), null);
@@ -63,10 +65,9 @@ if ($fromform = $mform->get_data()) {
     header("Location:" .$CFG->wwwroot . $url);
     exit;
 }   
-$studindex = key($student);
 
 echo $OUTPUT->header();
 $renderer = $PAGE->get_renderer('local_gugcat');
-echo $renderer->display_overview_adjust_grade_form($student[$studindex = key($student)]);
+echo $renderer->display_overview_adjust_grade_form($student);
 $mform->display();
 echo $OUTPUT->footer();

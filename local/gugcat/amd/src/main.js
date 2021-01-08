@@ -174,14 +174,14 @@ define(['jquery', 'core/str' ], function($, Str) {
                     var mformReason = document.getElementById('id_otherreason');
                     var mformNotes = document.getElementById('id_notes');
                     mformReason.placeholder = "Please Specify";
-                    mformNotes.placeholder = "Specify reason(s) for ammendment";
+                    mformNotes.placeholder = "Specify reason(s) for amendment";
                     mformNotes.required = true;
                 }
 
                 if(checkCurrentUrl("gugcat/overview/gradeform")){
                     //Add placeholder
                     var mformNotes = document.getElementById('id_notes');
-                    mformNotes.placeholder = "Specify reason(s) for ammendment";
+                    mformNotes.placeholder = "Specify reason(s) for amendment";
                     mformNotes.required = true;
                 }
             }
