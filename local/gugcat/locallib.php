@@ -23,6 +23,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use local_gugcat\grade_aggregation;
+
 defined('MOODLE_INTERNAL') || die();
 
 //tables used in db
@@ -289,17 +291,11 @@ class local_gugcat {
     }
 
     public static function convert_grade($grade){
-        $scale = self::$GRADES;
+        $scale = self::$GRADES + grade_aggregation::$AGGRADE;
 
         //add admin grades in scale
         $scale[NON_SUBMISSION] = NON_SUBMISSION_AC;
-        $scale[CREDIT_WITHHELD] = NON_SUBMISSION_AC;
-        $scale[CREDIT_REFUSED] = CREDIT_REFUSED_AC;
-        $scale[CA] = CA_AC;
-        $scale[UNDER_INVESTIGATION] = UNDER_INVESTIGATION_AC;
-        $scale[AU] = AU_AC;
-        $scale[FC] = FC_AC;
-
+        
         $final_grade = intval($grade);
         if ($final_grade >= key(array_slice($scale, -1, 1, true)) && $final_grade <= key($scale)){
             return ($final_grade != 0) ? $scale[$final_grade] : $final_grade;

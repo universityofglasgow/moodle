@@ -119,7 +119,7 @@ class grade_aggregation{
                 $grdobj->activity = $item->name;
                 $grdobj->grade = $grade;
                 $grdobj->rawgrade = $grd;
-                $grdobj->weight = $weight;
+                $grdobj->weight =  round((float)$weight * 100 );
                 array_push($gradecaptureitem->grades, $grdobj);
             }
             $gradecaptureitem->completed = round((float)$floatweight * 100 ) . '%';
@@ -130,7 +130,7 @@ class grade_aggregation{
             $aggrdobj->rawgrade = $aggrade;
             $aggrdobj->display = in_array(get_string('nograderecorded', 'local_gugcat'), $gradecaptureitem->grades) 
                 ? get_string('missinggrade', 'local_gugcat') 
-                : local_gugcat::convert_grade($aggrade) .' ('.number_format($aggrade, 2).')';
+                : (!strstr($aggrade, '-') ? local_gugcat::convert_grade($aggrade) .' ('.number_format($aggrade, 2).')' : local_gugcat::convert_grade($aggrade));
             $gradecaptureitem->aggregatedgrade = $aggrdobj;
             array_push($rows, $gradecaptureitem);
             $i++;
