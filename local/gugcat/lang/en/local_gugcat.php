@@ -81,6 +81,7 @@ $string['successadjustweight'] = 'Successfully adjusted course weightings';
 $string['supportingdocument'] = "Supporting Documentation";
 $string['surname'] = 'Surname';
 $string['title'] = 'Grade Capture & Course Grade Aggregation';
+$string['valuemust'] = 'Value must equal 100%';
 
 // Grade item names
 $string['gi_agreedgrade'] = 'Agreed Grade';
