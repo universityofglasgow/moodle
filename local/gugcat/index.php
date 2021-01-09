@@ -51,6 +51,7 @@ $activities = local_gugcat::get_activities($courseid);
 $selectedmodule = null;
 $groupid = 0;
 $groups = null;
+$valid_22point_scale = true;
 
 if(!empty($activities)){
     $mods = array_reverse($activities);
@@ -63,9 +64,10 @@ if(!empty($activities)){
     if (is_null($scaleid)){
         $gradetype = $selectedmodule->gradeitem->gradetype;
         $grademax = $selectedmodule->gradeitem->grademax;
-        if (local_gugcat::is_grademax22($gradetype, $grademax)){
+        $valid_22point_scale = local_gugcat::is_grademax22($gradetype, $grademax);
+        if ($valid_22point_scale){
             $scaleid = local_gugcat::get_gcat_scaleid();
-        }        
+        }    
     }
 
     //populate $GRADES with scales
@@ -116,8 +118,13 @@ if (!empty($_POST)){
             print_error('errorgraderequired', 'local_gugcat', $PAGE->url);
         }
     }elseif(isset($_POST['importgrades'])){
-        grade_capture::import_from_gradebook($courseid, $selectedmodule, $students, $activities);
-        local_gugcat::notify_success('successimport');
+        if ($valid_22point_scale){
+            grade_capture::import_from_gradebook($courseid, $selectedmodule, $students, $activities);
+            local_gugcat::notify_success('successimport');
+        } else{
+            local_gugcat::notify_error('importerror');
+        }
+
         unset($_POST);
         header("Location: ".$_SERVER['REQUEST_URI']);
         exit;
