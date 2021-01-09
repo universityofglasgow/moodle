@@ -124,6 +124,10 @@ class grade_aggregation{
             $aggrdobj = new stdClass();
             $aggrade = ($gbaggregatedgrade->overridden == 0) ? $sumaggregated : $gbaggregatedgrade->finalgrade;
             ($gbaggregatedgrade->overridden == 0) ? local_gugcat::update_grade($student->id, $aggradeid, $sumaggregated) : null;
+            if(!(max(array_keys(local_gugcat::$GRADES)) >= 22)){
+                $gcatscaleid = local_gugcat::get_gcat_scaleid();
+                local_gugcat::set_grade_scale($gcatscaleid);
+            }
             $aggrdobj->grade = local_gugcat::convert_grade($aggrade);
             $aggrdobj->rawgrade = $aggrade;
             $adjustedgrade = ($aggrade > 0) ?  $aggrade-((float)1) : $aggrade;
