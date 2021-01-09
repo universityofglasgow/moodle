@@ -24,12 +24,10 @@
  */
 require_once("$CFG->libdir/formslib.php");
 require_once($CFG->dirroot . '/local/gugcat/locallib.php');
-class addgradeform extends moodleform {
+class addeditgradeform extends moodleform {
     //Add elements to form
     public function definition() {
         global $CFG;
- 
-       
 
         $mform = $this->_form; // Don't forget the underscore! 
         $mform->addElement('html', '<div class="mform-container">');
@@ -53,7 +51,6 @@ class addgradeform extends moodleform {
 
         $mform->addElement('html', '</div>');
         $this->add_action_buttons(false, get_string('confirmgrade', 'local_gugcat'), ['class' => 'float-right']);
-
         //hidden params
         $mform->addElement('hidden', 'studentid', $this->_customdata['studentid']);
         $mform->setType('studentid', PARAM_ACTION);
