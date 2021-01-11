@@ -96,40 +96,43 @@ class block_gu_spdetails extends block_base {
         foreach($courseids as $courseid) {
             $mods = grade_get_gradable_activities($courseid);
 
-            foreach($mods as $mod) {
-                $modinfo = get_fast_modinfo($mod->course);
-                $course = get_course($courseid);
-                $cm = $modinfo->get_cm($mod->id);
-                $isVisible = $cm->uservisible;
-                $mod->activity = self::retrieve_activity($mod->modname, $mod->instance, $mod->course, $userid);
-                $gradeitem = self::retrieve_gradeitem($mod->course, $mod->modname, $mod->instance);
-                $gradecategory = self::retrieve_gradecategory($gradeitem->categoryid);
-                $mod->grades = self::retrieve_grades($userid, $gradeitem->id);
-                $mod->isprovisional = (!isset($mod->grades->information)) ? true : false;
-                $mod->provisionaltext = ($mod->isprovisional) ? get_string('provisional', SPDETAILS_STRINGS) : null;
+            if (is_array($mods) || is_object($mods)) {
+                foreach($mods as $mod) {
+                    $modinfo = get_fast_modinfo($mod->course);
+                    $course = get_course($courseid);
+                    $cm = $modinfo->get_cm($mod->id);
+                    $isVisible = $cm->uservisible;
+                    $mod->activity = self::retrieve_activity($mod->modname, $mod->instance, $mod->course, $userid);
+                    $gradeitem = self::retrieve_gradeitem($mod->course, $mod->modname, $mod->instance);
+                    $gradecategory = self::retrieve_gradecategory($gradeitem->categoryid);
+                    $mod->grades = self::retrieve_grades($userid, $gradeitem->id);
+                    $mod->isprovisional = (!isset($mod->grades->information)) ? true : false;
+                    $mod->provisionaltext = ($mod->isprovisional) ? get_string('provisional', SPDETAILS_STRINGS) : null;
 
-                $mod->coursename = $course->fullname;
-                $mod->coursecode = $course->shortname;
-                $mod->coursetitle = self::return_coursetitle($mod->course, $mod->section, $mod->coursename);
-                $mod->courseurl = self::return_courseurl($mod->course);
-                $mod->assessmenturl = self::return_assessmenturl($mod->id, $mod->modname);
-                $mod->assessmenttype = self::return_assessmenttype($gradecategory->fullname);
-                $mod->weight = self::return_weight($mod->assessmenttype, $gradecategory->aggregation,
-                                                   $gradeitem->aggregationcoef, $gradeitem->aggregationcoef2);
-                $mod->finalgrade = self::return_grade($gradeitem, $mod->grades);
-                $mod->dates = self::return_dates($mod->modname, $mod->activity);
-                $mod->dates->formattedduedate = (!empty($mod->dates->duedate)) ?
-                                                userdate($mod->dates->duedate,
-                                                         get_string('convertdate', SPDETAILS_STRINGS)) :
-                                                get_string('emptyvalue', SPDETAILS_STRINGS);
-                $mod->gradingduedate = self::return_gradingduedate($mod->finalgrade, $mod->dates->gradingduedate);
-                $mod->hasfeedback = (!empty($mod->grades->feedback) || !empty($mod->grades->feedbackformat)) ? true : false;
-                $mod->feedbackduedate = self::return_feedbackduedate($mod->hasfeedback, $mod->finalgrade,
-                                                                     $mod->dates->gradingduedate);
-                $mod->status = self::return_status($mod->modname, $mod->finalgrade, $mod->dates, $mod->activity);
+                    $mod->coursename = $course->fullname;
+                    $mod->coursecode = $course->shortname;
+                    $mod->coursetitle = self::return_coursetitle($mod->course, $mod->section, $mod->coursename);
+                    $mod->courseurl = self::return_courseurl($mod->course);
+                    $mod->assessmenturl = self::return_assessmenturl($mod->id, $mod->modname);
+                    $mod->assessmenttype = self::return_assessmenttype($gradecategory->fullname);
+                    $mod->weight = self::return_weight($mod->assessmenttype, $gradecategory->aggregation,
+                                                    $gradeitem->aggregationcoef, $gradeitem->aggregationcoef2);
+                    $mod->finalgrade = self::return_grade($gradeitem, $mod->grades);
+                    $mod->dates = self::return_dates($mod->modname, $mod->activity);
+                    $mod->dates->formattedduedate = (!empty($mod->dates->duedate)) ?
+                                                    userdate($mod->dates->duedate,
+                                                            get_string('convertdate', SPDETAILS_STRINGS)) :
+                                                    get_string('emptyvalue', SPDETAILS_STRINGS);
+                    $mod->dates->gradingduedate = (isset($mod->dates->gradingduedate)) ? $mod->dates->gradingduedate : '0';
+                    $mod->gradingduedate = self::return_gradingduedate($mod->finalgrade, $mod->dates->gradingduedate);
+                    $mod->hasfeedback = (!empty($mod->grades->feedback) || !empty($mod->grades->feedbackformat)) ? true : false;
+                    $mod->feedbackduedate = self::return_feedbackduedate($mod->hasfeedback, $mod->finalgrade,
+                                                                        $mod->dates->gradingduedate);
+                    $mod->status = self::return_status($mod->modname, $mod->finalgrade, $mod->dates, $mod->activity);
 
-                if($isVisible && in_array($mod->modname, $allowedactivities)) {
-                    array_push($assessments, $mod);
+                    if($isVisible && in_array($mod->modname, $allowedactivities)) {
+                        array_push($assessments, $mod);
+                    }
                 }
             }
         }
@@ -277,12 +280,10 @@ class block_gu_spdetails extends block_base {
 
     public static function return_dates($modname, $activity) {
         $date = new stdClass();
-        $date->duedate = $activity->duedate;
+        $date->duedate = (isset($activity->duedate)) ? $activity->duedate : '0';
         $date->isdueextended = false;
-        $date->startdate = (isset($activity->startdate)) ?
-                           $activity->startdate : '0';
-        $date->cutoffdate = (isset($activity->cutoffdate)) ?
-                            $activity->cutoffdate : '0';
+        $date->startdate = (isset($activity->startdate)) ? $activity->startdate : '0';
+        $date->cutoffdate = (isset($activity->cutoffdate)) ? $activity->cutoffdate : '0';
 
         switch($modname) {
             case 'assign':
