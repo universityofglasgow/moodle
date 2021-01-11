@@ -33,10 +33,12 @@ $courseid = required_param('id', PARAM_INT);
 $activityid = required_param('activityid', PARAM_INT);
 $studentid = required_param('studentid', PARAM_INT);
 $categoryid = optional_param('categoryid', null, PARAM_INT);
+$overview = required_param('overview', PARAM_INT);
 
 require_login($courseid);
 $PAGE->set_context(context_system::instance());
-$urlparams = array('id' => $courseid, 'activityid' => $activityid, 'studentid' => $studentid);
+$urlparams = array('id' => $courseid, 'activityid' => $activityid, 'studentid' => $studentid, 'overview' => $isoverview);
+
 $PAGE->set_url(new moodle_url('/local/gugcat/edit/index.php', $urlparams));
 $PAGE->set_title(get_string('gugcat', 'local_gugcat'));
 $PAGE->navbar->ignore_active();
@@ -61,9 +63,8 @@ $grading_info = grade_get_grades($courseid, 'mod', $module->modname, $module->in
 $gradeitems = local_gugcat::get_grade_grade_items($course, $module);
 $gradeversions = local_gugcat::filter_grade_version($gradeitems, $studentid);
 
-$mform = new addeditgradeform(null, array('id'=>$courseid, 'categoryid'=>$categoryid, 'activityid'=>$activityid, 'studentid'=>$studentid));
+$mform = new addeditgradeform(null, array('id'=>$courseid, 'categoryid'=>$categoryid, 'activityid'=>$activityid, 'studentid'=>$studentid, 'overview' => $overview));
 if ($fromform = $mform->get_data()) {
-
     if($fromform->reasons == 8) {
         $gradereason = $fromform->otherreason;
     }
@@ -76,9 +77,18 @@ if ($fromform = $mform->get_data()) {
     }
     $gradeitemid = local_gugcat::add_grade_item($courseid, $gradereason, $module);
     $grades = local_gugcat::add_update_grades($studentid, $gradeitemid, $fromform->grade, $fromform->notes, $fromform->userfile);
-    $url = '/local/gugcat/index.php?id='.$courseid.'&activityid='.$activityid;
-    $url .= (($categoryid !== 0) ? '&categoryid='.$categoryid : null);
-    header("Location:" .$CFG->wwwroot . $url);
+
+    $url = null;
+
+    if((integer)$fromform->overview == 1){
+        $url .= new moodle_url('/local/gugcat/overview/index.php', array('id' => $courseid));
+        header("Location:" . $url);
+    }
+    else{
+        $url .= '/local/gugcat/index.php?id='.$courseid.'&activityid='.$activityid;
+        $url .= (($categoryid !== 0) ? '&categoryid='.$categoryid : null);
+        header("Location:" .$CFG->wwwroot . $url);
+    }
     exit;
 }   
 
