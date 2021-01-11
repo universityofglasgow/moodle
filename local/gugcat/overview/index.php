@@ -52,8 +52,7 @@ $rows = grade_aggregation::get_rows($course, $activities, $students);
 
 if(!empty($_POST)){
     if(isset($_POST['resit']) && !empty($_POST['rowstudentno'])){
-        $studentno = $_POST['rowstudentno'];
-        $status = grade_aggregation::require_resit($studentno);
+        grade_aggregation::require_resit($_POST['rowstudentno']);
         unset($_POST);
         header("Location: ".$_SERVER['REQUEST_URI']);
         exit;

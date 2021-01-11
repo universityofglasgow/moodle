@@ -140,19 +140,15 @@ class grade_aggregation{
     }
 
     public static function require_resit($studentno){
-        global $aggradeid;
+        global $aggradeid, $USER;
 
         $grade_ = new grade_grade(array('userid' => $studentno, 'itemid' => $aggradeid), true);
-        $grade_->usermodified = $studentno;
+        $grade_->usermodified = $USER->id;
         $grade_->itemid = $aggradeid;
         $grade_->userid = $studentno;
         $grade_->timemodified = time();
-        if(is_null($grade_->information)){
-            $grade_->information = '1'; 
-        }  
-        else {
-            $grade_->information = null;
-        }
+        $grade_->information = is_null($grade_->information) ? '1' : null;
+
         return $grade_->update();    
     }
 }
