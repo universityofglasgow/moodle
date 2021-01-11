@@ -136,4 +136,20 @@ class grade_aggregation_testcase extends advanced_testcase {
         $this->assertEquals("$expectedweight%", $student->completed);
     }
 
+    public function test_require_resit() {
+        global $DB;
+        $expected = 1;
+
+        $DB->insert_record('grade_grades', array(
+            'itemid' => $this->cm->gradeitem->id,
+            'userid' => $this->student1->id
+        ));
+        $modules = array($this->cm);
+        $rows = grade_aggregation::get_rows($this->course, $modules, $this->students);
+        $this->assertNull($rows[0]->resit);
+
+        grade_aggregation::require_resit($this->student1->id);
+        $resitRows = grade_aggregation::get_rows($this->course, $modules, $this->students);
+        $this->assertEquals($expected, $resitRows[0]->resit);
+    }
 }
