@@ -45,7 +45,7 @@ class grade_capture_testcase extends advanced_testcase {
         $this->coursecontext = context_course::instance($this->course->id);
         $gen->enrol_user($this->student->id, $this->course->id, 'student');
         $gen->enrol_user($this->teacher->id, $this->course->id, 'editingteacher');
-        $this->students = get_enrolled_users($this->coursecontext, 'mod/coursework:submit');
+        $this->students = get_enrolled_users($this->coursecontext, 'moodle/competency:coursecompetencygradable');
         $gen->create_module('assign', array('id' => 1, 'course' => $this->course->id));
 
         $cm = local_gugcat::get_activities($this->course->id);
@@ -58,12 +58,9 @@ class grade_capture_testcase extends advanced_testcase {
 
         //create grade items
         $this->gradeitem = new grade_item($gen->create_grade_item(['courseid' => $this->course->id, 'iteminfo' => $this->cm->id]), false);
-        $this->provisionalgi = new grade_item($gen->create_grade_item(['courseid' => $this->course->id, 
-        'iteminfo' => $this->cm->id, 
-        'itemname' => get_string('provisionalgrd', 'local_gugcat')
-        ]), false);
-
-        $prvgradeid = $this->provisionalgi->id;
+        local_gugcat::$STUDENTS = $this->students;
+        $this->provisionalgi = local_gugcat::add_grade_item($this->course->id, get_string('provisionalgrd', 'local_gugcat'), $this->cm);
+        
         local_gugcat::set_prv_grade_id($this->course->id, $this->cm);
 
         $DB->insert_record('grade_grades', array(
@@ -75,7 +72,7 @@ class grade_capture_testcase extends advanced_testcase {
     public function test_grade_capture_columns() {
         global $gradeitems, $prvgradeid;
         $gradeitems = [];
-        $prvgradeid = $this->provisionalgi->id;
+        $prvgradeid = $this->provisionalgi;
         array_push($gradeitems, $this->gradeitem);
         $firstgrade = get_string('moodlegrade', 'local_gugcat').'<br>[Date]';
         $columns = grade_capture::get_columns();
@@ -85,7 +82,7 @@ class grade_capture_testcase extends advanced_testcase {
     public function test_grade_capture_rows() {
         global $gradeitems, $prvgradeid;
         $gradeitems = array();
-        $prvgradeid = $this->provisionalgi->id;
+        $prvgradeid = $this->provisionalgi;
         $rows = grade_capture::get_rows($this->course, $this->cm, $this->students);
         $row = $rows[0];
         $this->assertEquals($row->cnum, 1);
@@ -97,7 +94,7 @@ class grade_capture_testcase extends advanced_testcase {
     public function test_import_grade(){
         global $gradeitems, $prvgradeid;
         $gradeitems = array();
-        $prvgradeid = $this->provisionalgi->id;
+        $prvgradeid = $this->provisionalgi;
         $mggradeitemstr = get_string('moodlegrade', 'local_gugcat');
         $firstrows = grade_capture::get_rows($this->course, $this->cm, $this->students);
         $firstrow = $firstrows[0];
@@ -186,7 +183,7 @@ class grade_capture_testcase extends advanced_testcase {
     public function test_hideshow_grade() {
         global $gradeitems, $prvgradeid;
         $gradeitems = array();
-        $prvgradeid = $this->provisionalgi->id;
+        $prvgradeid = $this->provisionalgi;
         grade_capture::get_rows($this->course, $this->cm, $this->students);
         $mggradeitemstr = get_string('moodlegrade', 'local_gugcat');
         $mggradeitem = local_gugcat::add_grade_item($this->course->id, $mggradeitemstr, $this->cm); 
@@ -195,5 +192,23 @@ class grade_capture_testcase extends advanced_testcase {
         $firstrows = grade_capture::get_rows($this->course, $this->cm, $this->students);
         $firstrow = $firstrows[0];
         $this->assertTrue($firstrow->hidden);
+    }
+
+    public function test_set_provisional_weights() {
+        global $DB;
+        $expectedweight = '0.20000';
+        $gradeitemid = $this->cm->gradeitem->id;
+        $data[] = [
+            'itemid' => $gradeitemid,
+            'userid' => $this->student->id,
+            'excluded' => 0,
+            'rawgrade' => 17,
+            'finalgrade' => 17,
+            'aggregationweight' => $expectedweight
+        ];
+        $DB->insert_records('grade_grades', $data);
+        grade_capture::set_provisional_weights($this->course->id, array($this->cm), $this->students);
+        $prvweight = $DB->get_field(GRADE_GRADES, 'information', array('itemid' => $this->provisionalgi, 'userid' => $this->student->id));
+        $this->assertEquals($prvweight, $expectedweight); //assert provisional grade_grade copied weight from main act
     }
 }

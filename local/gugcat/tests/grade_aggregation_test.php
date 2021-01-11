@@ -24,6 +24,7 @@
  */
 
 use local_gugcat\grade_aggregation;
+use local_gugcat\grade_capture;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -46,7 +47,7 @@ class grade_aggregation_testcase extends advanced_testcase {
         $gen->enrol_user($this->student1->id, $this->course->id, 'student');
         $gen->enrol_user($this->student2->id, $this->course->id, 'student');
         $gen->enrol_user($this->teacher->id, $this->course->id, 'editingteacher');
-        $this->students = get_enrolled_users($this->coursecontext, 'mod/coursework:submit');
+        $this->students = get_enrolled_users($this->coursecontext, 'moodle/competency:coursecompetencygradable');
         $gen->create_module('assign', array('id' => 1, 'course' => $this->course->id));
 
         $cm = local_gugcat::get_activities($this->course->id);
@@ -55,21 +56,12 @@ class grade_aggregation_testcase extends advanced_testcase {
         $modinfo = get_fast_modinfo($this->course);
         $cm_info = $modinfo->get_cm($this->cm->id);
         $this->assign = new assign(context_module::instance($cm_info->id), $cm_info, $this->course->id);
+        local_gugcat::$STUDENTS = $this->students;
+        $this->provisionalgi = local_gugcat::add_grade_item($this->course->id, get_string('provisionalgrd', 'local_gugcat'), $this->cm);
     }
 
     public function test_grade_aggregation_rows() {
         global $DB;
-        $gen = $this->getDataGenerator();
-        //create provisional grade item
-        $this->provisionalgi = new grade_item($gen->create_grade_item([
-            'courseid' => $this->course->id, 
-            'iteminfo' => $this->cm->id, 
-            'itemname' => get_string('provisionalgrd', 'local_gugcat')
-            ]), false);
-        // Give a prv grade to the students.
-        // $this->provisionalgi->update_final_grade($this->student1->id, 5);
-        // $this->provisionalgi->update_final_grade($this->student2->id, 10);
-
         //add grades to students so  aggregation weight in grade_grades
         $gradeitemid = $this->cm->gradeitem->id;
         $user1 = $this->student1->id;
@@ -78,8 +70,8 @@ class grade_aggregation_testcase extends advanced_testcase {
         $s1grd =  5;
         $s2grd =  10;
         //expected grades
-        $exp_s1grd =  '10.00000';
-        $exp_s2grd = '5.00000';
+        $exp_s1grd = '5.00000';
+        $exp_s2grd =  '10.00000';
 
         $data = [];
         $data[] = [//1st student grade for main activity
@@ -96,22 +88,14 @@ class grade_aggregation_testcase extends advanced_testcase {
             'rawgrade' => 22,
             'finalgrade' => 22
         ];
-        $data[] = [//1st student grade for provisional grade
-            'itemid' => $this->provisionalgi->id,
-            'userid' => $user1,
-            'excluded' => 1,
-            'rawgrade' => $s1grd,
-            'finalgrade' => $s1grd
-        ];
-        $data[] = [//2nd student grade for provisional grade
-            'itemid' => $this->provisionalgi->id,
-            'userid' => $user2,
-            'excluded' => 1,
-            'rawgrade' => $s2grd,
-            'finalgrade' => $s2grd
-        ];
         $DB->insert_records('grade_grades', $data);
-        
+        foreach ($this->students as $student) {
+            $grade_ = new grade_grade(array('userid' => $student->id, 'itemid' => $this->provisionalgi), true);
+            $grade_->information = '1.00000';
+            $grade_->rawgrade = ($student->id != $this->student1->id) ? $s2grd : $s1grd;
+            $grade_->finalgrade = ($student->id != $this->student1->id) ? $s2grd : $s1grd;
+            $grade_->update();  
+        }
         $modules = array($this->cm);
         $rows = grade_aggregation::get_rows($this->course, $modules, $this->students);
         //get the weight of the main activity grades
@@ -124,16 +108,32 @@ class grade_aggregation_testcase extends advanced_testcase {
         //assert each rows that it has the provisional grade
         $row1 = $rows[1];
         $this->assertEquals($row1->cnum, 2);
-        $this->assertEquals($row1->studentno, $this->student2->id);
-        $this->assertContains($exp_s1grd, $row1->grades);
+        $this->assertEquals($row1->studentno, $this->student1->id);
+        $this->assertEquals($exp_s1grd, $row1->grades[0]->grade);
         $this->assertEquals($row1->completed, $expectedcompleted); //assert complete percent
-        $this->assertStringContainsString($exp_aggregatedgrd1, $row1->aggregatedgrade); //assert aggregated grade 
+        $this->assertEquals($exp_aggregatedgrd1, $row1->aggregatedgrade->grade); //assert aggregated grade 
         $row2 = $rows[0];
         $this->assertEquals($row2->cnum, 1);
-        $this->assertEquals($row2->studentno, $this->student1->id);
-        $this->assertContains($exp_s2grd, $row2->grades);
+        $this->assertEquals($row2->studentno, $this->student2->id);
+        $this->assertEquals($exp_s2grd, $row2->grades[0]->grade);
         $this->assertEquals($row2->completed, $expectedcompleted);
-        $this->assertStringContainsString($exp_aggregatedgrd2, $row2->aggregatedgrade);
+        $this->assertEquals($exp_aggregatedgrd2, $row2->aggregatedgrade->grade);
+    }
+
+    public function test_adjust_course_weight() {
+        $expectedweight = 30;
+        $weights = array();
+        $weights[$this->cm->id] = $expectedweight;
+        $grade_ = new grade_grade(array('userid' => $this->student1->id, 'itemid' => $this->provisionalgi), true);
+        $grade_->information = '1.00000';
+        $grade_->rawgrade = 20;
+        $grade_->finalgrade = 20;
+        $grade_->update();  
+        grade_aggregation::adjust_course_weight($weights, $this->course->id, $this->student1->id, null);
+        $rows = grade_aggregation::get_rows($this->course, array($this->cm), array($this->student1));
+        $student = $rows[0];
+        $this->assertEquals($expectedweight, $student->grades[0]->weight);
+        $this->assertEquals("$expectedweight%", $student->completed);
     }
 
 }
