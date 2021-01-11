@@ -154,4 +154,17 @@ class grade_aggregation{
 
         return $grade_->update();    
     }
+
+    public static function adjust_course_weight($weights, $courseid, $studentid, $notes){
+        foreach($weights as $key=>$value) {
+            $weight = number_format(($value/100), 5);
+            $prvgrdid = local_gugcat::get_grade_item_id($courseid, $key, get_string('provisionalgrd', 'local_gugcat'));
+            $grade_ = new grade_grade(array('userid' => $studentid, 'itemid' => $prvgrdid), true);
+            $grade_->information = $weight;
+            $grade_->feedback = $notes;
+            $grade_->timemodified = time();
+            $grade_->update();  
+        }
+        local_gugcat::notify_success('successadjustweight');
+    }
 }
