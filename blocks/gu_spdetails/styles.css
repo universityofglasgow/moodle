@@ -120,7 +120,7 @@
     width: 5%;
 }
 
-.header-sortable {
+.assessments-th-sortable {
     cursor: pointer;
 }
 
@@ -136,12 +136,13 @@
     padding: 0 7.5px;
 }
 
-.assessments-details-sort label {
+.assessments-details-sort-label {
+    cursor: pointer;
     font-size: 1.05rem;
     font-weight: 700;
 }
 
-.assessments-details-sort select {
+.assessments-details-sort-select {
     border-color: #677;
     border-radius: 8px;
     color: #677;

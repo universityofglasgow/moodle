@@ -98,7 +98,7 @@ if((substr($PAGE->pagetype, 0, 11) == 'course-view') && ($hillheadsmartalerts ==
                 
         if($studentyUsers === 0) {
             if(empty($_SESSION['SESSION']->hillhead_notifications) || !array_key_exists(md5($courseDetails->id.'coursenostudents'), $_SESSION['SESSION']->hillhead_notifications) && $canConfigureEnrolments) {
-                $notiftext .= '<div class="alert alert-warning"><a class="close" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($courseDetails->id.'coursenostudents').'" aria-label="Close"><span aria-hidden="true">&times;</span></a><i class="fa fa-users"></i><span><strong>There are no students on this course.</strong> <a class="alert-link" href="https://www.gla.ac.uk/myglasgow/moodle/universityofglasgowmoodleguides/enrollingstudentsonmoodlecourses/" target="_blank">How do I add students to my course?</a></span></div>';
+                $notiftext .= '<div class="alert alert-warning"><a class="close" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($courseDetails->id.'coursenostudents').'" aria-label="Close"><span aria-hidden="true">&times;</span></a><i class="fa fa-users"></i><span><strong>There are no students on this course.</strong> Click the \'Participants\' link in the sidebar to add students.</span></div>';
             }
         }
         

@@ -94,6 +94,7 @@ define(['jquery', 'core/str' ], function($, Str) {
         var btn_saveadd = document.getElementById('btn-saveadd');
         var btn_release = document.getElementById('btn-release');
         var btn_import = document.getElementById('btn-import');
+        var btn_coursegradeform = document.getElementById('btn-coursegradeform');
         var import_submit = document.getElementById('importgrades-submit');
         var gcat_tbl_form = document.getElementById('multigradesform');
         switch (event.target) {
@@ -125,6 +126,19 @@ define(['jquery', 'core/str' ], function($, Str) {
                     import_submit.click();
                 }
                 break;
+            case btn_coursegradeform:
+                var inputarr = document.querySelectorAll('.input-percent');
+                if(inputarr.length > 0){
+                    inputarr.forEach(div => {
+                        var invalid = div.querySelector('input.is-invalid');
+                        if(invalid != null){
+                            div.querySelector('div.felement').classList.add('no-after');
+                        }else{
+                            div.querySelector('div.felement').classList.remove('no-after');
+                        }
+                    });
+                }
+                break;
             default:
                 break;
         }
@@ -134,6 +148,7 @@ define(['jquery', 'core/str' ], function($, Str) {
         init: function() {
             const GCAT = document.querySelector('.gcat-container');
             var input_reason = document.getElementById('input-reason');
+            var input_percentarr = document.querySelectorAll('.input-percent');
             if(GCAT){
                 GCAT.addEventListener('change', onChangeListeners);
                 GCAT.addEventListener('click', onClickListeners);
@@ -142,6 +157,29 @@ define(['jquery', 'core/str' ], function($, Str) {
                     input_reason.addEventListener('input', (e) => {
                         update_reason_inputs(e.target.value);
                     });
+                }
+
+                if(input_percentarr.length > 0){
+                    input_percentarr.forEach(div => {
+                        var input = div.querySelector('input');
+                        input.addEventListener('focus', (e) => {
+                            var val = e.target.value;
+                            if(val !== "" && val.match(/^[0-9]+$/) === null){
+                                div.querySelector('div.felement').classList.add('no-after');
+                            }else{
+                                div.querySelector('div.felement').classList.remove('no-after');
+                            }
+                        });
+                        input.addEventListener('blur', (e) => {
+                            var val = e.target.value;
+                            if(val !== "" && val.match(/^[0-9]+$/) === null){
+                                div.querySelector('div.felement').classList.add('no-after');
+                            }else{
+                                div.querySelector('div.felement').classList.remove('no-after');
+                            }
+                        });
+                    });
+                    
                 }
 
                 //Show 'grade discrepancy' when grade discrepancy exist
@@ -173,7 +211,14 @@ define(['jquery', 'core/str' ], function($, Str) {
                     var mformReason = document.getElementById('id_otherreason');
                     var mformNotes = document.getElementById('id_notes');
                     mformReason.placeholder = "Please Specify";
-                    mformNotes.placeholder = "Specify reason(s) for ammendment";
+                    mformNotes.placeholder = "Specify reason(s) for amendment";
+                    mformNotes.required = true;
+                }
+
+                if(checkCurrentUrl("gugcat/overview/gradeform")){
+                    //Add placeholder
+                    var mformNotes = document.getElementById('id_notes');
+                    mformNotes.placeholder = "Specify reason(s) for amendment";
                     mformNotes.required = true;
                 }
             }

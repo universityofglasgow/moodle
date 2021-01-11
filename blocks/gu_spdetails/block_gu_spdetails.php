@@ -401,37 +401,41 @@ class block_gu_spdetails extends block_base {
         $status = new stdClass();
         $status->hasurl = false;
 
-        if(!empty($finalgrade)) {
+        // assuming $finalgrade can be 0
+        if(!is_null($finalgrade)) {
             $status->text = get_string('graded', SPDETAILS_STRINGS);
             $status->suffix = get_string('graded', SPDETAILS_STRINGS);
         }else{
-            if($modname == 'assign' && $activity->status == 'submitted') {
-                $status->text = get_string('submitted', SPDETAILS_STRINGS);
-                $status->suffix = get_string('submitted', SPDETAILS_STRINGS);
-            }
-
             if($dates->startdate == '0' || time() >= $dates->startdate) {
-                if($dates->duedate == '0' || time() <= $dates->duedate) {
-                    if($dates->cutoffdate == '0' || time() <= $dates->cutoffdate) {
-                        $status->text = get_string('submit', SPDETAILS_STRINGS);
-                        $status->suffix = get_string('submit', SPDETAILS_STRINGS);
-                        $status->hasurl = true;
+                if(time() <= $dates->duedate) {
+                    $status->hasurl = true;
+                    if($dates->isdueextended) {
+                        $status->text = get_string('overdue', SPDETAILS_STRINGS);
+                        $status->suffix = get_string('class_overduelinked', SPDETAILS_STRINGS);
                     }else{
-                        if($dates->isdueextended) {
-                            if(time() <= $dates->duedate) {
-                                $status->text = get_string('overdue', SPDETAILS_STRINGS);
-                                $status->suffix = get_string('class_overduelinked', SPDETAILS_STRINGS);
-                                $status->hasurl = true;
-                            }
+                        if($modname === 'assign' && $activity->status === 'submitted') {
+                            $status->text = get_string('submitted', SPDETAILS_STRINGS);
+                            $status->suffix = get_string('submitted', SPDETAILS_STRINGS);
+                            $status->hasurl = false;
                         }else{
-                            $status->text = get_string('overdue', SPDETAILS_STRINGS);
-                            $status->suffix = get_string('overdue', SPDETAILS_STRINGS);
+                            $status->text = get_string('submit', SPDETAILS_STRINGS);
+                            $status->suffix = get_string('submit', SPDETAILS_STRINGS);
                         }
                     }
                 }else{
-                    $status->text = get_string('overdue', SPDETAILS_STRINGS);
-                    $status->suffix = get_string('class_overduelinked', SPDETAILS_STRINGS);
-                    $status->hasurl = true;
+                    if($dates->duedate == 0) {
+                        $status->text = get_string('notopen', SPDETAILS_STRINGS);
+                        $status->suffix = get_string('class_notopen', SPDETAILS_STRINGS);
+                    }else{
+                        $status->text = get_string('overdue', SPDETAILS_STRINGS);
+
+                        if(time() <= $dates->cutoffdate || $dates->cutoffdate == 0) {
+                            $status->suffix = get_string('class_overduelinked', SPDETAILS_STRINGS);
+                            $status->hasurl = true;
+                        }else{
+                            $status->suffix = get_string('overdue', SPDETAILS_STRINGS);
+                        }
+                    }
                 }
             }else{
                 $status->text = get_string('notopen', SPDETAILS_STRINGS);
