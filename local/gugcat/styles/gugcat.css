@@ -16,6 +16,11 @@ td > i, th > i {
     cursor: pointer;
 }
 
+.fa-check-circle{
+    font-size: 20px;
+    color: #005c8a;
+}
+
 .fa-cog {
     color: white;
     margin: 0 5px;
@@ -84,7 +89,7 @@ td > i, th > i {
     height: 40px;
 }
 
-#btn-release, #btn-saveadd, .togglemultigrd, .addnewgrade{
+#btn-release, #btn-saveadd, #resit-submit, .togglemultigrd, .addnewgrade{
     display: none;
 }
 

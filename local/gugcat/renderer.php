@@ -24,6 +24,7 @@
  */
 
 defined('MOODLE_INTERNAL') || die();
+use local_gugcat\grade_aggregation;
 
 class local_gugcat_renderer extends plugin_renderer_base {
     public function display_grade_capture($activities_, $rows, $columns) {
@@ -96,7 +97,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
                 $row->provisionalgrade == get_string('missinggrade', 'local_gugcat'))
                 $htmlrows .= '<td class="provisionalgrade"><b>'.$row->provisionalgrade.'</b>'. $isgradehidden.'</td>';
             else
-                $htmlrows .= '<td class="provisionalgrade"><b>'.$row->provisionalgrade.'</b>'.$this->context_actions($row->studentno, $isgradehidden, false, htmlspecialchars_decode($editformurl)).  $isgradehidden.'</td>';
+                $htmlrows .= '<td class="provisionalgrade"><b>'.$row->provisionalgrade.'</b>'.$this->context_actions($row->studentno, $isgradehidden, false, htmlspecialchars_decode($editformurl), false).  $isgradehidden.'</td>';
             $htmlrows .= '<td>
                             <button type="button" class="btn btn-default addnewgrade" onclick="location.href=\''.$addformurl.'\'">
                                 '.get_string('addnewgrade', 'local_gugcat').'
@@ -160,6 +161,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $editformurl = new moodle_url('/local/gugcat/edit/index.php', array('id' => $courseid));
 
         //url to grade form
+        $actionurl = 'index.php?id=' . $courseid;
         $gradeformurl = new moodle_url('/local/gugcat/overview/gradeform/index.php', array('id' => $courseid));
         //add category id in the url if not null
         if(!is_null($categoryid)){
@@ -187,13 +189,19 @@ class local_gugcat_renderer extends plugin_renderer_base {
             
             foreach((array) $row->grades as $grade) {
                 $editformurl->param('activityid', $grade->activityid);
-                $htmlrows .= '<td>'.$grade->grade.((strpos($grade->grade, 'No grade') !== false) ? null : $this->context_actions($row->studentno, null, false, htmlspecialchars_decode($editformurl))).'</td>';
+                $htmlrows .= '<td>'.$grade->grade.((strpos($grade->grade, 'No grade') !== false) ? null : $this->context_actions($row->studentno, null, false, htmlspecialchars_decode($editformurl), true)).'</td>';
             }
-
-            $htmlrows .= '<td><i class="fa fa-times-circle"></i></td>';
+            $classname = (is_null($row->resit) ? "fa fa-times-circle" : "fa fa-check-circle");
+            $htmlrows .= '<td><i class="'.$classname.'"
+                        onclick="
+                        studno = document.getElementById(\'resitstudentno\');
+                        var button = document.getElementById(\'resit-submit\');
+                        studno.value = \''.$row->studentno.'\';
+                        button.click();
+                        "></i></td>';
             $htmlrows .= html_writer::tag('td', $row->completed);
             $htmlrows .= ($row->aggregatedgrade->display != get_string('missinggrade', 'local_gugcat')) 
-            ? html_writer::start_tag('td').$row->aggregatedgrade->display.$this->context_actions($row->studentno, null, true, str_replace('_cnum', $row->cnum, $gradeformurl)).html_writer::end_tag('td')
+            ? html_writer::start_tag('td').$row->aggregatedgrade->display.$this->context_actions($row->studentno, null, true, str_replace('_cnum', $row->cnum, $gradeformurl), true).html_writer::end_tag('td')
             : html_writer::tag('td', $row->aggregatedgrade->display);
             $htmlrows .= html_writer::end_tag('tr');
         }
@@ -201,7 +209,11 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $html .= $this->render_from_template('local_gugcat/gcat_tab_header', (object)[
             'downloadcsvstr' =>get_string('downloadcsv', 'local_gugcat'),
         ]);
+        $html .= html_writer::start_tag('form', array('id' => 'requireresitform', 'method' => 'post', 'action' => $actionurl));
         $html .= $this->display_table($htmlrows, $htmlcolumns);
+        $html .= html_writer::empty_tag('input', array('name' => 'rowstudentno', 'type' => 'hidden', 'id'=>'resitstudentno'));
+        $html .= html_writer::empty_tag('button', array('id'=>'resit-submit', 'name'=> 'resit', 'type'=>'submit'));
+        $html .= html_writer::end_tag('form');
         $html .= $this->footer();
         return $html;
     }
@@ -248,7 +260,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
         return $html;
     }
 
-    private function context_actions($studentno, $ishidden=null, $is_aggregrade = false, $link = null) {
+    private function context_actions($studentno, $ishidden=null, $is_aggregrade = false, $link = null, $is_overviewpage = false) {
         $html = html_writer::tag('i', null, array('class' => 'fa fa-ellipsis-h', 'data-toggle' => 'dropdown'));
         $html .= html_writer::start_tag('ul', array('class' => 'dropdown-menu'));
         if($is_aggregrade){
@@ -258,6 +270,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
             $html .= html_writer::tag('li', get_string('adjustcourseweight', 'local_gugcat'), array('class' => 'dropdown-item', 'onclick' => 'location.href=\''.$adjustlink.'\''));
             $html .= html_writer::tag('li', get_string('overrideggregrade', 'local_gugcat'), array('class' => 'dropdown-item', 'onclick' => 'location.href=\''.$overridelink.'\''));
         }else{
+            $link .= '&overview='.($is_overviewpage ? 1 : 0); 
             $html .= html_writer::tag('li', get_string('amendgrades', 'local_gugcat'), array('class' => 'dropdown-item', 'onclick' => 'location.href=\''.$link.'\''));
             $html .= html_writer::tag('li', get_string('historicalamendments', 'local_gugcat'), array('class' => 'dropdown-item'));
             $html .= html_writer::tag('li', !empty($ishidden) ? get_string('showgrade', 'local_gugcat') : get_string('hidefromstudent', 'local_gugcat'), array('class' => 'dropdown-item hide-show-grade',
