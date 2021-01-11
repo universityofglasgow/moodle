@@ -17,93 +17,94 @@
 {{#hasassessments}}
     <div class="assessments-details-container table-responsive">
         <div class="assessments-details-sort">
-            <label>{{sort}}</label>
-            <select oninput="sortTable(parseInt(this.value), true)">
-                <option value="0">{{sort_course}}</option>
-                <option value="4">{{sort_date}}</option>
-            </select>
+            <label class="assessments-details-sort-label">{{sort}}
+                <select class="assessments-details-sort-select" oninput="sortTable(parseInt(this.value), true)">
+                    <option value="0">{{sort_course}}</option>
+                    <option value="4">{{sort_date}}</option>
+                </select>
+            </label>
         </div>
         <table class="table assessments-table" id="block_spdetails_table">
             <thead>
                 <tr>
-                    <th scope="col" class="header-sortable" onclick="sortByCourse(this)" id="gu_spdetails_tableheader_course">
+                    <th class="td20 assessments-th-sortable" scope="col" onclick="sortByCourse(this)"
+                        id="gu_spdetails_tableheader_course">
                         {{header_course}}
                         <img src="{{downarrow_img}}">
                     </th>
-                    <th scope="col">{{header_assessment}}</th>
-                    <th scope="col">{{header_type}}</th>
-                    <th scope="col">{{header_weight}}</th>
-                    <th scope="col" class="header-sortable" onclick="sortByDate(this)" id="gu_spdetails_tableheader_duedate">
+                    <th class="td20" scope="col">{{header_assessment}}</th>
+                    <th class="td10" scope="col">{{header_type}}</th>
+                    <th class="td05" scope="col">{{header_weight}}</th>
+                    <th class="td10 assessments-th-sortable" scope="col" onclick="sortByDate(this)"
+                        id="gu_spdetails_tableheader_duedate">
                         {{header_duedate}}
                         <img src="{{downarrow_img}}">
                     </th>
-                    <th scope="col">{{header_status}}</th>
-                    <th scope="col">{{header_grade}}</th>
-                    <th scope="col">{{header_feedback}}</th>
+                    <th class="td15" scope="col">{{header_status}}</th>
+                    <th class="td10" scope="col">{{header_grade}}</th>
+                    <th class="td10" scope="col">{{header_feedback}}</th>
                 </tr>
             </thead>
             <tbody>
                 {{#data}}
                     <tr>
-                        <td>
-                            <a href="{{courserecord.url}}">
-                                {{courserecord.coursename}}
+                        <td class="td20">
+                            <a href="{{courseurl}}">
+                                {{coursetitle}}
                             </a>
                         </td>
-                        <td>
-                            <a href="{{assessment.url}}">
-                                {{assessment.name}}
+                        <td class="td20">
+                            <a href="{{assessmenturl}}">
+                                {{name}}
                             </a>
                         </td>
-                        <td>
-                            {{assessment.categoryname}}
+                        <td class="td10">
+                            {{assessmenttype}}
                         </td>
-                        <td>
-                            {{formatted.weight}}
+                        <td class="td05">
+                            {{weight}}
                         </td>
-                        <td style="display:none;">
-                            {{assessment.actualduedate}}
+                        <td class="hidden">
+                            {{dates.duedate}}
                         </td>
-                        <td>
-                            {{#assessment.hasextension}} 
-                                {{formatted.extensionduedate}}<span class="extended">*</span>
-                            {{/assessment.hasextension}}
-                            {{^assessment.hasextension}}
-                                {{formatted.duedate}}
-                            {{/assessment.hasextension}}
+                        <td class="td10">
+                            {{#dates.isdueextended}}
+                                {{dates.formattedduedate}}<span class="extended">*</span>
+                            {{/dates.isdueextended}}
+                            {{^dates.isdueextended}}
+                                {{dates.formattedduedate}}
+                            {{/dates.isdueextended}}
                         </td>
-                        <td>
-                            {{#submission}}
-                                {{#submission.hasurl}}
-                                    <a href="{{assessment.url}}" class="status-link">
-                                        <span class="status-item status-{{submission.suffix}}">{{submission.status}}</span>
-                                    </a>
-                                {{/submission.hasurl}}
-                                {{^submission.hasurl}}
-                                    <span class="status-item status-{{submission.suffix}}">{{submission.status}}</span>
-                                {{/submission.hasurl}}
-                            {{/submission}}
-                            {{^submission}}
-                                -
-                            {{/submission}}
-                        </td>
-                        <td>
-                            {{#isScale}}
-                                <span class="grade-scale">{{grades.gradetext}}</span>
-                            {{/isScale}}
-                            {{^isScale}}
-                                {{grades.gradetext}}
-                            {{/isScale}}
-                        </td>
-                        <td>
-                            {{#feedback.hasurl}}
-                                <a href="{{assessment.url}}">
-                                    {{feedback.text}}
+                        <td class="td15">
+                            {{#status.hasurl}}
+                                <a href="{{assessmenturl}}" class="status-link">
+                                    <span class="status-item status-{{status.suffix}}">{{status.text}}</span>
                                 </a>
-                            {{/feedback.hasurl}}
-                            {{^feedback.hasurl}}
-                                {{feedback.text}}
-                            {{/feedback.hasurl}}
+                            {{/status.hasurl}}
+                            {{^status.hasurl}}
+                                <span class="status-item status-{{status.suffix}}">{{status.text}}</span>
+                            {{/status.hasurl}}
+                        </td>
+                        <td class="td10">
+                            {{#gradingduedate.hasgrade}}
+                                <span class="graded">{{gradingduedate.gradetext}}</span>
+                                {{#isprovisional}}
+                                    {{provisionaltext}}
+                                {{/isprovisional}}
+                            {{/gradingduedate.hasgrade}}
+                            {{^gradingduedate.hasgrade}}
+                                {{gradingduedate.gradetext}}
+                            {{/gradingduedate.hasgrade}}
+                        </td>
+                        <td class="td10">
+                            {{#hasfeedback}}
+                                <a href="{{assessmenturl}}">
+                                    {{feedbackduedate}}
+                                </a>
+                            {{/hasfeedback}}
+                            {{^hasfeedback}}
+                                {{feedbackduedate}}
+                            {{/hasfeedback}}
                         </td>
                     </tr>
                 {{/data}}

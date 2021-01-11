@@ -1,9 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=PT+Sans&display=swap');
-
-.color-primary {
-    color: #005C8A;
-}
-
 .assessments-item {
     text-align: center;
 }
@@ -13,7 +7,7 @@
 }
 
 .assessments-item-count {
-    font-family: 'PT Sans', sans-serif;
+    color: #058;
     font-size: 25px;
     font-weight: 700;
     line-height: 32.35px;
@@ -21,13 +15,13 @@
 }
 
 .assessments-item-label {
-    font-family: 'Arial',sans-serif;
+    color: #058;
     font-size: 13px;
     line-height: 14.95px;
 }
 
 .block-region .assessments-item {
-    border-bottom: 1px solid #e1e6eb;
+    border-bottom: 1px solid #eee;
     padding-top: 10px;
     padding-bottom: 10px;
 }

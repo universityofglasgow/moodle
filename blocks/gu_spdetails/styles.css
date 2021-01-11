@@ -1,10 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=PT+Sans&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro&display=swap');
-
 .assessments-table {
-    color: #555;
-    font-family: 'Arial',sans-serif;
-    font-size: 13px;
+    color: #555555;
+    font-size: 1rem;
     line-height: 14.95px;
 }
 
@@ -17,8 +13,7 @@
 .table.assessments-table thead th {
     border-color: transparent;
     color: #777;
-    font-family: 'PT Sans', sans-serif;
-    font-size: 13px;
+    font-size: 1rem;
     line-height: 16.82px;
 }
 
@@ -52,9 +47,8 @@
     border-radius: 2px;
     color: #ccc;
     display: inline-block;
-    font-family: 'Source Sans Pro', sans-serif;
     font-weight: 600;
-    font-size: 12px;
+    font-size: 0.9rem;
     line-height: 18px;
     text-align: center;
     text-transform: uppercase;
@@ -76,8 +70,14 @@
 }
 
 .status-overdue {
-    border-color: #f46;
-    color: #f46;
+    border-color: #b00;
+    color: #b00;
+}
+
+.status-overduelinked {
+    background-color: #b00;
+    border-color: #b00;
+    color: #fff;
 }
 
 .assessments-img-empty {
@@ -91,10 +91,36 @@
 }
 
 .extended {
-    color: #f46;
+    color: #b00;
+    font-weight: 600;
 }
 
-.header-sortable {
+.graded {
+    color: #183;
+    font-weight: 600;
+}
+
+.hidden {
+    display: none;
+}
+
+.td20 {
+    width: 20%;
+}
+
+.td15 {
+    width: 15%;
+}
+
+.td10 {
+    width: 10%;
+}
+
+.td05 {
+    width: 5%;
+}
+
+.assessments-th-sortable {
     cursor: pointer;
 }
 
@@ -110,21 +136,17 @@
     padding: 0 7.5px;
 }
 
-.assessments-details-sort label {
-    font-size: 13px;
+.assessments-details-sort-label {
+    cursor: pointer;
+    font-size: 1.05rem;
     font-weight: 700;
 }
 
-.assessments-details-sort select {
+.assessments-details-sort-select {
     border-color: #677;
     border-radius: 8px;
     color: #677;
-    font-size: 14px;
+    font-size: 1.1rem;
     margin-left: 15px;
     padding: 10px;
-}
-
-.grade-scale {
-    color: #183;
-    font-weight: 600;
 }

@@ -23,10 +23,15 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+$string['class_overduelinked'] = 'overduelinked';
 $string['class_notopen'] = 'notopen';
 $string['convertdate'] = "%B %d";
 $string['due'] = 'Due ';
 $string['emptyvalue'] = '—';
+$string['formative'] = 'Formative';
+$string['graded'] = 'graded';
+$string['gu_spdetails:addinstance'] = 'Add a new Your assessments details block';
+$string['gu_spdetails:myaddinstance'] = 'Add a new Your assessments details block to Dashboard';
 $string['header_assessment'] = "Assessment";
 $string['header_course'] = "Course";
 $string['header_duedate'] = "Due Date";
@@ -35,19 +40,16 @@ $string['header_feedback'] = "Feedback";
 $string['header_grade'] = "Your Grade";
 $string['header_status'] = "Status";
 $string['header_weight'] = "Weight";
-$string['gu_spdetails:addinstance'] = 'Add a new Your assessments details block';
-$string['gu_spdetails:myaddinstance'] = 'Add a new Your assessments details block to Dashboard';
 $string['noassessments'] = 'No upcoming assessments due';
 $string['nofeedback'] = 'No feedback provided';
+$string['notopen'] = 'submission not open';
+$string['overdue'] = 'overdue';
 $string['pluginname'] = 'Your Assessments details';
+$string['provisional'] = '(Provisional)';
+$string['summative'] = 'Summative';
 $string['readfeedback'] = 'Read feedback';
-$string['status_contribute'] = 'contribute';
-$string['status_graded'] = 'graded';
-$string['status_notopen'] = 'submission not open';
-$string['status_overdue'] = 'overdue';
-$string['status_submit'] = 'submit';
 $string['sort'] = "Sort by ";
 $string['sort_course'] = "Course";
 $string['sort_date'] = "Date";
-$string['formative'] = "Formative";
-$string['summative'] = "Summative";
+$string['submit'] = 'submit';
+$string['submitted'] = 'submitted';

@@ -86,15 +86,20 @@ class block_gu_spoverview extends block_base {
         $assignment_str = ($assignments_submitted == 1) ? get_string('assignment', $lang) : get_string('assignments', $lang);
         $assessment_str = ($assessments_marked == 1) ? get_string('assessment', $lang) : get_string('assessments', $lang);
 
+        $assessments_submitted_icon = $OUTPUT->image_url('assessments_submitted', 'theme');
+        $assessments_tosubmit_icon = $OUTPUT->image_url('assessments_tosubmit', 'theme');
+        $assessments_overdue_icon = $OUTPUT->image_url('assessments_overdue', 'theme');
+        $assessments_marked_icon = $OUTPUT->image_url('assessments_marked', 'theme');
+
         $templatecontext = (object)[
             'assessments_submitted'        => $assignments_submitted,
             'assessments_tosubmit'         => $assignments_tosubmit,
             'assessments_overdue'          => $assignments_overdue,
             'assessments_marked'           => $assessments_marked,
-            'assessments_submitted_icon'   => '../blocks/gu_spoverview/pix/assessments_submitted.svg',
-            'assessments_tosubmit_icon'    => '../blocks/gu_spoverview/pix/assessments_tosubmit.svg',
-            'assessments_overdue_icon'     => '../blocks/gu_spoverview/pix/assessments_overdue.svg',
-            'assessments_marked_icon'      => '../blocks/gu_spoverview/pix/assessments_marked.svg',
+            'assessments_submitted_icon'   => $assessments_submitted_icon,
+            'assessments_tosubmit_icon'    => $assessments_tosubmit_icon,
+            'assessments_overdue_icon'     => $assessments_overdue_icon,
+            'assessments_marked_icon'      => $assessments_marked_icon,
             'assessments_submitted_str'    => $assignment_str.get_string('submitted', $lang),
             'assessments_tosubmit_str'     => get_string('tobesubmitted', $lang),
             'assessments_overdue_str'      => get_string('overdue', $lang),
