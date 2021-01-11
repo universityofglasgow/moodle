@@ -137,4 +137,3 @@ class grade_aggregation_testcase extends advanced_testcase {
     }
 
 }
-`
