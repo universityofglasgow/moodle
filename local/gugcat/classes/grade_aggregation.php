@@ -25,6 +25,7 @@ namespace local_gugcat;
 
 use local_gugcat;
 use stdClass;
+use grade_grade;
 
 defined('MOODLE_INTERNAL') || die();
 require_once('gcat_item.php');
@@ -56,7 +57,7 @@ class grade_aggregation{
      * @param mixed $students
      */
     public static function get_rows($course, $modules, $students){
-        global $DB;
+        global $DB, $aggradeid;
         //get grade item id for aggregated grade
         $aggradeid = local_gugcat::add_grade_item($course->id, get_string('aggregatedgrade', 'local_gugcat'), null);
         $rows = array();
@@ -120,6 +121,7 @@ class grade_aggregation{
                 $grdobj->weight =  round((float)$weight * 100 );
                 array_push($gradecaptureitem->grades, $grdobj);
             }
+            $gradecaptureitem->resit = $gbaggregatedgrade->information;
             $gradecaptureitem->completed = round((float)$floatweight * 100 ) . '%';
             $aggrdobj = new stdClass();
             $aggrade = ($gbaggregatedgrade->overridden == 0) ? $sumaggregated : $gbaggregatedgrade->finalgrade;
@@ -135,5 +137,18 @@ class grade_aggregation{
             $i++;
         }
         return $rows;
+    }
+
+    public static function require_resit($studentno){
+        global $aggradeid, $USER;
+
+        $grade_ = new grade_grade(array('userid' => $studentno, 'itemid' => $aggradeid), true);
+        $grade_->usermodified = $USER->id;
+        $grade_->itemid = $aggradeid;
+        $grade_->userid = $studentno;
+        $grade_->timemodified = time();
+        $grade_->information = is_null($grade_->information) ? '1' : null;
+
+        return $grade_->update();    
     }
 }

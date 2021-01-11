@@ -24,6 +24,7 @@
  */
 
 defined('MOODLE_INTERNAL') || die();
+use local_gugcat\grade_aggregation;
 
 class local_gugcat_renderer extends plugin_renderer_base {
     public function display_grade_capture($activities_, $rows, $columns) {
@@ -160,6 +161,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $editformurl = new moodle_url('/local/gugcat/edit/index.php', array('id' => $courseid));
 
         //url to grade form
+        $actionurl = 'index.php?id=' . $courseid;
         $gradeformurl = new moodle_url('/local/gugcat/overview/gradeform/index.php', array('id' => $courseid));
         //add category id in the url if not null
         if(!is_null($categoryid)){
@@ -189,8 +191,14 @@ class local_gugcat_renderer extends plugin_renderer_base {
                 $editformurl->param('activityid', $grade->activityid);
                 $htmlrows .= '<td>'.$grade->grade.((strpos($grade->grade, 'No grade') !== false) ? null : $this->context_actions($row->studentno, null, false, htmlspecialchars_decode($editformurl))).'</td>';
             }
-
-            $htmlrows .= '<td><i class="fa fa-times-circle"></i></td>';
+            $classname = (is_null($row->resit) ? "fa fa-times-circle" : "fa fa-check-circle");
+            $htmlrows .= '<td><i class="'.$classname.'"
+                        onclick="
+                        studno = document.getElementById(\'resitstudentno\');
+                        var button = document.getElementById(\'resit-submit\');
+                        studno.value = \''.$row->studentno.'\';
+                        button.click();
+                        "></i></td>';
             $htmlrows .= html_writer::tag('td', $row->completed);
             $htmlrows .= ($row->aggregatedgrade->display != get_string('missinggrade', 'local_gugcat')) 
             ? html_writer::start_tag('td').$row->aggregatedgrade->display.$this->context_actions($row->studentno, null, true, str_replace('_cnum', $row->cnum, $gradeformurl)).html_writer::end_tag('td')
@@ -201,7 +209,11 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $html .= $this->render_from_template('local_gugcat/gcat_tab_header', (object)[
             'downloadcsvstr' =>get_string('downloadcsv', 'local_gugcat'),
         ]);
+        $html .= html_writer::start_tag('form', array('id' => 'requireresitform', 'method' => 'post', 'action' => $actionurl));
         $html .= $this->display_table($htmlrows, $htmlcolumns);
+        $html .= html_writer::empty_tag('input', array('name' => 'rowstudentno', 'type' => 'hidden', 'id'=>'resitstudentno'));
+        $html .= html_writer::empty_tag('button', array('id'=>'resit-submit', 'name'=> 'resit', 'type'=>'submit'));
+        $html .= html_writer::end_tag('form');
         $html .= $this->footer();
         return $html;
     }
