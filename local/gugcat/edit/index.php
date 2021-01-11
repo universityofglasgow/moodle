@@ -37,7 +37,7 @@ $overview = required_param('overview', PARAM_INT);
 
 require_login($courseid);
 $PAGE->set_context(context_system::instance());
-$urlparams = array('id' => $courseid, 'activityid' => $activityid, 'studentid' => $studentid, 'overview' => $isoverview);
+$urlparams = array('id' => $courseid, 'activityid' => $activityid, 'studentid' => $studentid, 'overview' => $overview);
 
 $PAGE->set_url(new moodle_url('/local/gugcat/edit/index.php', $urlparams));
 $PAGE->set_title(get_string('gugcat', 'local_gugcat'));
