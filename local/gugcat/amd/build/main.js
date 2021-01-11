@@ -222,6 +222,13 @@ define(['jquery', 'core/str' ], function($, Str) {
                     mformNotes.placeholder = "Specify reason(s) for amendment";
                     mformNotes.required = true;
                 }
+
+                if(checkCurrentUrl("gugcat/edit")){
+                    //Add placeholder
+                    var mformNotes = document.getElementById('id_notes');
+                    mformNotes.placeholder = "Specify reason(s) for amendment";
+                    mformNotes.required = true;
+                }
             }
         }
     };
