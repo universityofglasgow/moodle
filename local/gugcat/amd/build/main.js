@@ -193,8 +193,9 @@ define(['jquery', 'core/str' ], function($, Str) {
                 if(checkCurrentUrl("gugcat/overview")){
                     document.querySelector('#btn-overviewtab').classList.add('active');
                     document.querySelector('#btn-assessmenttab').classList.remove('active');
-                }else{
+                }else if(checkCurrentUrl("gugcat/index")){
                     document.getElementById('btn-release').style.display = 'block';
+                }else{
                     var hideshowgrade = document.querySelectorAll('.hide-show-grade');
                     hideshowgrade.forEach(element => {
                         element.style.display = 'block';
