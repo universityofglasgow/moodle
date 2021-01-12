@@ -104,7 +104,7 @@ if (isset($release) && isset($prvgrades)){
     local_gugcat::notify_success('successrelease');
     unset($release);
     unset($prvgrades);
-    header("Location: ".htmlspecialchars_decode($URL));
+    redirect(htmlspecialchars_decode($URL));
     exit;
 }else if (!empty($gradeitem)){
     if(isset($newgrades)){
@@ -118,7 +118,7 @@ if (isset($release) && isset($prvgrades)){
         local_gugcat::notify_success('successaddall');
         unset($gradeitem);
         unset($newgrades);
-        header("Location: ".htmlspecialchars_decode($URL));
+        redirect(htmlspecialchars_decode($URL));
         exit;
     }else{
         print_error('errorrequired', 'local_gugcat', $PAGE->url);
@@ -131,13 +131,13 @@ if (isset($release) && isset($prvgrades)){
         local_gugcat::notify_error('importerror');
     }
     unset($importgrades);
-    header("Location: ".htmlspecialchars_decode($URL));
+    redirect(htmlspecialchars_decode($URL));
     exit;
 }else if(isset($showhidegrade) && !empty($rowstudentid)){
     grade_capture::hideshowgrade($rowstudentid);
     unset($showhidegrade);
     unset($rowstudentid);
-    header("Location: ".htmlspecialchars_decode($URL));
+    redirect(htmlspecialchars_decode($URL));
     exit;
 }
 $rows = grade_capture::get_rows($course, $selectedmodule, $students);

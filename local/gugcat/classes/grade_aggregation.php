@@ -124,7 +124,7 @@ class grade_aggregation{
             $gradecaptureitem->completed = round((float)$floatweight * 100 ) . '%';
             $rawaggrade = ($gbaggregatedgrade->overridden == 0) ? $sumaggregated : $gbaggregatedgrade->finalgrade;
             ($gbaggregatedgrade->overridden == 0) ? local_gugcat::update_grade($student->id, $aggradeid, $sumaggregated) : null;
-            $aggrade = round($rawaggrade) + 1; //convert back to moodle scale
+            $aggrade = ($gbaggregatedgrade->overridden == 0) ? round($rawaggrade) + 1 : $rawaggrade; //convert back to moodle scale
             if(!(max(array_keys(local_gugcat::$GRADES)) >= 22)){
                 $gcatscaleid = local_gugcat::get_gcat_scaleid();
                 local_gugcat::set_grade_scale($gcatscaleid);
@@ -134,7 +134,8 @@ class grade_aggregation{
             $aggrdobj->rawgrade = $rawaggrade;
             $aggrdobj->display = array_search(get_string('nograderecorded', 'local_gugcat'), array_column($gradecaptureitem->grades, 'grade'))
                 ? get_string('missinggrade', 'local_gugcat') 
-                : (!strstr($rawaggrade, '-') ? local_gugcat::convert_grade($aggrade) .' ('.number_format($rawaggrade, 2).')' : local_gugcat::convert_grade($aggrade));
+                : (!strstr($rawaggrade, '-') ? local_gugcat::convert_grade($aggrade) .' ('.number_format(($gbaggregatedgrade->overridden == 0) ?
+                 $rawaggrade : $rawaggrade-1, 2).')' : local_gugcat::convert_grade($aggrade));
             $gradecaptureitem->aggregatedgrade = $aggrdobj;
             array_push($rows, $gradecaptureitem);
             $i++;

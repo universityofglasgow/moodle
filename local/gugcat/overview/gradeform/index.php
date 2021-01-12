@@ -66,14 +66,14 @@ if ($fromform = $mform->get_data()) {
         if(array_sum($weights) != 100){
             local_gugcat::notify_error('errortotalweight');
             $urlparams = "?id=$courseid&setting=$formtype&studentid=$studentid&cnum=$cnum";
-            header("Location: ".htmlspecialchars_decode($URL));
+            redirect(htmlspecialchars_decode($URL));
             exit;
         }else{
             grade_aggregation::adjust_course_weight($weights, $courseid, $studentid, $fromform->notes);
         }
     }
     $url = '/local/gugcat/overview/index.php?id='.$courseid;
-    header("Location:" .$CFG->wwwroot . $url);
+    redirect($CFG->wwwroot . $url);
     exit;
 }   
 
