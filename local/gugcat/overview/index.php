@@ -29,10 +29,12 @@ require_once(__DIR__ . '/../../../config.php');
 require_once($CFG->dirroot . '/local/gugcat/locallib.php');
 
 $courseid = required_param('id', PARAM_INT);
-
+$categoryid = optional_param('categoryid', null, PARAM_INT);
+$URL = new moodle_url('/local/gugcat/overview/index.php', array('id' => $courseid));
+is_null($categoryid) ? null : $URL->param('categoryid', $categoryid);
 require_login($courseid);
+$PAGE->set_url($URL);
 $PAGE->set_context(context_system::instance());
-$PAGE->set_url(new moodle_url('/local/gugcat/overview/index.php', array('id' => $courseid)));
 $PAGE->set_title(get_string('gugcat', 'local_gugcat'));
 $PAGE->navbar->ignore_active();
 $PAGE->navbar->add(get_string('navname', 'local_gugcat'), new moodle_url('/local/gugcat/overview'));
@@ -50,17 +52,15 @@ $students = get_enrolled_users($coursecontext, 'moodle/competency:coursecompeten
 $activities = local_gugcat::get_activities($courseid);
 $rows = grade_aggregation::get_rows($course, $activities, $students);
 
-if(!empty($_POST)){
-    if(isset($_POST['resit']) && !empty($_POST['rowstudentno'])){
-        grade_aggregation::require_resit($_POST['rowstudentno']);
-        unset($_POST);
-        header("Location: ".$_SERVER['REQUEST_URI']);
-        exit;
-    }else{
-        print_error('errorrequired', 'local_gugcat', $PAGE->url);
-    }
+$requireresit = optional_param('resit', null, PARAM_NOTAGS);
+$rowstudentid = optional_param('rowstudentno', null, PARAM_NOTAGS);
+if(isset($requireresit) && !empty($rowstudentid)){
+    grade_aggregation::require_resit($rowstudentid);
+    unset($requireresit);
+    unset($rowstudentid);
+    header("Location: ".htmlspecialchars_decode($URL));
+    exit;
 }
-
 
 echo $OUTPUT->header();
 $renderer = $PAGE->get_renderer('local_gugcat');

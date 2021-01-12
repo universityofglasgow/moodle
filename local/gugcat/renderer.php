@@ -62,8 +62,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
             $editformurl->param('studentid', $row->studentno);
             $htmlrows .= html_writer::start_tag('tr');
             //hidden inputs for id and provisional grades
-            $htmlrows .= html_writer::empty_tag('input', array('name' => 'grades['.$row->studentno.'][id]', 'type' => 'hidden', 'value' => $row->studentno));
-            $htmlrows .= html_writer::empty_tag('input', array('name' => 'grades['.$row->studentno.'][provisional]', 'type' => 'hidden', 'value' => ((strpos($row->provisionalgrade, 'Null') !== false) ? null : $row->provisionalgrade)));
+            $htmlrows .= html_writer::empty_tag('input', array('name' => 'prvgrades['.$row->studentno.']', 'type' => 'hidden', 'value' => ((strpos($row->provisionalgrade, 'Null') !== false) ? null : $row->provisionalgrade)));
             $htmlrows .= html_writer::tag('td', $row->cnum);
             $htmlrows .= html_writer::tag('td', $row->studentno);
             $htmlrows .= html_writer::tag('td', $row->surname);
@@ -79,7 +78,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
             $htmlrows .= '<td class="togglemultigrd">'
                         .$this->display_custom_select(
                             $grades,
-                            'grades['.$row->studentno.'][grade]',
+                            'newgrades['.$row->studentno.']',
                             get_string('choosegrade', 'local_gugcat'),
                             'multi-select-grade').'
                     </td>';
