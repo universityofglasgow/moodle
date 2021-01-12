@@ -66,6 +66,23 @@ class local_gugcat_testcase extends advanced_testcase {
         ));
     }
 
+    public function test_filter_grade_version(){
+        global $DB;
+
+        $course = $DB->get_record('course', ['id' => $this->course->id], '*', MUST_EXIST);
+        $gradeitems = local_gugcat::get_grade_grade_items($course, $this->cm);
+        $gradeversions = local_gugcat::filter_grade_version($gradeitems, $this->student->id);
+        $this->assertNotNull($gradeversions, "");
+    }
+
+    public function test_get_grade_grade_items(){
+        global $DB;
+
+        $course = $DB->get_record('course', ['id' => $this->course->id], '*', MUST_EXIST);
+        $gradeitems = local_gugcat::get_grade_grade_items($course, $this->cm);
+        $this->assertNotNull($gradeitems, "");
+    }
+
     public function test_get_grade_categories() {
         //create grade categories
         $gen = $this->getDataGenerator();
