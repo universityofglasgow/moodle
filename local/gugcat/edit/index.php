@@ -1,4 +1,3 @@
-
 <?php
 // This file is part of Moodle - http://moodle.org/
 //
@@ -82,12 +81,12 @@ if ($fromform = $mform->get_data()) {
 
     if((integer)$fromform->overview == 1){
         $url .= new moodle_url('/local/gugcat/overview/index.php', array('id' => $courseid));
-        header("Location:" . $url);
+        redirect($CFG->wwwroot . $url);
     }
     else{
         $url .= '/local/gugcat/index.php?id='.$courseid.'&activityid='.$activityid;
         $url .= (($categoryid !== 0) ? '&categoryid='.$categoryid : null);
-        header("Location:" .$CFG->wwwroot . $url);
+        redirect($CFG->wwwroot . $url);
     }
     exit;
 }   

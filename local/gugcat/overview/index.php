@@ -58,7 +58,7 @@ if(isset($requireresit) && !empty($rowstudentid)){
     grade_aggregation::require_resit($rowstudentid);
     unset($requireresit);
     unset($rowstudentid);
-    header("Location: ".htmlspecialchars_decode($URL));
+    redirect(htmlspecialchars_decode($URL));
     exit;
 }
 
