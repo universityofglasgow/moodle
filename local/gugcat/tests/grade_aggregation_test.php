@@ -144,12 +144,36 @@ class grade_aggregation_testcase extends advanced_testcase {
             'itemid' => $this->cm->gradeitem->id,
             'userid' => $this->student1->id
         ));
+        $student = array($this->student1);
         $modules = array($this->cm);
-        $rows = grade_aggregation::get_rows($this->course, $modules, $this->students);
+        $rows = grade_aggregation::get_rows($this->course, $modules, $student);
         $this->assertNull($rows[0]->resit);
 
         grade_aggregation::require_resit($this->student1->id);
-        $resitRows = grade_aggregation::get_rows($this->course, $modules, $this->students);
+        $resitRows = grade_aggregation::get_rows($this->course, $modules, $student);
         $this->assertEquals($expected, $resitRows[0]->resit);
+    }
+
+    public function test_override_grade() {
+        global $DB;
+        $modules = array($this->cm);
+        $grade_ = new grade_grade(array('userid' => $this->student1->id, 'itemid' => $this->provisionalgi), true);
+        $grade_->information = '1.00000';
+        $grade_->rawgrade = 20;
+        $grade_->finalgrade = 20;
+        $grade_->update();  
+        $student = array($this->student1);
+        $rows = grade_aggregation::get_rows($this->course, $modules, $student);
+        $this->assertNotNull($rows[0]->aggregatedgrade->rawgrade);
+
+        $aggradeitem = local_gugcat::add_grade_item($this->course->id, get_string('aggregatedgrade', 'local_gugcat'), null);
+        $expectednotes = 'testnote';
+        $expectedoverridden = 0;
+        local_gugcat::update_grade($this->student1->id, $aggradeitem, 19, $expectednotes, null, time());
+        $rows = grade_aggregation::get_rows($this->course, $modules, $student);
+        $aggrade = $DB->get_record('grade_grades', array('userid'=>$this->student1->id, 'itemid'=>$aggradeitem));
+        $this->assertEquals($rows[0]->aggregatedgrade->rawgrade, '19.00000');
+        $this->assertEquals($expectednotes, $aggrade->feedback);
+        $this->assertNotEquals($expectedoverridden, $aggrade->overridden);
     }
 }
