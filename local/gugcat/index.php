@@ -30,10 +30,13 @@ require_once('locallib.php');
 
 $courseid = required_param('id', PARAM_INT);
 $activityid = optional_param('activityid', null, PARAM_INT);
-
+$categoryid = optional_param('categoryid', null, PARAM_INT);
+$URL = new moodle_url('/local/gugcat/index.php', array('id' => $courseid));
+is_null($activityid) ? null : $URL->param('activityid', $activityid);
+is_null($categoryid) ? null : $URL->param('categoryid', $categoryid);
 require_login($courseid);
+$PAGE->set_url($URL);
 $PAGE->set_context(context_system::instance());
-$PAGE->set_url(new moodle_url('/local/gugcat/index.php', array('id' => $courseid)));
 $PAGE->set_title(get_string('gugcat', 'local_gugcat'));
 $PAGE->navbar->ignore_active();
 $PAGE->navbar->add(get_string('navname', 'local_gugcat'), new moodle_url('/local/gugcat'));
@@ -90,55 +93,54 @@ local_gugcat::$STUDENTS = $students;
 local_gugcat::set_prv_grade_id($courseid, $selectedmodule);
 
 //---------submit grade capture table
-if (!empty($_POST)){
-    // release provisional grade
-    if (isset($_POST['release']) && isset($_POST['grades'])){
-        grade_capture::release_prv_grade($courseid, $selectedmodule, $_POST['grades']);
-        local_gugcat::notify_success('successrelease');
-        unset($_POST);
-        header("Location: ".$_SERVER['REQUEST_URI']);
-        exit;
-    }else if (isset($_POST['grades']) && !empty($_POST['reason'])){
-        $grades = $_POST['grades'];
-        $reason = $_POST['reason'];
-        if(array_column($grades,'grade')){
-            $gradeitemid = local_gugcat::add_grade_item($courseid, $reason, $selectedmodule);
-            foreach ($grades as $item) {
-                if(isset($item['grade'])){
-                    $grade = array_search($item['grade'], local_gugcat::$GRADES);
-                    local_gugcat::add_update_grades($item['id'], $gradeitemid, $grade);
-                }
+$release = optional_param('release', null, PARAM_NOTAGS);
+$gradeitem = optional_param('reason', null, PARAM_NOTAGS);
+$importgrades = optional_param('importgrades', null, PARAM_NOTAGS);
+$showhidegrade = optional_param('showhidegrade', null, PARAM_NOTAGS);
+$rowstudentid = optional_param('rowstudentno', null, PARAM_NOTAGS);
+$prvgrades = optional_param_array('prvgrades', null, PARAM_NOTAGS);
+$newgrades = optional_param_array('newgrades', null, PARAM_NOTAGS);
+if (isset($release) && isset($prvgrades)){
+    grade_capture::release_prv_grade($courseid, $selectedmodule, $prvgrades);
+    local_gugcat::notify_success('successrelease');
+    unset($release);
+    unset($prvgrades);
+    header("Location: ".htmlspecialchars_decode($URL));
+    exit;
+}else if (!empty($gradeitem)){
+    if(isset($newgrades)){
+        $gradeitemid = local_gugcat::add_grade_item($courseid, $gradeitem, $selectedmodule);
+        foreach ($newgrades as $id=>$item) {
+            if(isset($item)){
+                $grade = array_search($item, local_gugcat::$GRADES);
+                local_gugcat::add_update_grades($id, $gradeitemid, $grade);
             }
-            local_gugcat::notify_success('successaddall');
-            unset($_POST);
-            header("Location: ".$_SERVER['REQUEST_URI']);
-            exit;
-        }else{
-            //no grades selected
-            print_error('errorgraderequired', 'local_gugcat', $PAGE->url);
         }
-    }elseif(isset($_POST['importgrades'])){
-        if ($valid_22point_scale){
-            grade_capture::import_from_gradebook($courseid, $selectedmodule, $students, $activities);
-            local_gugcat::notify_success('successimport');
-        } else{
-            local_gugcat::notify_error('importerror');
-        }
-
-        unset($_POST);
-        header("Location: ".$_SERVER['REQUEST_URI']);
-        exit;
-    }elseif(isset($_POST['showhidegrade']) && !empty($_POST['rowstudentno'])){
-        $studentno = $_POST['rowstudentno'];
-        grade_capture::hideshowgrade($studentno);
-        unset($_POST);
-        header("Location: ".$_SERVER['REQUEST_URI']);
+        local_gugcat::notify_success('successaddall');
+        unset($gradeitem);
+        unset($newgrades);
+        header("Location: ".htmlspecialchars_decode($URL));
         exit;
     }else{
         print_error('errorrequired', 'local_gugcat', $PAGE->url);
     }
+}else if(isset($importgrades)){
+    if ($valid_22point_scale){
+        grade_capture::import_from_gradebook($courseid, $selectedmodule, $students, $activities);
+        local_gugcat::notify_success('successimport');
+    } else{
+        local_gugcat::notify_error('importerror');
+    }
+    unset($importgrades);
+    header("Location: ".htmlspecialchars_decode($URL));
+    exit;
+}else if(isset($showhidegrade) && !empty($rowstudentid)){
+    grade_capture::hideshowgrade($rowstudentid);
+    unset($showhidegrade);
+    unset($rowstudentid);
+    header("Location: ".htmlspecialchars_decode($URL));
+    exit;
 }
-
 $rows = grade_capture::get_rows($course, $selectedmodule, $students);
 $columns = grade_capture::get_columns();
 

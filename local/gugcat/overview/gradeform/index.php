@@ -37,7 +37,8 @@ $cnum = required_param('cnum', PARAM_INT);
 require_login($courseid);
 $PAGE->set_context(context_system::instance());
 $urlparams = array('id' => $courseid, 'setting' => $formtype, 'studentid' => $studentid, 'cnum' => $cnum);
-$PAGE->set_url(new moodle_url('/local/gugcat/overview/gradeform/index.php', $urlparams));
+$URL = new moodle_url('/local/gugcat/overview/gradeform/index.php', $urlparams);
+$PAGE->set_url($URL);
 $PAGE->set_title(get_string('gugcat', 'local_gugcat'));
 $PAGE->navbar->ignore_active();
 $PAGE->navbar->add(get_string('navname', 'local_gugcat'), new moodle_url('/local/gugcat/overview'));
@@ -65,7 +66,7 @@ if ($fromform = $mform->get_data()) {
         if(array_sum($weights) != 100){
             local_gugcat::notify_error('errortotalweight');
             $urlparams = "?id=$courseid&setting=$formtype&studentid=$studentid&cnum=$cnum";
-            header("Location: ".$_SERVER['REQUEST_URI'].$urlparams);
+            header("Location: ".htmlspecialchars_decode($URL));
             exit;
         }else{
             grade_aggregation::adjust_course_weight($weights, $courseid, $studentid, $fromform->notes);
