@@ -1,4 +1,3 @@
-  
 <?php
 // This file is part of Moodle - http://moodle.org/
 //
@@ -82,7 +81,7 @@ if ($fromform = $mform->get_data()) {
     $grades = local_gugcat::add_update_grades($studentid, $gradeitemid, $fromform->grade, $fromform->notes, $fromform->userfile);
     $url = '/local/gugcat/index.php?id='.$courseid.'&activityid='.$activityid;
     $url .= (($categoryid !== 0) ? '&categoryid='.$categoryid : null);
-    header("Location:" .$CFG->wwwroot . $url);
+    redirect($CFG->wwwroot . $url);
     exit;
 }   
 
