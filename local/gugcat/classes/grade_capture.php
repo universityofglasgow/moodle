@@ -168,6 +168,9 @@ class grade_capture{
         }
         foreach ($grades as $userid=>$grd)  {
             $hidden = $DB->get_field(GRADE_GRADES, 'hidden', array('itemid'=>local_gugcat::$PRVGRADEID, 'userid' => $userid));
+            $select = "itemid = $gradeitemid AND userid = $userid";
+            //update hidden status
+            $DB->set_field_select(GRADE_GRADES, 'hidden', $hidden, $select);
             if(!empty($grd) && $hidden == 0){
                 $rawgrade = array_search($grd, local_gugcat::$GRADES);
                 $rawgrade = $rawgrade ? $rawgrade : $grd;
@@ -191,7 +194,6 @@ class grade_capture{
                         break;
                 }
                 //update feedback and excluded field
-                $select = "itemid = $gradeitemid AND userid = $userid";
                 $DB->set_field_select(GRADE_GRADES, 'feedback', $feedback, $select);
                 $DB->set_field_select(GRADE_GRADES, 'excluded', $excluded, $select);
                 if($cm->modname === 'assign'){

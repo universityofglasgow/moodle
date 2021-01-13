@@ -80,7 +80,7 @@ if (!empty($groups)){
     $students = Array();
     foreach ($groups as $group) {
         $groupstudents = get_enrolled_users($coursecontext, 'moodle/competency:coursecompetencygradable', $group->id);
-        array_push($students, ...$groupstudents);
+        $students += $groupstudents;
     }
 }else{
     $students = get_enrolled_users($coursecontext, 'moodle/competency:coursecompetencygradable', $groupid);
