@@ -24,6 +24,10 @@
  */
 
 function local_gugcat_extend_navigation_course($parentnode, $course, $context) {
+    global $USER;
+    if(has_capability('moodle/competency:coursecompetencygradable', $context, $USER)) {
+        return; //user role = student
+    }
     $url = new moodle_url('/local/gugcat/index.php', array('id' => $course->id));
     $gugcat = get_string('navname', 'local_gugcat');
     $icon = new pix_icon('t/grades', '');
