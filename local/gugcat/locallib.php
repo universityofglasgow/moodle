@@ -92,19 +92,20 @@ class local_gugcat {
         $categoryid = optional_param('categoryid', null, PARAM_INT);
         $mods = grade_get_gradable_activities($courseid);
         $activities = array();
-        foreach($mods as $cm) {
-            $activities[$cm->id] = $cm;
-            $activities[$cm->id]->selected = (strval($activityid) === $cm->id)? 'selected' : '';
-            $activities[$cm->id]->gradeitem = grade_item::fetch(array('itemtype'=>'mod', 'itemmodule'=>$cm->modname, 'iteminstance'=>$cm->instance, 'courseid'=>$courseid, 'itemnumber'=>0));
-        }
-        if(!is_null($categoryid) && $categoryid !== 0){
-            foreach ($activities as $key=>$activity) {
-                if ( $activity->gradeitem->categoryid !== strval($categoryid)) {
-                    unset($activities[$key]);
+        if($mods){
+            foreach($mods as $cm) {
+                $activities[$cm->id] = $cm;
+                $activities[$cm->id]->selected = (strval($activityid) === $cm->id)? 'selected' : '';
+                $activities[$cm->id]->gradeitem = grade_item::fetch(array('itemtype'=>'mod', 'itemmodule'=>$cm->modname, 'iteminstance'=>$cm->instance, 'courseid'=>$courseid, 'itemnumber'=>0));
+            }
+            if(!is_null($categoryid) && $categoryid !== 0){
+                foreach ($activities as $key=>$activity) {
+                    if ( $activity->gradeitem->categoryid !== strval($categoryid)) {
+                        unset($activities[$key]);
+                    }
                 }
             }
         }
-
         return $activities;
     }
 

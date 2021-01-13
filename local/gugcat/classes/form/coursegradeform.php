@@ -51,11 +51,14 @@ class coursegradeform extends moodleform {
                     'type' => 'number',
                     'maxlength' => '3',
                     'minlength' => '1',
-                    'size' => '6'
+                    'size' => '6',
+                    'pattern' => '[0-9]+'
                 );
                 $mform->addElement('text', 'weights['.$grdobj->activityid.']', $grdobj->activity.' Weighting', $attributes);
                 $mform->setType('weights['.$grdobj->activityid.']', PARAM_INT);
                 $mform->addRule('weights['.$grdobj->activityid.']', null, 'numeric', null, 'client');
+                $mform->addRule('weights['.$grdobj->activityid.']', get_string('errorfieldnumbers', 'local_gugcat'), 'regex', '/^[0-9]+$/', 'client');
+                $mform->addRule('weights['.$grdobj->activityid.']', get_string('errorfieldnumbers', 'local_gugcat'), 'regex', '/^[0-9]+$/', 'server');
                 $mform->setDefault('weights['.$grdobj->activityid.']', $grdobj->weight);
             }
         }
