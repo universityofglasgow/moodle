@@ -100,8 +100,12 @@ $rowstudentid = optional_param('rowstudentno', null, PARAM_NOTAGS);
 $prvgrades = optional_param_array('prvgrades', null, PARAM_NOTAGS);
 $newgrades = optional_param_array('newgrades', null, PARAM_NOTAGS);
 if (isset($release) && isset($prvgrades)){
-    grade_capture::release_prv_grade($courseid, $selectedmodule, $prvgrades);
-    local_gugcat::notify_success('successrelease');
+    if(count(array_filter($prvgrades)) > 0){
+        grade_capture::release_prv_grade($courseid, $selectedmodule, array_filter($prvgrades));
+        local_gugcat::notify_success('successrelease');
+    }else{
+        local_gugcat::notify_error('errornoprvgrades');
+    }
     unset($release);
     unset($prvgrades);
     redirect(htmlspecialchars_decode($URL));

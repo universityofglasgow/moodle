@@ -62,7 +62,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
             $editformurl->param('studentid', $row->studentno);
             $htmlrows .= html_writer::start_tag('tr');
             //hidden inputs for id and provisional grades
-            $htmlrows .= html_writer::empty_tag('input', array('name' => 'prvgrades['.$row->studentno.']', 'type' => 'hidden', 'value' => ((strpos($row->provisionalgrade, 'Null') !== false) ? null : $row->provisionalgrade)));
+            $htmlrows .= html_writer::empty_tag('input', array('name' => 'prvgrades['.$row->studentno.']', 'type' => 'hidden', 'value' => ($row->provisionalgrade == get_string('nograde', 'local_gugcat') ? "" : $row->provisionalgrade)));
             $htmlrows .= html_writer::tag('td', $row->cnum);
             $htmlrows .= html_writer::tag('td', $row->studentno);
             $htmlrows .= html_writer::tag('td', $row->surname);
@@ -204,9 +204,11 @@ class local_gugcat_renderer extends plugin_renderer_base {
             : html_writer::tag('td', $row->aggregatedgrade->display);
             $htmlrows .= html_writer::end_tag('tr');
         }
+        $hide_release = in_array(get_string('missinggrade', 'local_gugcat'), array_column(array_column($rows, 'aggregatedgrade'), 'display'));
         $html = $this->header();
         $html .= $this->render_from_template('local_gugcat/gcat_tab_header', (object)[
             'downloadcsvstr' =>get_string('downloadcsv', 'local_gugcat'),
+            'releasefinalstr' =>$hide_release ? null : get_string('releasefinalassessment', 'local_gugcat'),
         ]);
         $html .= html_writer::start_tag('form', array('id' => 'requireresitform', 'method' => 'post', 'action' => $actionurl));
         $html .= $this->display_table($htmlrows, $htmlcolumns);
