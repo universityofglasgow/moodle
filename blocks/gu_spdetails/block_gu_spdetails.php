@@ -24,6 +24,7 @@
  */
 defined('MOODLE_INTERNAL') || die();
 define('SPDETAILS_STRINGS', 'block_gu_spdetails');
+require_once($CFG->libdir.'/gradelib.php');
 require_once($CFG->dirroot . '/grade/querylib.php');
 
 class block_gu_spdetails extends block_base {
@@ -102,11 +103,13 @@ class block_gu_spdetails extends block_base {
                     $course = get_course($courseid);
                     $cm = $modinfo->get_cm($mod->id);
                     $isVisible = $cm->uservisible;
-                    $mod->activity = self::retrieve_activity($mod->modname, $mod->instance, $mod->course, $userid);
-                    $gradeitem = self::retrieve_gradeitem($mod->course, $mod->modname, $mod->instance);
+                    $completionview = $cm->completionview;
+                    $completiontype = $cm->completiongradeitemnumber;
+                    $activity = self::retrieve_activity($mod->modname, $mod->instance, $mod->course, $userid);
+                    $gradeitem = self::retrieve_gradeitem($mod->course, $mod->modname, $mod->instance, $activity);
                     $gradecategory = self::retrieve_gradecategory($gradeitem->categoryid);
-                    $mod->grades = self::retrieve_grades($userid, $gradeitem->id);
-                    $mod->isprovisional = (!isset($mod->grades->information)) ? true : false;
+                    $grades = self::retrieve_grades($userid, $gradeitem->id);
+                    $mod->isprovisional = (!isset($grades->information)) ? true : false;
                     $mod->provisionaltext = ($mod->isprovisional) ? get_string('provisional', SPDETAILS_STRINGS) : null;
 
                     $mod->coursename = $course->fullname;
@@ -117,18 +120,18 @@ class block_gu_spdetails extends block_base {
                     $mod->assessmenttype = self::return_assessmenttype($gradecategory->fullname);
                     $mod->weight = self::return_weight($mod->assessmenttype, $gradecategory->aggregation,
                                                     $gradeitem->aggregationcoef, $gradeitem->aggregationcoef2);
-                    $mod->finalgrade = self::return_grade($gradeitem, $mod->grades);
-                    $mod->dates = self::return_dates($mod->modname, $mod->activity);
+                    $mod->finalgrade = self::return_grade($gradeitem, $grades);
+                    $mod->dates = self::return_dates($mod->modname, $activity);
                     $mod->dates->formattedduedate = (!empty($mod->dates->duedate)) ?
                                                     userdate($mod->dates->duedate,
                                                             get_string('convertdate', SPDETAILS_STRINGS)) :
                                                     get_string('emptyvalue', SPDETAILS_STRINGS);
                     $mod->dates->gradingduedate = (isset($mod->dates->gradingduedate)) ? $mod->dates->gradingduedate : '0';
                     $mod->gradingduedate = self::return_gradingduedate($mod->finalgrade, $mod->dates->gradingduedate);
-                    $mod->hasfeedback = (!empty($mod->grades->feedback) || !empty($mod->grades->feedbackformat)) ? true : false;
+                    $mod->hasfeedback = (!empty($grades->feedback) || !empty($grades->feedbackformat)) ? true : false;
                     $mod->feedbackduedate = self::return_feedbackduedate($mod->hasfeedback, $mod->finalgrade,
                                                                         $mod->dates->gradingduedate);
-                    $mod->status = self::return_status($mod->modname, $mod->finalgrade, $mod->dates, $mod->activity);
+                    $mod->status = self::return_status($mod->modname, $mod->finalgrade, $mod->dates, $activity);
 
                     if($isVisible && in_array($mod->modname, $allowedactivities)) {
                         array_push($assessments, $mod);
@@ -183,7 +186,7 @@ class block_gu_spdetails extends block_base {
                 break;
             case 'forum':
                 $conditions = array('id' => $instance, 'course' => $courseid);
-                $columns = 'id, name, duedate, cutoffdate';
+                $columns = 'id, name, duedate, cutoffdate, assessed, grade_forum';
                 $activity = $DB->get_record('forum', $conditions, $columns);
                 break;
             case 'quiz':
@@ -222,11 +225,11 @@ class block_gu_spdetails extends block_base {
         return $activity;
     }
 
-    public static function retrieve_gradeitem($courseid, $modname, $instance) {
+    public static function retrieve_gradeitem($courseid, $modname, $instance, $activity) {
         global $DB;
-        $number = ($modname == 'forum') ? 1 : 0;
+        $itemnumber = ($modname == 'forum') ? (($activity->grade_forum) ? 1 : 0) : 0;
         $conditions = array('courseid' => $courseid, 'itemmodule' => $modname,
-                            'iteminstance' => $instance, 'itemnumber' => $number);
+                            'iteminstance' => $instance, 'itemnumber' => $itemnumber);
         $columns = 'id, categoryid, itemname, gradetype, grademax, grademin, scaleid,
                     aggregationcoef, aggregationcoef2';
 
