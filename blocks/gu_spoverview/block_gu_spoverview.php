@@ -24,6 +24,8 @@
  */
 
 defined('MOODLE_INTERNAL') || die();
+define('SPOVERVIEW_STRINGS', 'block_gu_spoverview');
+require_once($CFG->dirroot . '/blocks/gu_spdetails/block_gu_spdetails.php');
 
 class block_gu_spoverview extends block_base {
 
@@ -49,42 +51,19 @@ class block_gu_spoverview extends block_base {
         global $USER, $DB, $PAGE, $OUTPUT;
 
         $PAGE->requires->css('/blocks/gu_spoverview/styles.css');
-        $lang = 'block_gu_spoverview';
         $userid = $USER->id;
 
         $courses = enrol_get_all_users_courses($userid, true);
         $courseids = array_column($courses, 'id');
 
-        $assignments = (count($courseids) > 0) ? self::get_user_assignments($userid, $courseids) : array();
-        $assignments_submitted = 0;
-        $assignments_tosubmit = 0;
-        $assignments_overdue = 0;
-        $assessments_marked = (count($courseids) > 0) ? self::get_user_assessments_count($userid, $courseids) : 0;
+        $assessments = block_gu_spdetails::return_assessments($courseids, $userid);
+        $count = self::return_assessments_count($assessments);
 
-        foreach ($assignments as $assignment) {
-            if($assignment->status != 'submitted') {
-                if(time() > $assignment->startdate) {
-                    if(($assignment->duedate > 0 && time() <= $assignment->duedate)
-                        || ($assignment->cutoffdate > 0 && time() <= $assignment->cutoffdate)
-                        || (($assignment->extensionduedate > 0 || !is_null($assignment->extensionduedate))
-                             && time() <= $assignment->extensionduedate)) {
-                        $assignments_tosubmit++;
-                    }else{
-                        if($assignment->duedate != 0 || $assignment->cutoffdate != 0
-                            || $assignment->extensionduedate != 0 || ($assignment->duedate >= time() && $assignment->cutoffdate <= time())) {
-                            $assignments_overdue++;
-                        }
-                    }
-                }
-            }else{
-                $assignments_submitted++;
-            }
-        }
-
-
-        // Set singular/plural strings for Assignment and Assessment
-        $assignment_str = ($assignments_submitted == 1) ? get_string('assignment', $lang) : get_string('assignments', $lang);
-        $assessment_str = ($assessments_marked == 1) ? get_string('assessment', $lang) : get_string('assessments', $lang);
+        // Set singular/plural strings for Assessments submitted and Assessments marked
+        $submitted_str = ($count->submitted == 1) ? get_string('assessment', SPOVERVIEW_STRINGS) :
+                                                    get_string('assessments', SPOVERVIEW_STRINGS);
+        $marked_str = ($count->marked == 1) ? get_string('assessment', SPOVERVIEW_STRINGS) :
+                                              get_string('assessments', SPOVERVIEW_STRINGS);
 
         $assessments_submitted_icon = $OUTPUT->image_url('assessments_submitted', 'theme');
         $assessments_tosubmit_icon = $OUTPUT->image_url('assessments_tosubmit', 'theme');
@@ -92,18 +71,18 @@ class block_gu_spoverview extends block_base {
         $assessments_marked_icon = $OUTPUT->image_url('assessments_marked', 'theme');
 
         $templatecontext = (object)[
-            'assessments_submitted'        => $assignments_submitted,
-            'assessments_tosubmit'         => $assignments_tosubmit,
-            'assessments_overdue'          => $assignments_overdue,
-            'assessments_marked'           => $assessments_marked,
+            'assessments_submitted'        => $count->submitted,
+            'assessments_tosubmit'         => $count->tosubmit,
+            'assessments_overdue'          => $count->overdue,
+            'assessments_marked'           => $count->marked,
             'assessments_submitted_icon'   => $assessments_submitted_icon,
             'assessments_tosubmit_icon'    => $assessments_tosubmit_icon,
             'assessments_overdue_icon'     => $assessments_overdue_icon,
             'assessments_marked_icon'      => $assessments_marked_icon,
-            'assessments_submitted_str'    => $assignment_str.get_string('submitted', $lang),
-            'assessments_tosubmit_str'     => get_string('tobesubmitted', $lang),
-            'assessments_overdue_str'      => get_string('overdue', $lang),
-            'assessments_marked_str'       => $assessment_str.get_string('marked', $lang),
+            'assessments_submitted_str'    => $submitted_str.get_string('submitted', SPOVERVIEW_STRINGS),
+            'assessments_tosubmit_str'     => get_string('tobesubmitted', SPOVERVIEW_STRINGS),
+            'assessments_overdue_str'      => get_string('overdue', SPOVERVIEW_STRINGS),
+            'assessments_marked_str'       => $marked_str.get_string('marked', SPOVERVIEW_STRINGS),
         ];
 
         $this->content = new stdClass;
@@ -113,50 +92,41 @@ class block_gu_spoverview extends block_base {
     }
 
     /**
-     * Returns all user assignments including submission status and extension due date.
      * 
-     * @param int $userid
-     * @param array $courseids
-     * @return stdClass Assignment objects if records are returned,
-     *  otherwise return empty object
+     * @param array $assessments
+     * @return stdClass $counter Object containing count of Assessment records
      */
-    public static function get_user_assignments($userid, $courseids) {
-        global $DB, $CFG;
-        $params = array($userid, $userid);
-        $incourseids = implode(',', $courseids);
+    public static function return_assessments_count($assessments) {
+        $counter = new stdClass;
+        $counter->submitted = 0;
+        $counter->tosubmit = 0;
+        $counter->overdue = 0;
+        $counter->marked = 0;
 
-        $sql = "SELECT DISTINCT ma.id, ma.name, ma.allowsubmissionsfromdate as `startdate`,
-                ma.duedate, ma.cutoffdate, mas.status, mauf.extensionduedate
-                FROM `{$CFG->prefix}assign` ma
-                LEFT JOIN `{$CFG->prefix}assign_submission` mas ON ma.id = mas.assignment 
-                AND mas.userid = ?
-                LEFT JOIN `{$CFG->prefix}assign_user_flags` mauf ON ma.id = mauf.assignment 
-                AND mauf.userid = ?
-                WHERE ma.course IN (".$incourseids.")";
+        if (!empty($assessments)) {
+            foreach($assessments as $assessment) {
+                switch($assessment->status->suffix) {
+                    case 'graded':
+                        $counter->marked++;
+                        $counter->submitted++;
+                        break;
+                    case 'overdue':
+                        $counter->overdue++;
+                        break;
+                    case 'overduelinked':
+                        $counter->tosubmit++;
+                        $counter->overdue++;
+                        break;
+                    case 'submit':
+                        $counter->tosubmit++;
+                        break;
+                    case 'submitted':
+                        $counter->submitted++;
+                        break;
+                }
+            }
+        }
 
-        $assignments = ($assignments = $DB->get_records_sql($sql, $params)) ? $assignments : new stdClass;
-        return $assignments;
-    }
-
-    /**
-     * Returns count of graded assessments (activity modules)
-     * 
-     * @param int $userid
-     * @param array $courseids
-     * @return int Count of Assessment records
-     */
-    public static function get_user_assessments_count($userid, $courseids) {
-        global $DB, $CFG;
-        $params = array($userid, 'mod');
-        $incourseids = implode(',', $courseids);
-
-        $sql = "SELECT DISTINCT mgi.id, mgi.itemname, mgg.finalgrade
-                FROM `{$CFG->prefix}grade_items` mgi
-                JOIN `{$CFG->prefix}grade_grades` mgg ON mgi.id = mgg.itemid AND mgg.userid = ? AND mgg.finalgrade IS NOT NULL
-                WHERE mgi.itemtype = ? AND mgi.courseid IN (".$incourseids.")";
-
-        $assessments = ($assessments = $DB->get_records_sql($sql, $params)) ? $assessments : array();
-        $assessments_count = count($assessments);
-        return $assessments_count;
+        return $counter;
     }
 }
