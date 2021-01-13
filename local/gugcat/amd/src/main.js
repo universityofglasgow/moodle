@@ -23,20 +23,19 @@
  */
 define(['jquery', 'core/str' ], function($, Str) {
 
-    var urlParams = new URLSearchParams(window.location.search);
-
     //Returns boolean on check of the current url and match it to the path params
-    var checkCurrentUrl = function(path) {
+    const checkCurrentUrl = function(path) {
         var url = window.location.pathname;
         return url.match(path);
     }
 
-    var update_reason_inputs = (val) =>{
+    const update_reason_inputs = (val) =>{
         var list = document.querySelectorAll('.input-reason');
         list.forEach(input => input.value = val);
     }
 
-    var onChangeListeners = (event) =>{
+    const onChangeListeners = (event) =>{
+        var urlParams = new URLSearchParams(window.location.search);
         var categories = document.getElementById('select-category');
         var activities = document.getElementById('select-activity');
         var grade_reason = document.getElementById('select-grade-reason');
@@ -90,7 +89,7 @@ define(['jquery', 'core/str' ], function($, Str) {
         }
     }
 
-    var onClickListeners = (event) =>{
+    const onClickListeners = (event) =>{
         var btn_saveadd = document.getElementById('btn-saveadd');
         var btn_release = document.getElementById('btn-release');
         var btn_import = document.getElementById('btn-import');
@@ -147,18 +146,18 @@ define(['jquery', 'core/str' ], function($, Str) {
     return {
         init: function() {
             const GCAT = document.querySelector('.gcat-container');
-            var input_reason = document.getElementById('input-reason');
-            var input_percentarr = document.querySelectorAll('.input-percent');
             if(GCAT){
                 GCAT.addEventListener('change', onChangeListeners);
                 GCAT.addEventListener('click', onClickListeners);
     
+                var input_reason = document.getElementById('input-reason');
                 if(input_reason){
                     input_reason.addEventListener('input', (e) => {
                         update_reason_inputs(e.target.value);
                     });
                 }
 
+                var input_percentarr = document.querySelectorAll('.input-percent');
                 if(input_percentarr.length > 0){
                     input_percentarr.forEach(div => {
                         var input = div.querySelector('input');
@@ -185,41 +184,44 @@ define(['jquery', 'core/str' ], function($, Str) {
                 //Show 'grade discrepancy' when grade discrepancy exist
                 var grdDiscExist = document.querySelectorAll('td .grade-discrepancy');
                 if (grdDiscExist.length > 0) {
-                    var grddisc = document.getElementById('btn-grddisc');
-                    grddisc.style.display = 'inline-block';
+                    document.getElementById('btn-grddisc').style.display = 'inline-block';
                 }
 
-                // Hide elements on add grade form page 
+                // Hide elements different pages
                 if(checkCurrentUrl("gugcat/overview")){
                     document.querySelector('#btn-overviewtab').classList.add('active');
                     document.querySelector('#btn-assessmenttab').classList.remove('active');
-                }else{
+                    var mformNotes = document.getElementById('id_notes');
+                    if(mformNotes){
+                        (async () => {
+                            mformNotes.placeholder = await Str.get_string('specifyreason', 'local_gugcat');
+                            mformNotes.required = true;
+                        })();
+                    }
+                }else if(checkCurrentUrl("gugcat/index")){
                     document.getElementById('btn-release').style.display = 'block';
-                    var hideshowgrade = document.querySelectorAll('.hide-show-grade');
-                    hideshowgrade.forEach(element => {
-                        element.style.display = 'block';
-                    });
-                }
+                    var nodeArr = Array.from(document.querySelectorAll('.gradeitems'));
+                    if(nodeArr.find(node => node.innerHTML !== 'Moodle Grade<br>[Date]')){
+                        document.getElementById('btn-saveadd').style.display = 'inline-block';
+                        var btnnewgrade = document.querySelectorAll('.addnewgrade');
+                        btnnewgrade.forEach(e => {
+                            e.style.display = 'block';
+                        });
 
-                if(!($(".gradeitems").text().includes("Moodle Grade[Date]"))){
-                    $("#btn-saveadd").show();
-                    $(".addnewgrade").show();
-                }
-
-                if(checkCurrentUrl("gugcat/add")){
+                        var hideshowgrade = document.querySelectorAll('.hide-show-grade');
+                        hideshowgrade.forEach(element => {
+                            element.style.display = 'block';
+                        });
+                    }
+                }else if(checkCurrentUrl("gugcat/add") || checkCurrentUrl("gugcat/edit")){
                     //Add placeholder
                     var mformReason = document.getElementById('id_otherreason');
                     var mformNotes = document.getElementById('id_notes');
-                    mformReason.placeholder = "Please Specify";
-                    mformNotes.placeholder = "Specify reason(s) for amendment";
-                    mformNotes.required = true;
-                }
-
-                if(checkCurrentUrl("gugcat/overview/gradeform")){
-                    //Add placeholder
-                    var mformNotes = document.getElementById('id_notes');
-                    mformNotes.placeholder = "Specify reason(s) for amendment";
-                    mformNotes.required = true;
+                    (async () => {
+                        mformReason.placeholder = await Str.get_string('pleasespecify', 'local_gugcat');
+                        mformNotes.placeholder = await Str.get_string('specifyreason', 'local_gugcat');
+                        mformNotes.required = true;
+                    })();
                 }
             }
         }

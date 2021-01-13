@@ -35,21 +35,22 @@ $studentid = required_param('studentid', PARAM_INT);
 $cnum = required_param('cnum', PARAM_INT);
 
 require_login($courseid);
-$PAGE->set_context(context_system::instance());
 $urlparams = array('id' => $courseid, 'setting' => $formtype, 'studentid' => $studentid, 'cnum' => $cnum);
-$PAGE->set_url(new moodle_url('/local/gugcat/overview/gradeform/index.php', $urlparams));
+$URL = new moodle_url('/local/gugcat/overview/gradeform/index.php', $urlparams);
+$PAGE->set_url($URL);
 $PAGE->set_title(get_string('gugcat', 'local_gugcat'));
 $PAGE->navbar->ignore_active();
-$PAGE->navbar->add(get_string('navname', 'local_gugcat'), new moodle_url('/local/gugcat/overview'));
+$PAGE->navbar->add(get_string('navname', 'local_gugcat'), $URL);
 
 $PAGE->requires->css('/local/gugcat/styles/gugcat.css');
 $PAGE->requires->js_call_amd('local_gugcat/main', 'init');
+$course = get_course($courseid);
 
-$course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
-$studentarr = $DB->get_records('user', array('id'=>$studentid, 'deleted'=>0), MUST_EXIST);
-
+$coursecontext = context_course::instance($courseid);
+$PAGE->set_context($coursecontext);
 $PAGE->set_course($course);
 $PAGE->set_heading($course->fullname);
+$studentarr = $DB->get_records('user', array('id'=>$studentid, 'deleted'=>0), MUST_EXIST);
 
 $activities = local_gugcat::get_activities($courseid);
 $rows = grade_aggregation::get_rows($course, $activities, $studentarr);
@@ -65,23 +66,14 @@ if ($fromform = $mform->get_data()) {
         if(array_sum($weights) != 100){
             local_gugcat::notify_error('errortotalweight');
             $urlparams = "?id=$courseid&setting=$formtype&studentid=$studentid&cnum=$cnum";
-            header("Location: ".$_SERVER['REQUEST_URI'].$urlparams);
+            redirect(htmlspecialchars_decode($URL));
             exit;
         }else{
-            foreach($weights as $key=>$value) {
-                $weight = number_format(($value/100), 5);
-                $prvgrdid = local_gugcat::get_grade_item_id($courseid, $key, get_string('provisionalgrd', 'local_gugcat'));
-                $grade_ = new grade_grade(array('userid' => $studentid, 'itemid' => $prvgrdid), true);
-                $grade_->information = $weight;
-                $grade_->feedback = $fromform->notes;
-                $grade_->timemodified = time();
-                $grade_->update();  
-            }
-            local_gugcat::notify_success('successadjustweight');
+            grade_aggregation::adjust_course_weight($weights, $courseid, $studentid, $fromform->notes);
         }
     }
     $url = '/local/gugcat/overview/index.php?id='.$courseid;
-    header("Location:" .$CFG->wwwroot . $url);
+    redirect($CFG->wwwroot . $url);
     exit;
 }   
 
