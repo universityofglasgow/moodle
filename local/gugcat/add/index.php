@@ -1,4 +1,3 @@
-  
 <?php
 // This file is part of Moodle - http://moodle.org/
 //
@@ -35,22 +34,24 @@ $studentid = required_param('studentid', PARAM_INT);
 $categoryid = optional_param('categoryid', null, PARAM_INT);
 
 require_login($courseid);
-$PAGE->set_context(context_system::instance());
 $urlparams = array('id' => $courseid, 'activityid' => $activityid, 'studentid' => $studentid);
-$PAGE->set_url(new moodle_url('/local/gugcat/add/index.php', $urlparams));
+$URL = new moodle_url('/local/gugcat/add/index.php', $urlparams);
+$PAGE->set_url($URL);
 $PAGE->set_title(get_string('gugcat', 'local_gugcat'));
 $PAGE->navbar->ignore_active();
-$PAGE->navbar->add(get_string('navname', 'local_gugcat'), new moodle_url('/local/gugcat'));
+$PAGE->navbar->add(get_string('navname', 'local_gugcat'), $URL);
 
 $PAGE->requires->css('/local/gugcat/styles/gugcat.css');
 $PAGE->requires->js_call_amd('local_gugcat/main', 'init');
 
-$course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
-$student = $DB->get_record('user', array('id'=>$studentid, 'deleted'=>0), '*', MUST_EXIST);
+$course = get_course($courseid);
 
+$coursecontext = context_course::instance($courseid);
+$PAGE->set_context($coursecontext);
 $PAGE->set_course($course);
 $PAGE->set_heading($course->fullname);
 
+$student = $DB->get_record('user', array('id'=>$studentid, 'deleted'=>0), '*', MUST_EXIST);
 $module = local_gugcat::get_activities($courseid)[$activityid];
 $PAGE->set_cm($module);
 
@@ -82,7 +83,7 @@ if ($fromform = $mform->get_data()) {
     $grades = local_gugcat::add_update_grades($studentid, $gradeitemid, $fromform->grade, $fromform->notes, $fromform->userfile);
     $url = '/local/gugcat/index.php?id='.$courseid.'&activityid='.$activityid;
     $url .= (($categoryid !== 0) ? '&categoryid='.$categoryid : null);
-    header("Location:" .$CFG->wwwroot . $url);
+    redirect($CFG->wwwroot . $url);
     exit;
 }   
 

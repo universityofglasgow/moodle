@@ -36,20 +36,19 @@ is_null($activityid) ? null : $URL->param('activityid', $activityid);
 is_null($categoryid) ? null : $URL->param('categoryid', $categoryid);
 require_login($courseid);
 $PAGE->set_url($URL);
-$PAGE->set_context(context_system::instance());
 $PAGE->set_title(get_string('gugcat', 'local_gugcat'));
 $PAGE->navbar->ignore_active();
-$PAGE->navbar->add(get_string('navname', 'local_gugcat'), new moodle_url('/local/gugcat'));
+$PAGE->navbar->add(get_string('navname', 'local_gugcat'), $URL);
 
 $PAGE->requires->css('/local/gugcat/styles/gugcat.css');
 $PAGE->requires->js_call_amd('local_gugcat/main', 'init');
 
-$course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
+$course = get_course($courseid);
 
+$coursecontext = context_course::instance($courseid);
+$PAGE->set_context($coursecontext);
 $PAGE->set_course($course);
 $PAGE->set_heading($course->fullname);
-
-$coursecontext = context_course::instance($course->id);
 $activities = local_gugcat::get_activities($courseid);
 $selectedmodule = null;
 $groupid = 0;
@@ -105,7 +104,7 @@ if (isset($release) && isset($prvgrades)){
     local_gugcat::notify_success('successrelease');
     unset($release);
     unset($prvgrades);
-    header("Location: ".htmlspecialchars_decode($URL));
+    redirect(htmlspecialchars_decode($URL));
     exit;
 }else if (!empty($gradeitem)){
     if(isset($newgrades)){
@@ -119,7 +118,7 @@ if (isset($release) && isset($prvgrades)){
         local_gugcat::notify_success('successaddall');
         unset($gradeitem);
         unset($newgrades);
-        header("Location: ".htmlspecialchars_decode($URL));
+        redirect(htmlspecialchars_decode($URL));
         exit;
     }else{
         print_error('errorrequired', 'local_gugcat', $PAGE->url);
@@ -132,13 +131,13 @@ if (isset($release) && isset($prvgrades)){
         local_gugcat::notify_error('importerror');
     }
     unset($importgrades);
-    header("Location: ".htmlspecialchars_decode($URL));
+    redirect(htmlspecialchars_decode($URL));
     exit;
 }else if(isset($showhidegrade) && !empty($rowstudentid)){
     grade_capture::hideshowgrade($rowstudentid);
     unset($showhidegrade);
     unset($rowstudentid);
-    header("Location: ".htmlspecialchars_decode($URL));
+    redirect(htmlspecialchars_decode($URL));
     exit;
 }
 $rows = grade_capture::get_rows($course, $selectedmodule, $students);

@@ -34,20 +34,18 @@ $URL = new moodle_url('/local/gugcat/overview/index.php', array('id' => $coursei
 is_null($categoryid) ? null : $URL->param('categoryid', $categoryid);
 require_login($courseid);
 $PAGE->set_url($URL);
-$PAGE->set_context(context_system::instance());
 $PAGE->set_title(get_string('gugcat', 'local_gugcat'));
 $PAGE->navbar->ignore_active();
-$PAGE->navbar->add(get_string('navname', 'local_gugcat'), new moodle_url('/local/gugcat/overview'));
+$PAGE->navbar->add(get_string('navname', 'local_gugcat'), $URL);
 
 $PAGE->requires->css('/local/gugcat/styles/gugcat.css');
 $PAGE->requires->js_call_amd('local_gugcat/main', 'init');
+$course = get_course($courseid);
 
-$course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
-
+$coursecontext = context_course::instance($courseid);
+$PAGE->set_context($coursecontext);
 $PAGE->set_course($course);
 $PAGE->set_heading($course->fullname);
-
-$coursecontext = context_course::instance($course->id);
 $students = get_enrolled_users($coursecontext, 'moodle/competency:coursecompetencygradable');
 $activities = local_gugcat::get_activities($courseid);
 $rows = grade_aggregation::get_rows($course, $activities, $students);
@@ -58,7 +56,7 @@ if(isset($requireresit) && !empty($rowstudentid)){
     grade_aggregation::require_resit($rowstudentid);
     unset($requireresit);
     unset($rowstudentid);
-    header("Location: ".htmlspecialchars_decode($URL));
+    redirect(htmlspecialchars_decode($URL));
     exit;
 }
 
