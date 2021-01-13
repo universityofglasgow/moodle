@@ -166,12 +166,11 @@ class grade_capture{
             $assign = new assign(context_module::instance($cm->id), $cm, $courseid);
             $is_workflow_enabled = $assign->get_instance()->markingworkflow == 1;
         }
-        foreach ($grades as $grd) {
-            $userid = $grd['id'];
+        foreach ($grades as $userid=>$grd)  {
             $hidden = $DB->get_field(GRADE_GRADES, 'hidden', array('itemid'=>local_gugcat::$PRVGRADEID, 'userid' => $userid));
-            if(!empty($grd['provisional']) && $hidden == 0){
-                $rawgrade = array_search($grd['provisional'], local_gugcat::$GRADES);
-                $rawgrade = $rawgrade ? $rawgrade : $grd['provisional'];
+            if(!empty($grd) && $hidden == 0){
+                $rawgrade = array_search($grd, local_gugcat::$GRADES);
+                $rawgrade = $rawgrade ? $rawgrade : $grd;
                 switch ($rawgrade) {
                     case NON_SUBMISSION:
                         $feedback = NON_SUBMISSION_AC;
