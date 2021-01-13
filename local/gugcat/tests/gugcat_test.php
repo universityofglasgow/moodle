@@ -72,7 +72,11 @@ class local_gugcat_testcase extends advanced_testcase {
         $course = $DB->get_record('course', ['id' => $this->course->id], '*', MUST_EXIST);
         $gradeitems = local_gugcat::get_grade_grade_items($course, $this->cm);
         $gradeversions = local_gugcat::filter_grade_version($gradeitems, $this->student->id);
-        $this->assertNotNull($gradeversions, "");
+        
+        foreach($gradeversions as $gradeversion){
+            $this->assertContains($this->provisionalgi->itemname, $gradeversion);
+            $this->assertContains($this->provisionalgi->iteminfo, $gradeversion);
+        }
     }
 
     public function test_get_grade_grade_items(){
@@ -80,8 +84,10 @@ class local_gugcat_testcase extends advanced_testcase {
 
         $course = $DB->get_record('course', ['id' => $this->course->id], '*', MUST_EXIST);
         $gradeitems = local_gugcat::get_grade_grade_items($course, $this->cm);
-        $this->assertNotNull($gradeitems, "");
-    }
+        
+        $this->assertArrayHasKey($this->gradeitem->id, (array)$gradeitems);
+        $this->assertCount(2, $gradeitems);
+    }   
 
     public function test_get_grade_categories() {
         //create grade categories
