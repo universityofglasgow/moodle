@@ -24,8 +24,8 @@
  */
 
 function local_gugcat_extend_navigation_course($parentnode, $course, $context) {
-    global $USER;
-    if(has_capability('moodle/competency:coursecompetencygradable', $context, $USER)) {
+    if(!has_capability('moodle/site:config', $context) 
+    && has_capability('moodle/competency:coursecompetencygradable', $context)) {
         return; //user role = student
     }
     $url = new moodle_url('/local/gugcat/index.php', array('id' => $course->id));
