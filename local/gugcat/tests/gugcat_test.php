@@ -72,11 +72,15 @@ class local_gugcat_testcase extends advanced_testcase {
         $course = $DB->get_record('course', ['id' => $this->course->id], '*', MUST_EXIST);
         $gradeitems = local_gugcat::get_grade_grade_items($course, $this->cm);
         $gradeversions = local_gugcat::filter_grade_version($gradeitems, $this->student->id);
-        
-        foreach($gradeversions as $gradeversion){
-            $this->assertContains($this->provisionalgi->itemname, $gradeversion);
-            $this->assertContains($this->provisionalgi->iteminfo, $gradeversion);
+
+        foreach($gradeitems as $gradeitem){
+            $arrayofgradeitem = (array)$gradeitem;
+
+            $this->assertContains($this->gradeitem->courseid, $arrayofgradeitem);
+            $this->assertContains($this->gradeitem->iteminfo, $arrayofgradeitem);
         }
+        
+        $this->assertNotContains($this->provisionalgi, $gradeversions);
     }
 
     public function test_get_grade_grade_items(){
