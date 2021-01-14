@@ -51,7 +51,7 @@ define('UNDER_INVESTIGATION', -6);
 define('AU', -7);
 define('FC', -8);
 
-
+define('FINAL_GRADE', 'Final');
 define('GCAT_SCALE', 'UofG 22-Point Scale (Do NOT use if you are grading in Feedback Studio)');
 define('GCAT_GRADE_CATEGORY', 'DO NOT USE');
 

@@ -57,7 +57,7 @@ function local_gugcat_extend_navigation($navigation){
      }
 
     $gugcatLinkName = get_string('navname', 'local_gugcat');
-    $linkUrl = new moodle_url('/local/gugcat/index.php', array('courseid' => $coursecontext->instanceid));
+    $linkUrl = new moodle_url('/local/gugcat/index.php', array('id' => $coursecontext->instanceid));
     $icon = new pix_icon('t/grades', '');
     $currentCourseNode = $navigation->find('currentcourse', $navigation::TYPE_ROOTNODE);
     if (isNodeNotEmpty($currentCourseNode)) {

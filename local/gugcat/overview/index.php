@@ -51,11 +51,28 @@ $activities = local_gugcat::get_activities($courseid);
 $rows = grade_aggregation::get_rows($course, $activities, $students);
 
 $requireresit = optional_param('resit', null, PARAM_NOTAGS);
+$finalrelease = optional_param('finalrelease', null, PARAM_NOTAGS);
 $rowstudentid = optional_param('rowstudentno', null, PARAM_NOTAGS);
+$finalgrades = optional_param_array('finalgrades', null, PARAM_NOTAGS);
+$cminstances = optional_param_array('cminstances', null, PARAM_NOTAGS);
 if(isset($requireresit) && !empty($rowstudentid)){
     grade_aggregation::require_resit($rowstudentid);
     unset($requireresit);
     unset($rowstudentid);
+    redirect(htmlspecialchars_decode($URL));
+    exit;
+}else if(isset($finalrelease)){
+    if(!in_array("", $finalgrades)){
+        $students = array();
+        foreach($finalgrades as $key=>$value) {
+            $ids = explode('_', $key); //0 = student id, 1 = activity id
+            $students[$ids[0]][$ids[1]] = array_search($value, local_gugcat::$GRADES);
+        }
+        grade_aggregation::release_final_grades($courseid, $cminstances, $students);      
+    }
+    unset($finalrelease);
+    unset($finalgrades);
+    unset($cminstances);
     redirect(htmlspecialchars_decode($URL));
     exit;
 }
