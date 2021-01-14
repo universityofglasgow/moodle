@@ -176,4 +176,18 @@ class grade_aggregation_testcase extends advanced_testcase {
         $this->assertEquals($expectednotes, $aggrade->feedback);
         $this->assertNotEquals($defaultoverridden, $aggrade->overridden);
     }
+
+    public function test_release_final_grades() {
+        $expectedgrade = '10.00000';
+        $cms = array();
+        $cms[$this->cm->id] = $this->cm->instance."_".$this->cm->name;
+        $students = array();
+        $students[$this->student1->id][$this->cm->id] = 10;
+        $gradeitemid = $this->cm->gradeitem->id;
+        grade_aggregation::release_final_grades($this->course->id, $cms, $students);
+        $gg = new grade_grade(array('userid' => $this->student1->id, 'itemid' => $gradeitemid), true);
+        $this->assertEquals($this->student1->id, $gg->userid);//assert updated user = student 1
+        $this->assertEquals($expectedgrade, $gg->finalgrade);//assert finalgrade = 10.00000
+        $this->assertEquals(FINAL_GRADE, $gg->information); //assert information = final
+    }
 }

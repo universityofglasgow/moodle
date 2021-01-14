@@ -188,22 +188,20 @@ class grade_aggregation{
             }
             foreach($students as $id=>$student) {
                 //update grade & information from gradebook
-                $grade = array_search($student[$cmid], local_gugcat::$GRADES);                
-                if($grade){
-                    switch ($grade) {
-                        case NON_SUBMISSION:
-                            $grade = 0;
-                            break;
-                        case MEDICAL_EXEMPTION:
-                            $grade = null;
-                            break;
-                        default:
-                            $grade = $grade - $gradescaleoffset;
-                            break;
-                    }
-                    if($gradeitem->update_final_grade($id, $grade, null, null, FORMAT_MOODLE, $USER->id)){
-                        $DB->set_field_select(GRADE_GRADES, 'information', FINAL_GRADE, "itemid = $gradeitem->id AND userid = $id");
-                    }
+                $grade = $student[$cmid]; 
+                switch ($grade) {
+                    case NON_SUBMISSION:
+                        $grade = 0;
+                        break;
+                    case MEDICAL_EXEMPTION:
+                        $grade = null;
+                        break;
+                    default:
+                        $grade = $grade - $gradescaleoffset;
+                        break;
+                }
+                if($gradeitem->update_final_grade($id, $grade, null, null, FORMAT_MOODLE, $USER->id)){
+                    $DB->set_field_select(GRADE_GRADES, 'information', FINAL_GRADE, "itemid = $gradeitem->id AND userid = $id");
                 }
             }         
         }

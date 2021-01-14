@@ -66,7 +66,7 @@ if(isset($requireresit) && !empty($rowstudentid)){
         $students = array();
         foreach($finalgrades as $key=>$value) {
             $ids = explode('_', $key); //0 = student id, 1 = activity id
-            $students[$ids[0]][$ids[1]] = $value;
+            $students[$ids[0]][$ids[1]] = array_search($value, local_gugcat::$GRADES);
         }
         grade_aggregation::release_final_grades($courseid, $cminstances, $students);      
     }
