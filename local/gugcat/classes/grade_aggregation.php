@@ -26,6 +26,7 @@ namespace local_gugcat;
 use local_gugcat;
 use stdClass;
 use grade_grade;
+use grade_item;
 
 defined('MOODLE_INTERNAL') || die();
 require_once('gcat_item.php');
@@ -114,6 +115,7 @@ class grade_aggregation{
                 $gradecaptureitem->nonsubmission = ($grade === NON_SUBMISSION_AC) ? true : false;
                 $gradecaptureitem->medicalexemption = ($grade === MEDICAL_EXEMPTION_AC) ? true : false;
                 $grdobj->activityid = $item->id;
+                $grdobj->activityinstance = $item->instance;
                 $grdobj->activity = $item->name;
                 $grdobj->grade = $grade;
                 $grdobj->rawgrade = $grd;
@@ -167,5 +169,44 @@ class grade_aggregation{
             $grade_->update();  
         }
         local_gugcat::notify_success('successadjustweight');
+    }
+
+    public static function release_final_grades($courseid, $cms, $students){
+        global $USER, $DB;
+        foreach($cms as $cmid=>$cm) {
+            $data = new stdClass();
+            $data->courseid = $courseid;
+            $data->itemtype = 'mod';
+            $data->iteminstance = explode('_', $cm)[0];
+            $data->itemname = explode('_', $cm)[1];
+            //get gradebook grade item
+            $gradeitem = new grade_item($data, true);
+           //set offset value for max 22 points grade
+            $gradescaleoffset = 0;
+            if (local_gugcat::is_grademax22($gradeitem->gradetype, $gradeitem->grademax)){
+                $gradescaleoffset = 1;
+            }
+            foreach($students as $id=>$student) {
+                //update grade & information from gradebook
+                $grade = array_search($student[$cmid], local_gugcat::$GRADES);                
+                if($grade){
+                    switch ($grade) {
+                        case NON_SUBMISSION:
+                            $grade = 0;
+                            break;
+                        case MEDICAL_EXEMPTION:
+                            $grade = null;
+                            break;
+                        default:
+                            $grade = $grade - $gradescaleoffset;
+                            break;
+                    }
+                    if($gradeitem->update_final_grade($id, $grade, null, null, FORMAT_MOODLE, $USER->id)){
+                        $DB->set_field_select(GRADE_GRADES, 'information', FINAL_GRADE, "itemid = $gradeitem->id AND userid = $id");
+                    }
+                }
+            }         
+        }
+        local_gugcat::notify_success('successfinalrelease');
     }
 }

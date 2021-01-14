@@ -94,6 +94,7 @@ define(['jquery', 'core/str' ], function($, Str) {
         var btn_release = document.getElementById('btn-release');
         var btn_import = document.getElementById('btn-import');
         var btn_coursegradeform = document.getElementById('btn-coursegradeform');
+        var btn_finalrelease = document.getElementById('btn-finalrelease');
         var import_submit = document.getElementById('importgrades-submit');
         var gcat_tbl_form = document.getElementById('multigradesform');
         switch (event.target) {
@@ -137,6 +138,13 @@ define(['jquery', 'core/str' ], function($, Str) {
                         }
                     });
                 }
+                break;
+            case btn_finalrelease:
+                Str.get_string('confirmfinalrelease', 'local_gugcat').then(function(msg) {
+                    if(confirm(msg) == true) {
+                        document.getElementById('finalrelease-submit').click();
+                    }
+                });
                 break;
             default:
                 break;

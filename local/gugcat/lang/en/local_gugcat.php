@@ -82,6 +82,7 @@ $string['showgrademsg'] = 'The grade is now visible to the student';
 $string['specifyreason'] = 'Specify reason(s) for amendment';
 $string['studentno'] = 'Student No.';
 $string['successaddall'] = 'Successfully added grades for all participants.';
+$string['successfinalrelease'] = 'Successfully released final assessment grades for the students.';
 $string['successrelease'] = 'Successfully released provisional grades';
 $string['successimport'] = 'Successfully imported grades from gradebook';
 $string['successadjustweight'] = 'Successfully adjusted course weightings';
