@@ -50,6 +50,7 @@ $string['readfeedback'] = 'Read feedback';
 $string['sort'] = "Sort by ";
 $string['sort_course'] = "Course";
 $string['sort_date'] = "Date";
+$string['student'] = "student";
 $string['submit'] = 'submit';
 $string['submitted'] = 'submitted';
 $string['summative'] = 'summative';

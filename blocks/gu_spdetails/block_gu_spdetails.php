@@ -23,15 +23,15 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die();
-define('SPDETAILS_STRINGS', 'block_gu_spdetails');
-define('EMPTY_VAL', get_string('emptyvalue', SPDETAILS_STRINGS));
+define('SPDETAILS_LANG', 'block_gu_spdetails');
+
 require_once($CFG->libdir.'/gradelib.php');
 require_once($CFG->dirroot . '/grade/querylib.php');
 
 class block_gu_spdetails extends block_base {
 
     public function init() {
-        $this->title = get_string('pluginname', 'block_gu_spdetails');
+        $this->title = get_string('pluginname', SPDETAILS_LANG);
     }
 
     /**
@@ -69,18 +69,18 @@ class block_gu_spdetails extends block_base {
             'assessments'       => json_encode($assessments),
             'data'              => $assessments,
             'hasassessments'    => $hasassessments,
-            'header_course'     => get_string('header_course', SPDETAILS_STRINGS),
-            'header_assessment' => get_string('header_assessment', SPDETAILS_STRINGS),
-            'header_type'       => get_string('header_type', SPDETAILS_STRINGS),
-            'header_weight'     => get_string('header_weight', SPDETAILS_STRINGS),
-            'header_duedate'    => get_string('header_duedate', SPDETAILS_STRINGS),
-            'header_status'     => get_string('header_status', SPDETAILS_STRINGS),
-            'header_grade'      => get_string('header_grade', SPDETAILS_STRINGS),
-            'header_feedback'   => get_string('header_feedback', SPDETAILS_STRINGS),
-            'noassessments'     => get_string('noassessments', SPDETAILS_STRINGS),
-            'sort'              => get_string('sort', SPDETAILS_STRINGS),
-            'sort_course'       => get_string('sort_course', SPDETAILS_STRINGS),
-            'sort_date'         => get_string('sort_date', SPDETAILS_STRINGS),
+            'header_course'     => get_string('header_course', SPDETAILS_LANG),
+            'header_assessment' => get_string('header_assessment', SPDETAILS_LANG),
+            'header_type'       => get_string('header_type', SPDETAILS_LANG),
+            'header_weight'     => get_string('header_weight', SPDETAILS_LANG),
+            'header_duedate'    => get_string('header_duedate', SPDETAILS_LANG),
+            'header_status'     => get_string('header_status', SPDETAILS_LANG),
+            'header_grade'      => get_string('header_grade', SPDETAILS_LANG),
+            'header_feedback'   => get_string('header_feedback', SPDETAILS_LANG),
+            'noassessments'     => get_string('noassessments', SPDETAILS_LANG),
+            'sort'              => get_string('sort', SPDETAILS_LANG),
+            'sort_course'       => get_string('sort_course', SPDETAILS_LANG),
+            'sort_date'         => get_string('sort_date', SPDETAILS_LANG),
             'noassessments_img' => $noassessments,
             'downarrow_img'     => $downarrow,
         ];
@@ -103,7 +103,11 @@ class block_gu_spdetails extends block_base {
                     $modinfo = get_fast_modinfo($mod->course);
                     $course = get_course($courseid);
                     $cm = $modinfo->get_cm($mod->id);
-                    $isVisible = $cm->uservisible;
+
+                    $isactivityvisible = $cm->uservisible;
+                    $isallowedactivity = in_array($mod->modname, $allowedactivities);
+                    $mod->isstudent = self::return_isstudent($userid, $courseid);
+
                     $completionview = $cm->completionview;
                     $completiontype = $cm->completiongradeitemnumber;
                     $activity = self::retrieve_activity($mod->modname, $mod->instance, $mod->course, $userid);
@@ -111,7 +115,7 @@ class block_gu_spdetails extends block_base {
                     $gradecategory = self::retrieve_gradecategory($gradeitem->categoryid);
                     $grades = self::retrieve_grades($userid, $gradeitem->id);
                     $mod->isprovisional = (!isset($grades->information)) ? true : false;
-                    $mod->provisionaltext = ($mod->isprovisional) ? get_string('provisional', SPDETAILS_STRINGS) : null;
+                    $mod->provisionaltext = ($mod->isprovisional) ? get_string('provisional', SPDETAILS_LANG) : null;
 
                     $mod->coursename = $course->fullname;
                     $mod->coursecode = $course->shortname;
@@ -125,7 +129,8 @@ class block_gu_spdetails extends block_base {
                     $mod->dates = self::return_dates($mod->modname, $activity);
                     $mod->dates->formattedduedate = (!empty($mod->dates->duedate)) ?
                                                     userdate($mod->dates->duedate,
-                                                             get_string('convertdate', SPDETAILS_STRINGS)) : EMPTY_VAL;
+                                                             get_string('convertdate', SPDETAILS_LANG)) :
+                                                    get_string('emptyvalue', SPDETAILS_LANG);
                     $mod->dates->gradingduedate = (isset($mod->dates->gradingduedate)) ? $mod->dates->gradingduedate : '0';
                     $mod->gradingduedate = self::return_gradingduedate($mod->finalgrade, $mod->dates->gradingduedate);
                     $mod->hasfeedback = (!empty($grades->feedback) || !empty($grades->feedbackformat)) ? true : false;
@@ -133,7 +138,7 @@ class block_gu_spdetails extends block_base {
                                                                         $mod->dates->gradingduedate);
                     $mod->status = self::return_status($mod->modname, $mod->finalgrade, $mod->dates, $activity);
 
-                    if($isVisible && in_array($mod->modname, $allowedactivities)) {
+                    if($isactivityvisible && $isallowedactivity && $mod->isstudent) {
                         array_push($assessments, $mod);
                     }
                 }
@@ -256,15 +261,15 @@ class block_gu_spdetails extends block_base {
 
     public static function return_assessmenttype($gradecategoryname) {
         $type = strtolower($gradecategoryname);
-        $formative = get_string('formative', SPDETAILS_STRINGS);
-        $summative = get_string('summative', SPDETAILS_STRINGS);
+        $formative = get_string('formative', SPDETAILS_LANG);
+        $summative = get_string('summative', SPDETAILS_LANG);
 
-        if($type == $formative || strpos($type, $formative)) {
+        if($type === $formative || strpos($type, $formative)) {
             $assessmenttype = ucwords($formative);
-        } else if($type == $summative || strpos($type, $summative)) {
+        } else if($type === $summative || strpos($type, $summative)) {
             $assessmenttype = ucwords($summative);
         } else {
-            $assessmenttype = EMPTY_VAL;
+            $assessmenttype = get_string('emptyvalue', SPDETAILS_LANG);
         }
 
         return $assessmenttype;
@@ -272,7 +277,7 @@ class block_gu_spdetails extends block_base {
 
     public static function return_weight($assessmenttype, $aggregation, $aggregationcoef, $aggregationcoef2) {
         $type = strtolower($assessmenttype);
-        $summative = get_string('summative', SPDETAILS_STRINGS);
+        $summative = get_string('summative', SPDETAILS_LANG);
         $weight = 0;
 
         if($type === $summative) {
@@ -332,15 +337,15 @@ class block_gu_spdetails extends block_base {
     public static function return_gradingduedate($finalgrade, $gradingduedate) {
         $duedateobj = new stdClass();
         $duedateobj->hasgrade = (!empty($finalgrade)) ? true : false;
-        $duedateobj->gradetext = get_string('due', SPDETAILS_STRINGS).
-                                        userdate($gradingduedate, get_string('convertdate', SPDETAILS_STRINGS));
+        $duedateobj->gradetext = get_string('due', SPDETAILS_LANG).
+                                        userdate($gradingduedate, get_string('convertdate', SPDETAILS_LANG));
 
         if (!empty($finalgrade)){
             $duedateobj->gradetext = $finalgrade;
         } else if (empty($gradingduedate)){
-            $duedateobj->gradetext = get_string('tobeconfirmed', SPDETAILS_STRINGS);
+            $duedateobj->gradetext = get_string('tobeconfirmed', SPDETAILS_LANG);
         } else if (time() > $gradingduedate){
-            $duedateobj->gradetext = ucwords(get_string('overdue', SPDETAILS_STRINGS));
+            $duedateobj->gradetext = ucwords(get_string('overdue', SPDETAILS_LANG));
         }
 
         return $duedateobj;
@@ -350,19 +355,20 @@ class block_gu_spdetails extends block_base {
         $finalgrade = null;
         $grademax = $gradeitem->grademax;
         $grademin = $gradeitem->grademin;
-        $intgrade = ($grades && $grades->finalgrade) ? round($grades->finalgrade) : 0;
 
         // check if $grades != false and $grades->finalgrade != NULL
         if($grades && $grades->finalgrade) {
             switch($gradeitem->gradetype) {
                 // grade type = value
                 case "1":
+                    $intgrade = round($grades->finalgrade);
                     $finalgrade = ($grademax == '22' && $grademin == '0') ?
                                     self::return_22grademaxpoint(round($intgrade)) :
                                     round(($intgrade / ($grademax - $grademin)) * 100, 2).'%';
                     break;
                 // grade type = scale
                 case "2":
+                    $intgrade = round($grades->finalgrade);
                     $scales = self::retrieve_scale($gradeitem->scaleid);
                     $scale = make_menu_from_list($scales->scale);
                     $scalevalue = $scale[$intgrade];
@@ -401,16 +407,16 @@ class block_gu_spdetails extends block_base {
 
     public static function return_feedbackduedate($hasfeedback, $finalgrade, $gradingduedate) {
         if ($hasfeedback && !empty($finalgrade)) {
-            return get_string('readfeedback', SPDETAILS_STRINGS);
+            return get_string('readfeedback', SPDETAILS_LANG);
         } else if (!$hasfeedback && !empty($finalgrade)) {
-            return  get_string('nofeedback', SPDETAILS_STRINGS);
+            return  get_string('nofeedback', SPDETAILS_LANG);
         } else if (!$hasfeedback && empty($finalgrade) && empty($gradingduedate)) {
-            return get_string('tobeconfirmed', SPDETAILS_STRINGS);
+            return get_string('tobeconfirmed', SPDETAILS_LANG);
         } else if (!$hasfeedback && empty($finalgrade) && time() > $gradingduedate) {
-            return ucwords(get_string('overdue', SPDETAILS_STRINGS));
+            return ucwords(get_string('overdue', SPDETAILS_LANG));
         } else {
-            return get_string('due', SPDETAILS_STRINGS).
-                   userdate($gradingduedate, get_string('convertdate', SPDETAILS_STRINGS));
+            return get_string('due', SPDETAILS_LANG).
+                   userdate($gradingduedate, get_string('convertdate', SPDETAILS_LANG));
         }
     }
 
@@ -420,46 +426,55 @@ class block_gu_spdetails extends block_base {
 
         // assuming $finalgrade can be 0
         if(!is_null($finalgrade)) {
-            $status->text = get_string('graded', SPDETAILS_STRINGS);
-            $status->suffix = get_string('graded', SPDETAILS_STRINGS);
+            $status->text = get_string('graded', SPDETAILS_LANG);
+            $status->suffix = get_string('graded', SPDETAILS_LANG);
         }else{
             if($dates->startdate == '0' || time() >= $dates->startdate) {
                 if(time() <= $dates->duedate) {
                     $status->hasurl = true;
                     if($dates->isdueextended) {
-                        $status->text = get_string('overdue', SPDETAILS_STRINGS);
-                        $status->suffix = get_string('class_overduelinked', SPDETAILS_STRINGS);
+                        $status->text = get_string('overdue', SPDETAILS_LANG);
+                        $status->suffix = get_string('class_overduelinked', SPDETAILS_LANG);
                     }else{
                         if($modname === 'assign' && $activity->status === 'submitted') {
-                            $status->text = get_string('submitted', SPDETAILS_STRINGS);
-                            $status->suffix = get_string('submitted', SPDETAILS_STRINGS);
+                            $status->text = get_string('submitted', SPDETAILS_LANG);
+                            $status->suffix = get_string('submitted', SPDETAILS_LANG);
                             $status->hasurl = false;
                         }else{
-                            $status->text = get_string('submit', SPDETAILS_STRINGS);
-                            $status->suffix = get_string('submit', SPDETAILS_STRINGS);
+                            $status->text = get_string('submit', SPDETAILS_LANG);
+                            $status->suffix = get_string('submit', SPDETAILS_LANG);
                         }
                     }
                 }else{
                     if($dates->duedate == 0) {
-                        $status->text = get_string('notopen', SPDETAILS_STRINGS);
-                        $status->suffix = get_string('class_notopen', SPDETAILS_STRINGS);
+                        $status->text = get_string('notopen', SPDETAILS_LANG);
+                        $status->suffix = get_string('class_notopen', SPDETAILS_LANG);
                     }else{
-                        $status->text = get_string('overdue', SPDETAILS_STRINGS);
+                        $status->text = get_string('overdue', SPDETAILS_LANG);
 
                         if(time() <= $dates->cutoffdate || $dates->cutoffdate == 0) {
-                            $status->suffix = get_string('class_overduelinked', SPDETAILS_STRINGS);
+                            $status->suffix = get_string('class_overduelinked', SPDETAILS_LANG);
                             $status->hasurl = true;
                         }else{
-                            $status->suffix = get_string('overdue', SPDETAILS_STRINGS);
+                            $status->suffix = get_string('overdue', SPDETAILS_LANG);
                         }
                     }
                 }
             }else{
-                $status->text = get_string('notopen', SPDETAILS_STRINGS);
-                $status->suffix = get_string('class_notopen', SPDETAILS_STRINGS);
+                $status->text = get_string('notopen', SPDETAILS_LANG);
+                $status->suffix = get_string('class_notopen', SPDETAILS_LANG);
             }
         }
 
         return $status;
+    }
+
+    public static function return_isstudent($userid, $courseid) {
+        $roles_array = array();
+        $roles = strtolower(strip_tags(get_user_roles_in_course($userid, $courseid)));
+        $roles_array = explode(',', $roles);
+        $isstudent = in_array(get_string('student', SPDETAILS_LANG), $roles_array);
+
+        return $isstudent;
     }
 }

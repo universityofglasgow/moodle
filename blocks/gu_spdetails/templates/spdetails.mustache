@@ -15,6 +15,7 @@
     @template block_gu_spdetails/spdetails
 }}
 {{#hasassessments}}
+    <blockquote class="hidden-element">{{assessments}}</blockquote>
     <div class="assessments-details-container table-responsive">
         <div class="assessments-details-sort">
             <label class="assessments-details-sort-label">{{sort}}
@@ -64,7 +65,7 @@
                         <td class="td05">
                             {{weight}}
                         </td>
-                        <td class="hidden">
+                        <td class="hidden-element">
                             {{dates.duedate}}
                         </td>
                         <td class="td10">
