@@ -113,8 +113,8 @@ class block_gu_spdetails extends block_base {
                     $activity = self::retrieve_activity($mod->modname, $mod->instance, $mod->course, $userid);
                     $gradeitem = self::retrieve_gradeitem($mod->course, $mod->modname, $mod->instance, $activity);
                     $gradecategory = self::retrieve_gradecategory($gradeitem->categoryid);
-                    $grades = self::retrieve_grades($userid, $gradeitem->id);
-                    $mod->isprovisional = (!isset($grades->information)) ? true : false;
+                    $mod->grades = self::retrieve_grades($userid, $gradeitem->id);
+                    $mod->isprovisional = (!isset($mod->grades->information)) ? true : false;
                     $mod->provisionaltext = ($mod->isprovisional) ? get_string('provisional', SPDETAILS_LANG) : null;
 
                     $mod->coursename = $course->fullname;
@@ -125,7 +125,7 @@ class block_gu_spdetails extends block_base {
                     $mod->assessmenttype = self::return_assessmenttype($gradecategory->fullname);
                     $mod->weight = self::return_weight($mod->assessmenttype, $gradecategory->aggregation,
                                                     $gradeitem->aggregationcoef, $gradeitem->aggregationcoef2);
-                    $mod->finalgrade = self::return_grade($gradeitem, $grades);
+                    $mod->finalgrade = self::return_grade($gradeitem, $mod->grades);
                     $mod->dates = self::return_dates($mod->modname, $activity);
                     $mod->dates->formattedduedate = (!empty($mod->dates->duedate)) ?
                                                     userdate($mod->dates->duedate,
@@ -133,7 +133,7 @@ class block_gu_spdetails extends block_base {
                                                     get_string('emptyvalue', SPDETAILS_LANG);
                     $mod->dates->gradingduedate = (isset($mod->dates->gradingduedate)) ? $mod->dates->gradingduedate : '0';
                     $mod->gradingduedate = self::return_gradingduedate($mod->finalgrade, $mod->dates->gradingduedate);
-                    $mod->hasfeedback = (!empty($grades->feedback) || !empty($grades->feedbackformat)) ? true : false;
+                    $mod->hasfeedback = (!empty($mod->grades->feedback) || !empty($mod->grades->feedbackformat)) ? true : false;
                     $mod->feedbackduedate = self::return_feedbackduedate($mod->hasfeedback, $mod->finalgrade,
                                                                         $mod->dates->gradingduedate);
                     $mod->status = self::return_status($mod->modname, $mod->finalgrade, $mod->dates, $activity);
@@ -371,14 +371,14 @@ class block_gu_spdetails extends block_base {
                     $intgrade = round($grades->finalgrade);
                     $scales = self::retrieve_scale($gradeitem->scaleid);
                     $scale = make_menu_from_list($scales->scale);
-                    $scalevalue = $scale[$intgrade];
+                    $scalevalue = (!empty($intgrade)) ? $scale[$intgrade] : null;
 
                     if(strpos($scalevalue, ':')){
                         $expscalevalue = explode(':', $scalevalue);
                         $scalevalue = $expscalevalue[0];
                     }
 
-                    $finalgrade =  $scalevalue ;
+                    $finalgrade = $scalevalue;
                     break;
                 // grade type = text
                 default:
