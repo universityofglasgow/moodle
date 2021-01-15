@@ -63,7 +63,7 @@ require_once($CFG->dirroot . '/grade/querylib.php');
 require_once($CFG->libdir.'/grade/grade_item.php');
 require_once($CFG->libdir.'/grade/grade_grade.php');
 require_once($CFG->dirroot.'/mod/assign/locallib.php');
-require_once($CFG->libdir.'./dataformatlib.php');
+require_once($CFG->libdir.'/dataformatlib.php');
 
 class local_gugcat {
      
