@@ -60,6 +60,7 @@ require_once($CFG->dirroot . '/grade/querylib.php');
 require_once($CFG->libdir.'/grade/grade_item.php');
 require_once($CFG->libdir.'/grade/grade_grade.php');
 require_once($CFG->dirroot.'/mod/assign/locallib.php');
+require_once($CFG->libdir.'./dataformatlib.php');
 
 class local_gugcat {
      
@@ -374,5 +375,17 @@ class local_gugcat {
             default:
                 return false;
         }
+    }
+
+    public static function export_gcat($filename, $columns, $iterator){
+        $dataformat = 'csv';
+        // In 3.9 forward, download_as_dataformat is replaced by \core\dataformat::download_data.
+        if (method_exists('\\core\\dataformat', 'download_data')) {
+            \core\dataformat::download_data($filename, $dataformat, $columns, $iterator);
+            exit;
+        } else {
+            download_as_dataformat($filename, $dataformat, $columns, $iterator);
+            exit;
+        } 
     }
 }

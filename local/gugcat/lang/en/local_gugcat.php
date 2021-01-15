@@ -30,6 +30,7 @@ $string['addnewgrade'] = 'Add new grade';
 $string['editgrade'] = 'Edit grade';
 $string['adjustcourseweight'] = 'Adjust student\'s course weightings';
 $string['aggregatedgrade'] = 'Aggregated Grade';
+$string['aggregationtool'] = 'grade_aggregation_tool';
 $string['amendgrades'] = 'Amend Grades';
 $string['assessmentlvlscore'] = 'Assessment Level Score';
 $string['cancelrelaseprovisionalgrade'] = 'No, cancel action';

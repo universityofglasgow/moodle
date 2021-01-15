@@ -23,6 +23,7 @@
  */
 namespace local_gugcat;
 
+use ArrayObject;
 use local_gugcat;
 use stdClass;
 use grade_grade;
@@ -106,9 +107,10 @@ class grade_aggregation{
                 local_gugcat::set_grade_scale($scaleid);
                 $grade = is_null($grd) ? get_string('nograderecorded', 'local_gugcat') : local_gugcat::convert_grade($grd);
                 $weight = 0;
+                $grdvalue = get_string('nograderecorded', 'local_gugcat');
                 if(!is_null($pg) && !is_null($grd) && $grade !== MEDICAL_EXEMPTION_AC){
                     $weight = (float)$pg->information; //get weight from information column of provisional grades
-                    $grdvalue = (float)$grd - (float)1; //normalize to actual grade value for computation
+                    $grdvalue = ($grade === NON_SUBMISSION_AC) ? 0 : (float)$grd - (float)1; //normalize to actual grade value for computation
                     $floatweight += ($grade === NON_SUBMISSION_AC) ? 0 : $weight;
                     $sumaggregated += ($grade === NON_SUBMISSION_AC) ?( 0 * (float)$grdvalue) : ((float)$grdvalue * $weight);
                 }
@@ -118,7 +120,7 @@ class grade_aggregation{
                 $grdobj->activityinstance = $item->instance;
                 $grdobj->activity = $item->name;
                 $grdobj->grade = $grade;
-                $grdobj->rawgrade = $grd;
+                $grdobj->rawgrade = $grdvalue;
                 $grdobj->weight =  round((float)$weight * 100 );
                 array_push($gradecaptureitem->grades, $grdobj);
             }
@@ -206,5 +208,46 @@ class grade_aggregation{
             }         
         }
         local_gugcat::notify_success('successfinalrelease');
+    }
+
+    public static function export_aggregation_tool($course, $modules, $students){
+        $table = get_string('aggregationtool', 'local_gugcat');
+        $filename = "export_$table"."_".date('Y-m-d_His');    
+        $columns = ['student_number', 'surname', 'forename'];
+        //Process the activity names
+        $activities = array();
+        foreach($modules as $cm) {
+            $weight = preg_replace('!\s+!', '_', $cm->name).'_weighting';
+            $alpha = preg_replace('!\s+!', '_', $cm->name).'_alphanumeric_grade';
+            $numeric = preg_replace('!\s+!', '_', $cm->name).'_numeric_grade';
+            array_push($activities, array($weight, $alpha, $numeric));
+            array_push($columns, ...array($weight, $alpha, $numeric));
+        }
+        //add the remaining columns after the activities
+        array_push($columns, ...['%_complete', 'aggregated_grade', 'aggregated_grade_numeric', 'resit_required']);
+        //Process the data to be iterated
+        $data = self::get_rows($course, $modules, $students);
+        $array = array();
+        foreach($data as $row) {
+            $student = new stdClass();
+            $student->student_number = $row->studentno;
+            $student->surname = $row->surname;
+            $student->forename = $row->forename;
+            foreach($activities as $key=>$act) {
+                $student->{$act[0]} = $row->grades[$key]->weight.'%';//weight
+                $student->{$act[1]} = $row->grades[$key]->grade; //alphanumeric
+                $student->{$act[2]} = $row->grades[$key]->rawgrade;//numeric
+            }
+            $student->{'%_complete'} = $row->completed;
+            //check if grade is aggregated 
+            $isaggregated = ($row->aggregatedgrade->display != get_string('missinggrade', 'local_gugcat')) ? true : false;
+            $student->aggregated_grade = $isaggregated ? $row->aggregatedgrade->grade : null;
+            $student->aggregated_grade_numeric = $isaggregated ?  $row->aggregatedgrade->rawgrade : null;
+            $student->resit_required = is_null($row->resit) ? 'N' : 'Y';
+            array_push($array, $student);
+        }
+        //convert array to ArrayObject to get the iterator
+        $exportdata = new ArrayObject($array);
+        local_gugcat::export_gcat($filename, $columns, $exportdata->getIterator());
     }
 }
