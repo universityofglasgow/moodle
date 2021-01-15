@@ -53,6 +53,11 @@ td > i, th > i {
     text-align: center;
 }
 
+.btn-default-padding {
+    padding-left: 24.5px;
+    padding-right: 24.5px;
+}
+
 .btn-default:hover {
     opacity: .9;
     background-color: #005c8a;
@@ -202,4 +207,22 @@ td > .grade-discrepancy{
 
 .hide-show-grade {
     display: none;
+}
+
+.modal-body-txt {
+    color: black;
+    font-size: 36.4px;
+}
+
+.modal-header {
+    display: none;
+}
+
+.modal-footer {
+    border-top-color: white;
+}
+
+.btn-cancel-alignment {
+    position:relative;
+    left:-25px;
 }
