@@ -395,18 +395,24 @@ class block_gu_spdetails_testcase extends advanced_testcase {
 
     public function test_return_feedbackduedate(){
         $lang = 'block_gu_spdetails';
-        $gradingduedate = time();
+        $gradingduedate = time() + 86400;
 
         $expected1 = get_string('readfeedback', $lang);
 
         $expected2 = get_string('nofeedback', $lang);
 
-        $expected3 = get_string('due', $lang).
-                     userdate($gradingduedate, get_string('convertdate', $lang));
+        $expected3 = get_string('tobeconfirmed', $lang);
+
+        $expected4 = ucwords(get_string('overdue', $lang));
+
+        $expected5 = get_string('due', $lang).
+                    userdate($gradingduedate, get_string('convertdate', $lang));
 
         $this->assertEquals($expected1, $this->spdetails->return_feedbackduedate(true, 1, $gradingduedate));
         $this->assertEquals($expected2, $this->spdetails->return_feedbackduedate(false, 1, $gradingduedate));
-        $this->assertEquals($expected3, $this->spdetails->return_feedbackduedate(true, 0, $gradingduedate));
+        $this->assertEquals($expected3, $this->spdetails->return_feedbackduedate(false, 0, 0));
+        $this->assertEquals($expected4, $this->spdetails->return_feedbackduedate(false, 0, time() - 1));
+        $this->assertEquals($expected5, $this->spdetails->return_feedbackduedate(true, 0, $gradingduedate));
     }
 
     public function test_return_assessmenttype(){
@@ -558,7 +564,7 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $expectedAssign2->isdueextended = true;
         $expectedAssign2->startdate = $activity->startdate;
         $expectedAssign2->cutoffdate = $activity->cutoffdate;
-        $expectedAssign2->gradingduedate = $expectedAssign2->duedate + (86400 * 14);
+        $expectedAssign2->gradingduedate = '0';
 
         $this->assertEquals($expectedAssign2, $this->spdetails->return_dates('assign', $activity));
 
@@ -627,7 +633,7 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $expectedForum2 = new stdClass();
         $expectedForum2->startdate = '0';
         $expectedForum2->cutoffdate = '0';
-        $expectedForum2->gradingduedate = $activity->duedate + (86400 * 14);
+        $expectedForum2->gradingduedate = $activity->duedate;
         $expectedForum2->isdueextended = false;
         $expectedForum2->duedate = $activity->duedate;
 
@@ -668,7 +674,7 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $expectedWorkshop2->isdueextended = false;
         $expectedWorkshop2->startdate = '0';
         $expectedWorkshop2->cutoffdate = '0';
-        $expectedWorkshop2->gradingduedate = $expectedWorkshop2->duedate + (86400 * 14);
+        $expectedWorkshop2->gradingduedate = '0';
 
         $this->assertEquals($expectedWorkshop2, $this->spdetails->return_dates('workshop', $activity));
 
@@ -699,8 +705,18 @@ class block_gu_spdetails_testcase extends advanced_testcase {
 
         $expected2 = new stdClass();
         $expected2->hasgrade = false;
-        $expected2->gradetext = get_string('due', $lang) . userdate($gradingduedate, get_string('convertdate', $lang));
-        $this->assertEquals($expected2, $this->spdetails->return_gradingduedate(0, $gradingduedate));
+        $expected2->gradetext = get_string('tobeconfirmed', SPDETAILS_STRINGS);
+        $this->assertEquals($expected2, $this->spdetails->return_gradingduedate(0, 0));
+
+        $expected3 = new stdClass();
+        $expected3->hasgrade = false;
+        $expected3->gradetext = ucwords(get_string('overdue', SPDETAILS_STRINGS));
+        $this->assertEquals($expected3, $this->spdetails->return_gradingduedate(0, time() - 1));
+
+        $expected4 = new stdClass();
+        $expected4->hasgrade = false;
+        $expected4->gradetext = get_string('due', $lang) . userdate($gradingduedate, get_string('convertdate', $lang));
+        $this->assertEquals($expected4, $this->spdetails->return_gradingduedate(0, $gradingduedate));
     }
 
     public function test_retrieve_scale(){

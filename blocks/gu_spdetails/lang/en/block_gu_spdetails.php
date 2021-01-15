@@ -53,3 +53,4 @@ $string['sort_course'] = "Course";
 $string['sort_date'] = "Date";
 $string['submit'] = 'submit';
 $string['submitted'] = 'submitted';
+$string['tobeconfirmed'] = 'To be confirmed';

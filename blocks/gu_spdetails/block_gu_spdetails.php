@@ -300,9 +300,7 @@ class block_gu_spdetails extends block_base {
                                    $activity->overridestartdate : $activity->startdate;
                 $date->cutoffdate = (!empty($activity->overridecutoffdate)) ?
                                    $activity->overridecutoffdate : $activity->cutoffdate;
-                $date->gradingduedate = (!empty($activity->gradingduedate)) ?
-                                        $activity->gradingduedate :
-                                        (!(empty($date->duedate)) ? $date->duedate + (86400 * 14) : '0');
+                $date->gradingduedate = (!empty($activity->gradingduedate)) ? $activity->gradingduedate : '0';
                 break;
             case 'quiz':
                 if($activity->overrideduedate) {
@@ -317,12 +315,10 @@ class block_gu_spdetails extends block_base {
             case 'forum':
                 $date->gradingduedate = (!empty($activity->cutoffdate)) ?
                                         $activity->cutoffdate :
-                                        (!(empty($date->duedate)) ? $date->duedate + (86400 * 14) : '0');
+                                        (!(empty($date->duedate)) ? $date->duedate : '0');
                 break;
             case 'workshop':
-                $date->gradingduedate = (!empty($activity->gradingduedate)) ?
-                                        $activity->gradingduedate :
-                                        (!(empty($date->duedate)) ? $date->duedate + (86400 * 14) : '0');
+                $date->gradingduedate = (!empty($activity->gradingduedate)) ? $activity->gradingduedate : '0';
                 break;
         }
 
@@ -332,9 +328,16 @@ class block_gu_spdetails extends block_base {
     public static function return_gradingduedate($finalgrade, $gradingduedate) {
         $duedateobj = new stdClass();
         $duedateobj->hasgrade = (!empty($finalgrade)) ? true : false;
-        $duedateobj->gradetext = (!empty($finalgrade)) ? $finalgrade :
-                                get_string('due', SPDETAILS_STRINGS).
-                                userdate($gradingduedate, get_string('convertdate', SPDETAILS_STRINGS));
+        $duedateobj->gradetext = get_string('due', SPDETAILS_STRINGS).
+                                        userdate($gradingduedate, get_string('convertdate', SPDETAILS_STRINGS));
+
+        if (!empty($finalgrade)){
+            $duedateobj->gradetext = $finalgrade;
+        } else if (empty($gradingduedate)){
+            $duedateobj->gradetext = get_string('tobeconfirmed', SPDETAILS_STRINGS);
+        } else if (time() > $gradingduedate){
+            $duedateobj->gradetext = ucwords(get_string('overdue', SPDETAILS_STRINGS));
+        }
 
         return $duedateobj;
     }
@@ -393,12 +396,18 @@ class block_gu_spdetails extends block_base {
     }
 
     public static function return_feedbackduedate($hasfeedback, $finalgrade, $gradingduedate) {
-        $feedbacktext = ($hasfeedback && !empty($finalgrade)) ? get_string('readfeedback', SPDETAILS_STRINGS) :
-                        ((!$hasfeedback && !empty($finalgrade)) ? get_string('nofeedback', SPDETAILS_STRINGS) :
-                         get_string('due', SPDETAILS_STRINGS).
-                         userdate($gradingduedate, get_string('convertdate', SPDETAILS_STRINGS)));
-
-        return $feedbacktext;
+        if ($hasfeedback && !empty($finalgrade)) {
+            return get_string('readfeedback', SPDETAILS_STRINGS);
+        } else if (!$hasfeedback && !empty($finalgrade)) {
+            return  get_string('nofeedback', SPDETAILS_STRINGS);
+        } else if (!$hasfeedback && empty($finalgrade) && empty($gradingduedate)) {
+            return get_string('tobeconfirmed', SPDETAILS_STRINGS);
+        } else if (!$hasfeedback && empty($finalgrade) && time() > $gradingduedate) {
+            return ucwords(get_string('overdue', SPDETAILS_STRINGS));
+        } else {
+            return get_string('due', SPDETAILS_STRINGS).
+                   userdate($gradingduedate, get_string('convertdate', SPDETAILS_STRINGS));
+        }
     }
 
     public static function return_status($modname, $finalgrade, $dates, $activity) {
