@@ -24,6 +24,10 @@
  */
 
 function local_gugcat_extend_navigation_course($parentnode, $course, $context) {
+    if(!has_capability('moodle/site:config', $context) 
+    && has_capability('moodle/competency:coursecompetencygradable', $context)) {
+        return; //user role = student
+    }
     $url = new moodle_url('/local/gugcat/index.php', array('id' => $course->id));
     $gugcat = get_string('navname', 'local_gugcat');
     $icon = new pix_icon('t/grades', '');
@@ -53,7 +57,7 @@ function local_gugcat_extend_navigation($navigation){
      }
 
     $gugcatLinkName = get_string('navname', 'local_gugcat');
-    $linkUrl = new moodle_url('/local/gugcat/index.php', array('courseid' => $coursecontext->instanceid));
+    $linkUrl = new moodle_url('/local/gugcat/index.php', array('id' => $coursecontext->instanceid));
     $icon = new pix_icon('t/grades', '');
     $currentCourseNode = $navigation->find('currentcourse', $navigation::TYPE_ROOTNODE);
     if (isNodeNotEmpty($currentCourseNode)) {
@@ -78,4 +82,18 @@ function local_gugcat_extend_navigation($navigation){
             $currentCourseInCourses->add($gugcatLinkName, $linkUrl, navigation_node::NODETYPE_LEAF, $gugcatLinkName, 'gugcat', $icon);
         }
     }
+}
+
+function local_gugcat_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options=array()) {
+
+    // Retrieve the file from the Files API.
+    $relativepath = implode('/', $args);
+    $fullpath = "/{$context->id}/local_gugcat/attachment$itemid/$relativepath";
+
+    $fs = get_file_storage();
+    if (!($file = $fs->get_file_by_hash(sha1($fullpath))) || $file->is_directory()) {
+        return false;
+    }
+    send_stored_file($file, 86400, 0, true, $options);
+    exit;
 }

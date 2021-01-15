@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * My Media main viewing page.
+ * Index file.
  *
  * @package    local_gugcat
  * @copyright  2020
@@ -23,19 +23,18 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once(__DIR__ . '/../../../config.php');
+use local_gugcat\grade_aggregation;
+require_once(__DIR__ . '/../../../../config.php');
 require_once($CFG->dirroot . '/local/gugcat/locallib.php');
-require_once($CFG->dirroot.'/local/gugcat/classes/form/addeditgradeform.php');
-require_once($CFG->libdir.'/filelib.php');
 
 $courseid = required_param('id', PARAM_INT);
 $activityid = required_param('activityid', PARAM_INT);
 $studentid = required_param('studentid', PARAM_INT);
-$categoryid = optional_param('categoryid', null, PARAM_INT);
+$cnum = required_param('cnum', PARAM_INT);
 
 require_login($courseid);
-$urlparams = array('id' => $courseid, 'activityid' => $activityid, 'studentid' => $studentid);
-$URL = new moodle_url('/local/gugcat/add/index.php', $urlparams);
+$urlparams = array('id' => $courseid, 'activityid' => $activityid, 'studentid' => $studentid, 'cnum' => $cnum);
+$URL = new moodle_url('/local/gugcat/overview/history/index.php', $urlparams);
 $PAGE->set_url($URL);
 $PAGE->set_title(get_string('gugcat', 'local_gugcat'));
 $PAGE->navbar->ignore_active();
@@ -43,7 +42,6 @@ $PAGE->navbar->add(get_string('navname', 'local_gugcat'), $URL);
 
 $PAGE->requires->css('/local/gugcat/styles/gugcat.css');
 $PAGE->requires->js_call_amd('local_gugcat/main', 'init');
-
 $course = get_course($courseid);
 
 $coursecontext = context_course::instance($courseid);
@@ -61,36 +59,10 @@ if (is_null($scaleid) && local_gugcat::is_grademax22($module->gradeitem->gradety
 }
 local_gugcat::set_grade_scale($scaleid);
 local_gugcat::set_prv_grade_id($courseid, $module);
-$grading_info = grade_get_grades($courseid, 'mod', $module->modname, $module->instance, $studentid);
-$gradeitems = local_gugcat::get_grade_grade_items($course, $module);
-$gradeversions = local_gugcat::filter_grade_version($gradeitems, $studentid);
 
-$mform = new addeditgradeform(null, array('id'=>$courseid, 'categoryid'=>$categoryid, 'activityid'=>$activityid, 'studentid'=>$studentid));
-if ($fromform = $mform->get_data()) {
-
-    if($fromform->reasons == 8) {
-        $gradereason = $fromform->otherreason;
-    }
-    else{
-        $gradereason = local_gugcat::get_reasons()[$fromform->reasons];
-    }
-    if(!empty($fromform->userfile)){
-        file_save_draft_area_files($fromform->userfile, $PAGE->context->id, 'local_gugcat', 'attachment',
-                            $fromform->userfile, array('subdirs' => 0));
-    }
-    
-    $gradeitemid = local_gugcat::add_grade_item($courseid, $gradereason, $module);
-    $grades = local_gugcat::add_update_grades($studentid, $gradeitemid, $fromform->grade, $fromform->notes, $fromform->userfile);
-    $url = '/local/gugcat/index.php?id='.$courseid.'&activityid='.$activityid;
-    $url .= (($categoryid !== 0) ? '&categoryid='.$categoryid : null);
-    redirect($CFG->wwwroot . $url);
-    exit;
-}   
-
+$history = local_gugcat::get_grade_history($courseid, $module, $studentid);
+$student->cnum = $cnum;
 echo $OUTPUT->header();
 $renderer = $PAGE->get_renderer('local_gugcat');
-echo $renderer->display_add_edit_grade_form($course, $student, $gradeversions, true);
-$mform->display();
+echo $renderer->display_grade_history($student, $module->name, $history);
 echo $OUTPUT->footer();
-
-

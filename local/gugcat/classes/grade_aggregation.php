@@ -23,9 +23,11 @@
  */
 namespace local_gugcat;
 
+use ArrayObject;
 use local_gugcat;
 use stdClass;
 use grade_grade;
+use grade_item;
 
 defined('MOODLE_INTERNAL') || die();
 require_once('gcat_item.php');
@@ -105,18 +107,20 @@ class grade_aggregation{
                 local_gugcat::set_grade_scale($scaleid);
                 $grade = is_null($grd) ? get_string('nograderecorded', 'local_gugcat') : local_gugcat::convert_grade($grd);
                 $weight = 0;
+                $grdvalue = get_string('nograderecorded', 'local_gugcat');
                 if(!is_null($pg) && !is_null($grd) && $grade !== MEDICAL_EXEMPTION_AC){
                     $weight = (float)$pg->information; //get weight from information column of provisional grades
-                    $grdvalue = (float)$grd - (float)1; //normalize to actual grade value for computation
+                    $grdvalue = ($grade === NON_SUBMISSION_AC) ? 0 : (float)$grd - (float)1; //normalize to actual grade value for computation
                     $floatweight += ($grade === NON_SUBMISSION_AC) ? 0 : $weight;
                     $sumaggregated += ($grade === NON_SUBMISSION_AC) ?( 0 * (float)$grdvalue) : ((float)$grdvalue * $weight);
                 }
                 $gradecaptureitem->nonsubmission = ($grade === NON_SUBMISSION_AC) ? true : false;
                 $gradecaptureitem->medicalexemption = ($grade === MEDICAL_EXEMPTION_AC) ? true : false;
                 $grdobj->activityid = $item->id;
+                $grdobj->activityinstance = $item->instance;
                 $grdobj->activity = $item->name;
                 $grdobj->grade = $grade;
-                $grdobj->rawgrade = $grd;
+                $grdobj->rawgrade = $grdvalue;
                 $grdobj->weight =  round((float)$weight * 100 );
                 array_push($gradecaptureitem->grades, $grdobj);
             }
@@ -167,5 +171,83 @@ class grade_aggregation{
             $grade_->update();  
         }
         local_gugcat::notify_success('successadjustweight');
+    }
+
+    public static function release_final_grades($courseid, $cms, $students){
+        global $USER, $DB;
+        foreach($cms as $cmid=>$cm) {
+            $data = new stdClass();
+            $data->courseid = $courseid;
+            $data->itemtype = 'mod';
+            $data->iteminstance = explode('_', $cm)[0];
+            $data->itemname = explode('_', $cm)[1];
+            //get gradebook grade item
+            $gradeitem = new grade_item($data, true);
+           //set offset value for max 22 points grade
+            $gradescaleoffset = 0;
+            if (local_gugcat::is_grademax22($gradeitem->gradetype, $gradeitem->grademax)){
+                $gradescaleoffset = 1;
+            }
+            foreach($students as $id=>$student) {
+                //update grade & information from gradebook
+                $grade = $student[$cmid]; 
+                switch ($grade) {
+                    case NON_SUBMISSION:
+                        $grade = 0;
+                        break;
+                    case MEDICAL_EXEMPTION:
+                        $grade = null;
+                        break;
+                    default:
+                        $grade = $grade - $gradescaleoffset;
+                        break;
+                }
+                if($gradeitem->update_final_grade($id, $grade, null, null, FORMAT_MOODLE, $USER->id)){
+                    $DB->set_field_select(GRADE_GRADES, 'information', FINAL_GRADE, "itemid = $gradeitem->id AND userid = $id");
+                }
+            }         
+        }
+        local_gugcat::notify_success('successfinalrelease');
+    }
+
+    public static function export_aggregation_tool($course, $modules, $students){
+        $table = get_string('aggregationtool', 'local_gugcat');
+        $filename = "export_$table"."_".date('Y-m-d_His');    
+        $columns = ['student_number', 'surname', 'forename'];
+        //Process the activity names
+        $activities = array();
+        foreach($modules as $cm) {
+            $weight = preg_replace('!\s+!', '_', $cm->name).'_weighting';
+            $alpha = preg_replace('!\s+!', '_', $cm->name).'_alphanumeric_grade';
+            $numeric = preg_replace('!\s+!', '_', $cm->name).'_numeric_grade';
+            array_push($activities, array($weight, $alpha, $numeric));
+            array_push($columns, ...array($weight, $alpha, $numeric));
+        }
+        //add the remaining columns after the activities
+        array_push($columns, ...['%_complete', 'aggregated_grade', 'aggregated_grade_numeric', 'resit_required']);
+        //Process the data to be iterated
+        $data = self::get_rows($course, $modules, $students);
+        $array = array();
+        foreach($data as $row) {
+            $student = new stdClass();
+            $student->student_number = $row->studentno;
+            $student->surname = $row->surname;
+            $student->forename = $row->forename;
+            foreach($activities as $key=>$act) {
+                $student->{$act[0]} = $row->grades[$key]->weight.'%';//weight
+                $student->{$act[1]} = $row->grades[$key]->grade; //alphanumeric
+                $student->{$act[2]} = $row->grades[$key]->rawgrade;//numeric
+            }
+            $student->{'%_complete'} = $row->completed;
+            //check if grade is aggregated 
+            $isaggregated = ($row->aggregatedgrade->display != get_string('missinggrade', 'local_gugcat')) ? true : false;
+            $student->aggregated_grade = $isaggregated ? $row->aggregatedgrade->grade : null;
+            $student->aggregated_grade_numeric = $isaggregated ?  $row->aggregatedgrade->rawgrade : null;
+            $student->resit_required = is_null($row->resit) ? 'N' : 'Y';
+            array_push($array, $student);
+        }
+        //convert array to ArrayObject to get the iterator
+        $exportdata = new ArrayObject($array);
+        local_gugcat::export_gcat($filename, $columns, $exportdata->getIterator());
     }
 }

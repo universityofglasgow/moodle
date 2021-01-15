@@ -21,7 +21,7 @@
  * @author     Accenture
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-define(['jquery', 'core/str' ], function($, Str) {
+define(['jquery', 'core/str', 'core/modal_factory', 'local_gugcat/modal_gcat' ], function($, Str, ModalFactory, ModalGcat) {
 
     //Returns boolean on check of the current url and match it to the path params
     const checkCurrentUrl = function(path) {
@@ -94,6 +94,8 @@ define(['jquery', 'core/str' ], function($, Str) {
         var btn_release = document.getElementById('btn-release');
         var btn_import = document.getElementById('btn-import');
         var btn_coursegradeform = document.getElementById('btn-coursegradeform');
+        var btn_download = document.getElementById('btn-download');
+        var btn_finalrelease = document.getElementById('btn-finalrelease');
         var import_submit = document.getElementById('importgrades-submit');
         var gcat_tbl_form = document.getElementById('multigradesform');
         switch (event.target) {
@@ -110,8 +112,36 @@ define(['jquery', 'core/str' ], function($, Str) {
                 });
                 $(".togglemultigrd").show();
                 break;
-            case btn_release:
-                document.getElementById('release-submit').click();
+            case btn_release:   
+                var strings = [
+                    {
+                        key: 'modalreleaseprovisionalgrade',
+                        component: 'local_gugcat'
+                    },
+                    {
+                        key: 'cancelrelaseprovisionalgrade',
+                        component: 'local_gugcat'
+                    },
+                    {
+                        key: 'confirmreleaseprovisionalgrade',
+                        component: 'local_gugcat'
+                    }
+                ];
+
+                Str.get_strings(strings).then(function(langStrings){
+                    
+                    var templateContext = {
+                        bodycontent: langStrings[0],
+                        strcancel: langStrings[1], 
+                        strconfirm: langStrings[2], 
+                        dataaction: 'release'
+                    };
+
+                    ModalFactory.create({
+                        type:ModalGcat.TYPE,
+                        templateContext: templateContext
+                    }, $("#btn-release"))
+                });
                 break;
             case btn_import:
                 if(!$(".gradeitems").text().includes("Moodle Grade[Date]")){
@@ -137,6 +167,16 @@ define(['jquery', 'core/str' ], function($, Str) {
                         }
                     });
                 }
+                break;
+            case btn_finalrelease:
+                Str.get_string('confirmfinalrelease', 'local_gugcat').then(function(msg) {
+                    if(confirm(msg) == true) {
+                        document.getElementById('finalrelease-submit').click();
+                    }
+                });
+                break;
+            case btn_download:
+                document.getElementById('downloadcsv-submit').click();
                 break;
             default:
                 break;
@@ -178,7 +218,6 @@ define(['jquery', 'core/str' ], function($, Str) {
                             }
                         });
                     });
-                    
                 }
 
                 //Show 'grade discrepancy' when grade discrepancy exist

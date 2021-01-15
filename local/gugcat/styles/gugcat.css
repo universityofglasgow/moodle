@@ -53,6 +53,11 @@ td > i, th > i {
     text-align: center;
 }
 
+.btn-default-padding {
+    padding-left: 24.5px;
+    padding-right: 24.5px;
+}
+
 .btn-default:hover {
     opacity: .9;
     background-color: #005c8a;
@@ -64,13 +69,13 @@ td > i, th > i {
     color: white;
 }
 
-.btn-approve {
+.btn-release {
     border: 1px solid #006630;
     background-color: #006630;
     color: white;
 }
 
-.btn-approve:hover {
+.btn-release:hover {
     background-color: #006630;
     color: white;
     opacity: 0.8;
@@ -80,16 +85,28 @@ td > i, th > i {
     margin-bottom: 1.5em;
 }
 
-.btn-download, .btn-approve {
+.btn-download, .btn-release {
     float: right;
 }
 
-.btn-download, .btn-approve, .btn-add-import,
+.btn-download, .btn-release, .btn-add-import,
 .tabcontent-header >.selectdiv select {
     height: 40px;
 }
 
-#btn-release, #btn-saveadd, #resit-submit, .togglemultigrd, .addnewgrade{
+#btn-finalrelease{
+    border: 1px solid #006630;
+    color: #006630;
+    margin-right: 0.5em;
+}
+
+#btn-finalrelease:hover {
+    background-color: #006630;
+    color: white;
+    opacity: 0.8;
+}
+
+#btn-release, #btn-saveadd, .togglemultigrd, .addnewgrade{
     display: none;
 }
 
@@ -181,11 +198,31 @@ td > .grade-discrepancy{
 }
 
 /* Hide submit buttons */
-#release-submit, #importgrades-submit, #showhidegrade-submit {
+#release-submit, #importgrades-submit, 
+#resit-submit,#showhidegrade-submit,
+#finalrelease-submit, #downloadcsv-submit {
     position: absolute;
     visibility: hidden;
 }
 
 .hide-show-grade {
     display: none;
+}
+
+.modal-body-txt {
+    color: black;
+    font-size: 36.4px;
+}
+
+.modal-header {
+    display: none;
+}
+
+.modal-footer {
+    border-top-color: white;
+}
+
+.btn-cancel-alignment {
+    position:relative;
+    left:-25px;
 }

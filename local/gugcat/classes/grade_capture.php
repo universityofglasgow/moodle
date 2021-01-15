@@ -168,6 +168,9 @@ class grade_capture{
         }
         foreach ($grades as $userid=>$grd)  {
             $hidden = $DB->get_field(GRADE_GRADES, 'hidden', array('itemid'=>local_gugcat::$PRVGRADEID, 'userid' => $userid));
+            $select = "itemid = $gradeitemid AND userid = $userid";
+            //update hidden status
+            $DB->set_field_select(GRADE_GRADES, 'hidden', $hidden, $select);
             if(!empty($grd) && $hidden == 0){
                 $rawgrade = array_search($grd, local_gugcat::$GRADES);
                 $rawgrade = $rawgrade ? $rawgrade : $grd;
@@ -191,7 +194,6 @@ class grade_capture{
                         break;
                 }
                 //update feedback and excluded field
-                $select = "itemid = $gradeitemid AND userid = $userid";
                 $DB->set_field_select(GRADE_GRADES, 'feedback', $feedback, $select);
                 $DB->set_field_select(GRADE_GRADES, 'excluded', $excluded, $select);
                 if($cm->modname === 'assign'){
@@ -253,7 +255,7 @@ class grade_capture{
             if(strcmp($module->modname, 'assign') == 0){
                 $assign = new assign(context_module::instance($module->id), $module, $courseid);
                 $asgrd = $assign->get_user_grade($student->id, false);
-                $grade = !is_null($admingrade) ? $admingrade : (($asgrd && !is_null($asgrd->grade)) ? ($asgrd->grade + $gradescaleoffset) : null);
+                $grade = !is_null($admingrade) ? $admingrade : (($asgrd && !is_null($asgrd->grade) && ($asgrd->grader>=0)) ? ($asgrd->grade + $gradescaleoffset) : null);
                 local_gugcat::update_workflow_state($assign, $student->id, ASSIGN_MARKING_WORKFLOW_STATE_INREVIEW);
             }else{
                 $gbgrade = $gbg->grade;
