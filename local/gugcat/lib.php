@@ -83,3 +83,17 @@ function local_gugcat_extend_navigation($navigation){
         }
     }
 }
+
+function local_gugcat_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options=array()) {
+
+    // Retrieve the file from the Files API.
+    $relativepath = implode('/', $args);
+    $fullpath = "/{$context->id}/local_gugcat/attachment$itemid/$relativepath";
+
+    $fs = get_file_storage();
+    if (!($file = $fs->get_file_by_hash(sha1($fullpath))) || $file->is_directory()) {
+        return false;
+    }
+    send_stored_file($file, 86400, 0, true, $options);
+    exit;
+}

@@ -31,7 +31,10 @@ defined('MOODLE_INTERNAL') || die();
 define('GRADE_GRADES', 'grade_grades');
 define('GRADE_ITEMS', 'grade_items');
 define('GRADE_CATEGORIES', 'grade_categories');
+define('GRADE_GRADES_HISTORY', 'grade_grades_history');
 define('SCALE', 'scale');
+define('USER', 'user');
+define ('FILES', 'files');
 
 //Administrative grades at Assessment Level
 define('NON_SUBMISSION_AC', 'NS');
@@ -60,6 +63,7 @@ require_once($CFG->dirroot . '/grade/querylib.php');
 require_once($CFG->libdir.'/grade/grade_item.php');
 require_once($CFG->libdir.'/grade/grade_grade.php');
 require_once($CFG->dirroot.'/mod/assign/locallib.php');
+require_once($CFG->libdir.'./dataformatlib.php');
 
 class local_gugcat {
      
@@ -374,5 +378,57 @@ class local_gugcat {
             default:
                 return false;
         }
+    }
+
+    public static function get_grade_history($courseid, $module, $studentid){
+        global $DB;
+        $select = 'courseid = '.$courseid.' AND '.self::compare_iteminfo();
+        $gradeitems = $DB->get_records_select(GRADE_ITEMS, $select, ['iteminfo' => $module->id]);
+        unset($gradeitems[self::$PRVGRADEID]);
+        $grades_arr = array();
+        foreach($gradeitems as $gradeitem){
+            $gradehistory_arr = $DB->get_records(GRADE_GRADES_HISTORY, array('userid'=>$studentid, 'itemid'=>$gradeitem->id), MUST_EXIST);
+            foreach($gradehistory_arr as $grd){
+                $fields = 'firstname, lastname';
+                if(!is_null($grd->usermodified) && !is_null($grd->rawgrade) && !is_null($grd->finalgrade)){
+                $modby = $DB->get_record(USER, array('id' => $grd->usermodified), $fields, MUST_EXIST);
+                $grd->modby = $modby->lastname . ', '.$modby->firstname;
+                $grd->notes = !is_null($grd->feedback) ? $grd->feedback : 'N/A - '.$gradeitem->itemname;
+                $grd->type = ($gradeitem->itemname == get_string('moodlegrade', 'local_gugcat')) ? 
+                $gradeitem->itemname. '<br>'.date("j/n/Y", strtotime(userdate($grd->timemodified)))
+                 : $gradeitem->itemname;
+                $grd->date = date("j/n", strtotime(userdate($grd->timemodified))).'<br>'.date("h:i", strtotime(userdate($grd->timemodified)));
+                $grd->grade = !is_null($grd->finalgrade) ? self::convert_grade($grd->finalgrade) : self::convert_grade($grd->rawgrade);
+                $grd->docs = null;
+                if(!is_null($grd->information)){
+                    $documentfields = 'contextid, component, filearea, itemid, filename';
+                    $selectdocs = 'filename <> "." AND itemid='.$grd->information.' AND '.' filearea="attachment"'; 
+                    if($docs = $DB->get_record_select(FILES, $selectdocs, null, $documentfields)){
+                        $grd->docs = moodle_url::make_pluginfile_url($docs->contextid, $docs->component, $docs->filearea, $docs->itemid, '/', $docs->filename);
+                        $grd->docname = $docs->filename;
+                    }
+                }
+                array_push($grades_arr, $grd);
+                }
+            }
+        }
+        //sort array by timemodified
+        usort($grades_arr,function($first,$second){
+            return $first->timemodified < $second->timemodified;
+        });
+
+        return $grades_arr;
+    }
+    
+    public static function export_gcat($filename, $columns, $iterator){
+        $dataformat = 'csv';
+        // In 3.9 forward, download_as_dataformat is replaced by \core\dataformat::download_data.
+        if (method_exists('\\core\\dataformat', 'download_data')) {
+            \core\dataformat::download_data($filename, $dataformat, $columns, $iterator);
+            exit;
+        } else {
+            download_as_dataformat($filename, $dataformat, $columns, $iterator);
+            exit;
+        } 
     }
 }

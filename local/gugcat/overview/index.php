@@ -53,6 +53,7 @@ $rows = grade_aggregation::get_rows($course, $activities, $students);
 $requireresit = optional_param('resit', null, PARAM_NOTAGS);
 $finalrelease = optional_param('finalrelease', null, PARAM_NOTAGS);
 $rowstudentid = optional_param('rowstudentno', null, PARAM_NOTAGS);
+$downloadcsv = optional_param('downloadcsv', null, PARAM_NOTAGS);
 $finalgrades = optional_param_array('finalgrades', null, PARAM_NOTAGS);
 $cminstances = optional_param_array('cminstances', null, PARAM_NOTAGS);
 if(isset($requireresit) && !empty($rowstudentid)){
@@ -73,6 +74,11 @@ if(isset($requireresit) && !empty($rowstudentid)){
     unset($finalrelease);
     unset($finalgrades);
     unset($cminstances);
+    redirect(htmlspecialchars_decode($URL));
+    exit;
+}else if(isset($downloadcsv)){
+    grade_aggregation::export_aggregation_tool($course, $activities, $students);
+    unset($downloadcsv);
     redirect(htmlspecialchars_decode($URL));
     exit;
 }
