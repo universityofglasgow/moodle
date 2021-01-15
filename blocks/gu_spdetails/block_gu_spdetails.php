@@ -24,6 +24,7 @@
  */
 defined('MOODLE_INTERNAL') || die();
 define('SPDETAILS_STRINGS', 'block_gu_spdetails');
+define('EMPTY_VAL', get_string('emptyvalue', SPDETAILS_STRINGS));
 require_once($CFG->libdir.'/gradelib.php');
 require_once($CFG->dirroot . '/grade/querylib.php');
 
@@ -124,8 +125,7 @@ class block_gu_spdetails extends block_base {
                     $mod->dates = self::return_dates($mod->modname, $activity);
                     $mod->dates->formattedduedate = (!empty($mod->dates->duedate)) ?
                                                     userdate($mod->dates->duedate,
-                                                            get_string('convertdate', SPDETAILS_STRINGS)) :
-                                                    get_string('emptyvalue', SPDETAILS_STRINGS);
+                                                             get_string('convertdate', SPDETAILS_STRINGS)) : EMPTY_VAL;
                     $mod->dates->gradingduedate = (isset($mod->dates->gradingduedate)) ? $mod->dates->gradingduedate : '0';
                     $mod->gradingduedate = self::return_gradingduedate($mod->finalgrade, $mod->dates->gradingduedate);
                     $mod->hasfeedback = (!empty($grades->feedback) || !empty($grades->feedbackformat)) ? true : false;
@@ -256,22 +256,26 @@ class block_gu_spdetails extends block_base {
 
     public static function return_assessmenttype($gradecategoryname) {
         $type = strtolower($gradecategoryname);
+        $formative = get_string('formative', SPDETAILS_STRINGS);
+        $summative = get_string('summative', SPDETAILS_STRINGS);
 
-        if(strpos($type, 'formative')) {
-            $assessmenttype = get_string('formative', SPDETAILS_STRINGS);
-        } else if(strpos($type, 'summative')) {
-            $assessmenttype = get_string('summative', SPDETAILS_STRINGS);
+        if($type == $formative || strpos($type, $formative)) {
+            $assessmenttype = ucwords($formative);
+        } else if($type == $summative || strpos($type, $summative)) {
+            $assessmenttype = ucwords($summative);
         } else {
-            $assessmenttype = get_string('emptyvalue', SPDETAILS_STRINGS);
+            $assessmenttype = EMPTY_VAL;
         }
 
         return $assessmenttype;
     }
 
     public static function return_weight($assessmenttype, $aggregation, $aggregationcoef, $aggregationcoef2) {
+        $type = strtolower($assessmenttype);
+        $summative = get_string('summative', SPDETAILS_STRINGS);
         $weight = 0;
 
-        if($assessmenttype == get_string('summative', SPDETAILS_STRINGS)) {
+        if($type === $summative) {
             $weight = ($aggregation == '10') ? (($aggregationcoef > 1) ? $aggregationcoef : $aggregationcoef * 100) :
                       $aggregationcoef2 * 100;
         }
