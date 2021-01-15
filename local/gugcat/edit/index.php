@@ -72,7 +72,7 @@ if ($fromform = $mform->get_data()) {
         $gradereason = local_gugcat::get_reasons()[$fromform->reasons];
     }
     if(!empty($fromform->userfile)){
-        file_save_draft_area_files($fromform->userfile, $PAGE->context->id, 'grade_documentation', 'attachment',
+        file_save_draft_area_files($fromform->userfile, $PAGE->context->id, 'local_gugcat', 'attachment',
                             $fromform->userfile, array('subdirs' => 0));
     }
     $gradeitemid = local_gugcat::add_grade_item($courseid, $gradereason, $module);
