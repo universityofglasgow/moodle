@@ -167,6 +167,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
         //add category id in the url if not null
         if(!is_null($categoryid)){
             $gradeformurl .= '&categoryid=' . $categoryid;
+            $actionurl .= '&categoryid=' . $categoryid;
             $editformurl .= '&categoryid=' . $categoryid;
         }
 
@@ -306,8 +307,8 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $html .= html_writer::start_tag('ul', array('class' => 'dropdown-menu'));
         $link[0] .= '&studentid='.$studentno;
         if($is_aggregrade){
-            $adjustlink = $link . '&setting=' . ADJUST_WEIGHT_FORM;
-            $overridelink = $link . '&setting=' . OVERRIDE_GRADE_FORM;
+            $adjustlink = $link[0] . '&setting=' . ADJUST_WEIGHT_FORM;
+            $overridelink = $link[0] . '&setting=' . OVERRIDE_GRADE_FORM;
             $html .= html_writer::tag('li', get_string('adjustcourseweight', 'local_gugcat'), array('class' => 'dropdown-item', 'onclick' => 'location.href=\''.$adjustlink.'\''));
             $html .= html_writer::tag('li', get_string('overrideggregrade', 'local_gugcat'), array('class' => 'dropdown-item', 'onclick' => 'location.href=\''.$overridelink.'\''));
         }else{
