@@ -98,6 +98,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
                 $historyeditparams .= '&activityid='.$modid.'&cnum='.$row->cnum;
                 $htmlrows .= '<td class="provisionalgrade"><b>'.$row->provisionalgrade.'</b>'.$this->context_actions($row->studentno, $isgradehidden, false, $historyeditparams, false).  $isgradehidden.'</td>';
             }
+            $addformurl .= '&studentid='. $row->studentno;
             $htmlrows .= '<td>
                             <button type="button" class="btn btn-default addnewgrade" onclick="location.href=\''.$addformurl.'\'">
                                 '.get_string('addnewgrade', 'local_gugcat').'
