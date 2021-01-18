@@ -98,14 +98,14 @@
                             {{/gradingduedate.hasgrade}}
                         </td>
                         <td class="td10">
-                            {{#hasfeedback}}
-                                <a href="{{assessmenturl}}">
-                                    {{feedbackduedate}}
+                            {{#feedbackduedate.hasfeedback}}
+                                <a href="{{feedbackurl}}">
+                                    {{feedbackduedate.feedbacktext}}
                                 </a>
-                            {{/hasfeedback}}
-                            {{^hasfeedback}}
-                                {{feedbackduedate}}
-                            {{/hasfeedback}}
+                            {{/feedbackduedate.hasfeedback}}
+                            {{^feedbackduedate.hasfeedback}}
+                                {{feedbackduedate.feedbacktext}}
+                            {{/feedbackduedate.hasfeedback}}
                         </td>
                     </tr>
                 {{/data}}
