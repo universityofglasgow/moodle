@@ -2,6 +2,7 @@ courseIsAscending = true;
 dateIsAscending = true;
 
 function sortByDate(header){
+    changeSelectSortIndex(1)
     sortTable(4, dateIsAscending);
     saveSorts("date", dateIsAscending);
     dateIsAscending = !dateIsAscending;
@@ -15,6 +16,7 @@ function sortByDate(header){
 }
 
 function sortByCourse(header){
+    changeSelectSortIndex(0)
     sortTable(0, courseIsAscending);
     saveSorts("course", courseIsAscending);
     courseIsAscending = !courseIsAscending;
@@ -58,6 +60,11 @@ function sortTable(index, isAscending = true) {
     }
 }
 
+function changeSelectSortIndex(index){
+    selectSort = document.getElementById("gu_spdetails_select_sort");
+    selectSort.selectedIndex  = index;
+}
+
 window.addEventListener("DOMContentLoaded", ()=>{
     sortedBy = localStorage["sortedBy"];
     isAscending = localStorage["isAscending"] == "true";
@@ -69,6 +76,10 @@ window.addEventListener("DOMContentLoaded", ()=>{
             break;
         case "course" :
             courseIsAscending = isAscending;
+            sortByCourse(document.getElementById("gu_spdetails_tableheader_course"));
+            break;
+        default :
+            courseIsAscending = true;
             sortByCourse(document.getElementById("gu_spdetails_tableheader_course"));
             break;
     }
