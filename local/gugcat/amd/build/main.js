@@ -140,7 +140,7 @@ define(['jquery', 'core/str', 'core/modal_factory', 'local_gugcat/modal_gcat' ],
                     ModalFactory.create({
                         type:ModalGcat.TYPE,
                         templateContext: templateContext
-                    }, $("#btn-release"))
+                    }, $("#btn-release").trigger('click'))
                 });
                 break;
             case btn_import:
