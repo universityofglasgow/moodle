@@ -162,6 +162,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
         //add category id in the url if not null
         if(!is_null($categoryid)){
             $gradeformurl .= '&categoryid=' . $categoryid;
+            $actionurl .= '&categoryid=' . $categoryid;
         }
 
         $htmlcolumns = null;
