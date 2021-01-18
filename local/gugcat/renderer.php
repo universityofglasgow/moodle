@@ -204,7 +204,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
                         "></i></td>';
             $htmlrows .= html_writer::tag('td', $row->completed);
             $htmlrows .= ($row->aggregatedgrade->display != get_string('missinggrade', 'local_gugcat')) 
-            ? html_writer::start_tag('td').$row->aggregatedgrade->display.$this->context_actions($row->studentno, null, true, [str_replace('_cnum', $row->cnum, $gradeformurl)], true).html_writer::end_tag('td')
+            ? html_writer::start_tag('td').$row->aggregatedgrade->display.$this->context_actions($row->studentno, null, true, str_replace('_cnum', $row->cnum, $gradeformurl), true).html_writer::end_tag('td')
             : html_writer::tag('td', $row->aggregatedgrade->display);
             $htmlrows .= html_writer::end_tag('tr');
         }
@@ -299,10 +299,10 @@ class local_gugcat_renderer extends plugin_renderer_base {
         return $html;
     }
 
-    private function context_actions($studentno, $ishidden=null, $is_aggregrade = false, $link = [], $is_overviewpage = false, $is_historical = false) {
+    private function context_actions($studentno, $ishidden=null, $is_aggregrade = false, $link = null, $is_overviewpage = false, $is_historical = false) {
         $html = html_writer::tag('i', null, array('class' => 'fa fa-ellipsis-h', 'data-toggle' => 'dropdown'));
         $html .= html_writer::start_tag('ul', array('class' => 'dropdown-menu'));
-        $link[0] .= '&studentid='.$studentno;
+        $link .=  '&studentid='.$studentno;
         if($is_aggregrade){
             $adjustlink = $link. '&setting=' . ADJUST_WEIGHT_FORM;
             $overridelink = $link . '&setting=' . OVERRIDE_GRADE_FORM;
