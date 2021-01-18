@@ -202,10 +202,13 @@ class block_gu_spdetails extends block_base {
                         qo.attempts as `overrideattempts`,
                         qa.attempt, qa.state
                         FROM {quiz} quiz
-                        LEFT JOIN {quiz_overrides} qo ON qo.quiz = quiz.id AND qo.userid = ?
-                        LEFT JOIN {quiz_attempts} qa ON qa.quiz = quiz.id AND qa.attempt = quiz.attempts
+                        LEFT JOIN {quiz_overrides} qo
+                        ON qo.quiz = quiz.id AND qo.userid = ?
+                        LEFT JOIN {quiz_attempts} qa
+                        ON qa.quiz = quiz.id AND qa.attempt = quiz.attempts
+                        AND qa.userid = ?
                         WHERE quiz.id = ? AND quiz.course = ?';
-                $conditions = array($userid, $instance, $courseid);
+                $conditions = array($userid, $userid, $instance, $courseid);
                 $activity = $DB->get_record_sql($sql, $conditions);
                 break;
             case 'workshop':
