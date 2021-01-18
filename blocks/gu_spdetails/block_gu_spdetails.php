@@ -24,6 +24,12 @@
  */
 defined('MOODLE_INTERNAL') || die();
 define('SPDETAILS_LANG', 'block_gu_spdetails');
+define('NON_SUBMISSION', 'NS');
+define('MEDICAL_EXEMPTION', 'MV');
+define('PAGE_FOOTER', '#page-footer');
+
+define('MOD_ASSIGN', 'assign');
+define('MOD_WORKSHOP', 'workshop');
 
 require_once($CFG->libdir.'/gradelib.php');
 require_once($CFG->dirroot . '/grade/querylib.php');
@@ -133,9 +139,12 @@ class block_gu_spdetails extends block_base {
                                                     get_string('emptyvalue', SPDETAILS_LANG);
                     $mod->dates->gradingduedate = (isset($mod->dates->gradingduedate)) ? $mod->dates->gradingduedate : '0';
                     $mod->gradingduedate = self::return_gradingduedate($mod->finalgrade, $mod->dates->gradingduedate);
-                    $mod->hasfeedback = (!empty($mod->grades->feedback) || !empty($mod->grades->feedbackformat)) ? true : false;
-                    $mod->feedbackduedate = self::return_feedbackduedate($mod->hasfeedback, $mod->finalgrade,
+                    $mod->feedback = (!empty($mod->grades->feedback)) ? $mod->grades->feedback :
+                                        (!empty($mod->grades->feedbackformat) ? $mod->grades->feedbackformat : null);
+                    $mod->feedbackduedate = self::return_feedbackduedate($mod->feedback, $mod->finalgrade,
                                                                         $mod->dates->gradingduedate);
+                    $mod->feedbackurl = self::return_feedbackurl($mod->feedbackduedate->hasfeedback, $mod->assessmenturl,
+                                                                 $mod->modname, $mod->id);
                     $mod->status = self::return_status($mod->modname, $mod->finalgrade, $mod->dates, $activity);
 
                     if($isactivityvisible && $isallowedactivity && $mod->isstudent) {
@@ -202,10 +211,13 @@ class block_gu_spdetails extends block_base {
                         qo.attempts as `overrideattempts`,
                         qa.attempt, qa.state
                         FROM {quiz} quiz
-                        LEFT JOIN {quiz_overrides} qo ON qo.quiz = quiz.id AND qo.userid = ?
-                        LEFT JOIN {quiz_attempts} qa ON qa.quiz = quiz.id AND qa.attempt = quiz.attempts
+                        LEFT JOIN {quiz_overrides} qo
+                        ON qo.quiz = quiz.id AND qo.userid = ?
+                        LEFT JOIN {quiz_attempts} qa
+                        ON qa.quiz = quiz.id AND qa.attempt = quiz.attempts
+                        AND qa.userid = ?
                         WHERE quiz.id = ? AND quiz.course = ?';
-                $conditions = array($userid, $instance, $courseid);
+                $conditions = array($userid, $userid, $instance, $courseid);
                 $activity = $DB->get_record_sql($sql, $conditions);
                 break;
             case 'workshop':
@@ -342,10 +354,10 @@ class block_gu_spdetails extends block_base {
 
         if (!empty($finalgrade)){
             $duedateobj->gradetext = $finalgrade;
-        } else if (empty($gradingduedate)){
-            $duedateobj->gradetext = get_string('tobeconfirmed', SPDETAILS_LANG);
-        } else if (time() > $gradingduedate){
-            $duedateobj->gradetext = ucwords(get_string('overdue', SPDETAILS_LANG));
+        } else {
+            $duedateobj->gradetext = (empty($gradingduedate)) ? get_string('tobeconfirmed', SPDETAILS_LANG) :
+                                     ((time() > $gradingduedate) ? ucwords(get_string('overdue', SPDETAILS_LANG)) :
+                                      $duedateobj->gradetext);
         }
 
         return $duedateobj;
@@ -405,19 +417,39 @@ class block_gu_spdetails extends block_base {
         return $values[$grade];
     }
 
-    public static function return_feedbackduedate($hasfeedback, $finalgrade, $gradingduedate) {
-        if ($hasfeedback && !empty($finalgrade)) {
-            return get_string('readfeedback', SPDETAILS_LANG);
-        } else if (!$hasfeedback && !empty($finalgrade)) {
-            return  get_string('nofeedback', SPDETAILS_LANG);
-        } else if (!$hasfeedback && empty($finalgrade) && empty($gradingduedate)) {
-            return get_string('tobeconfirmed', SPDETAILS_LANG);
-        } else if (!$hasfeedback && empty($finalgrade) && time() > $gradingduedate) {
-            return ucwords(get_string('overdue', SPDETAILS_LANG));
-        } else {
-            return get_string('due', SPDETAILS_LANG).
-                   userdate($gradingduedate, get_string('convertdate', SPDETAILS_LANG));
+    public static function return_feedbackduedate($feedback, $finalgrade, $gradingduedate) {
+        $duedateobj = new stdClass();
+        $duedateobj->hasfeedback = (!empty($feedback)) ? true : false;
+        $duedateobj->feedbacktext = get_string('due', SPDETAILS_LANG).
+                                        userdate($gradingduedate, get_string('convertdate', SPDETAILS_LANG));
+
+        if($duedateobj->hasfeedback) {
+            $duedateobj->hasfeedback = ($feedback === MEDICAL_EXEMPTION || $feedback === NON_SUBMISSION) ? false : true;
         }
+
+        if(!empty($finalgrade)) {
+            $duedateobj->feedbacktext = ($duedateobj->hasfeedback) ? get_string('readfeedback', SPDETAILS_LANG) :
+                                        get_string('nofeedback', SPDETAILS_LANG);
+        }else{
+            $duedateobj->feedbacktext = (empty($gradingduedate)) ? get_string('tobeconfirmed', SPDETAILS_LANG) :
+                                        ((time() > $gradingduedate) ? ucwords(get_string('overdue', SPDETAILS_LANG)) :
+                                         $duedateobj->feedbacktext);
+        }
+
+        return $duedateobj;
+    }
+
+    public static function return_feedbackurl($hasfeedback, $assessmenturl, $modname, $cmid) {
+        $feedbackurl = null;
+
+        if($hasfeedback){
+            $feedbackurl = ($modname === MOD_WORKSHOP) ?
+                            new moodle_url('/mod/'.MOD_WORKSHOP.'/submission.php', array('cmid' => $cmid)) :
+                            $assessmenturl;
+            $feedbackurl = $feedbackurl.PAGE_FOOTER;
+        }
+
+        return $feedbackurl;
     }
 
     public static function return_status($modname, $finalgrade, $dates, $activity) {
