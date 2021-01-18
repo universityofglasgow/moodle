@@ -391,8 +391,8 @@ class local_gugcat {
             foreach($gradehistory_arr as $grd){
                 $fields = 'firstname, lastname';
                 if(!is_null($grd->usermodified) && !is_null($grd->rawgrade) && !is_null($grd->finalgrade)){
-                $modby = $DB->get_record(USER, array('id' => $grd->usermodified), $fields, MUST_EXIST);
-                $grd->modby = $modby->lastname . ', '.$modby->firstname;
+                $modby = $DB->get_record(USER, array('id' => $grd->usermodified), $fields);
+                $grd->modby = (isset($modby->lastname) && isset($modby->firstname)) ? $modby->lastname . ', '.$modby->firstname : null;
                 $grd->notes = !is_null($grd->feedback) ? $grd->feedback : 'N/A - '.$gradeitem->itemname;
                 $grd->type = ($gradeitem->itemname == get_string('moodlegrade', 'local_gugcat')) ? 
                 $gradeitem->itemname. '<br>'.date("j/n/Y", strtotime(userdate($grd->timemodified)))
