@@ -140,9 +140,9 @@ class block_gu_spdetails extends block_base {
                     $mod->dates->gradingduedate = (isset($mod->dates->gradingduedate)) ? $mod->dates->gradingduedate : '0';
                     $mod->gradingduedate = self::return_gradingduedate($mod->finalgrade, $mod->dates->gradingduedate);
                     $mod->feedback = (!empty($mod->grades->feedback)) ? $mod->grades->feedback :
-                                        (!empty($mod->grades->feedbackformat) ? $mod->grades->feedbackformat : null);
+                                     (!empty($mod->grades->feedbackformat) ? $mod->grades->feedbackformat : null);
                     $mod->feedbackduedate = self::return_feedbackduedate($mod->feedback, $mod->finalgrade,
-                                                                        $mod->dates->gradingduedate);
+                                                                         $mod->dates->gradingduedate);
                     $mod->feedbackurl = self::return_feedbackurl($mod->feedbackduedate->hasfeedback, $mod->assessmenturl,
                                                                  $mod->modname, $mod->id);
                     $mod->status = self::return_status($mod->modname, $mod->finalgrade, $mod->dates, $activity);
@@ -421,10 +421,11 @@ class block_gu_spdetails extends block_base {
         $duedateobj = new stdClass();
         $duedateobj->hasfeedback = (!empty($feedback)) ? true : false;
         $duedateobj->feedbacktext = get_string('due', SPDETAILS_LANG).
-                                        userdate($gradingduedate, get_string('convertdate', SPDETAILS_LANG));
+                                    userdate($gradingduedate, get_string('convertdate', SPDETAILS_LANG));
 
         if($duedateobj->hasfeedback) {
-            $duedateobj->hasfeedback = ($feedback === MEDICAL_EXEMPTION || $feedback === NON_SUBMISSION) ? false : true;
+            $duedateobj->hasfeedback = (($feedback === MEDICAL_EXEMPTION || $feedback === NON_SUBMISSION) &&
+                                        empty($finalgrade)) ? false : true;
         }
 
         if(!empty($finalgrade)) {
