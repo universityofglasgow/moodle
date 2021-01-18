@@ -24,7 +24,7 @@
  */
 
 use local_gugcat\grade_aggregation;
-require_once(__DIR__ . '/../../../../config.php');
+require_once(__DIR__ . '/../../../config.php');
 require_once($CFG->dirroot . '/local/gugcat/locallib.php');
 
 $courseid = required_param('id', PARAM_INT);
@@ -34,7 +34,7 @@ $cnum = required_param('cnum', PARAM_INT);
 
 require_login($courseid);
 $urlparams = array('id' => $courseid, 'activityid' => $activityid, 'studentid' => $studentid, 'cnum' => $cnum);
-$URL = new moodle_url('/local/gugcat/overview/history/index.php', $urlparams);
+$URL = new moodle_url('/local/gugcat/history/index.php', $urlparams);
 $PAGE->set_url($URL);
 $PAGE->set_title(get_string('gugcat', 'local_gugcat'));
 $PAGE->navbar->ignore_active();
