@@ -24,12 +24,16 @@
  */
 defined('MOODLE_INTERNAL') || die();
 define('SPDETAILS_LANG', 'block_gu_spdetails');
-define('NON_SUBMISSION', 'NS');
-define('MEDICAL_EXEMPTION', 'MV');
-define('PAGE_FOOTER', '#page-footer');
+
+define('FEEDBACK_NS', 'NS');
+define('FEEDBACK_MV', 'MV');
 
 define('MOD_ASSIGN', 'assign');
+define('MOD_FORUM', 'forum');
+define('MOD_QUIZ', 'quiz');
 define('MOD_WORKSHOP', 'workshop');
+
+define('PAGE_FOOTER', '#page-footer');
 
 require_once($CFG->libdir.'/gradelib.php');
 require_once($CFG->dirroot . '/grade/querylib.php');
@@ -99,7 +103,7 @@ class block_gu_spdetails extends block_base {
 
     public static function return_assessments($courseids, $userid) {
         $assessments = array();
-        $allowedactivities = array('assign', 'quiz', 'forum', 'workshop');
+        $allowedactivities = array(MOD_ASSIGN, MOD_QUIZ, MOD_FORUM, MOD_WORKSHOP);
 
         foreach($courseids as $courseid) {
             $mods = grade_get_gradable_activities($courseid);
@@ -140,7 +144,8 @@ class block_gu_spdetails extends block_base {
                     $mod->dates->gradingduedate = (isset($mod->dates->gradingduedate)) ? $mod->dates->gradingduedate : '0';
                     $mod->gradingduedate = self::return_gradingduedate($mod->finalgrade, $mod->dates->gradingduedate);
                     $mod->feedback = (!empty($mod->grades->feedback)) ? $mod->grades->feedback :
-                                     (!empty($mod->grades->feedbackformat) ? $mod->grades->feedbackformat : null);
+                                     ((!empty($mod->grades->feedbackformat) && $mod->modname === MOD_WORKSHOP) ?
+                                      $mod->grades->feedbackformat : null);
                     $mod->feedbackduedate = self::return_feedbackduedate($mod->feedback, $mod->finalgrade,
                                                                          $mod->dates->gradingduedate);
                     $mod->feedbackurl = self::return_feedbackurl($mod->feedbackduedate->hasfeedback, $mod->assessmenturl,
@@ -180,7 +185,7 @@ class block_gu_spdetails extends block_base {
         $activity = new stdClass();
 
         switch($modname) {
-            case 'assign':
+            case MOD_ASSIGN:
                 $sql = 'SELECT assign.id, assign.name, assign.duedate,
                            assign.allowsubmissionsfromdate as `startdate`, assign.cutoffdate,
                            assign.gradingduedate, assign.teamsubmissiongroupingid,
@@ -198,12 +203,12 @@ class block_gu_spdetails extends block_base {
                 $conditions = array($userid, $userid, $userid, $instance, $courseid);
                 $activity = $DB->get_record_sql($sql, $conditions);
                 break;
-            case 'forum':
+            case MOD_FORUM:
                 $conditions = array('id' => $instance, 'course' => $courseid);
                 $columns = 'id, name, duedate, cutoffdate, assessed, grade_forum';
                 $activity = $DB->get_record('forum', $conditions, $columns);
                 break;
-            case 'quiz':
+            case MOD_QUIZ:
                 $sql = 'SELECT quiz.id, quiz.name, quiz.timeopen as `startdate`,
                         quiz.timeclose as `duedate`, quiz.attempts,
                         qo.timeopen as `overridestartdate`,
@@ -220,7 +225,7 @@ class block_gu_spdetails extends block_base {
                 $conditions = array($userid, $userid, $instance, $courseid);
                 $activity = $DB->get_record_sql($sql, $conditions);
                 break;
-            case 'workshop':
+            case MOD_WORKSHOP:
                 $sql = 'SELECT workshop.id, workshop.name, workshop.submissionstart as `startdate`,
                         workshop.submissionend as `duedate`, workshop.assessmentstart,
                         workshop.assessmentend as `gradingduedate`,
@@ -310,7 +315,7 @@ class block_gu_spdetails extends block_base {
         $date->cutoffdate = (isset($activity->cutoffdate)) ? $activity->cutoffdate : '0';
 
         switch($modname) {
-            case 'assign':
+            case MOD_ASSIGN:
                 if(!empty($activity->overrideduedate) || !empty($activity->extensionduedate)) {
                     $date->duedate = ($activity->overrideduedate >= $activity->extensionduedate) ?
                                      $activity->overrideduedate : $activity->extensionduedate;
@@ -323,7 +328,7 @@ class block_gu_spdetails extends block_base {
                                    $activity->overridecutoffdate : $activity->cutoffdate;
                 $date->gradingduedate = (!empty($activity->gradingduedate)) ? $activity->gradingduedate : '0';
                 break;
-            case 'quiz':
+            case MOD_QUIZ:
                 if($activity->overrideduedate) {
                     $date->duedate = $activity->overrideduedate;
                     $date->isdueextended = true;
@@ -333,12 +338,12 @@ class block_gu_spdetails extends block_base {
                                    $activity->overridestartdate : $activity->startdate;
                 $date->gradingduedate = (!(empty($date->duedate)) ? $date->duedate : '0');
                 break;
-            case 'forum':
+            case MOD_FORUM:
                 $date->gradingduedate = (!empty($activity->cutoffdate)) ?
                                         $activity->cutoffdate :
                                         (!(empty($date->duedate)) ? $date->duedate : '0');
                 break;
-            case 'workshop':
+            case MOD_WORKSHOP:
                 $date->gradingduedate = (!empty($activity->gradingduedate)) ? $activity->gradingduedate : '0';
                 break;
         }
@@ -424,7 +429,7 @@ class block_gu_spdetails extends block_base {
                                     userdate($gradingduedate, get_string('convertdate', SPDETAILS_LANG));
 
         if($duedateobj->hasfeedback) {
-            $duedateobj->hasfeedback = (($feedback === MEDICAL_EXEMPTION || $feedback === NON_SUBMISSION) &&
+            $duedateobj->hasfeedback = (($feedback === FEEDBACK_MV || $feedback === FEEDBACK_NS) &&
                                         empty($finalgrade)) ? false : true;
         }
 
@@ -469,7 +474,7 @@ class block_gu_spdetails extends block_base {
                         $status->text = get_string('overdue', SPDETAILS_LANG);
                         $status->suffix = get_string('class_overduelinked', SPDETAILS_LANG);
                     }else{
-                        if($modname === 'assign' && $activity->status === 'submitted') {
+                        if($modname === MOD_ASSIGN && $activity->status === 'submitted') {
                             $status->text = get_string('submitted', SPDETAILS_LANG);
                             $status->suffix = get_string('submitted', SPDETAILS_LANG);
                             $status->hasurl = false;
