@@ -96,7 +96,6 @@ define(['jquery', 'core/str', 'core/modal_factory', 'local_gugcat/modal_gcat' ],
         var btn_coursegradeform = document.getElementById('btn-coursegradeform');
         var btn_download = document.getElementById('btn-download');
         var btn_finalrelease = document.getElementById('btn-finalrelease');
-        var import_submit = document.getElementById('importgrades-submit');
         var gcat_tbl_form = document.getElementById('multigradesform');
         switch (event.target) {
             case btn_saveadd:
@@ -119,7 +118,7 @@ define(['jquery', 'core/str', 'core/modal_factory', 'local_gugcat/modal_gcat' ],
                         component: 'local_gugcat'
                     },
                     {
-                        key: 'cancelrelaseprovisionalgrade',
+                        key: 'cancelmodal',
                         component: 'local_gugcat'
                     },
                     {
@@ -127,32 +126,49 @@ define(['jquery', 'core/str', 'core/modal_factory', 'local_gugcat/modal_gcat' ],
                         component: 'local_gugcat'
                     }
                 ];
-
                 Str.get_strings(strings).then(function(langStrings){
-                    
                     var templateContext = {
                         bodycontent: langStrings[0],
                         strcancel: langStrings[1], 
                         strconfirm: langStrings[2], 
                         dataaction: 'release'
                     };
-
                     ModalFactory.create({
                         type:ModalGcat.TYPE,
                         templateContext: templateContext
-                    }, $("#btn-release").trigger('click'))
+                    }).done(modal => modal.show());
                 });
                 break;
             case btn_import:
                 if(!$(".gradeitems").text().includes("Moodle Grade[Date]")){
-                    Str.get_string('confirmimport', 'local_gugcat').then(function(msg) {
-                        var confirmation = confirm(msg);
-                        if(confirmation == true) {
-                            import_submit.click();
+                    var strings = [
+                        {
+                            key: 'modalimportgrades',
+                            component: 'local_gugcat'
+                        },
+                        {
+                            key: 'cancelmodal',
+                            component: 'local_gugcat'
+                        },
+                        {
+                            key: 'confirmimport',
+                            component: 'local_gugcat'
                         }
+                    ];
+                    Str.get_strings(strings).then(function(langStrings){
+                        var templateContext = {
+                            bodycontent: langStrings[0],
+                            strcancel: langStrings[1], 
+                            strconfirm: langStrings[2], 
+                            dataaction: 'importgrades'
+                        };
+                        ModalFactory.create({
+                            type:ModalGcat.TYPE,
+                            templateContext: templateContext
+                        }).done(modal => modal.show());
                     });
                 }else{
-                    import_submit.click();
+                    document.getElementById('importgrades-submit').click();
                 }
                 break;
             case btn_coursegradeform:
@@ -169,10 +185,31 @@ define(['jquery', 'core/str', 'core/modal_factory', 'local_gugcat/modal_gcat' ],
                 }
                 break;
             case btn_finalrelease:
-                Str.get_string('confirmfinalrelease', 'local_gugcat').then(function(msg) {
-                    if(confirm(msg) == true) {
-                        document.getElementById('finalrelease-submit').click();
+                var strings = [
+                    {
+                        key: 'modalreleasefinalgrades',
+                        component: 'local_gugcat'
+                    },
+                    {
+                        key: 'cancelmodal',
+                        component: 'local_gugcat'
+                    },
+                    {
+                        key: 'confirmfinalrelease',
+                        component: 'local_gugcat'
                     }
+                ];
+                Str.get_strings(strings).then(function(langStrings){
+                    var templateContext = {
+                        bodycontent: langStrings[0],
+                        strcancel: langStrings[1], 
+                        strconfirm: langStrings[2], 
+                        dataaction: 'finalrelease'
+                    };
+                    ModalFactory.create({
+                        type:ModalGcat.TYPE,
+                        templateContext: templateContext
+                    }).done(modal => modal.show());
                 });
                 break;
             case btn_download:

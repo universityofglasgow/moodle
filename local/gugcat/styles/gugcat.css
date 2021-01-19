@@ -1,6 +1,7 @@
 @import url("table-tabs.css");
 @import url("mform-styles.css");
 @import url("custom-select.css");
+@import url("modal.css");
 
 .gcat-title{
     font-size: 18px;
@@ -51,11 +52,6 @@ td > i, th > i {
     line-height: 21px;
     letter-spacing: 0em;
     text-align: center;
-}
-
-.btn-default-padding {
-    padding-left: 24.5px;
-    padding-right: 24.5px;
 }
 
 .btn-default:hover {
@@ -207,22 +203,4 @@ td > .grade-discrepancy{
 
 .hide-show-grade {
     display: none;
-}
-
-.modal-body-txt {
-    color: black;
-    font-size: 36.4px;
-}
-
-.modal-header {
-    display: none;
-}
-
-.modal-footer {
-    border-top-color: white;
-}
-
-.btn-cancel-alignment {
-    position:relative;
-    left:-25px;
 }
