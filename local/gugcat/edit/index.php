@@ -39,6 +39,8 @@ $urlparams = array('id' => $courseid, 'activityid' => $activityid, 'studentid' =
 $URL = new moodle_url('/local/gugcat/edit/index.php', $urlparams);
 $PAGE->set_url($URL);
 $PAGE->set_title(get_string('gugcat', 'local_gugcat'));
+// $PAGE->navbar->ignore_active();
+// $PAGE->navbar->add(get_string('navname', 'local_gugcat'), $URL);
 
 $PAGE->requires->css('/local/gugcat/styles/gugcat.css');
 $PAGE->requires->js_call_amd('local_gugcat/main', 'init');
@@ -95,6 +97,7 @@ if ($fromform = $mform->get_data()) {
 }   
 
 echo $OUTPUT->header();
+$PAGE->set_cm($module);
 $renderer = $PAGE->get_renderer('local_gugcat');
 echo $renderer->display_add_edit_grade_form($course, $student, $gradeversions, false);
 $mform->display();

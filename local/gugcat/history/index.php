@@ -60,6 +60,7 @@ local_gugcat::set_prv_grade_id($courseid, $module);
 $history = local_gugcat::get_grade_history($courseid, $module, $studentid);
 $student->cnum = $cnum;
 echo $OUTPUT->header();
+$PAGE->set_cm($module);
 $renderer = $PAGE->get_renderer('local_gugcat');
 echo $renderer->display_grade_history($student, $module->name, $history);
 echo $OUTPUT->footer();

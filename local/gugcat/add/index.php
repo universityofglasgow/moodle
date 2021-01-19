@@ -85,9 +85,8 @@ if ($fromform = $mform->get_data()) {
 }   
 
 echo $OUTPUT->header();
+$PAGE->set_cm($module);
 $renderer = $PAGE->get_renderer('local_gugcat');
 echo $renderer->display_add_edit_grade_form($course, $student, $gradeversions, true);
 $mform->display();
 echo $OUTPUT->footer();
-
-
