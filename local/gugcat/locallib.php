@@ -45,8 +45,6 @@ define('UNDER_INVESTIGATION', -6);
 define('AU', -7);
 define('FC', -8);
 
-define('GCAT_SCALE', 'UofG 22-Point Scale (Do NOT use if you are grading in Feedback Studio)');
-
 require_once($CFG->libdir.'/gradelib.php');
 require_once($CFG->dirroot . '/grade/querylib.php');
 require_once($CFG->libdir.'/grade/grade_item.php');
@@ -124,14 +122,6 @@ class local_gugcat {
         return $gradeitems;
     }
 
-    /**
-     * Returns the scale id used for GCAT
-     */
-    public static function get_gcat_scaleid(){
-        global $DB;
-        return $DB->get_field('scale', 'id', array('name' => GCAT_SCALE, 'courseid' => '0'));
-    }
-
     public static function compare_iteminfo(){
         global $DB;
         return $DB->sql_compare_text('iteminfo') . ' = :iteminfo';
@@ -164,7 +154,7 @@ class local_gugcat {
 
     public static function get_gcat_grade_category_id($courseid){
         global $DB;
-        $grdcategorystr = get_string('local_gugcat', 'grade_category');
+        $grdcategorystr = get_string('gcat_category', 'local_gugcat');
         $categoryid = $DB->get_field('grade_categories', 'id', array('fullname' => $grdcategorystr, 'courseid' => $courseid));
         if (empty($categoryid)){
             $grade_category = new grade_category(array('courseid'=>$courseid), false);
@@ -203,12 +193,8 @@ class local_gugcat {
         }else{
             // check if gradeitem already exists using $itemname, $courseid, $activityid
             if(!$gradeitemid = self::get_grade_item_id($courseid, $mod->id, $itemname)){
-                $scaleid = $mod->gradeitem->scaleid;
-                if (self::is_grademax22($mod->gradeitem->gradetype, $mod->gradeitem->grademax)){
-                    $scaleid = self::get_gcat_scaleid();
-                }
                 $params_mod = [
-                    'scaleid' => $scaleid,
+                    'scaleid' => $mod->gradeitem->scaleid,
                     'grademin' => 1,
                     'grademax' => sizeof(self::$GRADES),
                     'gradetype' => 2,
@@ -316,14 +302,23 @@ class local_gugcat {
 
     public static function set_grade_scale($scaleid){
         global $DB;
-
         $scalegrades = array();
-        if($scale = $DB->get_record('scale', array('id'=>$scaleid), '*')){
-        $scalegrades = make_menu_from_list($scale->scale); 
+        if(is_null($scaleid)){
+            $scalegrades = self::get_gcat_scale();
+        }else{
+            if($scale = $DB->get_record('scale', array('id'=>$scaleid), '*')){
+                $scalegrades = make_menu_from_list($scale->scale); 
+            }
         }
         $scalegrades[NON_SUBMISSION] = NON_SUBMISSION_AC;
         $scalegrades[MEDICAL_EXEMPTION] = MEDICAL_EXEMPTION_AC;
         self::$GRADES = $scalegrades;
+    }
+
+    public static function get_gcat_scale(){
+        $json = file_get_contents('gcat_scale.json');
+        $obj = json_decode($json);
+        return array_filter(array_merge(array(0), $obj->schedule_A));//starts 1 => H
     }
 
     public static function notify_success($stridentifier){

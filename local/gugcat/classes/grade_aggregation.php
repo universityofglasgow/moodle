@@ -102,7 +102,7 @@ class grade_aggregation{
                 : ((isset($gb) && !is_null($gb->grade)) ? $gb->grade : null));                
                 $scaleid = $item->scaleid;
                 if (is_null($scaleid) && local_gugcat::is_grademax22($item->gradeitem->gradetype, $item->gradeitem->grademax)){
-                    $scaleid = local_gugcat::get_gcat_scaleid();
+                    $scaleid = null;
                 }
                 local_gugcat::set_grade_scale($scaleid);
                 $grade = is_null($grd) ? get_string('nograderecorded', 'local_gugcat') : local_gugcat::convert_grade($grd);
@@ -130,8 +130,7 @@ class grade_aggregation{
             ($gbaggregatedgrade->overridden == 0) ? local_gugcat::update_grade($student->id, $aggradeid, $sumaggregated) : null;
             $aggrade = ($gbaggregatedgrade->overridden == 0) ? round($rawaggrade) + 1 : $rawaggrade; //convert back to moodle scale
             if(!(max(array_keys(local_gugcat::$GRADES)) >= 22)){
-                $gcatscaleid = local_gugcat::get_gcat_scaleid();
-                local_gugcat::set_grade_scale($gcatscaleid);
+                local_gugcat::set_grade_scale(null);
             }
             $aggrdobj = new stdClass();
             $aggrdobj->grade = local_gugcat::convert_grade($aggrade);
