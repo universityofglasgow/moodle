@@ -60,6 +60,7 @@ class grade_aggregation{
      */
     public static function get_rows($course, $modules, $students){
         global $DB, $aggradeid;
+        $categoryid = optional_param('categoryid', '0', PARAM_INT);
         //get grade item id for aggregated grade
         $aggradeid = local_gugcat::add_grade_item($course->id, get_string('aggregatedgrade', 'local_gugcat'), null);
         $rows = array();
@@ -124,7 +125,7 @@ class grade_aggregation{
                 $grdobj->weight =  round((float)$weight * 100 );
                 array_push($gradecaptureitem->grades, $grdobj);
             }
-            $gradecaptureitem->resit = (preg_match('/\b'.$course->categoryid.'/i', $gbaggregatedgrade->information) ? $gbaggregatedgrade->information : null);
+            $gradecaptureitem->resit = (preg_match('/\b'.$categoryid.'/i', $gbaggregatedgrade->information) ? $gbaggregatedgrade->information : null);
             $gradecaptureitem->completed = round((float)$floatweight * 100 ) . '%';
             $rawaggrade = ($gbaggregatedgrade->overridden == 0) ? $sumaggregated : $gbaggregatedgrade->finalgrade;
             ($gbaggregatedgrade->overridden == 0) ? local_gugcat::update_grade($student->id, $aggradeid, $sumaggregated) : null;
@@ -147,18 +148,19 @@ class grade_aggregation{
         return $rows;
     }
 
-    public static function require_resit($studentno, $category=0){
+    public static function require_resit($studentno){
         global $aggradeid, $USER;
 
+        $categoryid = optional_param('categoryid', '0', PARAM_INT);
         $grade_ = new grade_grade(array('userid' => $studentno, 'itemid' => $aggradeid), true);
         $grade_->usermodified = $USER->id;
         $grade_->itemid = $aggradeid;
         $grade_->userid = $studentno;
         $grade_->timemodified = time();
-        if(preg_match('/\b'.$category.'/i', $grade_->information))
-            $grade_->information = preg_replace('/\b'.$category.'/i', '', $grade_->information);
+        if(preg_match('/\b'.$categoryid.'/i', $grade_->information))
+            $grade_->information = preg_replace('/\b'.$categoryid.'/i', '', $grade_->information);
         else
-            $grade_->information .= ' '.$category;
+            $grade_->information .= ' '.$categoryid;
 
         return $grade_->update();    
     }
