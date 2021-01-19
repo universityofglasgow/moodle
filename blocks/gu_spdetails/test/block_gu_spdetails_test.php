@@ -286,6 +286,7 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $date2->isdueextended = true;
         $activity2 = new stdClass();
         $activity2->status = 'submitted';
+        $activity2->nosubmissions = '0';
         $returned2 = $this->spdetails->return_status('assign', null, $date2, $activity2);
         $this->assertEquals($expected2, $returned2);
 
@@ -296,6 +297,7 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $date3 = $date2;
         $date3->isdueextended = false;
         $activity3 = new stdClass();
+        $activity3->nosubmissions = '0';
         $activity3->status = 'submitted';
         $returned3 = $this->spdetails->return_status('assign', null, $date3, $activity3);
         $this->assertEquals($expected3, $returned3);
@@ -337,6 +339,17 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $date7->cutoffdate = time() - 1;
         $returned7 = $this->spdetails->return_status('', null, $date7, new stdClass());
         $this->assertEquals($expected7, $returned7);
+
+        $expected8 = new stdClass();
+        $expected8->text = get_string('submission_unavailable', $lang);
+        $expected8->suffix = get_string('unavailable', $lang);
+        $expected8->hasurl = false;
+        $activity8 = new stdClass();
+        $activity8->status = '';
+        $activity8->nosubmissions = '1';
+        $date8 = $date7;
+        $returned8 = $this->spdetails->return_status('assign', null, $date8, $activity8);
+        $this->assertEquals($expected8, $returned8);
     }
 
     public function test_retrieve_grades(){
