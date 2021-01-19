@@ -73,7 +73,7 @@ class grade_aggregation{
             $prvgrdid = local_gugcat::set_prv_grade_id($course->id, $mod);
             $sort = 'id';
             $fields = 'userid, itemid, id, rawgrade, finalgrade, information, timemodified';
-            $grades->provisional = $DB->get_records(GRADE_GRADES, array('itemid' => $prvgrdid), $sort, $fields);
+            $grades->provisional = $DB->get_records('grade_grades', array('itemid' => $prvgrdid), $sort, $fields);
             //get grades from gradebook
             $gbgrades = grade_get_grades($course->id, 'mod', $mod->modname, $mod->instance, array_keys($students));
             $grades->gradebook = isset($gbgrades->items[0]) ? $gbgrades->items[0]->grades : null;
@@ -89,7 +89,7 @@ class grade_aggregation{
             $gradecaptureitem->surname = $student->lastname;
             $gradecaptureitem->forename = $student->firstname;
             $gradecaptureitem->grades = array();
-            $gbaggregatedgrade = $DB->get_record(GRADE_GRADES, array('itemid'=>$aggradeid, 'userid'=>$student->id));
+            $gbaggregatedgrade = $DB->get_record('grade_grades', array('itemid'=>$aggradeid, 'userid'=>$student->id));
             $floatweight = 0;
             $sumaggregated = 0;
             foreach ($gradebook as $item) {
@@ -203,7 +203,7 @@ class grade_aggregation{
                         break;
                 }
                 if($gradeitem->update_final_grade($id, $grade, null, null, FORMAT_MOODLE, $USER->id)){
-                    $DB->set_field_select(GRADE_GRADES, 'information', FINAL_GRADE, "itemid = $gradeitem->id AND userid = $id");
+                    $DB->set_field_select('grade_grades', 'information', 'final', "itemid = $gradeitem->id AND userid = $id");
                 }
             }         
         }

@@ -208,7 +208,7 @@ class grade_capture_testcase extends advanced_testcase {
         ];
         $DB->insert_records('grade_grades', $data);
         grade_capture::set_provisional_weights($this->course->id, array($this->cm), $this->students);
-        $prvweight = $DB->get_field(GRADE_GRADES, 'information', array('itemid' => $this->provisionalgi, 'userid' => $this->student->id));
+        $prvweight = $DB->get_field('grade_grades', 'information', array('itemid' => $this->provisionalgi, 'userid' => $this->student->id));
         $this->assertEquals($prvweight, $expectedweight); //assert provisional grade_grade copied weight from main act
     }
 }

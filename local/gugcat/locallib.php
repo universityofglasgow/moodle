@@ -27,15 +27,6 @@ use local_gugcat\grade_aggregation;
 
 defined('MOODLE_INTERNAL') || die();
 
-//tables used in db
-define('GRADE_GRADES', 'grade_grades');
-define('GRADE_ITEMS', 'grade_items');
-define('GRADE_CATEGORIES', 'grade_categories');
-define('GRADE_GRADES_HISTORY', 'grade_grades_history');
-define('SCALE', 'scale');
-define('USER', 'user');
-define ('FILES', 'files');
-
 //Administrative grades at Assessment Level
 define('NON_SUBMISSION_AC', 'NS');
 define('MEDICAL_EXEMPTION_AC', 'MV');
@@ -54,9 +45,7 @@ define('UNDER_INVESTIGATION', -6);
 define('AU', -7);
 define('FC', -8);
 
-define('FINAL_GRADE', 'Final');
 define('GCAT_SCALE', 'UofG 22-Point Scale (Do NOT use if you are grading in Feedback Studio)');
-define('GCAT_GRADE_CATEGORY', 'DO NOT USE');
 
 require_once($CFG->libdir.'/gradelib.php');
 require_once($CFG->dirroot . '/grade/querylib.php');
@@ -122,11 +111,11 @@ class local_gugcat {
     public static function get_grade_grade_items($course, $module){
         global $DB;
         $select = 'courseid = '.$course->id.' AND '.self::compare_iteminfo();
-        $gradeitems = $DB->get_records_select(GRADE_ITEMS, $select, ['iteminfo' => $module->id]);
+        $gradeitems = $DB->get_records_select('grade_items', $select, ['iteminfo' => $module->id]);
         $sort = 'id';
         $fields = 'userid, itemid, id, rawgrade, finalgrade, timemodified, hidden';
         foreach($gradeitems as $item) {
-            $grades_arr = $DB->get_records(GRADE_GRADES, array('itemid' => $item->id), $sort, $fields);
+            $grades_arr = $DB->get_records('grade_grades', array('itemid' => $item->id), $sort, $fields);
             foreach($grades_arr as $grditem) {
                 $grditem->grade = is_null($grditem->finalgrade) ? $grditem->rawgrade : $grditem->finalgrade;
             }
@@ -140,7 +129,7 @@ class local_gugcat {
      */
     public static function get_gcat_scaleid(){
         global $DB;
-        return $DB->get_field(SCALE, 'id', array('name' => GCAT_SCALE, 'courseid' => '0'));
+        return $DB->get_field('scale', 'id', array('name' => GCAT_SCALE, 'courseid' => '0'));
     }
 
     public static function compare_iteminfo(){
@@ -163,7 +152,7 @@ class local_gugcat {
             'itemname' => $itemname,
             'iteminfo' => $modid
         ];
-        return $DB->get_field_select(GRADE_ITEMS, 'id', $select, $params);
+        return $DB->get_field_select('grade_items', 'id', $select, $params);
     }
 
     public static function is_grademax22($gradetype, $grademax){
@@ -175,12 +164,13 @@ class local_gugcat {
 
     public static function get_gcat_grade_category_id($courseid){
         global $DB;
-        $categoryid = $DB->get_field(GRADE_CATEGORIES, 'id', array('fullname' => GCAT_GRADE_CATEGORY, 'courseid' => $courseid));
+        $grdcategorystr = get_string('local_gugcat', 'grade_category');
+        $categoryid = $DB->get_field('grade_categories', 'id', array('fullname' => $grdcategorystr, 'courseid' => $courseid));
         if (empty($categoryid)){
             $grade_category = new grade_category(array('courseid'=>$courseid), false);
             $grade_category->apply_default_settings();
             $grade_category->apply_forced_settings();
-            $grade_category->fullname = GCAT_GRADE_CATEGORY;
+            $grade_category->fullname = $grdcategorystr;
             $grade_category->hidden = 1;
             grade_category::set_properties($grade_category, $grade_category->get_record_data());
             $grade_category->insert();
@@ -383,15 +373,15 @@ class local_gugcat {
     public static function get_grade_history($courseid, $module, $studentid){
         global $DB;
         $select = 'courseid = '.$courseid.' AND '.self::compare_iteminfo();
-        $gradeitems = $DB->get_records_select(GRADE_ITEMS, $select, ['iteminfo' => $module->id]);
+        $gradeitems = $DB->get_records_select('grade_items', $select, ['iteminfo' => $module->id]);
         unset($gradeitems[self::$PRVGRADEID]);
         $grades_arr = array();
         foreach($gradeitems as $gradeitem){
-            $gradehistory_arr = $DB->get_records(GRADE_GRADES_HISTORY, array('userid'=>$studentid, 'itemid'=>$gradeitem->id), MUST_EXIST);
+            $gradehistory_arr = $DB->get_records('grade_grades_history', array('userid'=>$studentid, 'itemid'=>$gradeitem->id), MUST_EXIST);
             foreach($gradehistory_arr as $grd){
                 $fields = 'firstname, lastname';
                 if(!is_null($grd->usermodified) && !is_null($grd->rawgrade) && !is_null($grd->finalgrade)){
-                $modby = $DB->get_record(USER, array('id' => $grd->usermodified), $fields);
+                $modby = $DB->get_record('user', array('id' => $grd->usermodified), $fields);
                 $grd->modby = (isset($modby->lastname) && isset($modby->firstname)) ? $modby->lastname . ', '.$modby->firstname : null;
                 $grd->notes = !is_null($grd->feedback) ? $grd->feedback : 'N/A - '.$gradeitem->itemname;
                 $grd->type = ($gradeitem->itemname == get_string('moodlegrade', 'local_gugcat')) ? 
@@ -403,7 +393,7 @@ class local_gugcat {
                 if(!is_null($grd->information)){
                     $documentfields = 'contextid, component, filearea, itemid, filename';
                     $selectdocs = 'filename <> "." AND itemid='.$grd->information.' AND '.' filearea="attachment"'; 
-                    if($docs = $DB->get_record_select(FILES, $selectdocs, null, $documentfields)){
+                    if($docs = $DB->get_record_select('files', $selectdocs, null, $documentfields)){
                         $grd->docs = moodle_url::make_pluginfile_url($docs->contextid, $docs->component, $docs->filearea, $docs->itemid, '/', $docs->filename);
                         $grd->docname = $docs->filename;
                     }
