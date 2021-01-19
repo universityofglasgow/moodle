@@ -108,4 +108,4 @@ $string['gi_secondgrade'] = 'Second Grade';
 $string['gi_thirdgrade'] = 'Third Grade';
 
 //gcat grade category
-$string['grade_category'] = 'DO NOT USE';
+$string['gcat_category'] = 'DO NOT USE';
