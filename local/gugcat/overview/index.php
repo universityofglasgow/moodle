@@ -46,6 +46,7 @@ $coursecontext = context_course::instance($courseid);
 $PAGE->set_context($coursecontext);
 $PAGE->set_course($course);
 $PAGE->set_heading($course->fullname);
+$course->categoryid = !is_null($categoryid) ? $categoryid : 0;  
 $students = get_enrolled_users($coursecontext, 'moodle/competency:coursecompetencygradable');
 $activities = local_gugcat::get_activities($courseid);
 $rows = grade_aggregation::get_rows($course, $activities, $students);
@@ -57,7 +58,7 @@ $downloadcsv = optional_param('downloadcsv', null, PARAM_NOTAGS);
 $finalgrades = optional_param_array('finalgrades', null, PARAM_NOTAGS);
 $cminstances = optional_param_array('cminstances', null, PARAM_NOTAGS);
 if(isset($requireresit) && !empty($rowstudentid)){
-    grade_aggregation::require_resit($rowstudentid);
+    grade_aggregation::require_resit($rowstudentid, (!is_null($categoryid) ? $categoryid : 0));
     unset($requireresit);
     unset($rowstudentid);
     redirect(htmlspecialchars_decode($URL));

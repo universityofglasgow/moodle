@@ -124,7 +124,7 @@ class grade_aggregation{
                 $grdobj->weight =  round((float)$weight * 100 );
                 array_push($gradecaptureitem->grades, $grdobj);
             }
-            $gradecaptureitem->resit = $gbaggregatedgrade->information;
+            $gradecaptureitem->resit = (preg_match('/\b'.$course->categoryid.'/i', $gbaggregatedgrade->information) ? $gbaggregatedgrade->information : null);
             $gradecaptureitem->completed = round((float)$floatweight * 100 ) . '%';
             $rawaggrade = ($gbaggregatedgrade->overridden == 0) ? $sumaggregated : $gbaggregatedgrade->finalgrade;
             ($gbaggregatedgrade->overridden == 0) ? local_gugcat::update_grade($student->id, $aggradeid, $sumaggregated) : null;
@@ -147,7 +147,7 @@ class grade_aggregation{
         return $rows;
     }
 
-    public static function require_resit($studentno){
+    public static function require_resit($studentno, $category=0){
         global $aggradeid, $USER;
 
         $grade_ = new grade_grade(array('userid' => $studentno, 'itemid' => $aggradeid), true);
@@ -155,7 +155,10 @@ class grade_aggregation{
         $grade_->itemid = $aggradeid;
         $grade_->userid = $studentno;
         $grade_->timemodified = time();
-        $grade_->information = is_null($grade_->information) ? '1' : null;
+        if(preg_match('/\b'.$category.'/i', $grade_->information))
+            $grade_->information = preg_replace('/\b'.$category.'/i', '', $grade_->information);
+        else
+            $grade_->information .= ' '.$category;
 
         return $grade_->update();    
     }
