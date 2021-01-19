@@ -37,8 +37,6 @@ is_null($categoryid) ? null : $URL->param('categoryid', $categoryid);
 require_login($courseid);
 $PAGE->set_url($URL);
 $PAGE->set_title(get_string('gugcat', 'local_gugcat'));
-$PAGE->navbar->ignore_active();
-$PAGE->navbar->add(get_string('navname', 'local_gugcat'), $URL);
 
 $PAGE->requires->css('/local/gugcat/styles/gugcat.css');
 $PAGE->requires->js_call_amd('local_gugcat/main', 'init');
@@ -58,7 +56,6 @@ $valid_22point_scale = true;
 if(!empty($activities)){
     $mods = array_reverse($activities);
     $selectedmodule = is_null($activityid) ? array_pop($mods) : $activities[$activityid];
-    $PAGE->set_cm($selectedmodule);
     $groupingid = $selectedmodule->groupingid;
     $groups = groups_get_all_groups($course->id, $userid=0, $groupingid, $fields='g.*');
 
