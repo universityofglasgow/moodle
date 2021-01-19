@@ -59,7 +59,7 @@ $PAGE->set_cm($module);
 $scaleid = $module->gradeitem->scaleid;
 
 if (is_null($scaleid) && local_gugcat::is_grademax22($module->gradeitem->gradetype, $module->gradeitem->grademax)){
-    $scaleid = local_gugcat::get_gcat_scaleid();
+    $scaleid = null;
 }
 
 local_gugcat::set_grade_scale($scaleid);

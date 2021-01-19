@@ -167,10 +167,10 @@ class grade_capture{
             $is_workflow_enabled = $assign->get_instance()->markingworkflow == 1;
         }
         foreach ($grades as $userid=>$grd)  {
-            $hidden = $DB->get_field(GRADE_GRADES, 'hidden', array('itemid'=>local_gugcat::$PRVGRADEID, 'userid' => $userid));
+            $hidden = $DB->get_field('grade_grades', 'hidden', array('itemid'=>local_gugcat::$PRVGRADEID, 'userid' => $userid));
             $select = "itemid = $gradeitemid AND userid = $userid";
             //update hidden status
-            $DB->set_field_select(GRADE_GRADES, 'hidden', $hidden, $select);
+            $DB->set_field_select('grade_grades', 'hidden', $hidden, $select);
             if(!empty($grd) && $hidden == 0){
                 $rawgrade = array_search($grd, local_gugcat::$GRADES);
                 $rawgrade = $rawgrade ? $rawgrade : $grd;
@@ -195,8 +195,8 @@ class grade_capture{
                         break;
                 }
                 //update feedback and excluded field
-                $DB->set_field_select(GRADE_GRADES, 'feedback', $feedback, $select);
-                $DB->set_field_select(GRADE_GRADES, 'excluded', $excluded, $select);
+                $DB->set_field_select('grade_grades', 'feedback', $feedback, $select);
+                $DB->set_field_select('grade_grades', 'excluded', $excluded, $select);
                 if($cm->modname === 'assign'){
                     // update assign grade
                     if ($grade = $assign->get_user_grade($userid, true)) {
@@ -209,7 +209,7 @@ class grade_capture{
                         $assign->update_grade($grade); 
                     }
                     if($is_admingrade){
-                        $DB->set_field_select(GRADE_GRADES, 'finalgrade', $rawgrade, $select);
+                        $DB->set_field_select('grade_grades', 'finalgrade', $rawgrade, $select);
                     }
                 }else{         
                     //update grade from gradebook
@@ -306,8 +306,8 @@ class grade_capture{
             // $weightcoef2 = $mod->gradeitem->aggregationcoef2; //Aggregation coeficient used for weighted averages only
             // $weight = ((float)$weightcoef1 > 0) ? (float)$weightcoef1 : (float)$weightcoef2;
             foreach ($students as $student) {
-                $weight = $DB->get_field(GRADE_GRADES, 'aggregationweight', array('itemid' => $maingrdeid, 'userid' => $student->id));
-                $DB->set_field(GRADE_GRADES, 'information', $weight, array('itemid' => $prvgrdid, 'userid' => $student->id));          
+                $weight = $DB->get_field('grade_grades', 'aggregationweight', array('itemid' => $maingrdeid, 'userid' => $student->id));
+                $DB->set_field('grade_grades', 'information', $weight, array('itemid' => $prvgrdid, 'userid' => $student->id));          
             }
         }
     }

@@ -106,3 +106,6 @@ $string['gi_latepenalty'] = 'Late Penalty';
 $string['gi_moderatedgrade'] = 'Moderated Grade';
 $string['gi_secondgrade'] = 'Second Grade';
 $string['gi_thirdgrade'] = 'Third Grade';
+
+//gcat grade category
+$string['gcat_category'] = 'DO NOT USE';
