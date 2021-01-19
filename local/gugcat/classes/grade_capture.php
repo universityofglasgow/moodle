@@ -177,17 +177,18 @@ class grade_capture{
                 switch ($rawgrade) {
                     case NON_SUBMISSION:
                         $feedback = NON_SUBMISSION_AC;
-                        $is_non_sub = true;
+                        $is_admingrade = true;
                         $rawgrade = 0;
                         $excluded = 0;                        
                         break;
                     case MEDICAL_EXEMPTION:
                         $feedback = MEDICAL_EXEMPTION_AC;
+                        $is_admingrade = true;
                         $rawgrade = null;
                         $excluded = 1; //excluded from aggregation
                         break;
                     default:
-                        $is_non_sub = false;
+                        $is_admingrade = false;
                         $feedback = null;
                         $excluded = 0;
                         $rawgrade = !is_null($rawgrade) ? ($rawgrade - $gradescaleoffset) : $rawgrade;
@@ -203,11 +204,11 @@ class grade_capture{
                         if($is_workflow_enabled){
                             local_gugcat::update_workflow_state($assign, $userid, ASSIGN_MARKING_WORKFLOW_STATE_RELEASED);
                         }
-                        $grade->grade = $rawgrade;
+                        $grade->grade = $is_admingrade ? 0 : $rawgrade;
                         $grade->grader = $USER->id;
                         $assign->update_grade($grade); 
                     }
-                    if($is_non_sub){
+                    if($is_admingrade){
                         $DB->set_field_select(GRADE_GRADES, 'finalgrade', $rawgrade, $select);
                     }
                 }else{         
