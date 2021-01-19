@@ -4,6 +4,8 @@ define(['jquery', 'core/custom_interaction_events', 'core/modal', 'core/modal_re
     var registered = false;
     var SELECTORS = {
         RELEASE_PROVISIONAL_GRADE_BUTTON: '[data-action="release"]',
+        RELEASE_FINAL_GRADE_BUTTON: '[data-action="finalrelease"]',
+        IMPORT_GRADE_BUTTON: '[data-action="importgrades"]',
         CANCEL_BUTTON: '[data-action="cancel"]',
     };
 
@@ -33,6 +35,14 @@ define(['jquery', 'core/custom_interaction_events', 'core/modal', 'core/modal_re
             // Add your logic for when the login button is clicked. This could include the form validation,
             // loading animations, error handling etc.
             document.getElementById('release-submit').click();
+        }.bind(this));
+
+        this.getModal().on(CustomEvents.events.activate, SELECTORS.RELEASE_FINAL_GRADE_BUTTON, function(e, data) {
+            document.getElementById('finalrelease-submit').click();
+        }.bind(this));
+
+        this.getModal().on(CustomEvents.events.activate, SELECTORS.IMPORT_GRADE_BUTTON, function(e, data) {
+            document.getElementById('importgrades-submit').click();
         }.bind(this));
 
         this.getModal().on(CustomEvents.events.activate, SELECTORS.CANCEL_BUTTON, function(e, data) {
