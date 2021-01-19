@@ -1,0 +1,18 @@
+
+.modal-body {
+    color: black;
+    font-size: 18px;
+}
+
+.modal-header {
+    display: none;
+}
+
+.modal-footer {
+    border-top-color: white;
+    justify-content: space-between;
+}
+
+.btn-modal-cancel {
+    height: 40px;
+}
