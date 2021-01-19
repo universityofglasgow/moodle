@@ -186,7 +186,7 @@ class block_gu_spdetails extends block_base {
 
         switch($modname) {
             case MOD_ASSIGN:
-                $sql = 'SELECT assign.id, assign.name, assign.duedate,
+                $sql = 'SELECT assign.id, assign.name, assign.duedate, assign.nosubmissions,
                            assign.allowsubmissionsfromdate as `startdate`, assign.cutoffdate,
                            assign.gradingduedate, assign.teamsubmissiongroupingid,
                            auf.extensionduedate, ao.duedate as `overrideduedate`,
@@ -467,7 +467,10 @@ class block_gu_spdetails extends block_base {
             $status->text = get_string('graded', SPDETAILS_LANG);
             $status->suffix = get_string('graded', SPDETAILS_LANG);
         }else{
-            if($dates->startdate == '0' || time() >= $dates->startdate) {
+            if($modname == MOD_ASSIGN && $activity->nosubmissions == '1'){
+                $status->text = get_string('submission_unavailable', SPDETAILS_LANG);
+                $status->suffix = get_string('unavailable', SPDETAILS_LANG);
+            }else if($dates->startdate == '0' || time() >= $dates->startdate) {
                 if(time() <= $dates->duedate) {
                     $status->hasurl = true;
                     if($dates->isdueextended) {
