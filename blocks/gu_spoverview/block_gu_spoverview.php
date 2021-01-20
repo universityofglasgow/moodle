@@ -24,7 +24,6 @@
  */
 
 defined('MOODLE_INTERNAL') || die();
-define('SPOVERVIEW_STRINGS', 'block_gu_spoverview');
 require_once($CFG->dirroot . '/blocks/gu_spdetails/block_gu_spdetails.php');
 
 class block_gu_spoverview extends block_base {
@@ -60,10 +59,10 @@ class block_gu_spoverview extends block_base {
         $count = self::return_assessments_count($assessments);
 
         // Set singular/plural strings for Assessments submitted and Assessments marked
-        $submitted_str = ($count->submitted == 1) ? get_string('assessment', SPOVERVIEW_STRINGS) :
-                                                    get_string('assessments', SPOVERVIEW_STRINGS);
-        $marked_str = ($count->marked == 1) ? get_string('assessment', SPOVERVIEW_STRINGS) :
-                                              get_string('assessments', SPOVERVIEW_STRINGS);
+        $submitted_str = ($count->submitted == 1) ? get_string('assessment', 'block_gu_spoverview') :
+                                                    get_string('assessments', 'block_gu_spoverview');
+        $marked_str = ($count->marked == 1) ? get_string('assessment', 'block_gu_spoverview') :
+                                              get_string('assessments', 'block_gu_spoverview');
 
         $assessments_submitted_icon = $OUTPUT->image_url('assessments_submitted', 'theme');
         $assessments_tosubmit_icon = $OUTPUT->image_url('assessments_tosubmit', 'theme');
@@ -79,10 +78,10 @@ class block_gu_spoverview extends block_base {
             'assessments_tosubmit_icon'    => $assessments_tosubmit_icon,
             'assessments_overdue_icon'     => $assessments_overdue_icon,
             'assessments_marked_icon'      => $assessments_marked_icon,
-            'assessments_submitted_str'    => $submitted_str.get_string('submitted', SPOVERVIEW_STRINGS),
-            'assessments_tosubmit_str'     => get_string('tobesubmitted', SPOVERVIEW_STRINGS),
-            'assessments_overdue_str'      => get_string('overdue', SPOVERVIEW_STRINGS),
-            'assessments_marked_str'       => $marked_str.get_string('marked', SPOVERVIEW_STRINGS),
+            'assessments_submitted_str'    => $submitted_str.get_string('submitted', 'block_gu_spoverview'),
+            'assessments_tosubmit_str'     => get_string('tobesubmitted', 'block_gu_spoverview'),
+            'assessments_overdue_str'      => get_string('overdue', 'block_gu_spoverview'),
+            'assessments_marked_str'       => $marked_str.get_string('marked', 'block_gu_spoverview'),
         ];
 
         $this->content = new stdClass;

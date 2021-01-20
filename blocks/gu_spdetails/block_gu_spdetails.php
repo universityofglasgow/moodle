@@ -23,17 +23,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die();
-define('SPDETAILS_LANG', 'block_gu_spdetails');
-
-define('FEEDBACK_NS', 'NS');
-define('FEEDBACK_MV', 'MV');
-
-define('MOD_ASSIGN', 'assign');
-define('MOD_FORUM', 'forum');
-define('MOD_QUIZ', 'quiz');
-define('MOD_WORKSHOP', 'workshop');
-
-define('PAGE_FOOTER', '#page-footer');
 
 require_once($CFG->libdir.'/gradelib.php');
 require_once($CFG->dirroot . '/grade/querylib.php');
@@ -41,7 +30,7 @@ require_once($CFG->dirroot . '/grade/querylib.php');
 class block_gu_spdetails extends block_base {
 
     public function init() {
-        $this->title = get_string('pluginname', SPDETAILS_LANG);
+        $this->title = get_string('pluginname', 'block_gu_spdetails');
     }
 
     /**
@@ -79,18 +68,18 @@ class block_gu_spdetails extends block_base {
             'assessments'       => json_encode($assessments),
             'data'              => $assessments,
             'hasassessments'    => $hasassessments,
-            'header_course'     => get_string('header_course', SPDETAILS_LANG),
-            'header_assessment' => get_string('header_assessment', SPDETAILS_LANG),
-            'header_type'       => get_string('header_type', SPDETAILS_LANG),
-            'header_weight'     => get_string('header_weight', SPDETAILS_LANG),
-            'header_duedate'    => get_string('header_duedate', SPDETAILS_LANG),
-            'header_status'     => get_string('header_status', SPDETAILS_LANG),
-            'header_grade'      => get_string('header_grade', SPDETAILS_LANG),
-            'header_feedback'   => get_string('header_feedback', SPDETAILS_LANG),
-            'noassessments'     => get_string('noassessments', SPDETAILS_LANG),
-            'sort'              => get_string('sort', SPDETAILS_LANG),
-            'sort_course'       => get_string('sort_course', SPDETAILS_LANG),
-            'sort_date'         => get_string('sort_date', SPDETAILS_LANG),
+            'header_course'     => get_string('header_course', 'block_gu_spdetails'),
+            'header_assessment' => get_string('header_assessment', 'block_gu_spdetails'),
+            'header_type'       => get_string('header_type', 'block_gu_spdetails'),
+            'header_weight'     => get_string('header_weight', 'block_gu_spdetails'),
+            'header_duedate'    => get_string('header_duedate', 'block_gu_spdetails'),
+            'header_status'     => get_string('header_status', 'block_gu_spdetails'),
+            'header_grade'      => get_string('header_grade', 'block_gu_spdetails'),
+            'header_feedback'   => get_string('header_feedback', 'block_gu_spdetails'),
+            'noassessments'     => get_string('noassessments', 'block_gu_spdetails'),
+            'sort'              => get_string('sort', 'block_gu_spdetails'),
+            'sort_course'       => get_string('sort_course', 'block_gu_spdetails'),
+            'sort_date'         => get_string('sort_date', 'block_gu_spdetails'),
             'noassessments_img' => $noassessments,
             'downarrow_img'     => $downarrow,
         ];
@@ -103,7 +92,7 @@ class block_gu_spdetails extends block_base {
 
     public static function return_assessments($courseids, $userid) {
         $assessments = array();
-        $allowedactivities = array(MOD_ASSIGN, MOD_QUIZ, MOD_FORUM, MOD_WORKSHOP);
+        $allowedactivities = array('assign', 'quiz', 'forum', 'workshop');
 
         foreach($courseids as $courseid) {
             $mods = grade_get_gradable_activities($courseid);
@@ -125,7 +114,7 @@ class block_gu_spdetails extends block_base {
                     $gradecategory = self::retrieve_gradecategory($gradeitem->categoryid);
                     $mod->grades = self::retrieve_grades($userid, $gradeitem->id);
                     $mod->isprovisional = (!isset($mod->grades->information)) ? true : false;
-                    $mod->provisionaltext = ($mod->isprovisional) ? get_string('provisional', SPDETAILS_LANG) : null;
+                    $mod->provisionaltext = ($mod->isprovisional) ? get_string('provisional', 'block_gu_spdetails') : null;
 
                     $mod->coursename = $course->fullname;
                     $mod->coursecode = $course->shortname;
@@ -139,12 +128,12 @@ class block_gu_spdetails extends block_base {
                     $mod->dates = self::return_dates($mod->modname, $activity);
                     $mod->dates->formattedduedate = (!empty($mod->dates->duedate)) ?
                                                     userdate($mod->dates->duedate,
-                                                             get_string('convertdate', SPDETAILS_LANG)) :
-                                                    get_string('emptyvalue', SPDETAILS_LANG);
+                                                             get_string('convertdate', 'block_gu_spdetails')) :
+                                                    get_string('emptyvalue', 'block_gu_spdetails');
                     $mod->dates->gradingduedate = (isset($mod->dates->gradingduedate)) ? $mod->dates->gradingduedate : '0';
                     $mod->gradingduedate = self::return_gradingduedate($mod->finalgrade, $mod->dates->gradingduedate);
                     $mod->feedback = (!empty($mod->grades->feedback)) ? $mod->grades->feedback :
-                                     ((!empty($mod->grades->feedbackformat) && $mod->modname === MOD_WORKSHOP) ?
+                                     ((!empty($mod->grades->feedbackformat) && $mod->modname === 'workshop') ?
                                       $mod->grades->feedbackformat : null);
                     $mod->feedbackduedate = self::return_feedbackduedate($mod->feedback, $mod->finalgrade,
                                                                          $mod->dates->gradingduedate);
@@ -185,7 +174,7 @@ class block_gu_spdetails extends block_base {
         $activity = new stdClass();
 
         switch($modname) {
-            case MOD_ASSIGN:
+            case 'assign':
                 $sql = 'SELECT assign.id, assign.name, assign.duedate, assign.nosubmissions,
                            assign.allowsubmissionsfromdate as `startdate`, assign.cutoffdate,
                            assign.gradingduedate, assign.teamsubmissiongroupingid,
@@ -203,12 +192,12 @@ class block_gu_spdetails extends block_base {
                 $conditions = array($userid, $userid, $userid, $instance, $courseid);
                 $activity = $DB->get_record_sql($sql, $conditions);
                 break;
-            case MOD_FORUM:
+            case 'forum':
                 $conditions = array('id' => $instance, 'course' => $courseid);
                 $columns = 'id, name, duedate, cutoffdate, assessed, grade_forum';
                 $activity = $DB->get_record('forum', $conditions, $columns);
                 break;
-            case MOD_QUIZ:
+            case 'quiz':
                 $sql = 'SELECT quiz.id, quiz.name, quiz.timeopen as `startdate`,
                         quiz.timeclose as `duedate`, quiz.attempts,
                         qo.timeopen as `overridestartdate`,
@@ -225,7 +214,7 @@ class block_gu_spdetails extends block_base {
                 $conditions = array($userid, $userid, $instance, $courseid);
                 $activity = $DB->get_record_sql($sql, $conditions);
                 break;
-            case MOD_WORKSHOP:
+            case 'workshop':
                 $sql = 'SELECT workshop.id, workshop.name, workshop.submissionstart as `startdate`,
                         workshop.submissionend as `duedate`, workshop.assessmentstart,
                         workshop.assessmentend as `gradingduedate`,
@@ -278,15 +267,15 @@ class block_gu_spdetails extends block_base {
 
     public static function return_assessmenttype($gradecategoryname) {
         $type = strtolower($gradecategoryname);
-        $formative = get_string('formative', SPDETAILS_LANG);
-        $summative = get_string('summative', SPDETAILS_LANG);
+        $formative = get_string('formative', 'block_gu_spdetails');
+        $summative = get_string('summative', 'block_gu_spdetails');
 
         if($type === $formative || strpos($type, $formative)) {
             $assessmenttype = ucwords($formative);
         } else if($type === $summative || strpos($type, $summative)) {
             $assessmenttype = ucwords($summative);
         } else {
-            $assessmenttype = get_string('emptyvalue', SPDETAILS_LANG);
+            $assessmenttype = get_string('emptyvalue', 'block_gu_spdetails');
         }
 
         return $assessmenttype;
@@ -294,7 +283,7 @@ class block_gu_spdetails extends block_base {
 
     public static function return_weight($assessmenttype, $aggregation, $aggregationcoef, $aggregationcoef2) {
         $type = strtolower($assessmenttype);
-        $summative = get_string('summative', SPDETAILS_LANG);
+        $summative = get_string('summative', 'block_gu_spdetails');
         $weight = 0;
 
         if($type === $summative) {
@@ -315,7 +304,7 @@ class block_gu_spdetails extends block_base {
         $date->cutoffdate = (isset($activity->cutoffdate)) ? $activity->cutoffdate : '0';
 
         switch($modname) {
-            case MOD_ASSIGN:
+            case 'assign':
                 if(!empty($activity->overrideduedate) || !empty($activity->extensionduedate)) {
                     $date->duedate = ($activity->overrideduedate >= $activity->extensionduedate) ?
                                      $activity->overrideduedate : $activity->extensionduedate;
@@ -328,7 +317,7 @@ class block_gu_spdetails extends block_base {
                                    $activity->overridecutoffdate : $activity->cutoffdate;
                 $date->gradingduedate = (!empty($activity->gradingduedate)) ? $activity->gradingduedate : '0';
                 break;
-            case MOD_QUIZ:
+            case 'quiz':
                 if($activity->overrideduedate) {
                     $date->duedate = $activity->overrideduedate;
                     $date->isdueextended = true;
@@ -338,12 +327,12 @@ class block_gu_spdetails extends block_base {
                                    $activity->overridestartdate : $activity->startdate;
                 $date->gradingduedate = (!(empty($date->duedate)) ? $date->duedate : '0');
                 break;
-            case MOD_FORUM:
+            case 'forum':
                 $date->gradingduedate = (!empty($activity->cutoffdate)) ?
                                         $activity->cutoffdate :
                                         (!(empty($date->duedate)) ? $date->duedate : '0');
                 break;
-            case MOD_WORKSHOP:
+            case 'workshop':
                 $date->gradingduedate = (!empty($activity->gradingduedate)) ? $activity->gradingduedate : '0';
                 break;
         }
@@ -354,14 +343,14 @@ class block_gu_spdetails extends block_base {
     public static function return_gradingduedate($finalgrade, $gradingduedate) {
         $duedateobj = new stdClass();
         $duedateobj->hasgrade = (!empty($finalgrade)) ? true : false;
-        $duedateobj->gradetext = get_string('due', SPDETAILS_LANG).
-                                        userdate($gradingduedate, get_string('convertdate', SPDETAILS_LANG));
+        $duedateobj->gradetext = get_string('due', 'block_gu_spdetails').
+                                        userdate($gradingduedate, get_string('convertdate', 'block_gu_spdetails'));
 
         if (!empty($finalgrade)){
             $duedateobj->gradetext = $finalgrade;
         } else {
-            $duedateobj->gradetext = (empty($gradingduedate)) ? get_string('tobeconfirmed', SPDETAILS_LANG) :
-                                     ((time() > $gradingduedate) ? ucwords(get_string('overdue', SPDETAILS_LANG)) :
+            $duedateobj->gradetext = (empty($gradingduedate)) ? get_string('tobeconfirmed', 'block_gu_spdetails') :
+                                     ((time() > $gradingduedate) ? ucwords(get_string('overdue', 'block_gu_spdetails')) :
                                       $duedateobj->gradetext);
         }
 
@@ -425,20 +414,20 @@ class block_gu_spdetails extends block_base {
     public static function return_feedbackduedate($feedback, $finalgrade, $gradingduedate) {
         $duedateobj = new stdClass();
         $duedateobj->hasfeedback = (!empty($feedback)) ? true : false;
-        $duedateobj->feedbacktext = get_string('due', SPDETAILS_LANG).
-                                    userdate($gradingduedate, get_string('convertdate', SPDETAILS_LANG));
+        $duedateobj->feedbacktext = get_string('due', 'block_gu_spdetails').
+                                    userdate($gradingduedate, get_string('convertdate', 'block_gu_spdetails'));
 
         if($duedateobj->hasfeedback) {
-            $duedateobj->hasfeedback = (($feedback === FEEDBACK_MV || $feedback === FEEDBACK_NS) &&
+            $duedateobj->hasfeedback = (($feedback === 'MV' || $feedback === 'NS') &&
                                         empty($finalgrade)) ? false : true;
         }
 
         if(!empty($finalgrade)) {
-            $duedateobj->feedbacktext = ($duedateobj->hasfeedback) ? get_string('readfeedback', SPDETAILS_LANG) :
-                                        get_string('nofeedback', SPDETAILS_LANG);
+            $duedateobj->feedbacktext = ($duedateobj->hasfeedback) ? get_string('readfeedback', 'block_gu_spdetails') :
+                                        get_string('nofeedback', 'block_gu_spdetails');
         }else{
-            $duedateobj->feedbacktext = (empty($gradingduedate)) ? get_string('tobeconfirmed', SPDETAILS_LANG) :
-                                        ((time() > $gradingduedate) ? ucwords(get_string('overdue', SPDETAILS_LANG)) :
+            $duedateobj->feedbacktext = (empty($gradingduedate)) ? get_string('tobeconfirmed', 'block_gu_spdetails') :
+                                        ((time() > $gradingduedate) ? ucwords(get_string('overdue', 'block_gu_spdetails')) :
                                          $duedateobj->feedbacktext);
         }
 
@@ -449,10 +438,11 @@ class block_gu_spdetails extends block_base {
         $feedbackurl = null;
 
         if($hasfeedback){
-            $feedbackurl = ($modname === MOD_WORKSHOP) ?
-                            new moodle_url('/mod/'.MOD_WORKSHOP.'/submission.php', array('cmid' => $cmid)) :
+            $feedbackurl = ($modname === 'workshop') ?
+                            new moodle_url('/mod/'.'workshop'.'/submission.php', array('cmid' => $cmid)) :
                             $assessmenturl;
-            $feedbackurl = $feedbackurl.PAGE_FOOTER;
+            $footer = get_string('pagefooter', 'block_gu_spdetails');
+            $feedbackurl = $feedbackurl.$footer;
         }
 
         return $feedbackurl;
@@ -464,46 +454,46 @@ class block_gu_spdetails extends block_base {
 
         // assuming $finalgrade can be 0
         if(!is_null($finalgrade)) {
-            $status->text = get_string('graded', SPDETAILS_LANG);
-            $status->suffix = get_string('graded', SPDETAILS_LANG);
+            $status->text = get_string('graded', 'block_gu_spdetails');
+            $status->suffix = get_string('graded', 'block_gu_spdetails');
         }else{
-            if($modname == MOD_ASSIGN && $activity->nosubmissions == '1'){
-                $status->text = get_string('submission_unavailable', SPDETAILS_LANG);
-                $status->suffix = get_string('unavailable', SPDETAILS_LANG);
+            if($modname == 'assign' && $activity->nosubmissions == '1'){
+                $status->text = get_string('submission_unavailable', 'block_gu_spdetails');
+                $status->suffix = get_string('unavailable', 'block_gu_spdetails');
             }else if($dates->startdate == '0' || time() >= $dates->startdate) {
                 if(time() <= $dates->duedate) {
                     $status->hasurl = true;
                     if($dates->isdueextended) {
-                        $status->text = get_string('overdue', SPDETAILS_LANG);
-                        $status->suffix = get_string('class_overduelinked', SPDETAILS_LANG);
+                        $status->text = get_string('overdue', 'block_gu_spdetails');
+                        $status->suffix = get_string('class_overduelinked', 'block_gu_spdetails');
                     }else{
-                        if($modname === MOD_ASSIGN && $activity->status === 'submitted') {
-                            $status->text = get_string('submitted', SPDETAILS_LANG);
-                            $status->suffix = get_string('submitted', SPDETAILS_LANG);
+                        if($modname === 'assign' && $activity->status === 'submitted') {
+                            $status->text = get_string('submitted', 'block_gu_spdetails');
+                            $status->suffix = get_string('submitted', 'block_gu_spdetails');
                             $status->hasurl = false;
                         }else{
-                            $status->text = get_string('submit', SPDETAILS_LANG);
-                            $status->suffix = get_string('submit', SPDETAILS_LANG);
+                            $status->text = get_string('submit', 'block_gu_spdetails');
+                            $status->suffix = get_string('submit', 'block_gu_spdetails');
                         }
                     }
                 }else{
                     if($dates->duedate == 0) {
-                        $status->text = get_string('notopen', SPDETAILS_LANG);
-                        $status->suffix = get_string('class_notopen', SPDETAILS_LANG);
+                        $status->text = get_string('notopen', 'block_gu_spdetails');
+                        $status->suffix = get_string('class_notopen', 'block_gu_spdetails');
                     }else{
-                        $status->text = get_string('overdue', SPDETAILS_LANG);
+                        $status->text = get_string('overdue', 'block_gu_spdetails');
 
                         if(time() <= $dates->cutoffdate || $dates->cutoffdate == 0) {
-                            $status->suffix = get_string('class_overduelinked', SPDETAILS_LANG);
+                            $status->suffix = get_string('class_overduelinked', 'block_gu_spdetails');
                             $status->hasurl = true;
                         }else{
-                            $status->suffix = get_string('overdue', SPDETAILS_LANG);
+                            $status->suffix = get_string('overdue', 'block_gu_spdetails');
                         }
                     }
                 }
             }else{
-                $status->text = get_string('notopen', SPDETAILS_LANG);
-                $status->suffix = get_string('class_notopen', SPDETAILS_LANG);
+                $status->text = get_string('notopen', 'block_gu_spdetails');
+                $status->suffix = get_string('class_notopen', 'block_gu_spdetails');
             }
         }
 
@@ -514,7 +504,7 @@ class block_gu_spdetails extends block_base {
         $roles_array = array();
         $roles = strtolower(strip_tags(get_user_roles_in_course($userid, $courseid)));
         $roles_array = explode(',', $roles);
-        $isstudent = in_array(get_string('student', SPDETAILS_LANG), $roles_array);
+        $isstudent = in_array(get_string('student', 'block_gu_spdetails'), $roles_array);
 
         return $isstudent;
     }
