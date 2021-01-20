@@ -375,7 +375,7 @@ class local_gugcat {
             $gradehistory_arr = $DB->get_records('grade_grades_history', array('userid'=>$studentid, 'itemid'=>$gradeitem->id), MUST_EXIST);
             foreach($gradehistory_arr as $grd){
                 $fields = 'firstname, lastname';
-                if(!is_null($grd->usermodified) && !is_null($grd->rawgrade) && !is_null($grd->finalgrade)){
+                if(!is_null($grd->usermodified) && !is_null($grd->rawgrade)){
                 $modby = $DB->get_record('user', array('id' => $grd->usermodified), $fields);
                 $grd->modby = (isset($modby->lastname) && isset($modby->firstname)) ? $modby->lastname . ', '.$modby->firstname : null;
                 $grd->notes = !is_null($grd->feedback) ? $grd->feedback : 'N/A - '.$gradeitem->itemname;

@@ -62,7 +62,6 @@ class local_gugcat_renderer extends plugin_renderer_base {
             $htmlrows .= html_writer::start_tag('tr');
             //hidden inputs for id and provisional grades
             $htmlrows .= html_writer::empty_tag('input', array('name' => 'prvgrades['.$row->studentno.']', 'type' => 'hidden', 'value' => ($row->provisionalgrade == get_string('nograde', 'local_gugcat') ? "" : $row->provisionalgrade)));
-            $htmlrows .= html_writer::tag('td', $row->cnum);
             $htmlrows .= html_writer::tag('td', $row->studentno);
             $htmlrows .= html_writer::tag('td', $row->surname);
             $htmlrows .= html_writer::tag('td', $row->forename);
@@ -216,7 +215,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
             'releasefinalstr' =>$hide_release ? null : get_string('releasefinalassessment', 'local_gugcat'),
         ]);
         $html .= html_writer::start_tag('form', array('id' => 'requireresitform', 'method' => 'post', 'action' => $actionurl));
-        $html .= $this->display_table($htmlrows, $htmlcolumns);
+        $html .= $this->display_table($htmlrows, $htmlcolumns, false, true);
         $html .= html_writer::empty_tag('input', array('id'=>'resitstudentno', 'name' => 'rowstudentno', 'type' => 'hidden'));
         $html .= html_writer::empty_tag('button', array('id'=>'resit-submit', 'name'=> 'resit', 'type'=>'submit'));
         $html .= html_writer::empty_tag('button', array('id'=>'downloadcsv-submit', 'name'=> 'downloadcsv', 'type'=>'submit'));
@@ -277,13 +276,15 @@ class local_gugcat_renderer extends plugin_renderer_base {
         return $html;
     }
 
-    private function display_table($rows, $columns, $history=false) {
+    private function display_table($rows, $columns, $history = false, $aggregation = false) {
         $html = html_writer::start_tag('div', array('class' => 'table-responsive'));
         $html .= html_writer::start_tag('table', array('class' => 'table'));
         $html .= html_writer::start_tag('thead');
         $html .= html_writer::start_tag('tr');
         if(!$history){
-            $html .= html_writer::tag('th', get_string('candidateno', 'local_gugcat'));
+            if($aggregation){
+                $html .= html_writer::tag('th', get_string('candidateno', 'local_gugcat'));
+            }
             $html .= html_writer::tag('th', get_string('studentno', 'local_gugcat'));
             $html .= html_writer::tag('th', get_string('surname', 'local_gugcat'));
             $html .= html_writer::tag('th', get_string('forename', 'local_gugcat'));
@@ -333,11 +334,11 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $categories = local_gugcat::get_grade_categories($courseid);
         $assessmenturl = new moodle_url('/local/gugcat/index.php', array('id' => $courseid));
         $assessmenturl.= $this->page->cm ? '&activityid='.$this->page->cm->id : null;
-        $overviewurl = new moodle_url('/local/gugcat/overview/index.php', array('id' => $courseid));
+        $coursegradeurl = new moodle_url('/local/gugcat/overview/index.php', array('id' => $courseid));
         //add category id in the url if not null
         if(!is_null($categoryid)){
             $assessmenturl .= '&categoryid=' . $categoryid;
-            $overviewurl .= '&categoryid=' . $categoryid;
+            $coursegradeurl .= '&categoryid=' . $categoryid;
         }
         $html = html_writer::start_tag('div', array('class' => 'gcat-container'));
         $html .= html_writer::tag('span', get_string('title', 'local_gugcat'), array('class' => 'gcat-title'));
@@ -348,11 +349,11 @@ class local_gugcat_renderer extends plugin_renderer_base {
             'select-category',
             'select-category');
         $html .= $this->render_from_template('local_gugcat/gcat_tabs', (object)[
-            'assessmenttabstr' =>get_string('assessmentlvlscore', 'local_gugcat'),
-            'overviewtabstr' =>get_string('overviewaggregrade', 'local_gugcat'),
+            'assessmenttabstr' =>get_string('assessmentgradecapture', 'local_gugcat'),
+            'coursegradetabstr' =>get_string('coursegradeaggregation', 'local_gugcat'),
             'releaseprvgrdstr' =>get_string('releaseprvgrades', 'local_gugcat'),
             'assessmenturl' =>$assessmenturl,
-            'overviewurl' =>$overviewurl,
+            'coursegradeurl' =>$coursegradeurl,
         ]);
         $html .= html_writer::start_tag('div', array('class' => 'tabcontent'));
         return $html;
