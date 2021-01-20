@@ -44,6 +44,7 @@ $string['noassessments'] = 'No upcoming assessments due';
 $string['nofeedback'] = 'No feedback provided';
 $string['notopen'] = 'submission not open';
 $string['overdue'] = 'overdue';
+$string['pagefooter'] = 'PAGE_FOOTER';
 $string['pluginname'] = 'Your Assessments details';
 $string['provisional'] = '(Provisional)';
 $string['readfeedback'] = 'Read feedback';
