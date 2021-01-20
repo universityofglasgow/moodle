@@ -188,6 +188,6 @@ class grade_aggregation_testcase extends advanced_testcase {
         $gg = new grade_grade(array('userid' => $this->student1->id, 'itemid' => $gradeitemid), true);
         $this->assertEquals($this->student1->id, $gg->userid);//assert updated user = student 1
         $this->assertEquals($expectedgrade, $gg->finalgrade);//assert finalgrade = 10.00000
-        $this->assertEquals(FINAL_GRADE, $gg->information); //assert information = final
+        $this->assertEquals('final', $gg->information); //assert information = final
     }
 }

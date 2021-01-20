@@ -65,9 +65,7 @@ if(!empty($activities)){
         $gradetype = $selectedmodule->gradeitem->gradetype;
         $grademax = $selectedmodule->gradeitem->grademax;
         $valid_22point_scale = local_gugcat::is_grademax22($gradetype, $grademax);
-        if ($valid_22point_scale){
-            $scaleid = local_gugcat::get_gcat_scaleid();
-        }    
+        $scaleid = $valid_22point_scale ? null : $scaleid;
     }
 
     //populate $GRADES with scales
