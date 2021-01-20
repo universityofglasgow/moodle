@@ -36,8 +36,11 @@ $categoryid = optional_param('categoryid', null, PARAM_INT);
 require_login($courseid);
 $urlparams = array('id' => $courseid, 'activityid' => $activityid, 'studentid' => $studentid);
 $URL = new moodle_url('/local/gugcat/add/index.php', $urlparams);
+$indexurl = new moodle_url('/local/gugcat/index.php', array('id' => $courseid));
+
 $PAGE->set_url($URL);
 $PAGE->set_title(get_string('gugcat', 'local_gugcat'));
+$PAGE->navbar->add(get_string('navname', 'local_gugcat'), $indexurl);
 
 $PAGE->requires->css('/local/gugcat/styles/gugcat.css');
 $PAGE->requires->js_call_amd('local_gugcat/main', 'init');

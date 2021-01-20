@@ -37,10 +37,11 @@ $cnum = required_param('cnum', PARAM_INT);
 require_login($courseid);
 $urlparams = array('id' => $courseid, 'setting' => $formtype, 'studentid' => $studentid, 'cnum' => $cnum);
 $URL = new moodle_url('/local/gugcat/overview/gradeform/index.php', $urlparams);
+$indexurl = new moodle_url('/local/gugcat/index.php', array('id' => $courseid));
+
 $PAGE->set_url($URL);
 $PAGE->set_title(get_string('gugcat', 'local_gugcat'));
-$PAGE->navbar->ignore_active();
-$PAGE->navbar->add(get_string('navname', 'local_gugcat'), $URL);
+$PAGE->navbar->add(get_string('navname', 'local_gugcat'), $indexurl);
 
 $PAGE->requires->css('/local/gugcat/styles/gugcat.css');
 $PAGE->requires->js_call_amd('local_gugcat/main', 'init');
