@@ -96,7 +96,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
                 $row->provisionalgrade == get_string('missinggrade', 'local_gugcat'))
                 $htmlrows .= '<td class="provisionalgrade"><b>'.$row->provisionalgrade.'</b>'. $isgradehidden.'</td>';
             else{
-                $historyeditparams .= '&activityid='.$modid.'&cnum='.$row->cnum;
+                $historyeditparams .= '&activityid='.$modid;
                 $htmlrows .= '<td class="provisionalgrade"><b>'.$row->provisionalgrade.'</b>'.$this->context_actions($row->studentno, $isgradehidden, false, $historyeditparams, false).  $isgradehidden.'</td>';
             }
             $addformurl .= '&studentid='. $row->studentno;
@@ -162,14 +162,14 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $is_blind_marking = local_gugcat::is_blind_marking();
 
         //url to grade form
-        $actionurl = 'index.php?id=' . $courseid;
         $gradeformurl = new moodle_url('/local/gugcat/overview/gradeform/index.php', array('id' => $courseid));
-        $editformurl = new moodle_url('/local/gugcat/edit/index.php', array('id' => $courseid));
-        $historyurl = new moodle_url('/local/gugcat/overview/history/index.php', array('id' => $courseid));
+        $actionurl = 'index.php?id=' . $courseid;
         //add category id in the url if not null
+        $historyeditcategory = null;
         if(!is_null($categoryid)){
             $gradeformurl .= '&categoryid=' . $categoryid;
             $actionurl .= '&categoryid=' . $categoryid;
+            $historyeditcategory = '&categoryid=' . $categoryid;
         }
 
         $htmlcolumns = null;
@@ -184,8 +184,6 @@ class local_gugcat_renderer extends plugin_renderer_base {
         //grade capture rows
 
         foreach ($rows as $row) {
-            $historyurl->param('cnum', $row->cnum);
-            $historyurl->param('studentid', $row->studentno);
             $htmlrows .= html_writer::start_tag('tr');
             $htmlrows .= html_writer::tag('td', $row->cnum);
             $htmlrows .= html_writer::tag('td', $row->studentno);
@@ -194,8 +192,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
                 $htmlrows .= html_writer::tag('td', $row->forename);
             }
             foreach((array) $row->grades as $grade) {
-                $historyeditcategory = (is_null($categoryid)) ? '' : '&categoryid=' . $categoryid;
-                $historyeditparams = '?id='.$courseid.'&activityid='.$grade->activityid.'&cnum='.$row->cnum . $historyeditcategory;
+                $historyeditparams = '?id='.$courseid.'&activityid='.$grade->activityid . $historyeditcategory;
                 $htmlrows .= html_writer::empty_tag('input', array('name' => 'finalgrades['.$row->studentno.'_'.$grade->activityid.']', 'type' => 'hidden', 'value' => ($grade->grade == get_string('nograderecorded', 'local_gugcat') ? "" : $grade->grade)));
                 $htmlrows .= html_writer::empty_tag('input', array('name' => 'cminstances['.$grade->activityid.']', 'type' => 'hidden', 'value' => $grade->activityinstance."_$grade->activity"));
                 $htmlrows .= '<td>'.$grade->grade.((strpos($grade->grade, 'No grade') !== false) ? null : $this->context_actions($row->studentno, null, false, $historyeditparams, true)).'</td>';
@@ -274,7 +271,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
         }
         $html = $this->header();
         $html .= $this->render_from_template('local_gugcat/gcat_grade_history', (object)[
-            'title' =>get_string('historicalamendments', 'local_gugcat'),
+            'title' =>get_string('assessmentgradehistory', 'local_gugcat'),
             'student' => $student,
             'activity' => $activity,
             'blindmarking'=> !local_gugcat::is_blind_marking($this->page->cm) ? true : null
@@ -311,7 +308,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
         return $html;
     }
 
-    private function context_actions($studentno, $ishidden=null, $is_aggregrade = false, $link = null, $is_overviewpage = false, $is_historical = false) {
+    private function context_actions($studentno, $ishidden=null, $is_aggregrade = false, $link = null, $is_overviewpage = false) {
         $html = html_writer::tag('i', null, array('class' => 'fa fa-ellipsis-h', 'data-toggle' => 'dropdown'));
         $html .= html_writer::start_tag('ul', array('class' => 'dropdown-menu'));
         $link .=  '&studentid='.$studentno;
@@ -323,11 +320,9 @@ class local_gugcat_renderer extends plugin_renderer_base {
         }else{
             $historylink = new moodle_url('/local/gugcat/history/index.php').$link;
             $editlink = new moodle_url('/local/gugcat/edit/index.php').$link.'&overview='.($is_overviewpage ? 1 : 0);
-            //remove cnum for editlink
-            $editlink = preg_replace('/&cnum=./i', '', $editlink);
 
             $html .= html_writer::tag('li', get_string('amendgrades', 'local_gugcat'), array('class' => 'dropdown-item', 'onclick' => 'location.href=\''.$editlink.'\''));
-            $html .= html_writer::tag('li', get_string('historicalamendments', 'local_gugcat'), array('class' => 'dropdown-item', 'onclick' => 'location.href=\''.$historylink.'\''));
+            $html .= html_writer::tag('li', get_string('assessmentgradehistory', 'local_gugcat'), array('class' => 'dropdown-item', 'onclick' => 'location.href=\''.$historylink.'\''));
             $html .= html_writer::tag('li', !empty($ishidden) ? get_string('showgrade', 'local_gugcat') : get_string('hidefromstudent', 'local_gugcat'), array('class' => 'dropdown-item hide-show-grade',
                 'onclick'=>
                 'document.getElementById("studentno").value = '.$studentno.';

@@ -33,6 +33,8 @@ $string['aggregatedgrade'] = 'Aggregated Grade';
 $string['aggregationtool'] = 'grade_aggregation_tool';
 $string['amendgrades'] = 'Amend Grades';
 $string['assessmentgradecapture'] = 'Assessment Grade Capture';
+$string['assessmentgradehistory'] = 'Assessment Grade History';
+
 $string['cancelmodal'] = 'No, cancel action';
 $string['candidateno'] = 'Candidate No.';
 $string['choosegrade'] = 'Choose grade';
