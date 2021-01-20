@@ -133,8 +133,8 @@ class local_gugcat_renderer extends plugin_renderer_base {
     public function display_add_edit_grade_form($course, $student, $gradeversions, $isaddform) {
         $modname = (($this->page->cm) ? $this->page->cm->name : null);
         $html = $this->header();
-        $html .= $this->render_from_template('local_gugcat/gcat_add_edit_form', (object)[
-            'addeditgrade' => $isaddform ? get_string('addnewgrade', 'local_gugcat') : get_string('editgrade', 'local_gugcat'),
+        $html .= $this->render_from_template('local_gugcat/gcat_form_details', (object)[
+            'title' => $isaddform ? get_string('addnewgrade', 'local_gugcat') : get_string('editgrade', 'local_gugcat'),
             'course' => $course,
             'section' => $modname,
             'student' => $student,
@@ -239,12 +239,13 @@ class local_gugcat_renderer extends plugin_renderer_base {
         return $html;
     }
 
-    public function display_overview_adjust_grade_form($student) {
+    public function display_adjust_override_grade_form($student) {
         $setting = required_param('setting', PARAM_INT);
         $html = $this->header();
-        $html .= $this->render_from_template('local_gugcat/gcat_adjustoverride_form', (object)[
+        $html .= $this->render_from_template('local_gugcat/gcat_form_details', (object)[
             'title' =>get_string(($setting != 0 ? 'overridestudgrade' : 'adjustcourseweight'), 'local_gugcat'),
-            'student' => $student
+            'student' => $student,
+            'blindmarking'=> !local_gugcat::is_blind_marking() ? true : null
         ]);
         return $html;
     }
@@ -270,7 +271,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
             $htmlrows .= html_writer::end_tag('tr');
         }
         $html = $this->header();
-        $html .= $this->render_from_template('local_gugcat/gcat_grade_history', (object)[
+        $html .= $this->render_from_template('local_gugcat/gcat_form_details', (object)[
             'title' =>get_string('assessmentgradehistory', 'local_gugcat'),
             'student' => $student,
             'activity' => $activity,
