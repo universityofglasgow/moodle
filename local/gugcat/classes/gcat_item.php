@@ -87,11 +87,17 @@ class gcat_item{
      * The string percentage of the accomplish assessment of the student
      *@var string $completed
      */
-    public $completed;
+    public $completed = '0%';
     
     /**
      * The formated aggregated grade of the student, can also be string 'missing grade'
      * @var string $aggregatedgrade
      */
     public $aggregatedgrade;
+    
+    /**
+     * Boolean value if resit is required to the student
+     * @var boolean $resit
+     */
+    public $resit;
 }
