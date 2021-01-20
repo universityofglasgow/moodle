@@ -334,11 +334,11 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $categories = local_gugcat::get_grade_categories($courseid);
         $assessmenturl = new moodle_url('/local/gugcat/index.php', array('id' => $courseid));
         $assessmenturl.= $this->page->cm ? '&activityid='.$this->page->cm->id : null;
-        $overviewurl = new moodle_url('/local/gugcat/overview/index.php', array('id' => $courseid));
+        $coursegradeurl = new moodle_url('/local/gugcat/overview/index.php', array('id' => $courseid));
         //add category id in the url if not null
         if(!is_null($categoryid)){
             $assessmenturl .= '&categoryid=' . $categoryid;
-            $overviewurl .= '&categoryid=' . $categoryid;
+            $coursegradeurl .= '&categoryid=' . $categoryid;
         }
         $html = html_writer::start_tag('div', array('class' => 'gcat-container'));
         $html .= html_writer::tag('span', get_string('title', 'local_gugcat'), array('class' => 'gcat-title'));
@@ -349,11 +349,11 @@ class local_gugcat_renderer extends plugin_renderer_base {
             'select-category',
             'select-category');
         $html .= $this->render_from_template('local_gugcat/gcat_tabs', (object)[
-            'assessmenttabstr' =>get_string('assessmentlvlscore', 'local_gugcat'),
-            'overviewtabstr' =>get_string('overviewaggregrade', 'local_gugcat'),
+            'assessmenttabstr' =>get_string('assessmentgradecapture', 'local_gugcat'),
+            'coursegradetabstr' =>get_string('coursegradeaggregation', 'local_gugcat'),
             'releaseprvgrdstr' =>get_string('releaseprvgrades', 'local_gugcat'),
             'assessmenturl' =>$assessmenturl,
-            'overviewurl' =>$overviewurl,
+            'coursegradeurl' =>$coursegradeurl,
         ]);
         $html .= html_writer::start_tag('div', array('class' => 'tabcontent'));
         return $html;
