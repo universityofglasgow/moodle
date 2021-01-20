@@ -216,12 +216,12 @@ class local_gugcat_testcase extends advanced_testcase {
         $mggradeitemstr = get_string('moodlegrade', 'local_gugcat');
         $mggradeitem = local_gugcat::add_grade_item($this->course->id, $mggradeitemstr, $this->cm); 
         local_gugcat::add_update_grades($this->student->id, $mggradeitem, '5.00000', $notesitemid1, $documentitemid1);
-        $DB->set_field_select(GRADE_GRADES, 'usermodified', $this->teacher->id, "itemid = ".$mggradeitem." AND userid = ".$this->student->id);
+        $DB->set_field_select('grade_grades', 'usermodified', $this->teacher->id, "itemid = ".$mggradeitem." AND userid = ".$this->student->id);
         $sndgrditemstr = get_string('gi_secondgrade', 'local_gugcat');    
         $expectednotes = 'N/A - '.$sndgrditemstr;
         $sndgradeitem = local_gugcat::add_grade_item($this->course->id, $sndgrditemstr, $this->cm); 
         local_gugcat::add_update_grades($this->student->id, $sndgradeitem, '21.00000', null, null);
-        $DB->set_field_select(GRADE_GRADES, 'usermodified', $this->teacher->id, "itemid = ".$sndgradeitem ." AND userid = ".$this->student->id);
+        $DB->set_field_select('grade_grades', 'usermodified', $this->teacher->id, "itemid = ".$sndgradeitem ." AND userid = ".$this->student->id);
         grade_capture::get_rows($this->course, $this->cm, $this->students);
         $gradehistory = local_gugcat::get_grade_history($this->course->id, $this->cm, $this->student->id);
         $type = preg_replace('/<br>.*/i', '', $gradehistory[0]->type);

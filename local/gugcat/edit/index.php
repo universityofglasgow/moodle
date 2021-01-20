@@ -37,10 +37,11 @@ $overview = required_param('overview', PARAM_INT);
 require_login($courseid);
 $urlparams = array('id' => $courseid, 'activityid' => $activityid, 'studentid' => $studentid, 'overview' => $overview);
 $URL = new moodle_url('/local/gugcat/edit/index.php', $urlparams);
+$indexurl = new moodle_url('/local/gugcat/index.php', array('id' => $courseid));
+
 $PAGE->set_url($URL);
 $PAGE->set_title(get_string('gugcat', 'local_gugcat'));
-$PAGE->navbar->ignore_active();
-$PAGE->navbar->add(get_string('navname', 'local_gugcat'), $URL);
+$PAGE->navbar->add(get_string('navname', 'local_gugcat'), $indexurl);
 
 $PAGE->requires->css('/local/gugcat/styles/gugcat.css');
 $PAGE->requires->js_call_amd('local_gugcat/main', 'init');
@@ -54,12 +55,11 @@ $PAGE->set_heading($course->fullname);
 
 $student = $DB->get_record('user', array('id'=>$studentid, 'deleted'=>0), '*', MUST_EXIST);
 $module = local_gugcat::get_activities($courseid)[$activityid];
-$PAGE->set_cm($module);
 
 $scaleid = $module->gradeitem->scaleid;
 
 if (is_null($scaleid) && local_gugcat::is_grademax22($module->gradeitem->gradetype, $module->gradeitem->grademax)){
-    $scaleid = local_gugcat::get_gcat_scaleid();
+    $scaleid = null;
 }
 
 local_gugcat::set_grade_scale($scaleid);
@@ -98,6 +98,7 @@ if ($fromform = $mform->get_data()) {
 }   
 
 echo $OUTPUT->header();
+$PAGE->set_cm($module);
 $renderer = $PAGE->get_renderer('local_gugcat');
 echo $renderer->display_add_edit_grade_form($course, $student, $gradeversions, false);
 $mform->display();

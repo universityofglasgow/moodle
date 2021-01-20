@@ -85,7 +85,6 @@ class grade_capture_testcase extends advanced_testcase {
         $prvgradeid = $this->provisionalgi;
         $rows = grade_capture::get_rows($this->course, $this->cm, $this->students);
         $row = $rows[0];
-        $this->assertEquals($row->cnum, 1);
         $this->assertEquals($row->studentno, $this->student->id);
         $this->assertEquals($row->firstgrade, get_string('nogradeimport', 'local_gugcat'));
         $this->assertFalse($row->discrepancy);
@@ -208,7 +207,7 @@ class grade_capture_testcase extends advanced_testcase {
         ];
         $DB->insert_records('grade_grades', $data);
         grade_capture::set_provisional_weights($this->course->id, array($this->cm), $this->students);
-        $prvweight = $DB->get_field(GRADE_GRADES, 'information', array('itemid' => $this->provisionalgi, 'userid' => $this->student->id));
+        $prvweight = $DB->get_field('grade_grades', 'information', array('itemid' => $this->provisionalgi, 'userid' => $this->student->id));
         $this->assertEquals($prvweight, $expectedweight); //assert provisional grade_grade copied weight from main act
     }
 }

@@ -37,8 +37,6 @@ is_null($categoryid) ? null : $URL->param('categoryid', $categoryid);
 require_login($courseid);
 $PAGE->set_url($URL);
 $PAGE->set_title(get_string('gugcat', 'local_gugcat'));
-$PAGE->navbar->ignore_active();
-$PAGE->navbar->add(get_string('navname', 'local_gugcat'), $URL);
 
 $PAGE->requires->css('/local/gugcat/styles/gugcat.css');
 $PAGE->requires->js_call_amd('local_gugcat/main', 'init');
@@ -58,7 +56,6 @@ $valid_22point_scale = true;
 if(!empty($activities)){
     $mods = array_reverse($activities);
     $selectedmodule = is_null($activityid) ? array_pop($mods) : $activities[$activityid];
-    $PAGE->set_cm($selectedmodule);
     $groupingid = $selectedmodule->groupingid;
     $groups = groups_get_all_groups($course->id, $userid=0, $groupingid, $fields='g.*');
 
@@ -67,9 +64,7 @@ if(!empty($activities)){
         $gradetype = $selectedmodule->gradeitem->gradetype;
         $grademax = $selectedmodule->gradeitem->grademax;
         $valid_22point_scale = local_gugcat::is_grademax22($gradetype, $grademax);
-        if ($valid_22point_scale){
-            $scaleid = local_gugcat::get_gcat_scaleid();
-        }    
+        $scaleid = $valid_22point_scale ? null : $scaleid;
     }
 
     //populate $GRADES with scales
@@ -84,6 +79,10 @@ if (!empty($groups)){
     }
 }else{
     $students = get_enrolled_users($coursecontext, 'moodle/competency:coursecompetencygradable', $groupid);
+}
+
+if(!is_null($courseid) && !is_null($categoryid)){
+    $PAGE->navbar->add(get_string('navname', 'local_gugcat'), $URL);
 }
 
 //populate $STUDENTS
@@ -148,6 +147,8 @@ $rows = grade_capture::get_rows($course, $selectedmodule, $students);
 $columns = grade_capture::get_columns();
 
 echo $OUTPUT->header();
+if(!empty($activities))
+    $PAGE->set_cm($selectedmodule);
 $renderer = $PAGE->get_renderer('local_gugcat');
 echo $renderer->display_grade_capture($activities, $rows, $columns);
 echo $OUTPUT->footer();

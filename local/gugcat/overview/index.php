@@ -31,12 +31,14 @@ require_once($CFG->dirroot . '/local/gugcat/locallib.php');
 $courseid = required_param('id', PARAM_INT);
 $categoryid = optional_param('categoryid', null, PARAM_INT);
 $URL = new moodle_url('/local/gugcat/overview/index.php', array('id' => $courseid));
+$indexurl = new moodle_url('/local/gugcat/index.php', array('id' => $courseid));
+
 is_null($categoryid) ? null : $URL->param('categoryid', $categoryid);
 require_login($courseid);
 $PAGE->set_url($URL);
 $PAGE->set_title(get_string('gugcat', 'local_gugcat'));
-$PAGE->navbar->ignore_active();
-$PAGE->navbar->add(get_string('navname', 'local_gugcat'), $URL);
+$PAGE->navbar->add(get_string('navname', 'local_gugcat'), $indexurl);
+
 
 $PAGE->requires->css('/local/gugcat/styles/gugcat.css');
 $PAGE->requires->js_call_amd('local_gugcat/main', 'init');
