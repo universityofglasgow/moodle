@@ -105,11 +105,11 @@ class block_gu_spdetails extends block_base {
         $assessments = array();
         $allowedactivities = array(MOD_ASSIGN, MOD_QUIZ, MOD_FORUM, MOD_WORKSHOP);
 
-        foreach($courseids as $courseid) {
-            $mods = grade_get_gradable_activities($courseid);
+        $mods = self::get_all_users_courses_gradable_activities($userid);
 
             if (is_array($mods) || is_object($mods)) {
                 foreach($mods as $mod) {
+                    $courseid = $mod->courseid;
                     $modinfo = get_fast_modinfo($mod->course);
                     $course = get_course($courseid);
                     $cm = $modinfo->get_cm($mod->id);
@@ -121,6 +121,7 @@ class block_gu_spdetails extends block_base {
                     $completionview = $cm->completionview;
                     $completiontype = $cm->completiongradeitemnumber;
                     $activity = self::retrieve_activity($mod->modname, $mod->instance, $mod->course, $userid);
+                    $mod->name = $activity->name;
                     $gradeitem = self::retrieve_gradeitem($mod->course, $mod->modname, $mod->instance, $activity);
                     $gradecategory = self::retrieve_gradecategory($gradeitem->categoryid);
                     $mod->grades = self::retrieve_grades($userid, $gradeitem->id);
@@ -157,7 +158,6 @@ class block_gu_spdetails extends block_base {
                     }
                 }
             }
-        }
 
         return $assessments;
     }
@@ -517,5 +517,46 @@ class block_gu_spdetails extends block_base {
         $isstudent = in_array(get_string('student', SPDETAILS_LANG), $roles_array);
 
         return $isstudent;
+    }
+
+    public static function get_all_users_courses_gradable_activities($userid, $active=true, $history=null){
+        global $DB;
+
+        $params = array('siteid' => SITEID, 'userid' => $userid, 'contextlevel' => CONTEXT_COURSE,
+                        'active' => ENROL_USER_ACTIVE, 'enabled' => ENROL_INSTANCE_ENABLED, 'gradetype' => GRADE_TYPE_NONE);
+        $fields = array('id as courseid', 'category', 'sortorder',
+                    'shortname', 'fullname', 'idnumber',
+                    'startdate', 'visible',
+                    'defaultgroupingid',
+                    'groupmode', 'groupmodeforce');
+
+        $subwhere = "WHERE ue.status = :active AND e.status = :enabled AND ue.timestart < :now1 AND (ue.timeend = 0 OR ue.timeend > :now2)";
+        $params['now1'] = (!empty($history) && !$active) ? $history : round(time(), -2); // improves db caching
+        $params['now2'] = $params['now1'];
+
+        $coursefields = 'c.' .join(',c.', $fields);
+        $ccselect = ', ' . context_helper::get_preload_record_columns_sql('ctx');
+        $ccjoin = "LEFT JOIN {context} ctx ON (ctx.instanceid = c.id AND ctx.contextlevel = :contextlevel)";
+        $gradegetselect = ", cm.*, md.name as modname";
+        $gradegetjoin = "JOIN {course_modules} cm ON (cm.course = c.id)
+                         JOIN {modules} md ON (md.id = cm.module)
+                         JOIN {grade_items} gi ON (gi.iteminstance = cm.instance AND gi.courseid = c.id AND gi.itemmodule = md.name)";
+        $gradegetwhere = "AND gi.itemtype = 'mod'
+                          AND gi.itemnumber = 0
+                          AND gi.gradetype != :gradetype";
+
+        $sql = "SELECT cm.id, $coursefields $ccselect $gradegetselect
+                    FROM {course} c
+                    $gradegetjoin
+                    JOIN (SELECT DISTINCT e.courseid
+                            FROM {enrol} e
+                            JOIN {user_enrolments} ue ON (ue.enrolid = e.id AND ue.userid = :userid)
+                    $subwhere
+                        ) en ON (en.courseid = c.id)
+                $ccjoin
+                WHERE c.id <> :siteid
+                $gradegetwhere";
+
+        return $DB->get_records_sql($sql, $params);
     }
 }
