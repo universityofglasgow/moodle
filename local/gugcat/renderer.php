@@ -268,7 +268,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
         }
         $html = $this->header();
         $html .= $this->render_from_template('local_gugcat/gcat_grade_history', (object)[
-            'title' =>get_string('historicalamendments', 'local_gugcat'),
+            'title' =>get_string('assessmentgradehistory', 'local_gugcat'),
             'student' => $student,
             'activity' => $activity
         ]);
@@ -317,7 +317,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
             $editlink = preg_replace('/&cnum=./i', '', $editlink);
 
             $html .= html_writer::tag('li', get_string('amendgrades', 'local_gugcat'), array('class' => 'dropdown-item', 'onclick' => 'location.href=\''.$editlink.'\''));
-            $html .= html_writer::tag('li', get_string('historicalamendments', 'local_gugcat'), array('class' => 'dropdown-item', 'onclick' => 'location.href=\''.$historylink.'\''));
+            $html .= html_writer::tag('li', get_string('assessmentgradehistory', 'local_gugcat'), array('class' => 'dropdown-item', 'onclick' => 'location.href=\''.$historylink.'\''));
             $html .= html_writer::tag('li', !empty($ishidden) ? get_string('showgrade', 'local_gugcat') : get_string('hidefromstudent', 'local_gugcat'), array('class' => 'dropdown-item hide-show-grade',
                 'onclick'=>
                 'document.getElementById("studentno").value = '.$studentno.';
