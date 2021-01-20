@@ -85,7 +85,6 @@ class grade_capture_testcase extends advanced_testcase {
         $prvgradeid = $this->provisionalgi;
         $rows = grade_capture::get_rows($this->course, $this->cm, $this->students);
         $row = $rows[0];
-        $this->assertEquals($row->cnum, 1);
         $this->assertEquals($row->studentno, $this->student->id);
         $this->assertEquals($row->firstgrade, get_string('nogradeimport', 'local_gugcat'));
         $this->assertFalse($row->discrepancy);
