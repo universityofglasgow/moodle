@@ -11,6 +11,10 @@
     letter-spacing: 0em;
 }
 
+.gcat-header{
+    margin: 15px 0;
+}
+
 /* Icons style */
 td > i, th > i {
     color: #8c8c8c;
@@ -60,7 +64,7 @@ td > i, th > i {
     color: white;
 }
 
-.btn-add-import {
+.btn-blue {
     background-color: #005c8a;
     color: white;
 }
@@ -85,7 +89,7 @@ td > i, th > i {
     float: right;
 }
 
-.btn-download, .btn-release, .btn-add-import,
+.btn-download, .btn-release, .btn-blue,
 .tabcontent-header >.selectdiv select {
     height: 40px;
 }
@@ -114,7 +118,7 @@ td > i, th > i {
 
 .select-category, .select-category > select{
     height: 40px;
-    margin: 15px 0;
+    margin: 0 5px 0 0;
 }
 
 .multi-select-reason{
