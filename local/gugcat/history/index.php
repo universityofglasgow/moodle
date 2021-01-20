@@ -30,10 +30,9 @@ require_once($CFG->dirroot . '/local/gugcat/locallib.php');
 $courseid = required_param('id', PARAM_INT);
 $activityid = required_param('activityid', PARAM_INT);
 $studentid = required_param('studentid', PARAM_INT);
-$cnum = required_param('cnum', PARAM_INT);
 
 require_login($courseid);
-$urlparams = array('id' => $courseid, 'activityid' => $activityid, 'studentid' => $studentid, 'cnum' => $cnum);
+$urlparams = array('id' => $courseid, 'activityid' => $activityid, 'studentid' => $studentid);
 $URL = new moodle_url('/local/gugcat/history/index.php', $urlparams);
 $indexurl = new moodle_url('/local/gugcat/index.php', array('id' => $courseid));
 
@@ -61,7 +60,6 @@ local_gugcat::set_grade_scale($scaleid);
 local_gugcat::set_prv_grade_id($courseid, $module);
 
 $history = local_gugcat::get_grade_history($courseid, $module, $studentid);
-$student->cnum = $cnum;
 echo $OUTPUT->header();
 $PAGE->set_cm($module);
 $renderer = $PAGE->get_renderer('local_gugcat');
