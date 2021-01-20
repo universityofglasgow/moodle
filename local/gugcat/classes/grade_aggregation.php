@@ -217,7 +217,7 @@ class grade_aggregation{
     public static function export_aggregation_tool($course, $modules, $students){
         $table = get_string('aggregationtool', 'local_gugcat');
         $filename = "export_$table"."_".date('Y-m-d_His');    
-        $columns = ['student_number', 'surname', 'forename'];
+        $columns = ['candidate_number', 'student_number', 'surname', 'forename'];
         //Process the activity names
         $activities = array();
         foreach($modules as $cm) {
@@ -234,6 +234,7 @@ class grade_aggregation{
         $array = array();
         foreach($data as $row) {
             $student = new stdClass();
+            $student->candidate_number = $row->cnum;
             $student->student_number = $row->studentno;
             $student->surname = $row->surname;
             $student->forename = $row->forename;
