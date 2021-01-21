@@ -140,6 +140,11 @@ class block_gu_spdetails extends block_base {
                                                                   $mod->submissionid, $mod->feedback, $mod->finalgrade,
                                                                   $mod->dates->gradingduedate);
                     $mod->status = self::return_status($mod->modname, $mod->finalgrade, $mod->dates, $activity);
+                    $mod->turnitin = $DB->get_records('turnitintooltwo', array('course' => $courseid);
+                    $mod->turnitinsub = $DB->get_records('turnitintooltwo_submissions', array('userid' => $userid);
+                    $mod->turnitinconf =  $DB->get_records('plagiarism_turnitin_config', array('cm' => $mod->id);
+                    $mod->turnitincourses =  $DB->get_records('plagiarism_turnitin_courses', array('courseid' => $courseid);
+                    $mod->turnitinfiles =  $DB->get_records('plagiarism_turnitin_files', array('cm' => $mod->id, 'userid' => $userid);
 
                     if($isactivityvisible && $isallowedactivity && $mod->isstudent) {
                         array_push($assessments, $mod);
@@ -432,7 +437,6 @@ class block_gu_spdetails extends block_base {
         }else{
             if($modname === 'assign') {
                 $feedbackobj->file = self::retrieve_file($userid, $itemid);
-                $feedbackobj->tii = self::retrieve_turnitin($courseid, $userid, $itemid);
                 $feedbackobj->hasfeedback = $feedbackobj->hasfeedback ? true :
                                             ((!empty($feedbackobj->file) && $finalgrade) ? true : false);
                 $feedbackurl = ($feedbackobj->hasfeedback) ?
@@ -521,22 +525,5 @@ class block_gu_spdetails extends block_base {
 
         $file = $DB->get_record_sql($sql, $conditions);
         return $file;
-    }
-
-    public static function retrieve_turnitin($courseid, $userid, $itemid) {
-        global $DB;
-
-        $sql = 'SELECT *
-                        FROM {turnitintooltwo} tii
-                        LEFT JOIN {turnitintooltwo_submissions} tiisub
-                        ON tiisub.userid = ? AND tiisub.turnitintooltwoid = tii.id
-                        LEFT JOIN {turnitintooltwo_courses} tiicourse
-                        ON tiicourse.courseid = ?
-                        LEFT JOIN {plagiarism_turnitin_files} tiifile
-                        ON tiifile.itemid = ?
-                        WHERE tii.course = ?';
-        $conditions = array($userid, $courseid, $itemid, $courseid);
-        $turnitin = $DB->get_records_sql($sql, $conditions);
-        return $turnitin;
     }
 }
