@@ -425,10 +425,10 @@ class block_gu_spdetails extends block_base {
         if($feedbackobj->hasfeedback) {
             $feedbackobj->hasfeedback = (($feedback === 'MV' || $feedback === 'NS') &&
                                         empty($finalgrade)) ? false : true;
-            if($modname === 'workshop') {
-                $feedbackurl = new moodle_url('/mod/'.'workshop'.'/submission.php', array('cmid' => $cmid));
-                $feedbackobj->feedbackurl  = $feedbackurl.$footer;
-            }
+            $feedbackurl = ($modname === 'workshop') ? 
+                           new moodle_url('/mod/'.$modname.'/submission.php', array('cmid' => $cmid)) :
+                           new moodle_url('/mod/'.$modname.'/view.php', array('id' => $cmid));
+            $feedbackobj->feedbackurl  = $feedbackurl.$footer;
         }else{
             if($modname === 'assign') {
                 $feedbackobj->file = self::retrieve_file($userid, $itemid);
@@ -437,12 +437,10 @@ class block_gu_spdetails extends block_base {
                                             ((!empty($feedbackobj->file) && $finalgrade) ? true : false);
                 $feedbackurl = ($feedbackobj->hasfeedback) ?
                                new moodle_url('/mod/'.$modname.'/view.php', array('id' => $cmid)) : null;
-                $feedbackobj->feedbackurl = ($feedbackobj->hasfeedback) ?
-                                            (!empty($feedbackobj->file) ? $feedbackurl.$intro : $feedbackurl.$footer) : null;
+                $feedbackobj->feedbackurl = ($feedbackobj->hasfeedback) ? $feedbackurl.$intro : null;
             }
         }
 
-        // Display feedback regardless if there's a grade or not.
         $feedbackobj->feedbacktext = ($feedbackobj->hasfeedback) ? get_string('readfeedback', 'block_gu_spdetails') :
                                      (((time() > $gradingduedate) ? ucwords(get_string('overdue', 'block_gu_spdetails')) :
                                      $feedbackobj->feedbacktext));
