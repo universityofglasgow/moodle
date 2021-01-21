@@ -65,7 +65,6 @@ class block_gu_spdetails extends block_base {
         $noassessments = $OUTPUT->image_url('noassessments', 'theme');
 
         $templatecontext = (array)[
-            'assessments'       => json_encode($assessments),
             'data'              => $assessments,
             'hasassessments'    => $hasassessments,
             'header_course'     => get_string('header_course', 'block_gu_spdetails'),
