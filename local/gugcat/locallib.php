@@ -316,9 +316,14 @@ class local_gugcat {
     }
 
     public static function get_gcat_scale(){
-        $json = file_get_contents('gcat_scale.json');
-        $obj = json_decode($json);
-        return array_filter(array_merge(array(0), $obj->schedule_A));//starts 1 => H
+        $json = @file_get_contents('gcat_scale.json');
+        $scale = array();
+        if($json !== false){
+            $obj = json_decode($json);
+            $scale = isset($obj) ? $obj->schedule_A : [];
+            return array_filter(array_merge(array(0), $scale));//starts 1 => H
+        }
+        return $scale;
     }
 
     public static function notify_success($stridentifier){
