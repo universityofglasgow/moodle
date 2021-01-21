@@ -448,7 +448,8 @@ class block_gu_spdetails extends block_base {
         }
 
         $feedbackobj->feedbacktext = ($feedbackobj->hasfeedback) ? get_string('readfeedback', 'block_gu_spdetails') :
-                                     (((time() > $gradingduedate) ? ucwords(get_string('overdue', 'block_gu_spdetails')) :
+                                     (empty($gradingduedate) ? get_string('tobeconfirmed', 'block_gu_spdetails') :
+                                     ((time() > $gradingduedate) ? ucwords(get_string('overdue', 'block_gu_spdetails')) :
                                      $feedbackobj->feedbacktext));
 
         return $feedbackobj;
