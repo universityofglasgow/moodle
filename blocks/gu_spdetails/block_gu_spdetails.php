@@ -139,6 +139,7 @@ class block_gu_spdetails extends block_base {
                     $mod->feedbackduedate = self::return_feedback($userid, $mod->course, $mod->modname, $mod->id, $mod->instance,
                                                                   $mod->submissionid, $mod->feedback, $mod->finalgrade,
                                                                   $mod->dates->gradingduedate);
+                    $mod->status = self::return_status($mod->modname, $mod->finalgrade, $mod->dates, $activity);
 
                     if($isactivityvisible && $isallowedactivity && $mod->isstudent) {
                         array_push($assessments, $mod);
