@@ -109,7 +109,7 @@ class local_gugcat {
     public static function get_grade_grade_items($course, $module){
         global $DB;
         $select = 'courseid = '.$course->id.' AND '.self::compare_iteminfo();
-        $gradeitems = $DB->get_records_select('grade_items', $select, ['iteminfo' => $module->id]);
+        $gradeitems = $DB->get_records_select('grade_items', $select, ['iteminfo' => $module->id], 'timemodified');
         $sort = 'id';
         $fields = 'userid, itemid, id, rawgrade, finalgrade, timemodified, hidden';
         foreach($gradeitems as $item) {
@@ -215,13 +215,11 @@ class local_gugcat {
     }
     
     public static function add_update_grades($userid, $itemid, $grade, $notes = null, $gradedocs = null){
-        global $USER;
+        global $USER, $DB;
 
         $params = array(
             'userid' => $userid,
-            'itemid' => $itemid,
-            'rawgrade' => null,
-            'finalgrade' => null
+            'itemid' => $itemid
         );
 
         $grade_ = new grade_grade($params, true);
@@ -246,10 +244,15 @@ class local_gugcat {
             : false);
             
         }else{
-            //updates empty grade objects in database
+            //updates grade objects in database
             $grade_->timemodified = time();
             //if update successful - update provisional grade
-            return ($grade_->update()) ? self::update_grade($userid, self::$PRVGRADEID, $grade) : false;
+            if($grade_->update()){
+                //update timemodified of grade item
+                $DB->set_field('grade_items', 'timemodified', $grade_->timemodified, array('id' => $itemid));
+                return self::update_grade($userid, self::$PRVGRADEID, $grade);
+            }
+            return false;
         }
     }
 
