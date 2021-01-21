@@ -434,9 +434,11 @@ class block_gu_spdetails extends block_base {
             if($modname === 'assign') {
                 $feedbackobj->file = self::retrieve_file($userid, $itemid);
                 $feedbackobj->assignfeedback = self::retrieve_assignfeedback($userid, $instance);
+                $feedbackobj->turnitincfg = self::retrieve_turnitincfg($cmid);
                 $feedbackobj->hasfeedback = $feedbackobj->hasfeedback ? true :
-                                            ((!empty($feedbackobj->assignfeedback)) ? true :
-                                            ((!empty($feedbackobj->file) && $finalgrade) ? true : false));
+                                            (!empty($feedbackobj->assignfeedback) ? true :
+                                            (!empty($feedbackobj->file) && !empty($feedbackobj->turnitincfg) && $finalgrade) ?
+                                            true : false);
                 $feedbackurl = ($feedbackobj->hasfeedback) ?
                                new moodle_url('/mod/'.$modname.'/view.php', array('id' => $cmid)) : null;
                 $feedbackobj->feedbackurl = ($feedbackobj->hasfeedback) ?
@@ -538,5 +540,14 @@ class block_gu_spdetails extends block_base {
         $conditions = array($instance, $instance, $userid);
         $assignfeedback = $DB->get_record_sql($sql, $conditions);
         return $assignfeedback;
+    }
+
+    public static function retrieve_turnitincfg($cmid) {
+        global $DB;
+
+        $cfg = 'use_turnitin';
+        $conditions = array('cm' => $cmid, 'name' => $cfg, 'value' => 1);
+        $turnitincfg = $DB->get_record('plagiarism_turnitin_config', $conditions);
+        return $turnitincfg;
     }
 }
