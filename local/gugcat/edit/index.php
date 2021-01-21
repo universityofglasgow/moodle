@@ -86,13 +86,13 @@ if ($fromform = $mform->get_data()) {
     $url = null;
 
     if((integer)$fromform->overview == 1){
-        $url .= new moodle_url('/local/gugcat/overview/index.php', array('id' => $courseid));
-        redirect($CFG->wwwroot . $url);
+        $url = new moodle_url('/local/gugcat/overview/index.php', array('id' => $courseid));
+        redirect($url);
     }
     else{
-        $url .= '/local/gugcat/index.php?id='.$courseid.'&activityid='.$activityid;
+        $url = new moodle_url('/local/gugcat/index.php', array('id' => $courseid, 'activityid' => $activityid));
         $url .= (($categoryid !== 0) ? '&categoryid='.$categoryid : null);
-        redirect($CFG->wwwroot . $url);
+        redirect($url);
     }
     exit;
 }   

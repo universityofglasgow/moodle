@@ -97,6 +97,7 @@ class grade_aggregation{
             $aggrdobj->display =  get_string('missinggrade', 'local_gugcat') ;
             if(count($gradebook) > 0){
                 foreach ($gradebook as $item) {
+                    $grditemresit = self::is_resit($item);
                     $grdobj = new stdClass();
                     $grades = $item->grades;
                     $pg = isset($grades->provisional[$student->id]) ? $grades->provisional[$student->id] : null;
@@ -109,14 +110,18 @@ class grade_aggregation{
                         $scaleid = null;
                     }
                     local_gugcat::set_grade_scale($scaleid);
-                    $grade = is_null($grd) ? get_string('nograderecorded', 'local_gugcat') : local_gugcat::convert_grade($grd);
+                    $grade = is_null($grd) ? ( $grditemresit ? 'N/A' : get_string('nograderecorded', 'local_gugcat')) : local_gugcat::convert_grade($grd);
                     $weight = 0;
                     $grdvalue = get_string('nograderecorded', 'local_gugcat');
-                    if(!is_null($pg) && !is_null($grd) && $grade !== MEDICAL_EXEMPTION_AC){
+                    if($grditemresit && is_null($pg) && is_null($grd) && !$gradecaptureitem->resitexist)
+                        $gradecaptureitem->resitexist = false;
+                    else if(!is_null($pg) && !is_null($grd) && $grade !== MEDICAL_EXEMPTION_AC){
                         $weight = (float)$pg->information; //get weight from information column of provisional grades
                         $grdvalue = ($grade === NON_SUBMISSION_AC) ? 0 : (float)$grd - (float)1; //normalize to actual grade value for computation
                         $floatweight += ($grade === NON_SUBMISSION_AC) ? 0 : $weight;
                         $sumaggregated += ($grade === NON_SUBMISSION_AC) ?( 0 * (float)$grdvalue) : ((float)$grdvalue * $weight);
+                        if($grditemresit && $weight == 0)
+                            $gradecaptureitem->resitexist = true;
                     }
                     $gradecaptureitem->nonsubmission = ($grade === NON_SUBMISSION_AC) ? true : false;
                     $gradecaptureitem->medicalexemption = ($grade === MEDICAL_EXEMPTION_AC) ? true : false;
@@ -160,9 +165,9 @@ class grade_aggregation{
         $grade_->userid = $studentno;
         $grade_->timemodified = time();
         if(preg_match('/\b'.$categoryid.'/i', $grade_->information))
-            $grade_->information = preg_replace('/\b'.$categoryid.'/i', '', $grade_->information);
+            $grade_->information = preg_replace('/\b'.$categoryid.' /i', '', $grade_->information);
         else
-            $grade_->information .= ' '.$categoryid;
+            $grade_->information .= $categoryid.' ';
 
         return $grade_->update();    
     }
@@ -257,5 +262,21 @@ class grade_aggregation{
         //convert array to ArrayObject to get the iterator
         $exportdata = new ArrayObject($array);
         local_gugcat::export_gcat($filename, $columns, $exportdata->getIterator());
+    }
+
+    public static function is_resit($module) {
+        global $DB;
+
+        if($taginstances = $DB->get_records('tag_instance', array('itemid'=>$module->id), null, 'tagid')){
+            foreach($taginstances as $taginstance){
+                $tag = $DB->get_field('tag', 'name', array('id'=>$taginstance->tagid));
+
+                if(!strcasecmp('resit', $tag)){
+                    return true;
+                }
+            }
+        }
+        return false;
+
     }
 }

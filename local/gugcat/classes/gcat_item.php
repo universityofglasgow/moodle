@@ -100,4 +100,10 @@ class gcat_item{
      * @var boolean $resit
      */
     public $resit;
+
+     /**
+     * Boolean value if resit grade item weight is = 0
+     * @var boolean $resitexist
+     */
+    public $resitexist;
 }
