@@ -124,7 +124,6 @@ class grade_aggregation{
                         if($grditemresit && $weight == 0)
                             $gradecaptureitem->grdedresit = 1;
                     }
-
                     $gradecaptureitem->nonsubmission = ($grade === NON_SUBMISSION_AC) ? true : false;
                     $gradecaptureitem->medicalexemption = ($grade === MEDICAL_EXEMPTION_AC) ? true : false;
                     $grdobj->activityid = $item->id;
@@ -217,7 +216,7 @@ class grade_aggregation{
                         break;
                 }
                 if($gradeitem->update_final_grade($id, $grade, null, null, FORMAT_MOODLE, $USER->id)){
-                    $DB->set_field_select('grade_grades', 'information', FINAL_GRADE, "itemid = $gradeitem->id AND userid = $id");
+                    $DB->set_field_select('grade_grades', 'information', 'final', "itemid = $gradeitem->id AND userid = $id");
                 }
             }         
         }

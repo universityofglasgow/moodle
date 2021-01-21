@@ -191,8 +191,8 @@ class local_gugcat_renderer extends plugin_renderer_base {
                 $htmlrows .= html_writer::empty_tag('input', array('name' => 'cminstances['.$grade->activityid.']', 'type' => 'hidden', 'value' => $grade->activityinstance."_$grade->activity"));
                 $htmlrows .= '<td>'.$grade->grade.((strpos($grade->grade, 'No grade') !== false) ? null : $this->context_actions($row->studentno, null, false, $historyeditparams, true)).'</td>';
             }
-            $resitlogo = (is_null($row->resit) ? "fa fa-times-circle" : "fa fa-check-circle");
-            $htmlrows .= '<td><i class="'.$resitlogo.'"
+            $classname = (is_null($row->resit) ? "fa fa-times-circle" : "fa fa-check-circle");
+            $htmlrows .= '<td><i class="'.$classname.'"
                         onclick="
                         studno = document.getElementById(\'resitstudentno\');
                         var button = document.getElementById(\'resit-submit\');
