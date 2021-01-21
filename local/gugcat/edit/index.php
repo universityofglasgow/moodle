@@ -87,7 +87,7 @@ if ($fromform = $mform->get_data()) {
 
     if((integer)$fromform->overview == 1){
         $url .= new moodle_url('/local/gugcat/overview/index.php', array('id' => $courseid));
-        redirect($CFG->wwwroot . $url);
+        redirect($url);
     }
     else{
         $url .= '/local/gugcat/index.php?id='.$courseid.'&activityid='.$activityid;
