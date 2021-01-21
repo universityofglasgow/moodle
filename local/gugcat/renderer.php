@@ -64,8 +64,8 @@ class local_gugcat_renderer extends plugin_renderer_base {
             $htmlrows .= html_writer::empty_tag('input', array('name' => 'prvgrades['.$row->studentno.']', 'type' => 'hidden', 'value' => ($row->provisionalgrade == get_string('nograde', 'local_gugcat') ? "" : $row->provisionalgrade)));
             $htmlrows .= html_writer::tag('td', $row->studentno);
             if(!$is_blind_marking){
-                $htmlrows .= html_writer::tag('td', $row->surname);
-                $htmlrows .= html_writer::tag('td', $row->forename);
+                $htmlrows .= html_writer::tag('td', $row->surname, array('class' => 'blind-marking'));
+                $htmlrows .= html_writer::tag('td', $row->forename, array('class' => 'blind-marking'));
             }
             $htmlrows .= '<td>'. (($row->discrepancy) 
                 ? '<div class="grade-discrepancy">'.$row->firstgrade.'</div>' 
@@ -188,8 +188,8 @@ class local_gugcat_renderer extends plugin_renderer_base {
             $htmlrows .= html_writer::tag('td', $row->cnum);
             $htmlrows .= html_writer::tag('td', $row->studentno);
             if(!$is_blind_marking){
-                $htmlrows .= html_writer::tag('td', $row->surname);
-                $htmlrows .= html_writer::tag('td', $row->forename);
+                $htmlrows .= html_writer::tag('td', $row->surname, array('class' => 'blind-marking'));
+                $htmlrows .= html_writer::tag('td', $row->forename, array('class' => 'blind-marking'));
             }
             foreach((array) $row->grades as $grade) {
                 $historyeditparams = '?id='.$courseid.'&activityid='.$grade->activityid . $historyeditcategory;
@@ -293,8 +293,8 @@ class local_gugcat_renderer extends plugin_renderer_base {
             }
             $html .= html_writer::tag('th', get_string('studentno', 'local_gugcat'));
             if(!$is_blind_marking){
-                $html .= html_writer::tag('th', get_string('surname', 'local_gugcat'));
-                $html .= html_writer::tag('th', get_string('forename', 'local_gugcat'));
+                $html .= html_writer::tag('th', get_string('surname', 'local_gugcat'), array('class' => 'blind-marking'));
+                $html .= html_writer::tag('th', get_string('forename', 'local_gugcat'), array('class' => 'blind-marking'));
             }
         }
         $html .= $columns;
@@ -356,7 +356,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
             'select-category',
             'select-category');
         $html .= has_capability('moodle/site:approvecourse', context_system::instance())
-            ? html_writer::tag('button', get_string('hideidentities', 'local_gugcat'), array('class'=>'btn btn-default btn-blue', 'name'=>'showhideidentities', 'type'=>'button'))
+            ? html_writer::tag('button', get_string('hideidentities', 'local_gugcat'), array('id'=>'btn-identities', 'class'=>'btn btn-default btn-blue', 'name'=>'showhideidentities', 'type'=>'button'))
             : null;
         $html .= html_writer::end_tag('div');
         $html .= $this->render_from_template('local_gugcat/gcat_tabs', (object)[
