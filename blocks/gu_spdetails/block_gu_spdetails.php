@@ -91,6 +91,8 @@ class block_gu_spdetails extends block_base {
     }
 
     public static function return_assessments($courseids, $userid) {
+        global $DB;
+
         $assessments = array();
         $allowedactivities = array('assign', 'quiz', 'forum', 'workshop');
 
@@ -139,6 +141,8 @@ class block_gu_spdetails extends block_base {
                     $mod->feedbackduedate = self::return_feedback($userid, $mod->course, $mod->modname, $mod->id, $mod->instance,
                                                                   $mod->submissionid, $mod->feedback, $mod->finalgrade,
                                                                   $mod->dates->gradingduedate);
+                    $mod->turnitincfg = $DB->get_record('plagiarism_turnitin_config', array('cm' => $mod->id));
+                    $mod->turnitinfiles = $DB->get_record('plagiarism_turnitin_files', array('cm' => $mod->id, 'userid' => $userid));
                     $mod->status = self::return_status($mod->modname, $mod->finalgrade, $mod->dates, $activity);
 
                     if($isactivityvisible && $isallowedactivity && $mod->isstudent) {
@@ -432,11 +436,15 @@ class block_gu_spdetails extends block_base {
         }else{
             if($modname === 'assign') {
                 $feedbackobj->file = self::retrieve_file($userid, $itemid);
+                $feedbackobj->assignfeedback = self::retrieve_assignfeedback($userid, $instance);
                 $feedbackobj->hasfeedback = $feedbackobj->hasfeedback ? true :
-                                            ((!empty($feedbackobj->file) && $finalgrade) ? true : false);
+                                            ((!empty($feedbackobj->assignfeedback)) ? true :
+                                            ((!empty($feedbackobj->file) && $finalgrade) ? true : false));
                 $feedbackurl = ($feedbackobj->hasfeedback) ?
                                new moodle_url('/mod/'.$modname.'/view.php', array('id' => $cmid)) : null;
-                $feedbackobj->feedbackurl = ($feedbackobj->hasfeedback) ? $feedbackurl.$intro : null;
+                $feedbackobj->feedbackurl = ($feedbackobj->hasfeedback) ?
+                                            (($feedbackobj->assignfeedback) ?
+                                             $feedbackurl.$footer : $feedbackurl.$intro) : null;
             }
         }
 
@@ -520,5 +528,18 @@ class block_gu_spdetails extends block_base {
 
         $file = $DB->get_record_sql($sql, $conditions);
         return $file;
+    }
+
+    public static function retrieve_assignfeedback($userid, $instance) {
+        global $DB;
+
+        $sql = 'SELECT ag.id, aff.id
+                FROM {assign_grades} ag
+                LEFT JOIN {assignfeedback_file} aff
+                ON aff.grade = ag.id AND aff.assignment = ?
+                WHERE ag.assignment = ? AND ag.userid = ?';
+        $conditions = array($instance, $instance, $userid);
+        $assignfeedback = $DB->get_record_sql($sql, $conditions);
+        return $assignfeedback;
     }
 }
