@@ -302,11 +302,10 @@ class grade_capture{
                 $prvgrdid = local_gugcat::add_grade_item($courseid, get_string('provisionalgrd', 'local_gugcat'), $mod);
             }
             //Work around when setting including no grades in aggregation is not accepted. 
-            // $weightcoef1 = $mod->gradeitem->aggregationcoef; //Aggregation coeficient used for weighted averages or extra credit
-            // $weightcoef2 = $mod->gradeitem->aggregationcoef2; //Aggregation coeficient used for weighted averages only
-            // $weight = ((float)$weightcoef1 > 0) ? (float)$weightcoef1 : (float)$weightcoef2;
+            $weightcoef1 = $mod->gradeitem->aggregationcoef; //Aggregation coeficient used for weighted averages or extra credit
+            $weightcoef2 = $mod->gradeitem->aggregationcoef2; //Aggregation coeficient used for weighted averages only
+            $weight = ((float)$weightcoef1 > 0) ? (float)$weightcoef1 : (float)$weightcoef2;
             foreach ($students as $student) {
-                $weight = $DB->get_field('grade_grades', 'aggregationweight', array('itemid' => $maingrdeid, 'userid' => $student->id));
                 $DB->set_field('grade_grades', 'information', $weight, array('itemid' => $prvgrdid, 'userid' => $student->id));          
             }
         }
