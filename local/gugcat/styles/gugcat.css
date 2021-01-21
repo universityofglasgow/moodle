@@ -38,6 +38,16 @@ td > i, th > i {
     margin-left: 2px;
 }
 
+.zero-resit-weight{
+    color: #b30c00;
+}
+
+.zero-resit-weight:before{
+    content: '\f111';
+    font: normal normal normal 8px/1 FontAwesome;
+    color: #b30c00;
+    padding-right: 1em;
+}
 /* Buttons style */
 .btn-default {
     background-color: transparent;
