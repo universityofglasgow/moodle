@@ -37,6 +37,7 @@ is_null($categoryid) ? null : $URL->param('categoryid', $categoryid);
 require_login($courseid);
 $PAGE->set_url($URL);
 $PAGE->set_title(get_string('gugcat', 'local_gugcat'));
+$PAGE->navbar->add(get_string('navname', 'local_gugcat'), $URL);
 
 $PAGE->requires->css('/local/gugcat/styles/gugcat.css');
 $PAGE->requires->js_call_amd('local_gugcat/main', 'init');
@@ -51,7 +52,8 @@ $activities = local_gugcat::get_activities($courseid);
 $selectedmodule = null;
 $groupid = 0;
 $groups = null;
-$valid_22point_scale = true;
+$valid_22point_scale = false;
+$valid_23point_scale = false;
 
 if(!empty($activities)){
     $mods = array_reverse($activities);
@@ -60,11 +62,16 @@ if(!empty($activities)){
     $groups = groups_get_all_groups($course->id, $userid=0, $groupingid, $fields='g.*');
 
     $scaleid = $selectedmodule->gradeitem->scaleid;
+    $gradetype = $selectedmodule->gradeitem->gradetype;
+    $grademax = $selectedmodule->gradeitem->grademax;
+
     if (is_null($scaleid)){
-        $gradetype = $selectedmodule->gradeitem->gradetype;
-        $grademax = $selectedmodule->gradeitem->grademax;
         $valid_22point_scale = local_gugcat::is_grademax22($gradetype, $grademax);
         $scaleid = $valid_22point_scale ? null : $scaleid;
+    }
+    else{
+        $valid_23point_scale = local_gugcat::is_scheduleAscale($gradetype, $grademax);
+        $scaleid = $valid_23point_scale ? null : $scaleid;
     }
 
     //populate $GRADES with scales
@@ -79,10 +86,6 @@ if (!empty($groups)){
     }
 }else{
     $students = get_enrolled_users($coursecontext, 'moodle/competency:coursecompetencygradable', $groupid);
-}
-
-if(!is_null($courseid) && !is_null($categoryid)){
-    $PAGE->navbar->add(get_string('navname', 'local_gugcat'), $URL);
 }
 
 //populate $STUDENTS
@@ -127,10 +130,11 @@ if (isset($release) && isset($prvgrades)){
         print_error('errorrequired', 'local_gugcat', $PAGE->url);
     }
 }else if(isset($importgrades)){
-    if ($valid_22point_scale){
+    if ($valid_22point_scale || $valid_23point_scale){
         grade_capture::import_from_gradebook($courseid, $selectedmodule, $students, $activities);
         local_gugcat::notify_success('successimport');
-    } else{
+    }
+    else{
         local_gugcat::notify_error('importerror');
     }
     unset($importgrades);
@@ -147,8 +151,7 @@ $rows = grade_capture::get_rows($course, $selectedmodule, $students);
 $columns = grade_capture::get_columns();
 
 echo $OUTPUT->header();
-if(!empty($activities))
-    $PAGE->set_cm($selectedmodule);
+$PAGE->set_cm($selectedmodule);
 $renderer = $PAGE->get_renderer('local_gugcat');
 echo $renderer->display_grade_capture($activities, $rows, $columns);
 echo $OUTPUT->footer();

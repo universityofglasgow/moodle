@@ -152,6 +152,13 @@ class local_gugcat {
         return false;
     }
 
+    public static function is_scheduleAscale($gradetype, $grademax){
+        if (($gradetype == GRADE_TYPE_SCALE && intval($grademax) == 23)){
+            return true;
+        }
+        return false;
+    }
+
     public static function get_gcat_grade_category_id($courseid){
         global $DB;
         $grdcategorystr = get_string('gcat_category', 'local_gugcat');
