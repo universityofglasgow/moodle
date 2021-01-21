@@ -109,7 +109,7 @@ class local_gugcat {
     public static function get_grade_grade_items($course, $module){
         global $DB;
         $select = 'courseid = '.$course->id.' AND '.self::compare_iteminfo();
-        $gradeitems = $DB->get_records_select('grade_items', $select, ['iteminfo' => $module->id]);
+        $gradeitems = $DB->get_records_select('grade_items', $select, ['iteminfo' => $module->id], 'timemodified');
         $sort = 'id';
         $fields = 'userid, itemid, id, rawgrade, finalgrade, timemodified, hidden';
         foreach($gradeitems as $item) {
@@ -146,7 +146,7 @@ class local_gugcat {
     }
 
     public static function is_grademax22($gradetype, $grademax){
-        if ($gradetype == GRADE_TYPE_VALUE && $grademax == 22){
+        if (($gradetype == GRADE_TYPE_VALUE && intval($grademax) == 22)){
             return true;
         }
         return false;
@@ -215,13 +215,11 @@ class local_gugcat {
     }
     
     public static function add_update_grades($userid, $itemid, $grade, $notes = null, $gradedocs = null){
-        global $USER;
+        global $USER, $DB;
 
         $params = array(
             'userid' => $userid,
-            'itemid' => $itemid,
-            'rawgrade' => null,
-            'finalgrade' => null
+            'itemid' => $itemid
         );
 
         $grade_ = new grade_grade($params, true);
@@ -246,10 +244,15 @@ class local_gugcat {
             : false);
             
         }else{
-            //updates empty grade objects in database
+            //updates grade objects in database
             $grade_->timemodified = time();
             //if update successful - update provisional grade
-            return ($grade_->update()) ? self::update_grade($userid, self::$PRVGRADEID, $grade) : false;
+            if($grade_->update()){
+                //update timemodified of grade item
+                $DB->set_field('grade_items', 'timemodified', $grade_->timemodified, array('id' => $itemid));
+                return self::update_grade($userid, self::$PRVGRADEID, $grade);
+            }
+            return false;
         }
     }
 
@@ -316,9 +319,15 @@ class local_gugcat {
     }
 
     public static function get_gcat_scale(){
-        $json = file_get_contents('gcat_scale.json');
-        $obj = json_decode($json);
-        return array_filter(array_merge(array(0), $obj->schedule_A));//starts 1 => H
+        global $CFG;
+        $json = @file_get_contents($CFG->dirroot .'/local/gugcat/gcat_scale.json');
+        $scale = array();
+        if($json !== false){
+            $obj = json_decode($json);
+            $scale = isset($obj) ? $obj->schedule_A : [];
+            return array_reverse(array_filter(array_merge(array(0), $scale)),true);//starts 1 => H
+        }
+        return $scale;
     }
 
     public static function notify_success($stridentifier){
