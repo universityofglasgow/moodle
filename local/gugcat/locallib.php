@@ -146,7 +146,7 @@ class local_gugcat {
     }
 
     public static function is_grademax22($gradetype, $grademax){
-        if ($gradetype == GRADE_TYPE_VALUE && $grademax == 22){
+        if (($gradetype == GRADE_TYPE_VALUE && $grademax == 22) || ($gradetype == GRADE_TYPE_SCALE && $grademax == 22)){
             return true;
         }
         return false;
