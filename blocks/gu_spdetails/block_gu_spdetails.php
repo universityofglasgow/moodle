@@ -65,7 +65,6 @@ class block_gu_spdetails extends block_base {
         $noassessments = $OUTPUT->image_url('noassessments', 'theme');
 
         $templatecontext = (array)[
-            'assessments'       => json_encode($assessments),
             'data'              => $assessments,
             'hasassessments'    => $hasassessments,
             'header_course'     => get_string('header_course', 'block_gu_spdetails'),
@@ -141,8 +140,6 @@ class block_gu_spdetails extends block_base {
                     $mod->feedbackduedate = self::return_feedback($userid, $mod->course, $mod->modname, $mod->id, $mod->instance,
                                                                   $mod->submissionid, $mod->feedback, $mod->finalgrade,
                                                                   $mod->dates->gradingduedate);
-                    $mod->turnitincfg = $DB->get_record('plagiarism_turnitin_config', array('cm' => $mod->id));
-                    $mod->turnitinfiles = $DB->get_record('plagiarism_turnitin_files', array('cm' => $mod->id, 'userid' => $userid));
                     $mod->status = self::return_status($mod->modname, $mod->finalgrade, $mod->dates, $activity);
 
                     if($isactivityvisible && $isallowedactivity && $mod->isstudent) {
