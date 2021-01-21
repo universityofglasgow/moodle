@@ -443,7 +443,7 @@ class block_gu_spdetails extends block_base {
                 $feedbackurl = ($feedbackobj->hasfeedback) ?
                                new moodle_url('/mod/'.$modname.'/view.php', array('id' => $cmid)) : null;
                 $feedbackobj->feedbackurl = ($feedbackobj->hasfeedback) ?
-                                            (($feedbackobj->assignfeedback) ?
+                                            ((!empty($feedbackobj->assignfeedback)) ?
                                              $feedbackurl.$footer : $feedbackurl.$intro) : null;
             }
         }
@@ -533,9 +533,9 @@ class block_gu_spdetails extends block_base {
     public static function retrieve_assignfeedback($userid, $instance) {
         global $DB;
 
-        $sql = 'SELECT ag.id, aff.id
+        $sql = 'SELECT ag.id, aff.id as `fileid`
                 FROM {assign_grades} ag
-                LEFT JOIN {assignfeedback_file} aff
+                JOIN {assignfeedback_file} aff
                 ON aff.grade = ag.id AND aff.assignment = ?
                 WHERE ag.assignment = ? AND ag.userid = ?';
         $conditions = array($instance, $instance, $userid);
