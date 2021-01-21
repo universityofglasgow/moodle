@@ -21,8 +21,10 @@
  * @author     Accenture
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-define(['jquery', 'core/str', 'core/modal_factory', 'local_gugcat/modal_gcat' ], function($, Str, ModalFactory, ModalGcat) {
+define(['jquery', 'core/str', 'core/modal_factory', 'local_gugcat/modal_gcat', 'core/sessionstorage'], 
+function($, Str, ModalFactory, ModalGcat, Storage) {
 
+    const BLIND_MARKING_KEY = 'blind-marking';
     //Returns boolean on check of the current url and match it to the path params
     const checkCurrentUrl = function(path) {
         var url = window.location.pathname;
@@ -32,6 +34,38 @@ define(['jquery', 'core/str', 'core/modal_factory', 'local_gugcat/modal_gcat' ],
     const update_reason_inputs = (val) =>{
         var list = document.querySelectorAll('.input-reason');
         list.forEach(input => input.value = val);
+    }
+
+    const check_blind_marking = () =>{
+        var btn_identities = document.getElementById('btn-identities');
+        var classes = document.querySelectorAll('.blind-marking');
+        if(btn_identities && classes.length > 0){
+            btn_identities.style.display = 'none';
+            classes.forEach(element => element.classList.add('hide-names'));
+            var is_blindmarking = (Storage.get(BLIND_MARKING_KEY) == 'true');
+            var strings = [
+                {
+                    key: 'showidentities',
+                    component: 'local_gugcat'
+                },
+                {
+                    key: 'hideidentities',
+                    component: 'local_gugcat'
+                }
+            ];
+            Str.get_strings(strings).then(function(langStrings){
+                btn_identities.textContent = is_blindmarking
+                    ?langStrings[0]//show
+                    :langStrings[1];//hide
+                btn_identities.style.display = 'inline-block';
+                classes.forEach(element => {
+                    is_blindmarking 
+                    ? element.classList.add('hide-names')
+                    : element.classList.remove('hide-names');
+                });
+            });
+           
+        }
     }
 
     const onChangeListeners = (event) =>{
@@ -93,6 +127,7 @@ define(['jquery', 'core/str', 'core/modal_factory', 'local_gugcat/modal_gcat' ],
         var btn_saveadd = document.getElementById('btn-saveadd');
         var btn_release = document.getElementById('btn-release');
         var btn_import = document.getElementById('btn-import');
+        var btn_identities = document.getElementById('btn-identities');
         var btn_coursegradeform = document.getElementById('btn-coursegradeform');
         var btn_download = document.getElementById('btn-download');
         var btn_finalrelease = document.getElementById('btn-finalrelease');
@@ -215,6 +250,11 @@ define(['jquery', 'core/str', 'core/modal_factory', 'local_gugcat/modal_gcat' ],
             case btn_download:
                 document.getElementById('downloadcsv-submit').click();
                 break;
+            case btn_identities:
+                var is_blindmarking = (Storage.get(BLIND_MARKING_KEY) == 'true');
+                Storage.set(BLIND_MARKING_KEY, !is_blindmarking);
+                check_blind_marking();
+                break;
             default:
                 break;
         }
@@ -227,6 +267,12 @@ define(['jquery', 'core/str', 'core/modal_factory', 'local_gugcat/modal_gcat' ],
                 GCAT.addEventListener('change', onChangeListeners);
                 GCAT.addEventListener('click', onClickListeners);
     
+                //if hide identities button is visible, add key in storage
+                if(document.getElementById('btn-identities') && !Storage.get(BLIND_MARKING_KEY)){
+                    Storage.set(BLIND_MARKING_KEY, false);
+                }
+                check_blind_marking();
+
                 var input_reason = document.getElementById('input-reason');
                 if(input_reason){
                     input_reason.addEventListener('input', (e) => {
