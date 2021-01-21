@@ -146,7 +146,7 @@ class local_gugcat {
     }
 
     public static function is_grademax22($gradetype, $grademax){
-        if (($gradetype == GRADE_TYPE_VALUE && $grademax == 22) || ($gradetype == GRADE_TYPE_SCALE && $grademax == 23)){
+        if (($gradetype == GRADE_TYPE_VALUE && intval($grademax) == 22)){
             return true;
         }
         return false;
@@ -324,7 +324,7 @@ class local_gugcat {
         if($json !== false){
             $obj = json_decode($json);
             $scale = isset($obj) ? $obj->schedule_A : [];
-            return array_filter(array_merge(array(0), $scale));//starts 1 => H
+            return array_reverse(array_filter(array_merge(array(0), $scale)),true);//starts 1 => H
         }
         return $scale;
     }
