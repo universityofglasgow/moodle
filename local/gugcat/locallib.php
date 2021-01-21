@@ -319,8 +319,7 @@ class local_gugcat {
     }
 
     public static function get_gcat_scale(){
-        global $CFG;
-        $json = @file_get_contents($CFG->dirroot . '/local/gugcat/gcat_scale.json');
+        $json = @file_get_contents('gcat_scale.json');
         $scale = array();
         if($json !== false){
             $obj = json_decode($json);
