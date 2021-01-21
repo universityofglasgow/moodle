@@ -89,7 +89,6 @@ class grade_aggregation{
             $gradecaptureitem->studentno = $student->id;
             $gradecaptureitem->surname = $student->lastname;
             $gradecaptureitem->forename = $student->firstname;
-            $gradecaptureitem->grdedresit = null;
             $gradecaptureitem->grades = array();
             $gbaggregatedgrade = $DB->get_record('grade_grades', array('itemid'=>$aggradeid, 'userid'=>$student->id));
             $floatweight = 0;
@@ -114,15 +113,15 @@ class grade_aggregation{
                     $grade = is_null($grd) ? ( $grditemresit ? 'N/A' : get_string('nograderecorded', 'local_gugcat')) : local_gugcat::convert_grade($grd);
                     $weight = 0;
                     $grdvalue = get_string('nograderecorded', 'local_gugcat');
-                    if($grditemresit && is_null($pg) && is_null($grd) && !$gradecaptureitem->grdedresit == 1)
-                        $gradecaptureitem->grdedresit = 0;
+                    if($grditemresit && is_null($pg) && is_null($grd) && !$gradecaptureitem->resitexist)
+                        $gradecaptureitem->resitexist = false;
                     else if(!is_null($pg) && !is_null($grd) && $grade !== MEDICAL_EXEMPTION_AC){
                         $weight = (float)$pg->information; //get weight from information column of provisional grades
                         $grdvalue = ($grade === NON_SUBMISSION_AC) ? 0 : (float)$grd - (float)1; //normalize to actual grade value for computation
                         $floatweight += ($grade === NON_SUBMISSION_AC) ? 0 : $weight;
                         $sumaggregated += ($grade === NON_SUBMISSION_AC) ?( 0 * (float)$grdvalue) : ((float)$grdvalue * $weight);
                         if($grditemresit && $weight == 0)
-                            $gradecaptureitem->grdedresit = 1;
+                            $gradecaptureitem->resitexist = true;
                     }
                     $gradecaptureitem->nonsubmission = ($grade === NON_SUBMISSION_AC) ? true : false;
                     $gradecaptureitem->medicalexemption = ($grade === MEDICAL_EXEMPTION_AC) ? true : false;
@@ -272,7 +271,7 @@ class grade_aggregation{
             foreach($taginstances as $taginstance){
                 $tag = $DB->get_field('tag', 'name', array('id'=>$taginstance->tagid));
 
-                if($tag = 'resit'){
+                if(!strcasecmp('resit', $tag)){
                     return true;
                 }
             }
