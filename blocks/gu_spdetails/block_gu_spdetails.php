@@ -139,12 +139,6 @@ class block_gu_spdetails extends block_base {
                     $mod->feedbackduedate = self::return_feedback($userid, $mod->course, $mod->modname, $mod->id, $mod->instance,
                                                                   $mod->submissionid, $mod->feedback, $mod->finalgrade,
                                                                   $mod->dates->gradingduedate);
-                    $mod->status = self::return_status($mod->modname, $mod->finalgrade, $mod->dates, $activity);
-                    $mod->turnitin = $DB->get_records('turnitintooltwo', array('course' => $courseid);
-                    $mod->turnitinsub = $DB->get_records('turnitintooltwo_submissions', array('userid' => $userid);
-                    $mod->turnitinconf =  $DB->get_records('plagiarism_turnitin_config', array('cm' => $mod->id);
-                    $mod->turnitincourses =  $DB->get_records('plagiarism_turnitin_courses', array('courseid' => $courseid);
-                    $mod->turnitinfiles =  $DB->get_records('plagiarism_turnitin_files', array('cm' => $mod->id, 'userid' => $userid);
 
                     if($isactivityvisible && $isallowedactivity && $mod->isstudent) {
                         array_push($assessments, $mod);
