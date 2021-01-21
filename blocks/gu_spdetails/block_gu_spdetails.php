@@ -135,10 +135,10 @@ class block_gu_spdetails extends block_base {
                     $mod->feedback = (!empty($mod->grades->feedback)) ? $mod->grades->feedback :
                                      ((!empty($mod->grades->feedbackformat) && $mod->modname === 'workshop') ?
                                       $mod->grades->feedbackformat : null);
-                    $mod->feedbackduedate = self::return_feedbackduedate($mod->feedback, $mod->finalgrade,
-                                                                         $mod->dates->gradingduedate);
-                    $mod->feedbackurl = self::return_feedbackurl($mod->feedbackduedate->hasfeedback, $mod->assessmenturl,
-                                                                 $mod->modname, $mod->id);
+                    $mod->submissionid = ($mod->modname === 'assign') ? $activity->submissionid : null;
+                    $mod->feedbackduedate = self::return_feedback($userid, $mod->course, $mod->modname, $mod->id, $mod->instance,
+                                                                  $mod->submissionid, $mod->feedback, $mod->finalgrade,
+                                                                  $mod->dates->gradingduedate);
                     $mod->status = self::return_status($mod->modname, $mod->finalgrade, $mod->dates, $activity);
 
                     if($isactivityvisible && $isallowedactivity && $mod->isstudent) {
@@ -180,7 +180,8 @@ class block_gu_spdetails extends block_base {
                            assign.gradingduedate, assign.teamsubmissiongroupingid,
                            auf.extensionduedate, ao.duedate as `overrideduedate`,
                            ao.allowsubmissionsfromdate as `overridestartdate`,
-                           ao.cutoffdate as `overridecutoffdate`, asub.status
+                           ao.cutoffdate as `overridecutoffdate`,
+                           asub.id as `submissionid`, asub.status
                            FROM {assign} assign
                            LEFT JOIN {assign_user_flags} auf
                            ON auf.userid = ? AND auf.assignment = assign.id
@@ -411,41 +412,42 @@ class block_gu_spdetails extends block_base {
         return $values[$grade];
     }
 
-    public static function return_feedbackduedate($feedback, $finalgrade, $gradingduedate) {
-        $duedateobj = new stdClass();
-        $duedateobj->hasfeedback = (!empty($feedback)) ? true : false;
-        $duedateobj->feedbacktext = get_string('due', 'block_gu_spdetails').
+    public static function return_feedback($userid, $courseid, $modname, $cmid, $instance, $itemid,
+                                           $feedback, $finalgrade, $gradingduedate) {
+        $feedbackobj = new stdClass();
+        $feedbackobj->hasfeedback = (!empty($feedback)) ? true : false;
+        $feedbackobj->feedbacktext = get_string('due', 'block_gu_spdetails').
                                     userdate($gradingduedate, get_string('convertdate', 'block_gu_spdetails'));
+        $feedbackobj->feedbackurl = null;
+        $footer = get_string('id_pagefooter', 'block_gu_spdetails');
+        $intro = get_string('id_intro', 'block_gu_spdetails');
 
-        if($duedateobj->hasfeedback) {
-            $duedateobj->hasfeedback = (($feedback === 'MV' || $feedback === 'NS') &&
+        if($feedbackobj->hasfeedback) {
+            $feedbackobj->hasfeedback = (($feedback === 'MV' || $feedback === 'NS') &&
                                         empty($finalgrade)) ? false : true;
-        }
-
-        if(!empty($finalgrade)) {
-            $duedateobj->feedbacktext = ($duedateobj->hasfeedback) ? get_string('readfeedback', 'block_gu_spdetails') :
-                                        get_string('nofeedback', 'block_gu_spdetails');
+            if($modname === 'workshop') {
+                $feedbackurl = new moodle_url('/mod/'.'workshop'.'/submission.php', array('cmid' => $cmid));
+                $feedbackobj->feedbackurl  = $feedbackurl.$footer;
+            }
         }else{
-            $duedateobj->feedbacktext = (empty($gradingduedate)) ? get_string('tobeconfirmed', 'block_gu_spdetails') :
-                                        ((time() > $gradingduedate) ? ucwords(get_string('overdue', 'block_gu_spdetails')) :
-                                         $duedateobj->feedbacktext);
+            if($modname === 'assign') {
+                $feedbackobj->file = self::retrieve_file($userid, $itemid);
+                $feedbackobj->tii = self::retrieve_turnitin($courseid, $userid, $itemid);
+                $feedbackobj->hasfeedback = $feedbackobj->hasfeedback ? true :
+                                            ((!empty($feedbackobj->file) && $finalgrade) ? true : false);
+                $feedbackurl = ($feedbackobj->hasfeedback) ?
+                               new moodle_url('/mod/'.$modname.'/view.php', array('id' => $cmid)) : null;
+                $feedbackobj->feedbackurl = ($feedbackobj->hasfeedback) ?
+                                            (!empty($feedbackobj->file) ? $feedbackurl.$intro : $feedbackurl.$footer) : null;
+            }
         }
 
-        return $duedateobj;
-    }
+        // Display feedback regardless if there's a grade or not.
+        $feedbackobj->feedbacktext = ($feedbackobj->hasfeedback) ? get_string('readfeedback', 'block_gu_spdetails') :
+                                     (((time() > $gradingduedate) ? ucwords(get_string('overdue', 'block_gu_spdetails')) :
+                                     $feedbackobj->feedbacktext));
 
-    public static function return_feedbackurl($hasfeedback, $assessmenturl, $modname, $cmid) {
-        $feedbackurl = null;
-
-        if($hasfeedback){
-            $feedbackurl = ($modname === 'workshop') ?
-                            new moodle_url('/mod/'.'workshop'.'/submission.php', array('cmid' => $cmid)) :
-                            $assessmenturl;
-            $footer = get_string('pagefooter', 'block_gu_spdetails');
-            $feedbackurl = $feedbackurl.$footer;
-        }
-
-        return $feedbackurl;
+        return $feedbackobj;
     }
 
     public static function return_status($modname, $finalgrade, $dates, $activity) {
@@ -507,5 +509,36 @@ class block_gu_spdetails extends block_base {
         $isstudent = in_array(get_string('student', 'block_gu_spdetails'), $roles_array);
 
         return $isstudent;
+    }
+
+    public static function retrieve_file($userid, $itemid) {
+        global $DB;
+        $filetype = 'assignsubmission_file';
+
+        $sql = 'SELECT *
+                FROM {files}
+                WHERE userid = ? AND itemid = ?
+                AND component = ? AND filesize > 0';
+        $conditions = array($userid, $itemid, $filetype);
+
+        $file = $DB->get_record_sql($sql, $conditions);
+        return $file;
+    }
+
+    public static function retrieve_turnitin($courseid, $userid, $itemid) {
+        global $DB;
+
+        $sql = 'SELECT *
+                        FROM {turnitintooltwo} tii
+                        LEFT JOIN {turnitintooltwo_submissions} tiisub
+                        ON tiisub.userid = ? AND tiisub.turnitintooltwoid = tii.id
+                        LEFT JOIN {turnitintooltwo_courses} tiicourse
+                        ON tiicourse.courseid = ?
+                        LEFT JOIN {plagiarism_turnitin_files} tiifile
+                        ON tiifile.itemid = ?
+                        WHERE tii.course = ?';
+        $conditions = array($userid, $courseid, $itemid, $courseid);
+        $turnitin = $DB->get_records_sql($sql, $conditions);
+        return $turnitin;
     }
 }
