@@ -257,7 +257,7 @@ class grade_capture{
                 $assign = new assign(context_module::instance($module->id), $module, $courseid);
                 $asgrd = $assign->get_user_grade($student->id, false);
                 if(isset($asgrd->grade)){
-                    $asgrd = $gbg->grade;
+                    $asgrd->grade = $gbg->grade;
                     $grade = !is_null($admingrade) ? $admingrade : (($asgrd && !is_null($asgrd->grade) && ($asgrd->grader>=0)) ? ($asgrd->grade + $gradescaleoffset) : null);
                     local_gugcat::update_workflow_state($assign, $student->id, ASSIGN_MARKING_WORKFLOW_STATE_INREVIEW);
                 }else {
