@@ -432,7 +432,7 @@ class block_gu_spdetails extends block_base {
             $feedbackobj->feedbackurl  = $feedbackurl.$footer;
         }else{
             if($modname === 'assign') {
-                $feedbackobj->file = self::retrieve_file($userid, $itemid);
+                $feedbackobj->file = self::retrieve_files($userid, $itemid);
                 $feedbackobj->assignfeedback = self::retrieve_assignfeedback($userid, $instance);
                 $feedbackobj->turnitincfg = self::retrieve_turnitincfg($cmid);
                 $feedbackobj->hasfeedback = $feedbackobj->hasfeedback ? true :
@@ -516,7 +516,7 @@ class block_gu_spdetails extends block_base {
         return $isstudent;
     }
 
-    public static function retrieve_file($userid, $itemid) {
+    public static function retrieve_files($userid, $itemid) {
         global $DB;
         $filetype = 'assignsubmission_file';
 
@@ -526,7 +526,7 @@ class block_gu_spdetails extends block_base {
                 AND component = ? AND filesize > 0';
         $conditions = array($userid, $itemid, $filetype);
 
-        $file = $DB->get_record_sql($sql, $conditions);
+        $file = $DB->get_records_sql($sql, $conditions);
         return $file;
     }
 
