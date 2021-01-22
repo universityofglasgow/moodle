@@ -81,9 +81,9 @@ if ($fromform = $mform->get_data()) {
     
     $gradeitemid = local_gugcat::add_grade_item($courseid, $gradereason, $module);
     $grades = local_gugcat::add_update_grades($studentid, $gradeitemid, $fromform->grade, $fromform->notes, $fromform->userfile);
-    $url = '/local/gugcat/index.php?id='.$courseid.'&activityid='.$activityid;
+    $url = new moodle_url('/local/gugcat/index.php', array('id' => $courseid, 'activityid' => $activityid));
     $url .= (($categoryid !== 0) ? '&categoryid='.$categoryid : null);
-    redirect($CFG->wwwroot . $url);
+    redirect($url);
     exit;
 }   
 
