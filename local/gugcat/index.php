@@ -86,6 +86,10 @@ if (!empty($groups)){
     $students = get_enrolled_users($coursecontext, 'moodle/competency:coursecompetencygradable', $groupid);
 }
 
+if(!is_null($courseid) && !is_null($categoryid)){
+    $PAGE->navbar->add(get_string('navname', 'local_gugcat'), $URL);
+}
+
 //populate $STUDENTS
 local_gugcat::$STUDENTS = $students;
 //populate provisional grade id and set it to static
