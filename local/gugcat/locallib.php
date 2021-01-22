@@ -152,6 +152,13 @@ class local_gugcat {
         return false;
     }
 
+    public static function is_scheduleAscale($gradetype, $grademax){
+        if (($gradetype == GRADE_TYPE_SCALE && intval($grademax) == 23)){
+            return true;
+        }
+        return false;
+    }
+
     public static function get_gcat_grade_category_id($courseid){
         global $DB;
         $grdcategorystr = get_string('gcat_category', 'local_gugcat');
@@ -424,5 +431,19 @@ class local_gugcat {
             download_as_dataformat($filename, $dataformat, $columns, $iterator);
             exit;
         } 
+    }
+
+    public static function is_blind_marking($module = null){
+        global $COURSE;
+        if(has_capability('moodle/site:approvecourse', context_system::instance())){
+            return false;
+        }else{
+            if(!is_null($module)){
+                $assign = new assign(context_module::instance($module->id), $module, $COURSE->id);
+                return $assign->get_instance()->blindmarking == 1;
+            }else{
+                return true;//aggregation tool
+            }
+        }
     }
 }

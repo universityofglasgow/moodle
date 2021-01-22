@@ -62,7 +62,7 @@ if(isset($requireresit) && !empty($rowstudentid)){
     grade_aggregation::require_resit($rowstudentid);
     unset($requireresit);
     unset($rowstudentid);
-    redirect(htmlspecialchars_decode($URL));
+    redirect($URL);
     exit;
 }else if(isset($finalrelease)){
     if(!in_array("", $finalgrades)){
@@ -76,12 +76,12 @@ if(isset($requireresit) && !empty($rowstudentid)){
     unset($finalrelease);
     unset($finalgrades);
     unset($cminstances);
-    redirect(htmlspecialchars_decode($URL));
+    redirect($URL);
     exit;
 }else if(isset($downloadcsv)){
     grade_aggregation::export_aggregation_tool($course, $activities, $students);
     unset($downloadcsv);
-    redirect(htmlspecialchars_decode($URL));
+    redirect($URL);
     exit;
 }
 
