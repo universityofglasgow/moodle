@@ -63,14 +63,7 @@ if(!empty($activities)){
     $gradetype = $selectedmodule->gradeitem->gradetype;
     $grademax = $selectedmodule->gradeitem->grademax;
 
-    if (is_null($scaleid)){
-        $valid_22point_scale = local_gugcat::is_grademax22($gradetype, $grademax);
-        $scaleid = $valid_22point_scale ? null : $scaleid;
-    }
-    else{
-        $valid_22point_scale = local_gugcat::is_scheduleAscale($gradetype, $grademax);
-        $scaleid = $valid_22point_scale ? null : $scaleid;
-    }
+    $valid_22point_scale = is_null($scaleid) ? local_gugcat::is_grademax22($gradetype, $grademax) : local_gugcat::is_scheduleAscale($gradetype, $grademax);
 
     //populate $GRADES with scales
     local_gugcat::set_grade_scale($scaleid);
@@ -135,8 +128,7 @@ if (isset($release) && isset($prvgrades)){
     if ($valid_22point_scale){
         grade_capture::import_from_gradebook($courseid, $selectedmodule, $students, $activities);
         local_gugcat::notify_success('successimport');
-    }
-    else{
+    }else{
         local_gugcat::notify_error('importerror');
     }
     unset($importgrades);
