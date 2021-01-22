@@ -98,6 +98,7 @@ $string['successimport'] = 'Successfully imported grades from gradebook';
 $string['successadjustweight'] = 'Successfully adjusted course weightings';
 $string['supportingdocument'] = "Supporting Documentation";
 $string['surname'] = 'Surname';
+$string['switchondisplay'] = 'Switch on display of Course Page on Student Dashboard';
 $string['title'] = 'Grade Capture & Course Grade Aggregation';
 $string['valuemust'] = 'Value must equal 100%';
 
