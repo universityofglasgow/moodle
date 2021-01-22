@@ -200,8 +200,9 @@ class local_gugcat_renderer extends plugin_renderer_base {
                         button.click();
                         "></i></td>';
             $htmlrows .= html_writer::tag('td', $row->completed);
+            $zero_resit_weight = $row->resitexist ? 'zero-resit-weight': '';
             $htmlrows .= ($row->aggregatedgrade->display != get_string('missinggrade', 'local_gugcat')) 
-            ? html_writer::start_tag('td').$row->aggregatedgrade->display.$this->context_actions($row->studentno, null, true, str_replace('_cnum', $row->cnum, $gradeformurl), true).html_writer::end_tag('td')
+            ? html_writer::start_tag('td', array('class' => $zero_resit_weight)).$row->aggregatedgrade->display.$this->context_actions($row->studentno, null, true, str_replace('_cnum', $row->cnum, $gradeformurl), true).html_writer::end_tag('td')
             : html_writer::tag('td', $row->aggregatedgrade->display);
             $htmlrows .= html_writer::end_tag('tr');
         }
