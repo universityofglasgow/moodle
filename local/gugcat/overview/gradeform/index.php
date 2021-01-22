@@ -70,14 +70,14 @@ if ($fromform = $mform->get_data()) {
         if(array_sum($weights) != 100){
             local_gugcat::notify_error('errortotalweight');
             $urlparams = "?id=$courseid&setting=$formtype&studentid=$studentid&cnum=$cnum";
-            redirect(htmlspecialchars_decode($URL));
+            redirect($URL);
             exit;
         }else{
             grade_aggregation::adjust_course_weight($weights, $courseid, $studentid, $fromform->notes);
         }
     }
-    $url = '/local/gugcat/overview/index.php?id='.$courseid;
-    redirect($CFG->wwwroot . $url);
+    $url = new moodle_url('/local/gugcat/overview/index.php', array('id' => $courseid));
+    redirect($url);
     exit;
 }   
 
