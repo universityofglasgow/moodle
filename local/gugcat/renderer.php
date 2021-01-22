@@ -334,6 +334,15 @@ class local_gugcat_renderer extends plugin_renderer_base {
         return $html;
     }  
 
+    private function gcat_settings() {
+        $html = html_writer::tag('i', null, array('id' => 'gcat-cog', 'class' => 'fa fa-cog', 'data-toggle' => 'dropdown'));
+        $html .= html_writer::start_tag('ul', array('class' => 'dropdown-menu'));
+        $html .= html_writer::tag('li', get_string('hideidentities', 'local_gugcat'), array('id'=>'btn-identities', 'class' => 'dropdown-item'));
+        $html .= html_writer::tag('li', get_string('switchondisplay', 'local_gugcat'), array('class' => 'dropdown-item'));
+        $html .= html_writer::end_tag('ul');
+        return $html;
+    }  
+
     private function header() {
         $courseid = $this->page->course->id;
         $categoryid = optional_param('categoryid', null, PARAM_INT);
@@ -357,7 +366,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
             'select-category',
             'select-category');
         $html .= has_capability('moodle/site:approvecourse', context_system::instance())
-            ? html_writer::tag('button', get_string('hideidentities', 'local_gugcat'), array('id'=>'btn-identities', 'class'=>'btn btn-default btn-blue', 'name'=>'showhideidentities', 'type'=>'button'))
+            ? $this->gcat_settings() 
             : null;
         $html .= html_writer::end_tag('div');
         $html .= $this->render_from_template('local_gugcat/gcat_tabs', (object)[
