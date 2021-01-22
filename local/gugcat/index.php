@@ -149,7 +149,8 @@ $rows = grade_capture::get_rows($course, $selectedmodule, $students);
 $columns = grade_capture::get_columns();
 
 echo $OUTPUT->header();
-$PAGE->set_cm($selectedmodule);
+if(!empty($activities))
+    $PAGE->set_cm($selectedmodule);
 $renderer = $PAGE->get_renderer('local_gugcat');
 echo $renderer->display_grade_capture($activities, $rows, $columns);
 echo $OUTPUT->footer();
