@@ -24,7 +24,7 @@
  */
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->libdir.'/gradelib.php');
+require_once($CFG->libdir. '/gradelib.php');
 require_once($CFG->dirroot . '/grade/querylib.php');
 
 class block_gu_spdetails extends block_base {
@@ -100,49 +100,45 @@ class block_gu_spdetails extends block_base {
 
             if (is_array($mods) || is_object($mods)) {
                 foreach($mods as $mod) {
-                    $modinfo = get_fast_modinfo($mod->course);
-                    $course = get_course($courseid);
-                    $cm = $modinfo->get_cm($mod->id);
+                    list($course, $cm) = get_course_and_cm_from_cmid($mod->id, $mod->modname, $mod->course);
+                    $iscmvisible = $cm->uservisible;
+                    $iscmallowed = in_array($mod->modname, $allowedactivities);
+                    $mod->isstudent = self::return_isstudent($userid, $mod->course);
 
-                    $isactivityvisible = $cm->uservisible;
-                    $isallowedactivity = in_array($mod->modname, $allowedactivities);
-                    $mod->isstudent = self::return_isstudent($userid, $courseid);
+                    if($iscmvisible && $iscmallowed && $mod->isstudent) {
+                        $completionview = $cm->completionview;
+                        $completiontype = $cm->completiongradeitemnumber;
+                        $activity = self::retrieve_activity($mod->modname, $mod->instance, $mod->course, $userid);
+                        $gradeitem = self::retrieve_gradeitem($mod->course, $mod->modname, $mod->instance, $activity);
+                        $gradecategory = self::retrieve_gradecategory($gradeitem->categoryid);
+                        $mod->grades = self::retrieve_grades($userid, $gradeitem->id);
+                        $mod->isprovisional = (!isset($mod->grades->information)) ? true : false;
+                        $mod->provisionaltext = ($mod->isprovisional) ? get_string('provisional', 'block_gu_spdetails') : null;
 
-                    $completionview = $cm->completionview;
-                    $completiontype = $cm->completiongradeitemnumber;
-                    $activity = self::retrieve_activity($mod->modname, $mod->instance, $mod->course, $userid);
-                    $gradeitem = self::retrieve_gradeitem($mod->course, $mod->modname, $mod->instance, $activity);
-                    $gradecategory = self::retrieve_gradecategory($gradeitem->categoryid);
-                    $mod->grades = self::retrieve_grades($userid, $gradeitem->id);
-                    $mod->isprovisional = (!isset($mod->grades->information)) ? true : false;
-                    $mod->provisionaltext = ($mod->isprovisional) ? get_string('provisional', 'block_gu_spdetails') : null;
-
-                    $mod->coursename = $course->fullname;
-                    $mod->coursecode = $course->shortname;
-                    $mod->coursetitle = self::return_coursetitle($mod->course, $mod->section, $mod->coursename);
-                    $mod->courseurl = self::return_courseurl($mod->course);
-                    $mod->assessmenturl = self::return_assessmenturl($mod->id, $mod->modname);
-                    $mod->assessmenttype = self::return_assessmenttype($gradecategory->fullname);
-                    $mod->weight = self::return_weight($mod->assessmenttype, $gradecategory->aggregation,
-                                                    $gradeitem->aggregationcoef, $gradeitem->aggregationcoef2);
-                    $mod->finalgrade = self::return_grade($gradeitem, $mod->grades);
-                    $mod->dates = self::return_dates($mod->modname, $activity);
-                    $mod->dates->formattedduedate = (!empty($mod->dates->duedate)) ?
-                                                    userdate($mod->dates->duedate,
-                                                             get_string('convertdate', 'block_gu_spdetails')) :
-                                                    get_string('emptyvalue', 'block_gu_spdetails');
-                    $mod->dates->gradingduedate = (isset($mod->dates->gradingduedate)) ? $mod->dates->gradingduedate : '0';
-                    $mod->gradingduedate = self::return_gradingduedate($mod->finalgrade, $mod->dates->gradingduedate);
-                    $mod->feedback = (!empty($mod->grades->feedback)) ? $mod->grades->feedback :
-                                     ((!empty($mod->grades->feedbackformat) && $mod->modname === 'workshop') ?
-                                      $mod->grades->feedbackformat : null);
-                    $mod->submissionid = ($mod->modname === 'assign') ? $activity->submissionid : null;
-                    $mod->feedbackduedate = self::return_feedback($userid, $mod->course, $mod->modname, $mod->id, $mod->instance,
-                                                                  $mod->submissionid, $mod->feedback, $mod->finalgrade,
-                                                                  $mod->dates->gradingduedate);
-                    $mod->status = self::return_status($mod->modname, $mod->finalgrade, $mod->dates, $activity);
-
-                    if($isactivityvisible && $isallowedactivity && $mod->isstudent) {
+                        $mod->coursename = $course->fullname;
+                        $mod->coursecode = $course->shortname;
+                        $mod->coursetitle = self::return_coursetitle($mod->course, $mod->section, $mod->coursename);
+                        $mod->courseurl = self::return_courseurl($mod->course);
+                        $mod->assessmenturl = self::return_assessmenturl($mod->id, $mod->modname);
+                        $mod->assessmenttype = self::return_assessmenttype($gradecategory->fullname);
+                        $mod->weight = self::return_weight($mod->assessmenttype, $gradecategory->aggregation,
+                                                        $gradeitem->aggregationcoef, $gradeitem->aggregationcoef2);
+                        $mod->finalgrade = self::return_grade($gradeitem, $mod->grades);
+                        $mod->dates = self::return_dates($mod->modname, $activity);
+                        $mod->dates->formattedduedate = (!empty($mod->dates->duedate)) ?
+                                                        userdate($mod->dates->duedate,
+                                                                get_string('convertdate', 'block_gu_spdetails')) :
+                                                        get_string('emptyvalue', 'block_gu_spdetails');
+                        $mod->dates->gradingduedate = (isset($mod->dates->gradingduedate)) ? $mod->dates->gradingduedate : '0';
+                        $mod->gradingduedate = self::return_gradingduedate($mod->finalgrade, $mod->dates->gradingduedate);
+                        $mod->feedback = (!empty($mod->grades->feedback)) ? $mod->grades->feedback :
+                                        ((!empty($mod->grades->feedbackformat) && $mod->modname === 'workshop') ?
+                                        $mod->grades->feedbackformat : null);
+                        $mod->submissionid = ($mod->modname === 'assign') ? $activity->submissionid : null;
+                        $mod->feedbackduedate = self::return_feedback($userid, $mod->course, $mod->modname, $mod->id, $mod->instance,
+                                                                    $mod->submissionid, $mod->feedback, $mod->finalgrade,
+                                                                    $mod->dates->gradingduedate);
+                        $mod->status = self::return_status($mod->modname, $mod->finalgrade, $mod->dates, $activity);
                         array_push($assessments, $mod);
                     }
                 }
@@ -204,16 +200,12 @@ class block_gu_spdetails extends block_base {
                         quiz.timeclose as `duedate`, quiz.attempts,
                         qo.timeopen as `overridestartdate`,
                         qo.timeclose as `overrideduedate`,
-                        qo.attempts as `overrideattempts`,
-                        qa.attempt, qa.state
+                        qo.attempts as `overrideattempts`
                         FROM {quiz} quiz
                         LEFT JOIN {quiz_overrides} qo
                         ON qo.quiz = quiz.id AND qo.userid = ?
-                        LEFT JOIN {quiz_attempts} qa
-                        ON qa.quiz = quiz.id AND qa.attempt = quiz.attempts
-                        AND qa.userid = ?
                         WHERE quiz.id = ? AND quiz.course = ?';
-                $conditions = array($userid, $userid, $instance, $courseid);
+                $conditions = array($userid, $instance, $courseid);
                 $activity = $DB->get_record_sql($sql, $conditions);
                 break;
             case 'workshop':
