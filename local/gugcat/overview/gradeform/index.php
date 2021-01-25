@@ -57,6 +57,9 @@ $activities = local_gugcat::get_activities($courseid);
 $rows = grade_aggregation::get_rows($course, $activities, $studentarr);
 $student = $rows[0];
 $student->cnum = $cnum; //candidate no.
+$student->id = $student->studentno; 
+$student->lastname = $student->surname; 
+$student->firstname = $student->forename;
 $mform = new coursegradeform(null, array('id'=>$courseid, 'studentid'=>$studentid, 'setting'=>$formtype, 'student'=>$student));
 if ($fromform = $mform->get_data()) {
     if($formtype == OVERRIDE_GRADE_FORM){
@@ -67,19 +70,19 @@ if ($fromform = $mform->get_data()) {
         if(array_sum($weights) != 100){
             local_gugcat::notify_error('errortotalweight');
             $urlparams = "?id=$courseid&setting=$formtype&studentid=$studentid&cnum=$cnum";
-            redirect(htmlspecialchars_decode($URL));
+            redirect($URL);
             exit;
         }else{
             grade_aggregation::adjust_course_weight($weights, $courseid, $studentid, $fromform->notes);
         }
     }
-    $url = '/local/gugcat/overview/index.php?id='.$courseid;
-    redirect($CFG->wwwroot . $url);
+    $url = new moodle_url('/local/gugcat/overview/index.php', array('id' => $courseid));
+    redirect($url);
     exit;
 }   
 
 echo $OUTPUT->header();
 $renderer = $PAGE->get_renderer('local_gugcat');
-echo $renderer->display_overview_adjust_grade_form($student);
+echo $renderer->display_adjust_override_grade_form($student);
 $mform->display();
 echo $OUTPUT->footer();
