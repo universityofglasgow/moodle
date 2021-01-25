@@ -110,7 +110,7 @@ class grade_aggregation{
                         $scaleid = null;
                     }
                     local_gugcat::set_grade_scale($scaleid);
-                    $grade = is_null($grd) ? ( $grditemresit ? 'N/A' : get_string('nograderecorded', 'local_gugcat')) : local_gugcat::convert_grade($grd);
+                    $grade = is_null($grd) ? ( $grditemresit ? get_string('nograderesit', 'local_gugcat') : get_string('nograderecorded', 'local_gugcat')) : local_gugcat::convert_grade($grd);
                     $weight = 0;
                     $grdvalue = get_string('nograderecorded', 'local_gugcat');
                     if($grditemresit && is_null($pg) && is_null($grd) && !$gradecaptureitem->resitexist)
@@ -225,7 +225,9 @@ class grade_aggregation{
     public static function export_aggregation_tool($course, $modules, $students){
         $table = get_string('aggregationtool', 'local_gugcat');
         $filename = "export_$table"."_".date('Y-m-d_His');    
-        $columns = ['candidate_number', 'student_number', 'surname', 'forename'];
+        $columns = ['candidate_number', 'student_number'];
+        $is_blind_marking = local_gugcat::is_blind_marking();
+        $is_blind_marking ? null : array_push($columns, ...array('surname', 'forename'));
         //Process the activity names
         $activities = array();
         foreach($modules as $cm) {
@@ -244,8 +246,10 @@ class grade_aggregation{
             $student = new stdClass();
             $student->candidate_number = $row->cnum;
             $student->student_number = $row->studentno;
-            $student->surname = $row->surname;
-            $student->forename = $row->forename;
+            if(!$is_blind_marking){
+                $student->surname = $row->surname;
+                $student->forename = $row->forename;
+            }
             foreach($activities as $key=>$act) {
                 $student->{$act[0]} = $row->grades[$key]->weight.'%';//weight
                 $student->{$act[1]} = $row->grades[$key]->grade; //alphanumeric

@@ -13,6 +13,14 @@
 
 .gcat-header{
     margin: 15px 0;
+    display: flex;
+    justify-content: space-between;
+}
+
+#gcat-cog{
+    color: #005c8a;
+    font-size: 36px;
+    cursor: pointer;
 }
 
 /* Icons style */
@@ -205,6 +213,10 @@ td > .grade-discrepancy{
     font-size: 11px;
     padding: .2rem;
     cursor: pointer;
+}
+
+.dropdown-item.active, .dropdown-item:active {
+    background-color: #005c8a;
 }
 
 /* Hide submit buttons */
