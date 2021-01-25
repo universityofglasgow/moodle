@@ -52,6 +52,9 @@ class local_gugcat_testcase extends advanced_testcase {
         $cm = local_gugcat::get_activities($this->course->id);
         $key = key($cm);
         $this->cm = $cm[$key];
+        $modinfo = get_fast_modinfo($this->course);
+        $cm_info = $modinfo->get_cm($this->cm->id);
+        $this->assign = new assign(context_module::instance($cm_info->id), $cm_info, $this->course->id);
 
         //create grade items
         $this->gradeitem = new grade_item($gen->create_grade_item(['courseid' => $this->course->id, 'iteminfo' => $this->cm->id]), false);
@@ -229,5 +232,34 @@ class local_gugcat_testcase extends advanced_testcase {
         $this->assertEquals($notesitemid1, $gradehistory[0]->notes);
         $this->assertEquals($sndgrditemstr, $gradehistory[1]->type);
         $this->assertEquals($expectednotes, $gradehistory[1]->notes);
+    }
+
+    public function test_blind_marking() {
+        global $DB;
+        // True for staff role, null module
+        $this->assertTrue(local_gugcat::is_blind_marking());
+        
+        // False for staff role, with module blind marking = 0
+        $this->assertFalse(local_gugcat::is_blind_marking($this->cm));
+
+        //enable blind marking
+        $assign = $this->assign;
+        $instance = $assign->get_instance();
+        $instance->instance = $instance->id;
+        $instance->blindmarking = 1; 
+        $assign->update_instance($instance);
+        // True for staff role, with module blind marking = 1
+        $this->assertTrue(local_gugcat::is_blind_marking($this->cm));
+        
+        // Check for Manager role.
+        $manager = $this->getDataGenerator()->create_user();
+        $context = context_system::instance();
+        $managerroleid = $DB->get_field('role', 'id', array('shortname' => 'manager'));
+        role_assign($managerroleid, $manager->id, $context->id);
+        accesslib_clear_all_caches_for_unit_testing();
+        $this->setUser($manager);//set user as manager
+
+        // False for manager role regardless of course module
+        $this->assertFalse(local_gugcat::is_blind_marking($this->cm));
     }
 }
