@@ -110,7 +110,7 @@ class grade_aggregation{
                         $scaleid = null;
                     }
                     local_gugcat::set_grade_scale($scaleid);
-                    $grade = is_null($grd) ? ( $grditemresit ? 'N/A' : get_string('nograderecorded', 'local_gugcat')) : local_gugcat::convert_grade($grd);
+                    $grade = is_null($grd) ? ( $grditemresit ? get_string('nograderesit', 'local_gugcat') : get_string('nograderecorded', 'local_gugcat')) : local_gugcat::convert_grade($grd);
                     $weight = 0;
                     $grdvalue = get_string('nograderecorded', 'local_gugcat');
                     if($grditemresit && is_null($pg) && is_null($grd) && !$gradecaptureitem->resitexist)
