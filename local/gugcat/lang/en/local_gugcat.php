@@ -70,6 +70,7 @@ $string['navname'] = 'Grade Capture and Aggregation';
 $string['nograde'] = 'Pending information';
 $string['nograderecorded'] = 'No grade recorded';
 $string['nogradeimport'] = 'Awaiting Grade Import';
+$string['nograderesit'] = 'N/A';
 $string['notes'] = 'Notes';
 $string['overrideggregrade'] = 'Override aggregated course grade';
 $string['overridestudgrade'] = "Override student's aggregated course grade";
