@@ -447,7 +447,7 @@ class local_gugcat {
             if(!is_null($module)){
                 if($module->modname === 'assign'){
                     $assign = new assign(context_module::instance($module->id), $module, $COURSE->id);
-                    return $assign->get_instance()->blindmarking == 1;
+                    return $assign->is_blind_marking();
                 }
                 return false;
             }else{
