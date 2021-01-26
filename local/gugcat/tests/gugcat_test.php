@@ -59,7 +59,7 @@ class local_gugcat_testcase extends advanced_testcase {
         //create grade items
         $this->gradeitem = new grade_item($gen->create_grade_item(['courseid' => $this->course->id, 'iteminfo' => $this->cm->id]), false);
         $this->provisionalgi = new grade_item($gen->create_grade_item(['courseid' => $this->course->id, 
-        'iteminfo' => $this->cm->id, 
+        'iteminfo' => $this->cm->gradeitemid, 
         'itemname' => get_string('provisionalgrd', 'local_gugcat')
         ]), false);
 
@@ -119,7 +119,7 @@ class local_gugcat_testcase extends advanced_testcase {
     }
 
     public function test_check_course_activities() {
-        $activities = local_gugcat::get_activities($this->course->id, $this->cm->id);
+        $activities = local_gugcat::get_activities($this->course->id);
         $mods = array_reverse($activities);
         $mod = array_pop($mods);
         $this->assertEquals($mod->id, $this->cm->id);
@@ -155,18 +155,18 @@ class local_gugcat_testcase extends advanced_testcase {
         $sndgradestr = get_string('gi_secondgrade', 'local_gugcat');
         $sndgradegi = new grade_item($gen->create_grade_item([
             'courseid' => $this->course->id, 
-            'iteminfo' => $this->cm->id,
+            'iteminfo' => $this->cm->gradeitemid,
             'itemname' => $sndgradestr,
             ]), false);
 
-        $id = local_gugcat::get_grade_item_id($this->course->id, $this->cm->id, $sndgradestr);
+        $id = local_gugcat::get_grade_item_id($this->course->id, $this->cm->gradeitemid, $sndgradestr);
         $this->assertEquals( $id, $sndgradegi->id);
     }
 
     public function test_add_grade_item(){
         $sndgradestr = get_string('gi_secondgrade', 'local_gugcat');
         $gradeitemid = local_gugcat::add_grade_item($this->course->id, $sndgradestr, $this->cm);
-        $id = local_gugcat::get_grade_item_id($this->course->id, $this->cm->id, $sndgradestr);
+        $id = local_gugcat::get_grade_item_id($this->course->id, $this->cm->gradeitemid, $sndgradestr);
         $this->assertEquals($gradeitemid, $id);
     }
 

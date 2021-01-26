@@ -76,18 +76,24 @@ class local_gugcat {
      * Returns all activities/modules for specific course
      *
      * @param int $courseid
-     * @param int $activityid
      */
     public static function get_activities($courseid){
         $activityid = optional_param('activityid', null, PARAM_INT);
         $categoryid = optional_param('categoryid', null, PARAM_INT);
-        $mods = grade_get_gradable_activities($courseid);
+        $mods = self::grade_get_gradable_activities($courseid);
+    
+        //get whole grading forums and workshop assessment | itemnumber = 1
+        $wholegradingforums = self::grade_get_gradable_activities($courseid, 'forum', 1);
+        $assessmentworkshops = self::grade_get_gradable_activities($courseid, 'workshop', 1);
+
         $activities = array();
-        if($mods){
+        if(count($mods) > 0 || count($wholegradingforums) > 0 || count($assessmentworkshops) > 0){
+            $mods = array_values($mods) + $wholegradingforums + $assessmentworkshops;
             foreach($mods as $cm) {
-                $activities[$cm->id] = $cm;
-                $activities[$cm->id]->selected = (strval($activityid) === $cm->id)? 'selected' : '';
-                $activities[$cm->id]->gradeitem = grade_item::fetch(array('itemtype'=>'mod', 'itemmodule'=>$cm->modname, 'iteminstance'=>$cm->instance, 'courseid'=>$courseid, 'itemnumber'=>0));
+                $gi = new grade_item(array('id'=>$cm->gradeitemid), true);
+                $activities[$gi->id]= $cm;
+                $activities[$gi->id]->gradeitem = $gi;
+                $activities[$gi->id]->selected = (strval($activityid) === $gi->id)? 'selected' : '';
             }
             if(!is_null($categoryid) && $categoryid !== 0){
                 foreach ($activities as $key=>$activity) {
@@ -109,7 +115,7 @@ class local_gugcat {
     public static function get_grade_grade_items($course, $module){
         global $DB;
         $select = 'courseid = '.$course->id.' AND '.self::compare_iteminfo();
-        $gradeitems = $DB->get_records_select('grade_items', $select, ['iteminfo' => $module->id], 'timemodified');
+        $gradeitems = $DB->get_records_select('grade_items', $select, ['iteminfo' => $module->gradeitemid], 'timemodified');
         $sort = 'id';
         $fields = 'userid, itemid, id, rawgrade, finalgrade, timemodified, hidden';
         foreach($gradeitems as $item) {
@@ -140,7 +146,7 @@ class local_gugcat {
         $params = [
             'courseid' => $courseid,
             'itemname' => $itemname,
-            'iteminfo' => $modid
+            'iteminfo' => $modid //modid = gradeitemid
         ];
         return $DB->get_field_select('grade_items', 'id', $select, $params);
     }
@@ -198,14 +204,14 @@ class local_gugcat {
                 return $gradeitemid;
             }
         }else{
-            // check if gradeitem already exists using $itemname, $courseid, $activityid
-            if(!$gradeitemid = self::get_grade_item_id($courseid, $mod->id, $itemname)){
+            // check if gradeitem already exists using $itemname, $courseid, $activityid (gradeitemid)
+            if(!$gradeitemid = self::get_grade_item_id($courseid, $mod->gradeitemid, $itemname)){
                 $params_mod = [
                     'scaleid' => $mod->gradeitem->scaleid,
                     'grademin' => 1,
                     'grademax' => sizeof(self::$GRADES),
                     'gradetype' => 2,
-                    'iteminfo' => $mod->id,
+                    'iteminfo' => $mod->gradeitemid,
                     'itemname' => $itemname
                 ];
                 // create new gradeitem
@@ -384,7 +390,7 @@ class local_gugcat {
     public static function get_grade_history($courseid, $module, $studentid){
         global $DB;
         $select = 'courseid = '.$courseid.' AND '.self::compare_iteminfo();
-        $gradeitems = $DB->get_records_select('grade_items', $select, ['iteminfo' => $module->id]);
+        $gradeitems = $DB->get_records_select('grade_items', $select, ['iteminfo' => $module->gradeitemid]);
         unset($gradeitems[self::$PRVGRADEID]);
         $grades_arr = array();
         foreach($gradeitems as $gradeitem){
@@ -449,4 +455,37 @@ class local_gugcat {
             }
         }
     }
+    //custom get gradeable activities
+    private static function grade_get_gradable_activities($courseid, $modulename='', $itemnumber = 0) {
+        global $DB;
+        if (empty($modulename)) {
+            $modules = array('assign', 'forum', 'quiz', 'workshop');//modules supported by gcat
+            $result = array();
+            foreach ($modules as $module) {
+                if ($cms = self::grade_get_gradable_activities($courseid, $module, $itemnumber)) {
+                    $result =  $result + $cms;
+                }
+            }
+            if (empty($result)) {
+                return false;
+            } else {
+                return $result;
+            }
+        }
+        $params = array($courseid, $modulename, $itemnumber, GRADE_TYPE_NONE, $modulename);
+        $sql = "SELECT cm.*, gi.itemname as name, md.name as modname, gi.id as gradeitemid
+                  FROM {grade_items} gi, {course_modules} cm, {modules} md, {{$modulename}} m
+                 WHERE gi.courseid = ? AND
+                       gi.itemtype = 'mod' AND
+                       gi.itemmodule = ? AND
+                       gi.itemnumber = ? AND
+                       gi.gradetype != ? AND
+                       gi.iteminstance = cm.instance AND
+                       cm.instance = m.id AND
+                       md.name = ? AND
+                       md.id = cm.module";
+    
+        return $DB->get_records_sql($sql, $params);
+    }
+    
 }

@@ -26,9 +26,9 @@
 defined('MOODLE_INTERNAL') || die();
 
 class local_gugcat_renderer extends plugin_renderer_base {
-    public function display_grade_capture($activities_, $rows, $columns) {
+    public function display_grade_capture($selectedmodule, $activities_, $rows, $columns) {
         $courseid = $this->page->course->id;
-        $modid = (($this->page->cm) ? $this->page->cm->id : null);
+        $modid = (($selectedmodule) ? $selectedmodule->gradeitemid : null);
         $is_blind_marking = local_gugcat::is_blind_marking($this->page->cm);
         $categoryid = optional_param('categoryid', null, PARAM_INT);
         $ammendgradeparams = '?id=' . $courseid . '&activityid=' . $modid;
@@ -346,10 +346,11 @@ class local_gugcat_renderer extends plugin_renderer_base {
     private function header() {
         $courseid = $this->page->course->id;
         $categoryid = optional_param('categoryid', null, PARAM_INT);
+        $activityid = optional_param('activityid', null, PARAM_INT);
         //reindex grade category arrayco
         $categories = local_gugcat::get_grade_categories($courseid);
         $assessmenturl = new moodle_url('/local/gugcat/index.php', array('id' => $courseid));
-        $assessmenturl.= $this->page->cm ? '&activityid='.$this->page->cm->id : null;
+        $assessmenturl.= $activityid ? '&activityid='.$activityid : null;
         $coursegradeurl = new moodle_url('/local/gugcat/overview/index.php', array('id' => $courseid));
         //add category id in the url if not null
         if(!is_null($categoryid)){
