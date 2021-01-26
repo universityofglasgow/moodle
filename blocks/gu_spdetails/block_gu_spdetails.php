@@ -37,6 +37,7 @@ define('PAGE_FOOTER', '#page-footer');
 
 require_once($CFG->libdir.'/gradelib.php');
 require_once($CFG->dirroot . '/grade/querylib.php');
+require_once($CFG->dirroot . '/blocks/gu_spdetails/lib.php');
 
 class block_gu_spdetails extends block_base {
 
@@ -69,7 +70,9 @@ class block_gu_spdetails extends block_base {
 
         $courses = enrol_get_all_users_courses($userid, true);
         $courseids = array_column($courses, 'id');
-        $assessments = self::return_assessments($courseids, $userid);
+        $returnassessments = self::return_assessments($courseids, $userid);
+        $assessments = $returnassessments->assessments;
+        $pastdata = $returnassessments->pastcourses;
         $hasassessments = ($assessments) ? true : false;
 
         $downarrow = $OUTPUT->image_url('downarrow', 'theme');
@@ -78,6 +81,7 @@ class block_gu_spdetails extends block_base {
         $templatecontext = (array)[
             'assessments'       => json_encode($assessments),
             'data'              => $assessments,
+            'pastdata'          => $pastdata,
             'hasassessments'    => $hasassessments,
             'header_course'     => get_string('header_course', SPDETAILS_LANG),
             'header_assessment' => get_string('header_assessment', SPDETAILS_LANG),
@@ -88,9 +92,12 @@ class block_gu_spdetails extends block_base {
             'header_grade'      => get_string('header_grade', SPDETAILS_LANG),
             'header_feedback'   => get_string('header_feedback', SPDETAILS_LANG),
             'noassessments'     => get_string('noassessments', SPDETAILS_LANG),
+            'currentenroll'     => get_string('currentlyenrolledin', SPDETAILS_LANG),
+            'pastenroll'        => get_string('pastcourses', SPDETAILS_LANG),
             'sort'              => get_string('sort', SPDETAILS_LANG),
             'sort_course'       => get_string('sort_course', SPDETAILS_LANG),
             'sort_date'         => get_string('sort_date', SPDETAILS_LANG),
+            'view_submission'   => get_string('viewsubmission', SPDETAILS_LANG),
             'noassessments_img' => $noassessments,
             'downarrow_img'     => $downarrow,
         ];
@@ -103,9 +110,10 @@ class block_gu_spdetails extends block_base {
 
     public static function return_assessments($courseids, $userid) {
         $assessments = array();
+        $pastcourses = array();
         $allowedactivities = array(MOD_ASSIGN, MOD_QUIZ, MOD_FORUM, MOD_WORKSHOP);
 
-        $mods = self::get_all_users_courses_gradable_activities($userid);
+        $mods = block_gu_spdetails_lib::get_all_users_courses_gradable_activities($userid);
 
             if (is_array($mods) || is_object($mods)) {
                 foreach($mods as $mod) {
@@ -153,13 +161,23 @@ class block_gu_spdetails extends block_base {
                                                                  $mod->modname, $mod->id);
                     $mod->status = self::return_status($mod->modname, $mod->finalgrade, $mod->dates, $activity);
 
+                    $ispastcourse = self::return_ispastcourse($mod->enddate, $mod->dates->duedate);
                     if($isactivityvisible && $isallowedactivity && $mod->isstudent) {
-                        array_push($assessments, $mod);
+                        if($ispastcourse){
+                            $mod->enddate = date(get_string('pastcourseconvertdate', SPDETAILS_LANG), $mod->enddate);
+                            $mod->startdate = date(get_string('pastcourseconvertdate', SPDETAILS_LANG), $mod->startdate);
+                            array_push($pastcourses, $mod);
+                        } else {
+                            array_push($assessments, $mod);
+                        }
                     }
                 }
             }
 
-        return $assessments;
+        return (object) array(
+            'assessments' => $assessments,
+            'pastcourses' => $pastcourses
+        );
     }
 
     public static function return_coursetitle($courseid, $sectionid, $coursename) {
@@ -519,44 +537,10 @@ class block_gu_spdetails extends block_base {
         return $isstudent;
     }
 
-    public static function get_all_users_courses_gradable_activities($userid, $active=true, $history=null){
-        global $DB;
+    public static function return_ispastcourse($courseenddate, $duedate){
+        $iscourseenddatefuture = time() + (86400 * 30) > $courseenddate;
+        $isassessmentduedatefuture = time() + (86400 * 30) > $duedate;
 
-        $params = array('siteid' => SITEID, 'userid' => $userid, 'contextlevel' => CONTEXT_COURSE,
-                        'active' => ENROL_USER_ACTIVE, 'enabled' => ENROL_INSTANCE_ENABLED, 'gradetype' => GRADE_TYPE_NONE);
-        $fields = array('id as courseid', 'category', 'sortorder',
-                    'shortname', 'fullname', 'idnumber',
-                    'startdate', 'visible',
-                    'defaultgroupingid',
-                    'groupmode', 'groupmodeforce');
-
-        $subwhere = "WHERE ue.status = :active AND e.status = :enabled AND ue.timestart < :now1 AND (ue.timeend = 0 OR ue.timeend > :now2)";
-        $params['now1'] = (!empty($history) && !$active) ? $history : round(time(), -2); // improves db caching
-        $params['now2'] = $params['now1'];
-
-        $coursefields = 'c.' .join(',c.', $fields);
-        $ccselect = ', ' . context_helper::get_preload_record_columns_sql('ctx');
-        $ccjoin = "LEFT JOIN {context} ctx ON (ctx.instanceid = c.id AND ctx.contextlevel = :contextlevel)";
-        $gradegetselect = ", cm.*, md.name as modname";
-        $gradegetjoin = "JOIN {course_modules} cm ON (cm.course = c.id)
-                         JOIN {modules} md ON (md.id = cm.module)
-                         JOIN {grade_items} gi ON (gi.iteminstance = cm.instance AND gi.courseid = c.id AND gi.itemmodule = md.name)";
-        $gradegetwhere = "AND gi.itemtype = 'mod'
-                          AND gi.itemnumber = 0
-                          AND gi.gradetype != :gradetype";
-
-        $sql = "SELECT cm.id, $coursefields $ccselect $gradegetselect
-                    FROM {course} c
-                    $gradegetjoin
-                    JOIN (SELECT DISTINCT e.courseid
-                            FROM {enrol} e
-                            JOIN {user_enrolments} ue ON (ue.enrolid = e.id AND ue.userid = :userid)
-                    $subwhere
-                        ) en ON (en.courseid = c.id)
-                $ccjoin
-                WHERE c.id <> :siteid
-                $gradegetwhere";
-
-        return $DB->get_records_sql($sql, $params);
+        return $iscourseenddatefuture && $isassessmentduedatefuture;
     }
 }

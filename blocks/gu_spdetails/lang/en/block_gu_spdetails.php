@@ -25,7 +25,10 @@
 
 $string['class_overduelinked'] = 'overduelinked';
 $string['class_notopen'] = 'notopen';
+$string['currentlyenrolledin'] = 'Currently enrolled in';
+$string['pastcourses'] = 'Past Courses';
 $string['convertdate'] = "%B %d";
+$string['pastcourseconvertdate'] = "m/y";
 $string['due'] = 'Due ';
 $string['emptyvalue'] = '—';
 $string['formative'] = 'formative';
@@ -45,6 +48,7 @@ $string['nofeedback'] = 'No feedback provided';
 $string['notopen'] = 'submission not open';
 $string['overdue'] = 'overdue';
 $string['pluginname'] = 'Your Assessments details';
+$string['pastcourses'] = 'Past courses';
 $string['provisional'] = '(Provisional)';
 $string['readfeedback'] = 'Read feedback';
 $string['sort'] = "Sort by ";
@@ -57,3 +61,4 @@ $string['submitted'] = 'submitted';
 $string['summative'] = 'summative';
 $string['tobeconfirmed'] = 'To be confirmed';
 $string['unavailable'] = 'unavailable';
+$string['viewsubmission'] = 'View Submission';
