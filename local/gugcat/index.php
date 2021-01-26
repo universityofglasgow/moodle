@@ -148,5 +148,5 @@ echo $OUTPUT->header();
 if(!empty($activities))
     $PAGE->set_cm($selectedmodule);
 $renderer = $PAGE->get_renderer('local_gugcat');
-echo $renderer->display_grade_capture($activities, $rows, $columns);
+echo $renderer->display_grade_capture($selectedmodule, $activities, $rows, $columns);
 echo $OUTPUT->footer();
