@@ -77,7 +77,10 @@ class grade_aggregation{
             $grades->provisional = $DB->get_records('grade_grades', array('itemid' => $prvgrdid), $sort, $fields);
             //get grades from gradebook
             $gbgrades = grade_get_grades($course->id, 'mod', $mod->modname, $mod->instance, array_keys($students));
-            $grades->gradebook = isset($gbgrades->items[0]) ? $gbgrades->items[0]->grades : null;
+            $gbgradeitem = array_values(array_filter($gbgrades->items, function($item) use($mod){
+                return $item->itemnumber == $mod->gradeitem->itemnumber;//filter grades with specific itemnumber
+            }));
+            $grades->gradebook = isset($gbgradeitem[0]) ? $gbgradeitem[0]->grades : null;
             $mod->grades = $grades;
             array_push($gradebook, $mod);
         }
@@ -125,7 +128,7 @@ class grade_aggregation{
                     }
                     $gradecaptureitem->nonsubmission = ($grade === NON_SUBMISSION_AC) ? true : false;
                     $gradecaptureitem->medicalexemption = ($grade === MEDICAL_EXEMPTION_AC) ? true : false;
-                    $grdobj->activityid = $item->id;
+                    $grdobj->activityid = $item->gradeitemid;
                     $grdobj->activityinstance = $item->instance;
                     $grdobj->activity = $item->name;
                     $grdobj->grade = $grade;

@@ -123,7 +123,7 @@ class grade_aggregation_testcase extends advanced_testcase {
     public function test_adjust_course_weight() {
         $expectedweight = 30;
         $weights = array();
-        $weights[$this->cm->id] = $expectedweight;
+        $weights[$this->cm->gradeitemid] = $expectedweight;
         $grade_ = new grade_grade(array('userid' => $this->student1->id, 'itemid' => $this->provisionalgi), true);
         $grade_->information = '1.00000';
         $grade_->rawgrade = 20;
@@ -180,9 +180,9 @@ class grade_aggregation_testcase extends advanced_testcase {
     public function test_release_final_grades() {
         $expectedgrade = '10.00000';
         $cms = array();
-        $cms[$this->cm->id] = $this->cm->instance."_".$this->cm->name;
+        $cms[$this->cm->gradeitemid] = $this->cm->instance."_".$this->cm->name;
         $students = array();
-        $students[$this->student1->id][$this->cm->id] = 10;
+        $students[$this->student1->id][$this->cm->gradeitemid] = 10;
         $gradeitemid = $this->cm->gradeitem->id;
         grade_aggregation::release_final_grades($this->course->id, $cms, $students);
         $gg = new grade_grade(array('userid' => $this->student1->id, 'itemid' => $gradeitemid), true);

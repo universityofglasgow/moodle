@@ -57,7 +57,7 @@ class grade_capture_testcase extends advanced_testcase {
         $this->assign = new assign(context_module::instance($cm_info->id), $cm_info, $this->course->id);
 
         //create grade items
-        $this->gradeitem = new grade_item($gen->create_grade_item(['courseid' => $this->course->id, 'iteminfo' => $this->cm->id]), false);
+        $this->gradeitem = new grade_item($gen->create_grade_item(['courseid' => $this->course->id, 'iteminfo' => $this->cm->gradeitemid]), false);
         local_gugcat::$STUDENTS = $this->students;
         $this->provisionalgi = local_gugcat::add_grade_item($this->course->id, get_string('provisionalgrd', 'local_gugcat'), $this->cm);
         
