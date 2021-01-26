@@ -439,8 +439,11 @@ class local_gugcat {
             return false;
         }else{
             if(!is_null($module)){
-                $assign = new assign(context_module::instance($module->id), $module, $COURSE->id);
-                return $assign->get_instance()->blindmarking == 1;
+                if($module->modname === 'assign'){
+                    $assign = new assign(context_module::instance($module->id), $module, $COURSE->id);
+                    return $assign->get_instance()->blindmarking == 1;
+                }
+                return false;
             }else{
                 return true;//aggregation tool
             }
