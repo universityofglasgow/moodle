@@ -92,6 +92,7 @@ class grade_aggregation{
             $gradecaptureitem->studentno = $student->id;
             $gradecaptureitem->surname = $student->lastname;
             $gradecaptureitem->forename = $student->firstname;
+            $gradecaptureitem->idnumber = $student->idnumber;
             $gradecaptureitem->grades = array();
             $gbaggregatedgrade = $DB->get_record('grade_grades', array('itemid'=>$aggradeid, 'userid'=>$student->id));
             $floatweight = 0;

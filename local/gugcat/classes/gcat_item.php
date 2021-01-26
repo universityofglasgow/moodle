@@ -35,6 +35,12 @@ class gcat_item{
      */
     public $studentno;
 
+      /**
+     * The student number from student info.
+     * @var int $idnumber
+     */
+    public $idnumber;
+
     /**
      * The surname of the student.
      * @var string $surname
