@@ -51,6 +51,7 @@ $string['errorrequired'] = 'Failed to save grades for all participants. Grade an
 $string['errortotalweight'] = 'Total weight is not equal to 100%';
 $string['forename'] = 'Forename';
 $string['gugcat'] = 'Grade Capture and Aggregation Tool';
+$string['gugcat:view'] = 'View Grade Capture and Aggregation Tool';
 $string['grade'] = "Grade";
 $string['gradebookgrade'] = 'Gradebook Grade ';
 $string['gradediscrepancy'] = 'Grade Discrepancy';

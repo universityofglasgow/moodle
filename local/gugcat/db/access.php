@@ -25,16 +25,16 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$capabilities = [
-    'moodle/gugcat:view' => [
+$capabilities = array(
+    'local/gugcat:view' => array(
         'riskbitmask' => RISK_PERSONAL,
         'captype' => 'read',
         'contextlevel' => CONTEXT_COURSE,
-        'archetypes' => [
+        'archetypes' => array(
             'manager' => CAP_ALLOW,
             'coursecreator' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
             'teacher' => CAP_ALLOW
-        ]
-    ]
-];
+        )
+    ),
+);
