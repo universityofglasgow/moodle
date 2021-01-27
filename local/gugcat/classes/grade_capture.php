@@ -51,7 +51,11 @@ class grade_capture{
         global $gradeitems, $firstgradeid;
         $gradeitems = array();
         if(isset($module)){
-            grade_get_grades($course->id, 'mod', $module->modname, $module->instance, array_keys($students));
+            $gbgrades = grade_get_grades($course->id, 'mod', $module->modname, $module->instance, array_keys($students));
+            $gbgradeitem = array_values(array_filter($gbgrades->items, function($item) use($module){
+                return $item->itemnumber == $module->gradeitem->itemnumber;//filter grades with specific itemnumber
+            }));
+            $releasedgrades = isset($gbgradeitem[0]) ? $gbgradeitem[0]->grades : null;
             if($firstgradeid = local_gugcat::get_grade_item_id($course->id, $module->gradeitemid, get_string('moodlegrade', 'local_gugcat'))){
                 $gradeitems = local_gugcat::get_grade_grade_items($course, $module);
                 //---------ids needed for grade discrepancy
@@ -74,6 +78,13 @@ class grade_capture{
             $gradecaptureitem->firstgrade = get_string('nogradeimport', 'local_gugcat');
             $gradecaptureitem->hidden = null;
             if($firstgradeid){
+                //get released grade
+                if(count($releasedgrades) > 0){
+                    $gbg = isset($releasedgrades[$student->id]) ? $releasedgrades[$student->id] : null;
+                    $gradescaleoffset = local_gugcat::is_grademax22($module->gradeitem->gradetype, $module->gradeitem->grademax) ? 1 : 0;
+                    $grade = self::check_gb_grade($gbg, $gradescaleoffset);
+                    $gradecaptureitem->releasedgrade = is_null($grade) ? null : local_gugcat::convert_grade($grade);
+                }
                 //get first grade and provisional grade
                 $gifg = $gradeitems[$firstgradeid]->grades;
                 $gipg = $gradeitems[intval(local_gugcat::$PRVGRADEID)]->grades;
@@ -207,6 +218,7 @@ class grade_capture{
                         if($is_workflow_enabled){
                             local_gugcat::update_workflow_state($assign, $userid, ASSIGN_MARKING_WORKFLOW_STATE_RELEASED);
                         }
+                        $DB->set_field_select('grade_grades', 'overridden', 0, $select);
                         $grade->grade = $is_admingrade ? 0 : $rawgrade;
                         $grade->grader = $USER->id;
                         $assign->update_grade($grade); 
@@ -218,6 +230,7 @@ class grade_capture{
                     //update grade from gradebook
                     $gradeitem->update_final_grade($userid, $rawgrade, null, false, FORMAT_MOODLE, $USER->id);
                 }
+                $DB->set_field_select('grade_grades', 'overridden', time(), $select);
             }
         }
         //unhide gradeitem 
@@ -238,43 +251,22 @@ class grade_capture{
         $gbgradeitem = array_values(array_filter($gbgrades->items, function($item) use($module){
             return $item->itemnumber == $module->gradeitem->itemnumber;//filter grades with specific itemnumber
         }));
-        $gradescaleoffset = 0;
-        if (local_gugcat::is_grademax22($module->gradeitem->gradetype, $module->gradeitem->grademax)){
-            $gradescaleoffset = 1;
-        }
+        $gradescaleoffset = local_gugcat::is_grademax22($module->gradeitem->gradetype, $module->gradeitem->grademax) ? 1 : 0;
 
         foreach($students as $student){
             $gbg = isset($gbgradeitem[0]) ? $gbgradeitem[0]->grades[$student->id] : null;//gradebook grade record
-            //check feedback if admin grade, MV or NS
-            $feedback = $gbg->feedback;
-            switch ($feedback) {
-                case NON_SUBMISSION_AC:
-                    $admingrade = NON_SUBMISSION;                     
-                    break;
-                case MEDICAL_EXEMPTION_AC:
-                    $admingrade = MEDICAL_EXEMPTION;
-                    break;
-                default:
-                    $admingrade = null;
-                    break;
-            }
             //check if assignment
             if(strcmp($module->modname, 'assign') == 0){
                 $assign = new assign(context_module::instance($module->id), $module, $courseid);
                 $asgrd = $assign->get_user_grade($student->id, false);
-                if(isset($asgrd->grade)){
-                    if ($gbg->overridden){
-                        $asgrd->grade = $gbg->grade;
-                    }
-                    $grade = !is_null($admingrade) ? $admingrade : (($asgrd && !is_null($asgrd->grade) && ($asgrd->grader>=0)) ? ($asgrd->grade + $gradescaleoffset) : null);
-                    local_gugcat::update_workflow_state($assign, $student->id, ASSIGN_MARKING_WORKFLOW_STATE_INREVIEW);
+                if($gbg->overridden == 0 && isset($asgrd->grade)){                    
+                    $grade = ($asgrd->grader >=0) ? ($asgrd->grade + $gradescaleoffset) : null;
                 }else {
-                    $gbgrade = $gbg->grade;
-                    $grade = !is_null($admingrade) ? $admingrade : ((isset($gbgrade)) ? ($gbgrade + $gradescaleoffset) : null);
+                    $grade = self::check_gb_grade($gbg, $gradescaleoffset);
                 }
+                local_gugcat::update_workflow_state($assign, $student->id, ASSIGN_MARKING_WORKFLOW_STATE_INREVIEW);
             }else{
-                $gbgrade = $gbg->grade;
-                $grade = !is_null($admingrade) ? $admingrade : ((isset($gbgrade)) ? ($gbgrade + $gradescaleoffset) : null);
+                $grade = self::check_gb_grade($gbg, $gradescaleoffset);
             }
             local_gugcat::update_grade($student->id, $mggradeitemid, $grade);
             local_gugcat::update_grade($student->id, local_gugcat::$PRVGRADEID, $grade);
@@ -322,6 +314,30 @@ class grade_capture{
                 $DB->set_field('grade_grades', 'information', $weight, array('itemid' => $prvgrdid, 'userid' => $student->id));          
             }
         }
+    }
+
+    /**
+     * Returns gradebook grade, admin grade or null 
+     *
+     * @param mixed $gbgobj - gradebook grade object per student
+     * @param mixed $gradescaleoffset - added to grade
+     */
+    public static function check_gb_grade($gbgobj, $gradescaleoffset){
+        if(is_null($gbgobj)) return null;
+        $gbgrade = $gbgobj->grade;
+        $feedback = $gbgobj->feedback;
+        switch ($feedback) {
+            case NON_SUBMISSION_AC:
+                $admingrade = NON_SUBMISSION;                     
+                break;
+            case MEDICAL_EXEMPTION_AC:
+                $admingrade = MEDICAL_EXEMPTION;
+                break;
+            default:
+                $admingrade = null;
+                break;
+        }
+        return !is_null($admingrade) ? $admingrade : ((isset($gbgrade)) ? ($gbgrade + $gradescaleoffset) : null);
     }
 
 }

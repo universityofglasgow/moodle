@@ -112,4 +112,10 @@ class gcat_item{
      * @var boolean $resitexist
      */
     public $resitexist;
+
+    /**
+     * The released grade or the grade of the student from the gradebook.
+     * @var string $releasedgrade
+     */
+    public $releasedgrade;
 }
