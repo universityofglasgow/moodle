@@ -51,7 +51,7 @@ $activities = local_gugcat::get_activities($courseid);
 $selectedmodule = null;
 $groupid = 0;
 $groups = null;
-$valid_22point_scale = true;
+$valid_22point_scale = false;
 
 if(!empty($activities)){
     $mods = array_reverse($activities);
@@ -60,12 +60,10 @@ if(!empty($activities)){
     $groups = groups_get_all_groups($course->id, $userid=0, $groupingid, $fields='g.*');
 
     $scaleid = $selectedmodule->gradeitem->scaleid;
-    if (is_null($scaleid)){
-        $gradetype = $selectedmodule->gradeitem->gradetype;
-        $grademax = $selectedmodule->gradeitem->grademax;
-        $valid_22point_scale = local_gugcat::is_grademax22($gradetype, $grademax);
-        $scaleid = $valid_22point_scale ? null : $scaleid;
-    }
+    $gradetype = $selectedmodule->gradeitem->gradetype;
+    $grademax = $selectedmodule->gradeitem->grademax;
+
+    $valid_22point_scale = is_null($scaleid) ? local_gugcat::is_grademax22($gradetype, $grademax) : local_gugcat::is_scheduleAscale($gradetype, $grademax);
 
     //populate $GRADES with scales
     local_gugcat::set_grade_scale($scaleid);
@@ -107,7 +105,7 @@ if (isset($release) && isset($prvgrades)){
     }
     unset($release);
     unset($prvgrades);
-    redirect(htmlspecialchars_decode($URL));
+    redirect($URL);
     exit;
 }else if (!empty($gradeitem)){
     if(isset($newgrades)){
@@ -121,7 +119,7 @@ if (isset($release) && isset($prvgrades)){
         local_gugcat::notify_success('successaddall');
         unset($gradeitem);
         unset($newgrades);
-        redirect(htmlspecialchars_decode($URL));
+        redirect($URL);
         exit;
     }else{
         print_error('errorrequired', 'local_gugcat', $PAGE->url);
@@ -130,17 +128,17 @@ if (isset($release) && isset($prvgrades)){
     if ($valid_22point_scale){
         grade_capture::import_from_gradebook($courseid, $selectedmodule, $students, $activities);
         local_gugcat::notify_success('successimport');
-    } else{
+    }else{
         local_gugcat::notify_error('importerror');
     }
     unset($importgrades);
-    redirect(htmlspecialchars_decode($URL));
+    redirect($URL);
     exit;
 }else if(isset($showhidegrade) && !empty($rowstudentid)){
     grade_capture::hideshowgrade($rowstudentid);
     unset($showhidegrade);
     unset($rowstudentid);
-    redirect(htmlspecialchars_decode($URL));
+    redirect($URL);
     exit;
 }
 $rows = grade_capture::get_rows($course, $selectedmodule, $students);
@@ -150,5 +148,5 @@ echo $OUTPUT->header();
 if(!empty($activities))
     $PAGE->set_cm($selectedmodule);
 $renderer = $PAGE->get_renderer('local_gugcat');
-echo $renderer->display_grade_capture($activities, $rows, $columns);
+echo $renderer->display_grade_capture($selectedmodule, $activities, $rows, $columns);
 echo $OUTPUT->footer();

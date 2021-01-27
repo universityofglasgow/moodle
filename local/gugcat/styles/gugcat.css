@@ -11,6 +11,18 @@
     letter-spacing: 0em;
 }
 
+.gcat-header{
+    margin: 15px 0;
+    display: flex;
+    justify-content: space-between;
+}
+
+#gcat-cog{
+    color: #005c8a;
+    font-size: 36px;
+    cursor: pointer;
+}
+
 /* Icons style */
 td > i, th > i {
     color: #8c8c8c;
@@ -38,6 +50,16 @@ td > i, th > i {
     margin-left: 2px;
 }
 
+.zero-resit-weight{
+    color: #b30c00;
+}
+
+.zero-resit-weight:before{
+    content: '\f111';
+    font: normal normal normal 8px/1 FontAwesome;
+    color: #b30c00;
+    padding-right: 1em;
+}
 /* Buttons style */
 .btn-default {
     background-color: transparent;
@@ -60,7 +82,7 @@ td > i, th > i {
     color: white;
 }
 
-.btn-add-import {
+.btn-blue {
     background-color: #005c8a;
     color: white;
 }
@@ -85,7 +107,7 @@ td > i, th > i {
     float: right;
 }
 
-.btn-download, .btn-release, .btn-add-import,
+.btn-download, .btn-release, .btn-blue,
 .tabcontent-header >.selectdiv select {
     height: 40px;
 }
@@ -114,7 +136,7 @@ td > i, th > i {
 
 .select-category, .select-category > select{
     height: 40px;
-    margin: 15px 0;
+    margin: 0 5px 0 0;
 }
 
 .multi-select-reason{
@@ -193,6 +215,10 @@ td > .grade-discrepancy{
     cursor: pointer;
 }
 
+.dropdown-item.active, .dropdown-item:active {
+    background-color: #005c8a;
+}
+
 /* Hide submit buttons */
 #release-submit, #importgrades-submit, 
 #resit-submit,#showhidegrade-submit,
@@ -201,6 +227,6 @@ td > .grade-discrepancy{
     visibility: hidden;
 }
 
-.hide-show-grade {
+.hide-show-grade, .hide-names {
     display: none;
 }

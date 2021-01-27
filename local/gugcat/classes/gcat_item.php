@@ -35,6 +35,12 @@ class gcat_item{
      */
     public $studentno;
 
+      /**
+     * The student number from student info.
+     * @var int $idnumber
+     */
+    public $idnumber;
+
     /**
      * The surname of the student.
      * @var string $surname
@@ -100,4 +106,10 @@ class gcat_item{
      * @var boolean $resit
      */
     public $resit;
+
+     /**
+     * Boolean value if resit grade item weight is = 0
+     * @var boolean $resitexist
+     */
+    public $resitexist;
 }
