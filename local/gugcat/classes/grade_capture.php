@@ -68,6 +68,7 @@ class grade_capture{
             $gradecaptureitem->studentno = $student->id;
             $gradecaptureitem->surname = $student->lastname;
             $gradecaptureitem->forename = $student->firstname;
+            $gradecaptureitem->idnumber = $student->idnumber;
             $gradecaptureitem->discrepancy = false;
             $gradecaptureitem->grades = array();
             $gradecaptureitem->firstgrade = get_string('nogradeimport', 'local_gugcat');

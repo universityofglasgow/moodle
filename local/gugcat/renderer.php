@@ -64,7 +64,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
             $htmlrows .= html_writer::start_tag('tr');
             //hidden inputs for id and provisional grades
             $htmlrows .= html_writer::empty_tag('input', array('name' => 'prvgrades['.$row->studentno.']', 'type' => 'hidden', 'value' => ($row->provisionalgrade == get_string('nograde', 'local_gugcat') ? "" : $row->provisionalgrade)));
-            $htmlrows .= html_writer::tag('td', $row->studentno);
+            $htmlrows .= html_writer::tag('td', $row->idnumber);
             if(!$is_blind_marking){
                 $htmlrows .= html_writer::tag('td', $row->surname, array('class' => 'blind-marking'));
                 $htmlrows .= html_writer::tag('td', $row->forename, array('class' => 'blind-marking'));
@@ -186,7 +186,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
         foreach ($rows as $row) {
             $htmlrows .= html_writer::start_tag('tr');
             $htmlrows .= html_writer::tag('td', $row->cnum);
-            $htmlrows .= html_writer::tag('td', $row->studentno);
+            $htmlrows .= html_writer::tag('td', $row->idnumber);
             if(!$is_blind_marking){
                 $htmlrows .= html_writer::tag('td', $row->surname, array('class' => 'blind-marking'));
                 $htmlrows .= html_writer::tag('td', $row->forename, array('class' => 'blind-marking'));
