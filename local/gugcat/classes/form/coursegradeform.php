@@ -102,6 +102,8 @@ class coursegradeform extends moodleform {
         $mform->setType('setting', PARAM_ACTION);
         $mform->addElement('hidden', 'cnum', $student->cnum);
         $mform->setType('cnum', PARAM_ACTION);
+        $mform->addElement('hidden', 'categoryid', $this->_customdata['categoryid']);
+        $mform->setType('categoryid', PARAM_ACTION);
         
     function validation($data, $files) {
         return array();
