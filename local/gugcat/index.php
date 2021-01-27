@@ -44,6 +44,8 @@ $PAGE->requires->js_call_amd('local_gugcat/main', 'init');
 $course = get_course($courseid);
 
 $coursecontext = context_course::instance($courseid);
+require_capability('local/gugcat:view', $coursecontext);
+
 $PAGE->set_context($coursecontext);
 $PAGE->set_course($course);
 $PAGE->set_heading($course->fullname);

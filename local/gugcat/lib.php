@@ -24,9 +24,8 @@
  */
 
 function local_gugcat_extend_navigation_course($parentnode, $course, $context) {
-    if(!has_capability('moodle/site:config', $context) 
-    && has_capability('moodle/competency:coursecompetencygradable', $context)) {
-        return; //user role = student
+    if(!has_capability('local/gugcat:view', $context)) {
+        return;
     }
     $url = new moodle_url('/local/gugcat/index.php', array('id' => $course->id));
     $gugcat = get_string('navname', 'local_gugcat');
@@ -56,6 +55,9 @@ function local_gugcat_extend_navigation($navigation){
      } else {
          $coursecontext = $context;
      }
+     if (!has_capability('local/gugcat:view', $coursecontext)){
+        return;
+    };     
 
     $gugcatLinkName = get_string('navname', 'local_gugcat');
     $linkUrl = new moodle_url('/local/gugcat/index.php', array('id' => $coursecontext->instanceid));
