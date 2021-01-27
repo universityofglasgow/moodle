@@ -34,13 +34,6 @@ td > i, th > i {
     color: #005c8a;
 }
 
-.fa-cog {
-    color: white;
-    margin: 0 5px;
-    font-size: small;
-    cursor: text;
-}
-
 .fa-times-circle{
     font-size: 20px;
 }
