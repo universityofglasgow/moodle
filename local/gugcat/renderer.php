@@ -53,6 +53,11 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $htmlcolumns .= html_writer::tag('th', get_string('addallnewgrade', 'local_gugcat'), array('class' => 'togglemultigrd'));
         $htmlcolumns .= html_writer::tag('th', get_string('reasonnewgrade', 'local_gugcat'), array('class' => 'togglemultigrd'));
         $htmlcolumns .= html_writer::tag('th', get_string('provisionalgrd', 'local_gugcat'));
+        //released grade column
+        $releasedarr = array_column($rows, 'releasedgrade');
+        $displayreleasedgrade = (count(array_filter($releasedarr, function ($a) { return $a !== null;})) > 0);
+        //--------COMMENT OUT FOR NOW
+        // $htmlcolumns .= $displayreleasedgrade ? html_writer::tag('th', get_string('releasedgrade', 'local_gugcat')) : null;
         $htmlcolumns .= html_writer::empty_tag('th');
         //grade capture rows
         foreach ($rows as $row) {
@@ -95,11 +100,13 @@ class local_gugcat_renderer extends plugin_renderer_base {
             $isgradehidden = (!isset($row->hidden)) ? null: (($row->hidden) ? '<br/>('.get_string('hiddengrade', 'local_gugcat').')' : '');
             if(is_null($row->provisionalgrade) || $row->provisionalgrade == '' || 
                 $row->provisionalgrade == get_string('nograde', 'local_gugcat') || 
-                $row->provisionalgrade == get_string('missinggrade', 'local_gugcat'))
+                $row->provisionalgrade == get_string('missinggrade', 'local_gugcat')){
                 $htmlrows .= '<td class="provisionalgrade"><b>'.$row->provisionalgrade.'</b>'. $isgradehidden.'</td>';
-            else{
+            }else{
                 $htmlrows .= '<td class="provisionalgrade"><b>'.$row->provisionalgrade.'</b>'.$this->context_actions($row->studentno, $isgradehidden, false, $ammendgradeparams, false).  $isgradehidden.'</td>';
             }
+            // ----------COMMENT OUT FOR NOW
+            // $htmlrows .= $displayreleasedgrade ? html_writer::tag('td', is_null($row->releasedgrade) ? get_string('nograde', 'local_gugcat') : $row->releasedgrade,array('class' => 'font-weight-bold') ) : null;
             $htmlrows .= '<td>
                             <button type="button" class="btn btn-default addnewgrade" onclick="location.href=\''.$addformurl.'\'">
                                 '.get_string('addnewgrade', 'local_gugcat').'

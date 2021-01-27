@@ -246,7 +246,7 @@ class local_gugcat {
         $grade_->hidden = 0;
         $grade_->excluded = 1;
       
-        if(empty($grade_->id)){
+        if(!isset($grade_->id)){
             //creates grade objects for other users in DB 
             $grade_->timecreated = time();
             $grade_->timemodified = time();

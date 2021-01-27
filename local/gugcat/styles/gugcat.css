@@ -172,6 +172,7 @@ td > i, th > i {
 
 .addnewgrade{
     font-size: 12px;
+    margin: auto;
 }
 
 /* display only the first select reason dropdown */
