@@ -25,6 +25,8 @@
 
 use local_gugcat\grade_aggregation;
 
+require_once($CFG->libdir . '/adminlib.php');
+
 defined('MOODLE_INTERNAL') || die();
 
 //Administrative grades at Assessment Level
@@ -492,5 +494,86 @@ class local_gugcat {
     
         return $DB->get_records_sql($sql, $params);
     }
-    
+
+    public static function switch_display_of_assessment_on_student_dashboard(){
+        global $DB;
+
+        $customfieldcategory = $DB->get_record('customfield_category', array('name'=> get_string('gugcatoptions', 'local_gugcat')));
+        if($customfieldcategory){
+            $customfieldfield = $DB->get_record('customfield_field', array('categoryid'=> $customfieldcategory->id));
+            if(!empty($customfieldfield)){
+                $customfielddata = $DB->get_record('customfield_data', array('fieldid'=> $customfieldfield->id));
+                if(!empty($customfielddata)){
+                    $customfielddatadobj = new stdClass();
+                    $customfieldfieldobj = new stdClass();
+                    $customfielddatadobj->id = (int)$customfielddata->id;
+                    $customfieldfieldobj->id = (int)$customfieldfield->id;
+
+                    if((int)$customfielddata->intvalue == 1){
+                        $customfielddatadobj->intvalue = 0;
+                        $customfielddatadobj->value = "0";
+                    }
+                    else{
+                        $customfielddatadobj->intvalue = 1;
+                        $customfielddatadobj->value = "1";
+                    }
+
+                    if($customfieldfield->name == get_string('switchoffdisplay', 'local_gugcat')){
+                        $customfieldfieldobj->name = get_string('switchondisplay', 'local_gugcat');
+                    }
+                    else{
+                        $customfieldfieldobj->name = get_string('switchoffdisplay', 'local_gugcat');
+                    }
+                    $DB->update_record('customfield_field', $customfieldfieldobj, $bulk=false);
+                    $DB->update_record('customfield_data', $customfielddatadobj, $bulk=false);
+                }
+            }
+        }
+        else{
+            $customfieldcategory = new stdClass();
+            $customfieldcategory->name = get_string('gugcatoptions', 'local_gugcat');
+            $customfieldcategory->component ="core_course";
+            $customfieldcategory->area = "course";
+            $customfieldcategory->timecreated = time();
+            $customfieldcategory->timemodified = time();
+            $customfieldcategoryid = $DB->insert_record('customfield_category', $customfieldcategory, $returnid=true, $bulk=false);
+            if(!is_null($customfieldcategoryid)){
+                $category = \core_customfield\category_controller::create($customfieldcategoryid);
+                $field = \core_customfield\field_controller::create(0, (object)['type' => 'checkbox'], $category);
+            
+                $handler = $field->get_handler();
+                $handler->save_field_configuration($field, (object)['name' => 'Switch off display of assessments on Student Dashboard', 'shortname' => '']);
+                $customfieldfield = $DB->get_record('customfield_field', array('categoryid'=> $customfieldcategoryid));
+                if(!empty($customfieldfield)){
+                    $customfieldddata = new stdClass();
+                    $customfielddata->fieldid = $customfieldfield->id;
+                    $customfielddata->instanceid = 9;
+                    $customfielddata->intvalue = 1;
+                    $customfielddata->value = 1;
+                    $customfielddata->valueformat = 0;
+                    $customfielddata->timecreated = time();
+                    $customfielddata->timemodified = time();
+                    $customfielddata->contextid = 112;
+                    $DB->insert_record('customfield_data', $customfielddata);
+                }
+            }
+        }
+    }
+
+    public static function get_value_of_customefield_checkbox(){
+        global $DB;
+
+        $customfieldcategory = $DB->get_record('customfield_category', array('name'=> get_string('gugcatoptions', 'local_gugcat')));
+        if($customfieldcategory){
+            $customfieldfield = $DB->get_record('customfield_field', array('categoryid'=> $customfieldcategory->id));
+            if(!empty($customfieldfield)){
+                $customfielddata = $DB->get_record('customfield_data', array('fieldid'=> $customfieldfield->id));
+                if(!empty($customfielddata)){
+                    return (int)$customfielddata->intvalue;
+                }
+                return 1;
+            }
+        }
+
+    }
 }

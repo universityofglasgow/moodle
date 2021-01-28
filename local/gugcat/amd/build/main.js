@@ -126,6 +126,7 @@ function($, Str, ModalFactory, ModalGcat, Storage) {
     }
 
     const onClickListeners = (event) =>{
+        var url = window.location.href;
         var btn_saveadd = document.getElementById('btn-saveadd');
         var btn_release = document.getElementById('btn-release');
         var btn_import = document.getElementById('btn-import');
@@ -133,6 +134,7 @@ function($, Str, ModalFactory, ModalGcat, Storage) {
         var btn_coursegradeform = document.getElementById('btn-coursegradeform');
         var btn_download = document.getElementById('btn-download');
         var btn_finalrelease = document.getElementById('btn-finalrelease');
+        var btn_switch_display = document.getElementById('btn-switch-display');
         switch (event.target) {
             case btn_saveadd:
                 btn_saveadd.classList.toggle('togglebtn');
@@ -255,6 +257,9 @@ function($, Str, ModalFactory, ModalGcat, Storage) {
                 var is_blindmarking = (Storage.get(BLIND_MARKING_KEY) == 'true');
                 Storage.set(BLIND_MARKING_KEY, !is_blindmarking);
                 check_blind_marking();
+                break;
+            case btn_switch_display:
+                document.getElementById('display-assessment').click();
                 break;
             default:
                 break;

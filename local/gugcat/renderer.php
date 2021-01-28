@@ -131,6 +131,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $html .= html_writer::empty_tag('button', array('id'=>'importgrades-submit', 'name'=> 'importgrades', 'type'=>'submit'));
         $html .= html_writer::empty_tag('input', array('name' => 'rowstudentno', 'type' => 'hidden', 'id'=>'studentno'));
         $html .= html_writer::empty_tag('button', array('id'=>'showhidegrade-submit', 'name'=> 'showhidegrade', 'type'=>'submit'));
+        $html .= html_writer::empty_tag('button', array('id'=>'display-assessment', 'name'=> 'displayassessment', 'type'=>'submit'));
         $html .= html_writer::end_tag('form');
         $html .= $this->footer();
         return $html;
@@ -378,10 +379,12 @@ class local_gugcat_renderer extends plugin_renderer_base {
     }  
 
     private function gcat_settings() {
+        $checkboxvalue = local_gugcat::get_value_of_customefield_checkbox();
+
         $html = html_writer::tag('i', null, array('id' => 'gcat-cog', 'class' => 'fa fa-cog', 'data-toggle' => 'dropdown'));
         $html .= html_writer::start_tag('ul', array('class' => 'dropdown-menu'));
         $html .= html_writer::tag('li', get_string('hideidentities', 'local_gugcat'), array('id'=>'btn-identities', 'class' => 'dropdown-item'));
-        $html .= html_writer::tag('li', get_string('switchondisplay', 'local_gugcat'), array('class' => 'dropdown-item'));
+        $html .= html_writer::tag('li', ($checkboxvalue == 1 ? get_string('switchoffdisplay', 'local_gugcat') : get_string('switchondisplay', 'local_gugcat')), array('id'=>'btn-switch-display', 'class' => 'dropdown-item'));
         $html .= html_writer::end_tag('ul');
         return $html;
     }  
