@@ -335,7 +335,7 @@ class grade_aggregation{
                     $sumgrade += (float)$grd * $weight;
                 }
             }
-            $row->grade = local_gugcat::convert_grade(round((float)$sumgrade - (float)1));
+            $row->grade = local_gugcat::convert_grade(round((float)$sumgrade));
         }
         //add overridden grades in 
         $fields = 'id, itemid, rawgrade, finalgrade, feedback, timemodified, usermodified';
