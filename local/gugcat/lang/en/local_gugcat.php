@@ -95,6 +95,7 @@ $string['showassessment'] = 'Show assessments on Student Dashboard';
 $string['showidentities'] = 'Show student identities';
 $string['showgrade'] = 'Show to student';
 $string['showgrademsg'] = 'The grade is now visible to the student';
+$string['showonstudentdashboard'] = 'show_on_studentdashboard';
 $string['specifyreason'] = 'Specify reason(s) for amendment';
 $string['studentno'] = 'Student No.';
 $string['successaddall'] = 'Successfully added grades for all participants.';
