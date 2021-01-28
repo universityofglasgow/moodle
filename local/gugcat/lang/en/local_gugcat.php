@@ -91,6 +91,7 @@ $string['requiresresit'] = 'Requires Resit';
 $string['saveallnewgrade'] = 'Save multiple grades';
 $string['savechanges'] = 'Save changes';
 $string['selectreason'] = 'Select reason';
+$string['showassessment'] = 'Show assessments on Student Dashboard';
 $string['showidentities'] = 'Show student identities';
 $string['showgrade'] = 'Show to student';
 $string['showgrademsg'] = 'The grade is now visible to the student';
