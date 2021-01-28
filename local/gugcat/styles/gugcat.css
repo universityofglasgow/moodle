@@ -13,6 +13,14 @@
 
 .gcat-header{
     margin: 15px 0;
+    display: flex;
+    justify-content: space-between;
+}
+
+#gcat-cog{
+    color: #005c8a;
+    font-size: 36px;
+    cursor: pointer;
 }
 
 /* Icons style */
@@ -24,13 +32,6 @@ td > i, th > i {
 .fa-check-circle{
     font-size: 20px;
     color: #005c8a;
-}
-
-.fa-cog {
-    color: white;
-    margin: 0 5px;
-    font-size: small;
-    cursor: text;
 }
 
 .fa-times-circle{
@@ -164,6 +165,7 @@ td > i, th > i {
 
 .addnewgrade{
     font-size: 12px;
+    margin: auto;
 }
 
 /* display only the first select reason dropdown */
@@ -207,10 +209,15 @@ td > .grade-discrepancy{
     cursor: pointer;
 }
 
+.dropdown-item.active, .dropdown-item:active {
+    background-color: #005c8a;
+}
+
 /* Hide submit buttons */
 #release-submit, #importgrades-submit, 
 #resit-submit,#showhidegrade-submit,
-#finalrelease-submit, #downloadcsv-submit {
+#finalrelease-submit, #downloadcsv-submit,
+#multiadd-submit {
     position: absolute;
     visibility: hidden;
 }

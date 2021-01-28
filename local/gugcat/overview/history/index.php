@@ -23,20 +23,21 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once(__DIR__ . '/../../../config.php');
+use local_gugcat\grade_aggregation;
+require_once(__DIR__ . '/../../../../config.php');
 require_once($CFG->dirroot . '/local/gugcat/locallib.php');
 
 $courseid = required_param('id', PARAM_INT);
-$activityid = required_param('activityid', PARAM_INT);
 $studentid = required_param('studentid', PARAM_INT);
+$cnum = required_param('cnum', PARAM_INT);
 $categoryid = optional_param('categoryid', null, PARAM_INT);
-$page = optional_param('page', 0, PARAM_INT);
+$page = optional_param('page', 0, PARAM_INT);  
 
 require_login($courseid);
-$urlparams = array('id' => $courseid, 'activityid' => $activityid, 'studentid' => $studentid, 'page' => $page);
-$URL = new moodle_url('/local/gugcat/history/index.php', $urlparams);
-is_null($categoryid) ? null : $URL->param('categoryid', $categoryid);
+$urlparams = array('id' => $courseid, 'studentid' => $studentid, 'cnum'=>$cnum, 'page' => $page);
+$URL = new moodle_url('/local/gugcat/overview/history/index.php', $urlparams);
 $indexurl = new moodle_url('/local/gugcat/index.php', array('id' => $courseid));
+is_null($categoryid) ? null : $URL->param('categoryid', $categoryid);
 
 $PAGE->set_url($URL);
 $PAGE->set_title(get_string('gugcat', 'local_gugcat'));
@@ -50,21 +51,14 @@ $coursecontext = context_course::instance($courseid);
 $PAGE->set_context($coursecontext);
 $PAGE->set_course($course);
 $PAGE->set_heading($course->fullname);
-require_capability('local/gugcat:view', $coursecontext);
 
 $student = $DB->get_record('user', array('id'=>$studentid, 'deleted'=>0), '*', MUST_EXIST);
-$module = local_gugcat::get_activities($courseid)[$activityid];
+$modules = local_gugcat::get_activities($courseid);
+$student->cnum = $cnum;
 
-$scaleid = $module->gradeitem->scaleid;
-if (is_null($scaleid) && local_gugcat::is_grademax22($module->gradeitem->gradetype, $module->gradeitem->grademax)){
-    $scaleid = null;
-}
-local_gugcat::set_grade_scale($scaleid);
-local_gugcat::set_prv_grade_id($courseid, $module);
+$gradehistory = grade_aggregation::get_course_grade_history($course, $modules, $student);
 
-$history = local_gugcat::get_grade_history($courseid, $module, $studentid);
 echo $OUTPUT->header();
-$PAGE->set_cm($module);
 $renderer = $PAGE->get_renderer('local_gugcat');
-echo $renderer->display_grade_history($student, $module->name, $history);
+echo $renderer->display_course_grade_history($student, $gradehistory, $modules);
 echo $OUTPUT->footer();

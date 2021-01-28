@@ -31,7 +31,9 @@ require_once('locallib.php');
 $courseid = required_param('id', PARAM_INT);
 $activityid = optional_param('activityid', null, PARAM_INT);
 $categoryid = optional_param('categoryid', null, PARAM_INT);
-$URL = new moodle_url('/local/gugcat/index.php', array('id' => $courseid));
+$page = optional_param('page', 0, PARAM_INT);  
+
+$URL = new moodle_url('/local/gugcat/index.php', array('id' => $courseid, 'page' => $page));
 is_null($activityid) ? null : $URL->param('activityid', $activityid);
 is_null($categoryid) ? null : $URL->param('categoryid', $categoryid);
 require_login($courseid);
@@ -44,12 +46,15 @@ $PAGE->requires->js_call_amd('local_gugcat/main', 'init');
 $course = get_course($courseid);
 
 $coursecontext = context_course::instance($courseid);
+require_capability('local/gugcat:view', $coursecontext);
+
 $PAGE->set_context($coursecontext);
 $PAGE->set_course($course);
 $PAGE->set_heading($course->fullname);
+
+//Retrieve activities
 $activities = local_gugcat::get_activities($courseid);
 $selectedmodule = null;
-$groupid = 0;
 $groups = null;
 $valid_22point_scale = false;
 
@@ -69,14 +74,19 @@ if(!empty($activities)){
     local_gugcat::set_grade_scale($scaleid);
 }
 
-if (!empty($groups)){
+//Retrieve students
+$limitfrom = $page * GCAT_MAX_USERS_PER_PAGE;
+$limitnum  = GCAT_MAX_USERS_PER_PAGE;
+$totalenrolled = count_enrolled_users($coursecontext, 'moodle/competency:coursecompetencygradable');
+
+if(!empty($groups)){
     $students = Array();
     foreach ($groups as $group) {
-        $groupstudents = get_enrolled_users($coursecontext, 'moodle/competency:coursecompetencygradable', $group->id);
+        $groupstudents = get_enrolled_users($coursecontext, 'moodle/competency:coursecompetencygradable', $group->id, 'u.*', null, $limitfrom, $limitnum);
         $students += $groupstudents;
     }
 }else{
-    $students = get_enrolled_users($coursecontext, 'moodle/competency:coursecompetencygradable', $groupid);
+    $students = get_enrolled_users($coursecontext, 'moodle/competency:coursecompetencygradable', 0, 'u.*', null, $limitfrom, $limitnum);
 }
 
 if(!is_null($courseid) && !is_null($categoryid)){
@@ -90,25 +100,20 @@ local_gugcat::set_prv_grade_id($courseid, $selectedmodule);
 
 //---------submit grade capture table
 $release = optional_param('release', null, PARAM_NOTAGS);
+$multiadd = optional_param('multiadd', null, PARAM_NOTAGS);
 $gradeitem = optional_param('reason', null, PARAM_NOTAGS);
 $importgrades = optional_param('importgrades', null, PARAM_NOTAGS);
 $showhidegrade = optional_param('showhidegrade', null, PARAM_NOTAGS);
 $rowstudentid = optional_param('rowstudentno', null, PARAM_NOTAGS);
-$prvgrades = optional_param_array('prvgrades', null, PARAM_NOTAGS);
 $newgrades = optional_param_array('newgrades', null, PARAM_NOTAGS);
-if (isset($release) && isset($prvgrades)){
-    if(count(array_filter($prvgrades)) > 0){
-        grade_capture::release_prv_grade($courseid, $selectedmodule, array_filter($prvgrades));
-        local_gugcat::notify_success('successrelease');
-    }else{
-        local_gugcat::notify_error('errornoprvgrades');
-    }
+if (isset($release)){
+    grade_capture::release_prv_grade($courseid, $selectedmodule);
+    local_gugcat::notify_success('successrelease');
     unset($release);
-    unset($prvgrades);
     redirect($URL);
     exit;
-}else if (!empty($gradeitem)){
-    if(isset($newgrades)){
+}else if (isset($multiadd)){
+    if(isset($newgrades) && !empty($gradeitem)){
         $gradeitemid = local_gugcat::add_grade_item($courseid, $gradeitem, $selectedmodule);
         foreach ($newgrades as $id=>$item) {
             if(isset($item)){
@@ -117,16 +122,17 @@ if (isset($release) && isset($prvgrades)){
             }
         }
         local_gugcat::notify_success('successaddall');
-        unset($gradeitem);
-        unset($newgrades);
-        redirect($URL);
-        exit;
     }else{
-        print_error('errorrequired', 'local_gugcat', $PAGE->url);
+        local_gugcat::notify_error('errorrequired');
     }
+    unset($multiadd);
+    unset($gradeitem);
+    unset($newgrades);
+    redirect($URL);
+    exit;
 }else if(isset($importgrades)){
     if ($valid_22point_scale){
-        grade_capture::import_from_gradebook($courseid, $selectedmodule, $students, $activities);
+        grade_capture::import_from_gradebook($courseid, $selectedmodule, $activities);
         local_gugcat::notify_success('successimport');
     }else{
         local_gugcat::notify_error('importerror');
@@ -148,5 +154,6 @@ echo $OUTPUT->header();
 if(!empty($activities))
     $PAGE->set_cm($selectedmodule);
 $renderer = $PAGE->get_renderer('local_gugcat');
-echo $renderer->display_grade_capture($activities, $rows, $columns);
+echo $renderer->display_grade_capture($selectedmodule, $activities, $rows, $columns);
+echo $OUTPUT->paging_bar($totalenrolled, $page, $limitnum, $PAGE->url);
 echo $OUTPUT->footer();

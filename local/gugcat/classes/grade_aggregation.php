@@ -24,6 +24,7 @@
 namespace local_gugcat;
 
 use ArrayObject;
+use context_course;
 use local_gugcat;
 use stdClass;
 use grade_grade;
@@ -77,18 +78,22 @@ class grade_aggregation{
             $grades->provisional = $DB->get_records('grade_grades', array('itemid' => $prvgrdid), $sort, $fields);
             //get grades from gradebook
             $gbgrades = grade_get_grades($course->id, 'mod', $mod->modname, $mod->instance, array_keys($students));
-            $grades->gradebook = isset($gbgrades->items[0]) ? $gbgrades->items[0]->grades : null;
+            $gbgradeitem = array_values(array_filter($gbgrades->items, function($item) use($mod){
+                return $item->itemnumber == $mod->gradeitem->itemnumber;//filter grades with specific itemnumber
+            }));
+            $grades->gradebook = isset($gbgradeitem[0]) ? $gbgradeitem[0]->grades : null;
             $mod->grades = $grades;
             array_push($gradebook, $mod);
         }
-
-        $i = 1;
+        $page = optional_param('page', 0, PARAM_INT);  
+        $i = $page * GCAT_MAX_USERS_PER_PAGE + 1;
         foreach ($students as $student) {
             $gradecaptureitem = new gcat_item();
             $gradecaptureitem->cnum = $i;
             $gradecaptureitem->studentno = $student->id;
             $gradecaptureitem->surname = $student->lastname;
             $gradecaptureitem->forename = $student->firstname;
+            $gradecaptureitem->idnumber = $student->idnumber;
             $gradecaptureitem->grades = array();
             $gbaggregatedgrade = $DB->get_record('grade_grades', array('itemid'=>$aggradeid, 'userid'=>$student->id));
             $floatweight = 0;
@@ -110,7 +115,7 @@ class grade_aggregation{
                         $scaleid = null;
                     }
                     local_gugcat::set_grade_scale($scaleid);
-                    $grade = is_null($grd) ? ( $grditemresit ? 'N/A' : get_string('nograderecorded', 'local_gugcat')) : local_gugcat::convert_grade($grd);
+                    $grade = is_null($grd) ? ( $grditemresit ? get_string('nogradeweight', 'local_gugcat') : get_string('nograderecorded', 'local_gugcat')) : local_gugcat::convert_grade($grd);
                     $weight = 0;
                     $grdvalue = get_string('nograderecorded', 'local_gugcat');
                     if($grditemresit && is_null($pg) && is_null($grd) && !$gradecaptureitem->resitexist)
@@ -125,7 +130,7 @@ class grade_aggregation{
                     }
                     $gradecaptureitem->nonsubmission = ($grade === NON_SUBMISSION_AC) ? true : false;
                     $gradecaptureitem->medicalexemption = ($grade === MEDICAL_EXEMPTION_AC) ? true : false;
-                    $grdobj->activityid = $item->id;
+                    $grdobj->activityid = $item->gradeitemid;
                     $grdobj->activityinstance = $item->instance;
                     $grdobj->activity = $item->name;
                     $grdobj->grade = $grade;
@@ -185,47 +190,45 @@ class grade_aggregation{
         local_gugcat::notify_success('successadjustweight');
     }
 
-    public static function release_final_grades($courseid, $cms, $students){
+    public static function release_final_grades($courseid){
         global $USER, $DB;
-        foreach($cms as $cmid=>$cm) {
-            $data = new stdClass();
-            $data->courseid = $courseid;
-            $data->itemtype = 'mod';
-            $data->iteminstance = explode('_', $cm)[0];
-            $data->itemname = explode('_', $cm)[1];
-            //get gradebook grade item
-            $gradeitem = new grade_item($data, true);
-           //set offset value for max 22 points grade
-            $gradescaleoffset = 0;
-            if (local_gugcat::is_grademax22($gradeitem->gradetype, $gradeitem->grademax)){
-                $gradescaleoffset = 1;
-            }
-            foreach($students as $id=>$student) {
+        //Retrieve enrolled students' ids only
+        $students = get_enrolled_users(context_course ::instance($courseid), 'moodle/competency:coursecompetencygradable', 0, 'u.id');
+        $modules = local_gugcat::get_activities($courseid, true, false);
+        foreach($modules as $mod) {
+            //Get provisional grade id of the module
+            $prvgrdid = local_gugcat::get_grade_item_id($courseid, $mod->gradeitemid, get_string('provisionalgrd', 'local_gugcat'));
+            
+            $gradeitem = new grade_item(array('id'=>$mod->gradeitemid), true);
+            //set offset value for max 22 points grade
+            $gradescaleoffset = (local_gugcat::is_grademax22($gradeitem->gradetype, $gradeitem->grademax)) ? 1 : 0;
+    
+            foreach($students as $student) {
+                //get the provisional grade of the student
+                $prvgrd = $DB->get_record('grade_grades', array('itemid'=>$prvgrdid, 'userid' => $student->id), 'rawgrade, finalgrade');
+                $grd = is_null($prvgrd->finalgrade) ? $prvgrd->rawgrade : $prvgrd->finalgrade;
+
+                //check if grade is admin grade
+                $grade = intval($grd); 
+                $grade = ($grade == NON_SUBMISSION || $grade == MEDICAL_EXEMPTION) ? null : $grade - $gradescaleoffset;
+
                 //update grade & information from gradebook
-                $grade = $student[$cmid]; 
-                switch ($grade) {
-                    case NON_SUBMISSION:
-                        $grade = 0;
-                        break;
-                    case MEDICAL_EXEMPTION:
-                        $grade = null;
-                        break;
-                    default:
-                        $grade = $grade - $gradescaleoffset;
-                        break;
+                if(!is_null($grd) && $gradeitem->update_final_grade($student->id, $grade, null, null, FORMAT_MOODLE, $USER->id)){
+                    $DB->set_field_select('grade_grades', 'information', 'final', "itemid = $gradeitem->id AND userid = $student->id");
                 }
-                if($gradeitem->update_final_grade($id, $grade, null, null, FORMAT_MOODLE, $USER->id)){
-                    $DB->set_field_select('grade_grades', 'information', 'final', "itemid = $gradeitem->id AND userid = $id");
-                }
-            }         
+            } 
         }
         local_gugcat::notify_success('successfinalrelease');
     }
 
-    public static function export_aggregation_tool($course, $modules, $students){
+    public static function export_aggregation_tool($course){
         $table = get_string('aggregationtool', 'local_gugcat');
         $filename = "export_$table"."_".date('Y-m-d_His');    
-        $columns = ['candidate_number', 'student_number', 'surname', 'forename'];
+        $columns = ['candidate_number', 'student_number'];
+        $is_blind_marking = local_gugcat::is_blind_marking();
+        $is_blind_marking ? null : array_push($columns, ...array('surname', 'forename'));
+        $students = get_enrolled_users(context_course::instance($course->id), 'moodle/competency:coursecompetencygradable');
+        $modules = local_gugcat::get_activities($course->id, true);
         //Process the activity names
         $activities = array();
         foreach($modules as $cm) {
@@ -244,8 +247,10 @@ class grade_aggregation{
             $student = new stdClass();
             $student->candidate_number = $row->cnum;
             $student->student_number = $row->studentno;
-            $student->surname = $row->surname;
-            $student->forename = $row->forename;
+            if(!$is_blind_marking){
+                $student->surname = $row->surname;
+                $student->forename = $row->forename;
+            }
             foreach($activities as $key=>$act) {
                 $student->{$act[0]} = $row->grades[$key]->weight.'%';//weight
                 $student->{$act[1]} = $row->grades[$key]->grade; //alphanumeric
@@ -278,5 +283,80 @@ class grade_aggregation{
         }
         return false;
 
+    }
+
+    public static function get_course_grade_history($course, $modules, $student){
+        global $DB;
+
+        $aggradeid = local_gugcat::add_grade_item($course->id, get_string('aggregatedgrade', 'local_gugcat'), null);
+        $rows = array();
+        $gradebook = array();
+        foreach ($modules as $mod) {
+            
+            $i = 0;
+            $mod->scaleid = $mod->gradeitem->scaleid;
+            $scaleid = $mod->scaleid;
+            if (is_null($scaleid) && local_gugcat::is_grademax22($mod->gradeitem->gradetype, $mod->gradeitem->grademax)){
+                $scaleid = null;
+            }
+            local_gugcat::set_grade_scale($scaleid);
+            $grades = new stdClass();
+            //get provisional grades
+            $prvgrdid = local_gugcat::set_prv_grade_id($course->id, $mod);
+            $sort = 'id';
+            $fields = 'id, itemid, rawgrade, finalgrade, feedback, timemodified, usermodified';
+            $select = 'feedback IS NOT NULL AND rawgrade IS NOT NULL AND itemid='.$prvgrdid.' AND '.' userid="'.$student->id.'"'; 
+            $gradehistory_arr = $DB->get_records_select('grade_grades_history', $select, null, $fields);
+            if($gradehistory_arr > 0){
+                foreach($gradehistory_arr as $gradehistory){
+                    isset($rows[$i]) ? null : $rows[$i] = new stdClass();
+                    isset($rows[$i]->grades) ? null : $rows[$i]->grades = array();
+                    $rows[$i]->timemodified = $gradehistory->timemodified;
+                    $rows[$i]->date = date("j/n", strtotime(userdate($gradehistory->timemodified))).'<br>'.date("h:i", strtotime(userdate($gradehistory->timemodified)));
+                    $fields = 'firstname, lastname';
+                    $modby = $DB->get_record('user', array('id' => $gradehistory->usermodified), $fields);
+                    $rows[$i]->modby = (isset($modby->lastname) && isset($modby->firstname)) ? $modby->lastname . ', '.$modby->firstname : null;
+                    $rows[$i]->notes = $gradehistory->feedback;
+                    array_push($rows[$i]->grades, $gradehistory);
+                    $i++;
+                }
+            }
+        }
+
+        foreach($rows as $row) {
+            $sumgrade = 0;
+            if($row->grades > 0){
+                foreach($row->grades as $grdhistory) {
+                    $grd = $grdhistory->rawgrade;
+                    $weight = $grdhistory->information;
+                    $sumgrade += (float)$grd * $weight;
+                }
+            }
+            $row->grade = local_gugcat::convert_grade(round((float)$sumgrade));
+        }
+        //add overridden grades in 
+        $fields = 'id, itemid, rawgrade, finalgrade, feedback, timemodified, usermodified';
+        $select = 'feedback IS NOT NULL AND rawgrade IS NOT NULL AND itemid='.$aggradeid.' AND '.' userid="'.$student->id.'"'; 
+        $gradehistory_overridden = $DB->get_records_select('grade_grades_history', $select, null, $fields);
+        if($gradehistory_overridden > 0){
+            foreach($gradehistory_overridden as $overriddengrade){
+                $ovgrade = new stdClass();
+                $grd = (is_null($overriddengrade->finalgrade) ? (float)$overriddengrade->rawgrade : (float)$overriddengrade->finalgrade);
+                $ovgrade->grade = local_gugcat::convert_grade($grd);
+                $ovgrade->notes = $overriddengrade->feedback;
+                $ovgrade->overridden = true;
+                $fields = 'firstname, lastname';
+                $modby = $DB->get_record('user', array('id' => $overriddengrade->usermodified), $fields);
+                $ovgrade->modby = (isset($modby->lastname) && isset($modby->firstname)) ? $modby->lastname . ', '.$modby->firstname : null;
+                $ovgrade->timemodified = $overriddengrade->timemodified;
+                $ovgrade->date = date("j/n", strtotime(userdate($overriddengrade->timemodified))).'<br>'.date("h:i", strtotime(userdate($overriddengrade->timemodified)));
+                array_push($rows, $ovgrade);
+            }
+        }
+        //sort array by timemodified
+        usort($rows,function($first,$second){
+            return $first->timemodified < $second->timemodified;
+        });
+        return $rows;
     }
 }

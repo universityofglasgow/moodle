@@ -30,10 +30,11 @@ require_once($CFG->dirroot . '/local/gugcat/locallib.php');
 
 $courseid = required_param('id', PARAM_INT);
 $categoryid = optional_param('categoryid', null, PARAM_INT);
-$URL = new moodle_url('/local/gugcat/overview/index.php', array('id' => $courseid));
-$indexurl = new moodle_url('/local/gugcat/index.php', array('id' => $courseid));
+$page = optional_param('page', 0, PARAM_INT);  
 
+$URL = new moodle_url('/local/gugcat/overview/index.php', array('id' => $courseid, 'page' => $page));
 is_null($categoryid) ? null : $URL->param('categoryid', $categoryid);
+$indexurl = new moodle_url('/local/gugcat/index.php', array('id' => $courseid));
 require_login($courseid);
 $PAGE->set_url($URL);
 $PAGE->set_title(get_string('gugcat', 'local_gugcat'));
@@ -48,7 +49,15 @@ $coursecontext = context_course::instance($courseid);
 $PAGE->set_context($coursecontext);
 $PAGE->set_course($course);
 $PAGE->set_heading($course->fullname);
-$students = get_enrolled_users($coursecontext, 'moodle/competency:coursecompetencygradable');
+require_capability('local/gugcat:view', $coursecontext);
+
+//Retrieve students
+$limitfrom = $page * GCAT_MAX_USERS_PER_PAGE;
+$limitnum  = GCAT_MAX_USERS_PER_PAGE;
+$totalenrolled = count_enrolled_users($coursecontext, 'moodle/competency:coursecompetencygradable');
+$students = get_enrolled_users($coursecontext, 'moodle/competency:coursecompetencygradable', 0, 'u.*', null, $limitfrom, $limitnum);
+
+//Retrieve activities
 $activities = local_gugcat::get_activities($courseid);
 $rows = grade_aggregation::get_rows($course, $activities, $students);
 
@@ -65,21 +74,12 @@ if(isset($requireresit) && !empty($rowstudentid)){
     redirect($URL);
     exit;
 }else if(isset($finalrelease)){
-    if(!in_array("", $finalgrades)){
-        $students = array();
-        foreach($finalgrades as $key=>$value) {
-            $ids = explode('_', $key); //0 = student id, 1 = activity id
-            $students[$ids[0]][$ids[1]] = array_search($value, local_gugcat::$GRADES);
-        }
-        grade_aggregation::release_final_grades($courseid, $cminstances, $students);      
-    }
+    grade_aggregation::release_final_grades($courseid); 
     unset($finalrelease);
-    unset($finalgrades);
-    unset($cminstances);
     redirect($URL);
     exit;
 }else if(isset($downloadcsv)){
-    grade_aggregation::export_aggregation_tool($course, $activities, $students);
+    grade_aggregation::export_aggregation_tool($course);
     unset($downloadcsv);
     redirect($URL);
     exit;
@@ -88,4 +88,5 @@ if(isset($requireresit) && !empty($rowstudentid)){
 echo $OUTPUT->header();
 $renderer = $PAGE->get_renderer('local_gugcat');
 echo $renderer->display_aggregation_tool($rows, $activities);
+echo $OUTPUT->paging_bar($totalenrolled, $page, $limitnum, $PAGE->url);
 echo $OUTPUT->footer();
