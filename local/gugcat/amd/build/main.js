@@ -126,7 +126,6 @@ function($, Str, ModalFactory, ModalGcat, Storage) {
     }
 
     const onClickListeners = (event) =>{
-        var url = window.location.href;
         var btn_saveadd = document.getElementById('btn-saveadd');
         var btn_release = document.getElementById('btn-release');
         var btn_import = document.getElementById('btn-import');
