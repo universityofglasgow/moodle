@@ -48,6 +48,8 @@ $coursecontext = context_course::instance($courseid);
 $PAGE->set_context($coursecontext);
 $PAGE->set_course($course);
 $PAGE->set_heading($course->fullname);
+require_capability('local/gugcat:view', $coursecontext);
+
 $students = get_enrolled_users($coursecontext, 'moodle/competency:coursecompetencygradable');
 $activities = local_gugcat::get_activities($courseid);
 $rows = grade_aggregation::get_rows($course, $activities, $students);
