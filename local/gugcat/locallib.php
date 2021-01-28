@@ -531,9 +531,12 @@ class local_gugcat {
             if(!is_null($customfieldcategoryid)){
                 $category = \core_customfield\category_controller::create($customfieldcategoryid);
                 $field = \core_customfield\field_controller::create(0, (object)['type' => 'checkbox'], $category);
-            
+
                 $handler = $field->get_handler();
-                $handler->save_field_configuration($field, (object)['name' => get_string('showassessment', 'local_gugcat'), 'shortname' => get_string('gugcatoptions', 'local_gugcat')]);
+                $handler->save_field_configuration($field, (object)[
+                    'name' => get_string('showassessment', 'local_gugcat'), 
+                    'shortname' => get_string('showonstudentdashboard', 'local_gugcat')
+                ]);
                 $customfieldfield = $DB->get_record('customfield_field', array('categoryid'=> $customfieldcategoryid));
                 if(!empty($customfieldfield)){
                     $customfieldddata = new stdClass();
