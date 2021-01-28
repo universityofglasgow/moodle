@@ -60,6 +60,8 @@ class addeditgradeform extends moodleform {
         $mform->setType('activityid', PARAM_ACTION);
         $mform->addElement('hidden', 'categoryid', $this->_customdata['categoryid']);
         $mform->setType('categoryid', PARAM_ACTION);
+        $mform->addElement('hidden', 'page', $this->_customdata['page']);
+        $mform->setType('page', PARAM_ACTION);
         if(isset($this->_customdata['overview'])){
             $mform->addElement('hidden', 'overview', $this->_customdata['overview']);
             $mform->setType('overview', PARAM_ACTION);

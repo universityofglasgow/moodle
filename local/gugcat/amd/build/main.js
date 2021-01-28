@@ -78,6 +78,7 @@ function($, Str, ModalFactory, ModalGcat, Storage) {
         switch (event.target) {
             case categories:
                 urlParams.delete("activityid");
+                urlParams.delete("page");
                 if(categories.value === 'null'){
                     urlParams.delete("categoryid");
                 }else{
@@ -94,6 +95,7 @@ function($, Str, ModalFactory, ModalGcat, Storage) {
                 break;
             case activities:
                 urlParams.set("activityid", activities.value);
+                urlParams.delete("page");
                 window.location.search = urlParams;
                 break;
             case grade_reason:
@@ -131,7 +133,6 @@ function($, Str, ModalFactory, ModalGcat, Storage) {
         var btn_coursegradeform = document.getElementById('btn-coursegradeform');
         var btn_download = document.getElementById('btn-download');
         var btn_finalrelease = document.getElementById('btn-finalrelease');
-        var gcat_tbl_form = document.getElementById('multigradesform');
         switch (event.target) {
             case btn_saveadd:
                 btn_saveadd.classList.toggle('togglebtn');
@@ -141,7 +142,7 @@ function($, Str, ModalFactory, ModalGcat, Storage) {
                     if(btn_saveadd.classList.contains('togglebtn')){
                         btn_saveadd.textContent = langString;
                     } else {
-                        gcat_tbl_form.submit();
+                        document.getElementById('multiadd-submit').click();
                     }
                 });
                 $(".togglemultigrd").show();
@@ -321,7 +322,8 @@ function($, Str, ModalFactory, ModalGcat, Storage) {
                         })();
                     }
                 }else if(checkCurrentUrl("gugcat/index")){
-                    document.getElementById('btn-release').style.display = 'block';
+                    document.getElementById('btn-release').style.display = 
+                    !$(".gradeitems").text().includes("Moodle Grade[Date]") ? 'block' : 'none';
                     var nodeArr = Array.from(document.querySelectorAll('.gradeitems'));
                     if(nodeArr.find(node => node.innerHTML !== 'Moodle Grade<br>[Date]')){
                         document.getElementById('btn-saveadd').style.display = 'inline-block';

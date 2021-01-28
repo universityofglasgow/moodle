@@ -23,17 +23,19 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use local_gugcat\grade_aggregation;
 require_once(__DIR__ . '/../../../config.php');
 require_once($CFG->dirroot . '/local/gugcat/locallib.php');
 
 $courseid = required_param('id', PARAM_INT);
 $activityid = required_param('activityid', PARAM_INT);
 $studentid = required_param('studentid', PARAM_INT);
+$categoryid = optional_param('categoryid', null, PARAM_INT);
+$page = optional_param('page', 0, PARAM_INT);
 
 require_login($courseid);
-$urlparams = array('id' => $courseid, 'activityid' => $activityid, 'studentid' => $studentid);
+$urlparams = array('id' => $courseid, 'activityid' => $activityid, 'studentid' => $studentid, 'page' => $page);
 $URL = new moodle_url('/local/gugcat/history/index.php', $urlparams);
+is_null($categoryid) ? null : $URL->param('categoryid', $categoryid);
 $indexurl = new moodle_url('/local/gugcat/index.php', array('id' => $courseid));
 
 $PAGE->set_url($URL);

@@ -45,6 +45,8 @@ define('UNDER_INVESTIGATION', -6);
 define('AU', -7);
 define('FC', -8);
 
+define('GCAT_MAX_USERS_PER_PAGE', 50);
+
 require_once($CFG->libdir.'/gradelib.php');
 require_once($CFG->dirroot . '/grade/querylib.php');
 require_once($CFG->libdir.'/grade/grade_item.php');
@@ -76,10 +78,12 @@ class local_gugcat {
      * Returns all activities/modules for specific course
      *
      * @param int $courseid
+     * @param boolean $all - If true, retrieves all modules regardless of category
+     * @param boolean $includegradeitem - If true, retrieves grade item of the module
      */
-    public static function get_activities($courseid){
+    public static function get_activities($courseid, $all = false, $includegradeitem = true){
         $activityid = optional_param('activityid', null, PARAM_INT);
-        $categoryid = optional_param('categoryid', null, PARAM_INT);
+        $categoryid = $all ? null : optional_param('categoryid', null, PARAM_INT);
         $mods = self::grade_get_gradable_activities($courseid);
     
         //get whole grading forums and workshop assessment | itemnumber = 1
@@ -88,12 +92,13 @@ class local_gugcat {
 
         $activities = array();
         if(count($mods) > 0 || count($wholegradingforums) > 0 || count($assessmentworkshops) > 0){
-            $mods = array_values($mods) + $wholegradingforums + $assessmentworkshops;
+            $mods = array_merge(array_values($mods), $wholegradingforums + $assessmentworkshops);
             foreach($mods as $cm) {
-                $gi = new grade_item(array('id'=>$cm->gradeitemid), true);
-                $activities[$gi->id]= $cm;
-                $activities[$gi->id]->gradeitem = $gi;
-                $activities[$gi->id]->selected = (strval($activityid) === $gi->id)? 'selected' : '';
+                $activities[$cm->gradeitemid]= $cm;
+                $activities[$cm->gradeitemid]->selected = (strval($activityid) === $cm->gradeitemid)? 'selected' : '';
+                if($includegradeitem){
+                    $activities[$cm->gradeitemid]->gradeitem = new grade_item(array('id'=>$cm->gradeitemid), true);
+                }
             }
             if(!is_null($categoryid) && $categoryid !== 0){
                 foreach ($activities as $key=>$activity) {

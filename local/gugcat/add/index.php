@@ -32,10 +32,12 @@ $courseid = required_param('id', PARAM_INT);
 $activityid = required_param('activityid', PARAM_INT);
 $studentid = required_param('studentid', PARAM_INT);
 $categoryid = optional_param('categoryid', null, PARAM_INT);
+$page = optional_param('page', 0, PARAM_INT);  
 
 require_login($courseid);
-$urlparams = array('id' => $courseid, 'activityid' => $activityid, 'studentid' => $studentid);
+$urlparams = array('id' => $courseid, 'activityid' => $activityid, 'studentid' => $studentid, 'page' => $page);
 $URL = new moodle_url('/local/gugcat/add/index.php', $urlparams);
+is_null($categoryid) ? null : $URL->param('categoryid', $categoryid);
 $indexurl = new moodle_url('/local/gugcat/index.php', array('id' => $courseid));
 
 $PAGE->set_url($URL);
@@ -66,7 +68,7 @@ $grading_info = grade_get_grades($courseid, 'mod', $module->modname, $module->in
 $gradeitems = local_gugcat::get_grade_grade_items($course, $module);
 $gradeversions = local_gugcat::filter_grade_version($gradeitems, $studentid);
 
-$mform = new addeditgradeform(null, array('id'=>$courseid, 'categoryid'=>$categoryid, 'activityid'=>$activityid, 'studentid'=>$studentid));
+$mform = new addeditgradeform(null, array('id'=>$courseid, 'page'=>$page, 'categoryid'=>$categoryid, 'activityid'=>$activityid, 'studentid'=>$studentid));
 if ($fromform = $mform->get_data()) {
 
     if($fromform->reasons == 8) {
@@ -82,8 +84,8 @@ if ($fromform = $mform->get_data()) {
     
     $gradeitemid = local_gugcat::add_grade_item($courseid, $gradereason, $module);
     $grades = local_gugcat::add_update_grades($studentid, $gradeitemid, $fromform->grade, $fromform->notes, $fromform->userfile);
-    $url = new moodle_url('/local/gugcat/index.php', array('id' => $courseid, 'activityid' => $activityid));
-    $url .= (($categoryid !== 0) ? '&categoryid='.$categoryid : null);
+    $url = new moodle_url('/local/gugcat/index.php', array('id' => $courseid, 'activityid' => $activityid, 'page'=> $page));
+    (!is_null($categoryid) && $categoryid != 0) ? $url->param('categoryid', $categoryid) : null;
     redirect($url);
     exit;
 }   

@@ -216,7 +216,8 @@ td > .grade-discrepancy{
 /* Hide submit buttons */
 #release-submit, #importgrades-submit, 
 #resit-submit,#showhidegrade-submit,
-#finalrelease-submit, #downloadcsv-submit {
+#finalrelease-submit, #downloadcsv-submit,
+#multiadd-submit {
     position: absolute;
     visibility: hidden;
 }

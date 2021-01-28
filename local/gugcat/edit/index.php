@@ -31,12 +31,14 @@ require_once($CFG->libdir.'/filelib.php');
 $courseid = required_param('id', PARAM_INT);
 $activityid = required_param('activityid', PARAM_INT);
 $studentid = required_param('studentid', PARAM_INT);
-$categoryid = optional_param('categoryid', null, PARAM_INT);
 $overview = required_param('overview', PARAM_INT);
+$categoryid = optional_param('categoryid', null, PARAM_INT);
+$page = optional_param('page', 0, PARAM_INT);  
 
 require_login($courseid);
-$urlparams = array('id' => $courseid, 'activityid' => $activityid, 'studentid' => $studentid, 'overview' => $overview);
+$urlparams = array('id' => $courseid, 'activityid' => $activityid, 'studentid' => $studentid, 'overview' => $overview, 'page' => $page);
 $URL = new moodle_url('/local/gugcat/edit/index.php', $urlparams);
+is_null($categoryid) ? null : $URL->param('categoryid', $categoryid);
 $indexurl = new moodle_url('/local/gugcat/index.php', array('id' => $courseid));
 
 $PAGE->set_url($URL);
@@ -69,7 +71,7 @@ $grading_info = grade_get_grades($courseid, 'mod', $module->modname, $module->in
 $gradeitems = local_gugcat::get_grade_grade_items($course, $module);
 $gradeversions = local_gugcat::filter_grade_version($gradeitems, $studentid);
 
-$mform = new addeditgradeform(null, array('id'=>$courseid, 'categoryid'=>$categoryid, 'activityid'=>$activityid, 'studentid'=>$studentid, 'overview' => $overview));
+$mform = new addeditgradeform(null, array('id'=>$courseid, 'page'=>$page, 'categoryid'=>$categoryid, 'activityid'=>$activityid, 'studentid'=>$studentid, 'overview' => $overview));
 if ($fromform = $mform->get_data()) {
     if($fromform->reasons == 8) {
         $gradereason = $fromform->otherreason;
@@ -87,12 +89,13 @@ if ($fromform = $mform->get_data()) {
     $url = null;
 
     if((integer)$fromform->overview == 1){
-        $url = new moodle_url('/local/gugcat/overview/index.php', array('id' => $courseid));
+        $url = new moodle_url('/local/gugcat/overview/index.php', array('id' => $courseid, 'page'=> $page));
+        (!is_null($categoryid) && $categoryid != 0) ? $url->param('categoryid', $categoryid) : null;
         redirect($url);
     }
     else{
-        $url = new moodle_url('/local/gugcat/index.php', array('id' => $courseid, 'activityid' => $activityid));
-        $url .= (($categoryid !== 0) ? '&categoryid='.$categoryid : null);
+        $url = new moodle_url('/local/gugcat/index.php', array('id' => $courseid, 'activityid' => $activityid, 'page'=> $page));
+        (!is_null($categoryid) && $categoryid != 0) ? $url->param('categoryid', $categoryid) : null;
         redirect($url);
     }
     exit;

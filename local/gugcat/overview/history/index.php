@@ -31,9 +31,10 @@ $courseid = required_param('id', PARAM_INT);
 $studentid = required_param('studentid', PARAM_INT);
 $cnum = required_param('cnum', PARAM_INT);
 $categoryid = optional_param('categoryid', null, PARAM_INT);
+$page = optional_param('page', 0, PARAM_INT);  
 
 require_login($courseid);
-$urlparams = array('id' => $courseid, 'studentid' => $studentid, 'cnum'=>$cnum);
+$urlparams = array('id' => $courseid, 'studentid' => $studentid, 'cnum'=>$cnum, 'page' => $page);
 $URL = new moodle_url('/local/gugcat/overview/history/index.php', $urlparams);
 $indexurl = new moodle_url('/local/gugcat/index.php', array('id' => $courseid));
 is_null($categoryid) ? null : $URL->param('categoryid', $categoryid);
