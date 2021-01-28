@@ -16,6 +16,14 @@
 }}
 {{#hasassessments}}
     <div class="assessments-details-container table-responsive">
+        <div class="assessments-table-tab-container">
+            <div id="gu_spdetails_current_tab" class="assessments-table-tab selected-element">
+                <a onclick="toggleTableShow('block_spdetails_table')">{{currentenroll}}</a>
+            </div>
+            <div id="gu_spdetails_past_tab" class="assessments-table-tab">
+                <a onclick="toggleTableShow('block_spdetails_table_past_history')">{{pastenroll}}</a>
+            </div>
+        </div>
         <div class="assessments-details-sort">
             <label class="assessments-details-sort-label">{{sort}}
                 <select id="gu_spdetails_select_sort" class="assessments-details-sort-select" oninput="sortTable(parseInt(this.value), true)">
@@ -108,6 +116,88 @@
                         </td>
                     </tr>
                 {{/data}}
+            </tbody>
+        </table>
+        <table class="table assessments-table hidden-element" id="block_spdetails_table_past_history">
+            <thead>
+                <tr>
+                    <th class="td20 assessments-th-sortable" scope="col" onclick="sortByCourse(this, '_past_history')"
+                        id="gu_spdetails_tableheader_course_past_history">
+                        {{header_course}}
+                        <img src="{{downarrow_img}}">
+                    </th>
+                    <th class="td20" scope="col">{{header_assessment}}</th>
+                    <th class="td10" scope="col">{{header_type}}</th>
+                    <th class="td05" scope="col">{{header_weight}}</th>
+                    <th class="td10 assessments-th-sortable" scope="col" onclick="sortByPastCourseDate(this, true)"
+                        id="gu_spdetails_tableheader_startdate_past_history">
+                        Course Start Date
+                        <img src="{{downarrow_img}}">
+                    </th>
+                    <th class="td10 assessments-th-sortable" scope="col" onclick="sortByPastCourseDate(this, false)"
+                        id="gu_spdetails_tableheader_enddate_past_history">
+                        Course End Date
+                        <img src="{{downarrow_img}}">
+                    </th>
+                    <th class="td15" scope="col">Submission</th>
+                    <th class="td10" scope="col">{{header_grade}}</th>
+                    <th class="td10" scope="col">{{header_feedback}}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#pastdata}}
+                    <tr>
+                        <td class="td20">
+                            <a href="{{courseurl}}">
+                                {{coursetitle}}
+                            </a>
+                        </td>
+                        <td class="td20">
+                            <a href="{{assessmenturl}}">
+                                {{name}}
+                            </a>
+                        </td>
+                        <td class="td10">
+                            {{assessmenttype}}
+                        </td>
+                        <td class="td05">
+                            {{weight}}
+                        </td>
+                        <td class="hidden-element">
+                            {{academicyear}}
+                        </td>
+                        <td class="td10">
+                            {{startdate}}
+                        </td>
+                        <td class="td10">
+                            {{enddate}}
+                        </td>
+                        <td class="td15">
+                            <a href ="{{assessmenturl}}">{{view_submission}}</a>
+                        </td>
+                        <td class="td10">
+                            {{#gradingduedate.hasgrade}}
+                                <span class="graded">{{gradingduedate.gradetext}}</span>
+                                {{#isprovisional}}
+                                    {{provisionaltext}}
+                                {{/isprovisional}}
+                            {{/gradingduedate.hasgrade}}
+                            {{^gradingduedate.hasgrade}}
+                                {{gradingduedate.gradetext}}
+                            {{/gradingduedate.hasgrade}}
+                        </td>
+                        <td class="td10">
+                            {{#feedbackduedate.hasfeedback}}
+                                <a href="{{feedbackurl}}">
+                                    {{feedbackduedate.feedbacktext}}
+                                </a>
+                            {{/feedbackduedate.hasfeedback}}
+                            {{^feedbackduedate.hasfeedback}}
+                                {{feedbackduedate.feedbacktext}}
+                            {{/feedbackduedate.hasfeedback}}
+                        </td>
+                    </tr>
+                {{/pastdata}}
             </tbody>
         </table>
     </div>
