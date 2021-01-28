@@ -24,6 +24,7 @@
 namespace local_gugcat;
 
 use assign;
+use context_course;
 use context_module;
 use grade_item;
 use grade_grade;
@@ -158,7 +159,7 @@ class grade_capture{
      * Function in releasing provisional grades
      *
      */
-    public static function release_prv_grade($courseid, $cm, $grades){
+    public static function release_prv_grade($courseid, $cm){
         global $USER, $CFG, $DB;
         $data = new stdClass();
         $data->courseid = $courseid;
@@ -168,10 +169,10 @@ class grade_capture{
         $gradeitemid = $cm->gradeitem->id;
 
         //set offset value for max 22 points grade
-        $gradescaleoffset = 0;
-        if (local_gugcat::is_grademax22($cm->gradeitem->gradetype, $cm->gradeitem->grademax)){
-            $gradescaleoffset = 1;
-        }
+        $gradescaleoffset = (local_gugcat::is_grademax22($cm->gradeitem->gradetype, $cm->gradeitem->grademax)) ? 1 : 0;
+        
+        //Retrieve enrolled students' ids only
+        $students = get_enrolled_users(context_course ::instance($courseid), 'moodle/competency:coursecompetencygradable', 0, 'u.id');
 
         //get grade item
         $gradeitem = new grade_item($data, true);
@@ -180,19 +181,23 @@ class grade_capture{
             $assign = new assign(context_module::instance($cm->id), $cm, $courseid);
             $is_workflow_enabled = $assign->get_instance()->markingworkflow == 1;
         }
-        foreach ($grades as $userid=>$grd)  {
-            $hidden = $DB->get_field('grade_grades', 'hidden', array('itemid'=>local_gugcat::$PRVGRADEID, 'userid' => $userid));
-            $select = "itemid = $gradeitemid AND userid = $userid";
+        foreach ($students as $student)  {
+            //get provisional grade_grade by user id
+            $fields = 'rawgrade, finalgrade, hidden';
+            $prvgrd = $DB->get_record('grade_grades', array('itemid'=>local_gugcat::$PRVGRADEID, 'userid' => $student->id), $fields);
+            $grd = is_null($prvgrd->finalgrade) ? $prvgrd->rawgrade : $prvgrd->finalgrade;
+            $hidden = $prvgrd->hidden;
+           
+            $select = "itemid = $gradeitemid AND userid = $student->id";
             //update hidden status
             $DB->set_field_select('grade_grades', 'hidden', $hidden, $select);
-            if(!empty($grd) && $hidden == 0){
-                $rawgrade = array_search($grd, local_gugcat::$GRADES);
-                $rawgrade = $rawgrade ? $rawgrade : $grd;
+            if(!is_null($grd) && !empty($grd) && $hidden == 0){
+                $rawgrade = intval($grd);
                 switch ($rawgrade) {
                     case NON_SUBMISSION:
                         $feedback = NON_SUBMISSION_AC;
                         $is_admingrade = true;
-                        $rawgrade = 0;
+                        $rawgrade = null;
                         $excluded = 0;                        
                         break;
                     case MEDICAL_EXEMPTION:
@@ -205,7 +210,7 @@ class grade_capture{
                         $is_admingrade = false;
                         $feedback = null;
                         $excluded = 0;
-                        $rawgrade = !is_null($rawgrade) ? ($rawgrade - $gradescaleoffset) : $rawgrade;
+                        $rawgrade = $rawgrade - $gradescaleoffset;
                         break;
                 }
                 //update feedback and excluded field
@@ -213,10 +218,10 @@ class grade_capture{
                 $DB->set_field_select('grade_grades', 'excluded', $excluded, $select);
                 if($cm->modname === 'assign'){
                     // update assign grade
-                    if ($grade = $assign->get_user_grade($userid, true)) {
+                    if ($grade = $assign->get_user_grade($student->id, true)) {
                         //update workflow state marking worklow is enabled
                         if($is_workflow_enabled){
-                            local_gugcat::update_workflow_state($assign, $userid, ASSIGN_MARKING_WORKFLOW_STATE_RELEASED);
+                            local_gugcat::update_workflow_state($assign, $student->id, ASSIGN_MARKING_WORKFLOW_STATE_RELEASED);
                         }
                         $DB->set_field_select('grade_grades', 'overridden', 0, $select);
                         $grade->grade = $is_admingrade ? 0 : $rawgrade;
@@ -228,7 +233,7 @@ class grade_capture{
                     }
                 }else{         
                     //update grade from gradebook
-                    $gradeitem->update_final_grade($userid, $rawgrade, null, false, FORMAT_MOODLE, $USER->id);
+                    $gradeitem->update_final_grade($student->id, $rawgrade, null, false, FORMAT_MOODLE, $USER->id);
                 }
                 $DB->set_field_select('grade_grades', 'overridden', time(), $select);
             }
@@ -238,7 +243,7 @@ class grade_capture{
         $gradeitem->update();
     }
 
-    public static function import_from_gradebook($courseid, $module, $students, $activities){
+    public static function import_from_gradebook($courseid, $module, $activities){
         $mggradeitemid = local_gugcat::add_grade_item($courseid, get_string('moodlegrade', 'local_gugcat'), $module);
 
         $gradeitem_ = new grade_item(array('id'=>$mggradeitemid), true);
@@ -246,6 +251,8 @@ class grade_capture{
         //update timemodified gradeitem
         $gradeitem_->update();
         $grade = null;
+        //Retrieve enrolled students' ids only
+        $students = get_enrolled_users(context_course ::instance($courseid), 'moodle/competency:coursecompetencygradable', 0, 'u.id');
         
         $gbgrades = grade_get_grades($courseid, 'mod', $module->modname, $module->instance, array_keys($students));
         $gbgradeitem = array_values(array_filter($gbgrades->items, function($item) use($module){

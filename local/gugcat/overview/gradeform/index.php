@@ -34,9 +34,10 @@ $formtype = required_param('setting', PARAM_INT);
 $studentid = required_param('studentid', PARAM_INT);
 $cnum = required_param('cnum', PARAM_INT);
 $categoryid = optional_param('categoryid', null, PARAM_INT);
+$page = optional_param('page', 0, PARAM_INT);  
 
 require_login($courseid);
-$urlparams = array('id' => $courseid, 'setting' => $formtype, 'studentid' => $studentid, 'cnum' => $cnum);
+$urlparams = array('id' => $courseid, 'setting' => $formtype, 'studentid' => $studentid, 'cnum' => $cnum, 'page' => $page);
 $URL = new moodle_url('/local/gugcat/overview/gradeform/index.php', $urlparams);
 is_null($categoryid) ? null : $URL->param('categoryid', $categoryid);
 $indexurl = new moodle_url('/local/gugcat/index.php', array('id' => $courseid));
@@ -64,7 +65,7 @@ $student->cnum = $cnum; //candidate no.
 $student->id = $student->studentno; 
 $student->lastname = $student->surname; 
 $student->firstname = $student->forename;
-$mform = new coursegradeform(null, array('id'=>$courseid, 'categoryid'=>$categoryid, 'studentid'=>$studentid, 'setting'=>$formtype, 'student'=>$student));
+$mform = new coursegradeform(null, array('id'=>$courseid, 'page'=>$page, 'categoryid'=>$categoryid, 'studentid'=>$studentid, 'setting'=>$formtype, 'student'=>$student));
 if ($fromform = $mform->get_data()) {
     if($formtype == OVERRIDE_GRADE_FORM){
         $gradeitemid = local_gugcat::add_grade_item($courseid, get_string('aggregatedgrade', 'local_gugcat'), null);
@@ -81,7 +82,7 @@ if ($fromform = $mform->get_data()) {
             grade_aggregation::adjust_course_weight($weights, $courseid, $studentid, $fromform->notes);
         }
     }
-    $url = new moodle_url('/local/gugcat/overview/index.php', array('id' => $courseid));
+    $url = new moodle_url('/local/gugcat/overview/index.php', array('id' => $courseid, 'page' => $page));
     (!is_null($categoryid) && $categoryid != 0) ? $url->param('categoryid', $categoryid) : null;
     redirect($url);
     exit;
