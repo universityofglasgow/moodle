@@ -505,9 +505,7 @@ class local_gugcat {
                 $customfielddata = $DB->get_record('customfield_data', array('fieldid'=> $customfieldfield->id));
                 if(!empty($customfielddata)){
                     $customfielddatadobj = new stdClass();
-                    $customfieldfieldobj = new stdClass();
                     $customfielddatadobj->id = (int)$customfielddata->id;
-                    $customfieldfieldobj->id = (int)$customfieldfield->id;
 
                     if((int)$customfielddata->intvalue == 1){
                         $customfielddatadobj->intvalue = 0;
@@ -518,13 +516,6 @@ class local_gugcat {
                         $customfielddatadobj->value = "1";
                     }
 
-                    if($customfieldfield->name == get_string('switchoffdisplay', 'local_gugcat')){
-                        $customfieldfieldobj->name = get_string('switchondisplay', 'local_gugcat');
-                    }
-                    else{
-                        $customfieldfieldobj->name = get_string('switchoffdisplay', 'local_gugcat');
-                    }
-                    $DB->update_record('customfield_field', $customfieldfieldobj, $bulk=false);
                     $DB->update_record('customfield_data', $customfielddatadobj, $bulk=false);
                 }
             }
@@ -542,7 +533,7 @@ class local_gugcat {
                 $field = \core_customfield\field_controller::create(0, (object)['type' => 'checkbox'], $category);
             
                 $handler = $field->get_handler();
-                $handler->save_field_configuration($field, (object)['name' => 'Switch off display of assessments on Student Dashboard', 'shortname' => '']);
+                $handler->save_field_configuration($field, (object)['name' => get_string('showassessment', 'local_gugcat'), 'shortname' => get_string('gugcatoptions', 'local_gugcat')]);
                 $customfieldfield = $DB->get_record('customfield_field', array('categoryid'=> $customfieldcategoryid));
                 if(!empty($customfieldfield)){
                     $customfieldddata = new stdClass();
