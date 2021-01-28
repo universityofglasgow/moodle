@@ -302,7 +302,8 @@ class grade_aggregation{
             local_gugcat::set_grade_scale($scaleid);
             $grades = new stdClass();
             //get provisional grades
-            $prvgrdid = local_gugcat::set_prv_grade_id($course->id, $mod);
+            $prvgrdstr = get_string('provisionalgrd', 'local_gugcat');
+            $prvgrdid = local_gugcat::get_grade_item_id($course->id, $mod->gradeitemid, $prvgrdstr);
             $sort = 'id';
             $fields = 'id, itemid, rawgrade, finalgrade, feedback, timemodified, usermodified';
             $select = 'feedback IS NOT NULL AND rawgrade IS NOT NULL AND itemid='.$prvgrdid.' AND '.' userid="'.$student->id.'"'; 
@@ -320,6 +321,24 @@ class grade_aggregation{
                     array_push($rows[$i]->grades, $gradehistory);
                     $i++;
                 }
+            }
+        }
+        $i = count($rows);
+        foreach($modules as $mod){
+            //add first course grade history
+            $grditemresit = self::is_resit($mod);
+            if(!$grditemresit){
+                $prvgrdstr = get_string('provisionalgrd', 'local_gugcat');
+                $prvgrdid = local_gugcat::get_grade_item_id($course->id, $mod->gradeitemid, $prvgrdstr);
+                $sql = 'SELECT * FROM mdl_grade_grades_history WHERE information IS NOT NULL AND rawgrade IS NOT NULL AND itemid='.$prvgrdid.' AND '.' userid="'.$student->id.'" ORDER BY id LIMIT 1';
+                $gradehistory = $DB->get_record_sql($sql);
+                isset($rows[$i]) ? null : $rows[$i] = new stdClass();
+                isset($rows[$i]->grades) ? null : $rows[$i]->grades = array();
+                $rows[$i]->timemodified = $gradehistory->timemodified;
+                $rows[$i]->date = date("j/n", strtotime(userdate($gradehistory->timemodified))).'<br>'.date("h:i", strtotime(userdate($gradehistory->timemodified)));
+                $rows[$i]->modby = get_string('nogradeweight','local_gugcat');
+                $rows[$i]->notes = get_string('nogradeweight','local_gugcat');
+                array_push($rows[$i]->grades, $gradehistory);
             }
         }
 
