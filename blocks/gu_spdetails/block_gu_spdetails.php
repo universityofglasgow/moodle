@@ -26,6 +26,7 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->libdir.'/gradelib.php');
 require_once($CFG->dirroot . '/grade/querylib.php');
+require_once($CFG->dirroot . '/blocks/gu_spdetails/lib.php');
 
 class block_gu_spdetails extends block_base {
 
@@ -58,7 +59,9 @@ class block_gu_spdetails extends block_base {
 
         $courses = enrol_get_all_users_courses($userid, true);
         $courseids = array_column($courses, 'id');
-        $assessments = self::return_assessments($courseids, $userid);
+        $returnassessments = self::return_assessments($courseids, $userid);
+        $assessments = $returnassessments->assessments;
+        $pastdata = $returnassessments->pastcourses;
         $hasassessments = ($assessments) ? true : false;
 
         $downarrow = $OUTPUT->image_url('downarrow', 'theme');
@@ -66,6 +69,7 @@ class block_gu_spdetails extends block_base {
 
         $templatecontext = (array)[
             'data'              => $assessments,
+            'pastdata'          => $pastdata,
             'hasassessments'    => $hasassessments,
             'header_course'     => get_string('header_course', 'block_gu_spdetails'),
             'header_assessment' => get_string('header_assessment', 'block_gu_spdetails'),
@@ -76,9 +80,12 @@ class block_gu_spdetails extends block_base {
             'header_grade'      => get_string('header_grade', 'block_gu_spdetails'),
             'header_feedback'   => get_string('header_feedback', 'block_gu_spdetails'),
             'noassessments'     => get_string('noassessments', 'block_gu_spdetails'),
+            'currentenroll'     => get_string('currentlyenrolledin', 'block_gu_spdetails'),
+            'pastenroll'        => get_string('pastcourses', 'block_gu_spdetails'),
             'sort'              => get_string('sort', 'block_gu_spdetails'),
             'sort_course'       => get_string('sort_course', 'block_gu_spdetails'),
             'sort_date'         => get_string('sort_date', 'block_gu_spdetails'),
+            'view_submission'   => get_string('viewsubmission', 'block_gu_spdetails'),
             'noassessments_img' => $noassessments,
             'downarrow_img'     => $downarrow,
         ];
@@ -93,13 +100,14 @@ class block_gu_spdetails extends block_base {
         global $DB;
 
         $assessments = array();
+        $pastcourses = array();
         $allowedactivities = array('assign', 'quiz', 'forum', 'workshop');
 
-        foreach($courseids as $courseid) {
-            $mods = grade_get_gradable_activities($courseid);
+        $mods = block_gu_spdetails_lib::get_all_users_courses_gradable_activities($userid);
 
             if (is_array($mods) || is_object($mods)) {
                 foreach($mods as $mod) {
+                    $courseid = $mod->courseid;
                     $modinfo = get_fast_modinfo($mod->course);
                     $course = get_course($courseid);
                     $cm = $modinfo->get_cm($mod->id);
@@ -111,6 +119,7 @@ class block_gu_spdetails extends block_base {
                     $completionview = $cm->completionview;
                     $completiontype = $cm->completiongradeitemnumber;
                     $activity = self::retrieve_activity($mod->modname, $mod->instance, $mod->course, $userid);
+                    $mod->name = $activity->name;
                     $gradeitem = self::retrieve_gradeitem($mod->course, $mod->modname, $mod->instance, $activity);
                     $gradecategory = self::retrieve_gradecategory($gradeitem->categoryid);
                     $mod->grades = self::retrieve_grades($userid, $gradeitem->id);
@@ -142,14 +151,23 @@ class block_gu_spdetails extends block_base {
                                                                   $mod->dates->gradingduedate);
                     $mod->status = self::return_status($mod->modname, $mod->finalgrade, $mod->dates, $activity);
 
+                    $ispastcourse = self::return_ispastcourse($mod->enddate, $mod->dates->duedate);
                     if($isactivityvisible && $isallowedactivity && $mod->isstudent) {
-                        array_push($assessments, $mod);
+                        if($ispastcourse){
+                            $mod->enddate = date(get_string('pastcourseconvertdate', 'block_gu_spdetails'), $mod->enddate);
+                            $mod->startdate = date(get_string('pastcourseconvertdate', 'block_gu_spdetails'), $mod->startdate);
+                            array_push($pastcourses, $mod);
+                        } else {
+                            array_push($assessments, $mod);
+                        }
                     }
                 }
             }
-        }
 
-        return $assessments;
+        return (object) array(
+            'assessments' => $assessments,
+            'pastcourses' => $pastcourses
+        );
     }
 
     public static function return_coursetitle($courseid, $sectionid, $coursename) {
@@ -458,6 +476,7 @@ class block_gu_spdetails extends block_base {
     public static function return_status($modname, $finalgrade, $dates, $activity) {
         $status = new stdClass();
         $status->hasurl = false;
+        $status->suffix = null;
 
         // assuming $finalgrade can be 0
         if(!is_null($finalgrade)) {
@@ -550,5 +569,12 @@ class block_gu_spdetails extends block_base {
         $conditions = array('cm' => $cmid, 'name' => $cfg, 'value' => 1);
         $turnitincfg = $DB->get_record('plagiarism_turnitin_config', $conditions);
         return $turnitincfg;
+    }
+
+    public static function return_ispastcourse($courseenddate, $duedate){
+        $iscourseenddatefuture = time() + (86400 * 30) > $courseenddate;
+        $isassessmentduedatefuture = time() + (86400 * 30) > $duedate;
+
+        return $iscourseenddatefuture && $isassessmentduedatefuture;
     }
 }
