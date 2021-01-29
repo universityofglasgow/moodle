@@ -43,7 +43,9 @@ class external extends external_api {
      */
     public static function display_assessments_parameters() {
         return new external_function_parameters(
-            array()
+            array(
+                'courseid' => new external_value(PARAM_INT, 'The course id', VALUE_DEFAULT)
+            )
         );
     }
 
@@ -52,9 +54,10 @@ class external extends external_api {
      *
      * @since  Moodle 3.8
      */
-    public static function display_assessments() {
+    public static function display_assessments($courseid) {
+        $params = self::validate_parameters(self::display_assessments_parameters(), ['courseid' => $courseid]);
         return [
-            'result' => api::display_assessments()
+            'result' => api::display_assessments($params['courseid'])
         ];
     }
 

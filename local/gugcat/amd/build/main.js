@@ -69,11 +69,13 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
 
     const toggle_display_assessments = () =>{
         var btn_switch_display = document.getElementById('btn-switch-display');
+        var urlParams = new URLSearchParams(window.location.search);
+        var courseid = urlParams.get('id');
         if(btn_switch_display){
             btn_switch_display.textContent = '...';
             var requests = Ajax.call([{
                 methodname: 'local_gugcat_display_assessments',
-                args: {},
+                args: { courseid: courseid},
             }]);
             requests[0].done(function(data) {
                 var switchOn = data.result;
