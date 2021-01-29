@@ -327,14 +327,17 @@ class grade_aggregation{
                 $prvgrdstr = get_string('provisionalgrd', 'local_gugcat');
                 $prvgrdid = local_gugcat::get_grade_item_id($course->id, $mod->gradeitemid, $prvgrdstr);
                 $sql = 'SELECT * FROM mdl_grade_grades_history WHERE information IS NOT NULL AND rawgrade IS NOT NULL AND itemid='.$prvgrdid.' AND '.' userid="'.$student->id.'" ORDER BY id LIMIT 1';
-                if($gradehistory = $DB->get_record_sql($sql)){
+                //if grdhistory did not get the first provisional grade, get it to gradebook
+                if(!$grdhistoryobj = $DB->get_record_sql($sql))
+                    $grdhistoryobj = $DB->get_record('grade_grades', array('itemid'=>$prvgrdid, 'userid'=>$student->id));
+                if($grdhistoryobj){
                     isset($rows[$i]) ? null : $rows[$i] = new stdClass();
                     isset($rows[$i]->grades) ? null : $rows[$i]->grades = array();
-                    $rows[$i]->timemodified = $gradehistory->timemodified;
-                    $rows[$i]->date = date("j/n", strtotime(userdate($gradehistory->timemodified))).'<br>'.date("h:i", strtotime(userdate($gradehistory->timemodified)));
+                    $rows[$i]->timemodified = $grdhistoryobj->timemodified;
+                    $rows[$i]->date = date("j/n", strtotime(userdate($grdhistoryobj->timemodified))).'<br>'.date("h:i", strtotime(userdate($grdhistoryobj->timemodified)));
                     $rows[$i]->modby = get_string('nogradeweight','local_gugcat');
                     $rows[$i]->notes = get_string('nogradeweight','local_gugcat');
-                    array_push($rows[$i]->grades, $gradehistory);
+                    array_push($rows[$i]->grades, $grdhistoryobj);
                 }
             }
         }
