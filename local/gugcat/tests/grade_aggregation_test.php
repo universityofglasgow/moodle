@@ -35,6 +35,7 @@ require_once($CFG->dirroot.'/local/gugcat/locallib.php');
 class grade_aggregation_testcase extends advanced_testcase {
 
     public function setUp() {
+        global $DB;
         $this->resetAfterTest();
 
         $gen = $this->getDataGenerator();
@@ -48,7 +49,9 @@ class grade_aggregation_testcase extends advanced_testcase {
         $gen->enrol_user($this->student2->id, $this->course->id, 'student');
         $gen->enrol_user($this->teacher->id, $this->course->id, 'editingteacher');
         $this->students = get_enrolled_users($this->coursecontext, 'moodle/competency:coursecompetencygradable');
-        $gen->create_module('assign', array('id' => 1, 'course' => $this->course->id));
+        $gen->create_module('assign', array('id' => 1, 'course' => $this->course->id, 'name'=>'test'));
+        $assignid = $DB->get_field('grade_items', 'id', array('courseid' => $this->course->id, 'itemmodule' => 'assign'));
+        $DB->set_field('grade_items', 'grademax', '22.00000', array('id'=>$assignid));
 
         $cm = local_gugcat::get_activities($this->course->id);
         $key = key($cm);
@@ -109,15 +112,15 @@ class grade_aggregation_testcase extends advanced_testcase {
         $row1 = $rows[1];
         $this->assertEquals($row1->cnum, 2);
         $this->assertEquals($row1->studentno, $this->student1->id);
-        $this->assertEquals($exp_s1grd, $row1->grades[0]->grade);
+        $this->assertEquals('F2', $row1->grades[0]->grade);
         $this->assertEquals($row1->completed, $expectedcompleted); //assert complete percent
-        $this->assertEquals($exp_aggregatedgrd1, $row1->aggregatedgrade->grade); //assert aggregated grade 
+        $this->assertEquals('F2', $row1->aggregatedgrade->grade); //assert aggregated grade 
         $row2 = $rows[0];
         $this->assertEquals($row2->cnum, 1);
         $this->assertEquals($row2->studentno, $this->student2->id);
-        $this->assertEquals($exp_s2grd, $row2->grades[0]->grade);
+        $this->assertEquals('D3', $row2->grades[0]->grade);
         $this->assertEquals($row2->completed, $expectedcompleted);
-        $this->assertEquals($exp_aggregatedgrd2, $row2->aggregatedgrade->grade);
+        $this->assertEquals('D3', $row2->aggregatedgrade->grade);
     }
 
     public function test_adjust_course_weight() {
@@ -138,8 +141,6 @@ class grade_aggregation_testcase extends advanced_testcase {
 
     public function test_require_resit() {
         global $DB;
-        $expected = 1;
-
         $DB->insert_record('grade_grades', array(
             'itemid' => $this->cm->gradeitem->id,
             'userid' => $this->student1->id
@@ -151,7 +152,8 @@ class grade_aggregation_testcase extends advanced_testcase {
 
         grade_aggregation::require_resit($this->student1->id);
         $resitRows = grade_aggregation::get_rows($this->course, $modules, $student);
-        $this->assertEquals($expected, $resitRows[0]->resit);
+        $match = preg_match('/\b0/i', $resitRows[0]->resit);
+        $this->assertEquals($match, 1);
     }
 
     public function test_override_grade() {
@@ -189,5 +191,18 @@ class grade_aggregation_testcase extends advanced_testcase {
         $this->assertEquals($this->student1->id, $gg->userid);//assert updated user = student 1
         $this->assertEquals($expectedgrade, $gg->finalgrade);//assert finalgrade = 10.00000
         $this->assertEquals('final', $gg->information); //assert information = final
+    }
+
+    public function test_get_course_grade_history(){
+        global $DB;
+        $modules = array($this->cm);
+        $aggradeitem = local_gugcat::add_grade_item($this->course->id, get_string('aggregatedgrade', 'local_gugcat'), null);
+        $expectednotes = 'testnote';
+        $defaultoverridden = 0;
+        local_gugcat::update_grade($this->student1->id, $aggradeitem, 19, $expectednotes, null, time());
+
+        $gradehistory = grade_aggregation::get_course_grade_history($this->course, $modules, $this->student1);
+        $this->assertEquals($gradehistory[0]->grade, 'A5');
+        $this->assertEquals($gradehistory[0]->notes, $expectednotes);
     }
 }

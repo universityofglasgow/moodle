@@ -109,14 +109,16 @@ class local_gugcat {
             }
 
             //remove gradeitems which do not fall within 22-point scale.
-            foreach($activities as $key=>$activity){
-            $scaleid = $activity->gradeitem->scaleid;
-            $gradetype = $activity->gradeitem->gradetype;
-            $grademax = $activity->gradeitem->grademax;
+            if($includegradeitem){
+                foreach($activities as $key=>$activity){    
+                    $scaleid = $activity->gradeitem->scaleid;
+                    $gradetype = $activity->gradeitem->gradetype;
+                    $grademax = $activity->gradeitem->grademax;
 
-            $valid_22point_scale = is_null($scaleid) ? local_gugcat::is_grademax22($gradetype, $grademax) : local_gugcat::is_scheduleAscale($gradetype, $grademax);
-            if(!$valid_22point_scale)
-                unset($activities[$key]);
+                    $valid_22point_scale = is_null($scaleid) ? local_gugcat::is_grademax22($gradetype, $grademax) : local_gugcat::is_scheduleAscale($gradetype, $grademax);
+                    if(!$valid_22point_scale)
+                        unset($activities[$key]);
+                }
             }
         }
         return $activities;
