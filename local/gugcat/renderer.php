@@ -131,7 +131,6 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $html .= html_writer::empty_tag('button', array('id'=>'importgrades-submit', 'name'=> 'importgrades', 'type'=>'submit'));
         $html .= html_writer::empty_tag('input', array('name' => 'rowstudentno', 'type' => 'hidden', 'id'=>'studentno'));
         $html .= html_writer::empty_tag('button', array('id'=>'showhidegrade-submit', 'name'=> 'showhidegrade', 'type'=>'submit'));
-        $html .= html_writer::empty_tag('button', array('id'=>'display-assessment', 'name'=> 'displayassessment', 'type'=>'submit'));
         $html .= html_writer::end_tag('form');
         $html .= $this->footer();
         return $html;
@@ -230,7 +229,6 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $html .= html_writer::empty_tag('button', array('id'=>'resit-submit', 'name'=> 'resit', 'type'=>'submit'));
         $html .= html_writer::empty_tag('button', array('id'=>'downloadcsv-submit', 'name'=> 'downloadcsv', 'type'=>'submit'));
         $html .= html_writer::empty_tag('button', array('id'=>'finalrelease-submit', 'name'=> 'finalrelease', 'type'=>'submit'));
-        $html .= html_writer::empty_tag('button', array('id'=>'display-assessment', 'name'=> 'displayassessment', 'type'=>'submit'));
         $html .= html_writer::end_tag('form');
         $html .= $this->footer();
         return $html;
