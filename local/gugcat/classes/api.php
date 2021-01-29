@@ -39,9 +39,8 @@ defined('MOODLE_INTERNAL') || die();
  */
 class api {
 
-    public static function display_assessments() {
-        global $COURSE;
-        $currentstate = local_gugcat::switch_display_of_assessment_on_student_dashboard($COURSE->id, context_course::instance($COURSE->id)->id);
+    public static function display_assessments($id) {
+        $currentstate = local_gugcat::switch_display_of_assessment_on_student_dashboard($id, context_course::instance($id)->id);
         return ($currentstate == 1) ? true : false;
     }
 }
