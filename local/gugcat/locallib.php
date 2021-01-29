@@ -569,14 +569,14 @@ class local_gugcat {
         }
     }
 
-    public static function get_value_of_customefield_checkbox(){
+    public static function get_value_of_customefield_checkbox($instanceid, $contextid){
         global $DB;
 
         $customfieldcategory = $DB->get_record('customfield_category', array('name'=> get_string('gugcatoptions', 'local_gugcat')));
         if($customfieldcategory){
             $customfieldfield = $DB->get_record('customfield_field', array('categoryid'=> $customfieldcategory->id));
             if(!empty($customfieldfield)){
-                $customfielddata = $DB->get_record('customfield_data', array('fieldid'=> $customfieldfield->id));
+                $customfielddata = $DB->get_record('customfield_data', array('fieldid'=> $customfieldfield->id, 'instanceid' => $instanceid, 'contextid' => $contextid));
                 if(!empty($customfielddata)){
                     return (int)$customfielddata->intvalue;
                 }
