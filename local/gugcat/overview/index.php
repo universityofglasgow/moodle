@@ -85,6 +85,10 @@ if(isset($requireresit) && !empty($rowstudentid)){
     exit;
 }
 
+if(isset($_POST['displayassessment'])){
+    local_gugcat::switch_display_of_assessment_on_student_dashboard($courseid, $coursecontext->id);
+}
+
 echo $OUTPUT->header();
 $renderer = $PAGE->get_renderer('local_gugcat');
 echo $renderer->display_aggregation_tool($rows, $activities);
