@@ -111,14 +111,16 @@ class local_gugcat {
             }
 
             //remove gradeitems which do not fall within 22-point scale.
-            foreach($activities as $key=>$activity){
-            $scaleid = $activity->gradeitem->scaleid;
-            $gradetype = $activity->gradeitem->gradetype;
-            $grademax = $activity->gradeitem->grademax;
+            if($includegradeitem){
+                foreach($activities as $key=>$activity){    
+                    $scaleid = $activity->gradeitem->scaleid;
+                    $gradetype = $activity->gradeitem->gradetype;
+                    $grademax = $activity->gradeitem->grademax;
 
-            $valid_22point_scale = is_null($scaleid) ? local_gugcat::is_grademax22($gradetype, $grademax) : local_gugcat::is_scheduleAscale($gradetype, $grademax);
-            if(!$valid_22point_scale)
-                unset($activities[$key]);
+                    $valid_22point_scale = is_null($scaleid) ? local_gugcat::is_grademax22($gradetype, $grademax) : local_gugcat::is_scheduleAscale($gradetype, $grademax);
+                    if(!$valid_22point_scale)
+                        unset($activities[$key]);
+                }
             }
         }
         return $activities;
@@ -527,7 +529,9 @@ class local_gugcat {
                         $customfielddatadobj->value = "1";
                     }
 
-                    $DB->update_record('customfield_data', $customfielddatadobj, $bulk=false);
+                    if($DB->update_record('customfield_data', $customfielddatadobj, $bulk=false)){
+                        return $customfielddatadobj->intvalue;
+                    };
                 }
                 else{
                     if(!empty($customfieldfield)){
@@ -564,10 +568,11 @@ class local_gugcat {
                     $DB->insert_record('customfield_data', $customfieldddata);
                 }
             }
+            return 1;
         }
     }
 
-    public static function get_value_of_customefield_checkbox($instanceid, $contextid){
+    public static function get_value_of_customfield_checkbox($instanceid, $contextid){
         global $DB;
 
         $customfieldcategory = $DB->get_record('customfield_category', array('name'=> get_string('gugcatoptions', 'local_gugcat')));

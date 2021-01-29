@@ -14,20 +14,33 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+
 /**
- * Version file.
+ * Class containing helper methods for processing data requests.
  *
  * @package    local_gugcat
  * @copyright  2020
  * @author     Accenture
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+namespace local_gugcat;
+require_once($CFG->dirroot . '/local/gugcat/locallib.php');
+
+use context_course;
+use local_gugcat;
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version      = 2021012715.00;
-$plugin->requires     = 2019111804.11;   // Moodle 3.8.4.
-$plugin->component    = 'local_gugcat';
+/**
+ * Class containing helper methods for processing data requests.
+ *
+ * @copyright  2020
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class api {
 
-$plugin->maturity     = MATURITY_STABLE;
-
+    public static function display_assessments($id) {
+        $currentstate = local_gugcat::switch_display_of_assessment_on_student_dashboard($id, context_course::instance($id)->id);
+        return ($currentstate == 1) ? true : false;
+    }
+}
