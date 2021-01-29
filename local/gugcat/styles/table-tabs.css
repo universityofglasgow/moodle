@@ -68,3 +68,8 @@ button.tablink, button.tablink:focus{
     box-shadow: none;
     border: 0;
 }
+
+/* Sort style */
+.sortable{
+    cursor: pointer;
+}

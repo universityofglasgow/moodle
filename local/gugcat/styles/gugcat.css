@@ -222,6 +222,6 @@ td > .grade-discrepancy{
     visibility: hidden;
 }
 
-.hide-show-grade, .hide-names {
+.hide-show-grade, .hide-names, #display-assessment  {
     display: none;
 }

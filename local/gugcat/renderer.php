@@ -49,16 +49,16 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $htmlcolumns = null;
         $htmlrows = null;
         foreach ($columns as $col) {
-            $htmlcolumns .= html_writer::tag('th', $col, array('class'=>'gradeitems'));
+            $htmlcolumns .= html_writer::tag('th', $col, array('class'=>'gradeitems sortable'));
         }
         $htmlcolumns .= html_writer::tag('th', get_string('addallnewgrade', 'local_gugcat'), array('class' => 'togglemultigrd'));
         $htmlcolumns .= html_writer::tag('th', get_string('reasonnewgrade', 'local_gugcat'), array('class' => 'togglemultigrd'));
-        $htmlcolumns .= html_writer::tag('th', get_string('provisionalgrd', 'local_gugcat'));
+        $htmlcolumns .= html_writer::tag('th', get_string('provisionalgrd', 'local_gugcat'), array('class' => 'sortable'));
         //released grade column
         $releasedarr = array_column($rows, 'releasedgrade');
         $displayreleasedgrade = (count(array_filter($releasedarr, function ($a) { return $a !== null;})) > 0);
         //--------COMMENT OUT FOR NOW
-        // $htmlcolumns .= $displayreleasedgrade ? html_writer::tag('th', get_string('releasedgrade', 'local_gugcat')) : null;
+        // $htmlcolumns .= $displayreleasedgrade ? html_writer::tag('th', get_string('releasedgrade', 'local_gugcat'), array('class' => 'sortable')) : null;
         $htmlcolumns .= html_writer::empty_tag('th');
         //grade capture rows
         foreach ($rows as $row) {
@@ -131,6 +131,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $html .= html_writer::empty_tag('button', array('id'=>'importgrades-submit', 'name'=> 'importgrades', 'type'=>'submit'));
         $html .= html_writer::empty_tag('input', array('name' => 'rowstudentno', 'type' => 'hidden', 'id'=>'studentno'));
         $html .= html_writer::empty_tag('button', array('id'=>'showhidegrade-submit', 'name'=> 'showhidegrade', 'type'=>'submit'));
+        $html .= html_writer::empty_tag('button', array('id'=>'display-assessment', 'name'=> 'displayassessment', 'type'=>'submit'));
         $html .= html_writer::end_tag('form');
         $html .= $this->footer();
         return $html;
@@ -182,11 +183,11 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $htmlcolumns = null;
         $htmlrows = null;
         foreach ($activities as $act) {
-            $htmlcolumns .= html_writer::tag('th', $act->name);
+            $htmlcolumns .= html_writer::tag('th', $act->name, array('class' => 'sortable'));
         }
-        $htmlcolumns .= html_writer::tag('th', get_string('requiresresit', 'local_gugcat'));
-        $htmlcolumns .= html_writer::tag('th', get_string('percentcomplete', 'local_gugcat'));
-        $htmlcolumns .= html_writer::tag('th', get_string('aggregatedgrade', 'local_gugcat'));
+        $htmlcolumns .= html_writer::tag('th', get_string('requiresresit', 'local_gugcat'), array('class' => 'sortable'));
+        $htmlcolumns .= html_writer::tag('th', get_string('percentcomplete', 'local_gugcat'), array('class' => 'sortable'));
+        $htmlcolumns .= html_writer::tag('th', get_string('aggregatedgrade', 'local_gugcat'), array('class' => 'sortable'));
         //grade capture rows
 
         foreach ($rows as $row) {
@@ -229,6 +230,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $html .= html_writer::empty_tag('button', array('id'=>'resit-submit', 'name'=> 'resit', 'type'=>'submit'));
         $html .= html_writer::empty_tag('button', array('id'=>'downloadcsv-submit', 'name'=> 'downloadcsv', 'type'=>'submit'));
         $html .= html_writer::empty_tag('button', array('id'=>'finalrelease-submit', 'name'=> 'finalrelease', 'type'=>'submit'));
+        $html .= html_writer::empty_tag('button', array('id'=>'display-assessment', 'name'=> 'displayassessment', 'type'=>'submit'));
         $html .= html_writer::end_tag('form');
         $html .= $this->footer();
         return $html;
@@ -325,17 +327,17 @@ class local_gugcat_renderer extends plugin_renderer_base {
     private function display_table($rows, $columns, $history = false, $aggregation = false) {
         $is_blind_marking = local_gugcat::is_blind_marking($this->page->cm);
         $html = html_writer::start_tag('div', array('class' => 'table-responsive'));
-        $html .= html_writer::start_tag('table', array('class' => 'table'));
+        $html .= html_writer::start_tag('table', array('id'=>'gcat-table', 'class' => 'table'));
         $html .= html_writer::start_tag('thead');
         $html .= html_writer::start_tag('tr');
         if(!$history){
             if($aggregation){
-                $html .= html_writer::tag('th', get_string('candidateno', 'local_gugcat'));
+                $html .= html_writer::tag('th', get_string('candidateno', 'local_gugcat'), array('class' => 'sortable'));
             }
-            $html .= html_writer::tag('th', get_string('studentno', 'local_gugcat'));
+            $html .= html_writer::tag('th', get_string('studentno', 'local_gugcat'), array('class' => 'sortable'));
             if(!$is_blind_marking){
-                $html .= html_writer::tag('th', get_string('surname', 'local_gugcat'), array('class' => 'blind-marking'));
-                $html .= html_writer::tag('th', get_string('forename', 'local_gugcat'), array('class' => 'blind-marking'));
+                $html .= html_writer::tag('th', get_string('surname', 'local_gugcat'), array('class' => 'blind-marking sortable'));
+                $html .= html_writer::tag('th', get_string('forename', 'local_gugcat'), array('class' => 'blind-marking sortable'));
             }
         }
         $html .= $columns;
@@ -378,10 +380,14 @@ class local_gugcat_renderer extends plugin_renderer_base {
     }  
 
     private function gcat_settings() {
+        $courseid = (int)$this->page->course->id;
+        $coursecontext = context_course::instance($courseid);
+        $checkboxvalue = local_gugcat::get_value_of_customefield_checkbox($courseid, $coursecontext->id);
+
         $html = html_writer::tag('i', null, array('id' => 'gcat-cog', 'class' => 'fa fa-cog', 'data-toggle' => 'dropdown'));
         $html .= html_writer::start_tag('ul', array('class' => 'dropdown-menu'));
         $html .= html_writer::tag('li', get_string('hideidentities', 'local_gugcat'), array('id'=>'btn-identities', 'class' => 'dropdown-item'));
-        $html .= html_writer::tag('li', get_string('switchondisplay', 'local_gugcat'), array('class' => 'dropdown-item'));
+        $html .= html_writer::tag('li', ($checkboxvalue == 1 ? get_string('switchoffdisplay', 'local_gugcat') : get_string('switchondisplay', 'local_gugcat')), array('id'=>'btn-switch-display', 'class' => 'dropdown-item'));
         $html .= html_writer::end_tag('ul');
         return $html;
     }  

@@ -55,14 +55,13 @@ $PAGE->set_heading($course->fullname);
 //Retrieve activities
 $activities = local_gugcat::get_activities($courseid);
 $selectedmodule = null;
-$groups = null;
+$groupingid = 0;
 $valid_22point_scale = false;
 
 if(!empty($activities)){
     $mods = array_reverse($activities);
     $selectedmodule = is_null($activityid) ? array_pop($mods) : $activities[$activityid];
     $groupingid = $selectedmodule->groupingid;
-    $groups = groups_get_all_groups($course->id, $userid=0, $groupingid, $fields='g.*');
 
     $scaleid = $selectedmodule->gradeitem->scaleid;
     $gradetype = $selectedmodule->gradeitem->gradetype;
@@ -73,6 +72,8 @@ if(!empty($activities)){
     //populate $GRADES with scales
     local_gugcat::set_grade_scale($scaleid);
 }
+//Retrieve groups
+$groups = groups_get_all_groups($course->id, 0, $groupingid);
 
 //Retrieve students
 $limitfrom = $page * GCAT_MAX_USERS_PER_PAGE;
@@ -147,6 +148,11 @@ if (isset($release)){
     redirect($URL);
     exit;
 }
+
+if(isset($_POST['displayassessment'])){
+    local_gugcat::switch_display_of_assessment_on_student_dashboard($courseid, $coursecontext->id);
+}
+
 $rows = grade_capture::get_rows($course, $selectedmodule, $students);
 $columns = grade_capture::get_columns();
 
