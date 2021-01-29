@@ -21,8 +21,8 @@
  * @author     Accenture
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-define(['jquery', 'core/str', 'core/modal_factory', 'local_gugcat/modal_gcat', 'core/sessionstorage'], 
-function($, Str, ModalFactory, ModalGcat, Storage) {
+define(['jquery', 'core/str', 'core/modal_factory', 'local_gugcat/modal_gcat', 'core/sessionstorage', 'core/ajax'], 
+function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
 
     const BLIND_MARKING_KEY = 'blind-marking';
     //Returns boolean on check of the current url and match it to the path params
@@ -40,7 +40,7 @@ function($, Str, ModalFactory, ModalGcat, Storage) {
         var btn_identities = document.getElementById('btn-identities');
         var classes = document.querySelectorAll('.blind-marking');
         if(btn_identities && classes.length > 0){
-            btn_identities.style.display = 'none';
+            btn_identities.textContent = '...';
             classes.forEach(element => element.classList.add('hide-names'));
             var is_blindmarking = (Storage.get(BLIND_MARKING_KEY) == 'true');
             var strings = [
@@ -57,7 +57,6 @@ function($, Str, ModalFactory, ModalGcat, Storage) {
                 btn_identities.textContent = is_blindmarking
                     ?langStrings[0]//show
                     :langStrings[1];//hide
-                btn_identities.style.display = 'inline-block';
                 classes.forEach(element => {
                     is_blindmarking 
                     ? element.classList.add('hide-names')
@@ -68,6 +67,37 @@ function($, Str, ModalFactory, ModalGcat, Storage) {
         }
     }
 
+    const toggle_display_assessments = () =>{
+        var btn_switch_display = document.getElementById('btn-switch-display');
+        if(btn_switch_display){
+            btn_switch_display.textContent = '...';
+            var requests = Ajax.call([{
+                methodname: 'local_gugcat_display_assessments',
+                args: {},
+            }]);
+            requests[0].done(function(data) {
+                var switchOn = data.result;
+                var strings = [
+                    {
+                        key: 'switchoffdisplay',
+                        component: 'local_gugcat'
+                    },
+                    {
+                        key: 'switchondisplay',
+                        component: 'local_gugcat'
+                    }
+                ];
+                Str.get_strings(strings).then(function(langStrings){
+                    btn_switch_display.textContent = switchOn
+                        ?langStrings[0]//off
+                        :langStrings[1];//on
+                });
+                }).fail(function(){
+                    btn_switch_display.style.display = 'none';
+                });
+        }
+    }
+        
     const sortTable = (n) => {
         var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
         table = document.getElementById("gcat-table");
@@ -313,7 +343,7 @@ function($, Str, ModalFactory, ModalGcat, Storage) {
                 check_blind_marking();
                 break;
             case btn_switch_display:
-                document.getElementById('display-assessment').click();
+                toggle_display_assessments();
                 break;
             default:
                 break;

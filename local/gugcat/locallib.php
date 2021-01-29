@@ -527,7 +527,9 @@ class local_gugcat {
                         $customfielddatadobj->value = "1";
                     }
 
-                    $DB->update_record('customfield_data', $customfielddatadobj, $bulk=false);
+                    if($DB->update_record('customfield_data', $customfielddatadobj, $bulk=false)){
+                        return $customfielddatadobj->intvalue;
+                    };
                 }
                 else{
                     if(!empty($customfieldfield)){
@@ -564,10 +566,11 @@ class local_gugcat {
                     $DB->insert_record('customfield_data', $customfieldddata);
                 }
             }
+            return 1;
         }
     }
 
-    public static function get_value_of_customefield_checkbox($instanceid, $contextid){
+    public static function get_value_of_customfield_checkbox($instanceid, $contextid){
         global $DB;
 
         $customfieldcategory = $DB->get_record('customfield_category', array('name'=> get_string('gugcatoptions', 'local_gugcat')));

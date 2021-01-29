@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version file.
+ * local gugcat webservice definitions.
  *
  * @package    local_gugcat
  * @copyright  2020
@@ -23,11 +23,17 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+ 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version      = 2021012715.00;
-$plugin->requires     = 2019111804.11;   // Moodle 3.8.4.
-$plugin->component    = 'local_gugcat';
+$functions = array(
 
-$plugin->maturity     = MATURITY_STABLE;
-
+    'local_gugcat_display_assessments' => array(
+        'classname'   => 'local_gugcat\external',
+        'methodname'  => 'display_assessments',
+        'description' => 'Toggle display of assessments on Student Dashboard',
+        'type'        => 'read',
+        'ajax'          => true,
+        'loginrequired' => true,
+    ),
+);
