@@ -49,16 +49,16 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $htmlcolumns = null;
         $htmlrows = null;
         foreach ($columns as $col) {
-            $htmlcolumns .= html_writer::tag('th', $col, array('class'=>'gradeitems'));
+            $htmlcolumns .= html_writer::tag('th', $col, array('class'=>'gradeitems sortable'));
         }
         $htmlcolumns .= html_writer::tag('th', get_string('addallnewgrade', 'local_gugcat'), array('class' => 'togglemultigrd'));
         $htmlcolumns .= html_writer::tag('th', get_string('reasonnewgrade', 'local_gugcat'), array('class' => 'togglemultigrd'));
-        $htmlcolumns .= html_writer::tag('th', get_string('provisionalgrd', 'local_gugcat'));
+        $htmlcolumns .= html_writer::tag('th', get_string('provisionalgrd', 'local_gugcat'), array('class' => 'sortable'));
         //released grade column
         $releasedarr = array_column($rows, 'releasedgrade');
         $displayreleasedgrade = (count(array_filter($releasedarr, function ($a) { return $a !== null;})) > 0);
         //--------COMMENT OUT FOR NOW
-        // $htmlcolumns .= $displayreleasedgrade ? html_writer::tag('th', get_string('releasedgrade', 'local_gugcat')) : null;
+        // $htmlcolumns .= $displayreleasedgrade ? html_writer::tag('th', get_string('releasedgrade', 'local_gugcat'), array('class' => 'sortable')) : null;
         $htmlcolumns .= html_writer::empty_tag('th');
         //grade capture rows
         foreach ($rows as $row) {
@@ -182,11 +182,11 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $htmlcolumns = null;
         $htmlrows = null;
         foreach ($activities as $act) {
-            $htmlcolumns .= html_writer::tag('th', $act->name);
+            $htmlcolumns .= html_writer::tag('th', $act->name, array('class' => 'sortable'));
         }
-        $htmlcolumns .= html_writer::tag('th', get_string('requiresresit', 'local_gugcat'));
-        $htmlcolumns .= html_writer::tag('th', get_string('percentcomplete', 'local_gugcat'));
-        $htmlcolumns .= html_writer::tag('th', get_string('aggregatedgrade', 'local_gugcat'));
+        $htmlcolumns .= html_writer::tag('th', get_string('requiresresit', 'local_gugcat'), array('class' => 'sortable'));
+        $htmlcolumns .= html_writer::tag('th', get_string('percentcomplete', 'local_gugcat'), array('class' => 'sortable'));
+        $htmlcolumns .= html_writer::tag('th', get_string('aggregatedgrade', 'local_gugcat'), array('class' => 'sortable'));
         //grade capture rows
 
         foreach ($rows as $row) {
@@ -325,17 +325,17 @@ class local_gugcat_renderer extends plugin_renderer_base {
     private function display_table($rows, $columns, $history = false, $aggregation = false) {
         $is_blind_marking = local_gugcat::is_blind_marking($this->page->cm);
         $html = html_writer::start_tag('div', array('class' => 'table-responsive'));
-        $html .= html_writer::start_tag('table', array('class' => 'table'));
+        $html .= html_writer::start_tag('table', array('id'=>'gcat-table', 'class' => 'table'));
         $html .= html_writer::start_tag('thead');
         $html .= html_writer::start_tag('tr');
         if(!$history){
             if($aggregation){
-                $html .= html_writer::tag('th', get_string('candidateno', 'local_gugcat'));
+                $html .= html_writer::tag('th', get_string('candidateno', 'local_gugcat'), array('class' => 'sortable'));
             }
-            $html .= html_writer::tag('th', get_string('studentno', 'local_gugcat'));
+            $html .= html_writer::tag('th', get_string('studentno', 'local_gugcat'), array('class' => 'sortable'));
             if(!$is_blind_marking){
-                $html .= html_writer::tag('th', get_string('surname', 'local_gugcat'), array('class' => 'blind-marking'));
-                $html .= html_writer::tag('th', get_string('forename', 'local_gugcat'), array('class' => 'blind-marking'));
+                $html .= html_writer::tag('th', get_string('surname', 'local_gugcat'), array('class' => 'blind-marking sortable'));
+                $html .= html_writer::tag('th', get_string('forename', 'local_gugcat'), array('class' => 'blind-marking sortable'));
             }
         }
         $html .= $columns;
