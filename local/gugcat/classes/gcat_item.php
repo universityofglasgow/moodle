@@ -107,12 +107,6 @@ class gcat_item{
      */
     public $resit;
 
-     /**
-     * Boolean value if resit grade item weight is = 0
-     * @var boolean $resitexist
-     */
-    public $resitexist;
-
     /**
      * The released grade or the grade of the student from the gradebook.
      * @var string $releasedgrade

@@ -80,11 +80,14 @@ $limitfrom = $page * GCAT_MAX_USERS_PER_PAGE;
 $limitnum  = GCAT_MAX_USERS_PER_PAGE;
 $totalenrolled = count_enrolled_users($coursecontext, 'moodle/competency:coursecompetencygradable');
 
-if(!empty($groups)){
+if($groupingid != 0 && !empty($groups)){
     $students = Array();
     foreach ($groups as $group) {
         $groupstudents = get_enrolled_users($coursecontext, 'moodle/competency:coursecompetencygradable', $group->id, 'u.*', null, $limitfrom, $limitnum);
         $students += $groupstudents;
+    }
+    if(count($students) === 0){
+        $students = get_enrolled_users($coursecontext, 'moodle/competency:coursecompetencygradable', 0, 'u.*', null, $limitfrom, $limitnum);
     }
 }else{
     $students = get_enrolled_users($coursecontext, 'moodle/competency:coursecompetencygradable', 0, 'u.*', null, $limitfrom, $limitnum);

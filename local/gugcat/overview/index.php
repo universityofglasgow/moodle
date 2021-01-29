@@ -64,6 +64,9 @@ if(!empty($groups)){
         $groupstudents = get_enrolled_users($coursecontext, 'moodle/competency:coursecompetencygradable', $group->id, 'u.*', null, $limitfrom, $limitnum);
         $students += $groupstudents;
     }
+    if(count($students) === 0){
+        $students = get_enrolled_users($coursecontext, 'moodle/competency:coursecompetencygradable', 0, 'u.*', null, $limitfrom, $limitnum);
+    }
 }else{
     $students = get_enrolled_users($coursecontext, 'moodle/competency:coursecompetencygradable', 0, 'u.*', null, $limitfrom, $limitnum);
 }
@@ -94,10 +97,6 @@ if(isset($requireresit) && !empty($rowstudentid)){
     unset($downloadcsv);
     redirect($URL);
     exit;
-}
-
-if(isset($_POST['displayassessment'])){
-    local_gugcat::switch_display_of_assessment_on_student_dashboard($courseid, $coursecontext->id);
 }
 
 echo $OUTPUT->header();
