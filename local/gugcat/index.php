@@ -148,10 +148,6 @@ if (isset($release)){
     exit;
 }
 
-if(isset($_POST['displayassessment'])){
-    local_gugcat::switch_display_of_assessment_on_student_dashboard($courseid, $coursecontext->id);
-}
-
 $rows = grade_capture::get_rows($course, $selectedmodule, $students);
 $columns = grade_capture::get_columns();
 
