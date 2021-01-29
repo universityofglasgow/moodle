@@ -25,6 +25,8 @@
 
 use local_gugcat\grade_aggregation;
 
+require_once($CFG->libdir . '/adminlib.php');
+
 defined('MOODLE_INTERNAL') || die();
 
 //Administrative grades at Assessment Level
@@ -503,5 +505,96 @@ class local_gugcat {
     
         return $DB->get_records_sql($sql, $params);
     }
-    
+
+    public static function switch_display_of_assessment_on_student_dashboard($instanceid, $contextid){
+        global $DB;
+
+        $customfieldcategory = $DB->get_record('customfield_category', array('name' => get_string('gugcatoptions', 'local_gugcat')));
+        if($customfieldcategory){
+            $customfieldfield = $DB->get_record('customfield_field', array('categoryid' => $customfieldcategory->id));
+            if(!empty($customfieldfield)){
+                $customfielddata = $DB->get_record('customfield_data', array('fieldid' => $customfieldfield->id , 'instanceid' => $instanceid, 'contextid' => $contextid));
+                if(!empty($customfielddata)){
+                    $customfielddatadobj = new stdClass();
+                    $customfielddatadobj->id = (int)$customfielddata->id;
+
+                    if((int)$customfielddata->intvalue == 1){
+                        $customfielddatadobj->intvalue = 0;
+                        $customfielddatadobj->value = "0";
+                    }
+                    else{
+                        $customfielddatadobj->intvalue = 1;
+                        $customfielddatadobj->value = "1";
+                    }
+
+                    $DB->update_record('customfield_data', $customfielddatadobj, $bulk=false);
+                }
+                else{
+                    if(!empty($customfieldfield)){
+                        $customfieldddata = self::default_contextfield_data_value($customfieldfield->id, $instanceid, $contextid);
+                        $DB->insert_record('customfield_data', $customfieldddata);
+                    }
+                }
+            }
+        }
+        else{
+            $customfieldcategory = new stdClass();
+            $customfieldcategory->name = get_string('gugcatoptions', 'local_gugcat');
+            $customfieldcategory->component ="core_course";
+            $customfieldcategory->area = "course";
+            $customfieldcategory->timecreated = time();
+            $customfieldcategory->timemodified = time();
+            $customfieldcategoryid = $DB->insert_record('customfield_category', $customfieldcategory, $returnid=true, $bulk=false);
+            if(!is_null($customfieldcategoryid)){
+                $category = \core_customfield\category_controller::create($customfieldcategoryid);
+                $field = \core_customfield\field_controller::create(0, (object)[
+                    'type' => 'checkbox',
+                    'configdata' => get_string('configdata', 'local_gugcat')
+                ], $category);
+
+                $handler = $field->get_handler();
+                $handler->save_field_configuration($field, (object)[
+                    'name' => get_string('showassessment', 'local_gugcat'), 
+                    'shortname' => get_string('showonstudentdashboard', 'local_gugcat')
+                ]);
+                
+                $customfieldfield = $DB->get_record('customfield_field', array('categoryid' => $customfieldcategoryid));
+                if(!is_null($customfieldfield->id) && !is_null($instanceid) && !is_null($contextid)){
+                    $customfieldddata = self::default_contextfield_data_value($customfieldfield->id, $instanceid, $contextid);
+                    $DB->insert_record('customfield_data', $customfieldddata);
+                }
+            }
+        }
+    }
+
+    public static function get_value_of_customefield_checkbox($instanceid, $contextid){
+        global $DB;
+
+        $customfieldcategory = $DB->get_record('customfield_category', array('name'=> get_string('gugcatoptions', 'local_gugcat')));
+        if($customfieldcategory){
+            $customfieldfield = $DB->get_record('customfield_field', array('categoryid'=> $customfieldcategory->id));
+            if(!empty($customfieldfield)){
+                $customfielddata = $DB->get_record('customfield_data', array('fieldid'=> $customfieldfield->id, 'instanceid' => $instanceid, 'contextid' => $contextid));
+                if(!empty($customfielddata)){
+                    return (int)$customfielddata->intvalue;
+                }
+                return 1;
+            }
+        }
+    }
+
+    public static function default_contextfield_data_value($customfieldid, $instanceid, $contextid){
+        $default_obj = (object) array(
+            "fieldid"      => $customfieldid,
+            "instanceid"   => $instanceid,
+            "intvalue"     => 1,
+            "value"        => "1",
+            "valueformat"  => 0,
+            "timecreated"  => time(),
+            "timemodified" => time(),
+            "contextid"    => $contextid
+        );
+
+        return $default_obj;
+    }
 }
