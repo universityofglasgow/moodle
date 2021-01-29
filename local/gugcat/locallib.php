@@ -531,16 +531,8 @@ class local_gugcat {
                 }
                 else{
                     if(!empty($customfieldfield)){
-                        $newcustomfielddataobj = new stdClass();
-                        $newcustomfielddataobj->fieldid = $customfieldfield->id;
-                        $newcustomfielddataobj->instanceid = $instanceid;
-                        $newcustomfielddataobj->intvalue = 1;
-                        $newcustomfielddataobj->value = '1';
-                        $newcustomfielddataobj->valueformat = 0;
-                        $newcustomfielddataobj->timecreated = time();
-                        $newcustomfielddataobj->timemodified = time();
-                        $newcustomfielddataobj->contextid = $contextid;
-                        $DB->insert_record('customfield_data', $newcustomfielddataobj);
+                        $customfieldddata = self::default_contextfield_data_value($customfieldfield->id, $instanceid, $contextid);
+                        $DB->insert_record('customfield_data', $customfieldddata);
                     }
                 }
             }
@@ -555,7 +547,10 @@ class local_gugcat {
             $customfieldcategoryid = $DB->insert_record('customfield_category', $customfieldcategory, $returnid=true, $bulk=false);
             if(!is_null($customfieldcategoryid)){
                 $category = \core_customfield\category_controller::create($customfieldcategoryid);
-                $field = \core_customfield\field_controller::create(0, (object)['type' => 'checkbox'], $category);
+                $field = \core_customfield\field_controller::create(0, (object)[
+                    'type' => 'checkbox',
+                    'configdata' => get_string('configdata', 'local_gugcat')
+                ], $category);
 
                 $handler = $field->get_handler();
                 $handler->save_field_configuration($field, (object)[
@@ -564,17 +559,9 @@ class local_gugcat {
                 ]);
                 
                 $customfieldfield = $DB->get_record('customfield_field', array('categoryid' => $customfieldcategoryid));
-                if(!empty($customfieldfield) && !is_null($instanceid) && !is_null($contextid)){
-                    $customfieldddata = new stdClass();
-                    $customfielddata->fieldid = $customfieldfield->id;
-                    $customfielddata->instanceid = $instanceid;
-                    $customfielddata->intvalue = 1;
-                    $customfielddata->value = '1';
-                    $customfielddata->valueformat = 0;
-                    $customfielddata->timecreated = time();
-                    $customfielddata->timemodified = time();
-                    $customfielddata->contextid = $contextid;
-                    $DB->insert_record('customfield_data', $customfielddata);
+                if(!is_null($customfieldfield->id) && !is_null($instanceid) && !is_null($contextid)){
+                    $customfieldddata = self::default_contextfield_data_value($customfieldfield->id, $instanceid, $contextid);
+                    $DB->insert_record('customfield_data', $customfieldddata);
                 }
             }
         }
@@ -594,6 +581,20 @@ class local_gugcat {
                 return 1;
             }
         }
+    }
 
+    public static function default_contextfield_data_value($customfieldid, $instanceid, $contextid){
+        $default_obj = (object) array(
+            "fieldid"      => $customfieldid,
+            "instanceid"   => $instanceid,
+            "intvalue"     => 1,
+            "value"        => "1",
+            "valueformat"  => 0,
+            "timecreated"  => time(),
+            "timemodified" => time(),
+            "contextid"    => $contextid
+        );
+
+        return $default_obj;
     }
 }
