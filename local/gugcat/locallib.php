@@ -572,7 +572,7 @@ class local_gugcat {
         }
     }
 
-    public function default_contextfield_data_value($customfieldid, $instanceid, $contextid){
+    public static function default_contextfield_data_value($customfieldid, $instanceid, $contextid){
         $default_obj = (object) array(
             "fieldid"      => $customfieldid,
             "instanceid"   => $instanceid,
