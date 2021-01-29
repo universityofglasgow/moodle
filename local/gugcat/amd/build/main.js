@@ -40,7 +40,7 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
         var btn_identities = document.getElementById('btn-identities');
         var classes = document.querySelectorAll('.blind-marking');
         if(btn_identities && classes.length > 0){
-            btn_identities.style.display = '...';
+            btn_identities.textContent = '...';
             classes.forEach(element => element.classList.add('hide-names'));
             var is_blindmarking = (Storage.get(BLIND_MARKING_KEY) == 'true');
             var strings = [
