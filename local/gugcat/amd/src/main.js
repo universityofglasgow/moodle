@@ -40,7 +40,7 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
         var btn_identities = document.getElementById('btn-identities');
         var classes = document.querySelectorAll('.blind-marking');
         if(btn_identities && classes.length > 0){
-            btn_identities.style.display = 'none';
+            btn_identities.style.display = '...';
             classes.forEach(element => element.classList.add('hide-names'));
             var is_blindmarking = (Storage.get(BLIND_MARKING_KEY) == 'true');
             var strings = [
@@ -57,7 +57,6 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                 btn_identities.textContent = is_blindmarking
                     ?langStrings[0]//show
                     :langStrings[1];//hide
-                btn_identities.style.display = 'inline-block';
                 classes.forEach(element => {
                     is_blindmarking 
                     ? element.classList.add('hide-names')
@@ -71,7 +70,7 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
     const toggle_display_assessments = () =>{
         var btn_switch_display = document.getElementById('btn-switch-display');
         if(btn_switch_display){
-            btn_switch_display.style.display = 'none';
+            btn_switch_display.textContent = '...';
             var requests = Ajax.call([{
                 methodname: 'local_gugcat_display_assessments',
                 args: {},
@@ -92,10 +91,9 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                     btn_switch_display.textContent = switchOn
                         ?langStrings[0]//off
                         :langStrings[1];//on
-                        btn_switch_display.style.display = 'inline-block';
                 });
                 }).fail(function(){
-                    btn_switch_display.style.display = 'inline-block';
+                    btn_switch_display.style.display = 'none';
                 });
         }
     }
