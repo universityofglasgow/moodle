@@ -112,15 +112,15 @@ class grade_aggregation_testcase extends advanced_testcase {
         $row1 = $rows[1];
         $this->assertEquals($row1->cnum, 2);
         $this->assertEquals($row1->studentno, $this->student1->id);
-        $this->assertEquals('F2', $row1->grades[0]->grade);
+        $this->assertEquals(local_gugcat::convert_grade($exp_s1grd), $row1->grades[0]->grade);
         $this->assertEquals($row1->completed, $expectedcompleted); //assert complete percent
-        $this->assertEquals('F2', $row1->aggregatedgrade->grade); //assert aggregated grade 
+        $this->assertEquals(local_gugcat::convert_grade($exp_s1grd), $row1->aggregatedgrade->grade); //assert aggregated grade 
         $row2 = $rows[0];
         $this->assertEquals($row2->cnum, 1);
         $this->assertEquals($row2->studentno, $this->student2->id);
-        $this->assertEquals('D3', $row2->grades[0]->grade);
+        $this->assertEquals(local_gugcat::convert_grade($exp_s2grd), $row2->grades[0]->grade);
         $this->assertEquals($row2->completed, $expectedcompleted);
-        $this->assertEquals('D3', $row2->aggregatedgrade->grade);
+        $this->assertEquals(local_gugcat::convert_grade($exp_s2grd), $row2->aggregatedgrade->grade);
     }
 
     public function test_adjust_course_weight() {
