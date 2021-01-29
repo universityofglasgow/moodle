@@ -379,7 +379,9 @@ class local_gugcat_renderer extends plugin_renderer_base {
     }  
 
     private function gcat_settings() {
-        $checkboxvalue = local_gugcat::get_value_of_customefield_checkbox();
+        $courseid = (int)$this->page->course->id;
+        $coursecontext = context_course::instance($courseid);
+        $checkboxvalue = local_gugcat::get_value_of_customefield_checkbox($courseid, $coursecontext->id);
 
         $html = html_writer::tag('i', null, array('id' => 'gcat-cog', 'class' => 'fa fa-cog', 'data-toggle' => 'dropdown'));
         $html .= html_writer::start_tag('ul', array('class' => 'dropdown-menu'));
