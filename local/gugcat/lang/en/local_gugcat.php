@@ -38,6 +38,7 @@ $string['assessmentgradehistory'] = 'Assessment Grade History';
 $string['cancelmodal'] = 'No, cancel action';
 $string['candidateno'] = 'Candidate No.';
 $string['choosegrade'] = 'Choose grade';
+$string['configdata'] = '{"required":"0","uniquevalues":"0","checkbydefault":"0","locked":"0","visibility":"1"}';
 $string['confirmgrade'] = 'Confirm new grade';
 $string['confirmfinalrelease'] = 'Yes, release final assessment grades';
 $string['confirmimport'] = 'Yes, import grades from Moodle';
