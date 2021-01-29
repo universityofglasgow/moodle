@@ -495,14 +495,14 @@ class local_gugcat {
         return $DB->get_records_sql($sql, $params);
     }
 
-    public static function switch_display_of_assessment_on_student_dashboard(){
+    public static function switch_display_of_assessment_on_student_dashboard($instanceid, $contextid){
         global $DB;
 
-        $customfieldcategory = $DB->get_record('customfield_category', array('name'=> get_string('gugcatoptions', 'local_gugcat')));
+        $customfieldcategory = $DB->get_record('customfield_category', array('name' => get_string('gugcatoptions', 'local_gugcat')));
         if($customfieldcategory){
-            $customfieldfield = $DB->get_record('customfield_field', array('categoryid'=> $customfieldcategory->id));
+            $customfieldfield = $DB->get_record('customfield_field', array('categoryid' => $customfieldcategory->id));
             if(!empty($customfieldfield)){
-                $customfielddata = $DB->get_record('customfield_data', array('fieldid'=> $customfieldfield->id));
+                $customfielddata = $DB->get_record('customfield_data', array('fieldid' => $customfieldfield->id , 'instanceid' => $instanceid, 'contextid' => $contextid));
                 if(!empty($customfielddata)){
                     $customfielddatadobj = new stdClass();
                     $customfielddatadobj->id = (int)$customfielddata->id;
@@ -517,6 +517,20 @@ class local_gugcat {
                     }
 
                     $DB->update_record('customfield_data', $customfielddatadobj, $bulk=false);
+                }
+                else{
+                    if(!empty($customfieldfield)){
+                        $newcustomfielddataobj = new stdClass();
+                        $newcustomfielddataobj->fieldid = $customfieldfield->id;
+                        $newcustomfielddataobj->instanceid = $instanceid;
+                        $newcustomfielddataobj->intvalue = 1;
+                        $newcustomfielddataobj->value = '1';
+                        $newcustomfielddataobj->valueformat = 0;
+                        $newcustomfielddataobj->timecreated = time();
+                        $newcustomfielddataobj->timemodified = time();
+                        $newcustomfielddataobj->contextid = $contextid;
+                        $DB->insert_record('customfield_data', $newcustomfielddataobj);
+                    }
                 }
             }
         }
@@ -537,17 +551,18 @@ class local_gugcat {
                     'name' => get_string('showassessment', 'local_gugcat'), 
                     'shortname' => get_string('showonstudentdashboard', 'local_gugcat')
                 ]);
-                $customfieldfield = $DB->get_record('customfield_field', array('categoryid'=> $customfieldcategoryid));
-                if(!empty($customfieldfield)){
+                
+                $customfieldfield = $DB->get_record('customfield_field', array('categoryid' => $customfieldcategoryid));
+                if(!empty($customfieldfield) && !is_null($instanceid) && !is_null($contextid)){
                     $customfieldddata = new stdClass();
                     $customfielddata->fieldid = $customfieldfield->id;
-                    $customfielddata->instanceid = 9;
+                    $customfielddata->instanceid = $instanceid;
                     $customfielddata->intvalue = 1;
-                    $customfielddata->value = 1;
+                    $customfielddata->value = '1';
                     $customfielddata->valueformat = 0;
                     $customfielddata->timecreated = time();
                     $customfielddata->timemodified = time();
-                    $customfielddata->contextid = 112;
+                    $customfielddata->contextid = $contextid;
                     $DB->insert_record('customfield_data', $customfielddata);
                 }
             }
