@@ -51,11 +51,22 @@ $PAGE->set_course($course);
 $PAGE->set_heading($course->fullname);
 require_capability('local/gugcat:view', $coursecontext);
 
+//Retrieve groups
+$groups = groups_get_all_groups($courseid);
+
 //Retrieve students
 $limitfrom = $page * GCAT_MAX_USERS_PER_PAGE;
 $limitnum  = GCAT_MAX_USERS_PER_PAGE;
 $totalenrolled = count_enrolled_users($coursecontext, 'moodle/competency:coursecompetencygradable');
-$students = get_enrolled_users($coursecontext, 'moodle/competency:coursecompetencygradable', 0, 'u.*', null, $limitfrom, $limitnum);
+if(!empty($groups)){
+    $students = Array();
+    foreach ($groups as $group) {
+        $groupstudents = get_enrolled_users($coursecontext, 'moodle/competency:coursecompetencygradable', $group->id, 'u.*', null, $limitfrom, $limitnum);
+        $students += $groupstudents;
+    }
+}else{
+    $students = get_enrolled_users($coursecontext, 'moodle/competency:coursecompetencygradable', 0, 'u.*', null, $limitfrom, $limitnum);
+}
 
 //Retrieve activities
 $activities = local_gugcat::get_activities($courseid);
