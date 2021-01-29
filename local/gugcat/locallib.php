@@ -544,7 +544,10 @@ class local_gugcat {
             $customfieldcategoryid = $DB->insert_record('customfield_category', $customfieldcategory, $returnid=true, $bulk=false);
             if(!is_null($customfieldcategoryid)){
                 $category = \core_customfield\category_controller::create($customfieldcategoryid);
-                $field = \core_customfield\field_controller::create(0, (object)['type' => 'checkbox'], $category);
+                $field = \core_customfield\field_controller::create(0, (object)[
+                    'type' => 'checkbox',
+                    'configdata' => get_string('configdata', 'local_gugcat')
+                ], $category);
 
                 $handler = $field->get_handler();
                 $handler->save_field_configuration($field, (object)[
