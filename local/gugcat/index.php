@@ -148,6 +148,7 @@ if (isset($release)){
     redirect($URL);
     exit;
 }
+
 $rows = grade_capture::get_rows($course, $selectedmodule, $students);
 $columns = grade_capture::get_columns();
 

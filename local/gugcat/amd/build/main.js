@@ -21,17 +21,17 @@
  * @author     Accenture
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-define(['jquery', 'core/str', 'core/modal_factory', 'local_gugcat/modal_gcat', 'core/sessionstorage'], 
-function($, Str, ModalFactory, ModalGcat, Storage) {
+define(['jquery', 'core/str', 'core/modal_factory', 'local_gugcat/modal_gcat', 'core/sessionstorage', 'core/ajax'], 
+function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
 
     const BLIND_MARKING_KEY = 'blind-marking';
     //Returns boolean on check of the current url and match it to the path params
-    const checkCurrentUrl = function(path) {
+    const checkCurrentUrl = (path) => {
         var url = window.location.pathname;
         return url.match(path);
     }
 
-    const update_reason_inputs = (val) =>{
+    const update_reason_inputs = (val) => {
         var list = document.querySelectorAll('.input-reason');
         list.forEach(input => input.value = val);
     }
@@ -40,7 +40,7 @@ function($, Str, ModalFactory, ModalGcat, Storage) {
         var btn_identities = document.getElementById('btn-identities');
         var classes = document.querySelectorAll('.blind-marking');
         if(btn_identities && classes.length > 0){
-            btn_identities.style.display = 'none';
+            btn_identities.textContent = '...';
             classes.forEach(element => element.classList.add('hide-names'));
             var is_blindmarking = (Storage.get(BLIND_MARKING_KEY) == 'true');
             var strings = [
@@ -57,7 +57,6 @@ function($, Str, ModalFactory, ModalGcat, Storage) {
                 btn_identities.textContent = is_blindmarking
                     ?langStrings[0]//show
                     :langStrings[1];//hide
-                btn_identities.style.display = 'inline-block';
                 classes.forEach(element => {
                     is_blindmarking 
                     ? element.classList.add('hide-names')
@@ -65,6 +64,92 @@ function($, Str, ModalFactory, ModalGcat, Storage) {
                 });
             });
            
+        }
+    }
+
+    const toggle_display_assessments = () =>{
+        var btn_switch_display = document.getElementById('btn-switch-display');
+        if(btn_switch_display){
+            btn_switch_display.textContent = '...';
+            var requests = Ajax.call([{
+                methodname: 'local_gugcat_display_assessments',
+                args: {},
+            }]);
+            requests[0].done(function(data) {
+                var switchOn = data.result;
+                var strings = [
+                    {
+                        key: 'switchoffdisplay',
+                        component: 'local_gugcat'
+                    },
+                    {
+                        key: 'switchondisplay',
+                        component: 'local_gugcat'
+                    }
+                ];
+                Str.get_strings(strings).then(function(langStrings){
+                    btn_switch_display.textContent = switchOn
+                        ?langStrings[0]//off
+                        :langStrings[1];//on
+                });
+                }).fail(function(){
+                    btn_switch_display.style.display = 'none';
+                });
+        }
+    }
+        
+    const sortTable = (n) => {
+        var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+        table = document.getElementById("gcat-table");
+        switching = true;
+        // Set the sorting direction to ascending:
+        dir = "asc";
+        /* Make a loop that will continue until
+        no switching has been done: */
+        while (switching) {
+          // Start by saying: no switching is done:
+          switching = false;
+          rows = table.rows;
+          /* Loop through all table rows (except the
+          first, which contains table headers): */
+          for (i = 1; i < (rows.length - 1); i++) {
+            // Start by saying there should be no switching:
+            shouldSwitch = false;
+            /* Get the two elements you want to compare,
+            one from current row and one from the next: */
+            x = rows[i].getElementsByTagName("TD")[n];
+            y = rows[i + 1].getElementsByTagName("TD")[n];
+            /* Check if the two rows should switch place,
+            based on the direction, asc or desc: */
+            if (dir == "asc") {
+              if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+                // If so, mark as a switch and break the loop:
+                shouldSwitch = true;
+                break;
+              }
+            } else if (dir == "desc") {
+              if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+                // If so, mark as a switch and break the loop:
+                shouldSwitch = true;
+                break;
+              }
+            }
+          }
+          if (shouldSwitch) {
+            /* If a switch has been marked, make the switch
+            and mark that a switch has been done: */
+            rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+            switching = true;
+            // Each time a switch is done, increase this count by 1:
+            switchcount ++;
+          } else {
+            /* If no switching has been done AND the direction is "asc",
+            set the direction to "desc" and run the while loop again. */
+            if (switchcount == 0 && dir == "asc") {
+              dir = "desc";
+              switching = true;
+            }
+          }
         }
     }
 
@@ -133,6 +218,7 @@ function($, Str, ModalFactory, ModalGcat, Storage) {
         var btn_coursegradeform = document.getElementById('btn-coursegradeform');
         var btn_download = document.getElementById('btn-download');
         var btn_finalrelease = document.getElementById('btn-finalrelease');
+        var btn_switch_display = document.getElementById('btn-switch-display');
         switch (event.target) {
             case btn_saveadd:
                 btn_saveadd.classList.toggle('togglebtn');
@@ -256,6 +342,9 @@ function($, Str, ModalFactory, ModalGcat, Storage) {
                 Storage.set(BLIND_MARKING_KEY, !is_blindmarking);
                 check_blind_marking();
                 break;
+            case btn_switch_display:
+                toggle_display_assessments();
+                break;
             default:
                 break;
         }
@@ -302,6 +391,13 @@ function($, Str, ModalFactory, ModalGcat, Storage) {
                             }
                         });
                     });
+                }
+
+                var columns = document.querySelectorAll('.sortable');
+                if(columns.length > 0){
+                    for (const [id, column] of columns.entries()) {
+                        column.addEventListener('click', () => sortTable(id));
+                    }
                 }
 
                 //Show 'grade discrepancy' when grade discrepancy exist
