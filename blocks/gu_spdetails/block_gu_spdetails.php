@@ -120,30 +120,33 @@ class block_gu_spdetails extends block_base {
 
         if ($mods) {
             foreach($mods as $mod) {
-                $assessment = new stdClass;    // object storage for assessment row
-                $courseparams = array($mod->courseid, $mod->category, $mod->sortorder,
-                                      $mod->fullname, $mod->shortname, $mod->idnumber,
-                                      $mod->summary, $mod->summaryformat, $mod->format,
-                                      $mod->showgrades, $mod->newsitems, $mod->startdate,
-                                      $mod->enddate, $mod->relativedatesmode, $mod->marker,
-                                      $mod->maxbytes, $mod->legacyfiles, $mod->showreports,
-                                      $mod->visible, $mod->visibleold, $mod->groupmode,
-                                      $mod->groupmodeforce, $mod->defaultgroupingid, $mod->lang,
-                                      $mod->calendartype, $mod->theme, $mod->timecreated,
-                                      $mod->timemodified , $mod->requested, $mod->enablecompletion,
-                                      $mod->completionnotify, $mod->cacherev);
-                $course = set_assessmentcourse($courseparams);
-                $modinfo = get_fast_modinfo($mod->course);
-                $cm = $modinfo->get_cm($mod->id);
-
-                // check if course module is visible to the user
-                $iscmvisible = $cm->uservisible;
+                // check if 'Show assessments on Student Dashboard' is checked
+                $showcourse = return_showcourse($mod->course);
                 // check if course module belongs to the list of allowed activities
                 $iscmallowed = in_array($mod->modname, $allowedactivities);
                 // check if user has role 'student' in the course
                 $isstudent = self::return_isstudent($user->id, $mod->course);
 
-                if($iscmvisible && $iscmallowed && $isstudent) {
+                $modinfo = get_fast_modinfo($mod->course);
+                $cm = $modinfo->get_cm($mod->id);
+                // check if course module is visible to the user
+                $iscmvisible = $cm->uservisible;
+
+                if($showcourse && $iscmallowed && $isstudent && $iscmvisible) {
+                    $assessment = new stdClass;    // object storage for assessment row
+                    $courseparams = array($mod->courseid, $mod->category, $mod->sortorder,
+                                        $mod->fullname, $mod->shortname, $mod->idnumber,
+                                        $mod->summary, $mod->summaryformat, $mod->format,
+                                        $mod->showgrades, $mod->newsitems, $mod->startdate,
+                                        $mod->enddate, $mod->relativedatesmode, $mod->marker,
+                                        $mod->maxbytes, $mod->legacyfiles, $mod->showreports,
+                                        $mod->visible, $mod->visibleold, $mod->groupmode,
+                                        $mod->groupmodeforce, $mod->defaultgroupingid, $mod->lang,
+                                        $mod->calendartype, $mod->theme, $mod->timecreated,
+                                        $mod->timemodified , $mod->requested, $mod->enablecompletion,
+                                        $mod->completionnotify, $mod->cacherev);
+                    $course = self::set_assessmentcourse($courseparams);
+
                     $gradeitemparams = array($mod->gradeitemid, $mod->categoryid, $mod->gradetype,
                                              $mod->grademax, $mod->grademin, $mod->scaleid,
                                              $mod->aggregationcoef, $mod->aggregationcoef2);
@@ -212,6 +215,29 @@ class block_gu_spdetails extends block_base {
         $isassessmentduedatefuture = time() + (86400 * 30) > $duedate;
 
         return $iscourseenddatefuture && $isassessmentduedatefuture;
+    }
+
+    /**
+     * Groups assessment course values in one object
+     *
+     * @param array $params
+     * @return stdClass
+     */
+    public static function set_assessmentcourse($params) {
+        $keys = array('id', 'category', 'sortorder',
+                    'fullname', 'shortname', 'idnumber',
+                    'summary', 'summaryformat', 'format',
+                    'showgrades', 'newsitems', 'startdate',
+                    'enddate', 'relativedatesmode', 'marker',
+                    'maxbytes', 'legacyfiles', 'showreports',
+                    'visible', 'visibleold', 'groupmode',
+                    'groupmodeforce', 'defaultgroupingid', 'lang',
+                    'calendartype', 'theme', 'timecreated',
+                    'timemodified' , 'requested', 'enablecompletion',
+                    'completionnotify', 'cacherev');
+        $values = $params;
+        $course = array_combine($keys, $values);
+        return (object) $course;
     }
 
     /**

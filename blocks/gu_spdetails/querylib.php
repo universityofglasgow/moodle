@@ -86,29 +86,6 @@ function get_all_user_courses_gradable_activities($userid) {
 }
 
 /**
- * Groups assessment course values in one object
- *
- * @param array $params
- * @return stdClass
- */
-function set_assessmentcourse($params) {
-    $keys = array('id', 'category', 'sortorder',
-                  'fullname', 'shortname', 'idnumber',
-                  'summary', 'summaryformat', 'format',
-                  'showgrades', 'newsitems', 'startdate',
-                  'enddate', 'relativedatesmode', 'marker',
-                  'maxbytes', 'legacyfiles', 'showreports',
-                  'visible', 'visibleold', 'groupmode',
-                  'groupmodeforce', 'defaultgroupingid', 'lang',
-                  'calendartype', 'theme', 'timecreated',
-                  'timemodified' , 'requested', 'enablecompletion',
-                  'completionnotify', 'cacherev');
-    $values = $params;
-    $course = array_combine($keys, $values);
-    return (object) $course;
-}
-
-/**
  * Groups assessment grade item values in one object
  *
  * @param array $params
@@ -363,4 +340,25 @@ function retrieve_assignfeedbackfile($assignmentid, $gradeid) {
     $conditions = array('assignment' => $assignmentid, 'grade' => $gradeid);
     $assignfeedbackfile = $DB->get_record('assignfeedback_file', $conditions);
     return $assignfeedbackfile;
+}
+
+/**
+ * Checks if 'Show assessments on Student Dashboard' is checked
+ * under GCAT Options in Course Settings
+ *
+ * @param int $courseid
+ * @return boolean
+ */
+function return_showcourse($courseid) {
+    global $DB;
+    $fieldname = 'show_on_studentdashboard';
+
+    $sql = "SELECT cfd.value
+            FROM {customfield_field} cff
+            JOIN {customfield_data} cfd ON cfd.fieldid = cff.id
+            AND cfd.instanceid = ?
+            WHERE cff.shortname = ?";
+    $config = $DB->get_record_sql($sql, array($courseid, $fieldname));
+    $showcourse = ($config) ? (($config->value > 0) ? true : false) : false;
+    return $showcourse;
 }
