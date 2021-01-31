@@ -19,17 +19,18 @@
  *
  * @package    block_gu_spdetails
  * @copyright  2020 Accenture
- * @author     Franco Louie Magpusao <franco.l.magpusao@accenture.com>
+ * @author     Franco Louie Magpusao, Jose Maria Abreu
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['class_overduelinked'] = 'overduelinked';
 $string['class_notopen'] = 'notopen';
+$string['class_notsubmitted'] = 'notsubmitted';
+$string['overduelinked'] = 'overduelinked';
+$string['class_unavailable'] = 'unavailable';
 $string['currentlyenrolledin'] = 'Currently enrolled in';
-$string['pastcourses'] = 'Past Courses';
 $string['convertdate'] = "%B %d";
-$string['pastcourseconvertdate'] = "m/y";
 $string['due'] = 'Due ';
+$string['duedateextension'] = 'Due date extension';
 $string['emptyvalue'] = '—';
 $string['formative'] = 'formative';
 $string['graded'] = 'graded';
@@ -43,25 +44,27 @@ $string['header_grade'] = "Your Grade";
 $string['header_status'] = "Status";
 $string['header_type'] = "Assessment Type";
 $string['header_weight'] = "Weight";
+$string['id_feedback'] = '#feedback';
 $string['id_intro'] = '#intro';
 $string['id_pagefooter'] = '#page-footer';
-$string['noassessments'] = 'No upcoming assessments due';
-$string['nofeedback'] = 'No feedback provided';
+$string['nocurrentassessments'] = 'No current assessments';
+$string['nopastassessments'] = 'No past assessments';
+$string['notavailable'] = 'Not available';
 $string['notopen'] = 'submission not open';
+$string['notsubmitted'] = 'not submitted';
 $string['overdue'] = 'overdue';
-$string['pagefooter'] = 'PAGE_FOOTER';
-$string['pluginname'] = 'Your Assessments details';
 $string['pastcourses'] = 'Past courses';
+$string['pastcourseconvertdate'] = "m/y";
+$string['pluginname'] = 'Your Assessments details';
 $string['provisional'] = '(Provisional)';
 $string['readfeedback'] = 'Read feedback';
 $string['sort'] = "Sort by ";
 $string['sort_course'] = "Course";
 $string['sort_date'] = "Date";
 $string['student'] = "student";
-$string['submission_unavailable'] = 'Submission Unavailable';
 $string['submit'] = 'submit';
 $string['submitted'] = 'submitted';
 $string['summative'] = 'summative';
 $string['tobeconfirmed'] = 'To be confirmed';
-$string['unavailable'] = 'unavailable';
+$string['unavailable'] = 'submission unavailable';
 $string['viewsubmission'] = 'View Submission';

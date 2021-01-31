@@ -19,12 +19,12 @@
  *
  * @package    block_gu_spdetails
  * @copyright  2020 Accenture
- * @author     Franco Louie Magpusao <franco.l.magpusao@accenture.com>
+ * @author     Franco Louie Magpusao, Jose Maria Abreu
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2021012106.01;
+$plugin->version   = 2021020106.02;
 $plugin->requires  = 2019111804.11;                  // Moodle 3.8.4.
 $plugin->component = 'block_gu_spdetails';

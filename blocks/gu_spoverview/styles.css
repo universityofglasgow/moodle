@@ -8,16 +8,12 @@
 
 .assessments-item-count {
     color: #058;
-    font-size: 25px;
-    font-weight: 700;
-    line-height: 32.35px;
+    font-weight: 600;
     margin-bottom: 8px;
 }
 
 .assessments-item-label {
     color: #058;
-    font-size: 13px;
-    line-height: 14.95px;
 }
 
 .block-region .assessments-item {

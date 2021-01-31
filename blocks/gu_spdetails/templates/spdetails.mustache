@@ -18,15 +18,20 @@
     <div class="assessments-details-container table-responsive">
         <div class="assessments-table-tab-container">
             <div id="gu_spdetails_current_tab" class="assessments-table-tab selected-element">
-                <a onclick="toggleTableShow('block_spdetails_table')">{{currentenroll}}</a>
+                <h4 class="h5">
+                    <a onclick="toggleTableShow('block_spdetails_table')">{{currentenroll}}</a>
+                </h4>
             </div>
             <div id="gu_spdetails_past_tab" class="assessments-table-tab">
-                <a onclick="toggleTableShow('block_spdetails_table_past_history')">{{pastenroll}}</a>
+                <h4 class="h5">
+                    <a onclick="toggleTableShow('block_spdetails_table_past_history')">{{pastenroll}}</a>
+                </h4>
             </div>
         </div>
         <div class="assessments-details-sort">
             <label class="assessments-details-sort-label">{{sort}}
-                <select id="gu_spdetails_select_sort" class="assessments-details-sort-select" oninput="sortTable(parseInt(this.value), true)">
+                <select id="gu_spdetails_select_sort" class="assessments-details-sort-select"
+                        oninput="sortTable(parseInt(this.value), true)">
                     <option value="0">{{sort_course}}</option>
                     <option value="4">{{sort_date}}</option>
                 </select>
@@ -53,70 +58,89 @@
                     <th class="td10" scope="col">{{header_feedback}}</th>
                 </tr>
             </thead>
-            <tbody>
-                {{#data}}
+            {{#hascurrentassessments}}
+                <tbody>
+                    {{#currentdata}}
+                        <tr>
+                            <td class="td20">
+                                <a href="{{courseurl}}">
+                                    {{coursetitle}}
+                                </a>
+                            </td>
+                            <td class="td20">
+                                <a href="{{assessmenturl}}">
+                                    {{assessmentname}}
+                                </a>
+                            </td>
+                            <td class="td10">
+                                {{assessmenttype}}
+                            </td>
+                            <td class="td05">
+                                {{weight}}
+                            </td>
+                            <td class="hidden-element">
+                                {{duedate.duedate}}
+                            </td>
+                            <td class="td10">
+                                {{duedate.formattedduedate}}
+                                {{#duedate.hasduedateextension}}
+                                    <span class="extended">*
+                                        <span class="extended-tooltip">{{duedateextension}}</span>
+                                    </span>
+                                {{/duedate.hasduedateextension}}
+                            </td>
+                            <td class="td15">
+                                {{#status.hasstatusurl}}
+                                    <a href="{{assessmenturl}}" class="status-link">
+                                        <span class="status-item status-{{status.suffix}}">
+                                            {{status.status}}
+                                        </span>
+                                    </a>
+                                {{/status.hasstatusurl}}
+                                {{^status.hasstatusurl}}
+                                    <span class="status-item status-{{status.suffix}}">
+                                        {{status.status}}
+                                    </span>
+                                {{/status.hasstatusurl}}
+                            </td>
+                            <td class="td10">
+                                {{#grading.hasgrade}}
+                                    <span class="graded">
+                                        {{grading.grade}}
+                                    </span>
+                                    {{#grading.isprovisional}}
+                                        {{provisional}}
+                                    {{/grading.isprovisional}}
+                                {{/grading.hasgrade}}
+                                {{^grading.hasgrade}}
+                                    {{grading.grade}}
+                                {{/grading.hasgrade}}
+                            </td>
+                            <td class="td10">
+                                {{#feedback.hasfeedback}}
+                                    <a href="{{feedback.feedbackurl}}">
+                                        {{feedback.feedback}}
+                                    </a>
+                                {{/feedback.hasfeedback}}
+                                {{^feedback.hasfeedback}}
+                                    {{feedback.feedback}}
+                                {{/feedback.hasfeedback}}
+                            </td>
+                        </tr>
+                    {{/currentdata}}
+                </tbody>
+            {{/hascurrentassessments}}
+            {{^hascurrentassessments}}
+                <tbody>
                     <tr>
-                        <td class="td20">
-                            <a href="{{courseurl}}">
-                                {{coursetitle}}
-                            </a>
+                        <td colspan="8">
+                            <div class="assessments-details-container assessments-details-empty text-center mx-auto">
+                                <img src="{{noassessments_img}}" alt="{{nocurrentassessments}}" class="assessments-img-empty">
+                                <p class="assessments-text-empty">{{nocurrentassessments}}</p>
+                            </div>
                         </td>
-                        <td class="td20">
-                            <a href="{{assessmenturl}}">
-                                {{name}}
-                            </a>
-                        </td>
-                        <td class="td10">
-                            {{assessmenttype}}
-                        </td>
-                        <td class="td05">
-                            {{weight}}
-                        </td>
-                        <td class="hidden-element">
-                            {{dates.duedate}}
-                        </td>
-                        <td class="td10">
-                            {{#dates.isdueextended}}
-                                {{dates.formattedduedate}}<span class="extended">*</span>
-                            {{/dates.isdueextended}}
-                            {{^dates.isdueextended}}
-                                {{dates.formattedduedate}}
-                            {{/dates.isdueextended}}
-                        </td>
-                        <td class="td15">
-                            {{#status.hasurl}}
-                                <a href="{{assessmenturl}}" class="status-link">
-                                    <span class="status-item status-{{status.suffix}}">{{status.text}}</span>
-                                </a>
-                            {{/status.hasurl}}
-                            {{^status.hasurl}}
-                                <span class="status-item status-{{status.suffix}}">{{status.text}}</span>
-                            {{/status.hasurl}}
-                        </td>
-                        <td class="td10">
-                            {{#gradingduedate.hasgrade}}
-                                <span class="graded">{{gradingduedate.gradetext}}</span>
-                                {{#isprovisional}}
-                                    {{provisionaltext}}
-                                {{/isprovisional}}
-                            {{/gradingduedate.hasgrade}}
-                            {{^gradingduedate.hasgrade}}
-                                {{gradingduedate.gradetext}}
-                            {{/gradingduedate.hasgrade}}
-                        </td>
-                        <td class="td10">
-                            {{#feedbackduedate.hasfeedback}}
-                                <a href="{{feedbackduedate.feedbackurl}}">
-                                    {{feedbackduedate.feedbacktext}}
-                                </a>
-                            {{/feedbackduedate.hasfeedback}}
-                            {{^feedbackduedate.hasfeedback}}
-                                {{feedbackduedate.feedbacktext}}
-                            {{/feedbackduedate.hasfeedback}}
-                        </td>
-                    </tr>
-                {{/data}}
-            </tbody>
+                </tbody>
+            {{/hascurrentassessments}}
         </table>
         <table class="table assessments-table hidden-element" id="block_spdetails_table_past_history">
             <thead>
@@ -144,67 +168,83 @@
                     <th class="td10" scope="col">{{header_feedback}}</th>
                 </tr>
             </thead>
-            <tbody>
-                {{#pastdata}}
-                    <tr>
-                        <td class="td20">
-                            <a href="{{courseurl}}">
-                                {{coursetitle}}
-                            </a>
-                        </td>
-                        <td class="td20">
-                            <a href="{{assessmenturl}}">
-                                {{name}}
-                            </a>
-                        </td>
-                        <td class="td10">
-                            {{assessmenttype}}
-                        </td>
-                        <td class="td05">
-                            {{weight}}
-                        </td>
-                        <td class="hidden-element">
-                            {{academicyear}}
-                        </td>
-                        <td class="td10">
-                            {{startdate}}
-                        </td>
-                        <td class="td10">
-                            {{enddate}}
-                        </td>
-                        <td class="td15">
-                            <a href ="{{assessmenturl}}">{{view_submission}}</a>
-                        </td>
-                        <td class="td10">
-                            {{#gradingduedate.hasgrade}}
-                                <span class="graded">{{gradingduedate.gradetext}}</span>
-                                {{#isprovisional}}
-                                    {{provisionaltext}}
-                                {{/isprovisional}}
-                            {{/gradingduedate.hasgrade}}
-                            {{^gradingduedate.hasgrade}}
-                                {{gradingduedate.gradetext}}
-                            {{/gradingduedate.hasgrade}}
-                        </td>
-                        <td class="td10">
-                            {{#feedbackduedate.hasfeedback}}
-                                <a href="{{feedbackurl}}">
-                                    {{feedbackduedate.feedbacktext}}
+            {{#haspastassessments}}
+                <tbody>
+                    {{#pastdata}}
+                        <tr>
+                            <td class="td20">
+                                <a href="{{courseurl}}">
+                                    {{coursetitle}}
                                 </a>
-                            {{/feedbackduedate.hasfeedback}}
-                            {{^feedbackduedate.hasfeedback}}
-                                {{feedbackduedate.feedbacktext}}
-                            {{/feedbackduedate.hasfeedback}}
+                            </td>
+                            <td class="td20">
+                                <a href="{{assessmenturl}}">
+                                    {{assessmentname}}
+                                </a>
+                            </td>
+                            <td class="td10">
+                                {{assessmenttype}}
+                            </td>
+                            <td class="td05">
+                                {{weight}}
+                            </td>
+                            <td class="hidden-element">
+                                {{academicyear}}
+                            </td>
+                            <td class="td10">
+                                {{startdate}}
+                            </td>
+                            <td class="td10">
+                                {{enddate}}
+                            </td>
+                            <td class="td15">
+                                <a href ="{{assessmenturl}}">{{view_submission}}</a>
+                            </td>
+                            <td class="td10">
+                                {{#grading.hasgrade}}
+                                    <span class="graded">
+                                        {{grading.grade}}
+                                    </span>
+                                    {{#grading.isprovisional}}
+                                        {{provisional}}
+                                    {{/grading.isprovisional}}
+                                {{/grading.hasgrade}}
+                                {{^grading.hasgrade}}
+                                    {{grading.grade}}
+                                {{/grading.hasgrade}}
+                            </td>
+                            <td class="td10">
+                                {{#feedback.hasfeedback}}
+                                    <a href="{{feedback.feedbackurl}}">
+                                        {{feedback.feedback}}
+                                    </a>
+                                {{/feedback.hasfeedback}}
+                                {{^feedback.hasfeedback}}
+                                    {{feedback.feedback}}
+                                {{/feedback.hasfeedback}}
+                            </td>
+                        </tr>
+                    {{/pastdata}}
+                </tbody>
+            {{/haspastassessments}}
+            {{^haspastassessments}}
+                <tbody>
+                    <tr>
+                        <td colspan="9">
+                            <div class="assessments-details-container assessments-details-empty text-center mx-auto">
+                                <img src="{{noassessments_img}}" alt="{{nopastassessments}}" class="assessments-img-empty">
+                                <p class="assessments-text-empty">{{nopastassessments}}</p>
+                            </div>
                         </td>
                     </tr>
-                {{/pastdata}}
-            </tbody>
+                </tbody>
+            {{/haspastassessments}}
         </table>
     </div>
 {{/hasassessments}}
 {{^hasassessments}}
     <div class="assessments-details-container assessments-details-empty text-center mx-auto">
-        <img src="{{noassessments_img}}" alt="{{noassessments}}" class="assessments-img-empty">
-        <p class="assessments-text-empty">{{noassessments}}</p>
+        <img src="{{noassessments_img}}" alt="{{nocurrentassessments}}" class="assessments-img-empty">
+        <p class="assessments-text-empty">{{nocurrentassessments}}</p>
     </div>
 {{/hasassessments}}
