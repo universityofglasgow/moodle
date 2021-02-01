@@ -63,7 +63,7 @@ function get_all_user_courses_gradable_activities($userid) {
                        gi.aggregationcoef, gi.aggregationcoef2";
     $gradegetjoin = "JOIN {course_modules} cm ON (cm.course = c.id)
                      JOIN {modules} md ON (md.id = cm.module)
-                     JOIN {grade_items} gi
+                     JOIN (SELECT * FROM {grade_items} GROUP BY iteminstance, itemmodule) gi
                      ON (gi.iteminstance = cm.instance
                          AND gi.courseid = c.id
                          AND gi.itemmodule = md.name)";
@@ -234,7 +234,7 @@ function retrieve_activity($user, $cm, $course, $gradeitem) {
             $activity->gradingduedate = ($activity->cutoffdate >= 0) ?
                                          $activity->cutoffdate : $activity->duedate;  // review logic
             $activity->gradeforum = ($forum->grade_forum) ? 1 : 0;
-            $activity->grade = $grades->finalgrade;
+            $activity->grade = ($grades && isset($grades->finalgrade)) ? $grades->finalgrade : null;
             $activity->graded = isset($activity->grade) ? $activity->grade : false;
             $activity->hasfeedback = false;
             $activity->feedback = ($grades) ? $grades->feedback : null;
@@ -262,7 +262,7 @@ function retrieve_activity($user, $cm, $course, $gradeitem) {
             $activity->duedate = $workshop->submissionend;
             $activity->gradingduedate = $workshop->assessmentend;
             $activity->submissionstatus = null;
-            $activity->grade = $grades->finalgrade;
+            $activity->grade = ($grades && isset($grades->finalgrade)) ? $grades->finalgrade : null;
             $activity->graded = false;
             $activity->hasfeedback = false;
             $activity->feedback = ($grades) ? $grades->feedback : null;
