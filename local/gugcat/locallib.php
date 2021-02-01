@@ -385,6 +385,12 @@ class local_gugcat {
         }
     }
 
+    /**
+     * Removes ungraded grade versions and provisional grade
+     * 
+     * @param array $gradeitems graded gradeversions.
+     * @param int $studentid student's user id.
+     */
     public static function filter_grade_version($gradeitems, $studentid){
         foreach($gradeitems as $gradeitem){
             $finalgrade = (isset($gradeitem->grades[$studentid]) ? $gradeitem->grades[$studentid]->grade : null); 
@@ -496,6 +502,15 @@ class local_gugcat {
         }
     }
 
+    /**
+     * Returns rows of grade version history
+     * 
+     * @param int $courseid
+     * @param array $module select course module
+     * @param int $studentid student's user id
+     * 
+     * 
+     */
     public static function get_grade_history($courseid, $module, $studentid){
         global $DB;
         $select = 'courseid = '.$courseid.' AND '.self::compare_iteminfo();

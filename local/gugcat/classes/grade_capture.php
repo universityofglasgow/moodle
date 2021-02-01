@@ -292,6 +292,12 @@ class grade_capture{
         self::set_provisional_weights($courseid, $activities, $students);
     }
 
+    /**
+     * Toggles hide and show grades in grade capture tab
+     * 
+     * @param int $userid 
+     * @return boolean
+     */
     public static function hideshowgrade($userid){
         global $USER;
         

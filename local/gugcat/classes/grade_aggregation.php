@@ -158,7 +158,13 @@ class grade_aggregation{
         }
         return $rows;
     }
-
+    
+    /**
+     * Toggles the requires resit button in grade aggregation
+     * 
+     * @param int $studentno as the student's user id
+     * @return boolean  
+     */
     public static function require_resit($studentno){
         global $aggradeid, $USER;
 
@@ -287,6 +293,13 @@ class grade_aggregation{
         local_gugcat::export_gcat($filename, $columns, $exportdata->getIterator());
     }
 
+
+    /**
+     * Checks if the activity has a resit tag
+     * 
+     * @param mixed $module selected course module
+     * @return boolean
+     */
     public static function is_resit($module) {
         global $DB;
 
@@ -303,6 +316,13 @@ class grade_aggregation{
 
     }
 
+    /**
+     * Returns rows of history of adjusted weights and overridden grades
+     * 
+     * @param mixed $course 
+     * @param array $modules
+     * @param mixed $student 
+     */
     public static function get_course_grade_history($course, $modules, $student){
         global $DB;
 

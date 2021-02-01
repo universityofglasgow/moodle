@@ -144,6 +144,15 @@ class local_gugcat_renderer extends plugin_renderer_base {
         return $html;
     }
 
+    /**
+     * Renders display of add and edit grade form page
+     * 
+     * @param mixed $course 
+     * @param mixed $student user info of student
+     * @param array $gradeversions graded grade versions
+     * @param boolean $isaddform indication between add and edit  
+     * 
+     */
     public function display_add_edit_grade_form($course, $student, $gradeversions, $isaddform) {
         $modname = (($this->page->cm) ? $this->page->cm->name : null);
         $html = $this->header();
@@ -265,6 +274,11 @@ class local_gugcat_renderer extends plugin_renderer_base {
         return $html;
     }
 
+    /**
+     * Render display of adjust weights and override grade form page
+     * 
+     * @param mixed $student user info of the student
+     */
     public function display_adjust_override_grade_form($student) {
         $setting = required_param('setting', PARAM_INT);
         $html = $this->header();
@@ -276,6 +290,13 @@ class local_gugcat_renderer extends plugin_renderer_base {
         return $html;
     }
 
+    /**
+     * Render display of grade history page
+     * 
+     * @param mixed $student user info of the student
+     * @param string $activity name of the activity
+     * @param array $rows
+     */
     public function display_grade_history($student, $activity, $rows){
         $htmlcolumns = null;
         $htmlrows = null;
@@ -307,6 +328,13 @@ class local_gugcat_renderer extends plugin_renderer_base {
         return $html;
     }
 
+    /**
+     * Renders display of course grade history page
+     * 
+     * @param mixed $student user info of the student
+     * @param array $rows
+     * @param array $activities
+     */
     public function display_course_grade_history($student, $rows, $activities){
         $htmlcolumns = null;
         $htmlrows = null;
