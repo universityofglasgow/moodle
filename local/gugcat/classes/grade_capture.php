@@ -144,6 +144,7 @@ class grade_capture{
         $firstcolumn = null;
         foreach ($gradeitems as $item) {
             if($item->itemname == get_string('moodlegrade', 'local_gugcat')){
+                //Add the date of the moodle grade item
                 $firstcolumn = $item->itemname.'<br>'.date("[j/n/Y]", strtotime(userdate($item->timemodified)));
             }else{
                 $columns[$item->id] = $item->itemname;
@@ -155,9 +156,11 @@ class grade_capture{
         return $columns;
     }
 
-    /**
-     * Function in releasing provisional grades
+     /**
+     * Release provisional grades for all the students on a specific module
      *
+     * @param int $courseid
+     * @param mixed $cm Selected course module
      */
     public static function release_prv_grade($courseid, $cm){
         global $USER, $CFG, $DB;
@@ -243,6 +246,13 @@ class grade_capture{
         $gradeitem->update();
     }
 
+    /**
+     * Import grades from assign grades/gradebook grades to GCAT moodle grade item
+     *
+     * @param int $courseid
+     * @param mixed $module Selected course module
+     * @param array $activities All modules
+     */
     public static function import_from_gradebook($courseid, $module, $activities){
         $mggradeitemid = local_gugcat::add_grade_item($courseid, get_string('moodlegrade', 'local_gugcat'), $module);
 
@@ -305,6 +315,9 @@ class grade_capture{
     /**
      * Copy weights from main activity grade item to provisional grade item
      *
+     * @param int $courseid
+     * @param array $activities All modules
+     * @param array $students All enrolled students
      */
     public static function set_provisional_weights($courseid, $activities, $students){
         global $DB;

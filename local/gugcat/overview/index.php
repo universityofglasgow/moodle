@@ -81,17 +81,22 @@ $rowstudentid = optional_param('rowstudentno', null, PARAM_NOTAGS);
 $downloadcsv = optional_param('downloadcsv', null, PARAM_NOTAGS);
 $finalgrades = optional_param_array('finalgrades', null, PARAM_NOTAGS);
 $cminstances = optional_param_array('cminstances', null, PARAM_NOTAGS);
+// Process require resit on a student
 if(isset($requireresit) && !empty($rowstudentid)){
     grade_aggregation::require_resit($rowstudentid);
     unset($requireresit);
     unset($rowstudentid);
     redirect($URL);
     exit;
+
+// Process release final assessment grades for all students
 }else if(isset($finalrelease)){
     grade_aggregation::release_final_grades($courseid); 
     unset($finalrelease);
     redirect($URL);
     exit;
+
+// Process download aggregation tool
 }else if(isset($downloadcsv)){
     grade_aggregation::export_aggregation_tool($course);
     unset($downloadcsv);

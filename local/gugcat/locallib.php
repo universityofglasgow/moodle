@@ -29,7 +29,7 @@ require_once($CFG->libdir . '/adminlib.php');
 
 defined('MOODLE_INTERNAL') || die();
 
-//Administrative grades at Assessment Level
+//Administrative grades
 define('NON_SUBMISSION_AC', 'NS');
 define('MEDICAL_EXEMPTION_AC', 'MV');
 define('CREDIT_WITHHELD_AC', 'CW');
@@ -62,6 +62,10 @@ class local_gugcat {
     public static $PRVGRADEID = null;
     public static $STUDENTS = array();
 
+     /**
+     * Returns reasons/grade versions in array
+     *
+     */
     public static function get_reasons(){
         return array(
             0=>get_string('gi_goodcause', 'local_gugcat'),
@@ -135,10 +139,12 @@ class local_gugcat {
     public static function get_grade_grade_items($course, $module){
         global $DB;
         $select = 'courseid = '.$course->id.' AND '.self::compare_iteminfo();
+        //Retrieve grade items
         $gradeitems = $DB->get_records_select('grade_items', $select, ['iteminfo' => $module->gradeitemid], 'timemodified');
         $sort = 'id';
         $fields = 'userid, itemid, id, rawgrade, finalgrade, timemodified, hidden';
         foreach($gradeitems as $item) {
+            //Retrieve grade_grades of each grade item
             $grades_arr = $DB->get_records('grade_grades', array('itemid' => $item->id), $sort, $fields);
             foreach($grades_arr as $grditem) {
                 $grditem->grade = is_null($grditem->finalgrade) ? $grditem->rawgrade : $grditem->finalgrade;
@@ -148,11 +154,20 @@ class local_gugcat {
         return $gradeitems;
     }
 
+    /**
+     * Helper function in comparing iteminfo 
+     *
+     */
     public static function compare_iteminfo(){
         global $DB;
         return $DB->sql_compare_text('iteminfo') . ' = :iteminfo';
     }
 
+    /**
+     * Set the static $PRVGRADEID when provisional grade item exist, creates if not yet created
+     * @param int $courseid
+     * @param mixed $mod Selected course module
+     */
     public static function set_prv_grade_id($courseid, $mod){
         if(is_null($mod)) return;
         $pgrd_str = get_string('provisionalgrd', 'local_gugcat');
@@ -160,6 +175,12 @@ class local_gugcat {
         return self::$PRVGRADEID;
     }
 
+    /**
+     * Returns the grade item id based from the passed parameters
+     * @param int $courseid
+     * @param int $modid Selected course module grade item ID
+     * @param string $itemname Item name can be Provisional Grade or Aggregated Grade
+     */
     public static function get_grade_item_id($courseid, $modid, $itemname){
         global $DB;
         $select = 'courseid = :courseid AND '.self::compare_iteminfo(). ' AND itemname = :itemname ';
@@ -171,6 +192,11 @@ class local_gugcat {
         return $DB->get_field_select('grade_items', 'id', $select, $params);
     }
 
+    /**
+     * Returns boolean if grade item max 22
+     * @param int $gradetype
+     * @param int $grademax 
+     */
     public static function is_grademax22($gradetype, $grademax){
         if (($gradetype == GRADE_TYPE_VALUE && intval($grademax) == 22)){
             return true;
@@ -178,6 +204,11 @@ class local_gugcat {
         return false;
     }
 
+    /**
+     * Returns boolean if scale is schedule A
+     * @param int $gradetype
+     * @param int $grademax 
+     */
     public static function is_scheduleAscale($gradetype, $grademax){
         if (($gradetype == GRADE_TYPE_SCALE && intval($grademax) == 23)){
             return true;
@@ -185,6 +216,10 @@ class local_gugcat {
         return false;
     }
 
+    /**
+     * Returns the gcat DO NOT USE grade category id
+     * @param int $courseid
+     */
     public static function get_gcat_grade_category_id($courseid){
         global $DB;
         $grdcategorystr = get_string('gcat_category', 'local_gugcat');
@@ -202,6 +237,12 @@ class local_gugcat {
         return $categoryid;
     }
 
+    /**
+     * Creates grade item and returns grade item id
+     * @param int $courseid
+     * @param mixed $mod Selected course module
+     * @param string $itemname 
+     */
     public static function add_grade_item($courseid, $itemname, $mod){
         $params = [
             'courseid' => $courseid,
@@ -247,6 +288,14 @@ class local_gugcat {
         }
     }
     
+    /**
+     * Creates/Updates grade_grade item of the student
+     * @param int $userid Student id
+     * @param int $itemid Grade item id
+     * @param int $grade 
+     * @param mixed $notes 
+     * @param mixed $gradedocs 
+     */
     public static function add_update_grades($userid, $itemid, $grade, $notes = null, $gradedocs = null){
         global $USER, $DB;
 
@@ -289,6 +338,15 @@ class local_gugcat {
         }
     }
 
+    /**
+     * Updates grade_grade item of the student
+     * @param int $userid Student id
+     * @param int $itemid Grade item id
+     * @param int $grade 
+     * @param mixed $notes 
+     * @param mixed $gradedocs 
+     * @param int $overridden 
+     */
     public static function update_grade($userid, $itemid, $grade, $notes = null, $gradedocs = null, $overridden = 0){
         global $USER;
 
@@ -309,6 +367,10 @@ class local_gugcat {
         return $grade_->update();
     }
 
+    /**
+     * Converts grade from the grade scale
+     * @param mixed $grade 
+     */
     public static function convert_grade($grade){
         $scale = self::$GRADES + grade_aggregation::$AGGRADE;
 
@@ -318,8 +380,7 @@ class local_gugcat {
         $final_grade = intval($grade);
         if ($final_grade >= key(array_slice($scale, -1, 1, true)) && $final_grade <= key($scale)){
             return ($final_grade != 0) ? $scale[$final_grade] : $final_grade;
-        }
-        else {
+        }else {
             return $grade; 
         }
     }
@@ -336,6 +397,10 @@ class local_gugcat {
         return $gradeitems;
     }
 
+    /**
+     * Set the static $GRADES scale based from the scale id
+     * @param int $scaleid
+     */
     public static function set_grade_scale($scaleid){
         global $DB;
         $scalegrades = array();
@@ -351,6 +416,9 @@ class local_gugcat {
         self::$GRADES = $scalegrades;
     }
 
+    /**
+     * Retrieves the custom gcat scale from json file
+     */
     public static function get_gcat_scale(){
         global $CFG;
         $json = @file_get_contents($CFG->dirroot .'/local/gugcat/gcat_scale.json');
@@ -363,23 +431,40 @@ class local_gugcat {
         return $scale;
     }
 
+    /**
+     * Displays moodle success notification and gets the string from local_gugcat strings 
+     * @param string $stridentifier
+     */
     public static function notify_success($stridentifier){
         $message = get_string($stridentifier, 'local_gugcat');
         \core\notification::add($message, \core\output\notification::NOTIFY_SUCCESS);
     }
 
+    /**
+     * Displays moodle error notification and gets the string from local_gugcat strings 
+     * @param string $stridentifier
+     */
     public static function notify_error($stridentifier){
         $message = get_string($stridentifier, 'local_gugcat');
         \core\notification::add($message, \core\output\notification::NOTIFY_ERROR);
     }
         
+    /**
+     * Updates workflow state of assign module
+     * @param mixed $assign Instance of Assign class
+     * @param int $userid 
+     * @param string $statetype
+     */
     public static function update_workflow_state($assign, $userid, $statetype){
-        //update workflow state to in review
         $assign_user_flags = $assign->get_user_flags($userid, true);
         $assign_user_flags->workflowstate = $statetype;
         $assign->update_user_flags($assign_user_flags);
     }
 
+    /**
+     * Retrieve all grade categories for specific course
+     * @param int $courseid 
+     */
     public static function get_grade_categories($courseid){
         $raw = grade_get_categories_menu($courseid);
         $gcat_category_id = self::get_gcat_grade_category_id($courseid);
@@ -396,6 +481,10 @@ class local_gugcat {
         return $grd_ctgs;
     }
 
+    /**
+     * Returns boolean if grade is admin grade 
+     * @param int $grade 
+     */
     public static function is_admin_grade($grade){
         switch ($grade) {
             case NON_SUBMISSION:
@@ -447,6 +536,12 @@ class local_gugcat {
         return $grades_arr;
     }
     
+    /**
+     * Reused moodle export function
+     * @param string $filename 
+     * @param array $columns 
+     * @param array $iterator 
+     */
     public static function export_gcat($filename, $columns, $iterator){
         $dataformat = 'csv';
         // In 3.9 forward, download_as_dataformat is replaced by \core\dataformat::download_data.
@@ -459,6 +554,10 @@ class local_gugcat {
         } 
     }
 
+    /**
+     * Returns boolean if blind marking is enabled
+     * @param mixed $module 
+     */
     public static function is_blind_marking($module = null){
         global $COURSE;
         if(has_capability('moodle/site:approvecourse', context_system::instance())){
@@ -475,7 +574,13 @@ class local_gugcat {
             }
         }
     }
-    //custom get gradeable activities
+
+    /**
+     * Custom grade_get_gradable_activities to accommodate modules with itemnumber 1
+     * @param int $courseid 
+     * @param string $modulename 
+     * @param int $itemnumber 
+     */
     private static function grade_get_gradable_activities($courseid, $modulename='', $itemnumber = 0) {
         global $DB;
         if (empty($modulename)) {

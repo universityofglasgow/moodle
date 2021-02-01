@@ -38,11 +38,15 @@ define('ADJUST_WEIGHT_FORM', 0);
 define('OVERRIDE_GRADE_FORM', 1);
 
  /**
- * Grade capture class.
+ * Grade aggregation tool class.
  */
 
 class grade_aggregation{
-
+    
+    /**
+     * An array of course level administrative grades.
+     * @var array $AGGRADE
+     */
     public static $AGGRADE = array(
         CREDIT_WITHHELD => CREDIT_WITHHELD_AC,
         CREDIT_REFUSED => CREDIT_REFUSED_AC,
@@ -53,11 +57,11 @@ class grade_aggregation{
     );
 
      /**
-     * Returns rows for grade aggreation table
+     * Returns rows for grade aggregation table
      *
      * @param mixed $course
-     * @param mixed $module
-     * @param mixed $students
+     * @param array $modules
+     * @param array $students
      */
     public static function get_rows($course, $modules, $students){
         global $DB, $aggradeid;
@@ -85,6 +89,7 @@ class grade_aggregation{
             $mod->grades = $grades;
             array_push($gradebook, $mod);
         }
+        //$i = candidate no. - Multiply it by the page number
         $page = optional_param('page', 0, PARAM_INT);  
         $i = $page * GCAT_MAX_USERS_PER_PAGE + 1;
         foreach ($students as $student) {
@@ -124,8 +129,6 @@ class grade_aggregation{
                         $floatweight += ($grade === NON_SUBMISSION_AC) ? 0 : $weight;
                         $sumaggregated += ($grade === NON_SUBMISSION_AC) ?( 0 * (float)$grdvalue) : ((float)$grdvalue * $weight);
                     }
-                    $gradecaptureitem->nonsubmission = ($grade === NON_SUBMISSION_AC) ? true : false;
-                    $gradecaptureitem->medicalexemption = ($grade === MEDICAL_EXEMPTION_AC) ? true : false;
                     $grdobj->activityid = $item->gradeitemid;
                     $grdobj->activityinstance = $item->instance;
                     $grdobj->activity = $item->name;
@@ -173,7 +176,16 @@ class grade_aggregation{
         return $grade_->update();    
     }
 
+    /**
+     * Adjust the provisional weights of a specific student
+     *
+     * @param array $weights
+     * @param int $courseid
+     * @param int $studentid
+     * @param string $notes
+     */
     public static function adjust_course_weight($weights, $courseid, $studentid, $notes){
+        //Iterate the weights, $key = gradeitem id, $value = weight
         foreach($weights as $key=>$value) {
             $weight = number_format(($value/100), 5);
             $prvgrdid = local_gugcat::get_grade_item_id($courseid, $key, get_string('provisionalgrd', 'local_gugcat'));
@@ -186,6 +198,11 @@ class grade_aggregation{
         local_gugcat::notify_success('successadjustweight');
     }
 
+    /**
+     * Release final assessment grades for all the students
+     *
+     * @param int $courseid
+     */
     public static function release_final_grades($courseid){
         global $USER, $DB;
         //Retrieve enrolled students' ids only
@@ -217,6 +234,11 @@ class grade_aggregation{
         local_gugcat::notify_success('successfinalrelease');
     }
 
+    /**
+     * Process the structure of the data from the aggregation tool table to be downloaded
+     *
+     * @param mixed $course
+     */
     public static function export_aggregation_tool($course){
         $table = get_string('aggregationtool', 'local_gugcat');
         $filename = "export_$table"."_".date('Y-m-d_His');    
