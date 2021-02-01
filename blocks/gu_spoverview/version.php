@@ -25,6 +25,6 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2021012102;
+$plugin->version   = 2021020102.01;
 $plugin->requires  = 2019111804.11;                  // Moodle 3.8.4.
 $plugin->component = 'block_gu_spoverview';

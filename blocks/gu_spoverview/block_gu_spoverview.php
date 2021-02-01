@@ -50,13 +50,10 @@ class block_gu_spoverview extends block_base {
         global $USER, $DB, $PAGE, $OUTPUT;
 
         $PAGE->requires->css('/blocks/gu_spoverview/styles.css');
-        $userid = $USER->id;
+        $user = $USER;
 
-        $courses = enrol_get_all_users_courses($userid, true);
-        $courseids = array_column($courses, 'id');
-
-        $returnassessments = block_gu_spdetails::return_assessments($courseids, $userid);
-        $count = self::return_assessments_count($returnassessments->assessments);
+        $returnassessments = block_gu_spdetails::return_assessments($user);
+        $count = self::return_assessments_count($returnassessments->currentassessments);
 
         // Set singular/plural strings for Assessments submitted and Assessments marked
         $submitted_str = ($count->submitted == 1) ? get_string('assessment', 'block_gu_spoverview') :
@@ -93,7 +90,7 @@ class block_gu_spoverview extends block_base {
     /**
      * 
      * @param array $assessments
-     * @return stdClass $counter Object containing count of Assessment records
+     * @return stdClass Counter Object containing count of Assessment records
      */
     public static function return_assessments_count($assessments) {
         $counter = new stdClass;
