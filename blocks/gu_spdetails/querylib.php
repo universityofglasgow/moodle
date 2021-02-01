@@ -68,7 +68,7 @@ function get_all_user_courses_gradable_activities($userid) {
                          AND gi.courseid = c.id
                          AND gi.itemmodule = md.name)";
     $gradegetwhere = "AND gi.itemtype = 'mod'
-                      AND gi.itemnumber = 0
+                      AND (gi.itemnumber = 0 OR gi.itemmodule = 'forum')
                       AND gi.gradetype != :gradetype";
     $subwhere = '';
     $sql = "SELECT cm.id, $coursefields $ccselect $gradegetselect
