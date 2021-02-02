@@ -278,13 +278,13 @@ class grade_aggregation{
             foreach($activities as $key=>$act) {
                 $student->{$act[0]} = $row->grades[$key]->weight.'%';//weight
                 $student->{$act[1]} = $row->grades[$key]->grade; //alphanumeric
-                $student->{$act[2]} = $row->grades[$key]->rawgrade;//numeric
+                $student->{$act[2]} = local_gugcat::is_admin_grade(array_search($row->grades[$key]->grade, local_gugcat::$GRADES)) ? get_string('nogradeweight', 'local_gugcat') : $row->grades[$key]->rawgrade;//numeric
             }
             $student->{'%_complete'} = $row->completed;
             //check if grade is aggregated 
             $isaggregated = ($row->aggregatedgrade->display != get_string('missinggrade', 'local_gugcat')) ? true : false;
             $student->aggregated_grade = $isaggregated ? $row->aggregatedgrade->grade : null;
-            $student->aggregated_grade_numeric = $isaggregated ?  $row->aggregatedgrade->rawgrade : null;
+            $student->aggregated_grade_numeric = $isaggregated ?  (local_gugcat::is_admin_grade($row->aggregatedgrade->rawgrade) ? get_string('nogradeweight', 'local_gugcat') : $row->aggregatedgrade->rawgrade) : null;
             $student->resit_required = is_null($row->resit) ? 'N' : 'Y';
             array_push($array, $student);
         }
