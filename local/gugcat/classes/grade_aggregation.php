@@ -270,7 +270,7 @@ class grade_aggregation{
         foreach($data as $row) {
             $student = new stdClass();
             $student->candidate_number = $row->cnum;
-            $student->student_number = $row->studentno;
+            $student->student_number = $row->idnumber;
             if(!$is_blind_marking){
                 $student->surname = $row->surname;
                 $student->forename = $row->forename;
