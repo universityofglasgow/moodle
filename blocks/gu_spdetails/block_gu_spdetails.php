@@ -125,7 +125,7 @@ class block_gu_spdetails extends block_base {
                 // check if course module belongs to the list of allowed activities
                 $iscmallowed = in_array($mod->modname, $allowedactivities);
                 // check if user has role 'student' in the course
-                $isstudent = self::return_isstudent($user->id, $mod->course);
+                $isstudent = self::return_isstudent($mod->modname, $mod->id);
 
                 $modinfo = get_fast_modinfo($mod->course);
                 $cm = $modinfo->get_cm($mod->id);
@@ -189,17 +189,28 @@ class block_gu_spdetails extends block_base {
     /**
      * Checks if the user has a 'student' role in the course
      *
-     * @param int $userid
-     * @param int $courseid
+     * @param string $modname expected arguments 'assign', 'quiz', 'forum' and 'workshop'
+     * @param int $instance
      * @return boolean
      */
-    public static function return_isstudent($userid, $courseid) {
-        $roles_array = array();
-        // get_user_roles_in_course() from /lib/accesslib.php
-        $roles = strtolower(strip_tags(get_user_roles_in_course($userid, $courseid)));
-        $roles_array = explode(',', $roles);
-        $isstudent = in_array(get_string('student', 'block_gu_spdetails'), $roles_array);
-
+    public static function return_isstudent($modname, $instance) {
+        $context = context_module::instance($instance);
+        $isstudent = false;
+        switch ($modname) {
+            case 'assign' :
+                $isstudent = has_capability("mod/assign:submit", $context, null, false);
+                break;
+            case 'quiz' :
+                $isstudent = has_capability("mod/quiz:attempt", $context, null, false);
+                break;
+            case 'forum' :
+                $isstudent = has_capability("mod/forum:deleteownpost", $context, null, false) &&
+                            !has_capability("mod/forum:deleteanypost", $context, null, false);
+                break;
+            case 'workshop' :
+                $isstudent = has_capability("mod/workshop:submit", $context, null, false);
+                break;
+        } 
         return $isstudent;
     }
 
