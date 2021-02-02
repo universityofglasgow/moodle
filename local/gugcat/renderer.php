@@ -474,7 +474,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
             $coursegradeurl .= '&categoryid=' . $categoryid;
         }
         $html = html_writer::start_tag('div', array('class' => 'gcat-container'));
-        $html .= html_writer::tag('span', get_string('title', 'local_gugcat'), array('class' => 'gcat-title'));
+        $html .= html_writer::tag('h3', get_string('title', 'local_gugcat'), array('class' => 'gcat-title'));
         $html .= html_writer::start_tag('div', array('class' => 'row gcat-header'));
         $html .= $this->display_custom_select(
             array_values($categories),

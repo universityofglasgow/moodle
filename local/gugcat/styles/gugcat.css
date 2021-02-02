@@ -4,8 +4,6 @@
 @import url("modal.css");
 
 .gcat-title{
-    font-size: 18px;
-    font-style: normal;
     font-weight: 700;
     line-height: 32px;
     letter-spacing: 0em;
@@ -61,9 +59,6 @@ td > i, th > i {
     border-radius: 8px;
     outline: none;
     white-space: nowrap;
-    font-size: 16px;
-    font-style: normal;
-    font-weight: 400;
     line-height: 21px;
     letter-spacing: 0em;
     text-align: center;
@@ -137,11 +132,6 @@ td > i, th > i {
     /* width: 100%; */
 }
 
-.multi-select-grade select, 
-.multi-select-reason select{
-    font-size: 12px;
-}
-
 .input-reason{
     -webkit-appearance: none;
     -moz-appearance: none;
@@ -164,7 +154,6 @@ td > i, th > i {
 }
 
 .addnewgrade{
-    font-size: 12px;
     margin: auto;
 }
 
@@ -204,7 +193,6 @@ td > .grade-discrepancy{
 }
 
 .dropdown-item {
-    font-size: 11px;
     padding: .2rem;
     cursor: pointer;
 }
