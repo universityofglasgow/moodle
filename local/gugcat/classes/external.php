@@ -50,7 +50,7 @@ class external extends external_api {
     }
 
     /**
-     *
+     * Toggles the settings of assessment display on student dashboard.
      *
      * @since  Moodle 3.8
      */
@@ -62,10 +62,10 @@ class external extends external_api {
     }
 
     /**
-     * potential_contexts return
+     * Returns display_assessments result value.
      *
      * @since  Moodle 3.8
-     * @return external_description
+     * @return external_value
      */
     public static function display_assessments_returns() {
         return new external_single_structure([

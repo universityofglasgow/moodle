@@ -24,7 +24,7 @@
 namespace local_gugcat;
 defined('MOODLE_INTERNAL') || die();
  /**
- * Class representing a gcat item.
+ * Class representing a gcat item. Items displayed in rows on GCAT tables
  */
 
 class gcat_item{
@@ -76,18 +76,6 @@ class gcat_item{
      * @var boolean $discrepancy
      */
     public $discrepancy;
-   
-    /**
-     * Boolean value if grade is -1 === medical exemption.
-     * @var boolean $medicalexemption
-     */
-    public $medicalexemption;
-
-    /**
-     * Boolean value if grade is -2 === non submission.
-     * @var boolean $nonsubmission
-     */
-    public $nonsubmission;
     
     /**
      * The string percentage of the accomplish assessment of the student
