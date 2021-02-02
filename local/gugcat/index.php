@@ -39,7 +39,7 @@ is_null($categoryid) ? null : $URL->param('categoryid', $categoryid);
 require_login($courseid);
 $PAGE->set_url($URL);
 $PAGE->set_title(get_string('gugcat', 'local_gugcat'));
-
+$PAGE->navbar->add(get_string('navname', 'local_gugcat'), $URL);
 $PAGE->requires->css('/local/gugcat/styles/gugcat.css');
 $PAGE->requires->js_call_amd('local_gugcat/main', 'init');
 
@@ -86,15 +86,8 @@ if($groupingid != 0 && !empty($groups)){
         $groupstudents = get_enrolled_users($coursecontext, 'moodle/competency:coursecompetencygradable', $group->id, 'u.*', null, $limitfrom, $limitnum);
         $students += $groupstudents;
     }
-    if(count($students) === 0){
-        $students = get_enrolled_users($coursecontext, 'moodle/competency:coursecompetencygradable', 0, 'u.*', null, $limitfrom, $limitnum);
-    }
 }else{
     $students = get_enrolled_users($coursecontext, 'moodle/competency:coursecompetencygradable', 0, 'u.*', null, $limitfrom, $limitnum);
-}
-
-if(!is_null($courseid) && !is_null($categoryid)){
-    $PAGE->navbar->add(get_string('navname', 'local_gugcat'), $URL);
 }
 
 //Populate static $STUDENTS

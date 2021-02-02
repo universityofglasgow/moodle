@@ -51,28 +51,34 @@ $PAGE->set_course($course);
 $PAGE->set_heading($course->fullname);
 require_capability('local/gugcat:view', $coursecontext);
 
-//Retrieve groups
-$groups = groups_get_all_groups($courseid);
+//Retrieve activities
+$activities = local_gugcat::get_activities($courseid);
+
+//Retrieve groupingids from activities
+$groupingids = array_column($activities, 'groupingid');
 
 //Retrieve students
 $limitfrom = $page * GCAT_MAX_USERS_PER_PAGE;
 $limitnum  = GCAT_MAX_USERS_PER_PAGE;
 $totalenrolled = count_enrolled_users($coursecontext, 'moodle/competency:coursecompetencygradable');
-if(!empty($groups)){
-    $students = Array();
-    foreach ($groups as $group) {
-        $groupstudents = get_enrolled_users($coursecontext, 'moodle/competency:coursecompetencygradable', $group->id, 'u.*', null, $limitfrom, $limitnum);
-        $students += $groupstudents;
+if(array_sum($groupingids) != 0){
+    $groups = array();
+    foreach ($groupingids as $groupingid) {
+        if($groupingid != 0){
+            $groups += groups_get_all_groups($courseid, 0, $groupingid);
+        }
     }
-    if(count($students) === 0){
-        $students = get_enrolled_users($coursecontext, 'moodle/competency:coursecompetencygradable', 0, 'u.*', null, $limitfrom, $limitnum);
+    $students = Array();
+    if(!empty($groups)){
+        foreach ($groups as $group) {
+            $groupstudents = get_enrolled_users($coursecontext, 'moodle/competency:coursecompetencygradable', $group->id, 'u.*', null, $limitfrom, $limitnum);
+            $students += $groupstudents;
+        }
     }
 }else{
     $students = get_enrolled_users($coursecontext, 'moodle/competency:coursecompetencygradable', 0, 'u.*', null, $limitfrom, $limitnum);
 }
 
-//Retrieve activities
-$activities = local_gugcat::get_activities($courseid);
 $rows = grade_aggregation::get_rows($course, $activities, $students);
 
 $requireresit = optional_param('resit', null, PARAM_NOTAGS);
