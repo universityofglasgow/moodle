@@ -39,6 +39,12 @@ defined('MOODLE_INTERNAL') || die();
  */
 class api {
 
+    /**
+     * Toggles the settings of assessment display on student dashboard.
+     *
+     * @param int $id The course id
+     * @return boolean
+     */
     public static function display_assessments($id) {
         $currentstate = local_gugcat::switch_display_of_assessment_on_student_dashboard($id, context_course::instance($id)->id);
         return ($currentstate == 1) ? true : false;

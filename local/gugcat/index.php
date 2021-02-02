@@ -39,7 +39,7 @@ is_null($categoryid) ? null : $URL->param('categoryid', $categoryid);
 require_login($courseid);
 $PAGE->set_url($URL);
 $PAGE->set_title(get_string('gugcat', 'local_gugcat'));
-
+$PAGE->navbar->add(get_string('navname', 'local_gugcat'), $URL);
 $PAGE->requires->css('/local/gugcat/styles/gugcat.css');
 $PAGE->requires->js_call_amd('local_gugcat/main', 'init');
 
@@ -69,7 +69,7 @@ if(!empty($activities)){
 
     $valid_22point_scale = is_null($scaleid) ? local_gugcat::is_grademax22($gradetype, $grademax) : local_gugcat::is_scheduleAscale($gradetype, $grademax);
 
-    //populate $GRADES with scales
+    //Populate static $GRADES scales
     local_gugcat::set_grade_scale($scaleid);
 }
 //Retrieve groups
@@ -86,20 +86,13 @@ if($groupingid != 0 && !empty($groups)){
         $groupstudents = get_enrolled_users($coursecontext, 'moodle/competency:coursecompetencygradable', $group->id, 'u.*', null, $limitfrom, $limitnum);
         $students += $groupstudents;
     }
-    if(count($students) === 0){
-        $students = get_enrolled_users($coursecontext, 'moodle/competency:coursecompetencygradable', 0, 'u.*', null, $limitfrom, $limitnum);
-    }
 }else{
     $students = get_enrolled_users($coursecontext, 'moodle/competency:coursecompetencygradable', 0, 'u.*', null, $limitfrom, $limitnum);
 }
 
-if(!is_null($courseid) && !is_null($categoryid)){
-    $PAGE->navbar->add(get_string('navname', 'local_gugcat'), $URL);
-}
-
-//populate $STUDENTS
+//Populate static $STUDENTS
 local_gugcat::$STUDENTS = $students;
-//populate provisional grade id and set it to static
+//Populate static provisional grade id
 local_gugcat::set_prv_grade_id($courseid, $selectedmodule);
 
 //---------submit grade capture table
@@ -110,12 +103,15 @@ $importgrades = optional_param('importgrades', null, PARAM_NOTAGS);
 $showhidegrade = optional_param('showhidegrade', null, PARAM_NOTAGS);
 $rowstudentid = optional_param('rowstudentno', null, PARAM_NOTAGS);
 $newgrades = optional_param_array('newgrades', null, PARAM_NOTAGS);
+// Process release provisional grades
 if (isset($release)){
     grade_capture::release_prv_grade($courseid, $selectedmodule);
     local_gugcat::notify_success('successrelease');
     unset($release);
     redirect($URL);
     exit;
+
+// Process multiple add grades to the students
 }else if (isset($multiadd)){
     if(isset($newgrades) && !empty($gradeitem)){
         $gradeitemid = local_gugcat::add_grade_item($courseid, $gradeitem, $selectedmodule);
@@ -134,6 +130,8 @@ if (isset($release)){
     unset($newgrades);
     redirect($URL);
     exit;
+
+// Process import grades
 }else if(isset($importgrades)){
     if ($valid_22point_scale){
         grade_capture::import_from_gradebook($courseid, $selectedmodule, $activities);
@@ -144,6 +142,8 @@ if (isset($release)){
     unset($importgrades);
     redirect($URL);
     exit;
+
+// Process show/hide grade from the student
 }else if(isset($showhidegrade) && !empty($rowstudentid)){
     grade_capture::hideshowgrade($rowstudentid);
     unset($showhidegrade);

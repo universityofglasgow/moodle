@@ -26,6 +26,14 @@
 defined('MOODLE_INTERNAL') || die();
 
 class local_gugcat_renderer extends plugin_renderer_base {
+
+    /**
+     * Render display of grade capture page
+     * @param mixed $selectedmodule 
+     * @param array $activities_ 
+     * @param array $rows 
+     * @param array $columns 
+     */
     public function display_grade_capture($selectedmodule, $activities_, $rows, $columns) {
         $courseid = $this->page->course->id;
         $modid = (($selectedmodule) ? $selectedmodule->gradeitemid : null);
@@ -136,6 +144,15 @@ class local_gugcat_renderer extends plugin_renderer_base {
         return $html;
     }
 
+    /**
+     * Renders display of add and edit grade form page
+     * 
+     * @param mixed $course 
+     * @param mixed $student user info of student
+     * @param array $gradeversions graded grade versions
+     * @param boolean $isaddform indication between add and edit  
+     * 
+     */
     public function display_add_edit_grade_form($course, $student, $gradeversions, $isaddform) {
         $modname = (($this->page->cm) ? $this->page->cm->name : null);
         $html = $this->header();
@@ -162,6 +179,11 @@ class local_gugcat_renderer extends plugin_renderer_base {
         return $html;
     }
 
+    /**
+     * Render display of grade aggregation tool page
+     * @param array $rows 
+     * @param array $columns 
+     */
     public function display_aggregation_tool($rows, $activities) {
         $courseid = $this->page->course->id;
         $categoryid = optional_param('categoryid', null, PARAM_INT);
@@ -233,6 +255,14 @@ class local_gugcat_renderer extends plugin_renderer_base {
         return $html;
     }
 
+    /**
+     * Render a reusable custom UI select element
+     * @param array $options 
+     * @param string $name 
+     * @param string $default 
+     * @param string $class 
+     * @param string $id 
+     */
     public function display_custom_select($options, $name = null, $default = null, $class = null, $id = null) {
         $html = $this->render_from_template('local_gugcat/gcat_custom_select', (object)[
             'default' => $default ,
@@ -244,6 +274,11 @@ class local_gugcat_renderer extends plugin_renderer_base {
         return $html;
     }
 
+    /**
+     * Render display of adjust weights and override grade form page
+     * 
+     * @param mixed $student user info of the student
+     */
     public function display_adjust_override_grade_form($student) {
         $setting = required_param('setting', PARAM_INT);
         $html = $this->header();
@@ -255,6 +290,13 @@ class local_gugcat_renderer extends plugin_renderer_base {
         return $html;
     }
 
+    /**
+     * Render display of grade history page
+     * 
+     * @param mixed $student user info of the student
+     * @param string $activity name of the activity
+     * @param array $rows
+     */
     public function display_grade_history($student, $activity, $rows){
         $htmlcolumns = null;
         $htmlrows = null;
@@ -286,6 +328,13 @@ class local_gugcat_renderer extends plugin_renderer_base {
         return $html;
     }
 
+    /**
+     * Renders display of course grade history page
+     * 
+     * @param mixed $student user info of the student
+     * @param array $rows
+     * @param array $activities
+     */
     public function display_course_grade_history($student, $rows, $activities){
         $htmlcolumns = null;
         $htmlrows = null;
@@ -321,6 +370,13 @@ class local_gugcat_renderer extends plugin_renderer_base {
         return $html;
     }
 
+    /**
+     * Render a reusable custom UI table element
+     * @param array $rows 
+     * @param array $columns 
+     * @param boolean $history Shows/hides some columns when true
+     * @param boolean $aggregation Shows/hides some columns when true
+     */
     private function display_table($rows, $columns, $history = false, $aggregation = false) {
         $is_blind_marking = local_gugcat::is_blind_marking($this->page->cm);
         $html = html_writer::start_tag('div', array('class' => 'table-responsive'));
@@ -349,6 +405,14 @@ class local_gugcat_renderer extends plugin_renderer_base {
         return $html;
     }
 
+    /**
+     * Render a reusable context action element
+     * @param int $studentno 
+     * @param boolean $ishidden Condition for url action
+     * @param boolean $is_aggregrade Condition for url action
+     * @param string $link Url link
+     * @param boolean $is_overviewpage Condition for url action
+     */
     private function context_actions($studentno, $ishidden=null, $is_aggregrade = false, $link = null, $is_overviewpage = false) {
         $html = html_writer::tag('i', null, array('class' => 'fa fa-ellipsis-h', 'data-toggle' => 'dropdown'));
         $html .= html_writer::start_tag('ul', array('class' => 'dropdown-menu'));
@@ -376,6 +440,9 @@ class local_gugcat_renderer extends plugin_renderer_base {
         return $html;
     }  
 
+    /**
+     * Render display of the GCAT cogwheel 
+     */
     private function gcat_settings() {
         $courseid = (int)$this->page->course->id;
         $coursecontext = context_course::instance($courseid);
@@ -389,6 +456,9 @@ class local_gugcat_renderer extends plugin_renderer_base {
         return $html;
     }  
 
+    /**
+     * Helper function in rendering header 
+     */
     private function header() {
         $courseid = $this->page->course->id;
         $categoryid = optional_param('categoryid', null, PARAM_INT);
@@ -404,7 +474,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
             $coursegradeurl .= '&categoryid=' . $categoryid;
         }
         $html = html_writer::start_tag('div', array('class' => 'gcat-container'));
-        $html .= html_writer::tag('span', get_string('title', 'local_gugcat'), array('class' => 'gcat-title'));
+        $html .= html_writer::tag('h3', get_string('title', 'local_gugcat'), array('class' => 'gcat-title'));
         $html .= html_writer::start_tag('div', array('class' => 'row gcat-header'));
         $html .= $this->display_custom_select(
             array_values($categories),
@@ -427,6 +497,9 @@ class local_gugcat_renderer extends plugin_renderer_base {
         return $html;
     }
 
+    /**
+     * Helper function in rendering footer 
+     */
     private function footer() {
         $html = html_writer::end_tag('div');
         $html .= html_writer::end_tag('div');
