@@ -138,7 +138,6 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $html .= html_writer::empty_tag('button', array('id' => 'multiadd-submit', 'name' => 'multiadd', 'type' => 'submit'));
         $html .= html_writer::empty_tag('button', array('id'=>'importgrades-submit', 'name'=> 'importgrades', 'type'=>'submit'));
         $html .= html_writer::empty_tag('input', array('name' => 'rowstudentno', 'type' => 'hidden', 'id'=>'studentno'));
-        $html .= html_writer::empty_tag('button', array('id'=>'showhidegrade-submit', 'name'=> 'showhidegrade', 'type'=>'submit'));
         $html .= html_writer::end_tag('form');
         $html .= $this->footer();
         return $html;
@@ -224,14 +223,10 @@ class local_gugcat_renderer extends plugin_renderer_base {
                 $courseformhistoryparams = "?id=$courseid&cnum=$row->cnum&page=$page" . $gradeformhistorycategory;
                 $htmlrows .= '<td>'.$grade->grade.((strpos($grade->grade, 'No grade') !== false) ? null : $this->context_actions($row->studentno, null, false, $ammendgradeparams, true)).'</td>';
             }
+            //Require resit row
+            $requireresiturl = $actionurl."&rowstudentno=$row->studentno&resit=1";
             $classname = (is_null($row->resit) ? "fa fa-times-circle" : "fa fa-check-circle");
-            $htmlrows .= '<td><i class="'.$classname.'"
-                        onclick="
-                        studno = document.getElementById(\'resitstudentno\');
-                        var button = document.getElementById(\'resit-submit\');
-                        studno.value = \''.$row->studentno.'\';
-                        button.click();
-                        "></i></td>';
+            $htmlrows .= html_writer::tag('td', html_writer::tag('a', null, array('class' => $classname, 'href' => $requireresiturl)));
             $htmlrows .= html_writer::tag('td', $row->completed);
             $htmlrows .= ($row->aggregatedgrade->display != get_string('missinggrade', 'local_gugcat')) 
             ? html_writer::start_tag('td').$row->aggregatedgrade->display.$this->context_actions($row->studentno, null, true, $courseformhistoryparams, true).html_writer::end_tag('td')
@@ -247,7 +242,6 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $html .= html_writer::start_tag('form', array('id' => 'requireresitform', 'method' => 'post', 'action' => $actionurl));
         $html .= $this->display_table($htmlrows, $htmlcolumns, false, true);
         $html .= html_writer::empty_tag('input', array('id'=>'resitstudentno', 'name' => 'rowstudentno', 'type' => 'hidden'));
-        $html .= html_writer::empty_tag('button', array('id'=>'resit-submit', 'name'=> 'resit', 'type'=>'submit'));
         $html .= html_writer::empty_tag('button', array('id'=>'downloadcsv-submit', 'name'=> 'downloadcsv', 'type'=>'submit'));
         $html .= html_writer::empty_tag('button', array('id'=>'finalrelease-submit', 'name'=> 'finalrelease', 'type'=>'submit'));
         $html .= html_writer::end_tag('form');
@@ -414,7 +408,8 @@ class local_gugcat_renderer extends plugin_renderer_base {
      * @param boolean $is_overviewpage Condition for url action
      */
     private function context_actions($studentno, $ishidden=null, $is_aggregrade = false, $link = null, $is_overviewpage = false) {
-        $html = html_writer::tag('i', null, array('class' => 'fa fa-ellipsis-h', 'data-toggle' => 'dropdown'));
+        $class = array('class' => 'dropdown-item');
+        $html = html_writer::tag('i', null, array('class' => 'fa fa-ellipsis-h', 'data-toggle' => 'dropdown', 'role' =>'button', 'tabindex' =>'0'));
         $html .= html_writer::start_tag('ul', array('class' => 'dropdown-menu'));
         $link .=  '&studentid='.$studentno;
         if($is_aggregrade){
@@ -422,19 +417,17 @@ class local_gugcat_renderer extends plugin_renderer_base {
             $coursehistoryurl = new moodle_url('/local/gugcat/overview/history/index.php').$link;
             $adjustlink = $gradeformurl. '&setting=' . ADJUST_WEIGHT_FORM;
             $overridelink = $gradeformurl . '&setting=' . OVERRIDE_GRADE_FORM;
-            $html .= html_writer::tag('li', get_string('adjustcourseweight', 'local_gugcat'), array('class' => 'dropdown-item', 'onclick' => 'location.href=\''.$adjustlink.'\''));
-            $html .= html_writer::tag('li', get_string('overrideggregrade', 'local_gugcat'), array('class' => 'dropdown-item', 'onclick' => 'location.href=\''.$overridelink.'\''));
-            $html .= html_writer::tag('li', get_string('viewcoursehistory', 'local_gugcat'), array('class' => 'dropdown-item', 'onclick' => 'location.href=\''.$coursehistoryurl.'\''));
+            $html .= html_writer::tag('li', html_writer::tag('a', get_string('adjustcourseweight', 'local_gugcat'), array('href' => $adjustlink)), $class);
+            $html .= html_writer::tag('li', html_writer::tag('a', get_string('overrideggregrade', 'local_gugcat'), array('href' => $overridelink)), $class);
+            $html .= html_writer::tag('li', html_writer::tag('a', get_string('viewcoursehistory', 'local_gugcat'), array('href' => $coursehistoryurl)), $class);
         }else{
             $historylink = new moodle_url('/local/gugcat/history/index.php').$link;
             $editlink = new moodle_url('/local/gugcat/edit/index.php').$link.'&overview='.($is_overviewpage ? 1 : 0);
-
-            $html .= html_writer::tag('li', get_string('amendgrades', 'local_gugcat'), array('class' => 'dropdown-item', 'onclick' => 'location.href=\''.$editlink.'\''));
-            $html .= html_writer::tag('li', get_string('assessmentgradehistory', 'local_gugcat'), array('class' => 'dropdown-item', 'onclick' => 'location.href=\''.$historylink.'\''));
-            $html .= html_writer::tag('li', !empty($ishidden) ? get_string('showgrade', 'local_gugcat') : get_string('hidefromstudent', 'local_gugcat'), array('class' => 'dropdown-item hide-show-grade',
-                'onclick'=>
-                'document.getElementById("studentno").value = '.$studentno.';
-                $("#showhidegrade-submit").click();'));
+            $hidelink = new moodle_url('/local/gugcat/index.php').$link."&showhidegrade=1";
+            $hidestr = !empty($ishidden) ? get_string('showgrade', 'local_gugcat') : get_string('hidefromstudent', 'local_gugcat');
+            $html .= html_writer::tag('li', html_writer::tag('a', get_string('amendgrades', 'local_gugcat'), array('href' => $editlink)), $class);
+            $html .= html_writer::tag('li', html_writer::tag('a', get_string('assessmentgradehistory', 'local_gugcat'), array('href' => $historylink)), $class);
+            $html .= html_writer::tag('li', html_writer::tag('a', $hidestr, array('href' => $hidelink)), array('class' => 'dropdown-item hide-show-grade'));
         }
         $html .= html_writer::end_tag('ul');
         return $html;
@@ -446,12 +439,13 @@ class local_gugcat_renderer extends plugin_renderer_base {
     private function gcat_settings() {
         $courseid = (int)$this->page->course->id;
         $coursecontext = context_course::instance($courseid);
+        $class = array('class' => 'dropdown-item');
         $checkboxvalue = local_gugcat::get_value_of_customfield_checkbox($courseid, $coursecontext->id);
-
-        $html = html_writer::tag('i', null, array('id' => 'gcat-cog', 'class' => 'fa fa-cog', 'data-toggle' => 'dropdown'));
+        $switchstr = $checkboxvalue == 1 ? get_string('switchoffdisplay', 'local_gugcat') : get_string('switchondisplay', 'local_gugcat');
+        $html = html_writer::tag('i', null, array('id' => 'gcat-cog', 'class' => 'fa fa-cog', 'data-toggle' => 'dropdown', 'role' =>'button', 'tabindex' =>'0'));
         $html .= html_writer::start_tag('ul', array('class' => 'dropdown-menu'));
-        $html .= html_writer::tag('li', get_string('hideidentities', 'local_gugcat'), array('id'=>'btn-identities', 'class' => 'dropdown-item'));
-        $html .= html_writer::tag('li', ($checkboxvalue == 1 ? get_string('switchoffdisplay', 'local_gugcat') : get_string('switchondisplay', 'local_gugcat')), array('id'=>'btn-switch-display', 'class' => 'dropdown-item'));
+        $html .= html_writer::tag('li', html_writer::tag('a', get_string('hideidentities', 'local_gugcat'), array('id'=>'btn-identities', 'href' => '#')), $class);
+        $html .= html_writer::tag('li', html_writer::tag('a',  $switchstr, array('id'=>'btn-switch-display', 'href' => '#')), $class);
         $html .= html_writer::end_tag('ul');
         return $html;
     }  

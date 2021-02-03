@@ -175,7 +175,7 @@ class grade_capture{
         $gradescaleoffset = (local_gugcat::is_grademax22($cm->gradeitem->gradetype, $cm->gradeitem->grademax)) ? 1 : 0;
         
         //Retrieve enrolled students' ids only
-        $students = get_enrolled_users(context_course ::instance($courseid), 'moodle/competency:coursecompetencygradable', 0, 'u.id');
+        $students = get_enrolled_users(context_course ::instance($courseid), 'local/gugcat:gradable', 0, 'u.id');
 
         //get grade item
         $gradeitem = new grade_item($data, true);
@@ -262,7 +262,7 @@ class grade_capture{
         $gradeitem_->update();
         $grade = null;
         //Retrieve enrolled students' ids only
-        $students = get_enrolled_users(context_course ::instance($courseid), 'moodle/competency:coursecompetencygradable', 0, 'u.id');
+        $students = get_enrolled_users(context_course ::instance($courseid), 'local/gugcat:gradable', 0, 'u.id');
         
         $gbgrades = grade_get_grades($courseid, 'mod', $module->modname, $module->instance, array_keys($students));
         $gbgradeitem = array_values(array_filter($gbgrades->items, function($item) use($module){

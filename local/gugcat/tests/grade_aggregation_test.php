@@ -48,7 +48,7 @@ class grade_aggregation_testcase extends advanced_testcase {
         $gen->enrol_user($this->student1->id, $this->course->id, 'student');
         $gen->enrol_user($this->student2->id, $this->course->id, 'student');
         $gen->enrol_user($this->teacher->id, $this->course->id, 'editingteacher');
-        $this->students = get_enrolled_users($this->coursecontext, 'moodle/competency:coursecompetencygradable');
+        $this->students = get_enrolled_users($this->coursecontext, 'local/gugcat:gradable');
         $gen->create_module('assign', array('id' => 1, 'course' => $this->course->id));
         $assignid = $DB->get_field('grade_items', 'id', array('courseid' => $this->course->id, 'itemmodule' => 'assign'));
         $DB->set_field('grade_items', 'grademax', '22.00000', array('id'=>$assignid));
