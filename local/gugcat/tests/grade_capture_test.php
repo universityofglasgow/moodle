@@ -45,7 +45,7 @@ class grade_capture_testcase extends advanced_testcase {
         $this->coursecontext = context_course::instance($this->course->id);
         $gen->enrol_user($this->student->id, $this->course->id, 'student');
         $gen->enrol_user($this->teacher->id, $this->course->id, 'editingteacher');
-        $this->students = get_enrolled_users($this->coursecontext, 'moodle/competency:coursecompetencygradable');
+        $this->students = get_enrolled_users($this->coursecontext, 'local/gugcat:gradable');
         $gen->create_module('assign', array('id' => 1, 'course' => $this->course->id));
 
         $cm = local_gugcat::get_activities($this->course->id);

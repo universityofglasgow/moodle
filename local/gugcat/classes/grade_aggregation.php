@@ -212,7 +212,7 @@ class grade_aggregation{
     public static function release_final_grades($courseid){
         global $USER, $DB;
         //Retrieve enrolled students' ids only
-        $students = get_enrolled_users(context_course ::instance($courseid), 'moodle/competency:coursecompetencygradable', 0, 'u.id');
+        $students = get_enrolled_users(context_course ::instance($courseid), 'local/gugcat:gradable', 0, 'u.id');
         $modules = local_gugcat::get_activities($courseid, true, false);
         foreach($modules as $mod) {
             //Get provisional grade id of the module
@@ -251,7 +251,7 @@ class grade_aggregation{
         $columns = ['candidate_number', 'student_number'];
         $is_blind_marking = local_gugcat::is_blind_marking();
         $is_blind_marking ? null : array_push($columns, ...array('surname', 'forename'));
-        $students = get_enrolled_users(context_course::instance($course->id), 'moodle/competency:coursecompetencygradable');
+        $students = get_enrolled_users(context_course::instance($course->id), 'local/gugcat:gradable');
         $modules = local_gugcat::get_activities($course->id, true);
         //Process the activity names
         $activities = array();

@@ -37,4 +37,12 @@ $capabilities = array(
             'teacher' => CAP_ALLOW
         )
     ),
+    'local/gugcat:gradable' => array(
+        'riskbitmask' => RISK_PERSONAL,
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_COURSE,
+        'archetypes' => array(
+            'student' => CAP_ALLOW
+        )
+    ),
 );
