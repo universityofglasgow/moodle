@@ -98,7 +98,7 @@ class grade_capture{
                 $trdgrade = (!$thirdgradeid) ? null : (isset($gradeitems[$thirdgradeid]->grades[$student->id]) ? $gradeitems[$thirdgradeid]->grades[$student->id]->grade : null);
 
                 foreach ($gradeitems as $item) {
-                    if($item->grades[$student->id]->hidden == 1)
+                    if(isset($item->grades[$student->id]->hidden) && $item->grades[$student->id]->hidden == 1)
                         $gradecaptureitem->hidden = true;
                     if($item->id != local_gugcat::$PRVGRADEID && $item->id != $firstgradeid){
                         $rawgrade = (isset($item->grades[$student->id])) ? $item->grades[$student->id]->grade : null; 
@@ -187,59 +187,62 @@ class grade_capture{
         foreach ($students as $student)  {
             //get provisional grade_grade by user id
             $fields = 'rawgrade, finalgrade, hidden';
-            $prvgrd = $DB->get_record('grade_grades', array('itemid'=>local_gugcat::$PRVGRADEID, 'userid' => $student->id), $fields);
-            $grd = is_null($prvgrd->finalgrade) ? $prvgrd->rawgrade : $prvgrd->finalgrade;
-            $hidden = $prvgrd->hidden;
-           
-            $select = "itemid = $gradeitemid AND userid = $student->id";
-            //update hidden status
-            $DB->set_field_select('grade_grades', 'hidden', $hidden, $select);
-            if(!is_null($grd) && !empty($grd) && $hidden == 0){
-                $rawgrade = intval($grd);
-                switch ($rawgrade) {
-                    case NON_SUBMISSION:
-                        $feedback = NON_SUBMISSION_AC;
-                        $is_admingrade = true;
-                        $rawgrade = null;
-                        $excluded = 0;                        
-                        break;
-                    case MEDICAL_EXEMPTION:
-                        $feedback = MEDICAL_EXEMPTION_AC;
-                        $is_admingrade = true;
-                        $rawgrade = null;
-                        $excluded = 1; //excluded from aggregation
-                        break;
-                    default:
-                        $is_admingrade = false;
-                        $feedback = null;
-                        $excluded = 0;
-                        $rawgrade = $rawgrade - $gradescaleoffset;
-                        break;
-                }
-                //update feedback and excluded field
-                $DB->set_field_select('grade_grades', 'feedback', $feedback, $select);
-                $DB->set_field_select('grade_grades', 'excluded', $excluded, $select);
-                if($cm->modname === 'assign'){
-                    // update assign grade
-                    if ($grade = $assign->get_user_grade($student->id, true)) {
-                        //update workflow state marking worklow is enabled
-                        if($is_workflow_enabled){
-                            local_gugcat::update_workflow_state($assign, $student->id, ASSIGN_MARKING_WORKFLOW_STATE_RELEASED);
+            if($prvgrd = $DB->get_record('grade_grades', array('itemid'=>local_gugcat::$PRVGRADEID, 'userid' => $student->id), $fields)){
+                $grd = is_null($prvgrd->finalgrade) ? $prvgrd->rawgrade : $prvgrd->finalgrade;
+                $hidden = $prvgrd->hidden;
+            
+                $select = "itemid = $gradeitemid AND userid = $student->id";
+                //update hidden status
+                $DB->set_field_select('grade_grades', 'hidden', $hidden, $select);
+                if(!is_null($grd) && !empty($grd) && $hidden == 0){
+                    $rawgrade = intval($grd);
+                    switch ($rawgrade) {
+                        case NON_SUBMISSION:
+                            $feedback = NON_SUBMISSION_AC;
+                            $is_admingrade = true;
+                            $rawgrade = null;
+                            $excluded = 0;                        
+                            break;
+                        case MEDICAL_EXEMPTION:
+                            $feedback = MEDICAL_EXEMPTION_AC;
+                            $is_admingrade = true;
+                            $rawgrade = null;
+                            $excluded = 1; //excluded from aggregation
+                            break;
+                        default:
+                            $is_admingrade = false;
+                            $feedback = null;
+                            $excluded = 0;
+                            $rawgrade = $rawgrade - $gradescaleoffset;
+                            break;
+                    }
+                    //update feedback and excluded field
+                    $DB->set_field_select('grade_grades', 'feedback', $feedback, $select);
+                    $DB->set_field_select('grade_grades', 'excluded', $excluded, $select);
+                    if($cm->modname === 'assign'){
+                        // update assign grade
+                        if ($grade = $assign->get_user_grade($student->id, true)) {
+                            //update workflow state marking worklow is enabled
+                            if($is_workflow_enabled){
+                                local_gugcat::update_workflow_state($assign, $student->id, ASSIGN_MARKING_WORKFLOW_STATE_RELEASED);
+                            }
+                            $DB->set_field_select('grade_grades', 'overridden', 0, $select);
+                            $grade->grade = $is_admingrade ? 0 : $rawgrade;
+                            $grade->grader = $USER->id;
+                            $assign->update_grade($grade); 
                         }
-                        $DB->set_field_select('grade_grades', 'overridden', 0, $select);
-                        $grade->grade = $is_admingrade ? 0 : $rawgrade;
-                        $grade->grader = $USER->id;
-                        $assign->update_grade($grade); 
+                        if($is_admingrade){
+                            $DB->set_field_select('grade_grades', 'finalgrade', $rawgrade, $select);
+                        }
+                    }else{         
+                        //update grade from gradebook
+                        $gradeitem->update_final_grade($student->id, $rawgrade, null, false, FORMAT_MOODLE, $USER->id);
                     }
-                    if($is_admingrade){
-                        $DB->set_field_select('grade_grades', 'finalgrade', $rawgrade, $select);
-                    }
-                }else{         
-                    //update grade from gradebook
-                    $gradeitem->update_final_grade($student->id, $rawgrade, null, false, FORMAT_MOODLE, $USER->id);
+                    $DB->set_field_select('grade_grades', 'overridden', time(), $select);
                 }
-                $DB->set_field_select('grade_grades', 'overridden', time(), $select);
             }
+            else
+                local_gugcat::add_update_grades($student->id, local_gugcat::$PRVGRADEID, null);
         }
         //unhide gradeitem 
         $gradeitem->hidden = 0;
