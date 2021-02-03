@@ -101,7 +101,7 @@ $multiadd = optional_param('multiadd', null, PARAM_NOTAGS);
 $gradeitem = optional_param('reason', null, PARAM_NOTAGS);
 $importgrades = optional_param('importgrades', null, PARAM_NOTAGS);
 $showhidegrade = optional_param('showhidegrade', null, PARAM_NOTAGS);
-$rowstudentid = optional_param('rowstudentno', null, PARAM_NOTAGS);
+$rowstudentid = optional_param('studentid', null, PARAM_NOTAGS);
 $newgrades = optional_param_array('newgrades', null, PARAM_NOTAGS);
 // Process release provisional grades
 if (isset($release)){

@@ -27,7 +27,6 @@ tr:nth-child(even) {
     border-radius: .5em .5em 0 0 ;
     background-color: #c4c4c4;
     border: 0;
-    outline: none;
     cursor: pointer;
     padding: 14px 16px;
     width: auto;
@@ -62,7 +61,6 @@ tr:nth-child(even) {
 }
 
 button.tablink, button.tablink:focus{
-    outline: 0;
     box-shadow: none;
     border: 0;
 }
