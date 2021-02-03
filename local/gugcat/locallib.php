@@ -114,7 +114,7 @@ class local_gugcat {
                 }
             }
             else{
-                if($includegradeitem){
+                if($includegradeitem && !$all){
                     $categories = self::get_grade_categories($courseid);
                     foreach ($activities as $key=>$activity){
                         if($categories[$activity->gradeitem->categoryid]->key != "null"){
