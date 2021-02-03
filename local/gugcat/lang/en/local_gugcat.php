@@ -54,6 +54,7 @@ $string['errortotalweight'] = 'Total weight is not equal to 100%';
 $string['forename'] = 'Forename';
 $string['gugcat'] = 'Grade Capture and Aggregation Tool';
 $string['gugcatoptions'] = 'GCAT Options';
+$string['gugcat:gradable'] = 'GCAT gradable item';
 $string['gugcat:view'] = 'View Grade Capture and Aggregation Tool';
 $string['grade'] = "Grade";
 $string['gradebookgrade'] = 'Gradebook Grade ';
