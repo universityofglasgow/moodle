@@ -120,10 +120,6 @@ class block_gu_spdetails extends block_base {
 
         if ($mods) {
             foreach($mods as $mod) {
-                // check if 'Show assessments on Student Dashboard' is checked
-                $showcourse = return_showcourse($mod->course);
-                // check if course module belongs to the list of allowed activities
-                $iscmallowed = in_array($mod->modname, $allowedactivities);
                 // check if user has role 'student' in the course
                 $isstudent = self::return_isstudent($mod->modname, $mod->id);
 
@@ -132,7 +128,7 @@ class block_gu_spdetails extends block_base {
                 // check if course module is visible to the user
                 $iscmvisible = $cm->uservisible;
 
-                if($showcourse && $iscmallowed && $isstudent && $iscmvisible) {
+                if($isstudent && $iscmvisible) {
                     $assessment = new stdClass;    // object storage for assessment row
                     $courseparams = array($mod->courseid, $mod->category, $mod->sortorder,
                                         $mod->fullname, $mod->shortname, $mod->idnumber,
