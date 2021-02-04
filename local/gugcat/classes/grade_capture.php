@@ -288,8 +288,8 @@ class grade_capture{
             }else{
                 $grade = self::check_gb_grade($gbg, $gradescaleoffset);
             }
-            local_gugcat::update_grade($student->id, $mggradeitemid, $grade);
-            local_gugcat::update_grade($student->id, local_gugcat::$PRVGRADEID, $grade);
+            local_gugcat::add_update_grades($student->id, local_gugcat::$PRVGRADEID, $grade);
+            local_gugcat::add_update_grades($student->id, $mggradeitemid, $grade);
         } 
         //every time import is clicked, weights from the main activity will be copied to provisional grade items
         self::set_provisional_weights($courseid, $activities, $students);
