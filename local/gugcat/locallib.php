@@ -666,10 +666,9 @@ class local_gugcat {
                     };
                 }
                 else{
-                    if(!empty($customfieldfield)){
-                        $customfieldddata = self::default_contextfield_data_value($customfieldfield->id, $instanceid, $contextid);
-                        $DB->insert_record('customfield_data', $customfieldddata);
-                    }
+                    $customfieldddataobj = self::default_contextfield_data_value($customfieldfield->id, $instanceid, $contextid);
+                    $DB->insert_record('customfield_data', $customfieldddataobj);
+                    return $customfielddatadobj->intvalue;
                 }
             }
         }
@@ -696,8 +695,10 @@ class local_gugcat {
                 
                 $customfieldfield = $DB->get_record('customfield_field', array('categoryid' => $customfieldcategoryid));
                 if(!is_null($customfieldfield->id) && !is_null($instanceid) && !is_null($contextid)){
-                    $customfieldddata = self::default_contextfield_data_value($customfieldfield->id, $instanceid, $contextid);
-                    $DB->insert_record('customfield_data', $customfieldddata);
+                    $customfieldddataobj = self::default_contextfield_data_value($customfieldfield->id, $instanceid, $contextid);
+                    $DB->insert_record('customfield_data', $customfieldddataobj);
+                    $customfielddata = $DB->get_record('customfield_data', array('fieldid' => $customfieldfield->id , 'instanceid' => $instanceid, 'contextid' => $contextid));
+                    return (int)$customfielddata->intvalue;
                 }
             }
             return 1;
