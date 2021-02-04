@@ -49,6 +49,8 @@ class local_gugcat_testcase extends advanced_testcase {
         $assign = $gen->create_module('assign', array('id' => 1, 'course' => $this->course->id));
         $modulecontext = context_module::instance($assign->cmid);
         $assign = new assign($modulecontext, false, false);
+        $assignid = $DB->get_field('grade_items', 'id', array('courseid' => $this->course->id, 'itemmodule' => 'assign'));
+        $DB->set_field('grade_items', 'grademax', '22.00000', array('id'=>$assignid));
         $cm = local_gugcat::get_activities($this->course->id);
         $key = key($cm);
         $this->cm = $cm[$key];
@@ -247,5 +249,82 @@ class local_gugcat_testcase extends advanced_testcase {
 
         // False for manager role regardless of course module
         $this->assertFalse(local_gugcat::is_blind_marking($this->cm));
+    }
+
+    public function test_switch_display_of_assessments_on_student_dashboard_without_customfield_category(){
+        global $DB;
+
+        $contextid = $this->coursecontext->id;
+        $instanceid = $this->course->id;
+
+        $switchdisplay = local_gugcat::switch_display_of_assessment_on_student_dashboard($instanceid, $contextid);
+
+        $this->assertEquals(1, $switchdisplay);
+    }
+
+    public function test_switch_display_of_assessments_on_student_dashboard_with_customfield_category_and_customfield_data(){
+        global $DB;
+
+        $contextid = $this->coursecontext->id;
+        $instanceid = $this->course->id;
+
+        $customfieldcategoryobj = self::default_custom_field_category_object();
+        $customfieldcategoryid = $DB->insert_record('customfield_category', $customfieldcategoryobj);
+
+        self::create_custom_field_field($customfieldcategoryid);
+
+        $customfieldfield = $DB->get_record('customfield_field', array('categoryid' => $customfieldcategoryid));
+
+        $customfieldddata = local_gugcat::default_contextfield_data_value($customfieldfield->id, $instanceid, $contextid);
+        $customfielddata = $DB->insert_record('customfield_data', $customfieldddata);
+
+        $switchdisplayoff = local_gugcat::switch_display_of_assessment_on_student_dashboard($instanceid, $contextid);
+
+        $this->assertEquals(0, $switchdisplayoff);
+
+        $switchdisplayon = local_gugcat::switch_display_of_assessment_on_student_dashboard($instanceid, $contextid);
+        $this->assertEquals(1, $switchdisplayon);
+    }
+
+    public function test_get_value_of_customfield_checkbox(){
+        global $DB;
+
+        $contextid = $this->coursecontext->id;
+        $instanceid = $this->course->id;
+
+        $customfieldcategoryobj = self::default_custom_field_category_object();
+        $customfieldcategoryid = $DB->insert_record('customfield_category', $customfieldcategoryobj);
+
+        self::create_custom_field_field($customfieldcategoryid);
+
+        $checkboxvalue = local_gugcat::get_value_of_customfield_checkbox($instanceid, $contextid);
+
+        $this->assertEquals(1, $checkboxvalue);
+    }
+
+    public static function default_custom_field_category_object(){
+        $customfieldcategory = new stdClass();
+        $customfieldcategory->name = get_string('gugcatoptions', 'local_gugcat');
+        $customfieldcategory->component ="core_course";
+        $customfieldcategory->area = "course";
+        $customfieldcategory->timecreated = time();
+        $customfieldcategory->timemodified = time();
+
+        return $customfieldcategory;
+    }
+
+
+    public static function create_custom_field_field($customfieldcategoryid){
+        $category = \core_customfield\category_controller::create($customfieldcategoryid);
+        $field = \core_customfield\field_controller::create(0, (object)[
+            'type' => 'checkbox',
+            'configdata' => get_string('configdata', 'local_gugcat')
+        ], $category);
+
+        $handler = $field->get_handler();
+        $handler->save_field_configuration($field, (object)[
+            'name' => get_string('showassessment', 'local_gugcat'), 
+            'shortname' => get_string('showonstudentdashboard', 'local_gugcat')
+        ]);
     }
 }
