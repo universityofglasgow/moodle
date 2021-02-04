@@ -306,7 +306,7 @@ class local_gugcat {
      * @param mixed $notes 
      * @param mixed $gradedocs 
      */
-    public static function add_update_grades($userid, $itemid, $grade, $notes = null, $gradedocs = null){
+    public static function add_update_grades($userid, $itemid, $grade, $notes = null){
         global $USER, $DB;
 
         $params = array(
@@ -321,7 +321,6 @@ class local_gugcat {
         $grade_->usermodified = $USER->id;
         $grade_->finalgrade = self::is_admin_grade($grade) ? null : $grade;
         $grade_->feedback = $notes;
-        $grade_->information = $gradedocs;
         $grade_->hidden = 0;
         $grade_->excluded = 1;
       
@@ -357,7 +356,7 @@ class local_gugcat {
      * @param mixed $gradedocs 
      * @param int $overridden 
      */
-    public static function update_grade($userid, $itemid, $grade, $notes = null, $gradedocs = null, $overridden = 0){
+    public static function update_grade($userid, $itemid, $grade, $notes = null, $overridden = 0){
         global $USER;
 
         //get grade grade, true
@@ -367,8 +366,6 @@ class local_gugcat {
         $grade_->finalgrade = self::is_admin_grade($grade) ? null : $grade;
         if(!is_null($notes))
             $grade_->feedback = $notes;
-        if(!is_null($gradedocs))
-            $grade_->information = $gradedocs;
         $grade_->itemid = $itemid;
         $grade_->userid = $userid;
         $grade_->overridden = $overridden;
@@ -552,15 +549,6 @@ class local_gugcat {
                  : $gradeitem->itemname;
                 $grd->date = date("j/n", strtotime(userdate($grd->timemodified))).'<br>'.date("h:i", strtotime(userdate($grd->timemodified)));
                 $grd->grade = !is_null($grd->finalgrade) ? self::convert_grade($grd->finalgrade) : self::convert_grade($grd->rawgrade);
-                $grd->docs = null;
-                if(!is_null($grd->information)){
-                    $documentfields = 'contextid, component, filearea, itemid, filename';
-                    $selectdocs = 'filename <> "." AND itemid='.$grd->information.' AND '.' filearea="attachment"'; 
-                    if($docs = $DB->get_record_select('files', $selectdocs, null, $documentfields)){
-                        $grd->docs = moodle_url::make_pluginfile_url($docs->contextid, $docs->component, $docs->filearea, $docs->itemid, '/', $docs->filename);
-                        $grd->docname = $docs->filename;
-                    }
-                }
                 array_push($grades_arr, $grd);
                 }
             }

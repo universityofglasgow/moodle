@@ -197,33 +197,19 @@ class local_gugcat_testcase extends advanced_testcase {
         $this->assertEquals($notes, $expectednotes);
     }
 
-    public function test_add_grade_document(){
-        global $gradeitems, $DB;
-        $gradeitems = array();
-        $documentitemid = '524106396';
-        $prvgradeid = $this->provisionalgi->id;
-        grade_capture::get_rows($this->course, $this->cm, $this->students);
-        $mggradeitemstr = get_string('moodlegrade', 'local_gugcat');
-        $mggradeitem = local_gugcat::add_grade_item($this->course->id, $mggradeitemstr, $this->cm); 
-        local_gugcat::add_update_grades($this->student->id, $mggradeitem, '5.00000', null, $documentitemid);
-        $notes = $DB->get_field('grade_grades', 'information', array('userid'=>$this->student->id, 'itemid'=>$mggradeitem));
-        $this->assertEquals($notes, $documentitemid);
-    }
-
     public function test_get_grade_history(){
         global $gradeitems, $DB;
         $gradeitems = array();
-        $documentitemid1 = '524106396';
         $notesitemid1 = 'Test notes';
         grade_capture::get_rows($this->course, $this->cm, $this->students);
         $mggradeitemstr = get_string('moodlegrade', 'local_gugcat');
         $mggradeitem = local_gugcat::add_grade_item($this->course->id, $mggradeitemstr, $this->cm); 
-        local_gugcat::add_update_grades($this->student->id, $mggradeitem, '5.00000', $notesitemid1, $documentitemid1);
+        local_gugcat::add_update_grades($this->student->id, $mggradeitem, '5.00000', $notesitemid1);
         $DB->set_field_select('grade_grades', 'usermodified', $this->teacher->id, "itemid = ".$mggradeitem." AND userid = ".$this->student->id);
         $sndgrditemstr = get_string('gi_secondgrade', 'local_gugcat');    
         $expectednotes = 'N/A - '.$sndgrditemstr;
         $sndgradeitem = local_gugcat::add_grade_item($this->course->id, $sndgrditemstr, $this->cm); 
-        local_gugcat::add_update_grades($this->student->id, $sndgradeitem, '21.00000', null, null);
+        local_gugcat::add_update_grades($this->student->id, $sndgradeitem, '21.00000', null);
         $DB->set_field_select('grade_grades', 'usermodified', $this->teacher->id, "itemid = ".$sndgradeitem ." AND userid = ".$this->student->id);
         grade_capture::get_rows($this->course, $this->cm, $this->students);
         $gradehistory = local_gugcat::get_grade_history($this->course->id, $this->cm, $this->student->id);
