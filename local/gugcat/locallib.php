@@ -647,6 +647,11 @@ class local_gugcat {
         return $DB->get_records_sql($sql, $params);
     }
 
+    /**
+     *  Custom field method to create and update value of customfield_data
+     * @param int $instanceid 
+     * @param int $contextid 
+     */
     public static function switch_display_of_assessment_on_student_dashboard($instanceid, $contextid){
         global $DB;
 
@@ -711,6 +716,11 @@ class local_gugcat {
         }
     }
 
+    /**
+     * Custom method to get the value of the customfield data
+     * @param int $instanceid 
+     * @param int $contextid 
+     */
     public static function get_value_of_customfield_checkbox($instanceid, $contextid){
         global $DB;
 
@@ -727,6 +737,12 @@ class local_gugcat {
         }
     }
 
+    /**
+     * Reusable customfield_data object
+     * @param int $customfieldid 
+     * @param int $instanceid 
+     * @param int $contextid 
+     */
     public static function default_contextfield_data_value($customfieldid, $instanceid, $contextid){
         $default_obj = (object) array(
             "fieldid"      => $customfieldid,
