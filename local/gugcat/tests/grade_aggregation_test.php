@@ -171,7 +171,7 @@ class grade_aggregation_testcase extends advanced_testcase {
         $aggradeitem = local_gugcat::add_grade_item($this->course->id, get_string('aggregatedgrade', 'local_gugcat'), null);
         $expectednotes = 'testnote';
         $defaultoverridden = 0;
-        local_gugcat::update_grade($this->student1->id, $aggradeitem, 19, $expectednotes, null, time());
+        local_gugcat::update_grade($this->student1->id, $aggradeitem, 19, $expectednotes, time());
         $rows = grade_aggregation::get_rows($this->course, $modules, $student);
         $aggrade = $DB->get_record('grade_grades', array('userid'=>$this->student1->id, 'itemid'=>$aggradeitem));
         $this->assertEquals($rows[0]->aggregatedgrade->rawgrade, '19.00000');
@@ -199,7 +199,7 @@ class grade_aggregation_testcase extends advanced_testcase {
         $aggradeitem = local_gugcat::add_grade_item($this->course->id, get_string('aggregatedgrade', 'local_gugcat'), null);
         $expectednotes = 'testnote';
         $defaultoverridden = 0;
-        local_gugcat::update_grade($this->student1->id, $aggradeitem, 19, $expectednotes, null, time());
+        local_gugcat::update_grade($this->student1->id, $aggradeitem, 19, $expectednotes, time());
 
         $gradehistory = grade_aggregation::get_course_grade_history($this->course, $modules, $this->student1);
         $this->assertEquals($gradehistory[0]->grade, 'A5');

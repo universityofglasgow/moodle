@@ -299,7 +299,6 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $htmlcolumns .= html_writer::tag('th', 'Revised By');
         $htmlcolumns .= html_writer::tag('th', 'Type');
         $htmlcolumns .= html_writer::tag('th', 'Notes / Reason for Revision');
-        $htmlcolumns .= html_writer::tag('th', 'Attachments');
         foreach($rows as $row){
             $htmlrows .= html_writer::start_tag('tr');
             $htmlrows .= html_writer::tag('td', $row->date);
@@ -307,8 +306,6 @@ class local_gugcat_renderer extends plugin_renderer_base {
             $htmlrows .= html_writer::tag('td', $row->modby);
             $htmlrows .= html_writer::tag('td', $row->type);
             $htmlrows .= html_writer::tag('td', $row->notes);
-
-            $htmlrows .= '<td>'.(!is_null($row->docs) ? '<a href = '.$row->docs.'>'.$row->docname : null) .'</td>';
             $htmlrows .= html_writer::end_tag('tr');
         }
         $html = $this->header();

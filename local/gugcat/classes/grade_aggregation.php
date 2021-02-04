@@ -150,7 +150,7 @@ class grade_aggregation{
                 $aggrdobj->display = in_array(get_string('nograderecorded', 'local_gugcat'), array_column($gradecaptureitem->grades, 'grade'))
                     ? get_string('missinggrade', 'local_gugcat') 
                     : (!strstr($rawaggrade, '-') ? local_gugcat::convert_grade($aggrade) .' ('.number_format(($gbaggregatedgrade->overridden == 0) ?
-                     $rawaggrade : $rawaggrade-1, 2).')' : local_gugcat::convert_grade($aggrade));
+                     $rawaggrade : $rawaggrade-1, 3).')' : local_gugcat::convert_grade($aggrade));
             }
             $gradecaptureitem->aggregatedgrade = $aggrdobj;
             array_push($rows, $gradecaptureitem);
