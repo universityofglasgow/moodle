@@ -138,7 +138,8 @@ class grade_aggregation{
                 }
                 if($gbaggregatedgrade = $DB->get_record('grade_grades', array('itemid'=>$aggradeid, 'userid'=>$student->id))){
                     $gradecaptureitem->resit = (preg_match('/\b'.$categoryid.'/i', $gbaggregatedgrade->information) ? $gbaggregatedgrade->information : null);
-                    $gradecaptureitem->completed = round((float)$floatweight * 100 ) . '%';
+                    $totalweight = round((float)$floatweight * 100 );
+                    $gradecaptureitem->completed = $totalweight . '%';
                     $rawaggrade = ($gbaggregatedgrade->overridden == 0) ? $sumaggregated : $gbaggregatedgrade->finalgrade;
                     ($gbaggregatedgrade->overridden == 0) ? local_gugcat::update_grade($student->id, $aggradeid, $sumaggregated) : null;
                     $aggrade = ($gbaggregatedgrade->overridden == 0) ? round($rawaggrade) + 1 : $rawaggrade; //convert back to moodle scale
@@ -147,11 +148,13 @@ class grade_aggregation{
                     }
                     $aggrdobj->grade = local_gugcat::convert_grade($aggrade);
                     $aggrdobj->rawgrade = $rawaggrade;
+                    $numberformat = number_format($rawaggrade, 3);
                     $aggrdobj->display = in_array(get_string('nograderecorded', 'local_gugcat'), array_column($gradecaptureitem->grades, 'grade'))
-                        ? get_string('missinggrade', 'local_gugcat') 
-                        : (!strstr($rawaggrade, '-') ? local_gugcat::convert_grade($aggrade) .' ('.number_format(($gbaggregatedgrade->overridden == 0) ?
-                        $rawaggrade : $rawaggrade-1, 3).')' : local_gugcat::convert_grade($aggrade));
-                }
+                    ? get_string('missinggrade', 'local_gugcat') 
+                    : ($gbaggregatedgrade->overridden == 0 ? ($totalweight < 75 ? $numberformat 
+                    : local_gugcat::convert_grade($aggrade) .' ('.$numberformat.')') 
+                    : local_gugcat::convert_grade($aggrade));
+                    }
             }
             $gradecaptureitem->aggregatedgrade = $aggrdobj;
             array_push($rows, $gradecaptureitem);
