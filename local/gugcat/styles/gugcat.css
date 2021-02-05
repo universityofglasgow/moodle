@@ -3,6 +3,14 @@
 @import url("custom-select.css");
 @import url("modal.css");
 
+#region-main {
+    overflow-x: visible;
+    min-width: 100%;
+    width: auto;
+    display: inline-flex;
+    flex-direction: column;
+}
+
 .gcat-title{
     font-weight: 700;
     line-height: 32px;
@@ -12,7 +20,6 @@
 .gcat-header{
     margin: 15px 0;
     display: flex;
-    justify-content: space-between;
 }
 
 #gcat-cog{
@@ -85,14 +92,6 @@ td > i, th > i {
     background-color: #006630;
     color: white;
     opacity: 0.8;
-}
-
-.btn-download{
-    margin-bottom: 1.5em;
-}
-
-.btn-download, .btn-release {
-    float: right;
 }
 
 .btn-download, .btn-release, .btn-blue,
