@@ -69,7 +69,7 @@ $mform = new coursegradeform(null, array('id'=>$courseid, 'page'=>$page, 'catego
 if ($fromform = $mform->get_data()) {
     if($formtype == OVERRIDE_GRADE_FORM){
         $gradeitemid = local_gugcat::add_grade_item($courseid, get_string('aggregatedgrade', 'local_gugcat'), null);
-        local_gugcat::update_grade($studentid, $gradeitemid, $fromform->override, $fromform->notes, null, time());
+        local_gugcat::update_grade($studentid, $gradeitemid, $fromform->override, $fromform->notes, time());
     }else if($formtype == ADJUST_WEIGHT_FORM){
         $weights = $fromform->weights;
         if(array_sum($weights) != 100){

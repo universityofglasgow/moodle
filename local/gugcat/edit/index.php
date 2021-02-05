@@ -79,12 +79,9 @@ if ($fromform = $mform->get_data()) {
     else{
         $gradereason = local_gugcat::get_reasons()[$fromform->reasons];
     }
-    if(!empty($fromform->userfile)){
-        file_save_draft_area_files($fromform->userfile, $PAGE->context->id, 'local_gugcat', 'attachment',
-                            $fromform->userfile, array('subdirs' => 0));
-    }
+
     $gradeitemid = local_gugcat::add_grade_item($courseid, $gradereason, $module);
-    $grades = local_gugcat::add_update_grades($studentid, $gradeitemid, $fromform->grade, $fromform->notes, $fromform->userfile);
+    $grades = local_gugcat::add_update_grades($studentid, $gradeitemid, $fromform->grade, $fromform->notes);
 
     $url = null;
 

@@ -39,7 +39,6 @@ select::-ms-expand {
     border: 1px solid #E0E2E9;
     -ms-word-break: normal;
     word-break: normal;
-    outline: none;
     line-height: 21px;
     letter-spacing: 0em;
     text-align: left;

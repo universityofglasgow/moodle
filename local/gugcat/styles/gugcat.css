@@ -34,6 +34,7 @@ td > i, th > i {
 
 .fa-times-circle{
     font-size: 20px;
+    color: #949494;
 }
 
 .fa-ellipsis-h{
@@ -57,7 +58,6 @@ td > i, th > i {
     border: 1px solid #005c8a;
     color: #005c8a;
     border-radius: 8px;
-    outline: none;
     white-space: nowrap;
     line-height: 21px;
     letter-spacing: 0em;
@@ -148,7 +148,6 @@ td > i, th > i {
     border: 1px solid #E0E2E9;
     -ms-word-break: normal;
     word-break: normal;
-    outline: none;
     display: none;
     width: auto;
 }
@@ -201,9 +200,12 @@ td > .grade-discrepancy{
     background-color: #005c8a;
 }
 
+td a:hover, .dropdown-item a:hover {
+    text-decoration: none;
+}
+
 /* Hide submit buttons */
 #release-submit, #importgrades-submit, 
-#resit-submit,#showhidegrade-submit,
 #finalrelease-submit, #downloadcsv-submit,
 #multiadd-submit {
     position: absolute;

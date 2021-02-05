@@ -48,7 +48,7 @@ class grade_aggregation_testcase extends advanced_testcase {
         $gen->enrol_user($this->student1->id, $this->course->id, 'student');
         $gen->enrol_user($this->student2->id, $this->course->id, 'student');
         $gen->enrol_user($this->teacher->id, $this->course->id, 'editingteacher');
-        $this->students = get_enrolled_users($this->coursecontext, 'moodle/competency:coursecompetencygradable');
+        $this->students = get_enrolled_users($this->coursecontext, 'local/gugcat:gradable');
         $gen->create_module('assign', array('id' => 1, 'course' => $this->course->id));
         $assignid = $DB->get_field('grade_items', 'id', array('courseid' => $this->course->id, 'itemmodule' => 'assign'));
         $DB->set_field('grade_items', 'grademax', '22.00000', array('id'=>$assignid));
@@ -171,7 +171,7 @@ class grade_aggregation_testcase extends advanced_testcase {
         $aggradeitem = local_gugcat::add_grade_item($this->course->id, get_string('aggregatedgrade', 'local_gugcat'), null);
         $expectednotes = 'testnote';
         $defaultoverridden = 0;
-        local_gugcat::update_grade($this->student1->id, $aggradeitem, 19, $expectednotes, null, time());
+        local_gugcat::update_grade($this->student1->id, $aggradeitem, 19, $expectednotes, time());
         $rows = grade_aggregation::get_rows($this->course, $modules, $student);
         $aggrade = $DB->get_record('grade_grades', array('userid'=>$this->student1->id, 'itemid'=>$aggradeitem));
         $this->assertEquals($rows[0]->aggregatedgrade->rawgrade, '19.00000');
@@ -199,7 +199,7 @@ class grade_aggregation_testcase extends advanced_testcase {
         $aggradeitem = local_gugcat::add_grade_item($this->course->id, get_string('aggregatedgrade', 'local_gugcat'), null);
         $expectednotes = 'testnote';
         $defaultoverridden = 0;
-        local_gugcat::update_grade($this->student1->id, $aggradeitem, 19, $expectednotes, null, time());
+        local_gugcat::update_grade($this->student1->id, $aggradeitem, 19, $expectednotes, time());
 
         $gradehistory = grade_aggregation::get_course_grade_history($this->course, $modules, $this->student1);
         $this->assertEquals($gradehistory[0]->grade, 'A5');
