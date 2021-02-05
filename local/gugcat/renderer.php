@@ -126,6 +126,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
             'saveallbtnstr' =>get_string('saveallnewgrade', 'local_gugcat'),
             'grddiscrepancystr' => get_string('gradediscrepancy', 'local_gugcat'),
             'importgradesstr' => get_string('importgrades', 'local_gugcat'),
+            'releaseprvgrdstr' =>get_string('releaseprvgrades', 'local_gugcat'),
             'displayactivities' => true,
             'activities' => $activities,
         ] : null;
@@ -370,8 +371,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
      */
     private function display_table($rows, $columns, $history = false, $aggregation = false) {
         $is_blind_marking = local_gugcat::is_blind_marking($this->page->cm);
-        $html = html_writer::start_tag('div', array('class' => 'table-responsive'));
-        $html .= html_writer::start_tag('table', array('id'=>'gcat-table', 'class' => 'table'));
+        $html = html_writer::start_tag('table', array('id'=>'gcat-table', 'class' => 'table'));
         $html .= html_writer::start_tag('thead');
         $html .= html_writer::start_tag('tr');
         if(!$history){
@@ -391,7 +391,6 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $html .= $rows;
         $html .= html_writer::end_tag('tbody');
         $html .= html_writer::end_tag('table');
-        $html .= html_writer::end_tag('div');
 
         return $html;
     }
@@ -480,7 +479,6 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $html .= $this->render_from_template('local_gugcat/gcat_tabs', (object)[
             'assessmenttabstr' =>get_string('assessmentgradecapture', 'local_gugcat'),
             'coursegradetabstr' =>get_string('coursegradeaggregation', 'local_gugcat'),
-            'releaseprvgrdstr' =>get_string('releaseprvgrades', 'local_gugcat'),
             'assessmenturl' =>$assessmenturl,
             'coursegradeurl' =>$coursegradeurl,
         ]);

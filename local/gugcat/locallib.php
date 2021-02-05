@@ -621,7 +621,6 @@ class local_gugcat {
                     $result =  $result + $cms;
                 }
             }
-            
             return $result;
         }
         $params = array($courseid, $modulename, $itemnumber, GRADE_TYPE_NONE, $modulename);

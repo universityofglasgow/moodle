@@ -96,3 +96,21 @@ textarea#id_notes.form-control {
     width: 350px;
     height: 100px;
 }
+
+/* Extra small devices (phones, 600px and down) */
+@media only screen and (max-width: 600px) {
+    .mform-grades {
+        position: revert;
+    }
+
+    .input-percent > div.felement:after {
+        left: calc(100% - 40px);
+    }
+}
+
+/* Small devices (portrait tablets and large phones, 600px and up) */
+@media only screen and (min-width: 600px) {
+    .mform-grades {
+        position: revert;
+    }
+}
