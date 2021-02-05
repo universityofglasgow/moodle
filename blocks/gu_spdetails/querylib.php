@@ -41,7 +41,9 @@ require_once($CFG->dirroot. '/mod/workshop/locallib.php');
 function get_all_user_courses_gradable_activities($userid) {
     global $DB;
 
-    $params = array('siteid' => SITEID, 'userid' => $userid, 'contextlevel' => CONTEXT_COURSE,
+    $allowedactivities = "'assign', 'quiz', 'forum', 'workshop'";
+
+    $params = array('siteid' => SITEID, 'userid' => $userid, 'contextlevel' => CONTEXT_COURSE, 'fieldname' => 'show_on_studentdashboard',
                     'active' => ENROL_USER_ACTIVE, 'enabled' => ENROL_INSTANCE_ENABLED, 'gradetype' => GRADE_TYPE_NONE);   
     $fields = array('id as courseid', 'category', 'sortorder',
                     'fullname', 'shortname', 'idnumber',
@@ -57,6 +59,7 @@ function get_all_user_courses_gradable_activities($userid) {
     $coursefields = 'c.' .join(',c.', $fields);
     $ccselect = ', ' . context_helper::get_preload_record_columns_sql('ctx');
     $ccjoin = "LEFT JOIN {context} ctx ON (ctx.instanceid = c.id AND ctx.contextlevel = :contextlevel)";
+
     $gradegetselect = ", cm.*, md.name as modname,
                        gi.id as gradeitemid, gi.categoryid, gi.gradetype,
                        gi.grademax, gi.grademin, gi.scaleid,
@@ -67,21 +70,25 @@ function get_all_user_courses_gradable_activities($userid) {
                      ON (gi.iteminstance = cm.instance
                          AND gi.courseid = c.id
                          AND gi.itemmodule = md.name)";
-    $gradegetwhere = "AND gi.itemtype = 'mod'
-                      AND (gi.itemnumber = 0 OR gi.itemmodule = 'forum')
-                      AND gi.gradetype != :gradetype";
-    $subwhere = '';
-    $sql = "SELECT cm.id, $coursefields $ccselect $gradegetselect
-            FROM {course} c $gradegetjoin
+
+    $customfieldselect = ", cfd.value";
+    $customfieldjoin = "JOIN {customfield_field} cff ON (cff.shortname = :fieldname)
+                        JOIN {customfield_data} cfd ON (cfd.fieldid = cff.id AND cfd.instanceid = c.id)";
+
+    $custonfieldwhere = "AND cfd.value > 0";
+    $gradegetwhere =    "AND gi.itemtype = 'mod'
+                         AND (gi.itemnumber = 0 OR gi.itemmodule = 'forum')
+                         AND gi.gradetype != :gradetype";
+    $filtermodname =    "AND md.name IN ($allowedactivities)";
+    $sql = "SELECT cm.id, $coursefields $ccselect $gradegetselect $customfieldselect
+            FROM {course} c $gradegetjoin $customfieldjoin
             JOIN (SELECT DISTINCT e.courseid
             FROM {enrol} e
             JOIN {user_enrolments} ue ON (ue.enrolid = e.id AND ue.userid = :userid)
-            $subwhere
             ) en ON (en.courseid = c.id)
             $ccjoin
             WHERE c.id <> :siteid
-            $gradegetwhere";
-
+            $gradegetwhere $filtermodname $custonfieldwhere";
     return $DB->get_records_sql($sql, $params);
 }
 
@@ -159,7 +166,7 @@ function retrieve_activity($user, $cm, $course, $gradeitem) {
                                           $submission->submission->status : null;
             $activity->submissionsenabled = ($submission) ? $submission->submissionsenabled : false;
             $activity->submissionslocked = ($submission) ? $submission->locked : false;
-            $activity->graded = ($submission) ? $submission->graded : false;
+            $activity->graded = ($submission && $grades) ? $submission->graded : false;
             $activity->feedback = ($grades) ? $grades->feedback : null;
             $activity->hasfeedback = false;
 
@@ -177,8 +184,10 @@ function retrieve_activity($user, $cm, $course, $gradeitem) {
                 $activity->grade = ($feedback) ? $feedback->grade->grade : null;
                 $activity->hasfeedbackfiles = false;
                 $activity->hasturnitin = false;
-
-                if($grades->feedbackformat > 0 || !empty($grades->feedback)) {
+                if(!$grades || !$feedback){
+                    $activity->hasfeedbackfiles = false;
+                    $activity->hasfeedback = ($activity->hasfeedbackfiles) ? true : false;
+                }else if($grades->feedbackformat > 0 || !empty($grades->feedback)) {
                     $activity->hasfeedback = true;
                 }else{
                     // check for feedback files only if feedback is empty
@@ -188,7 +197,7 @@ function retrieve_activity($user, $cm, $course, $gradeitem) {
                 }
 
                 // check if turnitin is enabled only if feedback and feedback files are empty
-                if($grades->feedbackformat == 0 && empty($grades->feedback) && !$activity->hasfeedbackfiles) {
+                if($grades && $grades->feedbackformat == 0 && empty($grades->feedback) && !$activity->hasfeedbackfiles) {
                     $turnitin = retrieve_turnitincfg($cm->id);
                     $activity->hasturnitin = ($turnitin) ? true : false;
                     $activity->hasfeedback = ($activity->hasturnitin) ? true : false;
