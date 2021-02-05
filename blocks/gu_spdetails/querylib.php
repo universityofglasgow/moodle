@@ -166,7 +166,7 @@ function retrieve_activity($user, $cm, $course, $gradeitem) {
                                           $submission->submission->status : null;
             $activity->submissionsenabled = ($submission) ? $submission->submissionsenabled : false;
             $activity->submissionslocked = ($submission) ? $submission->locked : false;
-            $activity->graded = ($submission) ? $submission->graded : false;
+            $activity->graded = ($submission && $grades) ? $submission->graded : false;
             $activity->feedback = ($grades) ? $grades->feedback : null;
             $activity->hasfeedback = false;
 
@@ -184,8 +184,10 @@ function retrieve_activity($user, $cm, $course, $gradeitem) {
                 $activity->grade = ($feedback) ? $feedback->grade->grade : null;
                 $activity->hasfeedbackfiles = false;
                 $activity->hasturnitin = false;
-
-                if($grades->feedbackformat > 0 || !empty($grades->feedback)) {
+                if(!$grades || !$feedback){
+                    $activity->hasfeedbackfiles = false;
+                    $activity->hasfeedback = ($activity->hasfeedbackfiles) ? true : false;
+                }else if($grades->feedbackformat > 0 || !empty($grades->feedback)) {
                     $activity->hasfeedback = true;
                 }else{
                     // check for feedback files only if feedback is empty
@@ -195,7 +197,7 @@ function retrieve_activity($user, $cm, $course, $gradeitem) {
                 }
 
                 // check if turnitin is enabled only if feedback and feedback files are empty
-                if($grades->feedbackformat == 0 && empty($grades->feedback) && !$activity->hasfeedbackfiles) {
+                if($grades && $grades->feedbackformat == 0 && empty($grades->feedback) && !$activity->hasfeedbackfiles) {
                     $turnitin = retrieve_turnitincfg($cm->id);
                     $activity->hasturnitin = ($turnitin) ? true : false;
                     $activity->hasfeedback = ($activity->hasturnitin) ? true : false;
