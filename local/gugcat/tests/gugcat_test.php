@@ -49,6 +49,8 @@ class local_gugcat_testcase extends advanced_testcase {
         $assign = $gen->create_module('assign', array('id' => 1, 'course' => $this->course->id));
         $modulecontext = context_module::instance($assign->cmid);
         $assign = new assign($modulecontext, false, false);
+        $assignid = $DB->get_field('grade_items', 'id', array('courseid' => $this->course->id, 'itemmodule' => 'assign'));
+        $DB->set_field('grade_items', 'grademax', '22.00000', array('id'=>$assignid));
         $cm = local_gugcat::get_activities($this->course->id);
         $key = key($cm);
         $this->cm = $cm[$key];
@@ -197,33 +199,19 @@ class local_gugcat_testcase extends advanced_testcase {
         $this->assertEquals($notes, $expectednotes);
     }
 
-    public function test_add_grade_document(){
-        global $gradeitems, $DB;
-        $gradeitems = array();
-        $documentitemid = '524106396';
-        $prvgradeid = $this->provisionalgi->id;
-        grade_capture::get_rows($this->course, $this->cm, $this->students);
-        $mggradeitemstr = get_string('moodlegrade', 'local_gugcat');
-        $mggradeitem = local_gugcat::add_grade_item($this->course->id, $mggradeitemstr, $this->cm); 
-        local_gugcat::add_update_grades($this->student->id, $mggradeitem, '5.00000', null, $documentitemid);
-        $notes = $DB->get_field('grade_grades', 'information', array('userid'=>$this->student->id, 'itemid'=>$mggradeitem));
-        $this->assertEquals($notes, $documentitemid);
-    }
-
     public function test_get_grade_history(){
         global $gradeitems, $DB;
         $gradeitems = array();
-        $documentitemid1 = '524106396';
         $notesitemid1 = 'Test notes';
         grade_capture::get_rows($this->course, $this->cm, $this->students);
         $mggradeitemstr = get_string('moodlegrade', 'local_gugcat');
         $mggradeitem = local_gugcat::add_grade_item($this->course->id, $mggradeitemstr, $this->cm); 
-        local_gugcat::add_update_grades($this->student->id, $mggradeitem, '5.00000', $notesitemid1, $documentitemid1);
+        local_gugcat::add_update_grades($this->student->id, $mggradeitem, '5.00000', $notesitemid1);
         $DB->set_field_select('grade_grades', 'usermodified', $this->teacher->id, "itemid = ".$mggradeitem." AND userid = ".$this->student->id);
         $sndgrditemstr = get_string('gi_secondgrade', 'local_gugcat');    
         $expectednotes = 'N/A - '.$sndgrditemstr;
         $sndgradeitem = local_gugcat::add_grade_item($this->course->id, $sndgrditemstr, $this->cm); 
-        local_gugcat::add_update_grades($this->student->id, $sndgradeitem, '21.00000', null, null);
+        local_gugcat::add_update_grades($this->student->id, $sndgradeitem, '21.00000', null);
         $DB->set_field_select('grade_grades', 'usermodified', $this->teacher->id, "itemid = ".$sndgradeitem ." AND userid = ".$this->student->id);
         grade_capture::get_rows($this->course, $this->cm, $this->students);
         $gradehistory = local_gugcat::get_grade_history($this->course->id, $this->cm, $this->student->id);
@@ -261,5 +249,82 @@ class local_gugcat_testcase extends advanced_testcase {
 
         // False for manager role regardless of course module
         $this->assertFalse(local_gugcat::is_blind_marking($this->cm));
+    }
+
+    public function test_switch_display_of_assessments_on_student_dashboard_without_customfield_category(){
+        global $DB;
+
+        $contextid = $this->coursecontext->id;
+        $instanceid = $this->course->id;
+
+        $switchdisplay = local_gugcat::switch_display_of_assessment_on_student_dashboard($instanceid, $contextid);
+
+        $this->assertEquals(1, $switchdisplay);
+    }
+
+    public function test_switch_display_of_assessments_on_student_dashboard_with_customfield_category_and_customfield_data(){
+        global $DB;
+
+        $contextid = $this->coursecontext->id;
+        $instanceid = $this->course->id;
+
+        $customfieldcategoryobj = self::default_custom_field_category_object();
+        $customfieldcategoryid = $DB->insert_record('customfield_category', $customfieldcategoryobj);
+
+        self::create_custom_field_field($customfieldcategoryid);
+
+        $customfieldfield = $DB->get_record('customfield_field', array('categoryid' => $customfieldcategoryid));
+
+        $customfieldddata = local_gugcat::default_contextfield_data_value($customfieldfield->id, $instanceid, $contextid);
+        $customfielddata = $DB->insert_record('customfield_data', $customfieldddata);
+
+        $switchdisplayoff = local_gugcat::switch_display_of_assessment_on_student_dashboard($instanceid, $contextid);
+
+        $this->assertEquals(0, $switchdisplayoff);
+
+        $switchdisplayon = local_gugcat::switch_display_of_assessment_on_student_dashboard($instanceid, $contextid);
+        $this->assertEquals(1, $switchdisplayon);
+    }
+
+    public function test_get_value_of_customfield_checkbox(){
+        global $DB;
+
+        $contextid = $this->coursecontext->id;
+        $instanceid = $this->course->id;
+
+        $customfieldcategoryobj = self::default_custom_field_category_object();
+        $customfieldcategoryid = $DB->insert_record('customfield_category', $customfieldcategoryobj);
+
+        self::create_custom_field_field($customfieldcategoryid);
+
+        $checkboxvalue = local_gugcat::get_value_of_customfield_checkbox($instanceid, $contextid);
+
+        $this->assertEquals(1, $checkboxvalue);
+    }
+
+    public static function default_custom_field_category_object(){
+        $customfieldcategory = new stdClass();
+        $customfieldcategory->name = get_string('gugcatoptions', 'local_gugcat');
+        $customfieldcategory->component ="core_course";
+        $customfieldcategory->area = "course";
+        $customfieldcategory->timecreated = time();
+        $customfieldcategory->timemodified = time();
+
+        return $customfieldcategory;
+    }
+
+
+    public static function create_custom_field_field($customfieldcategoryid){
+        $category = \core_customfield\category_controller::create($customfieldcategoryid);
+        $field = \core_customfield\field_controller::create(0, (object)[
+            'type' => 'checkbox',
+            'configdata' => get_string('configdata', 'local_gugcat')
+        ], $category);
+
+        $handler = $field->get_handler();
+        $handler->save_field_configuration($field, (object)[
+            'name' => get_string('showassessment', 'local_gugcat'), 
+            'shortname' => get_string('showonstudentdashboard', 'local_gugcat')
+        ]);
     }
 }

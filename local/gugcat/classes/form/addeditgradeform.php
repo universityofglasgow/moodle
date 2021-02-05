@@ -47,8 +47,6 @@ class addeditgradeform extends moodleform {
         $mform->addElement('textarea', 'notes', get_string('notes', 'local_gugcat'));
         $mform->setType('notes', PARAM_NOTAGS);
 
-        $mform->addElement('filepicker', 'userfile', get_string('supportingdocument', 'local_gugcat'), null, array('maxbytes' => 10485760, 'maxfiles' => 1,'accepted_types' => '*'));
-
         $mform->addElement('html', '</div>');
         $this->add_action_buttons(false, get_string('confirmgrade', 'local_gugcat'), ['class' => 'float-right']);
         //hidden params
