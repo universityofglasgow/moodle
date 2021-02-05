@@ -67,7 +67,7 @@ class grade_aggregation{
         global $DB, $aggradeid;
         $categoryid = optional_param('categoryid', '0', PARAM_INT);
         //get grade item id for aggregated grade
-        $aggradeid = local_gugcat::add_grade_item($course->id, get_string('aggregatedgrade', 'local_gugcat'), null);
+        $aggradeid = local_gugcat::get_grade_item_id($course->id, null, get_string('aggregatedgrade', 'local_gugcat'));
         $rows = array();
         $gradebook = array();
         foreach ($modules as $mod) {
@@ -168,7 +168,7 @@ class grade_aggregation{
      */
     public static function require_resit($studentno){
         global $aggradeid, $USER;
-
+        if(!$aggradeid) return false;
         $categoryid = optional_param('categoryid', '0', PARAM_INT);
         $grade_ = new grade_grade(array('userid' => $studentno, 'itemid' => $aggradeid), true);
         $grade_->usermodified = $USER->id;
@@ -327,11 +327,8 @@ class grade_aggregation{
     public static function get_course_grade_history($course, $modules, $student){
         global $DB;
 
-        $aggradeid = local_gugcat::add_grade_item($course->id, get_string('aggregatedgrade', 'local_gugcat'), null);
         $rows = array();
-        $gradebook = array();
         foreach ($modules as $mod) {
-            
             $i = 0;
             $mod->scaleid = $mod->gradeitem->scaleid;
             $scaleid = $mod->scaleid;
@@ -339,7 +336,6 @@ class grade_aggregation{
                 $scaleid = null;
             }
             local_gugcat::set_grade_scale($scaleid);
-            $grades = new stdClass();
             //get provisional grades
             $prvgrdstr = get_string('provisionalgrd', 'local_gugcat');
             $prvgrdid = local_gugcat::get_grade_item_id($course->id, $mod->gradeitemid, $prvgrdstr);
@@ -400,23 +396,26 @@ class grade_aggregation{
             }
             $row->grade = local_gugcat::convert_grade(round((float)$sumgrade));
         }
-        //add overridden grades in 
-        $fields = 'id, itemid, rawgrade, finalgrade, feedback, timemodified, usermodified';
-        $select = 'feedback IS NOT NULL AND rawgrade IS NOT NULL AND itemid='.$aggradeid.' AND '.' userid="'.$student->id.'"'; 
-        $gradehistory_overridden = $DB->get_records_select('grade_grades_history', $select, null, $fields);
-        if($gradehistory_overridden > 0){
-            foreach($gradehistory_overridden as $overriddengrade){
-                $ovgrade = new stdClass();
-                $grd = (is_null($overriddengrade->finalgrade) ? (float)$overriddengrade->rawgrade : (float)$overriddengrade->finalgrade);
-                $ovgrade->grade = local_gugcat::convert_grade($grd);
-                $ovgrade->notes = $overriddengrade->feedback;
-                $ovgrade->overridden = true;
-                $fields = 'firstname, lastname';
-                $modby = $DB->get_record('user', array('id' => $overriddengrade->usermodified), $fields);
-                $ovgrade->modby = (isset($modby->lastname) && isset($modby->firstname)) ? $modby->lastname . ', '.$modby->firstname : null;
-                $ovgrade->timemodified = $overriddengrade->timemodified;
-                $ovgrade->date = date("j/n", strtotime(userdate($overriddengrade->timemodified))).'<br>'.date("h:i", strtotime(userdate($overriddengrade->timemodified)));
-                array_push($rows, $ovgrade);
+        // Add overridden grades in rows
+        $aggradeid = local_gugcat::get_grade_item_id($course->id, null, get_string('aggregatedgrade', 'local_gugcat'));
+        if($aggradeid){
+            $fields = 'id, itemid, rawgrade, finalgrade, feedback, timemodified, usermodified';
+            $select = 'feedback IS NOT NULL AND rawgrade IS NOT NULL AND itemid='.$aggradeid.' AND '.' userid="'.$student->id.'"'; 
+            $gradehistory_overridden = $DB->get_records_select('grade_grades_history', $select, null, $fields);
+            if($gradehistory_overridden > 0){
+                foreach($gradehistory_overridden as $overriddengrade){
+                    $ovgrade = new stdClass();
+                    $grd = (is_null($overriddengrade->finalgrade) ? (float)$overriddengrade->rawgrade : (float)$overriddengrade->finalgrade);
+                    $ovgrade->grade = local_gugcat::convert_grade($grd);
+                    $ovgrade->notes = $overriddengrade->feedback;
+                    $ovgrade->overridden = true;
+                    $fields = 'firstname, lastname';
+                    $modby = $DB->get_record('user', array('id' => $overriddengrade->usermodified), $fields);
+                    $ovgrade->modby = (isset($modby->lastname) && isset($modby->firstname)) ? $modby->lastname . ', '.$modby->firstname : null;
+                    $ovgrade->timemodified = $overriddengrade->timemodified;
+                    $ovgrade->date = date("j/n", strtotime(userdate($overriddengrade->timemodified))).'<br>'.date("h:i", strtotime(userdate($overriddengrade->timemodified)));
+                    array_push($rows, $ovgrade);
+                }
             }
         }
         //sort array by timemodified

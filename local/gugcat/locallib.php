@@ -181,7 +181,7 @@ class local_gugcat {
     public static function set_prv_grade_id($courseid, $mod){
         if(is_null($mod)) return;
         $pgrd_str = get_string('provisionalgrd', 'local_gugcat');
-        self::$PRVGRADEID = self::add_grade_item($courseid, $pgrd_str, $mod);
+        self::$PRVGRADEID = self::get_grade_item_id($courseid, $mod->gradeitemid, $pgrd_str);
         return self::$PRVGRADEID;
     }
 
@@ -193,12 +193,15 @@ class local_gugcat {
      */
     public static function get_grade_item_id($courseid, $modid, $itemname){
         global $DB;
-        $select = 'courseid = :courseid AND '.self::compare_iteminfo(). ' AND itemname = :itemname ';
+        $select = 'courseid = :courseid AND itemname = :itemname ';
         $params = [
             'courseid' => $courseid,
-            'itemname' => $itemname,
-            'iteminfo' => $modid //modid = gradeitemid
+            'itemname' => $itemname
         ];
+        if(!is_null($modid)){
+            $select .= 'AND '.self::compare_iteminfo();
+            $params['iteminfo'] = $modid; // modid = gradeitemid
+        }
         return $DB->get_field_select('grade_items', 'id', $select, $params);
     }
 
@@ -229,12 +232,13 @@ class local_gugcat {
     /**
      * Returns the gcat DO NOT USE grade category id
      * @param int $courseid
+     * @param boolean $create Create gcat category if true
      */
-    public static function get_gcat_grade_category_id($courseid){
+    public static function get_gcat_grade_category_id($courseid, $create = false){
         global $DB;
         $grdcategorystr = get_string('gcat_category', 'local_gugcat');
         $categoryid = $DB->get_field('grade_categories', 'id', array('fullname' => $grdcategorystr, 'courseid' => $courseid));
-        if (empty($categoryid)){
+        if (empty($categoryid) && $create){
             $grade_category = new grade_category(array('courseid'=>$courseid), false);
             $grade_category->apply_default_settings();
             $grade_category->apply_forced_settings();
@@ -253,23 +257,24 @@ class local_gugcat {
      * @param mixed $mod Selected course module
      * @param string $itemname 
      */
-    public static function add_grade_item($courseid, $itemname, $mod){
+    public static function add_grade_item($courseid, $itemname, $mod, $students_ = null){
+        $students = is_null($students_) ? self::$STUDENTS : $students_;
         $params = [
             'courseid' => $courseid,
             'itemtype' => 'manual',
             'hidden' => 1,
             'weightoverride' => 1,
-            'categoryid' => self::get_gcat_grade_category_id($courseid),
-            'itemname' => get_string('aggregatedgrade', 'local_gugcat'),
+            'categoryid' => self::get_gcat_grade_category_id($courseid, true),
         ];
         if(is_null($mod)){
+            $params['itemname'] = $itemname;
             //creates grade item that has no module
             $gradeitem = new grade_item($params, true);
             if($gradeitem->id){
                 return $gradeitem->id;
             }else{
                 $gradeitemid = $gradeitem->insert();
-                foreach(local_gugcat::$STUDENTS as $student){
+                foreach($students as $student){
                     local_gugcat::add_update_grades($student->id, $gradeitemid, null);
                 }
                 return $gradeitemid;
@@ -288,7 +293,7 @@ class local_gugcat {
                 // create new gradeitem
                 $gradeitem = new grade_item(array_merge($params, $params_mod));
                 $gradeitemid = $gradeitem->insert();
-                foreach(self::$STUDENTS as $student){
+                foreach($students as $student){
                     self::add_update_grades($student->id, $gradeitemid, null);
                 }
                 return $gradeitemid;

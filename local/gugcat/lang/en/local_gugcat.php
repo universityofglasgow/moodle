@@ -17,7 +17,7 @@
 /**
  * Language EN
  *
- * @package    local_gugrader
+ * @package    local_gugcat
  * @copyright  2020
  * @author     Accenture
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later

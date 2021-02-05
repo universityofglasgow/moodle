@@ -72,19 +72,21 @@ if(!empty($activities)){
     //Populate static $GRADES scales
     local_gugcat::set_grade_scale($scaleid);
 }
-//Retrieve groups
-$groups = groups_get_all_groups($course->id, 0, $groupingid);
 
 //Retrieve students
 $limitfrom = $page * GCAT_MAX_USERS_PER_PAGE;
 $limitnum  = GCAT_MAX_USERS_PER_PAGE;
 $totalenrolled = count_enrolled_users($coursecontext, 'local/gugcat:gradable');
 
-if($groupingid != 0 && !empty($groups)){
+if($groupingid != 0){
     $students = Array();
-    foreach ($groups as $group) {
-        $groupstudents = get_enrolled_users($coursecontext, 'local/gugcat:gradable', $group->id, 'u.*', null, $limitfrom, $limitnum);
-        $students += $groupstudents;
+    //Retrieve groups
+    $groups = groups_get_all_groups($course->id, 0, $groupingid);
+    if(!empty($groups)){
+        foreach ($groups as $group) {
+            $groupstudents = get_enrolled_users($coursecontext, 'local/gugcat:gradable', $group->id, 'u.*', null, $limitfrom, $limitnum);
+            $students += $groupstudents;
+        }
     }
 }else{
     $students = get_enrolled_users($coursecontext, 'local/gugcat:gradable', 0, 'u.*', null, $limitfrom, $limitnum);
