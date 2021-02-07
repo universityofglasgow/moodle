@@ -50,8 +50,8 @@ tr:nth-child(even) {
 .tabcontent {
     border: 1px solid #4F5961;
     border-radius: 0 1em 0 0 ;
-    overflow: hidden;
-    position: relative;
+    overflow-x: visible;
+    min-width: 100%;
 }
 
 /* Tab Content Header style */

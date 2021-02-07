@@ -421,7 +421,7 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                     }
                 }else if(checkCurrentUrl("gugcat/index")){
                     document.getElementById('btn-release').style.display = 
-                    !$(".gradeitems").text().includes("Moodle Grade[Date]") ? 'block' : 'none';
+                    !$(".gradeitems").text().includes("Moodle Grade[Date]") ? 'inline-block' : 'none';
                     var nodeArr = Array.from(document.querySelectorAll('.gradeitems'));
                     if(nodeArr.find(node => node.innerHTML !== 'Moodle Grade<br>[Date]')){
                         document.getElementById('btn-saveadd').style.display = 'inline-block';
