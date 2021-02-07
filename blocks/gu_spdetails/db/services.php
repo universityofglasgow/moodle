@@ -15,16 +15,22 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version details for the UofG Assessments Details block.
+ * Student Dashboard - Assessments Details web service definitions.
  *
  * @package    block_gu_spdetails
  * @copyright  2020 Accenture
- * @author     Franco Louie Magpusao, Jose Maria Abreu
+ * @author     Franco Louie Magpusao <franco.l.magpusao@accenture.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2021020107.01;
-$plugin->requires  = 2019111804.11;                  // Moodle 3.8.4.
-$plugin->component = 'block_gu_spdetails';
+$functions = array(
+    'block_gu_spdetails_retrieve_assessments' => array(
+        'classname'   => 'block_gu_spdetails\external',
+        'methodname'  => 'retrieve_assessments',
+        'description' => 'Display assessments on Student Dashboard',
+        'type'        => 'read',
+        'ajax'          => true,
+        'loginrequired' => true,
+    ),
+);
