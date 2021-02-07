@@ -26,6 +26,12 @@ defined('MOODLE_INTERNAL') || die();
 define('ASSESSMENTS_PER_PAGE', 12);
 define('TAB_CURRENT', 'current');
 define('TAB_PAST', 'past');
+define('SORTBY_COURSE', 'course');
+define('SORTBY_DATE', 'date');
+define('SORTBY_STARTDATE', 'startdate');
+define('SORTBY_ENDDATE', 'enddate');
+define('SORTORDER_ASC', 'asc');
+define('SORTORDER_DESC', 'desc');
 
 class assessments_details {
 
@@ -47,10 +53,16 @@ class assessments_details {
                           'sortby' => $sortby, 'sortorder' => $sortorder);
           $url = new moodle_url('/index.php', $params);
 
+          $currentsortby = array(SORTBY_COURSE => get_string('option_course', 'block_gu_spdetails'),
+                                 SORTBY_DATE => get_string('option_date', 'block_gu_spdetails'));
+          $pastsortby = array(SORTBY_COURSE => get_string('option_course', 'block_gu_spdetails'),
+                              SORTBY_STARTDATE => get_string('option_startdate', 'block_gu_spdetails'),
+                              SORTBY_ENDDATE => get_string('option_enddate', 'block_gu_spdetails'));
+
           if($activetab === TAB_CURRENT) {
-               $items = self::retrieve_current_gradable_activities($userid);
+               $items = self::retrieve_current_gradable_activities($userid, $sortby, $sortorder);
           }else{
-               $items = self::retrieve_past_gradable_activities($userid);
+               $items = self::retrieve_past_gradable_activities($userid, $sortby, $sortorder);
           }
 
           $totalassessments = 0;
@@ -60,11 +72,27 @@ class assessments_details {
                $totalassessments = count($items);
                $paginatedassessments = array_splice($items, $offset, $limit);
 
-               $html .= html_writer::start_tag('table', array('class' => 'table assessments-table'));
+               $html .= html_writer::start_tag('div', array('class' => 'assessments-details-sort-container'));
+               if($activetab === TAB_CURRENT) {
+                    $selectsortby = get_string('select_currentsortby', 'block_gu_spdetails');
+                    $html .= html_writer::tag('label', get_string('label_sortby', 'block_gu_spdetails'),
+                                              array('class' => 'assessments-details-sort-label h5',
+                                                    'for' => 'menu'.$selectsortby));
+                    $html .= html_writer::select($currentsortby, $selectsortby, $sortby, false);
+               }else{
+                    $selectsortby = get_string('select_pastsortby', 'block_gu_spdetails');
+                    $html .= html_writer::tag('label', get_string('label_sortby', 'block_gu_spdetails'),
+                                              array('class' => 'assessments-details-sort-label h5',
+                                                    'for' => 'menu'.$selectsortby));
+                    $html .= html_writer::select($pastsortby, $selectsortby, $sortby, false);
+               }
+               $html .= html_writer::end_tag('div');
+               $html .= html_writer::start_tag('table', array('class' => 'table assessments-details-table'));
                $html .= html_writer::start_tag('thead');
                $html .= html_writer::start_tag('tr');
                $html .= html_writer::tag('th', get_string('header_course', 'block_gu_spdetails'),
-                                         array('class' => 'td20'));
+                                         array('id' => 'sortby_course', 'class' => 'td20 th-sortable',
+                                               'data-value' => ''));
                $html .= html_writer::tag('th', get_string('header_assessment', 'block_gu_spdetails'),
                                          array('class' => 'td20'));
                $html .= html_writer::tag('th', get_string('header_type', 'block_gu_spdetails'),
@@ -73,14 +101,17 @@ class assessments_details {
                                          array('class' => 'td05'));
                if($activetab === TAB_CURRENT) {
                     $html .= html_writer::tag('th', get_string('header_duedate', 'block_gu_spdetails'),
-                                              array('class' => 'td10'));
+                                              array('id' => 'sortby_date', 'class' => 'td10 th-sortable',
+                                                    'data-value' => ''));
                     $html .= html_writer::tag('th', get_string('header_status', 'block_gu_spdetails'),
                                               array('class' => 'td15'));
                }else{
                     $html .= html_writer::tag('th', get_string('header_coursestartdate', 'block_gu_spdetails'),
-                                              array('class' => 'td05'));
+                                              array('id' => 'sortby_startdate', 'class' => 'td05 th-sortable',
+                                              'data-value' => ''));
                     $html .= html_writer::tag('th', get_string('header_courseenddate', 'block_gu_spdetails'),
-                                              array('class' => 'td05'));
+                                              array('id' => 'sortby_enddate', 'class' => 'td05 th-sortable',
+                                              'data-value' => ''));
                     $html .= html_writer::tag('th', get_string('header_submission', 'block_gu_spdetails'),
                                               array('class' => 'td15'));
                }
@@ -116,13 +147,13 @@ class assessments_details {
                          if($assessment->status->hasstatusurl) {
                               $html .= html_writer::start_tag('a', array('href' => $assessment->assessmenturl,
                                                                          'class' => get_string('class_link', 'block_gu_spdetails')));
-                              $html .= html_writer::start_span(get_string('class_default', 'block_gu_spdetails').$assessment->status->class)
-                                                    .$assessment->status->statustext;
+                              $html .= html_writer::start_span(get_string('class_default', 'block_gu_spdetails').$assessment->status->class).
+                                                               $assessment->status->statustext;
                               $html .= html_writer::end_span();
                               $html .= html_writer::end_tag('a');
                          }else{
-                              $html .= html_writer::start_span(get_string('class_default', 'block_gu_spdetails').$assessment->status->class)
-                                                    .$assessment->status->statustext;
+                              $html .= html_writer::start_span(get_string('class_default', 'block_gu_spdetails').$assessment->status->class).
+                                                               $assessment->status->statustext;
                               $html .= html_writer::end_span();
                          }
                          $html .= html_writer::end_tag('td');
@@ -165,14 +196,24 @@ class assessments_details {
           return $html;
      }
 
-     public static function retrieve_current_gradable_activities($userid) {
+     public static function retrieve_current_gradable_activities($userid, $sortby, $sortorder) {
           global $DB;
           $onemonth = time() + (86400 * 30);
+
+          if($sortby === SORTBY_COURSE) {
+               $sortcolumn = 'coursetitle';
+          }else{
+               $sortcolumn = 'duedate';
+          }
 
           $sql = "SELECT cm.id, c.id AS courseid, c.startdate, c.enddate,
                          cs.section, cs.name AS sectionname,
                          c.fullname AS coursefullname, c.shortname AS courseshortname,
                          cm.instance AS modinstance, m.name AS modname,
+                         CASE
+                         WHEN cs.name IS NOT NULL THEN cs.name
+                         WHEN cs.section > 0 THEN CONCAT('Topic ', cs.section)
+                         ELSE c.fullname END AS coursetitle,
                          gi.id AS gradeitemid, gi.gradetype, gi.scaleid,
                          gi.aggregationcoef, gi.aggregationcoef2,
                          gi.grademax, gi.grademin, gi.gradepass,
@@ -315,7 +356,7 @@ class assessments_details {
                            FROM {forum})) ua
                               ON (ua.modtype = m.`name` AND ua.activityid = cm.instance)
                     WHERE cfd.value > 0 AND m.`name` IN ('assign' , 'quiz', 'forum', 'workshop')
-                    AND c.enddate > ? ORDER BY cm.instance ASC";
+                    AND c.enddate > ? ORDER BY ".$sortcolumn." ".$sortorder;
           $params = array($userid, $userid, $userid, $userid, $userid,
                          $userid, $userid, $userid, $userid, $onemonth);
           $records = $DB->get_records_sql($sql, $params);
@@ -323,14 +364,26 @@ class assessments_details {
           return $items;
      }
 
-     public static function retrieve_past_gradable_activities($userid) {
+     public static function retrieve_past_gradable_activities($userid, $sortby, $sortorder) {
           global $DB;
           $onemonth = time() + (86400 * 30);
+
+          if($sortby === SORTBY_COURSE) {
+               $sortcolumn = 'coursetitle';
+          }else if($sortby === SORTBY_STARTDATE){
+               $sortcolumn = 'c.startdate';
+          }else{
+               $sortcolumn = 'c.enddate';
+          }
 
           $sql = "SELECT cm.id, c.id AS courseid, c.startdate, c.enddate,
                          cs.section, cs.name AS sectionname,
                          c.fullname AS coursefullname, c.shortname AS courseshortname,
                          cm.instance AS modinstance, m.name AS modname,
+                         CASE
+                         WHEN cs.name IS NOT NULL THEN cs.name
+                         WHEN cs.section > 0 THEN CONCAT('Topic ', cs.section)
+                         ELSE c.fullname END AS coursetitle,
                          gi.id AS gradeitemid, gi.gradetype, gi.scaleid,
                          gi.aggregationcoef, gi.aggregationcoef2,
                          gi.grademax, gi.grademin, gi.gradepass,
@@ -472,7 +525,7 @@ class assessments_details {
                            FROM {forum})) ua
                               ON (ua.modtype = m.`name` AND ua.activityid = cm.instance)
                     WHERE cfd.value > 0 AND m.`name` IN ('assign' , 'quiz', 'forum', 'workshop')
-                    AND c.enddate <= ? ORDER BY cm.instance ASC";
+                    AND c.enddate <= ? ORDER BY ".$sortcolumn." ".$sortorder;
           $params = array($userid, $userid, $userid, $userid, $userid,
                          $userid, $userid, $userid, $userid, $onemonth);
           $records = $DB->get_records_sql($sql, $params);
@@ -494,8 +547,7 @@ class assessments_details {
 
                     if($isstudent && $iscmvisible) {
                          $item = new stdClass;
-                         $item->coursetitle = self::return_coursetitle($record->section, $record->sectionname,
-                                                                      $record->coursefullname);
+                         $item->coursetitle = $record->coursetitle;
                          $item->courseurl = self::return_courseurl($record->courseid);
                          $item->assessmenturl = self::return_assessmenturl($record->id, $record->modname);
                          $item->assessmentname = $record->activityname;
@@ -555,21 +607,6 @@ class assessments_details {
                     break;
           }
           return $isstudent;
-     }
-
-     /**
-      * Returns the section name if it exists, otherwise, returns the course name
-      *
-      * @param int $section
-      * @param string $sectionname
-      * @param string $coursename
-      * @return string
-      */
-     public static function return_coursetitle($section, $sectionname, $coursefullname) {
-          $coursetitle = ($sectionname) ? $sectionname :
-                   (($section > 0) ? get_string('topic', 'block_gu_spdetails').$section : $coursefullname);
-
-          return $coursetitle;
      }
 
      /**
