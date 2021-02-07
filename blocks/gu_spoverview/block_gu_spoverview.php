@@ -24,7 +24,7 @@
  */
 
 defined('MOODLE_INTERNAL') || die();
-require_once($CFG->dirroot . '/blocks/gu_spdetails/block_gu_spdetails.php');
+// require_once($CFG->dirroot . '/blocks/gu_spdetails/block_gu_spdetails.php');
 
 class block_gu_spoverview extends block_base {
 
@@ -52,8 +52,13 @@ class block_gu_spoverview extends block_base {
         $PAGE->requires->css('/blocks/gu_spoverview/styles.css');
         $user = $USER;
 
-        $returnassessments = block_gu_spdetails::return_assessments($user);
-        $count = self::return_assessments_count($returnassessments->currentassessments);
+        // $returnassessments = block_gu_spdetails::return_assessments($user);
+        // $count = self::return_assessments_count($returnassessments->currentassessments);
+        $count = new stdClass;
+        $count->submitted = 0;
+        $count->tosubmit = 0;
+        $count->overdue = 0;
+        $count->marked = 0;
 
         // Set singular/plural strings for Assessments submitted and Assessments marked
         $submitted_str = ($count->submitted == 1) ? get_string('assessment', 'block_gu_spoverview') :
