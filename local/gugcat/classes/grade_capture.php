@@ -151,7 +151,9 @@ class grade_capture{
             }
         }
         //remove provisional column
-        unset($columns[local_gugcat::$PRVGRADEID]);
+        if(local_gugcat::$PRVGRADEID){
+            unset($columns[local_gugcat::$PRVGRADEID]);
+        }
         !is_null($firstcolumn) ? array_unshift($columns, $firstcolumn) : null; //always put moodle grade first
         return $columns;
     }
@@ -257,15 +259,23 @@ class grade_capture{
      * @param array $activities All modules
      */
     public static function import_from_gradebook($courseid, $module, $activities){
-        $mggradeitemid = local_gugcat::add_grade_item($courseid, get_string('moodlegrade', 'local_gugcat'), $module);
-
+        // Retrieve all enrolled students' ids only
+        $students = get_enrolled_users(context_course ::instance($courseid), 'local/gugcat:gradable', 0, 'u.id');
+        
+        // Create Provisional Grade grade item and grade_grades to all students, then assign it to static PRVID
+        local_gugcat::$PRVGRADEID = local_gugcat::add_grade_item($courseid, get_string('provisionalgrd', 'local_gugcat'), $module, $students);
+        
+        // Create Aggregated Grade grade item for this course
+        local_gugcat::add_grade_item($courseid, get_string('aggregatedgrade', 'local_gugcat'), null, $students);
+        
+        // Create Moodle Grade grade item and grade_grades to all students
+        $mggradeitemid = local_gugcat::add_grade_item($courseid, get_string('moodlegrade', 'local_gugcat'), $module, $students);
+        // Update Moodle Grade timemodified
         $gradeitem_ = new grade_item(array('id'=>$mggradeitemid), true);
         $gradeitem_->timemodified = time();
-        //update timemodified gradeitem
         $gradeitem_->update();
+
         $grade = null;
-        //Retrieve enrolled students' ids only
-        $students = get_enrolled_users(context_course ::instance($courseid), 'local/gugcat:gradable', 0, 'u.id');
         
         $gbgrades = grade_get_grades($courseid, 'mod', $module->modname, $module->instance, array_keys($students));
         $gbgradeitem = array_values(array_filter($gbgrades->items, function($item) use($module){
