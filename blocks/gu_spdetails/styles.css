@@ -150,15 +150,9 @@
     background-color: #183;
     border-color: #183;
     color: #fff;
-    opacity: 1;
 }
 
 .status-overdue {
-    border-color: #b00;
-    color: #b00;
-}
-
-.status-link .status-overdue {
     background-color: #b00;
     border-color: #b00;
     color: #fff;
