@@ -216,7 +216,7 @@ function return_assessments_count($userid) {
                                 $counter->submitted++;
                             }else{
                                 if($record->duedate < time()) {
-                                    if($record->cutoffdate < time()) {
+                                    if($record->cutoffdate == 0 || $record->cutoffdate > time()) {
                                         $counter->overdue++;
                                     }
                                 }else{
@@ -241,7 +241,7 @@ function return_assessments_count($userid) {
                         // forum
                         default:
                             if($record->duedate < time()) {
-                                if($record->cutoffdate < time()) {
+                                if($record->cutoffdate == 0 || $record->cutoffdate > time()) {
                                     $counter->overdue++;
                                 }
                             }else{
