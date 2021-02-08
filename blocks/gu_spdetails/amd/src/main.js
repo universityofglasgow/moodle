@@ -203,7 +203,7 @@ define(['core/ajax'], function(Ajax) {
             onClickPageLink();
             sortingStatus(sortby, sortorder);
         }).fail(function(response) {
-            console.log(response);
+            tabContent.innerHTML = response.message;
         });
     }
 
