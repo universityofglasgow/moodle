@@ -45,8 +45,8 @@ class assessments_details {
       * @return string HTML
       */ 
      public static function retrieve_assessments($activetab, $page, $sortby, $sortorder) {
-          global $DB, $USER, $OUTPUT;          
-          require_login();
+          global $DB, $USER, $OUTPUT, $PAGE;
+          $PAGE->set_context(context_system::instance());
 
           $userid = $USER->id;
           $limit = ASSESSMENTS_PER_PAGE;
