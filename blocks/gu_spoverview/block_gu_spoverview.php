@@ -24,7 +24,7 @@
  */
 
 defined('MOODLE_INTERNAL') || die();
-// require_once($CFG->dirroot . '/blocks/gu_spdetails/block_gu_spdetails.php');
+require_once('querylib.php');
 
 class block_gu_spoverview extends block_base {
 
@@ -50,15 +50,7 @@ class block_gu_spoverview extends block_base {
         global $USER, $DB, $PAGE, $OUTPUT;
 
         $PAGE->requires->css('/blocks/gu_spoverview/styles.css');
-        $user = $USER;
-
-        // $returnassessments = block_gu_spdetails::return_assessments($user);
-        // $count = self::return_assessments_count($returnassessments->currentassessments);
-        $count = new stdClass;
-        $count->submitted = 0;
-        $count->tosubmit = 0;
-        $count->overdue = 0;
-        $count->marked = 0;
+        $count = return_assessments_count($USER->id);
 
         // Set singular/plural strings for Assessments submitted and Assessments marked
         $submitted_str = ($count->submitted == 1) ? get_string('assessment', 'block_gu_spoverview') :
@@ -86,48 +78,13 @@ class block_gu_spoverview extends block_base {
             'assessments_marked_str'       => $marked_str.get_string('marked', 'block_gu_spoverview'),
         ];
 
+        if ($this->content !== null) {
+            return $this->content;
+        }
+
         $this->content = new stdClass;
         $this->content->text = $OUTPUT->render_from_template('block_gu_spoverview/spoverview', $templatecontext);
 
         return $this->content;
-    }
-
-    /**
-     * 
-     * @param array $assessments
-     * @return stdClass Counter Object containing count of Assessment records
-     */
-    public static function return_assessments_count($assessments) {
-        $counter = new stdClass;
-        $counter->submitted = 0;
-        $counter->tosubmit = 0;
-        $counter->overdue = 0;
-        $counter->marked = 0;
-
-        if (!empty($assessments)) {
-            foreach($assessments as $assessment) {
-                switch($assessment->status->suffix) {
-                    case 'graded':
-                        $counter->marked++;
-                        $counter->submitted++;
-                        break;
-                    case 'overdue':
-                        $counter->overdue++;
-                        break;
-                    case 'overduelinked':
-                        $counter->tosubmit++;
-                        $counter->overdue++;
-                        break;
-                    case 'submit':
-                        $counter->tosubmit++;
-                        break;
-                    case 'submitted':
-                        $counter->submitted++;
-                        break;
-                }
-            }
-        }
-
-        return $counter;
     }
 }
