@@ -570,7 +570,7 @@ class assessments_details {
                                                                  $record->feedbacktext, $record->gradingduedate);
                          $item->status = self::return_status($record->modname, $item->grading->hasgrade, $record->status,
                                                             $record->nosubmissions, $record->allowsubmissionsfromdate,
-                                                            $record->duedate, $record->cutoffdate,
+                                                            $record->duedate, $record->cutoffdate, $record->gradingduedate,
                                                             $item->hasextension, $record->workshopsubmission,
                                                             $record->feedback);
                          array_push($items, $item);
@@ -754,7 +754,7 @@ class assessments_details {
                     }
 
                     if($gradingduedate > time()) {
-                         $grading->gradetext = ($feedback === 'NS') ? $na : $duedate;
+                         $grading->gradetext = $duedate;
                     }else{
                          $grading->gradetext = ($feedback === 'NS') ? $na : $overdue;
                     }
@@ -841,7 +841,7 @@ class assessments_details {
                     }
 
                     if($gradingduedate > time()) {
-                         $fb->feedbacktext = ($feedback === 'NS') ? $na : $duedate;
+                         $fb->feedbacktext = $duedate;
                     }else{
                          $fb->feedbacktext = ($feedback === 'NS') ? $na : $overdue;
                     }
@@ -870,7 +870,7 @@ class assessments_details {
       * @return stdClass Object containing status text, status class, hasstatusurl
       */
      public static function return_status($modname, $hasgrade, $status, $nosubmissions,
-                                          $allowsubmissionsfromdate, $duedate, $cutoffdate,
+                                          $allowsubmissionsfromdate, $duedate, $cutoffdate, $gradingduedate,
                                           $hasextension, $workshopsubmission, $feedback) {
           $graded = get_string('status_graded', 'block_gu_spdetails');
           $notopen = get_string('status_notopen', 'block_gu_spdetails');
@@ -893,7 +893,15 @@ class assessments_details {
           if($hasgrade) {
                $s->statustext = $graded;
                $s->class = $classgraded;
-          }else{
+          }else if($feedback === 'NS' && $duedate < time() && $cutoffdate > time() && $gradingduedate > time()){
+               $s->statustext = $overdue;
+               $s->class = $classoverdue;
+               $s->hasstatusurl = false;
+          }else if($feedback === 'NS' && $duedate < time() && $cutoffdate < time() && $gradingduedate > time()){
+               $s->statustext = $unavailable;
+          }else if($feedback === 'NS' && $duedate < time() && $cutoffdate < time() && $gradingduedate < time()){
+               $s->statustext = $notsubmitted;
+          }else {
                switch($modname) {
                     case 'assign':
                          if($status === $submitted) {
