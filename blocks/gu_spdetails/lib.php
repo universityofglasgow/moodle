@@ -917,10 +917,10 @@ class assessments_details {
                                         $s->statustext = $notopen;
                                    }else{
                                         if($duedate < time()) {
-                                             if($cutoffdate < time()) {
+                                             if($cutoffdate == 0 || $cutoffdate > time()) {
                                                   $s->statustext = $overdue;
                                                   $s->class = $classoverdue;
-                                                  $s->hasstatusurl = ($cutoffdate == 0) ? true : false;
+                                                  $s->hasstatusurl = true;
                                              }else{
                                                   $s->statustext = $notsubmitted;
                                              }
@@ -967,10 +967,10 @@ class assessments_details {
                     // forum
                     default:
                          if($duedate < time()) {
-                              if($cutoffdate < time()) {
+                              if($cutoffdate == 0 || $cutoffdate > time()) {
                                    $s->statustext = $overdue;
                                    $s->class = $classoverdue;
-                                   $s->hasstatusurl = ($cutoffdate == 0) ? true : false;
+                                   $s->hasstatusurl = true;
                               }else{
                                    $s->statustext = $notsubmitted;
                               }
