@@ -23,42 +23,79 @@
     transition: all 0.3s ease-in-out;
 }
 
+/** Sort field **/
+.assessments-details-sort-container {
+    margin: 0.5em 0;
+}
+
+.assessments-details-container select {
+    border-radius: 8px;
+    height: 42px;
+    padding: 10px;
+    width: 136px;
+}
+
+.assessments-details-sort-label {
+    display: inline;
+    font-weight: 600;
+    margin: 0 1em 0 0.5em;
+    vertical-align: middle;
+}
+
 /** Table **/
-.assessments-table.table th,
-.assessments-table.table td {
+.assessments-details-table.table th,
+.assessments-details-table.table td {
     border: none;
 }
 
-.assessments-table.table th {
+.assessments-details-table.table th {
     vertical-align: middle;
 }
 
 /** Table columns **/
-.assessments-table .td20 {
+.assessments-details-table .td20 {
     width: 20%;
 }
 
-.assessments-table .td15 {
+.assessments-details-table .td15 {
     width: 15%;
 }
 
-.assessments-table .td10 {
+.assessments-details-table .td10 {
     width: 10%;
 }
 
-.assessments-table .td05 {
+.assessments-details-table .td05 {
     width: 5%;
 }
 
+/** Table columns sortable **/
+.assessments-details-table .th-sortable {
+    cursor: pointer;
+}
+
+.assessments-details-table .th-sortable::after {
+    content: '▸';
+    font-size: 1.2em;
+}
+
+.assessments-details-table .th-sort-asc::after {
+    content: '▾';
+}
+
+.assessments-details-table .th-sort-desc::after {
+    content: '▴';
+}
+
 /** Table span **/
-.assessments-table .extended {
+.assessments-details-table .extended {
     color: #b00;
     cursor: pointer;
     font-weight: 600;
     margin-left: -3px;
 }
 
-.assessments-table .extended-tooltip {
+.assessments-details-table .extended-tooltip {
     background-color: #ebf1f5;
     border: 1px solid #555;
     border-radius: 3px;
@@ -71,11 +108,11 @@
     z-index: 1;
 }
 
-.assessments-table .extended:hover .extended-tooltip {
+.assessments-details-table .extended:hover .extended-tooltip {
     visibility: visible;
 }
 
-.assessments-table .graded {
+.assessments-details-table .graded {
     color: #183;
     font-weight: 600;
 }
