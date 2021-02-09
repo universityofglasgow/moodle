@@ -183,7 +183,7 @@ function return_assessments_count($userid) {
                            FROM {forum})) ua
                               ON (ua.modtype = m.`name` AND ua.activityid = cm.instance)
                     WHERE cfd.value > 0 AND m.`name` IN ('assign' , 'quiz', 'forum', 'workshop')
-                    AND c.enddate > ?";
+                    AND cm.visible = 1 AND c.enddate > ?";
     $params = array($userid, $userid, $userid, $userid, $userid,
                     $userid, $userid, $userid, $userid, $onemonth);
     $records = $DB->get_records_sql($sql, $params);
