@@ -79,6 +79,8 @@ if ($fromform = $mform->get_data()) {
             redirect($URL);
             exit;
         }else{
+            $itemid = local_gugcat::add_grade_item($courseid, get_string('aggregatedgrade', 'local_gugcat'), null);
+            $DB->set_field('grade_grades', 'overridden', 0, array('itemid' => $itemid, 'userid'=>$studentid));
             grade_aggregation::adjust_course_weight($weights, $courseid, $studentid, $fromform->notes);
         }
     }
