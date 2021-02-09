@@ -259,6 +259,7 @@ class grade_capture{
      * @param array $activities All modules
      */
     public static function import_from_gradebook($courseid, $module, $activities){
+        global $DB;
         // Retrieve all enrolled students' ids only
         $students = get_enrolled_users(context_course ::instance($courseid), 'local/gugcat:gradable', 0, 'u.id');
         
@@ -266,7 +267,7 @@ class grade_capture{
         local_gugcat::$PRVGRADEID = local_gugcat::add_grade_item($courseid, get_string('provisionalgrd', 'local_gugcat'), $module, $students);
         
         // Create Aggregated Grade grade item for this course
-        local_gugcat::add_grade_item($courseid, get_string('aggregatedgrade', 'local_gugcat'), null, $students);
+        $aggradeid = local_gugcat::add_grade_item($courseid, get_string('aggregatedgrade', 'local_gugcat'), null, $students);
         
         // Create Moodle Grade grade item and grade_grades to all students
         $mggradeitemid = local_gugcat::add_grade_item($courseid, get_string('moodlegrade', 'local_gugcat'), $module, $students);
@@ -300,6 +301,8 @@ class grade_capture{
             }
             local_gugcat::add_update_grades($student->id, local_gugcat::$PRVGRADEID, $grade);
             local_gugcat::add_update_grades($student->id, $mggradeitemid, $grade);
+
+            $DB->set_field('grade_grades', 'overridden', 0, array('itemid' => $aggradeid, 'userid'=>$student->id));
         } 
         //every time import is clicked, weights from the main activity will be copied to provisional grade items
         self::set_provisional_weights($courseid, $activities, $students);
