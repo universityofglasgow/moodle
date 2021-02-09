@@ -62,8 +62,40 @@ class block_gu_spdetails extends block_base {
         }
 
         $this->content         = new stdClass();
-        $this->content->text   = $OUTPUT->render_from_template('block_gu_spdetails/spdetails', $templatecontext);
+        $this->content->text   = $this->return_enrolledcourses($USER->id) ? $OUTPUT->render_from_template('block_gu_spdetails/spdetails', $templatecontext) : null;
 
         return $this->content;
+    }
+
+    /**
+     * Returns enrolled courses with custom field 'show_on_studentdashboard'
+     * 
+     * @param string $userid
+     * @param string $fields
+     * @return array SQL data
+     */
+
+    public function return_enrolledcourses($userid, $fields = "c.id"){
+        global $DB;
+
+        $customfieldjoin = "JOIN
+                        {customfield_field} cff ON cff.shortname = 'show_on_studentdashboard'
+                            JOIN
+                        {customfield_data} cfd ON (cfd.fieldid = cff.id
+                            AND cfd.instanceid = c.id)";
+
+        $customfieldwhere = "cfd.value > 0";
+
+        $enrolmentselect = "SELECT DISTINCT
+                                e.courseid
+                            FROM
+                                {enrol} e
+                            JOIN {user_enrolments} ue ON (ue.enrolid = e.id AND ue.userid = ?)";    
+
+        $enrolmentjoin = "JOIN ($enrolmentselect) en ON (en.courseid = c.id)";
+
+        $sql = "SELECT $fields FROM {course} c $customfieldjoin $enrolmentjoin WHERE $customfieldwhere";
+        $param = array($userid);
+        return $DB->get_records_sql($sql, $param);
     }
 }
