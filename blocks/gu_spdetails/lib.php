@@ -129,10 +129,12 @@ class assessments_details {
                foreach($paginatedassessments as $assessment) {
                     $html .= html_writer::start_tag('tr');
                     $html .= html_writer::start_tag('td', array('class' => 'td20'));
-                    $html .= html_writer::tag('a', $assessment->coursetitle, array('href' => $assessment->courseurl));
+                    $html .= html_writer::tag('a', $assessment->coursetitle,
+                                              array('href' => $assessment->courseurl));
                     $html .= html_writer::end_tag('td');
                     $html .= html_writer::start_tag('td', array('class' => 'td20'));
-                    $html .= html_writer::tag('a', $assessment->assessmentname, array('href' => $assessment->assessmenturl));
+                    $html .= html_writer::tag('a', $assessment->assessmentname,
+                                              array('href' => $assessment->assessmenturl));
                     $html .= html_writer::end_tag('td');
                     $html .= html_writer::tag('td', $assessment->assessmenttype, array('class' => 'td10'));
                     $html .= html_writer::tag('td', $assessment->weight, array('class' => 'td05'));
@@ -141,22 +143,24 @@ class assessments_details {
                          $html .= $assessment->formattedduedate;
                          if($assessment->hasextension) {
                               $html .= html_writer::start_span('extended').'*';
-                              $html .= html_writer::start_span('extended-tooltip').get_string('extended', 'block_gu_spdetails');
+                              $html .= html_writer::start_span('extended-tooltip').
+                                                              get_string('extended', 'block_gu_spdetails');
                               $html .= html_writer::end_span();
                               $html .= html_writer::end_span();
                          }
                          $html .= html_writer::end_tag('td');
                          $html .= html_writer::start_tag('td', array('class' => 'td15'));
                          if($assessment->status->hasstatusurl) {
-                              $html .= html_writer::start_tag('a', array('href' => $assessment->assessmenturl,
-                                                                         'class' => get_string('class_link', 'block_gu_spdetails')));
-                              $html .= html_writer::start_span(get_string('class_default', 'block_gu_spdetails').$assessment->status->class).
-                                                               $assessment->status->statustext;
+                              $html .= html_writer::start_tag('a',
+                                                              array('href' => $assessment->assessmenturl,
+                                                              'class' => get_string('class_link', 'block_gu_spdetails')));
+                              $html .= html_writer::start_span(get_string('class_default', 'block_gu_spdetails').
+                                                               $assessment->status->class).$assessment->status->statustext;
                               $html .= html_writer::end_span();
                               $html .= html_writer::end_tag('a');
                          }else{
-                              $html .= html_writer::start_span(get_string('class_default', 'block_gu_spdetails').$assessment->status->class).
-                                                               $assessment->status->statustext;
+                              $html .= html_writer::start_span(get_string('class_default', 'block_gu_spdetails').
+                                                               $assessment->status->class).$assessment->status->statustext;
                               $html .= html_writer::end_span();
                          }
                          $html .= html_writer::end_tag('td');
@@ -179,7 +183,6 @@ class assessments_details {
                          $html .= $assessment->grading->gradetext;
                     }
                     $html .= html_writer::end_tag('td');
-                    // $html .= html_writer::tag('td', $assessment->feedback->feedbacktext);
                     $html .= html_writer::start_tag('td', array('class' => 'td10'));
                     if($assessment->feedback->hasfeedback) {
                          $html .= html_writer::tag('a', $assessment->feedback->feedbacktext,
@@ -556,26 +559,32 @@ class assessments_details {
                          $item->assessmentname = $record->activityname;
                          $item->assessmenttype = self::return_assessmenttype($record->gradecategoryname);
                          $item->weight = self::return_weight($item->assessmenttype, $record->aggregation,
-                                                            $record->aggregationcoef, $record->aggregationcoef2);
+                                                             $record->aggregationcoef, $record->aggregationcoef2);
                          $item->duedate = $record->duedate;
                          $item->formattedduedate = self::return_formattedduedate($record->duedate);
                          $item->hasextension = (!empty($record->hasextension)) ? true : false;
                          $item->startdate = $record->startdate;
                          $item->enddate = $record->enddate;
-                         $item->formattedstartdate = date(get_string('date_m_y', 'block_gu_spdetails'), $record->startdate);
-                         $item->formattedenddate = date(get_string('date_m_y', 'block_gu_spdetails'), $record->enddate);
+                         $item->formattedstartdate = date(get_string('date_m_y', 'block_gu_spdetails'),
+                                                          $record->startdate);
+                         $item->formattedenddate = date(get_string('date_m_y', 'block_gu_spdetails'),
+                                                        $record->enddate);
                          $item->grading = self::return_grading($record->finalgrade, $record->gradetype,
-                                                            $record->grademin, $record->grademax,$record->gradeinformation, 
-                                                            $record->gradingduedate, $record->duedate, $record->cutoffdate,
-                                                            $record->scale, $record->feedback);
-                         $item->feedback = self::return_feedback($record->id, $record->modname, $item->grading->hasgrade,
-                                                                 $record->feedback, $record->numfiles, $record->value,$record->feedbacktext, 
-                                                                 $record->gradingduedate, $record->duedate, $record->cutoffdate,);
-                         $item->status = self::return_status($record->modname, $item->grading->hasgrade, $record->status,
-                                                            $record->nosubmissions, $record->allowsubmissionsfromdate,
-                                                            $record->duedate, $record->cutoffdate, $record->gradingduedate,
-                                                            $item->hasextension, $record->workshopsubmission,
-                                                            $record->feedback);
+                                                               $record->grademin, $record->grademax,
+                                                               $record->gradeinformation, $record->gradingduedate,
+                                                               $record->duedate, $record->cutoffdate,
+                                                               $record->scale, $record->feedback);
+                         $item->feedback = self::return_feedback($record->id, $record->modname,
+                                                                 $item->grading->hasgrade, $record->feedback,
+                                                                 $record->numfiles, $record->value,
+                                                                 $record->feedbacktext, $record->gradingduedate,
+                                                                 $record->duedate, $record->cutoffdate);
+                         $item->status = self::return_status($record->modname, $item->grading->hasgrade,
+                                                             $record->status, $record->nosubmissions,
+                                                             $record->allowsubmissionsfromdate,
+                                                             $record->duedate, $record->cutoffdate,
+                                                             $record->gradingduedate, $item->hasextension,
+                                                             $record->workshopsubmission, $record->feedback);
                          array_push($items, $item);
                     }
                }
@@ -707,8 +716,9 @@ class assessments_details {
       * @return stdClass Object containing grade text (could be actual grade or grading due date),
       *         hasgrade, isprovisional
       */
-     public static function return_grading($finalgrade, $gradetype, $grademin, $grademax,$gradeinformation,
-                                           $gradingduedate, $duedate, $cutoffdate, $scale, $feedback) {
+     public static function return_grading($finalgrade, $gradetype, $grademin, $grademax,
+                                           $gradeinformation, $gradingduedate, $duedate,
+                                           $cutoffdate, $scale, $feedback) {
           $grading = new stdClass;
           $grading->gradetext = null;
           $grading->hasgrade = false;
@@ -876,9 +886,9 @@ class assessments_details {
       * @param string $feedback
       * @return stdClass Object containing status text, status class, hasstatusurl
       */
-     public static function return_status($modname, $hasgrade, $status, $nosubmissions,
-                                          $allowsubmissionsfromdate, $duedate, $cutoffdate, $gradingduedate,
-                                          $hasextension, $workshopsubmission, $feedback) {
+     public static function return_status($modname, $hasgrade, $status, $nosubmissions, $allowsubmissionsfromdate,
+                                          $duedate, $cutoffdate, $gradingduedate, $hasextension,
+                                          $workshopsubmission, $feedback) {
           $graded = get_string('status_graded', 'block_gu_spdetails');
           $notopen = get_string('status_notopen', 'block_gu_spdetails');
           $notsubmitted = get_string('status_notsubmitted', 'block_gu_spdetails');

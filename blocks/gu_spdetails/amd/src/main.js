@@ -188,6 +188,7 @@ define(['core/ajax'], function(Ajax) {
     }
     
     const loadAssessments = (activetab, page, sortby, sortorder) => {
+        var blockContainer = document.getElementById('assessments_details_container');
         var tabContent = document.getElementById('assessments_details_contents');
         var promise = Ajax.call([{
             methodname: 'block_gu_spdetails_retrieve_assessments',
@@ -203,7 +204,32 @@ define(['core/ajax'], function(Ajax) {
             onClickPageLink();
             sortingStatus(sortby, sortorder);
         }).fail(function(response) {
-            tabContent.innerHTML = response.message;
+            if(response) {
+                var errorContainer = document.createElement('div');
+                errorContainer.classList.add('alert', 'alert-danger');
+
+                if(response.hasOwnProperty('message')) {
+                    var errorMsg = document.createElement('p');
+
+                    errorMsg.innerHTML = response.message;
+                    errorContainer.appendChild(errorMsg);
+                    errorMsg.classList.add('errormessage');
+                }
+
+                if(response.hasOwnProperty('moreinfourl')) {
+                    var errorLinkContainer = document.createElement('p');
+                    var errorLink = document.createElement('a');
+
+                    errorLink.setAttribute('href', response.moreinfourl);
+                    errorLink.setAttribute('target', '_blank');
+                    errorLink.innerHTML = 'More information about this error';
+                    errorContainer.appendChild(errorLinkContainer);
+                    errorLinkContainer.appendChild(errorLink);
+                    errorLinkContainer.classList.add('errorcode');
+                }
+
+                blockContainer.prepend(errorContainer);
+            }
         });
     }
 
@@ -284,7 +310,7 @@ define(['core/ajax'], function(Ajax) {
             item.addEventListener('click', event => {
                 event.preventDefault();
                 loadAssessments(activetab, page, sortby, sortorder);
-            })
+            });
         });
     }
 
