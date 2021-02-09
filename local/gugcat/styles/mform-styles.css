@@ -108,9 +108,10 @@ textarea#id_notes.form-control {
     }
 }
 
-/* Small devices (portrait tablets and large phones, 600px and up) */
-@media only screen and (min-width: 600px) {
-    .mform-grades {
-        position: revert;
-    }
+.btn-coursegradeform > .form-inline > .btn{
+    margin-left: auto !important;
+    margin-right: 15px;
+    color: #fff;
+    background-color: #0f6fc5;
+    border-color: #0f6fc5;
 }

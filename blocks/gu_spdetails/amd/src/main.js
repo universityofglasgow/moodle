@@ -273,21 +273,19 @@ define(['core/ajax'], function(Ajax) {
 
     const onClickPageLink = () => {
         var pageLinks = document.querySelectorAll('#assessments_details_contents .page-item a.page-link');
-        for (var i=0; i<pageLinks.length; i++) {
-            var pageLink = pageLinks[i];
 
-            pageLink.addEventListener('click', event => {
+        pageLinks.forEach(item => {
+            var url = new URL(item.getAttribute('href'));
+            var params = new URLSearchParams(url.search);
+            var activetab = params.get('activetab');
+            var page = params.get('page');
+            var sortby = params.get('sortby');
+            var sortorder = params.get('sortorder');
+            item.addEventListener('click', event => {
                 event.preventDefault();
-                var url = new URL(event.target.getAttribute('href'));
-                var params = new URLSearchParams(url.search);
-                var activetab = params.get('activetab');
-                var page = params.get('page');
-                var sortby = params.get('sortby');
-                var sortorder = params.get('sortorder');
-
                 loadAssessments(activetab, page, sortby, sortorder);
-            });
-        }
+            })
+        });
     }
 
     return {

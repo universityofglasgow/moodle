@@ -67,20 +67,33 @@ $student->lastname = $student->surname;
 $student->firstname = $student->forename;
 $mform = new coursegradeform(null, array('id'=>$courseid, 'page'=>$page, 'categoryid'=>$categoryid, 'studentid'=>$studentid, 'setting'=>$formtype, 'student'=>$student));
 if ($fromform = $mform->get_data()) {
+    //params needed for logs
+    $params = array(
+        'context' => $coursecontext,
+        'other' => array(
+            'courseid' => $courseid,
+            'categoryid' => $categoryid,
+            'cnum' => $cnum,
+            'idnumber' => $student->idnumber,
+            'studentid' => $studentid,
+            'setting' => $formtype,
+            'page' => $page
+        )
+    );
     if($formtype == OVERRIDE_GRADE_FORM){
         $gradeitemid = local_gugcat::add_grade_item($courseid, get_string('aggregatedgrade', 'local_gugcat'), null);
         local_gugcat::update_grade($studentid, $gradeitemid, $fromform->override, $fromform->notes, time());
+        //log of adjust course weight
+        $event = \local_gugcat\event\override_course_grade::create($params);
+        $event->trigger();
     }else if($formtype == ADJUST_WEIGHT_FORM){
         $weights = $fromform->weights;
-        if(array_sum($weights) != 100){
-            local_gugcat::notify_error('errortotalweight');
-            $URL = new moodle_url('/local/gugcat/overview/gradeform/index.php', $urlparams);
-            (!is_null($categoryid) && $categoryid != 0) ? $URL->param('categoryid', $categoryid) : null;
-            redirect($URL);
-            exit;
-        }else{
-            grade_aggregation::adjust_course_weight($weights, $courseid, $studentid, $fromform->notes);
-        }
+        $aggradeid = local_gugcat::get_grade_item_id($courseid, null, get_string('aggregatedgrade', 'local_gugcat'));
+        $DB->set_field('grade_grades', 'overridden', 0, array('itemid' => $aggradeid, 'userid'=>$studentid));
+        grade_aggregation::adjust_course_weight($weights, $courseid, $studentid, $fromform->notes);
+        //log of adjust course weight
+        $event = \local_gugcat\event\adjust_course_weight::create($params);
+        $event->trigger();
     }
     $url = new moodle_url('/local/gugcat/overview/index.php', array('id' => $courseid, 'page' => $page));
     (!is_null($categoryid) && $categoryid != 0) ? $url->param('categoryid', $categoryid) : null;
