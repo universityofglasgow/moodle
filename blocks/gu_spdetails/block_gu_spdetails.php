@@ -62,22 +62,21 @@ class block_gu_spdetails extends block_base {
         }
 
         $this->content         = new stdClass();
-        $this->content->text   = $this->return_enrolledcourses($USER->id) ? $OUTPUT->render_from_template('block_gu_spdetails/spdetails', $templatecontext) : null;
+        $this->content->text   = !empty($this->return_enrolledcourses($USER->id)) ? $OUTPUT->render_from_template('block_gu_spdetails/spdetails', $templatecontext) : null;
 
         return $this->content;
     }
 
     /**
-     * Returns enrolled courses with custom field 'show_on_studentdashboard'
+     * Returns enrolled courses as student with custom field 'show_on_studentdashboard'
      * 
      * @param string $userid
      * @param string $fields
      * @return array SQL data
      */
-
-    public function return_enrolledcourses($userid, $fields = "c.id"){
+    public function return_enrolledcourses($userid){
         global $DB;
-
+        $fields = "c.id";
         $customfieldjoin = "JOIN
                         {customfield_field} cff ON cff.shortname = 'show_on_studentdashboard'
                             JOIN
@@ -96,6 +95,30 @@ class block_gu_spdetails extends block_base {
 
         $sql = "SELECT $fields FROM {course} c $customfieldjoin $enrolmentjoin WHERE $customfieldwhere";
         $param = array($userid);
-        return $DB->get_records_sql($sql, $param);
+        $results = $DB->get_records_sql($sql, $param);
+
+        if($results){
+            $studentcourses = array();
+            foreach($results as $courseid=>$courseobject){
+                if($this->return_isstudent($courseid)){
+                    array_push($studentcourses, $courseid);
+                }
+            }
+            return $studentcourses;
+        } else {
+            return array();
+        }
+    }
+
+    /**
+     * Return has_capability
+     * 
+     * @param string $courseid
+     * @param string $userid
+     * @return boolean
+     */
+    public function return_isstudent($courseid){
+        $context = context_course::instance($courseid);
+        return has_capability("moodle/course:isincompletionreports", $context, null, false);
     }
 }
