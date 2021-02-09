@@ -89,7 +89,8 @@ class assessments_details {
                     $html .= html_writer::select($pastsortby, $selectsortby, $sortby, false);
                }
                $html .= html_writer::end_tag('div');
-               $html .= html_writer::start_tag('table', array('class' => 'table assessments-details-table'));
+               $html .= html_writer::start_tag('table', array('class' =>
+                                               'table table-responsive assessments-details-table'));
                $html .= html_writer::start_tag('thead');
                $html .= html_writer::start_tag('tr');
                $html .= html_writer::tag('th', get_string('header_course', 'block_gu_spdetails'),
