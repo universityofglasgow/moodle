@@ -155,6 +155,35 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
         }
     }
 
+    const showModal = (dataAction, messageId, confirmId, cancelId = 'cancelmodal') => {
+        var strings = [
+            {
+                key: messageId,
+                component: 'local_gugcat'
+            },
+            {
+                key: cancelId,
+                component: 'local_gugcat'
+            },
+            {
+                key: confirmId,
+                component: 'local_gugcat'
+            }
+        ];
+        Str.get_strings(strings).then(function(langStrings){
+            var templateContext = {
+                bodycontent: langStrings[0],
+                strcancel: langStrings[1], 
+                strconfirm: langStrings[2], 
+                dataaction: dataAction
+            };
+            ModalFactory.create({
+                type:ModalGcat.TYPE,
+                templateContext: templateContext
+            }).done(modal => modal.show());
+        });
+    }
+
     const onChangeListeners = (event) =>{
         var urlParams = new URLSearchParams(window.location.search);
         var categories = document.getElementById('select-category');
@@ -236,69 +265,22 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                 $(".togglemultigrd").show();
                 break;
             case btn_release:   
-                var strings = [
-                    {
-                        key: 'modalreleaseprovisionalgrade',
-                        component: 'local_gugcat'
-                    },
-                    {
-                        key: 'cancelmodal',
-                        component: 'local_gugcat'
-                    },
-                    {
-                        key: 'confirmreleaseprovisionalgrade',
-                        component: 'local_gugcat'
-                    }
-                ];
-                Str.get_strings(strings).then(function(langStrings){
-                    var templateContext = {
-                        bodycontent: langStrings[0],
-                        strcancel: langStrings[1], 
-                        strconfirm: langStrings[2], 
-                        dataaction: 'release'
-                    };
-                    ModalFactory.create({
-                        type:ModalGcat.TYPE,
-                        templateContext: templateContext
-                    }).done(modal => modal.show());
-                });
+                showModal('release', 'modalreleaseprovisionalgrade', 'confirmreleaseprovisionalgrade');
                 break;
             case btn_import:
                 if(!$(".gradeitems").text().includes("Moodle Grade[Date]")){
-                    var strings = [
-                        {
-                            key: 'modalimportgrades',
-                            component: 'local_gugcat'
-                        },
-                        {
-                            key: 'cancelmodal',
-                            component: 'local_gugcat'
-                        },
-                        {
-                            key: 'confirmimport',
-                            component: 'local_gugcat'
-                        }
-                    ];
-                    Str.get_strings(strings).then(function(langStrings){
-                        var templateContext = {
-                            bodycontent: langStrings[0],
-                            strcancel: langStrings[1], 
-                            strconfirm: langStrings[2], 
-                            dataaction: 'importgrades'
-                        };
-                        ModalFactory.create({
-                            type:ModalGcat.TYPE,
-                            templateContext: templateContext
-                        }).done(modal => modal.show());
-                    });
+                    showModal('importgrades', 'modalimportgrades', 'confirmimport');
                 }else{
                     document.getElementById('importgrades-submit').click();
                 }
                 break;
             case btn_coursegradeform:
                 var inputarr = document.querySelectorAll('.input-percent');
+                var total = 0;
                 if(inputarr.length > 0){
                     inputarr.forEach(div => {
+                        var input = div.querySelector('input');
+                        total += parseInt(input.value);
                         var invalid = div.querySelector('input.is-invalid');
                         if(invalid != null){
                             div.querySelector('div.felement').classList.add('no-after');
@@ -307,34 +289,14 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                         }
                     });
                 }
+                if(total != 100){
+                    showModal('adjustweight', 'modaladjustweights', 'confirmchanges');
+                }else{
+                    document.getElementById('coursegradeform-submit').click();
+                }
                 break;
             case btn_finalrelease:
-                var strings = [
-                    {
-                        key: 'modalreleasefinalgrades',
-                        component: 'local_gugcat'
-                    },
-                    {
-                        key: 'cancelmodal',
-                        component: 'local_gugcat'
-                    },
-                    {
-                        key: 'confirmfinalrelease',
-                        component: 'local_gugcat'
-                    }
-                ];
-                Str.get_strings(strings).then(function(langStrings){
-                    var templateContext = {
-                        bodycontent: langStrings[0],
-                        strcancel: langStrings[1], 
-                        strconfirm: langStrings[2], 
-                        dataaction: 'finalrelease'
-                    };
-                    ModalFactory.create({
-                        type:ModalGcat.TYPE,
-                        templateContext: templateContext
-                    }).done(modal => modal.show());
-                });
+                showModal('finalrelease', 'modalreleasefinalgrades', 'confirmfinalrelease');
                 break;
             case btn_download:
                 document.getElementById('downloadcsv-submit').click();

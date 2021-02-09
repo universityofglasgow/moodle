@@ -217,7 +217,8 @@ td a:hover, .dropdown-item a:hover {
 #release-submit, #importgrades-submit, 
 #finalrelease-submit, #downloadcsv-submit,
 #multiadd-submit, #search-submit,
-.hide-show-grade, .hide-names {
+#coursegradeform-submit, .hide-show-grade, 
+.hide-names {
     display: none;
 }
 
