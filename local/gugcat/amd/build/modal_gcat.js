@@ -6,6 +6,7 @@ define(['jquery', 'core/custom_interaction_events', 'core/modal', 'core/modal_re
         RELEASE_PROVISIONAL_GRADE_BUTTON: '[data-action="release"]',
         RELEASE_FINAL_GRADE_BUTTON: '[data-action="finalrelease"]',
         IMPORT_GRADE_BUTTON: '[data-action="importgrades"]',
+        ADJUST_WEIGHT_BUTTON: '[data-action="adjustweight"]',
         CANCEL_BUTTON: '[data-action="cancel"]',
     };
 
@@ -43,6 +44,10 @@ define(['jquery', 'core/custom_interaction_events', 'core/modal', 'core/modal_re
 
         this.getModal().on(CustomEvents.events.activate, SELECTORS.IMPORT_GRADE_BUTTON, function(e, data) {
             document.getElementById('importgrades-submit').click();
+        }.bind(this));
+
+        this.getModal().on(CustomEvents.events.activate, SELECTORS.ADJUST_WEIGHT_BUTTON, function(e, data) {
+            document.getElementById('coursegradeform-submit').click();
         }.bind(this));
 
         this.getModal().on(CustomEvents.events.activate, SELECTORS.CANCEL_BUTTON, function(e, data) {

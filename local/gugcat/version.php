@@ -25,7 +25,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version      = 2021020508.38;
+$plugin->version      = 2021020509.38;
 $plugin->requires     = 2019111804.11;   // Moodle 3.8.4.
 $plugin->component    = 'local_gugcat';
 

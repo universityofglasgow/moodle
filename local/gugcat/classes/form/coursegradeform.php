@@ -91,8 +91,12 @@ class coursegradeform extends moodleform {
         $mform->setType('notes', PARAM_NOTAGS); 
 
         $mform->addElement('html', '</div>');
-        $mform->addElement('submit', 'submit', get_string('savechanges', 'local_gugcat'), ['id' => 'btn-coursegradeform', 'class' => 'btn float-right']);
-
+        if($this->_customdata['setting'] == '1'){
+            $mform->addElement('submit', 'submit', get_string('savechanges', 'local_gugcat'), ['class' => 'btn-coursegradeform']);
+        }else{
+            $mform->addElement('submit', 'submit', get_string('savechanges', 'local_gugcat'), ['id' => 'coursegradeform-submit', 'class' => 'btn-coursegradeform']);
+            $mform->addElement('button', 'adjustoverride', get_string('savechanges', 'local_gugcat'), ['id' => 'btn-coursegradeform', 'class' => 'btn-coursegradeform']);
+        }
         // hidden params
         $mform->addElement('hidden', 'studentid', $this->_customdata['studentid']);
         $mform->setType('studentid', PARAM_ACTION);
