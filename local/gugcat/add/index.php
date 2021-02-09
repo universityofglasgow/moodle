@@ -82,6 +82,22 @@ if ($fromform = $mform->get_data()) {
     $grades = local_gugcat::add_update_grades($studentid, $gradeitemid, $fromform->grade, $fromform->notes);
     $url = new moodle_url('/local/gugcat/index.php', array('id' => $courseid, 'activityid' => $activityid, 'page'=> $page));
     (!is_null($categoryid) && $categoryid != 0) ? $url->param('categoryid', $categoryid) : null;
+    //log of add grades
+    $params = array(
+        'context' => \context_module::instance($module->id),
+        'other' => array(
+            'courseid' => $courseid,
+            'activityid' => $activityid,
+            'categoryid' => $categoryid,
+            'studentno' => $studentid,
+            'idnumber' => $student->idnumber,
+            'grade' => local_gugcat::convert_grade($fromform->grade),
+            'gradeitem' => $gradereason,
+            'page'=> $page
+        )
+    );
+    $event = \local_gugcat\event\add_grade::create($params);
+    $event->trigger();
     redirect($url);
     exit;
 }   

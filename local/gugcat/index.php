@@ -37,7 +37,6 @@ $URL = new moodle_url('/local/gugcat/index.php', array('id' => $courseid, 'page'
 is_null($activityid) ? null : $URL->param('activityid', $activityid);
 is_null($categoryid) ? null : $URL->param('categoryid', $categoryid);
 require_login($courseid);
-$PAGE->set_url($URL);
 $PAGE->set_title(get_string('gugcat', 'local_gugcat'));
 $PAGE->navbar->add(get_string('navname', 'local_gugcat'), $URL);
 $PAGE->requires->css('/local/gugcat/styles/gugcat.css');
@@ -76,22 +75,46 @@ if(!empty($activities)){
 //Retrieve students
 $limitfrom = $page * GCAT_MAX_USERS_PER_PAGE;
 $limitnum  = GCAT_MAX_USERS_PER_PAGE;
-$totalenrolled = count_enrolled_users($coursecontext, 'local/gugcat:gradable');
+
+// Params from search bar filters
+$filters = optional_param_array('filters', [], PARAM_NOTAGS);
+$filters = local_gugcat::get_filters_from_url($filters);
+$activesearch = (isset($filters) && count($filters) > 0 && count(array_unique($filters)) !== 1) ? true : false;
+$activesearch ? $URL->param('filter', http_build_query($filters)) : null;
+$PAGE->set_url($URL);
 
 if($groupingid != 0){
     $students = Array();
+    $totalenrolled = 0;
     //Retrieve groups
     $groups = groups_get_all_groups($course->id, 0, $groupingid);
     if(!empty($groups)){
         foreach ($groups as $group) {
-            $groupstudents = get_enrolled_users($coursecontext, 'local/gugcat:gradable', $group->id, 'u.*', null, $limitfrom, $limitnum);
+            if($activesearch){
+                list($groupstudents, $count) = local_gugcat::get_filtered_students($coursecontext, $filters, $group->id, $limitfrom, $limitnum);
+            }else{
+                $count = count_enrolled_users($coursecontext, 'local/gugcat:gradable', $group->id);
+                $groupstudents = get_enrolled_users($coursecontext, 'local/gugcat:gradable', $group->id, 'u.*', null, $limitfrom, $limitnum);
+            }
+            $totalenrolled += $count;
             $students += $groupstudents;
         }
     }
 }else{
-    $students = get_enrolled_users($coursecontext, 'local/gugcat:gradable', 0, 'u.*', null, $limitfrom, $limitnum);
+    if($activesearch){
+        list($students, $totalenrolled) = local_gugcat::get_filtered_students($coursecontext, $filters, 0, $limitfrom, $limitnum);
+    }else{
+        $totalenrolled = count_enrolled_users($coursecontext, 'local/gugcat:gradable');
+        $students = get_enrolled_users($coursecontext, 'local/gugcat:gradable', 0, 'u.*', null, $limitfrom, $limitnum);
+    }
 }
 
+// Go back to first page when new search filters were submitted
+$filters = optional_param_array('filters', [], PARAM_NOTAGS);
+if(count($filters) > 0 && $page > 0){
+    $URL->remove_params('page');
+    redirect($URL);
+}
 //Populate static $STUDENTS
 local_gugcat::$STUDENTS = $students;
 //Populate static provisional grade id
@@ -105,10 +128,25 @@ $importgrades = optional_param('importgrades', null, PARAM_NOTAGS);
 $showhidegrade = optional_param('showhidegrade', null, PARAM_NOTAGS);
 $rowstudentid = optional_param('studentid', null, PARAM_NOTAGS);
 $newgrades = optional_param_array('newgrades', null, PARAM_NOTAGS);
+
+//params for logs
+$params = array(
+    'context' => \context_module::instance($selectedmodule->id),
+    'other' => array(
+        'courseid' => $courseid,
+        'activityid' => $activityid,
+        'categoryid' => $categoryid,
+        'page' => $page
+    )
+);
+
 // Process release provisional grades
 if (isset($release)){
     grade_capture::release_prv_grade($courseid, $selectedmodule);
     local_gugcat::notify_success('successrelease');
+    //log of release grades
+    $event = \local_gugcat\event\release_prv_grade::create($params);
+    $event->trigger();
     unset($release);
     redirect($URL);
     exit;
@@ -124,6 +162,9 @@ if (isset($release)){
             }
         }
         local_gugcat::notify_success('successaddall');
+        //log of add multiple grades
+        $event = \local_gugcat\event\add_multiple_grades::create($params);
+        $event->trigger();
     }else{
         local_gugcat::notify_error('errorrequired');
     }
@@ -138,6 +179,8 @@ if (isset($release)){
     if ($valid_22point_scale){
         grade_capture::import_from_gradebook($courseid, $selectedmodule, $activities);
         local_gugcat::notify_success('successimport');
+        $event = \local_gugcat\event\import_grade::create($params);
+        $event->trigger();
     }else{
         local_gugcat::notify_error('importerror');
     }
