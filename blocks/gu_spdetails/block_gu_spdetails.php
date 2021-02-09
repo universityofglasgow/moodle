@@ -46,23 +46,26 @@ class block_gu_spdetails extends block_base {
      */
     public function get_content() {
         global $PAGE, $USER, $OUTPUT;
-        $user = $USER;
-
-        // call JS and CSS
-        $PAGE->requires->css('/blocks/gu_spdetails/styles.css');
-        $PAGE->requires->js_call_amd('block_gu_spdetails/main', 'init');
-
-        $templatecontext = (array)[
-            'tab_current'            => get_string('tab_current', 'block_gu_spdetails'),
-            'tab_past'               => get_string('tab_past', 'block_gu_spdetails'),
-        ];
-
+        
         if ($this->content !== null) {
             return $this->content;
         }
 
-        $this->content         = new stdClass();
-        $this->content->text   = !empty($this->return_enrolledcourses($USER->id)) ? $OUTPUT->render_from_template('block_gu_spdetails/spdetails', $templatecontext) : null;
+        $this->content = new stdClass();
+
+        if(!empty($this->return_enrolledcourses($USER->id))) {
+            // call JS and CSS
+            $PAGE->requires->css('/blocks/gu_spdetails/styles.css');
+            $PAGE->requires->js_call_amd('block_gu_spdetails/main', 'init');
+
+            $templatecontext = (array)[
+                'tab_current'   => get_string('tab_current', 'block_gu_spdetails'),
+                'tab_past'      => get_string('tab_past', 'block_gu_spdetails'),
+            ];
+            $this->content->text = $OUTPUT->render_from_template('block_gu_spdetails/spdetails', $templatecontext);
+        }else{
+            $this->content->text = null;
+        }
 
         return $this->content;
     }
@@ -74,38 +77,32 @@ class block_gu_spdetails extends block_base {
      * @param string $fields
      * @return array SQL data
      */
-    public function return_enrolledcourses($userid){
+    public function return_enrolledcourses($userid) {
         global $DB;
         $fields = "c.id";
-        $customfieldjoin = "JOIN
-                        {customfield_field} cff ON cff.shortname = 'show_on_studentdashboard'
-                            JOIN
-                        {customfield_data} cfd ON (cfd.fieldid = cff.id
-                            AND cfd.instanceid = c.id)";
-
+        $customfieldjoin = "JOIN {customfield_field} cff
+                            ON cff.shortname = 'show_on_studentdashboard'
+                            JOIN {customfield_data} cfd
+                            ON (cfd.fieldid = cff.id AND cfd.instanceid = c.id)";
         $customfieldwhere = "cfd.value > 0";
-
-        $enrolmentselect = "SELECT DISTINCT
-                                e.courseid
-                            FROM
-                                {enrol} e
-                            JOIN {user_enrolments} ue ON (ue.enrolid = e.id AND ue.userid = ?)";    
-
+        $enrolmentselect = "SELECT DISTINCT e.courseid FROM {enrol} e
+                            JOIN {user_enrolments} ue
+                            ON (ue.enrolid = e.id AND ue.userid = ?)";
         $enrolmentjoin = "JOIN ($enrolmentselect) en ON (en.courseid = c.id)";
-
-        $sql = "SELECT $fields FROM {course} c $customfieldjoin $enrolmentjoin WHERE $customfieldwhere";
+        $sql = "SELECT $fields FROM {course} c $customfieldjoin $enrolmentjoin
+                WHERE $customfieldwhere";
         $param = array($userid);
         $results = $DB->get_records_sql($sql, $param);
 
-        if($results){
+        if($results) {
             $studentcourses = array();
-            foreach($results as $courseid=>$courseobject){
-                if($this->return_isstudent($courseid)){
+            foreach($results as $courseid=>$courseobject) {
+                if($this->return_isstudent($courseid)) {
                     array_push($studentcourses, $courseid);
                 }
             }
             return $studentcourses;
-        } else {
+        }else{
             return array();
         }
     }
@@ -117,7 +114,7 @@ class block_gu_spdetails extends block_base {
      * @param string $userid
      * @return boolean
      */
-    public function return_isstudent($courseid){
+    public function return_isstudent($courseid) {
         $context = context_course::instance($courseid);
         return has_capability("moodle/course:isincompletionreports", $context, null, false);
     }

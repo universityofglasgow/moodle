@@ -49,42 +49,46 @@ class block_gu_spoverview extends block_base {
     public function get_content() {
         global $USER, $DB, $PAGE, $OUTPUT;
 
-        $PAGE->requires->css('/blocks/gu_spoverview/styles.css');
-        $count = return_assessments_count($USER->id);
-
-        // Set singular/plural strings for Assessments submitted and Assessments marked
-        $submitted_str = ($count->submitted == 1) ? get_string('assessment', 'block_gu_spoverview') :
-                                                    get_string('assessments', 'block_gu_spoverview');
-        $marked_str = ($count->marked == 1) ? get_string('assessment', 'block_gu_spoverview') :
-                                              get_string('assessments', 'block_gu_spoverview');
-
-        $assessments_submitted_icon = $OUTPUT->image_url('assessments_submitted', 'theme');
-        $assessments_tosubmit_icon = $OUTPUT->image_url('assessments_tosubmit', 'theme');
-        $assessments_overdue_icon = $OUTPUT->image_url('assessments_overdue', 'theme');
-        $assessments_marked_icon = $OUTPUT->image_url('assessments_marked', 'theme');
-
-        $templatecontext = (object)[
-            'assessments_submitted'        => $count->submitted,
-            'assessments_tosubmit'         => $count->tosubmit,
-            'assessments_overdue'          => $count->overdue,
-            'assessments_marked'           => $count->marked,
-            'assessments_submitted_icon'   => $assessments_submitted_icon,
-            'assessments_tosubmit_icon'    => $assessments_tosubmit_icon,
-            'assessments_overdue_icon'     => $assessments_overdue_icon,
-            'assessments_marked_icon'      => $assessments_marked_icon,
-            'assessments_submitted_str'    => $submitted_str.get_string('submitted', 'block_gu_spoverview'),
-            'assessments_tosubmit_str'     => get_string('tobesubmitted', 'block_gu_spoverview'),
-            'assessments_overdue_str'      => get_string('overdue', 'block_gu_spoverview'),
-            'assessments_marked_str'       => $marked_str.get_string('marked', 'block_gu_spoverview'),
-        ];
-
         if ($this->content !== null) {
             return $this->content;
         }
-
+        
         $this->content = new stdClass;
-        $this->content->text = $this->return_enrolledcourses($USER->id) ?
-                               $OUTPUT->render_from_template('block_gu_spoverview/spoverview', $templatecontext) : null;
+
+        if(!empty($this->return_enrolledcourses($USER->id))) {
+            $PAGE->requires->css('/blocks/gu_spoverview/styles.css');
+
+            $count = return_assessments_count($USER->id);
+            // Set singular/plural strings for Assessments submitted and Assessments marked
+            $submitted_str = ($count->submitted == 1) ? get_string('assessment', 'block_gu_spoverview') :
+                                                        get_string('assessments', 'block_gu_spoverview');
+            $marked_str = ($count->marked == 1) ? get_string('assessment', 'block_gu_spoverview') :
+                                                get_string('assessments', 'block_gu_spoverview');
+
+            $assessments_submitted_icon = $OUTPUT->image_url('assessments_submitted', 'theme');
+            $assessments_tosubmit_icon = $OUTPUT->image_url('assessments_tosubmit', 'theme');
+            $assessments_overdue_icon = $OUTPUT->image_url('assessments_overdue', 'theme');
+            $assessments_marked_icon = $OUTPUT->image_url('assessments_marked', 'theme');
+
+            $templatecontext = (object)[
+                'assessments_submitted'        => $count->submitted,
+                'assessments_tosubmit'         => $count->tosubmit,
+                'assessments_overdue'          => $count->overdue,
+                'assessments_marked'           => $count->marked,
+                'assessments_submitted_icon'   => $assessments_submitted_icon,
+                'assessments_tosubmit_icon'    => $assessments_tosubmit_icon,
+                'assessments_overdue_icon'     => $assessments_overdue_icon,
+                'assessments_marked_icon'      => $assessments_marked_icon,
+                'assessments_submitted_str'    => $submitted_str.get_string('submitted', 'block_gu_spoverview'),
+                'assessments_tosubmit_str'     => get_string('tobesubmitted', 'block_gu_spoverview'),
+                'assessments_overdue_str'      => get_string('overdue', 'block_gu_spoverview'),
+                'assessments_marked_str'       => $marked_str.get_string('marked', 'block_gu_spoverview'),
+            ];
+
+            $this->content->text = $OUTPUT->render_from_template('block_gu_spoverview/spoverview', $templatecontext);
+        }else{
+            $this->content->text = null;
+        }
 
         return $this->content;
     }
@@ -96,20 +100,46 @@ class block_gu_spoverview extends block_base {
      * @param string $fields
      * @return array SQL data
      */
-    public function return_enrolledcourses($userid, $fields = 'c.id'){
+    public function return_enrolledcourses($userid) {
         global $DB;
-
+        $fields = "c.id";
         $customfieldjoin = "JOIN {customfield_field} cff
                             ON cff.shortname = 'show_on_studentdashboard'
                             JOIN {customfield_data} cfd
                             ON (cfd.fieldid = cff.id AND cfd.instanceid = c.id)";
+
         $customfieldwhere = "cfd.value > 0";
         $enrolmentselect = "SELECT DISTINCT e.courseid FROM {enrol} e
-                            JOIN {user_enrolments} ue ON (ue.enrolid = e.id AND ue.userid = ?)";
+                            JOIN {user_enrolments} ue
+                            ON (ue.enrolid = e.id AND ue.userid = ?)";
         $enrolmentjoin = "JOIN ($enrolmentselect) en ON (en.courseid = c.id)";
-
-        $sql = "SELECT $fields FROM {course} c $customfieldjoin $enrolmentjoin WHERE $customfieldwhere";
+        $sql = "SELECT $fields FROM {course} c $customfieldjoin $enrolmentjoin
+                WHERE $customfieldwhere";
         $param = array($userid);
-        return $DB->get_records_sql($sql, $param);
+        $results = $DB->get_records_sql($sql, $param);
+
+        if($results) {
+            $studentcourses = array();
+            foreach($results as $courseid=>$courseobject) {
+                if($this->return_isstudent($courseid)) {
+                    array_push($studentcourses, $courseid);
+                }
+            }
+            return $studentcourses;
+        }else{
+            return array();
+        }
+    }
+
+    /**
+     * Return has_capability
+     * 
+     * @param string $courseid
+     * @param string $userid
+     * @return boolean
+     */
+    public function return_isstudent($courseid) {
+        $context = context_course::instance($courseid);
+        return has_capability("moodle/course:isincompletionreports", $context, null, false);
     }
 }
