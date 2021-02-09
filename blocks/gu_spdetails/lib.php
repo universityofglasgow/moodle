@@ -362,7 +362,7 @@ class assessments_details {
                            FROM {forum})) ua
                               ON (ua.modtype = m.`name` AND ua.activityid = cm.instance)
                     WHERE cfd.value > 0 AND m.`name` IN ('assign' , 'quiz', 'forum', 'workshop')
-                    AND c.enddate > ? ORDER BY ".$sortcolumn." ".$sortorder;
+                    AND cm.visible = 1 AND c.enddate > ? ORDER BY ".$sortcolumn." ".$sortorder;
           $params = array($userid, $userid, $userid, $userid, $userid,
                          $userid, $userid, $userid, $userid, $onemonth);
           $records = $DB->get_records_sql($sql, $params);
@@ -531,7 +531,7 @@ class assessments_details {
                            FROM {forum})) ua
                               ON (ua.modtype = m.`name` AND ua.activityid = cm.instance)
                     WHERE cfd.value > 0 AND m.`name` IN ('assign' , 'quiz', 'forum', 'workshop')
-                    AND c.enddate <= ? ORDER BY ".$sortcolumn." ".$sortorder;
+                    AND cm.visible = 1 AND c.enddate > ? ORDER BY ".$sortcolumn." ".$sortorder;
           $params = array($userid, $userid, $userid, $userid, $userid,
                          $userid, $userid, $userid, $userid, $onemonth);
           $records = $DB->get_records_sql($sql, $params);
