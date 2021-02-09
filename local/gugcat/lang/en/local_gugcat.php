@@ -92,6 +92,7 @@ $string['releaseprvgrades'] = 'Release provisional grades';
 $string['requiresresit'] = 'Requires Resit';
 $string['saveallnewgrade'] = 'Save multiple grades';
 $string['savechanges'] = 'Save changes';
+$string['search'] = 'Search...';
 $string['selectreason'] = 'Select reason';
 $string['showassessment'] = 'Show assessments on Student Dashboard';
 $string['showidentities'] = 'Show student identities';
