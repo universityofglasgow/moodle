@@ -72,6 +72,7 @@ if ($fromform = $mform->get_data()) {
         local_gugcat::update_grade($studentid, $gradeitemid, $fromform->override, $fromform->notes, time());
     }else if($formtype == ADJUST_WEIGHT_FORM){
         $weights = $fromform->weights;
+        $itemid = local_gugcat::add_grade_item($courseid, get_string('aggregatedgrade', 'local_gugcat'), null);
         if(array_sum($weights) != 100){
             local_gugcat::notify_error('errortotalweight');
             $URL = new moodle_url('/local/gugcat/overview/gradeform/index.php', $urlparams);
@@ -79,6 +80,7 @@ if ($fromform = $mform->get_data()) {
             redirect($URL);
             exit;
         }else{
+            $DB->set_field('grade_grades', 'overridden', 0, array('itemid' => $itemid, 'userid'=>$studentid));
             grade_aggregation::adjust_course_weight($weights, $courseid, $studentid, $fromform->notes);
         }
     }
