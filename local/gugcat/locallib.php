@@ -750,4 +750,55 @@ class local_gugcat {
 
         return $default_obj;
     }
+
+    /**
+     * Retrieve display students based from the search filters
+     * @param context $coursecontext
+     * @param array $filters 
+     * @param int $groupid 0 means ignore groups, USERSWITHOUTGROUP without any group and any other value limits the result by group id
+     * @param int $limitfrom return a subset of records, starting at this point (optional, required if $limitnum is set).
+     * @param int $limitnum return a subset comprising this many records (optional, required if $limitfrom is set).\
+     * @return array list($data, $count) returns list of students and total count of filtered result
+     */
+    public static function get_filtered_students($coursecontext, $filters, $groupid = 0, $limitfrom = 0, $limitnum = 0){
+        global $DB;
+        list($enrolledsql, $enrolledparams) = get_enrolled_sql($coursecontext, 'local/gugcat:gradable', $groupid);
+        $filtersql = '';
+        foreach($filters as $key=>$value){
+            if(!empty($value)){
+                $filtersql .= $DB->sql_like("u.$key", ":$key", false).' AND ';
+                $params[$key] = "%$value%";
+            }
+        }
+        // Remove the last 'OR'
+        $filtersql = chop($filtersql, ' AND ');
+        // Sql for retrieving the data
+        $sql = "SELECT u.*
+                FROM {user} u
+                JOIN ($enrolledsql) je ON je.id = u.id
+                WHERE u.deleted = 0 AND $filtersql";
+        // Sql for counting the total filtered users
+        $countsql = "SELECT COUNT(DISTINCT u.id)
+                FROM {user} u
+                JOIN ($enrolledsql) je ON je.id = u.id
+                WHERE u.deleted = 0 AND $filtersql";        
+        $params = array_merge($params, $enrolledparams);
+        $data = $DB->get_records_sql($sql, $params, $limitfrom, $limitnum);
+        $count = $DB->count_records_sql($countsql, $params);
+        return array($data, $count);
+    }
+
+    /**
+     * Retrieve string filters from URL then convert it to an array
+     * @param array $currentfilters returns the current filters from submit if filter from url is null
+     */
+    public static function get_filters_from_url($currentfilters){
+        $filter = optional_param('filter', null, PARAM_NOTAGS);
+        if(!is_null($filter)){
+            parse_str(htmlspecialchars_decode($filter), $filters);
+            return $filters;
+        }else{
+            return $currentfilters;
+        }
+    }
 }

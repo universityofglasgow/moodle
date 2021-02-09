@@ -49,6 +49,17 @@ td > i, th > i {
     margin-left: 2px;
 }
 
+.fa-search{
+    margin-left: 3px;
+    color: white;
+    transition: transform .2s; /* Animation */
+}
+
+.fa-search:hover{
+    transform: scale(1.3);
+    margin-left: 5px;
+}
+
 .zero-resit-weight{
     color: #b30c00;
 }
@@ -128,10 +139,9 @@ td > i, th > i {
 
 .multi-select-reason{
     display: none;
-    /* width: 100%; */
 }
 
-.input-reason{
+.input-reason, .input-search{
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
@@ -206,11 +216,11 @@ td a:hover, .dropdown-item a:hover {
 /* Hide submit buttons */
 #release-submit, #importgrades-submit, 
 #finalrelease-submit, #downloadcsv-submit,
-#multiadd-submit {
-    position: absolute;
-    visibility: hidden;
-}
-
+#multiadd-submit, #search-submit,
 .hide-show-grade, .hide-names {
     display: none;
+}
+
+.visible{
+    display: block;
 }

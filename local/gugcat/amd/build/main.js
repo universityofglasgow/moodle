@@ -402,6 +402,22 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                     }
                 }
 
+                var searchIcons = document.querySelectorAll('.fa-search');
+                if(searchIcons.length > 0){
+                    searchIcons.forEach(icon => {
+                        icon.addEventListener('click', (e) => {
+                            e.currentTarget.blur();
+                            var input = e.target.nextSibling;
+                            input.classList.toggle('visible');
+                            if(input.classList.contains('visible')){
+                                input.style.display = 'block';
+                            } else {
+                                input.style.display = 'none';
+                            }
+                        });
+                    });
+                }
+
                 //Show 'grade discrepancy' when grade discrepancy exist
                 var grdDiscExist = document.querySelectorAll('td .grade-discrepancy');
                 if (grdDiscExist.length > 0) {
