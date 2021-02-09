@@ -85,6 +85,24 @@ if ($fromform = $mform->get_data()) {
 
     $url = null;
 
+    //log of ammend grades
+    $params = array(
+        'context' => \context_module::instance($module->id),
+        'other' => array(
+            'courseid' => $courseid,
+            'activityid' => $activityid,
+            'categoryid' => $categoryid,
+            'studentno' => $studentid,
+            'idnumber' => $student->idnumber,
+            'grade' => local_gugcat::convert_grade($fromform->grade),
+            'gradeitem' => $gradereason,
+            'page'=> $page,
+            'overview' => $overview
+        )
+    );
+    $event = \local_gugcat\event\ammend_grade::create($params);
+    $event->trigger();
+
     if((integer)$fromform->overview == 1){
         $url = new moodle_url('/local/gugcat/overview/index.php', array('id' => $courseid, 'page'=> $page));
         (!is_null($categoryid) && $categoryid != 0) ? $url->param('categoryid', $categoryid) : null;

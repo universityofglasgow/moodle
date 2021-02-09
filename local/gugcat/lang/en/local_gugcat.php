@@ -124,5 +124,15 @@ $string['gi_moderatedgrade'] = 'Moderated Grade';
 $string['gi_secondgrade'] = 'Second Grade';
 $string['gi_thirdgrade'] = 'Third Grade';
 
+//Log events
+$string['eventaddgrades'] = 'Add new grade for user';
+$string['eventaddmultiplegrades'] = 'Add Multiple Grades';
+$string['eventadjustgrade'] = 'Adjust student\'s course weightings';
+$string['eventammendgrade'] = 'Ammend grade for user';
+$string['eventimportgrades'] = 'Import grades from gradebook';
+$string['eventoverridegrade'] = 'Override student\'s course grade';
+$string['eventreleasefinalgrades'] = 'Release final assessment grades';
+$string['eventreleaseprvgrades'] = 'Release provisional grades';
+
 //gcat grade category
 $string['gcat_category'] = 'DO NOT USE';

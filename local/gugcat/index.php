@@ -129,10 +129,24 @@ $showhidegrade = optional_param('showhidegrade', null, PARAM_NOTAGS);
 $rowstudentid = optional_param('studentid', null, PARAM_NOTAGS);
 $newgrades = optional_param_array('newgrades', null, PARAM_NOTAGS);
 
+//params for logs
+$params = array(
+    'context' => \context_module::instance($selectedmodule->id),
+    'other' => array(
+        'courseid' => $courseid,
+        'activityid' => $activityid,
+        'categoryid' => $categoryid,
+        'page' => $page
+    )
+);
+
 // Process release provisional grades
 if (isset($release)){
     grade_capture::release_prv_grade($courseid, $selectedmodule);
     local_gugcat::notify_success('successrelease');
+    //log of release grades
+    $event = \local_gugcat\event\release_prv_grade::create($params);
+    $event->trigger();
     unset($release);
     redirect($URL);
     exit;
@@ -148,6 +162,9 @@ if (isset($release)){
             }
         }
         local_gugcat::notify_success('successaddall');
+        //log of add multiple grades
+        $event = \local_gugcat\event\add_multiple_grades::create($params);
+        $event->trigger();
     }else{
         local_gugcat::notify_error('errorrequired');
     }
@@ -162,6 +179,8 @@ if (isset($release)){
     if ($valid_22point_scale){
         grade_capture::import_from_gradebook($courseid, $selectedmodule, $activities);
         local_gugcat::notify_success('successimport');
+        $event = \local_gugcat\event\import_grade::create($params);
+        $event->trigger();
     }else{
         local_gugcat::notify_error('importerror');
     }

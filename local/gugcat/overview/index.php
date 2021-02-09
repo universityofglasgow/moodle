@@ -122,6 +122,17 @@ if(isset($requireresit) && !empty($rowstudentid)){
 // Process release final assessment grades for all students
 }else if(isset($finalrelease)){
     grade_aggregation::release_final_grades($courseid); 
+    //log of release final assessment grades
+    $params = array(
+        'context' => $coursecontext,
+        'other' => array(
+            'courseid' => $courseid,
+            'categoryid' => $categoryid,
+            'page' => $page
+        )
+    );
+    $event = \local_gugcat\event\release_final_assessment_grade::create($params);
+    $event->trigger();  
     unset($finalrelease);
     redirect($URL);
     exit;
