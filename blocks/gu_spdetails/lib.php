@@ -564,12 +564,12 @@ class assessments_details {
                          $item->formattedstartdate = date(get_string('date_m_y', 'block_gu_spdetails'), $record->startdate);
                          $item->formattedenddate = date(get_string('date_m_y', 'block_gu_spdetails'), $record->enddate);
                          $item->grading = self::return_grading($record->finalgrade, $record->gradetype,
-                                                            $record->grademin, $record->grademax,
-                                                            $record->gradeinformation, $record->gradingduedate,
+                                                            $record->grademin, $record->grademax,$record->gradeinformation, 
+                                                            $record->gradingduedate, $record->duedate, $record->cutoffdate,
                                                             $record->scale, $record->feedback);
                          $item->feedback = self::return_feedback($record->id, $record->modname, $item->grading->hasgrade,
-                                                                 $record->feedback, $record->numfiles, $record->value,
-                                                                 $record->feedbacktext, $record->gradingduedate);
+                                                                 $record->feedback, $record->numfiles, $record->value,$record->feedbacktext, 
+                                                                 $record->gradingduedate, $record->duedate, $record->cutoffdate,);
                          $item->status = self::return_status($record->modname, $item->grading->hasgrade, $record->status,
                                                             $record->nosubmissions, $record->allowsubmissionsfromdate,
                                                             $record->duedate, $record->cutoffdate, $record->gradingduedate,
@@ -706,8 +706,8 @@ class assessments_details {
       * @return stdClass Object containing grade text (could be actual grade or grading due date),
       *         hasgrade, isprovisional
       */
-     public static function return_grading($finalgrade, $gradetype, $grademin, $grademax,
-                                           $gradeinformation, $gradingduedate, $scale, $feedback) {
+     public static function return_grading($finalgrade, $gradetype, $grademin, $grademax,$gradeinformation,
+                                           $gradingduedate, $duedate, $cutoffdate, $scale, $feedback) {
           $grading = new stdClass;
           $grading->gradetext = null;
           $grading->hasgrade = false;
@@ -756,7 +756,9 @@ class assessments_details {
                     }
 
                     if($gradingduedate > time()) {
-                         $grading->gradetext = $duedate;
+                         $grading->gradetext = ($feedback === 'NS' &&
+                                                $cutoffdate < time() &&
+                                                $duedate < time()) ? $na : $duedate;
                     }else{
                          $grading->gradetext = ($feedback === 'NS') ? $na : $overdue;
                     }
@@ -781,8 +783,8 @@ class assessments_details {
       * @return stdClass Object containing feedback text (could be feedback text for the link or feedback due date),
       *         hasfeedback, feedbackurl
       */
-     public static function return_feedback($id, $modname, $hasgrade, $feedback,
-                                            $numfiles, $value, $feedbacktext, $gradingduedate) {
+     public static function return_feedback($id, $modname, $hasgrade, $feedback, $numfiles, $value,
+                                            $feedbacktext, $gradingduedate, $duedate, $cutoffdate) {
           $fb = new stdClass;
           $fb->feedbacktext = null;
           $fb->hasfeedback = false;
@@ -843,7 +845,9 @@ class assessments_details {
                     }
 
                     if($gradingduedate > time()) {
-                         $fb->feedbacktext = $duedate;
+                         $fb->feedbacktext = ($feedback === 'NS' &&
+                                              $cutoffdate < time() &&
+                                              $duedate < time()) ? $na : $duedate;
                     }else{
                          $fb->feedbacktext = ($feedback === 'NS') ? $na : $overdue;
                     }
@@ -898,7 +902,7 @@ class assessments_details {
           }else if($feedback === 'NS' && $duedate < time() && $cutoffdate > time() && $gradingduedate > time()){
                $s->statustext = $overdue;
                $s->class = $classoverdue;
-               $s->hasstatusurl = false;
+               $s->hasstatusurl = true;
           }else if($feedback === 'NS' && $duedate < time() && $cutoffdate < time() && $gradingduedate > time()){
                $s->statustext = $unavailable;
           }else if($feedback === 'NS' && $duedate < time() && $cutoffdate < time() && $gradingduedate < time()){
