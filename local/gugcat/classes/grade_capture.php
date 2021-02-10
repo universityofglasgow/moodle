@@ -325,13 +325,16 @@ class grade_capture{
         if($grade_->hidden == 0){
             $grade_->hidden = 1; 
             $message = 'hiddengrademsg';
+            $status = 'hidden';
         }  
         else {
             $grade_->hidden = 0;
             $message = 'showgrademsg';
+            $status = 'shown';
         }
         local_gugcat::notify_success($message);
-        return $grade_->update();        
+        $grade_->update();
+        return $status;        
     }
 
     /**

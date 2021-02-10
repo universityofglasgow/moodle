@@ -51,12 +51,28 @@ $coursecontext = context_course::instance($courseid);
 $PAGE->set_context($coursecontext);
 $PAGE->set_course($course);
 $PAGE->set_heading($course->fullname);
+require_capability('local/gugcat:view', $coursecontext);
 
 $student = $DB->get_record('user', array('id'=>$studentid, 'deleted'=>0), '*', MUST_EXIST);
 $modules = local_gugcat::get_activities($courseid);
 $student->cnum = $cnum;
 
 $gradehistory = grade_aggregation::get_course_grade_history($course, $modules, $student);
+
+//logs for course grade history viewed
+$params = array(
+    'context' => $coursecontext,
+    'other' => array(
+        'courseid' => $courseid,
+        'categoryid' => $categoryid,
+        'studentno' => $studentid,
+        'idnumber' => $student->idnumber,
+        'cnum' => $cnum,
+        'page'=> $page
+    )
+);
+$event = \local_gugcat\event\course_grade_history_viewed::create($params);
+$event->trigger();
 
 echo $OUTPUT->header();
 $renderer = $PAGE->get_renderer('local_gugcat');

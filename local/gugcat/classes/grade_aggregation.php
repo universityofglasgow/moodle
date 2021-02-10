@@ -178,12 +178,16 @@ class grade_aggregation{
         $grade_->itemid = $aggradeid;
         $grade_->userid = $studentno;
         $grade_->timemodified = time();
-        if(preg_match('/\b'.$categoryid.'/i', $grade_->information))
+        if(preg_match('/\b'.$categoryid.'/i', $grade_->information)){
             $grade_->information = preg_replace('/\b'.$categoryid.' /i', '', $grade_->information);
-        else
+            $status = "disable";
+        }
+        else{
             $grade_->information .= $categoryid.' ';
-
-        return $grade_->update();    
+            $status = "enable";
+        }
+        $grade_->update();
+        return $status;
     }
 
     /**
