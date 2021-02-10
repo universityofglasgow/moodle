@@ -40,7 +40,7 @@ class assessment_grade_history_viewed extends \core\event\base {
     }
  
     public function get_url() {
-        $url = new \moodle_url('local/gugcat/history/index.php', array('id' => $this->courseid, 'activityid'=>$this->other['activityid'], 'studentid'=>$this->other['studentno'], 'cnum'=>$this->other['cnum'], 'page'=>$this->other['page']));
+        $url = new \moodle_url('local/gugcat/history/index.php', array('id' => $this->courseid, 'activityid'=>$this->other['activityid'], 'studentid'=>$this->other['studentno'], 'page'=>$this->other['page']));
         if(!is_null($this->other['categoryid']))
             $url->param('categoryid', $this->other['categoryid']);
 
