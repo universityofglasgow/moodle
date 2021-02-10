@@ -55,7 +55,9 @@ $string['errortotalweight'] = 'Total weight is not equal to 100%';
 $string['forename'] = 'Forename';
 $string['gugcat'] = 'Grade Capture and Aggregation Tool';
 $string['gugcatoptions'] = 'GCAT Options';
+$string['gugcat:displayassessments'] = 'Switch display of assessments on Student Dashboard ';
 $string['gugcat:gradable'] = 'GCAT gradable item';
+$string['gugcat:revealidentities'] = 'Reveal student identities';
 $string['gugcat:view'] = 'View Grade Capture and Aggregation Tool';
 $string['grade'] = "Grade";
 $string['gradebookgrade'] = 'Gradebook Grade ';
@@ -113,7 +115,7 @@ $string['surname'] = 'Surname';
 $string['switchoffdisplay'] = 'Switch off display of assessments on Student Dashboard';
 $string['switchondisplay'] = 'Switch on display of assessments on Student Dashboard'; 
 $string['title'] = 'Grade Capture & Course Grade Aggregation';
-$string['valuemust'] = 'Value must equal 100%';
+$string['totalweight'] = 'Total Weighting';
 $string['viewcoursehistory'] = 'View Course Grade History';
 
 // Grade item names
@@ -130,11 +132,18 @@ $string['gi_thirdgrade'] = 'Third Grade';
 $string['eventaddgrades'] = 'Add new grade for user';
 $string['eventaddmultiplegrades'] = 'Add Multiple Grades';
 $string['eventadjustgrade'] = 'Adjust student\'s course weightings';
+$string['eventaggregationviewed'] = 'Aggregation Tool viewed';
 $string['eventammendgrade'] = 'Ammend grade for user';
+$string['eventassessmentgradehistoryviewed'] = 'Assessment grade history viewed';
+$string['eventcoursegradehistoryviewed'] = 'Course Grade history viewed';
+$string['eventgradecaptureviewed'] = 'Grade Capture tool viewed';
+$string['eventexportcsv'] = 'Export Grade Aggregation tool';
+$string['eventhideshowgrade'] = 'Hide/Show grade from student';
 $string['eventimportgrades'] = 'Import grades from gradebook';
 $string['eventoverridegrade'] = 'Override student\'s course grade';
 $string['eventreleasefinalgrades'] = 'Release final assessment grades';
 $string['eventreleaseprvgrades'] = 'Release provisional grades';
+$string['eventrequireresit'] = 'Require Resit';
 
 //gcat grade category
 $string['gcat_category'] = 'DO NOT USE';

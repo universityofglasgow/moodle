@@ -130,12 +130,12 @@ $rowstudentid = optional_param('studentid', null, PARAM_NOTAGS);
 $newgrades = optional_param_array('newgrades', null, PARAM_NOTAGS);
 
 //params for logs
-$cminstance = null;
-if (isset($selectedmodule->id)) {
-    $cminstance = \context_module::instance($selectedmodule->id);
+$eventcontext = $coursecontext;
+if (!is_null($selectedmodule) && isset($selectedmodule->id)) {
+    $eventcontext = \context_module::instance($selectedmodule->id);
 }
 $params = array(
-    'context' => $cminstance,
+    'context' => $eventcontext,
     'other' => array(
         'courseid' => $courseid,
         'activityid' => $activityid,
@@ -194,7 +194,21 @@ if (isset($release)){
 
 // Process show/hide grade from the student
 }else if(isset($showhidegrade) && !empty($rowstudentid)){
-    grade_capture::hideshowgrade($rowstudentid);
+    $status = grade_capture::hideshowgrade($rowstudentid);
+    //log of hide show grade
+    $hideshowparam = array (
+        'context' => \context_module::instance($selectedmodule->id),
+        'other' => array(
+            'courseid' => $courseid,
+            'activityid' => $activityid,
+            'categoryid' => $categoryid,
+            'status' => $status,
+            'idnumber' => $students[$rowstudentid]->idnumber,
+            'page' => $page
+        )
+    );
+    $event = \local_gugcat\event\hide_show_grade::create($hideshowparam);
+    $event->trigger();
     unset($showhidegrade);
     unset($rowstudentid);
     redirect($URL);
@@ -203,6 +217,10 @@ if (isset($release)){
 
 $rows = grade_capture::get_rows($course, $selectedmodule, $students);
 $columns = grade_capture::get_columns();
+
+//log of grade capture view
+$event = \local_gugcat\event\grade_capture_viewed::create($params);
+$event->trigger();
 
 echo $OUTPUT->header();
 if(!empty($activities))
