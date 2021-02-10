@@ -407,7 +407,7 @@ class grade_aggregation{
         $aggradeid = local_gugcat::get_grade_item_id($course->id, null, get_string('aggregatedgrade', 'local_gugcat'));
         if($aggradeid){
             $fields = 'id, itemid, rawgrade, finalgrade, feedback, timemodified, usermodified';
-            $select = 'feedback IS NOT NULL AND rawgrade IS NOT NULL AND itemid='.$aggradeid.' AND '.' userid="'.$student->id.'"'; 
+            $select = 'feedback IS NOT NULL AND rawgrade IS NOT NULL AND itemid='.$aggradeid.' AND '.' userid="'.$student->id.'" AND overridden <> "0"'; 
             $gradehistory_overridden = $DB->get_records_select('grade_grades_history', $select, null, $fields);
             if($gradehistory_overridden > 0){
                 foreach($gradehistory_overridden as $overriddengrade){
