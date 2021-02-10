@@ -130,12 +130,12 @@ $rowstudentid = optional_param('studentid', null, PARAM_NOTAGS);
 $newgrades = optional_param_array('newgrades', null, PARAM_NOTAGS);
 
 //params for logs
-$cminstance = null;
-if (isset($selectedmodule->id)) {
-    $cminstance = \context_module::instance($selectedmodule->id);
+$eventcontext = $coursecontext;
+if (!is_null($selectedmodule) && isset($selectedmodule->id)) {
+    $eventcontext = \context_module::instance($selectedmodule->id);
 }
 $params = array(
-    'context' => $cminstance,
+    'context' => $eventcontext,
     'other' => array(
         'courseid' => $courseid,
         'activityid' => $activityid,
