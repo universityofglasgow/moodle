@@ -55,7 +55,9 @@ $string['errortotalweight'] = 'Total weight is not equal to 100%';
 $string['forename'] = 'Forename';
 $string['gugcat'] = 'Grade Capture and Aggregation Tool';
 $string['gugcatoptions'] = 'GCAT Options';
+$string['gugcat:displayassessments'] = 'Switch display of assessments on Student Dashboard ';
 $string['gugcat:gradable'] = 'GCAT gradable item';
+$string['gugcat:revealidentities'] = 'Reveal student identities';
 $string['gugcat:view'] = 'View Grade Capture and Aggregation Tool';
 $string['grade'] = "Grade";
 $string['gradebookgrade'] = 'Gradebook Grade ';
@@ -113,7 +115,7 @@ $string['surname'] = 'Surname';
 $string['switchoffdisplay'] = 'Switch off display of assessments on Student Dashboard';
 $string['switchondisplay'] = 'Switch on display of assessments on Student Dashboard'; 
 $string['title'] = 'Grade Capture & Course Grade Aggregation';
-$string['valuemust'] = 'Value must equal 100%';
+$string['totalweight'] = 'Total Weighting';
 $string['viewcoursehistory'] = 'View Course Grade History';
 
 // Grade item names

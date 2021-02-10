@@ -75,6 +75,7 @@ if(array_sum($groupingids) != 0){
         }
     }
     $students = Array();
+    $totalenrolled = 0;
     if(!empty($groups)){
         foreach ($groups as $group) {
             if($activesearch){
