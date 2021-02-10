@@ -63,6 +63,22 @@ local_gugcat::set_grade_scale($scaleid);
 local_gugcat::set_prv_grade_id($courseid, $module);
 
 $history = local_gugcat::get_grade_history($courseid, $module, $studentid);
+
+//logs for assessment grade history viewed
+$params = array(
+    'context' => \context_module::instance($module->id),
+    'other' => array(
+        'courseid' => $courseid,
+        'activityid' => $activityid,
+        'categoryid' => $categoryid,
+        'studentno' => $studentid,
+        'idnumber' => $student->idnumber,
+        'page'=> $page
+    )
+);
+$event = \local_gugcat\event\assessment_grade_history_viewed::create($params);
+$event->trigger();
+
 echo $OUTPUT->header();
 $PAGE->set_cm($module);
 $renderer = $PAGE->get_renderer('local_gugcat');

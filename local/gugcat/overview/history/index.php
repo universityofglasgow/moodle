@@ -58,6 +58,21 @@ $student->cnum = $cnum;
 
 $gradehistory = grade_aggregation::get_course_grade_history($course, $modules, $student);
 
+//logs for course grade history viewed
+$params = array(
+    'context' => $coursecontext,
+    'other' => array(
+        'courseid' => $courseid,
+        'categoryid' => $categoryid,
+        'studentno' => $studentid,
+        'idnumber' => $student->idnumber,
+        'cnum' => $cnum,
+        'page'=> $page
+    )
+);
+$event = \local_gugcat\event\course_grade_history_viewed::create($params);
+$event->trigger();
+
 echo $OUTPUT->header();
 $renderer = $PAGE->get_renderer('local_gugcat');
 echo $renderer->display_course_grade_history($student, $gradehistory, $modules);

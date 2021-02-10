@@ -105,6 +105,16 @@ if(count($filters) > 0 && $page > 0){
 
 $rows = grade_aggregation::get_rows($course, $activities, $students);
 
+//params for log
+$params = array(
+    'context' => $coursecontext,
+    'other' => array(
+        'courseid' => $courseid,
+        'categoryid' => $categoryid,
+        'page' => $page
+    )
+);
+
 $requireresit = optional_param('resit', null, PARAM_NOTAGS);
 $finalrelease = optional_param('finalrelease', null, PARAM_NOTAGS);
 $rowstudentid = optional_param('rowstudentno', null, PARAM_NOTAGS);
@@ -113,7 +123,21 @@ $finalgrades = optional_param_array('finalgrades', null, PARAM_NOTAGS);
 $cminstances = optional_param_array('cminstances', null, PARAM_NOTAGS);
 // Process require resit on a student
 if(isset($requireresit) && !empty($rowstudentid)){
-    grade_aggregation::require_resit($rowstudentid);
+    $status = grade_aggregation::require_resit($rowstudentid);
+
+    //log of require resit viewed
+    $resitparam = array(
+        'context' => $coursecontext,
+        'other' => array(
+            'courseid' => $courseid,
+            'categoryid' => $categoryid,
+            'page' => $page,
+            'status' => $status,
+            'idnumber' => $students[$rowstudentid]->idnumber
+        )
+    );
+    $event = \local_gugcat\event\require_resit::create($resitparam);
+    $event->trigger();
     unset($requireresit);
     unset($rowstudentid);
     redirect($URL);
@@ -123,14 +147,6 @@ if(isset($requireresit) && !empty($rowstudentid)){
 }else if(isset($finalrelease)){
     grade_aggregation::release_final_grades($courseid); 
     //log of release final assessment grades
-    $params = array(
-        'context' => $coursecontext,
-        'other' => array(
-            'courseid' => $courseid,
-            'categoryid' => $categoryid,
-            'page' => $page
-        )
-    );
     $event = \local_gugcat\event\release_final_assessment_grade::create($params);
     $event->trigger();  
     unset($finalrelease);
@@ -139,11 +155,18 @@ if(isset($requireresit) && !empty($rowstudentid)){
 
 // Process download aggregation tool
 }else if(isset($downloadcsv)){
+    //log of release final assessment grades
+    $event = \local_gugcat\event\export_aggregation::create($params);
+    $event->trigger();
     grade_aggregation::export_aggregation_tool($course);
     unset($downloadcsv);
     redirect($URL);
     exit;
 }
+
+//log of aggregation tool viewed
+$event = \local_gugcat\event\aggregation_viewed::create($params);
+$event->trigger(); 
 
 echo $OUTPUT->header();
 $renderer = $PAGE->get_renderer('local_gugcat');

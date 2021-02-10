@@ -130,11 +130,18 @@ $string['gi_thirdgrade'] = 'Third Grade';
 $string['eventaddgrades'] = 'Add new grade for user';
 $string['eventaddmultiplegrades'] = 'Add Multiple Grades';
 $string['eventadjustgrade'] = 'Adjust student\'s course weightings';
+$string['eventaggregationviewed'] = 'Aggregation Tool viewed';
 $string['eventammendgrade'] = 'Ammend grade for user';
+$string['eventassessmentgradehistoryviewed'] = 'Assessment grade history viewed';
+$string['eventcoursegradehistoryviewed'] = 'Course Grade history viewed';
+$string['eventgradecaptureviewed'] = 'Grade Capture tool viewed';
+$string['eventexportcsv'] = 'Export Grade Aggregation tool';
+$string['eventhideshowgrade'] = 'Hide/Show grade from student';
 $string['eventimportgrades'] = 'Import grades from gradebook';
 $string['eventoverridegrade'] = 'Override student\'s course grade';
 $string['eventreleasefinalgrades'] = 'Release final assessment grades';
 $string['eventreleaseprvgrades'] = 'Release provisional grades';
+$string['eventrequireresit'] = 'Require Resit';
 
 //gcat grade category
 $string['gcat_category'] = 'DO NOT USE';
