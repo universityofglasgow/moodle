@@ -336,8 +336,16 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
 
                 var input_percentarr = document.querySelectorAll('.input-percent');
                 if(input_percentarr.length > 0){
+                    var total = 0;
+                    var totalweight = document.querySelector('#fitem_id_totalweight .form-inline');
                     input_percentarr.forEach(div => {
                         var input = div.querySelector('input');
+                        total += parseInt(input.value);
+                        input.addEventListener('input', (e) => {
+                            let total = 0;
+                            input_percentarr.forEach(div => total += parseInt(div.querySelector('input').value));
+                            totalweight.innerHTML = `${total}%`;
+                        });
                         input.addEventListener('focus', (e) => {
                             var val = e.target.value;
                             if(val !== "" && val.match(/^[0-9]+$/) === null){
@@ -355,6 +363,7 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                             }
                         });
                     });
+                    totalweight.innerHTML = `${total}%`;
                 }
 
                 var columns = document.querySelectorAll('.sortable');
