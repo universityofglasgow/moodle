@@ -34,7 +34,6 @@ $string['due'] = 'Due ';
 $string['emptyvalue'] = '—';
 $string['extended'] = 'Due date extension';
 $string['formative'] = 'Formative';
-$string['gu_spdetails:addinstance'] = 'Add a new Your assessments details block';
 $string['gu_spdetails:myaddinstance'] = 'Add a new Your assessments details block to Dashboard';
 $string['header_assessment'] = 'Assessment';
 $string['header_course'] = 'Course';
