@@ -24,6 +24,7 @@
  */
 
 use local_gugcat\grade_aggregation;
+defined('MOODLE_INTERNAL') || die();
 
 require_once("$CFG->libdir/formslib.php");
 require_once($CFG->dirroot . '/local/gugcat/locallib.php');
