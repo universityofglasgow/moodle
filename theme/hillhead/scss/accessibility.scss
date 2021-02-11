@@ -597,10 +597,20 @@ body.hillhead-night .dropdown-menu {
     background-color: #1A2B41;
 }
 
+body.hillhead-night .dropdown-item {
+    color: #c4d6ee !important;
+}
+
 body.hillhead-night .dropdown-item:hover, body.hillhead-night .dropdown-item:focus {
     background-color: #132030;
 }
 
 body.hillhead-night #page-footer {
     border-top-color: #1A2B41;
+}
+
+body.hillhead-night .popover-region-container {
+    color: #c4d6ee;
+    border-color: #c4d6ee;
+    background-color: #1A2B41;
 }
