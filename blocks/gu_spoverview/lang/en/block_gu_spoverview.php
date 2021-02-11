@@ -27,7 +27,6 @@ $string['assignment'] = 'Assignment';
 $string['assignments'] = 'Assignments';
 $string['assessment'] = 'Assessment';
 $string['assessments'] = 'Assessments';
-$string['gu_spoverview:addinstance'] = 'Add a new Your assessments at a glance block';
 $string['gu_spoverview:myaddinstance'] = 'Add a new Your assessments at a glance block to Dashboard';
 $string['marked'] = ' marked';
 $string['overdue'] = 'Overdue';
