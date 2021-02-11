@@ -45,7 +45,7 @@ class block_gu_spdetails extends block_base {
      * @return stdClass contents of block
      */
     public function get_content() {
-        global $PAGE, $USER, $OUTPUT;
+        global $USER, $OUTPUT;
         
         if ($this->content !== null) {
             return $this->content;
@@ -54,9 +54,8 @@ class block_gu_spdetails extends block_base {
         $this->content = new stdClass();
 
         if(!empty($this->return_enrolledcourses($USER->id))) {
-            // call JS and CSS
-            $PAGE->requires->css('/blocks/gu_spdetails/styles.css');
-            $PAGE->requires->js_call_amd('block_gu_spdetails/main', 'init');
+            // call JS
+            $this->page->requires->js_call_amd('block_gu_spdetails/main', 'init');
 
             $templatecontext = (array)[
                 'tab_current'   => get_string('tab_current', 'block_gu_spdetails'),

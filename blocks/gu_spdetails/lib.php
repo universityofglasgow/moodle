@@ -320,7 +320,7 @@ class assessments_details {
                            THEN qo.timeclose
                            ELSE q.timeclose END AS gradingduedate,
                            NULL AS hasextension, NULL as nosubmissions,
-                           qg.grade, NULL AS `status`,
+                           qg.grade, qa.state AS `status`,
                            NULL AS numfiles, NULL AS `value`,
                            qf.feedbacktext,
                            NULL AS `gradinggrade`, NULL AS `assessmentstart`,
@@ -335,7 +335,11 @@ class assessments_details {
                               ON (qf.quizid = q.id AND qg.grade IS NOT NULL
                                   AND (qg.grade > qf.mingrade
                                   OR (qg.grade = 0 AND qf.mingrade = 0))
-                                  AND qg.grade <= qf.maxgrade))
+                                  AND qg.grade <= qf.maxgrade)
+                           LEFT JOIN {quiz_attempts} AS qa 
+                              ON (qa.quiz = q.id 
+                                  AND qa.userid = ? 
+                                  AND qa.sumgrades IS NULL))
                     UNION (SELECT 'workshop' AS modtype, w.id AS activityid,
                            w.`name` AS activityname, w.submissionend AS duedate,
                            w.submissionstart AS allowsubmissionsfromdate,
@@ -363,7 +367,7 @@ class assessments_details {
                               ON (ua.modtype = m.`name` AND ua.activityid = cm.instance)
                     WHERE cfd.value > 0 AND m.`name` IN ('assign' , 'quiz', 'forum', 'workshop')
                     AND cm.visible = 1 AND c.enddate > ? ORDER BY ".$sortcolumn." ".$sortorder;
-          $params = array($userid, $userid, $userid, $userid, $userid,
+          $params = array($userid, $userid, $userid, $userid, $userid, $userid,
                          $userid, $userid, $userid, $userid, $onemonth);
           $records = $DB->get_records_sql($sql, $params);
           $items = ($records) ? self::sanitize_records($records) : array();
@@ -490,7 +494,7 @@ class assessments_details {
                            THEN qo.timeclose
                            ELSE q.timeclose END AS gradingduedate,
                            NULL AS hasextension, NULL as nosubmissions,
-                           qg.grade, NULL AS `status`,
+                           qg.grade, qa.state AS `status`,
                            NULL AS numfiles, NULL AS `value`,
                            qf.feedbacktext,
                            NULL AS `gradinggrade`, NULL AS `assessmentstart`,
@@ -505,7 +509,11 @@ class assessments_details {
                               ON (qf.quizid = q.id AND qg.grade IS NOT NULL
                                   AND (qg.grade > qf.mingrade
                                   OR (qg.grade = 0 AND qf.mingrade = 0))
-                                  AND qg.grade <= qf.maxgrade))
+                                  AND qg.grade <= qf.maxgrade)
+                           LEFT JOIN {quiz_attempts} AS qa 
+                              ON (qa.quiz = q.id 
+                                  AND qa.userid = ? 
+                                  AND qa.sumgrades IS NULL))
                     UNION (SELECT 'workshop' AS modtype, w.id AS activityid,
                            w.`name` AS activityname, w.submissionend AS duedate,
                            w.submissionstart AS allowsubmissionsfromdate,
@@ -532,7 +540,7 @@ class assessments_details {
                               ON (ua.modtype = m.`name` AND ua.activityid = cm.instance)
                     WHERE cfd.value > 0 AND m.`name` IN ('assign' , 'quiz', 'forum', 'workshop')
                     AND cm.visible = 1 AND c.enddate <= ? ORDER BY ".$sortcolumn." ".$sortorder;
-          $params = array($userid, $userid, $userid, $userid, $userid,
+          $params = array($userid, $userid, $userid, $userid, $userid, $userid,
                          $userid, $userid, $userid, $userid, $onemonth);
           $records = $DB->get_records_sql($sql, $params);
           $items = ($records) ? self::sanitize_records($records) : array();
@@ -954,6 +962,9 @@ class assessments_details {
                          }else{
                               if($duedate < time() && $duedate != 0) {
                                    $s->statustext = $notsubmitted;
+                              }else if($status === 'finished'){
+                                   $s->statustext = $submitted;
+                                   $s->class = $classsubmitted;
                               }else{
                                    $s->hasstatusurl = true;
                                    $s->statustext = $submit;

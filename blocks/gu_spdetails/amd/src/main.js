@@ -188,7 +188,7 @@ define(['core/ajax'], function(Ajax) {
     }
     
     const loadAssessments = (activetab, page, sortby, sortorder) => {
-        var blockContainer = document.getElementById('assessments_details_container');
+        var blockContainer = document.querySelector('.assessments-details-container');
         var tabContent = document.getElementById('assessments_details_contents');
         var promise = Ajax.call([{
             methodname: 'block_gu_spdetails_retrieve_assessments',
@@ -315,7 +315,7 @@ define(['core/ajax'], function(Ajax) {
     }
 
     return {
-        init: function() {                
+        init: function() {
             const ASSESSMENTS = document.querySelector('.assessments-details-container');
             if(ASSESSMENTS) {
                 var currentTab = document.getElementById('current_tab');
