@@ -59,7 +59,9 @@ class block_gu_spoverview extends block_base {
         $iscurrentlyenrolled = ($this->return_enrolledcourses($USER->id)) ? true : false;
 
         if($iscurrentlyenrolled) {
-            $count = return_assessments_count($USER->id);
+            $courses = $this->return_enrolledcourses($USER->id);
+            $courseids = implode(', ', $courses);
+            $count = return_assessments_count($USER->id, $courseids);
 
             $submitted_str = ($count->submitted == 1) ? get_string('assessment', 'block_gu_spoverview').
                                                         get_string('submitted', 'block_gu_spoverview') :
@@ -109,21 +111,20 @@ class block_gu_spoverview extends block_base {
         global $DB;
 
         $courseids = array();
-        $enddate = time() + (86400 * 30);
         $fields = "c.id";
         $customfieldjoin = "JOIN {customfield_field} cff
                             ON cff.shortname = 'show_on_studentdashboard'
                             JOIN {customfield_data} cfd
                             ON (cfd.fieldid = cff.id AND cfd.instanceid = c.id)";
 
-        $customfieldwhere = "cfd.value > 0 AND c.enddate > ?";
+        $customfieldwhere = "cfd.value = 1";
         $enrolmentselect = "SELECT DISTINCT e.courseid FROM {enrol} e
                             JOIN {user_enrolments} ue
                             ON (ue.enrolid = e.id AND ue.userid = ?)";
         $enrolmentjoin = "JOIN ($enrolmentselect) en ON (en.courseid = c.id)";
         $sql = "SELECT $fields FROM {course} c $customfieldjoin $enrolmentjoin
                 WHERE $customfieldwhere";
-        $params = array($userid, $enddate);
+        $params = array($userid);
         $results = $DB->get_records_sql($sql, $params);
 
         if($results) {

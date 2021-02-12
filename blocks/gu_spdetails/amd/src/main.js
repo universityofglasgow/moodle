@@ -36,7 +36,7 @@ define(['core/ajax'], function(Ajax) {
             case currentTab:
                 var activetab = 'current';
                 var page = 0;
-                var sortby = 'course';
+                var sortby = 'coursetitle';
                 var sortorder = 'asc';
 
                 currentTab.classList.add('active');
@@ -47,7 +47,7 @@ define(['core/ajax'], function(Ajax) {
             case pastTab:
                 var activetab = 'past';
                 var page = 0;
-                var sortby = 'course';
+                var sortby = 'coursetitle';
                 var sortorder = 'asc';
 
                 currentTab.classList.remove('active');
@@ -63,7 +63,7 @@ define(['core/ajax'], function(Ajax) {
                 }
 
                 var page = 0;
-                var sortby = 'course';
+                var sortby = 'coursetitle';
                 if(sortByCourse.getAttribute('data-value') == 'asc') {
                     sortorder = 'desc';
                     sortByCourse.setAttribute('data-value', 'desc');
@@ -80,7 +80,7 @@ define(['core/ajax'], function(Ajax) {
             case sortByDate:
                 var activetab = 'current';
                 var page = 0;
-                var sortby = 'date';
+                var sortby = 'duedate';
                 if(sortByDate.getAttribute('data-value') == 'asc') {
                     sortorder = 'desc';
                     sortByDate.setAttribute('data-value', 'desc');
@@ -148,7 +148,7 @@ define(['core/ajax'], function(Ajax) {
                 var sortby = currentSelectSort.value;
                 var sortorder = 'asc';
 
-                if(currentSelectSort.value === 'course') {
+                if(currentSelectSort.value === 'coursetitle') {
                     sortByCourse.classList.add('th-sort-asc');
                     sortByCourse.classList.remove('th-sort-desc');
                     sortByCourse.setAttribute('data-value', 'asc');
@@ -166,7 +166,7 @@ define(['core/ajax'], function(Ajax) {
                 var sortby = pastSelectSort.value;
                 var sortorder = 'asc';
 
-                if(pastSelectSort.value === 'course') {
+                if(pastSelectSort.value === 'coursetitle') {
                     sortByCourse.classList.add('th-sort-asc');
                     sortByCourse.classList.remove('th-sort-desc');
                     sortByCourse.setAttribute('data-value', 'asc');
@@ -240,7 +240,7 @@ define(['core/ajax'], function(Ajax) {
         var sortByEndDate = document.getElementById('sortby_enddate');
 
         switch(sortby) {
-            case 'course':
+            case 'coursetitle':
                 if(sortByCourse) {
                     if(sortorder === 'asc') {
                         sortByCourse.classList.add('th-sort-asc');
@@ -253,7 +253,7 @@ define(['core/ajax'], function(Ajax) {
                     }
                 }
                 break;
-            case 'date':
+            case 'duedate':
                 if(sortByDate) {
                     if(sortorder === 'asc') {
                         sortByDate.classList.add('th-sort-asc');
@@ -322,7 +322,7 @@ define(['core/ajax'], function(Ajax) {
                 var pastTab = document.getElementById('past_tab');
                 var activetab = 'current';
                 var page = 0;
-                var sortby = 'course';
+                var sortby = 'coursetitle';
                 var sortorder = 'asc';
 
                 currentTab.classList.add('active');
