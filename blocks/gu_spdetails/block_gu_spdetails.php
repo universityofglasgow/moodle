@@ -83,7 +83,7 @@ class block_gu_spdetails extends block_base {
                             ON cff.shortname = 'show_on_studentdashboard'
                             JOIN {customfield_data} cfd
                             ON (cfd.fieldid = cff.id AND cfd.instanceid = c.id)";
-        $customfieldwhere = "cfd.value > 0";
+        $customfieldwhere = "cfd.value = 1";
         $enrolmentselect = "SELECT DISTINCT e.courseid FROM {enrol} e
                             JOIN {user_enrolments} ue
                             ON (ue.enrolid = e.id AND ue.userid = ?)";
@@ -108,7 +108,7 @@ class block_gu_spdetails extends block_base {
 
     /**
      * Return has_capability
-     * 
+     *
      * @param string $courseid
      * @param string $userid
      * @return boolean
