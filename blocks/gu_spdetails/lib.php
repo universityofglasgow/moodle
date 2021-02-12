@@ -26,8 +26,8 @@ defined('MOODLE_INTERNAL') || die();
 define('ASSESSMENTS_PER_PAGE', 12);
 define('TAB_CURRENT', 'current');
 define('TAB_PAST', 'past');
-define('SORTBY_COURSE', 'course');
-define('SORTBY_DATE', 'date');
+define('SORTBY_COURSE', 'coursetitle');
+define('SORTBY_DATE', 'duedate');
 define('SORTBY_STARTDATE', 'startdate');
 define('SORTBY_ENDDATE', 'enddate');
 define('SORTORDER_ASC', 'asc');
@@ -61,11 +61,7 @@ class assessments_details {
                               SORTBY_STARTDATE => get_string('option_startdate', 'block_gu_spdetails'),
                               SORTBY_ENDDATE => get_string('option_enddate', 'block_gu_spdetails'));
 
-          if($activetab === TAB_CURRENT) {
-               $items = self::retrieve_current_gradable_activities($userid, $sortby, $sortorder);
-          }else{
-               $items = self::retrieve_past_gradable_activities($userid, $sortby, $sortorder);
-          }
+          $items = self::retrieve_gradable_activities($activetab, $userid, $sortby, $sortorder);
 
           $totalassessments = 0;
           $html = null;
@@ -202,347 +198,255 @@ class assessments_details {
           return $html;
      }
 
-     public static function retrieve_current_gradable_activities($userid, $sortby, $sortorder) {
+     public static function retrieve_courses($activetab, $userid) {
           global $DB;
-          $onemonth = time() + (86400 * 30);
 
-          if($sortby === SORTBY_COURSE) {
-               $sortcolumn = 'coursetitle';
+          $fields = "c.id";
+          $customfieldjoin = "JOIN {customfield_field} cff
+                              ON cff.shortname = 'show_on_studentdashboard'
+                              JOIN {customfield_data} cfd
+                              ON (cfd.fieldid = cff.id AND cfd.instanceid = c.id)";
+          $enrolmentselect = "SELECT DISTINCT e.courseid FROM {enrol} e
+                              JOIN {user_enrolments} ue
+                              ON (ue.enrolid = e.id AND ue.userid = ?)";
+          $enrolmentjoin = "JOIN ($enrolmentselect) en ON (en.courseid = c.id)";
+
+          if($activetab === TAB_CURRENT) {
+               $customfieldwhere = "cfd.value = 1";
+               $param = array($userid);
           }else{
-               $sortcolumn = 'duedate';
+               $enddate = time();
+               $customfieldwhere = "cfd.value = 1 AND c.enddate + 86400 * 30 <= ?";
+               $param = array($userid, $enddate);
           }
 
-          $sql = "SELECT cm.id, c.id AS courseid, c.startdate, c.enddate,
-                         cs.section, cs.name AS sectionname,
-                         c.fullname AS coursefullname, c.shortname AS courseshortname,
-                         cm.instance AS modinstance, m.name AS modname,
-                         CASE
-                         WHEN cs.name IS NOT NULL THEN cs.name
-                         WHEN cs.section > 0 THEN CONCAT('Topic ', cs.section)
-                         ELSE c.fullname END AS coursetitle,
-                         gi.id AS gradeitemid, gi.gradetype, gi.scaleid,
-                         gi.aggregationcoef, gi.aggregationcoef2,
-                         gi.grademax, gi.grademin, gi.gradepass,
-                         gg.finalgrade, gg.feedback, gg.feedbackformat,
-                         gg.information AS gradeinformation,
-                         gc.fullname AS gradecategoryname, gc.aggregation, 
-                         s.scale, ua.*
-                    FROM {course} c
-                    JOIN {course_modules} cm
-                         ON (c.id = cm.course AND cm.deletioninprogress = 0)
-                    JOIN {course_sections} cs
-                         ON (cs.course = c.id AND cs.id = cm.section)
-                    JOIN {modules} m ON m.id = cm.module
-                    JOIN (SELECT gi1.id, gi1.categoryid, gi1.gradetype,
-                          gi1.grademax, gi1.grademin, gi1.gradepass, gi1.scaleid,
-                          gi1.aggregationcoef, gi1.aggregationcoef2,
-                          gi1.iteminstance, gi1.courseid, gi1.itemmodule
-                          FROM {grade_items} gi1
-                          LEFT JOIN {grade_items} gi2
-                          ON (gi2.iteminstance = gi1.iteminstance
-                          AND gi2.itemmodule = gi1.itemmodule
-                          AND gi2.itemnumber <> gi1.itemnumber)
-                          WHERE gi1.itemtype = 'mod' AND gi1.gradetype != 0
-                          AND (gi1.itemnumber = 0 OR gi2.itemnumber IS NULL)) gi
-                         ON (gi.iteminstance = cm.instance AND gi.courseid = c.id
-                             AND gi.itemmodule = m.`name`)
-                    JOIN {customfield_field} cff
-                         ON cff.shortname = 'show_on_studentdashboard'
-                    JOIN {customfield_data} cfd
-                         ON (cfd.fieldid = cff.id AND cfd.instanceid = c.id)
-                    LEFT JOIN {scale} s ON s.id = gi.scaleid
-                    JOIN (SELECT DISTINCT e.courseid
-                          FROM {enrol} e
-                          JOIN {user_enrolments} ue
-                          ON (ue.enrolid = e.id AND ue.userid = ?)) en
-                         ON (en.courseid = c.id)
-                    LEFT JOIN {grade_grades} gg
-                         ON (gg.itemid = gi.id AND gg.userid = ?)
-                    LEFT JOIN {grade_categories} gc ON gc.id = gi.categoryid
-                    LEFT JOIN ((SELECT 'assign' AS modtype,
-                               a.id AS activityid, a.name AS activityname,
-                               CASE
-                               WHEN auf.extensionduedate IS NOT NULL
-                               AND auf.extensionduedate > 0
-                               THEN auf.extensionduedate
-                               WHEN ao.duedate IS NOT NULL THEN ao.duedate
-                               ELSE a.duedate END AS duedate,
-                               CASE
-                               WHEN ao.allowsubmissionsfromdate IS NOT NULL
-                               THEN ao.allowsubmissionsfromdate
-                               ELSE a.allowsubmissionsfromdate
-                               END AS allowsubmissionsfromdate,
-                               CASE
-                               WHEN ao.cutoffdate IS NOT NULL
-                               THEN ao.cutoffdate
-                               ELSE a.cutoffdate
-                               END AS cutoffdate, a.gradingduedate,
-                               CASE
-                               WHEN auf.extensionduedate IS NOT NULL
-                               AND auf.extensionduedate > 0
-                               THEN 1
-                               ELSE 0
-                               END AS hasextension, a.nosubmissions,
-                               ag.grade, `as`.`status`, aff.numfiles,
-                               ptcfg.`value`,
-                               NULL AS `feedbacktext`,
-                               NULL AS `gradinggrade`,
-                               NULL AS `assessmentstart`,
-                               NULL AS `workshopsubmission`,
-                               NULL AS `submissionsgrade`
-                               FROM {assign} AS a
-                               LEFT JOIN (SELECT assignid, duedate,
-                                          allowsubmissionsfromdate, cutoffdate
-                                          FROM {assign_overrides}
-                                          WHERE userid = ?) AS ao
-                                   ON (ao.assignid = a.id)
-                               LEFT JOIN (SELECT assignment, extensionduedate
-                               FROM {assign_user_flags} WHERE userid = ?) auf
-                                   ON auf.assignment = a.id
-                               LEFT JOIN {assign_grades} ag
-                                   ON (ag.assignment = a.id AND ag.userid = ?)
-                               LEFT JOIN {assign_submission} `as`
-                                   ON (`as`.assignment = a.id AND `as`.userid = ?)
-                               LEFT JOIN {assignfeedback_file} aff
-                                   ON (aff.assignment = a.id)
-                               LEFT JOIN {plagiarism_turnitin_config} ptcfg
-                                   ON (ptcfg.name = 'use_turnitin' AND ptcfg.value = 1))
-                    UNION (SELECT 'quiz' AS modtype, q.id AS activityid,
-                           q.name AS activityname,
-                           CASE
-                           WHEN qo.timeclose IS NOT NULL
-                           THEN qo.timeclose
-                           ELSE q.timeclose END AS duedate,
-                           q.timeopen AS allowsubmissionsfromdate,
-                           NULL AS cutoffdate,
-                           CASE
-                           WHEN qo.timeclose IS NOT NULL
-                           THEN qo.timeclose
-                           ELSE q.timeclose END AS gradingduedate,
-                           NULL AS hasextension, NULL as nosubmissions,
-                           qg.grade, qa.state AS `status`,
-                           NULL AS numfiles, NULL AS `value`,
-                           qf.feedbacktext,
-                           NULL AS `gradinggrade`, NULL AS `assessmentstart`,
-                           NULL AS `workshopsubmission`, NULL AS `submissionsgrade`
-                           FROM {quiz} q
-                           LEFT JOIN (SELECT * FROM {quiz_overrides}
-                                      WHERE userid = ?) qo
-                              ON qo.quiz = q.id
-                           LEFT JOIN {quiz_grades} AS qg
-                              ON (qg.quiz = q.id AND qg.userid = ?)
-                           LEFT JOIN {quiz_feedback} AS qf
-                              ON (qf.quizid = q.id AND qg.grade IS NOT NULL
-                                  AND (qg.grade > qf.mingrade
-                                  OR (qg.grade = 0 AND qf.mingrade = 0))
-                                  AND qg.grade <= qf.maxgrade)
-                           LEFT JOIN {quiz_attempts} AS qa 
-                              ON (qa.quiz = q.id 
-                                  AND qa.userid = ? 
-                                  AND qa.sumgrades IS NULL))
-                    UNION (SELECT 'workshop' AS modtype, w.id AS activityid,
-                           w.`name` AS activityname, w.submissionend AS duedate,
-                           w.submissionstart AS allowsubmissionsfromdate,
-                           NULL AS cutoffdate,
-                           w.assessmentend AS gradingduedate,
-                           NULL AS hasextension,  NULL as nosubmissions,
-                           w.grade, NULL AS `status`,
-                           NULL AS numfiles, NULL AS `value`,
-                           NULL AS feedbacktext, w.gradinggrade,
-                           w.assessmentstart, ws.title as `workshopsubmission`,
-                           ws.grade AS `submissionsgrade`
-                           FROM {workshop} w
-                           LEFT JOIN {workshop_submissions} ws
-                              ON (ws.workshopid = w.id AND ws.authorid = ?))
-                    UNION (SELECT 'forum' AS modtype, id as activityid,
-                           `name` as activityname, duedate,
-                           NULL AS `allowsubmissionsfromdate`, cutoffdate,
-                                   cutoffdate AS gradingduedate,
-                           NULL AS hasextension,  NULL as nosubmissions,
-                           grade_forum AS grade, assessed AS `status`,
-                           NULL AS numfiles, NULL AS `value`, NULL AS feedbacktext,
-                           NULL AS `gradinggrade`, NULL AS `assessmentstart`,
-                           NULL AS `workshopsubmission`, NULL AS `submissionsgrade`
-                           FROM {forum})) ua
-                              ON (ua.modtype = m.`name` AND ua.activityid = cm.instance)
-                    WHERE cfd.value > 0 AND m.`name` IN ('assign' , 'quiz', 'forum', 'workshop')
-                    AND cm.visible = 1 AND c.enddate > ? ORDER BY ".$sortcolumn." ".$sortorder;
-          $params = array($userid, $userid, $userid, $userid, $userid, $userid,
-                         $userid, $userid, $userid, $userid, $onemonth);
-          $records = $DB->get_records_sql($sql, $params);
-          $items = ($records) ? self::sanitize_records($records) : array();
-          return $items;
+          $sql = "SELECT $fields FROM {course} c $customfieldjoin $enrolmentjoin
+                  WHERE $customfieldwhere";
+          $results = $DB->get_records_sql($sql, $param);
+
+          if($results) {
+               $studentcourses = array();
+               foreach($results as $courseid=>$courseobject) {
+                    if(self::return_isstudent($courseid)) {
+                         array_push($studentcourses, $courseid);
+                    }
+               }
+               return $studentcourses;
+          }else{
+               return array();
+          }
      }
 
-     public static function retrieve_past_gradable_activities($userid, $sortby, $sortorder) {
+     public static function retrieve_gradable_activities($activetab, $userid, $sortby, $sortorder) {
           global $DB;
-          $onemonth = time() + (86400 * 30);
+          $enddate = time();
 
-          if($sortby === SORTBY_COURSE) {
-               $sortcolumn = 'coursetitle';
-          }else if($sortby === SORTBY_STARTDATE){
-               $sortcolumn = 'c.startdate';
-          }else{
-               $sortcolumn = 'c.enddate';
-          }
+          $courses = self::retrieve_courses($activetab, $userid);
+          $courseids = implode(', ', $courses);
 
-          $sql = "SELECT cm.id, c.id AS courseid, c.startdate, c.enddate,
-                         cs.section, cs.name AS sectionname,
-                         c.fullname AS coursefullname, c.shortname AS courseshortname,
-                         cm.instance AS modinstance, m.name AS modname,
+          $assignfields = "cm.id, a.course AS courseid,
+                              CASE
+                              WHEN cs.name IS NOT NULL THEN cs.name
+                              WHEN cs.section != 0 THEN CONCAT('Topic ', cs.section)
+                              ELSE c.fullname
+                              END AS coursetitle,
+                              gi.itemmodule AS modname, a.name AS activityname,
+                              gc.fullname AS gradecategoryname, gc.aggregation,
+                              gi.aggregationcoef, gi.aggregationcoef2,
+                              CASE
+                              WHEN ao.allowsubmissionsfromdate IS NOT NULL
+                              THEN ao.allowsubmissionsfromdate
+                              ELSE a.allowsubmissionsfromdate
+                              END AS allowsubmissionsfromdate,
+                              CASE
+                              WHEN auf.extensionduedate IS NOT NULL AND auf.extensionduedate != 0
+                              THEN auf.extensionduedate
+                              WHEN ao.duedate IS NOT NULL THEN ao.duedate
+                              ELSE a.duedate
+                              END AS duedate,
+                              CASE
+                              WHEN ao.cutoffdate IS NOT NULL THEN ao.cutoffdate
+                              ELSE a.cutoffdate
+                              END AS cutoffdate,
+                              a.gradingduedate,
+                              CASE
+                              WHEN auf.extensionduedate IS NOT NULL AND auf.extensionduedate != 0
+                              THEN 1
+                              ELSE 0
+                              END AS hasextension,
+                              gi.gradetype, gi.grademin, gi.grademax, s.scale, gg.finalgrade,
+                              gg.information AS gradeinformation, gg.feedback,
+                              aff.numfiles AS feedbackfiles, ptcfg.value AS hasturnitin,
+                              `as`.`status`, a.nosubmissions AS submissions, c.startdate, c.enddate";
+          $assignjoins = "LEFT JOIN {assign_overrides} ao ON (ao.assignid = a.id AND ao.userid = ?)
+                         LEFT JOIN {assign_user_flags} auf ON (auf.assignment = a.id AND auf.userid = ?)
+                         LEFT JOIN {assign_grades} ag ON (ag.assignment = a.id AND ag.userid = ?)
+                         LEFT JOIN (SELECT a.* FROM {assign_submission} a
+                                        LEFT OUTER JOIN {assign_submission} b
+                                        ON a.id = b.id AND a.attemptnumber < b.attemptnumber
+                                        WHERE b.id IS NULL) `as`
+                              ON (`as`.assignment = a.id AND `as`.userid = ?)
+                         LEFT JOIN {assignfeedback_file} aff ON (aff.assignment = a.id AND aff.grade = ag.id)
+                         LEFT JOIN {modules} m ON (m.name = 'assign')
+                         LEFT JOIN {course_modules} cm ON (cm.course = a.course AND cm.`instance` = a.id
+                              AND cm.module = m.id AND cm.deletioninprogress = 0)
+                         LEFT JOIN {plagiarism_turnitin_config} ptcfg ON (ptcfg.name = 'use_turnitin'
+                              AND ptcfg.value = 1 AND ptcfg.cm = cm.id)
+                         LEFT JOIN {grade_items} gi ON (gi.iteminstance = cm.`instance` AND gi.courseid = a.course
+                              AND gi.itemtype = 'mod' AND gi.itemmodule = 'assign')
+                         LEFT JOIN {grade_grades} gg ON (gg.itemid = gi.id AND gg.userid = ?)
+                         LEFT JOIN {grade_categories} gc ON gc.id = gi.categoryid
+                         LEFT JOIN {scale} s ON s.id = gi.scaleid
+                         LEFT JOIN {course} c ON c.id = a.course
+                         LEFT JOIN {course_sections} cs ON (cs.course = c.id AND cs.id = cm.section)";
+          $assignenddate = ($activetab === TAB_CURRENT) ?
+                         "AND (c.enddate + 86400 * 30 > ? OR
+                         CASE
+                         WHEN auf.extensionduedate IS NOT NULL AND auf.extensionduedate != 0
+                         THEN auf.extensionduedate
+                         WHEN ao.duedate IS NOT NULL THEN ao.duedate
+                         ELSE a.duedate END + 86400 * 30 > ?)" :
+                         "AND c.enddate  + 86400 * 30 <= ? AND
+                         (CASE
+                         WHEN auf.extensionduedate IS NOT NULL AND auf.extensionduedate != 0
+                         THEN auf.extensionduedate
+                         WHEN ao.duedate IS NOT NULL THEN ao.duedate
+                         ELSE a.duedate END + 86400 * 30 <= ?)";
+          $assignwhere = "a.course IN ($courseids) $assignenddate";
+          $assignsql = "SELECT $assignfields FROM {assign} a $assignjoins WHERE $assignwhere";
+          $assignparams = array($userid, $userid, $userid, $userid, $userid, $enddate, $enddate);
+
+          $forumfields = "cm.id, f.course AS courseid,
                          CASE
                          WHEN cs.name IS NOT NULL THEN cs.name
                          WHEN cs.section > 0 THEN CONCAT('Topic ', cs.section)
                          ELSE c.fullname END AS coursetitle,
-                         gi.id AS gradeitemid, gi.gradetype, gi.scaleid,
+                         gi.itemmodule AS modname, f.name AS activityname,
+                         gc.fullname AS gradecategoryname, gc.aggregation,
                          gi.aggregationcoef, gi.aggregationcoef2,
-                         gi.grademax, gi.grademin, gi.gradepass,
-                         gg.finalgrade, gg.feedback, gg.feedbackformat,
-                         gg.information AS gradeinformation,
-                         gc.fullname AS gradecategoryname, gc.aggregation, 
-                         s.scale, ua.*
-                    FROM {course} c
-                    JOIN {course_modules} cm
-                         ON (c.id = cm.course AND cm.deletioninprogress = 0)
-                    JOIN {course_sections} cs
-                         ON (cs.course = c.id AND cs.id = cm.section)
-                    JOIN {modules} m ON m.id = cm.module
-                    JOIN (SELECT gi1.id, gi1.categoryid, gi1.gradetype,
-                          gi1.grademax, gi1.grademin, gi1.gradepass, gi1.scaleid,
-                          gi1.aggregationcoef, gi1.aggregationcoef2,
-                          gi1.iteminstance, gi1.courseid, gi1.itemmodule
-                          FROM {grade_items} gi1
-                          LEFT JOIN {grade_items} gi2
-                          ON (gi2.iteminstance = gi1.iteminstance
-                          AND gi2.itemmodule = gi1.itemmodule
-                          AND gi2.itemnumber <> gi1.itemnumber)
-                          WHERE gi1.itemtype = 'mod' AND gi1.gradetype != 0
-                          AND (gi1.itemnumber = 0 OR gi2.itemnumber IS NULL)) gi
-                         ON (gi.iteminstance = cm.instance AND gi.courseid = c.id
-                             AND gi.itemmodule = m.`name`)
-                    JOIN {customfield_field} cff
-                         ON cff.shortname = 'show_on_studentdashboard'
-                    JOIN {customfield_data} cfd
-                         ON (cfd.fieldid = cff.id AND cfd.instanceid = c.id)
-                    LEFT JOIN {scale} s ON s.id = gi.scaleid
-                    JOIN (SELECT DISTINCT e.courseid
-                          FROM {enrol} e
-                          JOIN {user_enrolments} ue
-                          ON (ue.enrolid = e.id AND ue.userid = ?)) en
-                         ON (en.courseid = c.id)
-                    LEFT JOIN {grade_grades} gg
-                         ON (gg.itemid = gi.id AND gg.userid = ?)
-                    LEFT JOIN {grade_categories} gc ON gc.id = gi.categoryid
-                    LEFT JOIN ((SELECT 'assign' AS modtype,
-                               a.id AS activityid, a.name AS activityname,
-                               CASE
-                               WHEN auf.extensionduedate IS NOT NULL
-                               AND auf.extensionduedate > 0
-                               THEN auf.extensionduedate
-                               WHEN ao.duedate IS NOT NULL THEN ao.duedate
-                               ELSE a.duedate END AS duedate,
-                               CASE
-                               WHEN ao.allowsubmissionsfromdate IS NOT NULL
-                               THEN ao.allowsubmissionsfromdate
-                               ELSE a.allowsubmissionsfromdate
-                               END AS allowsubmissionsfromdate,
-                               CASE
-                               WHEN ao.cutoffdate IS NOT NULL
-                               THEN ao.cutoffdate
-                               ELSE a.cutoffdate
-                               END AS cutoffdate, a.gradingduedate,
-                               CASE
-                               WHEN auf.extensionduedate IS NOT NULL
-                               AND auf.extensionduedate > 0
-                               THEN 1
-                               ELSE 0
-                               END AS hasextension, a.nosubmissions,
-                               ag.grade, `as`.`status`,
-                               aff.numfiles, ptcfg.`value`,
-                               NULL AS `feedbacktext`,
-                               NULL AS `gradinggrade`,
-                               NULL AS `assessmentstart`,
-                               NULL AS `workshopsubmission`,
-                               NULL AS `submissionsgrade`
-                               FROM {assign} AS a
-                               LEFT JOIN (SELECT assignid, duedate,
-                                          allowsubmissionsfromdate, cutoffdate
-                                          FROM {assign_overrides}
-                                          WHERE userid = ?) AS ao
-                                   ON (ao.assignid = a.id)
-                               LEFT JOIN (SELECT assignment, extensionduedate
-                               FROM {assign_user_flags} WHERE userid = ?) auf
-                                   ON auf.assignment = a.id
-                               LEFT JOIN {assign_grades} ag
-                                   ON (ag.assignment = a.id AND ag.userid = ?)
-                               LEFT JOIN {assign_submission} `as`
-                                   ON (`as`.assignment = a.id AND `as`.userid = ?)
-                               LEFT JOIN {assignfeedback_file} aff
-                                   ON (aff.assignment = a.id)
-                               LEFT JOIN {plagiarism_turnitin_config} ptcfg
-                                   ON (ptcfg.name = 'use_turnitin' AND ptcfg.value = 1))
-                    UNION (SELECT 'quiz' AS modtype, q.id AS activityid,
-                           q.name AS activityname,
-                           CASE
-                           WHEN qo.timeclose IS NOT NULL
-                           THEN qo.timeclose
-                           ELSE q.timeclose END AS duedate,
-                           q.timeopen AS allowsubmissionsfromdate,
-                           NULL AS cutoffdate,
-                           CASE
-                           WHEN qo.timeclose IS NOT NULL
-                           THEN qo.timeclose
-                           ELSE q.timeclose END AS gradingduedate,
-                           NULL AS hasextension, NULL as nosubmissions,
-                           qg.grade, qa.state AS `status`,
-                           NULL AS numfiles, NULL AS `value`,
-                           qf.feedbacktext,
-                           NULL AS `gradinggrade`, NULL AS `assessmentstart`,
-                           NULL AS `workshopsubmission`, NULL AS `submissionsgrade`
-                           FROM {quiz} q
-                           LEFT JOIN (SELECT * FROM {quiz_overrides}
-                                      WHERE userid = ?) qo
-                              ON qo.quiz = q.id
-                           LEFT JOIN {quiz_grades} AS qg
-                              ON (qg.quiz = q.id AND qg.userid = ?)
-                           LEFT JOIN {quiz_feedback} AS qf
-                              ON (qf.quizid = q.id AND qg.grade IS NOT NULL
-                                  AND (qg.grade > qf.mingrade
-                                  OR (qg.grade = 0 AND qf.mingrade = 0))
-                                  AND qg.grade <= qf.maxgrade)
-                           LEFT JOIN {quiz_attempts} AS qa 
-                              ON (qa.quiz = q.id 
-                                  AND qa.userid = ? 
-                                  AND qa.sumgrades IS NULL))
-                    UNION (SELECT 'workshop' AS modtype, w.id AS activityid,
-                           w.`name` AS activityname, w.submissionend AS duedate,
-                           w.submissionstart AS allowsubmissionsfromdate,
-                           NULL AS cutoffdate,
-                           w.assessmentend AS gradingduedate,
-                           NULL AS hasextension, NULL as nosubmissions,
-                           w.grade, NULL AS `status`,
-                           NULL AS numfiles, NULL AS `value`,
-                           NULL AS feedbacktext, w.gradinggrade, w.assessmentstart,
-                                   ws.title as `workshopsubmission`, ws.grade AS `submissionsgrade`
-                           FROM {workshop} w
-                           LEFT JOIN {workshop_submissions} ws
-                              ON (ws.workshopid = w.id AND ws.authorid = ?))
-                    UNION (SELECT 'forum' AS modtype, id as activityid,
-                           `name` as activityname, duedate,
-                           NULL AS `allowsubmissionsfromdate`, cutoffdate,
-                                   cutoffdate AS gradingduedate,
-                           NULL AS hasextension, NULL as nosubmissions,
-                           grade_forum AS grade, assessed AS `status`,
-                           NULL AS numfiles, NULL AS `value`, NULL AS feedbacktext,
-                           NULL AS `gradinggrade`, NULL AS `assessmentstart`,
-                           NULL AS `workshopsubmission`, NULL AS `submissionsgrade`
-                           FROM {forum})) ua
-                              ON (ua.modtype = m.`name` AND ua.activityid = cm.instance)
-                    WHERE cfd.value > 0 AND m.`name` IN ('assign' , 'quiz', 'forum', 'workshop')
-                    AND cm.visible = 1 AND c.enddate <= ? ORDER BY ".$sortcolumn." ".$sortorder;
-          $params = array($userid, $userid, $userid, $userid, $userid, $userid,
-                         $userid, $userid, $userid, $userid, $onemonth);
-          $records = $DB->get_records_sql($sql, $params);
+                         NULL AS `allowsubmissionsfromdate`,
+                         f.duedate, f.cutoffdate, f.cutoffdate AS gradingduedate,
+                         NULL AS `hasextension`, gi.gradetype, gi.grademin, gi.grademax,
+                         NULL AS scale, gg.finalgrade, gg.information AS gradeinformation,
+                         gg.feedback, NULL AS feedbackfiles, NULL AS hasturnitin,
+                         NULL AS `status`, NULL AS submissions, c.startdate, c.enddate";
+          $forumjoins = "LEFT JOIN {modules} m ON (m.name = 'forum')
+                         LEFT JOIN {course_modules} cm ON (cm.course = f.course AND cm.`instance` = f.id
+                              AND cm.module = m.id AND cm.deletioninprogress = 0)
+                         LEFT JOIN {course} c ON c.id = f.course
+                         LEFT JOIN {course_sections} cs ON (cs.course = c.id AND cs.id = cm.section)
+                         JOIN (SELECT gi1.id, gi1.categoryid, gi1.gradetype, gi1.grademax, gi1.grademin,
+                              gi1.gradepass, gi1.scaleid, gi1.aggregationcoef, gi1.aggregationcoef2,
+                              gi1.iteminstance, gi1.courseid, gi1.itemmodule
+                              FROM {grade_items} gi1
+                              LEFT JOIN {grade_items} gi2 ON (gi2.iteminstance = gi1.iteminstance
+                              AND gi2.itemmodule = gi1.itemmodule AND gi2.itemnumber <> gi1.itemnumber)
+                              WHERE gi1.itemtype = 'mod' AND gi1.gradetype != 0
+                                   AND (gi1.itemnumber = 0 OR gi2.itemnumber IS NULL)
+                                   AND gi1.itemmodule = 'forum') gi
+                                   ON (gi.iteminstance = cm.instance AND gi.courseid = c.id)
+                         LEFT JOIN {grade_grades} gg ON (gg.itemid = gi.id AND gg.userid = ?)
+                         LEFT JOIN {grade_categories} gc ON gc.id = gi.categoryid";
+          $forumenddate = ($activetab === TAB_CURRENT) ?
+                         "AND (c.enddate + 86400 * 30 > ?
+                         OR f.duedate + 86400 * 30 > ?)" :
+                         "AND c.enddate + 86400 * 30 <= ?
+                         AND f.duedate + 86400 * 30 <= ?";
+          $forumwhere = "f.course IN ($courseids) $forumenddate";
+          $forumsql = "SELECT $forumfields FROM {forum} f $forumjoins WHERE $forumwhere";
+          $forumparams = array($userid, $enddate, $enddate);
+
+          $quizfields = "cm.id, q.course AS courseid,
+                         CASE
+                         WHEN cs.name IS NOT NULL THEN cs.name
+                         WHEN cs.section != 0 THEN CONCAT('Topic ', cs.section)
+                         ELSE c.fullname END AS coursetitle,
+                         gi.itemmodule AS modname, q.name AS activityname,
+                         gc.fullname AS gradecategoryname, gc.aggregation,
+                         gi.aggregationcoef, gi.aggregationcoef2,
+                         q.timeopen AS allowsubmissionsfromdate,
+                         CASE
+                              WHEN qo.timeclose IS NOT NULL THEN qo.timeclose
+                              ELSE q.timeclose END AS duedate,
+                         NULL AS cutoffdate,
+                         CASE
+                              WHEN qo.timeclose IS NOT NULL THEN qo.timeclose
+                              ELSE q.timeclose END AS gradingduedate,
+                         NULL AS hasextension, gi.gradetype, gi.grademin, gi.grademax,
+                         NULL AS scale, gg.finalgrade, gg.information AS gradeinformation,
+                         qf.feedbacktext AS feedback, NULL AS feedbackfiles, NULL AS hasturnitin,
+                         qa.state AS `status`, NULL AS submissions, c.startdate, c.enddate";
+          $quizjoins = "LEFT JOIN {quiz_overrides} AS qo ON (qo.quiz = q.id AND qo.userid = ?)
+                         LEFT JOIN {quiz_grades} AS qg ON (qg.quiz = q.id AND qg.userid = ?)
+                         LEFT JOIN {quiz_feedback} AS qf ON (qf.quizid = q.id AND qg.grade IS NOT NULL
+                              AND (qg.grade > qf.mingrade OR (qg.grade = 0 AND qf.mingrade = 0))
+                              AND qg.grade <= qf.maxgrade)
+                         LEFT JOIN {quiz_attempts} AS qa ON (qa.quiz = q.id AND qa.userid = ?
+                              AND qa.sumgrades IS NULL)
+                         LEFT JOIN {modules} m ON (m.name = 'quiz')
+                         LEFT JOIN {course_modules} cm ON (cm.course = q.course AND cm.`instance` = q.id
+                              AND cm.module = m.id AND cm.deletioninprogress = 0)
+                         LEFT JOIN {grade_items} gi ON (gi.iteminstance = cm.`instance`
+                              AND gi.courseid = q.course AND gi.itemtype = 'mod' AND gi.itemmodule = 'quiz')
+                         LEFT JOIN {grade_grades} gg ON (gg.itemid = gi.id AND gg.userid = ?)
+                         LEFT JOIN {grade_categories} gc ON gc.id = gi.categoryid
+                         LEFT JOIN {course} c ON c.id = q.course
+                         LEFT JOIN {course_sections} cs ON (cs.course = c.id AND cs.id = cm.section)";
+          $quizenddate = ($activetab === TAB_CURRENT) ?
+                         "AND (c.enddate + 86400 * 30 > ? OR
+                         CASE
+                         WHEN qo.timeclose IS NOT NULL THEN qo.timeclose
+                         ELSE q.timeclose END + 86400 * 30 > ?)" :
+                         "AND c.enddate + 86400 * 30 <= ? AND
+                         (CASE
+                         WHEN qo.timeclose IS NOT NULL THEN qo.timeclose
+                         ELSE q.timeclose END + 86400 * 30 <= ?)";
+          $quizwhere = "q.course IN ($courseids) $quizenddate";
+          $quizsql = "SELECT $quizfields FROM {quiz} q $quizjoins WHERE $quizwhere";
+          $quizparams = array($userid, $userid, $userid, $userid, $enddate, $enddate);
+
+          $workshopfields = "cm.id, w.course AS courseid,
+                              CASE
+                              WHEN cs.name IS NOT NULL THEN cs.name
+                              WHEN cs.section != 0 THEN CONCAT('Topic ', cs.section)
+                              ELSE c.fullname END AS coursetitle,
+                              gi.itemmodule AS modname, w.name AS activityname,
+                              gc.fullname AS gradecategoryname, gc.aggregation,
+                              gi.aggregationcoef, gi.aggregationcoef2,
+                              w.submissionstart AS allowsubmissionsfromdate,
+                              w.submissionend AS duedate, NULL AS cutoffdate,
+                              w.assessmentend AS gradingduedate, NULL AS hasextension,
+                              gi.gradetype, gi.grademin, gi.grademax, NULL AS scale,
+                              gg.finalgrade, gg.information AS gradeinformation, gg.feedback,
+                              NULL AS feedbackfiles, NULL AS hasturnitin, NULL AS `status`,
+                              ws.title AS submissions, c.startdate, c.enddate";
+          $workshopjoins = "LEFT JOIN {workshop_submissions} ws
+                         ON (ws.workshopid = w.id AND ws.authorid = ?)
+                         LEFT JOIN mdl_modules m ON (m.name = 'workshop')
+                         LEFT JOIN mdl_course_modules cm ON (cm.course = w.course
+                              AND cm.`instance` = w.id AND cm.module = m.id
+                              AND cm.deletioninprogress = 0)
+                         LEFT JOIN mdl_grade_items gi ON (gi.iteminstance = cm.`instance`
+                              AND gi.courseid = w.course AND gi.itemtype = 'mod'
+                              AND gi.itemmodule = 'workshop' AND gi.itemnumber = 0)
+                         LEFT JOIN mdl_grade_grades gg ON (gg.itemid = gi.id AND gg.userid = ?)
+                         LEFT JOIN mdl_grade_categories gc ON gc.id = gi.categoryid
+                         LEFT JOIN mdl_course c ON c.id = w.course
+                         LEFT JOIN mdl_course_sections cs ON (cs.course = c.id AND cs.id = cm.section)";
+          $workshopenddate = ($activetab === TAB_CURRENT) ?
+                              "AND (c.enddate + 86400 * 30 > ?
+                              OR w.submissionend + 86400 * 30 > ?)" :
+                              "AND c.enddate  + 86400 * 30 <= ?
+                              AND w.submissionend  + 86400 * 30 <= ?";
+          $workshopwhere = "w.course IN ($courseids) $workshopenddate";
+          $workshopsql = "SELECT $workshopfields FROM {workshop} w $workshopjoins WHERE $workshopwhere";
+          $workshopparams = array($userid, $userid, $enddate, $enddate);
+
+          $unionsql = "($assignsql) UNION ($forumsql) UNION ($quizsql) UNION ($workshopsql)
+                         ORDER BY $sortby $sortorder";
+          $unionparams = array_merge($assignparams, $forumparams, $quizparams, $workshopparams);
+
+          $records = $DB->get_records_sql($unionsql, $unionparams);
           $items = ($records) ? self::sanitize_records($records) : array();
           return $items;
      }
@@ -553,13 +457,12 @@ class assessments_details {
           if($records) {
                $recordsarray = (array) $records;
                foreach($recordsarray as $record) {
-                    $isstudent = self::return_isstudent($record->modname, $record->id);
                     $modinfo = get_fast_modinfo($record->courseid);
                     $cm = $modinfo->get_cm($record->id);
                     // check if course module is visible to the user
                     $iscmvisible = $cm->uservisible;
 
-                    if($isstudent && $iscmvisible) {
+                    if($iscmvisible) {
                          $item = new stdClass;
                          $item->coursetitle = $record->coursetitle;
                          $item->courseurl = self::return_courseurl($record->courseid);
@@ -579,20 +482,21 @@ class assessments_details {
                                                         $record->enddate);
                          $item->grading = self::return_grading($record->finalgrade, $record->gradetype,
                                                                $record->grademin, $record->grademax,
-                                                               $record->gradeinformation, $record->gradingduedate,
+                                                               $record->gradeinformation,
+                                                               $record->gradingduedate,
                                                                $record->duedate, $record->cutoffdate,
                                                                $record->scale, $record->feedback);
                          $item->feedback = self::return_feedback($record->id, $record->modname,
-                                                                 $item->grading->hasgrade, $record->feedback,
-                                                                 $record->numfiles, $record->value,
-                                                                 $record->feedbacktext, $record->gradingduedate,
+                                                                 $item->grading->hasgrade,
+                                                                 $record->feedback, $record->feedbackfiles,
+                                                                 $record->hasturnitin, $record->gradingduedate,
                                                                  $record->duedate, $record->cutoffdate);
                          $item->status = self::return_status($record->modname, $item->grading->hasgrade,
-                                                             $record->status, $record->nosubmissions,
+                                                             $record->status, $record->submissions,
                                                              $record->allowsubmissionsfromdate,
                                                              $record->duedate, $record->cutoffdate,
                                                              $record->gradingduedate, $item->hasextension,
-                                                             $record->workshopsubmission, $record->feedback);
+                                                             $record->feedback);
                          array_push($items, $item);
                     }
                }
@@ -602,31 +506,15 @@ class assessments_details {
      }
 
      /**
-      * Checks if the user has a 'student' role in the course
-      *
-      * @param string $modname expected arguments 'assign', 'quiz', 'forum' and 'workshop'
-      * @param int $instance
-      * @return boolean
-      */
-     public static function return_isstudent($modname, $instance) {
-          $context = context_module::instance($instance);
-          $isstudent = false;
-          switch($modname) {
-               case 'assign':
-                    $isstudent = has_capability("mod/assign:submit", $context, null, false);
-                    break;
-               case 'quiz':
-                    $isstudent = has_capability("mod/quiz:attempt", $context, null, false);
-                    break;
-               case 'forum':
-                    $isstudent = has_capability("mod/forum:deleteownpost", $context, null, false) &&
-                                 !has_capability("mod/forum:deleteanypost", $context, null, false);
-                    break;
-               case 'workshop':
-                    $isstudent = has_capability("mod/workshop:submit", $context, null, false);
-                    break;
-          }
-          return $isstudent;
+     * Return has_capability
+     *
+     * @param string $courseid
+     * @param string $userid
+     * @return boolean
+     */
+     public function return_isstudent($courseid) {
+          $context = context_course::instance($courseid);
+          return has_capability("moodle/course:isincompletionreports", $context, null, false);
      }
 
      /**
@@ -796,14 +684,13 @@ class assessments_details {
       * @param string $modname
       * @param boolean $hasgrade
       * @param string $feedback
-      * @param int $numfiles
-      * @param int $value
-      * @param string $feedbacktext
+      * @param int $feedbackfiles
+      * @param int $hasturnitin
       * @return stdClass Object containing feedback text (could be feedback text for the link or feedback due date),
       *         hasfeedback, feedbackurl
       */
-     public static function return_feedback($id, $modname, $hasgrade, $feedback, $numfiles, $value,
-                                            $feedbacktext, $gradingduedate, $duedate, $cutoffdate) {
+     public static function return_feedback($id, $modname, $hasgrade, $feedback, $feedbackfiles,
+                                            $hasturnitin, $gradingduedate, $duedate, $cutoffdate) {
           $fb = new stdClass;
           $fb->feedbacktext = null;
           $fb->hasfeedback = false;
@@ -822,8 +709,8 @@ class assessments_details {
 
                switch($modname) {
                     case 'assign':
-                         $fb->feedbackurl = ($value > 0) ? $feedbackurl.$idintro :
-                                            ((!empty($feedback) || $numfiles > 0) ? $feedbackurl.$idfooter : null);
+                         $fb->feedbackurl = ($hasturnitin > 0) ? $feedbackurl.$idintro :
+                                            ((!empty($feedback) || $feedbackfiles > 0) ? $feedbackurl.$idfooter : null);
                          if(isset($fb->feedbackurl)) {
                               $fb->feedbacktext = $readfeedback;
                               $fb->hasfeedback = true;
@@ -833,7 +720,7 @@ class assessments_details {
                          }
                          break;
                     case 'quiz':
-                         if($feedbacktext) {
+                         if($feedback) {
                               $fb->feedbacktext = $readfeedback;
                               $fb->hasfeedback = true;
                               $idfeedback = get_string('id_feedback', 'block_gu_spdetails');
@@ -880,23 +767,21 @@ class assessments_details {
 
      /**
       * Returns status object of an assessment
-      * @todo Include 'feedback' MV and NS on logic
       *
       * @param string $modname
       * @param boolean $hasgrade
       * @param string $status
-      * @param boolean $nosubmissions
+      * @param mixed $submissions
       * @param int $allowsubmissionsfromdate
       * @param int $duedate
       * @param int $cutoffdate
       * @param boolean $hasextension
-      * @param string $workshopsubmission
       * @param string $feedback
       * @return stdClass Object containing status text, status class, hasstatusurl
       */
-     public static function return_status($modname, $hasgrade, $status, $nosubmissions, $allowsubmissionsfromdate,
-                                          $duedate, $cutoffdate, $gradingduedate, $hasextension,
-                                          $workshopsubmission, $feedback) {
+     public static function return_status($modname, $hasgrade, $status, $submissions,
+                                          $allowsubmissionsfromdate, $duedate, $cutoffdate,
+                                          $gradingduedate, $hasextension, $feedback) {
           $graded = get_string('status_graded', 'block_gu_spdetails');
           $notopen = get_string('status_notopen', 'block_gu_spdetails');
           $notsubmitted = get_string('status_notsubmitted', 'block_gu_spdetails');
@@ -933,7 +818,7 @@ class assessments_details {
                               $s->statustext = $submitted;
                               $s->class = $classsubmitted;
                          }else{
-                              if($nosubmissions > 0) {
+                              if($submissions > 0) {
                                    $s->statustext = $unavailable;
                               }else{
                                    if($allowsubmissionsfromdate > time() || $duedate == 0) {
@@ -973,13 +858,13 @@ class assessments_details {
                          }
                          break;
                     case 'workshop':
-                         if(!empty($workshopsubmission)) {
+                         if(!empty($submissions)) {
                               $s->statustext = $submitted;
                               $s->class = $classsubmitted;
                          }else{
                               if($allowsubmissionsfromdate > time() || $duedate == 0) {
                                    $s->statustext = $notopen;
-                               }else{
+                              }else{
                                    if($duedate < time()) {
                                         $s->statustext = $notsubmitted;
                                    }else{
@@ -987,7 +872,7 @@ class assessments_details {
                                         $s->statustext = $submit;
                                         $s->class = $classsubmit;
                                    }
-                               }
+                              }
                          }
                          break;
                     // forum
