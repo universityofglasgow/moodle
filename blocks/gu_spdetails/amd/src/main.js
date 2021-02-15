@@ -301,16 +301,20 @@ define(['core/ajax'], function(Ajax) {
         var pageLinks = document.querySelectorAll('#assessments_details_contents .page-item a.page-link');
 
         pageLinks.forEach(item => {
-            var url = new URL(item.getAttribute('href'));
-            var params = new URLSearchParams(url.search);
-            var activetab = params.get('activetab');
-            var page = params.get('page');
-            var sortby = params.get('sortby');
-            var sortorder = params.get('sortorder');
-            item.addEventListener('click', event => {
-                event.preventDefault();
-                loadAssessments(activetab, page, sortby, sortorder);
-            });
+            if(item.getAttribute('href') !== '#') {
+                var url = new URL(item.getAttribute('href'));
+                var params = new URLSearchParams(url.search);
+                var activetab = params.get('activetab');
+                var page = params.get('page');
+                var sortby = params.get('sortby');
+                var sortorder = params.get('sortorder');
+                item.addEventListener('click', event => {
+                    event.preventDefault();
+                    loadAssessments(activetab, page, sortby, sortorder);
+                });
+            }else{
+                item.removeAttribute('href');
+            }
         });
     }
 
