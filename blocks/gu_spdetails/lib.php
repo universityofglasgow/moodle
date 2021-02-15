@@ -336,7 +336,7 @@ class assessments_details {
                               NULL AS `allowsubmissionsfromdate`,
                               f.duedate, f.cutoffdate, f.cutoffdate AS gradingduedate,
                               NULL AS `hasextension`, gi.gradetype, gi.grademin, gi.grademax,
-                              NULL AS scale, gg.finalgrade, gg.information AS gradeinformation,
+                              s.scale, gg.finalgrade, gg.information AS gradeinformation,
                               gg.feedback, NULL AS feedbackfiles, NULL AS hasturnitin,
                               NULL AS `status`, NULL AS submissions, c.startdate, c.enddate";
                $forumjoins = "LEFT JOIN {modules} m ON (m.name = 'forum')
@@ -351,9 +351,10 @@ class assessments_details {
                                    LEFT JOIN {grade_items} gi2 ON (gi2.iteminstance = gi1.iteminstance
                                    AND gi2.itemmodule = gi1.itemmodule AND gi2.itemnumber <> gi1.itemnumber)
                                    WHERE gi1.itemtype = 'mod' AND gi1.gradetype != 0
-                                        AND (gi1.itemnumber = 0 OR gi2.itemnumber IS NULL)
+                                        AND (gi1.itemnumber = 1 OR gi2.itemnumber IS NULL)
                                         AND gi1.itemmodule = 'forum') gi
                                         ON (gi.iteminstance = cm.instance AND gi.courseid = c.id)
+                              LEFT JOIN {scale} s ON s.id = gi.scaleid
                               LEFT JOIN {grade_grades} gg ON (gg.itemid = gi.id AND gg.userid = ?)
                               LEFT JOIN {grade_categories} gc ON gc.id = gi.categoryid";
                $forumenddate = ($activetab === TAB_CURRENT) ?

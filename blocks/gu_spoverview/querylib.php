@@ -95,7 +95,7 @@ function return_assessments_count($userid, $courseids) {
                         LEFT JOIN {grade_items} gi2 ON (gi2.iteminstance = gi1.iteminstance
                         AND gi2.itemmodule = gi1.itemmodule AND gi2.itemnumber <> gi1.itemnumber)
                         WHERE gi1.itemtype = 'mod' AND gi1.gradetype != 0
-                            AND (gi1.itemnumber = 0 OR gi2.itemnumber IS NULL)
+                            AND (gi1.itemnumber = 1 OR gi2.itemnumber IS NULL)
                             AND gi1.itemmodule = 'forum') gi
                             ON (gi.iteminstance = cm.instance AND gi.courseid = c.id)
                     LEFT JOIN {grade_grades} gg ON (gg.itemid = gi.id AND gg.userid = ?)";
