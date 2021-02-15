@@ -288,7 +288,7 @@ class assessments_details {
                               ON (`as`.assignment = a.id AND `as`.userid = ?)
                          LEFT JOIN {assignfeedback_file} aff ON (aff.assignment = a.id AND aff.grade = ag.id)
                          LEFT JOIN {modules} m ON (m.name = 'assign')
-                         LEFT JOIN {course_modules} cm ON (cm.course = a.course AND cm.`instance` = a.id
+                         JOIN {course_modules} cm ON (cm.course = a.course AND cm.`instance` = a.id
                               AND cm.module = m.id AND cm.deletioninprogress = 0)
                          LEFT JOIN {plagiarism_turnitin_config} ptcfg ON (ptcfg.name = 'use_turnitin'
                               AND ptcfg.value = 1 AND ptcfg.cm = cm.id)
@@ -331,7 +331,7 @@ class assessments_details {
                          gg.feedback, NULL AS feedbackfiles, NULL AS hasturnitin,
                          NULL AS `status`, NULL AS submissions, c.startdate, c.enddate";
           $forumjoins = "LEFT JOIN {modules} m ON (m.name = 'forum')
-                         LEFT JOIN {course_modules} cm ON (cm.course = f.course AND cm.`instance` = f.id
+                         JOIN {course_modules} cm ON (cm.course = f.course AND cm.`instance` = f.id
                               AND cm.module = m.id AND cm.deletioninprogress = 0)
                          LEFT JOIN {course} c ON c.id = f.course
                          LEFT JOIN {course_sections} cs ON (cs.course = c.id AND cs.id = cm.section)
@@ -384,7 +384,7 @@ class assessments_details {
                          LEFT JOIN {quiz_attempts} AS qa ON (qa.quiz = q.id AND qa.userid = ?
                               AND qa.sumgrades IS NULL)
                          LEFT JOIN {modules} m ON (m.name = 'quiz')
-                         LEFT JOIN {course_modules} cm ON (cm.course = q.course AND cm.`instance` = q.id
+                         JOIN {course_modules} cm ON (cm.course = q.course AND cm.`instance` = q.id
                               AND cm.module = m.id AND cm.deletioninprogress = 0)
                          LEFT JOIN {grade_items} gi ON (gi.iteminstance = cm.`instance`
                               AND gi.courseid = q.course AND gi.itemtype = 'mod' AND gi.itemmodule = 'quiz')
@@ -422,17 +422,17 @@ class assessments_details {
                               ws.title AS submissions, c.startdate, c.enddate";
           $workshopjoins = "LEFT JOIN {workshop_submissions} ws
                          ON (ws.workshopid = w.id AND ws.authorid = ?)
-                         LEFT JOIN mdl_modules m ON (m.name = 'workshop')
-                         LEFT JOIN mdl_course_modules cm ON (cm.course = w.course
+                         LEFT JOIN {modules} m ON (m.name = 'workshop')
+                         JOIN {course_modules} cm ON (cm.course = w.course
                               AND cm.`instance` = w.id AND cm.module = m.id
                               AND cm.deletioninprogress = 0)
-                         LEFT JOIN mdl_grade_items gi ON (gi.iteminstance = cm.`instance`
+                         LEFT JOIN {grade_items} gi ON (gi.iteminstance = cm.`instance`
                               AND gi.courseid = w.course AND gi.itemtype = 'mod'
                               AND gi.itemmodule = 'workshop' AND gi.itemnumber = 0)
-                         LEFT JOIN mdl_grade_grades gg ON (gg.itemid = gi.id AND gg.userid = ?)
-                         LEFT JOIN mdl_grade_categories gc ON gc.id = gi.categoryid
-                         LEFT JOIN mdl_course c ON c.id = w.course
-                         LEFT JOIN mdl_course_sections cs ON (cs.course = c.id AND cs.id = cm.section)";
+                         LEFT JOIN {grade_grades} gg ON (gg.itemid = gi.id AND gg.userid = ?)
+                         LEFT JOIN {grade_categories} gc ON gc.id = gi.categoryid
+                         LEFT JOIN {course} c ON c.id = w.course
+                         LEFT JOIN {course_sections} cs ON (cs.course = c.id AND cs.id = cm.section)";
           $workshopenddate = ($activetab === TAB_CURRENT) ?
                               "AND (c.enddate + 86400 * 30 > ?
                               OR w.submissionend + 86400 * 30 > ?)" :
