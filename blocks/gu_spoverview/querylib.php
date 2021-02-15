@@ -62,7 +62,7 @@ function return_assessments_count($userid, $courseids) {
                                 WHERE b.id IS NULL) `as`
                         ON (`as`.assignment = a.id AND `as`.userid = ?)
                     LEFT JOIN {modules} m ON (m.name = 'assign')
-                    LEFT JOIN {course_modules} cm ON (cm.course = a.course AND cm.`instance` = a.id
+                    JOIN {course_modules} cm ON (cm.course = a.course AND cm.`instance` = a.id
                         AND cm.module = m.id AND cm.deletioninprogress = 0)
                     LEFT JOIN {grade_items} gi ON (gi.iteminstance = cm.`instance` AND gi.courseid = a.course
                         AND gi.itemtype = 'mod' AND gi.itemmodule = 'assign')
@@ -85,20 +85,20 @@ function return_assessments_count($userid, $courseids) {
                     gg.finalgrade, gg.feedback, NULL AS `status`,
                     NULL AS submissions, c.enddate";
     $forumjoins = "LEFT JOIN {modules} m ON (m.name = 'forum')
-                LEFT JOIN {course_modules} cm ON (cm.course = f.course AND cm.`instance` = f.id
-                    AND cm.module = m.id AND cm.deletioninprogress = 0)
-                LEFT JOIN {course} c ON c.id = f.course
-                JOIN (SELECT gi1.id, gi1.categoryid, gi1.gradetype, gi1.grademax, gi1.grademin,
-                    gi1.gradepass, gi1.scaleid, gi1.aggregationcoef, gi1.aggregationcoef2,
-                    gi1.iteminstance, gi1.courseid, gi1.itemmodule
-                    FROM {grade_items} gi1
-                    LEFT JOIN {grade_items} gi2 ON (gi2.iteminstance = gi1.iteminstance
-                    AND gi2.itemmodule = gi1.itemmodule AND gi2.itemnumber <> gi1.itemnumber)
-                    WHERE gi1.itemtype = 'mod' AND gi1.gradetype != 0
-                        AND (gi1.itemnumber = 0 OR gi2.itemnumber IS NULL)
-                        AND gi1.itemmodule = 'forum') gi
-                        ON (gi.iteminstance = cm.instance AND gi.courseid = c.id)
-                LEFT JOIN {grade_grades} gg ON (gg.itemid = gi.id AND gg.userid = ?)";
+                    JOIN {course_modules} cm ON (cm.course = f.course AND cm.`instance` = f.id
+                        AND cm.module = m.id AND cm.deletioninprogress = 0)
+                    LEFT JOIN {course} c ON c.id = f.course
+                    JOIN (SELECT gi1.id, gi1.categoryid, gi1.gradetype, gi1.grademax, gi1.grademin,
+                        gi1.gradepass, gi1.scaleid, gi1.aggregationcoef, gi1.aggregationcoef2,
+                        gi1.iteminstance, gi1.courseid, gi1.itemmodule
+                        FROM {grade_items} gi1
+                        LEFT JOIN {grade_items} gi2 ON (gi2.iteminstance = gi1.iteminstance
+                        AND gi2.itemmodule = gi1.itemmodule AND gi2.itemnumber <> gi1.itemnumber)
+                        WHERE gi1.itemtype = 'mod' AND gi1.gradetype != 0
+                            AND (gi1.itemnumber = 0 OR gi2.itemnumber IS NULL)
+                            AND gi1.itemmodule = 'forum') gi
+                            ON (gi.iteminstance = cm.instance AND gi.courseid = c.id)
+                    LEFT JOIN {grade_grades} gg ON (gg.itemid = gi.id AND gg.userid = ?)";
     $forumenddate = "AND (c.enddate + 86400 * 30 > ?
                     OR f.duedate + 86400 * 30 > ?)";
     $forumwhere = "f.course IN ($courseids) $forumenddate";
@@ -125,7 +125,7 @@ function return_assessments_count($userid, $courseids) {
                     LEFT JOIN {quiz_attempts} AS qa ON (qa.quiz = q.id AND qa.userid = ?
                         AND qa.sumgrades IS NULL)
                     LEFT JOIN {modules} m ON (m.name = 'quiz')
-                    LEFT JOIN {course_modules} cm ON (cm.course = q.course AND cm.`instance` = q.id
+                    JOIN {course_modules} cm ON (cm.course = q.course AND cm.`instance` = q.id
                         AND cm.module = m.id AND cm.deletioninprogress = 0)
                     LEFT JOIN {grade_items} gi ON (gi.iteminstance = cm.`instance`
                         AND gi.courseid = q.course AND gi.itemtype = 'mod' AND gi.itemmodule = 'quiz')
@@ -147,16 +147,16 @@ function return_assessments_count($userid, $courseids) {
                         gg.finalgrade, gg.feedback,
                         NULL AS `status`, ws.title AS submissions, c.enddate";
     $workshopjoins = "LEFT JOIN {workshop_submissions} ws
-                    ON (ws.workshopid = w.id AND ws.authorid = ?)
-                    LEFT JOIN mdl_modules m ON (m.name = 'workshop')
-                    LEFT JOIN mdl_course_modules cm ON (cm.course = w.course
-                        AND cm.`instance` = w.id AND cm.module = m.id
-                        AND cm.deletioninprogress = 0)
-                    LEFT JOIN mdl_grade_items gi ON (gi.iteminstance = cm.`instance`
-                        AND gi.courseid = w.course AND gi.itemtype = 'mod'
-                        AND gi.itemmodule = 'workshop' AND gi.itemnumber = 0)
-                    LEFT JOIN mdl_grade_grades gg ON (gg.itemid = gi.id AND gg.userid = ?)
-                    LEFT JOIN mdl_course c ON c.id = w.course";
+                        ON (ws.workshopid = w.id AND ws.authorid = ?)
+                        LEFT JOIN {modules} m ON (m.name = 'workshop')
+                        JOIN {course_modules} cm ON (cm.course = w.course
+                            AND cm.`instance` = w.id AND cm.module = m.id
+                            AND cm.deletioninprogress = 0)
+                        LEFT JOIN {grade_items} gi ON (gi.iteminstance = cm.`instance`
+                            AND gi.courseid = w.course AND gi.itemtype = 'mod'
+                            AND gi.itemmodule = 'workshop' AND gi.itemnumber = 0)
+                        LEFT JOIN {grade_grades} gg ON (gg.itemid = gi.id AND gg.userid = ?)
+                        LEFT JOIN {course} c ON c.id = w.course";
     $workshopenddate = "AND (c.enddate + 86400 * 30 > ?
                         OR w.submissionend + 86400 * 30 > ?)";
     $workshopwhere = "w.course IN ($courseids) $workshopenddate";

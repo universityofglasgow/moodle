@@ -50,6 +50,7 @@ $string['id_feedback'] = '#feedback';
 $string['id_intro'] = '#intro';
 $string['id_pagefooter'] = '#page-footer';
 $string['label_sortby'] = 'Sort by: ';
+$string['noassessments'] = 'No assessments.';
 $string['notavailable'] = 'Not available';
 $string['option_course'] = 'Course';
 $string['option_date'] = 'Date';
