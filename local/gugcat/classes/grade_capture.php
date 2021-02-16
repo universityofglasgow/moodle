@@ -15,7 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- *
+ * Class containing helper methods for Grade Capture page.
+ * 
  * @package    local_gugcat
  * @copyright  2020
  * @author     Accenture
@@ -35,7 +36,7 @@ defined('MOODLE_INTERNAL') || die();
 require_once('gcat_item.php');
 
  /**
- * Grade capture class.
+ * Class containing helper methods for Grade Aggregation page.
  */
 
 class grade_capture{
