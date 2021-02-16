@@ -639,7 +639,7 @@ class assessments_details {
           $grading->isprovisional = false;
           
           if(isset($finalgrade)) {
-               $intgrade = round($finalgrade);
+               $intgrade = (int)$finalgrade;
                $grading->hasgrade = true;
                $grading->isprovisional = ($gradeinformation) ? false : true;
 
@@ -653,7 +653,11 @@ class assessments_details {
                     // gradetype = scale
                     case '2':
                          $scalelist = make_menu_from_list($scale);
-                         $scalegrade = $scalelist[$intgrade];
+                         foreach ($scalelist as $key => $value) {
+                              if($key == $intgrade) {
+                                   $scalegrade = $value;
+                              }
+                         }
 
                          if(strpos($scalegrade, ':')){
                               $scalegradevalue = explode(':', $scalegrade);
@@ -665,7 +669,7 @@ class assessments_details {
                     // gradetype = text
                     default:
                          $grading->gradetext = ($feedback) ? $feedback :
-                                           get_string('emptyvalue', 'block_gu_spdetails');
+                                               get_string('emptyvalue', 'block_gu_spdetails');
                     break;
                }
           }else{

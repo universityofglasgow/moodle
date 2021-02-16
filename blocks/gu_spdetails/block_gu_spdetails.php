@@ -95,7 +95,7 @@ class block_gu_spdetails extends block_base {
 
         if($results) {
             $studentcourses = array();
-            foreach($results as $courseid=>$courseobject) {
+            foreach($results as $courseid => $courseobject) {
                 if($this->return_isstudent($courseid)) {
                     array_push($studentcourses, $courseid);
                 }
