@@ -530,7 +530,7 @@ class assessments_details {
      * @param string $userid
      * @return boolean
      */
-     public function return_isstudent($courseid) {
+     public static function return_isstudent($courseid) {
           $context = context_course::instance($courseid);
           return has_capability("moodle/course:isincompletionreports", $context, null, false);
      }
