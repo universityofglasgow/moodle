@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * gugcat functions
+ * Local library containing helper methods for GCAT.
  *
  * @package    local_gugcat
  * @copyright  2020

@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * My Media main viewing page.
+ * Index file for add new grade.
  *
  * @package    local_gugcat
  * @copyright  2020
