@@ -334,6 +334,18 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                     });
                 }
 
+                var input_search = document.querySelectorAll('.input-search');
+                if(input_search.length > 0){
+                    input_search.forEach(input => {
+                        input.addEventListener('keydown', (e) => {
+                            var key = e.keyCode ? e.keyCode : e.which;
+                            if(key === 13){
+                                document.getElementById('search-submit').click();
+                            }                        
+                        });
+                    });
+                }
+
                 var input_percentarr = document.querySelectorAll('.input-percent');
                 if(input_percentarr.length > 0){
                     var total = 0;
