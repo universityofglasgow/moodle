@@ -524,15 +524,15 @@ class assessments_details {
      }
 
      /**
-     * Return has_capability
-     *
-     * @param string $courseid
-     * @param string $userid
-     * @return boolean
-     */
-     public function return_isstudent($courseid) {
+      * Return has_capability
+      *
+      * @param string $courseid
+      * @param string $userid
+      * @return boolean
+      */
+     public static function return_isstudent($courseid) {
           $context = context_course::instance($courseid);
-          return has_capability("moodle/course:isincompletionreports", $context, null, false);
+          return has_capability('moodle/grade:view', $context, null, false);
      }
 
      /**

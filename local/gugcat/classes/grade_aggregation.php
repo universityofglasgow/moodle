@@ -15,7 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- *
+ * Class containing helper methods for Grade Aggregation page.
+ * 
  * @package    local_gugcat
  * @copyright  2020
  * @author     Accenture
@@ -38,7 +39,7 @@ define('ADJUST_WEIGHT_FORM', 0);
 define('OVERRIDE_GRADE_FORM', 1);
 
  /**
- * Grade aggregation tool class.
+ * Class containing helper methods for Grade Aggregation page.
  */
 
 class grade_aggregation{

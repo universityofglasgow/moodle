@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * A moodleform allowing the editing of the grade options for an individual grade item
+ * A moodleform allowing the editing of the grade options for an individual student
  *
  * @package    local_gugcat
  * @copyright  2020
