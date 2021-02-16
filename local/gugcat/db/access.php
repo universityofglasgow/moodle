@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version file.
+ * Capability definitions.
  *
  * @package    local_gugcat
  * @copyright  2020

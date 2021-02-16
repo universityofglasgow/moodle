@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Index file.
+ * Index file for grade history.
  *
  * @package    local_gugcat
  * @copyright  2020

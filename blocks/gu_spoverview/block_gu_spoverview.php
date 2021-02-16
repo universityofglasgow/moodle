@@ -42,7 +42,6 @@ class block_gu_spoverview extends block_base {
     }
 
     /**
-     * @todo
      * Returns the contents.
      *
      * @return stdClass contents of block
@@ -128,7 +127,7 @@ class block_gu_spoverview extends block_base {
         $results = $DB->get_records_sql($sql, $params);
 
         if($results) {
-            foreach($results as $courseid=>$courseobject) {
+            foreach($results as $courseid => $courseobject) {
                 if($this->return_isstudent($courseid)) {
                     array_push($courseids, $courseid);
                 }
@@ -147,6 +146,6 @@ class block_gu_spoverview extends block_base {
      */
     public function return_isstudent($courseid) {
         $context = context_course::instance($courseid);
-        return has_capability("moodle/course:isincompletionreports", $context, null, false);
+        return has_capability('moodle/grade:view', $context, null, false);
     }
 }

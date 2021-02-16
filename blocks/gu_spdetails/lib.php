@@ -336,7 +336,7 @@ class assessments_details {
                               NULL AS `allowsubmissionsfromdate`,
                               f.duedate, f.cutoffdate, f.cutoffdate AS gradingduedate,
                               NULL AS `hasextension`, gi.gradetype, gi.grademin, gi.grademax,
-                              NULL AS scale, gg.finalgrade, gg.information AS gradeinformation,
+                              s.scale, gg.finalgrade, gg.information AS gradeinformation,
                               gg.feedback, NULL AS feedbackfiles, NULL AS hasturnitin,
                               NULL AS `status`, NULL AS submissions, c.startdate, c.enddate";
                $forumjoins = "LEFT JOIN {modules} m ON (m.name = 'forum')
@@ -354,6 +354,7 @@ class assessments_details {
                                         AND (gi1.itemnumber = 1 OR gi2.itemnumber IS NULL)
                                         AND gi1.itemmodule = 'forum') gi
                                         ON (gi.iteminstance = cm.instance AND gi.courseid = c.id)
+                              LEFT JOIN {scale} s ON s.id = gi.scaleid
                               LEFT JOIN {grade_grades} gg ON (gg.itemid = gi.id AND gg.userid = ?)
                               LEFT JOIN {grade_categories} gc ON gc.id = gi.categoryid";
                $forumenddate = ($activetab === TAB_CURRENT) ?
@@ -523,15 +524,15 @@ class assessments_details {
      }
 
      /**
-     * Return has_capability
-     *
-     * @param string $courseid
-     * @param string $userid
-     * @return boolean
-     */
-     public function return_isstudent($courseid) {
+      * Return has_capability
+      *
+      * @param string $courseid
+      * @param string $userid
+      * @return boolean
+      */
+     public static function return_isstudent($courseid) {
           $context = context_course::instance($courseid);
-          return has_capability("moodle/course:isincompletionreports", $context, null, false);
+          return has_capability('moodle/grade:view', $context, null, false);
      }
 
      /**
@@ -638,7 +639,7 @@ class assessments_details {
           $grading->isprovisional = false;
           
           if(isset($finalgrade)) {
-               $intgrade = round($finalgrade);
+               $intgrade = (int)$finalgrade;
                $grading->hasgrade = true;
                $grading->isprovisional = ($gradeinformation) ? false : true;
 
@@ -652,7 +653,11 @@ class assessments_details {
                     // gradetype = scale
                     case '2':
                          $scalelist = make_menu_from_list($scale);
-                         $scalegrade = $scalelist[$intgrade];
+                         foreach ($scalelist as $key => $value) {
+                              if($key == $intgrade) {
+                                   $scalegrade = $value;
+                              }
+                         }
 
                          if(strpos($scalegrade, ':')){
                               $scalegradevalue = explode(':', $scalegrade);
@@ -664,7 +669,7 @@ class assessments_details {
                     // gradetype = text
                     default:
                          $grading->gradetext = ($feedback) ? $feedback :
-                                           get_string('emptyvalue', 'block_gu_spdetails');
+                                               get_string('emptyvalue', 'block_gu_spdetails');
                     break;
                }
           }else{
