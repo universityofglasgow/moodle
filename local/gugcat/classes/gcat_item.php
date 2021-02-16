@@ -15,7 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- *
+ * Class representing a gcat item. Items displayed in rows on GCAT tables
+ * 
  * @package    local_gugcat
  * @copyright  2020
  * @author     Accenture

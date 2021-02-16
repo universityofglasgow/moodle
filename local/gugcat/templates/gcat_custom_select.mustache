@@ -15,8 +15,9 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template local_gugcat/form
-
+    @template local_gugcat/gcat_custom_select
+    
+    The purpose of this template is to render the GCAT custom UI select element.
 
     Example context (json):
     {
@@ -25,7 +26,7 @@
 }}
 
 <div class="selectdiv {{class}}">
-    <select id="{{id}}" name="{{name}}" required>
+    <select id="{{id}}" name="{{name}}">
         {{#default}}<option selected disabled="disabled">{{default}}</option>{{/default}}
         {{#options}}
         <option 
