@@ -42,7 +42,6 @@ class block_gu_spoverview extends block_base {
     }
 
     /**
-     * @todo
      * Returns the contents.
      *
      * @return stdClass contents of block
@@ -147,6 +146,6 @@ class block_gu_spoverview extends block_base {
      */
     public function return_isstudent($courseid) {
         $context = context_course::instance($courseid);
-        return has_capability("moodle/course:isincompletionreports", $context, null, false);
+        return has_capability('moodle/grade:view', $context, null, false);
     }
 }
