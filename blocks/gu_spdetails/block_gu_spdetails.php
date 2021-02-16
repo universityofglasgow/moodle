@@ -115,6 +115,6 @@ class block_gu_spdetails extends block_base {
      */
     public function return_isstudent($courseid) {
         $context = context_course::instance($courseid);
-        return has_capability("moodle/course:isincompletionreports", $context, null, false);
+        return has_capability('moodle/grade:view', $context, null, false);
     }
 }
