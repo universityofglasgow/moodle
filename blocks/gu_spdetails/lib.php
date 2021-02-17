@@ -456,10 +456,6 @@ class assessments_details {
                               ORDER BY $sortby $sortorder";
                $unionparams = array_merge($assignparams, $forumparams, $quizparams, $workshopparams);
 
-               $unionsql = "($assignsql) UNION ($forumsql) UNION ($quizsql)
-                              ORDER BY $sortby $sortorder";
-               $unionparams = array_merge($assignparams, $forumparams, $quizparams);
-
                $records = $DB->get_records_sql($unionsql, $unionparams);
           }else{
                $records = null;
