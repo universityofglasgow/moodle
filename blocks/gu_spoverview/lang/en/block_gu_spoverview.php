@@ -18,7 +18,7 @@
  * Lang strings for the UofG Assessments Overview block.
  *
  * @package    block_gu_spoverview
- * @copyright  2020 Accenture
+ * @copyright  2021 Accenture
  * @author     Franco Louie Magpusao <franco.l.magpusao@accenture.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
