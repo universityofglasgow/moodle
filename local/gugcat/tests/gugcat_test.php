@@ -59,7 +59,7 @@ class local_gugcat_testcase extends advanced_testcase {
         $this->assign = new assign(context_module::instance($cm_info->id), $cm_info, $this->course->id);
 
         //create grade items
-        $this->gradeitem = new grade_item($gen->create_grade_item(['courseid' => $this->course->id, 'iteminfo' => $this->cm->id]), false);
+        $this->gradeitem = new grade_item($gen->create_grade_item(['courseid' => $this->course->id, 'iteminfo' => $this->cm->gradeitemid]), false);
         $this->provisionalgi = new grade_item($gen->create_grade_item(['courseid' => $this->course->id, 
         'iteminfo' => $this->cm->gradeitemid, 
         'itemname' => get_string('provisionalgrd', 'local_gugcat')
@@ -94,11 +94,7 @@ class local_gugcat_testcase extends advanced_testcase {
     }
 
     public function test_get_grade_grade_items(){
-        global $DB;
-
-        $course = $DB->get_record('course', ['id' => $this->course->id], '*', MUST_EXIST);
-        $gradeitems = local_gugcat::get_grade_grade_items($course, $this->cm);
-        
+        $gradeitems = local_gugcat::get_grade_grade_items($this->course, $this->cm);
         $this->assertArrayHasKey($this->gradeitem->id, (array)$gradeitems);
         $this->assertCount(2, $gradeitems);
     }   
