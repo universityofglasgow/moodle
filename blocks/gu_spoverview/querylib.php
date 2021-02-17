@@ -17,7 +17,7 @@
 /**
  * Contains methods for Assessments at a Glance block
  *
- * @package    block_gu_spdetails
+ * @package    block_gu_spoverview
  * @copyright  2021 Accenture
  * @author     Franco Louie Magpusao <franco.l.magpusao@accenture.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later

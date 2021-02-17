@@ -17,7 +17,7 @@
 /**
  * Events tests.
  *
- * @package    block_spoverview
+ * @package    block_gu_spoverview
  * @category   test
  * @copyright  2020 Alejandro De Guzman <a.g.de.guzman@accenture.com>
  */
