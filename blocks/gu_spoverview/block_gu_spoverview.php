@@ -18,7 +18,7 @@
  * Contains the class for the UofG Assessments Overview block.
  *
  * @package    block_gu_spoverview
- * @copyright  2020 Accenture
+ * @copyright  2021 Accenture
  * @author     Franco Louie Magpusao <franco.l.magpusao@accenture.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -100,11 +100,11 @@ class block_gu_spoverview extends block_base {
     }
 
     /**
-     * Returns enrolled courses with custom field 'show_on_studentdashboard'
+     * Returns enrolled courses with enabled 'show_on_studentdashboard' custom field
      * 
      * @param string $userid
      * @param string $fields
-     * @return array SQL data
+     * @return array Array of Course IDs
      */
     public function return_enrolledcourses($userid) {
         global $DB;
@@ -138,11 +138,11 @@ class block_gu_spoverview extends block_base {
     }
 
     /**
-     * Return has_capability
+     * Checks if user has capability of a student
      * 
      * @param string $courseid
      * @param string $userid
-     * @return boolean
+     * @return boolean has_capability
      */
     public function return_isstudent($courseid) {
         $context = context_course::instance($courseid);

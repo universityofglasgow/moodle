@@ -18,7 +18,7 @@
  * Contains the DB query methods for UofG Assessments Details block.
  *
  * @package    block_gu_spdetails
- * @copyright  2020 Accenture
+ * @copyright  2021 Accenture
  * @author     Franco Louie Magpusao, Jose Maria Abreu
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -43,7 +43,7 @@ class assessments_details {
       * @param string $sortby
       * @param string $sortorder
       * @return string HTML
-      */ 
+      */
      public static function retrieve_assessments($activetab, $page, $sortby, $sortorder) {
           global $DB, $USER, $OUTPUT, $PAGE;
           $PAGE->set_context(context_system::instance());
@@ -206,6 +206,13 @@ class assessments_details {
           return $html;
      }
 
+     /**
+      * Returns current or past enrolled courses with enabled 'show_on_studentdashboard' custom field
+      *
+      * @param string $activetab
+      * @param string $userid
+      * @return array Array of Course IDs
+      */
      public static function retrieve_courses($activetab, $userid) {
           global $DB;
 
@@ -245,6 +252,15 @@ class assessments_details {
           }
      }
 
+     /**
+      * Retrieves gradable activities ('assign', 'forum', 'quiz', 'workshop') from the database
+      *
+      * @param string $activetab
+      * @param int $page
+      * @param string $sortby
+      * @param string $sortorder
+      * @return array $items
+      */
      public static function retrieve_gradable_activities($activetab, $userid, $sortby, $sortorder) {
           global $DB;
           $enddate = time();
@@ -286,7 +302,8 @@ class assessments_details {
                                    gi.gradetype, gi.grademin, gi.grademax, s.scale, gg.finalgrade,
                                    gg.information AS gradeinformation, gg.feedback,
                                    aff.numfiles AS feedbackfiles, ptcfg.value AS hasturnitin,
-                                   `as`.`status`, a.nosubmissions AS submissions, c.startdate, c.enddate";
+                                   `as`.`status`, a.nosubmissions AS submissions,
+                                   NULL as quizfeedback, c.startdate, c.enddate";
                $assignjoins = "LEFT JOIN {assign_overrides} ao ON (ao.assignid = a.id AND ao.userid = ?)
                               LEFT JOIN {assign_user_flags} auf ON (auf.assignment = a.id AND auf.userid = ?)
                               LEFT JOIN {assign_grades} ag ON (ag.assignment = a.id AND ag.userid = ?)
@@ -341,7 +358,8 @@ class assessments_details {
                               CASE
                               WHEN fd.id IS NOT NULL THEN 'submitted'
                               ELSE NULL
-                              END AS `status`, NULL AS submissions, c.startdate, c.enddate";
+                              END AS `status`, NULL AS submissions,
+                              NULL as quizfeedback, c.startdate, c.enddate";
                $forumjoins = "LEFT JOIN {modules} m ON (m.name = 'forum')
                               JOIN {course_modules} cm ON (cm.course = f.course AND cm.`instance` = f.id
                                    AND cm.module = m.id AND cm.deletioninprogress = 0)
@@ -357,10 +375,11 @@ class assessments_details {
                                         AND (gi1.itemnumber = 1 OR gi2.itemnumber IS NULL)
                                         AND gi1.itemmodule = 'forum') gi
                                         ON (gi.iteminstance = cm.instance AND gi.courseid = c.id)
-                              LEFT JOIN {scale} s ON s.id = gi.scaleid
                               LEFT JOIN {grade_grades} gg ON (gg.itemid = gi.id AND gg.userid = ?)
                               LEFT JOIN {grade_categories} gc ON gc.id = gi.categoryid
-                              LEFT JOIN {forum_discussions} fd ON (fd.course = c.id AND fd.forum = f.id AND fd.userid = gg.userid)";
+                              LEFT JOIN {scale} s ON s.id = gi.scaleid
+                              LEFT JOIN {forum_discussions} fd ON (fd.course = c.id AND fd.forum = f.id
+                                        AND fd.userid = gg.userid)";
                $forumenddate = ($activetab === TAB_CURRENT) ?
                               "AND (c.enddate + 86400 * 30 > ?
                               OR f.duedate + 86400 * 30 > ?)" :
@@ -388,8 +407,9 @@ class assessments_details {
                                    ELSE q.timeclose END AS gradingduedate,
                               NULL AS hasextension, gi.gradetype, gi.grademin, gi.grademax,
                               NULL AS scale, gg.finalgrade, gg.information AS gradeinformation,
-                              qf.feedbacktext AS feedback, NULL AS feedbackfiles, NULL AS hasturnitin,
-                              qa.state AS `status`, NULL AS submissions, c.startdate, c.enddate";
+                              gg.feedback, NULL AS feedbackfiles, NULL AS hasturnitin,
+                              qa.state AS `status`, NULL AS submissions,
+                              qf.feedbacktext as quizfeedback, c.startdate, c.enddate";
                $quizjoins = "LEFT JOIN {quiz_overrides} AS qo ON (qo.quiz = q.id AND qo.userid = ?)
                               LEFT JOIN {quiz_grades} AS qg ON (qg.quiz = q.id AND qg.userid = ?)
                               LEFT JOIN {quiz_feedback} AS qf ON (qf.quizid = q.id AND qg.grade IS NOT NULL
@@ -433,7 +453,8 @@ class assessments_details {
                                    gi.gradetype, gi.grademin, gi.grademax, NULL AS scale,
                                    gg.finalgrade, gg.information AS gradeinformation, gg.feedback,
                                    NULL AS feedbackfiles, NULL AS hasturnitin, NULL AS `status`,
-                                   ws.title AS submissions, c.startdate, c.enddate";
+                                   ws.title AS submissions, NULL as quizfeedback,
+                                   c.startdate, c.enddate";
                $workshopjoins = "LEFT JOIN {workshop_submissions} ws
                               ON (ws.workshopid = w.id AND ws.authorid = ?)
                               LEFT JOIN {modules} m ON (m.name = 'workshop')
@@ -469,6 +490,12 @@ class assessments_details {
           return $items;
      }
 
+     /**
+      * Returns sanitized data based from query results
+      *
+      * @param array $records
+      * @return array $items
+      */
      public static function sanitize_records($records) {
           $items = array();
 
@@ -508,7 +535,8 @@ class assessments_details {
                                                                  $item->grading->hasgrade,
                                                                  $record->feedback, $record->feedbackfiles,
                                                                  $record->hasturnitin, $record->gradingduedate,
-                                                                 $record->duedate, $record->cutoffdate);
+                                                                 $record->duedate, $record->cutoffdate,
+                                                                 $record->quizfeedback);
                          $item->status = self::return_status($record->modname, $item->grading->hasgrade,
                                                              $record->status, $record->submissions,
                                                              $record->allowsubmissionsfromdate,
@@ -524,11 +552,11 @@ class assessments_details {
      }
 
      /**
-      * Return has_capability
+      * Checks if user has capability of a student
       *
       * @param string $courseid
       * @param string $userid
-      * @return boolean
+      * @return boolean has_capability
       */
      public static function return_isstudent($courseid) {
           $context = context_course::instance($courseid);
@@ -539,7 +567,7 @@ class assessments_details {
       * Returns the course URL
       *
       * @param int $courseid
-      * @return string
+      * @return string $courseurl
       */
      public static function return_courseurl($courseid) {
           $courseurl = new moodle_url('/course/view.php', array('id' => $courseid));
@@ -551,7 +579,7 @@ class assessments_details {
       *
       * @param int $id
       * @param string $modname
-      * @return string
+      * @return string $assessmenturl
       */
      public static function return_assessmenturl($id, $modname) {
           $assessmenturl = new moodle_url('/mod/'.$modname.'/view.php', array('id' => $id));
@@ -604,10 +632,10 @@ class assessments_details {
      }
 
      /**
-      * Returns an object containing due date and related data
+      * Returns formatted due date (month d)
       *
       * @param int $duedate
-      * @return string 
+      * @return string $formattedduedate
       */
      public static function return_formattedduedate($duedate) {
           $formattedduedate = ($duedate > 0) ?
@@ -712,7 +740,8 @@ class assessments_details {
       *         hasfeedback, feedbackurl
       */
      public static function return_feedback($id, $modname, $hasgrade, $feedback, $feedbackfiles,
-                                            $hasturnitin, $gradingduedate, $duedate, $cutoffdate) {
+                                            $hasturnitin, $gradingduedate, $duedate, $cutoffdate,
+                                            $quizfeedback) {
           $fb = new stdClass;
           $fb->feedbacktext = null;
           $fb->hasfeedback = false;
@@ -742,7 +771,7 @@ class assessments_details {
                          }
                          break;
                     case 'quiz':
-                         if($feedback) {
+                         if($quizfeedback) {
                               $fb->feedbacktext = $readfeedback;
                               $fb->hasfeedback = true;
                               $idfeedback = get_string('id_feedback', 'block_gu_spdetails');
@@ -907,7 +936,7 @@ class assessments_details {
                                    $s->statustext = $overdue;
                                    $s->class = $classoverdue;
                                    $s->hasstatusurl = true;
-                              }else {
+                              }else{
                                    $s->statustext = $notsubmitted;
                               }
                          }else{
@@ -925,7 +954,7 @@ class assessments_details {
       * Returns a corresponding value for grades with gradetype = "value" and grademax = "22"
       *
       * @param int $grade
-      * @return string
+      * @return string 22-grade max point value
       */
      public static function return_22grademaxpoint($grade) {
           $values = array('H', 'G2', 'G1', 'F3', 'F2', 'F1', 'E3', 'E2', 'E1', 'D3', 'D2', 'D1',
