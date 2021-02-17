@@ -338,7 +338,10 @@ class assessments_details {
                               NULL AS `hasextension`, gi.gradetype, gi.grademin, gi.grademax,
                               s.scale, gg.finalgrade, gg.information AS gradeinformation,
                               gg.feedback, NULL AS feedbackfiles, NULL AS hasturnitin,
-                              NULL AS `status`, NULL AS submissions, c.startdate, c.enddate";
+                              CASE
+                              WHEN fd.id IS NOT NULL THEN 'submitted'
+                              ELSE NULL
+                              END AS `status`, NULL AS submissions, c.startdate, c.enddate";
                $forumjoins = "LEFT JOIN {modules} m ON (m.name = 'forum')
                               JOIN {course_modules} cm ON (cm.course = f.course AND cm.`instance` = f.id
                                    AND cm.module = m.id AND cm.deletioninprogress = 0)
@@ -356,7 +359,8 @@ class assessments_details {
                                         ON (gi.iteminstance = cm.instance AND gi.courseid = c.id)
                               LEFT JOIN {scale} s ON s.id = gi.scaleid
                               LEFT JOIN {grade_grades} gg ON (gg.itemid = gi.id AND gg.userid = ?)
-                              LEFT JOIN {grade_categories} gc ON gc.id = gi.categoryid";
+                              LEFT JOIN {grade_categories} gc ON gc.id = gi.categoryid
+                              LEFT JOIN {forum_discussions} fd ON (fd.course = c.id AND fd.forum = f.id AND fd.userid = gg.userid)";
                $forumenddate = ($activetab === TAB_CURRENT) ?
                               "AND (c.enddate + 86400 * 30 > ?
                               OR f.duedate + 86400 * 30 > ?)" :
@@ -455,10 +459,6 @@ class assessments_details {
                $unionsql = "($assignsql) UNION ($forumsql) UNION ($quizsql) UNION ($workshopsql)
                               ORDER BY $sortby $sortorder";
                $unionparams = array_merge($assignparams, $forumparams, $quizparams, $workshopparams);
-
-               $unionsql = "($assignsql) UNION ($forumsql) UNION ($quizsql)
-                              ORDER BY $sortby $sortorder";
-               $unionparams = array_merge($assignparams, $forumparams, $quizparams);
 
                $records = $DB->get_records_sql($unionsql, $unionparams);
           }else{
@@ -867,11 +867,11 @@ class assessments_details {
                          if($allowsubmissionsfromdate > time()) {
                               $s->statustext = $notopen;
                          }else{
-                              if($duedate < time() && $duedate != 0) {
-                                   $s->statustext = $notsubmitted;
-                              }else if($status === 'finished'){
+                              if($status === 'finished'){
                                    $s->statustext = $submitted;
                                    $s->class = $classsubmitted;
+                              }else if($duedate < time() && $duedate != 0) {
+                                   $s->statustext = $notsubmitted;
                               }else{
                                    $s->hasstatusurl = true;
                                    $s->statustext = $submit;
@@ -900,11 +900,14 @@ class assessments_details {
                     // forum
                     default:
                          if($duedate < time()) {
-                              if($cutoffdate == 0 || $cutoffdate > time()) {
+                              if($status === 'submitted'){
+                                   $s->statustext = $submitted;
+                                   $s->class = $classsubmitted;
+                              }else if($cutoffdate == 0 || $cutoffdate > time()) {
                                    $s->statustext = $overdue;
                                    $s->class = $classoverdue;
                                    $s->hasstatusurl = true;
-                              }else{
+                              }else {
                                    $s->statustext = $notsubmitted;
                               }
                          }else{
