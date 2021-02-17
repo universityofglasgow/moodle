@@ -18,7 +18,7 @@
  * Contains methods for Assessments at a Glance block
  *
  * @package    block_gu_spdetails
- * @copyright  2020 Accenture
+ * @copyright  2021 Accenture
  * @author     Franco Louie Magpusao <franco.l.magpusao@accenture.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -26,7 +26,8 @@
 /**
  * Returns an object that counts the status of active assessments
  *
- * @param int $userid
+ * @param string $userid
+ * @param string $courseids
  * @return stdClass $counter
  */
 function return_assessments_count($userid, $courseids) {
@@ -53,7 +54,7 @@ function return_assessments_count($userid, $courseids) {
                     a.gradingduedate,
                     gg.finalgrade,
                     gg.feedback,
-                    `as`.`status`, NULL AS submissions, c.enddate";
+                    `as`.`status`, a.nosubmissions AS submissions, c.enddate";
     $assignjoins = "LEFT JOIN {assign_overrides} ao ON (ao.assignid = a.id AND ao.userid = ?)
                     LEFT JOIN {assign_user_flags} auf ON (auf.assignment = a.id AND auf.userid = ?)
                     LEFT JOIN (SELECT a.* FROM {assign_submission} a
@@ -82,7 +83,11 @@ function return_assessments_count($userid, $courseids) {
                     gi.itemmodule AS modname,
                     NULL AS `allowsubmissionsfromdate`,
                     f.duedate, f.cutoffdate, f.cutoffdate AS gradingduedate,
-                    gg.finalgrade, gg.feedback, NULL AS `status`,
+                    gg.finalgrade, gg.feedback,
+                    CASE
+                    WHEN fd.id IS NOT NULL THEN 'submitted'
+                    ELSE NULL
+                    END AS `status`,
                     NULL AS submissions, c.enddate";
     $forumjoins = "LEFT JOIN {modules} m ON (m.name = 'forum')
                     JOIN {course_modules} cm ON (cm.course = f.course AND cm.`instance` = f.id
@@ -98,7 +103,9 @@ function return_assessments_count($userid, $courseids) {
                             AND (gi1.itemnumber = 1 OR gi2.itemnumber IS NULL)
                             AND gi1.itemmodule = 'forum') gi
                             ON (gi.iteminstance = cm.instance AND gi.courseid = c.id)
-                    LEFT JOIN {grade_grades} gg ON (gg.itemid = gi.id AND gg.userid = ?)";
+                    LEFT JOIN {grade_grades} gg ON (gg.itemid = gi.id AND gg.userid = ?)
+                    LEFT JOIN {forum_discussions} fd ON (fd.course = c.id AND fd.forum = f.id
+                            AND fd.userid = gg.userid)";
     $forumenddate = "AND (c.enddate + 86400 * 30 > ?
                     OR f.duedate + 86400 * 30 > ?)";
     $forumwhere = "f.course IN ($courseids) $forumenddate";
@@ -115,7 +122,7 @@ function return_assessments_count($userid, $courseids) {
                     CASE
                         WHEN qo.timeclose IS NOT NULL THEN qo.timeclose
                         ELSE q.timeclose END AS gradingduedate,
-                    gg.finalgrade, qf.feedbacktext AS feedback,
+                    gg.finalgrade, gg.feedback,
                     qa.state AS `status`, NULL AS submissions, c.enddate";
     $quizjoins = "LEFT JOIN {quiz_overrides} AS qo ON (qo.quiz = q.id AND qo.userid = ?)
                     LEFT JOIN {quiz_grades} AS qg ON (qg.quiz = q.id AND qg.userid = ?)
@@ -195,22 +202,32 @@ function return_assessments_count($userid, $courseids) {
                             if($record->status === 'submitted') {
                                 $counter->submitted++;
                             }else{
-                                if($record->allowsubmissionsfromdate <= time() || $record->duedate != 0) {
-                                    if($record->duedate < time()) {
-                                        if($record->cutoffdate == 0 || $record->cutoffdate > time()) {
-                                            $counter->overdue++;
+                                if($record->submissions > 0) {
+                                    // not available
+                                }else{
+                                    if($record->allowsubmissionsfromdate > time() || $record->duedate == 0) {
+                                        // not open
+                                    }else{
+                                        if($record->duedate < time()) {
+                                            if($record->cutoffdate == 0 || $record->cutoffdate > time()) {
+                                                $counter->overdue++;
+                                                $counter->tosubmit++;
+                                            }
+                                        }else{
                                             $counter->tosubmit++;
                                         }
-                                    }else{
-                                        $counter->tosubmit++;
                                     }
                                 }
                             }
                             break;
                         case 'quiz':
-                            if($record->allowsubmissionsfromdate <= time()) { 
+                            if($record->allowsubmissionsfromdate > time()) {
+                                // not open
+                            }else{
                                 if($record->status === 'finished'){
                                     $counter->submitted++;
+                                }else if($record->duedate < time() && $record->duedate != 0) {
+                                    // not submitted
                                 }else{
                                     $counter->tosubmit++;
                                 }
@@ -220,8 +237,12 @@ function return_assessments_count($userid, $courseids) {
                             if(!empty($record->submissions)) {
                                 $counter->submitted++;
                             }else{
-                                if($record->allowsubmissionsfromdate <= time() || $record->duedate != 0) { 
-                                    if($record->duedate > time()) {
+                                if($record->allowsubmissionsfromdate > time() || $record->duedate == 0) {
+                                    // not open
+                                }else{
+                                    if($record->duedate < time()) {
+                                        // not submitted
+                                    }else{
                                         $counter->tosubmit++;
                                     }
                                 }
@@ -230,7 +251,9 @@ function return_assessments_count($userid, $courseids) {
                         // forum
                         default:
                             if($record->duedate < time()) {
-                                if($record->cutoffdate == 0 || $record->cutoffdate > time()) {
+                                if($record->status === 'submitted'){
+                                    $counter->submitted++;
+                                }else if($record->cutoffdate == 0 || $record->cutoffdate > time()) {
                                     $counter->overdue++;
                                     $counter->tosubmit++;
                                 }
