@@ -863,11 +863,11 @@ class assessments_details {
                          if($allowsubmissionsfromdate > time()) {
                               $s->statustext = $notopen;
                          }else{
-                              if($duedate < time() && $duedate != 0) {
-                                   $s->statustext = $notsubmitted;
-                              }else if($status === 'finished'){
+                              if($status === 'finished'){
                                    $s->statustext = $submitted;
                                    $s->class = $classsubmitted;
+                              }else if($duedate < time() && $duedate != 0) {
+                                   $s->statustext = $notsubmitted;
                               }else{
                                    $s->hasstatusurl = true;
                                    $s->statustext = $submit;
