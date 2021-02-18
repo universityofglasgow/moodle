@@ -2,29 +2,34 @@
 
     require_once("$CFG->dirroot/enrol/locallib.php");
     
-    $hillheadnotificationtype = get_config('theme_hillhead', 'hillhead_notification_type');
-$hillheadNotificationText =  get_config('theme_hillhead', 'hillhead_notification');
-
-if(empty($_SESSION['SESSION']->hillhead_notifications) || !array_key_exists(md5($hillheadNotificationText), $_SESSION['SESSION']->hillhead_notifications)) {
-    switch($hillheadnotificationtype) {
-        case 'alert-danger':
-            $notiftext = '<div class="alert alert-danger"><a class="close" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($hillheadNotificationText).'" aria-label="Close"><span aria-hidden="true">&times;</span></a><i class="fa fa-warning"></i><span>'.$hillheadNotificationText.'</span></div>';
-            break;
-        case 'alert-warning':
-            $notiftext = '<div class="alert alert-warning"><a class="close" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($hillheadNotificationText).'" aria-label="Close"><span aria-hidden="true">&times;</span></a><i class="fa fa-warning"></i><span>'.$hillheadNotificationText.'</span></div>';
-            break;
-        case 'alert-success':
-            $notiftext = '<div class="alert alert-success"><a class="close" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($hillheadNotificationText).'" aria-label="Close"><span aria-hidden="true">&times;</span></a><i class="fa fa-info-circle"></i><span>'.$hillheadNotificationText.'</span></div>';
-            break;
-        case 'alert-info':
-            $notiftext = '<div class="alert alert-info"><a class="close" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($hillheadNotificationText).'" aria-label="Close"><span aria-hidden="true">&times;</span></a><i class="fa fa-info-circle"></i><span>'.$hillheadNotificationText.'</span></div>';
-            break;
-        default:
-            $notiftext = '';
-    }
-} else {
     $notiftext = '';
-}
+    
+    $hillheaddowntimedatetime = get_config('theme_hillhead', 'hillhead_downtime_datetime');
+    $hillheaddowntimelength = get_config('theme_hillhead', 'hillhead_downtime_length');
+    
+    if(!empty($hillheaddowntimedatetime)) {
+        $countdown = strtotime($hillheaddowntimedatetime);
+        $finishtime = $countdown + ($hillheaddowntimelength * 60);
+        if($countdown !== false) {
+            $timetildowntime = $countdown - time();
+            if($timetildowntime > 604800) {
+                // Downtime is over a week away. Do nothing.
+            } else if ($timetildowntime > 172800) {
+                // Downtime is between 2 and 7 days away.
+                $notiftext .= '<div class="alert alert-info d-flex align-items-center"><i class="fa fa-info-circle d-flex-item"></i><span class="d-flex-item"><strong>Moodle is being upgraded</strong> on '.date('l jS F', $countdown).' between '.date('H:i', $countdown).' and '.date('H:i', $finishtime).'. The site may be unavailable or slower than usual during the upgrade.</span></div>';
+            } else if ($timetildowntime > 10800) {
+                // Downtime is between 3 hours and 2 days away.
+                $notiftext .= '<div class="alert alert-warning d-flex align-items-center"><i class="fa fa-exclamation-circle d-flex-item"></i><span class="d-flex-item"><strong>Moodle is being upgraded</strong> on '.date('l jS F', $countdown).' between '.date('H:i', $countdown).' and '.date('H:i', $finishtime).'. The site may be unavailable or slower than usual during the upgrade.</span></div>';
+            } else if ($timetildowntime > 900) {
+                // Downtime is between 30 minutes and 3 hours away
+                $notiftext .= '<div class="alert alert-danger d-flex align-items-center"><i class="fa fa-exclamation-triangle d-flex-item"></i><span class="d-flex-item"><strong>Moodle is being upgraded</strong> on '.date('l jS F', $countdown).' between '.date('H:i', $countdown).' and '.date('H:i', $finishtime).'. The site may be unavailable or slower than usual during the upgrade.</span></div>';
+            } else if ($timetildowntime > -7200) {
+                // Downtime is less than 30 minutes away
+                $notiftext .= '<div class="alert alert-danger alert-pulse d-flex align-items-center"><i class="fa fa-exclamation-triangle d-flex-item"></i><span class="d-flex-item"><strong>Moodle is being upgraded</strong> on '.date('l jS F', $countdown).' between '.date('H:i', $countdown).' and '.date('H:i', $finishtime).'. The site may be unavailable or slower than usual during the upgrade. <strong>Please save your work!</strong></span></div>';
+            }
+        }
+    }
+    
 
 $hillheadoldbrowseralerts = get_config('theme_hillhead', 'hillhead_old_browser_alerts');
 
@@ -32,7 +37,7 @@ if($hillheadoldbrowseralerts == 'enabled') {
     $userAgentFlags = Array(
         'windows-xp'			=>'/(Windows NT 5.1)|(Windows XP)/',
 		'firefox-1-51'          => '/Firefox\/([0-9]|[1-4][0-9]|5[0-1])\b/',
-		'safari-1-7'			=> '/AppleWebKit\/([0-9][0-9]|[0-5][0-9][0-9]|600)\b/',
+		'safari-1-7'			=> '/(?=.*?AppleWebKit\/([0-9][0-9]|[0-5][0-9][0-9]|600)\b)(?!.*?Chrome\/).*/',
 		'ie-5-10'               =>  '/MSIE ([5-9]|10)\b/'
 	);
 	
@@ -63,7 +68,7 @@ if($hillheadoldbrowseralerts == 'enabled') {
                 break;
     	}
     	
-    	$notiftext .= '<div class="alert alert-danger"><i class="fa fa-exclamation-triangle"></i><span>'.$oldBrowserText.'</span></div>';
+    	$notiftext .= '<div class="alert alert-danger d-flex align-items-center"><i class="fa fa-exclamation-triangle d-flex-item"></i><span class="d-flex-item">'.$oldBrowserText.'</span></div>';
 	}
 	
 	
@@ -86,7 +91,7 @@ if((substr($PAGE->pagetype, 0, 11) == 'course-view') && ($hillheadsmartalerts ==
     if((!empty($courseDetails->id)) && $courseDetails->id != 1) {
         if($courseDetails->visible=='0') {
             if(empty($_SESSION['SESSION']->hillhead_notifications) || !array_key_exists(md5($courseDetails->id.'courseinvisible'), $_SESSION['SESSION']->hillhead_notifications) && $canEditCourse) {
-                $notiftext .= '<div class="alert alert-info"><a class="close" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($courseDetails->id.'courseinvisible').'" aria-label="Close"><span aria-hidden="true">&times;</span></a><i class="fa fa-eye-slash"></i><span><strong>This course is currently hidden.</strong> You can see it, but students can\'t. You can unhide this course <a class="alert-link" href="edit.php?id='.$courseDetails->id.'">on the settings page</a>.</span></div>';
+                $notiftext .= '<div class="alert alert-info d-flex align-items-center"></a><i class="fa fa-eye-slash d-flex-item"></i><span class="d-flex-item"><strong>This course is currently hidden.</strong> You can see it, but students can\'t. You can unhide this course <a class="alert-link" href="edit.php?id='.$courseDetails->id.'">on the settings page</a>.</span><a class="close d-flex-item ml-auto" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($courseDetails->id.'courseinvisible').'" aria-label="Close"><span aria-hidden="true">&times;</span></a></div>';
                 $automaticEnrolmentsDisabled = true;
                 $automaticEnrolmentsReason = 'this course has been hidden from students.';
             }
@@ -98,7 +103,7 @@ if((substr($PAGE->pagetype, 0, 11) == 'course-view') && ($hillheadsmartalerts ==
                 
         if($studentyUsers === 0) {
             if(empty($_SESSION['SESSION']->hillhead_notifications) || !array_key_exists(md5($courseDetails->id.'coursenostudents'), $_SESSION['SESSION']->hillhead_notifications) && $canConfigureEnrolments) {
-                $notiftext .= '<div class="alert alert-warning"><a class="close" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($courseDetails->id.'coursenostudents').'" aria-label="Close"><span aria-hidden="true">&times;</span></a><i class="fa fa-users"></i><span><strong>There are no students on this course.</strong> Click the \'Participants\' link in the sidebar to add students.</span></div>';
+                $notiftext .= '<div class="alert alert-warning d-flex align-items-center"></a><i class="fa fa-users d-flex-item"></i><span class="d-flex-item"><strong>There are no students on this course.</strong> <a class="alert-link" href="'.$CFG->wwwroot.'/enrol/instances.php?id='.$courseDetails->id.'">Manage Enrolments</a></span><a class="close d-flex-item ml-auto" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($courseDetails->id.'coursenostudents').'" aria-label="Close"><span aria-hidden="true">&times;</span></a></div>';
             }
         }
         
@@ -108,23 +113,23 @@ if((substr($PAGE->pagetype, 0, 11) == 'course-view') && ($hillheadsmartalerts ==
         
             if(!empty($courseDetails->enddate) && ($courseDetails->enddate) < time()) {
                 if(empty($_SESSION['SESSION']->hillhead_notifications) || !array_key_exists(md5($courseDetails->id.'courseenddate'), $_SESSION['SESSION']->hillhead_notifications) && $canEditCourse) {
-                    $notiftext .= '<div class="alert alert-info"><a class="close" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($courseDetails->id.'courseenddate').'" aria-label="Close"><span aria-hidden="true">&times;</span></a><i class="fa fa-clock-o"></i><span><strong>This course\'s end date is in the past.</strong> MyCampus enrolments are frozen, and won\'t be updated. If you\'re still using this course, you can change the end date <a class="alert-link" href="edit.php?id='.$courseDetails->id.'">on the settings page</a>.</span></div>';
+                    $notiftext .= '<div class="alert alert-info d-flex align-items-center"></a><i class="fa fa-clock-o d-flex-item"></i><span class="d-flex-item"><strong>This course\'s end date is in the past.</strong> MyCampus enrolments are frozen, and won\'t be updated. If you\'re still using this course, you can change the end date <a class="alert-link" href="edit.php?id='.$courseDetails->id.'">on the settings page</a>.</span><a class="close d-flex-item ml-auto" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($courseDetails->id.'courseenddate').'" aria-label="Close"><span aria-hidden="true">&times;</span></a></div>';
                     $automaticEnrolmentsDisabled = true;
                     $automaticEnrolmentsReason = 'the course\'s end date is in the past. Any old MyCampus enrolments have been frozen and won\'t be removed.';
                 }
             }
             
             if(!empty($courseDetails->startdate) && ($courseDetails->startdate) > time()) {
-                if(empty($_SESSION['SESSION']->hillhead_notifications) || !array_key_exists(md5($courseDetails->id.'courseenddate'), $_SESSION['SESSION']->hillhead_notifications) && $canEditCourse) {
-                    $notiftext .= '<div class="alert alert-info"><a class="close" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($courseDetails->id.'courseenddate').'" aria-label="Close"><span aria-hidden="true">&times;</span></a><i class="fa fa-clock-o"></i><span><strong>This course\'s start date is in the future.</strong> If you\'re using this course right now, you can change the start date <a class="alert-link" href="edit.php?id='.$courseDetails->id.'">on the settings page</a>.</span></div>';
+                if(empty($_SESSION['SESSION']->hillhead_notifications) || !array_key_exists(md5($courseDetails->id.'coursestartdate'), $_SESSION['SESSION']->hillhead_notifications) && $canEditCourse) {
+                     $notiftext .= '<div class="alert alert-info d-flex align-items-center"></a><i class="fa fa-clock-o d-flex-item"></i><span class="d-flex-item"><strong>This course\'s start date is in the future.</strong> MyCampus enrolments are frozen, and won\'t be updated. If you\'re already using this course right now, you can change the start date <a class="alert-link" href="edit.php?id='.$courseDetails->id.'">on the settings page</a>.</span><a class="close d-flex-item ml-auto" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($courseDetails->id.'coursestartdate').'" aria-label="Close"><span aria-hidden="true">&times;</span></a></div>';
                     $automaticEnrolmentsDisabled = true;
                     $automaticEnrolmentsReason = 'the course\'s start date is in the future.';
                 }
             }
             
             if(empty($courseDetails->enddate)) {
-                if(empty($_SESSION['SESSION']->hillhead_notifications) || !array_key_exists(md5($courseDetails->id.'courseenddate'), $_SESSION['SESSION']->hillhead_notifications) && $canEditCourse) {
-                    $notiftext .= '<div class="alert alert-danger"><a class="close" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($courseDetails->id.'courseenddate').'" aria-label="Close"><span aria-hidden="true">&times;</span></a><i class="fa fa-clock-o"></i><span><strong>This course doesn\'t have an end date.</strong> Automatic enrolments won\'t work unless you add one <a class="alert-link" href="edit.php?id='.$courseDetails->id.'">on the settings page</a>. This is to protect old courses from accidental changes.</span></div>';
+                if(empty($_SESSION['SESSION']->hillhead_notifications) || !array_key_exists(md5($courseDetails->id.'courseenddateblank'), $_SESSION['SESSION']->hillhead_notifications) && $canEditCourse) {
+                     $notiftext .= '<div class="alert alert-info d-flex align-items-center"></a><i class="fa fa-clock-o d-flex-item"></i><span class="d-flex-item"><strong>This course doesn\'t have an end date.</strong> Automatic enrolments won\'t work unless you add one <a class="alert-link" href="edit.php?id='.$courseDetails->id.'">on the settings page</a>. This is to protect old courses from accidental changes.</span></span><a class="close d-flex-item ml-auto" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($courseDetails->id.'courseenddateblank').'" aria-label="Close"><span aria-hidden="true">&times;</span></a></div>';
                     $automaticEnrolmentsDisabled = true;
                     $automaticEnrolmentsReason = 'the course doesn\'t have an end date.';
                 }
@@ -154,19 +159,20 @@ if((substr($PAGE->pagetype, 0, 11) == 'course-view') && ($hillheadsmartalerts ==
             
             if ($usesMyCampus == false) {
                 $automaticEnrolmentsDisabled = true;
-                $automaticEnrolmentsReason = 'the plugin has been disabled.';
+                $automaticEnrolmentsReason = 'MyCampus enrolments have not been set up for this course.';
             }
     
             
             if ($automaticEnrolmentsDisabled) {
                 if(empty($_SESSION['SESSION']->hillhead_notifications) || !array_key_exists(md5($courseDetails->id.'nomycampus'), $_SESSION['SESSION']->hillhead_notifications)) {
-                    $notiftext .= '<div class="alert alert-danger"><a class="close" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($courseDetails->id.'nomycampus').'" aria-label="Close"><span aria-hidden="true">&times;</span></a><i class="fa fa-refresh"></i><span><strong>MyCampus enrolments are disabled for this course.</strong> This is because '.$automaticEnrolmentsReason.' <a class="alert-link" href="'.$CFG->wwwroot.'/report/guenrol/index.php?id='.$courseDetails->id.'">More Information</a></span></div>';
+                    $notiftext .= '<div class="alert alert-danger d-flex align-items-center"></a><i class="fa fa-refresh d-flex-item"></i><span class="d-flex-item"><strong>MyCampus enrolments are disabled for this course.</strong> This is because '.$automaticEnrolmentsReason.' <a class="alert-link" href="'.$CFG->wwwroot.'/enrol/instances.php?id='.$courseDetails->id.'">Manage Enrolments</a></span><a class="close d-flex-item ml-auto" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($courseDetails->id.'nomycampus').'" aria-label="Close"><span aria-hidden="true">&times;</span></a></div>';
+                    
                 }
             }
             
             if ($usesSelfEnrolment) {
                 if(empty($_SESSION['SESSION']->hillhead_notifications) || !array_key_exists(md5($courseDetails->id.'selfenabled'), $_SESSION['SESSION']->hillhead_notifications)) {
-                    $notiftext .= '<div class="alert alert-warning"><a class="close" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($courseDetails->id.'selfenabled').'" aria-label="Close"><span aria-hidden="true">&times;</span></a><i class="fa fa-user-plus"></i><span><strong>Self-enrolment is enabled for this course, with no enrolment key.</strong> This means anybody can add themselves to this course. <a class="alert-link" href="'.$CFG->wwwroot.'/enrol/instances.php?id='.$courseDetails->id.'">Manage Enrolments</a></span></div>';
+                    $notiftext .= '<div class="alert alert-warning d-flex align-items-center"></a><i class="fa fa-user-plus d-flex-item"></i><span class="d-flex-item"><strong>Self-enrolment is enabled for this course, with no enrolment key.</strong> This means anybody can add themselves to this course. <a class="alert-link" href="'.$CFG->wwwroot.'/enrol/instances.php?id='.$courseDetails->id.'">Manage Enrolments</a></span><a class="close d-flex-item ml-auto" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($courseDetails->id.'selfenabled').'" aria-label="Close"><span aria-hidden="true">&times;</span></a></div>';
                 }
             }
         }
