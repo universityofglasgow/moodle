@@ -29,6 +29,8 @@ global $CFG;
 require_once('config.php');
 require_once($CFG->dirroot .'/blocks/moodleblock.class.php');
 require_once($CFG->dirroot .'/blocks/gu_spoverview/block_gu_spoverview.php');
+require_once($CFG->dirroot .'/blocks/gu_spoverview/querylib.php');
+require_once($CFG->dirroot .'/local/gugcat/locallib.php');
 
 class block_gu_spoverview_testcase extends advanced_testcase {
 
@@ -77,66 +79,10 @@ class block_gu_spoverview_testcase extends advanced_testcase {
             'attemptnumber' => 0,
             'status' => 'submitted'
         ));
+
+        // Set the current user to student
+        $this->setUser($this->student);
     }   
-
-    public function test_to_get_count_of_assignment(){
-        $assignments_submitted = 0;
-        $assignments_tosubmit = 0;
-        $assignments_overdue = 0;
-        
-        $courses = enrol_get_all_users_courses($this->student->id, true);
-        $courseids = array_column($courses, 'id');
-
-        $assignments = (count($courseids) > 0) ? $this->spoverview->get_user_assignments($this->student->id, $courseids) : 0;
-
-        foreach ($assignments as $assignment) {
-            if($assignment->status != 'submitted') {
-                if(time() > $assignment->startdate) {
-                    if(($assignment->duedate > 0 && time() <= $assignment->duedate)
-                        || ($assignment->cutoffdate > 0 && time() <= $assignment->cutoffdate)
-                        || (($assignment->extensionduedate > 0 || !is_null($assignment->extensionduedate))
-                            && time() <= $assignment->extensionduedate)) {
-                        $assignments_tosubmit++;
-                    }else{
-                        if($assignment->duedate != 0 || $assignment->cutoffdate != 0
-                            || $assignment->extensionduedate != 0 || ($assignment->duedate >= time() && $assignment->cutoffdate <= time())) {
-                            $assignments_overdue++;
-                        }
-                    }
-                }
-            }else{
-                $assignments_submitted++;
-            }
-        }
-
-        $this->assertNotEmpty($courses, 'empty');
-        $this->assertNotEmpty($assignments, 'empty');
-
-        $this->assertGreaterThanOrEqual(1, $assignments_tosubmit);
-        $this->assertGreaterThanOrEqual(1, $assignments_overdue);
-        $this->assertGreaterThanOrEqual(1, $assignments_submitted);
-
-        $this->assertContains(
-            $this->course->id, 
-            $courseids, 
-            "courseids array doesn't contains same course id"
-        );
-    }
-
-    public function test_check_marked_assignment(){
-        $courses = enrol_get_all_users_courses($this->student->id, true);
-        $courseids = array_column($courses, 'id');
-        $assessments_marked = (count($courseids) > 0) ? $this->spoverview->get_user_assessments_count($this->student->id, $courseids) : 0;
-
-        $this->assertNotEmpty($courses, 'empty');
-        $this->assertGreaterThanOrEqual(0, $assessments_marked);
-
-        $this->assertContains(
-            $this->course->id, 
-            $courseids, 
-            "courseids array doesn't contains same course id"
-        );
-    }
 
     public function test_applicable_formats(){
         $returned = $this->spoverview->applicable_formats();
@@ -144,51 +90,66 @@ class block_gu_spoverview_testcase extends advanced_testcase {
         $this->assertEquals($returned, array('my' => true));
     }
 
+    public function test_return_enrolledcourses(){
+        // Since show student dashboard is disabled first, return courses is empty
+        $returned = $this->spoverview->return_enrolledcourses($this->student->id);
+        $this->assertEmpty($returned);
+
+        // Enable the display assessment on dashboard
+        $this->enable_show_student_dashboard();
+                
+        $returned = $this->spoverview->return_enrolledcourses($this->student->id);
+        // Assert returned is not empty and contains the current course id
+        $this->assertNotEmpty($returned);
+        $this->assertContains($this->course->id,$returned);
+    }
+
     public function test_get_content(){
-        $lang = 'block_gu_spoverview';
-
-        $assignments_submitted = 0;
-        $assignments_tosubmit = 0;
-        $assignments_overdue = 0;
+        // Enable the display assessment on dashboard
+        $this->enable_show_student_dashboard();
         
-        $courses = enrol_get_all_users_courses($this->student->id, true);
-        $courseids = array_column($courses, 'id');
+        $returned = $this->spoverview->get_content();
+        // Content is in class object that has 'text' key attribute
+        $this->assertObjectHasAttribute('text', $returned);
 
-        $assignments = (count($courseids) > 0) ? $this->spoverview->get_user_assignments($this->student->id, $courseids) : 0;
-        $assessments_marked = (count($courseids) > 0) ? $this->spoverview->get_user_assessments_count($this->student->id, $courseids) : 0;
+        $text = $returned->text;
 
-        $assignment_str = ($assignments_submitted == 1) ? get_string('assignment', $lang) : get_string('assignments', $lang);
-        $assessment_str = ($assessments_marked == 1) ? get_string('assessment', $lang) : get_string('assessments', $lang);
-
-        foreach ($assignments as $assignment) {
-            if($assignment->status != 'submitted') {
-                if(time() > $assignment->startdate) {
-                    if(($assignment->duedate > 0 && time() <= $assignment->duedate)
-                        || ($assignment->cutoffdate > 0 && time() <= $assignment->cutoffdate)
-                        || (($assignment->extensionduedate > 0 || !is_null($assignment->extensionduedate))
-                            && time() <= $assignment->extensionduedate)) {
-                        $assignments_tosubmit++;
-                    }else{
-                        if($assignment->duedate != 0 || $assignment->cutoffdate != 0
-                            || $assignment->extensionduedate != 0 || ($assignment->duedate >= time() && $assignment->cutoffdate <= time())) {
-                            $assignments_overdue++;
-                        }
-                    }
-                }
-            }else{
-                $assignments_submitted++;
-            }
-        }
-
-        $html = $this->spoverview->get_content();
-
-        $this->assertSame(get_string('pluginname', 'block_gu_spoverview'), $this->spoverview->title);
-        $this->assertStringContainsString((string)$assignments_submitted, $html->text);
-        $this->assertStringContainsString((string)$assignments_tosubmit, $html->text);
-        $this->assertStringContainsString((string)$assignments_overdue, $html->text);
-        $this->assertStringContainsString((string)$assessments_marked, $html->text);
-
-        $this->assertStringContainsString($assignment_str, $html->text);
-        $this->assertStringContainsString($assessment_str, $html->text);
+        // Assert returned text has student dashboard labels
+        $this->assertStringContainsString('Assessment submitted', $text);
+        $this->assertStringContainsString('To be submitted / attended', $text);
+        $this->assertStringContainsString('Overdue', $text);
+        $this->assertStringContainsString('Assessments marked', $text);
     }    
+
+    public function enable_show_student_dashboard(){
+        $contextid = context_course::instance($this->course->id)->id;
+        $instanceid = $this->course->id;
+
+        // Add custom field using the gcat function, then enable the display assessment on dashboard
+        $switchdisplay = local_gugcat::switch_display_of_assessment_on_student_dashboard($instanceid, $contextid);
+        
+        // Show on student dashboard is enabled
+        $this->assertEquals(1, $switchdisplay);
+    }
+
+    public function test_return_isstudent(){
+        $returned = $this->spoverview->return_isstudent($this->course->id);
+
+        $this->assertTrue($returned);
+    }
+
+    public function test_querylib(){
+        $returned = return_assessments_count($this->student->id, $this->course->id);
+        // Check return object has key attributes
+        $this->assertObjectHasAttribute('submitted', $returned);
+        $this->assertObjectHasAttribute('tosubmit', $returned);
+        $this->assertObjectHasAttribute('overdue', $returned);
+        $this->assertObjectHasAttribute('marked', $returned);
+
+        // Assert 1 submitted assigment, and 0 to submit, overdue, marked
+        $this->assertEquals(1, $returned->submitted);
+        $this->assertEquals(0, $returned->tosubmit);
+        $this->assertEquals(0, $returned->overdue);
+        $this->assertEquals(0, $returned->marked);
+    }
 }
