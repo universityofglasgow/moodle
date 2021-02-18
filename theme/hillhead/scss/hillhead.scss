@@ -92,6 +92,8 @@ h6 {
 
 nav.navbar.fixed-top {
     background-color: $hillhead-blue;
+    border-bottom: 1px solid $hillhead-main;
+    padding-bottom: 9px;
 }
 
 nav.navbar .popover-region {
