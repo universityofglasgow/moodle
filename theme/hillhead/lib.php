@@ -42,7 +42,10 @@ function theme_hillhead_get_main_scss_content($theme) {
     
     foreach($sheets as $sheet) {
         $scss .= file_get_contents($CFG->dirroot . '/theme/hillhead/scss/'.$sheet.'.scss');
-    }                                                               
+    }
+    
+    $filename = !empty($theme->settings->preset) ? $theme->settings->preset : 'blue.scss';
+    $scss .= file_get_contents($CFG->dirroot . '/theme/hillhead/scss/'.$filename);                                                   
  
     return $scss;                                                                                                                   
 }
