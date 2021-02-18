@@ -115,28 +115,32 @@ if ($ADMIN->fulltree) {
         'disabled' => get_string('hillhead_old_browser_alerts_off', 'theme_hillhead')
     );                                                                     
     $default = 'disabled';
-    
-    $setting = new admin_setting_configselect($name, $title, $description, $default, $choices);                                                                                                                                                                                     
     $page->add($setting);
     
-    $name = 'theme_hillhead/hillhead_notification_type';                                                                                                   
-    $title = get_string('hillhead_notification_type', 'theme_hillhead');                                                                                   
-    $description = get_string('hillhead_notification_type_desc', 'theme_hillhead');
+    $setting = new admin_setting_configtext('theme_hillhead/hillhead_downtime_datetime',                                                              
+        get_string('hillhead_downtime_datetime', 'theme_hillhead'), get_string('hillhead_downtime_datetime_desc', 'theme_hillhead'), '2021-02-08 00:00:00', PARAM_RAW);                                                                                            
+    $page->add($setting);
+    
+    $name = 'theme_hillhead/hillhead_downtime_length';                                                                                                   
+    $title = get_string('hillhead_downtime_length', 'theme_hillhead');                                                                                   
+    $description = get_string('hillhead_downtime_length_desc', 'theme_hillhead');
     
     $choices = Array(
-        'alert-none' => get_string('hillhead_notification_none', 'theme_hillhead'),
-        'alert-danger' => get_string('hillhead_notification_danger', 'theme_hillhead'),
-        'alert-warning' => get_string('hillhead_notification_warning', 'theme_hillhead'),
-        'alert-success' => get_string('hillhead_notification_success', 'theme_hillhead'),
-        'alert-info' => get_string('hillhead_notification_info', 'theme_hillhead')
+        '30'  => get_string('hillhead_downtime_length_30', 'theme_hillhead'),
+        '60'  => get_string('hillhead_downtime_length_60', 'theme_hillhead'),
+        '90'  => get_string('hillhead_downtime_length_90', 'theme_hillhead'),
+        '120' => get_string('hillhead_downtime_length_120', 'theme_hillhead'),
+        '180' => get_string('hillhead_downtime_length_180', 'theme_hillhead'),
+        '240' => get_string('hillhead_downtime_length_240', 'theme_hillhead'),
+        '480' => get_string('hillhead_downtime_length_480', 'theme_hillhead'),
     );                                                                     
-    $default = 'alert-none';
+    $default = '180';
     
     $setting = new admin_setting_configselect($name, $title, $description, $default, $choices);                                                                                                                                                                                    
     $page->add($setting);
  
     // Custom System Notification                                                                                   
-    $setting = new admin_setting_configtextarea('theme_hillhead/hillhead_notification',                                                              
+    /*$setting = new admin_setting_configtextarea('theme_hillhead/hillhead_notification',                                                              
         get_string('hillhead_notification', 'theme_hillhead'), get_string('hillhead_notification_desc', 'theme_hillhead'), '', PARAM_RAW);                                                                                            
     $page->add($setting);
  
@@ -147,7 +151,7 @@ if ($ADMIN->fulltree) {
  
     $setting = new admin_setting_configtext('theme_hillhead/hillhead_helpcentre', get_string('helplink', 'theme_hillhead'),                           
         get_string('helplink_desc', 'theme_hillhead'), '', PARAM_RAW);                                                                                                                                        
-    $page->add($setting); 
+    $page->add($setting); */
  
     // Must add the page after definiting all the settings!                                                                         
     $settings->add($page);  
