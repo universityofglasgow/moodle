@@ -32,8 +32,13 @@ if ($ADMIN->fulltree) {
         $choices[$file->get_filename()] = $file->get_filename();                                                                    
     }                                                                                                                               
     // These are the built in presets from Boost.                                                                                   
-    $choices['default.scss'] = 'default.scss';                                                                                      
-    $choices['plain.scss'] = 'plain.scss';                                                                                          
+    $choices['blue.scss'] = 'University Blue';                                                                                      
+    $choices['green.scss'] = 'Moss Green';
+    $choices['red.scss'] = 'Pillarbox Red';
+    $choices['grey.scss'] = 'Slate Grey';
+    $choices['brown.scss'] = 'Sandstone Brown';
+    $choices['orange.scss'] = 'Rust Orange';
+    $choices['purple.scss'] = 'Lavender Purple';                                                                                             
  
     $setting = new admin_setting_configselect($name, $title, $description, $default, $choices);                                     
     $setting->set_updatedcallback('theme_reset_all_caches');                                                                        
@@ -42,20 +47,7 @@ if ($ADMIN->fulltree) {
     // Preset files setting.                                                                                                        
     $name = 'theme_hillhead/presetfiles';                                                                                              
     $title = get_string('presetfiles','theme_hillhead');                                                                               
-    $description = get_string('presetfiles_desc', 'theme_hillhead');                                                                   
- 
-    $setting = new admin_setting_configstoredfile($name, $title, $description, 'preset', 0,                                         
-        array('maxfiles' => 20, 'accepted_types' => array('.scss')));                                                               
-    $page->add($setting);     
- 
-    // Variable $brand-color.                                                                                                       
-    // We use an empty default value because the default colour should come from the preset.                                        
-    $name = 'theme_hillhead/brandcolor';                                                                                               
-    $title = get_string('brandcolor', 'theme_hillhead');                                                                               
-    $description = get_string('brandcolor_desc', 'theme_hillhead');                                                                    
-    $setting = new admin_setting_configcolourpicker($name, $title, $description, '');                                               
-    $setting->set_updatedcallback('theme_reset_all_caches');                                                                        
-    $page->add($setting);                                                                                                           
+    $description = get_string('presetfiles_desc', 'theme_hillhead');                                                                                                                                                                       
  
     // Must add the page after definiting all the settings!                                                                         
     $settings->add($page);                                                                                                          
@@ -115,6 +107,7 @@ if ($ADMIN->fulltree) {
         'disabled' => get_string('hillhead_old_browser_alerts_off', 'theme_hillhead')
     );                                                                     
     $default = 'disabled';
+    $setting = new admin_setting_configselect($name, $title, $description, $default, $choices);  
     $page->add($setting);
     
     $setting = new admin_setting_configtext('theme_hillhead/hillhead_downtime_datetime',                                                              
