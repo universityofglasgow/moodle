@@ -260,8 +260,9 @@ class grade_aggregation{
         $columns = ['candidate_number', 'student_number'];
         $is_blind_marking = local_gugcat::is_blind_marking();
         $is_blind_marking ? null : array_push($columns, ...array('surname', 'forename'));
-        $students = get_enrolled_users(context_course::instance($course->id), 'local/gugcat:gradable');
-        $modules = local_gugcat::get_activities($course->id, true);
+        $modules = local_gugcat::get_activities($course->id);
+        $groupingids = array_column($modules, 'groupingid');
+        $students = self::get_students_per_groups($groupingids, $course->id);
         //Process the activity names
         $activities = array();
         foreach($modules as $cm) {
@@ -431,5 +432,33 @@ class grade_aggregation{
             return $first->timemodified < $second->timemodified;
         });
         return $rows;
+    }
+
+    /**
+     * Returns list of students based on grouping ids from activities
+     * 
+     * @param array $groupingids ids from activities
+     * @param int $courseid selected course id
+     * @return array
+     */
+    public static function get_students_per_groups($groupingids, $courseid) {
+        $coursecontext = context_course::instance($courseid);
+        $students = Array();
+        if(array_sum($groupingids) != 0){
+            $groups = array();
+            foreach ($groupingids as $groupingid) {
+                if($groupingid != 0){
+                    $groups += groups_get_all_groups($courseid, 0, $groupingid);
+                }
+            }
+            if(!empty($groups)){
+                foreach ($groups as $group) {
+                    $students += get_enrolled_users($coursecontext, 'local/gugcat:gradable', $group->id);
+                }
+            }
+        }else{
+            $students = get_enrolled_users($coursecontext, 'local/gugcat:gradable');
+        }
+        return $students;
     }
 }
