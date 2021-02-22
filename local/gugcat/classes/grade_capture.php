@@ -228,6 +228,7 @@ class grade_capture{
                             //update workflow state marking worklow is enabled
                             if($is_workflow_enabled){
                                 local_gugcat::update_workflow_state($assign, $student->id, ASSIGN_MARKING_WORKFLOW_STATE_RELEASED);
+                                $assign->get_instance()->blindmarking = false; // Always set blindmarking = false to update grades to gradebook
                             }
                             $DB->set_field_select('grade_grades', 'overridden', 0, $select);
                             $grade->grade = $is_admingrade ? 0 : $rawgrade;
