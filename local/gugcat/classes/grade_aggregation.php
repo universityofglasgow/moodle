@@ -116,16 +116,14 @@ class grade_aggregation{
                     : (isset($pg) && !is_null($pg->rawgrade) ? $pg->rawgrade 
                     : ((isset($gb) && !is_null($gb->grade)) ? $gb->grade : null));                
                     $scaleid = $item->scaleid;
-                    if (is_null($scaleid) && local_gugcat::is_grademax22($item->gradeitem->gradetype, $item->gradeitem->grademax)){
-                        $scaleid = null;
-                    }
+                    $invalid22scale = is_null($scaleid) && local_gugcat::is_grademax22($item->gradeitem->gradetype, $item->gradeitem->grademax);
                     local_gugcat::set_grade_scale($scaleid);
-                    $grade = is_null($grd) ? ( $grditemresit ? get_string('nogradeweight', 'local_gugcat') : get_string('nograderecorded', 'local_gugcat')) : local_gugcat::convert_grade($grd);
-                    $weight = 0;
+                    $grade = is_null($grd) ? ( $grditemresit ? get_string('nogradeweight', 'local_gugcat') : get_string('nograderecorded', 'local_gugcat')) 
+                    : ($invalid22scale ? local_gugcat::convert_grade(intval($grd) + 1) : local_gugcat::convert_grade($grd));
                     $grdvalue = get_string('nograderecorded', 'local_gugcat');
-                    if(!is_null($pg) && !is_null($grd) && $grade !== MEDICAL_EXEMPTION_AC){
-                        $weight = (float)$pg->information; //get weight from information column of provisional grades
-                        $grdvalue = ($grade === NON_SUBMISSION_AC) ? 0 : (float)$grd - (float)1; //normalize to actual grade value for computation
+                    $weight = !is_null($pg) ? (float)$pg->information : 0; //get weight from information column of provisional grades
+                    if(!is_null($grd) && $grade !== MEDICAL_EXEMPTION_AC){
+                        $grdvalue = $invalid22scale ? $grd : (($grade === NON_SUBMISSION_AC) ? 0 : (float)$grd - (float)1); //normalize to actual grade value for computation
                         $floatweight += ($grade === NON_SUBMISSION_AC) ? 0 : $weight;
                         $sumaggregated += ($grade === NON_SUBMISSION_AC) ?( 0 * (float)$grdvalue) : ((float)$grdvalue * $weight);
                     }
@@ -225,7 +223,7 @@ class grade_aggregation{
         $modules = local_gugcat::get_activities($courseid, true, false);
         foreach($modules as $mod) {
             //Get provisional grade id of the module
-            $prvgrdid = local_gugcat::get_grade_item_id($courseid, $mod->gradeitemid, get_string('provisionalgrd', 'local_gugcat'));
+            $prvgrdid = local_gugcat::add_grade_item($courseid, get_string('provisionalgrd', 'local_gugcat'), $mod, $students);
             
             $gradeitem = new grade_item(array('id'=>$mod->gradeitemid), true);
             //set offset value for max 22 points grade
