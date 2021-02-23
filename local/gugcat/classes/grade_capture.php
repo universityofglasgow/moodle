@@ -232,6 +232,7 @@ class grade_capture{
                             $DB->set_field_select('grade_grades', 'overridden', 0, $select);
                             $grade->grade = $is_admingrade ? 0 : $rawgrade;
                             $grade->grader = $USER->id;
+                            $assign->get_instance()->blindmarking = false; // Always set blindmarking = false to update grades to gradebook
                             $assign->update_grade($grade); 
                         }
                         if($is_admingrade){
@@ -350,7 +351,7 @@ class grade_capture{
         foreach ($activities as $mod) {
             $prvgrdid = local_gugcat::get_grade_item_id($courseid, $mod->gradeitemid, get_string('provisionalgrd', 'local_gugcat'));
             if(!$prvgrdid){//create provisional grade item for modules that has no prv gi yet
-                $prvgrdid = local_gugcat::add_grade_item($courseid, get_string('provisionalgrd', 'local_gugcat'), $mod);
+                $prvgrdid = local_gugcat::add_grade_item($courseid, get_string('provisionalgrd', 'local_gugcat'), $mod, $students);
             }
             //Work around when setting including no grades in aggregation is not accepted. 
             $weightcoef1 = $mod->gradeitem->aggregationcoef; //Aggregation coeficient used for weighted averages or extra credit

@@ -115,17 +115,15 @@ class grade_aggregation{
                     $grd = (isset($pg) && !is_null($pg->finalgrade)) ? $pg->finalgrade 
                     : (isset($pg) && !is_null($pg->rawgrade) ? $pg->rawgrade 
                     : ((isset($gb) && !is_null($gb->grade)) ? $gb->grade : null));                
-                    $scaleid = $item->scaleid;
-                    if (is_null($scaleid) && local_gugcat::is_grademax22($item->gradeitem->gradetype, $item->gradeitem->grademax)){
-                        $scaleid = null;
-                    }
+                    $scaleid = is_null($item->scaleid) && local_gugcat::is_grademax22($item->gradeitem->gradetype, $item->gradeitem->grademax) ? null : $item->scaleid;
+                    $invalid22scale = is_null($scaleid) && local_gugcat::is_grademax22($item->gradeitem->gradetype, $item->gradeitem->grademax)  && !isset($pg);
                     local_gugcat::set_grade_scale($scaleid);
-                    $grade = is_null($grd) ? ( $grditemresit ? get_string('nogradeweight', 'local_gugcat') : get_string('nograderecorded', 'local_gugcat')) : local_gugcat::convert_grade($grd);
-                    $weight = 0;
+                    $grade = is_null($grd) ? ( $grditemresit ? get_string('nogradeweight', 'local_gugcat') : get_string('nograderecorded', 'local_gugcat')) 
+                    : ($invalid22scale ? local_gugcat::convert_grade(intval($grd) + 1) : local_gugcat::convert_grade($grd));
                     $grdvalue = get_string('nograderecorded', 'local_gugcat');
-                    if(!is_null($pg) && !is_null($grd) && $grade !== MEDICAL_EXEMPTION_AC){
-                        $weight = (float)$pg->information; //get weight from information column of provisional grades
-                        $grdvalue = ($grade === NON_SUBMISSION_AC) ? 0 : (float)$grd - (float)1; //normalize to actual grade value for computation
+                    $weight = !is_null($pg) ? (float)$pg->information : 0; //get weight from information column of provisional grades
+                    if(!is_null($grd) && $grade !== MEDICAL_EXEMPTION_AC){
+                        $grdvalue = $invalid22scale ? $grd : (($grade === NON_SUBMISSION_AC) ? 0 : (float)$grd - (float)1); //normalize to actual grade value for computation
                         $floatweight += ($grade === NON_SUBMISSION_AC) ? 0 : $weight;
                         $sumaggregated += ($grade === NON_SUBMISSION_AC) ?( 0 * (float)$grdvalue) : ((float)$grdvalue * $weight);
                     }
@@ -220,17 +218,18 @@ class grade_aggregation{
      */
     public static function release_final_grades($courseid){
         global $USER, $DB;
-        //Retrieve enrolled students' ids only
-        $students = get_enrolled_users(context_course ::instance($courseid), 'local/gugcat:gradable', 0, 'u.id');
-        $modules = local_gugcat::get_activities($courseid, true, false);
+        //Retrieve modules and enrolled students per grade category
+        $modules = local_gugcat::get_activities($courseid);
+        $groupingids = array_column($modules, 'groupingid');
+        $students = self::get_students_per_groups($groupingids, $courseid);
         foreach($modules as $mod) {
-            //Get provisional grade id of the module
-            $prvgrdid = local_gugcat::get_grade_item_id($courseid, $mod->gradeitemid, get_string('provisionalgrd', 'local_gugcat'));
+            // Get/create provisional grade id of the module
+            $prvgrdid = local_gugcat::add_grade_item($courseid, get_string('provisionalgrd', 'local_gugcat'), $mod);
             
-            $gradeitem = new grade_item(array('id'=>$mod->gradeitemid), true);
+            $gradeitem = new grade_item($mod->gradeitem);
             //set offset value for max 22 points grade
             $gradescaleoffset = (local_gugcat::is_grademax22($gradeitem->gradetype, $gradeitem->grademax)) ? 1 : 0;
-    
+
             foreach($students as $student) {
                 //get the provisional grade of the student
                 $prvgrd = $DB->get_record('grade_grades', array('itemid'=>$prvgrdid, 'userid' => $student->id), 'rawgrade, finalgrade');
@@ -240,10 +239,13 @@ class grade_aggregation{
                 $grade = intval($grd); 
                 $grade = ($grade == NON_SUBMISSION || $grade == MEDICAL_EXEMPTION) ? null : $grade - $gradescaleoffset;
 
-                //update grade & information from gradebook
-                if(!is_null($grd) && $gradeitem->update_final_grade($student->id, $grade, null, null, FORMAT_MOODLE, $USER->id)){
-                    $DB->set_field_select('grade_grades', 'information', 'final', "itemid = $gradeitem->id AND userid = $student->id");
+                //update gradebook grade if provisional grade is not null
+                if(!is_null($grd)){
+                    $gradeitem->update_final_grade($student->id, $grade, null, null, FORMAT_MOODLE, $USER->id);
                 }
+                // Update gradebook information field to final
+                $DB->set_field_select('grade_grades', 'information', 'final', "itemid = $gradeitem->id AND userid = $student->id");
+
             } 
         }
         local_gugcat::notify_success('successfinalrelease');
@@ -260,8 +262,9 @@ class grade_aggregation{
         $columns = ['candidate_number', 'student_number'];
         $is_blind_marking = local_gugcat::is_blind_marking();
         $is_blind_marking ? null : array_push($columns, ...array('surname', 'forename'));
-        $students = get_enrolled_users(context_course::instance($course->id), 'local/gugcat:gradable');
-        $modules = local_gugcat::get_activities($course->id, true);
+        $modules = local_gugcat::get_activities($course->id);
+        $groupingids = array_column($modules, 'groupingid');
+        $students = self::get_students_per_groups($groupingids, $course->id);
         //Process the activity names
         $activities = array();
         foreach($modules as $cm) {
@@ -431,5 +434,33 @@ class grade_aggregation{
             return $first->timemodified < $second->timemodified;
         });
         return $rows;
+    }
+
+    /**
+     * Returns list of students based on grouping ids from activities
+     * 
+     * @param array $groupingids ids from activities
+     * @param int $courseid selected course id
+     * @return array
+     */
+    public static function get_students_per_groups($groupingids, $courseid) {
+        $coursecontext = context_course::instance($courseid);
+        $students = Array();
+        if(array_sum($groupingids) != 0){
+            $groups = array();
+            foreach ($groupingids as $groupingid) {
+                if($groupingid != 0){
+                    $groups += groups_get_all_groups($courseid, 0, $groupingid);
+                }
+            }
+            if(!empty($groups)){
+                foreach ($groups as $group) {
+                    $students += get_enrolled_users($coursecontext, 'local/gugcat:gradable', $group->id);
+                }
+            }
+        }else{
+            $students = get_enrolled_users($coursecontext, 'local/gugcat:gradable');
+        }
+        return $students;
     }
 }
