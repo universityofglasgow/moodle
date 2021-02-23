@@ -116,7 +116,7 @@ class grade_aggregation{
                     : (isset($pg) && !is_null($pg->rawgrade) ? $pg->rawgrade 
                     : ((isset($gb) && !is_null($gb->grade)) ? $gb->grade : null));                
                     $scaleid = is_null($item->scaleid) && local_gugcat::is_grademax22($item->gradeitem->gradetype, $item->gradeitem->grademax) ? null : $item->scaleid;
-                    $invalid22scale = is_null($scaleid) && local_gugcat::is_grademax22($item->gradeitem->gradetype, $item->gradeitem->grademax);
+                    $invalid22scale = is_null($scaleid) && local_gugcat::is_grademax22($item->gradeitem->gradetype, $item->gradeitem->grademax)  && !isset($pg);
                     local_gugcat::set_grade_scale($scaleid);
                     $grade = is_null($grd) ? ( $grditemresit ? get_string('nogradeweight', 'local_gugcat') : get_string('nograderecorded', 'local_gugcat')) 
                     : ($invalid22scale ? local_gugcat::convert_grade(intval($grd) + 1) : local_gugcat::convert_grade($grd));
