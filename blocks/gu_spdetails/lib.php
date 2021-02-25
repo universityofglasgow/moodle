@@ -595,10 +595,10 @@ class assessments_details {
      public static function return_assessmenttype($gradecategoryname) {
           $type = strtolower($gradecategoryname);
 
-          if($type === 'formative' || strpos($type, 'formative')) {
-               $assessmenttype = get_string('formative', 'block_gu_spdetails');
-          } else if($type === 'summative' || strpos($type, 'summative')) {
+          if(strpos($type, 'summative') !==  false) {
                $assessmenttype = get_string('summative', 'block_gu_spdetails');
+          }else if(strpos($type, 'formative') !==  false) {
+               $assessmenttype = get_string('formative', 'block_gu_spdetails');
           } else {
                $assessmenttype = get_string('emptyvalue', 'block_gu_spdetails');
           }
