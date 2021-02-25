@@ -258,7 +258,11 @@ class local_gugcat {
      * @param string $itemname 
      */
     public static function add_grade_item($courseid, $itemname, $mod, $students_ = null){
-        $students = is_null($students_) ? self::$STUDENTS : $students_;
+        // Get all students ids if students_ param is null
+        $students = is_null($students_) 
+        ? get_enrolled_users(context_course ::instance($courseid), 'local/gugcat:gradable', 0, 'u.id') 
+        : $students_;
+
         $params = [
             'courseid' => $courseid,
             'itemtype' => 'manual',
