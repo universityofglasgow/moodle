@@ -19,7 +19,7 @@ if ($ADMIN->fulltree) {
     $name = 'theme_hillhead/preset';                                                                                                   
     $title = get_string('preset', 'theme_hillhead');                                                                                   
     $description = get_string('preset_desc', 'theme_hillhead');                                                                        
-    $default = 'default.scss';                                                                                                      
+    $default = 'blue.scss';                                                                                                      
  
     // We list files in our own file area to add to the drop down. We will provide our own function to                              
     // load all the presets from the correct paths.                                                                                 
