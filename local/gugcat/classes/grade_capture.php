@@ -387,4 +387,88 @@ class grade_capture{
         return !is_null($admingrade) ? $admingrade : ((isset($gbgrade)) ? ($gbgrade + $gradescaleoffset) : null);
     }
 
+    /**
+     * Checks and prepares grade data for updating grade items in gcat.
+     *
+     * @param object $csvimport csv import reader object for iterating over the imported CSV file.
+     * @param mixed $activity selected course module to grade
+     * @param string $itemname selected grade version for the new grades
+     */
+    public static function prepare_import_data($csvdata, $activity, $itemname){
+        $csvdata->init();
+        global $COURSE;
+        $gradebookerrors = array();
+        $newgrades = array();
+        $status = true;
+        $enrolled = array();
+        $grouped = array();
+        // Get list of all student idnumbers enrolled on current course
+        $enrolled = grade_aggregation::get_students_per_groups(array(0), $COURSE->id, 'u.id, u.idnumber');
+        // Get list of students in group
+        if($activity->groupingid && $activity->groupingid > 0){
+            $grouped = grade_aggregation::get_students_per_groups(array($activity->groupingid), $COURSE->id, 'u.id, u.idnumber');
+        }
+        while ($line = $csvdata->next()) {
+            if (count($line) <= 1) {
+                // There is no data on this line, move on.
+                continue;
+            }
+
+            // Each line is a student record. First element is ID number, second is grade.
+            $idnumber = $line[0];
+            $grade = $line[1];
+            $errorobj = new stdClass();
+            $errorobj->id = $idnumber;
+            $errorobj->value = $grade;
+
+            // Check if student is not enrolled in current course
+            if(!in_array($idnumber, array_column($enrolled, 'idnumber'))){
+                $gradebookerrors[] = get_string('uploaderrornotfound', 'local_gugcat', $errorobj);
+                $status = false;
+                break;
+            }
+
+            // Check if student is not in the current group
+            if(count($grouped) > 0 && !in_array($idnumber, array_column($grouped, 'idnumber'))){
+                $gradebookerrors[] = get_string('uploaderrornotmember', 'local_gugcat', $errorobj);
+                $status = false;
+                break;
+            }
+
+            // Check if grade not alphanumeric
+            if(!preg_match('/^(?=.*\d)(?=.*[a-zA-Z]).{2,2}$/', $grade)){
+                $gradebookerrors[] = get_string('uploaderrorgradeformat', 'local_gugcat', $errorobj);
+                $status = false;
+                break;
+            }
+
+            // Check if grade is not in the scale               
+            if(isset($grade) && !in_array($grade, local_gugcat::$GRADES)){
+                $gradebookerrors[] = get_string('uploaderrorgradescale', 'local_gugcat', $errorobj);
+                $status = false;
+                break;
+            }
+
+            if($status){
+                $userids = array_column($enrolled, 'id', 'idnumber');
+                $newgrades[$userids[$idnumber]] = $grade;
+            }
+        }
+        if($status && count($newgrades) > 0){
+            $gradeitemid = local_gugcat::add_grade_item($COURSE->id, $itemname, $activity);
+            foreach ($newgrades as $id=>$item) {
+                if($grade = array_search($item, local_gugcat::$GRADES)){
+                    $gradescaleoffset = local_gugcat::is_grademax22($activity->gradeitem->gradetype, $activity->gradeitem->grademax) ? 1 : 0;
+                    $grdobj = new stdClass();
+                    $grdobj->grade = $grade;
+                    $grdobj->feedback = null;
+                    $grade = self::check_gb_grade($grdobj, $gradescaleoffset);
+                    $status = local_gugcat::add_update_grades($id, $gradeitemid, $grade);
+                }
+            }
+        }
+        return array($status, $gradebookerrors);
+        
+    }
+
 }

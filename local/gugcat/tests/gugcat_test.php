@@ -311,10 +311,11 @@ class local_gugcat_testcase extends advanced_testcase {
 
 
     public static function create_custom_field_field($customfieldcategoryid){
+        $configdata = '{"required":"0","uniquevalues":"0","checkbydefault":"0","locked":"0","visibility":"0"}';
         $category = \core_customfield\category_controller::create($customfieldcategoryid);
         $field = \core_customfield\field_controller::create(0, (object)[
             'type' => 'checkbox',
-            'configdata' => get_string('configdata', 'local_gugcat')
+            'configdata' => $configdata
         ], $category);
 
         $handler = $field->get_handler();

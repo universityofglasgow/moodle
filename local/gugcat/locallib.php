@@ -690,10 +690,11 @@ class local_gugcat {
             $customfieldcategory->timemodified = time();
             $customfieldcategoryid = $DB->insert_record('customfield_category', $customfieldcategory, $returnid=true, $bulk=false);
             if(!is_null($customfieldcategoryid)){
+                $configdata = '{"required":"0","uniquevalues":"0","checkbydefault":"0","locked":"0","visibility":"0"}';
                 $category = \core_customfield\category_controller::create($customfieldcategoryid);
                 $field = \core_customfield\field_controller::create(0, (object)[
                     'type' => 'checkbox',
-                    'configdata' => get_string('configdata', 'local_gugcat')
+                    'configdata' => $configdata
                 ], $category);
 
                 $handler = $field->get_handler();

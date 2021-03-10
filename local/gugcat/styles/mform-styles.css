@@ -108,3 +108,8 @@ textarea#id_notes.form-control {
     background-color: #0f6fc5;
     border-color: #0f6fc5;
 }
+
+[data-groupname="buttonarr"] > .form-inline {
+    justify-content: flex-end;
+    padding-right: 2em;
+}
