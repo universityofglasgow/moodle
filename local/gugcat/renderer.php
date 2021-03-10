@@ -42,11 +42,15 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $page = optional_param('page', 0, PARAM_INT);
         $ammendgradeparams = "?id=$courseid&activityid=$modid&page=$page";
 
+        // Upload page url
+        $uploadurl = new moodle_url('/local/gugcat/import/index.php').$ammendgradeparams;
+
         //url action form
         $actionurl = "index.php?id=$courseid&activityid=$modid&page=$page";
         //add category id in the url if not null
         if(!is_null($categoryid)){
             $actionurl .= '&categoryid=' . $categoryid;
+            $$uploadurl .= '&categoryid=' . $categoryid;
             $ammendgradeparams .= '&categoryid=' . $categoryid;
         }
 
@@ -124,12 +128,16 @@ class local_gugcat_renderer extends plugin_renderer_base {
         }
         $tabheader = !empty($activities) ? (object)[
             'addallgrdstr' =>get_string('addmultigrades', 'local_gugcat'),
+            'uploadaddgrdstr' =>get_string('uploadaddgrd', 'local_gugcat'),
+            'adjustgrdstr' =>get_string('adjustgrade', 'local_gugcat'),
+            'adjustassconvstr' =>get_string('adjustassconv', 'local_gugcat'),
             'saveallbtnstr' =>get_string('saveallnewgrade', 'local_gugcat'),
             'grddiscrepancystr' => get_string('gradediscrepancy', 'local_gugcat'),
             'importgradesstr' => get_string('importgrades', 'local_gugcat'),
             'releaseprvgrdstr' =>get_string('releaseprvgrades', 'local_gugcat'),
             'displayactivities' => true,
             'activities' => $activities,
+            'uploadurl' => $uploadurl
         ] : null;
         //start displaying the table
         $html = $this->header();
@@ -370,13 +378,65 @@ class local_gugcat_renderer extends plugin_renderer_base {
     }
 
     /**
+     * Render display of adjust weights and override grade form page
+     * 
+     */
+    public function display_upload_import_form() {
+        $setting = optional_param('setting', 0, PARAM_INT);
+        $title = get_string(($setting != 0 ? 'setupimportoptions' : 'setupimportupload'), 'local_gugcat');
+        $html = $this->header();
+        $html .= html_writer::start_tag('div', array('class' => 'form-container'));
+        $html .= html_writer::tag('h5', $title, array('class' => 'title'));
+        $html .= html_writer::end_tag('div');
+
+        return $html;
+    }
+
+    /**
+     * Render display of adjust weights and override grade form page
+     * 
+     */
+    public function display_import_preview($firstrow, $data) {
+        $title = get_string('setupimportoptions' , 'local_gugcat');
+        $html = $this->header();
+        $html .= html_writer::start_tag('div', array('class' => 'form-container'));
+        $html .= html_writer::tag('h5', $title, array('class' => 'title'));
+        $html .= html_writer::tag('label', 'Data Preview:', array('style' => "margin-left:25px;"));
+        $htmlcolumns = null;
+        $htmlcolumns .= html_writer::tag('th', get_string('studentno', 'local_gugcat'), array('class' => 'sortable'));
+        $htmlcolumns .= html_writer::tag('th', get_string('grade'), array('class' => 'sortable'));
+        
+        $htmlrows = null;
+        if(count($firstrow) != 0){
+            $htmlrows .= html_writer::start_tag('tr');
+            foreach($firstrow as $row){
+                $htmlrows .= html_writer::tag('td', $row);
+            }
+            $htmlrows .= html_writer::end_tag('tr');
+        }
+        foreach($data as $row){
+            $htmlrows .= html_writer::start_tag('tr');
+            foreach($row as $rowdata){
+                $htmlrows .= html_writer::tag('td', $rowdata);
+            }            
+            $htmlrows .= html_writer::end_tag('tr');
+        }
+
+        $html .= $this->display_table($htmlrows, $htmlcolumns, true, false, array('style' => "margin-left:30px;padding-left:10px"));
+        $html .= html_writer::empty_tag('br');
+        $html .= html_writer::end_tag('div');
+
+        return $html;
+    }
+
+    /**
      * Render a reusable custom UI table element
      * @param array $rows 
      * @param array $columns 
      * @param boolean $history Shows/hides some columns when true
      * @param boolean $aggregation Shows/hides some columns when true
      */
-    private function display_table($rows, $columns, $history = false, $aggregation = false) {
+    private function display_table($rows, $columns, $simple = false, $aggregation = false, $attributes = []) {
         $is_blind_marking = local_gugcat::is_blind_marking($this->page->cm);
         $searchicon = html_writer::tag('i', null, array('class' => 'fa fa-search', 'role' =>'button', 'tabindex' =>'0'));
         // Check if there's existing filters
@@ -391,10 +451,10 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $sblastname = html_writer::empty_tag('input', $sbattr+array('name' => 'filters[lastname]', 'value' => $filters['lastname'],
          'class' => 'input-search '.(!empty($filters['lastname']) ? 'visible' : '')));
         
-        $html = html_writer::start_tag('table', array('id'=>'gcat-table', 'class' => 'table'));
+        $html = html_writer::start_tag('table', array_merge(array('id'=>'gcat-table', 'class' => 'table'), $attributes));
         $html .= html_writer::start_tag('thead');
         $html .= html_writer::start_tag('tr');
-        if(!$history){
+        if(!$simple){
             if($aggregation){
                 $html .= html_writer::tag('th', get_string('candidateno', 'local_gugcat'), array('class' => 'sortable'));
             }

@@ -33,8 +33,13 @@
         </select>
     </div>
     {{/displayactivities}}
-    {{#addallgrdstr}}<button class="btn btn-default btn-blue" id="btn-saveadd">{{addallgrdstr}}</button>{{/addallgrdstr}}
-    {{#importgradesstr}}<button class="btn btn-default btn-blue" id="btn-import">{{importgradesstr}}</button>{{/importgradesstr}}
+    {{#adjustgrdstr}}<button class="btn btn-default btn-blue" data-toggle="dropdown">{{adjustgrdstr}}<i class="fa fa-caret-down"></i></button>{{/adjustgrdstr}}
+    <div class="dropdown-menu">
+        {{#importgradesstr}}<a class="dropdown-item" href="#" id="btn-import">{{importgradesstr}}</a>{{/importgradesstr}}
+        {{#uploadaddgrdstr}}<a class="dropdown-item" href="{{uploadurl}}">{{uploadaddgrdstr}}</a>{{/uploadaddgrdstr}}
+        {{#addallgrdstr}}<a class="dropdown-item" href="#" id="btn-saveadd">{{addallgrdstr}}</a>{{/addallgrdstr}}
+        {{#adjustassconvstr}}<a class="dropdown-item" href="#">{{adjustassconvstr}}</a>{{/adjustassconvstr}}
+    </div>
     {{#grddiscrepancystr}}<button class="btn grade-discrepancy" id="btn-grddisc">{{grddiscrepancystr}}</button>{{/grddiscrepancystr}}
     {{#downloadcsvstr}}<button class="btn btn-default btn-download" id="btn-download">{{downloadcsvstr}}</button>{{/downloadcsvstr}}
     {{#releasefinalstr}}<button class="btn btn-default btn-download" id="btn-finalrelease">{{releasefinalstr}}</button>{{/releasefinalstr}}

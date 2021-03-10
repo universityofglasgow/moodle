@@ -441,9 +441,10 @@ class grade_aggregation{
      * 
      * @param array $groupingids ids from activities
      * @param int $courseid selected course id
+     * @param string $userfields requested user record fields
      * @return array
      */
-    public static function get_students_per_groups($groupingids, $courseid) {
+    public static function get_students_per_groups($groupingids, $courseid, $userfields = 'u.*') {
         $coursecontext = context_course::instance($courseid);
         $students = Array();
         if(array_sum($groupingids) != 0){
@@ -455,11 +456,11 @@ class grade_aggregation{
             }
             if(!empty($groups)){
                 foreach ($groups as $group) {
-                    $students += get_enrolled_users($coursecontext, 'local/gugcat:gradable', $group->id);
+                    $students += get_enrolled_users($coursecontext, 'local/gugcat:gradable', $group->id, $userfields);
                 }
             }
         }else{
-            $students = get_enrolled_users($coursecontext, 'local/gugcat:gradable');
+            $students = get_enrolled_users($coursecontext, 'local/gugcat:gradable', 0, $userfields);
         }
         return $students;
     }

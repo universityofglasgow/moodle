@@ -60,6 +60,10 @@ th .fa-search:hover{
     margin-left: 5px;
 }
 
+button .fa-caret-down{
+    margin-left: 5px;
+}
+
 .zero-resit-weight{
     color: #b30c00;
 }
