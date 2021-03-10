@@ -50,7 +50,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
         //add category id in the url if not null
         if(!is_null($categoryid)){
             $actionurl .= '&categoryid=' . $categoryid;
-            $$uploadurl .= '&categoryid=' . $categoryid;
+            $uploadurl .= '&categoryid=' . $categoryid;
             $ammendgradeparams .= '&categoryid=' . $categoryid;
         }
 
