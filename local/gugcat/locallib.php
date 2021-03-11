@@ -489,7 +489,7 @@ class local_gugcat {
         $categoryid = optional_param('categoryid', null, PARAM_INT);
         $grd_ctgs = array();
         foreach($categories as $key=>$category) {
-            $uncategorised = $category->is_course_category();
+            $uncategorised = ($key == $course_category->id) ? true : false;
             $cat = new stdClass();
             $cat->key = $uncategorised ? 'null' : $key;
             $cat->value = $uncategorised ? get_string('uncategorised', 'grades') : $category->fullname;
