@@ -6,6 +6,7 @@
 
 .table thead th, .table td{
     vertical-align: middle;
+    position: relative;
 }
 
 .table td{
@@ -68,4 +69,26 @@ button.tablink, button.tablink:focus{
 /* Sort style */
 .sortable{
     cursor: pointer;
+}
+
+.colgroup {
+    border: 2px dashed #d7d9f2;
+}
+
+.colexp-icon{
+    background-color: #e6eaee;
+    border: none;
+    color: #005c8a;
+    padding: 8px 10px;
+    font-size: 12px;
+    right: -15px;
+    position: absolute;
+    top: 20%;
+    z-index: 1;
+    border-radius: 50px;
+}
+
+.colexp-icon:hover{
+    background-color: #cdd4db;
+    color: #01527a;
 }
