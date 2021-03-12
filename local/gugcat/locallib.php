@@ -647,6 +647,7 @@ class local_gugcat {
                        gi.gradetype != ? AND
                        gi.iteminstance = cm.instance AND
                        cm.instance = m.id AND
+                       cm.deletioninprogress = 0 AND
                        md.name = ? AND
                        md.id = cm.module".
                        (empty($categoryids) ? null : " AND ($categorysql)"); 
@@ -816,5 +817,39 @@ class local_gugcat {
         }else{
             return $currentfilters;
         }
+    }
+
+    /**
+     * Checks if activity is a child of the current selected category
+     * @param mixed $activity Course module with gradeitem property
+     * @return boolean
+     */
+    public static function is_child_activity($activity){
+        $categoryid = optional_param('categoryid', null, PARAM_INT);
+        if(!is_null($categoryid) && isset($activity->gradeitem->parent_category)){
+            $parent = $activity->gradeitem->parent_category->parent;
+            return $parent == $categoryid;
+        }else{
+            return false;
+        }
+    }
+
+    /**
+     * Retrieve grade items of the grade category
+     * @param int $courseid 
+     * @param grade_category $gradecategory
+     * @return mixed $activity 
+     */
+    public static function get_category_gradeitem($courseid, $gradecategory){
+        $activity = new stdClass();
+        $activity->id = $gradecategory->id;
+        $activity->course = $courseid;
+        $activity->modname = 'category';
+        $activity->instance = $gradecategory->id;
+        $a = new stdClass();
+        $a->category = $gradecategory->get_name();
+        $activity->name =get_string('categorytotalfull', 'grades', $a);
+        $activity->gradeitem = grade_item::fetch(array('courseid' => $courseid, 'itemtype' => 'category', 'iteminstance' => $gradecategory->id));
+        return $activity;
     }
 }

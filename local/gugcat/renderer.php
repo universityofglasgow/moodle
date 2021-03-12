@@ -219,8 +219,8 @@ class local_gugcat_renderer extends plugin_renderer_base {
             $weightcoef2 = $act->gradeitem->aggregationcoef2; //Aggregation coeficient used for weighted averages only
             $weight = ((float)$weightcoef1 > 0) ? (float)$weightcoef1 : (float)$weightcoef2;
             $toggleicon = html_writer::tag('button', html_writer::empty_tag('i', array('class' => 'fa fa-plus')), array('type' => 'button', 'class' => 'btn colexp-icon'));
-            $header = $act->name.'<br/>'.($weight * 100).'%'.$toggleicon;
-            $htmlcolumns .= html_writer::tag('th', $header, array('scope' => 'col', 'class' => 'sortable sub-cat-header'));
+            $header = $act->name.'<br/>'.($weight * 100).'%'.($act->modname == 'category' ? $toggleicon : null);
+            $htmlcolumns .= html_writer::tag('th', $header, array('class' => 'sortable sub-cat-header'));
         }
         $htmlcolumns .= html_writer::tag('th', get_string('requiresresit', 'local_gugcat'), array('class' => 'sortable'));
         $htmlcolumns .= html_writer::tag('th', get_string('percentcomplete', 'local_gugcat'), array('class' => 'sortable'));
