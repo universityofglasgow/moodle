@@ -84,20 +84,29 @@ class local_gugcat {
      * Returns all activities/modules for specific course
      *
      * @param int $courseid
-     * @param boolean $all - If true, retrieves all modules regardless of category
-     * @param boolean $includegradeitem - If true, retrieves grade item of the module
+     * @param mixed $categoryid_ids Either a single category id, an array of category IDs or null. If category ID or IDs are not supplied, if gets category id from url or course grade category
      */
-    public static function get_activities($courseid, $all = false, $includegradeitem = true){
+    public static function get_activities($courseid, $categoryid_ids = null){
         $activityid = optional_param('activityid', null, PARAM_INT);
-        $categoryid = $all ? null : optional_param('categoryid', null, PARAM_INT);
-        if(is_null($categoryid) && $gc = grade_category::fetch_course_category($courseid)){
-            $categoryid = $gc->id;
+        $cids = array();
+        if (empty($categoryid_ids)) {
+            $categoryid = optional_param('categoryid', null, PARAM_INT);
+            if((is_null($categoryid) || $categoryid == 0) 
+            && $gc = grade_category::fetch_course_category($courseid)){
+                $categoryid = $gc->id;
+            }
+            $cids = array($categoryid);
+        } else if (is_array($categoryid_ids)) {
+            $cids = $categoryid_ids;
+        } else {
+            $cids = array($categoryid_ids);
         }
-        $mods = self::grade_get_gradable_activities($courseid, $categoryid);
+        
+        $mods = self::grade_get_gradable_activities($courseid, $cids);
     
         //get whole grading forums and workshop assessment | itemnumber = 1
-        $wholegradingforums = self::grade_get_gradable_activities($courseid, $categoryid, 'forum', 1);
-        $assessmentworkshops = self::grade_get_gradable_activities($courseid, $categoryid, 'workshop', 1);
+        $wholegradingforums = self::grade_get_gradable_activities($courseid, $cids, 'forum', 1);
+        $assessmentworkshops = self::grade_get_gradable_activities($courseid, $cids, 'workshop', 1);
 
         $activities = array();
         if(count($mods) > 0 || count($wholegradingforums) > 0 || count($assessmentworkshops) > 0){
@@ -105,24 +114,20 @@ class local_gugcat {
             foreach($mods as $cm) {
                 $activities[$cm->gradeitemid]= $cm;
                 $activities[$cm->gradeitemid]->selected = (strval($activityid) === $cm->gradeitemid)? 'selected' : '';
-                if($includegradeitem){
-                    $gi= new grade_item(array('id'=>$cm->gradeitemid), true);
-                    $gi->load_parent_category();
-                    $activities[$cm->gradeitemid]->gradeitem = $gi;
-                }
+                $gi= new grade_item(array('id'=>$cm->gradeitemid), true);
+                $gi->load_parent_category();
+                $activities[$cm->gradeitemid]->gradeitem = $gi;
             }
 
-            //remove gradeitems which do not fall within 22-point scale.
-            if($includegradeitem){
-                foreach($activities as $key=>$activity){    
-                    $scaleid = $activity->gradeitem->scaleid;
-                    $gradetype = $activity->gradeitem->gradetype;
-                    $grademax = $activity->gradeitem->grademax;
+            // Remove gradeitems which do not fall within 22-point scale.
+            foreach($activities as $key=>$activity){    
+                $scaleid = $activity->gradeitem->scaleid;
+                $gradetype = $activity->gradeitem->gradetype;
+                $grademax = $activity->gradeitem->grademax;
 
-                    $valid_22point_scale = is_null($scaleid) ? local_gugcat::is_grademax22($gradetype, $grademax) : local_gugcat::is_scheduleAscale($gradetype, $grademax);
-                    if(!$valid_22point_scale)
-                        unset($activities[$key]);
-                }
+                $valid_22point_scale = is_null($scaleid) ? local_gugcat::is_grademax22($gradetype, $grademax) : local_gugcat::is_scheduleAscale($gradetype, $grademax);
+                if(!$valid_22point_scale)
+                    unset($activities[$key]);
             }
         }
         return $activities;
@@ -609,23 +614,30 @@ class local_gugcat {
     /**
      * Custom grade_get_gradable_activities to accommodate modules with itemnumber 1
      * @param int $courseid 
-     * @param int $categoryid 
+     * @param array $categoryids
      * @param string $modulename 
      * @param int $itemnumber 
      */
-    private static function grade_get_gradable_activities($courseid, $categoryid, $modulename='', $itemnumber = 0) {
+    private static function grade_get_gradable_activities($courseid, $categoryids, $modulename='', $itemnumber = 0) {
         global $DB;
         if (empty($modulename)) {
             $modules = array('assign', 'forum', 'quiz', 'workshop');//modules supported by gcat
             $result = array();
             foreach ($modules as $module) {
-                if ($cms = self::grade_get_gradable_activities($courseid, $categoryid, $module, $itemnumber)) {
+                if ($cms = self::grade_get_gradable_activities($courseid, $categoryids, $module, $itemnumber)) {
                     $result =  $result + $cms;
                 }
             }
             return $result;
         }
-        $params = array($courseid, $modulename, $itemnumber, GRADE_TYPE_NONE, $modulename, $categoryid);
+        $categorysql = '';
+        foreach($categoryids as $id){
+            $categorysql .= "gi.categoryid = $id OR ";
+        }
+        // Remove the last 'OR'
+        $categorysql = chop($categorysql, ' OR ');
+        
+        $params = array($courseid, $modulename, $itemnumber, GRADE_TYPE_NONE, $modulename);
         $sql = "SELECT cm.*, gi.itemname as name, md.name as modname, gi.id as gradeitemid
                   FROM {grade_items} gi, {course_modules} cm, {modules} md, {{$modulename}} m
                  WHERE gi.courseid = ? AND
@@ -636,8 +648,8 @@ class local_gugcat {
                        gi.iteminstance = cm.instance AND
                        cm.instance = m.id AND
                        md.name = ? AND
-                       md.id = cm.module AND
-                       gi.categoryid = ?";
+                       md.id = cm.module".
+                       (empty($categoryids) ? null : " AND ($categorysql)"); 
     
         return $DB->get_records_sql($sql, $params);
     }
