@@ -213,14 +213,31 @@ class local_gugcat_renderer extends plugin_renderer_base {
 
         $htmlcolumns = null;
         $htmlrows = null;
-
+        $colgroups = null;
+        $colspan = 0;
+        $prevcatid = null;
         foreach ($activities as $act) {
             $weightcoef1 = $act->gradeitem->aggregationcoef; //Aggregation coeficient used for weighted averages or extra credit
             $weightcoef2 = $act->gradeitem->aggregationcoef2; //Aggregation coeficient used for weighted averages only
             $weight = ((float)$weightcoef1 > 0) ? (float)$weightcoef1 : (float)$weightcoef2;
-            $toggleicon = html_writer::tag('button', html_writer::empty_tag('i', array('class' => 'fa fa-plus')), array('type' => 'button', 'class' => 'btn colexp-icon'));
+            $toggleicon = html_writer::tag('button', html_writer::empty_tag('i', array('class' => 'i-colexp fa fa-plus')), array('data-categoryid' => $act->id, 'type' => 'button', 'class' => 'btn btn-colexp'));
             $header = $act->name.'<br/>'.($weight * 100).'%'.($act->modname == 'category' ? $toggleicon : null);
-            $htmlcolumns .= html_writer::tag('th', $header, array('class' => 'sortable sub-cat-header'));
+            if ($act->modname == 'category') {
+                if($colspan > 0){
+                    $colgroups .= html_writer::empty_tag('colgroup', array('span' => $colspan, 'class' => "colgroup hidden catid-$prevcatid"));
+                    $colspan = 0;
+                }
+                $prevcatid = $act->id;
+                $colgroups .= html_writer::empty_tag('colgroup', array('span' => 1, 'class' => 'subcat-colgroup'));
+            } else {
+                if (local_gugcat::is_child_activity($act)) {
+                    $colspan++;                    
+                } else {
+                    $colgroups .= html_writer::empty_tag('colgroup');
+                }
+            }
+            $class = local_gugcat::is_child_activity($act) ? array('class' => 'sortable hidden', 'data-category' => $act->gradeitem->categoryid) : array('class' => 'sortable');
+            $htmlcolumns .= html_writer::tag('th', $header, $class);
         }
         $htmlcolumns .= html_writer::tag('th', get_string('requiresresit', 'local_gugcat'), array('class' => 'sortable'));
         $htmlcolumns .= html_writer::tag('th', get_string('percentcomplete', 'local_gugcat'), array('class' => 'sortable'));
@@ -236,9 +253,10 @@ class local_gugcat_renderer extends plugin_renderer_base {
                 $htmlrows .= html_writer::tag('td', $row->forename, array('class' => 'blind-marking'));
             }
             foreach((array) $row->grades as $grade) {
+                $datacategory = $grade->category ? "data-category=$grade->category class='hidden'" : null;
                 $ammendgradeparams = "?id=$courseid&activityid=$grade->activityid&page=$page" . $historyeditcategory;
                 $courseformhistoryparams = "?id=$courseid&cnum=$row->cnum&page=$page" . $gradeformhistorycategory;
-                $htmlrows .= '<td>'.$grade->grade.((strpos($grade->grade, 'No grade') !== false) ? null : $this->context_actions($row->studentno, null, false, $ammendgradeparams, true)).'</td>';
+                $htmlrows .= "<td $datacategory>".$grade->grade.((strpos($grade->grade, 'No grade') !== false) ? null : $this->context_actions($row->studentno, null, false, $ammendgradeparams, true)).'</td>';
             }
             //Require resit row
             $requireresiturl = $actionurl."&rowstudentno=$row->studentno&resit=1";
@@ -257,7 +275,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
             'releasefinalstr' =>$hide_release ? null : get_string('releasefinalassessment', 'local_gugcat'),
         ]);
         $html .= html_writer::start_tag('form', array('id' => 'requireresitform', 'method' => 'post', 'action' => $actionurl));
-        $html .= $this->display_table($htmlrows, $htmlcolumns, false, true);
+        $html .= $this->display_table($htmlrows, $htmlcolumns, false, true, [], $colgroups);
         $html .= html_writer::empty_tag('button', array('id' => 'search-submit', 'name' => 'search', 'type' => 'submit'));
         $html .= html_writer::empty_tag('input', array('id'=>'resitstudentno', 'name' => 'rowstudentno', 'type' => 'hidden'));
         $html .= html_writer::empty_tag('button', array('id'=>'downloadcsv-submit', 'name'=> 'downloadcsv', 'type'=>'submit'));
@@ -438,7 +456,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
      * @param boolean $history Shows/hides some columns when true
      * @param boolean $aggregation Shows/hides some columns when true
      */
-    private function display_table($rows, $columns, $simple = false, $aggregation = false, $attributes = [], $col = null) {
+    private function display_table($rows, $columns, $simple = false, $aggregation = false, $attributes = [], $colgroup = null) {
         $is_blind_marking = local_gugcat::is_blind_marking($this->page->cm);
         $searchicon = html_writer::tag('i', null, array('class' => 'fa fa-search', 'role' =>'button', 'tabindex' =>'0'));
         // Check if there's existing filters
@@ -453,11 +471,10 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $sblastname = html_writer::empty_tag('input', $sbattr+array('name' => 'filters[lastname]', 'value' => $filters['lastname'],
          'class' => 'input-search '.(!empty($filters['lastname']) ? 'visible' : '')));
         
-        $col = is_null($col) ? '<col span="1">' : $col;
         $html = html_writer::start_tag('table', array_merge(array('id'=>'gcat-table', 'class' => 'table'), $attributes));
         if($aggregation){
-            $html .= html_writer::empty_tag('colgroup', array('span' => '4'));
-            $html .= html_writer::tag('colgroup', $col, array('class' => 'colgroup'));
+            $html .= html_writer::empty_tag('colgroup', array('span' => $is_blind_marking ? 2 : 4));
+            $html .= $colgroup;
         }
         $html .= html_writer::start_tag('thead');
         $html .= html_writer::start_tag('tr');

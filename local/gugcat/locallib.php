@@ -822,13 +822,13 @@ class local_gugcat {
     /**
      * Checks if activity is a child of the current selected category
      * @param mixed $activity Course module with gradeitem property
-     * @return boolean
+     * @return mixed category id or false
      */
     public static function is_child_activity($activity){
         $categoryid = optional_param('categoryid', null, PARAM_INT);
         if(!is_null($categoryid) && isset($activity->gradeitem->parent_category)){
             $parent = $activity->gradeitem->parent_category->parent;
-            return $parent == $categoryid;
+            return ($parent == $categoryid) ? $activity->gradeitem->categoryid: false ;
         }else{
             return false;
         }
@@ -846,6 +846,7 @@ class local_gugcat {
         $activity->course = $courseid;
         $activity->modname = 'category';
         $activity->instance = $gradecategory->id;
+        $activity->parent = $gradecategory->parent;
         $a = new stdClass();
         $a->category = $gradecategory->get_name();
         $activity->name =get_string('categorytotalfull', 'grades', $a);

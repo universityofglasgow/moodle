@@ -222,7 +222,7 @@ td a:hover, .dropdown-item a:hover {
 #finalrelease-submit, #downloadcsv-submit,
 #multiadd-submit, #search-submit,
 #coursegradeform-submit, .hide-show-grade, 
-.hide-names {
+.hide-names, .hidden {
     display: none;
 }
 
