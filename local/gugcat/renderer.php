@@ -221,18 +221,18 @@ class local_gugcat_renderer extends plugin_renderer_base {
             $weightcoef2 = $act->gradeitem->aggregationcoef2; //Aggregation coeficient used for weighted averages only
             $weight = ((float)$weightcoef1 > 0) ? (float)$weightcoef1 : (float)$weightcoef2;
             // The collapse-expand icon in the table header
-            $toggleicon = html_writer::tag('button', html_writer::empty_tag('i', array('class' => 'i-colexp fa fa-plus')), array('data-categoryid' => $act->id, 'type' => 'button', 'class' => 'btn btn-colexp'));
+            $toggleicon = html_writer::tag('button', html_writer::empty_tag('i', array('class' => 'i-colexp fa fa-plus', 'style'=>'pointer-events:none')), array('data-categoryid' => $act->id, 'type' => 'button', 'class' => 'btn btn-colexp'));
             $header = $act->name.'<br/>'.($weight * 100).'%'.($act->modname == 'category' ? $toggleicon : null);
             if ($act->modname == 'category') {
                 if($colspan > 0){
                     $colgroups .= html_writer::empty_tag('colgroup', array('span' => $colspan, 'class' => "colgroup hidden catid-$prevcatid"));
                     $colspan = 0;
                 }
-                $prevcatid = $act->id;
                 $colgroups .= html_writer::empty_tag('colgroup', array('span' => 1, 'class' => 'subcat-colgroup'));
             } else {
                 if (local_gugcat::is_child_activity($act)) {
-                    $colspan++;                    
+                    $colspan++;    
+                    $prevcatid = $act->gradeitem->categoryid;                
                 } else {
                     $colgroups .= html_writer::empty_tag('colgroup');
                 }

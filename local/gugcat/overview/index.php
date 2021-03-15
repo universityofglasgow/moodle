@@ -62,14 +62,14 @@ if(!is_null($categoryid)){
     // Retrieve activities based from categoryids
     $raw_activities = local_gugcat::get_activities($courseid, $cids);
 
-    $activities = array();
+    $mainactivities = array();
     $childactivities = array();
     // Separate the main activities and child activites into two arrays
-    array_map(function($value) use (&$activities, &$childactivities) {
+    array_map(function($value) use (&$mainactivities, &$childactivities) {
         if (local_gugcat::is_child_activity($value)) {
             $childactivities[] = $value;
         } else {
-            $activities[] = $value;
+            $mainactivities[] = $value;
         }
     }, $raw_activities);
   
@@ -80,9 +80,11 @@ if(!is_null($categoryid)){
             $gradecatgi[] = local_gugcat::get_category_gradeitem($courseid, $gc);
         }
     }
+    // The final array to be pass to get_rows
+    $activities = array();
     // Combine the main activities and grade categories grade items
-    $activities = array_merge($activities, $gradecatgi);
-    foreach ($activities as $index=>$act) {
+    $mainactivities = array_merge($mainactivities, $gradecatgi);
+    foreach ($mainactivities as $index=>$act) {
         // Check if activity = category, insert the child activities next to it.
         if($act->modname == 'category'){
             // Filter $childactivities to the children of the iterated category
@@ -92,11 +94,12 @@ if(!is_null($categoryid)){
                 }
             );
             if(!empty($children)){
-                // Insert it to $activities next to its category grade item
-                array_splice($activities, $index+1, 0, $children);
+                // Insert $children first before its category grade item
+                array_push($activities, ...$children);
             }
         }
-    }   
+        $activities[] = $act;
+    }    
 }else{
     $activities = local_gugcat::get_activities($courseid);
 }
