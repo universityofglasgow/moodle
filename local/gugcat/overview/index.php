@@ -51,8 +51,55 @@ $PAGE->set_heading($course->fullname);
 require_capability('local/gugcat:view', $coursecontext);
 
 //Retrieve activities
-$activities = local_gugcat::get_activities($courseid);
+if(!is_null($categoryid)){
+    // Retrieve sub categories
+    $gcs = grade_category::fetch_all(array('courseid' => $courseid, 'parent' => $categoryid));
+    $cids = array($categoryid);
 
+    // Combine retrieved sub categories and the main course category (ids)
+    !empty($gcs) ? array_push($cids, ...array_column($gcs, 'id')) : null;
+    
+    // Retrieve activities based from categoryids
+    $raw_activities = local_gugcat::get_activities($courseid, $cids);
+
+    $activities = array();
+    $childactivities = array();
+    // Separate the main activities and child activites into two arrays
+    array_map(function($value) use (&$activities, &$childactivities) {
+        if (local_gugcat::is_child_activity($value)) {
+            $childactivities[] = $value;
+        } else {
+            $activities[] = $value;
+        }
+    }, $raw_activities);
+  
+    // Retrieve grade items of the grade categories
+    $gradecatgi = array();
+    if(!empty($gcs)){
+        foreach ($gcs as $gc) {
+            $gradecatgi[] = local_gugcat::get_category_gradeitem($courseid, $gc);
+        }
+    }
+    // Combine the main activities and grade categories grade items
+    $activities = array_merge($activities, $gradecatgi);
+    foreach ($activities as $index=>$act) {
+        // Check if activity = category, insert the child activities next to it.
+        if($act->modname == 'category'){
+            // Filter $childactivities to the children of the iterated category
+            $children = array_filter($childactivities,
+                function($value) use ($act) {
+                    return $value->gradeitem->categoryid == $act->id;
+                }
+            );
+            if(!empty($children)){
+                // Insert it to $activities next to its category grade item
+                array_splice($activities, $index+1, 0, $children);
+            }
+        }
+    }   
+}else{
+    $activities = local_gugcat::get_activities($courseid);
+}
 //Retrieve groupingids from activities
 $groupingids = array_column($activities, 'groupingid');
 

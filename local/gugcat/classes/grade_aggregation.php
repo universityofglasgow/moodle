@@ -127,9 +127,13 @@ class grade_aggregation{
                         $floatweight += ($grade === NON_SUBMISSION_AC) ? 0 : $weight;
                         $sumaggregated += ($grade === NON_SUBMISSION_AC) ?( 0 * (float)$grdvalue) : ((float)$grdvalue * $weight);
                     }
+                    $is_child_activity = ($item->modname != 'category' 
+                        && $category = local_gugcat::is_child_activity($item)) ? $category : false;
+                    
                     $grdobj->activityid = $item->gradeitemid;
                     $grdobj->activityinstance = $item->instance;
                     $grdobj->activity = $item->name;
+                    $grdobj->category = $is_child_activity;
                     $grdobj->grade = $grade;
                     $grdobj->rawgrade = $grdvalue;
                     $grdobj->weight =  round((float)$weight * 100 );

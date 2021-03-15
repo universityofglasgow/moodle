@@ -67,6 +67,31 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
         }
     }
 
+    const toggle_child_activities = () =>{
+        var btns = document.querySelectorAll('.btn-colexp');
+        if(btns.length > 0){
+            btns.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    var selected = e.target.getAttribute('data-categoryid');
+                    var classes = document.querySelectorAll(`[data-category="${selected}"]`);
+                    var icon = btn.querySelector('.i-colexp');
+                    classes.forEach(element => {
+                       element.classList.toggle('hidden');
+                       if(element.classList.contains('hidden')){
+                           icon.classList.add('fa-plus');
+                           icon.classList.remove('fa-minus');
+                       }else{
+                           icon.classList.remove('fa-plus');
+                           icon.classList.add('fa-minus');
+                       }
+                   });
+                    var colgroups = document.querySelectorAll(`.catid-${selected}`);
+                    colgroups.forEach(element => element.classList.toggle('hidden'));
+                });
+            });
+        }
+    }
+
     const toggle_display_assessments = () =>{
         var btn_switch_display = document.getElementById('btn-switch-display');
         var urlParams = new URLSearchParams(window.location.search);
@@ -326,6 +351,7 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                     Storage.set(BLIND_MARKING_KEY, false);
                 }
                 check_blind_marking();
+                toggle_child_activities();
 
                 var input_reason = document.getElementById('input-reason');
                 if(input_reason){
