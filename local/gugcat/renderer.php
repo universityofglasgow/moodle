@@ -213,13 +213,14 @@ class local_gugcat_renderer extends plugin_renderer_base {
 
         $htmlcolumns = null;
         $htmlrows = null;
-        $colgroups = null;
-        $colspan = 0;
+        $colgroups = null; // Use for grouping the columns of child activities (to add border)
+        $colspan = 0; // Number of columns a column group should span
         $prevcatid = null;
         foreach ($activities as $act) {
             $weightcoef1 = $act->gradeitem->aggregationcoef; //Aggregation coeficient used for weighted averages or extra credit
             $weightcoef2 = $act->gradeitem->aggregationcoef2; //Aggregation coeficient used for weighted averages only
             $weight = ((float)$weightcoef1 > 0) ? (float)$weightcoef1 : (float)$weightcoef2;
+            // The collapse-expand icon in the table header
             $toggleicon = html_writer::tag('button', html_writer::empty_tag('i', array('class' => 'i-colexp fa fa-plus')), array('data-categoryid' => $act->id, 'type' => 'button', 'class' => 'btn btn-colexp'));
             $header = $act->name.'<br/>'.($weight * 100).'%'.($act->modname == 'category' ? $toggleicon : null);
             if ($act->modname == 'category') {
@@ -236,6 +237,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
                     $colgroups .= html_writer::empty_tag('colgroup');
                 }
             }
+            // If activity is a child of a sub category, hide by default; Data-category use for identifying which column is to be toggled in JS
             $class = local_gugcat::is_child_activity($act) ? array('class' => 'sortable hidden', 'data-category' => $act->gradeitem->categoryid) : array('class' => 'sortable');
             $htmlcolumns .= html_writer::tag('th', $header, $class);
         }
@@ -453,8 +455,10 @@ class local_gugcat_renderer extends plugin_renderer_base {
      * Render a reusable custom UI table element
      * @param array $rows 
      * @param array $columns 
-     * @param boolean $history Shows/hides some columns when true
+     * @param boolean $simple Shows/hides some columns when true
      * @param boolean $aggregation Shows/hides some columns when true
+     * @param array $attributes Additional attributes to be added in table
+     * @param mixed $colgroup Use for grouping the table columns
      */
     private function display_table($rows, $columns, $simple = false, $aggregation = false, $attributes = [], $colgroup = null) {
         $is_blind_marking = local_gugcat::is_blind_marking($this->page->cm);
