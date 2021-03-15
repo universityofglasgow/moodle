@@ -72,11 +72,14 @@ button.tablink, button.tablink:focus{
 }
 
 .colgroup {
-    border: 3px dashed #c2c4da;
+    border: 3px dashed #d9dada;
+    border-top-color: #82b0bf;
+    border-bottom-color: #82b0bf;
+    border-left-color: #82b0bf;
 }
 
 .subcat-colgroup {
-    border: 4px dashed #82b0bf;
+    border: 3px dashed #82b0bf;
 }
 
 .btn-colexp{
@@ -85,7 +88,7 @@ button.tablink, button.tablink:focus{
     color: #005c8a;
     padding: 6px 9px;
     font-size: 12px;
-    right: -15px;
+    left: -15px;
     position: absolute;
     top: 20%;
     z-index: 5;
