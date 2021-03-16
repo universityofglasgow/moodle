@@ -31,15 +31,20 @@ class local_gugcat_renderer extends plugin_renderer_base {
      * Render display of grade capture page
      * @param mixed $selectedmodule 
      * @param array $activities_ 
+     * @param array $childactivities_
      * @param array $rows 
      * @param array $columns 
      */
-    public function display_grade_capture($selectedmodule, $activities_, $rows, $columns) {
+    public function display_grade_capture($selectedmodule, $activities_, $childactivities_, $rows, $columns) {
         $courseid = $this->page->course->id;
-        $modid = (($selectedmodule) ? $selectedmodule->gradeitemid : null);
         $is_blind_marking = local_gugcat::is_blind_marking($this->page->cm);
+        $modid = (($selectedmodule) ? $selectedmodule->gradeitemid : null);
         $categoryid = optional_param('categoryid', null, PARAM_INT);
+        $activityid = optional_param('activityid', null, PARAM_INT);
+        $childactivityid = optional_param('childactivityid', null, PARAM_INT);
         $page = optional_param('page', 0, PARAM_INT);
+        if(!is_null($activityid))
+            $modid = $activityid;
         $ammendgradeparams = "?id=$courseid&activityid=$modid&page=$page";
 
         // Upload page url
@@ -53,9 +58,15 @@ class local_gugcat_renderer extends plugin_renderer_base {
             $uploadurl .= '&categoryid=' . $categoryid;
             $ammendgradeparams .= '&categoryid=' . $categoryid;
         }
+        if(!is_null($childactivityid)){
+            $actionurl .= '&childactivityid=' .$childactivityid;
+            $uploadurl .= '&childactivityid=' .$childactivityid;
+            $ammendgradeparams .= '&childactivityid=' .$childactivityid;
+        }
 
-        //reindex activities and grades array
+        //reindex activities, childactivities, and grades array
         $activities = array_values($activities_);
+        $childactivities = !empty($childactivities_) ? array_values($childactivities_) : null;
         $grades = array_values(local_gugcat::$GRADES);
         //grade capture columns and rows in html
         $htmlcolumns = null;
@@ -126,6 +137,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
                     </td>';
         $htmlrows .= html_writer::end_tag('tr');
         }
+        $displaychild = !empty($childactivities) ? true : false; 
         $tabheader = !empty($activities) ? (object)[
             'addallgrdstr' =>get_string('addmultigrades', 'local_gugcat'),
             'uploadaddgrdstr' =>get_string('uploadaddgrd', 'local_gugcat'),
@@ -136,7 +148,9 @@ class local_gugcat_renderer extends plugin_renderer_base {
             'importgradesstr' => get_string('importgrades', 'local_gugcat'),
             'releaseprvgrdstr' =>get_string('releaseprvgrades', 'local_gugcat'),
             'displayactivities' => true,
+            'displaychildactivities' =>$displaychild,
             'activities' => $activities,
+            'childactivities' => $childactivities,
             'uploadurl' => $uploadurl
         ] : null;
         //start displaying the table

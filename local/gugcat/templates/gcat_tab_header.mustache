@@ -25,13 +25,22 @@
 
 <div class="tabcontent-header">
     {{#displayactivities}}
-    <div class="selectdiv">
-        <select id="select-activity">
-            {{#activities}}
-                <option {{selected}} value={{gradeitemid}} >{{name}}</option>
-            {{/activities}}
-        </select>
-    </div>
+        <div class="selectdiv">
+            <select id="select-activity">
+                {{#activities}}
+                    <option {{selected}} value={{gradeitemid}} >{{name}}</option>
+                {{/activities}}
+            </select>
+        </div>
+        {{#displaychildactivities}}
+            <div class="selectdiv">
+                <select id="select-child-act">
+                    {{#childactivities}}
+                        <option {{selected}} value={{gradeitemid}} >{{name}}</option>
+                    {{/childactivities}}
+                </select>
+            </div>
+        {{/displaychildactivities}}
     {{/displayactivities}}
     {{#adjustgrdstr}}<button class="btn btn-default btn-blue" data-toggle="dropdown">{{adjustgrdstr}}<i class="fa fa-caret-down"></i></button>{{/adjustgrdstr}}
     <div class="dropdown-menu">

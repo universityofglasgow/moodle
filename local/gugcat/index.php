@@ -31,11 +31,13 @@ require_once('locallib.php');
 $courseid = required_param('id', PARAM_INT);
 $activityid = optional_param('activityid', null, PARAM_INT);
 $categoryid = optional_param('categoryid', null, PARAM_INT);
+$childactivityid = optional_param('childactivityid', null, PARAM_INT);
 $page = optional_param('page', 0, PARAM_INT);  
 
 $URL = new moodle_url('/local/gugcat/index.php', array('id' => $courseid, 'page' => $page));
 is_null($activityid) ? null : $URL->param('activityid', $activityid);
 is_null($categoryid) ? null : $URL->param('categoryid', $categoryid);
+is_null($childactivityid) ? null : $URL->param('childactivityid', $childactivityid);
 require_login($courseid);
 $PAGE->navbar->add(get_string('navname', 'local_gugcat'));
 $PAGE->set_title(get_string('gugcat', 'local_gugcat'));
@@ -53,13 +55,34 @@ $PAGE->set_heading($course->fullname);
 
 //Retrieve activities
 $activities = local_gugcat::get_activities($courseid);
+$childactivities = array();
 $selectedmodule = null;
 $groupingid = 0;
 $valid_22point_scale = false;
 
+if(!is_null($categoryid)){
+    // Retrieve sub categories
+    $gcs = grade_category::fetch_all(array('courseid' => $courseid, 'parent' => $categoryid));
+
+    $gradecatgi = array();
+    if(!empty($gcs)){
+        foreach ($gcs as $gc){
+            $gi = local_gugcat::get_category_gradeitem($courseid, $gc);
+            $gradecatgi[$gi->gradeitemid] = $gi; 
+        }
+    //merging two arrays without changing their index.
+    $totalactivities = $activities + $gradecatgi;
+    }
+    
+    $childactivities = isset($totalactivities[$activityid]->id)  ? local_gugcat::get_activities($courseid, $totalactivities[$activityid]->id) : null;
+}
+
 if(!empty($activities)){
     $mods = array_reverse($activities);
-    $selectedmodule = is_null($activityid) ? array_pop($mods) : $activities[$activityid];
+    
+    $childmods = empty($childactivities) ?  null : array_reverse($childactivities);
+    $selectedmodule = is_null($childmods) ? (is_null($activityid) ? array_pop($mods) : $activities[$activityid]) : (is_null($childactivityid) ? array_pop($childmods) : $childactivities[$childactivityid]);
+
     $groupingid = $selectedmodule->groupingid;
 
     $scaleid = $selectedmodule->gradeitem->scaleid;
@@ -181,7 +204,13 @@ if (isset($release)){
 // Process import grades
 }else if(isset($importgrades)){
     if ($valid_22point_scale){
-        grade_capture::import_from_gradebook($courseid, $selectedmodule, $activities);
+        if(!empty($childactivities)){
+            //push selected subcategory into $childactivities
+            array_push($childactivities, $gradecatgi[$activityid]);
+            grade_capture::import_from_gradebook($courseid, $selectedmodule, $childactivities);
+        }
+        else
+            grade_capture::import_from_gradebook($courseid, $selectedmodule, $activities);
         local_gugcat::notify_success('successimport');
         $event = \local_gugcat\event\import_grade::create($params);
         $event->trigger();
@@ -226,6 +255,6 @@ echo $OUTPUT->header();
 if(!empty($activities))
     $PAGE->set_cm($selectedmodule);
 $renderer = $PAGE->get_renderer('local_gugcat');
-echo $renderer->display_grade_capture($selectedmodule, $activities, $rows, $columns);
+echo $renderer->display_grade_capture($selectedmodule, $totalactivities, $childactivities, $rows, $columns);
 echo $OUTPUT->paging_bar($totalenrolled, $page, $limitnum, $PAGE->url);
 echo $OUTPUT->footer();

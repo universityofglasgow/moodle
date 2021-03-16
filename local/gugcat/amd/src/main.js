@@ -213,12 +213,14 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
         var urlParams = new URLSearchParams(window.location.search);
         var categories = document.getElementById('select-category');
         var activities = document.getElementById('select-activity');
+        var childactivities = document.getElementById('select-child-act');
         var grade_reason = document.getElementById('select-grade-reason');
         var input_reason = document.getElementById('input-reason');
         var mform_grade_reason = document.getElementById('id_reasons');
         switch (event.target) {
             case categories:
                 urlParams.delete("activityid");
+                urlParams.delete("childactivityid")
                 urlParams.delete("page");
                 if(categories.value === 'null'){
                     urlParams.delete("categoryid");
@@ -236,6 +238,12 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                 break;
             case activities:
                 urlParams.set("activityid", activities.value);
+                urlParams.delete("childactivityid")
+                urlParams.delete("page");
+                window.location.search = urlParams;
+                break;
+            case childactivities:
+                urlParams.set("childactivityid", childactivities.value)
                 urlParams.delete("page");
                 window.location.search = urlParams;
                 break;
