@@ -112,6 +112,7 @@ $string['showgrademsg'] = 'The grade is now visible to the student';
 $string['showonstudentdashboard'] = 'show_on_studentdashboard';
 $string['specifyreason'] = 'Specify reason(s) for amendment';
 $string['studentno'] = 'Student No.';
+$string['subcategorygrade'] = 'Subcategory Grade';
 $string['successaddall'] = 'Successfully added grades for all participants.';
 $string['successfinalrelease'] = 'Successfully released final assessment grades for the students.';
 $string['successrelease'] = 'Provisional Grades have been released to students';

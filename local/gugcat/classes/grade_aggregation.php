@@ -75,16 +75,22 @@ class grade_aggregation{
             $mod->scaleid = $mod->gradeitem->scaleid;
             $mod->gradeitemid = $mod->gradeitem->id;
             $grades = new stdClass();
+            // Get provisional gradeitem id and grades from gradebook for assessments and sub category
+            if($mod->modname == 'category'){
+                // $mod->id - sub category id 
+                $prvgrdid = local_gugcat::get_grade_item_id($course->id, $mod->id, get_string('subcategorygrade', 'local_gugcat'));
+                $gbgrades = grade_get_grades($course->id, 'category', null, $mod->instance, array_keys($students));
+            }else{
+                $prvgrdid = local_gugcat::set_prv_grade_id($course->id, $mod);
+                $gbgrades = grade_get_grades($course->id, 'mod', $mod->modname, $mod->instance, array_keys($students));
+            }
 
-            //get provisional grades
-            $prvgrdid = local_gugcat::set_prv_grade_id($course->id, $mod);
-            $sort = 'id';
             $fields = 'userid, itemid, id, rawgrade, finalgrade, information, timemodified';
-            $grades->provisional = $DB->get_records('grade_grades', array('itemid' => $prvgrdid), $sort, $fields);
-            //get grades from gradebook
-            $gbgrades = grade_get_grades($course->id, 'mod', $mod->modname, $mod->instance, array_keys($students));
+            // Get provisional grades
+            $grades->provisional = $DB->get_records('grade_grades', array('itemid' => $prvgrdid), 'id', $fields);
+            // Filter grades from gradebook with specific itemnumber
             $gbgradeitem = array_values(array_filter($gbgrades->items, function($item) use($mod){
-                return $item->itemnumber == $mod->gradeitem->itemnumber;//filter grades with specific itemnumber
+                return $item->itemnumber == $mod->gradeitem->itemnumber;
             }));
             $grades->gradebook = isset($gbgradeitem[0]) ? $gbgradeitem[0]->grades : null;
             $mod->grades = $grades;
