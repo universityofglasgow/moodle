@@ -249,6 +249,10 @@ class grade_aggregation{
      * @return int $grade
      */
     public static function calculate_grade($aggregationtype, $grades){
+        if(empty($grades)){
+            return null;
+        }
+
         switch ($aggregationtype) {
             case GRADE_AGGREGATE_MAX:
                 return max($grades);
