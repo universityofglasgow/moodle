@@ -116,7 +116,9 @@ class grade_aggregation{
                     $grditemresit = self::is_resit($item);
                     $grdobj = new stdClass();
                     $grades = $item->grades;
-                    $pg = isset($grades->provisional[$student->id]) ? $grades->provisional[$student->id] : null;
+                    $pg = isset($grades->provisional[$student->id]) ? (($item->modname == 'category') 
+                    ? self::get_aggregated_grade($student->id, $item, $gradebook) 
+                    : $grades->provisional[$student->id]) : null;
                     $gb = isset($grades->gradebook[$student->id]) ? $grades->gradebook[$student->id] : null;
                     $grd = (isset($pg) && !is_null($pg->finalgrade)) ? $pg->finalgrade 
                     : (isset($pg) && !is_null($pg->rawgrade) ? $pg->rawgrade 
@@ -197,6 +199,64 @@ class grade_aggregation{
         }
         $grade_->update();
         return $status;
+    }
+
+    /**
+     * Get the aggregated grade for the sub category total
+     * 
+     * @param int $userid The student's user id
+     * @param mixed $subcatobj The sub category gradeitem with grades' obj
+     * @param array $gradeitems Array of the gradeitems/activities with grades' obj
+     * @return mixed Return provisional grade obj or null  
+     */
+    public static function get_aggregated_grade($userid, $subcatobj, $gradeitems){
+        if($pgobj = $subcatobj->grades->provisional[$userid]){
+            $categoryid = $subcatobj->id;
+            // Get the provisional grade of the sub cat total
+            $grd = (!is_null($pgobj->finalgrade)) ? $pgobj->finalgrade 
+                : (!is_null($pgobj->rawgrade) ? $pgobj->rawgrade 
+                : null);
+            // Get child grade items
+            $filtered = array_filter($gradeitems, function ($gi) use ($categoryid) {
+                return $gi->gradeitem->categoryid == $categoryid;
+            });
+            // Filter child grade items object to grades
+            $actgrds = empty($filtered) ? array() : array_column($filtered, 'grades');
+            $studentgrades = array();
+            foreach ($actgrds as $grades) {
+                // Only get provisional grades $pg from child assessments
+                $pg = isset($grades->provisional[$userid]) ? $grades->provisional[$userid] : null;
+                var_dump($pg);
+                $grd_ = (isset($pg) && !is_null($pg->finalgrade)) ? $pg->finalgrade 
+                : (isset($pg) && !is_null($pg->rawgrade) ? $pg->rawgrade 
+                : null);  
+                $studentgrades[] = intval($grd_);
+            }
+            $calculatedgrd = self::calculate_grade($subcatobj->aggregation, $studentgrades);
+            if(isset($calculatedgrd) && $grd != $calculatedgrd){
+                local_gugcat::update_grade($userid, $pgobj->itemid, $calculatedgrd);
+            }
+            $pgobj->finalgrade = $calculatedgrd;
+            return isset($calculatedgrd) ? $pgobj : null;
+        }
+        return null;       
+    }
+
+    /**
+     * Checks aggregation type and returns the calculated grade
+     * 
+     * @param int $aggregationtype aggregation method id
+     * @param array $grades An array of grades in integer type
+     * @return int $grade
+     */
+    public static function calculate_grade($aggregationtype, $grades){
+        switch ($aggregationtype) {
+            case GRADE_AGGREGATE_MAX:
+                return max($grades);
+            default:
+                return max($grades);
+                break;
+        }
     }
 
     /**
