@@ -181,19 +181,19 @@ class local_gugcat {
     /**
      * Returns the grade item id based from the passed parameters
      * @param int $courseid
-     * @param int $modid Selected course module grade item ID
+     * @param int $id Selected course module grade item ID or sub category id
      * @param string $itemname Item name can be Provisional Grade or Aggregated Grade
      */
-    public static function get_grade_item_id($courseid, $modid, $itemname){
+    public static function get_grade_item_id($courseid, $id, $itemname){
         global $DB;
         $select = 'courseid = :courseid AND itemname = :itemname ';
         $params = [
             'courseid' => $courseid,
             'itemname' => $itemname
         ];
-        if(!is_null($modid)){
+        if(!is_null($id)){
             $select .= 'AND '.self::compare_iteminfo();
-            $params['iteminfo'] = $modid; // modid = gradeitemid
+            $params['iteminfo'] = $id; // id = gradeitemid or categoryid
         }
         return $DB->get_field_select('grade_items', 'id', $select, $params);
     }
@@ -847,10 +847,13 @@ class local_gugcat {
         $activity->modname = 'category';
         $activity->instance = $gradecategory->id;
         $activity->parent = $gradecategory->parent;
+        $activity->aggregation = $gradecategory->aggregation;
         $a = new stdClass();
         $a->category = $gradecategory->get_name();
         $activity->name =get_string('categorytotalfull', 'grades', $a);
-        $activity->gradeitem = grade_item::fetch(array('courseid' => $courseid, 'itemtype' => 'category', 'iteminstance' => $gradecategory->id));
+        $gi = grade_item::fetch(array('courseid' => $courseid, 'itemtype' => 'category', 'iteminstance' => $gradecategory->id));
+        $activity->gradeitem = $gi;
+        $activity->gradeitemid = $gi->id;
         return $activity;
     }
 }
