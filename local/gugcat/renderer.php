@@ -223,7 +223,8 @@ class local_gugcat_renderer extends plugin_renderer_base {
             // The collapse-expand icon in the table header
             $toggleicon = html_writer::tag('button', html_writer::empty_tag('i', array('class' => 'i-colexp fa fa-plus', 'style'=>'pointer-events:none')), 
             array('data-categoryid' => $act->id, 'type' => 'button', 'class' => 'btn btn-colexp'));
-            $header = $act->name.'<br/>'.($weight * 100).'%'.($act->modname == 'category' ? $toggleicon : null);
+            $header = $act->name.'<br/>'.($weight * 100).'%';
+            $header = html_writer::tag('span', $header, array('class' => 'sortable')).($act->modname == 'category' ? $toggleicon : null);
             if ($act->modname == 'category') {
                 if($colspan > 0){
                     $colgroups .= html_writer::empty_tag('colgroup', array('span' => $colspan, 'class' => "colgroup hidden catid-$prevcatid"));
@@ -239,7 +240,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
                 }
             }
             // If activity is a child of a sub category, hide by default; Data-category use for identifying which column is to be toggled in JS
-            $class = local_gugcat::is_child_activity($act) ? array('class' => 'sortable hidden', 'data-category' => $act->gradeitem->categoryid) : array('class' => 'sortable');
+            $class = local_gugcat::is_child_activity($act) ? array('class' => ' hidden', 'data-category' => $act->gradeitem->categoryid) : null;
             $htmlcolumns .= html_writer::tag('th', $header, $class);
         }
         $htmlcolumns .= html_writer::tag('th', get_string('requiresresit', 'local_gugcat'), array('class' => 'sortable'));

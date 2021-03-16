@@ -226,7 +226,6 @@ class grade_aggregation{
             foreach ($actgrds as $grades) {
                 // Only get provisional grades $pg from child assessments
                 $pg = isset($grades->provisional[$userid]) ? $grades->provisional[$userid] : null;
-                var_dump($pg);
                 $grd_ = (isset($pg) && !is_null($pg->finalgrade)) ? $pg->finalgrade 
                 : (isset($pg) && !is_null($pg->rawgrade) ? $pg->rawgrade 
                 : null);  
