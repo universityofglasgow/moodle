@@ -55,6 +55,7 @@ $PAGE->set_heading($course->fullname);
 
 //Retrieve activities
 $activities = local_gugcat::get_activities($courseid);
+$totalactivities = array();
 $childactivities = array();
 $selectedmodule = null;
 $groupingid = 0;
@@ -70,14 +71,15 @@ if(!is_null($categoryid)){
             $gi = local_gugcat::get_category_gradeitem($courseid, $gc);
             $gradecatgi[$gi->gradeitemid] = $gi; 
         }
-    //merging two arrays without changing their index.
-    $totalactivities = $activities + $gradecatgi;
+        //merging two arrays without changing their index.
+        $totalactivities = $activities + $gradecatgi;
     }
     
     $childactivities = isset($totalactivities[$activityid]->id)  ? local_gugcat::get_activities($courseid, $totalactivities[$activityid]->id) : null;
 }
 
 if(!empty($activities)){
+    
     $mods = array_reverse($activities);
     
     $childmods = empty($childactivities) ?  null : array_reverse($childactivities);
@@ -255,6 +257,6 @@ echo $OUTPUT->header();
 if(!empty($activities))
     $PAGE->set_cm($selectedmodule);
 $renderer = $PAGE->get_renderer('local_gugcat');
-echo $renderer->display_grade_capture($selectedmodule, $totalactivities, $childactivities, $rows, $columns);
+echo $renderer->display_grade_capture($selectedmodule, empty($totalactivities) ? $activities : $totalactivities, $childactivities, $rows, $columns);
 echo $OUTPUT->paging_bar($totalenrolled, $page, $limitnum, $PAGE->url);
 echo $OUTPUT->footer();
