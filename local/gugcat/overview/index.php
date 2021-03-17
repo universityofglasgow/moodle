@@ -52,54 +52,7 @@ require_capability('local/gugcat:view', $coursecontext);
 
 //Retrieve activities
 if(!is_null($categoryid)){
-    // Retrieve sub categories
-    $gcs = grade_category::fetch_all(array('courseid' => $courseid, 'parent' => $categoryid));
-    $cids = array($categoryid);
-
-    // Combine retrieved sub categories and the main course category (ids)
-    !empty($gcs) ? array_push($cids, ...array_column($gcs, 'id')) : null;
-    
-    // Retrieve activities based from categoryids
-    $raw_activities = local_gugcat::get_activities($courseid, $cids);
-
-    $mainactivities = array();
-    $childactivities = array();
-    // Separate the main activities and child activites into two arrays
-    array_map(function($value) use (&$mainactivities, &$childactivities) {
-        if (local_gugcat::is_child_activity($value)) {
-            $childactivities[] = $value;
-        } else {
-            $mainactivities[] = $value;
-        }
-    }, $raw_activities);
-  
-    // Retrieve grade items of the grade categories
-    $gradecatgi = array();
-    if(!empty($gcs)){
-        foreach ($gcs as $gc) {
-            $gradecatgi[] = local_gugcat::get_category_gradeitem($courseid, $gc);
-        }
-    }
-    // The final array to be pass to get_rows
-    $activities = array();
-    // Combine the main activities and grade categories grade items
-    $mainactivities = array_merge($mainactivities, $gradecatgi);
-    foreach ($mainactivities as $index=>$act) {
-        // Check if activity = category, insert the child activities next to it.
-        if($act->modname == 'category'){
-            // Filter $childactivities to the children of the iterated category
-            $children = array_filter($childactivities,
-                function($value) use ($act) {
-                    return $value->gradeitem->categoryid == $act->id;
-                }
-            );
-            if(!empty($children)){
-                // Insert $children first before its category grade item
-                array_push($activities, ...$children);
-            }
-        }
-        $activities[] = $act;
-    }    
+    $activities = grade_aggregation::get_parent_child_activities($courseid, $categoryid);
 }else{
     $activities = local_gugcat::get_activities($courseid);
 }

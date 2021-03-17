@@ -57,8 +57,13 @@ $PAGE->set_heading($course->fullname);
 require_capability('local/gugcat:view', $coursecontext);
 
 $studentarr = $DB->get_records('user', array('id'=>$studentid, 'deleted'=>0), MUST_EXIST);
-
-$activities = local_gugcat::get_activities($courseid);
+$activities = array();
+//Retrieve activities
+if(!is_null($categoryid)){
+    $activities = grade_aggregation::get_parent_child_activities($courseid, $categoryid);
+}else{
+    $activities = local_gugcat::get_activities($courseid);
+}
 $rows = grade_aggregation::get_rows($course, $activities, $studentarr);
 $student = $rows[0];
 $student->cnum = $cnum; //candidate no.
