@@ -76,7 +76,7 @@ if(!is_null($categoryid)){
         $totalactivities = $activities + $gradecatgi;
     }
     
-    $childactivities = ($totalactivities[$activityid]->modname === 'category') ? local_gugcat::get_activities($courseid, $totalactivities[$activityid]->id) : null;
+    $childactivities = (isset($totalactivities[$activityid]->modname) && $totalactivities[$activityid]->modname === 'category') ? local_gugcat::get_activities($courseid, $totalactivities[$activityid]->id) : null;
     if(!is_null($childactivities)){
         foreach($childactivities as $ca){
             $ca->selected = (strval($childactivityid) === $ca->gradeitemid)? 'selected' : '';
