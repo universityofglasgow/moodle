@@ -849,7 +849,6 @@ $cache = '.var_export($cache, true).';
             $plugins = self::get_plugin_list($plugintype);
             foreach ($plugins as $plugin => $fulldir) {
                 $path = $fulldir . '/' . $file;
-                ini_set('max_execution_time', 10000);
                 if (file_exists($path)) {
                     $pluginfiles[$plugin] = $path;
                 }
