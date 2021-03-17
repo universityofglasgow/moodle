@@ -130,10 +130,9 @@ button .fa-caret-down{
     display: none;
 }
 
-.tabcontent-header >.selectdiv{
+.tabcontent-header >.selectdiv, .select-wrapper, .child-select{
     float: left;
 }
-
 /* Specific select style*/
 
 .select-category, .select-category > select{
@@ -228,4 +227,12 @@ td a:hover, .dropdown-item a:hover {
 
 .visible{
     display: block;
+}
+
+.select-wrapper{
+    margin-bottom: 1.5em;
+}
+
+.child-select{
+    margin-top: 5px;
 }

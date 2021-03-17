@@ -31,16 +31,21 @@ class local_gugcat_renderer extends plugin_renderer_base {
      * Render display of grade capture page
      * @param mixed $selectedmodule 
      * @param array $activities_ 
+     * @param array $childactivities_
      * @param array $rows 
      * @param array $columns 
      */
-    public function display_grade_capture($selectedmodule, $activities_, $rows, $columns) {
+    public function display_grade_capture($selectedmodule, $activities_, $childactivities_, $rows, $columns) {
         $courseid = $this->page->course->id;
-        $modid = (($selectedmodule) ? $selectedmodule->gradeitemid : null);
         $is_blind_marking = local_gugcat::is_blind_marking($this->page->cm);
+        $modid = (($selectedmodule) ? $selectedmodule->gradeitemid : null);
         $categoryid = optional_param('categoryid', null, PARAM_INT);
-        $page = optional_param('page', 0, PARAM_INT);
+        $activityid = optional_param('activityid', null, PARAM_INT);
+        $childactivityid = optional_param('childactivityid', null, PARAM_INT);
+        $page = optional_param('page', 0, PARAM_INT);        
         $ammendgradeparams = "?id=$courseid&activityid=$modid&page=$page";
+        if(!is_null($activityid))
+            $modid = $activityid;
 
         // Upload page url
         $uploadurl = new moodle_url('/local/gugcat/import/index.php').$ammendgradeparams;
@@ -53,9 +58,15 @@ class local_gugcat_renderer extends plugin_renderer_base {
             $uploadurl .= '&categoryid=' . $categoryid;
             $ammendgradeparams .= '&categoryid=' . $categoryid;
         }
+        if(!is_null($childactivityid)){
+            $actionurl .= '&childactivityid=' .$childactivityid;
+            $uploadurl .= '&childactivityid=' .$childactivityid;
+            $ammendgradeparams .= '&childactivityid=' .$childactivityid;
+        }
 
-        //reindex activities and grades array
+        //reindex activities, childactivities, and grades array
         $activities = array_values($activities_);
+        $childactivities = !empty($childactivities_) ? array_values($childactivities_) : null;
         $grades = array_values(local_gugcat::$GRADES);
         //grade capture columns and rows in html
         $htmlcolumns = null;
@@ -75,7 +86,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
         //grade capture rows
         foreach ($rows as $row) {
             //url to add new grade
-            $addformurl = new moodle_url('/local/gugcat/add/index.php', array('id' => $courseid, 'activityid' => $modid, 'studentid' => $row->studentno, 'page' => $page));
+            $addformurl = new moodle_url('/local/gugcat/add/index.php', array('id' => $courseid, 'activityid' => (($selectedmodule) ? $selectedmodule->gradeitemid : null), 'studentid' => $row->studentno, 'page' => $page));
             if (!is_null($categoryid)){
                 $addformurl->param('categoryid', $categoryid);
             }
@@ -126,6 +137,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
                     </td>';
         $htmlrows .= html_writer::end_tag('tr');
         }
+        $displaychild = !empty($childactivities) ? true : false; 
         $tabheader = !empty($activities) ? (object)[
             'addallgrdstr' =>get_string('addmultigrades', 'local_gugcat'),
             'uploadaddgrdstr' =>get_string('uploadaddgrd', 'local_gugcat'),
@@ -136,7 +148,9 @@ class local_gugcat_renderer extends plugin_renderer_base {
             'importgradesstr' => get_string('importgrades', 'local_gugcat'),
             'releaseprvgrdstr' =>get_string('releaseprvgrades', 'local_gugcat'),
             'displayactivities' => true,
+            'displaychildactivities' =>$displaychild,
             'activities' => $activities,
+            'childactivities' => $childactivities,
             'uploadurl' => $uploadurl
         ] : null;
         //start displaying the table
@@ -570,7 +584,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
         //reindex grade category arrayco
         $categories = local_gugcat::get_grade_categories($courseid);
         $assessmenturl = new moodle_url('/local/gugcat/index.php', array('id' => $courseid));
-        $assessmenturl.= $activityid ? '&activityid='.$activityid : null;
+        $assessmenturl.= !is_null($activityid) ? '&activityid='.$activityid : null;
         $coursegradeurl = new moodle_url('/local/gugcat/overview/index.php', array('id' => $courseid));
         //add category id in the url if not null
         if(!is_null($categoryid)){

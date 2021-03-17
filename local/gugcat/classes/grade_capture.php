@@ -349,16 +349,26 @@ class grade_capture{
     public static function set_provisional_weights($courseid, $activities, $students){
         global $DB;
         foreach ($activities as $mod) {
-            $prvgrdid = local_gugcat::get_grade_item_id($courseid, $mod->gradeitemid, get_string('provisionalgrd', 'local_gugcat'));
-            if(!$prvgrdid){//create provisional grade item for modules that has no prv gi yet
-                $prvgrdid = local_gugcat::add_grade_item($courseid, get_string('provisionalgrd', 'local_gugcat'), $mod, $students);
+            if($mod->modname == "category"){
+                $subcatid = local_gugcat::get_grade_item_id($courseid, $mod->gradeitem->iteminstance, get_string('subcategorygrade', 'local_gugcat'));
+                if(!$subcatid){//create sub-category grade item for modules that has no sub-category gi yet
+                    $mod->gradeitemid = $mod->gradeitem->iteminstance;
+                    $subcatid = local_gugcat::add_grade_item($courseid, get_string('subcategorygrade', 'local_gugcat'), $mod, $students);
+                }
+            }
+            else{
+                $prvgrdid = local_gugcat::get_grade_item_id($courseid, $mod->gradeitemid, get_string('provisionalgrd', 'local_gugcat'));
+                if(!$prvgrdid){//create provisional grade item for modules that has no prv gi yet
+                    $prvgrdid = local_gugcat::add_grade_item($courseid, get_string('provisionalgrd', 'local_gugcat'), $mod, $students);
+                }
             }
             //Work around when setting including no grades in aggregation is not accepted. 
             $weightcoef1 = $mod->gradeitem->aggregationcoef; //Aggregation coeficient used for weighted averages or extra credit
             $weightcoef2 = $mod->gradeitem->aggregationcoef2; //Aggregation coeficient used for weighted averages only
             $weight = ((float)$weightcoef1 > 0) ? (float)$weightcoef1 : (float)$weightcoef2;
             foreach ($students as $student) {
-                $DB->set_field('grade_grades', 'information', $weight, array('itemid' => $prvgrdid, 'userid' => $student->id));          
+                $DB->set_field('grade_grades', 'information', $weight, array('itemid' => $mod->modname == 'category' ? $subcatid : $prvgrdid, 
+                'userid' => $student->id));          
             }
         }
     }
