@@ -581,12 +581,10 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $coursecontext = context_course::instance($courseid);
         $categoryid = optional_param('categoryid', null, PARAM_INT);
         $activityid = optional_param('activityid', null, PARAM_INT);
-        $childactivityid = optional_param('childactivityid', null, PARAM_INT);
         //reindex grade category arrayco
         $categories = local_gugcat::get_grade_categories($courseid);
         $assessmenturl = new moodle_url('/local/gugcat/index.php', array('id' => $courseid));
         $assessmenturl.= !is_null($activityid) ? '&activityid='.$activityid : null;
-        $assessmenturl.= !is_null($childactivityid) ? '$childactivityid='.$childactivityid : null;
         $coursegradeurl = new moodle_url('/local/gugcat/overview/index.php', array('id' => $courseid));
         //add category id in the url if not null
         if(!is_null($categoryid)){

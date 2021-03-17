@@ -28,7 +28,7 @@ select::-ms-expand {
     appearance: none;
     cursor: pointer;
     display: block;
-    height: 32px;
+    height: 40px;
     margin-right: 5px;
     padding: 0px 24px 0px 10px;
     line-height: 1.75;

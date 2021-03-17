@@ -68,6 +68,7 @@ if(!is_null($categoryid)){
     if(!empty($gcs)){
         foreach ($gcs as $gc){
             $gi = local_gugcat::get_category_gradeitem($courseid, $gc);
+            $gi->name = preg_replace('/\b total/i', '', $gi->name);
             $gradecatgi[$gi->gradeitemid] = $gi; 
             $gradecatgi[$gi->gradeitemid]->selected = (strval($activityid) === $gi->gradeitemid)? 'selected' : '';
         }
