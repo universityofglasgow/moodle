@@ -60,7 +60,6 @@ $childactivities = array();
 $selectedmodule = null;
 $groupingid = 0;
 $valid_22point_scale = false;
-
 if(!is_null($categoryid)){
     // Retrieve sub categories
     $gcs = grade_category::fetch_all(array('courseid' => $courseid, 'parent' => $categoryid));
@@ -70,18 +69,21 @@ if(!is_null($categoryid)){
         foreach ($gcs as $gc){
             $gi = local_gugcat::get_category_gradeitem($courseid, $gc);
             $gradecatgi[$gi->gradeitemid] = $gi; 
+            $gradecatgi[$gi->gradeitemid]->selected = (strval($activityid) === $gi->gradeitemid)? 'selected' : '';
         }
         //merging two arrays without changing their index.
         $totalactivities = $activities + $gradecatgi;
     }
     
     $childactivities = isset($totalactivities[$activityid]->id)  ? local_gugcat::get_activities($courseid, $totalactivities[$activityid]->id) : null;
+    foreach($childactivities as $ca){
+        $ca->selected = (strval($childactivityid) === $ca->gradeitemid)? 'selected' : '';
+    }
 }
 
 if(!empty($activities)){
     
     $mods = array_reverse($activities);
-    
     $childmods = empty($childactivities) ?  null : array_reverse($childactivities);
     $selectedmodule = is_null($childmods) ? (is_null($activityid) ? array_pop($mods) : $activities[$activityid]) : (is_null($childactivityid) ? array_pop($childmods) : $childactivities[$childactivityid]);
 

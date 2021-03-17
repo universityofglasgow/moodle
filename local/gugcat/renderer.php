@@ -42,10 +42,10 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $categoryid = optional_param('categoryid', null, PARAM_INT);
         $activityid = optional_param('activityid', null, PARAM_INT);
         $childactivityid = optional_param('childactivityid', null, PARAM_INT);
-        $page = optional_param('page', 0, PARAM_INT);
+        $page = optional_param('page', 0, PARAM_INT);        
+        $ammendgradeparams = "?id=$courseid&activityid=$modid&page=$page";
         if(!is_null($activityid))
             $modid = $activityid;
-        $ammendgradeparams = "?id=$courseid&activityid=$modid&page=$page";
 
         // Upload page url
         $uploadurl = new moodle_url('/local/gugcat/import/index.php').$ammendgradeparams;
@@ -86,7 +86,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
         //grade capture rows
         foreach ($rows as $row) {
             //url to add new grade
-            $addformurl = new moodle_url('/local/gugcat/add/index.php', array('id' => $courseid, 'activityid' => $modid, 'studentid' => $row->studentno, 'page' => $page));
+            $addformurl = new moodle_url('/local/gugcat/add/index.php', array('id' => $courseid, 'activityid' => (($selectedmodule) ? $selectedmodule->gradeitemid : null), 'studentid' => $row->studentno, 'page' => $page));
             if (!is_null($categoryid)){
                 $addformurl->param('categoryid', $categoryid);
             }
@@ -581,10 +581,12 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $coursecontext = context_course::instance($courseid);
         $categoryid = optional_param('categoryid', null, PARAM_INT);
         $activityid = optional_param('activityid', null, PARAM_INT);
+        $childactivityid = optional_param('childactivityid', null, PARAM_INT);
         //reindex grade category arrayco
         $categories = local_gugcat::get_grade_categories($courseid);
         $assessmenturl = new moodle_url('/local/gugcat/index.php', array('id' => $courseid));
-        $assessmenturl.= $activityid ? '&activityid='.$activityid : null;
+        $assessmenturl.= !is_null($activityid) ? '&activityid='.$activityid : null;
+        $assessmenturl.= !is_null($childactivityid) ? '$childactivityid='.$childactivityid : null;
         $coursegradeurl = new moodle_url('/local/gugcat/overview/index.php', array('id' => $courseid));
         //add category id in the url if not null
         if(!is_null($categoryid)){

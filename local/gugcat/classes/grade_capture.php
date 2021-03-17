@@ -259,7 +259,6 @@ class grade_capture{
      * @param int $courseid
      * @param mixed $module Selected course module
      * @param array $activities All modules
-     * @param bool $child
      */
     public static function import_from_gradebook($courseid, $module, $activities){
         global $DB;
