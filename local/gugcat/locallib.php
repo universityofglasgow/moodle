@@ -108,7 +108,7 @@ class local_gugcat {
         if(isset($gradeitem)){
             $mods = self::grade_get_gradable_activities($courseid, $cids, $gradeitem->itemmodule, $gradeitem->itemnumber, $gradeitem->id);
         }else{
-            $mods = self::grade_get_gradable_activities($courseid, $cids, '', 0, $gradeitem);
+            $mods = self::grade_get_gradable_activities($courseid, $cids);
     
             //get whole grading forums and workshop assessment | itemnumber = 1
             $wholegradingforums = self::grade_get_gradable_activities($courseid, $cids, 'forum', 1);
@@ -676,7 +676,7 @@ class local_gugcat {
                        md.name = ? AND
                        md.id = cm.module AND
                        (gi.itemtype = 'mod' OR gi.itemtype = 'category')".
-                       (is_null($gradeitemid) ? null : " AND gi.id = $gradeitemid"); 
+                       (is_null($gradeitemid) ? null : " AND gi.id = $gradeitemid").
                        (empty($categoryids) ? null : " AND ($categorysql)"); 
     
         return $DB->get_records_sql($sql, $params);
