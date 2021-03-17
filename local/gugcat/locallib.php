@@ -85,6 +85,7 @@ class local_gugcat {
      *
      * @param int $courseid
      * @param mixed $categoryid_ids Either a single category id, an array of category IDs or null. If category ID or IDs are not supplied, if gets category id from url or course grade category
+     * @param grade_item $gradeitem Use for specific activity id to get specific details.
      */
     public static function get_activities($courseid, $categoryid_ids = null, $gradeitem = null){
         $activityid = optional_param('activityid', null, PARAM_INT);
@@ -198,7 +199,8 @@ class local_gugcat {
     public static function set_prv_grade_id($courseid, $mod){
         if(is_null($mod)) return;
         $pgrd_str = get_string(($mod->modname == 'category' ? 'subcategorygrade' :'provisionalgrd'), 'local_gugcat');
-        self::$PRVGRADEID = self::get_grade_item_id($courseid, $mod->gradeitemid, $pgrd_str);
+        $id = $mod->modname == 'category' ? $mod->id : $mod->gradeitemid;
+        self::$PRVGRADEID = self::get_grade_item_id($courseid, $id, $pgrd_str);
         return self::$PRVGRADEID;
     }
 
