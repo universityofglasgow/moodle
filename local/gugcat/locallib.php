@@ -85,8 +85,9 @@ class local_gugcat {
      *
      * @param int $courseid
      * @param mixed $categoryid_ids Either a single category id, an array of category IDs or null. If category ID or IDs are not supplied, if gets category id from url or course grade category
+     * @param grade_item $gradeitem Use for specific activity id to get specific details.
      */
-    public static function get_activities($courseid, $categoryid_ids = null){
+    public static function get_activities($courseid, $categoryid_ids = null, $gradeitem = null){
         $activityid = optional_param('activityid', null, PARAM_INT);
         $cids = array();
         if (empty($categoryid_ids)) {
@@ -101,12 +102,18 @@ class local_gugcat {
         } else {
             $cids = array($categoryid_ids);
         }
-        
-        $mods = self::grade_get_gradable_activities($courseid, $cids);
+        $wholegradingforums = array();
+        $assessmentworkshops = array();
+        // if is not $gradeitem, get the specific activity with gradeitem details
+        if(isset($gradeitem)){
+            $mods = self::grade_get_gradable_activities($courseid, $cids, $gradeitem->itemmodule, $gradeitem->itemnumber, $gradeitem->id);
+        }else{
+            $mods = self::grade_get_gradable_activities($courseid, $cids, '', 0, $gradeitem);
     
-        //get whole grading forums and workshop assessment | itemnumber = 1
-        $wholegradingforums = self::grade_get_gradable_activities($courseid, $cids, 'forum', 1);
-        $assessmentworkshops = self::grade_get_gradable_activities($courseid, $cids, 'workshop', 1);
+            //get whole grading forums and workshop assessment | itemnumber = 1
+            $wholegradingforums = self::grade_get_gradable_activities($courseid, $cids, 'forum', 1);
+            $assessmentworkshops = self::grade_get_gradable_activities($courseid, $cids, 'workshop', 1);
+        }
 
         $activities = array();
         if(count($mods) > 0 || count($wholegradingforums) > 0 || count($assessmentworkshops) > 0){
@@ -114,7 +121,7 @@ class local_gugcat {
             foreach($mods as $cm) {
                 $activities[$cm->gradeitemid]= $cm;
                 $activities[$cm->gradeitemid]->selected = (strval($activityid) === $cm->gradeitemid)? 'selected' : '';
-                $gi= new grade_item(array('id'=>$cm->gradeitemid), true);
+                $gi = isset($gradeitem) ? $gradeitem : new grade_item(array('id'=>$cm->gradeitemid), true);
                 $gi->load_parent_category();
                 $activities[$cm->gradeitemid]->gradeitem = $gi;
             }
@@ -131,6 +138,24 @@ class local_gugcat {
             }
         }
         return $activities;
+    }
+
+    /**
+     * Returns activity details for assessments or sub categories
+     *
+     * @param int $courseid
+     * @param int $gradeitemid Id of the grade item
+     * @retirun int $gradeitemid Id of the grade item
+     */
+    public static function get_activity($courseid, $gradeitemid){
+        $gi = new grade_item(array('id'=> $gradeitemid), true);
+        if($gi->itemtype == 'category'){
+            $gc = $gi->get_item_category();
+            return local_gugcat::get_category_gradeitem($courseid, $gc);
+        }else{
+            $act = self::get_activities($courseid, $gi->categoryid, $gi);
+            return reset($act);
+        }
     }
 
     /**
@@ -173,8 +198,9 @@ class local_gugcat {
      */
     public static function set_prv_grade_id($courseid, $mod){
         if(is_null($mod)) return;
-        $pgrd_str = get_string('provisionalgrd', 'local_gugcat');
-        self::$PRVGRADEID = self::get_grade_item_id($courseid, $mod->gradeitemid, $pgrd_str);
+        $pgrd_str = get_string(($mod->modname == 'category' ? 'subcategorygrade' :'provisionalgrd'), 'local_gugcat');
+        $id = $mod->modname == 'category' ? $mod->id : $mod->gradeitemid;
+        self::$PRVGRADEID = self::get_grade_item_id($courseid, $id, $pgrd_str);
         return self::$PRVGRADEID;
     }
 
@@ -618,13 +644,13 @@ class local_gugcat {
      * @param string $modulename 
      * @param int $itemnumber 
      */
-    private static function grade_get_gradable_activities($courseid, $categoryids, $modulename='', $itemnumber = 0) {
+    private static function grade_get_gradable_activities($courseid, $categoryids, $modulename='', $itemnumber = 0, $gradeitemid = null) {
         global $DB;
         if (empty($modulename)) {
             $modules = array('assign', 'forum', 'quiz', 'workshop');//modules supported by gcat
             $result = array();
             foreach ($modules as $module) {
-                if ($cms = self::grade_get_gradable_activities($courseid, $categoryids, $module, $itemnumber)) {
+                if ($cms = self::grade_get_gradable_activities($courseid, $categoryids, $module, $itemnumber, $gradeitemid)) {
                     $result =  $result + $cms;
                 }
             }
@@ -641,7 +667,6 @@ class local_gugcat {
         $sql = "SELECT cm.*, gi.itemname as name, md.name as modname, gi.id as gradeitemid
                   FROM {grade_items} gi, {course_modules} cm, {modules} md, {{$modulename}} m
                  WHERE gi.courseid = ? AND
-                       gi.itemtype = 'mod' AND
                        gi.itemmodule = ? AND
                        gi.itemnumber = ? AND
                        gi.gradetype != ? AND
@@ -649,7 +674,9 @@ class local_gugcat {
                        cm.instance = m.id AND
                        cm.deletioninprogress = 0 AND
                        md.name = ? AND
-                       md.id = cm.module".
+                       md.id = cm.module AND
+                       (gi.itemtype = 'mod' OR gi.itemtype = 'category')".
+                       (is_null($gradeitemid) ? null : " AND gi.id = $gradeitemid"); 
                        (empty($categoryids) ? null : " AND ($categorysql)"); 
     
         return $DB->get_records_sql($sql, $params);

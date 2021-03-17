@@ -160,16 +160,16 @@ class local_gugcat_renderer extends plugin_renderer_base {
      * @param mixed $course 
      * @param mixed $student user info of student
      * @param array $gradeversions graded grade versions
+     * @param mixed $module selected assessment or sub category
      * @param boolean $isaddform indication between add and edit  
      * 
      */
-    public function display_add_edit_grade_form($course, $student, $gradeversions, $isaddform) {
-        $modname = (($this->page->cm) ? $this->page->cm->name : null);
+    public function display_add_edit_grade_form($course, $student, $gradeversions, $module, $isaddform) {
         $html = $this->header();
         $html .= $this->render_from_template('local_gugcat/gcat_form_details', (object)[
             'title' => $isaddform ? get_string('addnewgrade', 'local_gugcat') : get_string('editgrade', 'local_gugcat'),
             'course' => $course,
-            'section' => $modname,
+            'section' => $module->name,
             'student' => $student,
             'blindmarking'=> !local_gugcat::is_blind_marking($this->page->cm) ? true : null
         ]);

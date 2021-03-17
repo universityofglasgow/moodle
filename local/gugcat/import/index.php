@@ -99,7 +99,7 @@ $mform2 = new importform(null, array('iid' => $iid));
 // Here, if we have data, we process the fields and enter the information into the database.
 if ($formdata = $mform2->get_data()) {
     // Retrieve the module
-    $module = local_gugcat::get_activities($courseid)[$activityid];
+    $module = local_gugcat::get_activity($courseid, $activityid);
 
     //Populate static $GRADES scales
     local_gugcat::set_grade_scale($module->gradeitem->scaleid);

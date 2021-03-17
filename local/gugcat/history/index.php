@@ -53,7 +53,7 @@ $PAGE->set_heading($course->fullname);
 require_capability('local/gugcat:view', $coursecontext);
 
 $student = $DB->get_record('user', array('id'=>$studentid, 'deleted'=>0), '*', MUST_EXIST);
-$module = local_gugcat::get_activities($courseid)[$activityid];
+$module = local_gugcat::get_activity($courseid, $activityid);
 
 $scaleid = $module->gradeitem->scaleid;
 if (is_null($scaleid) && local_gugcat::is_grademax22($module->gradeitem->gradetype, $module->gradeitem->grademax)){
@@ -80,7 +80,6 @@ $event = \local_gugcat\event\assessment_grade_history_viewed::create($params);
 $event->trigger();
 
 echo $OUTPUT->header();
-$PAGE->set_cm($module);
 $renderer = $PAGE->get_renderer('local_gugcat');
 echo $renderer->display_grade_history($student, $module->name, $history);
 echo $OUTPUT->footer();

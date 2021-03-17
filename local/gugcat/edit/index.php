@@ -57,7 +57,7 @@ $PAGE->set_heading($course->fullname);
 require_capability('local/gugcat:view', $coursecontext);
 
 $student = $DB->get_record('user', array('id'=>$studentid, 'deleted'=>0), '*', MUST_EXIST);
-$module = local_gugcat::get_activities($courseid)[$activityid];
+$module = local_gugcat::get_activity($courseid, $activityid);
 
 $scaleid = $module->gradeitem->scaleid;
 
@@ -117,9 +117,8 @@ if ($fromform = $mform->get_data()) {
 }   
 
 echo $OUTPUT->header();
-$PAGE->set_cm($module);
 $renderer = $PAGE->get_renderer('local_gugcat');
-echo $renderer->display_add_edit_grade_form($course, $student, $gradeversions, false);
+echo $renderer->display_add_edit_grade_form($course, $student, $gradeversions, $module, false);
 $mform->display();
 echo $OUTPUT->footer();
 
