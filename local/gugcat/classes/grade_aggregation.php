@@ -29,6 +29,7 @@ use context_course;
 use local_gugcat;
 use stdClass;
 use grade_grade;
+use grade_category;
 use grade_item;
 
 defined('MOODLE_INTERNAL') || die();
@@ -116,7 +117,9 @@ class grade_aggregation{
                     $grditemresit = self::is_resit($item);
                     $grdobj = new stdClass();
                     $grades = $item->grades;
-                    $pg = isset($grades->provisional[$student->id]) ? $grades->provisional[$student->id] : null;
+                    $pg = isset($grades->provisional[$student->id]) ? (($item->modname == 'category') 
+                    ? self::get_aggregated_grade($student->id, $item, $gradebook) 
+                    : $grades->provisional[$student->id]) : null;
                     $gb = isset($grades->gradebook[$student->id]) ? $grades->gradebook[$student->id] : null;
                     $grd = (isset($pg) && !is_null($pg->finalgrade)) ? $pg->finalgrade 
                     : (isset($pg) && !is_null($pg->rawgrade) ? $pg->rawgrade 
@@ -197,6 +200,67 @@ class grade_aggregation{
         }
         $grade_->update();
         return $status;
+    }
+
+    /**
+     * Get the aggregated grade for the sub category total
+     * 
+     * @param int $userid The student's user id
+     * @param mixed $subcatobj The sub category gradeitem with grades' obj
+     * @param array $gradeitems Array of the gradeitems/activities with grades' obj
+     * @return mixed Return provisional grade obj or null  
+     */
+    public static function get_aggregated_grade($userid, $subcatobj, $gradeitems){
+        if($pgobj = $subcatobj->grades->provisional[$userid]){
+            $categoryid = $subcatobj->id;
+            // Get the provisional grade of the sub cat total
+            $grd = (!is_null($pgobj->finalgrade)) ? $pgobj->finalgrade 
+                : (!is_null($pgobj->rawgrade) ? $pgobj->rawgrade 
+                : null);
+            // Get child grade items
+            $filtered = array_filter($gradeitems, function ($gi) use ($categoryid) {
+                return $gi->gradeitem->categoryid == $categoryid;
+            });
+            // Filter child grade items object to grades
+            $actgrds = empty($filtered) ? array() : array_column($filtered, 'grades');
+            $studentgrades = array();
+            foreach ($actgrds as $grades) {
+                // Only get provisional grades $pg from child assessments
+                $pg = isset($grades->provisional[$userid]) ? $grades->provisional[$userid] : null;
+                $grd_ = (isset($pg) && !is_null($pg->finalgrade)) ? $pg->finalgrade 
+                : (isset($pg) && !is_null($pg->rawgrade) ? $pg->rawgrade 
+                : null);  
+                $studentgrades[] = intval($grd_);
+            }
+            $calculatedgrd = self::calculate_grade($subcatobj->aggregation, $studentgrades);
+            if(isset($calculatedgrd) && $grd != $calculatedgrd){
+                local_gugcat::update_grade($userid, $pgobj->itemid, $calculatedgrd);
+            }
+            $pgobj->finalgrade = $calculatedgrd;
+            return isset($calculatedgrd) ? $pgobj : null;
+        }
+        return null;       
+    }
+
+    /**
+     * Checks aggregation type and returns the calculated grade
+     * 
+     * @param int $aggregationtype aggregation method id
+     * @param array $grades An array of grades in integer type
+     * @return int $grade
+     */
+    public static function calculate_grade($aggregationtype, $grades){
+        if(empty($grades)){
+            return null;
+        }
+
+        switch ($aggregationtype) {
+            case GRADE_AGGREGATE_MAX:
+                return max($grades);
+            default:
+                return max($grades);
+                break;
+        }
     }
 
     /**
@@ -473,5 +537,64 @@ class grade_aggregation{
             $students = get_enrolled_users($coursecontext, 'local/gugcat:gradable', 0, $userfields);
         }
         return $students;
+    }
+
+    /**
+     * Return list of both child and parent activities
+     * 
+     * @param int $courseid
+     * @param int $categoryid
+     * @return array
+     */
+    public static function get_parent_child_activities($courseid, $categoryid){
+        // Retrieve sub categories
+        $gcs = grade_category::fetch_all(array('courseid' => $courseid, 'parent' => $categoryid));
+        $cids = array($categoryid);
+
+        // Combine retrieved sub categories and the main course category (ids)
+        !empty($gcs) ? array_push($cids, ...array_column($gcs, 'id')) : null;
+
+        // Retrieve activities based from categoryids
+        $raw_activities = local_gugcat::get_activities($courseid, $cids);
+
+        $mainactivities = array();
+        $childactivities = array();
+        // Separate the main activities and child activites into two arrays
+        array_map(function($value) use (&$mainactivities, &$childactivities) {
+            if (local_gugcat::is_child_activity($value)) {
+                $childactivities[] = $value;
+            } else {
+                $mainactivities[] = $value;
+            }
+        }, $raw_activities);
+
+        // Retrieve grade items of the grade categories
+        $gradecatgi = array();
+        if(!empty($gcs)){
+            foreach ($gcs as $gc) {
+                $gradecatgi[] = local_gugcat::get_category_gradeitem($courseid, $gc);
+            }
+        }
+        // The final array to be pass to get_rows
+        $activities = array();
+        // Combine the main activities and grade categories grade items
+        $mainactivities = array_merge($mainactivities, $gradecatgi);
+        foreach ($mainactivities as $index=>$act) {
+            // Check if activity = category, insert the child activities next to it.
+            if($act->modname == 'category'){
+                // Filter $childactivities to the children of the iterated category
+                $children = array_filter($childactivities,
+                    function($value) use ($act) {
+                        return $value->gradeitem->categoryid == $act->id;
+                    }
+                );
+                if(!empty($children)){
+                    // Insert $children first before its category grade item
+                    array_push($activities, ...$children);
+                }
+            }
+            $activities[] = $act;
+        }    
+        return $activities;
     }
 }

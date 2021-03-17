@@ -43,8 +43,10 @@ class coursegradeform extends moodleform {
             $mform->addElement('html', '<div class="mform-override">');
         foreach($student->grades as $grdobj){
 
-            if($this->_customdata['setting'] == '1'){
+            if($this->_customdata['setting'] == '1' || $grdobj->category){
+                $mform->addElement('html', '<div class="mform-override">');
                 $mform->addElement('static', $grdobj->activity, $grdobj->activity.' Weighting', $grdobj->weight .'%'); 
+                $mform->addElement('html', '</div>');
                 $mform->setType($grdobj->activity, PARAM_NOTAGS); 
             }elseif($this->_customdata['setting'] == '0'){
                 $attributes = array(
@@ -70,7 +72,13 @@ class coursegradeform extends moodleform {
         }
         $mform->addElement('html', '<div class="mform-grades">');
             foreach($student->grades as $grdobj){
+                if ($grdobj->category){
+                    $mform->addElement('html', '<div class="mform-override">');
+                }
                 $mform->addElement('static', $grdobj->activity.'grade', $grdobj->activity .' Grade',  $grdobj->grade); 
+                if ($grdobj->category){
+                    $mform->addElement('html', '</div>');
+                }
                 $mform->setType($grdobj->activity.'grade', PARAM_NOTAGS);
             }
             if($this->_customdata['setting'] == '0'){
