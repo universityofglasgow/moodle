@@ -298,6 +298,28 @@ class local_gugcat_testcase extends advanced_testcase {
         $this->assertEquals(1, $checkboxvalue);
     }
 
+    public function test_get_activity(){
+        // Test will include get_category_gradeitem($courseid, $gradecategory) function
+        $gen = $this->getDataGenerator();
+        $cid = $this->course->id;
+        //create grade sub category
+        $gc = new grade_category($gen->create_grade_category(['courseid' => $cid, 'fullname' => 'Sub category']), false);
+        //create grade item of the sub category
+        $gcgi = new grade_item(['courseid' => $cid, 'itemtype' => 'category', 'categoryid' => null, 'iteminstance' => $gc->id], true);
+        $module = local_gugcat::get_activity($cid, $gcgi->id);
+
+        // Get_activity will return gradeitem of sub category
+        $this->assertEquals($module->modname, 'category');
+        $this->assertEquals($module->name, $gc->fullname.' total');
+        $this->assertEquals($module->gradeitemid, $gcgi->id);
+
+        // Get_activity will return assessment data 
+        $module = local_gugcat::get_activity($cid, $this->cm->gradeitemid);
+        $this->assertEquals($module->modname, 'assign');
+        $this->assertEquals($module->name, $this->cm->name);
+        $this->assertEquals($module->gradeitemid, $this->cm->gradeitemid);
+    }
+
     public static function default_custom_field_category_object(){
         $customfieldcategory = new stdClass();
         $customfieldcategory->name = get_string('gugcatoptions', 'local_gugcat');
