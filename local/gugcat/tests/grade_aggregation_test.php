@@ -183,4 +183,49 @@ class grade_aggregation_testcase extends advanced_testcase {
         $this->assertEquals($gradehistory[1]->grade, 'A5');
         $this->assertEquals($gradehistory[1]->notes, $expectednotes);
     }
+
+    public function test_calculate_grade(){
+        $grades = array();
+        $aggregationtype = GRADE_AGGREGATE_MAX;
+
+        // Assert return is null if $grades is empty
+        $calgrade = grade_aggregation::calculate_grade($aggregationtype, $grades);
+        $this->assertNull($calgrade);
+
+        $grades = [10, 30, 20];
+        // Assert return is 30; Getting the highest grade from $grades
+        $calgrade = grade_aggregation::calculate_grade($aggregationtype, $grades);
+        $this->assertEquals($calgrade, 30);
+    }
+
+    public function test_get_aggregated_grade(){
+        $userid = $this->student1->id;
+        $categoryid = 10; 
+        // Create components array with grades obj
+        $gradeitems = array();
+        // Create subcat grade item with grades obj
+        $subcatobj = new stdClass();
+        // Create provisional grade obj 
+        $pgobj = new stdClass();
+        $pgobj->finalgrade = 15;
+        $pgobj->rawgrade = 15;
+        $subcatobj->id = $categoryid; // category id type of sub cat
+        $subcatobj->aggregation = GRADE_AGGREGATE_MAX; // aggregation type of sub cat
+        $subcatobj->grades->provisional[] = $pgobj;
+        // Assert return null if provisional is undefined
+        $aggregatedgrade = grade_aggregation::get_aggregated_grade($userid, $subcatobj, $gradeitems);
+        $this->assertnULL($aggregatedgrade);
+
+        $subcatobj->grades->provisional[$userid] = $pgobj;
+
+        // Create component obj
+        $gi = new stdClass();
+        $gi->gradeitem->categoryid = $categoryid;
+        // Add provisional grades on the grades property of component
+        $gi->grades->provisional[$userid] = $pgobj;
+        $gradeitems[] = $gi;
+
+        $aggregatedgrade = grade_aggregation::get_aggregated_grade($userid, $subcatobj, $gradeitems);
+        $this->assertEquals($aggregatedgrade, 15);
+    }
 }
