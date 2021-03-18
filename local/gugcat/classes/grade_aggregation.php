@@ -275,7 +275,10 @@ class grade_aggregation{
         //Iterate the weights, $key = gradeitem id, $value = weight
         foreach($weights as $key=>$value) {
             $weight = number_format(($value/100), 5);
-            $prvgrdid = local_gugcat::get_grade_item_id($courseid, $key, get_string('provisionalgrd', 'local_gugcat'));
+            $gradeitem = grade_item::fetch(array('courseid' => $courseid, 'id' => $key));
+            $id = ($gradeitem->itemtype == 'category') ? $gradeitem->iteminstance : $key;
+            $itemname = get_string( ($gradeitem->itemtype == 'category') ? 'subcategorygrade' : 'provisionalgrd', 'local_gugcat');
+            $prvgrdid = local_gugcat::get_grade_item_id($courseid, $id, $itemname);
             $grade_ = new grade_grade(array('userid' => $studentid, 'itemid' => $prvgrdid), true);
             $grade_->information = $weight;
             $grade_->feedback = $notes;
