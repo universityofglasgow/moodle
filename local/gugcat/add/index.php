@@ -80,8 +80,7 @@ if ($fromform = $mform->get_data()) {
     
     $gradeitemid = local_gugcat::add_grade_item($courseid, $gradereason, $module);
     $grades = local_gugcat::add_update_grades($studentid, $gradeitemid, $fromform->grade, $fromform->notes);
-    $url = new moodle_url('/local/gugcat/index.php', array('id' => $courseid, 'activityid' => $activityid, 'page'=> $page));
-    (!is_null($categoryid) && $categoryid != 0) ? $url->param('categoryid', $categoryid) : null;
+
     //log of add grades
     $params = array(
         'context' => \context_module::instance($module->id),
@@ -98,6 +97,13 @@ if ($fromform = $mform->get_data()) {
     );
     $event = \local_gugcat\event\add_grade::create($params);
     $event->trigger();
+
+    //check if activity is a subcat component.
+    $activityid = ($module->gradeitem->parent_category->parent === strval($categoryid)) ? 
+    $DB->get_field('grade_items', 'id', array('courseid'=>$courseid, 'itemtype'=>'category', 'iteminstance'=>$module->gradeitem->categoryid))
+    : $activityid;
+    $url = new moodle_url('/local/gugcat/index.php', array('id' => $courseid, 'activityid' => $activityid, 'page'=> $page));
+    (!is_null($categoryid) && $categoryid != 0) ? $url->param('categoryid', $categoryid) : null;
     redirect($url);
     exit;
 }   
