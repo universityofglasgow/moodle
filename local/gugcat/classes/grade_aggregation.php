@@ -86,7 +86,7 @@ class grade_aggregation{
                 $gbgrades = grade_get_grades($course->id, 'mod', $mod->modname, $mod->instance, array_keys($students));
             }
 
-            $fields = 'userid, itemid, id, rawgrade, finalgrade, information, timemodified';
+            $fields = 'userid, itemid, id, rawgrade, finalgrade, information, timemodified, overridden';
             // Get provisional grades
             $grades->provisional = $DB->get_records('grade_grades', array('itemid' => $prvgrdid), 'id', $fields);
             // Filter grades from gradebook with specific itemnumber
@@ -143,6 +143,7 @@ class grade_aggregation{
                     $grdobj->activityinstance = $item->instance;
                     $grdobj->activity = $item->name;
                     $grdobj->category = $is_child_activity;
+                    $grdobj->is_subcat = ($item->modname == 'category') ? true : false;
                     $grdobj->grade = $grade;
                     $grdobj->rawgrade = $grdvalue;
                     $grdobj->weight =  round((float)$weight * 100 );
@@ -212,6 +213,9 @@ class grade_aggregation{
      */
     public static function get_aggregated_grade($userid, $subcatobj, $gradeitems){
         if($pgobj = $subcatobj->grades->provisional[$userid]){
+            if($pgobj->overridden != 0){
+                return $pgobj;
+            }
             $categoryid = $subcatobj->id;
             // Get the provisional grade of the sub cat total
             $grd = (!is_null($pgobj->finalgrade)) ? $pgobj->finalgrade 

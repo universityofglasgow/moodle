@@ -271,10 +271,12 @@ class local_gugcat_renderer extends plugin_renderer_base {
                 $htmlrows .= html_writer::tag('td', $row->forename, array('class' => 'blind-marking'));
             }
             foreach((array) $row->grades as $grade) {
-                $datacategory = $grade->category ? "data-category=$grade->category class='hidden'" : null;
+                $datacategory = $grade->category ? array('class' => 'hidden', 'data-category' => $grade->category) : null;
                 $ammendgradeparams = "?id=$courseid&activityid=$grade->activityid&page=$page" . $historyeditcategory;
+                $ammendgradeparams .= $grade->is_subcat ? "&cnum=$row->cnum" : null;
                 $courseformhistoryparams = "?id=$courseid&cnum=$row->cnum&page=$page" . $gradeformhistorycategory;
-                $htmlrows .= "<td $datacategory>".$grade->grade.((strpos($grade->grade, 'No grade') !== false) ? null : $this->context_actions($row->studentno, null, false, $ammendgradeparams, true)).'</td>';
+                $htmlrows .= html_writer::tag('td', $grade->grade.((strpos($grade->grade, 'No grade') !== false) 
+                ? null : $this->context_actions($row->studentno, null, ($grade->is_subcat ? true : false), $ammendgradeparams, true)), $datacategory);
             }
             //Require resit row
             $requireresiturl = $actionurl."&rowstudentno=$row->studentno&resit=1";
@@ -282,7 +284,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
             $htmlrows .= html_writer::tag('td', html_writer::tag('a', null, array('class' => $classname, 'href' => $requireresiturl)));
             $htmlrows .= html_writer::tag('td', $row->completed);
             $htmlrows .= ($row->aggregatedgrade->display != get_string('missinggrade', 'local_gugcat')) 
-            ? html_writer::start_tag('td').$row->aggregatedgrade->display.$this->context_actions($row->studentno, null, true, $courseformhistoryparams, true).html_writer::end_tag('td')
+            ? html_writer::tag('td', $row->aggregatedgrade->display.$this->context_actions($row->studentno, null, true, $courseformhistoryparams, true))
             : html_writer::tag('td', $row->aggregatedgrade->display);
             $htmlrows .= html_writer::end_tag('tr');
         }
@@ -329,9 +331,10 @@ class local_gugcat_renderer extends plugin_renderer_base {
      */
     public function display_adjust_override_grade_form($student) {
         $setting = required_param('setting', PARAM_INT);
+        $activityid = optional_param('activityid', null, PARAM_INT);  
         $html = $this->header();
         $html .= $this->render_from_template('local_gugcat/gcat_form_details', (object)[
-            'title' =>get_string(($setting != 0 ? 'overridestudgrade' : 'adjustcourseweight'), 'local_gugcat'),
+            'title' =>get_string(($setting != 0 ? (is_null($activityid) ? 'overridestudgrade' : 'overridestudassgrade') : 'adjustcourseweight'), 'local_gugcat'),
             'student' => $student,
             'blindmarking'=> !local_gugcat::is_blind_marking() ? true : null
         ]);
@@ -537,9 +540,16 @@ class local_gugcat_renderer extends plugin_renderer_base {
             $coursehistoryurl = new moodle_url('/local/gugcat/overview/history/index.php').$link;
             $adjustlink = $gradeformurl. '&setting=' . ADJUST_WEIGHT_FORM;
             $overridelink = $gradeformurl . '&setting=' . OVERRIDE_GRADE_FORM;
-            $html .= html_writer::tag('li', html_writer::tag('a', get_string('adjustcourseweight', 'local_gugcat'), array('href' => $adjustlink)), $class);
-            $html .= html_writer::tag('li', html_writer::tag('a', get_string('overrideggregrade', 'local_gugcat'), array('href' => $overridelink)), $class);
-            $html .= html_writer::tag('li', html_writer::tag('a', get_string('viewcoursehistory', 'local_gugcat'), array('href' => $coursehistoryurl)), $class);
+            // Check if url params has activity id, then aggregated grade is sub category
+            if(strpos($link, 'activityid')){
+                $historylink = new moodle_url('/local/gugcat/history/index.php').$link;
+                $html .= html_writer::tag('li', html_writer::tag('a', get_string('overrideggreassessgrade', 'local_gugcat'), array('href' => $overridelink)), $class);
+                $html .= html_writer::tag('li', html_writer::tag('a', get_string('assessmentgradehistory', 'local_gugcat'), array('href' => $historylink)), $class);
+            }else{
+                $html .= html_writer::tag('li', html_writer::tag('a', get_string('adjustcourseweight', 'local_gugcat'), array('href' => $adjustlink)), $class);
+                $html .= html_writer::tag('li', html_writer::tag('a', get_string('overrideggregrade', 'local_gugcat'), array('href' => $overridelink)), $class);
+                $html .= html_writer::tag('li', html_writer::tag('a', get_string('viewcoursehistory', 'local_gugcat'), array('href' => $coursehistoryurl)), $class);
+            }
         }else{
             $historylink = new moodle_url('/local/gugcat/history/index.php').$link;
             $editlink = new moodle_url('/local/gugcat/edit/index.php').$link.'&overview='.($is_overviewpage ? 1 : 0);

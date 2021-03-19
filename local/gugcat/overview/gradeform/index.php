@@ -35,11 +35,14 @@ $studentid = required_param('studentid', PARAM_INT);
 $cnum = required_param('cnum', PARAM_INT);
 $categoryid = optional_param('categoryid', null, PARAM_INT);
 $page = optional_param('page', 0, PARAM_INT);  
+$activityid = optional_param('activityid', null, PARAM_INT); 
+$activityid = $activityid == 0 ? null : $activityid;
 
 require_login($courseid);
 $urlparams = array('id' => $courseid, 'setting' => $formtype, 'studentid' => $studentid, 'cnum' => $cnum, 'page' => $page);
 $URL = new moodle_url('/local/gugcat/overview/gradeform/index.php', $urlparams);
 is_null($categoryid) ? null : $URL->param('categoryid', $categoryid);
+is_null($activityid) ? null : $URL->param('activityid', $activityid);
 $indexurl = new moodle_url('/local/gugcat/index.php', array('id' => $courseid));
 
 $PAGE->set_url($URL);
@@ -60,7 +63,15 @@ $studentarr = $DB->get_records('user', array('id'=>$studentid, 'deleted'=>0), MU
 $activities = array();
 //Retrieve activities
 if(!is_null($categoryid)){
-    $activities = grade_aggregation::get_parent_child_activities($courseid, $categoryid);
+    if(!is_null($activityid) && $formtype == 1){
+        // Retrieve sub cat activity object
+        $subcatactivity = local_gugcat::get_activity($courseid, $activityid);
+        // Retrieve sub cat child components
+        $components = local_gugcat::get_activities($courseid, $subcatactivity->instance);
+        $activities = array_merge($components, [$subcatactivity]);
+    }else{
+        $activities = grade_aggregation::get_parent_child_activities($courseid, $categoryid);
+    }
 }else{
     $activities = local_gugcat::get_activities($courseid);
 }
@@ -70,6 +81,28 @@ $student->cnum = $cnum; //candidate no.
 $student->id = $student->studentno; 
 $student->lastname = $student->surname; 
 $student->firstname = $student->forename;
+
+// Prepare the data displayed if subcat activity
+if(!is_null($activityid) && $formtype == OVERRIDE_GRADE_FORM){
+    $subcatgrade = null;
+    foreach ($student->grades as $key=>$grade) {
+        // Get the calculated sub category grade
+        if($grade->is_subcat){
+            // Assign it to $subcatgrade
+            $subcatgrade = $grade;
+            // Remove it from $student->grades
+            unset($student->grades[$key]);
+            break;
+        }
+    }
+    // Change the data in aggregate grade obj with $subcatgrade
+    $aggrdobj = new stdClass();
+    $aggrdobj->grade = $subcatgrade->grade;
+    $aggrdobj->rawgrade = $subcatgrade->rawgrade;
+    $aggrdobj->display = $subcatgrade->rawgrade;
+    $student->aggregatedgrade = $aggrdobj;
+}
+
 $mform = new coursegradeform(null, array('id'=>$courseid, 'page'=>$page, 'categoryid'=>$categoryid, 'studentid'=>$studentid, 'setting'=>$formtype, 'student'=>$student));
 if ($fromform = $mform->get_data()) {
     //params needed for logs
@@ -86,11 +119,17 @@ if ($fromform = $mform->get_data()) {
         )
     );
     if($formtype == OVERRIDE_GRADE_FORM){
-        $gradeitemid = local_gugcat::add_grade_item($courseid, get_string('aggregatedgrade', 'local_gugcat'), null);
-        local_gugcat::update_grade($studentid, $gradeitemid, $fromform->override, $fromform->notes, time());
-        //log of adjust course weight
-        $event = \local_gugcat\event\override_course_grade::create($params);
-        $event->trigger();
+        $is_subcat = !is_null($activityid) && isset($subcatactivity) && $subcatactivity->modname == 'category';
+        $id = $is_subcat  ? $subcatactivity->instance : null;
+        $itemname = get_string($is_subcat ? 'subcategorygrade' : 'aggregatedgrade', 'local_gugcat');
+        if($gradeitemid = local_gugcat::get_grade_item_id($courseid, $id, $itemname)){
+            local_gugcat::update_grade($studentid, $gradeitemid, $fromform->override, $fromform->notes, time());
+            //log of adjust course weight
+            $event = \local_gugcat\event\override_course_grade::create($params);
+            $event->trigger();
+        }else{
+            local_gugcat::notify_error('overrideerror');
+        }
     }else if($formtype == ADJUST_WEIGHT_FORM){
         $weights = $fromform->weights;
         $aggradeid = local_gugcat::get_grade_item_id($courseid, null, get_string('aggregatedgrade', 'local_gugcat'));
