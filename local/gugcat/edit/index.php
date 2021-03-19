@@ -109,12 +109,15 @@ if ($fromform = $mform->get_data()) {
         redirect($url);
     }
     else{
-        //check if activity is a subcat component.
-        $activityid = ($module->gradeitem->parent_category->parent === strval($categoryid)) ? 
-        $DB->get_field('grade_items', 'id', array('courseid'=>$courseid, 'itemtype'=>'category', 'iteminstance'=>$module->gradeitem->categoryid))
-        : $activityid;
+        $childactivity = null;
+        //check if activity is a subcat component.'
+        if($module->gradeitem->parent_category->parent === strval($categoryid)){
+            $childactivity = $activityid;
+            $activityid = $DB->get_field('grade_items', 'id', array('courseid'=>$courseid, 'itemtype'=>'category', 'iteminstance'=>$module->gradeitem->categoryid));
+        }
         $url = new moodle_url('/local/gugcat/index.php', array('id' => $courseid, 'activityid' => $activityid, 'page'=> $page));
         (!is_null($categoryid) && $categoryid != 0) ? $url->param('categoryid', $categoryid) : null;
+        !is_null($childactivity) ? $url->param('childactivityid',$childactivity) : null;
         redirect($url);
     }
     exit;
