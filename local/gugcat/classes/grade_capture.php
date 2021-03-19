@@ -364,13 +364,12 @@ class grade_capture{
             $id = $mod->modname == 'category' ? $mod->gradeitem->iteminstance : $mod->gradeitemid; 
             $str = $mod->modname == 'category' ? 'subcategorygrade' : 'provisionalgrd'; 
 
-            $prvgrdid = local_gugcat::get_grade_item_id($courseid, $id, get_string($str, 'local_gugcat'));
-            if(!$prvgrdid){// Create provisional grade item for modules that has no prv gi yet
-                if($mod->modname == 'category'){
-                    $mod->gradeitemid = $id;
-                }
-                $prvgrdid = local_gugcat::add_grade_item($courseid, get_string($str, 'local_gugcat'), $mod, $students);
+            // Create provisional/subcategory grade item for modules that has no prv gi yet
+            if($mod->modname == 'category'){
+                $mod->gradeitemid = $id;
             }
+            $prvgrdid = local_gugcat::add_grade_item($courseid, get_string($str, 'local_gugcat'), $mod, $students);
+       
 
             // Getting the weights from the main activity grade item
             $weightcoef1 = $mod->gradeitem->aggregationcoef; //Aggregation coeficient used for weighted averages or extra credit
