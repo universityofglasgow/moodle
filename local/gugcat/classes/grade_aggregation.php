@@ -212,7 +212,7 @@ class grade_aggregation{
      * @return mixed Return provisional grade obj or null  
      */
     public static function get_aggregated_grade($userid, $subcatobj, $gradeitems){
-        if($pgobj = $subcatobj->grades->provisional[$userid]){
+        if(isset($subcatobj->grades->provisional[$userid]) && $pgobj = $subcatobj->grades->provisional[$userid]){
             if($pgobj->overridden != 0){
                 return $pgobj;
             }

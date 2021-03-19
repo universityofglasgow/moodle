@@ -82,18 +82,17 @@ class coursegradeform extends moodleform {
                 $mform->setType($grdobj->activity.'grade', PARAM_NOTAGS);
             }
             if($this->_customdata['setting'] == '0'){
-                $mform->addElement('static', 'aggregatedgrade', 'Aggregated Grade', $student->aggregatedgrade->grade); 
+                $mform->addElement('static', 'aggregatedgrade', get_string('aggregatedgrade', 'local_gugcat'), $student->aggregatedgrade->grade); 
                 $mform->setType('aggregatedgrade', PARAM_NOTAGS); 
             }
         $mform->addElement('html', '</div>');
     
         if($this->_customdata['setting'] == '1'){
-            $mform->addElement('static', 'aggregatedgrade', 'Aggregated Grade', $student->aggregatedgrade->grade); 
+            $mform->addElement('static', 'aggregatedgrade', get_string('aggregatedgrade', 'local_gugcat'), $student->aggregatedgrade->grade); 
             $mform->setType('aggregatedgrade', PARAM_NOTAGS); 
             $mform->addElement('html', '</div>');
-            $mform->addElement('select', 'override', "Override Code", $grade, ['class' => 'mform-custom-select']); 
-            $mform->setType('reasons', PARAM_NOTAGS); 
-            $mform->setDefault('reasons', "Select Reason");
+            $mform->addElement('select', 'override', get_string('overridegrade', 'local_gugcat'), $grade, ['class' => 'mform-custom-select']); 
+            $mform->setType('override', PARAM_NOTAGS); 
         }
         $mform->addElement('textarea', 'notes', get_string('notes', 'local_gugcat'));
         $mform->setType('notes', PARAM_NOTAGS); 

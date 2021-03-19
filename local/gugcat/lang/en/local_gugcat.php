@@ -84,6 +84,7 @@ $string['nogradeimport'] = 'Awaiting Grade Import';
 $string['nogradeweight'] = 'N/A';
 $string['notes'] = 'Notes';
 $string['overrideerror'] = 'Override error: Assessment is not yet imported to GCAT.';
+$string['overridegrade'] = 'Override grade';
 $string['overrideggreassessgrade'] = 'Override aggregated assessment grade';
 $string['overrideggregrade'] = 'Override aggregated course grade';
 $string['overridestudassgrade'] = "Override student's aggregated assessment grade";
