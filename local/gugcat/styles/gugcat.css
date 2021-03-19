@@ -219,7 +219,7 @@ td a:hover, .dropdown-item a:hover {
 /* Hide submit buttons */
 #release-submit, #importgrades-submit, 
 #finalrelease-submit, #downloadcsv-submit,
-#multiadd-submit, #search-submit,
+#multiadd-submit, #search-submit, #bulk-submit,
 #coursegradeform-submit, .hide-show-grade, 
 .hide-names, .hidden {
     display: none;
@@ -231,6 +231,10 @@ td a:hover, .dropdown-item a:hover {
 
 .select-wrapper{
     margin-bottom: 1.5em;
+}
+
+.select-wrapper > .selectdiv{
+    margin-left: unset;
 }
 
 .child-select{
