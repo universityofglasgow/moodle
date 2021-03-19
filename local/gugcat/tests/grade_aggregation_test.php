@@ -199,34 +199,64 @@ class grade_aggregation_testcase extends advanced_testcase {
     }
 
     public function test_get_aggregated_grade(){
-        $userid = $this->student1->id;
         $categoryid = 10; 
+        $userid = $this->student1->id;
+
+        $prvgi = local_gugcat::add_grade_item($this->course->id, 
+        get_string('subcategorygrade', 'local_gugcat'), null, [$this->student1]);
+
+        $pgobj = grade_grade::fetch(array('itemid' => $prvgi, 'userid' => $userid));
         // Create components array with grades obj
         $gradeitems = array();
         // Create subcat grade item with grades obj
         $subcatobj = new stdClass();
-        // Create provisional grade obj 
-        $pgobj = new stdClass();
-        $pgobj->finalgrade = 15;
-        $pgobj->rawgrade = 15;
         $subcatobj->id = $categoryid; // category id type of sub cat
         $subcatobj->aggregation = GRADE_AGGREGATE_MAX; // aggregation type of sub cat
-        $subcatobj->grades->provisional[] = $pgobj;
-        // Assert return null if provisional is undefined
-        $aggregatedgrade = grade_aggregation::get_aggregated_grade($userid, $subcatobj, $gradeitems);
-        $this->assertnULL($aggregatedgrade);
 
+        // Assert return null if provisional grade is undefined
+        $subcatobj->grades->provisional[] = $pgobj;
+        $aggregatedgrade = grade_aggregation::get_aggregated_grade($userid, $subcatobj, $gradeitems);
+        $this->assertNull($aggregatedgrade);
+
+        // Assert return is the provisional obj itself if sub cat is overridden 
+        $pgobj->overridden = 1;
+        $subcatobj->grades->provisional[$userid] = $pgobj;
+        $aggregatedgrade = grade_aggregation::get_aggregated_grade($userid, $subcatobj, $gradeitems);
+        $this->assertEquals($aggregatedgrade->finalgrade, $pgobj->finalgrade);
+        $this->assertEquals($aggregatedgrade->rawgrade, $pgobj->rawgrade);
+        $this->assertEquals($aggregatedgrade->overridden, $pgobj->overridden);
+
+        // Assert getting the calculation done if item was not overridden
+        $pgobj->overridden = 0; // Set overridden
         $subcatobj->grades->provisional[$userid] = $pgobj;
 
-        // Create component obj
-        $gi = new stdClass();
-        $gi->gradeitem->categoryid = $categoryid;
+        // Create components obj
+        $componentpg = new stdClass();
+        $componentpg->finalgrade = 15;
+        $gi1 = new stdClass();
+        $gi1->gradeitem = new stdClass();
+        $gi1->gradeitem->categoryid = $categoryid;
         // Add provisional grades on the grades property of component
-        $gi->grades->provisional[$userid] = $pgobj;
-        $gradeitems[] = $gi;
+        $gi1->grades->provisional[$userid] = $componentpg;
+        $gradeitems[] = $gi1;
 
+        $componentpg->finalgrade = 20;
+        $gi2 = new stdClass();
+        $gi2->gradeitem = new stdClass();
+        $gi2->gradeitem->categoryid = $categoryid;
+        // Add provisional grades on the grades property of component
+        $gi2->grades->provisional[$userid] = $componentpg;
+        $gradeitems[] = $gi2;
+
+        // Assert return gets the highest grade
         $aggregatedgrade = grade_aggregation::get_aggregated_grade($userid, $subcatobj, $gradeitems);
-        $this->assertEquals($aggregatedgrade, 15);
+        $this->assertEquals($aggregatedgrade->finalgrade, 20);
+        $this->assertEquals($aggregatedgrade->itemid, $prvgi);
+
+        // Check if grade from db was also updated
+        $updatedgradeobj = grade_grade::fetch(array('itemid' => $prvgi, 'userid' => $userid));
+        $this->assertEquals($updatedgradeobj->finalgrade, '20.00000');
+        $this->assertEquals($updatedgradeobj->rawgrade, '20.00000');
     }
 
     public function test_get_parent_child_activities(){
