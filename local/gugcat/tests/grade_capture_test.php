@@ -211,4 +211,66 @@ class grade_capture_testcase extends advanced_testcase {
         $prvweight = $DB->get_field('grade_grades', 'information', array('itemid' => $this->provisionalgi, 'userid' => $this->student->id));
         $this->assertEquals($prvweight, strval($expectedweight)); //assert provisional grade_grade copied weight from main act
     }
+
+    public function test_get_component_module(){
+        global $DB;
+        $gen = $this->getDataGenerator();
+        $cid = $this->course->id;
+        $gc1a = new grade_category($gen->create_grade_category(['courseid' => $cid]), false);
+        $gc2a = new grade_category($gen->create_grade_category(['courseid' => $cid]), false);
+        $gc2a->depth = 3;
+        $gc2a->path = $gc1a->path.$gc2a->id.'/';
+        $gc2a->parent = $gc1a->id;
+        $gc2a->update();
+        $categorygi = $DB->get_field('grade_items', 'id', array('courseid'=> $this->course->id, 'itemtype'=>'category', 'iteminstance'=>$gc2a->id));
+        $assignid = $DB->get_field('grade_items', 'id', array('courseid' => $this->course->id, 'itemmodule' => 'assign'));
+        $DB->set_field('grade_items', 'categoryid', $categorygi, array('id'=>$assignid));
+        $cm = local_gugcat::get_activities($cid, $gc1a->id);
+        $categoract = grade_category::fetch_all(array('courseid' => $cid, 'parent' => $gc1a->id));
+        $gradecatgi = array();
+        foreach ($categoract as $gc){
+            $gi = local_gugcat::get_category_gradeitem($cid, $gc);
+            $gi->name = preg_replace('/\b total/i', '', $gi->name);
+            $gradecatgi[$gi->gradeitemid] = $gi; 
+        }
+        $mods = key($gradecatgi);
+        $selectedmodid = $gradecatgi[$mods]->gradeitemid;
+        $childactivities = local_gugcat::get_activities($cid, $selectedmodid);
+        $childmods = key($childactivities);
+        $selectedmodule = $childactivities[$childmods];
+        $this->assertEquals($selectedmodule->gradeitem->itemname, $this->cm->gradeitem->itemname);
+        $this->assertEquals($selectedmodule->gradeitem->itemtype, $this->cm->gradeitem->itemtype);
+        $this->assertEquals($selectedmodule->gradeitem->itemmodule, $this->cm->gradeitem->itemmodule);
+        $this->assertNotEquals($selectedmodule->gradeitem->parent_category, $this->cm->gradeitem->parent_category);
+    }
+
+    public function test_create_subcategory_gradeitem(){
+        global $DB;
+        $gen = $this->getDataGenerator();
+        $cid = $this->course->id;
+        $gc1a = new grade_category($gen->create_grade_category(['courseid' => $cid]), false);
+        $gc2a = new grade_category($gen->create_grade_category(['courseid' => $cid]), false);
+        $gc2a->depth = 3;
+        $gc2a->path = $gc1a->path.$gc2a->id.'/';
+        $gc2a->parent = $gc1a->id;
+        $gc2a->update();
+        $categorygi = $DB->get_field('grade_items', 'id', array('courseid'=> $this->course->id, 'itemtype'=>'category', 'iteminstance'=>$gc2a->id));
+        $assignid = $DB->get_field('grade_items', 'id', array('courseid' => $this->course->id, 'itemmodule' => 'assign'));
+        $DB->set_field('grade_items', 'categoryid', $categorygi, array('id'=>$assignid));
+        $cm = local_gugcat::get_activities($cid, $gc1a->id);
+        $categoract = grade_category::fetch_all(array('courseid' => $cid, 'parent' => $gc1a->id));
+        $gradecatgi = array();
+        foreach ($categoract as $gc){
+            $gi = local_gugcat::get_category_gradeitem($cid, $gc);
+            $gradecatgi[$gi->gradeitemid] = $gi; 
+        }
+        $mods = key($gradecatgi);
+        $selectedmodid = $gradecatgi[$mods]->gradeitemid;
+        $childactivities = local_gugcat::get_activities($cid, $selectedmodid);
+        $totalactivities = $childactivities + $gradecatgi;
+        grade_capture::set_provisional_weights($cid, $totalactivities, $this->students);
+        $subcatstr = get_string('subcategorygrade', 'local_gugcat');
+        $subcatgi = $DB->get_record('grade_items', array('itemtype'=>'manual', 'itemname'=>$subcatstr));
+        $this->assertNotFalse($subcatgi);
+    }
 }
