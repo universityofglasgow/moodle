@@ -147,6 +147,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
             'grddiscrepancystr' => get_string('gradediscrepancy', 'local_gugcat'),
             'importgradesstr' => get_string('importgrades', 'local_gugcat'),
             'releaseprvgrdstr' =>get_string('releaseprvgrades', 'local_gugcat'),
+            'blkimportstr' =>get_string('bulkimport', 'local_gugcat'),
             'displayactivities' => true,
             'displaychildactivities' =>$displaychild,
             'activities' => $activities,
@@ -162,6 +163,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $html .= html_writer::empty_tag('button', array('id' => 'release-submit', 'name' => 'release', 'type' => 'submit'));
         $html .= html_writer::empty_tag('button', array('id' => 'multiadd-submit', 'name' => 'multiadd', 'type' => 'submit'));
         $html .= html_writer::empty_tag('button', array('id'=>'importgrades-submit', 'name'=> 'importgrades', 'type'=>'submit'));
+        $html .= html_writer::empty_tag('button', array('id'=>'bulk-submit', 'name'=> 'bulkimport', 'type'=>'submit'));
         $html .= html_writer::empty_tag('input', array('name' => 'rowstudentno', 'type' => 'hidden', 'id'=>'studentno'));
         $html .= html_writer::end_tag('form');
         $html .= $this->footer();

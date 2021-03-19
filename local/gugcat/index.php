@@ -158,6 +158,7 @@ $importgrades = optional_param('importgrades', null, PARAM_NOTAGS);
 $showhidegrade = optional_param('showhidegrade', null, PARAM_NOTAGS);
 $rowstudentid = optional_param('studentid', null, PARAM_NOTAGS);
 $newgrades = optional_param_array('newgrades', null, PARAM_NOTAGS);
+$bulkimport = optional_param('bulkimport', null, PARAM_NOTAGS);
 
 //params for logs
 $eventcontext = $coursecontext;
@@ -208,16 +209,16 @@ if (isset($release)){
     redirect($URL);
     exit;
 
-// Process import grades
+// Process single import grades
 }else if(isset($importgrades)){
     if ($valid_22point_scale){
         if(!empty($childactivities)){
-            //push selected subcategory into $childactivities
-            array_push($childactivities, $gradecatgi[$activityid]);
-            grade_capture::import_from_gradebook($courseid, $selectedmodule, $childactivities);
-        }
-        else
+            // Put the selected activity and sub category gi into array 
+            $acts = array($selectedmodule, $gradecatgi[$activityid]);
+            grade_capture::import_from_gradebook($courseid, $selectedmodule, $acts);
+        }else{
             grade_capture::import_from_gradebook($courseid, $selectedmodule, $activities);
+        }
         local_gugcat::notify_success('successimport');
         $event = \local_gugcat\event\import_grade::create($params);
         $event->trigger();
@@ -247,6 +248,12 @@ if (isset($release)){
     $event->trigger();
     unset($showhidegrade);
     unset($rowstudentid);
+    redirect($URL);
+    exit;
+}else if(isset($bulkimport)){
+    $gradeitems = array_column($childactivities, 'gradeitem');
+    $scaleids_ = array_column($gradeitems, 'scaleid');
+    unset($bulkimport);
     redirect($URL);
     exit;
 }
