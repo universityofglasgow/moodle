@@ -49,7 +49,7 @@ class grade_aggregation_testcase extends advanced_testcase {
         $gen->enrol_user($this->student2->id, $this->course->id, 'student');
         $gen->enrol_user($this->teacher->id, $this->course->id, 'editingteacher');
         $this->students = get_enrolled_users($this->coursecontext, 'local/gugcat:gradable');
-        $gen->create_module('assign', array('id' => 1, 'course' => $this->course->id));
+        $this->assign1 = $gen->create_module('assign', array('id' => 1, 'course' => $this->course->id));
         $assignid = $DB->get_field('grade_items', 'id', array('courseid' => $this->course->id, 'itemmodule' => 'assign'));
         $DB->set_field('grade_items', 'grademax', '22.00000', array('id'=>$assignid));
 
@@ -227,5 +227,43 @@ class grade_aggregation_testcase extends advanced_testcase {
 
         $aggregatedgrade = grade_aggregation::get_aggregated_grade($userid, $subcatobj, $gradeitems);
         $this->assertEquals($aggregatedgrade, 15);
+    }
+
+    public function test_get_parent_child_activities(){
+        global $DB;
+        $assignid = $DB->get_field('grade_items', 'id', array('courseid' => $this->course->id, 'itemmodule' => 'assign'));
+
+        $courseid = $this->course->id;
+        //create main category
+        $category = $this->getDataGenerator()->create_grade_category(array('courseid' => $courseid));
+
+        $DB->set_field('grade_items', 'categoryid', $category->id, array('id'=> $assignid));
+
+        $modarray = grade_aggregation::get_parent_child_activities($courseid, $category->id);
+
+        $this->assertEquals($this->assign1->id, $modarray[0]->gradeitem->iteminstance);
+
+        //create sub category
+        $subcategory = $this->getDataGenerator()->create_grade_category(
+            array(
+                'courseid' => $courseid,
+                'parent' => $category->id)
+        );
+        
+        $modarray = grade_aggregation::get_parent_child_activities($courseid, $category->id);
+        $this->assertEquals($subcategory->id, $modarray[1]->gradeitem->iteminstance);
+        $this->assertEquals('category', $modarray[1]->modname);
+
+        //create module inside subcategory
+        $assign = $this->getDataGenerator()->create_module('assign', array('course' => $this->course->id));
+        $gradeitemid = $DB->get_field('grade_items', 'id', array('courseid' => $this->course->id, 'itemmodule' => 'assign', 'iteminstance' => $assign->id));
+        $DB->set_field('grade_items', 'grademax', '22.00000', array('id'=> $gradeitemid));
+        $DB->set_field('grade_items', 'categoryid', $subcategory->id, array('id'=> $gradeitemid));
+
+        $modarray = grade_aggregation::get_parent_child_activities($courseid, $category->id);
+        $this->assertEquals($assign->id, $modarray[1]->gradeitem->iteminstance);
+        $this->assertEquals('assign', $modarray[1]->modname);
+
+        $this->assertCount(3, $modarray);
     }
 }
