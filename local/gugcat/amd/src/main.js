@@ -344,7 +344,11 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                 toggle_display_assessments();
                 break;
             case btn_bulk_import:
-                document.getElementById('bulk-submit').click();
+                if(!$(".gradeitems").text().includes("Moodle Grade[Date]")){
+                    showModal('importgrades', 'modalimportgrades', 'confirmimport');
+                }else{
+                    document.getElementById('bulk-submit').click();
+                }
                 break;
             default:
                 break;
