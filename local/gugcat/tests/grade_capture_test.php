@@ -106,6 +106,28 @@ class grade_capture_testcase extends advanced_testcase {
         $columns = grade_capture::get_columns();
         $this->assertEquals($row->firstgrade, get_string('nograde', 'local_gugcat'));
         $this->assertNotContains($mgcolumn, $columns);
+
+        // Multiple course modules to be imported
+        global $DB;
+        $gen = $this->getDataGenerator();
+        $mod1 = $gen->create_module('assign', array('name'=> 'Assessment 1','course' => $this->course->id));
+        $mod2 = $gen->create_module('assign', array('name'=> 'Assessment 2','course' => $this->course->id));
+        $DB->set_field('grade_items', 'grademax', '22.00000', array('iteminstance'=>$mod1->id, 'itemmodule' => 'assign'));
+        $DB->set_field('grade_items', 'grademax', '22.00000', array('iteminstance'=>$mod2->id, 'itemmodule' => 'assign'));
+        $gcatactivities = local_gugcat::get_activities($this->course->id);
+        // Assert $gcatactivities is 3 as we added 2 new assessments
+        $this->assertCount(3, $gcatactivities);
+
+        // Import all 3 activities
+        grade_capture::import_from_gradebook($this->course->id, $gcatactivities, $gcatactivities);
+        
+        // Check each activities will now have moodle grade and provisional grade items.
+        foreach ($gcatactivities as $act) {
+            $moodlegi = grade_item::fetch(array('iteminfo'=>$act->gradeitemid, 'itemtype' => 'manual', 'itemname' => get_string('moodlegrade', 'local_gugcat')));
+            $prvgi = grade_item::fetch(array('iteminfo'=>$act->gradeitemid, 'itemtype' => 'manual', 'itemname' => get_string('provisionalgrd', 'local_gugcat')));
+            $this->assertNotFalse($moodlegi);
+            $this->assertNotFalse($prvgi);
+        }
     }
 
     public function test_grade_capture_rows() {
