@@ -257,10 +257,10 @@ if (isset($release)){
         $scaleid = $activity->gradeitem->scaleid;
         $gradetype = $activity->gradeitem->gradetype;
         $grademax = $activity->gradeitem->grademax;
-        if($gradetype != GRADE_TYPE_VALUE || $gradetype != GRADE_TYPE_SCALE){
-            $importerror[] = $activity->id;
-        }else if(!is_null($scaleid) && !local_gugcat::is_scheduleAscale($gradetype, $grademax)){
-            $importerror[] = $activity->id;
+        if($gradetype != GRADE_TYPE_VALUE && $gradetype != GRADE_TYPE_SCALE){
+            $importerror[] = $activity->gradeitemid;
+        }else if($gradetype == GRADE_TYPE_SCALE && !local_gugcat::is_scheduleAscale($gradetype, $grademax)){
+            $importerror[] = $activity->gradeitemid;
         }
         // Stop the iteration if importerror is not empty
         if(!empty($importerror)){
