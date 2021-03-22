@@ -130,7 +130,7 @@ button .fa-caret-down{
     display: none;
 }
 
-.tabcontent-header >.selectdiv, #btn-blkimport{
+.tabcontent-header >.selectdiv{
     float: left;
 }
 /* Specific select style*/
@@ -227,12 +227,4 @@ td a:hover, .dropdown-item a:hover {
 
 .visible{
     display: block;
-}
-
-.child-select{
-    clear: both;
-}
-
-.child-select, #btn-blkimport{
-    margin: 5px 0 1.5em 0;
 }
