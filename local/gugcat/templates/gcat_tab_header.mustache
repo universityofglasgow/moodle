@@ -32,17 +32,7 @@
                 {{/activities}}
             </select>
         </div>
-        {{#displaychildactivities}}
-        <div class="selectdiv child-select">
-            <select id="select-child-act">
-                {{#childactivities}}
-                    <option {{selected}} value={{gradeitemid}} >{{name}}</option>
-                {{/childactivities}}
-            </select>
-        </div>
-        {{/displaychildactivities}}
     {{/displayactivities}}
-    {{#displaychildactivities}}<button class="btn btn-default btn-blue" id="btn-blkimport">{{blkimportstr}}</button>{{/displaychildactivities}}
     {{#adjustgrdstr}}<button class="btn btn-default btn-blue" data-toggle="dropdown">{{adjustgrdstr}}<i class="fa fa-caret-down"></i></button>{{/adjustgrdstr}}
     <div class="dropdown-menu">
         {{#importgradesstr}}<a class="dropdown-item" href="#" id="btn-import">{{importgradesstr}}</a>{{/importgradesstr}}
@@ -54,5 +44,14 @@
     {{#downloadcsvstr}}<button class="btn btn-default btn-download" id="btn-download">{{downloadcsvstr}}</button>{{/downloadcsvstr}}
     {{#releasefinalstr}}<button class="btn btn-default btn-download" id="btn-finalrelease">{{releasefinalstr}}</button>{{/releasefinalstr}}
     {{#releaseprvgrdstr}}<button class="btn btn-default btn-release" id="btn-release">{{releaseprvgrdstr}}</button>{{/releaseprvgrdstr}}
-  
+    {{#displaychildactivities}}
+    <div class="selectdiv child-select">
+        <select id="select-child-act">
+            {{#childactivities}}
+                <option {{selected}} value={{gradeitemid}} >{{name}}</option>
+            {{/childactivities}}
+        </select>
+    </div>
+    <button class="btn btn-default btn-blue" id="btn-blkimport">{{blkimportstr}}</button>
+    {{/displaychildactivities}}
 </div>
