@@ -250,9 +250,32 @@ if (isset($release)){
     unset($rowstudentid);
     redirect($URL);
     exit;
+// Process bulk import of components
 }else if(isset($bulkimport)){
-    $gradeitems = array_column($childactivities, 'gradeitem');
-    $scaleids_ = array_column($gradeitems, 'scaleid');
+    $importerror = array();
+    foreach ($childactivities as $activity) {
+        $scaleid = $activity->gradeitem->scaleid;
+        $gradetype = $activity->gradeitem->gradetype;
+        $grademax = $activity->gradeitem->grademax;
+        if(is_null($scaleid) && !local_gugcat::is_grademax22($gradetype, $grademax)){
+            $importerror[] = $activity->id;
+        }else if(!is_null($scaleid) && !local_gugcat::is_scheduleAscale($gradetype, $grademax)){
+            $importerror[] = $activity->id;
+        }
+        // Stop the iteration if importerror is not empty
+        if(!empty($importerror)){
+            break;
+        }
+    }
+    if(!empty($importerror)){
+        local_gugcat::notify_error('bulkimporterror');
+    }else{
+        // Put the selected activity and sub category gi into array 
+        $acts = array_merge($childactivities, array($gradecatgi[$activityid]));
+        // Proceed with bulk import
+        grade_capture::import_from_gradebook($courseid, $childactivities, $acts);
+        local_gugcat::notify_success('successimport');
+    }
     unset($bulkimport);
     redirect($URL);
     exit;
