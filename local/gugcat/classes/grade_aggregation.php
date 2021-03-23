@@ -234,7 +234,7 @@ class grade_aggregation{
                 $grd_ = (isset($pg) && !is_null($pg->finalgrade)) ? $pg->finalgrade 
                 : (isset($pg) && !is_null($pg->rawgrade) ? $pg->rawgrade 
                 : null);  
-                if($grd_ != MEDICAL_EXEMPTION){
+                if(intval($grd_) != MEDICAL_EXEMPTION){
                     $studentgrades[$id] = intval($grd_);
                 }
             }
@@ -247,8 +247,19 @@ class grade_aggregation{
             // If drop lowest is not empty, remove the n number of lowest grades
             if($subcatobj->droplow > 0){
                 asort($studentgrades, SORT_NUMERIC);
-                $studentgrades = array_slice($studentgrades, 3, count($studentgrades), true);
+                $studentgrades = array_slice($studentgrades, $subcatobj->droplow, count($studentgrades), true);
             }
+            
+            // Convert to 0 if grades has NON_SUBMISSION (-1)
+            if(in_array(NON_SUBMISSION, $studentgrades)){
+                foreach ($studentgrades as $id=>$value) {
+                    if($value == NON_SUBMISSION ){
+                        $studentgrades[$id] = 0;
+                    }
+                }
+                
+            }
+            
             // Array of components' grade items to be used in the calculation
             $grditems = empty($filtered) ? array() : array_column($filtered, 'gradeitem', 'gradeitemid');
             $calculatedgrd = self::calculate_grade($subcatobj->aggregation, $studentgrades, $grditems);
