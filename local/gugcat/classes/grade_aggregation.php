@@ -128,9 +128,9 @@ class grade_aggregation{
                     $invalid22scale = is_null($scaleid) && local_gugcat::is_grademax22($item->gradeitem->gradetype, $item->gradeitem->grademax)  && !isset($pg);
                     local_gugcat::set_grade_scale($scaleid);
                     $grade = is_null($grd) ? ( $grditemresit ? get_string('nogradeweight', 'local_gugcat') : get_string('nograderecorded', 'local_gugcat')) 
-                    : ($invalid22scale ? local_gugcat::convert_grade(intval($grd) + 1) : local_gugcat::convert_grade($grd));
+                    : ($invalid22scale ? local_gugcat::convert_grade(round($grd) + 1) : local_gugcat::convert_grade(round($grd)));
                     $grdvalue = get_string('nograderecorded', 'local_gugcat');
-                    $weight = !is_null($pg) ? (float)$pg->information : 0; //get weight from information column of provisional grades
+                    $weight = local_gugcat::is_child_activity($item) ? 0 : (!is_null($pg) ? (float)$pg->information : 0); //get weight from information column of provisional grades
                     if(!is_null($grd) && $grade !== MEDICAL_EXEMPTION_AC){
                         $grdvalue = $invalid22scale ? $grd : (($grade === NON_SUBMISSION_AC) ? 0 : (float)$grd - (float)1); //normalize to actual grade value for computation
                         $floatweight += ($grade === NON_SUBMISSION_AC) ? 0 : $weight;
@@ -226,17 +226,32 @@ class grade_aggregation{
                 return $gi->gradeitem->categoryid == $categoryid;
             });
             // Filter child grade items object to grades
-            $actgrds = empty($filtered) ? array() : array_column($filtered, 'grades');
+            $actgrds = empty($filtered) ? array() : array_column($filtered, 'grades', 'gradeitemid');
             $studentgrades = array();
-            foreach ($actgrds as $grades) {
+            foreach ($actgrds as $id=>$grades) {
                 // Only get provisional grades $pg from child assessments
                 $pg = isset($grades->provisional[$userid]) ? $grades->provisional[$userid] : null;
                 $grd_ = (isset($pg) && !is_null($pg->finalgrade)) ? $pg->finalgrade 
                 : (isset($pg) && !is_null($pg->rawgrade) ? $pg->rawgrade 
                 : null);  
-                $studentgrades[] = intval($grd_);
+                if($grd_ != MEDICAL_EXEMPTION){
+                    $studentgrades[$id] = intval($grd_);
+                }
             }
-            $calculatedgrd = self::calculate_grade($subcatobj->aggregation, $studentgrades);
+            
+            // Aggregate only graded
+            if($subcatobj->aggregateonlygraded == 1){
+                $studentgrades = array_filter($studentgrades);
+            }
+
+            // If drop lowest is not empty, remove the n number of lowest grades
+            if($subcatobj->droplow > 0){
+                asort($studentgrades, SORT_NUMERIC);
+                $studentgrades = array_slice($studentgrades, 3, count($studentgrades), true);
+            }
+            // Array of components' grade items to be used in the calculation
+            $grditems = empty($filtered) ? array() : array_column($filtered, 'gradeitem', 'gradeitemid');
+            $calculatedgrd = self::calculate_grade($subcatobj->aggregation, $studentgrades, $grditems);
             if(isset($calculatedgrd) && $grd != $calculatedgrd){
                 local_gugcat::update_grade($userid, $pgobj->itemid, $calculatedgrd);
             }
@@ -247,23 +262,45 @@ class grade_aggregation{
     }
 
     /**
-     * Checks aggregation type and returns the calculated grade
+     * Checks aggregation type and returns the calculated grade, only calculates highest, lowest, average and weighted mean of grades
      * 
      * @param int $aggregationtype aggregation method id
-     * @param array $grades An array of grades in integer type
-     * @return int $grade
+     * @param array $grade_values An array of values to be aggregated
+     * @param array $items The array of grade_items
+     * @return int $grade The new calculated grade
      */
-    public static function calculate_grade($aggregationtype, $grades){
-        if(empty($grades)){
+    public static function calculate_grade($aggregationtype, $grade_values, $items){
+        if(empty($grade_values)){
             return null;
         }
-
+    
         switch ($aggregationtype) {
+            case GRADE_AGGREGATE_MIN:
+                return min($grade_values);
             case GRADE_AGGREGATE_MAX:
-                return max($grades);
+                return max($grade_values);
+           
+            case GRADE_AGGREGATE_WEIGHTED_MEAN:// Weighted average of all existing final grades, weight specified in coef
+                $weightsum = 0;
+                $sum       = 0;
+
+                foreach ($grade_values as $itemid=>$grade_value) {
+                    if (!isset($items[$itemid]) || $items[$itemid]->aggregationcoef <= 0) {
+                        continue;
+                    }
+                    $weightsum += $items[$itemid]->aggregationcoef;
+                    $sum       += $items[$itemid]->aggregationcoef * $grade_value;
+                }
+                $agg_grade = ($weightsum == 0) ? null : $sum / $weightsum;
+                return $agg_grade;
+
+
+            case GRADE_AGGREGATE_MEAN:
             default:
-                return max($grades);
-                break;
+                $num = count($grade_values);
+                $sum = array_sum($grade_values);
+                $agg_grade = $sum / $num;
+                return $agg_grade;
         }
     }
 
