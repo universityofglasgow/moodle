@@ -131,10 +131,9 @@ class local_gugcat {
                 $scaleid = $activity->gradeitem->scaleid;
                 $gradetype = $activity->gradeitem->gradetype;
                 $grademax = $activity->gradeitem->grademax;
-
-                $valid_22point_scale = is_null($scaleid) ? local_gugcat::is_grademax22($gradetype, $grademax) : local_gugcat::is_scheduleAscale($gradetype, $grademax);
-                if(!$valid_22point_scale)
+                if($gradetype != GRADE_TYPE_VALUE && !local_gugcat::is_scheduleAscale($gradetype, $grademax)){
                     unset($activities[$key]);
+                }
             }
         }
         return $activities;

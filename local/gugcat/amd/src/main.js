@@ -345,7 +345,7 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                 break;
             case btn_bulk_import:
                 if(!$(".gradeitems").text().includes("Moodle Grade[Date]")){
-                    showModal('importgrades', 'modalimportgrades', 'confirmimport');
+                    showModal('bulkimportgrades', 'modalimportgrades', 'confirmimport');
                 }else{
                     document.getElementById('bulk-submit').click();
                 }
