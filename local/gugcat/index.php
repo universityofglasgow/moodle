@@ -275,6 +275,19 @@ if (isset($release)){
         // Proceed with bulk import
         grade_capture::import_from_gradebook($courseid, $childactivities, $acts);
         local_gugcat::notify_success('successimport');
+        //log of bulk import
+        $params = array(
+            'context' => context_course::instance($courseid),
+            'other' => array(
+                'courseid' => $courseid,
+                'activityid' => $activity->id,
+                'categoryid' => $categoryid,
+                'categoryname' => $activity->gradeitem->itemname,
+                'page'=> $page
+            )
+        );
+        $event = \local_gugcat\event\bulk_import::create($params);
+        $event->trigger();
     }
     unset($bulkimport);
     redirect($URL);
