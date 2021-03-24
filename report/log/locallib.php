@@ -142,7 +142,7 @@ function report_log_usercourse($userid, $courseid, $coursestart, $logreader = ''
     return $DB->get_records_sql("SELECT FLOOR(($timefield - $coursestart)/" . DAYSECS . ") AS day, COUNT(*) AS num
                                    FROM {" . $logtable . "}
                                   WHERE userid = :userid
-                                        AND $timefield > $coursestart $courseselect $nonanonymous
+                                        AND $timefield > $coursestart $courseselect
                                GROUP BY FLOOR(($timefield - $coursestart)/" . DAYSECS .")", $params);
 }
 
