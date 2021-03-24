@@ -245,12 +245,6 @@ class grade_aggregation{
                 $studentgrades = array_filter($studentgrades);
             }
 
-            // If drop lowest is not empty, remove the n number of lowest grades
-            if($subcatobj->droplow > 0){
-                asort($studentgrades, SORT_NUMERIC);
-                $studentgrades = array_slice($studentgrades, $subcatobj->droplow, count($studentgrades), true);
-            }
-            
             // Convert to 0 if grades has NON_SUBMISSION (-1)
             if(in_array(NON_SUBMISSION, $studentgrades)){
                 foreach ($studentgrades as $id=>$value) {
@@ -258,7 +252,12 @@ class grade_aggregation{
                         $studentgrades[$id] = 0;
                     }
                 }
-                
+            }
+
+            // If drop lowest is not empty, remove the n number of lowest grades
+            if($subcatobj->droplow > 0){
+                asort($studentgrades, SORT_NUMERIC);
+                $studentgrades = array_slice($studentgrades, $subcatobj->droplow, count($studentgrades), true);
             }
             
             // Array of components' grade items to be used in the calculation
@@ -291,7 +290,6 @@ class grade_aggregation{
                 return min($grade_values);
             case GRADE_AGGREGATE_MAX:
                 return max($grade_values);
-           
             case GRADE_AGGREGATE_WEIGHTED_MEAN:// Weighted average of all existing final grades, weight specified in coef
                 $weightsum = 0;
                 $sum       = 0;
@@ -305,8 +303,6 @@ class grade_aggregation{
                 }
                 $agg_grade = ($weightsum == 0) ? null : $sum / $weightsum;
                 return $agg_grade;
-
-
             case GRADE_AGGREGATE_MEAN:
             default:
                 $num = count($grade_values);
