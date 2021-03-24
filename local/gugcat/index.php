@@ -195,7 +195,26 @@ if (isset($release)){
         foreach ($newgrades as $id=>$item) {
             if(isset($item)){
                 $grade = array_search($item, local_gugcat::$GRADES);
-                local_gugcat::add_update_grades($id, $gradeitemid, $grade);
+                local_gugcat::add_update_grades($id, $gradeitemid, $grade, '');
+                //check if child activities are existing
+                if(!empty($childactivities)){
+                    $subcatid = local_gugcat::get_grade_item_id($courseid, $selectedmodule->gradeitem->categoryid, get_string('subcategorygrade', 'local_gugcat'));
+                    $fields = 'itemid, id, rawgrade, finalgrade, overridden';
+                    // Get provisional grades
+                    $grade = $DB->get_record('grade_grades', array('itemid' => $subcatid, 'userid'=>$id), $fields);
+                    $grd = !is_null($grade->finalgrade) ? $grade->finalgrade 
+                    : (!is_null($grade->rawgrade) ? $grade->rawgrade 
+                    : null);
+                    //if subcat has a grade and it is not overridden.
+                    if(isset($grd) && !is_null($grd) && $grade->overridden == 0){
+                        $notes = 'grade';
+                        local_gugcat::update_components_notes($id, $subcatid, $notes);
+                        foreach($childactivities as $ca){
+                            $prvgrdid = local_gugcat::set_prv_grade_id($courseid, $ca);
+                            local_gugcat::update_components_notes($id, $prvgrdid, $notes);
+                        }
+                    }
+                }
             }
         }
         local_gugcat::notify_success('successaddall');
@@ -218,6 +237,24 @@ if (isset($release)){
             // Put the selected activity and sub category gi into array 
             $acts = array($selectedmodule, $gradecatgi[$activityid]);
             grade_capture::import_from_gradebook($courseid, $selectedmodule, $acts);
+            foreach($students as $student){
+                $subcatid = local_gugcat::get_grade_item_id($courseid, $selectedmodule->gradeitem->categoryid, get_string('subcategorygrade', 'local_gugcat'));
+                $fields = 'itemid, id, rawgrade, finalgrade, overridden';
+                // Get provisional grades
+                $grade = $DB->get_record('grade_grades', array('itemid' => $subcatid, 'userid'=>$student->id), $fields);
+                $grd = !is_null($grade->finalgrade) ? $grade->finalgrade 
+                : (!is_null($grade->rawgrade) ? $grade->rawgrade 
+                : null);
+                //if subcat has a grade and it is not overridden.
+                if(isset($grd) && !is_null($grd) && $grade->overridden == 0){
+                    $notes = 'import';
+                    local_gugcat::update_components_notes($student->id, $subcatid, $notes);
+                    foreach($childactivities as $ca){
+                        $prvgrdid = local_gugcat::set_prv_grade_id($courseid, $ca);
+                        local_gugcat::update_components_notes($student->id, $prvgrdid, $notes);
+                    }
+                }
+            }
         }else{
             grade_capture::import_from_gradebook($courseid, $selectedmodule, $activities);
         }
@@ -276,6 +313,25 @@ if (isset($release)){
         $acts = array_merge($childactivities, array($gradecatgi[$activityid]));
         // Proceed with bulk import
         grade_capture::import_from_gradebook($courseid, $childactivities, $acts);
+        //update notes for grade history
+        foreach($students as $student){
+            $subcatid = local_gugcat::get_grade_item_id($courseid, $selectedmodule->gradeitem->categoryid, get_string('subcategorygrade', 'local_gugcat'));
+            $fields = 'itemid, id, rawgrade, finalgrade, overridden';
+            // Get provisional grades
+            $grade = $DB->get_record('grade_grades', array('itemid' => $subcatid, 'userid'=>$student->id), $fields);
+            $grd = !is_null($grade->finalgrade) ? $grade->finalgrade 
+            : (!is_null($grade->rawgrade) ? $grade->rawgrade 
+            : null);
+            //if subcat has a grade and it is not overridden.
+            if(isset($grd) && !is_null($grd) && $grade->overridden == 0){
+                $notes = 'import';
+                local_gugcat::update_components_notes($student->id, $subcatid, $notes);
+                foreach($childactivities as $ca){
+                    $prvgrdid = local_gugcat::set_prv_grade_id($courseid, $ca);
+                    local_gugcat::update_components_notes($student->id, $prvgrdid, $notes);
+                }
+            }
+        }
         local_gugcat::notify_success('successimport');
         //log of bulk import
         $params = array(

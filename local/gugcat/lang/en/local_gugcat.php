@@ -61,7 +61,7 @@ $string['gugcat:displayassessments'] = 'Switch display of assessments on Student
 $string['gugcat:gradable'] = 'GCAT gradable item';
 $string['gugcat:revealidentities'] = 'Reveal student identities';
 $string['gugcat:view'] = 'View Grade Capture and Aggregation Tool';
-$string['grade'] = "Grade";
+$string['gradeformgrade'] = "Grade";
 $string['gradebookgrade'] = 'Gradebook Grade ';
 $string['gradediscrepancy'] = 'Grade Discrepancy';
 $string['hiddengrade'] = 'Hidden grade';
@@ -164,6 +164,11 @@ $string['eventoverridegrade'] = 'Override student\'s course grade';
 $string['eventreleasefinalgrades'] = 'Release final assessment grades';
 $string['eventreleaseprvgrades'] = 'Release provisional grades';
 $string['eventrequireresit'] = 'Require Resit';
+
+//aggregated assessment grade history notes
+$string['aggregation'] = 'N/A - Aggregation calculation function updated';
+$string['grade'] = 'N/A - Component grade(s) updated, see component grade history for more information';
+$string['import'] = 'N/A - Component grade(s) imported';
 
 //gcat grade category
 $string['gcat_category'] = 'DO NOT USE';

@@ -363,7 +363,7 @@ class local_gugcat {
             //if insert successful - update provisional grade
             return (!$grade_->insert()) ? false : 
             ((self::$PRVGRADEID && !is_null($grade))
-            ? self::update_grade($userid, self::$PRVGRADEID, $grade) 
+            ? self::update_grade($userid, self::$PRVGRADEID, $grade, '') 
             : false);
             
         }else{
@@ -373,7 +373,7 @@ class local_gugcat {
             if($grade_->update()){
                 //update timemodified of grade item
                 $DB->set_field('grade_items', 'timemodified', $grade_->timemodified, array('id' => $itemid));
-                return self::update_grade($userid, self::$PRVGRADEID, $grade);
+                return self::update_grade($userid, self::$PRVGRADEID, $grade, '');
             }
             return false;
         }
@@ -586,7 +586,7 @@ class local_gugcat {
                 if(!is_null($grd->usermodified) && !is_null($grd->rawgrade)){
                 $modby = $DB->get_record('user', array('id' => $grd->usermodified), $fields);
                 $grd->modby = (isset($modby->lastname) && isset($modby->firstname)) ? $modby->lastname . ', '.$modby->firstname : null;
-                $grd->notes = !is_null($grd->feedback) ? $grd->feedback : 'N/A - '.$gradeitem->itemname;
+                $grd->notes = !is_null($grd->feedback) ? ($grd->feedback != "" ? $grd->feedback : 'N/A - '.$gradeitem->itemname) : 'N/A - '.$gradeitem->itemname;
                 $grd->type = ($gradeitem->itemname == get_string('moodlegrade', 'local_gugcat')) ? 
                 $gradeitem->itemname. '<br>'.date("j/n/Y", strtotime(userdate($grd->timemodified)))
                  : $gradeitem->itemname;
@@ -602,6 +602,14 @@ class local_gugcat {
         });
 
         return $grades_arr;
+    }
+
+    public static function get_subcategory_history($courseid, $module, $studentid){
+        global $DB;
+        $activityid = optional_param('activityid', null, PARAM_INT);
+        $select = 'courseid = '.$courseid.' AND '.self::compare_iteminfo() . ' AND ' . 'itemname="'.get_string('subcategorygrade', 'local_gugcat').'"';
+        $subcatgi = $DB->get_record_select('grade_items', $select, ['iteminfo' => $module->id]);
+        return $subcatgi;
     }
     
     /**
@@ -893,7 +901,7 @@ class local_gugcat {
     }
 
     /**
-     * Detele gcat items in grade_items and grade_grades table
+     * Delete gcat items in grade_items and grade_grades table
      * @param int $courseid 
      * @param mixed $activity
      */
@@ -914,5 +922,95 @@ class local_gugcat {
             // Delete records in grade_items
             $DB->delete_records_select('grade_items', $select, ['iteminfo' => $activity->gradeitemid]);
         }
+    }
+
+    /**
+     * Update child components notes and timemodified
+     * @param int $userid
+     * @param int $itemid
+     * @param string $status
+     */
+    public static function update_components_notes($userid, $itemid, $status){
+        $subcatgrade = new grade_grade(array('userid' => $userid, 'itemid' => $itemid), true);
+        $subcatgrade->feedback = $status;
+        $subcatgrade->timemodified = time();
+        $subcatgrade->update();
+    }
+
+    /**
+     * Returns rows of aggregated assessment grade history
+     * @param int $courseid
+     * @param int $userid
+     * @param mixed $module
+     * @param mixed $childacts
+     */
+    public static function get_aggregated_assessment_history($courseid, $userid, $module, $childacts){
+        global $DB;
+
+        $i = 0;
+        $rows = array();
+        $notes = array('aggregation', 'grade', 'import');
+        $subcatid = local_gugcat::get_grade_item_id($courseid, $module->gradeitem->iteminstance, get_string('subcategorygrade', 'local_gugcat'));
+        $sort = 'id DESC';
+        $fields = 'id, itemid, rawgrade, finalgrade, feedback, timemodified, usermodified';
+        $select = 'feedback IS NOT NULL AND feedback <> "" AND rawgrade IS NOT NULL AND itemid='.$subcatid.' AND userid='.$userid;
+        $gradehistory_arr = $DB->get_records_select('grade_grades_history', $select, null, $sort, $fields);
+        if($gradehistory_arr > 0){
+            foreach($gradehistory_arr as $gradehistory){
+                isset($rows[$i]) ? null : $rows[$i] = new stdClass();
+                isset($rows[$i]->grades) ? null : $rows[$i]->grades = array();
+                $rows[$i]->timemodified = $gradehistory->timemodified;
+                $rows[$i]->date = date("j/n", strtotime(userdate($gradehistory->timemodified))).'<br>'.date("h:i", strtotime(userdate($gradehistory->timemodified)));
+                $rows[$i]->notes = $gradehistory->feedback;
+                $fields = 'firstname, lastname';
+                $modby = (!in_array($gradehistory->feedback, $notes)) ? $DB->get_record('user', array('id' => $gradehistory->usermodified), $fields) : null;
+                $rows[$i]->modby = !is_null($modby) ? ((isset($modby->lastname) && isset($modby->firstname)) ? $modby->lastname . ', '.$modby->firstname : 'System Update') : 'System Update';
+                $rows[$i]->notes = $gradehistory->feedback == 'aggregation' ? get_string('aggregation', 'local_gugcat') 
+                : ($gradehistory->feedback == 'grade' ? get_string('grade', 'local_gugcat') 
+                : ($gradehistory->feedback == 'import' ? get_string('import', 'local_gugcat') : $gradehistory->feedback));
+                if($i+1 < sizeof($gradehistory_arr)){
+                isset($rows[$i+1]) ? null : $rows[$i+1] = new stdClass();
+                isset($rows[$i+1]->grade) ? null : $rows[$i+1]->grade = array();
+                $rows[$i+1]->grade = !is_null($gradehistory->finalgrade) ? self::convert_grade($gradehistory->finalgrade) 
+                : (!is_null($gradehistory->rawgrade) ? self::convert_grade($gradehistory->rawgrade) 
+                : null); 
+                }
+                array_push($rows[$i]->grades, $gradehistory);
+                $i++;
+            }
+        }
+         //get the latest grade.
+         if($grade = $DB->get_record('grade_grades', array('userid'=>$userid, 'itemid'=>$subcatid))){
+            isset($rows[0]->grade) ? null : $rows[0]->grade = new stdClass();
+            $rows[0]->grade = !is_null($grade->finalgrade) ? self::convert_grade($grade->finalgrade) 
+            : (!is_null($grade->rawgrade) ? self::convert_grade($grade->rawgrade) 
+            : null); 
+        }
+        $i = 0;
+        $childacts = self::get_activities($courseid, $module->gradeitem->iteminstance);
+        foreach($childacts as $ca){
+            $j = 0;
+            $notes = array('aggregation', 'grade', 'import');
+            $prvgrdstr = get_string('provisionalgrd', 'local_gugcat');
+            $prvgrdid = local_gugcat::get_grade_item_id($courseid, $ca->gradeitemid, $prvgrdstr);
+            $sort = 'id DESC';
+            $fields = 'id, itemid, rawgrade, finalgrade, feedback';
+            $select = 'feedback IS NOT NULL AND feedback <> "" AND rawgrade IS NOT NULL AND itemid='.$prvgrdid.' AND userid='.$userid;
+            $gradehistory_arr = $DB->get_records_select('grade_grades_history', $select, null, $sort, $fields);
+            if(sizeof($gradehistory_arr) > 0){
+                foreach($gradehistory_arr as $gradehistory){
+                    if(isset($rows[$j])){
+                        isset($rows[$j]->childgrades) ? null : $rows[$j]->childgrades = array();
+                        $gradehistory->grade = !is_null($gradehistory->finalgrade) ? self::convert_grade($gradehistory->finalgrade) 
+                        : (!is_null($gradehistory->rawgrade) ? self::convert_grade($gradehistory->rawgrade) 
+                        : null); 
+                        $rows[$j]->childgrades[$i] = $gradehistory;
+                        $j++;
+                    }
+                }
+            }
+            $i++;
+        }
+        return $rows;
     }
 }

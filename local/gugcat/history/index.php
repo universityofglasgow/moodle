@@ -62,7 +62,9 @@ if (is_null($scaleid) && local_gugcat::is_grademax22($module->gradeitem->gradety
 local_gugcat::set_grade_scale($scaleid);
 local_gugcat::set_prv_grade_id($courseid, $module);
 
-$history = local_gugcat::get_grade_history($courseid, $module, $studentid);
+$childacts = ($module->modname == 'category') ? local_gugcat::get_activities($courseid, $module->gradeitem->iteminstance) : null;
+$history = ($module->modname == 'category') ? local_gugcat::get_aggregated_assessment_history($courseid, $studentid, $module, $childacts) 
+: local_gugcat::get_grade_history($courseid, $module, $studentid);
 
 //logs for assessment grade history viewed
 $params = array(
@@ -81,5 +83,8 @@ $event->trigger();
 
 echo $OUTPUT->header();
 $renderer = $PAGE->get_renderer('local_gugcat');
-echo $renderer->display_grade_history($student, $module->name, $history);
+if($module->modname == 'category')
+    echo $renderer->display_aggregated_assessment_history($childacts, $history, $student, $module->name);
+else
+    echo $renderer->display_grade_history($student, $module->name, $history);
 echo $OUTPUT->footer();
