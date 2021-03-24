@@ -127,7 +127,7 @@ if ($fromform = $mform->get_data()) {
             //also update notes for subcomponents
             if($is_subcat){
                 foreach($components as $ca){
-                    $prvgrdid = local_gugcat::set_prv_grade_id($courseid, $ca);
+                    $prvgrdid = local_gugcat::get_grade_item_id($courseid, $ca->gradeitemid, get_string('provisionalgrd', 'local_gugcat'));
                     local_gugcat::update_components_notes($studentid, $prvgrdid, $fromform->notes);
                 }
             }

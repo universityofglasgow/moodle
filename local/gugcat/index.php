@@ -210,7 +210,7 @@ if (isset($release)){
                         $notes = 'grade';
                         local_gugcat::update_components_notes($id, $subcatid, $notes);
                         foreach($childactivities as $ca){
-                            $prvgrdid = local_gugcat::set_prv_grade_id($courseid, $ca);
+                            $prvgrdid = local_gugcat::get_grade_item_id($courseid, $ca->gradeitemid, get_string('provisionalgrd', 'local_gugcat'));
                             local_gugcat::update_components_notes($id, $prvgrdid, $notes);
                         }
                     }
@@ -250,7 +250,7 @@ if (isset($release)){
                     $notes = 'import';
                     local_gugcat::update_components_notes($student->id, $subcatid, $notes);
                     foreach($childactivities as $ca){
-                        $prvgrdid = local_gugcat::set_prv_grade_id($courseid, $ca);
+                        $prvgrdid = local_gugcat::get_grade_item_id($courseid, $ca->gradeitemid, get_string('provisionalgrd', 'local_gugcat'));
                         local_gugcat::update_components_notes($student->id, $prvgrdid, $notes);
                     }
                 }
@@ -327,7 +327,7 @@ if (isset($release)){
                 $notes = 'import';
                 local_gugcat::update_components_notes($student->id, $subcatid, $notes);
                 foreach($childactivities as $ca){
-                    $prvgrdid = local_gugcat::set_prv_grade_id($courseid, $ca);
+                    $prvgrdid = local_gugcat::get_grade_item_id($courseid, $ca->gradeitemid, get_string('provisionalgrd', 'local_gugcat'));
                     local_gugcat::update_components_notes($student->id, $prvgrdid, $notes);
                 }
             }

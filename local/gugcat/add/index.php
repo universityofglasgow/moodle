@@ -115,7 +115,7 @@ if ($fromform = $mform->get_data()) {
             $childactivities = local_gugcat::get_activities($courseid, $module->gradeitem->categoryid);
             local_gugcat::update_components_notes($studentid, $subcatid, $notes);
             foreach($childactivities as $ca){
-                $prvgrdid = local_gugcat::set_prv_grade_id($courseid, $ca);
+                $prvgrdid = local_gugcat::get_grade_item_id($courseid, $ca->gradeitemid, get_string('provisionalgrd', 'local_gugcat'));
                 local_gugcat::update_components_notes($studentid, $prvgrdid, $notes);
             }
         }
