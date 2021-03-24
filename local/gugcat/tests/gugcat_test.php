@@ -320,6 +320,64 @@ class local_gugcat_testcase extends advanced_testcase {
         $this->assertEquals($module->gradeitemid, $this->cm->gradeitemid);
     }
 
+    public function test_delete_gcat_items(){
+        global $DB;
+        $cid = $this->course->id;
+        // Create an assessment first
+        $gen = $this->getDataGenerator();
+        $mod = $gen->create_module('assign', array('name'=> 'Assessment Deletion','course' => $this->course->id));
+        $DB->set_field('grade_items', 'grademax', '22.00000', array('iteminstance'=>$mod->id, 'itemmodule' => 'assign'));
+        // Get the grade item of the new assessment
+        $gi = new grade_item(['courseid' => $cid, 'iteminstance' => $mod->id, 'itemmodule' => 'assign'], true);
+        $module = local_gugcat::get_activity($cid, $gi->id);
+
+        // Import assessment to GCAT
+        grade_capture::import_from_gradebook($cid, $module, array($module));
+
+        // Assert module is imported
+        $moodlegi = grade_item::fetch(array('iteminfo'=>$module->gradeitemid, 'itemtype' => 'manual', 'itemname' => get_string('moodlegrade', 'local_gugcat')));
+        $prvgi = grade_item::fetch(array('iteminfo'=>$module->gradeitemid, 'itemtype' => 'manual', 'itemname' => get_string('provisionalgrd', 'local_gugcat')));
+        $this->assertNotFalse($moodlegi);
+        $this->assertNotFalse($prvgi);
+
+        $gcatactivities = local_gugcat::get_activities($this->course->id);
+        // Assert $gcatactivities is 2 as we added 1 new assessment
+        $this->assertCount(2, $gcatactivities);
+
+        // Delete assessment in moodle, this will set deletioninprogress = 1 in course_modules table
+        $DB->set_field('course_modules', 'deletioninprogress', 1, array('id' => $mod->cmid, 'course' => $cid));
+
+        // Delete gcat items for this assessment
+        local_gugcat::delete_gcat_items($cid, $module);
+
+        // Call get_activities again, this will call the delete_gcat_items() funtion
+        // because of the deletioninprogress = 1
+        $gcatactivities = local_gugcat::get_activities($cid);
+        // Assert $gcatactivities is 1 as the previously added assessment was already deleted in moodle;
+        $this->assertCount(1, $gcatactivities);
+        
+        // Assert module will not have moodle and provisional grade items
+        $moodlegi = grade_item::fetch(array('iteminfo'=>$module->gradeitemid, 'itemtype' => 'manual', 'itemname' => get_string('moodlegrade', 'local_gugcat')));
+        $prvgi = grade_item::fetch(array('iteminfo'=>$module->gradeitemid, 'itemtype' => 'manual', 'itemname' => get_string('provisionalgrd', 'local_gugcat')));
+        $this->assertFalse($moodlegi);
+        $this->assertFalse($prvgi);
+    }
+
+    public function test_convert_grade(){
+        // Populate static $GRADES scales
+        // Setting it to null will call to get gcat scale in json file
+        local_gugcat::set_grade_scale(null);
+
+        // convert_grade function will return the grade accd to gradetype, default is GRADE_TYPE_SCALE
+        $grade = 10; // D2 in 22 point scale
+
+        $return = local_gugcat::convert_grade($grade, GRADE_TYPE_VALUE);
+        $this->assertEquals(10.00, $return);
+        // As we are adjust grade in converting to 22 pt scale, we will add 1
+        $return = local_gugcat::convert_grade($grade+1);
+        $this->assertEquals('D2', $return);
+    }
+
     public static function default_custom_field_category_object(){
         $customfieldcategory = new stdClass();
         $customfieldcategory->name = get_string('gugcatoptions', 'local_gugcat');
