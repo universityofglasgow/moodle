@@ -90,16 +90,18 @@ if(!empty($activities)){
     $childmods = empty($childactivities) ?  null : array_reverse($childactivities);
     $selectedmodule = is_null($childmods) ? (is_null($activityid) ? array_pop($mods) : $activities[$activityid]) : (is_null($childactivityid) ? array_pop($childmods) : $childactivities[$childactivityid]);
 
-    $groupingid = $selectedmodule->groupingid;
+    if(isset($selectedmodule)){
+        $groupingid = $selectedmodule->groupingid;
 
-    $scaleid = $selectedmodule->gradeitem->scaleid;
-    $gradetype = $selectedmodule->gradeitem->gradetype;
-    $grademax = $selectedmodule->gradeitem->grademax;
-
-    $valid_22point_scale = is_null($scaleid) ? local_gugcat::is_grademax22($gradetype, $grademax) : local_gugcat::is_scheduleAscale($gradetype, $grademax);
-
-    //Populate static $GRADES scales
-    local_gugcat::set_grade_scale($scaleid);
+        $scaleid = $selectedmodule->gradeitem->scaleid;
+        $gradetype = $selectedmodule->gradeitem->gradetype;
+        $grademax = $selectedmodule->gradeitem->grademax;
+    
+        $valid_22point_scale = is_null($scaleid) ? local_gugcat::is_grademax22($gradetype, $grademax) : local_gugcat::is_scheduleAscale($gradetype, $grademax);
+    
+        //Populate static $GRADES scales
+        local_gugcat::set_grade_scale($scaleid);
+    }
 }
 
 //Retrieve students
@@ -275,6 +277,19 @@ if (isset($release)){
         // Proceed with bulk import
         grade_capture::import_from_gradebook($courseid, $childactivities, $acts);
         local_gugcat::notify_success('successimport');
+        //log of bulk import
+        $params = array(
+            'context' => context_course::instance($courseid),
+            'other' => array(
+                'courseid' => $courseid,
+                'activityid' => $activity->id,
+                'categoryid' => $categoryid,
+                'categoryname' => $activity->gradeitem->itemname,
+                'page'=> $page
+            )
+        );
+        $event = \local_gugcat\event\bulk_import::create($params);
+        $event->trigger();
     }
     unset($bulkimport);
     redirect($URL);
@@ -289,8 +304,9 @@ $event = \local_gugcat\event\grade_capture_viewed::create($params);
 $event->trigger();
 
 echo $OUTPUT->header();
-if(!empty($activities))
+if(!is_null($selectedmodule)){
     $PAGE->set_cm($selectedmodule);
+}
 $renderer = $PAGE->get_renderer('local_gugcat');
 echo $renderer->display_grade_capture($selectedmodule, empty($totalactivities) ? $activities : $totalactivities, $childactivities, $rows, $columns);
 echo $OUTPUT->paging_bar($totalenrolled, $page, $limitnum, $PAGE->url);

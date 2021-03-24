@@ -127,8 +127,9 @@ class grade_aggregation{
                     $scaleid = is_null($item->scaleid) && local_gugcat::is_grademax22($item->gradeitem->gradetype, $item->gradeitem->grademax) ? null : $item->scaleid;
                     $invalid22scale = is_null($scaleid) && local_gugcat::is_grademax22($item->gradeitem->gradetype, $item->gradeitem->grademax)  && !isset($pg);
                     local_gugcat::set_grade_scale($scaleid);
+                    $gt = $item->gradeitem->gradetype;
                     $grade = is_null($grd) ? ( $grditemresit ? get_string('nogradeweight', 'local_gugcat') : get_string('nograderecorded', 'local_gugcat')) 
-                    : ($invalid22scale ? local_gugcat::convert_grade(round($grd) + 1) : local_gugcat::convert_grade(round($grd)));
+                    : ($invalid22scale ? local_gugcat::convert_grade($grd+1, $gt) : local_gugcat::convert_grade($grd, $gt));
                     $grdvalue = get_string('nograderecorded', 'local_gugcat');
                     $weight = local_gugcat::is_child_activity($item) ? 0 : (!is_null($pg) ? (float)$pg->information : 0); //get weight from information column of provisional grades
                     if(!is_null($grd) && $grade !== MEDICAL_EXEMPTION_AC){

@@ -127,8 +127,13 @@ class local_gugcat {
             }
 
             // Remove gradeitems which do not fall within 22-point scale.
-            foreach($activities as $key=>$activity){    
-                $scaleid = $activity->gradeitem->scaleid;
+            // Deletes gcat items for deletion in progress == 1 activities 
+            foreach($activities as $key=>$activity){   
+                if($activity->deletioninprogress == 1){
+                    unset($activities[$key]);
+                    self::delete_gcat_items($courseid, $activity);
+                    continue;
+                }
                 $gradetype = $activity->gradeitem->gradetype;
                 $grademax = $activity->gradeitem->grademax;
                 if($gradetype != GRADE_TYPE_VALUE && !local_gugcat::is_scheduleAscale($gradetype, $grademax)){
@@ -405,13 +410,16 @@ class local_gugcat {
      * Converts grade from the grade scale
      * @param mixed $grade 
      */
-    public static function convert_grade($grade){
+    public static function convert_grade($grade, $gradetype = GRADE_TYPE_SCALE){
+        if($gradetype == GRADE_TYPE_VALUE){
+            return number_format($grade, 2);
+        }
         $scale = self::$GRADES + grade_aggregation::$AGGRADE;
 
         //add admin grades in scale
         $scale[NON_SUBMISSION] = NON_SUBMISSION_AC;
         
-        $final_grade = intval($grade);
+        $final_grade = round($grade);
         if ($final_grade >= key(array_slice($scale, -1, 1, true)) && $final_grade <= key($scale)){
             return ($final_grade != 0) ? $scale[$final_grade] : $final_grade;
         }else {
@@ -671,7 +679,6 @@ class local_gugcat {
                        gi.gradetype != ? AND
                        gi.iteminstance = cm.instance AND
                        cm.instance = m.id AND
-                       cm.deletioninprogress = 0 AND
                        md.name = ? AND
                        md.id = cm.module AND
                        (gi.itemtype = 'mod' OR gi.itemtype = 'category')".
@@ -883,5 +890,29 @@ class local_gugcat {
         $activity->gradeitem = $gi;
         $activity->gradeitemid = $gi->id;
         return $activity;
+    }
+
+    /**
+     * Detele gcat items in grade_items and grade_grades table
+     * @param int $courseid 
+     * @param mixed $activity
+     */
+    public static function delete_gcat_items($courseid, $activity){
+        global $DB;
+        $select = "courseid = $courseid AND ".self::compare_iteminfo();
+        // Retrieve grade items ids first
+        if($gradeitemids = $DB->get_records_select('grade_items', $select, ['iteminfo' => $activity->gradeitemid], '', 'id')){
+            // Iterate the ids to create the select sql for grade_grades deletion
+            $ggsql = '';
+            foreach ($gradeitemids as $id) {
+                $ggsql .= "itemid = $id->id OR ";
+            }
+            // Remove the last 'OR'
+            $ggsql = chop($ggsql, ' OR ');
+            // Delete records in grade_grades
+            $DB->delete_records_select('grade_grades', $ggsql);
+            // Delete records in grade_items
+            $DB->delete_records_select('grade_items', $select, ['iteminfo' => $activity->gradeitemid]);
+        }
     }
 }
