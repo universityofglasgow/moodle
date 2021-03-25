@@ -385,15 +385,13 @@ class grade_aggregation{
     public static function export_aggregation_tool($course, $categoryid = null){
         $table = get_string('aggregationtool', 'local_gugcat');
         $filename = "export_$table"."_".date('Y-m-d_His');    
-        $columns = ['grade_category', 'student_number'];
+        $columns = ['grade_category', 'student_number', 'surname', 'forename', 'aggregated_grade',
+                    'aggregated_grade_numeric', '%_complete', 'resit_required'];
         $is_blind_marking = local_gugcat::is_blind_marking();
-        $is_blind_marking ? null : array_push($columns, ...array('surname', 'forename'));
         $modules = ($categoryid == null) ? local_gugcat::get_activities($course->id) : 
                                            self::get_parent_child_activities($course->id, $categoryid);
         $groupingids = array_column($modules, 'groupingid');
         $students = self::get_students_per_groups($groupingids, $course->id);
-        //add the columns before the activities
-        array_push($columns, ...['aggregated_grade', 'aggregated_grade_numeric', '%_complete', 'resit_required']);
         //Process the activity names
         $activities = array();
         foreach($modules as $cm) {
