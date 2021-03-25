@@ -603,14 +603,6 @@ class local_gugcat {
 
         return $grades_arr;
     }
-
-    public static function get_subcategory_history($courseid, $module, $studentid){
-        global $DB;
-        $activityid = optional_param('activityid', null, PARAM_INT);
-        $select = 'courseid = '.$courseid.' AND '.self::compare_iteminfo() . ' AND ' . 'itemname="'.get_string('subcategorygrade', 'local_gugcat').'"';
-        $subcatgi = $DB->get_record_select('grade_items', $select, ['iteminfo' => $module->id]);
-        return $subcatgi;
-    }
     
     /**
      * Reused moodle export function

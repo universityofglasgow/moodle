@@ -288,7 +288,7 @@ class grade_aggregation{
                         local_gugcat::update_components_notes($userid, $pg->itemid, $notes);
                     }
                 }else    
-                    local_gugcat::update_components_notes($userid, $pgobj->itemid, '');
+                    local_gugcat::update_grade($userid, $pgobj->itemid, $calculatedgrd, '');
             }
             $pgobj->finalgrade = $calculatedgrd;
             return isset($calculatedgrd) ? $pgobj : null;
