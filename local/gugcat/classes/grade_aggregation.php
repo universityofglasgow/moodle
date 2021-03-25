@@ -382,26 +382,27 @@ class grade_aggregation{
      *
      * @param mixed $course
      */
-    public static function export_aggregation_tool($course){
+    public static function export_aggregation_tool($course, $categoryid = null){
         $table = get_string('aggregationtool', 'local_gugcat');
         $filename = "export_$table"."_".date('Y-m-d_His');    
-        $columns = ['candidate_number', 'student_number'];
+        $columns = ['grade_category', 'student_number'];
         $is_blind_marking = local_gugcat::is_blind_marking();
         $is_blind_marking ? null : array_push($columns, ...array('surname', 'forename'));
-        $modules = local_gugcat::get_activities($course->id);
+        $modules = ($categoryid == null) ? local_gugcat::get_activities($course->id) : 
+                                           self::get_parent_child_activities($course->id, $categoryid);
         $groupingids = array_column($modules, 'groupingid');
         $students = self::get_students_per_groups($groupingids, $course->id);
+        //add the columns before the activities
+        array_push($columns, ...['aggregated_grade', 'aggregated_grade_numeric', '%_complete', 'resit_required']);
         //Process the activity names
         $activities = array();
         foreach($modules as $cm) {
             $weight = preg_replace('!\s+!', '_', $cm->name).'_weighting';
             $alpha = preg_replace('!\s+!', '_', $cm->name).'_alphanumeric_grade';
             $numeric = preg_replace('!\s+!', '_', $cm->name).'_numeric_grade';
-            array_push($activities, array($weight, $alpha, $numeric));
+            array_push($activities, array($weight, $alpha, $numeric, $cm->gradeitem->parent_category->fullname));
             array_push($columns, ...array($weight, $alpha, $numeric));
         }
-        //add the remaining columns after the activities
-        array_push($columns, ...['%_complete', 'aggregated_grade', 'aggregated_grade_numeric', 'resit_required']);
         //Process the data to be iterated
         $data = self::get_rows($course, $modules, $students);
         $array = array();
@@ -413,17 +414,18 @@ class grade_aggregation{
                 $student->surname = $row->surname;
                 $student->forename = $row->forename;
             }
-            foreach($activities as $key=>$act) {
-                $student->{$act[0]} = $row->grades[$key]->weight.'%';//weight
-                $student->{$act[1]} = $row->grades[$key]->grade; //alphanumeric
-                $student->{$act[2]} = local_gugcat::is_admin_grade(array_search($row->grades[$key]->grade, local_gugcat::$GRADES)) ? get_string('nogradeweight', 'local_gugcat') : $row->grades[$key]->rawgrade;//numeric
-            }
-            $student->{'%_complete'} = $row->completed;
             //check if grade is aggregated 
             $isaggregated = ($row->aggregatedgrade->display != get_string('missinggrade', 'local_gugcat')) ? true : false;
             $student->aggregated_grade = $isaggregated ? $row->aggregatedgrade->grade : null;
             $student->aggregated_grade_numeric = $isaggregated ?  (local_gugcat::is_admin_grade($row->aggregatedgrade->rawgrade) ? get_string('nogradeweight', 'local_gugcat') : $row->aggregatedgrade->rawgrade) : null;
+            $student->{'%_complete'} = $row->completed;
             $student->resit_required = is_null($row->resit) ? 'N' : 'Y';
+            foreach($activities as $key=>$act) {
+                $student->{$act[0]} = $row->grades[$key]->weight.'%';//weight
+                $student->{$act[1]} = $row->grades[$key]->grade; //alphanumeric
+                $student->{$act[2]} = local_gugcat::is_admin_grade(array_search($row->grades[$key]->grade, local_gugcat::$GRADES)) ? get_string('nogradeweight', 'local_gugcat') : $row->grades[$key]->rawgrade;//numeric
+                $student->candidate_number = $act[3];
+            }
             array_push($array, $student);
         }
         //convert array to ArrayObject to get the iterator

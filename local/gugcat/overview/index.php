@@ -162,7 +162,7 @@ if(isset($requireresit) && !empty($rowstudentid)){
     //log of release final assessment grades
     $event = \local_gugcat\event\export_aggregation::create($params);
     $event->trigger();
-    grade_aggregation::export_aggregation_tool($course);
+    grade_aggregation::export_aggregation_tool($course, $categoryid);
     unset($downloadcsv);
     redirect($URL);
     exit;
