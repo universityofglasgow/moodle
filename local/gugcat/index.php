@@ -209,9 +209,9 @@ if (isset($release)){
                     if(isset($grd) && !is_null($grd) && $grade->overridden == 0){
                         $notes = 'grade';
                         local_gugcat::update_components_notes($id, $subcatid, $notes);
-                        foreach($childactivities as $ca){
-                            $prvgrdid = local_gugcat::get_grade_item_id($courseid, $ca->gradeitemid, get_string('provisionalgrd', 'local_gugcat'));
-                            local_gugcat::update_components_notes($id, $prvgrdid, $notes);
+                        $prvgrds = local_gugcat::get_prvgrd_item_ids($courseid, $childactivities);
+                        foreach($prvgrds as $prvgrd){
+                            local_gugcat::update_components_notes($id, $prvgrd->id, $notes);
                         }
                     }
                 }
@@ -237,8 +237,8 @@ if (isset($release)){
             // Put the selected activity and sub category gi into array 
             $acts = array($selectedmodule, $gradecatgi[$activityid]);
             grade_capture::import_from_gradebook($courseid, $selectedmodule, $acts);
+            $subcatid = local_gugcat::get_grade_item_id($courseid, $selectedmodule->gradeitem->categoryid, get_string('subcategorygrade', 'local_gugcat'));
             foreach($students as $student){
-                $subcatid = local_gugcat::get_grade_item_id($courseid, $selectedmodule->gradeitem->categoryid, get_string('subcategorygrade', 'local_gugcat'));
                 $fields = 'itemid, id, rawgrade, finalgrade, overridden';
                 // Get provisional grades
                 $grade = $DB->get_record('grade_grades', array('itemid' => $subcatid, 'userid'=>$student->id), $fields);
@@ -249,9 +249,9 @@ if (isset($release)){
                 if(isset($grd) && !is_null($grd) && $grade->overridden == 0){
                     $notes = 'import';
                     local_gugcat::update_components_notes($student->id, $subcatid, $notes);
-                    foreach($childactivities as $ca){
-                        $prvgrdid = local_gugcat::get_grade_item_id($courseid, $ca->gradeitemid, get_string('provisionalgrd', 'local_gugcat'));
-                        local_gugcat::update_components_notes($student->id, $prvgrdid, $notes);
+                    $prvgrds = local_gugcat::get_prvgrd_item_ids($courseid, $childactivities);
+                    foreach($prvgrds as $prvgrd){
+                        local_gugcat::update_components_notes($student->id, $prvgrd->id, $notes);
                     }
                 }
             }
@@ -313,9 +313,9 @@ if (isset($release)){
         $acts = array_merge($childactivities, array($gradecatgi[$activityid]));
         // Proceed with bulk import
         grade_capture::import_from_gradebook($courseid, $childactivities, $acts);
+        $subcatid = local_gugcat::get_grade_item_id($courseid, $selectedmodule->gradeitem->categoryid, get_string('subcategorygrade', 'local_gugcat'));
         //update notes for grade history
         foreach($students as $student){
-            $subcatid = local_gugcat::get_grade_item_id($courseid, $selectedmodule->gradeitem->categoryid, get_string('subcategorygrade', 'local_gugcat'));
             $fields = 'itemid, id, rawgrade, finalgrade, overridden';
             // Get provisional grades
             $grade = $DB->get_record('grade_grades', array('itemid' => $subcatid, 'userid'=>$student->id), $fields);
@@ -326,9 +326,9 @@ if (isset($release)){
             if(isset($grd) && !is_null($grd) && $grade->overridden == 0){
                 $notes = 'import';
                 local_gugcat::update_components_notes($student->id, $subcatid, $notes);
-                foreach($childactivities as $ca){
-                    $prvgrdid = local_gugcat::get_grade_item_id($courseid, $ca->gradeitemid, get_string('provisionalgrd', 'local_gugcat'));
-                    local_gugcat::update_components_notes($student->id, $prvgrdid, $notes);
+                $prvgrds = local_gugcat::get_prvgrd_item_ids($courseid, $childactivities);
+                foreach($prvgrds as $prvgrd){
+                    local_gugcat::update_components_notes($student->id, $prvgrd->id, $notes);
                 }
             }
         }

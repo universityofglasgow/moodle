@@ -926,7 +926,67 @@ class local_gugcat {
         $subcatgrade = new grade_grade(array('userid' => $userid, 'itemid' => $itemid), true);
         $subcatgrade->feedback = $status;
         $subcatgrade->timemodified = time();
-        $subcatgrade->update();
+        //if subcat raw grade is null then it won't update
+        !is_null($subcatgrade->rawgrade) ? $subcatgrade->update() : null;
+    }
+
+    /**
+     * Get provisional grade item ids for each activity ids
+     * @param int $courseid
+     * @param mixed $activities
+     * @return mixed prvgrditemids
+     */
+    public static function get_prvgrd_item_ids($courseid, $activities){
+        global $DB;
+
+        $itemname = get_string('provisionalgrd', 'local_gugcat');
+        $iteminfo = '';
+        $field = 'id';
+        foreach($activities as $act){
+            $iteminfo .= $DB->sql_compare_text('iteminfo').'='.$act->gradeitemid.' OR ';
+        }
+        //remove last or
+        $iteminfo = chop($iteminfo, ' OR ');
+        $select = "courseid=$courseid AND itemname='$itemname' AND ( $iteminfo )";
+        return $DB->get_records_select('grade_items', $select, null, null, $field);
+    }
+
+    /**
+     * get the gradeitem of child activities
+     * @param int $courseid
+     * @param int $categoryid
+     * @return mixed $activities
+     */
+    public static function get_child_activities_id($courseid, $categoryid){
+        global $DB;
+        
+        $activities = array();
+        $modules = array('assign', 'forum', 'quiz', 'workshop');//modules supported by gcat
+        foreach($modules as $mod){
+            $params = array($courseid, $categoryid, GRADE_TYPE_NONE, $mod, 0);
+            $sql = "SELECT gi.id as gradeitemid, gi.gradetype as gradetype, gi.grademax as grademax
+                    FROM {grade_items} gi, {course_modules} cm
+                    WHERE gi.courseid = ? AND
+                          gi.categoryid = ? AND
+                          gi.itemtype = 'mod' AND
+                          gi.gradetype != ? AND
+                          gi.itemmodule = ? AND
+                          cm.instance = gi.iteminstance AND
+                          cm.deletioninprogress = ?";
+
+            $result = $DB->get_records_sql($sql, $params);
+            (sizeof($result) > 0) ? $activities = $activities + $result : null; 
+        }
+
+        foreach($activities as $key=>$activity){
+            $gradetype = $activity->gradetype;
+            $grademax = $activity->grademax;
+            if($gradetype != GRADE_TYPE_VALUE && !local_gugcat::is_scheduleAscale($gradetype, $grademax)){
+                unset($activities[$key]);
+            }
+        }
+
+        return $activities;
     }
 
     /**
@@ -980,14 +1040,13 @@ class local_gugcat {
         }
         $i = 0;
         $childacts = self::get_activities($courseid, $module->gradeitem->iteminstance);
-        foreach($childacts as $ca){
+        $prvgrades = local_gugcat::get_prvgrd_item_ids($courseid, $childacts);
+        foreach($prvgrades as $prvgrd){
             $j = 0;
             $notes = array('aggregation', 'grade', 'import');
-            $prvgrdstr = get_string('provisionalgrd', 'local_gugcat');
-            $prvgrdid = local_gugcat::get_grade_item_id($courseid, $ca->gradeitemid, $prvgrdstr);
             $sort = 'id DESC';
             $fields = 'id, itemid, rawgrade, finalgrade, feedback';
-            $select = 'feedback IS NOT NULL AND feedback <> "" AND rawgrade IS NOT NULL AND itemid='.$prvgrdid.' AND userid='.$userid;
+            $select = 'feedback IS NOT NULL AND feedback <> "" AND rawgrade IS NOT NULL AND itemid='.$prvgrd->id.' AND userid='.$userid;
             $gradehistory_arr = $DB->get_records_select('grade_grades_history', $select, null, $sort, $fields);
             if(sizeof($gradehistory_arr) > 0){
                 foreach($gradehistory_arr as $gradehistory){

@@ -147,13 +147,15 @@ class grade_aggregation{
                     $grdobj->activity = $item->name;
                     $grdobj->category = $is_child_activity;
                     $grdobj->is_subcat = ($item->modname == 'category') ? true : false;
+                    $grdobj->subcat_exist = !is_null($pg) ? true : false;
                     $grdobj->grade = $grade;
                     $grdobj->rawgrade = $grdvalue;
                     $grdobj->weight =  round((float)$weight * 100 );
                     array_push($gradecaptureitem->grades, $grdobj);
                     //update calculation field with aggregation type
-                    if($item->modname == 'category' && $student->id == $laststud)
-                        $DB->set_field('grade_items', 'calculation', $item->aggregation, array('id'=>$item->grades->provisional[$student->id]->itemid));
+                    if($item->modname == 'category' && $student->id == $laststud){
+                        is_null($pg) ? null : $DB->set_field('grade_items', 'calculation', $item->aggregation, array('id'=>$item->grades->provisional[$student->id]->itemid));
+                    }
                 }
                 if($gbaggregatedgrade = $DB->get_record('grade_grades', array('itemid'=>$aggradeid, 'userid'=>$student->id))){
                     $gradecaptureitem->resit = (preg_match('/\b'.$categoryid.'/i', $gbaggregatedgrade->information) ? $gbaggregatedgrade->information : null);
@@ -284,7 +286,6 @@ class grade_aggregation{
                     local_gugcat::update_grade($userid, $pgobj->itemid, $calculatedgrd, $notes);
                     foreach($actgrds as $id=>$grades){
                         // Only get provisional grades $pg from child assessments
-                        $pg = isset($grades->provisional[$userid]) ? $grades->provisional[$userid] : null;
                         local_gugcat::update_components_notes($userid, $pg->itemid, $notes);
                     }
                 }else    
