@@ -82,6 +82,8 @@ class grade_aggregation{
                 // $mod->id - sub category id 
                 $prvgrdid = local_gugcat::get_grade_item_id($course->id, $mod->id, get_string('subcategorygrade', 'local_gugcat'));
                 $gbgrades = grade_get_grades($course->id, 'category', null, $mod->instance, array_keys($students));
+                //get aggregation type
+                $mod->aggregation_type = $DB->get_field('grade_items', 'calculation', array('id'=>$prvgrdid));
             }else{
                 $prvgrdid = local_gugcat::set_prv_grade_id($course->id, $mod);
                 $gbgrades = grade_get_grades($course->id, 'mod', $mod->modname, $mod->instance, array_keys($students));
@@ -101,8 +103,6 @@ class grade_aggregation{
         //$i = candidate no. - Multiply it by the page number
         $page = optional_param('page', 0, PARAM_INT);  
         $i = $page * GCAT_MAX_USERS_PER_PAGE + 1;
-        //get the last student index of the $students array
-        $laststud = key(array_slice($students, -1, 1, true));
         foreach ($students as $student) {
             $gradecaptureitem = new gcat_item();
             $gradecaptureitem->cnum = $i;
@@ -233,9 +233,9 @@ class grade_aggregation{
             });
             // Filter child grade items object to grades
             $actgrds = empty($filtered) ? array() : array_column($filtered, 'grades', 'gradeitemid');
-            //get subcategory aggregation id from calculation field.
-            $aggtype = $DB->get_field('grade_items', 'calculation', array('id'=>$pgobj->itemid));
-            if(!is_null($aggtype) && $aggtype != $subcatobj->aggregation){
+            //if calculation field is empty, then update it with aggregation type
+            is_null($subcatobj->aggregation_type) ? $DB->set_field('grade_items', 'calculation', $subcatobj->aggregation, array('id'=>$pgobj->itemid)) : null;
+            if(!is_null($subcatobj->aggregation_type) && $subcatobj->aggregation_type != $subcatobj->aggregation){
                 $notes = 'aggregation';
                 //update feedback field for subcat and child components prvgrade 
                 self::update_component_notes_for_all_students($pgobj->itemid, $subcatobj->id, $notes);
@@ -284,9 +284,10 @@ class grade_aggregation{
                     $notes = 'import';
                     local_gugcat::update_grade($userid, $pgobj->itemid, $calculatedgrd, $notes);
                     foreach($actgrds as $id=>$grades){
+                        $pg = isset($grades->provisional[$userid]) ? $grades->provisional[$userid] : null;
                         // Only get provisional grades $pg from child assessments
-                        local_gugcat::update_components_notes($userid, $pg->itemid, $notes);
-                    }
+                        !is_null($pg) ? local_gugcat::update_components_notes($userid, $pg->itemid, $notes) : null;
+                    }   
                 }else    
                     local_gugcat::update_grade($userid, $pgobj->itemid, $calculatedgrd, '');
             }
