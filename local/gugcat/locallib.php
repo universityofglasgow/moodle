@@ -953,7 +953,7 @@ class local_gugcat {
     }
 
     /**
-     * get the gradeitem of child activities
+     * get the gradeitemids of child activities
      * @param int $courseid
      * @param int $categoryid
      * @return mixed $activities

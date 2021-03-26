@@ -278,7 +278,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
                 $ammendgradeparams .= $grade->is_subcat ? "&cnum=$row->cnum" : null;
                 $courseformhistoryparams = "?id=$courseid&cnum=$row->cnum&page=$page" . $gradeformhistorycategory;
                 $htmlrows .= html_writer::tag('td', $grade->grade.((strpos($grade->grade, 'No grade') !== false) 
-                ? null : ($grade->subcat_exist ? $this->context_actions($row->studentno, null, ($grade->is_subcat ? true : false), $ammendgradeparams, true) : null)), $datacategory);
+                ? null : ($grade->is_imported ? $this->context_actions($row->studentno, null, ($grade->is_subcat ? true : false), $ammendgradeparams, true) : null)), $datacategory);
             }
             //Require resit row
             $requireresiturl = $actionurl."&rowstudentno=$row->studentno&resit=1";
@@ -353,11 +353,11 @@ class local_gugcat_renderer extends plugin_renderer_base {
     public function display_grade_history($student, $activity, $rows){
         $htmlcolumns = null;
         $htmlrows = null;
-        $htmlcolumns .= html_writer::tag('th', 'Date & Time');
-        $htmlcolumns .= html_writer::tag('th', 'Grade');
-        $htmlcolumns .= html_writer::tag('th', 'Revised By');
-        $htmlcolumns .= html_writer::tag('th', 'Type');
-        $htmlcolumns .= html_writer::tag('th', 'Notes / Reason for Revision');
+        $htmlcolumns .= html_writer::tag('th', get_string('datetime', 'local_gugcat'));
+        $htmlcolumns .= html_writer::tag('th', get_string('gradeformgrade', 'local_gugcat'));
+        $htmlcolumns .= html_writer::tag('th', get_string('revised', 'local_gugcat'));
+        $htmlcolumns .= html_writer::tag('th', get_string('type', 'local_gugcat'));
+        $htmlcolumns .= html_writer::tag('th', get_string('notesreason', 'local_gugcat'));
         foreach($rows as $row){
             $htmlrows .= html_writer::start_tag('tr');
             $htmlrows .= html_writer::tag('td', $row->date);
@@ -389,13 +389,13 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $htmlcolumns = null;
         $htmlrows = null;
 
-        $htmlcolumns .= html_writer::tag('th', 'Date & Time');
-        $htmlcolumns .= html_writer::tag('th', 'Revised By');
-        $htmlcolumns .= html_writer::tag('th', 'Course Grade');
+        $htmlcolumns .= html_writer::tag('th', get_string('datetime', 'local_gugcat'));
+        $htmlcolumns .= html_writer::tag('th', get_string('revised', 'local_gugcat'));
+        $htmlcolumns .= html_writer::tag('th', get_string('coursegrade', 'local_gugcat'));
         foreach($activities as $act){
             $htmlcolumns .= html_writer::tag('th', $act->name. '<br> Weigthing');
         }
-        $htmlcolumns .= html_writer::tag('th', 'Notes / Reason for Revision');
+        $htmlcolumns .= html_writer::tag('th', get_string('notesreason', 'local_gugcat'));
         foreach($rows as $row){
             $htmlrows .= html_writer::start_tag('tr');
             $htmlrows .= html_writer::tag('td', $row->date);
@@ -480,13 +480,13 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $categoryid = optional_param('categoryid', null, PARAM_INT);
         $page = optional_param('page', 0, PARAM_INT);
         
-        $htmlcolumns .= html_writer::tag('th', 'Date & Time');
-        $htmlcolumns .= html_writer::tag('th', 'Aggregated Assessment Grade');
+        $htmlcolumns .= html_writer::tag('th', get_string('datetime', 'local_gugcat'));
+        $htmlcolumns .= html_writer::tag('th', get_string('aggregatedassgrd', 'local_gugcat'));
         foreach($activities as $act){
             $htmlcolumns .= html_writer::tag('th', $act->name);
         }
-        $htmlcolumns .= html_writer::tag('th', 'Revised By');
-        $htmlcolumns .= html_writer::tag('th', 'Notes');
+        $htmlcolumns .= html_writer::tag('th', get_string('revised', 'local_gugcat'));
+        $htmlcolumns .= html_writer::tag('th', get_string('notes', 'local_gugcat'));
         foreach($rows as $row){
             $htmlrows .= html_writer::start_tag('tr');
             $htmlrows .= html_writer::tag('td', $row->date);

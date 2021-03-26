@@ -170,5 +170,13 @@ $string['aggregation'] = 'N/A - Aggregation calculation function updated';
 $string['grade'] = 'N/A - Component grade(s) updated, see component grade history for more information';
 $string['import'] = 'N/A - Component grade(s) imported';
 
+//grade history columns
+$string['aggregatedassgrd'] = 'Aggregated Assessment Grade';
+$string['coursegrade'] = 'Course Grade';
+$string['datetime'] = 'Date & Time';
+$string['notesreason'] = 'Notes / Reason for Revision';
+$string['revised'] = 'Revised By';
+$string['type'] = 'Type';
+
 //gcat grade category
 $string['gcat_category'] = 'DO NOT USE';
