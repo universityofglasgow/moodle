@@ -390,6 +390,7 @@ class grade_aggregation{
         $is_blind_marking ? null : array_push($columns, ...array('surname', 'forename'));
         $modules = ($categoryid == null) ? local_gugcat::get_activities($course->id) : 
                                            self::get_parent_child_activities($course->id, $categoryid);
+        $category = grade_category::fetch(array('id' => $categoryid));
         $groupingids = array_column($modules, 'groupingid');
         $students = self::get_students_per_groups($groupingids, $course->id);
         //add the columns before the activities
@@ -400,7 +401,7 @@ class grade_aggregation{
             $weight = preg_replace('!\s+!', '_', $cm->name).'_weighting';
             $alpha = preg_replace('!\s+!', '_', $cm->name).'_alphanumeric_grade';
             $numeric = preg_replace('!\s+!', '_', $cm->name).'_numeric_grade';
-            array_push($activities, array($weight, $alpha, $numeric, $cm->gradeitem->parent_category->fullname));
+            array_push($activities, array($weight, $alpha, $numeric));
             array_push($columns, ...array($weight, $alpha, $numeric));
         }
         //Process the data to be iterated
@@ -408,7 +409,7 @@ class grade_aggregation{
         $array = array();
         foreach($data as $row) {
             $student = new stdClass();
-            $student->candidate_number = $row->cnum;
+            $student->candidate_number = $category->fullname;
             $student->student_number = $row->idnumber;
             if(!$is_blind_marking){
                 $student->surname = $row->surname;
@@ -424,7 +425,6 @@ class grade_aggregation{
                 $student->{$act[0]} = $row->grades[$key]->weight.'%';//weight
                 $student->{$act[1]} = $row->grades[$key]->grade; //alphanumeric
                 $student->{$act[2]} = local_gugcat::is_admin_grade(array_search($row->grades[$key]->grade, local_gugcat::$GRADES)) ? get_string('nogradeweight', 'local_gugcat') : $row->grades[$key]->rawgrade;//numeric
-                $student->candidate_number = $act[3];
             }
             array_push($array, $student);
         }
