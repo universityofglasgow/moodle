@@ -124,6 +124,13 @@ if ($fromform = $mform->get_data()) {
         $itemname = get_string($is_subcat ? 'subcategorygrade' : 'aggregatedgrade', 'local_gugcat');
         if($gradeitemid = local_gugcat::get_grade_item_id($courseid, $id, $itemname)){
             local_gugcat::update_grade($studentid, $gradeitemid, $fromform->override, $fromform->notes, time());
+            //also update notes for subcomponents
+            if($is_subcat){
+                $prvgrades = local_gugcat::get_prvgrd_item_ids($courseid, $components);
+                foreach($prvgrades as $prvgrades){
+                    local_gugcat::update_components_notes($studentid, $prvgrades->id, $fromform->notes);
+                }
+            }
             //log of adjust course weight
             $event = \local_gugcat\event\override_course_grade::create($params);
             $event->trigger();

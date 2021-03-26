@@ -278,7 +278,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
                 $ammendgradeparams .= $grade->is_subcat ? "&cnum=$row->cnum" : null;
                 $courseformhistoryparams = "?id=$courseid&cnum=$row->cnum&page=$page" . $gradeformhistorycategory;
                 $htmlrows .= html_writer::tag('td', $grade->grade.((strpos($grade->grade, 'No grade') !== false) 
-                ? null : $this->context_actions($row->studentno, null, ($grade->is_subcat ? true : false), $ammendgradeparams, true)), $datacategory);
+                ? null : ($grade->is_imported ? $this->context_actions($row->studentno, null, ($grade->is_subcat ? true : false), $ammendgradeparams, true) : null)), $datacategory);
             }
             //Require resit row
             $requireresiturl = $actionurl."&rowstudentno=$row->studentno&resit=1";
@@ -353,11 +353,11 @@ class local_gugcat_renderer extends plugin_renderer_base {
     public function display_grade_history($student, $activity, $rows){
         $htmlcolumns = null;
         $htmlrows = null;
-        $htmlcolumns .= html_writer::tag('th', 'Date & Time');
-        $htmlcolumns .= html_writer::tag('th', 'Grade');
-        $htmlcolumns .= html_writer::tag('th', 'Revised By');
-        $htmlcolumns .= html_writer::tag('th', 'Type');
-        $htmlcolumns .= html_writer::tag('th', 'Notes / Reason for Revision');
+        $htmlcolumns .= html_writer::tag('th', get_string('datetime', 'local_gugcat'));
+        $htmlcolumns .= html_writer::tag('th', get_string('gradeformgrade', 'local_gugcat'));
+        $htmlcolumns .= html_writer::tag('th', get_string('revised', 'local_gugcat'));
+        $htmlcolumns .= html_writer::tag('th', get_string('type', 'local_gugcat'));
+        $htmlcolumns .= html_writer::tag('th', get_string('notesreason', 'local_gugcat'));
         foreach($rows as $row){
             $htmlrows .= html_writer::start_tag('tr');
             $htmlrows .= html_writer::tag('td', $row->date);
@@ -389,13 +389,13 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $htmlcolumns = null;
         $htmlrows = null;
 
-        $htmlcolumns .= html_writer::tag('th', 'Date & Time');
-        $htmlcolumns .= html_writer::tag('th', 'Revised By');
-        $htmlcolumns .= html_writer::tag('th', 'Course Grade');
+        $htmlcolumns .= html_writer::tag('th', get_string('datetime', 'local_gugcat'));
+        $htmlcolumns .= html_writer::tag('th', get_string('revised', 'local_gugcat'));
+        $htmlcolumns .= html_writer::tag('th', get_string('coursegrade', 'local_gugcat'));
         foreach($activities as $act){
             $htmlcolumns .= html_writer::tag('th', $act->name. '<br> Weigthing');
         }
-        $htmlcolumns .= html_writer::tag('th', 'Notes / Reason for Revision');
+        $htmlcolumns .= html_writer::tag('th', get_string('notesreason', 'local_gugcat'));
         foreach($rows as $row){
             $htmlrows .= html_writer::start_tag('tr');
             $htmlrows .= html_writer::tag('td', $row->date);
@@ -469,6 +469,48 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $html .= html_writer::empty_tag('br');
         $html .= html_writer::end_tag('div');
 
+        return $html;
+    }
+
+    public function display_aggregated_assessment_history($activities, $rows, $student, $activity){
+        $htmlcolumns = null;
+        $htmlrows = null;
+
+        $courseid = optional_param('id', null, PARAM_INT);
+        $categoryid = optional_param('categoryid', null, PARAM_INT);
+        $page = optional_param('page', 0, PARAM_INT);
+        
+        $htmlcolumns .= html_writer::tag('th', get_string('datetime', 'local_gugcat'));
+        $htmlcolumns .= html_writer::tag('th', get_string('aggregatedassgrd', 'local_gugcat'));
+        foreach($activities as $act){
+            $htmlcolumns .= html_writer::tag('th', $act->name);
+        }
+        $htmlcolumns .= html_writer::tag('th', get_string('revised', 'local_gugcat'));
+        $htmlcolumns .= html_writer::tag('th', get_string('notes', 'local_gugcat'));
+        foreach($rows as $row){
+            $htmlrows .= html_writer::start_tag('tr');
+            $htmlrows .= html_writer::tag('td', $row->date);
+            $htmlrows .= html_writer::tag('td', $row->grade);
+            $i = 0;
+            foreach($activities as $act){
+                $activityid = $act->gradeitemid;
+                $ammendgradeparams = "?id=$courseid&activityid=$activityid&page=$page&categoryid=$categoryid&history";
+                $htmlrows .= html_writer::tag('td', isset($row->childgrades[$i]->grade) ? 
+                $row->childgrades[$i]->grade. $this->context_actions($student->id, null, false, $ammendgradeparams) : 'N/A');
+                $i++;
+            }
+            $htmlrows .= html_writer::tag('td', $row->modby);
+            $htmlrows .= html_writer::tag('td', $row->notes);
+            $htmlrows .= html_writer::end_tag('tr');
+        }
+        $html = $this->header();
+        $html .= $this->render_from_template('local_gugcat/gcat_form_details', (object)[
+            'title' =>get_string('assessmentgradehistory', 'local_gugcat'),
+            'student' => $student,
+            'activity' => $activity,
+            'blindmarking'=> !local_gugcat::is_blind_marking($this->page->cm) ? true : null
+        ]);
+        $html .= $this->display_table($htmlrows, $htmlcolumns, true);
         return $html;
     }
 
@@ -556,10 +598,17 @@ class local_gugcat_renderer extends plugin_renderer_base {
             $historylink = new moodle_url('/local/gugcat/history/index.php').$link;
             $editlink = new moodle_url('/local/gugcat/edit/index.php').$link.'&overview='.($is_overviewpage ? 1 : 0);
             $hidelink = new moodle_url('/local/gugcat/index.php').$link."&showhidegrade=1";
-            $hidestr = !empty($ishidden) ? get_string('showgrade', 'local_gugcat') : get_string('hidefromstudent', 'local_gugcat');
-            $html .= html_writer::tag('li', html_writer::tag('a', get_string('amendgrades', 'local_gugcat'), array('href' => $editlink)), $class);
-            $html .= html_writer::tag('li', html_writer::tag('a', get_string('assessmentgradehistory', 'local_gugcat'), array('href' => $historylink)), $class);
-            $html .= html_writer::tag('li', html_writer::tag('a', $hidestr, array('href' => $hidelink)), array('class' => 'dropdown-item hide-show-grade'));
+            //check if url params has history for aggregated assessment grade history context action.
+            if(preg_match('/\b&history/i', $historylink)){
+                $historylink = preg_replace('/\b&history/i', '', $historylink);
+                $html .= html_writer::tag('li', html_writer::tag('a', get_string('assessmentgradehistory', 'local_gugcat'), array('href' => $historylink)), $class);
+            }
+            else{
+                $hidestr = !empty($ishidden) ? get_string('showgrade', 'local_gugcat') : get_string('hidefromstudent', 'local_gugcat');
+                $html .= html_writer::tag('li', html_writer::tag('a', get_string('amendgrades', 'local_gugcat'), array('href' => $editlink)), $class);
+                $html .= html_writer::tag('li', html_writer::tag('a', get_string('assessmentgradehistory', 'local_gugcat'), array('href' => $historylink)), $class);
+                $html .= html_writer::tag('li', html_writer::tag('a', $hidestr, array('href' => $hidelink)), array('class' => 'dropdown-item hide-show-grade'));
+            }
         }
         $html .= html_writer::end_tag('ul');
         return $html;

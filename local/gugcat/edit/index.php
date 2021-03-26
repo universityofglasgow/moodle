@@ -102,22 +102,40 @@ if ($fromform = $mform->get_data()) {
     );
     $event = \local_gugcat\event\ammend_grade::create($params);
     $event->trigger();
-
+    $childactivity = null;
+    //check if activity is a subcat component.'
+    if($module->gradeitem->parent_category->parent === strval($categoryid)){
+        $childactivity = $activityid;
+        $activityid = $DB->get_field('grade_items', 'id', array('courseid'=>$courseid, 'itemtype'=>'category', 'iteminstance'=>$module->gradeitem->categoryid));
+        //get subcategory gradeitem id
+        $subcatid = local_gugcat::get_grade_item_id($courseid, $module->gradeitem->categoryid, get_string('subcategorygrade', 'local_gugcat'));
+        $fields = 'itemid, id, rawgrade, finalgrade, overridden';
+        // Get provisional grades
+        $grade = $DB->get_record('grade_grades', array('itemid' => $subcatid, 'userid'=>$studentid), $fields);
+        $notes = 'grade';
+        $grd = !is_null($grade->finalgrade) ? $grade->finalgrade 
+        : (!is_null($grade->rawgrade) ? $grade->rawgrade 
+        : null);  
+        //check if subcategory has an existing grade.
+        if(!is_null($grd) && $grade->overridden == 0){
+            $childactivities = local_gugcat::get_child_activities_id($courseid, $module->gradeitem->categoryid);
+            local_gugcat::update_components_notes($studentid, $subcatid, $notes);
+            $prvgrades = local_gugcat::get_prvgrd_item_ids($courseid, $childactivities);
+            foreach($prvgrades as $prvgrd){
+                local_gugcat::update_components_notes($studentid, $prvgrd->id, $notes);
+            }
+        }
+    }
     if((integer)$fromform->overview == 1){
         $url = new moodle_url('/local/gugcat/overview/index.php', array('id' => $courseid, 'page'=> $page));
         (!is_null($categoryid) && $categoryid != 0) ? $url->param('categoryid', $categoryid) : null;
         redirect($url);
     }
     else{
-        $childactivity = null;
-        //check if activity is a subcat component.'
-        if($module->gradeitem->parent_category->parent === strval($categoryid)){
-            $childactivity = $activityid;
-            $activityid = $DB->get_field('grade_items', 'id', array('courseid'=>$courseid, 'itemtype'=>'category', 'iteminstance'=>$module->gradeitem->categoryid));
-        }
         $url = new moodle_url('/local/gugcat/index.php', array('id' => $courseid, 'activityid' => $activityid, 'page'=> $page));
         (!is_null($categoryid) && $categoryid != 0) ? $url->param('categoryid', $categoryid) : null;
         !is_null($childactivity) ? $url->param('childactivityid',$childactivity) : null;
+
         redirect($url);
     }
     exit;

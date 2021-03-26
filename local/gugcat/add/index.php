@@ -103,6 +103,22 @@ if ($fromform = $mform->get_data()) {
     if($module->gradeitem->parent_category->parent === strval($categoryid)){
         $childactivity = $activityid;
         $activityid = $DB->get_field('grade_items', 'id', array('courseid'=>$courseid, 'itemtype'=>'category', 'iteminstance'=>$module->gradeitem->categoryid));
+        $subcatid = local_gugcat::get_grade_item_id($courseid, $module->gradeitem->categoryid, get_string('subcategorygrade', 'local_gugcat'));
+        $fields = 'itemid, id, rawgrade, finalgrade, overridden';
+        // Get provisional grades
+        $grade = $DB->get_record('grade_grades', array('itemid' => $subcatid, 'userid'=>$studentid), $fields);
+        $notes = 'grade';
+        $grd = !is_null($grade->finalgrade) ? $grade->finalgrade 
+        : (!is_null($grade->rawgrade) ? $grade->rawgrade 
+        : null);  
+        if(!is_null($grd) && $grade->overridden == 0){
+            $childactivities = local_gugcat::get_child_activities_id($courseid, $module->gradeitem->categoryid);
+            local_gugcat::update_components_notes($studentid, $subcatid, $notes);
+            $prvgrades = local_gugcat::get_prvgrd_item_ids($courseid, $childactivities);
+            foreach($prvgrades as $prvgrd){
+                local_gugcat::update_components_notes($studentid, $prvgrd->id, $notes);
+            }
+        }
     }
     $url = new moodle_url('/local/gugcat/index.php', array('id' => $courseid, 'activityid' => $activityid, 'page'=> $page));
     (!is_null($categoryid) && $categoryid != 0) ? $url->param('categoryid', $categoryid) : null;
