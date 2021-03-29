@@ -46,7 +46,8 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $ammendgradeparams = "?id=$courseid&activityid=$modid&page=$page";
         if(!is_null($activityid))
             $modid = $activityid;
-
+        if(isset($selectedmodule->activityid))
+            $modid = $selectedmodule->activityid;
         // Upload page url
         $uploadurl = new moodle_url('/local/gugcat/import/index.php').$ammendgradeparams;
 

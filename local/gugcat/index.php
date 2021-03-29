@@ -76,6 +76,14 @@ if(!is_null($categoryid)){
         $totalactivities = $activities + $gradecatgi;
     }
     
+    //if activityid is null and there are no assessments
+    if(is_null($activityid) && empty($activities) && !empty($gradecatgi)){
+        $mods = array_reverse($totalactivities);
+        $activity = array_pop($mods);
+        $activityid = $activity->gradeitemid;
+        $URL->param('activityid', $activityid);
+    }
+
     $childactivities = (isset($totalactivities[$activityid]->modname) && $totalactivities[$activityid]->modname === 'category') ? local_gugcat::get_activities($courseid, $totalactivities[$activityid]->id) : null;
     if(!is_null($childactivities)){
         foreach($childactivities as $ca){
@@ -84,7 +92,7 @@ if(!is_null($categoryid)){
     }
 }
 
-if(!empty($activities)){
+if(!empty($totalactivities)){
     
     $mods = array_reverse($activities);
     $childmods = empty($childactivities) ?  null : array_reverse($childactivities);
@@ -96,9 +104,9 @@ if(!empty($activities)){
         $scaleid = $selectedmodule->gradeitem->scaleid;
         $gradetype = $selectedmodule->gradeitem->gradetype;
         $grademax = $selectedmodule->gradeitem->grademax;
-    
         $valid_22point_scale = is_null($scaleid) ? local_gugcat::is_grademax22($gradetype, $grademax) : local_gugcat::is_scheduleAscale($gradetype, $grademax);
-    
+        //if $activities is empty, and activity id parameter is also null add $activityid into $selectmodule
+        empty($activities) ? $selectedmodule->activityid = $activityid : null;
         //Populate static $GRADES scales
         local_gugcat::set_grade_scale($scaleid);
     }
