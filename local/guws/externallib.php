@@ -583,4 +583,49 @@ class local_guws_external extends external_api {
 
         return $results;
     }
+
+    /**
+     * Parameter definition for guid_completion
+     * @return external_function_parameters
+     */
+    public static function guid_completion_parameters() {
+        return new external_function_parameters([
+            'courseid' => new external_value(PARAM_INT, 'Course ID'),
+            'guid' => new external_value(PARAM_TEXT, 'GUID'),
+        ]);
+    }
+
+    /**
+     * Return definition for guid_completion
+     * @returns external_multiple_structure
+     */
+    public static function guid_completion_returns() {
+        return new external_value(PARAM_BOOL, 'Completed');
+    }  
+    
+    /**
+     * guid_completion
+     * @param string $guid
+     * @param int $maxresults
+     */
+    public static function guid_completion($courseid, $guid) {
+        global $CFG, $DB;
+
+        // Check params
+        $params = self::validate_parameters(self::guid_completion_parameters(), ['courseid' => $courseid, 'guid' => $guid]);   
+        
+        // find GUID
+        $user = $DB->get_record('user', ['username' => $guid], '*', MUST_EXIST);
+
+        // Make sure it's a valid course
+        $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
+
+        // Completed?
+        if (!$completion = $DB->get_record('course_completions', ['userid' => $user->id, 'course' => $courseid])) {
+            return false;
+        }
+
+        return !empty($completion->timecompleted);
+    }
+
 }

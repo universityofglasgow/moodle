@@ -78,4 +78,11 @@ $functions = array(
         'description' => 'Get list of courses for portal ',
         'type'        => 'read',
     ),
+    'local_guws_guid_completion' => array(
+        'classname'   => 'local_guws_external',
+        'methodname'  => 'guid_completion',
+        'classpath'   => 'local/guws/externallib.php',
+        'description' => 'Get course completion status for list of GUIDs ',
+        'type'        => 'read',
+    ),  
 );
