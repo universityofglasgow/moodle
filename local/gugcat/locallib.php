@@ -492,8 +492,8 @@ class local_gugcat {
      * Displays moodle error notification and gets the string from local_gugcat strings 
      * @param string $stridentifier
      */
-    public static function notify_error($stridentifier){
-        $message = get_string($stridentifier, 'local_gugcat');
+    public static function notify_error($stridentifier, $str = null){
+        $message = is_null($str) ? get_string($stridentifier, 'local_gugcat') : $str;
         \core\notification::add($message, \core\output\notification::NOTIFY_ERROR);
     }
         

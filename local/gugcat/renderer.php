@@ -277,7 +277,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
                 $ammendgradeparams = "?id=$courseid&activityid=$grade->activityid&page=$page" . $historyeditcategory;
                 $ammendgradeparams .= $grade->is_subcat ? "&cnum=$row->cnum" : null;
                 $courseformhistoryparams = "?id=$courseid&cnum=$row->cnum&page=$page" . $gradeformhistorycategory;
-                $htmlrows .= html_writer::tag('td', $grade->grade.((strpos($grade->grade, 'No grade') !== false) 
+                $htmlrows .= html_writer::tag('td', $grade->grade.((strpos($grade->grade, 'No grade') !== false) || (strpos($grade->grade, 'Missing') !== false) 
                 ? null : ($grade->is_imported ? $this->context_actions($row->studentno, null, ($grade->is_subcat ? true : false), $ammendgradeparams, true) : null)), $datacategory);
             }
             //Require resit row
