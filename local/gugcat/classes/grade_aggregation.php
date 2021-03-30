@@ -540,7 +540,7 @@ class grade_aggregation{
         $is_blind_marking ? null : array_push($columns, ...array('surname', 'forename'));
         $modules = ($categoryid == null) ? local_gugcat::get_activities($course->id) : 
                                            self::get_parent_child_activities($course->id, $categoryid);
-        $category = grade_category::fetch(array('id' => $categoryid));
+        $category = is_null($categoryid) ? null : grade_category::fetch(array('id' => $categoryid));
         $groupingids = array_column($modules, 'groupingid');
         $students = self::get_students_per_groups($groupingids, $course->id);
         //add the columns before the activities
