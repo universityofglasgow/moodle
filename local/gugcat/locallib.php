@@ -408,7 +408,7 @@ class local_gugcat {
      * @param mixed $grade 
      */
     public static function convert_grade($grade, $gradetype = GRADE_TYPE_SCALE){
-        if($gradetype == GRADE_TYPE_VALUE){
+        if(!local_gugcat::is_admin_grade($grade) && $gradetype == GRADE_TYPE_VALUE){
             return number_format($grade, 2);
         }
         $scale = self::$GRADES + grade_aggregation::$AGGRADE;

@@ -184,25 +184,60 @@ class grade_aggregation_testcase extends advanced_testcase {
         $this->assertEquals($gradehistory[1]->notes, $expectednotes);
     }
 
+    public function test_normalize_grades(){
+        $grades = array(1 => 10, 2 => 20, 3 => 30);
+        $gi1 = new grade_item(array('id'=>1));
+        $gi2 = new grade_item(array('id'=>2));
+        $gi3 = new grade_item(array('id'=>3));
+        $gradeitems = array(1 => $gi1, 2 => $gi2, 3 => $gi3);
+        
+        // Assert normalize grades
+        $normgrades = grade_aggregation::normalize_grades($grades, $gradeitems);
+        // grademax = 100 (default) grade/100
+        $this->assertEquals($normgrades, $grades);
+
+        $grademax = 50;
+        $gi1->grademax = $grademax;
+        $gi2->grademax = $grademax;
+        $gi3->grademax = $grademax;
+        $gradeitems = array(1 => $gi1, 2 => $gi2, 3 => $gi3);
+        // Assert normalize grades
+        $normgrades = grade_aggregation::normalize_grades($grades, $gradeitems);
+        // grademax = 50 grade/50
+        $this->assertContains(20, $normgrades);        
+        $this->assertContains(40, $normgrades);        
+        $this->assertContains(60, $normgrades);        
+    }
+
     public function test_calculate_grade(){
         $grades = array(1 => 10, 2 => 20, 3 => 30);
         $aggregationcoef = '1.000000';
-        $gi = new stdClass();
-        $gi->aggregationcoef = $aggregationcoef;
-        $gradeitems = array(1 => $gi, 2 => $gi, 3 => $gi);
-
+        $gi1 = new grade_item(array('id'=>1));
+        $gi1->aggregationcoef = $aggregationcoef;
+        $gi2 = new grade_item(array('id'=>2));
+        $gi2->aggregationcoef = $aggregationcoef;
+        $gi3 = new grade_item(array('id'=>3));
+        $gi3->aggregationcoef = $aggregationcoef;
+        $gradeitems = array(1 => $gi1, 2 => $gi2, 3 => $gi3);
+        
+        $subcatobj = new stdClass();
+        $subcatobj->aggregation = GRADE_AGGREGATE_MAX;
+        $subcatobj->gradeitem = new grade_item();
+        $subcatobj->gradeitem->gradetype = GRADE_TYPE_VALUE;
         // Assert calculation to get the Highest grade
-        $calgrade = grade_aggregation::calculate_grade(GRADE_AGGREGATE_MAX, $grades, $gradeitems);
+        $calgrade = grade_aggregation::calculate_grade($subcatobj, $grades, $gradeitems);
         // grades max[10, 20, 30] = 30
         $this->assertEquals($calgrade, 30);
 
         // Assert calculation to get the weighted mean grade
-        $calgrade = grade_aggregation::calculate_grade(GRADE_AGGREGATE_WEIGHTED_MEAN, $grades, $gradeitems);
+        $subcatobj->aggregation = GRADE_AGGREGATE_WEIGHTED_MEAN;
+        $calgrade = grade_aggregation::calculate_grade($subcatobj, $grades, $gradeitems);
         // grades [10 x aggregationcoef, 20 x aggregationcoef, 30 x aggregationcoef] / 3 = 20
         $this->assertEquals($calgrade, 20);
 
         // Assert calculation to get the simple mean grade
-        $calgrade = grade_aggregation::calculate_grade(GRADE_AGGREGATE_MEAN, $grades, $gradeitems);
+        $subcatobj->aggregation = GRADE_AGGREGATE_MEAN;
+        $calgrade = grade_aggregation::calculate_grade($subcatobj, $grades, $gradeitems);
         // grades [10, 20, 30] / 3 = 20
         $this->assertEquals($calgrade, 20);
     }
@@ -223,19 +258,24 @@ class grade_aggregation_testcase extends advanced_testcase {
         $subcatobj->aggregateonlygraded = 1; // Aggregate only graded
         $subcatobj->droplow = 0; // Drop lowest
         $subcatobj->aggregation = GRADE_AGGREGATE_MEAN; // aggregation type, get the Mean grade
+        $subcatobj->aggregation_type = GRADE_AGGREGATE_MEAN; // aggregation type, get the Mean grade
+        $subcatobj->children_total = 3; // Total components
+        $subcatobj->gradeitem = new stdClass();
+        $subcatobj->gradeitem->gradetype = GRADE_TYPE_VALUE; // Sub cat gradetype
 
         // Assert return null if provisional grade is undefined
         $subcatobj->grades->provisional[] = $pgobj;
-        $aggregatedgrade = grade_aggregation::get_aggregated_grade($userid, $subcatobj, $gradeitems);
+        list($aggregatedgrade, $processed, $error) = grade_aggregation::get_aggregated_grade($userid, $subcatobj, $gradeitems);
         $this->assertNull($aggregatedgrade);
+        $this->assertFalse($processed);
+        $this->assertNull($error);
 
-        // Assert return is the provisional obj itself if sub cat is overridden 
-        $pgobj->overridden = 1;
+        // Assert return null if there are no components
         $subcatobj->grades->provisional[$userid] = $pgobj;
-        $aggregatedgrade = grade_aggregation::get_aggregated_grade($userid, $subcatobj, $gradeitems);
-        $this->assertEquals($aggregatedgrade->finalgrade, $pgobj->finalgrade);
-        $this->assertEquals($aggregatedgrade->rawgrade, $pgobj->rawgrade);
-        $this->assertEquals($aggregatedgrade->overridden, $pgobj->overridden);
+        list($aggregatedgrade, $processed, $error) = grade_aggregation::get_aggregated_grade($userid, $subcatobj, $gradeitems);
+        $this->assertNull($aggregatedgrade);
+        $this->assertFalse($processed);
+        $this->assertNull($error);
 
         // Assert getting the calculation done if item was not overridden
         $pgobj->overridden = 0; // Set overridden
@@ -245,26 +285,58 @@ class grade_aggregation_testcase extends advanced_testcase {
         $componentpg1 = new stdClass();
         $componentpg1->finalgrade = 10;
         $gi1 = new stdClass();
-        $gi1->gradeitem = new stdClass();
+        $gi1->id = 1;
+        $gi1->gradeitem = new grade_item(array('id'=>1));
+        $gi1->gradeitem->gradetype = GRADE_TYPE_VALUE;
         $gi1->gradeitem->categoryid = $categoryid;
         // Add provisional grades on the grades property of component
         $gi1->grades->provisional[$userid] = $componentpg1;
-        $gradeitems[] = $gi1;
+        $gradeitems[$gi1->id] = $gi1;
+
+        // Assert returns null if not all components are imported (dont have provisional grade item)
+        list($aggregatedgrade, $processed, $error) = grade_aggregation::get_aggregated_grade($userid, $subcatobj, $gradeitems);
+        $this->assertNull($aggregatedgrade);
+        $this->assertTrue($processed);
+        $this->assertNull($error);
 
         $componentpg2 = new stdClass();
         $componentpg2->finalgrade = 20;
         $gi2 = new stdClass();
-        $gi2->gradeitem = new stdClass();
+        $gi2->id = 2;
+        $gi2->gradeitem = new grade_item(array('id'=>2));
         $gi2->gradeitem->categoryid = $categoryid;
+        $gi2->gradeitem->gradetype = GRADE_TYPE_SCALE;
         // Add provisional grades on the grades property of component
         $gi2->grades->provisional[$userid] = $componentpg2;
-        $gradeitems[] = $gi2;
+        $gradeitems[$gi2->id] = $gi2;
 
+        // Assert returns error if not all components have the same gradetypes
+        $subcatobj->children_total = 2;
+        list($aggregatedgrade, $processed, $error) = grade_aggregation::get_aggregated_grade($userid, $subcatobj, $gradeitems);
+        $this->assertNull($aggregatedgrade);
+        $this->assertTrue($processed);
+        $this->assertEquals($error, get_string('aggregationwarningcomponents', 'local_gugcat'));
+
+        // Same grade type
+        $gi2->gradeitem->gradetype = GRADE_TYPE_VALUE;
+        $gradeitems[$gi2->id] = $gi2;
+
+        // Assert return is the provisional obj itself if sub cat is overridden 
+        $pgobj->overridden = 1;
+        $subcatobj->grades->provisional[$userid] = $pgobj;
+        list($aggregatedgrade, $processed, $error) = grade_aggregation::get_aggregated_grade($userid, $subcatobj, $gradeitems);
+        $this->assertEquals($aggregatedgrade->grade, $pgobj->finalgrade);
+        $this->assertFalse($processed);
+        $this->assertNull($error);
+
+        $pgobj->overridden = 0;
+        $subcatobj->grades->provisional[$userid] = $pgobj;
         // Assert return gets the mean grade
-        $aggregatedgrade = grade_aggregation::get_aggregated_grade($userid, $subcatobj, $gradeitems);
+        list($aggregatedgrade, $processed, $error) = grade_aggregation::get_aggregated_grade($userid, $subcatobj, $gradeitems);
         // Grades - [10, 20] / 2 = 15
-        $this->assertEquals($aggregatedgrade->finalgrade, 15);
-        $this->assertEquals($aggregatedgrade->itemid, $prvgi);
+        $this->assertEquals($aggregatedgrade->grade, 15);
+        $this->assertTrue($processed);
+        $this->assertNull($error);
 
         // Check if grade from db was also updated
         $updatedgradeobj = grade_grade::fetch(array('itemid' => $prvgi, 'userid' => $userid));
@@ -276,25 +348,28 @@ class grade_aggregation_testcase extends advanced_testcase {
         $componentpg3->finalgrade = null;
         $componentpg3->rawgrade = -1;
         $gi3 = new stdClass();
-        $gi3->gradeitem = new stdClass();
+        $gi3->id = 3;
+        $gi3->gradeitem = new grade_item(array('id'=>3));
         $gi3->gradeitem->categoryid = $categoryid;
+        $gi1->gradeitem->gradetype = GRADE_TYPE_VALUE;
         // Add provisional grades on the grades property of component
         $gi3->grades->provisional[$userid] = $componentpg3;
-        $gradeitems[] = $gi3;
-        $aggregatedgrade = grade_aggregation::get_aggregated_grade($userid, $subcatobj, $gradeitems);
-        // grades [10, 20, 0] / 3 => [10]
-        $this->assertEquals($aggregatedgrade->finalgrade, 10);
+        $gradeitems[$gi3->id] = $gi3;
+        $subcatobj->children_total = 3;
+        // Assert return is non submission grade -1
+        list($aggregatedgrade, $processed, $error) = grade_aggregation::get_aggregated_grade($userid, $subcatobj, $gradeitems);
+        // grades [10, 20, -1] => [-1]
+        $this->assertEquals($aggregatedgrade->grade, -1);
+        $this->assertTrue($processed);
+        $this->assertNull($error);
 
         // Test including drop lowest
         $subcatobj->droplow = 1; // Drop 1 lowest
-        $aggregatedgrade = grade_aggregation::get_aggregated_grade($userid, $subcatobj, $gradeitems);
-        // grades [10, 20, 0] => [10, 20] / 2 = 15
-        $this->assertEquals($aggregatedgrade->finalgrade, 15);
-
-        $subcatobj->droplow = 2; // Drop 2 lowest
-        $aggregatedgrade = grade_aggregation::get_aggregated_grade($userid, $subcatobj, $gradeitems);
-        // grades [10, 20, 0] => [20] / 1 = 20
-        $this->assertEquals($aggregatedgrade->finalgrade, 20);
+        list($aggregatedgrade, $processed, $error) = grade_aggregation::get_aggregated_grade($userid, $subcatobj, $gradeitems);
+        // grades [10, 20, -1] => [10, 20] / 2 = 15
+        $this->assertEquals($aggregatedgrade->grade, 15);
+        $this->assertTrue($processed);
+        $this->assertNull($error);
     }
 
     public function test_get_parent_child_activities(){

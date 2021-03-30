@@ -282,9 +282,10 @@ class grade_aggregation{
                 (isset($notes) && !is_null($grd)) ? local_gugcat::update_components_notes($userid, $pg->itemid, $notes) : null;
                 $studentgrades[$id] = intval($grd_);
             }
+            $is_highest_grade = $subcatobj->aggregation == GRADE_AGGREGATE_MAX;
 
             // Return grade = null, processed = true if all children are not imported for weighted/mean
-            if($subcatobj->aggregation != GRADE_AGGREGATE_MAX && count($studentgrades) != $subcatobj->children_total){
+            if(!$is_highest_grade && count($studentgrades) != $subcatobj->children_total){
                 return array(null, true, null);
             }
 
@@ -308,6 +309,7 @@ class grade_aggregation{
             $gradetypes = array_column($grditems, 'gradetype', 'id');
             $grademaxs = array_column($grditems, 'grademax', 'id');
             $errstr = get_string('aggregationwarningcomponents', 'local_gugcat');
+            
             if(count(array_unique($gradetypes)) == 1){
                 // Get first grade item
                 $gi = $grditems[key($grditems)];
@@ -351,9 +353,9 @@ class grade_aggregation{
             }
 
             // Check if $studentgrades still have admingrades, if yes, return admin grades instead
-            if(in_array(NON_SUBMISSION, $studentgrades)){
+            if(in_array(NON_SUBMISSION, $studentgrades) && !$is_highest_grade){
                 $calculatedgrd = NON_SUBMISSION;
-            }else if(in_array(MEDICAL_EXEMPTION, $studentgrades)){
+            }else if(in_array(MEDICAL_EXEMPTION, $studentgrades) && !$is_highest_grade){
                 $calculatedgrd = MEDICAL_EXEMPTION;
             }else{
                 // If $studentgrades dont have admin grades, proceed to calculation
@@ -366,9 +368,10 @@ class grade_aggregation{
                     $notes = 'import';
                     local_gugcat::update_grade($userid, $pgobj->itemid, $calculatedgrd, $notes);
                     foreach($actgrds as $id=>$grades){
-                        $pg = isset($grades->provisional[$userid]) ? $grades->provisional[$userid] : null;
-                        // Only get provisional grades $pg from child assessments
-                        !is_null($pg) ? local_gugcat::update_components_notes($userid, $pg->itemid, $notes) : null;
+                        if($pg = $grades->provisional[$userid]){
+                            // Only get provisional grades $pg from child assessments
+                            local_gugcat::update_components_notes($userid, $pg->itemid, $notes);
+                        }        
                     }   
                 }else{
                     local_gugcat::update_grade($userid, $pgobj->itemid, $calculatedgrd, '');
@@ -377,7 +380,7 @@ class grade_aggregation{
             $grdobj->grade = $calculatedgrd;
             $grdobj->gradetype = $gradetype;
             $grdobj->scaleid = $scaleid;
-            return array($grdobj, false, null);
+            return array($grdobj, true, null);
         }
         return array(null, false, null);
     }

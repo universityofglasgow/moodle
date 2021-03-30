@@ -92,7 +92,7 @@ if(!is_null($categoryid)){
     }
 }
 
-if(!empty($totalactivities)){
+if(!empty($totalactivities) || !empty($activities)){
     
     $mods = array_reverse($activities);
     $childmods = empty($childactivities) ?  null : array_reverse($childactivities);
@@ -242,9 +242,7 @@ if (isset($release)){
 }else if(isset($importgrades)){
     if ($valid_22point_scale){
         if(!empty($childactivities)){
-            // Put the selected activity and sub category gi into array 
-            $acts = array($selectedmodule, $gradecatgi[$activityid]);
-            grade_capture::import_from_gradebook($courseid, $selectedmodule, $acts);
+            grade_capture::import_from_gradebook($courseid, $selectedmodule, $totalactivities);
             $subcatid = local_gugcat::get_grade_item_id($courseid, $selectedmodule->gradeitem->categoryid, get_string('subcategorygrade', 'local_gugcat'));
             foreach($students as $student){
                 $fields = 'itemid, id, rawgrade, finalgrade, overridden';
@@ -264,7 +262,7 @@ if (isset($release)){
                 }
             }
         }else{
-            grade_capture::import_from_gradebook($courseid, $selectedmodule, $activities);
+            grade_capture::import_from_gradebook($courseid, $selectedmodule,  empty($totalactivities) ? $activities : $totalactivities);
         }
         local_gugcat::notify_success('successimport');
         $event = \local_gugcat\event\import_grade::create($params);
@@ -317,10 +315,8 @@ if (isset($release)){
     if(!empty($importerror)){
         local_gugcat::notify_error('bulkimporterror');
     }else{
-        // Put the selected activity and sub category gi into array 
-        $acts = array_merge($childactivities, array($gradecatgi[$activityid]));
         // Proceed with bulk import
-        grade_capture::import_from_gradebook($courseid, $childactivities, $acts);
+        grade_capture::import_from_gradebook($courseid, $childactivities, $totalactivities);
         $subcatid = local_gugcat::get_grade_item_id($courseid, $selectedmodule->gradeitem->categoryid, get_string('subcategorygrade', 'local_gugcat'));
         //update notes for grade history
         foreach($students as $student){
