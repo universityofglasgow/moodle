@@ -150,10 +150,10 @@ class grade_aggregation{
                     : ($invalid22scale && !local_gugcat::is_admin_grade($grd) ? local_gugcat::convert_grade($grd+1, $gt) : local_gugcat::convert_grade($grd, $gt));
                     $grdvalue = get_string('nograderecorded', 'local_gugcat');
                     $weight = local_gugcat::is_child_activity($item) ? 0 : (!is_null($pg) ? (float)$pg->information : 0); //get weight from information column of provisional grades
-                    if(!is_null($grd) && !local_gugcat::is_child_activity($item) && $grade !== MEDICAL_EXEMPTION_AC){
+                    if(!is_null($grd) && $grade !== MEDICAL_EXEMPTION_AC){
                         $grdvalue = $invalid22scale ? $grd : (($grade === NON_SUBMISSION_AC) ? 0 : (float)$grd - (float)1); //normalize to actual grade value for computation
                         $floatweight += ($grade === NON_SUBMISSION_AC) ? 0 : $weight;
-                        $sumaggregated += ($grade === NON_SUBMISSION_AC) ?( 0 * (float)$grdvalue) : ((float)$grdvalue * $weight);
+                        $sumaggregated += ($grade === NON_SUBMISSION_AC || local_gugcat::is_child_activity($item)) ?( 0 * (float)$grdvalue) : ((float)$grdvalue * $weight);
                     }
                     $is_child_activity = ($item->modname != 'category' 
                         && $category = local_gugcat::is_child_activity($item)) ? $category : false;
@@ -559,7 +559,7 @@ class grade_aggregation{
         $array = array();
         foreach($data as $row) {
             $student = new stdClass();
-            $student->candidate_number = $category->fullname;
+            $student->grade_category = is_null($categoryid) ? get_string('uncategorised', 'grades') : $category->fullname;
             $student->student_number = $row->idnumber;
             if(!$is_blind_marking){
                 $student->surname = $row->surname;
