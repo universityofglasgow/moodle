@@ -615,7 +615,7 @@ class local_guws_external extends external_api {
         $params = self::validate_parameters(self::guid_completion_parameters(), ['courseid' => $courseid, 'guid' => $guid]);   
         
         // find GUID
-        $user = $DB->get_record('user', ['username' => $guid], '*', MUST_EXIST);
+        $user = $DB->get_record('user', ['username' => $guid, 'mnethostid' => $CFG->mnet_localhost_id], '*', MUST_EXIST);
 
         // Make sure it's a valid course
         $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
