@@ -404,4 +404,77 @@ class local_gugcat_testcase extends advanced_testcase {
             'shortname' => get_string('showonstudentdashboard', 'local_gugcat')
         ]);
     }
+
+    public function test_get_child_activities_id(){
+        global $DB;
+        $gen = $this->getDataGenerator();
+        $cid = $this->course->id;
+        $gc1a = new grade_category($gen->create_grade_category(['courseid' => $cid]), false);
+        $gc2a = new grade_category($gen->create_grade_category(['courseid' => $cid]), false);
+        $gc2a->depth = 3;
+        $gc2a->path = $gc1a->path.$gc2a->id.'/';
+        $gc2a->parent = $gc1a->id;
+        $gc2a->update();
+        $assignid = $DB->get_field('grade_items', 'id', array('courseid' => $this->course->id, 'itemmodule' => 'assign'));
+        $DB->set_field('grade_items', 'categoryid', $gc2a->id, array('id'=>$assignid));
+        $cm = local_gugcat::get_child_activities_id($cid, $gc2a->id);
+        $this->assertNotEmpty($cm);
+        $this->assertEquals($cm[key($cm)]->gradeitemid, $this->cm->gradeitemid);
+    }
+
+    public function test_get_prvgrd_item_ids(){
+        global $DB;
+        $gen = $this->getDataGenerator();
+        $cid = $this->course->id;
+        $gc1a = new grade_category($gen->create_grade_category(['courseid' => $cid]), false);
+        $gc2a = new grade_category($gen->create_grade_category(['courseid' => $cid]), false);
+        $gc2a->depth = 3;
+        $gc2a->path = $gc1a->path.$gc2a->id.'/';
+        $gc2a->parent = $gc1a->id;
+        $gc2a->update();
+        $assignid = $DB->get_field('grade_items', 'id', array('courseid' => $this->course->id, 'itemmodule' => 'assign'));
+        $DB->set_field('grade_items', 'categoryid', $gc2a->id, array('id'=>$assignid));
+        $cm = local_gugcat::get_child_activities_id($cid, $gc2a->id);
+        $prvgrdid = local_gugcat::add_grade_item($cid, get_string('provisionalgrd', 'local_gugcat'), $cm[key($cm)]);
+        $prvgrds = local_gugcat::get_prvgrd_item_ids($cid, $cm);
+        $this->assertNotEmpty($prvgrds);
+        foreach($prvgrds as $prvgrd){
+            $this->assertNotEmpty($prvgrd);
+            $this->assertEquals($prvgrdid, $prvgrd->id);
+        }
+    }
+
+    public function test_update_components_notes(){
+        global $DB;
+        $exepectednotes = 'testnotes';
+        $subcatgi = local_gugcat::add_grade_item($this->course->id, get_string('subcategorygrade', 'local_gugcat'), null); 
+        local_gugcat::update_grade($this->student->id, $subcatgi, 19);
+        local_gugcat::update_components_notes($this->student->id, $subcatgi, $exepectednotes);
+        $notes = $DB->get_field('grade_grades', 'feedback', array('userid'=>$this->student->id, 'itemid'=>$subcatgi));
+        $this->assertEquals($exepectednotes, $notes);
+    }
+
+    public function test_get_aggregated_assessment_history(){
+        global $DB;
+        $gen = $this->getDataGenerator();
+        $cid = $this->course->id;
+        $gc1a = new grade_category($gen->create_grade_category(['courseid' => $cid]), false);
+        $gc2a = new grade_category($gen->create_grade_category(['courseid' => $cid]), false);
+        $gc2a->depth = 3;
+        $gc2a->path = $gc1a->path.$gc2a->id.'/';
+        $gc2a->parent = $gc1a->id;
+        $gc2a->update();
+        $assignid = $DB->get_field('grade_items', 'id', array('courseid' => $this->course->id, 'itemmodule' => 'assign'));
+        $DB->set_field('grade_items', 'categoryid', $gc2a->id, array('id'=>$assignid));
+        //create subcat gi
+        $subcatgi = $DB->get_record('grade_items', array('courseid'=>$this->course->id, 'iteminstance'=>$gc2a->id));
+        $subcatgiid = local_gugcat::add_grade_item($this->course->id, get_string('subcategorygrade', 'local_gugcat'), null);
+        $DB->set_field('grade_items', 'iteminfo', $gc2a->id, array('id'=>$subcatgiid));
+        local_gugcat::update_grade($this->student->id, $subcatgiid, 19, 'import');
+        $module = local_gugcat::get_activity($this->course->id, $subcatgi->id);
+        $rows = local_gugcat::get_aggregated_assessment_history($this->course->id, $this->student->id, $module);
+        $this->assertNotEmpty($rows);
+        $this->assertEquals($rows[0]->grade, '19.00000');
+        $this->assertEquals($rows[0]->notes, get_string('import', 'local_gugcat'));
+    }
 }

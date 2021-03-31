@@ -63,7 +63,7 @@ local_gugcat::set_grade_scale($scaleid);
 local_gugcat::set_prv_grade_id($courseid, $module);
 
 $childacts = ($module->modname == 'category') ? local_gugcat::get_activities($courseid, $module->gradeitem->iteminstance) : null;
-$history = ($module->modname == 'category') ? local_gugcat::get_aggregated_assessment_history($courseid, $studentid, $module, $childacts) 
+$history = ($module->modname == 'category') ? local_gugcat::get_aggregated_assessment_history($courseid, $studentid, $module) 
 : local_gugcat::get_grade_history($courseid, $module, $studentid);
 
 $childact = local_gugcat::get_child_activities_id($courseid, $module->gradeitem->iteminstance);

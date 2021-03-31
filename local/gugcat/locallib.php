@@ -994,7 +994,7 @@ class local_gugcat {
      * @param mixed $module
      * @param mixed $childacts
      */
-    public static function get_aggregated_assessment_history($courseid, $userid, $module, $childacts){
+    public static function get_aggregated_assessment_history($courseid, $userid, $module){
         global $DB;
 
         $i = 0;
