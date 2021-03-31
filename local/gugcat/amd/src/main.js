@@ -216,6 +216,7 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
         var childactivities = document.getElementById('select-child-act');
         var grade_reason = document.getElementById('select-grade-reason');
         var input_reason = document.getElementById('input-reason');
+        var select_scale = document.getElementById('select-scale');
         var mform_grade_reason = document.getElementById('id_reasons');
         switch (event.target) {
             case categories:
@@ -268,6 +269,13 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                 else
                     mformReason.required = false;
                 mformReason.focus();
+                break;
+            case select_scale:
+                var selectedOption = event.target.value;
+                var schedA = document.getElementById('table-schedulea');
+                var schedB = document.getElementById('table-scheduleb');
+                schedA.classList.toggle('hidden');
+                schedB.classList.toggle('hidden');
                 break;
             default:
                 break;

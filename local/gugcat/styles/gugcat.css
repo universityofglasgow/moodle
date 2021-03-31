@@ -164,6 +164,10 @@ button .fa-caret-down{
     width: auto;
 }
 
+.input-scale-pt{
+    margin-left: 5%;
+}
+
 .addnewgrade{
     margin: auto;
 }

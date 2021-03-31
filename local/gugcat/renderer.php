@@ -43,13 +43,16 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $activityid = optional_param('activityid', null, PARAM_INT);
         $childactivityid = optional_param('childactivityid', null, PARAM_INT);
         $page = optional_param('page', 0, PARAM_INT);        
-        $ammendgradeparams = "?id=$courseid&activityid=$modid&page=$page";
-        if(!is_null($activityid))
+        if(!is_null($activityid)){
             $modid = $activityid;
-        if(isset($selectedmodule->activityid))
+        }else if(isset($selectedmodule->activityid)){
             $modid = $selectedmodule->activityid;
+        }
+        $ammendgradeparams = "?id=$courseid&activityid=$modid&page=$page";
         // Upload page url
         $uploadurl = new moodle_url('/local/gugcat/import/index.php').$ammendgradeparams;
+        // Convert page url
+        $converturl = new moodle_url('/local/gugcat/convert/index.php').$ammendgradeparams;
 
         //url action form
         $actionurl = "index.php?id=$courseid&activityid=$modid&page=$page";
@@ -57,11 +60,13 @@ class local_gugcat_renderer extends plugin_renderer_base {
         if(!is_null($categoryid)){
             $actionurl .= '&categoryid=' . $categoryid;
             $uploadurl .= '&categoryid=' . $categoryid;
+            $converturl .= '&categoryid=' . $categoryid;
             $ammendgradeparams .= '&categoryid=' . $categoryid;
         }
         if(!is_null($childactivityid)){
             $actionurl .= '&childactivityid=' .$childactivityid;
-            $uploadurl .= '&childactivityid=' .$childactivityid;
+            $uploadurl .= "&childactivityid=$childactivityid";
+            $converturl .= "&childactivityid=$childactivityid";
             $ammendgradeparams .= '&childactivityid=' .$childactivityid;
         }
 
@@ -153,7 +158,8 @@ class local_gugcat_renderer extends plugin_renderer_base {
             'displaychildactivities' =>$displaychild,
             'activities' => $activities,
             'childactivities' => $childactivities,
-            'uploadurl' => $uploadurl
+            'uploadurl' => $uploadurl,
+            'converturl' => $converturl,
         ] : null;
         //start displaying the table
         $html = $this->header();
@@ -422,12 +428,14 @@ class local_gugcat_renderer extends plugin_renderer_base {
     }
 
     /**
-     * Render display of adjust weights and override grade form page
-     * 
+     * Render display of forms with contents from mform
+     * @param string $title_ Title of the form
      */
-    public function display_upload_import_form() {
+    public function display_empty_form($title_ = null) {
         $setting = optional_param('setting', 0, PARAM_INT);
-        $title = get_string(($setting != 0 ? 'setupimportoptions' : 'setupimportupload'), 'local_gugcat');
+        $title = is_null($title_) 
+            ? get_string(($setting != 0 ? 'setupimportoptions' : 'setupimportupload'), 'local_gugcat')
+            : $title_;
         $html = $this->header();
         $html .= html_writer::start_tag('div', array('class' => 'form-container'));
         $html .= html_writer::tag('h5', $title, array('class' => 'title'));

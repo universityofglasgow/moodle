@@ -70,7 +70,7 @@ if(!$iid){
             foreach (array($csvimporterror) as $error) {
                 echo $OUTPUT->notification($error);
             }
-            echo $renderer->display_upload_import_form();
+            echo $renderer->display_empty_form();
             echo $mform->display();
             echo $OUTPUT->footer();
             die();
@@ -83,7 +83,7 @@ if(!$iid){
     }else{
         // Display the standard upload file form.
         echo $OUTPUT->header();
-        echo $renderer->display_upload_import_form();
+        echo $renderer->display_empty_form();
         echo $mform->display();
         echo $OUTPUT->footer();
         die();
@@ -125,7 +125,7 @@ if ($formdata = $mform2->get_data()) {
             echo $OUTPUT->notification($error);
         }
         // Display the standard upload file form.
-        echo $renderer->display_upload_import_form();
+        echo $renderer->display_empty_form();
         echo $mform->display();
         echo $OUTPUT->footer();
     }

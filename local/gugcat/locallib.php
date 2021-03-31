@@ -59,6 +59,7 @@ require_once($CFG->libdir.'/dataformatlib.php');
 class local_gugcat {
      
     public static $GRADES = array();
+    public static $SCHEDULE_B = array();
     public static $PRVGRADEID = null;
     public static $STUDENTS = array();
 
@@ -446,11 +447,12 @@ class local_gugcat {
      * Set the static $GRADES scale based from the scale id
      * @param int $scaleid
      */
-    public static function set_grade_scale($scaleid){
+    public static function set_grade_scale($scaleid = null){
         global $DB;
         $scalegrades = array();
         if(is_null($scaleid)){
-            $scalegrades = self::get_gcat_scale();
+            list($scalegrades, $schedB) = self::get_gcat_scale();
+            self::$SCHEDULE_B = $schedB;
         }else{
             if($scale = $DB->get_record('scale', array('id'=>$scaleid), '*')){
                 $scalegrades = make_menu_from_list($scale->scale); 
@@ -470,8 +472,11 @@ class local_gugcat {
         $scale = array();
         if($json !== false){
             $obj = json_decode($json);
-            $scale = isset($obj) ? $obj->schedule_A : [];
-            return array_reverse(array_filter(array_merge(array(0), $scale)),true);//starts 1 => H
+            $A = isset($obj) ? $obj->schedule_A : [];
+            $B = isset($obj) ? $obj->schedule_B : [];
+            $schedA = array_reverse(array_filter(array_merge(array(0), $A)),true);//starts 1 => H Schedule A
+            $schedB = array_reverse(array_filter(array_merge(array(0), $B)),true);//starts 1 => H Schedule B
+            return array($schedA, $schedB);
         }
         return $scale;
     }
