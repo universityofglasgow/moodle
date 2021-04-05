@@ -59,7 +59,7 @@ $totalactivities = array();
 $childactivities = array();
 $selectedmodule = null;
 $groupingid = 0;
-$valid_22point_scale = false;
+$valid_import_activity = false;
 if(!is_null($categoryid)){
     // Retrieve sub categories
     $gcs = grade_category::fetch_all(array('courseid' => $courseid, 'parent' => $categoryid));
@@ -104,7 +104,8 @@ if(!empty($totalactivities) || !empty($activities)){
         $scaleid = $selectedmodule->gradeitem->scaleid;
         $gradetype = $selectedmodule->gradeitem->gradetype;
         $grademax = $selectedmodule->gradeitem->grademax;
-        $valid_22point_scale = is_null($scaleid) ? local_gugcat::is_grademax22($gradetype, $grademax) : local_gugcat::is_scheduleAscale($gradetype, $grademax);
+        $grademin = $selectedmodule->gradeitem->grademin;
+        $valid_import_activity = is_null($scaleid) ? local_gugcat::is_validgradepoint($gradetype, $grademin) : local_gugcat::is_scheduleAscale($gradetype, $grademax);
         //if $activities is empty, and activity id parameter is also null add $activityid into $selectmodule
         empty($activities) ? $selectedmodule->activityid = $activityid : null;
         //Populate static $GRADES scales
@@ -240,7 +241,7 @@ if (isset($release)){
 
 // Process single import grades
 }else if(isset($importgrades)){
-    if ($valid_22point_scale){
+    if ($valid_import_activity){
         if(!empty($childactivities)){
             grade_capture::import_from_gradebook($courseid, $selectedmodule, $totalactivities);
             $subcatid = local_gugcat::get_grade_item_id($courseid, $selectedmodule->gradeitem->categoryid, get_string('subcategorygrade', 'local_gugcat'));
