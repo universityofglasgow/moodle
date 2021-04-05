@@ -144,7 +144,7 @@ button .fa-caret-down{
     display: none;
 }
 
-.input-reason, .input-search{
+.input-reason, .input-search, .input-gradept{
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
@@ -160,8 +160,16 @@ button .fa-caret-down{
     border: 1px solid #E0E2E9;
     -ms-word-break: normal;
     word-break: normal;
+}
+
+.input-reason, .input-search{
     display: none;
     width: auto;
+}
+
+.input-gradept{
+    height: 40px;
+    margin-top: 0;
 }
 
 .input-scale-pt{
@@ -240,3 +248,17 @@ td a:hover, .dropdown-item a:hover {
 .child-select, #btn-blkimport{
     margin: 5px 0 1.5em 0;
 } 
+
+/* Tooltip styles */
+.tooltip > .arrow::before {
+    border-right-color: #8c8c8c;
+}
+
+.tooltip > .tooltip-inner {
+    text-align: left;
+    color: black;
+    background-color: white;
+    font-size: x-small;
+    border-radius: 10px;
+    border: 1px solid #8c8c8c;
+}

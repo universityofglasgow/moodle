@@ -89,8 +89,33 @@ class local_gugcat_renderer extends plugin_renderer_base {
         //--------COMMENT OUT FOR NOW
         // $htmlcolumns .= $displayreleasedgrade ? html_writer::tag('th', get_string('releasedgrade', 'local_gugcat'), array('class' => 'sortable')) : null;
         $htmlcolumns .= html_writer::empty_tag('th');
+        // Grade point field attributes
+        $gm = ($selectedmodule) ? intval($selectedmodule->gradeitem->grademax) : 0; //Grade max
+        $gt = ($selectedmodule) ? $selectedmodule->gradeitem->gradetype : null; //Grade type
+        $grdfieldattrs = array(
+            'pattern' => '^([mM][vV]|[0-9]|[nN][sS])+$', 
+            'placeholder' => get_string('typegrade', 'local_gugcat'),
+            'data-toggle' => 'tooltip',
+            'data-placement' => 'right',
+            'data-html' => 'true',
+            'data-grademax' => $gm,
+            'maxlength' => strlen($gm),
+            'minlength' => '1',
+            'title' => get_string('gradetooltip', 'local_gugcat'),
+            'class' => 'input-gradept multi-select-grade form-control',
+            'onkeypress' => "return event.keyCode != 13;",
+            'type' => 'text');
+        
         //grade capture rows
         foreach ($rows as $row) {
+            $inputgrdpt =  html_writer::start_tag('div', array('class' => 'form-inline felement'));
+            $inputgrdpt .=  html_writer::empty_tag('input', array_merge(array('name' => 'newgrades['.$row->studentno.']'), $grdfieldattrs));
+            $inputgrdpt .=  html_writer::tag('div', get_string('errorinputpoints', 'local_gugcat'), array('class' => 'form-control-feedback invalid-feedback'));
+            $inputgrdpt .=  html_writer::end_tag('div');
+            // Field for multiple add grade
+            $gradefield = ($gt == GRADE_TYPE_VALUE)
+            ? $inputgrdpt
+            : $this->display_custom_select($grades, 'newgrades['.$row->studentno.']', get_string('choosegrade', 'local_gugcat'), 'multi-select-grade');
             //url to add new grade
             $addformurl = new moodle_url('/local/gugcat/add/index.php', array('id' => $courseid, 'activityid' => (($selectedmodule) ? $selectedmodule->gradeitemid : null), 'studentid' => $row->studentno, 'page' => $page));
             if (!is_null($categoryid)){
@@ -110,20 +135,13 @@ class local_gugcat_renderer extends plugin_renderer_base {
                     ? '<div class="grade-discrepancy">'.$item->grade.'</div>' 
                     : $item->grade ).'</td>';
             }
-            $htmlrows .= '<td class="togglemultigrd">'
-                        .$this->display_custom_select(
-                            $grades,
-                            'newgrades['.$row->studentno.']',
-                            get_string('choosegrade', 'local_gugcat'),
-                            'multi-select-grade').'
-                    </td>';
+            $htmlrows .= html_writer::tag('td', $gradefield, array('class' => 'togglemultigrd'));
             $htmlrows .= '<td class="togglemultigrd">'.$this->display_custom_select(
                             local_gugcat::get_reasons(),
                             'reason',
                             get_string('selectreason', 'local_gugcat'),
-                            'multi-select-reason',
-                            'select-grade-reason').
-                            html_writer::empty_tag('input', array('type' => 'text', 'name' => 'reason', 'id' => 'input-reason', 
+                            'multi-select-reason').
+                            html_writer::empty_tag('input', array('type' => 'text', 'name' => 'reason',
                             'class' => 'input-reason', 'onkeypress' => "return event.keyCode != 13;"))
                     .'</td>';
             $isgradehidden = (!isset($row->hidden)) ? null: (($row->hidden) ? '<br/>('.get_string('hiddengrade', 'local_gugcat').')' : '');
@@ -146,6 +164,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $displaychild = !empty($childactivities) ? true : false; 
         $tabheader = !empty($activities) ? (object)[
             'addallgrdstr' =>get_string('addmultigrades', 'local_gugcat'),
+            'saveallgrdstr' =>get_string('saveallnewgrade', 'local_gugcat'),
             'uploadaddgrdstr' =>get_string('uploadaddgrd', 'local_gugcat'),
             'adjustgrdstr' =>get_string('adjustgrade', 'local_gugcat'),
             'adjustassconvstr' =>get_string('adjustassconv', 'local_gugcat'),

@@ -20,7 +20,6 @@
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
-
     display: block;
     width: 100%;
     max-width: 150px;
@@ -29,7 +28,7 @@
     color: #333;
     background-color: #ffffff;
     background-image: none;
-    border-radius: .5em;
+    border-radius: .25rem;
     border: 1px solid #8c8c8c;
     -ms-word-break: normal;
     word-break: normal;

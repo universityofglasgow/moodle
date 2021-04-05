@@ -71,17 +71,12 @@ $grading_info = grade_get_grades($courseid, 'mod', $module->modname, $module->in
 $gradeitems = local_gugcat::get_grade_grade_items($course, $module);
 $gradeversions = local_gugcat::filter_grade_version($gradeitems, $studentid);
 
-$mform = new addeditgradeform(null, array('id'=>$courseid, 'page'=>$page, 'categoryid'=>$categoryid, 'activityid'=>$activityid, 'studentid'=>$studentid, 'overview' => $overview));
+$mform = new addeditgradeform(null, array('id'=>$courseid, 'page'=>$page, 'categoryid'=>$categoryid, 'activity'=>$module, 'studentid'=>$studentid, 'overview' => $overview));
 if ($fromform = $mform->get_data()) {
-    if($fromform->reasons == 8) {
-        $gradereason = $fromform->otherreason;
-    }
-    else{
-        $gradereason = local_gugcat::get_reasons()[$fromform->reasons];
-    }
-
+    $gradereason = ($fromform->reasons == 8) ? $fromform->otherreason : local_gugcat::get_reasons()[$fromform->reasons];
+    $grade = !is_numeric($fromform->grade) ? array_search(strtoupper($fromform->grade), local_gugcat::$GRADES) : $fromform->grade; 
     $gradeitemid = local_gugcat::add_grade_item($courseid, $gradereason, $module);
-    $grades = local_gugcat::add_update_grades($studentid, $gradeitemid, $fromform->grade, $fromform->notes);
+    $grades = local_gugcat::add_update_grades($studentid, $gradeitemid, $grade, $fromform->notes);
 
     $url = null;
 

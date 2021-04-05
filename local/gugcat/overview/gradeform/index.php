@@ -61,6 +61,7 @@ require_capability('local/gugcat:view', $coursecontext);
 
 $studentarr = $DB->get_records('user', array('id'=>$studentid, 'deleted'=>0), MUST_EXIST);
 $activities = array();
+$gradetype = null;
 //Retrieve activities
 if(!is_null($categoryid)){
     if(!is_null($activityid) && $formtype == 1){
@@ -68,6 +69,9 @@ if(!is_null($categoryid)){
         $subcatactivity = local_gugcat::get_activity($courseid, $activityid);
         // Retrieve sub cat child components
         $components = local_gugcat::get_activities($courseid, $subcatactivity->instance);
+        $subcatactivity->children_total = count($components);
+        // Get child gradetype
+        $gradetype = array_column($components, 'gradeitem')[0]->gradetype;
         $activities = array_merge($components, [$subcatactivity]);
     }else{
         $activities = grade_aggregation::get_parent_child_activities($courseid, $categoryid);
@@ -103,7 +107,8 @@ if(!is_null($activityid) && $formtype == OVERRIDE_GRADE_FORM){
     $student->aggregatedgrade = $aggrdobj;
 }
 
-$mform = new coursegradeform(null, array('id'=>$courseid, 'page'=>$page, 'categoryid'=>$categoryid, 'studentid'=>$studentid, 'setting'=>$formtype, 'student'=>$student));
+$mform = new coursegradeform(null, array('id'=>$courseid, 'page'=>$page, 'categoryid'=>$categoryid, 'studentid'=>$studentid, 'setting'=>$formtype, 
+'student'=>$student, 'gradetype' => $gradetype));
 if ($fromform = $mform->get_data()) {
     //params needed for logs
     $params = array(
@@ -123,7 +128,8 @@ if ($fromform = $mform->get_data()) {
         $id = $is_subcat  ? $subcatactivity->instance : null;
         $itemname = get_string($is_subcat ? 'subcategorygrade' : 'aggregatedgrade', 'local_gugcat');
         if($gradeitemid = local_gugcat::get_grade_item_id($courseid, $id, $itemname)){
-            local_gugcat::update_grade($studentid, $gradeitemid, $fromform->override, $fromform->notes, time());
+            $grade = !is_numeric($fromform->override) ? array_search(strtoupper($fromform->override), local_gugcat::$GRADES) : $fromform->override; 
+            local_gugcat::update_grade($studentid, $gradeitemid, $grade, $fromform->notes, time());
             //also update notes for subcomponents
             if($is_subcat){
                 $prvgrades = local_gugcat::get_prvgrd_item_ids($courseid, $components);

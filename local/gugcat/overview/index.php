@@ -107,7 +107,7 @@ if(count($filters) > 0 && $page > 0){
     redirect($URL);
 }
 
-$rows = grade_aggregation::get_rows($course, $activities, $students);
+$rows = grade_aggregation::get_rows($course, $activities, $students, true);
 
 //params for log
 $params = array(

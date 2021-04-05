@@ -55,6 +55,7 @@ $string['coursegradehistory'] = 'Course Grade History';
 $string['coursegrade'] = 'Course Grade';
 $string['datetime'] = 'Date & Time';
 $string['downloadcsv'] = 'Download .csv';
+$string['errorinputpoints'] = 'Please ensure grade is in proper format.';
 $string['errorfieldnumbers'] = 'Field should contain only numbers.';
 $string['errorgraderequired'] = 'Add atleast one grade.';
 $string['errornoprvgrades'] = 'No provisional grades yet.';
@@ -70,6 +71,13 @@ $string['gugcat:view'] = 'View Grade Capture and Aggregation Tool';
 $string['gradeformgrade'] = "Grade";
 $string['gradebookgrade'] = 'Gradebook Grade ';
 $string['gradediscrepancy'] = 'Grade Discrepancy';
+$string['gradetooltip'] = '<i>Please ensure grade is: 
+    <ul class="mb-0">
+        <li>A whole number</li>
+        <li>A positive number</li>
+        <li>Within the range of maximum available points</li>
+        <li>Or an accepted administrative grade (NS/MV)</li>
+    </ul></i>';
 $string['hiddengrade'] = 'Hidden grade';
 $string['hiddengrademsg'] = 'The grade is now hidden to the student';
 $string['hidefromstudent'] = 'Hide from student';
@@ -144,6 +152,7 @@ $string['switchondisplay'] = 'Switch on display of assessments on Student Dashbo
 $string['title'] = 'Grade Capture & Course Grade Aggregation';
 $string['totalweight'] = 'Total Weighting';
 $string['type'] = 'Type';
+$string['typegrade'] = 'Type Grade';
 $string['uploadaddgrd'] = 'Upload Additional Grades';
 $string['uploaderrorgradeformat'] = 'User with ID number of {$a->id} has an invalid grade: {$a->value}. Grades must be in alphanumeric format.';
 $string['uploaderrorgradescale'] = 'User with ID number of {$a->id} has an invalid grade: {$a->value}. Grade is not within the scale.';

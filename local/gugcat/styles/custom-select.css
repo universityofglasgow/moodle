@@ -8,7 +8,7 @@
 .selectdiv:after {
     content: '\f078';
     font: normal normal normal 10px/1 FontAwesome;
-    color: #C3C5CB;;
+    color: #005c8a;
     position: absolute;
     right: 5px;
     top: 35%;

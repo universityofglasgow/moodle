@@ -214,8 +214,7 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
         var categories = document.getElementById('select-category');
         var activities = document.getElementById('select-activity');
         var childactivities = document.getElementById('select-child-act');
-        var grade_reason = document.getElementById('select-grade-reason');
-        var input_reason = document.getElementById('input-reason');
+        var grade_reason = document.querySelector('.multi-select-reason > select');
         var select_scale = document.getElementById('select-scale');
         var mform_grade_reason = document.getElementById('id_reasons');
         switch (event.target) {
@@ -249,13 +248,14 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                 window.location.search = urlParams;
                 break;
             case grade_reason:
-                var selected = event.target.value;    
+                var selected = event.target.value; 
+                var input = document.querySelector('.togglemultigrd > input');
                 update_reason_inputs(selected);
                 if(selected === 'Other'){
                     update_reason_inputs('');
-                    input_reason.style.display = 'block';
+                    input.style.display = 'block';
                 }else{
-                    input_reason.style.display = 'none';
+                    input.style.display = 'none';
                 }
                 break;
             case mform_grade_reason:
@@ -283,7 +283,8 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
     }
 
     const onClickListeners = (event) =>{
-        var btn_saveadd = document.getElementById('btn-saveadd');
+        var btn_multiadd = document.getElementById('btn-saveadd');
+        var btn_multisave = document.getElementById('btn-multisave');
         var btn_release = document.getElementById('btn-release');
         var btn_import = document.getElementById('btn-import');
         var btn_identities = document.getElementById('btn-identities');
@@ -293,18 +294,14 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
         var btn_switch_display = document.getElementById('btn-switch-display');
         var btn_bulk_import = document.getElementById('btn-blkimport');
         switch (event.target) {
-            case btn_saveadd:
-                btn_saveadd.classList.toggle('togglebtn');
-                btn_saveadd.style.display = 'none';
-                Str.get_string('saveallnewgrade', 'local_gugcat').then(function(langString) {
-                    btn_saveadd.style.display = 'inline-block';
-                    if(btn_saveadd.classList.contains('togglebtn')){
-                        btn_saveadd.textContent = langString;
-                    } else {
-                        document.getElementById('multiadd-submit').click();
-                    }
-                });
-                $(".togglemultigrd").show();
+            case btn_multiadd:
+                $(".togglemultigrd").toggle();
+                btn_multisave.classList.toggle('hidden');
+                break;
+            case btn_multisave:
+                if(document.querySelectorAll('input.is-invalid').length == 0){
+                    document.getElementById('multiadd-submit').click();
+                }
                 break;
             case btn_release:   
                 showModal('release', 'modalreleaseprovisionalgrade', 'confirmreleaseprovisionalgrade');
@@ -377,7 +374,7 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                 check_blind_marking();
                 toggle_child_activities();
 
-                var input_reason = document.getElementById('input-reason');
+                var input_reason = document.querySelector('.togglemultigrd > input');
                 if(input_reason){
                     input_reason.addEventListener('input', (e) => {
                         update_reason_inputs(e.target.value);
@@ -392,6 +389,25 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                             if(key === 13){
                                 document.getElementById('search-submit').click();
                             }                        
+                        });
+                    });
+                }
+
+                var input_gradept = document.querySelectorAll('.input-gradept');
+                if(input_gradept.length > 0){
+                    input_gradept.forEach(input => {
+                        input.addEventListener('input', (e) => {
+                            var val = e.target.value;
+                            var grademax = e.target.getAttribute('data-grademax');
+                            if(val && !(/^([mM][vV]|[0-9]|[nN][sS])+$/).test(val)){
+                                input.classList.add('is-invalid');
+                            }else{
+                                if(Number.isInteger(parseInt(val)) && parseInt(val) > parseInt(grademax)){
+                                    input.classList.add('is-invalid');
+                                }else{
+                                    input.classList.remove('is-invalid');
+                                }
+                            }
                         });
                     });
                 }

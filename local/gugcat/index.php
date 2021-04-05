@@ -202,7 +202,7 @@ if (isset($release)){
         $gradeitemid = local_gugcat::add_grade_item($courseid, $gradeitem, $selectedmodule);
         foreach ($newgrades as $id=>$item) {
             if(isset($item)){
-                $grade = array_search($item, local_gugcat::$GRADES);
+                $grade = !is_numeric($item) ? array_search(strtoupper($item), local_gugcat::$GRADES) : $item; 
                 local_gugcat::add_update_grades($id, $gradeitemid, $grade, '');
                 //check if child activities are existing
                 if(!empty($childactivities)){

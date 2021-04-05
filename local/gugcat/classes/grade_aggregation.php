@@ -65,8 +65,9 @@ class grade_aggregation{
      * @param mixed $course
      * @param array $modules
      * @param array $students
+     * @param boolean $showerrors
      */
-    public static function get_rows($course, $modules, $students){
+    public static function get_rows($course, $modules, $students, $showerrors = false){
         global $DB, $aggradeid;
         $categoryid = optional_param('categoryid', '0', PARAM_INT);
         //get grade item id for aggregated grade
@@ -202,8 +203,10 @@ class grade_aggregation{
             $i++;
         }
         // Display the errors from aggregation
-        foreach($errors as $e) {
-            local_gugcat::notify_error(null, $e);
+        if($showerrors){
+            foreach($errors as $e) {
+                local_gugcat::notify_error(null, $e);
+            }
         }
         return $rows;
     }

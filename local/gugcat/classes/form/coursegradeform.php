@@ -31,11 +31,14 @@ require_once($CFG->dirroot . '/local/gugcat/locallib.php');
 class coursegradeform extends moodleform {
     //Add elements to form
     public function definition() {
-        global $CFG;
-
-        $grade = local_gugcat::$GRADES + grade_aggregation::$AGGRADE;
-        unset($grade[NON_SUBMISSION]);
-
+        $act = optional_param('activityid', null, PARAM_INT);
+        if(!is_null($act)){
+            $grade = local_gugcat::$GRADES;
+        }else{
+            $grade = local_gugcat::$GRADES + grade_aggregation::$AGGRADE;
+            unset($grade[NON_SUBMISSION]);
+        }
+        
         $mform = $this->_form; // Don't forget the underscore! 
         $mform->addElement('html', '<div class="mform-container">');
         $student = $this->_customdata['student'];
@@ -91,8 +94,28 @@ class coursegradeform extends moodleform {
             $mform->addElement('static', 'aggregatedgrade', get_string('aggregatedgrade', 'local_gugcat'), $student->aggregatedgrade->grade); 
             $mform->setType('aggregatedgrade', PARAM_NOTAGS); 
             $mform->addElement('html', '</div>');
-            $mform->addElement('select', 'override', get_string('overridegrade', 'local_gugcat'), $grade, ['class' => 'mform-custom-select']); 
-            $mform->setType('override', PARAM_NOTAGS); 
+            $mform->addElement('hidden', 'gradetype', $this->_customdata['gradetype']); 
+            $mform->setType('gradetype', PARAM_NOTAGS);
+            if(!is_null($this->_customdata['gradetype']) && $this->_customdata['gradetype'] == GRADE_TYPE_VALUE){
+                $attributes = array(
+                    'pattern' => '^([mM][vV]|[0-9]|[nN][sS])+$', 
+                    'size' => '16', 
+                    'placeholder' => get_string('typegrade', 'local_gugcat'),
+                    'data-toggle' => 'tooltip',
+                    'data-placement' => 'right',
+                    'data-html' => 'true',
+                    'maxlength' => '3',
+                    'minlength' => '1',
+                    'title' => get_string('gradetooltip', 'local_gugcat')
+                );
+                $mform->addElement('text', 'override', get_string('gradeformgrade', 'local_gugcat'), $attributes); 
+                $mform->setType('override', PARAM_NOTAGS);
+                $mform->addRule('override', get_string('errorinputpoints', 'local_gugcat'), 'regex', '/^([mM][vV]|[0-9]|[nN][sS])+$/', 'client');
+                $mform->addRule('override', get_string('errorinputpoints', 'local_gugcat'), 'regex', '/^([mM][vV]|[0-9]|[nN][sS])+$/', 'server');    
+            }else{
+                $mform->addElement('select', 'override', get_string('overridegrade', 'local_gugcat'), $grade, ['class' => 'mform-custom-select']); 
+                $mform->setType('override', PARAM_NOTAGS); 
+            }
         }
         $mform->addElement('textarea', 'notes', get_string('notes', 'local_gugcat'));
         $mform->setType('notes', PARAM_NOTAGS); 
@@ -118,8 +141,18 @@ class coursegradeform extends moodleform {
         $mform->addElement('hidden', 'activityid', optional_param('activityid', null, PARAM_INT));
         $mform->setType('activityid', PARAM_INT);
         
+    }
+
     function validation($data, $files) {
-        return array();
+        $errors = parent::validation($data, $files);
+        if($data['setting'] == 1){
+            $newgrade = $data['override'];
+            // Grademax is always 100 for subcategory grade point
+            if ($data['gradetype'] == GRADE_TYPE_VALUE && is_numeric($newgrade) && $newgrade > $data['grademax']) {
+                $errors['override'] = get_string('errorinputpoints', 'local_gugcat');
+            } 
         }
+             
+        return $errors;
     }
 }

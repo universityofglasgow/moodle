@@ -52,7 +52,9 @@ class grade_capture{
         $captureitems = array();
         global $gradeitems, $firstgradeid;
         $gradeitems = array();
+        $gt = null; // Gradetype
         if(isset($module)){
+            $gt = $module->gradeitem->gradetype;
             $gbgrades = grade_get_grades($course->id, 'mod', $module->modname, $module->instance, array_keys($students));
             $gbgradeitem = array_values(array_filter($gbgrades->items, function($item) use($module){
                 return $item->itemnumber == $module->gradeitem->itemnumber;//filter grades with specific itemnumber
@@ -85,15 +87,15 @@ class grade_capture{
                     $gbg = isset($releasedgrades[$student->id]) ? $releasedgrades[$student->id] : null;
                     $gradescaleoffset = local_gugcat::is_grademax22($module->gradeitem->gradetype, $module->gradeitem->grademax) ? 1 : 0;
                     $grade = self::check_gb_grade($gbg, $gradescaleoffset);
-                    $gradecaptureitem->releasedgrade = is_null($grade) ? null : local_gugcat::convert_grade($grade);
+                    $gradecaptureitem->releasedgrade = is_null($grade) ? null : local_gugcat::convert_grade($grade, $gt);
                 }
                 //get first grade and provisional grade
                 $gifg = $gradeitems[$firstgradeid]->grades;
                 $gipg = $gradeitems[intval(local_gugcat::$PRVGRADEID)]->grades;
                 $fg = (isset($gifg[$student->id])) ? $gifg[$student->id]->grade : null;
                 $pg = (isset($gipg[$student->id])) ? $gipg[$student->id]->grade : null;
-                $gradecaptureitem->firstgrade = is_null($fg) ? get_string('nograde', 'local_gugcat') : local_gugcat::convert_grade($fg);
-                $gradecaptureitem->provisionalgrade = is_null($pg) ? get_string('nograde', 'local_gugcat') : local_gugcat::convert_grade($pg);
+                $gradecaptureitem->firstgrade = is_null($fg) ? get_string('nograde', 'local_gugcat') : local_gugcat::convert_grade($fg, $gt);
+                $gradecaptureitem->provisionalgrade = is_null($pg) ? get_string('nograde', 'local_gugcat') : local_gugcat::convert_grade($pg, $gt);
                 $agreedgrade = (!$agreedgradeid) ? null : (isset($gradeitems[$agreedgradeid]->grades[$student->id]) ? $gradeitems[$agreedgradeid]->grades[$student->id]->grade : null);
                 $sndgrade = (!$secondgradeid) ? null : (isset($gradeitems[$secondgradeid]->grades[$student->id]) ? $gradeitems[$secondgradeid]->grades[$student->id]->grade : null);
                 $trdgrade = (!$thirdgradeid) ? null : (isset($gradeitems[$thirdgradeid]->grades[$student->id]) ? $gradeitems[$thirdgradeid]->grades[$student->id]->grade : null);
@@ -104,7 +106,7 @@ class grade_capture{
                     if($item->id != local_gugcat::$PRVGRADEID && $item->id != $firstgradeid){
                         $rawgrade = (isset($item->grades[$student->id])) ? $item->grades[$student->id]->grade : null; 
                         $grdobj = new stdClass();
-                        $grade = is_null($rawgrade) ? 'N/A' : local_gugcat::convert_grade($rawgrade);
+                        $grade = is_null($rawgrade) ? 'N/A' : local_gugcat::convert_grade($rawgrade, $gt);
                         $grdobj->grade = $grade;
                         $grdobj->discrepancy = false;
 
