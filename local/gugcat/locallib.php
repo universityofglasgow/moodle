@@ -777,7 +777,7 @@ class local_gugcat {
                 if(!empty($customfielddata)){
                     return (int)$customfielddata->intvalue;
                 }
-                return 1;
+                return 0;
             }
         }
     }
