@@ -237,6 +237,18 @@ class local_gugcat {
     }
 
     /**
+     * Returns boolean if grade type is value with min = 0
+     * @param int $gradetype
+     * @param int $grademin 
+     */
+    public static function is_validgradepoint($gradetype, $grademin){
+        if (($gradetype == GRADE_TYPE_VALUE && intval($grademin) == 0)){
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Returns boolean if scale is schedule A
      * @param int $gradetype
      * @param int $grademax 
