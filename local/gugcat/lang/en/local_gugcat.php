@@ -29,6 +29,7 @@ $string['addmultigrades'] = 'Add multiple grades';
 $string['addnewgrade'] = 'Add new grade';
 $string['editgrade'] = 'Edit grade';
 $string['adjustassconv'] = 'Adjust Assessment Conversion';
+$string['adjustassessgrdcvr'] = 'Add / adjust assessment grade conversion';
 $string['adjustgrade'] = 'Adjust Grades';
 $string['adjustcourseweight'] = 'Adjust student\'s course weightings';
 $string['aggregatedgrade'] = 'Aggregated Grade';

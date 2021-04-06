@@ -265,8 +265,9 @@ class local_gugcat_renderer extends plugin_renderer_base {
             // The collapse-expand icon in the table header
             $toggleicon = html_writer::tag('button', html_writer::empty_tag('i', array('class' => 'i-colexp fa fa-plus', 'style'=>'pointer-events:none')), 
             array('data-categoryid' => $act->id, 'type' => 'button', 'class' => 'btn btn-colexp'));
+            $convertgrdparams = "?id=$courseid&activityid=$act->gradeitemid&page=$page" . $historyeditcategory;
             $header = $act->name.'<br/>'.($weight * 100).'%';
-            $header = html_writer::tag('span', $header, array('class' => 'sortable')).($act->modname == 'category' ? $toggleicon : null);
+            $header = html_writer::tag('span', $header, array('class' => 'sortable')).($act->modname == 'category' ? ($this->context_actions(null, null, false, $convertgrdparams, false, true).$toggleicon): null);
             if ($act->modname == 'category') {
                 if($colspan > 0){
                     $colgroups .= html_writer::empty_tag('colgroup', array('span' => $colspan, 'class' => "colgroup hidden catid-$prevcatid"));
@@ -602,11 +603,11 @@ class local_gugcat_renderer extends plugin_renderer_base {
      * @param string $link Url link
      * @param boolean $is_overviewpage Condition for url action
      */
-    private function context_actions($studentno, $ishidden=null, $is_aggregrade = false, $link = null, $is_overviewpage = false) {
+    private function context_actions($studentno = null, $ishidden=null, $is_aggregrade = false, $link = null, $is_overviewpage = false, $is_subcat = false) {
         $class = array('class' => 'dropdown-item');
         $html = html_writer::tag('i', null, array('class' => 'fa fa-ellipsis-h', 'data-toggle' => 'dropdown', 'role' =>'button', 'tabindex' =>'0'));
         $html .= html_writer::start_tag('ul', array('class' => 'dropdown-menu'));
-        $link .=  '&studentid='.$studentno;
+        $link .=  is_null($studentno) ? null : "&studentid=$studentno";
         if($is_aggregrade){
             $gradeformurl = new moodle_url('/local/gugcat/overview/gradeform/index.php').$link;
             $coursehistoryurl = new moodle_url('/local/gugcat/overview/history/index.php').$link;
@@ -622,6 +623,9 @@ class local_gugcat_renderer extends plugin_renderer_base {
                 $html .= html_writer::tag('li', html_writer::tag('a', get_string('overrideggregrade', 'local_gugcat'), array('href' => $overridelink)), $class);
                 $html .= html_writer::tag('li', html_writer::tag('a', get_string('viewcoursehistory', 'local_gugcat'), array('href' => $coursehistoryurl)), $class);
             }
+        }else if($is_subcat){
+            $converturl = new moodle_url('/local/gugcat/convert/index.php').$link;
+            $html .= html_writer::tag('li', html_writer::tag('a', get_string('adjustassessgrdcvr', 'local_gugcat'), array('href' => $converturl)), $class);
         }else{
             $historylink = new moodle_url('/local/gugcat/history/index.php').$link;
             $editlink = new moodle_url('/local/gugcat/edit/index.php').$link.'&overview='.($is_overviewpage ? 1 : 0);
@@ -630,8 +634,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
             if(preg_match('/\b&history/i', $historylink)){
                 $historylink = preg_replace('/\b&history/i', '', $historylink);
                 $html .= html_writer::tag('li', html_writer::tag('a', get_string('assessmentgradehistory', 'local_gugcat'), array('href' => $historylink)), $class);
-            }
-            else{
+            }else{
                 $hidestr = !empty($ishidden) ? get_string('showgrade', 'local_gugcat') : get_string('hidefromstudent', 'local_gugcat');
                 $html .= html_writer::tag('li', html_writer::tag('a', get_string('amendgrades', 'local_gugcat'), array('href' => $editlink)), $class);
                 $html .= html_writer::tag('li', html_writer::tag('a', get_string('assessmentgradehistory', 'local_gugcat'), array('href' => $historylink)), $class);
