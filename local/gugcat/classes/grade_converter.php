@@ -15,19 +15,25 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version file.
- *
+ * Class containing helper methods for Grade Convertion page.
+ * 
  * @package    local_gugcat
- * @copyright  2020
+ * @copyright  2020x
  * @author     Accenture
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+namespace local_gugcat;
 
 defined('MOODLE_INTERNAL') || die();
+require_once('gcat_item.php');
 
-$plugin->version      = 2021021616.00;
-$plugin->requires     = 2019111804.11;   // Moodle 3.8.4.
-$plugin->component    = 'local_gugcat';
+class grade_converter{
 
-$plugin->maturity     = MATURITY_STABLE;
+    public static function save_grade_converter($modid, $scale, $grades){
+        global $DB;
 
+        $DB->insert_records('gcat_grade_converter', $grades);
+        $DB->set_field('grade_items', 'iteminfo', $scale, array('id'=>$modid));
+    }
+
+}

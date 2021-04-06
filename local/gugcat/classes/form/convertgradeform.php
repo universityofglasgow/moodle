@@ -93,7 +93,6 @@ class convertform extends moodleform {
             'class' => 'input-scale-pt mb-0',
             'type' => 'number',
             'maxlength' => '3',
-            'minlength' => '1',
             'size' => '10',
             'pattern' => '[0-9]+'
         );
@@ -112,7 +111,7 @@ class convertform extends moodleform {
             $html .= html_writer::start_tag('td');
             $mform->addElement('html', $html); 
             $mform->addElement('text', $name."[$grd]", null, $attributes); 
-            $mform->setType($name."[$grd]", PARAM_INT);
+            $mform->setType($name."[$grd]", PARAM_NOTAGS);
             $mform->addRule($name."[$grd]", null, 'numeric', null, 'client');
             $mform->addRule($name."[$grd]", get_string('errorfieldnumbers', 'local_gugcat'), 'regex', '/^[0-9]+$/', 'client');
             $mform->addRule($name."[$grd]", get_string('errorfieldnumbers', 'local_gugcat'), 'regex', '/^[0-9]+$/', 'server');

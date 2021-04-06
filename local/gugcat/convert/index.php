@@ -22,6 +22,7 @@
  * @author     Accenture
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+use local_gugcat\grade_converter;
 
 require_once(__DIR__ . '/../../../config.php');
 require_once($CFG->dirroot . '/local/gugcat/locallib.php');
@@ -68,7 +69,18 @@ $scales = array(
 );
 $mform = new convertform(null, array('activity' => $module, 'scales' => $scales));
 if ($formdata = $mform->get_data()) {
-    
+
+    $grades = $formdata->scale == 0 ? $formdata->schedA : $formdata->schedB;
+    $i = $formdata->scale == 0 ? 23 : 8;
+    $gradeconvert = array();
+    foreach($grades as $grd){
+        if($grd != ""){
+            $grdconvert = array('courseid'=>$courseid, 'itemid'=>$modid, 'lowerboundary'=>$grd, 'grade'=>$i);
+            array_push($gradeconvert, $grdconvert);
+        }
+        $i--;
+    }
+    grade_converter::save_grade_converter($modid, $formdata->scale, $gradeconvert);
 }else if ($mform->is_cancelled()) {
     redirect($indexurl);
 }
