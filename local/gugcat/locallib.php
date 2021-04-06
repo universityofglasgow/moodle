@@ -135,8 +135,6 @@ class local_gugcat {
                     self::delete_gcat_items($courseid, $activity);
                     continue;
                 }
-                $gradetype = $activity->gradeitem->gradetype;
-                $grademax = $activity->gradeitem->grademax;
             }
         }
         return $activities;

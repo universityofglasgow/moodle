@@ -156,15 +156,16 @@ class grade_aggregation{
                         $floatweight += ($grade === NON_SUBMISSION_AC) ? 0 : $weight;
                         $sumaggregated += ($grade === NON_SUBMISSION_AC || local_gugcat::is_child_activity($item)) ?( 0 * (float)$grdvalue) : ((float)$grdvalue * $weight);
                     }
-                    $is_child_activity = ($item->modname != 'category' 
+                    $get_category = ($item->modname != 'category' 
                         && $category = local_gugcat::is_child_activity($item)) ? $category : false;
                     
                     $grdobj->activityid = $item->gradeitemid;
                     $grdobj->activityinstance = $item->instance;
                     $grdobj->activity = $item->name;
-                    $grdobj->category = $is_child_activity;
+                    $grdobj->category = $get_category;
                     $grdobj->is_subcat = ($item->modname == 'category') ? true : false;
                     $grdobj->is_imported = !is_null($pg) ? true : false;
+                    $grdobj->is_child = local_gugcat::is_child_activity($item) ? true : false;
                     $grdobj->grade = $grade;
                     $grdobj->rawgrade = $grdvalue;
                     $grdobj->weight =  round((float)$weight * 100 );
@@ -183,7 +184,10 @@ class grade_aggregation{
                     $aggrdobj->grade = local_gugcat::convert_grade($aggrade);
                     $aggrdobj->rawgrade = $rawaggrade;
                     $numberformat = number_format($rawaggrade, 3);
-                    $aggrdobj->display = in_array(get_string('nograderecorded', 'local_gugcat'), array_column($gradecaptureitem->grades, 'grade'))
+                    // Only get main activities and categories.
+                    $filtered = array_filter($gradecaptureitem->grades, function($item){ return !$item->is_child; });
+                    $aggrdobj->display = in_array(get_string('nograderecorded', 'local_gugcat'), array_column($filtered, 'grade'))
+                    || in_array(get_string('missinggrade', 'local_gugcat'), array_column($filtered, 'grade'))
                     ? get_string('missinggrade', 'local_gugcat') 
                     : ($gbaggregatedgrade->overridden == 0 ? ($totalweight < 75 ? $numberformat 
                     : local_gugcat::convert_grade($aggrade) .' ('.$numberformat.')') 
