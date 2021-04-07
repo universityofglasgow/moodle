@@ -954,7 +954,7 @@ class local_gugcat {
 
         $itemname = get_string('provisionalgrd', 'local_gugcat');
         $iteminfo = '';
-        $field = 'id';
+        $field = 'id, iteminfo';
         foreach($activities as $act){
             $iteminfo .= $DB->sql_compare_text('iteminfo').'='.$act->gradeitemid.' OR ';
         }
@@ -1056,6 +1056,8 @@ class local_gugcat {
         $prvgrades = local_gugcat::get_prvgrd_item_ids($courseid, $childacts);
         foreach($prvgrades as $prvgrd){
             $j = 0;
+            $scaleid = is_null($childacts[$prvgrd->iteminfo]->gradeitem->scaleid) ? null : $childacts[$prvgrd->iteminfo]->gradeitem->scaleid;
+            local_gugcat::set_grade_scale($scaleid);
             $notes = array('aggregation', 'grade', 'import');
             $sort = 'id DESC';
             $fields = 'id, itemid, rawgrade, finalgrade, feedback';
