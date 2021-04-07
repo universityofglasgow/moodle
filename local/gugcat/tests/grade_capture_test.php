@@ -108,7 +108,7 @@ class grade_capture_testcase extends advanced_testcase {
         $this->assertNotContains($mgcolumn, $columns);
 
         // Multiple course modules to be imported
-        global $DB;
+        global $DB, $USER;
         $gen = $this->getDataGenerator();
         $mod1 = $gen->create_module('assign', array('name'=> 'Assessment 1','course' => $this->course->id));
         $mod2 = $gen->create_module('assign', array('name'=> 'Assessment 2','course' => $this->course->id));
@@ -128,6 +128,22 @@ class grade_capture_testcase extends advanced_testcase {
             $this->assertNotFalse($moodlegi);
             $this->assertNotFalse($prvgi);
         }
+
+        // Adding invalid scale
+        $name = "Non-22 Scale";
+        $scale = "0,1,2";
+        $non22scale = $this->getDataGenerator()->create_scale(array('name' => $name, 'scale' => $scale, 'courseid' => $this->course->id, 'userid' => $USER->id));
+
+        // Creating invalid module
+        $invalidmod = $gen->create_module('assign', array('name'=> 'Invalid Assessment 1','course' => $this->course->id));
+        $DB->set_field('grade_items', 'scaleid', $non22scale->id, array('iteminstance'=>$invalidmod->id, 'itemmodule' => 'assign'));
+
+        $gradeitem = $DB->get_record('grade_items', array('iteminstance'=>$invalidmod->id, 'itemmodule' => 'assign'), 'id');
+
+        $moodlegi = grade_item::fetch(array('iteminfo'=>$gradeitem->id, 'itemtype' => 'manual', 'itemname' => get_string('moodlegrade', 'local_gugcat')));
+        $prvgi = grade_item::fetch(array('iteminfo'=>$gradeitem->id, 'itemtype' => 'manual', 'itemname' => get_string('provisionalgrd', 'local_gugcat')));
+        $this->assertFalse($moodlegi);
+        $this->assertFalse($prvgi);
     }
 
     public function test_grade_capture_rows() {
