@@ -167,7 +167,7 @@ class grade_aggregation{
                     $grdobj->is_imported = !is_null($pg) ? true : false;
                     $grdobj->is_child = local_gugcat::is_child_activity($item) ? true : false;
                     $grdobj->grade = $grade;
-                    $grdobj->orignalgrade = (float)$grd;
+                    $grdobj->orignalgrade = is_null($scaleid) ? $grade : $grdvalue;
                     $grdobj->rawgrade = $grdvalue;
                     $grdobj->weight =  round((float)$weight * 100 );
                     array_push($gradecaptureitem->grades, $grdobj);
