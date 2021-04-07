@@ -62,6 +62,17 @@ $PAGE->set_course($course);
 $PAGE->set_heading($course->fullname);
 require_capability('local/gugcat:view', $coursecontext);
 
+//logs for grade converter
+$params = array(
+    'context' => context_course::instance($courseid),
+    'other' => array(
+        'courseid' => $courseid,
+        'activityid' => $modid,
+        'categoryid' => $categoryid,
+        'page'=> $page
+    )
+);
+
 $module = local_gugcat::get_activity($courseid, $modid);
 $scales = array(
     0 => get_string('schedulea', 'local_gugcat'),
@@ -81,6 +92,9 @@ if ($formdata = $mform->get_data()) {
         $i--;
     }
     grade_converter::save_grade_converter($modid, $formdata->scale, $gradeconvert);
+    $event = \local_gugcat\event\add_grade_converter::create($params);
+    $event->trigger();
+    
 }else if ($mform->is_cancelled()) {
     redirect($indexurl);
 }

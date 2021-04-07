@@ -172,6 +172,7 @@ $string['gi_thirdgrade'] = 'Third Grade';
 
 //Log events
 $string['eventaddgrades'] = 'Add new grade for user';
+$string['eventaddgradeconverter'] = 'Add new grade converter';
 $string['eventaddmultiplegrades'] = 'Add Multiple Grades';
 $string['eventadjustgrade'] = 'Adjust student\'s course weightings';
 $string['eventaggregationviewed'] = 'Aggregation Tool viewed';
