@@ -304,9 +304,7 @@ if (isset($release)){
         $gradetype = $activity->gradeitem->gradetype;
         $grademax = $activity->gradeitem->grademax;
         $grademin = $activity->gradeitem->grademin;
-        $invalid_import_activity = ($gradetype != GRADE_TYPE_VALUE && $gradetype != GRADE_TYPE_SCALE) || 
-                                   ($gradetype == GRADE_TYPE_SCALE && !local_gugcat::is_scheduleAscale($gradetype, $grademax)) ||
-                                   (is_null($scaleid) ? !local_gugcat::is_validgradepoint($gradetype, $grademin)
+        $invalid_import_activity = (is_null($scaleid) ? !local_gugcat::is_validgradepoint($gradetype, $grademin)
                                                       : !local_gugcat::is_scheduleAscale($gradetype, $grademax));
 
         if($invalid_import_activity){
