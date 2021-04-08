@@ -24,6 +24,7 @@
  */
 
 use local_gugcat\grade_capture;
+use local_gugcat\grade_converter;
 
 require_once(__DIR__ . '/../../config.php');
 require_once('locallib.php');
@@ -60,6 +61,7 @@ $childactivities = array();
 $selectedmodule = null;
 $groupingid = 0;
 $valid_import_activity = false;
+$is_converted = false;
 if(!is_null($categoryid)){
     // Retrieve sub categories
     $gcs = grade_category::fetch_all(array('courseid' => $courseid, 'parent' => $categoryid));
@@ -109,8 +111,8 @@ if(!empty($totalactivities) || !empty($activities)){
         //if $activities is empty, and activity id parameter is also null add $activityid into $selectmodule
         empty($activities) ? $selectedmodule->activityid = $activityid : null;
         //Populate static $GRADES scales
-        if($st = $selectedmodule->gradeitem->iteminfo){
-            local_gugcat::set_grade_scale(null, $st);
+        if($is_converted = $selectedmodule->gradeitem->iteminfo){
+            local_gugcat::set_grade_scale(null, $is_converted);
         }else{
             local_gugcat::set_grade_scale($scaleid);
         }
@@ -206,9 +208,17 @@ if (isset($release)){
     if(isset($newgrades) && !empty($gradeitem)){
         $gradeitemid = local_gugcat::add_grade_item($courseid, $gradeitem, $selectedmodule);
         foreach ($newgrades as $id=>$item) {
-            if(isset($item)){
+            if(isset($item) && !empty($item)){
                 $grade = !is_numeric($item) ? array_search(strtoupper($item), local_gugcat::$GRADES) : $item; 
                 local_gugcat::add_update_grades($id, $gradeitemid, $grade, '');
+                if($is_converted){
+                    // If conversion is enabled, save the converted grade to provisional grade and original grade to converted grade.
+                    $conversion = grade_converter::retrieve_grade_conversion($selectedmodule->gradeitemid);
+                    $cg = grade_converter::convert($conversion, $grade);
+                    local_gugcat::update_grade($id, local_gugcat::$PRVGRADEID, $cg);
+                    $convertedgi = local_gugcat::get_grade_item_id($COURSE->id, $selectedmodule->gradeitemid, get_string('convertedgrade', 'local_gugcat'));
+                    local_gugcat::update_grade($id, $convertedgi, $grade);
+                }
                 //check if child activities are existing
                 if(!empty($childactivities)){
                     $subcatid = local_gugcat::get_grade_item_id($courseid, $selectedmodule->gradeitem->categoryid, get_string('subcategorygrade', 'local_gugcat'));

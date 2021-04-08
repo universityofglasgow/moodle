@@ -61,11 +61,11 @@ class grade_converter{
             foreach ($prvgrades as $prvgrade) {
                 $grade = null;
                 // Get converted grade 
-                $cvtgrade = $DB->get_field('grade_grades', 'rawgrade', array('itemid' => $convertedgi, 'userid' => $prvgrade->userid));
+                $cvtgrade = grade_grade::fetch(array('itemid' => $convertedgi, 'userid' => $prvgrade->userid));
                 // If converted grade is not null and not admin grade
                 // Else, get the provisional grade
-                if($cvtgrade){
-                    $grade = !local_gugcat::is_admin_grade($cvtgrade) ? $cvtgrade : null;
+                if($cvtgrade && !is_null($cvtgrade->rawgrade)){
+                    $grade = !local_gugcat::is_admin_grade($cvtgrade->rawgrade) ? $cvtgrade->rawgrade : null;
                 }else{
                     if(!is_null($prvgrade->rawgrade)){
                         $grade = !local_gugcat::is_admin_grade($prvgrade->rawgrade) ? $prvgrade->rawgrade : null;
@@ -75,11 +75,10 @@ class grade_converter{
                 if(!is_null($grade)){
                     $converted = self::convert($conversion, $grade);
                     // Update converted grade
-                    $originalgrade = ($cvtgrade) ? $cvtgrade : $prvgrade->rawgrade;
-                    $prvgrade->finalgrade = $originalgrade;
-                    $prvgrade->rawgrade = $originalgrade;
-                    $prvgrade->timemodified = time();
-                    $prvgrade->update();
+                    $cvtgrade->finalgrade = $grade;
+                    $cvtgrade->rawgrade = $grade;
+                    $cvtgrade->timemodified = time();
+                    $cvtgrade->update();
                     // Update provisional grade
                     $prvgrade->finalgrade = $converted;
                     $prvgrade->rawgrade = $converted;
