@@ -114,36 +114,50 @@ class grade_capture_testcase extends advanced_testcase {
         $mod2 = $gen->create_module('assign', array('name'=> 'Assessment 2','course' => $this->course->id));
         $DB->set_field('grade_items', 'grademax', '22.00000', array('iteminstance'=>$mod1->id, 'itemmodule' => 'assign'));
         $DB->set_field('grade_items', 'grademax', '22.00000', array('iteminstance'=>$mod2->id, 'itemmodule' => 'assign'));
-        $gcatactivities = local_gugcat::get_activities($this->course->id);
-        // Assert $gcatactivities is 3 as we added 2 new assessments
-        $this->assertCount(3, $gcatactivities);
-
-        // Import all 3 activities
-        grade_capture::import_from_gradebook($this->course->id, $gcatactivities, $gcatactivities);
-        
-        // Check each activities will now have moodle grade and provisional grade items.
-        foreach ($gcatactivities as $act) {
-            $moodlegi = grade_item::fetch(array('iteminfo'=>$act->gradeitemid, 'itemtype' => 'manual', 'itemname' => get_string('moodlegrade', 'local_gugcat')));
-            $prvgi = grade_item::fetch(array('iteminfo'=>$act->gradeitemid, 'itemtype' => 'manual', 'itemname' => get_string('provisionalgrd', 'local_gugcat')));
-            $this->assertNotFalse($moodlegi);
-            $this->assertNotFalse($prvgi);
-        }
 
         // Adding invalid scale
         $name = "Non-22 Scale";
         $scale = "0,1,2";
         $non22scale = $this->getDataGenerator()->create_scale(array('name' => $name, 'scale' => $scale, 'courseid' => $this->course->id, 'userid' => $USER->id));
 
-        // Creating invalid module
+        // Creating invalid activity
         $invalidmod = $gen->create_module('assign', array('name'=> 'Invalid Assessment 1','course' => $this->course->id));
         $DB->set_field('grade_items', 'scaleid', $non22scale->id, array('iteminstance'=>$invalidmod->id, 'itemmodule' => 'assign'));
 
         $gradeitem = $DB->get_record('grade_items', array('iteminstance'=>$invalidmod->id, 'itemmodule' => 'assign'), 'id');
 
-        $moodlegi = grade_item::fetch(array('iteminfo'=>$gradeitem->id, 'itemtype' => 'manual', 'itemname' => get_string('moodlegrade', 'local_gugcat')));
-        $prvgi = grade_item::fetch(array('iteminfo'=>$gradeitem->id, 'itemtype' => 'manual', 'itemname' => get_string('provisionalgrd', 'local_gugcat')));
-        $this->assertFalse($moodlegi);
-        $this->assertFalse($prvgi);
+        $gcatactivities = local_gugcat::get_activities($this->course->id);
+        // Assert $gcatactivities is 4 as we added 1 new invalid assessment
+        $this->assertCount(4, $gcatactivities);
+
+        // Filter activities
+        $gcatactivities = array_filter($gcatactivities, function($k){
+            $scaleid = $k->gradeitem->scaleid;
+            $gradetype = $k->gradeitem->gradetype;
+            $grademax = $k->gradeitem->grademax;
+            $grademin = $k->gradeitem->grademin;
+            $invalid_import_activity = (is_null($scaleid) ? !local_gugcat::is_validgradepoint($gradetype, $grademin)
+                                                          : !local_gugcat::is_scheduleAscale($gradetype, $grademax));
+            return !$invalid_import_activity;
+        }, ARRAY_FILTER_USE_BOTH);
+        
+        // Assert $gcatactivities is 3 as we filtered 1 invalid assessment
+        $this->assertCount(3, $gcatactivities);
+
+        // Import filtered activities
+        grade_capture::import_from_gradebook($this->course->id, $gcatactivities, $gcatactivities);
+
+        foreach ($gcatactivities as $act) {
+            $moodlegi = grade_item::fetch(array('iteminfo'=>$act->gradeitemid, 'itemtype' => 'manual', 'itemname' => get_string('moodlegrade', 'local_gugcat')));
+            $prvgi = grade_item::fetch(array('iteminfo'=>$act->gradeitemid, 'itemtype' => 'manual', 'itemname' => get_string('provisionalgrd', 'local_gugcat')));
+            if ($act->instance == $invalidmod->id){
+                $this->assertFalse($moodlegi);
+                $this->assertFalse($prvgi);
+            } else {
+                $this->assertNotFalse($moodlegi);
+                $this->assertNotFalse($prvgi);
+            }
+        }
     }
 
     public function test_grade_capture_rows() {
