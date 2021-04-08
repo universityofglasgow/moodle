@@ -62,7 +62,11 @@ $scaleid = $module->gradeitem->scaleid;
 if (is_null($scaleid) && local_gugcat::is_grademax22($module->gradeitem->gradetype, $module->gradeitem->grademax)){
     $scaleid = null;
 }
-local_gugcat::set_grade_scale($scaleid);
+if($st = $module->gradeitem->iteminfo){
+    local_gugcat::set_grade_scale(null, $st);
+}else{
+    local_gugcat::set_grade_scale($scaleid);
+}
 local_gugcat::set_prv_grade_id($courseid, $module);
 $grading_info = grade_get_grades($courseid, 'mod', $module->modname, $module->instance, $studentid);
 $gradeitems = local_gugcat::get_grade_grade_items($course, $module);

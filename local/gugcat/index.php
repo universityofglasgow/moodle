@@ -109,7 +109,11 @@ if(!empty($totalactivities) || !empty($activities)){
         //if $activities is empty, and activity id parameter is also null add $activityid into $selectmodule
         empty($activities) ? $selectedmodule->activityid = $activityid : null;
         //Populate static $GRADES scales
-        local_gugcat::set_grade_scale($scaleid);
+        if($st = $selectedmodule->gradeitem->iteminfo){
+            local_gugcat::set_grade_scale(null, $st);
+        }else{
+            local_gugcat::set_grade_scale($scaleid);
+        }
     }
 }
 
