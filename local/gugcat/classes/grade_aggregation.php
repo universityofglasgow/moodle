@@ -167,7 +167,7 @@ class grade_aggregation{
                     $grdobj->is_imported = !is_null($pg) ? true : false;
                     $grdobj->is_child = local_gugcat::is_child_activity($item) ? true : false;
                     $grdobj->grade = $grade;
-                    $grdobj->orignalgrade = is_null($scaleid) ? $grade : $grdvalue;
+                    $grdobj->originalgrade = is_null($scaleid) ? $grade : $grdvalue;
                     $grdobj->rawgrade = $grdvalue;
                     $grdobj->weight =  round((float)$weight * 100 );
                     array_push($gradecaptureitem->grades, $grdobj);
@@ -582,7 +582,7 @@ class grade_aggregation{
             foreach($activities as $key=>$act) {
                 $student->{$act[0]} = $row->grades[$key]->weight.'%';//weight
                 $student->{$act[1]} = $row->grades[$key]->grade; //alphanumeric
-                $student->{$act[2]} = local_gugcat::is_admin_grade(array_search($row->grades[$key]->grade, local_gugcat::$GRADES)) ? get_string('nogradeweight', 'local_gugcat') : $row->grades[$key]->orignalgrade;//numeric
+                $student->{$act[2]} = local_gugcat::is_admin_grade(array_search($row->grades[$key]->grade, local_gugcat::$GRADES)) ? get_string('nogradeweight', 'local_gugcat') : $row->grades[$key]->originalgrade;//numeric
             }
             array_push($array, $student);
         }
