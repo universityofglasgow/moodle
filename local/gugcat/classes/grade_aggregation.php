@@ -75,10 +75,6 @@ class grade_aggregation{
         $rows = array();
         $gradebook = array();
         foreach ($modules as $mod) {
-            $mod->is_converted = !is_null($mod->gradeitem->iteminfo) && !empty($mod->gradeitem->iteminfo);
-            if($mod->is_converted){
-                $mod->conversion = grade_converter::retrieve_grade_conversion($mod->gradeitemid);
-            }
             $mod->scaleid = $mod->gradeitem->scaleid;
             $mod->gradeitemid = $mod->gradeitem->id;
             $grades = new stdClass();
@@ -97,6 +93,12 @@ class grade_aggregation{
             $fields = 'userid, itemid, id, rawgrade, finalgrade, information, timemodified, overridden';
             // Get provisional grades
             $grades->provisional = $DB->get_records('grade_grades', array('itemid' => $prvgrdid), 'id', $fields);
+            $mod->is_converted = !is_null($mod->gradeitem->iteminfo) && !empty($mod->gradeitem->iteminfo);
+            if($mod->is_converted){
+                $mod->conversion = grade_converter::retrieve_grade_conversion($mod->gradeitemid);
+                $cvtgrdid = local_gugcat::get_grade_item_id($course->id, $mod->gradeitemid, get_string('convertedgrade', 'local_gugcat'));
+                $grades->converted = $DB->get_records('grade_grades', array('itemid' => $cvtgrdid), 'id', $fields);
+            }
             // Filter grades from gradebook with specific itemnumber
             $gbgradeitem = array_values(array_filter($gbgrades->items, function($item) use($mod){
                 return $item->itemnumber == $mod->gradeitem->itemnumber;
@@ -155,8 +157,12 @@ class grade_aggregation{
                     : ($invalid22scale && !local_gugcat::is_admin_grade($grd) ? local_gugcat::convert_grade($grd+1, $gt) : local_gugcat::convert_grade($grd, $gt));
                     $grdvalue = get_string('nograderecorded', 'local_gugcat');
                     if($item->is_converted && !is_null($grd)){
-                        $cgg = grade_converter::convert($item->conversion, $grd);
-                        $grade = local_gugcat::convert_grade($cgg, null, $item->gradeitem->iteminfo);
+                        if($item->modname == 'category'){
+                            $cgg = grade_converter::convert($item->conversion, $grd);
+                            $grade = local_gugcat::convert_grade($cgg, null, $item->gradeitem->iteminfo);
+                        }else{
+                            $grade = local_gugcat::convert_grade($grd, null, $item->gradeitem->iteminfo);
+                        }
                     }
                     $weight = local_gugcat::is_child_activity($item) ? 0 : (!is_null($pg) ? (float)$pg->information : 0); //get weight from information column of provisional grades
                     // Only aggregate grades that are:
@@ -303,6 +309,10 @@ class grade_aggregation{
             foreach ($actgrds as $id=>$grades) {
                 // Only get provisional grades $pg from child assessments
                 $pg = isset($grades->provisional[$userid]) ? $grades->provisional[$userid] : null;
+                // If component is converted, get the original grade
+                if(isset($grades->converted)){
+                    $pg = isset($grades->converted[$userid]) ? $grades->converted[$userid] : null;
+                }
                 if(is_null($pg)){
                     continue;
                 }
