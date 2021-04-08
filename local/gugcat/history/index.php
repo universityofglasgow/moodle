@@ -70,7 +70,7 @@ $childact = local_gugcat::get_child_activities_id($courseid, $module->gradeitem-
 
 //logs for assessment grade history viewed
 $params = array(
-    'context' => \context_module::instance($module->id),
+    'context' => ($module->modname == 'category') ? context_course::instance($courseid) : \context_module::instance($module->id),
     'other' => array(
         'courseid' => $courseid,
         'activityid' => $activityid,

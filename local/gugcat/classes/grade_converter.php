@@ -31,6 +31,12 @@ defined('MOODLE_INTERNAL') || die();
 
 class grade_converter{
 
+    /**
+     * Saves grade converter into gcat_grade_converter table
+     * @param int $modid
+     * @param int $scale
+     * @param mixed $grades
+     */
     public static function save_grade_converter($modid, $scale, $grades){
         global $DB;
 
