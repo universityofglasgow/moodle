@@ -29,6 +29,9 @@ require_once($CFG->libdir . '/adminlib.php');
 
 defined('MOODLE_INTERNAL') || die();
 
+//Scale type 
+define('SCHEDULE_A', 1);
+define('SCHEDULE_B', 2);
 //Administrative grades
 define('NON_SUBMISSION_AC', 'NS');
 define('MEDICAL_EXEMPTION_AC', 'MV');
@@ -59,6 +62,7 @@ require_once($CFG->libdir.'/dataformatlib.php');
 class local_gugcat {
      
     public static $GRADES = array();
+    public static $SCHEDULE_A = array();
     public static $SCHEDULE_B = array();
     public static $PRVGRADEID = null;
     public static $STUDENTS = array();
@@ -456,12 +460,15 @@ class local_gugcat {
     /**
      * Set the static $GRADES scale based from the scale id
      * @param int $scaleid
+     * @param int $scaletype Scale type can be Schedule or Schedule B
      */
-    public static function set_grade_scale($scaleid = null){
+    public static function set_grade_scale($scaleid = null, $scaletype = SCHEDULE_A){
         global $DB;
         $scalegrades = array();
         if(is_null($scaleid)){
             list($scalegrades, $schedB) = self::get_gcat_scale();
+            $scalegrades = ($scaletype != SCHEDULE_A) ? $schedB : $scalegrades;
+            self::$SCHEDULE_A = $scalegrades;
             self::$SCHEDULE_B = $schedB;
         }else{
             if($scale = $DB->get_record('scale', array('id'=>$scaleid), '*')){
@@ -554,7 +561,7 @@ class local_gugcat {
      * @param int $grade 
      */
     public static function is_admin_grade($grade){
-        switch ($grade) {
+        switch (intval($grade)) {
             case NON_SUBMISSION:
                 return true;
             case MEDICAL_EXEMPTION:

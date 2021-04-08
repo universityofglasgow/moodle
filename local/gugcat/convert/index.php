@@ -75,28 +75,47 @@ $params = array(
 
 $module = local_gugcat::get_activity($courseid, $modid);
 $scales = array(
-    0 => get_string('schedulea', 'local_gugcat'),
-    1 => get_string('scheduleb', 'local_gugcat')
+    SCHEDULE_A => get_string('schedulea', 'local_gugcat'),
+    SCHEDULE_B => get_string('scheduleb', 'local_gugcat')
 );
+$returnurl = $indexurl;
+global $SESSION;
+if (!empty($SESSION->wantsurl)) {
+    $returnurl = $SESSION->wantsurl;
+    unset($SESSION->wantsurl);
+}
 $mform = new convertform(null, array('activity' => $module, 'scales' => $scales));
-if ($formdata = $mform->get_data()) {
-
-    $grades = $formdata->scale == 0 ? $formdata->schedA : $formdata->schedB;
-    $i = $formdata->scale == 0 ? 23 : 8;
-    $gradeconvert = array();
-    foreach($grades as $grd){
-        if($grd != ""){
+if($mform->is_cancelled()) {
+    redirect($returnurl);
+}else if ($formdata = $mform->get_data()) {
+    $grades = $formdata->scale == SCHEDULE_A ? $formdata->schedA : $formdata->schedB;
+    $grades = array_filter($grades, 'strlen');
+    if(empty($grades)){
+        local_gugcat::notify_error('errorgraderequired');
+    }else if(count($grades) != count(array_unique($grades))){
+        local_gugcat::notify_error('errorduplicate');
+    }else if(max($grades) > intval($module->gradeitem->grademax)){
+        local_gugcat::notify_error('errorexceedmax');
+    }else{
+        $i = $formdata->scale == SCHEDULE_A ? 23 : 8;
+        $gradeconvert = array();
+        foreach($grades as $grd){
             $grdconvert = array('courseid'=>$courseid, 'itemid'=>$modid, 'lowerboundary'=>$grd, 'grade'=>$i);
             array_push($gradeconvert, $grdconvert);
+            $i--;
         }
-        $i--;
+        $is_subcat = $module->modname == 'category';
+        $id = $is_subcat  ? $module->instance : $modid;
+        $itemname = get_string($is_subcat ? 'subcategorygrade' : 'provisionalgrd', 'local_gugcat');
+        if($prvid = local_gugcat::get_grade_item_id($courseid, $id, $itemname)){
+            grade_converter::convert_provisional_grades($gradeconvert, $prvid);
+            grade_converter::delete_grade_conversion($modid);
+            grade_converter::save_grade_converter($modid, $formdata->scale, $gradeconvert);
+            redirect($returnurl);
+        }
     }
-    grade_converter::save_grade_converter($modid, $formdata->scale, $gradeconvert);
     $event = \local_gugcat\event\add_grade_converter::create($params);
     $event->trigger();
-    
-}else if ($mform->is_cancelled()) {
-    redirect($indexurl);
 }
 
 $renderer = $PAGE->get_renderer('local_gugcat');

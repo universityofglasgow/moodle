@@ -75,6 +75,10 @@ class grade_aggregation{
         $rows = array();
         $gradebook = array();
         foreach ($modules as $mod) {
+            $mod->is_converted = !is_null($mod->gradeitem->iteminfo);
+            if($mod->is_converted){
+                $mod->conversion = grade_converter::retrieve_grade_conversion($mod->gradeitemid);
+            }
             $mod->scaleid = $mod->gradeitem->scaleid;
             $mod->gradeitemid = $mod->gradeitem->id;
             $grades = new stdClass();

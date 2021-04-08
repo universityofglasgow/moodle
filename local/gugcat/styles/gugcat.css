@@ -49,7 +49,7 @@ td > i, th > i {
     margin-left: 2px;
 }
 
-th .fa-search{
+th .fa-search, th .fa-ellipsis-h{
     margin-left: 3px;
     color: white;
     transition: transform .2s; /* Animation */

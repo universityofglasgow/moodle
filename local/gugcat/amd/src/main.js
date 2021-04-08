@@ -271,7 +271,6 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                 mformReason.focus();
                 break;
             case select_scale:
-                var selectedOption = event.target.value;
                 var schedA = document.getElementById('table-schedulea');
                 var schedB = document.getElementById('table-scheduleb');
                 schedA.classList.toggle('hidden');
@@ -379,6 +378,16 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                     input_reason.addEventListener('input', (e) => {
                         update_reason_inputs(e.target.value);
                     });
+                }
+
+                var select_scale = document.getElementById('select-scale');
+                if(select_scale){
+                    if(select_scale.value != 1){
+                        var schedA = document.getElementById('table-schedulea');
+                        var schedB = document.getElementById('table-scheduleb');
+                        schedA.classList.toggle('hidden');
+                        schedB.classList.toggle('hidden');
+                    }
                 }
 
                 var input_search = document.querySelectorAll('.input-search');

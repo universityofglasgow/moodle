@@ -32,10 +32,8 @@ class convertform extends moodleform {
     public function definition() {
 
         local_gugcat::set_grade_scale();
-        $grades = local_gugcat::$GRADES;
+        $grades = local_gugcat::$SCHEDULE_A;
         $schedB = local_gugcat::$SCHEDULE_B;
-        unset($grades[NON_SUBMISSION]);
-        unset($grades[MEDICAL_EXEMPTION]);
 
         $gradetypestr = array(
             GRADE_TYPE_TEXT => get_string('modgradetypenone', 'grades'),
@@ -55,7 +53,7 @@ class convertform extends moodleform {
         $mform->setType('assessment', PARAM_NOTAGS); 
         $mform->addElement('static', 'gradetype', get_string('gradetype', 'grades'), $gradetypestr[$activity->gradeitem->gradetype]); 
         $mform->setType('gradetype', PARAM_NOTAGS); 
-        $mform->addElement('static', 'maximumgrade', get_string('grademax', 'grades'), $activity->gradeitem->grademax); 
+        $mform->addElement('static', 'maximumgrade', get_string('grademax', 'grades'), intval($activity->gradeitem->grademax)); 
         $mform->setType('maximumgrade', PARAM_NOTAGS); 
         $mform->addElement('select', 'scale', get_string('selectscale', 'local_gugcat'), $scales, ['id' => 'select-scale', 'class' => 'mform-custom-select']); 
         $mform->setType('scale', PARAM_NOTAGS); 
@@ -85,6 +83,8 @@ class convertform extends moodleform {
         $mform->setType('categoryid', PARAM_INT);
         $mform->addElement('hidden', 'childactivityid', optional_param('childactivityid', null, PARAM_INT));
         $mform->setType('childactivityid', PARAM_INT);
+        $mform->addElement('hidden', 'grademax', intval($activity->gradeitem->grademax));
+        $mform->setType('grademax', PARAM_INT);
 
     }
 
