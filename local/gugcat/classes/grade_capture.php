@@ -81,7 +81,6 @@ class grade_capture{
                 $secondgradeid = local_gugcat::get_grade_item_id($course->id, $module->gradeitemid, get_string('gi_secondgrade', 'local_gugcat'));
                 $thirdgradeid = local_gugcat::get_grade_item_id($course->id, $module->gradeitemid, get_string('gi_thirdgrade', 'local_gugcat'));    
             }
-           
         }
         $i = 1;
         foreach ($students as $student) {
