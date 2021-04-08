@@ -43,6 +43,9 @@ class convertform extends moodleform {
         // Divide schedule A into two array
         $schedA1 = array_slice($grades, 0, (count($grades) / 2)+1);
         $schedA2 = array_slice($grades, (count($grades) / 2)+1);
+        $keys = array_keys($grades);
+        $keysA1 = array_slice($keys, 0, (count($keys) / 2)+1);
+        $keysA2 = array_slice($keys, (count($keys) / 2)+1);
 
         $activity = $this->_customdata['activity'];
         $scales = $this->_customdata['scales'];
@@ -58,11 +61,12 @@ class convertform extends moodleform {
         $mform->addElement('select', 'scale', get_string('selectscale', 'local_gugcat'), $scales, ['id' => 'select-scale', 'class' => 'mform-custom-select']); 
         $mform->setType('scale', PARAM_NOTAGS); 
        
+        // Schedule A tables
         $mform->addElement('html', html_writer::start_tag('div', array('id' => 'table-schedulea', 'class' => 'row'))); 
-        $this->setup_table($schedA1, $mform, 'schedA');
-        $this->setup_table($schedA2, $mform, 'schedA');
+        $this->setup_table($schedA1, $mform, 'schedA', $keysA1);
+        $this->setup_table($schedA2, $mform, 'schedA', $keysA2);
         $mform->addElement('html', html_writer::end_tag('div')); 
-
+        // Schedule B table
         $mform->addElement('html', html_writer::start_tag('div', array('id' => 'table-scheduleb', 'class' => 'row hidden'))); 
         $this->setup_table($schedB, $mform, 'schedB');
         $mform->addElement('html', html_writer::tag('div', null, array('class' => 'col'))); 
@@ -88,7 +92,7 @@ class convertform extends moodleform {
 
     }
 
-    function setup_table($grades, $mform, $name) {
+    function setup_table($grades, $mform, $name, $keys = array()) {
         $attributes = array(
             'class' => 'input-scale-pt mb-0',
             'type' => 'number',
@@ -105,16 +109,17 @@ class convertform extends moodleform {
         $html .= html_writer::end_tag('tr');
         $html .= html_writer::end_tag('thead');
         $html .= html_writer::start_tag('tbody');
-        foreach ($grades as $grd) {
+        foreach ($grades as $index=>$grd) {
+            $index = empty($keys) ? $index : $keys[$index];
             $html .= html_writer::start_tag('tr');
             $html .= html_writer::tag('td', $grd);
             $html .= html_writer::start_tag('td');
             $mform->addElement('html', $html); 
-            $mform->addElement('text', $name."[$grd]", null, $attributes); 
-            $mform->setType($name."[$grd]", PARAM_NOTAGS);
-            $mform->addRule($name."[$grd]", null, 'numeric', null, 'client');
-            $mform->addRule($name."[$grd]", get_string('errorfieldnumbers', 'local_gugcat'), 'regex', '/^[0-9]+$/', 'client');
-            $mform->addRule($name."[$grd]", get_string('errorfieldnumbers', 'local_gugcat'), 'regex', '/^[0-9]+$/', 'server');
+            $mform->addElement('text', $name."[$index]", null, $attributes); 
+            $mform->setType($name."[$index]", PARAM_NOTAGS);
+            $mform->addRule($name."[$index]", null, 'numeric', null, 'client');
+            $mform->addRule($name."[$index]", get_string('errorfieldnumbers', 'local_gugcat'), 'regex', '/^[0-9]+$/', 'client');
+            $mform->addRule($name."[$index]", get_string('errorfieldnumbers', 'local_gugcat'), 'regex', '/^[0-9]+$/', 'server');
             $html = html_writer::end_tag('td');
             $html .= html_writer::end_tag('tr');
         }
