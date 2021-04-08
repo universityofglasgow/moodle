@@ -23,6 +23,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use local_gugcat\grade_converter;
+
 require_once(__DIR__ . '/../../../config.php');
 require_once($CFG->dirroot . '/local/gugcat/locallib.php');
 require_once($CFG->dirroot.'/local/gugcat/classes/form/addeditgradeform.php');
@@ -57,19 +59,23 @@ require_capability('local/gugcat:view', $coursecontext);
 
 $student = $DB->get_record('user', array('id'=>$studentid, 'deleted'=>0), '*', MUST_EXIST);
 $module = local_gugcat::get_activity($courseid, $activityid);
+$is_converted = !is_null($module->gradeitem->iteminfo);
 
 $scaleid = $module->gradeitem->scaleid;
 if (is_null($scaleid) && local_gugcat::is_grademax22($module->gradeitem->gradetype, $module->gradeitem->grademax)){
     $scaleid = null;
 }
-if($st = $module->gradeitem->iteminfo){
-    local_gugcat::set_grade_scale(null, $st);
-}else{
-    local_gugcat::set_grade_scale($scaleid);
-}
+local_gugcat::set_grade_scale($scaleid);
 local_gugcat::set_prv_grade_id($courseid, $module);
 $grading_info = grade_get_grades($courseid, 'mod', $module->modname, $module->instance, $studentid);
 $gradeitems = local_gugcat::get_grade_grade_items($course, $module);
+// Get converted grade item and remove it from the gradeitems array
+foreach($gradeitems as $i=>$gi){
+    if($gi->itemname == get_string('convertedgrade', 'local_gugcat')){
+        unset($gradeitems[$i]);
+        break;
+    }
+}
 $gradeversions = local_gugcat::filter_grade_version($gradeitems, $studentid);
 
 $mform = new addeditgradeform(null, array('id'=>$courseid, 'page'=>$page, 'categoryid'=>$categoryid, 'activity'=>$module, 'studentid'=>$studentid));
@@ -78,7 +84,14 @@ if ($fromform = $mform->get_data()) {
     $grade = !is_numeric($fromform->grade) ? array_search(strtoupper($fromform->grade), local_gugcat::$GRADES) : $fromform->grade; 
     $gradeitemid = local_gugcat::add_grade_item($courseid, $gradereason, $module);
     $grades = local_gugcat::add_update_grades($studentid, $gradeitemid, $grade, $fromform->notes);
-
+    if($is_converted){
+        // If conversion is enabled, save the converted grade to provisional grade and original grade to converted grade.
+        $conversion = grade_converter::retrieve_grade_conversion($activityid);
+        $cg = grade_converter::convert($conversion, $grade);
+        local_gugcat::update_grade($studentid, local_gugcat::$PRVGRADEID, $cg);
+        $convertedgi = local_gugcat::get_grade_item_id($COURSE->id, $activityid, get_string('convertedgrade', 'local_gugcat'));
+        local_gugcat::update_grade($studentid, $convertedgi, $grade);
+    }
     //log of add grades
     $params = array(
         'context' => \context_module::instance($module->id),

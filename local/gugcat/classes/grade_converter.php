@@ -26,6 +26,7 @@ namespace local_gugcat;
 
 use local_gugcat;
 use grade_grade;
+use stdClass;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -45,20 +46,39 @@ class grade_converter{
     }
 
     /**
-     * Converts all grades in provisional grade
+     * Converts all grades in converted | provisional grade
      *
      * @param array $conversion List of grade element conversion
-     * @param int  $itemid Provisional grade item id
+     * @param mixed $module Selected module/activity
+     * @param int  $prvid Provisional grade item id
      */
-    public static function convert_provisional_grades($conversion, $itemid){
-        if($grades = grade_grade::fetch_all(array('itemid' => $itemid))){
-            foreach ($grades as $grdobj) { 
-                if(!is_null($grdobj->rawgrade) && !local_gugcat::is_admin_grade($grdobj->rawgrade)){
-                    $converted = self::convert($conversion, $grdobj->rawgrade);
-                    $grdobj->finalgrade = $converted;
-                    $grdobj->rawgrade = $converted;
-                    $grdobj->timemodified = time();
-                    $grdobj->update();
+    public static function convert_provisional_grades($conversion, $module, $prvid){
+        global $DB, $COURSE;
+        // Get all provisional grade_grades
+        if($prvgrades = grade_grade::fetch_all(array('itemid' => $prvid))){
+            // Create/get converted grade item
+            $convertedgi = local_gugcat::add_grade_item($COURSE->id, get_string('convertedgrade', 'local_gugcat'), $module);
+            foreach ($prvgrades as $prvgrade) {
+                $grade = null;
+                // Get converted grade 
+                $cvtgrade = $DB->get_field('grade_grades', 'rawgrade', array('itemid' => $convertedgi, 'userid' => $prvgrade->userid));
+                // If converted grade is not null and not admin grade
+                // Else, get the provisional grade
+                if($cvtgrade && !is_null($cvtgrade)){
+                    $grade = !local_gugcat::is_admin_grade($cvtgrade) ? $cvtgrade : null;
+                }else{
+                    if(!is_null($prvgrade->rawgrade)){
+                        $grade = !local_gugcat::is_admin_grade($prvgrade->rawgrade) ? $prvgrade->rawgrade : null;
+                    }
+                }
+                // If grade is not null, convert the grade and save it to provisional grade 
+                if(!is_null($grade)){
+                    $converted = self::convert($conversion, $grade);
+                    // Update provisional grade
+                    $prvgrade->finalgrade = $converted;
+                    $prvgrade->rawgrade = $converted;
+                    $prvgrade->timemodified = time();
+                    $prvgrade->update();
                 }
             }
         }
@@ -98,21 +118,30 @@ class grade_converter{
         if(local_gugcat::is_admin_grade($grade)){
             return $grade;
         }
-        // Reindex $conversion, so array indexes will start in 0
-        $convs = array_values($conversion);
-        $convertedgrade = null;
+        // If conversion is flat array ([1 => 'A1, ...]) - For schedule B
+        if(empty(array_column($conversion, 'lowerboundary'))){
+            $convs = array();
+            foreach ($conversion as $lower=>$item) { 
+                $obj = new stdClass();
+                $obj->lowerboundary = $lower;
+                $obj->grade = $item;
+                $convs[] = $obj;
+            }
+        }else{
+            // Reindex $conversion, so array indexes will start in 0
+            $convs = array_values($conversion);
+        }
 
+        $convertedgrade = null;
         foreach ($convs as $index=>$cobj) { 
             $cobj = (object) $cobj;     
+            // Get the upperbound from the preceding element lowerboundary
             $upperbound = (isset($convs[$index-1]) && $precendent = (object)$convs[$index-1])
                 ? $precendent->lowerboundary : null;
-            // Get the upperbound from the preceding element lowerboundary
-            if($upperbound){
-                // Check if grade is within the range of lower and upper boundary
-                if($grade < $upperbound  && $grade >= $cobj->lowerboundary){
-                    $convertedgrade = $cobj->grade;
-                    break;
-                }
+            // Check if grade is within the range of lower and upper boundary
+            if($upperbound && $grade < $upperbound  && $grade >= $cobj->lowerboundary){
+                $convertedgrade = $cobj->grade;
+                break;
             }else{
                 // Check if grade is greater than or equal to lower boundary
                 if($grade >= $cobj->lowerboundary){
@@ -130,6 +159,4 @@ class grade_converter{
         }
         return $convertedgrade;
     }
-
-    
 }

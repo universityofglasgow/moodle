@@ -24,6 +24,7 @@
  */
 
 use local_gugcat\grade_aggregation;
+use local_gugcat\grade_converter;
 
 require_once($CFG->libdir . '/adminlib.php');
 
@@ -422,9 +423,14 @@ class local_gugcat {
      * Converts grade from the grade scale
      * @param mixed $grade 
      */
-    public static function convert_grade($grade, $gradetype = GRADE_TYPE_SCALE){
-        if(!local_gugcat::is_admin_grade($grade) && $gradetype == GRADE_TYPE_VALUE){
-            return number_format($grade, 2);
+    public static function convert_grade($grade, $gradetype = GRADE_TYPE_SCALE, $scaletype = SCHEDULE_A){
+        if(!local_gugcat::is_admin_grade($grade)){
+            if($gradetype == GRADE_TYPE_VALUE){
+                return number_format($grade, 2);
+            }
+            if($scaletype != SCHEDULE_A){
+                return grade_converter::convert(self::$SCHEDULE_B, $grade);
+            }
         }
         $scale = self::$GRADES + grade_aggregation::$AGGRADE;
 
@@ -467,9 +473,15 @@ class local_gugcat {
         $scalegrades = array();
         if(is_null($scaleid)){
             list($scalegrades, $schedB) = self::get_gcat_scale();
-            $scalegrades = ($scaletype != SCHEDULE_A) ? $schedB : $scalegrades;
             self::$SCHEDULE_A = $scalegrades;
-            self::$SCHEDULE_B = $schedB;
+            // Change the indexes of Schedule B to its lowerbound
+            $lowerbounds = array(0, 1, 3, 6, 9, 12, 15, 18);
+            $B = array();
+            foreach($schedB as $i=>$b){
+                $B[$lowerbounds[$i-1]] = $b;
+            }
+            self::$SCHEDULE_B = $B;
+            $scalegrades = ($scaletype != SCHEDULE_A) ? self::$SCHEDULE_B : $scalegrades;
         }else{
             if($scale = $DB->get_record('scale', array('id'=>$scaleid), '*')){
                 $scalegrades = make_menu_from_list($scale->scale); 

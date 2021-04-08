@@ -97,18 +97,16 @@ if($mform->is_cancelled()) {
     }else if(max($grades) > intval($module->gradeitem->grademax)){
         local_gugcat::notify_error('errorexceedmax');
     }else{
-        $i = $formdata->scale == SCHEDULE_A ? 23 : 8;
         $gradeconvert = array();
-        foreach($grades as $grd){
-            $grdconvert = array('courseid'=>$courseid, 'itemid'=>$modid, 'lowerboundary'=>$grd, 'grade'=>$i);
+        foreach($grades as $grade=>$grd){
+            $grdconvert = array('courseid'=>$courseid, 'itemid'=>$modid, 'lowerboundary'=>$grd, 'grade'=>$grade);
             array_push($gradeconvert, $grdconvert);
-            $i--;
         }
         $is_subcat = $module->modname == 'category';
         $id = $is_subcat  ? $module->instance : $modid;
         $itemname = get_string($is_subcat ? 'subcategorygrade' : 'provisionalgrd', 'local_gugcat');
         if($prvid = local_gugcat::get_grade_item_id($courseid, $id, $itemname)){
-            grade_converter::convert_provisional_grades($gradeconvert, $prvid);
+            grade_converter::convert_provisional_grades($gradeconvert, $module, $prvid);
             grade_converter::delete_grade_conversion($modid);
             grade_converter::save_grade_converter($modid, $formdata->scale, $gradeconvert);
             redirect($returnurl);
