@@ -265,7 +265,6 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $colspan = 0; // Number of columns a column group should span
         $prevcatid = null;
         foreach ($activities as $act) {
-            $is_scale = $act->gradeitem->gradetype == GRADE_TYPE_SCALE; //Aggregation coeficient used for weighted averages or extra credit
             $weightcoef1 = $act->gradeitem->aggregationcoef; //Aggregation coeficient used for weighted averages or extra credit
             $weightcoef2 = $act->gradeitem->aggregationcoef2; //Aggregation coeficient used for weighted averages only
             $weight = ((float)$weightcoef1 > 0) ? (float)$weightcoef1 : (float)$weightcoef2;
@@ -273,8 +272,12 @@ class local_gugcat_renderer extends plugin_renderer_base {
             $toggleicon = html_writer::tag('button', html_writer::empty_tag('i', array('class' => 'i-colexp fa fa-plus', 'style'=>'pointer-events:none')), 
             array('data-categoryid' => $act->id, 'type' => 'button', 'class' => 'btn btn-colexp'));
             $convertgrdparams = "?id=$courseid&activityid=$act->gradeitemid&page=$page" . $historyeditcategory;
+            $is_imported = false;
+            if($act->gradeitem->gradetype == GRADE_TYPE_VALUE && $act->modname == 'category'){
+                $is_imported = local_gugcat::get_grade_item_id($courseid, $act->id, get_string('subcategorygrade', 'local_gugcat'));
+            }
             $header = $act->name.'<br/>'.($weight * 100).'%';
-            $header = html_writer::tag('span', $header, array('class' => 'sortable')).($act->modname == 'category' ? ($is_scale ? $toggleicon : $this->context_actions(null, null, false, $convertgrdparams, false, true).$toggleicon): null);
+            $header = html_writer::tag('span', $header, array('class' => 'sortable')).($act->modname == 'category' ? ($is_imported ? $this->context_actions(null, null, false, $convertgrdparams, false, true).$toggleicon : $toggleicon): null);
             if ($act->modname == 'category') {
                 if($colspan > 0){
                     $colgroups .= html_writer::empty_tag('colgroup', array('span' => $colspan, 'class' => "colgroup hidden catid-$prevcatid"));

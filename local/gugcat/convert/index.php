@@ -82,10 +82,10 @@ $returnurl = $indexurl;
 global $SESSION;
 if (!empty($SESSION->wantsurl)) {
     $returnurl = $SESSION->wantsurl;
-    unset($SESSION->wantsurl);
 }
 $mform = new convertform(null, array('activity' => $module, 'scales' => $scales));
 if($mform->is_cancelled()) {
+    unset($SESSION->wantsurl);
     redirect($returnurl);
 }else if ($formdata = $mform->get_data()) {
     $grades = $formdata->scale == SCHEDULE_A ? $formdata->schedA : $formdata->schedB;
@@ -109,6 +109,7 @@ if($mform->is_cancelled()) {
             grade_converter::convert_provisional_grades($gradeconvert, $module, $prvid);
             grade_converter::delete_grade_conversion($modid);
             grade_converter::save_grade_converter($modid, $formdata->scale, $gradeconvert);
+            unset($SESSION->wantsurl);
             redirect($returnurl);
         }
     }

@@ -64,7 +64,7 @@ class grade_converter{
                 $cvtgrade = $DB->get_field('grade_grades', 'rawgrade', array('itemid' => $convertedgi, 'userid' => $prvgrade->userid));
                 // If converted grade is not null and not admin grade
                 // Else, get the provisional grade
-                if($cvtgrade && !is_null($cvtgrade)){
+                if($cvtgrade){
                     $grade = !local_gugcat::is_admin_grade($cvtgrade) ? $cvtgrade : null;
                 }else{
                     if(!is_null($prvgrade->rawgrade)){
@@ -74,6 +74,12 @@ class grade_converter{
                 // If grade is not null, convert the grade and save it to provisional grade 
                 if(!is_null($grade)){
                     $converted = self::convert($conversion, $grade);
+                    // Update converted grade
+                    $originalgrade = ($cvtgrade) ? $cvtgrade : $prvgrade->rawgrade;
+                    $prvgrade->finalgrade = $originalgrade;
+                    $prvgrade->rawgrade = $originalgrade;
+                    $prvgrade->timemodified = time();
+                    $prvgrade->update();
                     // Update provisional grade
                     $prvgrade->finalgrade = $converted;
                     $prvgrade->rawgrade = $converted;
@@ -133,6 +139,7 @@ class grade_converter{
         }
 
         $convertedgrade = null;
+        $grade = round($grade);
         foreach ($convs as $index=>$cobj) { 
             $cobj = (object) $cobj;     
             // Get the upperbound from the preceding element lowerboundary
