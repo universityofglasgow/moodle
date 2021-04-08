@@ -458,7 +458,7 @@ class grade_aggregation{
             // Array of components' grade items to be used in the calculation
             $grditems = array_column($filtered, 'gradeitem', 'gradeitemid');
             $calculatedgrd = self::calculate_grade($subcatobj, $studentgrades, $grditems);
-            $grdobj->grade = $calculatedgrd;
+            $grdobj->grade = $calculatedgrd == 0 ? null : $calculatedgrd;
             $grdobj->gradetype = $subcatobj->gradeitem->gradetype;
             $grdobj->scaleid = $subcatobj->gradeitem->scaleid;
             return array($grdobj, true, null);
