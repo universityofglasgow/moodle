@@ -87,8 +87,6 @@ class grade_aggregation{
                 // $mod->id - sub category id 
                 $prvgrdid = local_gugcat::get_grade_item_id($course->id, $mod->id, get_string('subcategorygrade', 'local_gugcat'));
                 $gbgrades = grade_get_grades($course->id, 'category', null, $mod->instance, array_keys($students));
-                //get aggregation type
-                $mod->aggregation_type = $DB->get_field('grade_items', 'calculation', array('id'=>$prvgrdid));
             }else{
                 $prvgrdid = local_gugcat::set_prv_grade_id($course->id, $mod);
                 $gbgrades = grade_get_grades($course->id, 'mod', $mod->modname, $mod->instance, array_keys($students));
@@ -135,6 +133,8 @@ class grade_aggregation{
                     : ((isset($gb) && !is_null($gb->grade)) ? $gb->grade : null));  
                     $processed = false; // Used for subcat grades
                     if($item->modname == 'category') {
+                        //get aggregation type
+                        $item->aggregation_type = $DB->get_field('grade_items', 'calculation', array('id'=>$prvgrdid));
                         list($subcatgrd, $processed, $error) = self::get_aggregated_grade($student->id, $item, $gradebook);
                         $grd = $processed ? (is_null($subcatgrd) ? null : $subcatgrd->grade) : (is_null($subcatgrd) ? $grd : $subcatgrd->grade);
                         if(!is_null($subcatgrd)){
@@ -492,7 +492,7 @@ class grade_aggregation{
             $prvgrdid = local_gugcat::get_grade_item_id($courseid, $id, $itemname);
             $grade_ = new grade_grade(array('userid' => $studentid, 'itemid' => $prvgrdid), true);
             $grade_->information = $weight;
-            $grade_->feedback = $notes;
+            $grade_->feedback = ($gradeitem->itemtype == 'category') ? null : $notes;
             $grade_->timemodified = time();
             $grade_->update();  
         }
