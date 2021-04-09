@@ -15,7 +15,7 @@
 
 /**
  * Customize modal for gugcat
- * 
+ *
  * @package    local_gugcat
  * @copyright  2020
  * @author     Accenture
@@ -55,25 +55,25 @@ define(['jquery', 'core/custom_interaction_events', 'core/modal', 'core/modal_re
         // Apply parent event listeners.
         Modal.prototype.registerEventListeners.call(this);
 
-        this.getModal().on(CustomEvents.events.activate, SELECTORS.RELEASE_PROVISIONAL_GRADE_BUTTON, function(e, data) {
+        this.getModal().on(CustomEvents.events.activate, SELECTORS.RELEASE_PROVISIONAL_GRADE_BUTTON, function() {
             // Add your logic for when the login button is clicked. This could include the form validation,
             // loading animations, error handling etc.
             document.getElementById('release-submit').click();
         }.bind(this));
 
-        this.getModal().on(CustomEvents.events.activate, SELECTORS.RELEASE_FINAL_GRADE_BUTTON, function(e, data) {
+        this.getModal().on(CustomEvents.events.activate, SELECTORS.RELEASE_FINAL_GRADE_BUTTON, function() {
             document.getElementById('finalrelease-submit').click();
         }.bind(this));
 
-        this.getModal().on(CustomEvents.events.activate, SELECTORS.IMPORT_GRADE_BUTTON, function(e, data) {
+        this.getModal().on(CustomEvents.events.activate, SELECTORS.IMPORT_GRADE_BUTTON, function() {
             document.getElementById('importgrades-submit').click();
         }.bind(this));
 
-        this.getModal().on(CustomEvents.events.activate, SELECTORS.ADJUST_WEIGHT_BUTTON, function(e, data) {
+        this.getModal().on(CustomEvents.events.activate, SELECTORS.ADJUST_WEIGHT_BUTTON, function() {
             document.getElementById('coursegradeform-submit').click();
         }.bind(this));
 
-        this.getModal().on(CustomEvents.events.activate, SELECTORS.CANCEL_BUTTON, function(e, data) {
+        this.getModal().on(CustomEvents.events.activate, SELECTORS.CANCEL_BUTTON, function() {
             // Add your logic for when the cancel button is clicked.
             setInterval(() => {
                 this.hide();

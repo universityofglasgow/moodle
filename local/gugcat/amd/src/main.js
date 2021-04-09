@@ -15,13 +15,13 @@
 
 /**
  * AMD module for local_gugcat.
- * 
+ *
  * @package    local_gugcat
  * @copyright  2020
  * @author     Accenture
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-define(['jquery', 'core/str', 'core/modal_factory', 'local_gugcat/modal_gcat', 'core/sessionstorage', 'core/ajax'], 
+define(['jquery', 'core/str', 'core/modal_factory', 'local_gugcat/modal_gcat', 'core/sessionstorage', 'core/ajax'],
 function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
 
     const BLIND_MARKING_KEY = 'blind-marking';
@@ -29,12 +29,14 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
     const checkCurrentUrl = (path) => {
         var url = window.location.pathname;
         return url.match(path);
-    }
+    };
 
     const update_reason_inputs = (val) => {
         var list = document.querySelectorAll('.input-reason');
-        list.forEach(input => input.value = val);
-    }
+        list.forEach(input => {
+            input.value = val;
+        });
+    };
 
     const check_blind_marking = () =>{
         var btn_identities = document.getElementById('btn-identities');
@@ -58,14 +60,16 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                     ?langStrings[0]//show
                     :langStrings[1];//hide
                 classes.forEach(element => {
-                    is_blindmarking 
-                    ? element.classList.add('hide-names')
-                    : element.classList.remove('hide-names');
+                    if (is_blindmarking) {
+                        element.classList.add('hide-names');
+                    } else {
+                        element.classList.remove('hide-names');
+                    }
                 });
             });
-           
+
         }
-    }
+    };
 
     const toggle_display_assessments = () =>{
         var btn_switch_display = document.getElementById('btn-switch-display');
@@ -98,8 +102,8 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                     btn_switch_display.style.display = 'none';
                 });
         }
-    }
-        
+    };
+
     const sortTable = (n) => {
         var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
         table = document.getElementById("gcat-table");
@@ -153,7 +157,7 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
             }
           }
         }
-    }
+    };
 
     const showModal = (dataAction, messageId, confirmId, cancelId = 'cancelmodal') => {
         var strings = [
@@ -173,8 +177,8 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
         Str.get_strings(strings).then(function(langStrings){
             var templateContext = {
                 bodycontent: langStrings[0],
-                strcancel: langStrings[1], 
-                strconfirm: langStrings[2], 
+                strcancel: langStrings[1],
+                strconfirm: langStrings[2],
                 dataaction: dataAction
             };
             ModalFactory.create({
@@ -182,7 +186,7 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                 templateContext: templateContext
             }).done(modal => modal.show());
         });
-    }
+    };
 
     const onChangeListeners = (event) =>{
         var urlParams = new URLSearchParams(window.location.search);
@@ -215,7 +219,7 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                 window.location.search = urlParams;
                 break;
             case grade_reason:
-                var selected = event.target.value;    
+                var selected = event.target.value;
                 update_reason_inputs(selected);
                 if(selected === 'Other'){
                     update_reason_inputs('');
@@ -228,18 +232,19 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                 var selectedOption = event.target.value;
                 var mformReason = document.getElementById('id_otherreason');
                 mformReason.value = selectedOption;
-                if(selectedOption = '8'){
+                if(selectedOption == '8'){
                     mformReason.value = '';
                     mformReason.required = true;
                 }
-                else
+                else {
                     mformReason.required = false;
+                }
                 mformReason.focus();
                 break;
             default:
                 break;
         }
-    }
+    };
 
     const onClickListeners = (event) =>{
         var btn_saveadd = document.getElementById('btn-saveadd');
@@ -264,7 +269,7 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                 });
                 $(".togglemultigrd").show();
                 break;
-            case btn_release:   
+            case btn_release:
                 showModal('release', 'modalreleaseprovisionalgrade', 'confirmreleaseprovisionalgrade');
                 break;
             case btn_import:
@@ -282,7 +287,7 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                         var input = div.querySelector('input');
                         total += parseInt(input.value);
                         var invalid = div.querySelector('input.is-invalid');
-                        if(invalid != null){
+                        if(invalid !== null){
                             div.querySelector('div.felement').classList.add('no-after');
                         }else{
                             div.querySelector('div.felement').classList.remove('no-after');
@@ -312,7 +317,7 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
             default:
                 break;
         }
-    }
+    };
 
     return {
         init: function() {
@@ -320,7 +325,7 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
             if(GCAT){
                 GCAT.addEventListener('change', onChangeListeners);
                 GCAT.addEventListener('click', onClickListeners);
-    
+
                 //if hide identities button is visible, add key in storage
                 if(document.getElementById('btn-identities') && !Storage.get(BLIND_MARKING_KEY)){
                     Storage.set(BLIND_MARKING_KEY, false);
@@ -341,7 +346,7 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                             var key = e.keyCode ? e.keyCode : e.which;
                             if(key === 13){
                                 document.getElementById('search-submit').click();
-                            }                        
+                            }
                         });
                     });
                 }
@@ -353,9 +358,11 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                     input_percentarr.forEach(div => {
                         var input = div.querySelector('input');
                         total += parseInt(input.value);
-                        input.addEventListener('input', (e) => {
+                        input.addEventListener('input', () => {
                             let total = 0;
-                            input_percentarr.forEach(div => total += parseInt(div.querySelector('input').value));
+                            input_percentarr.forEach(div => {
+                                total += parseInt(div.querySelector('input').value);
+                            });
                             totalweight.innerHTML = `${total}%`;
                         });
                         input.addEventListener('focus', (e) => {
@@ -419,8 +426,11 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                         })();
                     }
                 }else if(checkCurrentUrl("gugcat/index")){
-                    document.getElementById('btn-release').style.display = 
-                    !$(".gradeitems").text().includes("Moodle Grade[Date]") ? 'inline-block' : 'none';
+                    var btnrelease = document.getElementById('btn-release');
+                    if (btnrelease) {
+                        btnrelease.style.display = !$(".gradeitems").text().includes("Moodle Grade[Date]") ?
+                            'inline-block' : 'none';
+                    }
                     var nodeArr = Array.from(document.querySelectorAll('.gradeitems'));
                     if(nodeArr.find(node => node.innerHTML !== 'Moodle Grade<br>[Date]')){
                         document.getElementById('btn-saveadd').style.display = 'inline-block';
