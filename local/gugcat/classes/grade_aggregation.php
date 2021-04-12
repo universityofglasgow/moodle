@@ -197,6 +197,10 @@ class grade_aggregation{
                     $grdobj->is_child = local_gugcat::is_child_activity($item) ? true : false;
                     $grdobj->grade = $grade;
                     $grdobj->originalgrade = is_null($scaleid) ? $grade : $grdvalue;
+                    $weightcoef1 = $item->gradeitem->aggregationcoef; //Aggregation coeficient used for weighted averages or extra credit
+                    $weightcoef2 = $item->gradeitem->aggregationcoef2; //Aggregation coeficient used for weighted averages only
+                    $originalweight = ((float)$weightcoef1 > 0) ? (float)$weightcoef1 : (float)$weightcoef2;
+                    $grdobj->originalweight =  round((float)$originalweight * 100 );
                     $grdobj->rawgrade = $grdvalue;
                     $grdobj->weight =  round((float)$weight * 100 );
                     array_push($gradecaptureitem->grades, $grdobj);
@@ -651,7 +655,7 @@ class grade_aggregation{
             $student->{'%_complete'} = $row->completed;
             $student->resit_required = is_null($row->resit) ? 'N' : 'Y';
             foreach($activities as $key=>$act) {
-                $student->{$act[0]} = $row->grades[$key]->weight.'%';//weight
+                $student->{$act[0]} = $row->grades[$key]->originalweight.'%';//weight
                 $student->{$act[1]} = $row->grades[$key]->grade; //alphanumeric
                 $student->{$act[2]} = local_gugcat::is_admin_grade(array_search($row->grades[$key]->grade, local_gugcat::$GRADES)) ? get_string('nogradeweight', 'local_gugcat') : $row->grades[$key]->originalgrade;//numeric
             }
