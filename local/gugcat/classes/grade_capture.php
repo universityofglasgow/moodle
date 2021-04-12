@@ -313,7 +313,6 @@ class grade_capture{
             $gbgradeitem = array_values(array_filter($gbgrades->items, function($item) use($module){
                 return $item->itemnumber == $module->gradeitem->itemnumber;//filter grades with specific itemnumber
             }));
-            $gradescaleoffset = local_gugcat::is_grademax22($module->gradeitem->gradetype, $module->gradeitem->grademax) ? 1 : 0;
 
             foreach($students as $student){
                 $gbg = isset($gbgradeitem[0]) ? $gbgradeitem[0]->grades[$student->id] : null;//gradebook grade record
@@ -322,13 +321,13 @@ class grade_capture{
                     $assign = new assign(context_module::instance($module->id), $module, $courseid);
                     $asgrd = $assign->get_user_grade($student->id, false);
                     if($gbg->overridden == 0 && isset($asgrd->grade)){                    
-                        $grade = ($asgrd->grader >=0) ? ($asgrd->grade + $gradescaleoffset) : null;
+                        $grade = ($asgrd->grader >=0) ? ($asgrd->grade) : null;
                     }else {
-                        $grade = self::check_gb_grade($gbg, $gradescaleoffset);
+                        $grade = self::check_gb_grade($gbg);
                     }
                     local_gugcat::update_workflow_state($assign, $student->id, ASSIGN_MARKING_WORKFLOW_STATE_INREVIEW);
                 }else{
-                    $grade = self::check_gb_grade($gbg, $gradescaleoffset);
+                    $grade = self::check_gb_grade($gbg);
                 }
                 local_gugcat::add_update_grades($student->id, local_gugcat::$PRVGRADEID, $grade);
                 local_gugcat::add_update_grades($student->id, $mggradeitemid, $grade);
@@ -410,7 +409,7 @@ class grade_capture{
      * @param mixed $gbgobj - gradebook grade object per student
      * @param mixed $gradescaleoffset - added to grade
      */
-    public static function check_gb_grade($gbgobj, $gradescaleoffset){
+    public static function check_gb_grade($gbgobj, $gradescaleoffset = 0){
         if(is_null($gbgobj)) return null;
         $gbgrade = $gbgobj->grade;
         $feedback = $gbgobj->feedback;
