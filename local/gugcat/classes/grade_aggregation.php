@@ -156,6 +156,7 @@ class grade_aggregation{
                     $grade = is_null($grd) ? ( $grditemresit ? get_string('nogradeweight', 'local_gugcat') :( $processed ? get_string('missinggrade', 'local_gugcat') : get_string('nograderecorded', 'local_gugcat'))) 
                     : ($invalid22scale && !local_gugcat::is_admin_grade($grd) ? local_gugcat::convert_grade($grd+1, $gt) : local_gugcat::convert_grade($grd, $gt));
                     $grdvalue = get_string('nograderecorded', 'local_gugcat');
+                    $grade = ($grade === (float)0) ? number_format(0, 3) : $grade;
                     if($item->is_converted && !is_null($grd)){
                         if($item->modname == 'category'){
                             $cgg = grade_converter::convert($item->conversion, $grd);
@@ -215,8 +216,9 @@ class grade_aggregation{
                     $numberformat = number_format($rawaggrade, 3);
                     // Only get main activities and categories.
                     $filtered = array_filter($gradecaptureitem->grades, function($item){ return !$item->is_child; });
-                    $aggrdobj->display = in_array(get_string('nograderecorded', 'local_gugcat'), array_column($filtered, 'grade'))
-                    || in_array(get_string('missinggrade', 'local_gugcat'), array_column($filtered, 'grade'))
+                    $filtergrade = array_column($filtered, 'grade');
+                    $aggrdobj->display = in_array(get_string('nograderecorded', 'local_gugcat'), $filtergrade, true)
+                    || in_array(get_string('missinggrade', 'local_gugcat'), $filtergrade, true)
                     ? get_string('missinggrade', 'local_gugcat') 
                     : ($gbaggregatedgrade->overridden == 0 ? ($totalweight < 75 ? $numberformat 
                     : local_gugcat::convert_grade($aggrade) .' ('.$numberformat.')') 
@@ -445,7 +447,6 @@ class grade_aggregation{
 
             // Filter child grade items object to grades
             $actgrds = array_column($filtered, 'grades', 'gradeitemid');
-            
             $studentgrades = array();
             foreach ($actgrds as $id=>$grades) {
                 // Only get grades from gradebook of child assessments
@@ -455,10 +456,7 @@ class grade_aggregation{
                 }
                 $studentgrades[$id] = intval($gb->grade);
             }
-            // Array of components' grade items to be used in the calculation
-            $grditems = array_column($filtered, 'gradeitem', 'gradeitemid');
-            $calculatedgrd = self::calculate_grade($subcatobj, $studentgrades, $grditems);
-            $grdobj->grade = $calculatedgrd == 0 ? null : $calculatedgrd;
+            $grdobj->grade = in_array(0, $studentgrades) ? null : 0;
             $grdobj->gradetype = $subcatobj->gradeitem->gradetype;
             $grdobj->scaleid = $subcatobj->gradeitem->scaleid;
             return array($grdobj, true, null);
