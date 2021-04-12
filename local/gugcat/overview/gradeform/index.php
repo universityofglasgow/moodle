@@ -69,7 +69,7 @@ if(!is_null($categoryid)){
         $subcatactivity = local_gugcat::get_activity($courseid, $activityid);
         // Retrieve sub cat child components
         $components = local_gugcat::get_activities($courseid, $subcatactivity->instance);
-        $subcatactivity->children_total = count($components);
+        $subcatactivity->children = array_column($components, 'gradeitemid');
         // Get child gradetype
         $gradetype = array_column($components, 'gradeitem')[0]->gradetype;
         $activities = array_merge($components, [$subcatactivity]);
