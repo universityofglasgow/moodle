@@ -158,12 +158,7 @@ class grade_aggregation{
                     $grdvalue = get_string('nograderecorded', 'local_gugcat');
                     $grade = ($grade === (float)0) ? number_format(0, 3) : $grade;
                     if($item->is_converted && !is_null($grd)){
-                        if($item->modname == 'category'){
-                            $cgg = grade_converter::convert($item->conversion, $grd);
-                            $grade = local_gugcat::convert_grade($cgg, null, $item->gradeitem->iteminfo);
-                        }else{
-                            $grade = local_gugcat::convert_grade($grd, null, $item->gradeitem->iteminfo);
-                        }
+                        $grade = local_gugcat::convert_grade($grd, null, $item->gradeitem->iteminfo);
                     }
                     $weight = local_gugcat::is_child_activity($item) ? 0 : (!is_null($pg) ? (float)$pg->information : 0); //get weight from information column of provisional grades
                     // Only aggregate grades that are:
