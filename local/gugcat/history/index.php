@@ -30,6 +30,7 @@ $courseid = required_param('id', PARAM_INT);
 $activityid = required_param('activityid', PARAM_INT);
 $studentid = required_param('studentid', PARAM_INT);
 $categoryid = optional_param('categoryid', null, PARAM_INT);
+$childactivityid = optional_param('childactivityid', null, PARAM_INT);
 $page = optional_param('page', 0, PARAM_INT);
 
 require_login($courseid);
@@ -37,6 +38,12 @@ $urlparams = array('id' => $courseid, 'activityid' => $activityid, 'studentid' =
 $URL = new moodle_url('/local/gugcat/history/index.php', $urlparams);
 is_null($categoryid) ? null : $URL->param('categoryid', $categoryid);
 $indexurl = new moodle_url('/local/gugcat/index.php', array('id' => $courseid));
+$modid = $activityid;
+if(!is_null($childactivityid) && $childactivityid != 0){
+    $URL->param('childactivityid', $childactivityid);
+    $indexurl->param('childactivityid', $childactivityid);
+    $modid = $childactivityid;
+}
 
 $PAGE->set_url($URL);
 $PAGE->set_title(get_string('gugcat', 'local_gugcat'));
@@ -53,7 +60,7 @@ $PAGE->set_heading($course->fullname);
 require_capability('local/gugcat:view', $coursecontext);
 
 $student = $DB->get_record('user', array('id'=>$studentid, 'deleted'=>0), '*', MUST_EXIST);
-$module = local_gugcat::get_activity($courseid, $activityid);
+$module = local_gugcat::get_activity($courseid, $modid);
 
 $scaleid = $module->gradeitem->scaleid;
 if (is_null($scaleid) && local_gugcat::is_grademax22($module->gradeitem->gradetype, $module->gradeitem->grademax)){
@@ -73,7 +80,7 @@ $params = array(
     'context' => ($module->modname == 'category') ? context_course::instance($courseid) : \context_module::instance($module->id),
     'other' => array(
         'courseid' => $courseid,
-        'activityid' => $activityid,
+        'activityid' => $modid,
         'categoryid' => $categoryid,
         'studentno' => $studentid,
         'idnumber' => $student->idnumber,

@@ -610,6 +610,7 @@ class local_gugcat {
         $gradeitems = $DB->get_records_select('grade_items', $select, ['iteminfo' => $module->gradeitemid]);
         unset($gradeitems[self::$PRVGRADEID]);
         $grades_arr = array();
+        $gt = $module->gradeitem->gradetype;
         foreach($gradeitems as $gradeitem){
             $gradehistory_arr = $DB->get_records('grade_grades_history', array('userid'=>$studentid, 'itemid'=>$gradeitem->id), MUST_EXIST);
             foreach($gradehistory_arr as $grd){
@@ -622,7 +623,7 @@ class local_gugcat {
                 $gradeitem->itemname. '<br>'.date("j/n/Y", strtotime(userdate($grd->timemodified)))
                  : $gradeitem->itemname;
                 $grd->date = date("j/n", strtotime(userdate($grd->timemodified))).'<br>'.date("h:i", strtotime(userdate($grd->timemodified)));
-                $grd->grade = !is_null($grd->finalgrade) ? self::convert_grade($grd->finalgrade) : self::convert_grade($grd->rawgrade);
+                $grd->grade = !is_null($grd->finalgrade) ? self::convert_grade($grd->finalgrade, $gt) : self::convert_grade($grd->rawgrade, $gt);
                 array_push($grades_arr, $grd);
                 }
             }
