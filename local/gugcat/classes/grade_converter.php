@@ -34,11 +34,11 @@ class grade_converter{
 
     /**
      * Saves grade converter into gcat_grade_converter table
-     * @param int $modid
+     * @param int $modid gradeitem id
      * @param int $scale
      * @param mixed $grades
      */
-    public static function save_grade_converter($modid, $scale, $grades){
+    public static function save_grade_conversion($modid, $scale, $grades){
         global $DB;
 
         $DB->insert_records('gcat_grade_converter', $grades);
@@ -53,7 +53,7 @@ class grade_converter{
      * @param int  $prvid Provisional grade item id
      */
     public static function convert_provisional_grades($conversion, $module, $prvid){
-        global $DB, $COURSE;
+        global $COURSE;
         // Get all provisional grade_grades
         if($prvgrades = grade_grade::fetch_all(array('itemid' => $prvid))){
             // Create/get converted grade item

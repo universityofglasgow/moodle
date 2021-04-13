@@ -108,7 +108,7 @@ if($mform->is_cancelled()) {
         if($prvid = local_gugcat::get_grade_item_id($courseid, $id, $itemname)){
             grade_converter::convert_provisional_grades($gradeconvert, $module, $prvid);
             grade_converter::delete_grade_conversion($modid);
-            grade_converter::save_grade_converter($modid, $formdata->scale, $gradeconvert);
+            grade_converter::save_grade_conversion($modid, $formdata->scale, $gradeconvert);
             unset($SESSION->wantsurl);
             redirect($returnurl);
         }
