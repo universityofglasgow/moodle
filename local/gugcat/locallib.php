@@ -914,9 +914,7 @@ class local_gugcat {
         $activity->aggregation = $gradecategory->aggregation;
         $activity->droplow = $gradecategory->droplow;
         $activity->aggregateonlygraded = $gradecategory->aggregateonlygraded;
-        $a = new stdClass();
-        $a->category = $gradecategory->get_name();
-        $activity->name =get_string('categorytotalfull', 'grades', $a);
+        $activity->name = $gradecategory->get_name();
         $gi = grade_item::fetch(array('courseid' => $courseid, 'itemtype' => 'category', 'iteminstance' => $gradecategory->id));
         $gi->load_parent_category();
         $activity->gradeitem = $gi;

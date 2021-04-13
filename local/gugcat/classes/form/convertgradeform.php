@@ -23,6 +23,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use local_gugcat\grade_converter;
+
 defined('MOODLE_INTERNAL') || die();
 
 require_once("$CFG->libdir/formslib.php");
@@ -32,23 +34,27 @@ class convertform extends moodleform {
     public function definition() {
 
         local_gugcat::set_grade_scale();
-        $grades = local_gugcat::$SCHEDULE_A;
-        $schedB = local_gugcat::$SCHEDULE_B;
 
         $gradetypestr = array(
             GRADE_TYPE_TEXT => get_string('modgradetypenone', 'grades'),
             GRADE_TYPE_SCALE => get_string('modgradetypescale', 'grades'),
             GRADE_TYPE_VALUE => get_string('modgradetypepoint', 'grades'),
         );
+
+        $activity = $this->_customdata['activity'];
+        $scales = $this->_customdata['scales'];
+        $is_converted = !is_null($activity->gradeitem->iteminfo) && !empty($activity->gradeitem->iteminfo);
+        $defaulttype = $is_converted ? $activity->gradeitem->iteminfo : SCHEDULE_A;
+        $existing = grade_converter::retrieve_grade_conversion($activity->gradeitemid);
+
+        $grades = grade_converter::process_defaults($activity->gradeitem->iteminfo == SCHEDULE_A, local_gugcat::$SCHEDULE_A, $existing);
+        $schedB = grade_converter::process_defaults($activity->gradeitem->iteminfo == SCHEDULE_B, local_gugcat::$SCHEDULE_B, $existing);
         // Divide schedule A into two array
         $schedA1 = array_slice($grades, 0, (count($grades) / 2)+1);
         $schedA2 = array_slice($grades, (count($grades) / 2)+1);
         $keys = array_keys($grades);
         $keysA1 = array_slice($keys, 0, (count($keys) / 2)+1);
         $keysA2 = array_slice($keys, (count($keys) / 2)+1);
-
-        $activity = $this->_customdata['activity'];
-        $scales = $this->_customdata['scales'];
 
         $mform = $this->_form; // Don't forget the underscore! 
         $mform->addElement('html', '<div class="mform-container">');
@@ -60,7 +66,7 @@ class convertform extends moodleform {
         $mform->setType('maximumgrade', PARAM_NOTAGS); 
         $mform->addElement('select', 'scale', get_string('selectscale', 'local_gugcat'), $scales, ['id' => 'select-scale', 'class' => 'mform-custom-select']); 
         $mform->setType('scale', PARAM_NOTAGS); 
-       
+        $mform->setDefault('scale', $defaulttype);
         // Schedule A tables
         $mform->addElement('html', html_writer::start_tag('div', array('id' => 'table-schedulea', 'class' => 'row'))); 
         $this->setup_table($schedA1, $mform, 'schedA', $keysA1);
@@ -112,10 +118,11 @@ class convertform extends moodleform {
         foreach ($grades as $index=>$grd) {
             $index = empty($keys) ? $index : $keys[$index];
             $html .= html_writer::start_tag('tr');
-            $html .= html_writer::tag('td', $grd);
+            $html .= html_writer::tag('td', $grd->grade);
             $html .= html_writer::start_tag('td');
             $mform->addElement('html', $html); 
             $mform->addElement('text', $name."[$index]", null, $attributes); 
+            $mform->setDefault($name."[$index]", $grd->lowerboundary);
             $mform->setType($name."[$index]", PARAM_NOTAGS);
             $mform->addRule($name."[$index]", null, 'numeric', null, 'client');
             $mform->addRule($name."[$index]", get_string('errorfieldnumbers', 'local_gugcat'), 'regex', '/^[0-9]+$/', 'client');

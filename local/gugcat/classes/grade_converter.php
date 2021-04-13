@@ -111,6 +111,26 @@ class grade_converter{
         return $DB->delete_records('gcat_grade_converter', array('courseid'=>$COURSE->id, 'itemid'=>$itemid));
     }
 
+    /**
+     * Process schedule A or B array on display 
+     *
+     * @param boolean $defaultscale Boolean if scale is the default one
+     * @param array $scale schedule A or B
+     * @param array $defaultvalue Default scale values from gcat table
+     * @return array $grades 
+     */
+    public static function process_defaults($defaultscale, $scale, $defaultvalue){
+        $grades = array();
+        $default = array_column($defaultvalue, 'lowerboundary', 'grade');
+        foreach ($scale as $key => $grade) {
+            $grd = new stdClass();
+            $grd->lowerboundary = $defaultscale && isset($default[$key]) ? $default[$key] : null;
+            $grd->grade = $grade;
+            $grades[$key] = $grd;
+        }
+        return $grades;
+    }
+
      /**
      * Converts grade from the custom grade conversion
      *
