@@ -324,27 +324,21 @@ class grade_aggregation{
             
             $studentgrades = array();
             foreach ($actgrds as $id=>$grades) {
-                // Only get provisional grades $pg from child assessments
+                // Get provisional grades $pg from child assessments
                 $pg = isset($grades->provisional[$userid]) ? $grades->provisional[$userid] : null;
                 // If component is converted, get the original grade
                 if(isset($grades->converted)){
                     $pg = isset($grades->converted[$userid]) ? $grades->converted[$userid] : null;
                 }
-                if(is_null($pg)){
-                    continue;
-                }
+                // Get gradebook grades $gb from child assessments
+                $gb = isset($grades->gradebook[$userid]) ? $grades->gradebook[$userid] : null;
                 $grd_ = (isset($pg) && !is_null($pg->finalgrade)) ? $pg->finalgrade 
                 : (isset($pg) && !is_null($pg->rawgrade) ? $pg->rawgrade 
-                : null);  
+                : ((isset($gb) && !is_null($gb->grade)) ? $gb->grade : null)); 
                 (isset($notes) && !is_null($grd)) ? local_gugcat::update_components_notes($userid, $pg->itemid, $notes) : null;
                 $studentgrades[$id] = intval($grd_);
             }
             $is_highest_grade = $subcatobj->aggregation == GRADE_AGGREGATE_MAX;
-
-            // Return grade = null, processed = true if all children are not imported for weighted/mean
-            if(!$is_highest_grade && count($studentgrades) != count($subcatobj->children)){
-                return array(null, true, null);
-            }
 
             // If calculation field is empty, then update it with aggregation type
             is_null($subcatobj->aggregation_type) ? $DB->set_field('grade_items', 'calculation', $subcatobj->aggregation, array('id'=>$pgobj->itemid)) : null;
@@ -433,7 +427,7 @@ class grade_aggregation{
                     $notes = 'import';
                     local_gugcat::update_grade($userid, $pgobj->itemid, $calculatedgrd, $notes);
                     foreach($actgrds as $id=>$grades){
-                        if($pg = $grades->provisional[$userid]){
+                        if(isset($grades->provisional[$userid]) && $pg = $grades->provisional[$userid]){
                             // Only get provisional grades $pg from child assessments
                             local_gugcat::update_components_notes($userid, $pg->itemid, $notes);
                         }        
