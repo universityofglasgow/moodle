@@ -426,7 +426,7 @@ class local_gugcat {
     public static function convert_grade($grade, $gradetype = GRADE_TYPE_SCALE, $scaletype = SCHEDULE_A){
         if(!local_gugcat::is_admin_grade($grade)){
             if($gradetype == GRADE_TYPE_VALUE){
-                return number_format($grade, 2);
+                return number_format($grade, 3);
             }
             if($scaletype != SCHEDULE_A){
                 return grade_converter::convert(self::$SCHEDULE_B, $grade);
