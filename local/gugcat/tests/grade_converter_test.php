@@ -35,7 +35,7 @@ require_once($CFG->dirroot.'/local/gugcat/locallib.php');
 class grade_converter_testcase extends advanced_testcase {
 
     public function setUp() {
-        global $DB;
+        global $DB, $COURSE;
         $this->resetAfterTest();
 
         $gen = $this->getDataGenerator();
@@ -44,6 +44,7 @@ class grade_converter_testcase extends advanced_testcase {
         $this->teacher = $gen->create_user();
         $this->admin = get_admin();
         $this->course = $gen->create_course();
+        $COURSE = $this->course;
         $this->coursecontext = context_course::instance($this->course->id);
         $gen->enrol_user($this->student1->id, $this->course->id, 'student');
         $gen->enrol_user($this->student2->id, $this->course->id, 'student');
@@ -64,17 +65,177 @@ class grade_converter_testcase extends advanced_testcase {
         $this->provisionalgi = local_gugcat::add_grade_item($this->course->id, get_string('provisionalgrd', 'local_gugcat'), $this->cm);
     }
 
-    public function test_save_grade_converter(){
-        global $DB;
-
+    public function test_save_retrieve_delete_grade_conversion(){
+        // Test save grade_conversion
         $expectedlb = '93';
         $expectedgrade = '23'; 
-        $grdconvert = array(['courseid'=>$this->course->id, 'itemid'=>$this->cm->gradeitem->id, 'lowerboundary'=>$expectedlb, 'grade'=>$expectedgrade]);
-        grade_converter::save_grade_converter($this->cm->id, '1', $grdconvert);
+        $modid = $this->cm->gradeitem->id;
+        $grdconvert = array(['courseid'=>$this->course->id, 'itemid'=>$modid, 'lowerboundary'=>$expectedlb, 'grade'=>$expectedgrade]);
+        grade_converter::save_grade_conversion($modid, '1', $grdconvert);
 
-        $gradeconvert = $DB->get_record('gcat_grade_converter', array('itemid'=>$this->cm->gradeitem->id));
+        // Test retrieve grade_conversion
+        $gradeconvert = grade_converter::retrieve_grade_conversion($modid);
         $this->assertNotEmpty($gradeconvert);
-        $this->assertEquals($gradeconvert->lowerboundary, $expectedlb);
-        $this->assertEquals($gradeconvert->grade, $expectedgrade);
+        $gc = $gradeconvert[key($gradeconvert)];
+        $this->assertEquals($gc->lowerboundary, $expectedlb);
+        $this->assertEquals($gc->grade, $expectedgrade);
+
+        // Test delete grade_conversion
+        grade_converter::delete_grade_conversion($modid);
+        $gradeconvert = grade_converter::retrieve_grade_conversion($modid);
+        $this->assertEmpty($gradeconvert);
+    }
+
+    public function test_process_defaults(){
+        // Get schedule b
+        local_gugcat::set_grade_scale();
+        $defaultvalue = array(); // Create a grade conversion like retrieve from db
+        $item1 = new stdClass();
+        $item1->lowerboundary = 90;
+        $item1->grade = 18;
+        $defaultvalue[] = $item1;
+        $item2 = new stdClass();
+        $item2->lowerboundary = 70;
+        $item2->grade = 15;
+        $defaultvalue[] = $item2;
+        // Assert defaultscale is false, returns null lowerboundary of schedule B
+        $return = grade_converter::process_defaults(false, local_gugcat::$SCHEDULE_B, $defaultvalue);
+        $schedBkeys = array_keys(local_gugcat::$SCHEDULE_B);
+        foreach ($return as $key => $grade) {
+            // Assert key is in schedule b keys array
+            $this->assertContains($key, $schedBkeys);
+            // Assert same alphanumeric from schedule b
+            $this->assertEquals($grade->grade, local_gugcat::$SCHEDULE_B[$key]);
+            // Assert lowerboundary is null
+            $this->assertNull($grade->lowerboundary);
+        }
+
+        // Assert defaultscale is true, returns the $defaultvalue from db to lowerboundary of schedule B
+        $return = grade_converter::process_defaults(true, local_gugcat::$SCHEDULE_B, $defaultvalue);
+
+        $keys = array_keys($return);
+        // Assert grade 18 from returned array
+        $this->assertContains($item1->grade, $keys);
+        // Assert grade 15 from returned array
+        $this->assertContains($item2->grade, $keys);
+
+        // Assert lowerboundary 90 is already set to grade 18
+        $this->assertEquals($item1->lowerboundary, $return[$item1->grade]->lowerboundary);
+        // Assert lowerboundary 70 is already set to grade 15
+        $this->assertEquals($item2->lowerboundary, $return[$item2->grade]->lowerboundary);
+    }
+
+    public function test_convert_provisional_grades(){
+        global $DB;
+        // Create provisional grades
+        $prvid = $this->provisionalgi;
+        $stud1grd = 89;
+        $stud2grd = 70;
+        // Update provisional grade of the students
+        local_gugcat::update_grade($this->student1->id, $prvid, $stud1grd);
+        local_gugcat::update_grade($this->student2->id, $prvid, $stud2grd);
+
+        // Assert provisional grades are save
+        $grade1 = $DB->get_field('grade_grades', 'finalgrade', array('itemid' => $prvid, 'userid' => $this->student1->id));
+        $this->assertEquals($grade1, $stud1grd);
+        $grade2 = $DB->get_field('grade_grades', 'finalgrade', array('itemid' => $prvid, 'userid' => $this->student2->id));
+        $this->assertEquals($grade2, $stud2grd);
+
+        // Create a conversion
+        $conversion = array();
+        // Schedule A
+        // 23 => A1 => 90
+        // 22 => A2 => 85
+        // 21 => A3 => 80
+        // 20 => A4 => <80
+        $A1 = new stdClass();
+        $A1->lowerboundary = 90;
+        $A1->grade = 23;
+        $conversion[] = $A1;
+        $A2 = new stdClass();
+        $A2->lowerboundary = 85;
+        $A2->grade = 22;
+        $conversion[] = $A2;
+        $A3 = new stdClass();
+        $A3->lowerboundary = 80;
+        $A3->grade = 21;
+        $conversion[] = $A3;
+        grade_converter::convert_provisional_grades($conversion, $this->cm, $prvid);
+
+         // Assert converted provisional grades 
+         $grade1 = $DB->get_field('grade_grades', 'finalgrade', array('itemid' => $prvid, 'userid' => $this->student1->id));
+         //stud1grd = 89 ===> 22
+         $this->assertEquals($grade1, 22);
+         $grade2 = $DB->get_field('grade_grades', 'finalgrade', array('itemid' => $prvid, 'userid' => $this->student2->id));
+         //stud2grd = 70 ===> 20
+         $this->assertEquals($grade2, 20);
+
+        // Assert converted grade item is created
+        $cnvgi = local_gugcat::get_grade_item_id($this->course->id, $this->cm->gradeitemid, get_string('convertedgrade', 'local_gugcat'));
+        $this->assertNotFalse($cnvgi);
+
+        // Assert converted grade grades contains the original grades (grades in points)
+        $grade1 = $DB->get_field('grade_grades', 'finalgrade', array('itemid' => $cnvgi, 'userid' => $this->student1->id));
+        //stud1grd = 89 
+        $this->assertEquals($grade1, $stud1grd);
+        $grade2 = $DB->get_field('grade_grades', 'finalgrade', array('itemid' => $cnvgi, 'userid' => $this->student2->id));
+        //stud2grd = 70
+        $this->assertEquals($grade2, $stud2grd);
+    }
+
+    public function test_convert(){
+        // Create a conversion
+        $conversion = array();
+        // Schedule A
+        // 23 => A1 => 90
+        // 22 => A2 => 85
+        // 21 => A3 => 80
+        // 20 => A4 => <80
+        $A1 = new stdClass();
+        $A1->lowerboundary = 90;
+        $A1->grade = 23;
+        $conversion[] = $A1;
+        $A2 = new stdClass();
+        $A2->lowerboundary = 85;
+        $A2->grade = 22;
+        $conversion[] = $A2;
+        $A3 = new stdClass();
+        $A3->lowerboundary = 80;
+        $A3->grade = 21;
+        $conversion[] = $A3;
+        // Start conversion
+        // Grade = 91 == converted = 23
+        $convertedgraed = grade_converter::convert($conversion, 91);
+        $this->assertEquals($convertedgraed, $A1->grade);
+        // Grade = 89 == converted = 22
+        $convertedgraed = grade_converter::convert($conversion, 89);
+        $this->assertEquals($convertedgraed, $A2->grade);
+        // Grade = 85 == converted = 22
+        $convertedgraed = grade_converter::convert($conversion, 85);
+        $this->assertEquals($convertedgraed, $A2->grade);
+        // Grade = 83 == converted = 21
+        $convertedgraed = grade_converter::convert($conversion, 83);
+        $this->assertEquals($convertedgraed, $A3->grade);
+        // Grade = 50 == converted = 20
+        $convertedgraed = grade_converter::convert($conversion, 50);
+        $this->assertEquals($convertedgraed, 20);
+
+        // Test 22 pt with schedule B conversion
+        local_gugcat::set_grade_scale();
+        // 22 => A0
+        $alphanumgrd = grade_converter::convert(local_gugcat::$SCHEDULE_B, 22);
+        $this->assertEquals($alphanumgrd, 'A0');
+        // 17 => B0
+        $alphanumgrd = grade_converter::convert(local_gugcat::$SCHEDULE_B, 17);
+        $this->assertEquals($alphanumgrd, 'B0');
+        // 10 => D0
+        $alphanumgrd = grade_converter::convert(local_gugcat::$SCHEDULE_B, 10);
+        $this->assertEquals($alphanumgrd, 'D0');
+        // 2 => G1
+        $alphanumgrd = grade_converter::convert(local_gugcat::$SCHEDULE_B, 2);
+        $this->assertEquals($alphanumgrd, 'G0');
+        // 0 => H
+        $alphanumgrd = grade_converter::convert(local_gugcat::$SCHEDULE_B, 0);
+        $this->assertEquals($alphanumgrd, 'H');
     }
 }
