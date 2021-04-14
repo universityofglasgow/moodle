@@ -474,11 +474,11 @@ class local_gugcat {
         if(is_null($scaleid)){
             list($scalegrades, $schedB) = self::get_gcat_scale();
             self::$SCHEDULE_A = $scalegrades;
-            // Change the indexes of Schedule B to its lowerbound
-            $lowerbounds = array(0, 1, 3, 6, 9, 12, 15, 18);
+            // Change the indexes (+1) of Schedule B to its upperbounds
+            $upperbounds = array(1, 3, 6, 9, 12, 15, 18, 23);
             $B = array();
             foreach($schedB as $i=>$b){
-                $B[$lowerbounds[$i-1]] = $b;
+                $B[$upperbounds[$i-1]] = $b;
             }
             self::$SCHEDULE_B = $B;
             $scalegrades = ($scaletype != SCHEDULE_A) ? self::$SCHEDULE_B : $scalegrades;

@@ -124,7 +124,7 @@ class convertform extends moodleform {
             $mform->setDefault($name."[$index]", is_null($grd->lowerboundary) ? null : floatval($grd->lowerboundary) );
             $mform->setType($name."[$index]", PARAM_NOTAGS);
             $mform->addRule($name."[$index]", null, 'numeric', null, 'client');
-            if($index == 0 || (!empty($keys) && $index == 1)){
+            if($index == 1){
                 $mform->addRule($name."[$index]", get_string('errorfieldzero', 'local_gugcat'), 'regex', '/^[0]$/', 'client');
                 $mform->addRule($name."[$index]", get_string('errorfieldzero', 'local_gugcat'), 'regex', '/^[0]$/', 'server');
             }else{

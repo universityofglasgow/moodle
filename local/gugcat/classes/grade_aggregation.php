@@ -159,14 +159,16 @@ class grade_aggregation{
                             // Set the grade type and scale id of the sub category column
                             $item->scaleid = $subcatgrd->scaleid;
                             $item->gradeitem->gradetype = $subcatgrd->gradetype;                            
+                            $item->gradeitem->grademax = $subcatgrd->grademax;                            
                         }
                         if($error){
                             $errors[$item->gradeitemid] = $error;
                         }
                     }
                     $gt = $item->gradeitem->gradetype;
+                    $gm = $item->gradeitem->grademax;
                     $scaleid = is_null($item->scaleid) ? null : $item->scaleid;
-                    $is_scale = !is_null($scaleid) && local_gugcat::is_scheduleAscale($gt, $item->gradeitem->grademax) && isset($pg);
+                    $is_scale = !is_null($scaleid) && local_gugcat::is_scheduleAscale($gt, $gm) && isset($pg);
 
                     local_gugcat::set_grade_scale($scaleid);
                     local_gugcat::is_child_activity($item) || $item->is_converted ? null: $gradetypes[] = intval($gt);
@@ -175,6 +177,7 @@ class grade_aggregation{
                     $grdvalue = get_string('nograderecorded', 'local_gugcat');
                     $grade = ($grade === (float)0) ? number_format(0, 3) : $grade;
                     if($item->is_converted && !is_null($grd)){
+                        $is_scale = true;
                         $grade = local_gugcat::convert_grade($grd, null, $item->gradeitem->iteminfo);
                     }
                     $weight = local_gugcat::is_child_activity($item) ? 0 : (!is_null($pg) ? (float)$pg->information : 0); //get weight from information column of provisional grades
@@ -350,8 +353,9 @@ class grade_aggregation{
                 $DB->set_field('grade_items', 'calculation', $subcatobj->aggregation, array('id'=>$pgobj->itemid));
             }
 
-            // Overall gradetype and scaleid to be used in subcat grade
+            // Overall gradetype, grademax and scaleid to be used in subcat grade
             $gradetype = null;
+            $grademax = null;
             $scaleid = null;
             // Array of components' grade items to be used in the calculation
             $grditems = array_column($filtered, 'gradeitem', 'gradeitemid');
@@ -367,9 +371,11 @@ class grade_aggregation{
                 if($gi->gradetype == GRADE_TYPE_VALUE){
                     $subcatobj->gradeitem->gradetype = GRADE_TYPE_VALUE;
                     $gradetype = GRADE_TYPE_VALUE;
+                    $grademax = $subcatobj->gradeitem->grademax;
                 }else if(count(array_unique($grademaxs)) == 1 && local_gugcat::is_scheduleAscale($gi->gradetype, $gi->grademax)){
                     $subcatobj->gradeitem->gradetype = GRADE_TYPE_SCALE;
                     $gradetype = GRADE_TYPE_SCALE;
+                    $grademax = $gi->grademax;
                     $is_schedule_a = false;
                     foreach($grditems as $item){
                         if ($gi->scaleid != $item->scaleid){
@@ -394,6 +400,7 @@ class grade_aggregation{
             if($pgobj->overridden != 0){
                 $grdobj->grade = $grd;
                 $grdobj->gradetype = $gradetype;
+                $grdobj->grademax = $grademax;
                 $grdobj->scaleid = $scaleid;
                 if($subcatobj->is_converted){
                     $grdobj->grade = grade_converter::convert($subcatobj->conversion, $grd);
@@ -444,6 +451,7 @@ class grade_aggregation{
             }
             $grdobj->grade = $calculatedgrd;
             $grdobj->gradetype = $gradetype;
+            $grdobj->grademax = $grademax;
             $grdobj->scaleid = $scaleid;
             return array($grdobj, true, null);
         }else if((isset($subcatobj->grades->gradebook[$userid]) && $subcatobj->grades->gradebook[$userid])){
