@@ -238,8 +238,36 @@ class grade_aggregation_testcase extends advanced_testcase {
         // Assert calculation to get the simple mean grade
         $subcatobj->aggregation = GRADE_AGGREGATE_MEAN;
         $calgrade = grade_aggregation::calculate_grade($subcatobj, $grades, $gradeitems);
-        // grades [10, 20, 30] / 3 = 20
+        // grades [10 + 20 + 30] / 3 = 20
         $this->assertEquals($calgrade, 20);
+
+        // Assert calculation to get the lowest grade
+        $subcatobj->aggregation = GRADE_AGGREGATE_MIN;
+        $calgrade = grade_aggregation::calculate_grade($subcatobj, $grades, $gradeitems);
+        // grades [10, 20, 30] => 10
+        $this->assertEquals($calgrade, 10);
+
+        // Assert calculation to get the natural sum
+        $subcatobj->aggregation = GRADE_AGGREGATE_SUM;
+        $calgrade = grade_aggregation::calculate_grade($subcatobj, $grades, $gradeitems);
+        // grades [10 + 20 + 30] = 60
+        $this->assertEquals($calgrade, 60);
+
+        // Assert calculation to get the median
+        $subcatobj->aggregation = GRADE_AGGREGATE_MEDIAN;
+        $calgrade = grade_aggregation::calculate_grade($subcatobj, $grades, $gradeitems);
+        // grades [10, 20, 30] => 20
+        $this->assertEquals($calgrade, 20);
+
+        // Assert calculation to get the mode
+        $subcatobj->aggregation = GRADE_AGGREGATE_MODE;
+        $grades[] = 10;
+        $gi4 = new grade_item(array('id'=>4));
+        $gi4->aggregationcoef = $aggregationcoef;
+        $grades[4] = $gi4;
+        $calgrade = grade_aggregation::calculate_grade($subcatobj, $grades, $gradeitems);
+        // grades [10, 20, 30, 10] = 10
+        $this->assertEquals($calgrade, 10);
     }
 
     public function test_get_aggregated_grade(){
