@@ -95,6 +95,7 @@ class grade_aggregation{
                     if($DB->record_exists_select('grade_items', "itemname = '$moodlestr' AND ($componentsql)")){
                         // $mod->id - sub category id 
                         $prvgrdid = local_gugcat::get_grade_item_id($course->id, $mod->id, get_string('subcategorygrade', 'local_gugcat'));
+                        $mod->prvgrdid = $prvgrdid;
                     }
                 }
                 $gbgrades = grade_get_grades($course->id, 'category', null, $mod->instance, array_keys($students));
@@ -151,7 +152,7 @@ class grade_aggregation{
                     $processed = false; // Used for subcat grades
                     if($item->modname == 'category') {
                         //get aggregation type
-                        $item->aggregation_type = $DB->get_field('grade_items', 'calculation', array('id'=>$prvgrdid));
+                        $item->aggregation_type = $DB->get_field('grade_items', 'calculation', array('id'=>$item->prvgrdid));
                         list($subcatgrd, $processed, $error) = self::get_aggregated_grade($student->id, $item, $gradebook);
                         $grd = $processed ? (is_null($subcatgrd) ? null : $subcatgrd->grade) : (is_null($subcatgrd) ? $grd : $subcatgrd->grade);
                         if(!is_null($subcatgrd)){
@@ -335,7 +336,6 @@ class grade_aggregation{
                 $grd_ = (isset($pg) && !is_null($pg->finalgrade)) ? $pg->finalgrade 
                 : (isset($pg) && !is_null($pg->rawgrade) ? $pg->rawgrade 
                 : ((isset($gb) && !is_null($gb->grade)) ? $gb->grade : null)); 
-                (isset($notes) && !is_null($grd)) ? local_gugcat::update_components_notes($userid, $pg->itemid, $notes) : null;
                 $studentgrades[$id] = intval($grd_);
             }
             $is_highest_grade = $subcatobj->aggregation == GRADE_AGGREGATE_MAX;
