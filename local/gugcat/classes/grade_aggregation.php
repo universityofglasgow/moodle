@@ -495,19 +495,18 @@ class grade_aggregation{
         $subcatgt = $subcatobj->gradeitem->gradetype;
         $subcatgmax = 100;
         $subcatgmin = 0;
+        $agg_grade = null; //Aggregated grade
+        $grades = self::normalize_grades($grade_values, $items);
         switch ($aggregationtype) {
             case GRADE_AGGREGATE_MIN:
-                return min($grade_values);
+                $agg_grade = min($grades);
+                break;
             case GRADE_AGGREGATE_MAX:
-                $grades = self::normalize_grades($grade_values, $items);
                 $agg_grade = max($grades);
-                return ($subcatgt == GRADE_TYPE_VALUE) 
-                        ? grade_grade::standardise_score($agg_grade, $subcatgmin, $subcatgmax, 0, 100)
-                        : $agg_grade;
+                break;
             case GRADE_AGGREGATE_WEIGHTED_MEAN:// Weighted average of all existing final grades, weight specified in coef
                 $weightsum = 0;
                 $sum = 0;
-                $grades = self::normalize_grades($grade_values, $items);
                 foreach ($grades as $itemid=>$grade_value) {
                     if (!isset($items[$itemid]) || $items[$itemid]->aggregationcoef <= 0) {
                         continue;
@@ -516,19 +515,50 @@ class grade_aggregation{
                     $sum       += $items[$itemid]->aggregationcoef * $grade_value;
                 }
                 $agg_grade = ($weightsum == 0) ? null : $sum / $weightsum;
-                return ($subcatgt == GRADE_TYPE_VALUE) 
-                        ? grade_grade::standardise_score($agg_grade, $subcatgmin, $subcatgmax, 0, 100)
-                        : $agg_grade;
+                break;
+            case GRADE_AGGREGATE_SUM:
+                $agg_grade = array_sum($grades);
+                break;
+            case GRADE_AGGREGATE_MEDIAN:
+                sort($grades);
+                $count = count($grades);
+                $middleval = floor(($count-1)/2);
+                if ($count % 2) {
+                    $agg_grade = $grades[$middleval];
+                } else {
+                    $low = $grades[$middleval];
+                    $high = $grades[$middleval+1];
+                    $agg_grade = (($low+$high)/2);
+                }
+                break;
+            case GRADE_AGGREGATE_MODE:
+                // the most common value
+                // array_count_values only counts INT and STRING, so if grades are floats we must convert them to string
+                $converted_grade_values = array();
+                foreach ($grades as $k => $gv) {
+                    if (!is_int($gv) && !is_string($gv)) {
+                        $converted_grade_values[$k] = (string) $gv;
+                    } else {
+                        $converted_grade_values[$k] = $gv;
+                    }
+                }
+
+                $freq = array_count_values($converted_grade_values);
+                arsort($freq);                      // sort by frequency keeping keys
+                $top = reset($freq);               // highest frequency count
+                $modes = array_keys($freq, $top);  // search for all modes (have the same highest count)
+                rsort($modes, SORT_NUMERIC);       // get highest mode
+                $agg_grade = reset($modes);
+                break;
             case GRADE_AGGREGATE_MEAN:
             default:
                 $num = count($grade_values);
-                $grades = self::normalize_grades($grade_values, $items);
                 $sum = array_sum($grades);
-                $agg_grade = $sum / $num;                
-                return ($subcatgt == GRADE_TYPE_VALUE) 
-                        ? grade_grade::standardise_score($agg_grade, $subcatgmin, $subcatgmax, 0, 100)
-                        : $agg_grade;
+                $agg_grade = $sum / $num;
         }
+        return ($subcatgt == GRADE_TYPE_VALUE) 
+            ? grade_grade::standardise_score($agg_grade, $subcatgmin, $subcatgmax, 0, 100)
+            : $agg_grade;
     }
 
     /**
