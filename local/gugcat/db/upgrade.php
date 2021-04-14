@@ -44,10 +44,11 @@ defined('MOODLE_INTERNAL') || die();
 
 /**
  * Upgrades database
+ * @param int $oldversion the version we are upgrading from.
  */
-function xmldb_local_gugcat_upgrade() {
+function xmldb_local_gugcat_upgrade($oldversion) {
 
-    global $CFG, $DB;
+    global $DB;
 
     $dbman = $DB->get_manager();
     //create table gcat_grade_converter
@@ -60,7 +61,7 @@ function xmldb_local_gugcat_upgrade() {
             XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null, null);
         $field3 = new xmldb_field('itemid', XMLDB_TYPE_INTEGER, '10',
             XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null, null);
-        $field4 = new xmldb_field('lowerboundary', XMLDB_TYPE_INTEGER, '10',
+        $field4 = new xmldb_field('lowerboundary', XMLDB_TYPE_NUMBER, '10, 5',
             XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null, null);
         $field5 = new xmldb_field('grade', XMLDB_TYPE_INTEGER, '10',
             XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null, null);
@@ -81,6 +82,16 @@ function xmldb_local_gugcat_upgrade() {
         $table->addKey($key2);
         $table->addKey($key3);
         $dbman->create_table($table);
+    }
+
+    if ($oldversion < 2021041416) {
+        if ($dbman->table_exists($table)) {
+            $field = new xmldb_field('lowerboundary', XMLDB_TYPE_NUMBER, '10, 5',
+            XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null, null);
+            if ($dbman->field_exists($table, $field)) {
+                $dbman->change_field_type($table, $field);
+            }
+        }
     }
 
     return true;
