@@ -370,7 +370,13 @@ class grade_aggregation{
                 }else if(count(array_unique($grademaxs)) == 1 && local_gugcat::is_scheduleAscale($gi->gradetype, $gi->grademax)){
                     $subcatobj->gradeitem->gradetype = GRADE_TYPE_SCALE;
                     $gradetype = GRADE_TYPE_SCALE;
-                    $scaleid = $gi->scaleid;
+                    $is_schedule_a = false;
+                    foreach($grditems as $item){
+                        if ($gi->scaleid != $item->scaleid){
+                            $is_schedule_a = true;
+                        }
+                    }
+                    $scaleid = $is_schedule_a ? null : $gi->scaleid;
                 }else{
                     if(!is_null($grd)){
                         local_gugcat::update_grade($userid, $pgobj->itemid, null);

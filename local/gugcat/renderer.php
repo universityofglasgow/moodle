@@ -174,7 +174,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
             'saveallgrdstr' =>get_string('saveallnewgrade', 'local_gugcat'),
             'uploadaddgrdstr' =>get_string('uploadaddgrd', 'local_gugcat'),
             'adjustgrdstr' =>get_string('adjustgrade', 'local_gugcat'),
-            'adjustassconvstr' =>get_string('adjustassessgrdcvr', 'local_gugcat'),
+            'adjustassconvstr' => ($gt == GRADE_TYPE_VALUE) ? get_string('adjustassessgrdcvr', 'local_gugcat') : null,
             'saveallbtnstr' =>get_string('saveallnewgrade', 'local_gugcat'),
             'grddiscrepancystr' => get_string('gradediscrepancy', 'local_gugcat'),
             'importgradesstr' => get_string('importgrades', 'local_gugcat'),

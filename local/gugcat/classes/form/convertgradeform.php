@@ -102,9 +102,8 @@ class convertform extends moodleform {
         $attributes = array(
             'class' => 'input-scale-pt mb-0',
             'type' => 'number',
-            'maxlength' => '3',
-            'size' => '10',
-            'pattern' => '[0-9]+'
+            'maxlength' => '6',
+            'size' => '10'
         );
         $mform->addElement('html', html_writer::start_tag('div', array('class' => 'col'))); 
         $html = html_writer::start_tag('table', array_merge(array('id'=>'gcat-table', 'class' => 'table')));
@@ -122,11 +121,16 @@ class convertform extends moodleform {
             $html .= html_writer::start_tag('td');
             $mform->addElement('html', $html); 
             $mform->addElement('text', $name."[$index]", null, $attributes); 
-            $mform->setDefault($name."[$index]", $grd->lowerboundary);
+            $mform->setDefault($name."[$index]", is_null($grd->lowerboundary) ? null : floatval($grd->lowerboundary) );
             $mform->setType($name."[$index]", PARAM_NOTAGS);
             $mform->addRule($name."[$index]", null, 'numeric', null, 'client');
-            $mform->addRule($name."[$index]", get_string('errorfieldnumbers', 'local_gugcat'), 'regex', '/^[0-9]+$/', 'client');
-            $mform->addRule($name."[$index]", get_string('errorfieldnumbers', 'local_gugcat'), 'regex', '/^[0-9]+$/', 'server');
+            if($index == 0 || (!empty($keys) && $index == 1)){
+                $mform->addRule($name."[$index]", get_string('errorfieldzero', 'local_gugcat'), 'regex', '/^[0]$/', 'client');
+                $mform->addRule($name."[$index]", get_string('errorfieldzero', 'local_gugcat'), 'regex', '/^[0]$/', 'server');
+            }else{
+                $mform->addRule($name."[$index]", get_string('errorfielddecimal', 'local_gugcat'), 'regex', '/^[0-9]+(\.[0-9]{1,2})?$/', 'client');
+                $mform->addRule($name."[$index]", get_string('errorfielddecimal', 'local_gugcat'), 'regex', '/^[0-9]+(\.[0-9]{1,2})?$/', 'server');
+            }
             $html = html_writer::end_tag('td');
             $html .= html_writer::end_tag('tr');
         }
