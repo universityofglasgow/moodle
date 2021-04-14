@@ -148,7 +148,7 @@ class coursegradeform extends moodleform {
         if($data['setting'] == 1){
             $newgrade = $data['override'];
             // Grademax is always 100 for subcategory grade point
-            if ($data['gradetype'] == GRADE_TYPE_VALUE && is_numeric($newgrade) && $newgrade > $data['grademax']) {
+            if ($data['gradetype'] == GRADE_TYPE_VALUE && is_numeric($newgrade) && $newgrade > 100) {
                 $errors['override'] = get_string('errorinputpoints', 'local_gugcat');
             } 
         }
