@@ -146,6 +146,7 @@ class grade_aggregation{
                     $grades = $item->grades;
                     $pg = isset($grades->provisional[$student->id]) ? $grades->provisional[$student->id] : null;
                     $gb = isset($grades->gradebook[$student->id]) ? $grades->gradebook[$student->id] : null;
+                    $ncg = isset($grades->converted[$student->id]) ? $grades->converted[$student->id] : null;
                     $grd = (isset($pg) && !is_null($pg->finalgrade)) ? $pg->finalgrade 
                     : (isset($pg) && !is_null($pg->rawgrade) ? $pg->rawgrade 
                     : ((isset($gb) && !is_null($gb->grade)) ? $gb->grade : null)); 
@@ -211,6 +212,8 @@ class grade_aggregation{
                     $grdobj->is_child = local_gugcat::is_child_activity($item) ? true : false;
                     $grdobj->grade = $grade;
                     $grdobj->originalgrade = is_null($scaleid) ? $grade : $grdvalue;
+                    $grdobj->nonconvertedgrade = (isset($ncg) && !is_null($ncg->finalgrade)) ? $ncg->finalgrade 
+                                                                                           : (isset($ncg) && !is_null($ncg->rawgrade) ? $ncg->rawgrade : null);
                     $weightcoef1 = $item->gradeitem->aggregationcoef; //Aggregation coeficient used for weighted averages or extra credit
                     $weightcoef2 = $item->gradeitem->aggregationcoef2; //Aggregation coeficient used for weighted averages only
                     $originalweight = ((float)$weightcoef1 > 0) ? (float)$weightcoef1 : (float)$weightcoef2;
@@ -687,8 +690,10 @@ class grade_aggregation{
         foreach($modules as $cm) {
             $weight = preg_replace('!\s+!', '_', $cm->name).'_weighting';
             $alpha = preg_replace('!\s+!', '_', $cm->name).'_alphanumeric_grade';
-            $numeric = preg_replace('!\s+!', '_', $cm->name).'_numeric_grade';
-            array_push($activities, array($weight, $alpha, $numeric));
+            $is_points = is_null($cm->gradeitem->scaleid);
+            $max_grade = (int)$cm->gradeitem->grademax;
+            $numeric = preg_replace('!\s+!', '_', $cm->name). (($is_points) ? '_numeric_points_max(' . $max_grade . ')' : '_numeric_grade');
+            array_push($activities, array($weight, $alpha, $numeric, $is_points));
             array_push($columns, ...array($weight, $alpha, $numeric));
         }
         //Process the data to be iterated
@@ -709,9 +714,13 @@ class grade_aggregation{
             $student->{'%_complete'} = $row->completed;
             $student->resit_required = is_null($row->resit) ? 'N' : 'Y';
             foreach($activities as $key=>$act) {
-                $student->{$act[0]} = $row->grades[$key]->originalweight.'%';//weight
-                $student->{$act[1]} = $row->grades[$key]->grade; //alphanumeric
-                $student->{$act[2]} = local_gugcat::is_admin_grade(array_search($row->grades[$key]->grade, local_gugcat::$GRADES)) ? get_string('nogradeweight', 'local_gugcat') : $row->grades[$key]->originalgrade;//numeric
+                $is_converted = !is_null($row->grades[$key]->nonconvertedgrade);
+                $is_points = $act[3];
+                $student->{$act[0]} = $row->grades[$key]->originalweight.'%'; //weight
+                $student->{$act[1]} = ($is_converted || !$is_points) ? $row->grades[$key]->grade : get_string('nogradeweight', 'local_gugcat'); //alphanumeric
+                $is_admin_grade = local_gugcat::is_admin_grade(array_search($row->grades[$key]->grade,local_gugcat::$GRADES));
+                $student->{$act[2]} = $is_admin_grade ? get_string('nogradeweight', 'local_gugcat')
+                                                      : ($is_converted ? $row->grades[$key]->nonconvertedgrade : $row->grades[$key]->rawgrade); //numeric
             }
             array_push($array, $student);
         }
