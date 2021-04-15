@@ -159,14 +159,16 @@ class grade_aggregation{
                             // Set the grade type and scale id of the sub category column
                             $item->scaleid = $subcatgrd->scaleid;
                             $item->gradeitem->gradetype = $subcatgrd->gradetype;                            
+                            $item->gradeitem->grademax = $subcatgrd->grademax;                            
                         }
                         if($error){
                             $errors[$item->gradeitemid] = $error;
                         }
                     }
                     $gt = $item->gradeitem->gradetype;
+                    $gm = $item->gradeitem->grademax;
                     $scaleid = is_null($item->scaleid) ? null : $item->scaleid;
-                    $is_scale = !is_null($scaleid) && local_gugcat::is_scheduleAscale($gt, $item->gradeitem->grademax) && isset($pg);
+                    $is_scale = !is_null($scaleid) && local_gugcat::is_scheduleAscale($gt, $gm) && isset($pg);
 
                     local_gugcat::set_grade_scale($scaleid);
                     local_gugcat::is_child_activity($item) || $item->is_converted ? null: $gradetypes[] = intval($gt);
@@ -175,6 +177,7 @@ class grade_aggregation{
                     $grdvalue = get_string('nograderecorded', 'local_gugcat');
                     $grade = ($grade === (float)0) ? number_format(0, 3) : $grade;
                     if($item->is_converted && !is_null($grd)){
+                        $is_scale = true;
                         $grade = local_gugcat::convert_grade($grd, null, $item->gradeitem->iteminfo);
                     }
                     $weight = local_gugcat::is_child_activity($item) ? 0 : (!is_null($pg) ? (float)$pg->information : 0); //get weight from information column of provisional grades
@@ -350,8 +353,9 @@ class grade_aggregation{
                 $DB->set_field('grade_items', 'calculation', $subcatobj->aggregation, array('id'=>$pgobj->itemid));
             }
 
-            // Overall gradetype and scaleid to be used in subcat grade
+            // Overall gradetype, grademax and scaleid to be used in subcat grade
             $gradetype = null;
+            $grademax = null;
             $scaleid = null;
             // Array of components' grade items to be used in the calculation
             $grditems = array_column($filtered, 'gradeitem', 'gradeitemid');
@@ -367,9 +371,11 @@ class grade_aggregation{
                 if($gi->gradetype == GRADE_TYPE_VALUE){
                     $subcatobj->gradeitem->gradetype = GRADE_TYPE_VALUE;
                     $gradetype = GRADE_TYPE_VALUE;
+                    $grademax = $subcatobj->gradeitem->grademax;
                 }else if(count(array_unique($grademaxs)) == 1 && local_gugcat::is_scheduleAscale($gi->gradetype, $gi->grademax)){
                     $subcatobj->gradeitem->gradetype = GRADE_TYPE_SCALE;
                     $gradetype = GRADE_TYPE_SCALE;
+                    $grademax = $gi->grademax;
                     $is_schedule_a = false;
                     foreach($grditems as $item){
                         if ($gi->scaleid != $item->scaleid){
@@ -394,6 +400,7 @@ class grade_aggregation{
             if($pgobj->overridden != 0){
                 $grdobj->grade = $grd;
                 $grdobj->gradetype = $gradetype;
+                $grdobj->grademax = $grademax;
                 $grdobj->scaleid = $scaleid;
                 if($subcatobj->is_converted){
                     $grdobj->grade = grade_converter::convert($subcatobj->conversion, $grd);
@@ -444,6 +451,7 @@ class grade_aggregation{
             }
             $grdobj->grade = $calculatedgrd;
             $grdobj->gradetype = $gradetype;
+            $grdobj->grademax = $grademax;
             $grdobj->scaleid = $scaleid;
             return array($grdobj, true, null);
         }else if((isset($subcatobj->grades->gradebook[$userid]) && $subcatobj->grades->gradebook[$userid])){
@@ -495,19 +503,18 @@ class grade_aggregation{
         $subcatgt = $subcatobj->gradeitem->gradetype;
         $subcatgmax = 100;
         $subcatgmin = 0;
+        $agg_grade = null; //Aggregated grade
+        $grades = self::normalize_grades($grade_values, $items);
         switch ($aggregationtype) {
             case GRADE_AGGREGATE_MIN:
-                return min($grade_values);
+                $agg_grade = min($grades);
+                break;
             case GRADE_AGGREGATE_MAX:
-                $grades = self::normalize_grades($grade_values, $items);
                 $agg_grade = max($grades);
-                return ($subcatgt == GRADE_TYPE_VALUE) 
-                        ? grade_grade::standardise_score($agg_grade, $subcatgmin, $subcatgmax, 0, 100)
-                        : $agg_grade;
+                break;
             case GRADE_AGGREGATE_WEIGHTED_MEAN:// Weighted average of all existing final grades, weight specified in coef
                 $weightsum = 0;
                 $sum = 0;
-                $grades = self::normalize_grades($grade_values, $items);
                 foreach ($grades as $itemid=>$grade_value) {
                     if (!isset($items[$itemid]) || $items[$itemid]->aggregationcoef <= 0) {
                         continue;
@@ -516,19 +523,50 @@ class grade_aggregation{
                     $sum       += $items[$itemid]->aggregationcoef * $grade_value;
                 }
                 $agg_grade = ($weightsum == 0) ? null : $sum / $weightsum;
-                return ($subcatgt == GRADE_TYPE_VALUE) 
-                        ? grade_grade::standardise_score($agg_grade, $subcatgmin, $subcatgmax, 0, 100)
-                        : $agg_grade;
+                break;
+            case GRADE_AGGREGATE_SUM:
+                $agg_grade = array_sum($grades);
+                break;
+            case GRADE_AGGREGATE_MEDIAN:
+                sort($grades);
+                $count = count($grades);
+                $middleval = floor(($count-1)/2);
+                if ($count % 2) {
+                    $agg_grade = $grades[$middleval];
+                } else {
+                    $low = $grades[$middleval];
+                    $high = $grades[$middleval+1];
+                    $agg_grade = (($low+$high)/2);
+                }
+                break;
+            case GRADE_AGGREGATE_MODE:
+                // the most common value
+                // array_count_values only counts INT and STRING, so if grades are floats we must convert them to string
+                $converted_grade_values = array();
+                foreach ($grades as $k => $gv) {
+                    if (!is_int($gv) && !is_string($gv)) {
+                        $converted_grade_values[$k] = (string) $gv;
+                    } else {
+                        $converted_grade_values[$k] = $gv;
+                    }
+                }
+
+                $freq = array_count_values($converted_grade_values);
+                arsort($freq);                      // sort by frequency keeping keys
+                $top = reset($freq);               // highest frequency count
+                $modes = array_keys($freq, $top);  // search for all modes (have the same highest count)
+                rsort($modes, SORT_NUMERIC);       // get highest mode
+                $agg_grade = reset($modes);
+                break;
             case GRADE_AGGREGATE_MEAN:
             default:
                 $num = count($grade_values);
-                $grades = self::normalize_grades($grade_values, $items);
                 $sum = array_sum($grades);
-                $agg_grade = $sum / $num;                
-                return ($subcatgt == GRADE_TYPE_VALUE) 
-                        ? grade_grade::standardise_score($agg_grade, $subcatgmin, $subcatgmax, 0, 100)
-                        : $agg_grade;
+                $agg_grade = $sum / $num;
         }
+        return ($subcatgt == GRADE_TYPE_VALUE) 
+            ? grade_grade::standardise_score($agg_grade, $subcatgmin, $subcatgmax, 0, 100)
+            : $agg_grade;
     }
 
     /**

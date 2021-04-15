@@ -32,7 +32,7 @@ class coursegradeform extends moodleform {
     //Add elements to form
     public function definition() {
         $act = optional_param('activityid', null, PARAM_INT);
-        if(!is_null($act)){
+        if(!is_null($act) && $act != 0){
             $grade = local_gugcat::$GRADES;
         }else{
             $grade = local_gugcat::$GRADES + grade_aggregation::$AGGRADE;
