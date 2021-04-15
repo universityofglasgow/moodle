@@ -276,8 +276,11 @@ class local_gugcat_renderer extends plugin_renderer_base {
             array('data-categoryid' => $act->id, 'type' => 'button', 'class' => 'btn btn-colexp'));
             $convertgrdparams = "?id=$courseid&activityid=$act->gradeitemid&page=$page" . $historyeditcategory;
             $is_imported = false;
-            if($act->gradeitem->gradetype == GRADE_TYPE_VALUE && $act->modname == 'category'){
-                $is_imported = local_gugcat::get_grade_item_id($courseid, $act->id, get_string('subcategorygrade', 'local_gugcat'));
+            if($act->modname == 'category'){
+                $is_converted = !is_null($act->gradeitem->iteminfo) && !empty($act->gradeitem->iteminfo);
+                if($act->gradeitem->gradetype == GRADE_TYPE_VALUE || $is_converted){
+                    $is_imported = local_gugcat::get_grade_item_id($courseid, $act->id, get_string('subcategorygrade', 'local_gugcat'));
+                }
             }
             $header = $act->name.'<br/>'.($weight * 100).'%';
             $header = html_writer::tag('span', $header, array('class' => 'sortable')).($act->modname == 'category' ? ($is_imported ? $this->context_actions(null, null, false, $convertgrdparams, false, true).$toggleicon : $toggleicon): null);

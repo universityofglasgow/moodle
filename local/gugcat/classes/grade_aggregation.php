@@ -212,8 +212,8 @@ class grade_aggregation{
                     $grdobj->is_child = local_gugcat::is_child_activity($item) ? true : false;
                     $grdobj->grade = $grade;
                     $grdobj->originalgrade = is_null($scaleid) ? $grade : $grdvalue;
-                    $grdobj->nonconvertedgrade = (isset($ncg) && !is_null($ncg->finalgrade)) ? $ncg->finalgrade 
-                                                                                           : (isset($ncg) && !is_null($ncg->rawgrade) ? $ncg->rawgrade : null);
+                    $grdobj->nonconvertedgrade = (isset($ncg) && !is_null($ncg->finalgrade)) 
+                    ? $ncg->finalgrade : (isset($ncg) && !is_null($ncg->rawgrade) ? $ncg->rawgrade : null);
                     $weightcoef1 = $item->gradeitem->aggregationcoef; //Aggregation coeficient used for weighted averages or extra credit
                     $weightcoef2 = $item->gradeitem->aggregationcoef2; //Aggregation coeficient used for weighted averages only
                     $originalweight = ((float)$weightcoef1 > 0) ? (float)$weightcoef1 : (float)$weightcoef2;
@@ -332,10 +332,6 @@ class grade_aggregation{
             foreach ($actgrds as $id=>$grades) {
                 // Get provisional grades $pg from child assessments
                 $pg = isset($grades->provisional[$userid]) ? $grades->provisional[$userid] : null;
-                // If component is converted, get the original grade
-                if(isset($grades->converted)){
-                    $pg = isset($grades->converted[$userid]) ? $grades->converted[$userid] : null;
-                }
                 // Get gradebook grades $gb from child assessments
                 $gb = isset($grades->gradebook[$userid]) ? $grades->gradebook[$userid] : null;
                 $grd_ = (isset($pg) && !is_null($pg->finalgrade)) ? $pg->finalgrade 
@@ -367,12 +363,29 @@ class grade_aggregation{
             $scaleid = null;
             // Array of components' grade items to be used in the calculation
             $grditems = array_column($filtered, 'gradeitem', 'gradeitemid');
-            
-            // Check if components grade types are the same
+
+            $errstr = get_string('aggregationwarningcomponents', 'local_gugcat');
+            $is_schedule_a = false;
+            $firstgi = null;
+            // Change gradetype and grademax of gradeitems that are converted
+            foreach($grditems as $item){
+                if(is_null($firstgi)){
+                    $firstgi = $item;
+                }
+                if ($firstgi->scaleid != $item->scaleid){
+                    $is_schedule_a = true;
+                }
+                $is_converted = !is_null($item->iteminfo) && !empty($item->iteminfo);
+                if($item->gradetype == GRADE_TYPE_VALUE && $is_converted){
+                    $item->gradetype = GRADE_TYPE_SCALE;
+                    $item->grademax = '23.00000';
+                }
+            }
+
             $gradetypes = array_column($grditems, 'gradetype', 'id');
             $grademaxs = array_column($grditems, 'grademax', 'id');
-            $errstr = get_string('aggregationwarningcomponents', 'local_gugcat');
-            
+
+            // Check if components grade types are the same
             if(count(array_unique($gradetypes)) == 1){
                 // Get first grade item
                 $gi = $grditems[key($grditems)];
@@ -384,12 +397,6 @@ class grade_aggregation{
                     $subcatobj->gradeitem->gradetype = GRADE_TYPE_SCALE;
                     $gradetype = GRADE_TYPE_SCALE;
                     $grademax = $gi->grademax;
-                    $is_schedule_a = false;
-                    foreach($grditems as $item){
-                        if ($gi->scaleid != $item->scaleid){
-                            $is_schedule_a = true;
-                        }
-                    }
                     $scaleid = $is_schedule_a ? null : $gi->scaleid;
                 }else{
                     if(!is_null($grd)){
