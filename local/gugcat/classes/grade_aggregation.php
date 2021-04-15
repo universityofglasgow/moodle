@@ -485,6 +485,7 @@ class grade_aggregation{
             }
             $grdobj->grade = in_array(0, $studentgrades) ? null : 0;
             $grdobj->gradetype = $subcatobj->gradeitem->gradetype;
+            $grdobj->grademax = $subcatobj->gradeitem->grademax;
             $grdobj->scaleid = $subcatobj->gradeitem->scaleid;
             return array($grdobj, true, null);
         }
