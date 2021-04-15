@@ -540,7 +540,7 @@ class grade_aggregation{
                 $agg_grade = ($weightsum == 0) ? null : $sum / $weightsum;
                 break;
             case GRADE_AGGREGATE_SUM:
-                $agg_grade = array_sum($grades);
+                $agg_grade = array_sum($grades) / count($grades);
                 break;
             case GRADE_AGGREGATE_MEDIAN:
                 sort($grades);
