@@ -307,41 +307,42 @@ class grade_aggregation{
      */
     public static function get_aggregated_grade($userid, $subcatobj, $gradeitems){
         global $DB;
-        if(isset($subcatobj->grades->provisional[$userid]) && $pgobj = $subcatobj->grades->provisional[$userid]){
-            $categoryid = $subcatobj->id;
-            $grdobj = new stdClass();
-            // Get the provisional grade of the sub cat total
-            $grd = (!is_null($pgobj->finalgrade)) ? $pgobj->finalgrade 
-                : (!is_null($pgobj->rawgrade) ? $pgobj->rawgrade 
-                : null);
+        $pgobj = isset($subcatobj->grades->provisional[$userid]) ? $subcatobj->grades->provisional[$userid] : null;
 
-            // Get child grade items
-            $filtered = array_filter($gradeitems, function ($gi) use ($categoryid) {
-                return $gi->gradeitem->categoryid == $categoryid;
-            });
+        $categoryid = $subcatobj->id;
+        $grdobj = new stdClass();
+        // Get the provisional grade of the sub cat total
+        $grd = (isset($pgobj) && !is_null($pgobj->finalgrade)) ? $pgobj->finalgrade 
+            : (isset($pgobj) && !is_null($pgobj->rawgrade) ? $pgobj->rawgrade : null);
 
-            // Return grade = null if there are no children
-            if(count($filtered) == 0){
-                return array(null, false, null);
-            }
+        // Get child grade items
+        $filtered = array_filter($gradeitems, function ($gi) use ($categoryid) {
+            return $gi->gradeitem->categoryid == $categoryid;
+        });
 
-            // Filter child grade items object to grades
-            $actgrds = array_column($filtered, 'grades', 'gradeitemid');
-            
-            $studentgrades = array();
-            foreach ($actgrds as $id=>$grades) {
-                // Get provisional grades $pg from child assessments
-                $pg = isset($grades->provisional[$userid]) ? $grades->provisional[$userid] : null;
-                // Get gradebook grades $gb from child assessments
-                $gb = isset($grades->gradebook[$userid]) ? $grades->gradebook[$userid] : null;
-                $grd_ = (isset($pg) && !is_null($pg->finalgrade)) ? $pg->finalgrade 
-                : (isset($pg) && !is_null($pg->rawgrade) ? $pg->rawgrade 
-                : ((isset($gb) && !is_null($gb->grade)) ? $gb->grade : null)); 
-                $studentgrades[$id] = intval($grd_);
-            }
-            $is_highest_grade = $subcatobj->aggregation == GRADE_AGGREGATE_MAX;
+        // Return grade = null if there are no children
+        if(count($filtered) == 0){
+            return array(null, false, null);
+        }
 
-            // If calculation field is empty, then update it with aggregation type
+        // Filter child grade items object to grades
+        $actgrds = array_column($filtered, 'grades', 'gradeitemid');
+        
+        $studentgrades = array();
+        foreach ($actgrds as $id=>$grades) {
+            // Get provisional grades $pg from child assessments
+            $pg = isset($grades->provisional[$userid]) ? $grades->provisional[$userid] : null;
+            // Get gradebook grades $gb from child assessments
+            $gb = isset($grades->gradebook[$userid]) ? $grades->gradebook[$userid] : null;
+            $grd_ = (isset($pg) && !is_null($pg->finalgrade)) ? $pg->finalgrade 
+            : (isset($pg) && !is_null($pg->rawgrade) ? $pg->rawgrade 
+            : ((isset($gb) && !is_null($gb->grade)) ? $gb->grade : null)); 
+            $studentgrades[$id] = intval($grd_);
+        }
+        $is_highest_grade = $subcatobj->aggregation == GRADE_AGGREGATE_MAX;
+
+        // If calculation field is empty, then update it with aggregation type
+        if($pgobj){
             is_null($subcatobj->aggregation_type) ? $DB->set_field('grade_items', 'calculation', $subcatobj->aggregation, array('id'=>$pgobj->itemid)) : null;
             $scale = $subcatobj->is_converted ? $subcatobj->gradeitem->iteminfo : null;
             if(!is_null($subcatobj->aggregation_type) && $subcatobj->aggregation_type != $subcatobj->aggregation){
@@ -357,150 +358,119 @@ class grade_aggregation{
                 //update calculation field with aggregation type
                 $DB->set_field('grade_items', 'calculation', $subcatobj->aggregation, array('id'=>$pgobj->itemid));
             }
+        }
 
-            // Overall gradetype, grademax and scaleid to be used in subcat grade
-            $gradetype = null;
-            $grademax = null;
-            $scaleid = null;
-            // Array of components' grade items to be used in the calculation
-            $grditems = array_column($filtered, 'gradeitem', 'gradeitemid');
+        // Overall gradetype, grademax and scaleid to be used in subcat grade
+        $gradetype = null;
+        $grademax = null;
+        $scaleid = null;
+        // Array of components' grade items to be used in the calculation
+        $grditems = array_column($filtered, 'gradeitem', 'gradeitemid');
 
-            $errstr = get_string('aggregationwarningcomponents', 'local_gugcat');
-            $is_schedule_a = false;
-            $firstgi = null;
-            // Change gradetype and grademax of gradeitems that are converted
-            foreach($grditems as $item){
-                if(is_null($firstgi)){
-                    $firstgi = $item;
-                }
-                if ($firstgi->scaleid != $item->scaleid){
-                    $is_schedule_a = true;
-                }
-                $is_converted = !is_null($item->iteminfo) && !empty($item->iteminfo);
-                if($item->gradetype == GRADE_TYPE_VALUE && $is_converted){
-                    $item->gradetype = GRADE_TYPE_SCALE;
-                    $item->grademax = '23.00000';
-                }
+        $errstr = get_string('aggregationwarningcomponents', 'local_gugcat');
+        $is_schedule_a = false;
+        $firstgi = null;
+        // Change gradetype and grademax of gradeitems that are converted
+        foreach($grditems as $item){
+            if(is_null($firstgi)){
+                $firstgi = $item;
             }
+            if ($firstgi->scaleid != $item->scaleid){
+                $is_schedule_a = true;
+            }
+            $is_converted = !is_null($item->iteminfo) && !empty($item->iteminfo);
+            if($item->gradetype == GRADE_TYPE_VALUE && $is_converted){
+                $item->gradetype = GRADE_TYPE_SCALE;
+                $item->grademax = '23.00000';
+            }
+        }
 
-            $gradetypes = array_column($grditems, 'gradetype', 'id');
-            $grademaxs = array_column($grditems, 'grademax', 'id');
+        $gradetypes = array_column($grditems, 'gradetype', 'id');
+        $grademaxs = array_column($grditems, 'grademax', 'id');
 
-            // Check if components grade types are the same
-            if(count(array_unique($gradetypes)) == 1){
-                // Get first grade item
-                $gi = $grditems[key($grditems)];
-                if($gi->gradetype == GRADE_TYPE_VALUE){
-                    $subcatobj->gradeitem->gradetype = GRADE_TYPE_VALUE;
-                    $gradetype = GRADE_TYPE_VALUE;
-                    $grademax = $subcatobj->gradeitem->grademax;
-                }else if(count(array_unique($grademaxs)) == 1 && local_gugcat::is_scheduleAscale($gi->gradetype, $gi->grademax)){
-                    $subcatobj->gradeitem->gradetype = GRADE_TYPE_SCALE;
-                    $gradetype = GRADE_TYPE_SCALE;
-                    $grademax = $gi->grademax;
-                    $scaleid = $is_schedule_a ? null : $gi->scaleid;
-                }else{
-                    if(!is_null($grd)){
-                        local_gugcat::update_grade($userid, $pgobj->itemid, null, '');
-                    }
-                    return array(null, true, $errstr);
-                }
+        // Check if components grade types are the same
+        if(count(array_unique($gradetypes)) == 1){
+            // Get first grade item
+            $gi = $grditems[key($grditems)];
+            if($gi->gradetype == GRADE_TYPE_VALUE){
+                $subcatobj->gradeitem->gradetype = GRADE_TYPE_VALUE;
+                $gradetype = GRADE_TYPE_VALUE;
+                $grademax = $subcatobj->gradeitem->grademax;
+            }else if(count(array_unique($grademaxs)) == 1 && local_gugcat::is_scheduleAscale($gi->gradetype, $gi->grademax)){
+                $subcatobj->gradeitem->gradetype = GRADE_TYPE_SCALE;
+                $gradetype = GRADE_TYPE_SCALE;
+                $grademax = $gi->grademax;
+                $scaleid = $is_schedule_a ? null : $gi->scaleid;
             }else{
-                if(!is_null($grd)){
+                if($pgobj && !is_null($grd)){
                     local_gugcat::update_grade($userid, $pgobj->itemid, null, '');
                 }
                 return array(null, true, $errstr);
             }
+        }else{
+            if($pgobj && !is_null($grd)){
+                local_gugcat::update_grade($userid, $pgobj->itemid, null, '');
+            }
+            return array(null, true, $errstr);
+        }
 
-            // Return provisional grade if overridden
-            if($pgobj->overridden != 0){
-                $grdobj->grade = $grd;
-                $grdobj->gradetype = $gradetype;
-                $grdobj->grademax = $grademax;
-                $grdobj->scaleid = $scaleid;
-                if($subcatobj->is_converted){
-                    $grdobj->grade = grade_converter::convert($subcatobj->conversion, $grd);
-                }
-                return array($grdobj, false, null);
-            }
-
-            // Aggregate only graded
-            if($subcatobj->aggregateonlygraded == 1){
-                $studentgrades = array_filter($studentgrades);
-            }
-
-            // If drop lowest is not empty, remove the n number of lowest grades, including -1, -2
-            if($subcatobj->droplow > 0){
-                asort($studentgrades, SORT_NUMERIC);
-                $studentgrades = array_slice($studentgrades, $subcatobj->droplow, count($studentgrades), true);
-            }
-
-            // Check if $studentgrades still have admingrades, if yes, return admin grades instead
-            if(in_array(NON_SUBMISSION, $studentgrades) && !$is_highest_grade){
-                $calculatedgrd = NON_SUBMISSION;
-            }else if(in_array(MEDICAL_EXEMPTION, $studentgrades) && !$is_highest_grade){
-                $calculatedgrd = MEDICAL_EXEMPTION;
-            }else{
-                // If $studentgrades dont have admin grades, proceed to calculation
-                $calculatedgrd = self::calculate_grade($subcatobj, $studentgrades, $grditems);
-            }
-
-            // If subcategory is converted, convert the calculated grade
-            if($subcatobj->is_converted){
-                $calculatedgrd = grade_converter::convert($subcatobj->conversion, $calculatedgrd);
-            }
-            if(isset($calculatedgrd) && $grd != $calculatedgrd){
-                //if subcategory is new then update grade with "import" notes for grade history.
-                if(is_null($grd) && !$subcatobj->is_converted){
-                    $notes = 'import';
-                    local_gugcat::update_grade($userid, $pgobj->itemid, $calculatedgrd, $notes);
-                    foreach($actgrds as $id=>$grades){
-                        if(isset($grades->provisional[$userid]) && $pg = $grades->provisional[$userid]){
-                            // Only get provisional grades $pg from child assessments
-                            local_gugcat::update_components_notes($userid, $pg->itemid, $notes);
-                        }        
-                    }   
-                }else{
-                    local_gugcat::update_grade($userid, $pgobj->itemid, $calculatedgrd, '');
-                }    
-            }
-            $grdobj->grade = $calculatedgrd;
+        // Return provisional grade if overridden
+        if($pgobj && $pgobj->overridden != 0){
+            $grdobj->grade = $grd;
             $grdobj->gradetype = $gradetype;
             $grdobj->grademax = $grademax;
             $grdobj->scaleid = $scaleid;
-            return array($grdobj, true, null);
-        }else if((isset($subcatobj->grades->gradebook[$userid]) && $subcatobj->grades->gradebook[$userid])){
-            // Calculate assessment grades from gradebook if sub category is not yet imported.
-            $categoryid = $subcatobj->id;
-            $grdobj = new stdClass();
-            // Get child grade items
-            $filtered = array_filter($gradeitems, function ($gi) use ($categoryid) {
-                return $gi->gradeitem->categoryid == $categoryid;
-            });
-
-            // Return grade = null if there are no children
-            if(count($filtered) == 0){
-                return array(null, false, null);
+            if($subcatobj->is_converted){
+                $grdobj->grade = grade_converter::convert($subcatobj->conversion, $grd);
             }
-
-            // Filter child grade items object to grades
-            $actgrds = array_column($filtered, 'grades', 'gradeitemid');
-            $studentgrades = array();
-            foreach ($actgrds as $id=>$grades) {
-                // Only get grades from gradebook of child assessments
-                $gb = isset($grades->gradebook[$userid]) ? $grades->gradebook[$userid] : null;
-                if(is_null($gb)){
-                    continue;
-                }
-                $studentgrades[$id] = intval($gb->grade);
-            }
-            $grdobj->grade = in_array(0, $studentgrades) ? null : 0;
-            $grdobj->gradetype = $subcatobj->gradeitem->gradetype;
-            $grdobj->grademax = $subcatobj->gradeitem->grademax;
-            $grdobj->scaleid = $subcatobj->gradeitem->scaleid;
-            return array($grdobj, true, null);
+            return array($grdobj, false, null);
         }
-        return array(null, false, null);
+
+        // Aggregate only graded
+        if($subcatobj->aggregateonlygraded == 1){
+            $studentgrades = array_filter($studentgrades);
+        }
+
+        // If drop lowest is not empty, remove the n number of lowest grades, including -1, -2
+        if($subcatobj->droplow > 0){
+            asort($studentgrades, SORT_NUMERIC);
+            $studentgrades = array_slice($studentgrades, $subcatobj->droplow, count($studentgrades), true);
+        }
+
+        // Check if $studentgrades still have admingrades, if yes, return admin grades instead
+        if(in_array(NON_SUBMISSION, $studentgrades) && !$is_highest_grade){
+            $calculatedgrd = NON_SUBMISSION;
+        }else if(in_array(MEDICAL_EXEMPTION, $studentgrades) && !$is_highest_grade){
+            $calculatedgrd = MEDICAL_EXEMPTION;
+        }else{
+            // If $studentgrades dont have admin grades, proceed to calculation
+            $calculatedgrd = self::calculate_grade($subcatobj, $studentgrades, $grditems);
+        }
+
+        // If subcategory is converted, convert the calculated grade
+        if($subcatobj->is_converted){
+            $calculatedgrd = grade_converter::convert($subcatobj->conversion, $calculatedgrd);
+        }
+        if($pgobj && isset($calculatedgrd) && $grd != $calculatedgrd){
+            //if subcategory is new then update grade with "import" notes for grade history.
+            if(is_null($grd) && !$subcatobj->is_converted){
+                $notes = 'import';
+                local_gugcat::update_grade($userid, $pgobj->itemid, $calculatedgrd, $notes);
+                foreach($actgrds as $id=>$grades){
+                    if(isset($grades->provisional[$userid]) && $pg = $grades->provisional[$userid]){
+                        // Only get provisional grades $pg from child assessments
+                        local_gugcat::update_components_notes($userid, $pg->itemid, $notes);
+                    }        
+                }   
+            }else{
+                local_gugcat::update_grade($userid, $pgobj->itemid, $calculatedgrd, '');
+            }    
+        }
+        $grdobj->grade = $calculatedgrd;
+        $grdobj->gradetype = $gradetype;
+        $grdobj->grademax = $grademax;
+        $grdobj->scaleid = $scaleid;
+        return array($grdobj, true, null);
     }
 
     /**
