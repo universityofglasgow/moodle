@@ -113,6 +113,7 @@ if(!empty($totalactivities) || !empty($activities)){
         //Populate static $GRADES scales
         if($is_converted = $selectedmodule->gradeitem->iteminfo){
             local_gugcat::set_grade_scale(null, $is_converted);
+            $selectedmodule->is_converted = $is_converted;
         }else{
             local_gugcat::set_grade_scale($scaleid);
         }

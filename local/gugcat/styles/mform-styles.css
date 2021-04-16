@@ -109,6 +109,11 @@ textarea#id_notes.form-control {
     border-color: #0f6fc5;
 }
 
+#id_convertbutton{
+    background-color: #0f6fc5;
+    color: #fff;
+}
+
 [data-groupname="buttonarr"] > .form-inline {
     justify-content: flex-end;
     padding-right: 2em;
