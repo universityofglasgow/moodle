@@ -199,6 +199,8 @@ $string['eventrequireresit'] = 'Require Resit';
 $string['aggregation'] = 'N/A - Aggregation calculation function updated';
 $string['grade'] = 'N/A - Component grade(s) updated, see component grade history for more information';
 $string['import'] = 'N/A - Component grade(s) imported';
+$string['convertnew'] = 'N/A - Conversion Applied';
+$string['convertexist'] = 'N/A - Conversion Adjusted';
 
 //gcat grade category
 $string['gcat_category'] = 'DO NOT USE';

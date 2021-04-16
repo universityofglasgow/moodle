@@ -117,12 +117,14 @@ if ($fromform = $mform->get_data()) {
     //check if activity is a subcat component.'
     if($module->gradeitem->parent_category->parent === strval($categoryid)){
         $childactivity = $activityid;
-        $activityid = $DB->get_field('grade_items', 'id', array('courseid'=>$courseid, 'itemtype'=>'category', 'iteminstance'=>$module->gradeitem->categoryid));
+        $activity = $DB->get_record('grade_items', array('courseid'=>$courseid, 'itemtype'=>'category', 'iteminstance'=>$module->gradeitem->categoryid));
+        $activityid = $activity->id;
+        $scale = $activity->iteminfo;
         $subcatid = local_gugcat::get_grade_item_id($courseid, $module->gradeitem->categoryid, get_string('subcategorygrade', 'local_gugcat'));
         $fields = 'itemid, id, rawgrade, finalgrade, overridden';
         // Get provisional grades
         $grade = $DB->get_record('grade_grades', array('itemid' => $subcatid, 'userid'=>$studentid), $fields);
-        $notes = 'grade';
+        $notes = !is_null($scale) && !empty($scale) ? 'grade -'.$scale : 'grade';
         $grd = !is_null($grade->finalgrade) ? $grade->finalgrade 
         : (!is_null($grade->rawgrade) ? $grade->rawgrade 
         : null);  

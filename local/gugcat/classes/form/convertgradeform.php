@@ -46,6 +46,7 @@ class convertform extends moodleform {
         $is_converted = !is_null($activity->gradeitem->iteminfo) && !empty($activity->gradeitem->iteminfo);
         $defaulttype = $is_converted ? $activity->gradeitem->iteminfo : SCHEDULE_A;
         $existing = grade_converter::retrieve_grade_conversion($activity->gradeitemid);
+        $notes = $existing ? 'convertexist' : 'convertnew';
 
         $grades = grade_converter::process_defaults($activity->gradeitem->iteminfo == SCHEDULE_A, local_gugcat::$SCHEDULE_A, $existing);
         $schedB = grade_converter::process_defaults($activity->gradeitem->iteminfo == SCHEDULE_B, local_gugcat::$SCHEDULE_B, $existing);
@@ -95,6 +96,8 @@ class convertform extends moodleform {
         $mform->setType('childactivityid', PARAM_INT);
         $mform->addElement('hidden', 'grademax', intval($activity->gradeitem->grademax));
         $mform->setType('grademax', PARAM_INT);
+        $mform->addElement('hidden', 'notes', $notes);
+        $mform->setType('notes', PARAM_NOTAGS);
 
     }
 

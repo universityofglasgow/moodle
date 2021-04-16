@@ -215,13 +215,14 @@ if (isset($release)){
                     // If conversion is enabled, save the converted grade to provisional grade and original grade to converted grade.
                     $conversion = grade_converter::retrieve_grade_conversion($selectedmodule->gradeitemid);
                     $cg = grade_converter::convert($conversion, $grade);
-                    local_gugcat::update_grade($id, local_gugcat::$PRVGRADEID, $cg);
+                    local_gugcat::update_grade($id, local_gugcat::$PRVGRADEID, $cg, '');
                     $convertedgi = local_gugcat::get_grade_item_id($COURSE->id, $selectedmodule->gradeitemid, get_string('convertedgrade', 'local_gugcat'));
-                    local_gugcat::update_grade($id, $convertedgi, $grade);
+                    local_gugcat::update_grade($id, $convertedgi, $grade, '');
                 }
                 //check if child activities are existing
                 if(!empty($childactivities)){
                     $subcatid = local_gugcat::get_grade_item_id($courseid, $selectedmodule->gradeitem->categoryid, get_string('subcategorygrade', 'local_gugcat'));
+                    $scale = $totalactivities[$activityid]->gradeitem->iteminfo;
                     $fields = 'itemid, id, rawgrade, finalgrade, overridden';
                     // Get provisional grades
                     $grade = $DB->get_record('grade_grades', array('itemid' => $subcatid, 'userid'=>$id), $fields);
@@ -230,7 +231,7 @@ if (isset($release)){
                     : null);
                     //if subcat has a grade and it is not overridden.
                     if(isset($grd) && !is_null($grd) && $grade->overridden == 0){
-                        $notes = 'grade';
+                        $notes = !is_null($scale)  && !empty($scale) ? 'grade -'.$scale : 'grade';
                         local_gugcat::update_components_notes($id, $subcatid, $notes);
                         $prvgrds = local_gugcat::get_prvgrd_item_ids($courseid, $childactivities);
                         foreach($prvgrds as $prvgrd){
@@ -257,6 +258,7 @@ if (isset($release)){
 }else if(isset($importgrades)){
     if ($valid_import_activity){
         if(!empty($childactivities)){
+            $scale = $totalactivities[$activityid]->gradeitem->iteminfo;
             grade_capture::import_from_gradebook($courseid, $selectedmodule, $totalactivities);
             $subcatid = local_gugcat::get_grade_item_id($courseid, $selectedmodule->gradeitem->categoryid, get_string('subcategorygrade', 'local_gugcat'));
             foreach($students as $student){
@@ -268,7 +270,7 @@ if (isset($release)){
                 : null);
                 //if subcat has a grade and it is not overridden.
                 if(isset($grd) && !is_null($grd) && $grade->overridden == 0){
-                    $notes = 'import';
+                    $notes = !is_null($scale) && !empty($scale) ? 'import -'.$scale : 'import';
                     local_gugcat::update_components_notes($student->id, $subcatid, $notes);
                     $prvgrds = local_gugcat::get_prvgrd_item_ids($courseid, $childactivities);
                     foreach($prvgrds as $prvgrd){
@@ -332,6 +334,7 @@ if (isset($release)){
     if(!empty($importerror)){
         local_gugcat::notify_error('bulkimporterror');
     }else{
+        $scale = $totalactivities[$activityid]->gradeitem->iteminfo;
         // Proceed with bulk import
         grade_capture::import_from_gradebook($courseid, $childactivities, $totalactivities);
         $subcatid = local_gugcat::get_grade_item_id($courseid, $selectedmodule->gradeitem->categoryid, get_string('subcategorygrade', 'local_gugcat'));
@@ -345,7 +348,7 @@ if (isset($release)){
             : null);
             //if subcat has a grade and it is not overridden.
             if(isset($grd) && !is_null($grd) && $grade->overridden == 0){
-                $notes = 'import';
+                $notes = !is_null($scale) && !empty($scale) ? 'import -'.$scale : 'import';
                 local_gugcat::update_components_notes($student->id, $subcatid, $notes);
                 $prvgrds = local_gugcat::get_prvgrd_item_ids($courseid, $childactivities);
                 foreach($prvgrds as $prvgrd){

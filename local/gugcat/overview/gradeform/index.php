@@ -85,7 +85,6 @@ $student->cnum = $cnum; //candidate no.
 $student->id = $student->studentno; 
 $student->lastname = $student->surname; 
 $student->firstname = $student->forename;
-
 // Prepare the data displayed if subcat activity
 if(!is_null($activityid) && $formtype == OVERRIDE_GRADE_FORM){
     $subcatgrade = null;
@@ -129,12 +128,16 @@ if ($fromform = $mform->get_data()) {
         $itemname = get_string($is_subcat ? 'subcategorygrade' : 'aggregatedgrade', 'local_gugcat');
         if($gradeitemid = local_gugcat::get_grade_item_id($courseid, $id, $itemname)){
             $grade = !is_numeric($fromform->override) ? array_search(strtoupper($fromform->override), local_gugcat::$GRADES) : $fromform->override; 
-            local_gugcat::update_grade($studentid, $gradeitemid, $grade, $fromform->notes, time());
+            //if subcat get scaleid 
+            $scale = $is_subcat ? $subcatactivity->gradeitem->iteminfo : null;
+            //if scaleid is not empty or null, then add the scale to notes
+            $notes = !is_null($scale) && !empty($scale) ? $fromform->notes." -".$scale : $fromform->notes;
+            local_gugcat::update_grade($studentid, $gradeitemid, $grade, $notes, time());
             //also update notes for subcomponents
             if($is_subcat){
                 $prvgrades = local_gugcat::get_prvgrd_item_ids($courseid, $components);
                 foreach($prvgrades as $prvgrades){
-                    local_gugcat::update_components_notes($studentid, $prvgrades->id, $fromform->notes);
+                    local_gugcat::update_components_notes($studentid, $prvgrades->id, $notes);
                 }
             }
             //log of adjust course weight

@@ -22,6 +22,8 @@
  * @author     Accenture
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+use local_gugcat\grade_aggregation;
 use local_gugcat\grade_converter;
 
 require_once(__DIR__ . '/../../../config.php');
@@ -114,6 +116,9 @@ if($mform->is_cancelled()) {
                 grade_converter::convert_provisional_grades($gradeconvert, $module, $prvid);
                 grade_converter::delete_grade_conversion($modid);
                 grade_converter::save_grade_conversion($modid, $formdata->scale, $gradeconvert);
+                //put the scale in notes for grade conversion in grade history
+                $notes = $formdata->notes." -".$formdata->scale;
+                $is_subcat ? grade_aggregation::update_component_notes_for_all_students($prvid, $module->id, $notes) : null;
                 unset($SESSION->wantsurl);
                 redirect($returnurl);
                 $event = \local_gugcat\event\add_grade_converter::create($params);

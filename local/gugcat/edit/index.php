@@ -69,7 +69,6 @@ require_capability('local/gugcat:view', $coursecontext);
 $student = $DB->get_record('user', array('id'=>$studentid, 'deleted'=>0), '*', MUST_EXIST);
 $module = local_gugcat::get_activity($courseid, $modid);
 $is_converted = !is_null($module->gradeitem->iteminfo);
-
 $scaleid = $module->gradeitem->scaleid;
 
 if (is_null($scaleid) && local_gugcat::is_grademax22($module->gradeitem->gradetype, $module->gradeitem->grademax)){
@@ -126,10 +125,11 @@ if ($fromform = $mform->get_data()) {
     if($module->gradeitem->parent_category->parent === strval($categoryid)){
         //get subcategory gradeitem id
         $subcatid = local_gugcat::get_grade_item_id($courseid, $module->gradeitem->categoryid, get_string('subcategorygrade', 'local_gugcat'));
+        $scale = $DB->get_field('grade_items', 'iteminfo', array('courseid'=>$courseid, 'itemtype'=>'category', 'iteminstance'=>$module->gradeitem->categoryid));
         $fields = 'itemid, id, rawgrade, finalgrade, overridden';
         // Get provisional grades
         $grade = $DB->get_record('grade_grades', array('itemid' => $subcatid, 'userid'=>$studentid), $fields);
-        $notes = 'grade';
+        $notes = $scale && !empty($scale) ? 'grade -'.$scale : 'grade';
         $grd = !is_null($grade->finalgrade) ? $grade->finalgrade 
         : (!is_null($grade->rawgrade) ? $grade->rawgrade 
         : null);  

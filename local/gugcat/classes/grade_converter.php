@@ -83,6 +83,7 @@ class grade_converter{
                     $prvgrade->finalgrade = $converted;
                     $prvgrade->rawgrade = $converted;
                     $prvgrade->timemodified = time();
+                    $prvgrade->feedback = null;
                     $prvgrade->update();
                 }
             }

@@ -343,8 +343,9 @@ class grade_aggregation{
 
             // If calculation field is empty, then update it with aggregation type
             is_null($subcatobj->aggregation_type) ? $DB->set_field('grade_items', 'calculation', $subcatobj->aggregation, array('id'=>$pgobj->itemid)) : null;
+            $scale = $subcatobj->is_converted ? $subcatobj->gradeitem->iteminfo : null;
             if(!is_null($subcatobj->aggregation_type) && $subcatobj->aggregation_type != $subcatobj->aggregation){
-                $notes = 'aggregation';
+                $notes = !is_null($scale) && !empty($scale) ? 'aggregation -'.$scale : 'aggregation';
                 //update feedback field for subcat and child components prvgrade 
                 local_gugcat::update_components_notes($userid, $pgobj->itemid, $notes);
                 foreach($actgrds as $id=>$grades){
