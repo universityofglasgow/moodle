@@ -173,7 +173,8 @@ button .fa-caret-down{
 }
 
 .input-scale-pt{
-    margin-left: 5%;
+    margin-left: -10%;
+    margin-right: 10%;
 }
 
 .addnewgrade{

@@ -36,4 +36,13 @@ $functions = array(
         'ajax'          => true,
         'loginrequired' => true,
     ),
+
+    'local_gugcat_get_converter_template' => array(
+        'classname'   => 'local_gugcat\external',
+        'methodname'  => 'get_converter_template',
+        'description' => 'Retrieve converter template grades',
+        'type'        => 'read',
+        'ajax'          => true,
+        'loginrequired' => true,
+    ),
 );

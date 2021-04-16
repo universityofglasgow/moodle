@@ -33,16 +33,17 @@ defined('MOODLE_INTERNAL') || die();
 class grade_converter{
 
     /**
-     * Saves grade converter into gcat_grade_converter table
+     * Saves grade converter items into gcat_grade_converter table
+     * @param array $conversion
      * @param int $modid gradeitem id
-     * @param int $scale
-     * @param mixed $grades
+     * @param int $scale Scale type either schedule A or B (1/2)
      */
-    public static function save_grade_conversion($modid, $scale, $grades){
+    public static function save_grade_conversion($conversion, $modid = null, $scale = null){
         global $DB;
-
-        $DB->insert_records('gcat_grade_converter', $grades);
-        $DB->set_field('grade_items', 'iteminfo', $scale, array('id'=>$modid));
+        if(!is_null($modid) && !is_null($scale)){
+            $DB->set_field('grade_items', 'iteminfo', $scale, array('id'=>$modid));
+        }
+        return $DB->insert_records('gcat_grade_converter', $conversion);
     }
 
     /**
@@ -132,7 +133,7 @@ class grade_converter{
         return $grades;
     }
 
-     /**
+    /**
      * Converts grade from the custom grade conversion
      *
      * @param array $conversion List of grade element conversion
@@ -181,9 +182,37 @@ class grade_converter{
         // eg. lowest = G1 => 2 (-1), converted grade = G2 => 1
         // eg. lowest = H => 0, converted grade = H => 0
         if(is_null($convertedgrade)){
-            $grade = min(array_column($convs, 'grade'));
-            $convertedgrade = $grade == 0 ? 0 : intval($grade)-1;
+            $grade_ = empty($convs) ? $grade : min(array_column($convs, 'grade'));
+            $convertedgrade = empty($convs) ? $grade : ($grade_ == 0 ? 0 : intval($grade_)-1);
         }
         return $convertedgrade;
+    }
+
+    /**
+     * Returns array of grade converter templates 
+     *
+     * @param int $itemid
+     * @return array | false Array of grade elements for conversion
+     */
+    public static function get_conversion_templates(){
+        global $DB, $USER;
+        return $DB->get_records('gcat_converter_templates', array('userid'=>$USER->id));
+    }
+
+    
+    /**
+     * Saves new template in gcat_converter_templates table
+     * @param string $templatename
+     * @param int $scaletype Either schedule A or B (1/2)
+     * @return mixed array | false
+     */
+    public static function save_new_template($templatename, $scaletype){
+        global $DB, $USER;
+        $data = array(
+            'userid' => $USER->id,
+            'templatename' => $templatename,
+            'scaletype' => $scaletype,
+        );
+        return $DB->insert_record('gcat_converter_templates', $data);
     }
 }

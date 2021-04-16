@@ -94,7 +94,8 @@ $string['ignorerow'] = 'Ignore first row?';
 $string['importfile'] = 'Import File';
 $string['importgrades'] = 'Import Grades from Moodle';
 $string['importerror'] = 'Error: You are trying to import grades which are not in an accepted format. Please ensure all component grades are in either Schedule A, Schedule B or Points and re-import';
-$string['lowerbound'] = 'Lower Bound';
+$string['lowerboundper'] = 'Lower Bound <br> % Boundary';
+$string['lowerboundpt'] = 'Lower Bound <br> Points Boundary';
 $string['missinggrade'] = 'Missing grade(s)';
 $string['modaladjustweights'] = 'WARNING: The assessment weightings for this student do not total 100%. Do you wish to continue?';
 $string['modalimportgrades'] = 'Please note that grades have already been imported from Moodle. If you continue, you will overwrite all the grades. Do you wish to continue?';
@@ -106,6 +107,7 @@ $string['nograde'] = 'Pending information';
 $string['nograderecorded'] = 'No grade recorded';
 $string['nogradeimport'] = 'Awaiting Grade Import';
 $string['nogradeweight'] = 'N/A';
+$string['noteconversion'] = 'Please note that once conversion has taken place, it will not be possible to release assessment grades to students via Moodle or the Student Dashboard';
 $string['notes'] = 'Notes';
 $string['notesreason'] = 'Notes / Reason for Revision';
 $string['overrideerror'] = 'Override error: Assessment is not yet imported to GCAT.';
@@ -115,8 +117,15 @@ $string['overrideggregrade'] = 'Override aggregated course grade';
 $string['overridestudassgrade'] = "Override student's aggregated assessment grade";
 $string['overridestudgrade'] = "Override student's aggregated course grade";
 $string['percentcomplete'] = '% Complete';
+$string['pleaseprovidetemplatename'] = 'If you would like to save this conversion for future use, please provide a name for this conversion scale:';
 $string['pleasespecify'] = 'Please Specify';
 $string['pluginname'] = 'UofG Grade Capture and Aggregation Tool';
+$string['pointtooltip'] = '<i>Please ensure value is: 
+    <ul class="mb-0">
+        <li>Up to 2 decimal places</li>
+        <li>Doesn\' duplicate any other number</li>
+        <li>No greater than the maximum available points</li>
+    </ul></i>';
 $string['provisionalgrd'] = 'Provisional Grade';
 $string['reasonnewgrade'] = 'Reason for new grade';
 $string['reasonaddgrade'] = 'Reason for addtional grade';
@@ -131,8 +140,10 @@ $string['savechanges'] = 'Save changes';
 $string['schedulea'] = 'Schedule A';
 $string['scheduleb'] = 'Schedule B';
 $string['search'] = 'Search...';
+$string['selectconversion'] = 'Select conversion';
 $string['selectdelimiter'] = 'Select delimiter:';
 $string['selectfile'] = 'Select file:';
+$string['selectprevconv'] = 'Select previously stored conversion:';
 $string['selectscale'] = 'Select scale';
 $string['selectreason'] = 'Select reason:';
 $string['setupimportoptions'] = 'Setup import - Select import options';

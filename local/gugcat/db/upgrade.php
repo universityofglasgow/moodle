@@ -51,47 +51,82 @@ function xmldb_local_gugcat_upgrade($oldversion) {
     global $DB;
 
     $dbman = $DB->get_manager();
-    //create table gcat_grade_converter
-    $table = new xmldb_table('gcat_grade_converter');
-    //check if table is existing in DB, if not then create table
-    if(!$dbman->table_exists($table)){
-        $field1 = new xmldb_field('id', XMLDB_TYPE_INTEGER, '10',
-            XMLDB_UNSIGNED, XMLDB_NOTNULL, XMLDB_SEQUENCE, null, null);
-        $field2 = new xmldb_field('courseid', XMLDB_TYPE_INTEGER, '10',
-            XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null, null);
-        $field3 = new xmldb_field('itemid', XMLDB_TYPE_INTEGER, '10',
-            XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null, null);
-        $field4 = new xmldb_field('lowerboundary', XMLDB_TYPE_NUMBER, '10, 5',
-            XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null, null);
-        $field5 = new xmldb_field('grade', XMLDB_TYPE_INTEGER, '10',
-            XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null, null);
 
-        $table->addField($field1);
-        $table->addField($field2);
-        $table->addField($field3);
-        $table->addField($field4);
-        $table->addField($field5);
+    // ------- Table gcat_converter_templates starts here --------
 
-        $key1 = new xmldb_key('primary');
-        $key1->set_attributes(XMLDB_KEY_PRIMARY, array('id'), null, null);
-        $key2 = new xmldb_key('foreignkey1');
-        $key2->set_attributes(XMLDB_KEY_FOREIGN, array('courseid'), 'course', array('id')); 
-        $key3 = new xmldb_key('foreignkey2');
-        $key3->set_attributes(XMLDB_KEY_FOREIGN, array('itemid'), 'grade_items', array('id'));
-        $table->addKey($key1);
-        $table->addKey($key2);
-        $table->addKey($key3);
-        $dbman->create_table($table);
-    }
+    // Define table gcat_converter_templates to be created.
+    $table_tpl = new xmldb_table('gcat_converter_templates');
 
-    if ($oldversion < 2021041416) {
-        if ($dbman->table_exists($table)) {
-            $field = new xmldb_field('lowerboundary', XMLDB_TYPE_NUMBER, '10, 5',
-            XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null, null);
-            if ($dbman->field_exists($table, $field)) {
-                $dbman->change_field_type($table, $field);
-            }
+    // Define fields to table gcat_converter_templates.
+    $table_tpl_id = new xmldb_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+    $table_tpl_templatename = new xmldb_field('templatename', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, null);
+    $table_tpl_userid = new xmldb_field('userid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+    $table_tpl_scaletype = new xmldb_field('scaletype', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+
+    // Define keys to table gcat_converter_templates.
+    $table_tpl_key = new xmldb_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+
+    // ------- Table gcat_grade_converter starts here --------
+
+    // Define table gcat_grade_converter to be created.
+    $table_cvt = new xmldb_table('gcat_grade_converter');
+
+    // Define fields to table gcat_grade_converter.
+    $table_cvt_id = new xmldb_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+    $table_cvt_courseid = new xmldb_field('courseid', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+    $table_cvt_itemid = new xmldb_field('itemid', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+    $table_cvt_templateid = new xmldb_field('templateid', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+    $table_cvt_lowerboundary = new xmldb_field('lowerboundary', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+    $table_cvt_grade = new xmldb_field('grade', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+    
+    // Define keys to table gcat_grade_converter.
+    $table_cvt_key1 = new xmldb_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+    $table_cvt_key2 = new xmldb_key('gcat_grade_converter_fk', XMLDB_KEY_FOREIGN,  array('templateid'), 'gcat_converter_templates', array('id'));
+
+    // Define indexes to table gcat_grade_converter.
+    $table_cvt_index1 = new xmldb_index('courseid', XMLDB_INDEX_NOTUNIQUE, array('courseid'));
+    $table_cvt_index2 = new xmldb_index('itemid', XMLDB_INDEX_NOTUNIQUE, array('itemid'));
+
+    if ($oldversion < 2021041600) {
+
+        // Adding fields to table gcat_converter_templates.
+        $table_tpl->addField($table_tpl_id);
+        $table_tpl->addField($table_tpl_templatename);
+        $table_tpl->addField($table_tpl_userid);
+        $table_tpl->addField($table_tpl_scaletype);
+
+        // Adding keys to table gcat_converter_templates.
+        $table_tpl->addKey($table_tpl_key);
+
+        // Conditionally launch create table for gcat_converter_templates.
+        if (!$dbman->table_exists($table_tpl)) {
+            $dbman->create_table($table_tpl);
         }
+
+        // Adding fields to table gcat_grade_converter.
+        $table_cvt->addField($table_cvt_id);
+        $table_cvt->addField($table_cvt_courseid);
+        $table_cvt->addField($table_cvt_itemid);
+        $table_cvt->addField($table_cvt_templateid);
+        $table_cvt->addField($table_cvt_lowerboundary);
+        $table_cvt->addField($table_cvt_grade);
+
+        // Adding keys to table gcat_grade_converter.
+        $table_cvt->addKey($table_cvt_key1);
+        $table_cvt->addKey($table_cvt_key2);
+    
+        // Adding indexes to table gcat_grade_converter.
+        $table_cvt->addIndex($table_cvt_index1);
+        $table_cvt->addIndex($table_cvt_index2);
+        
+        // Conditionally launch create table for gcat_grade_converter.
+        if($dbman->table_exists($table_cvt)) {
+            $dbman->drop_table($table_cvt);
+        }
+        $dbman->create_table($table_cvt);
+
+        // Gugcat savepoint reached.
+        upgrade_plugin_savepoint(true, 2021041600, 'local', 'gugcat');
     }
 
     return true;

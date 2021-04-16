@@ -49,4 +49,17 @@ class api {
         $currentstate = local_gugcat::switch_display_of_assessment_on_student_dashboard($id, context_course::instance($id)->id);
         return ($currentstate == 1) ? true : false;
     }
+
+    /**
+     * Retrieve grade conversion template data.
+     *
+     * @param int $templateid Template id
+     * @return mixed || false
+     */
+    public static function get_converter_template_data($templateid) {
+        global $DB, $USER;
+        $template = $DB->get_record('gcat_converter_templates', array('id'=>$templateid, 'userid'=>$USER->id));
+        ($template) ? $template->conversion = $DB->get_records('gcat_grade_converter', array('templateid'=>$templateid)) : null;
+        return ($template) ? json_encode($template) : false;
+    }
 }

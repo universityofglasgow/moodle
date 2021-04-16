@@ -41,8 +41,16 @@ class convertform extends moodleform {
             GRADE_TYPE_VALUE => get_string('modgradetypepoint', 'grades'),
         );
 
+        $scales = array(
+            SCHEDULE_A => get_string('schedulea', 'local_gugcat'),
+            SCHEDULE_B => get_string('scheduleb', 'local_gugcat')
+        );
+
+        $dbtemplates = grade_converter::get_conversion_templates();
+        $templates = empty($dbtemplates) ? array() : array_column($dbtemplates, 'templatename', 'id');
+        $templates[0] = get_string('selectconversion', 'local_gugcat');
+
         $activity = $this->_customdata['activity'];
-        $scales = $this->_customdata['scales'];
         $is_converted = !is_null($activity->gradeitem->iteminfo) && !empty($activity->gradeitem->iteminfo);
         $defaulttype = $is_converted ? $activity->gradeitem->iteminfo : SCHEDULE_A;
         $existing = grade_converter::retrieve_grade_conversion($activity->gradeitemid);
@@ -68,6 +76,9 @@ class convertform extends moodleform {
         $mform->addElement('select', 'scale', get_string('selectscale', 'local_gugcat'), $scales, ['id' => 'select-scale', 'class' => 'mform-custom-select']); 
         $mform->setType('scale', PARAM_NOTAGS); 
         $mform->setDefault('scale', $defaulttype);
+        $mform->addElement('select', 'template', get_string('selectprevconv', 'local_gugcat'), $templates, ['id' => 'select-template', 'class' => 'mform-custom-select']); 
+        $mform->setType('template', PARAM_NOTAGS); 
+        $mform->setDefault('template', 0); 
         // Schedule A tables
         $mform->addElement('html', html_writer::start_tag('div', array('id' => 'table-schedulea', 'class' => 'row'))); 
         $this->setup_table($schedA1, $mform, 'schedA', $keysA1);
@@ -78,7 +89,12 @@ class convertform extends moodleform {
         $this->setup_table($schedB, $mform, 'schedB');
         $mform->addElement('html', html_writer::tag('div', null, array('class' => 'col'))); 
         $mform->addElement('html', html_writer::end_tag('div')); 
-       
+
+        $mform->addElement('html', html_writer::tag('p', get_string('noteconversion', 'local_gugcat'), array('class' => 'mt-3 font-weight-bold'))); 
+
+        $mform->addElement('text', 'templatename', get_string('pleaseprovidetemplatename', 'local_gugcat')); 
+        $mform->setType('templatename', PARAM_NOTAGS); 
+
         $mform->addElement('html', '</div>');
         $buttonarray = array();
         $buttonarray[] =& $mform->createElement('cancel', 'cancel', get_string('cancel'));
@@ -102,18 +118,31 @@ class convertform extends moodleform {
     }
 
     function setup_table($grades, $mform, $name, $keys = array()) {
-        $attributes = array(
-            'class' => 'input-scale-pt mb-0',
+        // Percent field attributes
+        $prcattr = array(
+            'class' => 'input-scale-pt mb-0 input-prc',
             'type' => 'number',
             'maxlength' => '6',
             'size' => '10'
+        );
+        // Point field attributes
+        $pointattr = array(
+            'class' => 'input-scale-pt mb-0 input-pt',
+            'type' => 'number',
+            'maxlength' => '6',
+            'size' => '10',
+            'data-toggle' => 'tooltip',
+            'data-placement' => 'right',
+            'data-html' => 'true',
+            'title' => get_string('pointtooltip', 'local_gugcat')
         );
         $mform->addElement('html', html_writer::start_tag('div', array('class' => 'col'))); 
         $html = html_writer::start_tag('table', array_merge(array('id'=>'gcat-table', 'class' => 'table')));
         $html .= html_writer::start_tag('thead');
         $html .= html_writer::start_tag('tr');   
-        $html .= html_writer::tag('th', html_writer::tag('span',  get_string('grade'), array('class' => 'sortable')));
-        $html .= html_writer::tag('th', html_writer::tag('span',  get_string('lowerbound', 'local_gugcat'), array('class' => 'sortable')));
+        $html .= html_writer::tag('th', get_string('grade'));
+        $html .= html_writer::tag('th', get_string('lowerboundper', 'local_gugcat'));
+        $html .= html_writer::tag('th', get_string('lowerboundpt', 'local_gugcat'));
         $html .= html_writer::end_tag('tr');
         $html .= html_writer::end_tag('thead');
         $html .= html_writer::start_tag('tbody');
@@ -123,7 +152,7 @@ class convertform extends moodleform {
             $html .= html_writer::tag('td', $grd->grade);
             $html .= html_writer::start_tag('td');
             $mform->addElement('html', $html); 
-            $mform->addElement('text', $name."[$index]", null, $attributes); 
+            $mform->addElement('text', $name."[$index]", null, $prcattr); 
             $mform->setDefault($name."[$index]", is_null($grd->lowerboundary) ? null : floatval($grd->lowerboundary) );
             $mform->setType($name."[$index]", PARAM_NOTAGS);
             $mform->addRule($name."[$index]", null, 'numeric', null, 'client');
@@ -133,6 +162,20 @@ class convertform extends moodleform {
             }else{
                 $mform->addRule($name."[$index]", get_string('errorfielddecimal', 'local_gugcat'), 'regex', '/^[0-9]+(\.[0-9]{1,2})?$/', 'client');
                 $mform->addRule($name."[$index]", get_string('errorfielddecimal', 'local_gugcat'), 'regex', '/^[0-9]+(\.[0-9]{1,2})?$/', 'server');
+            }
+            $html = html_writer::end_tag('td');
+            $html .= html_writer::start_tag('td');
+            $mform->addElement('html', $html); 
+            $mform->addElement('text', $name."_pt[$index]", null, $pointattr); 
+            $mform->setDefault($name."_pt[$index]", is_null($grd->lowerboundary) ? null : floatval($grd->lowerboundary) );
+            $mform->setType($name."_pt[$index]", PARAM_NOTAGS);
+            $mform->addRule($name."_pt[$index]", null, 'numeric', null, 'client');
+            if($index == 1){
+                $mform->addRule($name."_pt[$index]", get_string('errorfieldzero', 'local_gugcat'), 'regex', '/^[0]$/', 'client');
+                $mform->addRule($name."_pt[$index]", get_string('errorfieldzero', 'local_gugcat'), 'regex', '/^[0]$/', 'server');
+            }else{
+                $mform->addRule($name."_pt[$index]", get_string('errorfielddecimal', 'local_gugcat'), 'regex', '/^[0-9]+(\.[0-9]{1,2})?$/', 'client');
+                $mform->addRule($name."_pt[$index]", get_string('errorfielddecimal', 'local_gugcat'), 'regex', '/^[0-9]+(\.[0-9]{1,2})?$/', 'server');
             }
             $html = html_writer::end_tag('td');
             $html .= html_writer::end_tag('tr');

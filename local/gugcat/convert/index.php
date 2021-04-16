@@ -76,21 +76,18 @@ $params = array(
 );
 
 $module = local_gugcat::get_activity($courseid, $modid);
-$scales = array(
-    SCHEDULE_A => get_string('schedulea', 'local_gugcat'),
-    SCHEDULE_B => get_string('scheduleb', 'local_gugcat')
-);
+
 $returnurl = $indexurl;
 global $SESSION;
 if (!empty($SESSION->wantsurl)) {
     $returnurl = $SESSION->wantsurl;
 }
-$mform = new convertform(null, array('activity' => $module, 'scales' => $scales));
+$mform = new convertform(null, array('activity' => $module));
 if($mform->is_cancelled()) {
     unset($SESSION->wantsurl);
     redirect($returnurl);
 }else if ($formdata = $mform->get_data()) {
-    $grades = $formdata->scale == SCHEDULE_A ? $formdata->schedA : $formdata->schedB;
+    $grades = $formdata->scale == SCHEDULE_A ? $formdata->schedA_pt : $formdata->schedB_pt;
     $grades = array_filter($grades, 'strlen');
     if(empty($grades)){
         local_gugcat::notify_error('errorgraderequired');
@@ -104,19 +101,35 @@ if($mform->is_cancelled()) {
         if(!($copy === $grades)){
             local_gugcat::notify_error('errorvaluesorder');
         }else{
-            $gradeconvert = array();
-            foreach($grades as $grade=>$grd){
-                $grdconvert = array('courseid'=>$courseid, 'itemid'=>$modid, 'lowerboundary'=>$grd, 'grade'=>$grade);
-                array_push($gradeconvert, $grdconvert);
+            $templateid = null;
+            $newtemplate = array();
+            // Save new template in gcat_converter_templates table, and get the id
+            if(!empty($formdata->templatename)){
+                $templateid = grade_converter::save_new_template($formdata->templatename, $formdata->scale);
             }
+            
+            $conversion = array();
+            foreach($grades as $grade=>$grd){
+                if(!empty($formdata->templatename) && $templateid){
+                    $newtemplate[] = array('templateid'=>$templateid, 'lowerboundary'=>$grd, 'grade'=>$grade);
+                }
+                $conversion[] = array('courseid'=>$courseid, 'itemid'=>$modid, 'lowerboundary'=>$grd, 'grade'=>$grade);
+            }
+            
+            // Save template conversions in gcat_grade_converter table
+            if($templateid){
+                grade_converter::save_grade_conversion($newtemplate);
+            }
+
             $is_subcat = $module->modname == 'category';
             $id = $is_subcat  ? $module->instance : $modid;
             $itemname = get_string($is_subcat ? 'subcategorygrade' : 'provisionalgrd', 'local_gugcat');
+            
             if($prvid = local_gugcat::get_grade_item_id($courseid, $id, $itemname)){
-                grade_converter::convert_provisional_grades($gradeconvert, $module, $prvid);
+                grade_converter::convert_provisional_grades($conversion, $module, $prvid);
                 grade_converter::delete_grade_conversion($modid);
-                grade_converter::save_grade_conversion($modid, $formdata->scale, $gradeconvert);
-                //put the scale in notes for grade conversion in grade history
+                grade_converter::save_grade_conversion($conversion, $modid, $formdata->scale);
+                // Put the scale in notes for grade conversion in grade history
                 $notes = $formdata->notes." -".$formdata->scale;
                 $is_subcat ? grade_aggregation::update_component_notes_for_all_students($prvid, $module->id, $notes) : null;
                 unset($SESSION->wantsurl);
