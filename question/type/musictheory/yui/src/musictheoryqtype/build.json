@@ -1,0 +1,11 @@
+{
+  "name": "moodle-qtype_musictheory-musictheoryqtype",
+  "builds": {
+    "moodle-qtype_musictheory-musictheoryqtype": {
+      "jsfiles": [
+        "MusicTheory.js",
+        "XMLConverter.js"
+      ]
+    }
+  }
+}

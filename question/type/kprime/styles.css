@@ -1,0 +1,298 @@
+/**  The kprime question rendering table */
+.que.kprime table.kprime {
+    display: inline-table;
+    border-spacing: 0px 5px;
+    border-collapse: separate;
+}
+
+.que.kprime table.kprime th, .que.kprime table.kprime td {
+    position: relative;
+}
+
+.que.kprime table.kprime div.r0 label,
+.que.kprime table.kprime div.r1 label,
+.que.kprime table.kprime div.r0 div.specificfeedback,
+.que.kprime table.kprime div.r1 div.specificfeedback {
+    /* In Chrome and IE, the text-indent above is applied to any embedded table
+        cells or <li>s, which screws up the intended layout. This fixes it again. */
+    text-indent: 0 !important;
+}
+
+.que.kprime .answer div.r0 input,
+.que.kprime .answer div.r1 input {
+    margin: 0 5px;
+    padding: 0;
+    width: 15px;
+}
+
+.dir-rtl .que.kprime .answer div.r0,
+.dir-rtl .que.kprime .answer div.r1 {
+    padding: 0.3em 25px 0.3em 0;
+}
+
+.que.kprime table.kprime tbody tr {
+    margin-bottom: 2em;
+    margin-top: 0;
+    padding-bottom: 5px;
+    padding-top: 5px;
+    border-top: 0;
+}
+
+.que.kprime table.kprime th {
+    border-width: 3px;
+}
+
+.que.kprime table.kprime td,
+.que.kprime table.kprime th {
+    text-align: center;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 5px;
+    padding-right: 5px;
+    min-width: 50px;
+}
+
+.que.kprime table.kprime tbody td.optiontext {
+    min-width: 10em;
+    text-align: left;
+    padding-right: 4em;
+}
+
+.que.kprime table.kprime tbody td.kprimeresponsebutton {
+    opacity: 0.1;
+    filter: alpha(opacity = 10); /* msie */
+    background-color: #000;
+}
+
+.kprimegreyingout {
+    opacity: 0.3;
+    filter: alpha(opacity = 30);
+}
+
+.que.kprime table.kprime tbody td.correctness {
+    vertical-align: middle;
+    display: table-cell;
+    border-radius: 0px;
+    border-left: #777 solid 3px !important;
+}
+
+td.kprimecorrectness {
+    border-left: #AAA solid 1px;
+    text-align: center;
+    align: center;
+}
+
+.que.kprime table.kprime tbody td.feedback {
+    padding-left: 1em;
+}
+
+.que.kprime table.kprime tbody td.feedback div.specificfeedback {
+    background: #FFF3BF !important;
+    text-align: left !important;
+}
+
+.kprimespecificfeedback {
+    background: #FFF3BF !important;
+    text-align: left !important;
+}
+
+.que.kprime table.kprime .lastcol p {
+    display: inline;
+    margin: 0px;
+    margin-left: 5px;
+}
+
+/* ====================================*/
+/** The question editing form */
+/* ====================================*/
+
+body#page-question-type-kprime div.responsetexts {
+    width: auto;
+    padding-left: 10px;
+    padding-right: 10px;
+    margin-bottom: 0;
+    text-align: center;
+    border: 0;
+}
+
+body#page-question-type-kprime div#fitem_id_responsetext_2 div.fitemtitle {
+    display: none;
+}
+
+body#page-question-type-kprime div.optionbox {
+    margin-top: 0;
+    padding-bottom: 15px;
+    padding-top: 5px;
+    display: flex;
+}
+
+body#page-question-type-kprime div.option_question {
+    flex-grow: 1;
+    flex: 1;
+    padding-right: 6px;
+    word-break: break-word;
+}
+body#page-question-type-kprime div.option_answer {
+    flex-shrink: 1;
+}
+
+body#page-question-type-kprime div.optionbox label.optiontitle {
+    font-weight: bold;
+    margin-bottom: 0px;
+}
+
+/* Put response checkboxes in the middle */
+body#page-question-type-kprime div.responses {
+    width: auto;
+    margin-bottom: 0;
+    vertical-align: middle;
+    text-align: center;
+    border: 0;
+    position: relative;
+}
+
+@media ( max-width : 986px) {
+    body#page-question-type-kprime div.responses {
+        padding-top: 0px;
+    }
+}
+
+body#page-question-type-kprime div.responses fieldset.fgroup span {
+    border: 1px;
+    margin: 0px 0px 8px 2px;
+    background-color: white;
+    border-radius: 5px;
+    vertical-align: middle;
+    display: inline-block;
+    width: 80px;
+}
+
+body#page-question-type-kprime div.responses fieldset.fgroup span input {
+    vertical-align: bottom;
+    position: relative;
+    top: -2px;
+}
+
+body#page-question-type-kprime div.responses fieldset.fgroup span label {
+    vertical-align: bottom;
+}
+
+body#page-question-type-kprime div.responses div.fitem_fgroup {
+    text-align: left;
+    width: auto;
+    border-width: 0 0 0 0;
+}
+
+body#page-question-type-kprime div.responses div.fitem_fgroup fieldset.fgroup {
+    margin-left: 0px;
+}
+
+body#page-question-type-kprime div.responses div.fitem_fgroup div.fitemtitle {
+    text-align: left;
+    width: 0;
+}
+
+body#page-question-type-kprime div.optiontext div.fitemtitle {
+    padding-left: 0px;
+    padding-top: 0px;
+}
+
+/* Put the feedback text editor to the right */
+body#page-question-type-kprime div.feedbacktext {
+    margin-left: 0px;
+    display: block;
+    clear: both;
+}
+
+body#page-question-type-kprime div.optionbox label.feedbacktitle {
+    color: #777;
+}
+
+body#page-question-type-kprime div.feedbacktext div.fitemtitle {
+    padding-left: 0px;
+    padding-top: 0px;
+}
+
+body#page-question-type-multichoice div[id^=fitem_id_][id*=feedback_] {
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-bottom: 5px;
+    padding-top: 5px;
+    border: 1px solid #BBB;
+    border-bottom: 0;
+}
+
+body#page-question-type-kprime div[id^=fitem_id_][id*=option_] {
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-bottom: 5px;
+    padding-top: 5px;
+}
+
+body#page-question-type-kprime div[id^=fitem_id_][id*=option_] .fitemtitle {
+    font-weight: bold;
+}
+
+body#page-question-type-kprime div[id^=fitem_id_] .fitemtitle {
+    margin-left: 0px;
+    margin-right: 0px;
+    padding-left: 0px;
+    padding-right: 6px;
+}
+
+body.dir-rtl#page-question-type-kprime div[id^=fitem_id_] .fitemtitle {
+    margin-left: 0px;
+    margin-right: 0px;
+    padding-left: 0px;
+    padding-right: 0px;
+}
+
+body#page-question-type-kprime div[id^=fgroup_id_][id*=responses_] {
+    margin-bottom: 2em;
+    margin-top: 0;
+    padding-bottom: 5px;
+    padding-top: 5px;
+    border: 1px solid #BBB;
+    border-top: 0;
+}
+
+body#page-question-type-kprime div[id^=fgroup_id_weightsarray] {
+    margin-top: 0;
+    padding-bottom: 5px;
+    padding-top: 5px;
+    border-top: 0;
+}
+
+.que.kprime table .c1,
+.que.kprime table .c2 {
+    width: 1%;
+    min-width: 70px;
+}
+
+#page-mod-quiz-review .que.kprime table .c0,
+#page-mod-quiz-review .que.kprime table .c4 {
+    width: 40%;
+}
+
+@supports (display:-ms-grid) {
+    body#page-question-type-kprime #id_questiontexteditable,
+    body#page-question-type-kprime #id_generalfeedbackeditable,
+    body#page-question-type-kprime .optionbox,
+    .que.kprime .optiontext,
+    .kprimespecificfeedback {
+        word-break: break-all;
+    }
+}
+
+body#page-question-type-kprime #id_questiontexteditable,
+body#page-question-type-kprime #id_generalfeedbackeditable,
+body#page-question-type-kprime .optionbox,
+.que.kprime .optiontext,
+.kprimespecificfeedback {
+    word-break: break-word;
+    overflow-wrap: anywhere;
+}
+
+#page-mod-quiz-attempt .que.kprime .kprimeresponsebutton label {
+    padding: 10px;
+}

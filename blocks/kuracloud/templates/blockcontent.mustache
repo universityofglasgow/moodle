@@ -1,0 +1,72 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template block_kuracloud/blockcontent
+
+    block_kuracloud content.
+
+    Classes required for JS:
+    * -
+
+    Data attributes required for JS:
+    * -
+
+    Context variables required for this template:
+    * mapping
+
+    Example context (json):
+    {
+        "toBeSupplied": [
+        ]
+    }
+}}
+<div>
+{{#remote_name}}
+    {{#str}} currentmapping, block_kuracloud {{/str}} "{{remote_name}}"
+    {{#status_ok}}
+        {{#pix}} i/valid, core, {{#str}}statusok, block_kuracloud{{/str}} {{/pix}}
+    {{/status_ok}}
+
+    {{^status_ok}}
+        {{#pix}} i/invalid, core, {{status_message}} {{/pix}}
+    {{/status_ok}}
+
+    {{#editmapping_url}}
+        <a href="{{editmapping_url}}">{{#pix}} t/edit, core, {{#str}}edit, core{{/str}} {{/pix}}</a>
+    {{/editmapping_url}}
+    {{#deletemapping_url}}
+        <a href="{{deletemapping_url}}">{{#pix}} t/delete, core, {{#str}}delete, core{{/str}} {{/pix}}</a>
+    {{/deletemapping_url}}
+
+    {{#status_ok}}
+        <ul>
+        {{#syncusers_url}}
+            <li><a href="{{syncusers_url}}">{{#str}}syncusers, block_kuracloud{{/str}}</a></li>
+        {{/syncusers_url}}
+        {{#syncgrades_url}}
+            <li><a href="{{syncgrades_url}}">{{#str}}syncgrades, block_kuracloud{{/str}}</a></li>
+        {{/syncgrades_url}}
+        </ul>
+    {{/status_ok}}
+{{/remote_name}}
+
+{{^remote_name}}
+    <a href="{{editmapping_url}}">{{#str}} nomapping, block_kuracloud {{/str}}</a>
+{{/remote_name}}
+
+
+</div>

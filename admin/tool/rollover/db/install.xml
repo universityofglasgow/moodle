@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="admin/tool/rollover/db" VERSION="20180615" COMMENT="XMLDB file for Moodle tool/rollover"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <TABLE NAME="tool_rollover" COMMENT="Lists courses to be rolled over, status etc.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="Source course id"/>
+        <FIELD NAME="destinationcourseid" TYPE="int" LENGTH="11" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="id of finally restored course"/>
+        <FIELD NAME="state" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false" COMMENT="Progress of rollover for this course"/>
+        <FIELD NAME="session" TYPE="int" LENGTH="11" NOTNULL="false" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="filename" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="name of backup file"/>
+        <FIELD NAME="timestarted" TYPE="int" LENGTH="11" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="unix timestamp, start of rollover"/>
+        <FIELD NAME="timecompleted" TYPE="int" LENGTH="11" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="unix timestamp, time rollover completed"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="ix_couses" UNIQUE="false" FIELDS="session, courseid" COMMENT="Index on courseid"/>
+        <INDEX NAME="ix_destses" UNIQUE="false" FIELDS="session, destinationcourseid" COMMENT="Index on destinationcourseid"/>
+      </INDEXES>
+    </TABLE>
+  </TABLES>
+</XMLDB>

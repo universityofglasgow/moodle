@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<options
+  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+  xsi:noNamespaceSchemaLocation='question_options_schema.xsd'>
+  <keysignature-identify>
+    <clef>treble</clef>
+    <key>F#M</key>
+  </keysignature-identify>
+</options>

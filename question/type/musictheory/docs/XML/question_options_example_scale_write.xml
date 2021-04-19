@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<options
+  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+  xsi:noNamespaceSchemaLocation='question_options_schema.xsd'>
+  <scale-write>
+    <clef>treble</clef>
+    <tonic>
+      <letter>A</letter>
+      <accidental>n</accidental>
+      <register>2</register>
+    </tonic>
+    <displaykeysignature>true</displaykeysignature>
+    <scaletype>natural</scaletype>
+  </scale-write>
+</options>

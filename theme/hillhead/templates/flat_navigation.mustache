@@ -55,33 +55,165 @@
         ]
     }
 }}
-<nav class="list-group">
-{{# flatnavigation }}
-    {{#showdivider}}
-</nav>
-<nav class="list-group m-t-1">
-    {{/showdivider}}
-    {{#action}}
-    <a class="list-group-item list-group-item-action {{#isactive}}font-weight-bold{{/isactive}}" href="{{{action}}}" data-key="{{key}}">
-        <div class="m-l-{{get_indent}}">
-            {{#is_section}}
-                    <span class="text-holder">{{{text}}}</span>
-            {{/is_section}}
-            {{^is_section}}
-                <span class="text-holder">{{{text}}}</span>
-            {{/is_section}}
-        </div>
-    </a>
-    {{/action}}
-    {{^action}}
-    <div class="list-group-item" data-key="{{key}}">
-        <div class="m-l-{{get_indent}}">
-            {{#is_section}}
-                {{#pix}}i/folder{{/pix}}
-            {{/is_section}}
-            <span class="text-holder">{{{text}}}</span>
-        </div>
-    </div>
-    {{/action}}
-{{/ flatnavigation }}
-</nav>
+
+{{#sitenavexists}}
+<ul><li class="accessibility-link">{{{accessibilityButton}}}</li></ul>
+<h2>Moodle</h2>
+<ul>
+{{#sitenav}}
+    <li>
+        <a href="{{{action}}}">
+            <div class="media">
+                {{#icon.pix}}
+                    <span class="media-left">
+                        {{#pix}}{{{icon.pix}}}, {{{icon.component}}}, {{{icon.alt}}}{{/pix}}
+                    </span>
+                {{/icon.pix}}
+                <span class="media-body">{{{text}}}</span>
+            </div>
+        </a>
+    </li>
+{{/sitenav}}
+</ul>
+{{/sitenavexists}}
+
+{{#settingsnavexists}}
+<h2>Course Settings</h2>
+<ul>
+{{#settingsnav}}
+    <li>
+        <a href="{{{action}}}">
+            <div class="media">
+                {{#icon.pix}}
+                    <span class="media-left">
+                        {{#pix}}{{{icon.pix}}}, {{{icon.component}}}, {{{icon.alt}}}{{/pix}}
+                    </span>
+                {{/icon.pix}}
+                <span class="media-body">{{{text}}}</span>
+            </div>
+        </a>
+    </li>
+{{/settingsnav}}
+</ul>
+{{/settingsnavexists}}
+
+{{#starrednavexists}}
+<h2>Starred Courses <span class="badgeHolder"><a class="sidebarBadge" href="#" id="rearrangeSidebar" style="display: none;">Edit</a><a class="sidebarBadge" href="#" id="saveSidebar" style="display: none;">Save</a></span></h2>
+<ul id="starredCourses" class="m-b-0" save="{{{starposturl}}}">
+{{#starrednav}}
+    <li courseid="{{courseid}}" {{{starredOrdering}}}>
+        <a href="{{{action}}}">
+            <div class="media">
+                {{#icon.pix}}
+                    <span class="media-left">
+                        {{#pix}}{{{icon.pix}}}, {{{icon.component}}}, {{{icon.alt}}}{{/pix}}
+                    </span>
+                {{/icon.pix}}
+                <span class="media-body">{{{text}}}</span>
+            </div>
+        </a>
+    </li>
+{{/starrednav}}
+</ul>
+<ul>
+{{#starrednavbottom}}
+    <li>
+        <a href="{{{action}}}" {{{starredOrdering}}} courseid="{{courseid}}">
+            <div class="media">
+                {{#icon.pix}}
+                    <span class="media-left">
+                        {{#pix}}{{{icon.pix}}}, {{{icon.component}}}, {{{icon.alt}}}{{/pix}}
+                    </span>
+                {{/icon.pix}}
+                <span class="media-body">{{{text}}}</span>
+            </div>
+        </a>
+    </li>
+{{/starrednavbottom}}
+</ul>
+{{/starrednavexists}}
+
+{{^starrednavexists}}
+<h2>Courses</h2>
+{{#coursenavexists}}
+<ul>
+{{#coursenav}}
+    <li>
+        <a href="{{{action}}}">
+            <div class="media">
+                {{#icon.pix}}
+                    <span class="media-left">
+                        {{#pix}}{{{icon.pix}}}, {{{icon.component}}}, {{{icon.alt}}}{{/pix}}
+                    </span>
+                {{/icon.pix}}
+                <span class="media-body">{{{text}}}</span>
+            </div>
+        </a>
+    </li>
+{{/coursenav}}
+</ul>
+{{/coursenavexists}}
+{{^coursenavexists}}
+<p><strong>Oh dear, you don't have any courses.</strong> You should speak to your lecturers about this.</p>
+{{/coursenavexists}}
+{{/starrednavexists}}
+
+{{#globalcoursenavexists}}
+<h2>{{globalcoursenavheading}}</h2>
+<ul>
+{{#globalcoursenav}}
+    <li>
+        <a href="{{{action}}}">
+            <div class="media">
+                {{#icon.pix}}
+                    <span class="media-left">
+                        {{#pix}}{{{icon.pix}}}, {{{icon.component}}}, {{{icon.alt}}}{{/pix}}
+                    </span>
+                {{/icon.pix}}
+                <span class="media-body">{{{text}}}</span>
+            </div>
+        </a>
+    </li>
+{{/globalcoursenav}}
+</ul>
+{{/globalcoursenavexists}}
+
+{{#adminnavexists}}
+<h2>Administration</h2>
+<ul>
+{{#adminnav}}
+    <li>
+        <a href="{{{action}}}">
+            <div class="media">
+                {{#icon.pix}}
+                    <span class="media-left">
+                        {{#pix}}{{{icon.pix}}}, {{{icon.component}}}, {{{icon.alt}}}{{/pix}}
+                    </span>
+                {{/icon.pix}}
+                <span class="media-body">{{{text}}}</span>
+            </div>
+        </a>
+    </li>
+{{/adminnav}}
+</ul>
+{{/adminnavexists}}
+
+{{#othernavexists}}
+<h2>Not Yet Categorised</h2>
+<ul>
+{{#othernav}}
+    <li>
+        <a href="{{{action}}}">
+            <div class="media">
+                {{#icon.pix}}
+                    <span class="media-left">
+                        {{#pix}}{{{icon.pix}}}, {{{icon.component}}}, {{{icon.alt}}}{{/pix}}
+                    </span>
+                {{/icon.pix}}
+                <span class="media-body">{{{type}}} - {{{key}}}</span>
+            </div>
+        </a>
+    </li>
+{{/othernav}}
+</ul>
+{{/othernavexists}}

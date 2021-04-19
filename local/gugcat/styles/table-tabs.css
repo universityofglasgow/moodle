@@ -1,0 +1,71 @@
+/* Table style */
+.table {
+    margin-bottom: 0;
+    text-align: center;
+}
+
+.table thead th, .table td{
+    vertical-align: middle;
+}
+
+.table td{
+    padding: .30rem;
+}
+
+th {
+    background-color: #005c8a;
+    color: white;
+    font-weight: 500;
+}
+
+tr:nth-child(even) {
+    background-color: #e6eaee;
+}
+
+/* Tab Links style */
+.tablink {
+    border-radius: .5em .5em 0 0 ;
+    background-color: #c4c4c4;
+    border: 0;
+    cursor: pointer;
+    padding: 14px 16px;
+    width: auto;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 21px;
+    letter-spacing: 0em;
+    text-align: center;
+}
+
+.tablink:hover {
+    opacity: 0.8;
+}
+
+.tablink.active {
+    background-color: #005c8a;
+    color: white;
+}
+
+/* Tab Content style */
+.tabcontent {
+    border: 1px solid #4F5961;
+    border-radius: 0 1em 0 0 ;
+    overflow-x: visible;
+    min-width: 100%;
+}
+
+/* Tab Content Header style */
+
+.tabcontent-header {
+    padding: 1.5em;
+}
+
+button.tablink, button.tablink:focus{
+    box-shadow: none;
+    border: 0;
+}
+
+/* Sort style */
+.sortable{
+    cursor: pointer;
+}

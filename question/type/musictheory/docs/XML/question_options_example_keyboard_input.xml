@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<options
+  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+  xsi:noNamespaceSchemaLocation='question_options_schema.xsd'>
+  <keyboard-input>
+	<includestaticnote>true</includestaticnote>
+	<staticnote>
+	  <letter>F</letter>
+	  <accidental>#</accidental>
+	  <register>6</register>
+	</staticnote>
+	<considerregister>false</considerregister>
+	<note>
+	  <letter>E</letter>
+	  <accidental>b</accidental>
+	  <register>5</register>
+	</note>
+  </keyboard-input>
+</options>

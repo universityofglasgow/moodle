@@ -1,0 +1,109 @@
+// Login Page Stuff
+
+body#page-login-index {
+    background-image: url([[pix:theme|login-background]]);
+    background-attachment: fixed;
+    background-position: 50% 50%;
+    background-size: cover;
+}
+@media (max-width:1920px) and (max-height:1080px) {
+    body#page-login-index {
+        background-size: auto;
+        background-position: 50% 50%;
+    }
+}
+
+.gu-login {
+    background-color: rgba(255, 255, 255, 0.7);
+    border-radius: 6px;
+    padding: 10px;
+}
+
+.gu-login input, .gu-login button, .gu-login p {
+    margin-bottom: 10px;
+}
+
+.gu-login input, .gu-login button {
+    border-radius: 3px;
+}
+
+.gu-login *:last-child {
+    margin-bottom: 0;
+}
+
+.gu-login .gu-feature-link {
+    padding: 0;
+    text-align: center;
+}
+
+.gu-login .alert {
+    padding: 4px 7px;
+    margin-bottom: 10px;
+}
+
+.gu-login-intro h2 {
+    color: $hillhead-blue;
+    font-size: 30px !important;
+    font-weight: 400;
+    line-height: 1.4em;
+}
+
+.gu-login-intro {
+    animation-name: lift;
+    animation-duration: 0.4s;
+    animation-iteration-count: 1;
+    animation-timing-function: ease-out;
+}
+
+.gu-login-intro a {
+    color: $hillhead-blue;
+    text-decoration: underline;
+}
+
+.gu-login-intro a:hover {
+    color: $hillhead-blue;
+    text-decoration: underline;
+}
+
+.gu-login-intro p {
+    color: $hillhead-blue;
+    font-size: 20px;
+    font-weight: 300;
+    line-height: 1.4em;
+}
+
+.gu-login-spacer {
+    height: 100px;
+}
+
+.gu-login label.hidden-xs-up {
+    display: none;
+}
+
+.gu-login .rememberpass {
+    padding-top: 8px !important;
+    margin-top: 0 !important;
+    margin-bottom: 0;
+    border-top: 1px solid #8CAECB;
+}
+
+.gu-login .rememberpass input {
+    margin-bottom: 0;
+    margin-right: 10px;
+}
+
+#page-login-index header button, #page-login-index header .login {
+    display: none;
+}
+
+@keyframes lift {
+    0% {
+        margin-top: 120px;
+        opacity: 0.2;
+    }
+    
+    100% {
+        margin-top: 0;
+        opacity: 1;
+    }
+}

@@ -25,9 +25,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2018040501;
+$plugin->version   = 2020090306;
 $plugin->requires  = 2016112900;
 $plugin->component = 'theme_hillhead';
 $plugin->dependencies = [
-    'theme_boost' => '2016102100',
+    'theme_boost' => '2017111300',
 ];

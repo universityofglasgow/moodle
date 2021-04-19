@@ -1,0 +1,33 @@
+{{=<% %>=}}
+<%#enabled%>
+<div class="mma-xp-group-selector">
+    <ion-list>
+        <ion-item>
+            <%^canswitch%>
+                <%#usesvisiblegroups%>{{ 'core.groupsvisible' | translate }}<%/usesvisiblegroups%>
+                <%#usesseparategroups%>{{ 'core.groupsseparate' | translate  }}<%/usesseparategroups%>
+                <ion-note item-end><% groupname %></ion-note>
+            <%/canswitch%>
+            <%#canswitch%>
+                <ion-label>
+                    <%#usesvisiblegroups%>{{ 'core.groupsvisible' | translate  }}<%/usesvisiblegroups%>
+                    <%#usesseparategroups%>{{ 'core.groupsseparate' | translate  }}<%/usesseparategroups%>
+                </ion-label>
+                <ion-select [(ngModel)]="CONTENT_OTHERDATA.groupid" (ionChange)="updateContent({courseid: <% courseid %>, groupid: CONTENT_OTHERDATA.groupid})">
+                    <%#canseeallparticipants%>
+                        <ion-option value="0">{{ 'core.allparticipants' | translate }}</ion-option>
+                    <%/canseeallparticipants%>
+                    <%#_firstseparator%><ion-option disabled>-</ion-option><%/_firstseparator%>
+                    <%#mygroups%>
+                        <ion-option value="<% id %>"><% name %></ion-option>
+                    <%/mygroups%>
+                    <%#_secondseparator%><ion-option disabled>-</ion-option><%/_secondseparator%>
+                    <%#othergroups%>
+                        <ion-option value="<% id %>"><% name %></ion-option>
+                    <%/othergroups%>
+                </ion-select>
+            <%/canswitch%>
+        </ion-item>
+    </ion-list>
+</div>
+<%/enabled%>

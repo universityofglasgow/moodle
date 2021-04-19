@@ -1,0 +1,62 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template block_kuracloud/tokenlist
+
+    Current API Tokens.
+
+    Classes required for JS:
+    * -
+
+    Data attributes required for JS:
+    * -
+
+    Context variables required for this template:
+    * tokens
+
+    Example context (json):
+    {
+        "toBeSupplied": [
+        ]
+    }
+}}
+
+<div data-region="tokens">
+<table class="generaltable fullwidth">
+    <thead>
+        <tr>
+            <th scope="col">{{#str}}instancename, block_kuracloud{{/str}}</th>
+            <th scope="col">{{#str}}status, block_kuracloud{{/str}}</th>
+            <th scope="col">{{#str}}lmsenabled, block_kuracloud{{/str}}</th>
+            <th scope="col">{{#str}}actions, block_kuracloud{{/str}}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{#tokens}}
+        <tr>
+            <td>{{name}}</td>
+            <td>{{status}}</td>
+            <td>{{lmsenabled}}</td>
+            <td>
+                <a href="deleteendpoint.php?id={{instanceid}}">{{#pix}} t/delete, core, {{#str}}delete, core{{/str}} {{/pix}}</a>
+            </td>
+        </tr>
+        {{/tokens}}
+    </tbody>
+</table>
+<a href="addendpoint.php">{{#str}}addnewendpoint, block_kuracloud{{/str}}</a>
+</div>

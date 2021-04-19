@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<options
+  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+  xsi:noNamespaceSchemaLocation='question_options_schema.xsd'>
+  <harmonicfunction-identify>
+    <clef>treble</clef>
+    <key>GnM</key>
+    <displaykeysignature>true</displaykeysignature>
+    <harmonicfunction>
+      <hfprimary>I</hfprimary>
+      <hfinvext></hfinvext>
+      <hfsecondary>IV</hfsecondary>
+    </harmonicfunction>
+    <harmonicfunction-responsetypes>
+      <harmonicfunctiontype>diatonictriad</harmonicfunctiontype>
+    </harmonicfunction-responsetypes>
+  </harmonicfunction-identify>
+</options>

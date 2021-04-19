@@ -50,7 +50,43 @@ class icon_system_fontawesome extends \core\output\icon_system_fontawesome {
     private $map = [];
     public function get_core_icon_map() {
         $iconmap = parent::get_core_icon_map();
-        $iconmap['core:req'] = 'fa-asterisk text-warning';
-        return $iconmap;
+        
+        $overrides = Array(
+            'core:req'                          => 'fa-asterisk text-warning',
+            'core:i/section'                    => 'fa-folder-open',
+            'core:hillhead/allcourses'          => 'fa-sitemap',
+            'core:hillhead/starred'             => 'fa-star',
+            'core:hillhead/vleenhancements'     => 'fa-magic',
+            'core:hillhead/role'                => 'fa-key'
+        );
+        
+        $merged = array_merge($iconmap, $overrides);
+        
+        return $merged;
+    }
+    
+    public function get_icon_name_map() {
+        if ($this->map === []) {
+            $cache = \cache::make('theme_hillhead', 'fontawesomeiconmapping');
+
+            $this->map = $cache->get('mapping');
+
+            if (empty($this->map)) {
+                $this->map = $this->get_core_icon_map();
+                $callback = 'get_fontawesome_icon_map';
+
+                if ($pluginsfunction = get_plugins_with_function($callback)) {
+                    foreach ($pluginsfunction as $plugintype => $plugins) {
+                        foreach ($plugins as $pluginfunction) {
+                            $pluginmap = $pluginfunction();
+                            $this->map += $pluginmap;
+                        }
+                    }
+                }
+                $cache->set('mapping', $this->map);
+            }
+
+        }
+        return $this->map;
     }
 }

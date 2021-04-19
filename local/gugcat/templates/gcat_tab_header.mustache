@@ -1,0 +1,42 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_gugcat/gcat_tab_header
+
+    The purpose of this template is to render the buttons in header of each GCAT tabs.
+
+    Example context (json):
+    { }
+}}
+
+<div class="tabcontent-header">
+    {{#displayactivities}}
+    <div class="selectdiv">
+        <select id="select-activity">
+            {{#activities}}
+                <option {{selected}} value={{gradeitemid}} >{{name}}</option>
+            {{/activities}}
+        </select>
+    </div>
+    {{/displayactivities}}
+    {{#addallgrdstr}}<button class="btn btn-default btn-blue" id="btn-saveadd">{{addallgrdstr}}</button>{{/addallgrdstr}}
+    {{#importgradesstr}}<button class="btn btn-default btn-blue" id="btn-import">{{importgradesstr}}</button>{{/importgradesstr}}
+    {{#grddiscrepancystr}}<button class="btn grade-discrepancy" id="btn-grddisc">{{grddiscrepancystr}}</button>{{/grddiscrepancystr}}
+    {{#downloadcsvstr}}<button class="btn btn-default btn-download" id="btn-download">{{downloadcsvstr}}</button>{{/downloadcsvstr}}
+    {{#releasefinalstr}}<button class="btn btn-default btn-download" id="btn-finalrelease">{{releasefinalstr}}</button>{{/releasefinalstr}}
+    {{#releaseprvgrdstr}}<button class="btn btn-default btn-release" id="btn-release">{{releaseprvgrdstr}}</button>{{/releaseprvgrdstr}}
+</div>

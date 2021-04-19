@@ -1,0 +1,107 @@
+{{{ picture }}} 
+
+<div class="alert alert-primary m-t-1">
+    {{# str }}resultfor, report_guid, {{{ displayname }}}{{/ str }}
+</div>
+
+{{# noemail }}
+    <div class="alert alert-danger">
+        {{# str }}noemail, report_guid{{/ str }}
+    </div>
+{{/ noemail }}
+
+{{# createlink }}
+    <a class="btn btn-success" href="{{{ createlink }}}">{{# str }}create, report_guid, {{ fullname }}{{/ str }}</a>
+{{/ createlink }}
+
+{{# gudatabaseerror }}
+    <div class="alert alert-danger">
+        {{# str }}nogudatabase, report_guid{{/ str }}
+    </div>
+{{/ gudatabaseerror }}
+
+<div class="card m-t-2">
+  <div class="card-body">
+    <h5 class="card-title">{{# str }}ldapresults, report_guid{{/ str }}</h5>
+    <p class="card-text">{{{ formattedldap }}}</p>
+  </div>
+</div>
+
+<div class="card m-t-2">
+  <div class="card-body">
+    <h5 class="card-title">{{# str }}enrolments, report_guid, {{ fullname }}{{/ str }}</h5>
+    <p class="card-text">
+        {{# noenrolments }}
+            {{# str }}noenrolments, report_guid{{/ str }}
+        {{/ noenrolments }}
+        {{^ noenrolments }}
+            <ul>
+                {{# formattedenrolments }}
+                    <li>
+                        {{# courselink }}
+                            <a href="{{{ courselink }}}"><b>{{ name }}</b></a>
+                        {{/ courselink }}
+                        {{^ courselink }}
+                            <b>{{ name }}</b>
+                        {{/ courselink }}
+                        <i>({{# str }}accessed, report_guid, {{ lastaccess }}{{/ str}})</i>
+                        {{# ended }}<span class="badge badge-danger">{{# str }}ended, report_guid{{/ str }}</span>{{/ ended }}
+                        {{# notstarted }}<span class="badge badge-primary">{{# str }}notstarted, report_guid{{/ str }}</span>{{/ notstarted }}
+                    </li>
+                {{/ formattedenrolments }}
+            </ul>
+        {{/ noenrolments}}
+    </p>
+  </div>
+</div>
+
+<div class="card m-t-2">
+  <div class="card-body">
+    <h5 class="card-title">{{# str }}mycampus, report_guid{{/ str }}</h5>
+    <p class="card-text">
+        {{# nocourses }}
+            {{# str }}nomycampus, report_guid{{/ str }}
+        {{/ nocourses }}
+        {{^ nocourses }}
+            <ul>
+                {{# formattedcourses }}
+                    <li>
+                        <b>{{ code }}</b>
+                        {{# isnamed }}
+                            {{ name }} => {{ ou }}
+                        {{/ isnamed }}
+                        {{# usernamemismatch }}
+                            <span class="text-danger">{{# str }}guidnomatch, report_guid{{/ str }}</span>
+                        {{/ usernamemismatch }}
+                        {{# isgucourses }}
+                            <small><ul>
+                                {{# gucourses }}
+                                    <li><a {{^ visible }}class="text-muted"{{/ visible }} href="{{{ link }}}">{{ fullname }}<a></li>
+                                {{/ gucourses }}
+                            </ul></small>
+                        {{/ isgucourses }}
+                    </li>    
+                {{/ formattedcourses }}
+            </ul>
+        {{/ nocourses }}
+    </p>
+  </div>
+</div>
+
+{{^ isstudent }}
+    <div class="card m-t-2">
+        <div class="card-body">
+            <h5 class="card-title">{{# str }}corehrresults, report_guid{{/ str }}</h5>
+            <p class="card-text">
+                {{# iscorehr }}
+                    {{{ corehr }}}
+                {{/ iscorehr }}
+                {{^ iscorehr }}
+                    <div class="alert alert-info">{{# str }}nomoodleprofile, report_guid{{/ str }}</div>
+                {{/ iscorehr }}    
+            </p>
+        </div>
+    </div>
+{{/ isstudent }}
+
+<a class="m-t-2 btn btn-primary" href="{{{ backlink }}}">{{# str }}back{{/ str }}</a>

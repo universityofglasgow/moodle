@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<quiz>
+<!-- question: 0  -->
+  <question type="category">
+    <category>
+        <text>$course$/top</text>
+
+    </category>
+  </question>
+
+<!-- question: 0  -->
+  <question type="category">
+    <category>
+        <text>$course$/top/Default for c1</text>
+
+    </category>
+  </question>
+
+<!-- question: 267000  -->
+  <question type="mtf">
+    <name>
+      <text>MTF-Question-001</text>
+    </name>
+    <questiontext format="html">
+      <text><![CDATA[<img src="@@PLUGINFILE@@/testimage1.png" alt="testimage1AltDescription" width="100" height="100" class="img-responsive atto_image_button_text-bottom">Enter the stem or question prompt here.]]></text>
+<file name="testimage1.png" path="/" encoding="base64">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</file>
+    </questiontext>
+    <generalfeedback format="html">
+      <text></text>
+    </generalfeedback>
+    <defaultgrade>1.0000000</defaultgrade>
+    <penalty>0.3333333</penalty>
+    <hidden>0</hidden>
+    <scoringmethod><text>subpoints</text>
+</scoringmethod>
+    <shuffleanswers>false</shuffleanswers>
+    <numberofrows>2</numberofrows>
+    <numberofcolumns>2</numberofcolumns>
+    <answernumbering>123</answernumbering>
+    <row number="1">
+      <optiontext format="html">
+        <text><![CDATA[<img src="@@PLUGINFILE@@/testimage2.png" alt="testimage2AltDescription" width="100" height="100" class="img-responsive atto_image_button_text-bottom">option text 1]]></text>
+<file name="testimage2.png" path="/" encoding="base64">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</file>
+      </optiontext>
+      <feedbacktext format="html">
+        <text>feedback to option 1</text>
+      </feedbacktext>
+    </row>
+    <row number="2">
+      <optiontext format="html">
+        <text>option text 2</text>
+      </optiontext>
+      <feedbacktext format="html">
+        <text>feedback to option 2</text>
+      </feedbacktext>
+    </row>
+    <column number="1">
+      <responsetext format="moodle_auto_format">
+        <text>True</text>
+      </responsetext>
+    </column>
+    <column number="2">
+      <responsetext format="moodle_auto_format">
+        <text>False</text>
+      </responsetext>
+    </column>
+    <weight rownumber="1" columnnumber="1">
+      <value>
+         1.000
+      </value>
+    </weight>
+    <weight rownumber="1" columnnumber="2">
+      <value>
+         0.000
+      </value>
+    </weight>
+    <weight rownumber="2" columnnumber="1">
+      <value>
+         0.000
+      </value>
+    </weight>
+    <weight rownumber="2" columnnumber="2">
+      <value>
+         1.000
+      </value>
+    </weight>
+  </question>
+
+</quiz>

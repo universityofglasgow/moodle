@@ -1,20 +1,24 @@
 require(['jquery'], function($) { $(document).ready(function(){
     if(typeof window.speechSynthesis !== 'undefined') {
-    	$('p, h1, h2, h3, h4, h5, span, a, label').hover(
+    	$('p, h1, h2, h3, h4, h5, span, a, label, button').hover(
     	    function() {
+        	    
         	    $(this).addClass('currentlySpeaking');
+        	    $(this).addClass('currentlySpeakingHighlight');
         	    if(typeof speakTimer !== 'undefined') {
         	        clearTimeout(speakTimer);
         	    }
         	    window.speechSynthesis.cancel();
         	    var speakText = $(this).text();
+        	    var $hillheadCurrentlySpeaking = $(this);
         	    speakTimer = setTimeout( function() {
             		var msg = new SpeechSynthesisUtterance(speakText);
-                	msg.rate = 0.8;
-                	msg.lang = 'en-scottish';
-                	$(this).addClass('currentlySpeakingHighlight');
+                	msg.lang = 'en-gb';
+                	msg.onend = function(event) {
+                    	 $hillheadCurrentlySpeaking.removeClass('currentlySpeaking');
+                         $hillheadCurrentlySpeaking.removeClass('currentlySpeakingHighlight');
+                	};
             		window.speechSynthesis.speak(msg);
-            		$(this).removeClass('currentlySpeaking');
                 }, 1500);
             },
             function() {

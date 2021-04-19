@@ -1,0 +1,27 @@
+$brand-color: #B30C00;
+$brand-dark: darken($brand-color, 5%);
+$login-band: lighten($brand-color, 55%);
+$login-text: #fff;
+
+body#page-login-index {
+   background-image: none !important;
+   background-color: $brand-color !important;
+}
+
+.gu-login-intro h2, .gu-login-intro p, .gu-login-intro a {
+   color: $login-text !important;
+}
+
+.gu-login .rememberpass {
+    border-top-color: $login-band !important;
+}
+
+nav.navbar.fixed-top {
+    background-color: $brand-color;
+    border-color: $brand-dark;
+}
+
+nav.navbar button.btn {
+    background-color: $brand-dark;
+    border-color: $brand-dark;
+}
