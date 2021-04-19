@@ -198,6 +198,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $html .= html_writer::empty_tag('button', array('id'=>'importgrades-submit', 'name'=> 'importgrades', 'type'=>'submit'));
         $html .= html_writer::empty_tag('button', array('id'=>'bulk-submit', 'name'=> 'bulkimport', 'type'=>'submit'));
         $html .= html_writer::empty_tag('input', array('name' => 'rowstudentno', 'type' => 'hidden', 'id'=>'studentno'));
+        $html .= html_writer::empty_tag('input', array('name' => 'is_converted', 'type'=>'hidden', 'id'=>'isconverted', 'value'=>$is_converted));
         $html .= html_writer::end_tag('form');
         $html .= $this->footer();
         return $html;
@@ -267,6 +268,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $colgroups = null; // Use for grouping the columns of child activities (to add border)
         $colspan = 0; // Number of columns a column group should span
         $prevcatid = null;
+        $isconvertsubcat = false;
         foreach ($activities as $act) {
             $weightcoef1 = $act->gradeitem->aggregationcoef; //Aggregation coeficient used for weighted averages or extra credit
             $weightcoef2 = $act->gradeitem->aggregationcoef2; //Aggregation coeficient used for weighted averages only
@@ -276,9 +278,12 @@ class local_gugcat_renderer extends plugin_renderer_base {
             array('data-categoryid' => $act->id, 'type' => 'button', 'class' => 'btn btn-colexp'));
             $convertgrdparams = "?id=$courseid&activityid=$act->gradeitemid&page=$page" . $historyeditcategory;
             $is_imported = false;
+            $is_converted = !is_null($act->gradeitem->iteminfo) && !empty($act->gradeitem->iteminfo);
+            //if module is converted then change the value for issubcatconvert to true, else original value.
+            $isconvertsubcat = $is_converted ? true : $isconvertsubcat; 
             if($act->modname == 'category'){
-                $is_converted = !is_null($act->gradeitem->iteminfo) && !empty($act->gradeitem->iteminfo);
                 if($act->gradeitem->gradetype == GRADE_TYPE_VALUE || $is_converted){
+                    $isconvertsubcat = true;
                     $is_imported = local_gugcat::get_grade_item_id($courseid, $act->id, get_string('subcategorygrade', 'local_gugcat'));
                 }
             }
@@ -345,6 +350,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $html .= html_writer::empty_tag('input', array('id'=>'resitstudentno', 'name' => 'rowstudentno', 'type' => 'hidden'));
         $html .= html_writer::empty_tag('button', array('id'=>'downloadcsv-submit', 'name'=> 'downloadcsv', 'type'=>'submit'));
         $html .= html_writer::empty_tag('button', array('id'=>'finalrelease-submit', 'name'=> 'finalrelease', 'type'=>'submit'));
+        $html .= html_writer::empty_tag('input', array('id'=>'isconvertsubcat', 'name'=>'isconvertsubcat', 'type'=>'hidden', 'value'=>$isconvertsubcat));
         $html .= html_writer::end_tag('form');
         $html .= $this->footer();
         return $html;

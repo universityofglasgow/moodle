@@ -341,6 +341,7 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
         var btn_finalrelease = document.getElementById('btn-finalrelease');
         var btn_switch_display = document.getElementById('btn-switch-display');
         var btn_bulk_import = document.getElementById('btn-blkimport');
+        var btn_convert = document.getElementById('id_convertbutton');
         switch (event.target) {
             case btn_multiadd:
                 $(".togglemultigrd").toggle();
@@ -383,7 +384,8 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                 }
                 break;
             case btn_finalrelease:
-                showModal('finalrelease', 'modalreleasefinalgrades', 'confirmfinalrelease');
+                var isConvertSubcat = document.getElementById('isconvertsubcat');
+                showModal('finalrelease', isConvertSubcat.value != 1 ? 'modalreleasefinalgrades' : 'modalreleasefinalconvertedgrades', 'confirmfinalrelease');
                 break;
             case btn_download:
                 document.getElementById('downloadcsv-submit').click();
@@ -403,6 +405,8 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                     document.getElementById('bulk-submit').click();
                 }
                 break;
+            case btn_convert:
+                showModal('convertgrades', 'modalconvertgrades', 'continueconvertgrade');
             default:
                 break;
         }
@@ -543,6 +547,7 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                     document.getElementById('btn-release').style.display = 
                     !$(".gradeitems").text().includes("Moodle Grade[Date]") ? 'inline-block' : 'none';
                     var nodeArr = Array.from(document.querySelectorAll('.gradeitems'));
+                    var isConverted = document.getElementById('isconverted');
                     if(nodeArr.find(node => node.innerHTML !== 'Moodle Grade<br>[Date]')){
                         document.getElementById('btn-saveadd').style.display = 'inline-block';
                         var btnnewgrade = document.querySelectorAll('.addnewgrade');
@@ -554,6 +559,9 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                         hideshowgrade.forEach(element => {
                             element.style.display = 'block';
                         });
+                    }
+                    if(isConverted.value != 0){
+                        document.getElementById('btn-release').style.display = 'none';
                     }
                 }else if(checkCurrentUrl("gugcat/add") || checkCurrentUrl("gugcat/edit")){
                     //Add placeholder

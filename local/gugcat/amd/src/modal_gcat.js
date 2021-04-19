@@ -31,6 +31,7 @@ define(['jquery', 'core/custom_interaction_events', 'core/modal', 'core/modal_re
         IMPORT_GRADE_BUTTON: '[data-action="importgrades"]',
         ADJUST_WEIGHT_BUTTON: '[data-action="adjustweight"]',
         BULK_IMPORT_BUTTON: '[data-action="bulkimportgrades"]',
+        CONVERT_GRADE_BUTTON: '[data-action="convertgrades"]',
         CANCEL_BUTTON: '[data-action="cancel"]',
     };
 
@@ -76,6 +77,10 @@ define(['jquery', 'core/custom_interaction_events', 'core/modal', 'core/modal_re
 
         this.getModal().on(CustomEvents.events.activate, SELECTORS.BULK_IMPORT_BUTTON, function(e, data) {
             document.getElementById('bulk-submit').click();
+        }.bind(this));
+
+        this.getModal().on(CustomEvents.events.activate, SELECTORS.CONVERT_GRADE_BUTTON, function(e, data) {
+            document.getElementById('id_submitconvertbutton').click();
         }.bind(this));
 
         this.getModal().on(CustomEvents.events.activate, SELECTORS.CANCEL_BUTTON, function(e, data) {

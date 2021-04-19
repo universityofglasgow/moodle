@@ -617,6 +617,12 @@ class grade_aggregation{
         $groupingids = array_column($modules, 'groupingid');
         $students = self::get_students_per_groups($groupingids, $courseid);
         foreach($modules as $mod) {
+            $is_converted = !is_null($mod->gradeitem->iteminfo) && !empty($mod->gradeitem->iteminfo);
+            $is_subcat = ($mod->modname == 'category') ? true : false;
+            //if mod is subcat or converted then continue
+            if($is_converted || $is_subcat){
+                continue;
+            }
             // Get/create provisional grade id of the module
             $prvgrdid = local_gugcat::add_grade_item($courseid, get_string('provisionalgrd', 'local_gugcat'), $mod);
             
