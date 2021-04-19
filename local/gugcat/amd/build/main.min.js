@@ -572,10 +572,6 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                         mformNotes.placeholder = await Str.get_string('specifyreason', 'local_gugcat');
                         mformNotes.required = true;
                     })();
-                }else if(checkCurrentUrl("gugcat/convert")){
-                    var mformSave = document.getElementById('id_submitbutton');
-                    //hide the mform save button
-                    mformSave.style.display = 'none';
                 }
             }
         }

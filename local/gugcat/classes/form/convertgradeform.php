@@ -98,7 +98,7 @@ class convertform extends moodleform {
         $mform->addElement('html', '</div>');
         $buttonarray = array();
         $buttonarray[] =& $mform->createElement('cancel', 'cancel', get_string('cancel'));
-        $buttonarray[] =& $mform->createElement('submit', 'submitbutton', get_string('savechanges', 'local_gugcat'));
+        $buttonarray[] =& $mform->createElement('submit', 'submitconvertbutton', get_string('savechanges', 'local_gugcat'));
         $buttonarray[] =& $mform->createElement('button', 'convertbutton', get_string('savechanges', 'local_gugcat'));
         $mform->addGroup($buttonarray, 'buttonarr', '', array(''), false);
 

@@ -80,7 +80,7 @@ define(['jquery', 'core/custom_interaction_events', 'core/modal', 'core/modal_re
         }.bind(this));
 
         this.getModal().on(CustomEvents.events.activate, SELECTORS.CONVERT_GRADE_BUTTON, function(e, data) {
-            document.getElementById('id_submitbutton').click();
+            document.getElementById('id_submitconvertbutton').click();
         }.bind(this));
 
         this.getModal().on(CustomEvents.events.activate, SELECTORS.CANCEL_BUTTON, function(e, data) {
