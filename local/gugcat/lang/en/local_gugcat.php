@@ -51,6 +51,7 @@ $string['confirmfinalrelease'] = 'Yes, release final assessment grades';
 $string['confirmimport'] = 'Yes, import grades from Moodle';
 $string['confirmreleaseprovisionalgrade'] = 'Yes, release provisional grades';
 $string['continueconvertgrade'] = 'Continue';
+$string['conversiontype'] = 'Conversion type';
 $string['convertedgrade'] = 'Converted Grade';
 $string['convertformtitle'] = 'Manage assessment grade conversion';
 $string['coursegradeaggregation'] = 'Course Grade Aggregation';
