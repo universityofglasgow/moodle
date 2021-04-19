@@ -31,10 +31,15 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
         return url.match(path);
     }
 
-    const calculatePercentage = (target) => {
-        input_point = document.getElementById(target.id.slice(0,10) + "pt_" + target.id.slice(10));
+    const calculatePercentagePoints = (target, is_percentage = true) => {
         grade_max = document.getElementsByName('grademax')[0].value;
-        input_point.value = (target.value / 100) * grade_max;
+        if (is_percentage){
+            input_point = document.getElementById(target.id.slice(0,10) + "pt_" + target.id.slice(10));
+            input_point.value = (target.value / 100) * grade_max;
+        } else {
+            input_percentage = document.getElementById(target.id.slice(0,10) + target.id.slice(13))
+            input_percentage.value = (target.value / grade_max) * 100;
+        }
     }
 
     const update_reason_inputs = (val) => {
@@ -333,7 +338,9 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                 break;
             default:
                 if (/id_sched(B|A)_\d+/.test(event.target.id)){
-                    calculatePercentage(event.target);
+                    calculatePercentagePoints(event.target);
+                } else if(/id_sched(B|A)_pt_\d+/.test(event.target.id)){
+                    calculatePercentagePoints(event.target, false);
                 }
                 break;
         }
