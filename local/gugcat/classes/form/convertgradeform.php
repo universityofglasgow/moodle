@@ -73,6 +73,14 @@ class convertform extends moodleform {
         $mform->setType('gradetype', PARAM_NOTAGS); 
         $mform->addElement('static', 'maximumgrade', get_string('grademax', 'grades'), intval($activity->gradeitem->grademax)); 
         $mform->setType('maximumgrade', PARAM_NOTAGS); 
+
+        // Radio Button for Points/Percentage
+        $radioarray = array();
+        $radioarray[] = $mform->createElement('radio', 'percentpoints', '', ucfirst(get_string('points', 'grades')), 1, '');
+        $radioarray[] = $mform->createElement('radio', 'percentpoints', '', get_string('percentage', 'grades'), 0, '');
+        $mform->addGroup($radioarray, 'radioar', get_string('conversiontype', 'local_gugcat'), array(' '), false);
+        $mform->setDefault('percentpoints', 1);
+
         $mform->addElement('select', 'scale', get_string('selectscale', 'local_gugcat'), $scales, ['id' => 'select-scale', 'class' => 'mform-custom-select']); 
         $mform->setType('scale', PARAM_NOTAGS); 
         $mform->setDefault('scale', $defaulttype);
@@ -154,6 +162,7 @@ class convertform extends moodleform {
             $html .= html_writer::start_tag('td');
             $mform->addElement('html', $html); 
             $mform->addElement('text', $name."[$index]", null, $prcattr); 
+            $mform->disabledIf($name."[$index]", 'percentpoints', 'checked');
             $mform->setDefault($name."[$index]", is_null($grd->lowerboundary) ? null : floatval($grd->lowerboundary) );
             $mform->setType($name."[$index]", PARAM_NOTAGS);
             $mform->addRule($name."[$index]", null, 'numeric', null, 'client');
@@ -168,6 +177,7 @@ class convertform extends moodleform {
             $html .= html_writer::start_tag('td');
             $mform->addElement('html', $html); 
             $mform->addElement('text', $name."_pt[$index]", null, $pointattr); 
+            $mform->disabledIf($name."_pt[$index]", 'percentpoints', 'notchecked');
             $mform->setDefault($name."_pt[$index]", is_null($grd->lowerboundary) ? null : floatval($grd->lowerboundary) );
             $mform->setType($name."_pt[$index]", PARAM_NOTAGS);
             $mform->addRule($name."_pt[$index]", null, 'numeric', null, 'client');

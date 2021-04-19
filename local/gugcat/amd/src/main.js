@@ -31,6 +31,12 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
         return url.match(path);
     }
 
+    const calculatePercentage = (target) => {
+        input_point = document.getElementById(target.id.slice(0,10) + "pt_" + target.id.slice(10));
+        grade_max = document.getElementsByName('grademax')[0].value;
+        input_point.value = (target.value / 100) * grade_max;
+    }
+
     const update_reason_inputs = (val) => {
         var list = document.querySelectorAll('.input-reason');
         list.forEach(input => input.value = val);
@@ -326,6 +332,9 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                 }
                 break;
             default:
+                if (/id_sched(B|A)_\d+/.test(event.target.id)){
+                    calculatePercentage(event.target);
+                }
                 break;
         }
     }
