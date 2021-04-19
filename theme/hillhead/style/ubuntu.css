@@ -1,0 +1,46 @@
+@font-face {
+    font-family: 'Hillhead';
+    src: url([[font:theme|ubuntu-l.woff]]) format('woff'));
+    font-weight: 300;
+    font-style: normal;
+
+}
+
+@font-face {
+    font-family: 'Hillhead';
+    src: url([[font:theme|ubuntu-li.woff]]) format('woff'));
+    font-weight: 300;
+    font-style: italic;
+
+}
+
+@font-face {
+    font-family: 'Hillhead';
+    src: url([[font:theme|ubuntu-r.woff]]) format('woff'));
+    font-weight: 400;
+    font-style: normal;
+
+}
+
+@font-face {
+    font-family: 'Hillhead';
+    src: url([[font:theme|ubuntu-ri.woff]]) format('woff'));
+    font-weight: 400;
+    font-style: italic;
+
+}
+
+@font-face {
+    font-family: 'Hillhead';
+    src: url([[font:theme|ubuntu-b.woff]]) format('woff'));
+    font-weight: 700;
+    font-style: normal;
+
+}
+
+@font-face {
+    font-family: 'Hillhead';
+    src: url([[font:theme|ubuntu-bi.woff]]) format('woff'));
+    font-weight: 700;
+    font-style: italic;
+}

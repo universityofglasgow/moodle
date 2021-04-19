@@ -1,0 +1,31 @@
+@font-face {
+    font-family: 'Hillhead Mono';
+    src: url([[font:theme|mono-r.woff]]) format('woff'));
+    font-weight: 300;
+    font-style: normal;
+
+}
+
+@font-face {
+    font-family: 'Hillhead Mono';
+    src: url([[font:theme|mono-ri.woff]]) format('woff'));
+    font-weight: 300;
+    font-style: italic;
+
+}
+
+@font-face {
+    font-family: 'Hillhead Mono';
+    src: url([[font:theme|mono-b.woff]]) format('woff'));
+    font-weight: 500;
+    font-style: normal;
+
+}
+
+@font-face {
+    font-family: 'Hillhead Mono';
+    src: url([[font:theme|mono-bi.woff]]) format('woff'));
+    font-weight: 500;
+    font-style: italic;
+
+}
