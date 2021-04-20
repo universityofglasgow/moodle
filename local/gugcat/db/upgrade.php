@@ -141,6 +141,7 @@ function xmldb_local_gugcat_upgrade($oldversion) {
 
         // Gugcat savepoint reached.
         upgrade_plugin_savepoint(true, 2021041601, 'local', 'gugcat');
+    }
 
     return true;
 }
