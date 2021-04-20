@@ -71,7 +71,7 @@ class grade_converter_testcase extends advanced_testcase {
         $expectedgrade = '23'; 
         $modid = $this->cm->gradeitem->id;
         $grdconvert = array(['courseid'=>$this->course->id, 'itemid'=>$modid, 'lowerboundary'=>$expectedlb, 'grade'=>$expectedgrade]);
-        grade_converter::save_grade_conversion($modid, '1', $grdconvert);
+        grade_converter::save_grade_conversion($grdconvert, $modid, '1');
 
         // Test retrieve grade_conversion
         $gradeconvert = grade_converter::retrieve_grade_conversion($modid);
@@ -237,5 +237,21 @@ class grade_converter_testcase extends advanced_testcase {
         // 0 => H
         $alphanumgrd = grade_converter::convert(local_gugcat::$SCHEDULE_B, 0);
         $this->assertEquals($alphanumgrd, 'H');
+    }
+
+    public function test_save_retrieve_conversion_template(){
+        global $USER;
+        // Test save save_new_template
+        $expectedtemplate = 'Template 1';
+        $expectedscaletype = '1';
+        grade_converter::save_new_template($expectedtemplate, $expectedscaletype);
+
+        // Test retrieve grade_conversion
+        $templates = grade_converter::get_conversion_templates();
+        $this->assertNotEmpty($templates);
+        $template = $templates[key($templates)];
+        $this->assertEquals($template->userid, $USER->id);
+        $this->assertEquals($template->templatename, $expectedtemplate);
+        $this->assertEquals($template->scaletype, $expectedscaletype);
     }
 }
