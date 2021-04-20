@@ -215,4 +215,20 @@ class grade_converter{
         );
         return $DB->insert_record('gcat_converter_templates', $data);
     }
+    
+    /**
+     * Converts points to percentage and vise versa
+     * @param int $maxgrade
+     * @param int $grade
+     * @param bool $ispercent
+     * @return int convertedgrade
+     */
+    public static function convert_point_percentage($maxgrade, $grade, $ispoint = true){
+        if($ispoint){
+            return ($grade / $maxgrade) * 100;
+        }
+        else{
+            return ($grade / 100) * $maxgrade;
+        }
+    }
 }

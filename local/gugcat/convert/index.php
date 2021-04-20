@@ -76,6 +76,7 @@ $params = array(
 );
 
 $module = local_gugcat::get_activity($courseid, $modid);
+$maxgrade = $module->gradeitem->grademax;
 
 $returnurl = $indexurl;
 global $SESSION;
@@ -87,13 +88,15 @@ if($mform->is_cancelled()) {
     unset($SESSION->wantsurl);
     redirect($returnurl);
 }else if ($formdata = $mform->get_data()) {
-    $grades = $formdata->scale == SCHEDULE_A ? $formdata->schedA_pt : $formdata->schedB_pt;
+    $ispoints = $formdata->percentpoints == 1 ? true : false;
+    $grades = $ispoints ? ($formdata->scale == SCHEDULE_A ? $formdata->schedA_pt : $formdata->schedB_pt)
+    : ($formdata->scale == SCHEDULE_A ? $formdata->schedA : $formdata->schedB);
     $grades = array_filter($grades, 'strlen');
     if(empty($grades)){
         local_gugcat::notify_error('errorgraderequired');
     }else if(count($grades) != count(array_unique($grades))){
         local_gugcat::notify_error('errorduplicate');
-    }else if(max($grades) > intval($module->gradeitem->grademax)){
+    }else if(($ispoints ? max($grades) : grade_converter::convert_point_percentage($maxgrade, max($grades), false)) > intval($maxgrade)){
         local_gugcat::notify_error('errorexceedmax');
     }else{
         $copy = $grades;
@@ -109,16 +112,12 @@ if($mform->is_cancelled()) {
             }
             
             $conversion = array();
-            !empty($formdata->templatename) && $templateid ? 
-            ($percentages = $formdata->scale == SCHEDULE_A ? $formdata->schedA : $formdata->schedB)
-            : null;
-
-            foreach($percentages as $grade=>$percentage){
+            foreach($grades as $grade=>$grd){
                 if(!empty($formdata->templatename) && $templateid){
-                    //save percentage as decimals
-                    $newtemplate[] = array('templateid'=>$templateid, 'lowerboundary'=>($percentage * 0.01), 'grade'=>$grade);
+                    // save percentage as decimals
+                    $newtemplate[] = array('templateid'=>$templateid, 'lowerboundary'=>$ispoints ? grade_converter::convert_point_percentage($maxgrade, $grd) : $grd, 'grade'=>$grade);
                 }
-                $conversion[] = array('courseid'=>$courseid, 'itemid'=>$modid, 'lowerboundary'=>$percentage, 'grade'=>$grade);
+                $conversion[] = array('courseid'=>$courseid, 'itemid'=>$modid, 'lowerboundary'=>$ispoints ? $grd : grade_converter::convert_point_percentage($maxgrade, $grd, false), 'grade'=>$grade);
             }
             
             // Save template conversions in gcat_grade_converter table
