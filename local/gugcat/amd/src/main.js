@@ -320,16 +320,26 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                             // Assign template scale on the select scale field
                             select_scale.value = template.scaletype;
 
-                            // Name identifier for the input pts
-                            var nameid = template.scaletype != 2 ? "schedA_pt[*]" : "schedB_pt[*]";
-                            
+                            // Name identifier for the input percentages and input points
+
+                            var nameidprc = template.scaletype != 2 ? "schedA[*]" : "schedB[*]";
+                            var nameidpt = template.scaletype != 2 ? "schedA_pt[*]" : "schedB_pt[*]";
+
+                            // Get maximum grade
+                            var maxgrade = document.getElementsByName('grademax')[0].value;
+
                             // Start assigning lowerboundary from template on the input pt fields 
                             var conversions = template.conversion;
+                            precision = Math.pow(10, 2);
                             for (let key in conversions) {
                                 let conv = conversions[key];
-                                let name = nameid.replace("*", conv.grade);
-                                var input = document.querySelector(`.input-pt > div > input[name="${name}"]`);
-                                input.value = parseFloat(conv.lowerboundary);
+                                let nameprc = nameidprc.replace("*", conv.grade);
+                                let namept = nameidpt.replace("*", conv.grade);
+                                var inputprc = document.querySelector(`.input-prc > div > input[name="${nameprc}"]`);
+                                var inputpt = document.querySelector(`.input-pt > div > input[name="${namept}"]`);
+                                let lowerboundary = parseFloat(conv.lowerboundary);
+                                inputprc.value =  lowerboundary;
+                                inputpt.value = Math.ceil((lowerboundary / 100) * maxgrade * precision) / precision; //convert percentage to points
                             }
                         }
                     }).fail(function(e){

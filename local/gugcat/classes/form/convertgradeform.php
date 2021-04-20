@@ -55,6 +55,7 @@ class convertform extends moodleform {
         $defaulttype = $is_converted ? $activity->gradeitem->iteminfo : SCHEDULE_A;
         $existing = grade_converter::retrieve_grade_conversion($activity->gradeitemid);
         $notes = $existing ? 'convertexist' : 'convertnew';
+        $maxgrade = $activity->gradeitem->grademax;
 
         $grades = grade_converter::process_defaults($activity->gradeitem->iteminfo == SCHEDULE_A, local_gugcat::$SCHEDULE_A, $existing);
         $schedB = grade_converter::process_defaults($activity->gradeitem->iteminfo == SCHEDULE_B, local_gugcat::$SCHEDULE_B, $existing);
@@ -71,7 +72,7 @@ class convertform extends moodleform {
         $mform->setType('assessment', PARAM_NOTAGS); 
         $mform->addElement('static', 'gradetype', get_string('gradetype', 'grades'), $gradetypestr[$activity->gradeitem->gradetype]); 
         $mform->setType('gradetype', PARAM_NOTAGS); 
-        $mform->addElement('static', 'maximumgrade', get_string('grademax', 'grades'), intval($activity->gradeitem->grademax)); 
+        $mform->addElement('static', 'maximumgrade', get_string('grademax', 'grades'), intval($maxgrade)); 
         $mform->setType('maximumgrade', PARAM_NOTAGS); 
 
         // Radio Button for Points/Percentage
@@ -89,12 +90,12 @@ class convertform extends moodleform {
         $mform->setDefault('template', 0); 
         // Schedule A tables
         $mform->addElement('html', html_writer::start_tag('div', array('id' => 'table-schedulea', 'class' => 'row'))); 
-        $this->setup_table($schedA1, $mform, 'schedA', $keysA1);
-        $this->setup_table($schedA2, $mform, 'schedA', $keysA2);
+        $this->setup_table($schedA1, $mform, 'schedA', $keysA1, $maxgrade);
+        $this->setup_table($schedA2, $mform, 'schedA', $keysA2, $maxgrade);
         $mform->addElement('html', html_writer::end_tag('div')); 
         // Schedule B table
         $mform->addElement('html', html_writer::start_tag('div', array('id' => 'table-scheduleb', 'class' => 'row hidden'))); 
-        $this->setup_table($schedB, $mform, 'schedB');
+        $this->setup_table($schedB, $mform, 'schedB', null, $maxgrade);
         $mform->addElement('html', html_writer::tag('div', null, array('class' => 'col'))); 
         $mform->addElement('html', html_writer::end_tag('div')); 
 
@@ -119,14 +120,14 @@ class convertform extends moodleform {
         $mform->setType('categoryid', PARAM_INT);
         $mform->addElement('hidden', 'childactivityid', optional_param('childactivityid', null, PARAM_INT));
         $mform->setType('childactivityid', PARAM_INT);
-        $mform->addElement('hidden', 'grademax', intval($activity->gradeitem->grademax));
+        $mform->addElement('hidden', 'grademax', intval($maxgrade));
         $mform->setType('grademax', PARAM_INT);
         $mform->addElement('hidden', 'notes', $notes);
         $mform->setType('notes', PARAM_NOTAGS);
 
     }
 
-    function setup_table($grades, $mform, $name, $keys = array()) {
+    function setup_table($grades, $mform, $name, $keys = array(), $maxgrade) {
         // Percent field attributes
         $prcattr = array(
             'class' => 'input-scale-pt mb-0 input-prc',
@@ -163,7 +164,7 @@ class convertform extends moodleform {
             $mform->addElement('html', $html); 
             $mform->addElement('text', $name."[$index]", null, $prcattr); 
             $mform->disabledIf($name."[$index]", 'percentpoints', 'checked');
-            $mform->setDefault($name."[$index]", is_null($grd->lowerboundary) ? null : floatval($grd->lowerboundary) );
+            $mform->setDefault($name."[$index]", is_null($grd->lowerboundary) ? null : floatval(grade_converter::convert_point_percentage($maxgrade, $grd->lowerboundary)));
             $mform->setType($name."[$index]", PARAM_NOTAGS);
             $mform->addRule($name."[$index]", null, 'numeric', null, 'client');
             if($index == 1){
