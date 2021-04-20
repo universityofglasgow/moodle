@@ -33,12 +33,13 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
 
     const calculatePercentagePoints = (target, is_percentage = true) => {
         grade_max = document.getElementsByName('grademax')[0].value;
+        precision = Math.pow(10, 2);
         if (is_percentage){
             input_point = document.getElementById(target.id.slice(0,10) + "pt_" + target.id.slice(10));
-            input_point.value = (target.value / 100) * grade_max;
+            input_point.value = Math.ceil((target.value / 100) * grade_max * precision) / precision;
         } else {
-            input_percentage = document.getElementById(target.id.slice(0,10) + target.id.slice(13))
-            input_percentage.value = (target.value / grade_max) * 100;
+            input_percentage = document.getElementById(target.id.slice(0,10) + target.id.slice(13));
+            input_percentage.value = Math.ceil((target.value / grade_max) * 100 * precision) / precision;
         }
     }
 
@@ -337,11 +338,6 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                 }
                 break;
             default:
-                if (/id_sched(B|A)_\d+/.test(event.target.id)){
-                    calculatePercentagePoints(event.target);
-                } else if(/id_sched(B|A)_pt_\d+/.test(event.target.id)){
-                    calculatePercentagePoints(event.target, false);
-                }
                 break;
         }
     }
@@ -464,6 +460,15 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                             if(key === 13){
                                 document.getElementById('search-submit').click();
                             }                        
+                        });
+                    });
+                }
+
+                var input_percentage_points = document.querySelectorAll('.input-prc,.input-pt');
+                if(input_percentage_points.length > 0){
+                    input_percentage_points.forEach(input => {
+                        input.addEventListener('change', (e) =>{
+                            calculatePercentagePoints(e.target, input.classList.contains('input-prc'));
                         });
                     });
                 }
