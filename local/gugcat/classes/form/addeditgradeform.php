@@ -27,7 +27,6 @@ defined('MOODLE_INTERNAL') || die();
 require_once("$CFG->libdir/formslib.php");
 require_once($CFG->dirroot . '/local/gugcat/locallib.php');
 class addeditgradeform extends moodleform {
-    public $is_converted = false;
     //Add elements to form
     public function definition() {
         $mform = $this->_form; // Don't forget the underscore! 
@@ -42,8 +41,7 @@ class addeditgradeform extends moodleform {
         $mform->hideIf('otherreason', 'reasons', 'neq', 8); 
         $mform->addElement('hidden', 'gradetype', $activity->gradeitem->gradetype); 
         $mform->setType('gradetype', PARAM_NOTAGS);
-        $this->is_converted = !is_null($activity->gradeitem->iteminfo);
-        if($activity->gradeitem->gradetype == GRADE_TYPE_VALUE && !$this->is_converted){
+        if($activity->gradeitem->gradetype == GRADE_TYPE_VALUE){
             $gm = intval($activity->gradeitem->grademax);
             $mform->addElement('hidden', 'grademax', $gm); 
             $mform->setType('grademax', PARAM_NOTAGS);
@@ -95,7 +93,7 @@ class addeditgradeform extends moodleform {
     function validation($data, $files) {
         $errors = parent::validation($data, $files);
         $newgrade = $data['grade'];
-        if ($data['gradetype'] == GRADE_TYPE_VALUE && !$this->is_converted && is_numeric($newgrade) && $newgrade > $data['grademax']) {
+        if ($data['gradetype'] == GRADE_TYPE_VALUE && is_numeric($newgrade) && $newgrade > $data['grademax']) {
             $errors['grade'] = get_string('errorinputpoints', 'local_gugcat');
         }  
         return $errors;
