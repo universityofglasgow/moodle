@@ -23,6 +23,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use local_gugcat\api;
 use local_gugcat\grade_capture;
 use local_gugcat\grade_converter;
 
@@ -71,13 +72,13 @@ class grade_converter_testcase extends advanced_testcase {
         $expectedgrade = '23'; 
         $modid = $this->cm->gradeitem->id;
         $grdconvert = array(['courseid'=>$this->course->id, 'itemid'=>$modid, 'lowerboundary'=>$expectedlb, 'grade'=>$expectedgrade]);
-        grade_converter::save_grade_conversion($modid, '1', $grdconvert);
+        grade_converter::save_grade_conversion($grdconvert, $modid, '1');
 
         // Test retrieve grade_conversion
         $gradeconvert = grade_converter::retrieve_grade_conversion($modid);
         $this->assertNotEmpty($gradeconvert);
         $gc = $gradeconvert[key($gradeconvert)];
-        $this->assertEquals($gc->lowerboundary, $expectedlb);
+        $this->assertEquals($gc->lowerboundary, "$expectedlb.00000");
         $this->assertEquals($gc->grade, $expectedgrade);
 
         // Test delete grade_conversion
@@ -222,20 +223,74 @@ class grade_converter_testcase extends advanced_testcase {
 
         // Test 22 pt with schedule B conversion
         local_gugcat::set_grade_scale();
-        // 22 => A0
-        $alphanumgrd = grade_converter::convert(local_gugcat::$SCHEDULE_B, 22);
+        // 23 => A0
+        $alphanumgrd = grade_converter::convert(local_gugcat::$SCHEDULE_B, 23);
         $this->assertEquals($alphanumgrd, 'A0');
-        // 17 => B0
-        $alphanumgrd = grade_converter::convert(local_gugcat::$SCHEDULE_B, 17);
+        // 18 => B0
+        $alphanumgrd = grade_converter::convert(local_gugcat::$SCHEDULE_B, 18);
         $this->assertEquals($alphanumgrd, 'B0');
-        // 10 => D0
+        // 10 => E0
         $alphanumgrd = grade_converter::convert(local_gugcat::$SCHEDULE_B, 10);
-        $this->assertEquals($alphanumgrd, 'D0');
-        // 2 => G1
-        $alphanumgrd = grade_converter::convert(local_gugcat::$SCHEDULE_B, 2);
+        $this->assertEquals($alphanumgrd, 'E0');
+        // 3 => G0
+        $alphanumgrd = grade_converter::convert(local_gugcat::$SCHEDULE_B, 3);
         $this->assertEquals($alphanumgrd, 'G0');
-        // 0 => H
-        $alphanumgrd = grade_converter::convert(local_gugcat::$SCHEDULE_B, 0);
+        // 1 => H
+        $alphanumgrd = grade_converter::convert(local_gugcat::$SCHEDULE_B, 1);
         $this->assertEquals($alphanumgrd, 'H');
+    }
+
+    public function test_save_retrieve_conversion_template(){
+        global $USER;
+        // Test save save_new_template
+        $expectedtemplate = 'Template 1';
+        $expectedscaletype = '1';
+        grade_converter::save_new_template($expectedtemplate, $expectedscaletype);
+
+        // Test retrieve grade_conversion
+        $templates = grade_converter::get_conversion_templates();
+        $this->assertNotEmpty($templates);
+        $template = $templates[key($templates)];
+        $this->assertEquals($template->userid, $USER->id);
+        $this->assertEquals($template->templatename, $expectedtemplate);
+        $this->assertEquals($template->scaletype, $expectedscaletype);
+    }
+
+    public function test_get_converter_template_data_api(){  
+        global $USER;    
+        $templateid = null;
+        $templatedata = api::get_converter_template_data($templateid);
+        // Assert null if no template yet
+        $this->assertFalse($templatedata);
+
+        // Save a new template using grade_converter::save_new_template
+        $expectedtemplate = 'Template 1';
+        $expectedscaletype = '1';
+        $templateid = grade_converter::save_new_template($expectedtemplate, $expectedscaletype);
+
+        // Save template grade_conversion
+        $expectedlb = '93';
+        $expectedgrade = '23'; 
+        $grdconvert = array(['templateid'=>$templateid, 'lowerboundary'=>$expectedlb, 'grade'=>$expectedgrade]);
+        grade_converter::save_grade_conversion($grdconvert);
+    
+        $templatedata = api::get_converter_template_data($templateid);
+
+        // Assert return is json string
+        $this->assertJson($templatedata);
+
+        // Convert json string to object
+        $template = json_decode($templatedata);
+        $this->assertEquals($template->id, $templateid);
+        $this->assertEquals($template->userid, $USER->id);
+        $this->assertEquals($template->templatename, $expectedtemplate);
+        $this->assertEquals($template->scaletype, $expectedscaletype);
+
+        $conversion = reset($template->conversion);
+        $this->assertEquals($conversion->lowerboundary, "$expectedlb.00000");
+        $this->assertEquals($conversion->grade, $expectedgrade);
+        $this->assertEquals($conversion->templateid, $templateid);
+        $this->assertNull($conversion->itemid);
+        $this->assertNull($conversion->courseid);
     }
 }
