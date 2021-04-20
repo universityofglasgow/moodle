@@ -163,7 +163,7 @@ class convertform extends moodleform {
             $mform->addElement('html', $html); 
             $mform->addElement('text', $name."[$index]", null, $prcattr); 
             $mform->disabledIf($name."[$index]", 'percentpoints', 'checked');
-            $mform->setDefault($name."[$index]", is_null($grd->lowerboundary) ? null : floatval($grd->lowerboundary) );
+            $mform->setDefault($name."[$index]", null);
             $mform->setType($name."[$index]", PARAM_NOTAGS);
             $mform->addRule($name."[$index]", null, 'numeric', null, 'client');
             if($index == 1){

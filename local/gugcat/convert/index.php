@@ -109,11 +109,16 @@ if($mform->is_cancelled()) {
             }
             
             $conversion = array();
-            foreach($grades as $grade=>$grd){
+            !empty($formdata->templatename) && $templateid ? 
+            ($percentages = $formdata->scale == SCHEDULE_A ? $formdata->schedA : $formdata->schedB)
+            : null;
+
+            foreach($percentages as $grade=>$percentage){
                 if(!empty($formdata->templatename) && $templateid){
-                    $newtemplate[] = array('templateid'=>$templateid, 'lowerboundary'=>$grd, 'grade'=>$grade);
+                    //save percentage as decimals
+                    $newtemplate[] = array('templateid'=>$templateid, 'lowerboundary'=>($percentage * 0.01), 'grade'=>$grade);
                 }
-                $conversion[] = array('courseid'=>$courseid, 'itemid'=>$modid, 'lowerboundary'=>$grd, 'grade'=>$grade);
+                $conversion[] = array('courseid'=>$courseid, 'itemid'=>$modid, 'lowerboundary'=>$percentage, 'grade'=>$grade);
             }
             
             // Save template conversions in gcat_grade_converter table
