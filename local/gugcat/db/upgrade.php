@@ -76,7 +76,7 @@ function xmldb_local_gugcat_upgrade($oldversion) {
     $table_cvt_courseid = new xmldb_field('courseid', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
     $table_cvt_itemid = new xmldb_field('itemid', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
     $table_cvt_templateid = new xmldb_field('templateid', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
-    $table_cvt_lowerboundary = new xmldb_field('lowerboundary', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+    $table_cvt_lowerboundary = new xmldb_field('lowerboundary', XMLDB_TYPE_NUMBER, '10,5', null, XMLDB_NOTNULL, null, '0');
     $table_cvt_grade = new xmldb_field('grade', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
     
     // Define keys to table gcat_grade_converter.
@@ -127,6 +127,20 @@ function xmldb_local_gugcat_upgrade($oldversion) {
 
         // Gugcat savepoint reached.
         upgrade_plugin_savepoint(true, 2021041600, 'local', 'gugcat');
+    }
+    if ($oldversion < 2021041601) {
+        
+        // Conditionally launch create table for gcat_grade_converter.
+        if($dbman->table_exists($table_cvt)) {
+            if($dbman->field_exists($table_cvt, $table_cvt_lowerboundary)){
+                $dbman->change_field_type($table_cvt, $table_cvt_lowerboundary);
+            }
+        }else{
+            $dbman->create_table($table_cvt);
+        }
+
+        // Gugcat savepoint reached.
+        upgrade_plugin_savepoint(true, 2021041601, 'local', 'gugcat');
     }
 
     return true;
