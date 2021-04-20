@@ -87,7 +87,7 @@ function xmldb_local_gugcat_upgrade($oldversion) {
     $table_cvt_index1 = new xmldb_index('courseid', XMLDB_INDEX_NOTUNIQUE, array('courseid'));
     $table_cvt_index2 = new xmldb_index('itemid', XMLDB_INDEX_NOTUNIQUE, array('itemid'));
 
-    if ($oldversion < 2021041601) {
+    if ($oldversion < 2021041600) {
 
         // Adding fields to table gcat_converter_templates.
         $table_tpl->addField($table_tpl_id);
@@ -118,6 +118,17 @@ function xmldb_local_gugcat_upgrade($oldversion) {
         // Adding indexes to table gcat_grade_converter.
         $table_cvt->addIndex($table_cvt_index1);
         $table_cvt->addIndex($table_cvt_index2);
+        
+        // Conditionally launch create table for gcat_grade_converter.
+        if($dbman->table_exists($table_cvt)) {
+            $dbman->drop_table($table_cvt);
+        }
+        $dbman->create_table($table_cvt);
+
+        // Gugcat savepoint reached.
+        upgrade_plugin_savepoint(true, 2021041600, 'local', 'gugcat');
+    }
+    if ($oldversion < 2021041601) {
         
         // Conditionally launch create table for gcat_grade_converter.
         if($dbman->table_exists($table_cvt)) {

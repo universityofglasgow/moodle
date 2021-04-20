@@ -224,11 +224,6 @@ class grade_converter{
      * @return int convertedgrade
      */
     public static function convert_point_percentage($maxgrade, $grade, $ispoint = true){
-        if($ispoint){
-            return ($grade / $maxgrade) * 100;
-        }
-        else{
-            return ($grade / 100) * $maxgrade;
-        }
+            return $ispoint ? (($grade / $maxgrade) * 100) : (($grade / 100) * $maxgrade);
     }
 }
