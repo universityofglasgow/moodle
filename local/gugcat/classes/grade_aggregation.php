@@ -539,8 +539,18 @@ class grade_aggregation{
                 rsort($modes, SORT_NUMERIC);       // get highest mode
                 $agg_grade = reset($modes);
                 break;
-            case GRADE_AGGREGATE_MEAN:
             case GRADE_AGGREGATE_SUM:
+                if(reset($items)->gradetype == GRADE_TYPE_VALUE){
+                    $sum = array_sum($grade_values);
+                    $grademax = array_sum(array_column($items, 'grademax'));
+                    $agg_grade = ($sum / $grademax) * 100;
+                }else{
+                    $num = count($grade_values);
+                    $sum = array_sum($grades);
+                    $agg_grade = $sum / $num;
+                }
+                break;
+            case GRADE_AGGREGATE_MEAN:
             default:
                 $num = count($grade_values);
                 $sum = array_sum($grades);
