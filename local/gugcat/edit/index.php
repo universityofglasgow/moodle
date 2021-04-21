@@ -41,7 +41,7 @@ $page = optional_param('page', 0, PARAM_INT);
 require_login($courseid);
 $urlparams = array('id' => $courseid, 'activityid' => $activityid, 'studentid' => $studentid, 'overview' => $overview, 'page' => $page);
 $URL = new moodle_url('/local/gugcat/edit/index.php', $urlparams);
-is_null($categoryid) ? null : $URL->param('categoryid', $categoryid);
+(!is_null($categoryid) && $categoryid != 0) ? null : $URL->param('categoryid', $categoryid);
 $indexurl = new moodle_url('/local/gugcat/index.php', array('id' => $courseid));
 
 $modid = $activityid;
@@ -68,14 +68,16 @@ require_capability('local/gugcat:view', $coursecontext);
 
 $student = $DB->get_record('user', array('id'=>$studentid, 'deleted'=>0), '*', MUST_EXIST);
 $module = local_gugcat::get_activity($courseid, $modid);
-$is_converted = !is_null($module->gradeitem->iteminfo);
 $scaleid = $module->gradeitem->scaleid;
 
 if (is_null($scaleid) && local_gugcat::is_grademax22($module->gradeitem->gradetype, $module->gradeitem->grademax)){
     $scaleid = null;
 }
-
-local_gugcat::set_grade_scale($scaleid);
+if($is_converted = $module->is_converted){
+    local_gugcat::set_grade_scale(null, $is_converted);
+}else{
+    local_gugcat::set_grade_scale($scaleid);
+}
 local_gugcat::set_prv_grade_id($courseid, $module);
 $grading_info = grade_get_grades($courseid, 'mod', $module->modname, $module->instance, $studentid);
 $gradeitems = local_gugcat::get_grade_grade_items($course, $module);
@@ -88,7 +90,7 @@ foreach($gradeitems as $i=>$gi){
 }
 $gradeversions = local_gugcat::filter_grade_version($gradeitems, $studentid);
 
-$mform = new addeditgradeform(null, array('id'=>$courseid, 'page'=>$page, 'categoryid'=>$categoryid, 'activity'=>$module, 'studentid'=>$studentid, 'overview' => $overview));
+$mform = new addeditgradeform(null, array('id'=>$courseid, 'activity'=>$module, 'studentid'=>$studentid, 'overview' => $overview));
 if ($fromform = $mform->get_data()) {
     $gradereason = ($fromform->reasons == 8) ? $fromform->otherreason : local_gugcat::get_reasons()[$fromform->reasons];
     $grade = !is_numeric($fromform->grade) ? array_search(strtoupper($fromform->grade), local_gugcat::$GRADES) : $fromform->grade; 
@@ -123,11 +125,12 @@ if ($fromform = $mform->get_data()) {
     $event->trigger();
     //check if activity is a subcat component.'
     if($module->gradeitem->parent_category->parent === strval($categoryid)){
-        //get subcategory gradeitem id
-        $subcatid = local_gugcat::get_grade_item_id($courseid, $module->gradeitem->categoryid, get_string('subcategorygrade', 'local_gugcat'));
-        $scale = $DB->get_field('grade_items', 'iteminfo', array('courseid'=>$courseid, 'itemtype'=>'category', 'iteminstance'=>$module->gradeitem->categoryid));
-        $fields = 'itemid, id, rawgrade, finalgrade, overridden';
+        // Get Subcategory prv grade item id and idnumber
+        $prvgrd = local_gugcat::get_gradeitem_converted_flag($module->gradeitem->categoryid, true);
+        $subcatid = $prvgrd->id;
+        $scale = $prvgrd->idnumber;
         // Get provisional grades
+        $fields = 'itemid, id, rawgrade, finalgrade, overridden';
         $grade = $DB->get_record('grade_grades', array('itemid' => $subcatid, 'userid'=>$studentid), $fields);
         $notes = $scale && !empty($scale) ? 'grade -'.$scale : 'grade';
         $grd = !is_null($grade->finalgrade) ? $grade->finalgrade 
@@ -147,12 +150,10 @@ if ($fromform = $mform->get_data()) {
         $url = new moodle_url('/local/gugcat/overview/index.php', array('id' => $courseid, 'page'=> $page));
         (!is_null($categoryid) && $categoryid != 0) ? $url->param('categoryid', $categoryid) : null;
         redirect($url);
-    }
-    else{
+    }else{
         $url = new moodle_url('/local/gugcat/index.php', array('id' => $courseid, 'activityid' => $activityid, 'page'=> $page));
         (!is_null($categoryid) && $categoryid != 0) ? $url->param('categoryid', $categoryid) : null;
-        !is_null($childactivityid) ? $url->param('childactivityid',$childactivityid) : null;
-
+        (!is_null($childactivityid) && $childactivityid != 0) ? $url->param('childactivityid', $childactivityid) : null;
         redirect($url);
     }
     exit;

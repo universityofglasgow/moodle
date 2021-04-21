@@ -40,7 +40,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $SESSION->wantsurl = $this->page->url;
         $courseid = $this->page->course->id;
         $is_blind_marking = local_gugcat::is_blind_marking($this->page->cm);
-        $is_converted = ($selectedmodule) ? !is_null($selectedmodule->gradeitem->iteminfo) : false;
+        $is_converted = ($selectedmodule) ? $selectedmodule->is_converted : false;
         $modid = (($selectedmodule) ? $selectedmodule->gradeitemid : null);
         $categoryid = optional_param('categoryid', null, PARAM_INT);
         $activityid = optional_param('activityid', null, PARAM_INT);
@@ -55,26 +55,23 @@ class local_gugcat_renderer extends plugin_renderer_base {
             $childactivityid = $selectedmodule->gradeitemid;
         }
         $ammendgradeparams = "?id=$courseid&activityid=$modid&page=$page";
+    
+        //add category id and childactivityid in the url parameters if not null
+        if(!is_null($categoryid)){
+            $ammendgradeparams .= '&categoryid=' . $categoryid;
+        }
+        if(!is_null($childactivityid)){
+            $ammendgradeparams .= '&childactivityid=' .$childactivityid;
+        }
+
+        // Url action form
+        $actionurl = "index.php$ammendgradeparams";
+        // Add grade page url
+        $addgradeurl = new moodle_url('/local/gugcat/add/index.php').$ammendgradeparams;
         // Upload page url
         $uploadurl = new moodle_url('/local/gugcat/import/index.php').$ammendgradeparams;
         // Convert page url
         $converturl = new moodle_url('/local/gugcat/convert/index.php').$ammendgradeparams;
-
-        //url action form
-        $actionurl = "index.php?id=$courseid&activityid=$modid&page=$page";
-        //add category id in the url if not null
-        if(!is_null($categoryid)){
-            $actionurl .= '&categoryid=' . $categoryid;
-            $uploadurl .= '&categoryid=' . $categoryid;
-            $converturl .= '&categoryid=' . $categoryid;
-            $ammendgradeparams .= '&categoryid=' . $categoryid;
-        }
-        if(!is_null($childactivityid)){
-            $actionurl .= '&childactivityid=' .$childactivityid;
-            $uploadurl .= "&childactivityid=$childactivityid";
-            $converturl .= "&childactivityid=$childactivityid";
-            $ammendgradeparams .= '&childactivityid=' .$childactivityid;
-        }
         //reindex activities, childactivities, and grades array
         $activities = array_values($activities_);
         $childactivities = !empty($childactivities_) ? array_values($childactivities_) : null;
@@ -122,11 +119,6 @@ class local_gugcat_renderer extends plugin_renderer_base {
             $gradefield = ($gt == GRADE_TYPE_VALUE)
             ? $inputgrdpt
             : $this->display_custom_select($grades, 'newgrades['.$row->studentno.']', get_string('choosegrade', 'local_gugcat'), 'multi-select-grade');
-            //url to add new grade
-            $addformurl = new moodle_url('/local/gugcat/add/index.php', array('id' => $courseid, 'activityid' => (($selectedmodule) ? $selectedmodule->gradeitemid : null), 'studentid' => $row->studentno, 'page' => $page));
-            if (!is_null($categoryid)){
-                $addformurl->param('categoryid', $categoryid);
-            }
             $htmlrows .= html_writer::start_tag('tr');
             $htmlrows .= html_writer::tag('td', $row->idnumber);
             if(!$is_blind_marking){
@@ -162,7 +154,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
             // ----------COMMENT OUT FOR NOW
             // $htmlrows .= $displayreleasedgrade ? html_writer::tag('td', is_null($row->releasedgrade) ? get_string('nograde', 'local_gugcat') : $row->releasedgrade,array('class' => 'font-weight-bold') ) : null;
             $htmlrows .= '<td>
-                            <button type="button" class="btn btn-default addnewgrade" onclick="location.href=\''.$addformurl.'\'">
+                            <button type="button" class="btn btn-default addnewgrade" onclick="location.href=\''.$addgradeurl."&studentid=$row->studentno".'\'">
                                 '.get_string('addnewgrade', 'local_gugcat').'
                             </button>     
                     </td>';
@@ -278,7 +270,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
             array('data-categoryid' => $act->id, 'type' => 'button', 'class' => 'btn btn-colexp'));
             $convertgrdparams = "?id=$courseid&activityid=$act->gradeitemid&page=$page" . $historyeditcategory;
             $is_imported = false;
-            $is_converted = !is_null($act->gradeitem->iteminfo) && !empty($act->gradeitem->iteminfo);
+            $is_converted = $act->is_converted;
             //if module is converted then change the value for issubcatconvert to true, else original value.
             $isconvertsubcat = $is_converted ? true : $isconvertsubcat; 
             if($act->modname == 'category'){
