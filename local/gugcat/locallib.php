@@ -1052,6 +1052,12 @@ class local_gugcat {
         (is_null($scaleid) && $gt == 1) ? null : local_gugcat::set_grade_scale($scaleid);
         if($gradehistory_arr > 0){
             $gradehistory_arr = array_values($gradehistory_arr);
+            //remove from array if feedback has weightchangesubcat
+            foreach($gradehistory_arr as $key=>$gradehistory){
+                if(preg_match('/\bweightchangesubcat/i', $gradehistory->feedback)){
+                    unset($gradehistory_arr[$key]);
+                }
+            }
             foreach($gradehistory_arr as $key=>$gradehistory){
                 isset($rows[$i]) ? null : $rows[$i] = new stdClass();
                 isset($rows[$i]->grades) ? null : $rows[$i]->grades = array();
