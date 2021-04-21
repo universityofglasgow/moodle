@@ -293,4 +293,15 @@ class grade_converter_testcase extends advanced_testcase {
         $this->assertNull($conversion->itemid);
         $this->assertNull($conversion->courseid);
     }
+    
+    public function test_convert_point_percentage(){
+        $maxgrade = 100;
+        $grade = 80;
+        $expectedpercent = 80;
+        $percent = grade_converter::convert_point_percentage($maxgrade,$grade, false);
+        $this->assertEquals($percent, $expectedpercent);
+
+        $convertedgrade = grade_converter::convert_point_percentage($maxgrade, $percent);
+        $this->assertEquals($convertedgrade, $grade);
+    }
 }
