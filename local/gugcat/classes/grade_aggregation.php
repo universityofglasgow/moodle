@@ -604,7 +604,7 @@ class grade_aggregation{
             $prvgrdid = local_gugcat::get_grade_item_id($courseid, $id, $itemname);
             $grade_ = new grade_grade(array('userid' => $studentid, 'itemid' => $prvgrdid), true);
             $grade_->information = $weight;
-            $grade_->feedback = ($gradeitem->itemtype == 'category') ? null : $notes;
+            $grade_->feedback = ($gradeitem->itemtype == 'category') ? $notes .' weightchangesubcat' : $notes;
             $grade_->timemodified = time();
             $grade_->update();  
         }
@@ -753,6 +753,7 @@ class grade_aggregation{
 
         $rows = array();
         foreach ($modules as $mod) {
+            $prvgrdid = $mod->provisionalid;
             $i = 0;
             $mod->scaleid = $mod->gradeitem->scaleid;
             $scaleid = $mod->scaleid;
@@ -761,14 +762,19 @@ class grade_aggregation{
             }
             local_gugcat::set_grade_scale($scaleid);
             //get provisional grades
-            $prvgrdstr = get_string('provisionalgrd', 'local_gugcat');
-            $prvgrdid = local_gugcat::get_grade_item_id($course->id, $mod->gradeitemid, $prvgrdstr);
             $sort = 'id DESC';
             $fields = 'id, itemid, rawgrade, finalgrade, feedback, timemodified, usermodified, information';
-            $select = 'feedback IS NOT NULL AND rawgrade IS NOT NULL AND itemid='.$prvgrdid.' AND '.' userid="'.$student->id.'"'; 
+            $select = "feedback IS NOT NULL AND feedback <> '' AND rawgrade IS NOT NULL AND itemid=$prvgrdid AND userid=$student->id";
             $gradehistory_arr = $DB->get_records_select('grade_grades_history', $select, null, $sort, $fields);
             if($gradehistory_arr > 0){
                 foreach($gradehistory_arr as $gradehistory){
+                    if($mod->modname == 'category'){
+                        if(preg_match('/\bweightchangesubcat/i', $gradehistory->feedback)){
+                            $gradehistory->feedback = preg_replace('/\bweightchangesubcat/i', '', $gradehistory->feedback);
+                        }else{
+                            continue;
+                        }
+                    }
                     isset($rows[$i]) ? null : $rows[$i] = new stdClass();
                     isset($rows[$i]->grades) ? null : $rows[$i]->grades = array();
                     $rows[$i]->timemodified = $gradehistory->timemodified;
@@ -787,13 +793,11 @@ class grade_aggregation{
             //add first course grade history
             $grditemresit = self::is_resit($mod);
             if(!$grditemresit){
-                $prvgrdstr = get_string('provisionalgrd', 'local_gugcat');
-                $prvgrdid = local_gugcat::get_grade_item_id($course->id, $mod->gradeitemid, $prvgrdstr);
                 $sort = 'id ASC';
-                $select = 'information IS NOT NULL AND rawgrade IS NOT NULL AND itemid='.$prvgrdid.' AND '.' userid="'.$student->id.'"'; 
+                $select = 'information IS NOT NULL AND rawgrade IS NOT NULL AND itemid='.$mod->provisionalid.' AND '.' userid="'.$student->id.'"'; 
                 //if grdhistory did not get the first provisional grade, get it to gradebook
                 if(!$gradehistory = $DB->get_records_select('grade_grades_history', $select, null, $sort, '*', 0, 1))
-                    $grdhistoryobj = $DB->get_record('grade_grades', array('itemid'=>$prvgrdid, 'userid'=>$student->id));
+                    $grdhistoryobj = $DB->get_record('grade_grades', array('itemid'=>$mod->provisionalid, 'userid'=>$student->id));
                 else{
                     $grdhistoryobj = $gradehistory[key($gradehistory)];
                 } 

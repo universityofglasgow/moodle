@@ -55,6 +55,22 @@ require_capability('local/gugcat:view', $coursecontext);
 
 $student = $DB->get_record('user', array('id'=>$studentid, 'deleted'=>0), '*', MUST_EXIST);
 $modules = local_gugcat::get_activities($courseid);
+if(!is_null($categoryid) && $categoryid != 0){
+    // Retrieve sub categories
+    $gcs = grade_category::fetch_all(array('courseid' => $courseid, 'parent' => $categoryid));
+
+    $gradecatgi = array();
+    if(!empty($gcs)){
+        foreach ($gcs as $gc){
+            $gi = local_gugcat::get_category_gradeitem($courseid, $gc);
+            $gi->name = preg_replace('/\b total/i', '', $gi->name);
+            $gradecatgi[$gi->gradeitemid] = $gi; 
+        }
+        //merging two arrays without changing their index.
+        $modules = $modules + $gradecatgi;
+    }
+}
+
 $student->cnum = $cnum;
 
 $gradehistory = grade_aggregation::get_course_grade_history($course, $modules, $student);
