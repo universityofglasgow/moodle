@@ -163,7 +163,6 @@ class convertform extends moodleform {
             $html .= html_writer::start_tag('td');
             $mform->addElement('html', $html); 
             $mform->addElement('text', $name."[$index]", null, $prcattr); 
-            $mform->disabledIf($name."[$index]", 'percentpoints', 'checked');
             $mform->setDefault($name."[$index]", is_null($grd->lowerboundary) ? null : floatval(grade_converter::convert_point_percentage($maxgrade, $grd->lowerboundary)));
             $mform->setType($name."[$index]", PARAM_NOTAGS);
             $mform->addRule($name."[$index]", null, 'numeric', null, 'client');
@@ -178,7 +177,17 @@ class convertform extends moodleform {
             $html .= html_writer::start_tag('td');
             $mform->addElement('html', $html); 
             $mform->addElement('text', $name."_pt[$index]", null, $pointattr); 
-            $mform->disabledIf($name."_pt[$index]", 'percentpoints', 'notchecked');
+            if($grd->grade == 'H'){
+                $mform->setDefault($name."[$index]", 0);
+                $mform->setDefault($name."_pt[$index]", 0);
+                $mform->disabledIf($name."[$index]", 'percentpoints', 'checked');
+                $mform->disabledIf($name."_pt[$index]", 'percentpoints', 'notchecked');
+                $mform->disabledIf($name."[$index]", 'percentpoints', 'notchecked');
+                $mform->disabledIf($name."_pt[$index]", 'percentpoints', 'checked');
+            } else {
+                $mform->disabledIf($name."[$index]", 'percentpoints', 'checked');
+                $mform->disabledIf($name."_pt[$index]", 'percentpoints', 'notchecked');
+            }
             $mform->setDefault($name."_pt[$index]", is_null($grd->lowerboundary) ? null : floatval($grd->lowerboundary) );
             $mform->setType($name."_pt[$index]", PARAM_NOTAGS);
             $mform->addRule($name."_pt[$index]", null, 'numeric', null, 'client');
