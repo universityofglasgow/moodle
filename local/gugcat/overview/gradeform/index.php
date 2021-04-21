@@ -129,7 +129,7 @@ if ($fromform = $mform->get_data()) {
         if($gradeitemid = local_gugcat::get_grade_item_id($courseid, $id, $itemname)){
             $grade = !is_numeric($fromform->override) ? array_search(strtoupper($fromform->override), local_gugcat::$GRADES) : $fromform->override; 
             //if subcat get scaleid 
-            $scale = $is_subcat ? $subcatactivity->gradeitem->iteminfo : null;
+            $scale = $is_subcat ? $subcatactivity->is_converted : null;
             //if scaleid is not empty or null, then add the scale to notes
             $notes = !is_null($scale) && !empty($scale) ? $fromform->notes." -".$scale : $fromform->notes;
             local_gugcat::update_grade($studentid, $gradeitemid, $grade, $notes, time());

@@ -51,14 +51,14 @@ class convertform extends moodleform {
         $templates[0] = get_string('selectconversion', 'local_gugcat');
 
         $activity = $this->_customdata['activity'];
-        $is_converted = !is_null($activity->gradeitem->iteminfo) && !empty($activity->gradeitem->iteminfo);
-        $defaulttype = $is_converted ? $activity->gradeitem->iteminfo : SCHEDULE_A;
+        $is_converted = $activity->is_converted;
+        $defaulttype = $is_converted ? $is_converted : SCHEDULE_A;
         $existing = grade_converter::retrieve_grade_conversion($activity->gradeitemid);
         $notes = $existing ? 'convertexist' : 'convertnew';
         $maxgrade = $activity->gradeitem->grademax;
 
-        $grades = grade_converter::process_defaults($activity->gradeitem->iteminfo == SCHEDULE_A, local_gugcat::$SCHEDULE_A, $existing);
-        $schedB = grade_converter::process_defaults($activity->gradeitem->iteminfo == SCHEDULE_B, local_gugcat::$SCHEDULE_B, $existing);
+        $grades = grade_converter::process_defaults($activity->is_converted == SCHEDULE_A, local_gugcat::$SCHEDULE_A, $existing);
+        $schedB = grade_converter::process_defaults($activity->is_converted == SCHEDULE_B, local_gugcat::$SCHEDULE_B, $existing);
         // Divide schedule A into two array
         $schedA1 = array_slice($grades, 0, (count($grades) / 2)+1);
         $schedA2 = array_slice($grades, (count($grades) / 2)+1);

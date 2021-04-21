@@ -94,20 +94,19 @@ class grade_aggregation{
                     // provisional grade (subcategory) grade item of the subcategory
                     if($DB->record_exists_select('grade_items', "itemname = '$moodlestr' AND ($componentsql)")){
                         // $mod->id - sub category id 
-                        $prvgrdid = local_gugcat::get_grade_item_id($course->id, $mod->id, get_string('subcategorygrade', 'local_gugcat'));
+                        $prvgrdid = $mod->provisionalid;
                         $mod->aggregation_type = $DB->get_field('grade_items', 'calculation', array('id'=>$prvgrdid));
                     }
                 }
                 $gbgrades = grade_get_grades($course->id, 'category', null, $mod->instance, array_keys($students));
             }else{
-                $prvgrdid = local_gugcat::set_prv_grade_id($course->id, $mod);
+                $prvgrdid = $mod->provisionalid;
                 $gbgrades = grade_get_grades($course->id, 'mod', $mod->modname, $mod->instance, array_keys($students));
             }
 
             $fields = 'userid, itemid, id, rawgrade, finalgrade, information, timemodified, overridden';
             // Get provisional grades
             $grades->provisional = is_null($prvgrdid) ? array() : $DB->get_records('grade_grades', array('itemid' => $prvgrdid), 'id', $fields);
-            $mod->is_converted = !is_null($mod->gradeitem->iteminfo) && !empty($mod->gradeitem->iteminfo);
             if($mod->is_converted){
                 $mod->conversion = grade_converter::retrieve_grade_conversion($mod->gradeitemid);
                 $cvtgrdid = local_gugcat::get_grade_item_id($course->id, $mod->gradeitemid, get_string('convertedgrade', 'local_gugcat'));
@@ -178,7 +177,7 @@ class grade_aggregation{
                     $grade = ($grade === (float)0) ? number_format(0, 3) : $grade;
                     if($item->is_converted && !is_null($grd)){
                         $is_scale = true;
-                        $grade = local_gugcat::convert_grade($grd, null, $item->gradeitem->iteminfo);
+                        $grade = local_gugcat::convert_grade($grd, null, $item->is_converted);
                     }
                     $weight = local_gugcat::is_child_activity($item) ? 0 : (!is_null($pg) ? (float)$pg->information : 0); //get weight from information column of provisional grades
                     // Only aggregate grades that are:
@@ -344,7 +343,7 @@ class grade_aggregation{
         // If calculation field is empty, then update it with aggregation type
         if($pgobj){
             is_null($subcatobj->aggregation_type) ? $DB->set_field('grade_items', 'calculation', $subcatobj->aggregation, array('id'=>$pgobj->itemid)) : null;
-            $scale = $subcatobj->is_converted ? $subcatobj->gradeitem->iteminfo : null;
+            $scale = $subcatobj->is_converted ? $subcatobj->is_converted : null;
             if(!is_null($subcatobj->aggregation_type) && $subcatobj->aggregation_type != $subcatobj->aggregation){
                 $notes = !is_null($scale) && !empty($scale) ? 'aggregation -'.$scale : 'aggregation';
                 //update feedback field for subcat and child components prvgrade 
@@ -371,17 +370,16 @@ class grade_aggregation{
         $is_schedule_a = false;
         $firstgi = null;
         // Change gradetype and grademax of gradeitems that are converted
-        foreach($grditems as $item){
+        foreach($filtered as $item){
             if(is_null($firstgi)){
-                $firstgi = $item;
+                $firstgi = $item->gradeitem;
             }
-            if ($firstgi->scaleid != $item->scaleid){
+            if ($firstgi->scaleid != $item->gradeitem->scaleid){
                 $is_schedule_a = true;
             }
-            $is_converted = !is_null($item->iteminfo) && !empty($item->iteminfo);
-            if($item->gradetype == GRADE_TYPE_VALUE && $is_converted){
-                $item->gradetype = GRADE_TYPE_SCALE;
-                $item->grademax = '23.00000';
+            if($item->gradeitem->gradetype == GRADE_TYPE_VALUE && $item->is_converted){
+                $item->gradeitem->gradetype = GRADE_TYPE_SCALE;
+                $item->gradeitem->grademax = '23.00000';
             }
         }
 
@@ -615,10 +613,9 @@ class grade_aggregation{
         $groupingids = array_column($modules, 'groupingid');
         $students = self::get_students_per_groups($groupingids, $courseid);
         foreach($modules as $mod) {
-            $is_converted = !is_null($mod->gradeitem->iteminfo) && !empty($mod->gradeitem->iteminfo);
             $is_subcat = ($mod->modname == 'category') ? true : false;
             //if mod is subcat or converted then continue
-            if($is_converted || $is_subcat){
+            if($mod->is_converted || $is_subcat){
                 continue;
             }
             // Get/create provisional grade id of the module

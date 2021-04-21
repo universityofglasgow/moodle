@@ -134,12 +134,16 @@ class local_gugcat {
 
             // Remove gradeitems which do not fall within 22-point scale.
             // Deletes gcat items for deletion in progress == 1 activities 
+            // Gets provisional grade item (id and idnumber) for the conversion flag
             foreach($activities as $key=>$activity){   
                 if($activity->deletioninprogress == 1){
                     unset($activities[$key]);
                     self::delete_gcat_items($courseid, $activity);
                     continue;
                 }
+                $prvgrd = self::get_gradeitem_converted_flag($activity->gradeitemid);
+                $activity->provisionalid = ($prvgrd) ? $prvgrd->id : null;
+                $activity->is_converted = ($prvgrd && !is_null($prvgrd->idnumber)) ? $prvgrd->idnumber : false;
             }
         }
         return $activities;
@@ -156,7 +160,7 @@ class local_gugcat {
         $gi = new grade_item(array('id'=> $gradeitemid), true);
         if($gi->itemtype == 'category'){
             $gc = $gi->get_item_category();
-            return local_gugcat::get_category_gradeitem($courseid, $gc);
+            return self::get_category_gradeitem($courseid, $gc);
         }else{
             $act = self::get_activities($courseid, $gi->categoryid, $gi);
             return reset($act);
@@ -920,6 +924,10 @@ class local_gugcat {
         $gi->load_parent_category();
         $activity->gradeitem = $gi;
         $activity->gradeitemid = $gi->id;
+        // Get Subcategory prv grade item id and idnumber
+        $prvgrd = self::get_gradeitem_converted_flag($gradecategory->id, true);
+        $activity->provisionalid = ($prvgrd) ? $prvgrd->id : null;
+        $activity->is_converted = ($prvgrd && !is_null($prvgrd->idnumber)) ? $prvgrd->idnumber : false;
         return $activity;
     }
 
@@ -1033,14 +1041,14 @@ class local_gugcat {
         $i = 0;
         $rows = array();
         $notes = array('aggregation', 'grade', 'import');
-        $subcatid = local_gugcat::get_grade_item_id($courseid, $module->gradeitem->iteminstance, get_string('subcategorygrade', 'local_gugcat'));
+        $subcatid = $module->provisionalid;
         $sort = 'id DESC';
         $fields = 'id, itemid, rawgrade, finalgrade, feedback, timemodified, usermodified, overridden';
         $select = 'feedback IS NOT NULL AND feedback <> "" AND rawgrade IS NOT NULL AND itemid='.$subcatid.' AND userid='.$userid;
         $gradehistory_arr = $DB->get_records_select('grade_grades_history', $select, null, $sort, $fields);
-        $scaleid = is_null($module->gradeitem->scaleid) ? null : $module->gradeitem->scaleid;
+        $scaleid = $module->is_converted;
         $gt = $module->gradeitem->gradetype;
-        $is_convertedmod = !is_null($module->gradeitem->iteminfo) && !empty($module->gradeitem->iteminfo);
+        $is_convertedmod = $module->is_converted;
         (is_null($scaleid) && $gt == 1) ? null : local_gugcat::set_grade_scale($scaleid);
         if($gradehistory_arr > 0){
             $gradehistory_arr = array_values($gradehistory_arr);
@@ -1114,8 +1122,8 @@ class local_gugcat {
                     $grade->finalgrade = $cg;
                 }
                 isset($rows[0]->grade) ? null : $rows[0]->grade = new stdClass();
-                $rows[0]->grade = !is_null($grade->finalgrade) ? self::convert_grade($grade->finalgrade, null, $module->gradeitem->iteminfo) 
-                : (!is_null($grade->rawgrade) ? self::convert_grade($grade->rawgrade, null, $module->gradeitem->iteminfo) 
+                $rows[0]->grade = !is_null($grade->finalgrade) ? self::convert_grade($grade->finalgrade, null, $module->is_converted) 
+                : (!is_null($grade->rawgrade) ? self::convert_grade($grade->rawgrade, null, $module->is_converted) 
                 : null); 
             }
         }
@@ -1148,5 +1156,18 @@ class local_gugcat {
             $i++;
         }
         return $rows;
+    }
+
+     /**
+     * Returns gradeitem object (id and idnumber) of activity's provisional gradeitem
+     * @param int $id grade item iteminfo - grade item id or category instance
+     * @param boolean $is_category
+     * @return mixed || false
+     */
+    public static function get_gradeitem_converted_flag($id, $is_category = false){
+        global $COURSE, $DB;
+        $prvstr = get_string(($is_category ? 'subcategorygrade' : 'provisionalgrd'), 'local_gugcat');
+        $select = "courseid=$COURSE->id AND itemname='$prvstr' AND ".self::compare_iteminfo();
+        return $DB->get_record_select('grade_items', $select, ['iteminfo' => $id], 'id, idnumber');
     }
 }

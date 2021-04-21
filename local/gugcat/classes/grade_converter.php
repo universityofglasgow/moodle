@@ -41,7 +41,7 @@ class grade_converter{
     public static function save_grade_conversion($conversion, $modid = null, $scale = null){
         global $DB;
         if(!is_null($modid) && !is_null($scale)){
-            $DB->set_field('grade_items', 'iteminfo', $scale, array('id'=>$modid));
+            $DB->set_field('grade_items', 'idnumber', $scale, array('id'=>$modid));
         }
         return $DB->insert_records('gcat_grade_converter', $conversion);
     }

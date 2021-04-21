@@ -64,7 +64,7 @@ class grade_capture{
             if($firstgradeid = local_gugcat::get_grade_item_id($course->id, $module->gradeitemid, get_string('moodlegrade', 'local_gugcat'))){
                 $gradeitems = local_gugcat::get_grade_grade_items($course, $module);
                 $convertedgrades = array();
-                $is_converted = !is_null($module->gradeitem->iteminfo);
+                $is_converted = $module->is_converted;
                 if($is_converted){
                     $conversion = grade_converter::retrieve_grade_conversion($module->gradeitemid);
                     // Get converted grade item and remove it from the gradeitems array
@@ -106,7 +106,7 @@ class grade_capture{
                 if($is_converted && count($convertedgrades) > 0){
                     $cg = isset($convertedgrades[$student->id]) ? $convertedgrades[$student->id] : null;
                     $cgg = grade_converter::convert($conversion, $cg->grade);
-                    $gradecaptureitem->convertedgrade = local_gugcat::convert_grade($cgg, null, $module->gradeitem->iteminfo);
+                    $gradecaptureitem->convertedgrade = local_gugcat::convert_grade($cgg, null, $module->is_converted);
                 }
                 //get first grade and provisional grade
                 $gifg = $gradeitems[$firstgradeid]->grades;
@@ -116,7 +116,7 @@ class grade_capture{
                 $gradecaptureitem->firstgrade = is_null($fg) ? get_string('nograde', 'local_gugcat') : local_gugcat::convert_grade($fg, $gt);
                 
                 $gradecaptureitem->provisionalgrade = is_null($pg) ? get_string('nograde', 'local_gugcat') : 
-                ($is_converted ? local_gugcat::convert_grade($pg, null, $module->gradeitem->iteminfo) : local_gugcat::convert_grade($pg, $gt));
+                ($is_converted ? local_gugcat::convert_grade($pg, null, $module->is_converted) : local_gugcat::convert_grade($pg, $gt));
                 $agreedgrade = (!$agreedgradeid) ? null : (isset($gradeitems[$agreedgradeid]->grades[$student->id]) ? $gradeitems[$agreedgradeid]->grades[$student->id]->grade : null);
                 $sndgrade = (!$secondgradeid) ? null : (isset($gradeitems[$secondgradeid]->grades[$student->id]) ? $gradeitems[$secondgradeid]->grades[$student->id]->grade : null);
                 $trdgrade = (!$thirdgradeid) ? null : (isset($gradeitems[$thirdgradeid]->grades[$student->id]) ? $gradeitems[$thirdgradeid]->grades[$student->id]->grade : null);
