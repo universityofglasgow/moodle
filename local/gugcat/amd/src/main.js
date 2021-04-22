@@ -33,14 +33,19 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
 
     const calculatePercentagePoints = (target, is_percentage = true) => {
         grade_max = document.getElementsByName('grademax')[0].value;
-        precision = Math.pow(10, 2);
         if (is_percentage){
             input_point = document.getElementById(target.id.slice(0,10) + "pt_" + target.id.slice(10));
-            input_point.value = Math.ceil((target.value / 100) * grade_max * precision) / precision;
+            input_point.value = rounder((target.value / 100) * grade_max);
         } else {
             input_percentage = document.getElementById(target.id.slice(0,10) + target.id.slice(13));
-            input_percentage.value = Math.ceil((target.value / grade_max) * 100 * precision) / precision;
+            input_percentage.value = rounder((target.value / grade_max) * 100);
         }
+    }
+
+    const rounder = (number) => {
+        var multiplier = parseInt("1" + "0".repeat(2));
+        number = number * multiplier;
+        return Math.round(number) / multiplier;
     }
 
     const update_reason_inputs = (val) => {
@@ -330,7 +335,6 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
 
                             // Start assigning lowerboundary from template on the input pt fields 
                             var conversions = template.conversion;
-                            precision = Math.pow(10, 2);
                             for (let key in conversions) {
                                 let conv = conversions[key];
                                 let nameprc = nameidprc.replace("*", conv.grade);
@@ -339,7 +343,7 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                                 var inputpt = document.querySelector(`.input-pt > div > input[name="${namept}"]`);
                                 let lowerboundary = parseFloat(conv.lowerboundary);
                                 inputprc.value =  lowerboundary;
-                                inputpt.value = Math.ceil((lowerboundary / 100) * maxgrade * precision) / precision; //convert percentage to points
+                                inputpt.value = rounder((lowerboundary / 100) * maxgrade); //convert percentage to points
                             }
                         }
                     }).fail(function(e){
