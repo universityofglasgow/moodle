@@ -198,7 +198,7 @@ class grade_capture{
         $gradeitemid = $cm->gradeitem->id;
 
         //set offset value for max 22 points grade
-        $gradescaleoffset = (local_gugcat::is_grademax22($cm->gradeitem->gradetype, $cm->gradeitem->grademax)) ? 1 : 0;
+        $gradescaleoffset = (local_gugcat::is_scheduleAscale($cm->gradeitem->gradetype, $cm->gradeitem->grademax)) ? 1 : 0;
         
         //Retrieve enrolled students' ids only
         $students = get_enrolled_users(context_course ::instance($courseid), 'local/gugcat:gradable', 0, 'u.id');
