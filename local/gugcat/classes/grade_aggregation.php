@@ -783,7 +783,7 @@ class grade_aggregation{
                     isset($rows[$i]) ? null : $rows[$i] = new stdClass();
                     isset($rows[$i]->grades) ? null : $rows[$i]->grades = array();
                     $rows[$i]->timemodified = $gradehistory->timemodified;
-                    $rows[$i]->date = date("j/n", strtotime(userdate($gradehistory->timemodified))).'<br>'.date("h:i", strtotime(userdate($gradehistory->timemodified)));
+                    $rows[$i]->date = date("j/n", strtotime(userdate($gradehistory->timemodified))).'<br>'.date("H:i", strtotime(userdate($gradehistory->timemodified)));
                     $fields = 'firstname, lastname';
                     $modby = $DB->get_record('user', array('id' => $gradehistory->usermodified), $fields);
                     $rows[$i]->modby = (isset($modby->lastname) && isset($modby->firstname)) ? $modby->lastname . ', '.$modby->firstname : null;
@@ -971,11 +971,9 @@ class grade_aggregation{
         $fields = 'id, itemid, userid, rawgrade, finalgrade, overridden';
         $subcatgrds = $DB->get_records_select('grade_grades', $select, null, null, $fields);
         foreach($subcatgrds as $subcatgrd){
-            if($subcatgrd->overridden == 0){
-                local_gugcat::update_components_notes($subcatgrd->userid, $subcatid, $notes);
-                foreach($prvgrades as $prvgrd){
-                    local_gugcat::update_components_notes($subcatgrd->userid, $prvgrd->id, $notes);
-                }
+            local_gugcat::update_components_notes($subcatgrd->userid, $subcatid, $notes);
+            foreach($prvgrades as $prvgrd){
+                local_gugcat::update_components_notes($subcatgrd->userid, $prvgrd->id, $notes);
             }
         }
     }

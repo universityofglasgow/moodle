@@ -626,7 +626,7 @@ class local_gugcat {
                 $grd->type = ($gradeitem->itemname == get_string('moodlegrade', 'local_gugcat')) ? 
                 $gradeitem->itemname. '<br>'.date("j/n/Y", strtotime(userdate($grd->timemodified)))
                  : $gradeitem->itemname;
-                $grd->date = date("j/n", strtotime(userdate($grd->timemodified))).'<br>'.date("h:i", strtotime(userdate($grd->timemodified)));
+                $grd->date = date("j/n", strtotime(userdate($grd->timemodified))).'<br>'.date("H:i", strtotime(userdate($grd->timemodified)));
                 $grd->grade = !is_null($grd->finalgrade) ? self::convert_grade($grd->finalgrade, $gt) : self::convert_grade($grd->rawgrade, $gt);
                 array_push($grades_arr, $grd);
                 }
@@ -1062,7 +1062,7 @@ class local_gugcat {
                 isset($rows[$i]) ? null : $rows[$i] = new stdClass();
                 isset($rows[$i]->grades) ? null : $rows[$i]->grades = array();
                 $rows[$i]->timemodified = $gradehistory->timemodified;
-                $rows[$i]->date = date("j/n", strtotime(userdate($gradehistory->timemodified))).'<br>'.date("h:i", strtotime(userdate($gradehistory->timemodified)));
+                $rows[$i]->date = date("j/n", strtotime(userdate($gradehistory->timemodified))).'<br>'.date("H:i", strtotime(userdate($gradehistory->timemodified)));
                 $rows[$i]->notes = $gradehistory->feedback;
                 $fields = 'firstname, lastname';
                 $modby = (!in_array($gradehistory->feedback, $notes)) ? $DB->get_record('user', array('id' => $gradehistory->usermodified), $fields) : null;
@@ -1109,6 +1109,18 @@ class local_gugcat {
                     $rows[$i]->grade = !is_null($gradehistory->finalgrade) ? self::convert_grade($gradehistory->finalgrade, null, $scale) 
                     : (!is_null($gradehistory->rawgrade) ? self::convert_grade($gradehistory->rawgrade, null, $scale) 
                     : null);
+                    //make the previous grade into it's own grade
+                    $is_converted = preg_match('/ \-./i', $gradehistory_arr[$key+1]->feedback);
+                    $scale = $is_converted ? preg_replace('/\b[a-zA-Z\- ]*/i', '', $gradehistory_arr[$key+1]->feedback) : null;
+                    if(!$is_converted){
+                        $rows[$i+1]->grade = !is_null($gradehistory_arr[$key+1]->finalgrade) ? self::convert_grade($gradehistory_arr[$key+1]->finalgrade, $gt) 
+                        : (!is_null($gradehistory_arr[$key+1]->rawgrade) ? self::convert_grade($gradehistory_arr[$key+1]->rawgrade, $gt) 
+                        : null);
+                    }else{
+                        $rows[$i+1]->grade = !is_null($gradehistory_arr[$key+1]->finalgrade) ? self::convert_grade($gradehistory_arr[$key+1]->finalgrade, null, $scale) 
+                        : (!is_null($gradehistory_arr[$key+1]->rawgrade) ? self::convert_grade($gradehistory_arr[$key+1]->rawgrade, null, $scale) 
+                        : null);
+                    }
                 }
                 array_push($rows[$i]->grades, $gradehistory);
                 $i++;
