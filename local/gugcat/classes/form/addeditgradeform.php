@@ -61,9 +61,9 @@ class addeditgradeform extends moodleform {
             $mform->addRule('grade', get_string('errorinputpoints', 'local_gugcat'), 'regex', '/^([mM][vV]|[0-9]|[nN][sS])+$/', 'client');
             $mform->addRule('grade', get_string('errorinputpoints', 'local_gugcat'), 'regex', '/^([mM][vV]|[0-9]|[nN][sS])+$/', 'server');
         }else{
-            $mform->addElement('select', 'grade', get_string('gradeformgrade', 'local_gugcat'), local_gugcat::$GRADES, array('class' => 'mform-custom-select', 'size' => '15')); 
+            $grades = local_gugcat::$GRADES;
+            $mform->addElement('select', 'grade', get_string('gradeformgrade', 'local_gugcat'), array_unique($grades), array('class' => 'mform-custom-select', 'size' => '15')); 
             $mform->setType('grade', PARAM_NOTAGS); 
-            $mform->setDefault('grade', "Select Grade");
         }
 
         $mform->addElement('textarea', 'notes', get_string('notes', 'local_gugcat'));

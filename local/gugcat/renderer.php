@@ -75,7 +75,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
         //reindex activities, childactivities, and grades array
         $activities = array_values($activities_);
         $childactivities = !empty($childactivities_) ? array_values($childactivities_) : null;
-        $grades = array_values(local_gugcat::$GRADES);
+        $grades = array_values(array_unique(local_gugcat::$GRADES));
         //grade capture columns and rows in html
         $htmlcolumns = null;
         $htmlrows = null;
