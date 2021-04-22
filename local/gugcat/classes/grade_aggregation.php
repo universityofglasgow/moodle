@@ -340,6 +340,11 @@ class grade_aggregation{
         }
         $is_highest_grade = $subcatobj->aggregation == GRADE_AGGREGATE_MAX;
 
+        // Return grade = null, processed = true if all components are not graded for weighted/mean/mode/median/natural
+        if(!$is_highest_grade && count(array_filter($studentgrades)) != count($subcatobj->children)){
+            return array(null, true, null);
+        }
+
         // If calculation field is empty, then update it with aggregation type
         if($pgobj){
             is_null($subcatobj->aggregation_type) ? $DB->set_field('grade_items', 'calculation', $subcatobj->aggregation, array('id'=>$pgobj->itemid)) : null;
@@ -427,11 +432,6 @@ class grade_aggregation{
         // Aggregate only graded
         if($subcatobj->aggregateonlygraded == 1){
             $studentgrades = array_filter($studentgrades);
-        }
-
-        // Return grade = null, processed = true if all components are not graded for weighted/mean,mode/median/natural
-        if(!$is_highest_grade && count($studentgrades) != count($subcatobj->children)){
-            return array(null, true, null);
         }
 
         // If drop lowest is not empty, remove the n number of lowest grades, including -1, -2

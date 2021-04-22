@@ -487,8 +487,8 @@ class local_gugcat {
             self::$SCHEDULE_B = $B;
             $scalegrades = ($scaletype != SCHEDULE_A) ? self::$SCHEDULE_B : $scalegrades;
         }else{
-            if($scale = $DB->get_record('scale', array('id'=>$scaleid), '*')){
-                $scalegrades = make_menu_from_list($scale->scale); 
+            if($scaleobj = $DB->get_record('scale', array('id'=>$scaleid), '*')){
+                $scalegrades = make_menu_from_list($scaleobj->scale);
             }
         }
         $scalegrades[NON_SUBMISSION] = NON_SUBMISSION_AC;

@@ -33,12 +33,11 @@ class coursegradeform extends moodleform {
     public function definition() {
         $act = optional_param('activityid', null, PARAM_INT);
         if(!is_null($act) && $act != 0){
-            $grade = local_gugcat::$GRADES;
+            $grades = local_gugcat::$GRADES;
         }else{
-            $grade = local_gugcat::$GRADES + grade_aggregation::$AGGRADE;
-            unset($grade[NON_SUBMISSION]);
+            $grades = local_gugcat::$GRADES + grade_aggregation::$AGGRADE;
+            unset($grades[NON_SUBMISSION]);
         }
-        
         $mform = $this->_form; // Don't forget the underscore! 
         $mform->addElement('html', '<div class="mform-container">');
         $student = $this->_customdata['student'];
@@ -113,7 +112,7 @@ class coursegradeform extends moodleform {
                 $mform->addRule('override', get_string('errorinputpoints', 'local_gugcat'), 'regex', '/^([mM][vV]|[0-9]|[nN][sS])+$/', 'client');
                 $mform->addRule('override', get_string('errorinputpoints', 'local_gugcat'), 'regex', '/^([mM][vV]|[0-9]|[nN][sS])+$/', 'server');    
             }else{
-                $mform->addElement('select', 'override', get_string('overridegrade', 'local_gugcat'), $grade, ['class' => 'mform-custom-select']); 
+                $mform->addElement('select', 'override', get_string('overridegrade', 'local_gugcat'), array_unique($grades), ['class' => 'mform-custom-select']); 
                 $mform->setType('override', PARAM_NOTAGS); 
             }
         }
