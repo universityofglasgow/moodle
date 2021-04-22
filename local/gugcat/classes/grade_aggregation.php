@@ -429,6 +429,11 @@ class grade_aggregation{
             $studentgrades = array_filter($studentgrades);
         }
 
+        // Return grade = null, processed = true if all components are not graded for weighted/mean,mode/median/natural
+        if(!$is_highest_grade && count($studentgrades) != count($subcatobj->children)){
+            return array(null, true, null);
+        }
+
         // If drop lowest is not empty, remove the n number of lowest grades, including -1, -2
         if($subcatobj->droplow > 0){
             asort($studentgrades, SORT_NUMERIC);
