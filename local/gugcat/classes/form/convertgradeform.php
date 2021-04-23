@@ -55,7 +55,7 @@ class convertform extends moodleform {
         $defaulttype = $is_converted ? $is_converted : SCHEDULE_A;
         $existing = grade_converter::retrieve_grade_conversion($activity->gradeitemid);
         $notes = $existing ? 'convertexist' : 'convertnew';
-        $maxgrade = $activity->gradeitem->grademax;
+        $maxgrade = $activity->modname == 'category' ? 100 : $activity->gradeitem->grademax;
 
         $grades = grade_converter::process_defaults($activity->is_converted == SCHEDULE_A, local_gugcat::$SCHEDULE_A, $existing);
         $schedB = grade_converter::process_defaults($activity->is_converted == SCHEDULE_B, local_gugcat::$SCHEDULE_B, $existing);
