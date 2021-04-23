@@ -209,6 +209,7 @@ class grade_aggregation{
                         $grdvalue = !$is_scale ? $grd : (($grade === NON_SUBMISSION_AC) ? 0 : (float)$grd - (float)1);
                         $floatweight += $weight_;
                         $sumaggregated += (float)$grdvalue * $weight_;
+
                     }
                     $get_category = ($item->modname != 'category' 
                         && $category = local_gugcat::is_child_activity($item)) ? $category : false;
@@ -801,6 +802,7 @@ class grade_aggregation{
                     $modby = $DB->get_record('user', array('id' => $gradehistory->usermodified), $fields);
                     $rows[$i]->modby = (isset($modby->lastname) && isset($modby->firstname)) ? $modby->lastname . ', '.$modby->firstname : null;
                     $rows[$i]->notes = $gradehistory->feedback;
+                    $gradehistory->is_converted = $mod->is_converted;
                     $gradehistory->modname = $mod->modname;
                     array_push($rows[$i]->grades, $gradehistory);
                     $i++;
@@ -828,6 +830,7 @@ class grade_aggregation{
                     $rows[$i]->modby = get_string('nogradeweight','local_gugcat');
                     $rows[$i]->notes = get_string('nogradeweight','local_gugcat');
                     $grdhistoryobj->modname = $mod->modname;
+                    $grdhistoryobj->is_converted = $mod->is_converted;
                     array_push($rows[$i]->grades, $grdhistoryobj);
                 }
             }
@@ -838,20 +841,25 @@ class grade_aggregation{
         $select = "courseid=$course->id AND itemname='$aggistr'";
         $aggradeitem = $DB->get_record_select('grade_items', $select, null, 'id, idnumber');
         $scale = $aggradeitem->idnumber;
-        $firstgrd = $DB->get_record('grade_grades', array('itemid'=>$aggradeitem->id, 'userid'=>$student->id));
-        $select = 'rawgrade IS NOT NULL AND rawgrade <= 23 AND itemid='.$aggradeitem->id.' AND '.' userid="'.$student->id.'"';
-        if(!$firstgrd = $DB->get_records_select('grade_grades_history', $select, null, $sort,'*', 0 ,1)){
-            $firstgrd = $DB->get_record('grade_grades', array('itemid'=>$aggradeitem->id, 'userid'=>$student->id));
-        }else{
-            $firstgrd = $firstgrd[key($firstgrd)];
-        }
-        $rows[$i]->grade = local_gugcat::convert_grade(round((float)$firstgrd->rawgrade), null, $scale);
+        // $firstgrd = $DB->get_record('grade_grades', array('itemid'=>$aggradeitem->id, 'userid'=>$student->id));
+        // $select = 'rawgrade IS NOT NULL AND rawgrade <= 23 AND itemid='.$aggradeitem->id.' AND '.' userid="'.$student->id.'"';
+        // if(!$firstgrd = $DB->get_records_select('grade_grades_history', $select, null, $sort,'*', 0 ,1)){
+        //     $firstgrd = $DB->get_record('grade_grades', array('itemid'=>$aggradeitem->id, 'userid'=>$student->id));
+        // }else{
+        //     $firstgrd = $firstgrd[key($firstgrd)];
+        // }
+        // $rows[$i]->grade = local_gugcat::convert_grade(round((float)$firstgrd->rawgrade), null, $scale);
 
         foreach($rows as $row) {
             $sumgrade = 0;
             if($row->grades > 0){
                 foreach($row->grades as $grdhistory) {
-                    $grd = $grdhistory->modname == 'category' ? (float)$grdhistory->rawgrade : (float)$grdhistory->rawgrade - (float)1;
+                    // $grd = $grdhistory->modname == 'category' ? (float)$grdhistory->rawgrade : (float)$grdhistory->rawgrade - (float)1;
+                    if($grdhistory->modname == 'category'){
+                        $grd = $grdhistory->is_converted ? (float)$grdhistory->rawgrade - 1 : (float)$grdhistory->rawgrade;
+                    }else{
+                        $grd = (float)$grdhistory->rawgrade - 1;
+                    }
                     $weight = $grdhistory->information;
                     $sumgrade += (float)$grd * $weight;
                 }
