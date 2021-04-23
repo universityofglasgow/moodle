@@ -841,15 +841,7 @@ class grade_aggregation{
         $select = "courseid=$course->id AND itemname='$aggistr'";
         $aggradeitem = $DB->get_record_select('grade_items', $select, null, 'id, idnumber');
         $scale = $aggradeitem->idnumber;
-        // $firstgrd = $DB->get_record('grade_grades', array('itemid'=>$aggradeitem->id, 'userid'=>$student->id));
-        // $select = 'rawgrade IS NOT NULL AND rawgrade <= 23 AND itemid='.$aggradeitem->id.' AND '.' userid="'.$student->id.'"';
-        // if(!$firstgrd = $DB->get_records_select('grade_grades_history', $select, null, $sort,'*', 0 ,1)){
-        //     $firstgrd = $DB->get_record('grade_grades', array('itemid'=>$aggradeitem->id, 'userid'=>$student->id));
-        // }else{
-        //     $firstgrd = $firstgrd[key($firstgrd)];
-        // }
-        // $rows[$i]->grade = local_gugcat::convert_grade(round((float)$firstgrd->rawgrade), null, $scale);
-
+    
         foreach($rows as $row) {
             $sumgrade = 0;
             if($row->grades > 0){
