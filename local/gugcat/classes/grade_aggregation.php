@@ -801,6 +801,7 @@ class grade_aggregation{
                     $modby = $DB->get_record('user', array('id' => $gradehistory->usermodified), $fields);
                     $rows[$i]->modby = (isset($modby->lastname) && isset($modby->firstname)) ? $modby->lastname . ', '.$modby->firstname : null;
                     $rows[$i]->notes = $gradehistory->feedback;
+                    $gradehistory->modname = $mod->modname;
                     array_push($rows[$i]->grades, $gradehistory);
                     $i++;
                 }
@@ -812,13 +813,13 @@ class grade_aggregation{
             $grditemresit = self::is_resit($mod);
             if(!$grditemresit){
                 $sort = 'id ASC';
-                $select = 'information IS NOT NULL AND rawgrade IS NOT NULL AND itemid='.$mod->provisionalid.' AND '.' userid="'.$student->id.'"'; 
+                $select = 'information IS NOT NULL AND rawgrade IS NOT NULL AND rawgrade <= 23 AND itemid='.$mod->provisionalid.' AND '.' userid="'.$student->id.'"'; 
                 //if grdhistory did not get the first provisional grade, get it to gradebook
-                if(!$gradehistory = $DB->get_records_select('grade_grades_history', $select, null, $sort, '*', 0, 1))
+                if(!$gradehistory = $DB->get_records_select('grade_grades_history', $select, null, $sort, '*', 0, 1)){
                     $grdhistoryobj = $DB->get_record('grade_grades', array('itemid'=>$mod->provisionalid, 'userid'=>$student->id));
-                else{
+                }else{
                     $grdhistoryobj = $gradehistory[key($gradehistory)];
-                } 
+                }
                 if($grdhistoryobj){
                     isset($rows[$i]) ? null : $rows[$i] = new stdClass();
                     isset($rows[$i]->grades) ? null : $rows[$i]->grades = array();
@@ -826,24 +827,35 @@ class grade_aggregation{
                     $rows[$i]->date = date("j/n", strtotime(userdate($grdhistoryobj->timemodified))).'<br>'.date("h:i", strtotime(userdate($grdhistoryobj->timemodified)));
                     $rows[$i]->modby = get_string('nogradeweight','local_gugcat');
                     $rows[$i]->notes = get_string('nogradeweight','local_gugcat');
+                    $grdhistoryobj->modname = $mod->modname;
                     array_push($rows[$i]->grades, $grdhistoryobj);
                 }
             }
         }
 
+        $sort = 'id ASC';
+        $aggradeid = local_gugcat::get_grade_item_id($course->id, null, get_string('aggregatedgrade', 'local_gugcat'));
+        $firstgrd = $DB->get_record('grade_grades', array('itemid'=>$aggradeid, 'userid'=>$student->id));
+        $select = 'rawgrade IS NOT NULL AND rawgrade <= 23 AND itemid='.$aggradeid.' AND '.' userid="'.$student->id.'"';
+        if(!$firstgrd = $DB->get_records_select('grade_grades_history', $select, null, $sort,'*', 0 ,1)){
+            $firstgrd = $DB->get_record('grade_grades', array('itemid'=>$aggradeid, 'userid'=>$student->id));
+        }else{
+            $firstgrd = $firstgrd[key($firstgrd)];
+        }
+        $rows[$i]->grade = local_gugcat::convert_grade(round((float)$firstgrd->rawgrade));
+
         foreach($rows as $row) {
             $sumgrade = 0;
             if($row->grades > 0){
                 foreach($row->grades as $grdhistory) {
-                    $grd = $grdhistory->rawgrade;
+                    $grd = $grdhistory->modname == 'category' ? (float)$grdhistory->rawgrade : (float)$grdhistory->rawgrade - (float)1;
                     $weight = $grdhistory->information;
                     $sumgrade += (float)$grd * $weight;
                 }
             }
-            $row->grade = local_gugcat::convert_grade(round((float)$sumgrade));
+            $row->grade = isset($row->grade) && !is_null($row->grade) ? $row->grade : local_gugcat::convert_grade(round((float)$sumgrade + 1));
         }
         // Add overridden grades in rows
-        $aggradeid = local_gugcat::get_grade_item_id($course->id, null, get_string('aggregatedgrade', 'local_gugcat'));
         if($aggradeid){
             $fields = 'id, itemid, rawgrade, finalgrade, feedback, timemodified, usermodified';
             $select = 'feedback IS NOT NULL AND rawgrade IS NOT NULL AND itemid='.$aggradeid.' AND '.' userid="'.$student->id.'" AND overridden <> "0"'; 
