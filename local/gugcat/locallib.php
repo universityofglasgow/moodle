@@ -1002,11 +1002,13 @@ class local_gugcat {
         $activities = array();
         $modules = array('assign', 'forum', 'quiz', 'workshop');//modules supported by gcat
         foreach($modules as $mod){
-            $params = array($courseid, $categoryid, GRADE_TYPE_NONE, $mod, 0);
+            $itemnumber = 0;
+            $params = array($courseid, $categoryid, $itemnumber, GRADE_TYPE_NONE, $mod, 0);
             $sql = "SELECT gi.id as gradeitemid, gi.gradetype as gradetype, gi.grademax as grademax
                     FROM {grade_items} gi, {course_modules} cm
                     WHERE gi.courseid = ? AND
                           gi.categoryid = ? AND
+                          gi.itemnumber = ? AND
                           gi.itemtype = 'mod' AND
                           gi.gradetype != ? AND
                           gi.itemmodule = ? AND
@@ -1014,6 +1016,13 @@ class local_gugcat {
                           cm.deletioninprogress = ?";
 
             $result = $DB->get_records_sql($sql, $params);
+            if($mod == 'workshop' || $mod == 'forum'){
+                // Itemnumber = 1
+                $params = array($courseid, $categoryid, 1, GRADE_TYPE_NONE, $mod, 0);
+                if ($wfs = $DB->get_records_sql($sql, $params)) {
+                    $result =  $result + $wfs;
+                }
+            }
             (sizeof($result) > 0) ? $activities = $activities + $result : null; 
         }
 
