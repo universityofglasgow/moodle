@@ -125,7 +125,10 @@ class grade_aggregation{
         //$i = candidate no. - Multiply it by the page number
         $page = optional_param('page', 0, PARAM_INT);  
         $i = $page * GCAT_MAX_USERS_PER_PAGE + 1;
+        $aggrdscaletype = null;
         foreach ($students as $student) {
+            $schedAweights = 0;
+            $schedBweights = 0;
             $gradecaptureitem = new gcat_item();
             $gradecaptureitem->cnum = $i;
             $gradecaptureitem->studentno = $student->id;
@@ -194,6 +197,14 @@ class grade_aggregation{
                         }else{
                             $weight_ = $weight;
                         }
+                        
+                        // Add the weights for schedule A or B, to be used in converting aggregated grade
+                        if(!empty($item->is_converted)){
+                            ($item->is_converted == SCHEDULE_A) ? $schedAweights += $weight_ : $schedBweights += $weight_;
+                        }else{
+                            preg_match('/^[Aa1]{2}/', reset(local_gugcat::$GRADES)) ? $schedAweights += $weight_ : $schedBweights += $weight_;
+                        }
+
                         // Normalize to actual grade value (-1) for computation if its grade type is scale
                         $grdvalue = !$is_scale ? $grd : (($grade === NON_SUBMISSION_AC) ? 0 : (float)$grd - (float)1);
                         $floatweight += $weight_;
@@ -210,7 +221,6 @@ class grade_aggregation{
                     $grdobj->is_imported = !is_null($pg) ? true : false;
                     $grdobj->is_child = local_gugcat::is_child_activity($item) ? true : false;
                     $grdobj->grade = $grade;
-                    $grdobj->originalgrade = is_null($scaleid) ? $grade : $grdvalue;
                     $grdobj->nonconvertedgrade = (isset($ncg) && !is_null($ncg->finalgrade)) 
                     ? $ncg->finalgrade : (isset($ncg) && !is_null($ncg->rawgrade) ? $ncg->rawgrade : null);
                     $weightcoef1 = $item->gradeitem->aggregationcoef; //Aggregation coeficient used for weighted averages or extra credit
@@ -222,16 +232,15 @@ class grade_aggregation{
                     array_push($gradecaptureitem->grades, $grdobj);
                 }
                 if($gbaggregatedgrade = $DB->get_record('grade_grades', array('itemid'=>$aggradeid, 'userid'=>$student->id))){
+                    local_gugcat::set_grade_scale(null);
                     $gradecaptureitem->resit = (preg_match('/\b'.$categoryid.'/i', $gbaggregatedgrade->information) ? $gbaggregatedgrade->information : null);
                     $totalweight = round((float)$floatweight * 100 );
                     $gradecaptureitem->completed = $totalweight . '%';
                     $rawaggrade = ($gbaggregatedgrade->overridden == 0) ? $sumaggregated : (!is_null($gbaggregatedgrade->finalgrade) ? $gbaggregatedgrade->finalgrade : $gbaggregatedgrade->rawgrade);
-                    ($gbaggregatedgrade->overridden == 0) ? local_gugcat::update_grade($student->id, $aggradeid, $sumaggregated) : null;
+                    ($gbaggregatedgrade->overridden == 0 && intval($sumaggregated) != intval($rawaggrade)) ? local_gugcat::update_grade($student->id, $aggradeid, $sumaggregated) : null;
                     $aggrade = ($gbaggregatedgrade->overridden == 0) ? round($rawaggrade) + 1 : $rawaggrade; //convert back to moodle scale
-                    if(!(max(array_keys(local_gugcat::$GRADES)) >= 22)){
-                        local_gugcat::set_grade_scale(null);
-                    }
-                    $aggrdobj->grade = local_gugcat::convert_grade($aggrade);
+                    $aggrdscaletype = ($schedAweights >= $schedBweights) ? SCHEDULE_A : SCHEDULE_B;
+                    $aggrdobj->grade = local_gugcat::convert_grade($aggrade, null, $aggrdscaletype);
                     $aggrdobj->rawgrade = $rawaggrade;
                     $numberformat = number_format($rawaggrade, 3);
                     // Only get main activities and categories.
@@ -241,8 +250,8 @@ class grade_aggregation{
                     || in_array(get_string('missinggrade', 'local_gugcat'), $filtergrade, true)
                     ? get_string('missinggrade', 'local_gugcat') 
                     : ($gbaggregatedgrade->overridden == 0 ? ($totalweight < 75 ? $numberformat 
-                    : local_gugcat::convert_grade($aggrade) .' ('.$numberformat.')') 
-                    : local_gugcat::convert_grade($aggrade));
+                    : local_gugcat::convert_grade($aggrade, null, $aggrdscaletype) .' ('.$numberformat.')') 
+                    : local_gugcat::convert_grade($aggrade, null, $aggrdscaletype));
                     // Check if assessments gradetypes has point grade type, if yes, display error and missing grade
                     if(in_array(GRADE_TYPE_VALUE, $gradetypes)){
                         $aggrdobj->grade = null;
@@ -256,6 +265,10 @@ class grade_aggregation{
             $gradecaptureitem->aggregatedgrade = $aggrdobj;
             array_push($rows, $gradecaptureitem);
             $i++;
+        }
+        // Save aggregated grade scale type for course grade history
+        if($aggradeid && !is_null($aggrdscaletype)){
+            $DB->set_field('grade_items', 'idnumber', $aggrdscaletype, array('id' => $aggradeid));
         }
         // Display the errors from aggregation
         if($showerrors){
