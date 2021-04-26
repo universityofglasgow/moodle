@@ -554,7 +554,10 @@ class local_gugcat {
         $course_category = grade_category::fetch_course_category($courseid);
         $categories[$course_category->id] = $course_category;
         // Retrieve categories which parent is equal to the course grade category id
-        $categories = $categories + grade_category::fetch_all(array('courseid' => $courseid, 'parent' => $course_category->id));
+        $children =  grade_category::fetch_all(array('courseid' => $courseid, 'parent' => $course_category->id));
+        if($children){
+            $categories = $categories + $children;
+        }
         // Remove custom gcat DO NOT USE category
         $gcat_category_id = self::get_gcat_grade_category_id($courseid);
         unset($categories[$gcat_category_id]);

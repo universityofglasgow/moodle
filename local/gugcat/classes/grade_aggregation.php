@@ -350,12 +350,12 @@ class grade_aggregation{
             $grd_ = (isset($pg) && !is_null($pg->finalgrade)) ? $pg->finalgrade 
             : (isset($pg) && !is_null($pg->rawgrade) ? $pg->rawgrade 
             : ((isset($gb) && !is_null($gb->grade)) ? $gb->grade : null)); 
-            $studentgrades[$id] = intval($grd_);
+            $studentgrades[$id] = is_null($grd_) ? null : intval($grd_);
         }
         $is_highest_grade = $subcatobj->aggregation == GRADE_AGGREGATE_MAX;
 
         // Return grade = null, processed = true if all components are not graded for weighted/mean/mode/median/natural
-        if(!$is_highest_grade && count(array_filter($studentgrades)) != count($subcatobj->children)){
+        if(!$is_highest_grade && count(array_filter($studentgrades, 'strlen')) != count($subcatobj->children)){
             return array(null, true, null);
         }
 
