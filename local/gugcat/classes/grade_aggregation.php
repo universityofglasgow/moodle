@@ -228,11 +228,11 @@ class grade_aggregation{
                     $grdobj->weight =  round((float)$weight * 100 );
                     array_push($gradecaptureitem->grades, $grdobj);
                 }
+                $totalweight = round((float)$floatweight * 100 );
+                $gradecaptureitem->completed = $totalweight . '%';
                 if($gbaggregatedgrade = $DB->get_record('grade_grades', array('itemid'=>$aggradeid, 'userid'=>$student->id))){
                     local_gugcat::set_grade_scale(null);
                     $gradecaptureitem->resit = (preg_match('/\b'.$categoryid.'/i', $gbaggregatedgrade->information) ? $gbaggregatedgrade->information : null);
-                    $totalweight = round((float)$floatweight * 100 );
-                    $gradecaptureitem->completed = $totalweight . '%';
                     $rawaggrade = ($gbaggregatedgrade->overridden == 0) ? $sumaggregated : (!is_null($gbaggregatedgrade->finalgrade) ? $gbaggregatedgrade->finalgrade : $gbaggregatedgrade->rawgrade);
                     ($gbaggregatedgrade->overridden == 0 && intval($sumaggregated) != intval($rawaggrade)) ? local_gugcat::update_grade($student->id, $aggradeid, $sumaggregated) : null;
                     $aggrade = ($gbaggregatedgrade->overridden == 0) ? round($rawaggrade) + 1 : $rawaggrade; //convert back to moodle scale
