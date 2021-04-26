@@ -63,13 +63,13 @@ class grade_converter{
                 $grade = null;
                 // Get converted grade 
                 $cvtgrade = grade_grade::fetch(array('itemid' => $convertedgi, 'userid' => $prvgrade->userid));
-                // If converted grade is not null and not admin grade
+                // If converted grade is not null 
                 // Else, get the provisional grade
                 if($cvtgrade && !is_null($cvtgrade->rawgrade)){
-                    $grade = !local_gugcat::is_admin_grade($cvtgrade->rawgrade) ? $cvtgrade->rawgrade : null;
+                    $grade = $cvtgrade->rawgrade;
                 }else{
                     if(!is_null($prvgrade->rawgrade)){
-                        $grade = !local_gugcat::is_admin_grade($prvgrade->rawgrade) ? $prvgrade->rawgrade : null;
+                        $grade = $prvgrade->rawgrade;
                     }
                 }
                 // If grade is not null, convert the grade and save it to provisional grade 
