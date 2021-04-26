@@ -437,9 +437,6 @@ class grade_aggregation{
             $grdobj->gradetype = $gradetype;
             $grdobj->grademax = $grademax;
             $grdobj->scaleid = $scaleid;
-            if($subcatobj->is_converted){
-                $grdobj->grade = grade_converter::convert($subcatobj->conversion, $grd);
-            }
             return array($grdobj, false, null);
         }
 
