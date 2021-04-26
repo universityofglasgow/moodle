@@ -1006,27 +1006,29 @@ class local_gugcat {
         $modules = array('assign', 'forum', 'quiz', 'workshop');//modules supported by gcat
         foreach($modules as $mod){
             $itemnumber = 0;
-            $params = array($courseid, $categoryid, $itemnumber, GRADE_TYPE_NONE, $mod, 0);
-            $sql = "SELECT gi.id as gradeitemid, gi.gradetype as gradetype, gi.grademax as grademax
-                    FROM {grade_items} gi, {course_modules} cm
+            $params = array($courseid, $categoryid, $itemnumber, GRADE_TYPE_NONE, $mod, $mod);
+            $sql = "SELECT cm.id as cmid, gi.id as gradeitemid, gi.gradetype as gradetype, gi.grademax as grademax
+                    FROM {grade_items} gi, {course_modules} cm, {modules} md, {{$mod}} m
                     WHERE gi.courseid = ? AND
                           gi.categoryid = ? AND
                           gi.itemnumber = ? AND
                           gi.itemtype = 'mod' AND
                           gi.gradetype != ? AND
                           gi.itemmodule = ? AND
-                          cm.instance = gi.iteminstance AND
-                          cm.deletioninprogress = ?";
-
+                          gi.iteminstance = cm.instance AND
+                          cm.instance = m.id AND
+                          md.name = ? AND
+                          md.id = cm.module AND
+                          cm.deletioninprogress = 0";
             $result = $DB->get_records_sql($sql, $params);
             if($mod == 'workshop' || $mod == 'forum'){
                 // Itemnumber = 1
-                $params = array($courseid, $categoryid, 1, GRADE_TYPE_NONE, $mod, 0);
+                $params = array($courseid, $categoryid, 1, GRADE_TYPE_NONE, $mod, $mod);
                 if ($wfs = $DB->get_records_sql($sql, $params)) {
                     $result =  $result + $wfs;
                 }
             }
-            (sizeof($result) > 0) ? $activities = $activities + $result : null; 
+            (count($result) > 0) ? $activities = $activities + $result : null; 
         }
 
         foreach($activities as $key=>$activity){
