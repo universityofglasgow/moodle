@@ -24,11 +24,15 @@
  */
 
 use local_gugcat\grade_aggregation;
+use local_gugcat\grade_converter;
 
 require_once($CFG->libdir . '/adminlib.php');
 
 defined('MOODLE_INTERNAL') || die();
 
+//Scale type 
+define('SCHEDULE_A', 1);
+define('SCHEDULE_B', 2);
 //Administrative grades
 define('NON_SUBMISSION_AC', 'NS');
 define('MEDICAL_EXEMPTION_AC', 'MV');
@@ -59,6 +63,8 @@ require_once($CFG->libdir.'/dataformatlib.php');
 class local_gugcat {
      
     public static $GRADES = array();
+    public static $SCHEDULE_A = array();
+    public static $SCHEDULE_B = array();
     public static $PRVGRADEID = null;
     public static $STUDENTS = array();
 
@@ -84,17 +90,36 @@ class local_gugcat {
      * Returns all activities/modules for specific course
      *
      * @param int $courseid
-     * @param boolean $all - If true, retrieves all modules regardless of category
-     * @param boolean $includegradeitem - If true, retrieves grade item of the module
+     * @param mixed $categoryid_ids Either a single category id, an array of category IDs or null. If category ID or IDs are not supplied, if gets category id from url or course grade category
+     * @param grade_item $gradeitem Use for specific activity id to get specific details.
      */
-    public static function get_activities($courseid, $all = false, $includegradeitem = true){
+    public static function get_activities($courseid, $categoryid_ids = null, $gradeitem = null){
         $activityid = optional_param('activityid', null, PARAM_INT);
-        $categoryid = $all ? null : optional_param('categoryid', null, PARAM_INT);
-        $mods = self::grade_get_gradable_activities($courseid);
+        $cids = array();
+        if (empty($categoryid_ids)) {
+            $categoryid = optional_param('categoryid', null, PARAM_INT);
+            if((is_null($categoryid) || $categoryid == 0) 
+            && $gc = grade_category::fetch_course_category($courseid)){
+                $categoryid = $gc->id;
+            }
+            $cids = array($categoryid);
+        } else if (is_array($categoryid_ids)) {
+            $cids = $categoryid_ids;
+        } else {
+            $cids = array($categoryid_ids);
+        }
+        $wholegradingforums = array();
+        $assessmentworkshops = array();
+        // if is not $gradeitem, get the specific activity with gradeitem details
+        if(isset($gradeitem)){
+            $mods = self::grade_get_gradable_activities($courseid, $cids, $gradeitem->itemmodule, $gradeitem->itemnumber, $gradeitem->id);
+        }else{
+            $mods = self::grade_get_gradable_activities($courseid, $cids);
     
-        //get whole grading forums and workshop assessment | itemnumber = 1
-        $wholegradingforums = self::grade_get_gradable_activities($courseid, 'forum', 1);
-        $assessmentworkshops = self::grade_get_gradable_activities($courseid, 'workshop', 1);
+            //get whole grading forums and workshop assessment | itemnumber = 1
+            $wholegradingforums = self::grade_get_gradable_activities($courseid, $cids, 'forum', 1);
+            $assessmentworkshops = self::grade_get_gradable_activities($courseid, $cids, 'workshop', 1);
+        }
 
         $activities = array();
         if(count($mods) > 0 || count($wholegradingforums) > 0 || count($assessmentworkshops) > 0){
@@ -102,42 +127,44 @@ class local_gugcat {
             foreach($mods as $cm) {
                 $activities[$cm->gradeitemid]= $cm;
                 $activities[$cm->gradeitemid]->selected = (strval($activityid) === $cm->gradeitemid)? 'selected' : '';
-                if($includegradeitem){
-                    $activities[$cm->gradeitemid]->gradeitem = new grade_item(array('id'=>$cm->gradeitemid), true);
-                }
-            }
-            if(!is_null($categoryid) && $categoryid !== 0){
-                foreach ($activities as $key=>$activity) {
-                    if ( $activity->gradeitem->categoryid !== strval($categoryid)) {
-                        unset($activities[$key]);
-                    }
-                }
-            }
-            else{
-                if($includegradeitem && !$all){
-                    $categories = self::get_grade_categories($courseid);
-                    foreach ($activities as $key=>$activity){
-                        if($categories[$activity->gradeitem->categoryid]->key != "null"){
-                            unset($activities[$key]);
-                        }
-                    }
-                }
+                $gi = isset($gradeitem) ? $gradeitem : new grade_item(array('id'=>$cm->gradeitemid), true);
+                $gi->load_parent_category();
+                $activities[$cm->gradeitemid]->gradeitem = $gi;
             }
 
-            //remove gradeitems which do not fall within 22-point scale.
-            if($includegradeitem){
-                foreach($activities as $key=>$activity){    
-                    $scaleid = $activity->gradeitem->scaleid;
-                    $gradetype = $activity->gradeitem->gradetype;
-                    $grademax = $activity->gradeitem->grademax;
-
-                    $valid_22point_scale = is_null($scaleid) ? local_gugcat::is_grademax22($gradetype, $grademax) : local_gugcat::is_scheduleAscale($gradetype, $grademax);
-                    if(!$valid_22point_scale)
-                        unset($activities[$key]);
+            // Remove gradeitems which do not fall within 22-point scale.
+            // Deletes gcat items for deletion in progress == 1 activities 
+            // Gets provisional grade item (id and idnumber) for the conversion flag
+            foreach($activities as $key=>$activity){   
+                if($activity->deletioninprogress == 1){
+                    unset($activities[$key]);
+                    self::delete_gcat_items($courseid, $activity);
+                    continue;
                 }
+                $prvgrd = self::get_gradeitem_converted_flag($activity->gradeitemid);
+                $activity->provisionalid = ($prvgrd) ? $prvgrd->id : null;
+                $activity->is_converted = ($prvgrd && !is_null($prvgrd->idnumber)) ? $prvgrd->idnumber : false;
             }
         }
         return $activities;
+    }
+
+    /**
+     * Returns activity details for assessments or sub categories
+     *
+     * @param int $courseid
+     * @param int $gradeitemid Id of the grade item
+     * @retirun int $gradeitemid Id of the grade item
+     */
+    public static function get_activity($courseid, $gradeitemid){
+        $gi = new grade_item(array('id'=> $gradeitemid), true);
+        if($gi->itemtype == 'category'){
+            $gc = $gi->get_item_category();
+            return self::get_category_gradeitem($courseid, $gc);
+        }else{
+            $act = self::get_activities($courseid, $gi->categoryid, $gi);
+            return reset($act);
+        }
     }
 
     /**
@@ -180,27 +207,28 @@ class local_gugcat {
      */
     public static function set_prv_grade_id($courseid, $mod){
         if(is_null($mod)) return;
-        $pgrd_str = get_string('provisionalgrd', 'local_gugcat');
-        self::$PRVGRADEID = self::get_grade_item_id($courseid, $mod->gradeitemid, $pgrd_str);
+        $pgrd_str = get_string(($mod->modname == 'category' ? 'subcategorygrade' :'provisionalgrd'), 'local_gugcat');
+        $id = $mod->modname == 'category' ? $mod->id : $mod->gradeitemid;
+        self::$PRVGRADEID = self::get_grade_item_id($courseid, $id, $pgrd_str);
         return self::$PRVGRADEID;
     }
 
     /**
      * Returns the grade item id based from the passed parameters
      * @param int $courseid
-     * @param int $modid Selected course module grade item ID
+     * @param int $id Selected course module grade item ID or sub category id
      * @param string $itemname Item name can be Provisional Grade or Aggregated Grade
      */
-    public static function get_grade_item_id($courseid, $modid, $itemname){
+    public static function get_grade_item_id($courseid, $id, $itemname){
         global $DB;
         $select = 'courseid = :courseid AND itemname = :itemname ';
         $params = [
             'courseid' => $courseid,
             'itemname' => $itemname
         ];
-        if(!is_null($modid)){
+        if(!is_null($id)){
             $select .= 'AND '.self::compare_iteminfo();
-            $params['iteminfo'] = $modid; // modid = gradeitemid
+            $params['iteminfo'] = $id; // id = gradeitemid or categoryid
         }
         return $DB->get_field_select('grade_items', 'id', $select, $params);
     }
@@ -212,6 +240,18 @@ class local_gugcat {
      */
     public static function is_grademax22($gradetype, $grademax){
         if (($gradetype == GRADE_TYPE_VALUE && intval($grademax) == 22)){
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Returns boolean if grade type is value with min = 0
+     * @param int $gradetype
+     * @param int $grademin 
+     */
+    public static function is_validgradepoint($gradetype, $grademin){
+        if (($gradetype == GRADE_TYPE_VALUE && intval($grademin) == 0)){
             return true;
         }
         return false;
@@ -340,7 +380,7 @@ class local_gugcat {
             //if insert successful - update provisional grade
             return (!$grade_->insert()) ? false : 
             ((self::$PRVGRADEID && !is_null($grade))
-            ? self::update_grade($userid, self::$PRVGRADEID, $grade) 
+            ? self::update_grade($userid, self::$PRVGRADEID, $grade, '') 
             : false);
             
         }else{
@@ -350,7 +390,7 @@ class local_gugcat {
             if($grade_->update()){
                 //update timemodified of grade item
                 $DB->set_field('grade_items', 'timemodified', $grade_->timemodified, array('id' => $itemid));
-                return self::update_grade($userid, self::$PRVGRADEID, $grade);
+                return self::update_grade($userid, self::$PRVGRADEID, $grade, '');
             }
             return false;
         }
@@ -387,13 +427,21 @@ class local_gugcat {
      * Converts grade from the grade scale
      * @param mixed $grade 
      */
-    public static function convert_grade($grade){
+    public static function convert_grade($grade, $gradetype = GRADE_TYPE_SCALE, $scaletype = SCHEDULE_A){
+        if(!local_gugcat::is_admin_grade($grade)){
+            if($gradetype == GRADE_TYPE_VALUE){
+                return number_format($grade, 3);
+            }
+            if($scaletype != SCHEDULE_A){
+                return grade_converter::convert(self::$SCHEDULE_B, $grade);
+            }
+        }
         $scale = self::$GRADES + grade_aggregation::$AGGRADE;
 
         //add admin grades in scale
         $scale[NON_SUBMISSION] = NON_SUBMISSION_AC;
         
-        $final_grade = intval($grade);
+        $final_grade = round($grade);
         if ($final_grade >= key(array_slice($scale, -1, 1, true)) && $final_grade <= key($scale)){
             return ($final_grade != 0) ? $scale[$final_grade] : $final_grade;
         }else {
@@ -422,15 +470,25 @@ class local_gugcat {
     /**
      * Set the static $GRADES scale based from the scale id
      * @param int $scaleid
+     * @param int $scaletype Scale type can be Schedule or Schedule B
      */
-    public static function set_grade_scale($scaleid){
+    public static function set_grade_scale($scaleid = null, $scaletype = SCHEDULE_A){
         global $DB;
         $scalegrades = array();
         if(is_null($scaleid)){
-            $scalegrades = self::get_gcat_scale();
+            list($scalegrades, $schedB) = self::get_gcat_scale();
+            self::$SCHEDULE_A = $scalegrades;
+            // Change the indexes (+1) of Schedule B to its upperbounds
+            $upperbounds = array(1, 3, 6, 9, 12, 15, 18, 23);
+            $B = array();
+            foreach($schedB as $i=>$b){
+                $B[$upperbounds[$i-1]] = $b;
+            }
+            self::$SCHEDULE_B = $B;
+            $scalegrades = ($scaletype != SCHEDULE_A) ? self::$SCHEDULE_B : $scalegrades;
         }else{
-            if($scale = $DB->get_record('scale', array('id'=>$scaleid), '*')){
-                $scalegrades = make_menu_from_list($scale->scale); 
+            if($scale = $DB->get_field('scale', 'scale', array('id'=>$scaleid))){
+                $scalegrades = make_menu_from_list($scale);
             }
         }
         $scalegrades[NON_SUBMISSION] = NON_SUBMISSION_AC;
@@ -447,8 +505,11 @@ class local_gugcat {
         $scale = array();
         if($json !== false){
             $obj = json_decode($json);
-            $scale = isset($obj) ? $obj->schedule_A : [];
-            return array_reverse(array_filter(array_merge(array(0), $scale)),true);//starts 1 => H
+            $A = isset($obj) ? $obj->schedule_A : [];
+            $B = isset($obj) ? $obj->schedule_B : [];
+            $schedA = array_reverse(array_filter(array_merge(array(0), $A)),true);//starts 1 => H Schedule A
+            $schedB = array_reverse(array_filter(array_merge(array(0), $B)),true);//starts 1 => H Schedule B
+            return array($schedA, $schedB);
         }
         return $scale;
     }
@@ -466,8 +527,8 @@ class local_gugcat {
      * Displays moodle error notification and gets the string from local_gugcat strings 
      * @param string $stridentifier
      */
-    public static function notify_error($stridentifier){
-        $message = get_string($stridentifier, 'local_gugcat');
+    public static function notify_error($stridentifier, $str = null){
+        $message = is_null($str) ? get_string($stridentifier, 'local_gugcat') : $str;
         \core\notification::add($message, \core\output\notification::NOTIFY_ERROR);
     }
         
@@ -488,15 +549,26 @@ class local_gugcat {
      * @param int $courseid 
      */
     public static function get_grade_categories($courseid){
-        $raw = grade_get_categories_menu($courseid);
+        $categories = array();
+        // Retrieve course grade category
+        $course_category = grade_category::fetch_course_category($courseid);
+        $categories[$course_category->id] = $course_category;
+        // Retrieve categories which parent is equal to the course grade category id
+        $children =  grade_category::fetch_all(array('courseid' => $courseid, 'parent' => $course_category->id));
+        if($children){
+            $categories = $categories + $children;
+        }
+        // Remove custom gcat DO NOT USE category
         $gcat_category_id = self::get_gcat_grade_category_id($courseid);
-        unset($raw[$gcat_category_id]);
+        unset($categories[$gcat_category_id]);
+
         $categoryid = optional_param('categoryid', null, PARAM_INT);
         $grd_ctgs = array();
-        foreach($raw as $key=>$value) {
+        foreach($categories as $key=>$category) {
+            $uncategorised = ($key == $course_category->id) ? true : false;
             $cat = new stdClass();
-            $cat->key = ($value === get_string('uncategorised', 'grades')) ? 'null' : $key;
-            $cat->value = $value;
+            $cat->key = $uncategorised ? 'null' : $key;
+            $cat->value = $uncategorised ? get_string('uncategorised', 'grades') : $category->fullname;
             $cat->selected = ($categoryid === $key)? 'selected' : '';
             $grd_ctgs[$key] = $cat;
         }
@@ -508,7 +580,7 @@ class local_gugcat {
      * @param int $grade 
      */
     public static function is_admin_grade($grade){
-        switch ($grade) {
+        switch (intval($grade)) {
             case NON_SUBMISSION:
                 return true;
             case MEDICAL_EXEMPTION:
@@ -545,6 +617,7 @@ class local_gugcat {
         $gradeitems = $DB->get_records_select('grade_items', $select, ['iteminfo' => $module->gradeitemid]);
         unset($gradeitems[self::$PRVGRADEID]);
         $grades_arr = array();
+        $gt = $module->gradeitem->gradetype;
         foreach($gradeitems as $gradeitem){
             $gradehistory_arr = $DB->get_records('grade_grades_history', array('userid'=>$studentid, 'itemid'=>$gradeitem->id), MUST_EXIST);
             foreach($gradehistory_arr as $grd){
@@ -552,12 +625,12 @@ class local_gugcat {
                 if(!is_null($grd->usermodified) && !is_null($grd->rawgrade)){
                 $modby = $DB->get_record('user', array('id' => $grd->usermodified), $fields);
                 $grd->modby = (isset($modby->lastname) && isset($modby->firstname)) ? $modby->lastname . ', '.$modby->firstname : null;
-                $grd->notes = !is_null($grd->feedback) ? $grd->feedback : 'N/A - '.$gradeitem->itemname;
+                $grd->notes = !is_null($grd->feedback) ? ($grd->feedback != "" ? $grd->feedback : 'N/A - '.$gradeitem->itemname) : 'N/A - '.$gradeitem->itemname;
                 $grd->type = ($gradeitem->itemname == get_string('moodlegrade', 'local_gugcat')) ? 
                 $gradeitem->itemname. '<br>'.date("j/n/Y", strtotime(userdate($grd->timemodified)))
                  : $gradeitem->itemname;
-                $grd->date = date("j/n", strtotime(userdate($grd->timemodified))).'<br>'.date("h:i", strtotime(userdate($grd->timemodified)));
-                $grd->grade = !is_null($grd->finalgrade) ? self::convert_grade($grd->finalgrade) : self::convert_grade($grd->rawgrade);
+                $grd->date = date("j/n", strtotime(userdate($grd->timemodified))).'<br>'.date("H:i", strtotime(userdate($grd->timemodified)));
+                $grd->grade = !is_null($grd->finalgrade) ? self::convert_grade($grd->finalgrade, $gt) : self::convert_grade($grd->rawgrade, $gt);
                 array_push($grades_arr, $grd);
                 }
             }
@@ -613,33 +686,43 @@ class local_gugcat {
     /**
      * Custom grade_get_gradable_activities to accommodate modules with itemnumber 1
      * @param int $courseid 
+     * @param array $categoryids
      * @param string $modulename 
      * @param int $itemnumber 
      */
-    private static function grade_get_gradable_activities($courseid, $modulename='', $itemnumber = 0) {
+    private static function grade_get_gradable_activities($courseid, $categoryids, $modulename='', $itemnumber = 0, $gradeitemid = null) {
         global $DB;
         if (empty($modulename)) {
             $modules = array('assign', 'forum', 'quiz', 'workshop');//modules supported by gcat
             $result = array();
             foreach ($modules as $module) {
-                if ($cms = self::grade_get_gradable_activities($courseid, $module, $itemnumber)) {
+                if ($cms = self::grade_get_gradable_activities($courseid, $categoryids, $module, $itemnumber, $gradeitemid)) {
                     $result =  $result + $cms;
                 }
             }
             return $result;
         }
+        $categorysql = '';
+        foreach($categoryids as $id){
+            $categorysql .= "gi.categoryid = $id OR ";
+        }
+        // Remove the last 'OR'
+        $categorysql = chop($categorysql, ' OR ');
+        
         $params = array($courseid, $modulename, $itemnumber, GRADE_TYPE_NONE, $modulename);
         $sql = "SELECT cm.*, gi.itemname as name, md.name as modname, gi.id as gradeitemid
                   FROM {grade_items} gi, {course_modules} cm, {modules} md, {{$modulename}} m
                  WHERE gi.courseid = ? AND
-                       gi.itemtype = 'mod' AND
                        gi.itemmodule = ? AND
                        gi.itemnumber = ? AND
                        gi.gradetype != ? AND
                        gi.iteminstance = cm.instance AND
                        cm.instance = m.id AND
                        md.name = ? AND
-                       md.id = cm.module";
+                       md.id = cm.module AND
+                       (gi.itemtype = 'mod' OR gi.itemtype = 'category')".
+                       (is_null($gradeitemid) ? null : " AND gi.id = $gradeitemid").
+                       (empty($categoryids) ? null : " AND ($categorysql)"); 
     
         return $DB->get_records_sql($sql, $params);
     }
@@ -690,10 +773,11 @@ class local_gugcat {
             $customfieldcategory->timemodified = time();
             $customfieldcategoryid = $DB->insert_record('customfield_category', $customfieldcategory, $returnid=true, $bulk=false);
             if(!is_null($customfieldcategoryid)){
+                $configdata = '{"required":"0","uniquevalues":"0","checkbydefault":"0","locked":"0","visibility":"0"}';
                 $category = \core_customfield\category_controller::create($customfieldcategoryid);
                 $field = \core_customfield\field_controller::create(0, (object)[
                     'type' => 'checkbox',
-                    'configdata' => get_string('configdata', 'local_gugcat')
+                    'configdata' => $configdata
                 ], $category);
 
                 $handler = $field->get_handler();
@@ -805,5 +889,315 @@ class local_gugcat {
         }else{
             return $currentfilters;
         }
+    }
+
+    /**
+     * Checks if activity is a child of the current selected category
+     * @param mixed $activity Course module with gradeitem property
+     * @return mixed category id or false
+     */
+    public static function is_child_activity($activity){
+        $categoryid = optional_param('categoryid', null, PARAM_INT);
+        if(!is_null($categoryid) && isset($activity->gradeitem->parent_category)){
+            $parent = $activity->gradeitem->parent_category->parent;
+            return ($parent == $categoryid) ? $activity->gradeitem->categoryid: false ;
+        }else{
+            return false;
+        }
+    }
+
+    /**
+     * Retrieve grade items of the grade category
+     * @param int $courseid 
+     * @param grade_category $gradecategory
+     * @return mixed $activity 
+     */
+    public static function get_category_gradeitem($courseid, $gradecategory){
+        $activity = new stdClass();
+        $activity->id = $gradecategory->id;
+        $activity->course = $courseid;
+        $activity->modname = 'category';
+        $activity->instance = $gradecategory->id;
+        $activity->parent = $gradecategory->parent;
+        $activity->aggregation = $gradecategory->aggregation;
+        $activity->droplow = $gradecategory->droplow;
+        $activity->aggregateonlygraded = $gradecategory->aggregateonlygraded;
+        $activity->name = $gradecategory->get_name();
+        $gi = grade_item::fetch(array('courseid' => $courseid, 'itemtype' => 'category', 'iteminstance' => $gradecategory->id));
+        $gi->load_parent_category();
+        $activity->gradeitem = $gi;
+        $activity->gradeitemid = $gi->id;
+        // Get Subcategory prv grade item id and idnumber
+        $prvgrd = self::get_gradeitem_converted_flag($gradecategory->id, true);
+        $activity->provisionalid = ($prvgrd) ? $prvgrd->id : null;
+        $activity->is_converted = ($prvgrd && !is_null($prvgrd->idnumber)) ? $prvgrd->idnumber : false;
+        return $activity;
+    }
+
+    /**
+     * Delete gcat items in grade_items and grade_grades table
+     * @param int $courseid 
+     * @param mixed $activity
+     */
+    public static function delete_gcat_items($courseid, $activity){
+        global $DB;
+        $select = "courseid = $courseid AND ".self::compare_iteminfo();
+        // Retrieve grade items ids first
+        if($gradeitemids = $DB->get_records_select('grade_items', $select, ['iteminfo' => $activity->gradeitemid], '', 'id')){
+            // Iterate the ids to create the select sql for grade_grades deletion
+            $ggsql = '';
+            foreach ($gradeitemids as $id) {
+                $ggsql .= "itemid = $id->id OR ";
+            }
+            // Remove the last 'OR'
+            $ggsql = chop($ggsql, ' OR ');
+            // Delete records in grade_grades
+            $DB->delete_records_select('grade_grades', $ggsql);
+            // Delete records in grade_items
+            $DB->delete_records_select('grade_items', $select, ['iteminfo' => $activity->gradeitemid]);
+        }
+    }
+
+    /**
+     * Update child components notes and timemodified
+     * @param int $userid
+     * @param int $itemid
+     * @param string $status
+     */
+    public static function update_components_notes($userid, $itemid, $status){
+        $subcatgrade = new grade_grade(array('userid' => $userid, 'itemid' => $itemid), true);
+        $subcatgrade->feedback = $status;
+        $subcatgrade->timemodified = time();
+        //if subcat raw grade is null then it won't update
+        !is_null($subcatgrade->rawgrade) ? $subcatgrade->update() : null;
+    }
+
+    /**
+     * Get provisional grade item ids for each activity ids
+     * @param int $courseid
+     * @param mixed $activities
+     * @return mixed prvgrditemids
+     */
+    public static function get_prvgrd_item_ids($courseid, $activities){
+        global $DB;
+
+        $itemname = get_string('provisionalgrd', 'local_gugcat');
+        $iteminfo = '';
+        $field = 'id, iteminfo';
+        foreach($activities as $act){
+            $iteminfo .= $DB->sql_compare_text('iteminfo').'='.$act->gradeitemid.' OR ';
+        }
+        //remove last or
+        $iteminfo = chop($iteminfo, ' OR ');
+        $select = "courseid=$courseid AND itemname='$itemname' AND ( $iteminfo )";
+        return $DB->get_records_select('grade_items', $select, null, null, $field);
+    }
+
+    /**
+     * get the gradeitemids of child activities
+     * @param int $courseid
+     * @param int $categoryid
+     * @return mixed $activities
+     */
+    public static function get_child_activities_id($courseid, $categoryid){
+        global $DB;
+        
+        $activities = array();
+        $modules = array('assign', 'forum', 'quiz', 'workshop');//modules supported by gcat
+        foreach($modules as $mod){
+            $itemnumber = 0;
+            $params = array($courseid, $categoryid, $itemnumber, GRADE_TYPE_NONE, $mod, 0);
+            $sql = "SELECT gi.id as gradeitemid, gi.gradetype as gradetype, gi.grademax as grademax
+                    FROM {grade_items} gi, {course_modules} cm
+                    WHERE gi.courseid = ? AND
+                          gi.categoryid = ? AND
+                          gi.itemnumber = ? AND
+                          gi.itemtype = 'mod' AND
+                          gi.gradetype != ? AND
+                          gi.itemmodule = ? AND
+                          cm.instance = gi.iteminstance AND
+                          cm.deletioninprogress = ?";
+
+            $result = $DB->get_records_sql($sql, $params);
+            if($mod == 'workshop' || $mod == 'forum'){
+                // Itemnumber = 1
+                $params = array($courseid, $categoryid, 1, GRADE_TYPE_NONE, $mod, 0);
+                if ($wfs = $DB->get_records_sql($sql, $params)) {
+                    $result =  $result + $wfs;
+                }
+            }
+            (sizeof($result) > 0) ? $activities = $activities + $result : null; 
+        }
+
+        foreach($activities as $key=>$activity){
+            $gradetype = $activity->gradetype;
+            $grademax = $activity->grademax;
+            if($gradetype != GRADE_TYPE_VALUE && !local_gugcat::is_scheduleAscale($gradetype, $grademax)){
+                unset($activities[$key]);
+            }
+        }
+
+        return $activities;
+    }
+
+    /**
+     * Returns rows of aggregated assessment grade history
+     * @param int $courseid
+     * @param int $userid
+     * @param mixed $module
+     * @param mixed $childacts
+     */
+    public static function get_aggregated_assessment_history($courseid, $userid, $module){
+        global $DB;
+
+        $i = 0;
+        $rows = array();
+        $notes = array('aggregation', 'grade', 'import');
+        $subcatid = $module->provisionalid;
+        $sort = 'id DESC';
+        $fields = 'id, itemid, rawgrade, finalgrade, feedback, timemodified, usermodified, overridden';
+        $select = 'feedback IS NOT NULL AND feedback <> "" AND rawgrade IS NOT NULL AND itemid='.$subcatid.' AND userid='.$userid;
+        $gradehistory_arr = $DB->get_records_select('grade_grades_history', $select, null, $sort, $fields);
+        $scaleid = $module->is_converted;
+        $gt = $module->gradeitem->gradetype;
+        $is_convertedmod = $module->is_converted;
+        (is_null($scaleid) && $gt == 1) ? null : local_gugcat::set_grade_scale($scaleid);
+        if($gradehistory_arr > 0){
+            $gradehistory_arr = array_values($gradehistory_arr);
+            //remove from array if feedback has weightchangesubcat
+            foreach($gradehistory_arr as $key=>$gradehistory){
+                if(preg_match('/\bweightchangesubcat/i', $gradehistory->feedback)){
+                    unset($gradehistory_arr[$key]);
+                }
+            }
+            foreach($gradehistory_arr as $key=>$gradehistory){
+                isset($rows[$i]) ? null : $rows[$i] = new stdClass();
+                isset($rows[$i]->grades) ? null : $rows[$i]->grades = array();
+                $rows[$i]->timemodified = $gradehistory->timemodified;
+                $rows[$i]->date = date("j/n", strtotime(userdate($gradehistory->timemodified))).'<br>'.date("H:i", strtotime(userdate($gradehistory->timemodified)));
+                $rows[$i]->notes = $gradehistory->feedback;
+                $fields = 'firstname, lastname';
+                $modby = (!in_array($gradehistory->feedback, $notes)) ? $DB->get_record('user', array('id' => $gradehistory->usermodified), $fields) : null;
+                $rows[$i]->modby = !is_null($modby) ? ((isset($modby->lastname) && isset($modby->firstname)) ? $modby->lastname . ', '.$modby->firstname : 'System Update') : 'System Update';
+                $is_converted = preg_match('/ \-./i', $gradehistory->feedback);
+                $scale = $is_converted ? preg_replace('/\b[a-zA-Z\- ]*/i', '', $gradehistory->feedback) : null;
+                $gradehistory->feedback = $is_converted ? preg_replace('/ \-./i', '', $gradehistory->feedback) : $gradehistory->feedback;
+                $rows[$i]->notes = $gradehistory->feedback == 'aggregation' ? get_string('aggregation', 'local_gugcat') 
+                : ($gradehistory->feedback == 'grade' ? get_string('grade', 'local_gugcat') : ($gradehistory->feedback == 'import' ? get_string('import', 'local_gugcat') 
+                : ($gradehistory->feedback == 'convertnew' ? get_string('convertnew', 'local_gugcat') 
+                : ($gradehistory->feedback == 'convertexist' ? get_string('convertexist', 'local_gugcat') : $gradehistory->feedback))));
+                if($i+1 < sizeof($gradehistory_arr)){
+                    isset($rows[$i+1]) ? null : $rows[$i+1] = new stdClass();
+                    isset($rows[$i+1]->grade) ? null : $rows[$i+1]->grade = array();
+                    if(!$is_converted){
+                        $rows[$i+1]->grade = !is_null($gradehistory->finalgrade) ? self::convert_grade($gradehistory->finalgrade, $gt) 
+                        : (!is_null($gradehistory->rawgrade) ? self::convert_grade($gradehistory->rawgrade, $gt) 
+                        : null); 
+                    }else{
+                        $rows[$i+1]->grade = !is_null($gradehistory->finalgrade) ? self::convert_grade($gradehistory->finalgrade, null, $scale) 
+                        : (!is_null($gradehistory->rawgrade) ? self::convert_grade($gradehistory->rawgrade, null, $scale) 
+                        : null); 
+                    }
+                }
+                //if subcategory is overridden then get the original grade
+                if($gradehistory->overridden != 0){
+                    isset($rows[$i]->grade) ? null : $rows[$i]->grade = array();
+                    $rows[$i]->grade = !is_null($gradehistory->finalgrade) ? self::convert_grade($gradehistory->finalgrade, $gt) 
+                    : (!is_null($gradehistory->rawgrade) ? self::convert_grade($gradehistory->rawgrade, $gt) 
+                    : null); 
+                    //get the past grade of it's own grade.
+                    $rows[$i+1]->grade = !is_null($gradehistory_arr[$key+1]->finalgrade) ? self::convert_grade($gradehistory_arr[$key+1]->finalgrade, $gt) 
+                    : (!is_null($gradehistory_arr[$key+1]->rawgrade) ? self::convert_grade($gradehistory_arr[$key+1]->rawgrade, $gt) 
+                    : null); 
+                }
+                if($is_converted){
+                    //convert overridden grade if grade conversion exists
+                    if($gradehistory->overridden != 0){
+                        $conversion = grade_converter::retrieve_grade_conversion($module->gradeitemid);
+                        $cg = grade_converter::convert($conversion, $gradehistory->finalgrade);
+                        $gradehistory->finalgrade = $cg;
+                    }
+                    isset($rows[$i]->grade) ? null : $rows[$i]->grade = array();
+                    $rows[$i]->grade = !is_null($gradehistory->finalgrade) ? self::convert_grade($gradehistory->finalgrade, null, $scale) 
+                    : (!is_null($gradehistory->rawgrade) ? self::convert_grade($gradehistory->rawgrade, null, $scale) 
+                    : null);
+                    //make the previous grade into it's own grade
+                    $is_converted = preg_match('/ \-./i', $gradehistory_arr[$key+1]->feedback);
+                    $scale = $is_converted ? preg_replace('/\b[a-zA-Z\- ]*/i', '', $gradehistory_arr[$key+1]->feedback) : null;
+                    if(!$is_converted){
+                        $rows[$i+1]->grade = !is_null($gradehistory_arr[$key+1]->finalgrade) ? self::convert_grade($gradehistory_arr[$key+1]->finalgrade, $gt) 
+                        : (!is_null($gradehistory_arr[$key+1]->rawgrade) ? self::convert_grade($gradehistory_arr[$key+1]->rawgrade, $gt) 
+                        : null);
+                    }else{
+                        $rows[$i+1]->grade = !is_null($gradehistory_arr[$key+1]->finalgrade) ? self::convert_grade($gradehistory_arr[$key+1]->finalgrade, null, $scale) 
+                        : (!is_null($gradehistory_arr[$key+1]->rawgrade) ? self::convert_grade($gradehistory_arr[$key+1]->rawgrade, null, $scale) 
+                        : null);
+                    }
+                }
+                array_push($rows[$i]->grades, $gradehistory);
+                $i++;
+            }
+        }
+         //get the latest grade.
+         if($grade = $DB->get_record('grade_grades', array('userid'=>$userid, 'itemid'=>$subcatid))){
+            if(!$is_convertedmod){
+                isset($rows[0]->grade) ? null : $rows[0]->grade = new stdClass();
+                $rows[0]->grade = !is_null($grade->finalgrade) ? self::convert_grade($grade->finalgrade, $gt) 
+                : (!is_null($grade->rawgrade) ? self::convert_grade($grade->rawgrade, $gt) 
+                : null); 
+            }else{
+                if($grade->overridden != 0){
+                    $conversion = grade_converter::retrieve_grade_conversion($module->gradeitemid);
+                    $cg = grade_converter::convert($conversion, $grade->finalgrade);
+                    $grade->finalgrade = $cg;
+                }
+                isset($rows[0]->grade) ? null : $rows[0]->grade = new stdClass();
+                $rows[0]->grade = !is_null($grade->finalgrade) ? self::convert_grade($grade->finalgrade, null, $module->is_converted) 
+                : (!is_null($grade->rawgrade) ? self::convert_grade($grade->rawgrade, null, $module->is_converted) 
+                : null); 
+            }
+        }
+        $i = 0;
+        $childacts = self::get_activities($courseid, $module->gradeitem->iteminstance);
+        $prvgrades = local_gugcat::get_prvgrd_item_ids($courseid, $childacts);
+        foreach($prvgrades as $prvgrd){
+            $j = 0;
+            $scaleid = is_null($childacts[$prvgrd->iteminfo]->gradeitem->scaleid) ? null : $childacts[$prvgrd->iteminfo]->gradeitem->scaleid;
+            local_gugcat::set_grade_scale($scaleid);
+            $gt = $childacts[$prvgrd->iteminfo]->gradeitem->gradetype;
+            (is_null($scaleid) && $gt == 1) ? null : local_gugcat::set_grade_scale($scaleid);
+            $notes = array('aggregation', 'grade', 'import');
+            $sort = 'id DESC';
+            $fields = 'id, itemid, rawgrade, finalgrade, feedback';
+            $select = 'feedback IS NOT NULL AND feedback <> "" AND rawgrade IS NOT NULL AND itemid='.$prvgrd->id.' AND userid='.$userid;
+            $gradehistory_arr = $DB->get_records_select('grade_grades_history', $select, null, $sort, $fields);
+            if(sizeof($gradehistory_arr) > 0){
+                foreach($gradehistory_arr as $gradehistory){
+                    if(isset($rows[$j])){
+                        isset($rows[$j]->childgrades) ? null : $rows[$j]->childgrades = array();
+                        $gradehistory->grade = !is_null($gradehistory->finalgrade) ? self::convert_grade($gradehistory->finalgrade, $gt) 
+                        : (!is_null($gradehistory->rawgrade) ? self::convert_grade($gradehistory->rawgrade, $gt) 
+                        : null); 
+                        $rows[$j]->childgrades[$i] = $gradehistory;
+                        $j++;
+                    }
+                }
+            }
+            $i++;
+        }
+        return $rows;
+    }
+
+     /**
+     * Returns gradeitem object (id and idnumber) of activity's provisional gradeitem
+     * @param int $id grade item iteminfo - grade item id or category instance
+     * @param boolean $is_category
+     * @return mixed || false
+     */
+    public static function get_gradeitem_converted_flag($id, $is_category = false){
+        global $COURSE, $DB;
+        $prvstr = get_string(($is_category ? 'subcategorygrade' : 'provisionalgrd'), 'local_gugcat');
+        $select = "courseid=$COURSE->id AND itemname='$prvstr' AND ".self::compare_iteminfo();
+        return $DB->get_record_select('grade_items', $select, ['iteminfo' => $id], 'id, idnumber');
     }
 }

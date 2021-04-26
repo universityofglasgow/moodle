@@ -6,6 +6,7 @@
 
 .table thead th, .table td{
     vertical-align: middle;
+    position: relative;
 }
 
 .table td{
@@ -68,4 +69,33 @@ button.tablink, button.tablink:focus{
 /* Sort style */
 .sortable{
     cursor: pointer;
+}
+
+.colgroup {
+    border: 3px dashed #d9dada;
+    border-top-color: #82b0bf;
+    border-bottom-color: #82b0bf;
+    border-left-color: #82b0bf;
+}
+
+.subcat-colgroup {
+    border: 3px dashed #82b0bf;
+}
+
+.btn-colexp{
+    background-color: #e6eaee;
+    border: none;
+    color: #005c8a;
+    padding: 6px 9px;
+    font-size: 12px;
+    left: -15px;
+    position: absolute;
+    top: 20%;
+    z-index: 5;
+    border-radius: 50px;
+}
+
+.btn-colexp:hover{
+    background-color: white;
+    color: #01527a;
 }

@@ -20,7 +20,6 @@
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
-
     display: block;
     width: 100%;
     max-width: 150px;
@@ -29,7 +28,7 @@
     color: #333;
     background-color: #ffffff;
     background-image: none;
-    border-radius: .5em;
+    border-radius: .25rem;
     border: 1px solid #8c8c8c;
     -ms-word-break: normal;
     word-break: normal;
@@ -38,12 +37,13 @@
 
 .mform-custom-select > div.felement:after {
     content: '\f078';
+    background-color: white;
     font: normal normal normal 12px/1 FontAwesome;
     color: #005c8a;
-    left: 125px;
+    left: 134px;
     top: 32%;
-    height: 34px;
-    padding: 0 8px;
+    height: 22px;
+    padding: 0px 5px;
     position: absolute;
     pointer-events: none;
 }
@@ -107,4 +107,18 @@ textarea#id_notes.form-control {
     color: #fff;
     background-color: #0f6fc5;
     border-color: #0f6fc5;
+}
+
+#id_convertbutton{
+    background-color: #0f6fc5;
+    color: #fff;
+}
+
+#id_submitconvertbutton{
+    display: none;
+}
+
+[data-groupname="buttonarr"] > .form-inline {
+    justify-content: flex-end;
+    padding-right: 2em;
 }

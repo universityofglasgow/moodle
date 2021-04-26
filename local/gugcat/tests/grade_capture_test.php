@@ -106,6 +106,58 @@ class grade_capture_testcase extends advanced_testcase {
         $columns = grade_capture::get_columns();
         $this->assertEquals($row->firstgrade, get_string('nograde', 'local_gugcat'));
         $this->assertNotContains($mgcolumn, $columns);
+
+        // Multiple course modules to be imported
+        global $DB, $USER;
+        $gen = $this->getDataGenerator();
+        $mod1 = $gen->create_module('assign', array('name'=> 'Assessment 1','course' => $this->course->id));
+        $mod2 = $gen->create_module('assign', array('name'=> 'Assessment 2','course' => $this->course->id));
+        $DB->set_field('grade_items', 'grademax', '22.00000', array('iteminstance'=>$mod1->id, 'itemmodule' => 'assign'));
+        $DB->set_field('grade_items', 'grademax', '22.00000', array('iteminstance'=>$mod2->id, 'itemmodule' => 'assign'));
+
+        // Adding invalid scale
+        $name = "Non-22 Scale";
+        $scale = "0,1,2";
+        $non22scale = $this->getDataGenerator()->create_scale(array('name' => $name, 'scale' => $scale, 'courseid' => $this->course->id, 'userid' => $USER->id));
+
+        // Creating invalid activity
+        $invalidmod = $gen->create_module('assign', array('name'=> 'Invalid Assessment 1','course' => $this->course->id));
+        $DB->set_field('grade_items', 'scaleid', $non22scale->id, array('iteminstance'=>$invalidmod->id, 'itemmodule' => 'assign'));
+
+        $gradeitem = $DB->get_record('grade_items', array('iteminstance'=>$invalidmod->id, 'itemmodule' => 'assign'), 'id');
+
+        $gcatactivities = local_gugcat::get_activities($this->course->id);
+        // Assert $gcatactivities is 4 as we added 1 new invalid assessment
+        $this->assertCount(4, $gcatactivities);
+
+        // Filter activities
+        $gcatactivities = array_filter($gcatactivities, function($k){
+            $scaleid = $k->gradeitem->scaleid;
+            $gradetype = $k->gradeitem->gradetype;
+            $grademax = $k->gradeitem->grademax;
+            $grademin = $k->gradeitem->grademin;
+            $invalid_import_activity = (is_null($scaleid) ? !local_gugcat::is_validgradepoint($gradetype, $grademin)
+                                                          : !local_gugcat::is_scheduleAscale($gradetype, $grademax));
+            return !$invalid_import_activity;
+        }, ARRAY_FILTER_USE_BOTH);
+        
+        // Assert $gcatactivities is 3 as we filtered 1 invalid assessment
+        $this->assertCount(3, $gcatactivities);
+
+        // Import filtered activities
+        grade_capture::import_from_gradebook($this->course->id, $gcatactivities, $gcatactivities);
+
+        foreach ($gcatactivities as $act) {
+            $moodlegi = grade_item::fetch(array('iteminfo'=>$act->gradeitemid, 'itemtype' => 'manual', 'itemname' => get_string('moodlegrade', 'local_gugcat')));
+            $prvgi = grade_item::fetch(array('iteminfo'=>$act->gradeitemid, 'itemtype' => 'manual', 'itemname' => get_string('provisionalgrd', 'local_gugcat')));
+            if ($act->instance == $invalidmod->id){
+                $this->assertFalse($moodlegi);
+                $this->assertFalse($prvgi);
+            } else {
+                $this->assertNotFalse($moodlegi);
+                $this->assertNotFalse($prvgi);
+            }
+        }
     }
 
     public function test_grade_capture_rows() {
@@ -210,5 +262,67 @@ class grade_capture_testcase extends advanced_testcase {
         grade_capture::set_provisional_weights($this->course->id, $this->cms, $this->students);
         $prvweight = $DB->get_field('grade_grades', 'information', array('itemid' => $this->provisionalgi, 'userid' => $this->student->id));
         $this->assertEquals($prvweight, strval($expectedweight)); //assert provisional grade_grade copied weight from main act
+    }
+
+    public function test_get_component_module(){
+        global $DB;
+        $gen = $this->getDataGenerator();
+        $cid = $this->course->id;
+        $gc1a = new grade_category($gen->create_grade_category(['courseid' => $cid]), false);
+        $gc2a = new grade_category($gen->create_grade_category(['courseid' => $cid]), false);
+        $gc2a->depth = 3;
+        $gc2a->path = $gc1a->path.$gc2a->id.'/';
+        $gc2a->parent = $gc1a->id;
+        $gc2a->update();
+        $categorygi = $DB->get_field('grade_items', 'id', array('courseid'=> $this->course->id, 'itemtype'=>'category', 'iteminstance'=>$gc2a->id));
+        $assignid = $DB->get_field('grade_items', 'id', array('courseid' => $this->course->id, 'itemmodule' => 'assign'));
+        $DB->set_field('grade_items', 'categoryid', $categorygi, array('id'=>$assignid));
+        $cm = local_gugcat::get_activities($cid, $gc1a->id);
+        $categoract = grade_category::fetch_all(array('courseid' => $cid, 'parent' => $gc1a->id));
+        $gradecatgi = array();
+        foreach ($categoract as $gc){
+            $gi = local_gugcat::get_category_gradeitem($cid, $gc);
+            $gi->name = preg_replace('/\b total/i', '', $gi->name);
+            $gradecatgi[$gi->gradeitemid] = $gi; 
+        }
+        $mods = key($gradecatgi);
+        $selectedmodid = $gradecatgi[$mods]->gradeitemid;
+        $childactivities = local_gugcat::get_activities($cid, $selectedmodid);
+        $childmods = key($childactivities);
+        $selectedmodule = $childactivities[$childmods];
+        $this->assertEquals($selectedmodule->gradeitem->itemname, $this->cm->gradeitem->itemname);
+        $this->assertEquals($selectedmodule->gradeitem->itemtype, $this->cm->gradeitem->itemtype);
+        $this->assertEquals($selectedmodule->gradeitem->itemmodule, $this->cm->gradeitem->itemmodule);
+        $this->assertNotEquals($selectedmodule->gradeitem->parent_category, $this->cm->gradeitem->parent_category);
+    }
+
+    public function test_create_subcategory_gradeitem(){
+        global $DB;
+        $gen = $this->getDataGenerator();
+        $cid = $this->course->id;
+        $gc1a = new grade_category($gen->create_grade_category(['courseid' => $cid]), false);
+        $gc2a = new grade_category($gen->create_grade_category(['courseid' => $cid]), false);
+        $gc2a->depth = 3;
+        $gc2a->path = $gc1a->path.$gc2a->id.'/';
+        $gc2a->parent = $gc1a->id;
+        $gc2a->update();
+        $categorygi = $DB->get_field('grade_items', 'id', array('courseid'=> $this->course->id, 'itemtype'=>'category', 'iteminstance'=>$gc2a->id));
+        $assignid = $DB->get_field('grade_items', 'id', array('courseid' => $this->course->id, 'itemmodule' => 'assign'));
+        $DB->set_field('grade_items', 'categoryid', $categorygi, array('id'=>$assignid));
+        $cm = local_gugcat::get_activities($cid, $gc1a->id);
+        $categoract = grade_category::fetch_all(array('courseid' => $cid, 'parent' => $gc1a->id));
+        $gradecatgi = array();
+        foreach ($categoract as $gc){
+            $gi = local_gugcat::get_category_gradeitem($cid, $gc);
+            $gradecatgi[$gi->gradeitemid] = $gi; 
+        }
+        $mods = key($gradecatgi);
+        $selectedmodid = $gradecatgi[$mods]->gradeitemid;
+        $childactivities = local_gugcat::get_activities($cid, $selectedmodid);
+        $totalactivities = $childactivities + $gradecatgi;
+        grade_capture::set_provisional_weights($cid, $totalactivities, $this->students);
+        $subcatstr = get_string('subcategorygrade', 'local_gugcat');
+        $subcatgi = $DB->get_record('grade_items', array('itemtype'=>'manual', 'itemname'=>$subcatstr));
+        $this->assertNotFalse($subcatgi);
     }
 }

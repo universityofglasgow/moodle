@@ -298,6 +298,86 @@ class local_gugcat_testcase extends advanced_testcase {
         $this->assertEquals(1, $checkboxvalue);
     }
 
+    public function test_get_activity(){
+        // Test will include get_category_gradeitem($courseid, $gradecategory) function
+        $gen = $this->getDataGenerator();
+        $cid = $this->course->id;
+        //create grade sub category
+        $gc = new grade_category($gen->create_grade_category(['courseid' => $cid, 'fullname' => 'Sub category']), false);
+        //create grade item of the sub category
+        $gcgi = new grade_item(['courseid' => $cid, 'itemtype' => 'category', 'categoryid' => null, 'iteminstance' => $gc->id], true);
+        $module = local_gugcat::get_activity($cid, $gcgi->id);
+
+        // Get_activity will return gradeitem of sub category
+        $this->assertEquals($module->modname, 'category');
+        $this->assertEquals($module->name, $gc->fullname.' total');
+        $this->assertEquals($module->gradeitemid, $gcgi->id);
+
+        // Get_activity will return assessment data 
+        $module = local_gugcat::get_activity($cid, $this->cm->gradeitemid);
+        $this->assertEquals($module->modname, 'assign');
+        $this->assertEquals($module->name, $this->cm->name);
+        $this->assertEquals($module->gradeitemid, $this->cm->gradeitemid);
+    }
+
+    public function test_delete_gcat_items(){
+        global $DB;
+        $cid = $this->course->id;
+        // Create an assessment first
+        $gen = $this->getDataGenerator();
+        $mod = $gen->create_module('assign', array('name'=> 'Assessment Deletion','course' => $this->course->id));
+        $DB->set_field('grade_items', 'grademax', '22.00000', array('iteminstance'=>$mod->id, 'itemmodule' => 'assign'));
+        // Get the grade item of the new assessment
+        $gi = new grade_item(['courseid' => $cid, 'iteminstance' => $mod->id, 'itemmodule' => 'assign'], true);
+        $module = local_gugcat::get_activity($cid, $gi->id);
+
+        // Import assessment to GCAT
+        grade_capture::import_from_gradebook($cid, $module, array($module));
+
+        // Assert module is imported
+        $moodlegi = grade_item::fetch(array('iteminfo'=>$module->gradeitemid, 'itemtype' => 'manual', 'itemname' => get_string('moodlegrade', 'local_gugcat')));
+        $prvgi = grade_item::fetch(array('iteminfo'=>$module->gradeitemid, 'itemtype' => 'manual', 'itemname' => get_string('provisionalgrd', 'local_gugcat')));
+        $this->assertNotFalse($moodlegi);
+        $this->assertNotFalse($prvgi);
+
+        $gcatactivities = local_gugcat::get_activities($this->course->id);
+        // Assert $gcatactivities is 2 as we added 1 new assessment
+        $this->assertCount(2, $gcatactivities);
+
+        // Delete assessment in moodle, this will set deletioninprogress = 1 in course_modules table
+        $DB->set_field('course_modules', 'deletioninprogress', 1, array('id' => $mod->cmid, 'course' => $cid));
+
+        // Delete gcat items for this assessment
+        local_gugcat::delete_gcat_items($cid, $module);
+
+        // Call get_activities again, this will call the delete_gcat_items() funtion
+        // because of the deletioninprogress = 1
+        $gcatactivities = local_gugcat::get_activities($cid);
+        // Assert $gcatactivities is 1 as the previously added assessment was already deleted in moodle;
+        $this->assertCount(1, $gcatactivities);
+        
+        // Assert module will not have moodle and provisional grade items
+        $moodlegi = grade_item::fetch(array('iteminfo'=>$module->gradeitemid, 'itemtype' => 'manual', 'itemname' => get_string('moodlegrade', 'local_gugcat')));
+        $prvgi = grade_item::fetch(array('iteminfo'=>$module->gradeitemid, 'itemtype' => 'manual', 'itemname' => get_string('provisionalgrd', 'local_gugcat')));
+        $this->assertFalse($moodlegi);
+        $this->assertFalse($prvgi);
+    }
+
+    public function test_convert_grade(){
+        // Populate static $GRADES scales
+        // Setting it to null will call to get gcat scale in json file
+        local_gugcat::set_grade_scale(null);
+
+        // convert_grade function will return the grade accd to gradetype, default is GRADE_TYPE_SCALE
+        $grade = 10; // D2 in 22 point scale
+
+        $return = local_gugcat::convert_grade($grade, GRADE_TYPE_VALUE);
+        $this->assertEquals(10.00, $return);
+        // As we are adjust grade in converting to 22 pt scale, we will add 1
+        $return = local_gugcat::convert_grade($grade+1);
+        $this->assertEquals('D2', $return);
+    }
+
     public static function default_custom_field_category_object(){
         $customfieldcategory = new stdClass();
         $customfieldcategory->name = get_string('gugcatoptions', 'local_gugcat');
@@ -311,10 +391,11 @@ class local_gugcat_testcase extends advanced_testcase {
 
 
     public static function create_custom_field_field($customfieldcategoryid){
+        $configdata = '{"required":"0","uniquevalues":"0","checkbydefault":"0","locked":"0","visibility":"0"}';
         $category = \core_customfield\category_controller::create($customfieldcategoryid);
         $field = \core_customfield\field_controller::create(0, (object)[
             'type' => 'checkbox',
-            'configdata' => get_string('configdata', 'local_gugcat')
+            'configdata' => $configdata
         ], $category);
 
         $handler = $field->get_handler();
@@ -322,5 +403,78 @@ class local_gugcat_testcase extends advanced_testcase {
             'name' => get_string('showassessment', 'local_gugcat'), 
             'shortname' => get_string('showonstudentdashboard', 'local_gugcat')
         ]);
+    }
+
+    public function test_get_child_activities_id(){
+        global $DB;
+        $gen = $this->getDataGenerator();
+        $cid = $this->course->id;
+        $gc1a = new grade_category($gen->create_grade_category(['courseid' => $cid]), false);
+        $gc2a = new grade_category($gen->create_grade_category(['courseid' => $cid]), false);
+        $gc2a->depth = 3;
+        $gc2a->path = $gc1a->path.$gc2a->id.'/';
+        $gc2a->parent = $gc1a->id;
+        $gc2a->update();
+        $assignid = $DB->get_field('grade_items', 'id', array('courseid' => $this->course->id, 'itemmodule' => 'assign'));
+        $DB->set_field('grade_items', 'categoryid', $gc2a->id, array('id'=>$assignid));
+        $cm = local_gugcat::get_child_activities_id($cid, $gc2a->id);
+        $this->assertNotEmpty($cm);
+        $this->assertEquals($cm[key($cm)]->gradeitemid, $this->cm->gradeitemid);
+    }
+
+    public function test_get_prvgrd_item_ids(){
+        global $DB;
+        $gen = $this->getDataGenerator();
+        $cid = $this->course->id;
+        $gc1a = new grade_category($gen->create_grade_category(['courseid' => $cid]), false);
+        $gc2a = new grade_category($gen->create_grade_category(['courseid' => $cid]), false);
+        $gc2a->depth = 3;
+        $gc2a->path = $gc1a->path.$gc2a->id.'/';
+        $gc2a->parent = $gc1a->id;
+        $gc2a->update();
+        $assignid = $DB->get_field('grade_items', 'id', array('courseid' => $this->course->id, 'itemmodule' => 'assign'));
+        $DB->set_field('grade_items', 'categoryid', $gc2a->id, array('id'=>$assignid));
+        $cm = local_gugcat::get_child_activities_id($cid, $gc2a->id);
+        $prvgrdid = local_gugcat::add_grade_item($cid, get_string('provisionalgrd', 'local_gugcat'), $cm[key($cm)]);
+        $prvgrds = local_gugcat::get_prvgrd_item_ids($cid, $cm);
+        $this->assertNotEmpty($prvgrds);
+        foreach($prvgrds as $prvgrd){
+            $this->assertNotEmpty($prvgrd);
+            $this->assertEquals($prvgrdid, $prvgrd->id);
+        }
+    }
+
+    public function test_update_components_notes(){
+        global $DB;
+        $exepectednotes = 'testnotes';
+        $subcatgi = local_gugcat::add_grade_item($this->course->id, get_string('subcategorygrade', 'local_gugcat'), null); 
+        local_gugcat::update_grade($this->student->id, $subcatgi, 19);
+        local_gugcat::update_components_notes($this->student->id, $subcatgi, $exepectednotes);
+        $notes = $DB->get_field('grade_grades', 'feedback', array('userid'=>$this->student->id, 'itemid'=>$subcatgi));
+        $this->assertEquals($exepectednotes, $notes);
+    }
+
+    public function test_get_aggregated_assessment_history(){
+        global $DB;
+        $gen = $this->getDataGenerator();
+        $cid = $this->course->id;
+        $gc1a = new grade_category($gen->create_grade_category(['courseid' => $cid]), false);
+        $gc2a = new grade_category($gen->create_grade_category(['courseid' => $cid]), false);
+        $gc2a->depth = 3;
+        $gc2a->path = $gc1a->path.$gc2a->id.'/';
+        $gc2a->parent = $gc1a->id;
+        $gc2a->update();
+        $assignid = $DB->get_field('grade_items', 'id', array('courseid' => $this->course->id, 'itemmodule' => 'assign'));
+        $DB->set_field('grade_items', 'categoryid', $gc2a->id, array('id'=>$assignid));
+        //create subcat gi
+        $subcatgi = $DB->get_record('grade_items', array('courseid'=>$this->course->id, 'iteminstance'=>$gc2a->id));
+        $subcatgiid = local_gugcat::add_grade_item($this->course->id, get_string('subcategorygrade', 'local_gugcat'), null);
+        $DB->set_field('grade_items', 'iteminfo', $gc2a->id, array('id'=>$subcatgiid));
+        local_gugcat::update_grade($this->student->id, $subcatgiid, 19, 'import');
+        $module = local_gugcat::get_activity($this->course->id, $subcatgi->id);
+        $rows = local_gugcat::get_aggregated_assessment_history($this->course->id, $this->student->id, $module);
+        $this->assertNotEmpty($rows);
+        $this->assertEquals($rows[0]->grade, '19.00000');
+        $this->assertEquals($rows[0]->notes, get_string('import', 'local_gugcat'));
     }
 }

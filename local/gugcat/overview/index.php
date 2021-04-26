@@ -51,8 +51,11 @@ $PAGE->set_heading($course->fullname);
 require_capability('local/gugcat:view', $coursecontext);
 
 //Retrieve activities
-$activities = local_gugcat::get_activities($courseid);
-
+if(!is_null($categoryid)){
+    $activities = grade_aggregation::get_parent_child_activities($courseid, $categoryid);
+}else{
+    $activities = local_gugcat::get_activities($courseid);
+}
 //Retrieve groupingids from activities
 $groupingids = array_column($activities, 'groupingid');
 
@@ -104,7 +107,7 @@ if(count($filters) > 0 && $page > 0){
     redirect($URL);
 }
 
-$rows = grade_aggregation::get_rows($course, $activities, $students);
+$rows = grade_aggregation::get_rows($course, $activities, $students, true);
 
 //params for log
 $params = array(
@@ -159,7 +162,7 @@ if(isset($requireresit) && !empty($rowstudentid)){
     //log of release final assessment grades
     $event = \local_gugcat\event\export_aggregation::create($params);
     $event->trigger();
-    grade_aggregation::export_aggregation_tool($course);
+    grade_aggregation::export_aggregation_tool($course, $categoryid);
     unset($downloadcsv);
     redirect($URL);
     exit;

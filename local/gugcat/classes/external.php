@@ -72,4 +72,40 @@ class external extends external_api {
             'result' => new external_value(PARAM_BOOL, 'The processing result')
         ]);
     }
+
+    /**
+     * get_converter_template parameters.
+     *
+     * @return external_function_parameters
+     */
+    public static function get_converter_template_parameters() {
+        return new external_function_parameters(
+            array(
+                'templateid' => new external_value(PARAM_INT, 'Template id', VALUE_DEFAULT)
+            )
+        );
+    }
+
+    /**
+     * Retrieve converter template grades.
+     *
+     * @param  $templateid
+     */
+    public static function get_converter_template($templateid) {
+        $params = self::validate_parameters(self::get_converter_template_parameters(), ['templateid' => $templateid]);
+        return [
+            'result' => api::get_converter_template_data($params['templateid'])
+        ];
+    }
+
+    /**
+     * Returns get_converter_template result value.
+     *
+     * @return external_value
+     */
+    public static function get_converter_template_returns() {
+        return new external_single_structure([
+            'result' => new external_value(PARAM_RAW, 'The processing result')
+        ]);
+    }
 }
