@@ -86,8 +86,8 @@ if(!is_null($categoryid)){
         $URL->param('activityid', $activityid);
     }
 
-    $childactivities = (isset($totalactivities[$activityid]->modname) && $totalactivities[$activityid]->modname === 'category') ? local_gugcat::get_activities($courseid, $totalactivities[$activityid]->id) : null;
-    if(!is_null($childactivities)){
+    $childactivities = (isset($totalactivities[$activityid]->modname) && $totalactivities[$activityid]->modname === 'category') ? local_gugcat::get_activities($courseid, $totalactivities[$activityid]->id) : array();
+    if(!empty($childactivities)){
         foreach($childactivities as $ca){
             $ca->selected = (strval($childactivityid) === $ca->gradeitemid)? 'selected' : '';
         }
