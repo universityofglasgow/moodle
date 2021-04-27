@@ -32,15 +32,26 @@ require_once($CFG->libdir . '/csvlib.class.php');
 $courseid = required_param('id', PARAM_INT);
 $activityid = required_param('activityid', PARAM_INT);
 $categoryid = optional_param('categoryid', null, PARAM_INT);
+$childactivityid = optional_param('childactivityid', null, PARAM_INT);
+$page = optional_param('page', 0, PARAM_INT);  
 $iid = optional_param('iid', null, PARAM_INT);
 
-$URL = new moodle_url('/local/gugcat/import/index.php', array('id' => $courseid, 'activityid' => $activityid));
-is_null($categoryid) || $categoryid == 0 ? null : $URL->param('categoryid', $categoryid);
 require_login($courseid);
+$urlparams = array('id' => $courseid, 'activityid' => $activityid, 'page' => $page);
+$URL = new moodle_url('/local/gugcat/import/index.php', $urlparams);
+(!is_null($categoryid) && $categoryid != 0) ? null : $URL->param('categoryid', $categoryid);
 $indexurl = new moodle_url('/local/gugcat/index.php', array('id' => $courseid));
+
+$modid = $activityid;
+if(!is_null($childactivityid) && $childactivityid != 0){
+    $URL->param('childactivityid', $childactivityid);
+    $indexurl->param('childactivityid', $childactivityid);
+    $modid = $childactivityid;
+}
 
 $PAGE->navbar->add(get_string('navname', 'local_gugcat'), $indexurl);
 $PAGE->set_title(get_string('gugcat', 'local_gugcat'));
+
 $PAGE->requires->css('/local/gugcat/styles/gugcat.css');
 $PAGE->requires->js_call_amd('local_gugcat/main', 'init');
 
@@ -53,11 +64,13 @@ $PAGE->set_course($course);
 $PAGE->set_heading($course->fullname);
 $PAGE->set_url($URL);
 
+// Retrieve the activity
+$module = local_gugcat::get_activity($courseid, $modid);
 $renderer = $PAGE->get_renderer('local_gugcat');
 
 // Set up the upload import form.
 $mform = new uploadform(null, array('includeseparator' => true, 'acceptedtypes' =>
-array('.csv', '.txt')));
+array('.csv', '.txt'), 'activity' => $module));
 if(!$iid){
     // If the upload form has been submitted.
     if ($formdata = $mform->get_data()) {
@@ -98,9 +111,6 @@ $mform2 = new importform(null, array('iid' => $iid));
 
 // Here, if we have data, we process the fields and enter the information into the database.
 if ($formdata = $mform2->get_data()) {
-    // Retrieve the module
-    $module = local_gugcat::get_activity($courseid, $activityid);
-
     //Populate static $GRADES scales
     local_gugcat::set_grade_scale($module->gradeitem->scaleid);
     //Populate static provisional grade id
@@ -114,7 +124,7 @@ if ($formdata = $mform2->get_data()) {
         if($categoryid && $categoryid != 0){
             $indexurl->param('categoryid', $categoryid);
         }
-        $indexurl->param('activityid', $activityid);
+        $indexurl->param('activityid', $modid);
         redirect($indexurl);
         exit;
     }else{

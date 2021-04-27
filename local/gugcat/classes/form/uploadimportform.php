@@ -44,6 +44,10 @@ class uploadform extends moodleform {
         $mform->setType('id', PARAM_INT);
         $mform->addElement('hidden', 'activityid', required_param('activityid', PARAM_INT));
         $mform->setType('activityid', PARAM_INT);
+        $mform->addElement('hidden', 'childactivityid', optional_param('childactivityid', null, PARAM_INT));
+        $mform->setType('childactivityid', PARAM_INT);
+        $mform->addElement('hidden', 'categoryid', optional_param('categoryid', null, PARAM_INT));
+        $mform->setType('categoryid', PARAM_INT);
 
         // Restrict the possible upload file types.
         if (!empty($features['acceptedtypes'])) {
@@ -52,6 +56,9 @@ class uploadform extends moodleform {
             $acceptedtypes = '*';
         }
 
+        $activity = $features['activity'];
+        $mform->addElement('static', 'assessment', get_string('assessment'), $activity->name); 
+        $mform->setType('assessment', PARAM_NOTAGS); 
         // File upload.
         $mform->addElement('filepicker', 'userfile', get_string('selectfile', 'local_gugcat'), null, array('accepted_types' => $acceptedtypes));
         $mform->addRule('userfile', null, 'required');
@@ -86,8 +93,10 @@ class importform extends moodleform {
         $mform->addElement('hidden', 'iid', $this->_customdata['iid']);
         $mform->setType('iid', PARAM_INT);
         $mform->setConstant('iid', $this->_customdata['iid']);
+        $mform->addElement('hidden', 'childactivityid', optional_param('childactivityid', null, PARAM_INT));
+        $mform->setType('childactivityid', PARAM_INT);
         $mform->addElement('hidden', 'categoryid', optional_param('categoryid', null, PARAM_INT));
-        $mform->setType('categoryid', PARAM_ACTION);
+        $mform->setType('categoryid', PARAM_INT);
 
         $mform->addElement('select', 'reasons', get_string('selectreason', 'local_gugcat'), local_gugcat::get_reasons(), ['class' => 'mform-custom-select']); 
         $mform->setType('reasons', PARAM_NOTAGS); 

@@ -51,7 +51,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
         }else if(isset($selectedmodule->activityid)){
             $modid = $selectedmodule->activityid;
         }
-        if(is_null($childactivityid) & isset($selectedmodule->gradeitemid)){
+        if(is_null($childactivityid) && count($childactivities_) > 0 && isset($selectedmodule->gradeitemid)){
             $childactivityid = $selectedmodule->gradeitemid;
         }
         $ammendgradeparams = "?id=$courseid&activityid=$modid&page=$page";
@@ -164,7 +164,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $tabheader = !empty($activities) ? (object)[
             'addallgrdstr' =>get_string('addmultigrades', 'local_gugcat'),
             'saveallgrdstr' =>get_string('saveallnewgrade', 'local_gugcat'),
-            'uploadaddgrdstr' =>get_string('uploadaddgrd', 'local_gugcat'),
+            'uploadaddgrdstr' => ($selectedmodule && $selectedmodule->provisionalid) ? get_string('uploadaddgrd', 'local_gugcat') : null,
             'adjustgrdstr' =>get_string('adjustgrade', 'local_gugcat'),
             'adjustassconvstr' => ($gt == GRADE_TYPE_VALUE) ? get_string('adjustassessgrdcvr', 'local_gugcat') : null,
             'saveallbtnstr' =>get_string('saveallnewgrade', 'local_gugcat'),
