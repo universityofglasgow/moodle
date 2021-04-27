@@ -39,6 +39,12 @@ class uploadform extends moodleform {
             $features = array();
         }
 
+        $gradetypestr = array(
+            GRADE_TYPE_TEXT => get_string('modgradetypenone', 'grades'),
+            GRADE_TYPE_SCALE => get_string('modgradetypescale', 'grades'),
+            GRADE_TYPE_VALUE => get_string('modgradetypepoint', 'grades'),
+        );
+
         // course id and act id need to be passed for auth purposes
         $mform->addElement('hidden', 'id', required_param('id', PARAM_INT));
         $mform->setType('id', PARAM_INT);
@@ -59,6 +65,13 @@ class uploadform extends moodleform {
         $activity = $features['activity'];
         $mform->addElement('static', 'assessment', get_string('assessment'), $activity->name); 
         $mform->setType('assessment', PARAM_NOTAGS); 
+        $mform->addElement('static', 'gradetype', get_string('gradetype', 'grades'), $gradetypestr[$activity->gradeitem->gradetype]); 
+        $mform->setType('gradetype', PARAM_NOTAGS); 
+        if($activity->gradeitem->gradetype == GRADE_TYPE_VALUE){
+            $mform->addElement('static', 'maximumgrade', get_string('grademax', 'grades'), intval($activity->gradeitem->grademax)); 
+            $mform->setType('maximumgrade', PARAM_NOTAGS); 
+        }
+
         // File upload.
         $mform->addElement('filepicker', 'userfile', get_string('selectfile', 'local_gugcat'), null, array('accepted_types' => $acceptedtypes));
         $mform->addRule('userfile', null, 'required');

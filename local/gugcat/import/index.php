@@ -40,7 +40,7 @@ require_login($courseid);
 $urlparams = array('id' => $courseid, 'activityid' => $activityid, 'page' => $page);
 $URL = new moodle_url('/local/gugcat/import/index.php', $urlparams);
 (!is_null($categoryid) && $categoryid != 0) ? null : $URL->param('categoryid', $categoryid);
-$indexurl = new moodle_url('/local/gugcat/index.php', array('id' => $courseid));
+$indexurl = new moodle_url('/local/gugcat/index.php', $urlparams);
 
 $modid = $activityid;
 if(!is_null($childactivityid) && $childactivityid != 0){
@@ -92,7 +92,6 @@ if(!$iid){
         $iid = $csvimport->get_iid(); // Go to import options form
         
         echo $renderer->display_import_preview($headers, $csvimport->get_previewdata());
-
     }else{
         // Display the standard upload file form.
         echo $OUTPUT->header();
@@ -112,7 +111,11 @@ $mform2 = new importform(null, array('iid' => $iid));
 // Here, if we have data, we process the fields and enter the information into the database.
 if ($formdata = $mform2->get_data()) {
     //Populate static $GRADES scales
-    local_gugcat::set_grade_scale($module->gradeitem->scaleid);
+    if($is_converted = $module->is_converted){
+        local_gugcat::set_grade_scale(null, $is_converted);
+    }else{
+        local_gugcat::set_grade_scale($module->gradeitem->scaleid);
+    }
     //Populate static provisional grade id
     local_gugcat::set_prv_grade_id($courseid, $module);
 
@@ -124,7 +127,8 @@ if ($formdata = $mform2->get_data()) {
         if($categoryid && $categoryid != 0){
             $indexurl->param('categoryid', $categoryid);
         }
-        $indexurl->param('activityid', $modid);
+        (!is_null($categoryid) && $categoryid != 0) ? $indexurl->param('categoryid', $categoryid) : null;
+        (!is_null($childactivityid) && $childactivityid != 0) ? $indexurl->param('childactivityid', $childactivityid) : null;
         redirect($indexurl);
         exit;
     }else{
