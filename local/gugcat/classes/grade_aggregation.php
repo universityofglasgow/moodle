@@ -631,7 +631,8 @@ class grade_aggregation{
     public static function release_final_grades($courseid){
         global $USER, $DB;
         //Retrieve modules and enrolled students per grade category
-        $modules = local_gugcat::get_activities($courseid);
+        $categoryid = optional_param('categoryid', null, PARAM_INT);
+        $modules = (is_null($categoryid)) ? local_gugcat::get_activities($courseid) : self::get_parent_child_activities($courseid, $categoryid);
         $groupingids = array_column($modules, 'groupingid');
         $students = self::get_students_per_groups($groupingids, $courseid);
         foreach($modules as $mod) {
