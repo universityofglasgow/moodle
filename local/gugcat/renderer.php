@@ -575,12 +575,13 @@ class local_gugcat_renderer extends plugin_renderer_base {
         // Add search bar element (sb) on idnumber, firstname, lastname
         $sbattr = array('type' => 'text', 'placeholder' => get_string('search', 'local_gugcat'));
         $sbidnumber = html_writer::empty_tag('input', $sbattr+array('name' => 'filters[idnumber]', 'value' => $filters['idnumber'],
-         'class' => 'input-search '.(!empty($filters['idnumber']) ? 'visible' : '')));
-        $sbfirstname = html_writer::empty_tag('input', $sbattr+array('name' => 'filters[firstname]', 'value' => $filters['firstname'],
-         'class' => 'input-search '.(!empty($filters['firstname']) ? 'visible' : '')));
-        $sblastname = html_writer::empty_tag('input', $sbattr+array('name' => 'filters[lastname]', 'value' => $filters['lastname'],
-         'class' => 'input-search '.(!empty($filters['lastname']) ? 'visible' : '')));
-        
+        'class' => 'input-search '.(!empty($filters['idnumber']) ? 'visible' : '')));
+        if(!$is_blind_marking){
+            $sbfirstname = html_writer::empty_tag('input', $sbattr+array('name' => 'filters[firstname]', 'value' => $filters['firstname'],
+            'class' => 'input-search '.(!empty($filters['firstname']) ? 'visible' : '')));
+            $sblastname = html_writer::empty_tag('input', $sbattr+array('name' => 'filters[lastname]', 'value' => $filters['lastname'],
+            'class' => 'input-search '.(!empty($filters['lastname']) ? 'visible' : '')));
+        }
         $html = html_writer::start_tag('table', array_merge(array('id'=>'gcat-table', 'class' => 'table'), $attributes));
         if($aggregation){
             $html .= html_writer::empty_tag('colgroup', array('span' => $is_blind_marking ? 2 : 4));
