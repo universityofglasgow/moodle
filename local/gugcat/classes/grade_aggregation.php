@@ -82,6 +82,7 @@ class grade_aggregation{
             $mod->gradeitemid = $mod->gradeitem->id;
             $grades = new stdClass();
             $prvgrdid = null;
+            $moodlestr = get_string('moodlegrade', 'local_gugcat');
             // Get provisional gradeitem id and grades from gradebook for assessments and sub category
             if($mod->modname == 'category'){
                 // Check if components are imported
@@ -90,7 +91,6 @@ class grade_aggregation{
                     foreach($mod->children as $id){
                         $componentsql .= "iteminfo = $id OR ";
                     }
-                    $moodlestr = get_string('moodlegrade', 'local_gugcat');
                     //remove last OR
                     $componentsql = chop($componentsql, ' OR ');
                     // If atleast 1 component has moodle grade item, subcategory is imported, hence, get the 
@@ -103,7 +103,10 @@ class grade_aggregation{
                 }
                 $gbgrades = grade_get_grades($course->id, 'category', null, $mod->instance, array_keys($students));
             }else{
-                $prvgrdid = $mod->provisionalid;
+                // Check if activity is imported or not by checking its moodle grade item
+                if($DB->record_exists_select('grade_items', "itemname = '$moodlestr' AND iteminfo = $mod->gradeitemid")){
+                    $prvgrdid = $mod->provisionalid;
+                }
                 $gbgrades = grade_get_grades($course->id, 'mod', $mod->modname, $mod->instance, array_keys($students));
             }
 
@@ -173,7 +176,7 @@ class grade_aggregation{
                     $gt = $item->gradeitem->gradetype;
                     $gm = $item->gradeitem->grademax;
                     $scaleid = is_null($item->scaleid) ? null : $item->scaleid;
-                    $is_scale = !is_null($scaleid) && local_gugcat::is_scheduleAscale($gt, $gm) && isset($pg);
+                    $is_scale = !is_null($scaleid) && local_gugcat::is_scheduleAscale($gt, $gm);
 
                     local_gugcat::set_grade_scale($scaleid);
                     local_gugcat::is_child_activity($item) || $item->is_converted ? null: $gradetypes[] = intval($gt);
