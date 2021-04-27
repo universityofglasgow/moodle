@@ -39,17 +39,37 @@ class uploadform extends moodleform {
             $features = array();
         }
 
+        $gradetypestr = array(
+            GRADE_TYPE_TEXT => get_string('modgradetypenone', 'grades'),
+            GRADE_TYPE_SCALE => get_string('modgradetypescale', 'grades'),
+            GRADE_TYPE_VALUE => get_string('modgradetypepoint', 'grades'),
+        );
+
         // course id and act id need to be passed for auth purposes
         $mform->addElement('hidden', 'id', required_param('id', PARAM_INT));
         $mform->setType('id', PARAM_INT);
         $mform->addElement('hidden', 'activityid', required_param('activityid', PARAM_INT));
         $mform->setType('activityid', PARAM_INT);
+        $mform->addElement('hidden', 'childactivityid', optional_param('childactivityid', null, PARAM_INT));
+        $mform->setType('childactivityid', PARAM_INT);
+        $mform->addElement('hidden', 'categoryid', optional_param('categoryid', null, PARAM_INT));
+        $mform->setType('categoryid', PARAM_INT);
 
         // Restrict the possible upload file types.
         if (!empty($features['acceptedtypes'])) {
             $acceptedtypes = $features['acceptedtypes'];
         } else {
             $acceptedtypes = '*';
+        }
+
+        $activity = $features['activity'];
+        $mform->addElement('static', 'assessment', get_string('assessment'), $activity->name); 
+        $mform->setType('assessment', PARAM_NOTAGS); 
+        $mform->addElement('static', 'gradetype', get_string('gradetype', 'grades'), $gradetypestr[$activity->gradeitem->gradetype]); 
+        $mform->setType('gradetype', PARAM_NOTAGS); 
+        if($activity->gradeitem->gradetype == GRADE_TYPE_VALUE){
+            $mform->addElement('static', 'maximumgrade', get_string('grademax', 'grades'), intval($activity->gradeitem->grademax)); 
+            $mform->setType('maximumgrade', PARAM_NOTAGS); 
         }
 
         // File upload.
@@ -86,8 +106,10 @@ class importform extends moodleform {
         $mform->addElement('hidden', 'iid', $this->_customdata['iid']);
         $mform->setType('iid', PARAM_INT);
         $mform->setConstant('iid', $this->_customdata['iid']);
+        $mform->addElement('hidden', 'childactivityid', optional_param('childactivityid', null, PARAM_INT));
+        $mform->setType('childactivityid', PARAM_INT);
         $mform->addElement('hidden', 'categoryid', optional_param('categoryid', null, PARAM_INT));
-        $mform->setType('categoryid', PARAM_ACTION);
+        $mform->setType('categoryid', PARAM_INT);
 
         $mform->addElement('select', 'reasons', get_string('selectreason', 'local_gugcat'), local_gugcat::get_reasons(), ['class' => 'mform-custom-select']); 
         $mform->setType('reasons', PARAM_NOTAGS); 
