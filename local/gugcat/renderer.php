@@ -164,7 +164,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $tabheader = !empty($activities) ? (object)[
             'addallgrdstr' =>get_string('addmultigrades', 'local_gugcat'),
             'saveallgrdstr' =>get_string('saveallnewgrade', 'local_gugcat'),
-            'uploadaddgrdstr' =>get_string('uploadaddgrd', 'local_gugcat'),
+            'uploadaddgrdstr' => ($selectedmodule && $selectedmodule->provisionalid) ? get_string('uploadaddgrd', 'local_gugcat') : null,
             'adjustgrdstr' =>get_string('adjustgrade', 'local_gugcat'),
             'adjustassconvstr' => ($gt == GRADE_TYPE_VALUE) ? get_string('adjustassessgrdcvr', 'local_gugcat') : null,
             'saveallbtnstr' =>get_string('saveallnewgrade', 'local_gugcat'),

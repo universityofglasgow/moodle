@@ -126,7 +126,7 @@ $limitnum  = GCAT_MAX_USERS_PER_PAGE;
 // Params from search bar filters
 $filters = optional_param_array('filters', [], PARAM_NOTAGS);
 $filters = local_gugcat::get_filters_from_url($filters);
-$activesearch = (isset($filters) && count($filters) > 0) ? true : false;
+$activesearch = isset($filters) && count($filters) > 0 && count(array_filter($filters)) > 0 ? true : false;
 $activesearch ? $URL->param('filter', http_build_query($filters)) : null;
 $PAGE->set_url($URL);
 
