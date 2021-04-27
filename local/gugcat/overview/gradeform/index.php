@@ -24,6 +24,7 @@
  */
 
 use local_gugcat\grade_aggregation;
+use local_gugcat\grade_converter;
 
 require_once(__DIR__ . '/../../../../config.php');
 require_once($CFG->dirroot . '/local/gugcat/locallib.php');
@@ -132,7 +133,17 @@ if ($fromform = $mform->get_data()) {
             $scale = $is_subcat ? $subcatactivity->is_converted : null;
             //if scaleid is not empty or null, then add the scale to notes
             $notes = !is_null($scale) && !empty($scale) ? $fromform->notes." -".$scale : $fromform->notes;
-            local_gugcat::update_grade($studentid, $gradeitemid, $grade, $notes, time());
+            if($is_subcat && $subcatactivity->is_converted){
+                // If conversion is enabled, save the converted grade to provisional grade and original grade to converted grade.
+                $conversion = grade_converter::retrieve_grade_conversion($subcatactivity->gradeitemid);
+                $cg = grade_converter::convert($conversion, $grade);
+                local_gugcat::update_grade($studentid, $gradeitemid, $cg, $notes, time());
+                $convertedgi = local_gugcat::get_grade_item_id($COURSE->id, $subcatactivity->gradeitemid, get_string('convertedgrade', 'local_gugcat'));
+                local_gugcat::update_grade($studentid, $convertedgi, $grade);
+            }else{
+                local_gugcat::update_grade($studentid, $gradeitemid, $grade, $notes, time());
+            }
+            
             //also update notes for subcomponents
             if($is_subcat){
                 $prvgrades = local_gugcat::get_prvgrd_item_ids($courseid, $components);

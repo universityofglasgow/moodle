@@ -98,7 +98,7 @@ if(!empty($totalactivities) || !empty($activities)){
     
     $mods = array_reverse($activities);
     $childmods = empty($childactivities) ?  null : array_reverse($childactivities);
-    $selectedmodule = is_null($childmods) ? (is_null($activityid) ? array_pop($mods) : $activities[$activityid]) : (is_null($childactivityid) ? array_pop($childmods) : $childactivities[$childactivityid]);
+    $selectedmodule = is_null($childmods) ? (is_null($activityid) ? array_pop($mods) : (!empty($activities) ? $activities[$activityid] : null)) : (is_null($childactivityid) ? array_pop($childmods) : $childactivities[$childactivityid]);
 
     if(isset($selectedmodule)){
         $groupingid = $selectedmodule->groupingid;

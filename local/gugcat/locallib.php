@@ -554,7 +554,10 @@ class local_gugcat {
         $course_category = grade_category::fetch_course_category($courseid);
         $categories[$course_category->id] = $course_category;
         // Retrieve categories which parent is equal to the course grade category id
-        $categories = $categories + grade_category::fetch_all(array('courseid' => $courseid, 'parent' => $course_category->id));
+        $children =  grade_category::fetch_all(array('courseid' => $courseid, 'parent' => $course_category->id));
+        if($children){
+            $categories = $categories + $children;
+        }
         // Remove custom gcat DO NOT USE category
         $gcat_category_id = self::get_gcat_grade_category_id($courseid);
         unset($categories[$gcat_category_id]);
@@ -1002,19 +1005,30 @@ class local_gugcat {
         $activities = array();
         $modules = array('assign', 'forum', 'quiz', 'workshop');//modules supported by gcat
         foreach($modules as $mod){
-            $params = array($courseid, $categoryid, GRADE_TYPE_NONE, $mod, 0);
-            $sql = "SELECT gi.id as gradeitemid, gi.gradetype as gradetype, gi.grademax as grademax
-                    FROM {grade_items} gi, {course_modules} cm
+            $itemnumber = 0;
+            $params = array($courseid, $categoryid, $itemnumber, GRADE_TYPE_NONE, $mod, $mod);
+            $sql = "SELECT cm.id as cmid, gi.id as gradeitemid, gi.gradetype as gradetype, gi.grademax as grademax
+                    FROM {grade_items} gi, {course_modules} cm, {modules} md, {{$mod}} m
                     WHERE gi.courseid = ? AND
                           gi.categoryid = ? AND
+                          gi.itemnumber = ? AND
                           gi.itemtype = 'mod' AND
                           gi.gradetype != ? AND
                           gi.itemmodule = ? AND
-                          cm.instance = gi.iteminstance AND
-                          cm.deletioninprogress = ?";
-
+                          gi.iteminstance = cm.instance AND
+                          cm.instance = m.id AND
+                          md.name = ? AND
+                          md.id = cm.module AND
+                          cm.deletioninprogress = 0";
             $result = $DB->get_records_sql($sql, $params);
-            (sizeof($result) > 0) ? $activities = $activities + $result : null; 
+            if($mod == 'workshop' || $mod == 'forum'){
+                // Itemnumber = 1
+                $params = array($courseid, $categoryid, 1, GRADE_TYPE_NONE, $mod, $mod);
+                if ($wfs = $DB->get_records_sql($sql, $params)) {
+                    $result =  $result + $wfs;
+                }
+            }
+            (count($result) > 0) ? $activities = $activities + $result : null; 
         }
 
         foreach($activities as $key=>$activity){
