@@ -441,14 +441,14 @@ class local_gugcat_renderer extends plugin_renderer_base {
         foreach($rows as $row){
             $htmlrows .= html_writer::start_tag('tr');
             $htmlrows .= html_writer::tag('td', $row->date);
-            $htmlrows .= html_writer::tag('td', $row->modby);
+            $htmlrows .= html_writer::tag('td', is_null($row->modby) ? get_string('nogradeweight', 'local_gugcat') : $row->modby);
             $htmlrows .= html_writer::tag('td', $row->grade);
             for($i=0; $i<sizeof($activities); $i++){
                 $weight = isset($row->overridden) ? get_string('nogradeweight', 'local_gugcat')  : 
-                (isset($row->grades[$i]) ? round((float)$row->grades[$i]->information * 100) . '%' : get_string('nogradeweight', 'local_gugcat'));
+                (isset($row->weights[$i]) ? round((float)$row->weights[$i] * 100) . '%' : get_string('nogradeweight', 'local_gugcat'));
                 $htmlrows .= html_writer::tag('td', $weight);
             }
-            $htmlrows .= html_writer::tag('td', $row->notes);
+            $htmlrows .= html_writer::tag('td', is_null($row->notes) && empty($row->notes) ? get_string('nogradeweight', 'local_gugcat') : $row->notes);
 
             $htmlrows .= html_writer::end_tag('tr');
         }

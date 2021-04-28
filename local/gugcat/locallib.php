@@ -302,6 +302,7 @@ class local_gugcat {
         $students = is_null($students_) 
         ? get_enrolled_users(context_course ::instance($courseid), 'local/gugcat:gradable', 0, 'u.id') 
         : $students_;
+        $categoryid = optional_param('categoryid', '0', PARAM_INT);
 
         $params = [
             'courseid' => $courseid,
@@ -312,6 +313,7 @@ class local_gugcat {
         ];
         if(is_null($mod)){
             $params['itemname'] = $itemname;
+            $params['iteminfo'] = $categoryid;
             //creates grade item that has no module
             $gradeitem = new grade_item($params, true);
             if($gradeitem->id){
