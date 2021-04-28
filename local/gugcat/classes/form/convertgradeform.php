@@ -124,6 +124,8 @@ class convertform extends moodleform {
         $mform->setType('grademax', PARAM_INT);
         $mform->addElement('hidden', 'notes', $notes);
         $mform->setType('notes', PARAM_NOTAGS);
+        $mform->addElement('hidden', 'page', optional_param('page', 0, PARAM_INT));
+        $mform->setType('page', PARAM_INT);
 
     }
 

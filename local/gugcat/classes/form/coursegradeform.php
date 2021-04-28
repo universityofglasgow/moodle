@@ -51,7 +51,7 @@ class coursegradeform extends moodleform {
                 $mform->addElement('static', $grdobj->activity, $grdobj->activity.' Weighting', $grdobj->weight .'%'); 
                 $mform->addElement('html', '</div>');
                 $mform->setType($grdobj->activity, PARAM_NOTAGS); 
-            }elseif($this->_customdata['setting'] == '0'){
+            }else if($this->_customdata['setting'] == '0'){
                 $attributes = array(
                     'class' => 'input-percent',
                     'type' => 'number',
@@ -131,18 +131,20 @@ class coursegradeform extends moodleform {
             $mform->addElement('button', 'adjustoverride', get_string('savechanges', 'local_gugcat'), ['id' => 'btn-coursegradeform', 'class' => 'btn-blue']);
         }
         // hidden params
-        $mform->addElement('hidden', 'studentid', $this->_customdata['studentid']);
-        $mform->setType('studentid', PARAM_ACTION);
-        $mform->addElement('hidden', 'id', $this->_customdata['id']);
-        $mform->setType('id', PARAM_ACTION);
+        $mform->addElement('hidden', 'studentid', required_param('studentid', PARAM_INT));
+        $mform->setType('studentid', PARAM_INT);
+        $mform->addElement('hidden', 'id', required_param('id', PARAM_INT));
+        $mform->setType('id', PARAM_INT);
         $mform->addElement('hidden', 'setting', $this->_customdata['setting']);
-        $mform->setType('setting', PARAM_ACTION);
+        $mform->setType('setting', PARAM_INT);
         $mform->addElement('hidden', 'cnum', $student->cnum);
-        $mform->setType('cnum', PARAM_ACTION);
-        $mform->addElement('hidden', 'categoryid', $this->_customdata['categoryid']);
-        $mform->setType('categoryid', PARAM_ACTION);
+        $mform->setType('cnum', PARAM_INT);
+        $mform->addElement('hidden', 'categoryid', optional_param('categoryid', null, PARAM_INT));
+        $mform->setType('categoryid', PARAM_INT);
         $mform->addElement('hidden', 'activityid', optional_param('activityid', null, PARAM_INT));
         $mform->setType('activityid', PARAM_INT);
+        $mform->addElement('hidden', 'page', optional_param('page', 0, PARAM_INT));
+        $mform->setType('page', PARAM_INT);
         
     }
 

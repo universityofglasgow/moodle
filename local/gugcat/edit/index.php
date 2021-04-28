@@ -41,7 +41,7 @@ $page = optional_param('page', 0, PARAM_INT);
 require_login($courseid);
 $urlparams = array('id' => $courseid, 'activityid' => $activityid, 'studentid' => $studentid, 'overview' => $overview, 'page' => $page);
 $URL = new moodle_url('/local/gugcat/edit/index.php', $urlparams);
-(!is_null($categoryid) && $categoryid != 0) ? null : $URL->param('categoryid', $categoryid);
+(!is_null($categoryid) && $categoryid != 0) ? $URL->param('categoryid', $categoryid) : null;
 $indexurl = new moodle_url('/local/gugcat/index.php', array('id' => $courseid));
 
 $modid = $activityid;

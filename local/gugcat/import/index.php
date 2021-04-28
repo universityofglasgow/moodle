@@ -39,7 +39,7 @@ $iid = optional_param('iid', null, PARAM_INT);
 require_login($courseid);
 $urlparams = array('id' => $courseid, 'activityid' => $activityid, 'page' => $page);
 $URL = new moodle_url('/local/gugcat/import/index.php', $urlparams);
-(!is_null($categoryid) && $categoryid != 0) ? null : $URL->param('categoryid', $categoryid);
+(!is_null($categoryid) && $categoryid != 0) ? $URL->param('categoryid', $categoryid) : null;
 $indexurl = new moodle_url('/local/gugcat/index.php', $urlparams);
 
 $modid = $activityid;
@@ -124,9 +124,6 @@ if ($formdata = $mform2->get_data()) {
     list($status, $errors) = grade_capture::prepare_import_data($csvimportdata, $module, $gradereason);
     if($status && count($errors) == 0){
         local_gugcat::notify_success('successimportupload');
-        if($categoryid && $categoryid != 0){
-            $indexurl->param('categoryid', $categoryid);
-        }
         (!is_null($categoryid) && $categoryid != 0) ? $indexurl->param('categoryid', $categoryid) : null;
         (!is_null($childactivityid) && $childactivityid != 0) ? $indexurl->param('childactivityid', $childactivityid) : null;
         redirect($indexurl);
