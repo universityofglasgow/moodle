@@ -398,7 +398,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $htmlcolumns .= html_writer::tag('th', get_string('gradeformgrade', 'local_gugcat'));
         $htmlcolumns .= html_writer::tag('th', get_string('revised', 'local_gugcat'));
         $htmlcolumns .= html_writer::tag('th', get_string('type', 'local_gugcat'));
-        $htmlcolumns .= html_writer::tag('th', get_string('notesreason', 'local_gugcat'));
+        $htmlcolumns .= html_writer::tag('th', get_string('notes', 'local_gugcat'));
         foreach($rows as $row){
             $htmlrows .= html_writer::start_tag('tr');
             $htmlrows .= html_writer::tag('td', $row->date);
@@ -434,9 +434,9 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $htmlcolumns .= html_writer::tag('th', get_string('revised', 'local_gugcat'));
         $htmlcolumns .= html_writer::tag('th', get_string('coursegrade', 'local_gugcat'));
         foreach($activities as $act){
-            $htmlcolumns .= html_writer::tag('th', $act->name. '<br> Weigthing');
+            $htmlcolumns .= html_writer::tag('th', $act->name. '<br> Weighting');
         }
-        $htmlcolumns .= html_writer::tag('th', get_string('notesreason', 'local_gugcat'));
+        $htmlcolumns .= html_writer::tag('th', get_string('notes', 'local_gugcat'));
         foreach($rows as $row){
             $htmlrows .= html_writer::start_tag('tr');
             $htmlrows .= html_writer::tag('td', $row->date);
