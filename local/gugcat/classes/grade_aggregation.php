@@ -72,9 +72,9 @@ class grade_aggregation{
         $aggradeid = null;
         $categoryid = optional_param('categoryid', '0', PARAM_INT);
         if(!empty($modules) && count(array_filter(array_column($modules, 'provisionalid'))) > 0){
+            //get or create grade item id for aggregated grade
             $aggradeid = local_gugcat::add_grade_item($course->id, get_string('aggregatedgrade', 'local_gugcat'), null, $students);
         }
-        //get grade item id for aggregated grade
         $rows = array();
         $gradebook = array();
         foreach ($modules as $mod) {
