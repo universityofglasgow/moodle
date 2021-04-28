@@ -898,7 +898,7 @@ class local_gugcat {
      */
     public static function is_child_activity($activity){
         $categoryid = optional_param('categoryid', null, PARAM_INT);
-        if(!is_null($categoryid) && isset($activity->gradeitem->parent_category)){
+        if(!is_null($categoryid) && $categoryid != 0 && isset($activity->gradeitem->parent_category)){
             $parent = $activity->gradeitem->parent_category->parent;
             return ($parent == $categoryid) ? $activity->gradeitem->categoryid: false ;
         }else{

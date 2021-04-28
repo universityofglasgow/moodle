@@ -112,6 +112,8 @@ class importform extends moodleform {
         $mform->setType('childactivityid', PARAM_INT);
         $mform->addElement('hidden', 'categoryid', optional_param('categoryid', null, PARAM_INT));
         $mform->setType('categoryid', PARAM_INT);
+        $mform->addElement('hidden', 'page', optional_param('page', 0, PARAM_INT));
+        $mform->setType('page', PARAM_INT);
 
         $reasons = local_gugcat::get_reasons();
         $reasons[0] = get_string('selectreason', 'local_gugcat');
