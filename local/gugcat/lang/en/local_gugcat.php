@@ -196,7 +196,7 @@ $string['gi_thirdgrade'] = 'Third Grade';
 
 //Log events
 $string['eventaddgrades'] = 'Add new grade for user';
-$string['eventaddgradeconverter'] = 'Add new grade converter';
+$string['eventaddadjustgradeconverter'] = 'Add / adjust assessment grade conversion';
 $string['eventaddmultiplegrades'] = 'Add multiple grades';
 $string['eventadjustgrade'] = 'Adjust student\'s course weightings';
 $string['eventaggregationviewed'] = 'Aggregation Tool viewed';
@@ -211,6 +211,8 @@ $string['eventoverridegrade'] = 'Override student\'s course grade';
 $string['eventreleasefinalgrades'] = 'Release final assessment grades';
 $string['eventreleaseprvgrades'] = 'Release provisional grades';
 $string['eventrequireresit'] = 'Require Resit';
+$string['eventtoggleassessmentsdisplay'] = 'Toggle assessments display in Student Dashboard';
+$string['eventuploadgrades'] = 'Upload additional grades';
 
 //aggregated assessment grade history notes
 $string['aggregation'] = 'N/A - Aggregation calculation function updated';

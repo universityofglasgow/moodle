@@ -64,6 +64,17 @@ $PAGE->set_course($course);
 $PAGE->set_heading($course->fullname);
 $PAGE->set_url($URL);
 
+// Logs for upload import grades
+$params = array(
+    'context' => context_course::instance($courseid),
+    'other' => array(
+        'courseid' => $courseid,
+        'activityid' => $modid,
+        'categoryid' => $categoryid,
+        'page'=> $page
+    )
+);
+
 // Retrieve the activity
 $module = local_gugcat::get_activity($courseid, $modid);
 $renderer = $PAGE->get_renderer('local_gugcat');
@@ -126,6 +137,8 @@ if ($formdata = $mform2->get_data()) {
         local_gugcat::notify_success('successimportupload');
         (!is_null($categoryid) && $categoryid != 0) ? $indexurl->param('categoryid', $categoryid) : null;
         (!is_null($childactivityid) && $childactivityid != 0) ? $indexurl->param('childactivityid', $childactivityid) : null;
+        $event = \local_gugcat\event\upload_import_grade::create($params);
+        $event->trigger();
         redirect($indexurl);
         exit;
     }else{
