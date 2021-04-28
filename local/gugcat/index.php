@@ -37,7 +37,7 @@ $page = optional_param('page', 0, PARAM_INT);
 
 $URL = new moodle_url('/local/gugcat/index.php', array('id' => $courseid, 'page' => $page));
 is_null($activityid) ? null : $URL->param('activityid', $activityid);
-is_null($categoryid) ? null : $URL->param('categoryid', $categoryid);
+is_null($categoryid) && $categoryid == 0 ? null : $URL->param('categoryid', $categoryid);
 is_null($childactivityid) ? null : $URL->param('childactivityid', $childactivityid);
 require_login($courseid);
 $PAGE->navbar->add(get_string('navname', 'local_gugcat'));
@@ -62,7 +62,7 @@ $selectedmodule = null;
 $groupingid = 0;
 $valid_import_activity = false;
 $is_converted = false;
-if(!is_null($categoryid)){
+if(!is_null($categoryid) && $categoryid != 0){
     // Retrieve sub categories
     $gcs = grade_category::fetch_all(array('courseid' => $courseid, 'parent' => $categoryid));
 
