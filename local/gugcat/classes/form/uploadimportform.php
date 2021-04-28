@@ -32,6 +32,7 @@ class uploadform extends moodleform {
     function definition (){
 
         $mform =& $this->_form;
+        $mform->addElement('html', '<div class="mform-container">');
 
         if (isset($this->_customdata)) {  // hardcoding plugin names here is hacky
             $features = $this->_customdata;
@@ -88,8 +89,9 @@ class uploadform extends moodleform {
         }
         $mform->addElement('advcheckbox', 'ignorerow', get_string('ignorerow', 'local_gugcat'));
         $mform->setDefault('ignorerow', 1);
+        $mform->addElement('html', '</div>');
 
-        $this->add_action_buttons(false, get_string('uploadgrades', 'grades'));
+        $mform->addElement('submit', 'submit', get_string('uploadgrades', 'grades'), ['class' => 'btn-blue']);
     }
 }
 
@@ -97,7 +99,7 @@ class importform extends moodleform {
     function definition (){
 
         $mform =& $this->_form;
-
+        $mform->addElement('html', '<div class="mform-container">');
         // course id and act id need to be passed for auth purposes
         $mform->addElement('hidden', 'id', required_param('id', PARAM_INT));
         $mform->setType('id', PARAM_INT);
@@ -111,14 +113,31 @@ class importform extends moodleform {
         $mform->addElement('hidden', 'categoryid', optional_param('categoryid', null, PARAM_INT));
         $mform->setType('categoryid', PARAM_INT);
 
-        $mform->addElement('select', 'reasons', get_string('selectreason', 'local_gugcat'), local_gugcat::get_reasons(), ['class' => 'mform-custom-select']); 
+        $reasons = local_gugcat::get_reasons();
+        $reasons[0] = get_string('selectreason', 'local_gugcat');
+        $mform->addElement('select', 'reasons', get_string('reasonaddgrade', 'local_gugcat'), $reasons,['class' => 'mform-custom-select']); 
         $mform->setType('reasons', PARAM_NOTAGS); 
-        $mform->setDefault('reasons', "Select Reason");
+        $mform->setDefault('reasons', 0);   
+        $mform->addRule('reasons', get_string('required'), 'nonzero', null, 'client');     
+        $mform->addRule('reasons', null, 'required', null, 'client');    
 
+        $mform->addElement('text', 'otherreason', get_string('reasonother', 'local_gugcat'), array('size' => 16, 'placeholder' => get_string('pleasespecify', 'local_gugcat')));
+        $mform->setType('otherreason', PARAM_NOTAGS); 
+        $mform->hideIf('otherreason', 'reasons', 'neq', 9); 
+        $mform->addElement('html', '</div>');
+        
         $buttonarray = array();
         $buttonarray[] =& $mform->createElement('cancel', 'cancel', get_string('back'));
         $buttonarray[] =& $mform->createElement('submit', 'submitbutton', get_string('importfile', 'local_gugcat'));
         $mform->addGroup($buttonarray, 'buttonarr', '', array(''), false);
         
+    }
+
+    function validation($data, $files) {
+        $errors = parent::validation($data, $files);
+        if ($data['reasons'] == 9 && empty($data['otherreason'])) {
+            $errors['otherreason'] = get_string('required');
+        }  
+        return $errors;
     }
 }

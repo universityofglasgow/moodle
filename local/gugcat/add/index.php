@@ -91,7 +91,7 @@ $gradeversions = local_gugcat::filter_grade_version($gradeitems, $studentid);
 
 $mform = new addeditgradeform(null, array('id'=>$courseid, 'activity'=>$module, 'studentid'=>$studentid));
 if ($fromform = $mform->get_data()) {
-    $gradereason = ($fromform->reasons == 8) ? $fromform->otherreason : local_gugcat::get_reasons()[$fromform->reasons];
+    $gradereason = ($fromform->reasons == 9) ? $fromform->otherreason : local_gugcat::get_reasons()[$fromform->reasons];
     $grade = !is_numeric($fromform->grade) ? array_search(strtoupper($fromform->grade), local_gugcat::$GRADES) : $fromform->grade; 
     $gradeitemid = local_gugcat::add_grade_item($courseid, $gradereason, $module);
     $grades = local_gugcat::add_update_grades($studentid, $gradeitemid, $grade, $fromform->notes);

@@ -21,8 +21,6 @@
     -moz-appearance: none;
     appearance: none;
     display: block;
-    width: 100%;
-    max-width: 150px;
     padding: 0px 15px;
     line-height: 1.75;
     color: #333;
@@ -41,8 +39,8 @@
     font: normal normal normal 12px/1 FontAwesome;
     color: #005c8a;
     left: 134px;
-    top: 32%;
-    height: 22px;
+    top: calc(16px - 5%);
+    height: 12px;
     padding: 0px 5px;
     position: absolute;
     pointer-events: none;
@@ -101,24 +99,31 @@ textarea#id_notes.form-control {
     }
 }
 
-.btn-coursegradeform > .form-inline > .btn{
-    margin-left: auto !important;
-    margin-right: 15px;
-    color: #fff;
-    background-color: #0f6fc5;
-    border-color: #0f6fc5;
-}
-
-#id_convertbutton{
-    background-color: #0f6fc5;
-    color: #fff;
-}
-
-#id_submitconvertbutton{
+#id_submitconvertbutton, .fdescription{
     display: none;
 }
 
 [data-groupname="buttonarr"] > .form-inline {
     justify-content: flex-end;
     padding-right: 2em;
+}
+
+abbr > .fa-asterisk {
+    color: #f04e69!important;
+}
+
+/* Form buttons */
+.btn-blue > .form-inline > .btn{
+    margin-left: auto !important;
+    margin-right: 15px;
+    border-color: #005c8a;
+    background-color: #005c8a;
+    color: white;
+}
+
+.mform-container ~ div > div input[type="submit"]:not(input[name="cancel"]), 
+.mform-container ~ div > div button[name="convertbutton"] {
+    border-color: #005c8a;
+    background-color: #005c8a;
+    color: white;
 }
