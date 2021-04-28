@@ -568,7 +568,7 @@ class local_gugcat {
             $uncategorised = ($key == $course_category->id) ? true : false;
             $cat = new stdClass();
             $cat->key = $uncategorised ? 'null' : $key;
-            $cat->value = $uncategorised ? get_string('uncategorised', 'grades') : $category->fullname;
+            $cat->value = $uncategorised ? get_string('selectcategory', 'local_gugcat') : $category->fullname;
             $cat->selected = ($categoryid === $key)? 'selected' : '';
             $grd_ctgs[$key] = $cat;
         }
