@@ -47,6 +47,15 @@ class api {
      */
     public static function display_assessments($id) {
         $currentstate = local_gugcat::switch_display_of_assessment_on_student_dashboard($id, context_course::instance($id)->id);
+        $logparams = array (
+            'context' => context_course::instance($id),
+            'other' => array(
+                'courseid' => $id,
+                'status' => ($currentstate == 1) ? 'on' : 'off'
+            )
+        );
+        $event = \local_gugcat\event\toggle_assessments_display::create($logparams);
+        $event->trigger();
         return ($currentstate == 1) ? true : false;
     }
 
