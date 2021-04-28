@@ -34,7 +34,7 @@ $courseid = required_param('id', PARAM_INT);
 $formtype = required_param('setting', PARAM_INT);
 $studentid = required_param('studentid', PARAM_INT);
 $cnum = required_param('cnum', PARAM_INT);
-$categoryid = optional_param('categoryid', null, PARAM_INT);
+$categoryid = optional_param('categoryid', 0, PARAM_INT);
 $page = optional_param('page', 0, PARAM_INT);  
 $activityid = optional_param('activityid', null, PARAM_INT); 
 $activityid = $activityid == 0 ? null : $activityid;
@@ -124,9 +124,10 @@ if ($fromform = $mform->get_data()) {
     );
     if($formtype == OVERRIDE_GRADE_FORM){
         $is_subcat = !is_null($activityid) && isset($subcatactivity) && $subcatactivity->modname == 'category';
-        $id = $is_subcat  ? $subcatactivity->instance : null;
+        $id = $is_subcat ? $subcatactivity->instance : $categoryid;
         $itemname = get_string($is_subcat ? 'subcategorygrade' : 'aggregatedgrade', 'local_gugcat');
-        if($gradeitemid = local_gugcat::get_grade_item_id($courseid, $id, $itemname)){
+        $select = "courseid=$courseid AND itemname='$itemname' AND ".local_gugcat::compare_iteminfo();
+        if($gradeitem = $DB->get_record_select('grade_items', $select, ['iteminfo'=>$id], 'id, idnumber')){
             $grade = !is_numeric($fromform->override) ? array_search(strtoupper($fromform->override), local_gugcat::$GRADES) : $fromform->override; 
             //if subcat get scaleid 
             $scale = $is_subcat ? $subcatactivity->is_converted : null;
@@ -136,11 +137,12 @@ if ($fromform = $mform->get_data()) {
                 // If conversion is enabled, save the converted grade to provisional grade and original grade to converted grade.
                 $conversion = grade_converter::retrieve_grade_conversion($subcatactivity->gradeitemid);
                 $cg = grade_converter::convert($conversion, $grade);
-                local_gugcat::update_grade($studentid, $gradeitemid, $cg, $notes, time());
+                local_gugcat::update_grade($studentid, $gradeitem->id, $cg, $notes, time());
                 $convertedgi = local_gugcat::get_grade_item_id($COURSE->id, $subcatactivity->gradeitemid, get_string('convertedgrade', 'local_gugcat'));
                 local_gugcat::update_grade($studentid, $convertedgi, $grade);
             }else{
-                local_gugcat::update_grade($studentid, $gradeitemid, $grade, $notes, time());
+                $notes = ",_scale: $gradeitem->idnumber ,_notes: $fromform->notes";
+                local_gugcat::update_grade($studentid, $gradeitem->id, $grade, $notes, time());
             }
             
             //also update notes for subcomponents
@@ -158,9 +160,15 @@ if ($fromform = $mform->get_data()) {
         }
     }else if($formtype == ADJUST_WEIGHT_FORM){
         $weights = $fromform->weights;
-        $aggradeid = local_gugcat::get_grade_item_id($courseid, null, get_string('aggregatedgrade', 'local_gugcat'));
-        $DB->set_field('grade_grades', 'overridden', 0, array('itemid' => $aggradeid, 'userid'=>$studentid));
-        grade_aggregation::adjust_course_weight($weights, $courseid, $studentid, $fromform->notes);
+        $notes = "notes: $fromform->notes";
+
+        $aggradeid = local_gugcat::get_grade_item_id($courseid, $categoryid, get_string('aggregatedgrade', 'local_gugcat'));
+        $aggradeobj = new stdClass();
+        $aggradeobj->id = $DB->get_field('grade_grades', 'id', array('itemid'=>$aggradeid, 'userid'=>$studentid));
+        $aggradeobj->feedback = $notes;
+        $aggradeobj->overridden = 0;
+        $DB->update_record('grade_grades', $aggradeobj);
+        grade_aggregation::adjust_course_weight($weights, $courseid, $studentid);
         //log of adjust course weight
         $event = \local_gugcat\event\adjust_course_weight::create($params);
         $event->trigger();
