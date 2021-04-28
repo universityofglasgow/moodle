@@ -42,8 +42,8 @@ $activityid = $activityid == 0 ? null : $activityid;
 require_login($courseid);
 $urlparams = array('id' => $courseid, 'setting' => $formtype, 'studentid' => $studentid, 'cnum' => $cnum, 'page' => $page);
 $URL = new moodle_url('/local/gugcat/overview/gradeform/index.php', $urlparams);
-is_null($categoryid) ? null : $URL->param('categoryid', $categoryid);
-is_null($activityid) ? null : $URL->param('activityid', $activityid);
+(!is_null($categoryid) && $categoryid != 0) ? $URL->param('categoryid', $categoryid) : null;
+(!is_null($activityid) && $activityid != 0) ? $URL->param('activityid', $activityid) : null;
 $indexurl = new moodle_url('/local/gugcat/index.php', array('id' => $courseid));
 
 $PAGE->set_url($URL);
@@ -64,7 +64,7 @@ $studentarr = $DB->get_records('user', array('id'=>$studentid, 'deleted'=>0), MU
 $activities = array();
 $gradetype = null;
 //Retrieve activities
-if(!is_null($categoryid)){
+if(!is_null($categoryid) && $categoryid != 0){
     if(!is_null($activityid) && $formtype == 1){
         // Retrieve sub cat activity object
         $subcatactivity = local_gugcat::get_activity($courseid, $activityid);
@@ -107,8 +107,7 @@ if(!is_null($activityid) && $formtype == OVERRIDE_GRADE_FORM){
     $student->aggregatedgrade = $aggrdobj;
 }
 
-$mform = new coursegradeform(null, array('id'=>$courseid, 'page'=>$page, 'categoryid'=>$categoryid, 'studentid'=>$studentid, 'setting'=>$formtype, 
-'student'=>$student, 'gradetype' => $gradetype));
+$mform = new coursegradeform(null, array('setting'=>$formtype, 'student'=>$student, 'gradetype' => $gradetype));
 if ($fromform = $mform->get_data()) {
     //params needed for logs
     $params = array(

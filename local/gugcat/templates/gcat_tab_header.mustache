@@ -33,18 +33,18 @@
             </select>
         </div>
     {{/displayactivities}}
-    {{#adjustgrdstr}}<button class="btn btn-default btn-blue" data-toggle="dropdown">{{adjustgrdstr}}<i class="fa fa-caret-down"></i></button>{{/adjustgrdstr}}
+    {{#adjustgrdstr}}<button class="btn btn-default" data-toggle="dropdown">{{adjustgrdstr}}<i class="fa fa-caret-down"></i></button>{{/adjustgrdstr}}
     <div class="dropdown-menu">
         {{#importgradesstr}}<a class="dropdown-item" href="#" id="btn-import">{{importgradesstr}}</a>{{/importgradesstr}}
         {{#uploadaddgrdstr}}<a class="dropdown-item" href="{{uploadurl}}">{{uploadaddgrdstr}}</a>{{/uploadaddgrdstr}}
         {{#addallgrdstr}}<a class="dropdown-item" href="#" id="btn-saveadd">{{addallgrdstr}}</a>{{/addallgrdstr}}
         {{#adjustassconvstr}}<a class="dropdown-item" href="{{converturl}}">{{adjustassconvstr}}</a>{{/adjustassconvstr}}
     </div>
-    {{#saveallgrdstr}}<button class="btn btn-default btn-blue hidden" id="btn-multisave">{{saveallgrdstr}}</button>{{/saveallgrdstr}}
-    {{#grddiscrepancystr}}<button class="btn grade-discrepancy" id="btn-grddisc">{{grddiscrepancystr}}</button>{{/grddiscrepancystr}}
-    {{#downloadcsvstr}}<button class="btn btn-default btn-download" id="btn-download">{{downloadcsvstr}}</button>{{/downloadcsvstr}}
-    {{#releasefinalstr}}<button class="btn btn-default btn-download" id="btn-finalrelease">{{releasefinalstr}}</button>{{/releasefinalstr}}
+    {{#saveallgrdstr}}<button class="btn btn-default hidden" id="btn-multisave">{{saveallgrdstr}}</button>{{/saveallgrdstr}}
+    {{#downloadcsvstr}}<button class="btn btn-default" id="btn-download">{{downloadcsvstr}}</button>{{/downloadcsvstr}}
+    {{#releasefinalstr}}<button class="btn btn-default btn-release" id="btn-finalrelease">{{releasefinalstr}}</button>{{/releasefinalstr}}
     {{#releaseprvgrdstr}}<button class="btn btn-default btn-release" id="btn-release">{{releaseprvgrdstr}}</button>{{/releaseprvgrdstr}}
+    {{#grddiscrepancystr}}<button class="btn grade-discrepancy" id="btn-grddisc">{{grddiscrepancystr}}</button>{{/grddiscrepancystr}}
     {{#displaychildactivities}}
     <div class="selectdiv child-select">
         <select id="select-child-act">
@@ -53,6 +53,6 @@
             {{/childactivities}}
         </select>
     </div>
-    <button class="btn btn-default btn-blue" id="btn-blkimport">{{blkimportstr}}</button>
+    <button class="btn btn-default" id="btn-blkimport">{{blkimportstr}}</button>
     {{/displaychildactivities}}
 </div>

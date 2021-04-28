@@ -87,43 +87,25 @@ button .fa-caret-down{
 }
 
 .btn-default:hover {
-    opacity: .9;
     background-color: #005c8a;
     color: white;
 }
 
-.btn-blue {
-    background-color: #005c8a;
-    color: white;
-}
-
+/* Green buttons */
 .btn-release {
     border: 1px solid #006630;
-    background-color: #006630;
-    color: white;
+    background-color: white;
+    color: #006630;
 }
 
 .btn-release:hover {
     background-color: #006630;
     color: white;
-    opacity: 0.8;
 }
 
-.btn-download, .btn-release, .btn-blue,
+.btn-default, .btn-release,
 .tabcontent-header >.selectdiv select {
     height: 40px;
-}
-
-#btn-finalrelease{
-    border: 1px solid #006630;
-    color: #006630;
-    margin-right: 0.5em;
-}
-
-#btn-finalrelease:hover {
-    background-color: #006630;
-    color: white;
-    opacity: 0.8;
 }
 
 #btn-release, #btn-saveadd, .togglemultigrd, .addnewgrade{
@@ -157,7 +139,7 @@ button .fa-caret-down{
     background-color: #ffffff;
     background-image: none;
     border-radius: 10px;
-    border: 1px solid #E0E2E9;
+    border: 1px solid #C4C4C4;
     -ms-word-break: normal;
     word-break: normal;
 }

@@ -41,7 +41,7 @@ $page = optional_param('page', 0, PARAM_INT);
 require_login($courseid);
 $urlparams = array('id' => $courseid, 'activityid' => $activityid, 'studentid' => $studentid, 'overview' => $overview, 'page' => $page);
 $URL = new moodle_url('/local/gugcat/edit/index.php', $urlparams);
-(!is_null($categoryid) && $categoryid != 0) ? null : $URL->param('categoryid', $categoryid);
+(!is_null($categoryid) && $categoryid != 0) ? $URL->param('categoryid', $categoryid) : null;
 $indexurl = new moodle_url('/local/gugcat/index.php', array('id' => $courseid));
 
 $modid = $activityid;
@@ -92,7 +92,7 @@ $gradeversions = local_gugcat::filter_grade_version($gradeitems, $studentid);
 
 $mform = new addeditgradeform(null, array('id'=>$courseid, 'activity'=>$module, 'studentid'=>$studentid, 'overview' => $overview));
 if ($fromform = $mform->get_data()) {
-    $gradereason = ($fromform->reasons == 8) ? $fromform->otherreason : local_gugcat::get_reasons()[$fromform->reasons];
+    $gradereason = ($fromform->reasons == 9) ? $fromform->otherreason : local_gugcat::get_reasons()[$fromform->reasons];
     $grade = !is_numeric($fromform->grade) ? array_search(strtoupper($fromform->grade), local_gugcat::$GRADES) : $fromform->grade; 
     $gradeitemid = local_gugcat::add_grade_item($courseid, $gradereason, $module);
     $grades = local_gugcat::add_update_grades($studentid, $gradeitemid, $grade, $fromform->notes);

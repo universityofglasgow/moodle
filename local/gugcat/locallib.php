@@ -74,15 +74,15 @@ class local_gugcat {
      */
     public static function get_reasons(){
         return array(
-            0=>get_string('gi_goodcause', 'local_gugcat'),
-            1=>get_string('gi_latepenalty', 'local_gugcat'),
-            2=>get_string('gi_cappedgrade', 'local_gugcat'),
-            3=>get_string('gi_secondgrade', 'local_gugcat'),
-            4=>get_string('gi_thirdgrade', 'local_gugcat'),
-            5=>get_string('gi_agreedgrade', 'local_gugcat'),
-            6=>get_string('gi_moderatedgrade', 'local_gugcat'),
-            7=>get_string('gi_conductpenalty', 'local_gugcat'),
-            8=>get_string('reasonother', 'local_gugcat')
+            1=>get_string('gi_goodcause', 'local_gugcat'),
+            2=>get_string('gi_latepenalty', 'local_gugcat'),
+            3=>get_string('gi_cappedgrade', 'local_gugcat'),
+            4=>get_string('gi_secondgrade', 'local_gugcat'),
+            5=>get_string('gi_thirdgrade', 'local_gugcat'),
+            6=>get_string('gi_agreedgrade', 'local_gugcat'),
+            7=>get_string('gi_moderatedgrade', 'local_gugcat'),
+            8=>get_string('gi_conductpenalty', 'local_gugcat'),
+            9=>get_string('reasonother', 'local_gugcat')
         );
     }
 
@@ -568,7 +568,7 @@ class local_gugcat {
             $uncategorised = ($key == $course_category->id) ? true : false;
             $cat = new stdClass();
             $cat->key = $uncategorised ? 'null' : $key;
-            $cat->value = $uncategorised ? get_string('uncategorised', 'grades') : $category->fullname;
+            $cat->value = $uncategorised ? get_string('selectcategory', 'local_gugcat') : $category->fullname;
             $cat->selected = ($categoryid === $key)? 'selected' : '';
             $grd_ctgs[$key] = $cat;
         }
@@ -898,7 +898,7 @@ class local_gugcat {
      */
     public static function is_child_activity($activity){
         $categoryid = optional_param('categoryid', null, PARAM_INT);
-        if(!is_null($categoryid) && isset($activity->gradeitem->parent_category)){
+        if(!is_null($categoryid) && $categoryid != 0 && isset($activity->gradeitem->parent_category)){
             $parent = $activity->gradeitem->parent_category->parent;
             return ($parent == $categoryid) ? $activity->gradeitem->categoryid: false ;
         }else{

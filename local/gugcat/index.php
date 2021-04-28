@@ -86,8 +86,8 @@ if(!is_null($categoryid)){
         $URL->param('activityid', $activityid);
     }
 
-    $childactivities = (isset($totalactivities[$activityid]->modname) && $totalactivities[$activityid]->modname === 'category') ? local_gugcat::get_activities($courseid, $totalactivities[$activityid]->id) : null;
-    if(!is_null($childactivities)){
+    $childactivities = (isset($totalactivities[$activityid]->modname) && $totalactivities[$activityid]->modname === 'category') ? local_gugcat::get_activities($courseid, $totalactivities[$activityid]->id) : array();
+    if(!empty($childactivities)){
         foreach($childactivities as $ca){
             $ca->selected = (strval($childactivityid) === $ca->gradeitemid)? 'selected' : '';
         }
@@ -126,7 +126,7 @@ $limitnum  = GCAT_MAX_USERS_PER_PAGE;
 // Params from search bar filters
 $filters = optional_param_array('filters', [], PARAM_NOTAGS);
 $filters = local_gugcat::get_filters_from_url($filters);
-$activesearch = (isset($filters) && count($filters) > 0 && count(array_unique($filters)) !== 1) ? true : false;
+$activesearch = isset($filters) && count($filters) > 0 && count(array_filter($filters)) > 0 ? true : false;
 $activesearch ? $URL->param('filter', http_build_query($filters)) : null;
 $PAGE->set_url($URL);
 
