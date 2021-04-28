@@ -70,7 +70,7 @@ $renderer = $PAGE->get_renderer('local_gugcat');
 
 // Set up the upload import form.
 $mform = new uploadform(null, array('includeseparator' => true, 'acceptedtypes' =>
-array('.csv', '.txt'), 'activity' => $module));
+array('.csv'), 'activity' => $module));
 if(!$iid){
     // If the upload form has been submitted.
     if ($formdata = $mform->get_data()) {
@@ -119,7 +119,7 @@ if ($formdata = $mform2->get_data()) {
     //Populate static provisional grade id
     local_gugcat::set_prv_grade_id($courseid, $module);
 
-    $gradereason = ($formdata->reasons == 8) ? $formdata->otherreason :  local_gugcat::get_reasons()[$formdata->reasons];
+    $gradereason = ($formdata->reasons == 9) ? $formdata->otherreason :  local_gugcat::get_reasons()[$formdata->reasons];
 
     list($status, $errors) = grade_capture::prepare_import_data($csvimportdata, $module, $gradereason);
     if($status && count($errors) == 0){

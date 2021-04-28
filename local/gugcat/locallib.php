@@ -74,15 +74,15 @@ class local_gugcat {
      */
     public static function get_reasons(){
         return array(
-            0=>get_string('gi_goodcause', 'local_gugcat'),
-            1=>get_string('gi_latepenalty', 'local_gugcat'),
-            2=>get_string('gi_cappedgrade', 'local_gugcat'),
-            3=>get_string('gi_secondgrade', 'local_gugcat'),
-            4=>get_string('gi_thirdgrade', 'local_gugcat'),
-            5=>get_string('gi_agreedgrade', 'local_gugcat'),
-            6=>get_string('gi_moderatedgrade', 'local_gugcat'),
-            7=>get_string('gi_conductpenalty', 'local_gugcat'),
-            8=>get_string('reasonother', 'local_gugcat')
+            1=>get_string('gi_goodcause', 'local_gugcat'),
+            2=>get_string('gi_latepenalty', 'local_gugcat'),
+            3=>get_string('gi_cappedgrade', 'local_gugcat'),
+            4=>get_string('gi_secondgrade', 'local_gugcat'),
+            5=>get_string('gi_thirdgrade', 'local_gugcat'),
+            6=>get_string('gi_agreedgrade', 'local_gugcat'),
+            7=>get_string('gi_moderatedgrade', 'local_gugcat'),
+            8=>get_string('gi_conductpenalty', 'local_gugcat'),
+            9=>get_string('reasonother', 'local_gugcat')
         );
     }
 

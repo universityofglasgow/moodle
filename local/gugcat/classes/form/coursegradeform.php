@@ -38,6 +38,7 @@ class coursegradeform extends moodleform {
             $grades = local_gugcat::$GRADES + grade_aggregation::$AGGRADE;
             unset($grades[NON_SUBMISSION]);
         }
+        $grades[0] = get_string('selectgrade', 'local_gugcat');
         $mform = $this->_form; // Don't forget the underscore! 
         $mform->addElement('html', '<div class="mform-container">');
         $student = $this->_customdata['student'];
@@ -113,18 +114,21 @@ class coursegradeform extends moodleform {
                 $mform->addRule('override', get_string('errorinputpoints', 'local_gugcat'), 'regex', '/^([mM][vV]|[0-9]|[nN][sS])+$/', 'server');    
             }else{
                 $mform->addElement('select', 'override', get_string('overridegrade', 'local_gugcat'), array_unique($grades), ['class' => 'mform-custom-select']); 
+                $mform->setDefault('override', 0);
                 $mform->setType('override', PARAM_NOTAGS); 
+                $mform->addRule('override', get_string('required'), 'nonzero', null, 'client');
             }
         }
-        $mform->addElement('textarea', 'notes', get_string('notes', 'local_gugcat'));
+        $mform->addElement('textarea', 'notes', get_string('notes', 'local_gugcat'), array('placeholder' => get_string('specifyreason', 'local_gugcat')));
+        $mform->addRule('notes', null, 'required', null, 'client');
         $mform->setType('notes', PARAM_NOTAGS); 
 
         $mform->addElement('html', '</div>');
         if($this->_customdata['setting'] == '1'){
-            $mform->addElement('submit', 'submit', get_string('savechanges', 'local_gugcat'), ['class' => 'btn-coursegradeform']);
+            $mform->addElement('submit', 'submit', get_string('savechanges', 'local_gugcat'), ['class' => 'btn-blue']);
         }else{
-            $mform->addElement('submit', 'submit', get_string('savechanges', 'local_gugcat'), ['id' => 'coursegradeform-submit', 'class' => 'btn-coursegradeform']);
-            $mform->addElement('button', 'adjustoverride', get_string('savechanges', 'local_gugcat'), ['id' => 'btn-coursegradeform', 'class' => 'btn-coursegradeform']);
+            $mform->addElement('submit', 'submit', get_string('savechanges', 'local_gugcat'), ['id' => 'coursegradeform-submit', 'class' => 'btn-blue']);
+            $mform->addElement('button', 'adjustoverride', get_string('savechanges', 'local_gugcat'), ['id' => 'btn-coursegradeform', 'class' => 'btn-blue']);
         }
         // hidden params
         $mform->addElement('hidden', 'studentid', $this->_customdata['studentid']);
