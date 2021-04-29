@@ -126,7 +126,7 @@ $string['pluginname'] = 'UofG Grade Capture and Aggregation Tool';
 $string['pointtooltip'] = '<i>Please ensure value is: 
     <ul class="mb-0">
         <li>Up to 2 decimal places</li>
-        <li>Doesn\' duplicate any other number</li>
+        <li>Doesn\'t duplicate any other number</li>
         <li>No greater than the maximum available points</li>
     </ul></i>';
 $string['provisionalgrd'] = 'Provisional Grade';
