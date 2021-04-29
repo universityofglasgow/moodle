@@ -297,7 +297,9 @@ class grade_capture{
         foreach ($modules as $module) {
             // Create Provisional Grade grade item and grade_grades to all students, then assign it to static PRVID
             local_gugcat::$PRVGRADEID = local_gugcat::add_grade_item($courseid, get_string('provisionalgrd', 'local_gugcat'), $module, $students);
-   
+
+            //Create Aggregated Grade grade item to all students
+            $aggradeid = local_gugcat::add_grade_item($courseid, get_string('aggregatedgrade', 'local_gugcat'), null, $students);
 
             // Create Moodle Grade grade item and grade_grades to all students
             $mggradeitemid = local_gugcat::add_grade_item($courseid, get_string('moodlegrade', 'local_gugcat'), $module, $students);
