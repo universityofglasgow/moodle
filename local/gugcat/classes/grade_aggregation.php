@@ -445,11 +445,6 @@ class grade_aggregation{
             return array($grdobj, false, null);
         }
 
-        // Aggregate only graded
-        if($subcatobj->aggregateonlygraded == 1){
-            $studentgrades = array_filter($studentgrades);
-        }
-
         // If drop lowest is not empty, remove the n number of lowest grades, including -1, -2
         if($subcatobj->droplow > 0){
             asort($studentgrades, SORT_NUMERIC);
