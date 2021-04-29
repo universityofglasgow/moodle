@@ -36,11 +36,16 @@ class local_gugcat_renderer extends plugin_renderer_base {
      * @param array $columns 
      */
     public function display_grade_capture($selectedmodule, $activities_, $childactivities_, $rows, $columns) {
-        global $SESSION;
+        global $SESSION, $DB;
         $SESSION->wantsurl = $this->page->url;
         $courseid = $this->page->course->id;
         $is_blind_marking = local_gugcat::is_blind_marking($this->page->cm);
         $is_converted = ($selectedmodule) ? $selectedmodule->is_converted : false;
+        $is_imported = false;
+        $moodlestr = get_string('moodlegrade', 'local_gugcat');
+        if(($selectedmodule) && $DB->record_exists_select('grade_items', "itemname = '$moodlestr' AND iteminfo = $selectedmodule->gradeitemid")){
+            $is_imported = true;
+        }
         $modid = (($selectedmodule) ? $selectedmodule->gradeitemid : null);
         $categoryid = optional_param('categoryid', null, PARAM_INT);
         $activityid = optional_param('activityid', null, PARAM_INT);
@@ -165,9 +170,9 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $tabheader = !empty($activities) ? (object)[
             'addallgrdstr' =>get_string('addmultigrades', 'local_gugcat'),
             'saveallgrdstr' =>get_string('saveallnewgrade', 'local_gugcat'),
-            'uploadaddgrdstr' => ($selectedmodule && $selectedmodule->provisionalid) ? get_string('uploadaddgrd', 'local_gugcat') : null,
+            'uploadaddgrdstr' => $is_imported ? get_string('uploadaddgrd', 'local_gugcat') : null,
             'adjustgrdstr' =>get_string('adjustgrade', 'local_gugcat'),
-            'adjustassconvstr' => ($gt == GRADE_TYPE_VALUE) ? get_string('adjustassessgrdcvr', 'local_gugcat') : null,
+            'adjustassconvstr' => ($is_imported && $gt == GRADE_TYPE_VALUE) ? get_string('adjustassessgrdcvr', 'local_gugcat') : null,
             'saveallbtnstr' =>get_string('saveallnewgrade', 'local_gugcat'),
             'grddiscrepancystr' => get_string('gradediscrepancy', 'local_gugcat'),
             'importgradesstr' => get_string('importgrades', 'local_gugcat'),
