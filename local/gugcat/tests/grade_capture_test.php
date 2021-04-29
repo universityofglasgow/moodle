@@ -406,7 +406,7 @@ class grade_capture_testcase extends advanced_testcase {
 
         $module->groupingid = 0;
 
-        // ---- Assert grade in scale not is not alphanumeric
+        // ---- Assert grade in scale is not alphanumeric
         $content3 = array(
             "ID Number,Grades",
             "$id1,AA"
@@ -423,7 +423,7 @@ class grade_capture_testcase extends advanced_testcase {
         $this->assertContains(get_string('uploaderrorgradeformat', 'local_gugcat', $errorobj), $errors);
         unset($csvimportdata);
 
-        // ---- Assert grade in scale not is alphanumeric but not within the scale
+        // ---- Assert grade in scale is alphanumeric but not within the scale
         $content3 = array(
             "ID Number,Grades",
             "$id1,Z0"
