@@ -263,7 +263,7 @@ class grade_aggregation{
                     }
                     $aggradegb = (!is_null($gbaggregatedgrade->finalgrade) ? $gbaggregatedgrade->finalgrade : $gbaggregatedgrade->rawgrade);
                     $feedback .= ",_grade: $aggrdobj->display ,_$gbaggregatedgrade->feedback";
-                    ($gbaggregatedgrade->overridden == 0 && bccomp((float)$sumaggregated, (float)$aggradegb, 5) != 0 && $aggrdobj->display != get_string('missinggrade', 'local_gugcat')) ? local_gugcat::update_grade($student->id, $aggradeid, $sumaggregated, $feedback) : null;
+                    ($gbaggregatedgrade->overridden == 0 && round((float)$sumaggregated, 5) != round((float)$aggradegb, 5) && $aggrdobj->display != get_string('missinggrade', 'local_gugcat')) ? local_gugcat::update_grade($student->id, $aggradeid, $sumaggregated, $feedback) : null;
                     $DB->set_field('grade_grades', 'feedback', '', array('id'=>$gbaggregatedgrade->id));
                 }
             }
