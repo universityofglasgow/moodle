@@ -451,7 +451,7 @@ class grade_capture{
             $grouped = grade_aggregation::get_students_per_groups(array($activity->groupingid), $COURSE->id, 'u.id, u.idnumber');
         }
         while ($line = $csvdata->next()) {
-            if (count($line) <= 1) {
+            if (count(array_filter($line)) == 0) {
                 // There is no data on this line, move on.
                 continue;
             }
@@ -480,7 +480,7 @@ class grade_capture{
             // If activity is scale, validate grades if its valid Schedule A or B
             if($gradetype == GRADE_TYPE_SCALE){
                 // Check if grade not alphanumeric
-                if(!preg_match('/^([mM][vV]|[Hh]|[a-zA-Z][0-9]|[nN][sS])+$/', $grade)){
+                if(!preg_match('/^([mM][vV]|[Hh]|[a-zA-Z][0-9]|[nN][sS])+$/', str_replace(' ', '', $grade))){
                     $gradebookerrors[] = get_string('uploaderrorgradeformat', 'local_gugcat', $errorobj);
                     $status = false;
                     break;
@@ -503,7 +503,7 @@ class grade_capture{
                 }
 
                 // Check if grade is a valid grade point
-                if(!preg_match('/^([mM][vV]|[0-9]|[nN][sS])+$/', $grade)){
+                if(!preg_match('/^([mM][vV]|[0-9]|[nN][sS])+$/', str_replace(' ', '', $grade))){
                     $gradebookerrors[] = get_string('uploaderrorgradepoint', 'local_gugcat', $errorobj);
                     $status = false;
                     break;

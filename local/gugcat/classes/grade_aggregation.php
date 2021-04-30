@@ -359,8 +359,16 @@ class grade_aggregation{
         }
         $is_highest_grade = $subcatobj->aggregation == GRADE_AGGREGATE_MAX;
 
+        $droplow = $subcatobj->droplow;
+        $totalchildren = count($subcatobj->children) - $droplow;
+        // If drop lowest is not empty, remove the n number of lowest grades, including -1, -2
+        if($droplow > 0){
+            asort($studentgrades, SORT_NUMERIC);
+            $studentgrades = array_slice($studentgrades, $subcatobj->droplow, count($studentgrades), true);
+        }
+
         // Return grade = null, processed = true if all components are not graded for weighted/mean/mode/median/natural
-        if(!$is_highest_grade && count(array_filter($studentgrades, 'strlen')) != count($subcatobj->children)){
+        if(!$is_highest_grade && count(array_filter($studentgrades, 'is_numeric')) != $totalchildren){
             return array(null, true, null);
         }
 
@@ -443,12 +451,6 @@ class grade_aggregation{
             $grdobj->grademax = $grademax;
             $grdobj->scaleid = $scaleid;
             return array($grdobj, false, null);
-        }
-
-        // If drop lowest is not empty, remove the n number of lowest grades, including -1, -2
-        if($subcatobj->droplow > 0){
-            asort($studentgrades, SORT_NUMERIC);
-            $studentgrades = array_slice($studentgrades, $subcatobj->droplow, count($studentgrades), true);
         }
 
         // Check if $studentgrades still have admingrades, if yes, return admin grades instead

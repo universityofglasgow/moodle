@@ -241,7 +241,7 @@ td a:hover, .dropdown-item a:hover {
     text-align: left;
     color: black;
     background-color: white;
-    font-size: x-small;
+    font-size: smaller;
     border-radius: 10px;
     border: 1px solid #8c8c8c;
 }
