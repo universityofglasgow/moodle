@@ -38,8 +38,8 @@ class grade_capture_testcase extends advanced_testcase {
         $this->resetAfterTest();
 
         $gen = $this->getDataGenerator();
-        $this->student = $gen->create_user();
-        $this->student2 = $gen->create_user();
+        $this->student = $gen->create_user(array('idnumber'=> 1));
+        $this->student2 = $gen->create_user(array('idnumber'=> 2));
         $this->teacher = $gen->create_user();
         $this->admin = get_admin();
         $this->course = $gen->create_course();
@@ -324,5 +324,168 @@ class grade_capture_testcase extends advanced_testcase {
         $subcatstr = get_string('subcategorygrade', 'local_gugcat');
         $subcatgi = $DB->get_record('grade_items', array('itemtype'=>'manual', 'itemname'=>$subcatstr));
         $this->assertNotFalse($subcatgi);
+    }
+
+    public function test_prepare_import_data(){
+        global $CFG, $COURSE;
+        $COURSE = $this->course;
+        require_once($CFG->libdir . '/csvlib.class.php');
+
+        $id1 = $this->student->idnumber;
+        $id2 = $this->student2->idnumber;
+
+        $module = $this->cm;
+        $gradereason = get_string('gi_goodcause', 'local_gugcat');
+        // Prepare scale
+        local_gugcat::set_grade_scale(null);
+
+        //Populate static provisional grade id
+        local_gugcat::set_prv_grade_id($this->course->id, $module);
+
+        // Schedule A import
+        $module->gradeitem->gradetype = GRADE_TYPE_SCALE;
+
+        $content1 = array(
+            "ID Number,Grades",
+            ",", //- Empty line will skip the validation
+            "$id1,A1",
+            "$id2,A2",
+        );
+        $csvimport = new gradeimport_csv_load_data();
+        $csvimport->load_csv_content(implode("\n", $content1), 'UTF-8', 'comma', 0);
+        $csvimportdata = new csv_import_reader($csvimport->get_iid(), 'grade');
+        
+        // Success import of grade 1 => A1, 2 => A2
+        // Assert status = true and errors = 0
+        list($status, $errors) = grade_capture::prepare_import_data($csvimportdata, $module, $gradereason);
+        $this->assertTrue($status);
+        $this->assertEmpty($errors);
+        unset($csvimportdata);
+        //-------- Start asserting errors ----
+        $errorobj = new stdClass();
+        
+        // ---- Assert student not enrolled in current course
+        $content2 = array(
+            "ID Number,Grades",
+            "5,A1",
+            "$id2,A2",
+        );
+        $csvimport->load_csv_content(implode("\n", $content2), 'UTF-8', 'comma', 0);
+        $csvimportdata = new csv_import_reader($csvimport->get_iid(), 'grade');
+        $errorobj->id = 5;
+        $errorobj->value = 'A1';
+        // Failed import of grade 5 => A1, 2 => A2
+        // Assert status = false and errors = 1
+        list($status, $errors) = grade_capture::prepare_import_data($csvimportdata, $module, $gradereason);
+        $this->assertFalse($status);
+        // Error = User mapping error. Could not find user with ID number of {$a->id}.
+        $this->assertContains(get_string('uploaderrornotfound', 'local_gugcat', $errorobj), $errors);
+        unset($csvimportdata);
+
+        // ---- Assert student not in the current group
+        
+        // Create grouping and group first, then add student 1 to the group
+        $grouping = $this->getDataGenerator()->create_grouping(array('courseid' => $this->course->id));
+        $group = self::getDataGenerator()->create_group(array('courseid' => $this->course->id));
+        groups_assign_grouping($grouping->id, $group->id);
+        groups_add_member($group->id, $this->student->id);
+        // Add grouping id on the module
+        $module->groupingid = $grouping->id;
+        $csvimport = new gradeimport_csv_load_data();
+        $csvimport->load_csv_content(implode("\n", $content1), 'UTF-8', 'comma', 0);
+        $csvimportdata = new csv_import_reader($csvimport->get_iid(), 'grade');
+        $errorobj->id = 2; // Student id 2 is not a member of the current group
+        $errorobj->value = 'A2';
+        // Failed import of grade 1 => A1 (grouped), 2 => A2
+        // Assert status = false and errors = 1
+        list($status, $errors) = grade_capture::prepare_import_data($csvimportdata, $module, $gradereason);
+        $this->assertFalse($status);
+        // Error = User with ID number of {$a->id} is not a member of current group.
+        $this->assertContains(get_string('uploaderrornotmember', 'local_gugcat', $errorobj), $errors);
+        unset($csvimportdata);
+
+        $module->groupingid = 0;
+
+        // ---- Assert grade in scale is not alphanumeric
+        $content3 = array(
+            "ID Number,Grades",
+            "$id1,AA"
+        );
+        $csvimport->load_csv_content(implode("\n", $content3), 'UTF-8', 'comma', 0);
+        $csvimportdata = new csv_import_reader($csvimport->get_iid(), 'grade');
+        $errorobj->id = $id1;
+        $errorobj->value = 'AA';
+        // Failed import of grade 1 => AA
+        // Assert status = false and errors = 1
+        list($status, $errors) = grade_capture::prepare_import_data($csvimportdata, $module, $gradereason);
+        $this->assertFalse($status);
+        // Error = User with ID number of {$a->id} has an invalid grade: {$a->value}. Grades must be in alphanumeric format.
+        $this->assertContains(get_string('uploaderrorgradeformat', 'local_gugcat', $errorobj), $errors);
+        unset($csvimportdata);
+
+        // ---- Assert grade in scale is alphanumeric but not within the scale
+        $content3 = array(
+            "ID Number,Grades",
+            "$id1,Z0"
+        );
+        $csvimport->load_csv_content(implode("\n", $content3), 'UTF-8', 'comma', 0);
+        $csvimportdata = new csv_import_reader($csvimport->get_iid(), 'grade');
+        $errorobj->id = $id1;
+        $errorobj->value = 'Z0';
+        // Failed import of grade 1 => Z0
+        // Assert status = false and errors = 1
+        list($status, $errors) = grade_capture::prepare_import_data($csvimportdata, $module, $gradereason);
+        $this->assertFalse($status);
+        // Error = User with ID number of {$a->id} has an invalid grade: {$a->value}. Grade is not within the scale.
+        $this->assertContains(get_string('uploaderrorgradescale', 'local_gugcat', $errorobj), $errors);
+        unset($csvimportdata);
+
+        // Change to module gradetype to point
+        $module->gradeitem->gradetype = GRADE_TYPE_VALUE;
+        $module->gradeitem->grademax = 10;
+        
+        // ---- Assert grade in points is greater than grademax
+        $content4 = array(
+            "ID Number,Grades",
+            "$id1,100"
+        );
+        $csvimport->load_csv_content(implode("\n", $content4), 'UTF-8', 'comma', 0);
+        $csvimportdata = new csv_import_reader($csvimport->get_iid(), 'grade');
+        $errorobj->id = $id1;
+        $errorobj->value = '100';
+        // Failed import of grade 1 => 100 > grademax = 10
+        // Assert status = false and errors = 1
+        list($status, $errors) = grade_capture::prepare_import_data($csvimportdata, $module, $gradereason);
+        $this->assertFalse($status);
+        // Error = User with ID number of {$a->id} has an invalid grade: {$a->value}. Grade is greater than the maximum grade.
+        $this->assertContains(get_string('uploaderrorgrademaxpoint', 'local_gugcat', $errorobj), $errors);
+        unset($csvimportdata);
+        
+        // ---- Assert grade in points is valid
+        $csvimport->load_csv_content(implode("\n", $content3), 'UTF-8', 'comma', 0);
+        $csvimportdata = new csv_import_reader($csvimport->get_iid(), 'grade');
+        $errorobj->id = $id1;
+        $errorobj->value = 'Z0';
+        // Failed import of grade 1 => Z0
+        // Assert status = false and errors = 1
+        list($status, $errors) = grade_capture::prepare_import_data($csvimportdata, $module, $gradereason);
+        $this->assertFalse($status);
+        // Error = User with ID number of {$a->id} has an invalid grade: {$a->value}. Grade is an invalid point grade.
+        $this->assertContains(get_string('uploaderrorgradepoint', 'local_gugcat', $errorobj), $errors);
+        unset($csvimportdata);
+
+        // ---- Assert success import for admin grades NS/MV
+        $content5 = array(
+            "ID Number,Grades",
+            "$id1,NS",
+            "$id2,MV"
+        );
+        $csvimport->load_csv_content(implode("\n", $content5), 'UTF-8', 'comma', 0);
+        $csvimportdata = new csv_import_reader($csvimport->get_iid(), 'grade');
+        // Assert status = true and errors = 0
+        list($status, $errors) = grade_capture::prepare_import_data($csvimportdata, $module, $gradereason);
+        $this->assertTrue($status);
+        $this->assertEmpty($errors);
+        unset($csvimportdata);
     }
 }
