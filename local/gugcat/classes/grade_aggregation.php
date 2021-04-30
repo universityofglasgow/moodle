@@ -242,6 +242,7 @@ class grade_aggregation{
                     $rawaggrade = ($gbaggregatedgrade->overridden == 0) ? $sumaggregated : (!is_null($gbaggregatedgrade->finalgrade) ? $gbaggregatedgrade->finalgrade : $gbaggregatedgrade->rawgrade);
                     $aggrade = ($gbaggregatedgrade->overridden == 0) ? round($rawaggrade) + 1 : $rawaggrade; //convert back to moodle scale
                     $aggrdscaletype = ($schedAweights >= $schedBweights) ? SCHEDULE_A : SCHEDULE_B;
+                    $aggrdobj->scale = $aggrdscaletype;
                     $aggrdobj->grade = local_gugcat::convert_grade($aggrade, null, $aggrdscaletype);
                     $aggrdobj->rawgrade = $rawaggrade;
                     $numberformat = number_format($rawaggrade, 3);
