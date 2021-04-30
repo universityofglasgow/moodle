@@ -101,10 +101,15 @@ if(!is_null($activityid) && $formtype == OVERRIDE_GRADE_FORM){
     }
     // Change the data in aggregate grade obj with $subcatgrade
     $aggrdobj = new stdClass();
+    $aggrdobj->scale = in_array($subcatgrade->grade, local_gugcat::$SCHEDULE_A) ? SCHEDULE_A : SCHEDULE_B;
     $aggrdobj->grade = $subcatgrade->grade;
     $aggrdobj->rawgrade = $subcatgrade->rawgrade;
     $aggrdobj->display = $subcatgrade->rawgrade;
     $student->aggregatedgrade = $aggrdobj;
+}
+
+if($formtype == OVERRIDE_GRADE_FORM && $student->aggregatedgrade){
+    local_gugcat::set_grade_scale(null, $student->aggregatedgrade->scale);
 }
 
 $mform = new coursegradeform(null, array('setting'=>$formtype, 'student'=>$student, 'gradetype' => $gradetype));

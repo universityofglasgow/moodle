@@ -33,17 +33,29 @@
     outline: none;
 }
 
-.mform-custom-select > div.felement:after {
+.mform-custom-select:not(.has-danger) > div.felement:after {
     content: '\f078';
     background-color: white;
     font: normal normal normal 12px/1 FontAwesome;
     color: #005c8a;
-    left: 134px;
-    top: calc(16px - 5%);
     height: 12px;
     padding: 0px 5px;
-    position: absolute;
     pointer-events: none;
+    position: relative;
+    margin-left: -24px;
+}
+
+.mform-custom-select.has-danger > div.felement:after {
+    content: '\f078';
+    background-color: white;
+    font: normal normal normal 12px/1 FontAwesome;
+    color: #ca3120;
+    height: 12px;
+    padding: 0px 5px;
+    pointer-events: none;
+    position: relative;
+    margin-left: 125px;
+    margin-top: -77px;
 }
 
 .mform-grades {
@@ -75,6 +87,10 @@
 
 .form-inline .input-group, .form-inline .custom-select {
     width: 150px;
+}
+
+#select-template{
+    width: auto;
 }
 
 #fitem_id_submitbutton .btn{
