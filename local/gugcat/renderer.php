@@ -506,10 +506,16 @@ class local_gugcat_renderer extends plugin_renderer_base {
             }
             $htmlrows .= html_writer::end_tag('tr');
         }
+
         foreach($data as $row){
+            $fixedcolumns = 2;
             $htmlrows .= html_writer::start_tag('tr');
             foreach($row as $rowdata){
                 $htmlrows .= html_writer::tag('td', $rowdata);
+                $fixedcolumns--;
+                if($fixedcolumns == 0 ){
+                    break;
+                }
             }            
             $htmlrows .= html_writer::end_tag('tr');
         }
