@@ -146,14 +146,17 @@ if ($fromform = $mform->get_data()) {
                 $convertedgi = local_gugcat::get_grade_item_id($COURSE->id, $subcatactivity->gradeitemid, get_string('convertedgrade', 'local_gugcat'));
                 local_gugcat::update_grade($studentid, $convertedgi, $grade);
             }else{
-                $notes = ",_scale: $gradeitem->idnumber ,_notes: $fromform->notes";
+                $notes = !$is_subcat ? ",_scale: $gradeitem->idnumber ,_notes: $fromform->notes" : $fromform->notes;
                 local_gugcat::update_grade($studentid, $gradeitem->id, $grade, $notes, time());
             }
             
             //also update notes for subcomponents
             if($is_subcat){
                 $prvgrades = local_gugcat::get_prvgrd_item_ids($courseid, $components);
+                $componentnotes = $fromform->notes;
                 foreach($prvgrades as $prvgrades){
+                    $scale = $DB->get_field('grade_items', 'idnumber', array("id"=>$prvgrades->id));
+                    $notes = $scale ? $componentnotes . " -" . $scale : $componentnotes; 
                     local_gugcat::update_components_notes($studentid, $prvgrades->id, $notes);
                 }
             }
