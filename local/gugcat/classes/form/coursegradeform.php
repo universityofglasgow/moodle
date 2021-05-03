@@ -98,7 +98,7 @@ class coursegradeform extends moodleform {
             $mform->setType('gradetype', PARAM_NOTAGS);
             if(!is_null($this->_customdata['gradetype']) && $this->_customdata['gradetype'] == GRADE_TYPE_VALUE){
                 $attributes = array(
-                    'pattern' => '^([mM][vV]|[0-9]|[nN][sS])+$', 
+                    'pattern' => '^([mM][vV]|[0-9]{1,3}|[nN][sS])$', 
                     'size' => '16', 
                     'placeholder' => get_string('typegrade', 'local_gugcat'),
                     'data-toggle' => 'tooltip',
@@ -110,8 +110,8 @@ class coursegradeform extends moodleform {
                 );
                 $mform->addElement('text', 'override', get_string('gradeformgrade', 'local_gugcat'), $attributes); 
                 $mform->setType('override', PARAM_NOTAGS);
-                $mform->addRule('override', get_string('errorinputpoints', 'local_gugcat'), 'regex', '/^([mM][vV]|[0-9]|[nN][sS])+$/', 'client');
-                $mform->addRule('override', get_string('errorinputpoints', 'local_gugcat'), 'regex', '/^([mM][vV]|[0-9]|[nN][sS])+$/', 'server');    
+                $mform->addRule('override', get_string('errorinputpoints', 'local_gugcat'), 'regex', '/^([mM][vV]|[0-9]{1,3}|[nN][sS])$/', 'client');
+                $mform->addRule('override', get_string('errorinputpoints', 'local_gugcat'), 'regex', '/^([mM][vV]|[0-9]{1,3}|[nN][sS])$/', 'server');    
             }else{
                 $mform->addElement('select', 'override', get_string('overridegrade', 'local_gugcat'), array_unique($grades), ['class' => 'mform-custom-select']); 
                 $mform->setDefault('override', 0);
