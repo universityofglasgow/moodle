@@ -98,9 +98,23 @@ if(!empty($totalactivities) || !empty($activities)){
     
     $mods = array_reverse($activities);
     $childmods = empty($childactivities) ?  null : array_reverse($childactivities);
-    $selectedmodule = is_null($childmods) ? (is_null($activityid) ? array_pop($mods) : (!empty($activities) ? $activities[$activityid] : null)) : (is_null($childactivityid) ? array_pop($childmods) : $childactivities[$childactivityid]);
+    $selectedmodule = is_null($childmods) ? (is_null($activityid) ? array_pop($mods) 
+    : (!empty($activities) ? $activities[$activityid] : null)) 
+    : (is_null($childactivityid) ? array_pop($childmods) : $childactivities[$childactivityid]);
 
     if(isset($selectedmodule)){
+        $is_imported = local_gugcat::get_grade_item_id($courseid, $selectedmodule->gradeitemid, get_string('moodlegrade', 'local_gugcat')) ? true : false;
+        $selectedmodule->is_imported = $is_imported;
+        if($is_imported && local_gugcat::is_child_activity($selectedmodule)){
+            // Get parent category object from array $gradecatgi
+            $index = array_search($selectedmodule->gradeitem->categoryid, array_column($gradecatgi, 'id', 'gradeitemid'));
+            $parent = $gradecatgi[$index];
+            // Create provisional gradeitem of the $parent subcategory if its null
+            if(is_null($parent->provisionalid)){
+                $parent->gradeitemid = $selectedmodule->gradeitem->categoryid;
+                local_gugcat::add_grade_item($courseid, get_string('subcategorygrade', 'local_gugcat'), $parent);
+            }
+        }
         $groupingid = $selectedmodule->groupingid;
 
         $scaleid = $selectedmodule->gradeitem->scaleid;
