@@ -101,7 +101,9 @@ class grade_aggregation{
                     if($DB->record_exists_select('grade_items', "itemname = '$moodlestr' AND ($componentsql)")){
                         // $mod->id - sub category id 
                         $prvgrdid = $mod->provisionalid;
-                        $mod->aggregation_type = $DB->get_field('grade_items', 'calculation', array('id'=>$prvgrdid));
+                        $subcataggscale = $DB->get_record('grade_items', array('id'=>$prvgrdid), 'calculation, outcomeid');
+                        $mod->aggregation_type = !is_null($subcataggscale) && !empty($subcataggscale) ? $subcataggscale->calculation : null;
+                        $mod->automaticscale = !is_null($subcataggscale) && !empty($subcataggscale) ? $subcataggscale->outcomeid : null;
                     }
                 }
                 $gbgrades = grade_get_grades($course->id, 'category', null, $mod->instance, array_keys($students));
@@ -373,25 +375,6 @@ class grade_aggregation{
             return array(null, true, null);
         }
 
-        // If calculation field is empty, then update it with aggregation type
-        if($pgobj){
-            is_null($subcatobj->aggregation_type) ? $DB->set_field('grade_items', 'calculation', $subcatobj->aggregation, array('id'=>$pgobj->itemid)) : null;
-            $scale = $subcatobj->is_converted ? $subcatobj->is_converted : null;
-            if(!is_null($subcatobj->aggregation_type) && $subcatobj->aggregation_type != $subcatobj->aggregation){
-                $notes = !is_null($scale) && !empty($scale) ? 'aggregation -'.$scale : 'aggregation';
-                //update feedback field for subcat and child components prvgrade 
-                local_gugcat::update_components_notes($userid, $pgobj->itemid, $notes);
-                foreach($actgrds as $id=>$grades){
-                    if(isset($grades->provisional[$userid]) && $pg = $grades->provisional[$userid]){
-                        // Only get provisional grades $pg from child assessments
-                        local_gugcat::update_components_notes($userid, $pg->itemid, $notes);
-                    }        
-                } 
-                //update calculation field with aggregation type
-                $DB->set_field('grade_items', 'calculation', $subcatobj->aggregation, array('id'=>$pgobj->itemid));
-            }
-        }
-
         // Overall gradetype, grademax and scaleid to be used in subcat grade
         $gradetype = null;
         $grademax = null;
@@ -468,7 +451,50 @@ class grade_aggregation{
         if($subcatobj->is_converted){
             $calculatedgrd = grade_converter::convert($subcatobj->conversion, $calculatedgrd);
         }
-        if($pgobj && isset($calculatedgrd) && $grd != $calculatedgrd){
+
+        // If calculation field is empty, then update it with aggregation type
+        if($pgobj){
+            $updated = false;
+            $autoscale = !is_null($scaleid) ? $scaleid : ($gradetype == GRADE_TYPE_SCALE ? 1 : null); 
+            is_null($subcatobj->aggregation_type) ? $DB->set_field('grade_items', 'calculation', $subcatobj->aggregation, array('id'=>$pgobj->itemid)) : null;
+            is_null($subcatobj->automaticscale) ? $DB->set_field('grade_items', 'outcomeid', $autoscale, array('id'=>$pgobj->itemid)) : null;
+            $scale = $subcatobj->is_converted ? $subcatobj->is_converted : (!is_null($autoscale) ? $autoscale : null);
+            if(!is_null($subcatobj->aggregation_type) && $subcatobj->aggregation_type != $subcatobj->aggregation){
+                $notes = !is_null($scale) && !empty($scale) ? 'aggregation -'.$scale : 'aggregation';
+                $componentnotes = 'aggregation';
+                //update feedback field for subcat and child components prvgrade 
+                local_gugcat::update_components_notes($userid, $pgobj->itemid, $notes);
+                foreach($filtered as $id=>$childact){
+                    if(isset($childact->grades->provisional[$userid]) && $pg = $childact->grades->provisional[$userid]){
+                        // Get idnumber of provisional grades for scales
+                        $scale = $childact->is_converted;
+                        $notes = $scale ? $componentnotes . " -" . $scale : $componentnotes; 
+                        // Only get provisional grades $pg from child assessments
+                        local_gugcat::update_components_notes($userid, $pg->itemid, $notes);
+                    }        
+                } 
+                //update calculation field with aggregation type
+                $DB->set_field('grade_items', 'calculation', $subcatobj->aggregation, array('id'=>$pgobj->itemid));
+            }
+            if(!is_null($scale) && !$subcatobj->is_converted && $subcatobj->automaticscale != $autoscale){
+                $notes = "grade -$scale";
+                $componentnotes = 'grade';
+                local_gugcat::update_grade($userid, $pgobj->itemid, $calculatedgrd, $notes);
+                foreach($filtered as $id=>$childact){
+                    if(isset($childact->grades->provisional[$userid]) && $pg = $childact->grades->provisional[$userid]){
+                        // Get idnumber of provisional grades for scales
+                        $scale = $childact->is_converted;
+                        $notes = $scale ? $componentnotes . " -" . $scale : $componentnotes; 
+                        // Only get provisional grades $pg from child assessments
+                        local_gugcat::update_components_notes($userid, $pg->itemid, $notes);
+                    }        
+                }
+                $updated = true;
+                $DB->set_field('grade_items', 'outcomeid', $autoscale, array('id'=>$pgobj->itemid));
+            }
+        }
+
+        if($pgobj && isset($calculatedgrd) && $grd != $calculatedgrd && !$updated){
             //if subcategory is new then update grade with "import" notes for grade history.
             if(is_null($grd) && !$subcatobj->is_converted){
                 $notes = 'import';

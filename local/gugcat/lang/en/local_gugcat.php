@@ -172,6 +172,7 @@ $string['supportingdocument'] = "Supporting Documentation";
 $string['surname'] = 'Surname';
 $string['switchoffdisplay'] = 'Switch off display of assessments on Student Dashboard';
 $string['switchondisplay'] = 'Switch on display of assessments on Student Dashboard'; 
+$string['systemupdate'] = 'System update - assessment grade changes';
 $string['title'] = 'Grade Capture & Course Grade Aggregation';
 $string['totalweight'] = 'Total Weighting';
 $string['type'] = 'Type';
