@@ -54,6 +54,8 @@ class grade_capture{
         $gradeitems = array();
         $gt = null; // Gradetype
         $is_converted = false;
+        // Error to display
+        $error = null;
         if(isset($module)){
             $gt = $module->gradeitem->gradetype;
             $gbgrades = grade_get_grades($course->id, 'mod', $module->modname, $module->instance, array_keys($students));
@@ -146,10 +148,23 @@ class grade_capture{
                         array_push($gradecaptureitem->grades, $grdobj);
                     }                        
                 }    
+                // Display error when grade from grade book is different from gcat moodle grade
+                if(!is_null($gradecaptureitem->releasedgrade)){
+                    // If gradebook grade is not null and different from moodle grade
+                    if($gradecaptureitem->firstgrade != $gradecaptureitem->releasedgrade){
+                        $error = get_string('warningreimport', 'local_gugcat');
+                    }
+                }else{
+                    // If gradebook grade is null but moodle grade is not null
+                    if($gradecaptureitem->firstgrade != get_string('nograde', 'local_gugcat')){
+                        $error = get_string('warningreimport', 'local_gugcat');
+                    }
+                }
             }
             array_push($captureitems, $gradecaptureitem);
             $i++;
         }
+        is_null($error) ? null : local_gugcat::notify_error(null, $error);
         return $captureitems;
     }
 
@@ -480,7 +495,7 @@ class grade_capture{
             // If activity is scale, validate grades if its valid Schedule A or B
             if($gradetype == GRADE_TYPE_SCALE){
                 // Check if grade not alphanumeric
-                if(!preg_match('/^([mM][vV]|[Hh]|[a-zA-Z][0-9]|[nN][sS])+$/', str_replace(' ', '', $grade))){
+                if(!preg_match('/^([mM][vV]|[Hh]|[a-zA-Z][0-9]|[nN][sS]|[a-zA-Z][0-9]:\d{1,2})$/', str_replace(' ', '', $grade))){
                     $gradebookerrors[] = get_string('uploaderrorgradeformat', 'local_gugcat', $errorobj);
                     $status = false;
                     break;
@@ -503,7 +518,7 @@ class grade_capture{
                 }
 
                 // Check if grade is a valid grade point
-                if(!preg_match('/^([mM][vV]|[0-9]|[nN][sS])+$/', str_replace(' ', '', $grade))){
+                if(!preg_match('/^([mM][vV]|[0-9]{1,3}|[nN][sS])$/', str_replace(' ', '', $grade))){
                     $gradebookerrors[] = get_string('uploaderrorgradepoint', 'local_gugcat', $errorobj);
                     $status = false;
                     break;

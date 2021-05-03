@@ -50,7 +50,7 @@ class addeditgradeform extends moodleform {
             $mform->addElement('hidden', 'grademax', $gm); 
             $mform->setType('grademax', PARAM_NOTAGS);
             $attributes = array(
-                'pattern' => '^([mM][vV]|[0-9]|[nN][sS])+$', 
+                'pattern' => '^([mM][vV]|[0-9]{1,3}|[nN][sS])$', 
                 'size' => '16', 
                 'placeholder' => get_string('typegrade', 'local_gugcat'),
                 'data-toggle' => 'tooltip',
@@ -62,8 +62,8 @@ class addeditgradeform extends moodleform {
             );
             $mform->addElement('text', 'grade', get_string('gradeformgrade', 'local_gugcat'), $attributes); 
             $mform->setType('grade', PARAM_NOTAGS);
-            $mform->addRule('grade', get_string('errorinputpoints', 'local_gugcat'), 'regex', '/^([mM][vV]|[0-9]|[nN][sS])+$/', 'client');
-            $mform->addRule('grade', get_string('errorinputpoints', 'local_gugcat'), 'regex', '/^([mM][vV]|[0-9]|[nN][sS])+$/', 'server');
+            $mform->addRule('grade', get_string('errorinputpoints', 'local_gugcat'), 'regex', '/^([mM][vV]|[0-9]{1,3}|[nN][sS])$/', 'client');
+            $mform->addRule('grade', get_string('errorinputpoints', 'local_gugcat'), 'regex', '/^([mM][vV]|[0-9]{1,3}|[nN][sS])$/', 'server');
         }else{
             $grades = local_gugcat::$GRADES;
             $grades[0] = get_string('selectgrade', 'local_gugcat');

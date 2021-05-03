@@ -184,6 +184,7 @@ $string['uploaderrorgradescale'] = 'User with ID number of {$a->id} has an inval
 $string['uploaderrornotmember'] = 'User with ID number of {$a->id} is not a member of current group.';
 $string['uploaderrornotfound'] = 'User mapping error. Could not find user with ID number of {$a->id}.';
 $string['viewcoursehistory'] = 'View course grade history';
+$string['warningreimport'] = 'The grades in Moodle Gradebook have been updated since the last import into GCAT. Please check if there are any changes which need to be replicated or imported into GCAT.';
 
 // Grade item names
 $string['gi_agreedgrade'] = 'Agreed Grade';
