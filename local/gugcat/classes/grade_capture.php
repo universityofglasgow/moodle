@@ -527,7 +527,7 @@ class grade_capture{
             // If activity is scale, validate grades if its valid Schedule A or B
             if($gradetype == GRADE_TYPE_SCALE){
                 // Check if grade not alphanumeric
-                if(!preg_match('/^([mM][vV]|[Hh]|[a-zA-Z][0-9]|[nN][sS])+$/', str_replace(' ', '', $grade))){
+                if(!preg_match('/^([mM][vV]|[Hh]|[a-zA-Z][0-9]|[nN][sS]|[a-zA-Z][0-9]:\d{1,2})$/', str_replace(' ', '', $grade))){
                     $gradebookerrors[] = get_string('uploaderrorgradeformat', 'local_gugcat', $errorobj);
                     $status = false;
                     break;
@@ -550,7 +550,7 @@ class grade_capture{
                 }
 
                 // Check if grade is a valid grade point
-                if(!preg_match('/^([mM][vV]|[0-9]|[nN][sS])+$/', str_replace(' ', '', $grade))){
+                if(!preg_match('/^([mM][vV]|[0-9]{1,3}|[nN][sS])$/', str_replace(' ', '', $grade))){
                     $gradebookerrors[] = get_string('uploaderrorgradepoint', 'local_gugcat', $errorobj);
                     $status = false;
                     break;

@@ -99,7 +99,7 @@ if ($fromform = $mform->get_data()) {
         // If conversion is enabled, save the converted grade to provisional grade and original grade to converted grade.
         $conversion = grade_converter::retrieve_grade_conversion($modid);
         $cg = grade_converter::convert($conversion, $grade);
-        local_gugcat::update_grade($studentid, local_gugcat::$PRVGRADEID, $cg);
+        local_gugcat::update_grade($studentid, local_gugcat::$PRVGRADEID, $cg ,'');
         $convertedgi = local_gugcat::get_grade_item_id($COURSE->id, $modid, get_string('convertedgrade', 'local_gugcat'));
         local_gugcat::update_grade($studentid, $convertedgi, $grade);
     }
@@ -124,11 +124,12 @@ if ($fromform = $mform->get_data()) {
         // Get Subcategory prv grade item id and idnumber
         $prvgrd = local_gugcat::get_gradeitem_converted_flag($module->gradeitem->categoryid, true);
         $subcatid = $prvgrd->id;
-        $scale = $prvgrd->idnumber;
+        $scale = $prvgrd->idnumber ? $prvgrd->idnumber : $DB->get_field('grade_items', 'outcomeid', array('id'=>$subcatid));
         // Get provisional grades
         $fields = 'itemid, id, rawgrade, finalgrade, overridden';
         $grade = $DB->get_record('grade_grades', array('itemid' => $subcatid, 'userid'=>$studentid), $fields);
         $notes = !is_null($scale) && !empty($scale) ? 'grade -'.$scale : 'grade';
+        $componentnotes = 'grade';
         $grd = !is_null($grade->finalgrade) ? $grade->finalgrade 
         : (!is_null($grade->rawgrade) ? $grade->rawgrade 
         : null);  
@@ -137,6 +138,8 @@ if ($fromform = $mform->get_data()) {
             local_gugcat::update_components_notes($studentid, $subcatid, $notes);
             $prvgrades = local_gugcat::get_prvgrd_item_ids($courseid, $childactivities);
             foreach($prvgrades as $prvgrd){
+                $is_scale = !is_null($prvgrd->idnumber) ? $prvgrd->idnumber : false;
+                $notes = $is_scale ? $componentnotes . " -" . $is_scale : $componentnotes; 
                 local_gugcat::update_components_notes($studentid, $prvgrd->id, $notes);
             }
         }

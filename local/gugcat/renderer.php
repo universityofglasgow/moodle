@@ -36,16 +36,12 @@ class local_gugcat_renderer extends plugin_renderer_base {
      * @param array $columns 
      */
     public function display_grade_capture($selectedmodule, $activities_, $childactivities_, $rows, $columns) {
-        global $SESSION, $DB;
+        global $SESSION;
         $SESSION->wantsurl = $this->page->url;
         $courseid = $this->page->course->id;
         $is_blind_marking = local_gugcat::is_blind_marking($this->page->cm);
         $is_converted = ($selectedmodule) ? $selectedmodule->is_converted : false;
-        $is_imported = false;
-        $moodlestr = get_string('moodlegrade', 'local_gugcat');
-        if(($selectedmodule) && $DB->record_exists_select('grade_items', "itemname = '$moodlestr' AND iteminfo = $selectedmodule->gradeitemid")){
-            $is_imported = true;
-        }
+        $is_imported = ($selectedmodule) ? $selectedmodule->is_imported : false;
         $modid = (($selectedmodule) ? $selectedmodule->gradeitemid : null);
         $categoryid = optional_param('categoryid', null, PARAM_INT);
         $activityid = optional_param('activityid', null, PARAM_INT);
@@ -453,7 +449,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
                 (isset($row->weights[$i]) ? round((float)$row->weights[$i] * 100) . '%' : get_string('nogradeweight', 'local_gugcat'));
                 $htmlrows .= html_writer::tag('td', $weight);
             }
-            $htmlrows .= html_writer::tag('td', is_null($row->notes) && empty($row->notes) ? get_string('nogradeweight', 'local_gugcat') : $row->notes);
+            $htmlrows .= html_writer::tag('td', is_null($row->notes) && empty($row->notes) ? get_string('systemupdate', 'local_gugcat') : $row->notes);
 
             $htmlrows .= html_writer::end_tag('tr');
         }
