@@ -27,8 +27,8 @@ require_once(__DIR__ . '/../../../config.php');
 require_once($CFG->dirroot . '/local/gugcat/locallib.php');
 
 $courseid = required_param('id', PARAM_INT);
-$activityid = required_param('activityid', PARAM_INT);
-$studentid = required_param('studentid', PARAM_INT);
+$activityid = optional_param('activityid', null, PARAM_INT);
+$studentid = optional_param('studentid', null, PARAM_INT);
 $categoryid = optional_param('categoryid', null, PARAM_INT);
 $childactivityid = optional_param('childactivityid', null, PARAM_INT);
 $page = optional_param('page', 0, PARAM_INT);
@@ -39,11 +39,16 @@ $URL = new moodle_url('/local/gugcat/history/index.php', $urlparams);
 is_null($categoryid) ? null : $URL->param('categoryid', $categoryid);
 $indexurl = new moodle_url('/local/gugcat/index.php', array('id' => $courseid));
 $modid = $activityid;
+//redirect to grade capture screen if activityid or studentid is null
+if(is_null($activityid) || is_null($studentid)){
+    redirect($indexurl);
+}
 if(!is_null($childactivityid) && $childactivityid != 0){
     $URL->param('childactivityid', $childactivityid);
     $indexurl->param('childactivityid', $childactivityid);
     $modid = $childactivityid;
 }
+
 
 $PAGE->set_url($URL);
 $PAGE->set_title(get_string('gugcat', 'local_gugcat'));

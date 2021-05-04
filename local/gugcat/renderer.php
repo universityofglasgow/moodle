@@ -547,7 +547,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
                 $activityid = $act->gradeitemid;
                 $ammendgradeparams = "?id=$courseid&activityid=$activityid&page=$page&categoryid=$categoryid&history";
                 $htmlrows .= html_writer::tag('td', isset($row->childgrades[$i]->grade) ? 
-                $row->childgrades[$i]->grade. $this->context_actions($student->id, null, false, $ammendgradeparams) : 'N/A');
+                $row->childgrades[$i]->grade. $this->context_actions($student->id, null, false, $ammendgradeparams) : get_string('pendingimport', 'local_gugcat'));
                 $i++;
             }
             $htmlrows .= html_writer::tag('td', $row->modby);
