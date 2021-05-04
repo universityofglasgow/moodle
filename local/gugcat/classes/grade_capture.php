@@ -311,8 +311,34 @@ class grade_capture{
         
         foreach ($modules as $module) {
             // Create Provisional Grade grade item and grade_grades to all students, then assign it to static PRVID
-            local_gugcat::$PRVGRADEID = local_gugcat::add_grade_item($courseid, get_string('provisionalgrd', 'local_gugcat'), $module, $students);
+            local_gugcat::$PRVGRADEID = is_null($module->provisionalid) 
+            ? local_gugcat::add_grade_item($courseid, get_string('provisionalgrd', 'local_gugcat'), $module, $students)
+            : $module->provisionalid;
 
+            // Get provisional gradeitem id for weights reset
+            // Create subcategory gradeitem for components
+            $prvid_reset = null;
+            if(local_gugcat::is_child_activity($module)){
+                // Get parent category object from array $allactivities
+
+                // Get sub categories
+                $categories = array_filter($allactivities, function ($act) {
+                    return $act->modname == 'category';
+                });
+                // Get parent subcat activity object
+                $index = array_search($module->gradeitem->categoryid, array_column($categories, 'id', 'gradeitemid'));
+                $parent = $categories[$index];
+                // Create provisional gradeitem of the $parent subcategory if its null
+                if(is_null($parent->provisionalid)){
+                    $parent->gradeitemid = $module->gradeitem->categoryid;
+                    $prvid_reset = local_gugcat::add_grade_item($courseid, get_string('subcategorygrade', 'local_gugcat'), $parent);
+                }else{
+                    $prvid_reset = $parent->provisionalid;
+                }
+            }else{
+                $prvid_reset = local_gugcat::$PRVGRADEID;
+            }
+           
             //Create Aggregated Grade grade item to all students
             $aggradeid = local_gugcat::add_grade_item($courseid, get_string('aggregatedgrade', 'local_gugcat'), null, $students);
 
@@ -350,11 +376,10 @@ class grade_capture{
                 local_gugcat::add_update_grades($student->id, $mggradeitemid, $grade, $notes);
 
                 $DB->set_field('grade_grades', 'overridden', 0, array('itemid' => $aggradeid, 'userid'=>$student->id));
+                // Every time import is clicked, reset weights in provisional grade > grade_grades information  to null
+                $DB->set_field('grade_grades', 'information', null, array('itemid' => $prvid_reset, 'userid' => $student->id));          
             } 
         }
-
-        //every time import is clicked, weights from the main activity will be copied to provisional grade items
-        self::set_provisional_weights($courseid, $allactivities, $students);
     }
 
     /**
@@ -384,40 +409,6 @@ class grade_capture{
         local_gugcat::notify_success($message);
         $grade_->update();
         return $status;        
-    }
-
-    /**
-     * Copy weights from main activity grade item to provisional grade item
-     *
-     * @param int $courseid
-     * @param array $activities All modules
-     * @param array $students All enrolled students
-     */
-    public static function set_provisional_weights($courseid, $activities, $students){
-        global $DB;
-        foreach ($activities as $mod) {
-            // If activity is a component/child activity, do not copy the weights
-            if(local_gugcat::is_child_activity($mod)){
-                continue;
-            }
-            $id = $mod->modname == 'category' ? $mod->gradeitem->iteminstance : $mod->gradeitemid; 
-            $str = $mod->modname == 'category' ? 'subcategorygrade' : 'provisionalgrd'; 
-
-            // Create provisional/subcategory grade item for modules that has no prv gi yet
-            if($mod->modname == 'category'){
-                $mod->gradeitemid = $id;
-            }
-            $prvgrdid = local_gugcat::add_grade_item($courseid, get_string($str, 'local_gugcat'), $mod, $students);
-       
-
-            // Getting the weights from the main activity grade item
-            $weightcoef1 = $mod->gradeitem->aggregationcoef; //Aggregation coeficient used for weighted averages or extra credit
-            $weightcoef2 = $mod->gradeitem->aggregationcoef2; //Aggregation coeficient used for weighted averages only
-            $weight = ((float)$weightcoef1 > 0) ? (float)$weightcoef1 : (float)$weightcoef2;
-            foreach ($students as $student) {
-                $DB->set_field('grade_grades', 'information', $weight, array('itemid' => $prvgrdid, 'userid' => $student->id));          
-            }
-        }
     }
 
     /**
