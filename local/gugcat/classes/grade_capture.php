@@ -344,8 +344,10 @@ class grade_capture{
                 }else{
                     $grade = self::check_gb_grade($gbg);
                 }
-                local_gugcat::add_update_grades($student->id, local_gugcat::$PRVGRADEID, $grade);
-                local_gugcat::add_update_grades($student->id, $mggradeitemid, $grade);
+                //for assessment grade history
+                $notes = ',_gradeitem: '. get_string('moodlegrade', 'local_gugcat');
+                local_gugcat::add_update_grades($student->id, local_gugcat::$PRVGRADEID, $grade, '');
+                local_gugcat::add_update_grades($student->id, $mggradeitemid, $grade, $notes);
 
                 $DB->set_field('grade_grades', 'overridden', 0, array('itemid' => $aggradeid, 'userid'=>$student->id));
             } 

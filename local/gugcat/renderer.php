@@ -449,7 +449,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
                 (isset($row->weights[$i]) ? round((float)$row->weights[$i] * 100) . '%' : get_string('nogradeweight', 'local_gugcat'));
                 $htmlrows .= html_writer::tag('td', $weight);
             }
-            $htmlrows .= html_writer::tag('td', is_null($row->notes) && empty($row->notes) ? get_string('systemupdate', 'local_gugcat') : $row->notes);
+            $htmlrows .= html_writer::tag('td', is_null($row->notes) && empty($row->notes) ? get_string('systemupdatecourse', 'local_gugcat') : $row->notes);
 
             $htmlrows .= html_writer::end_tag('tr');
         }
