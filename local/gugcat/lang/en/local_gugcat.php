@@ -220,11 +220,12 @@ $string['eventtoggleassessmentsdisplay'] = 'Toggle assessments display in Studen
 $string['eventuploadgrades'] = 'Upload additional grades';
 
 //aggregated assessment grade history notes
-$string['aggregation'] = 'N/A - Aggregation calculation function updated';
-$string['grade'] = 'N/A - Component grade(s) updated, see component grade history for more information';
-$string['import'] = 'N/A - Component grade(s) imported';
-$string['convertnew'] = 'N/A - Conversion Applied';
-$string['convertexist'] = 'N/A - Conversion Adjusted';
+$string['aggregation'] = 'System update - Aggregation calculation function updated';
+$string['grade'] = 'System update - Component grade(s) updated, see component grade history for more information';
+$string['import'] = 'System update - Component grade(s) imported';
+$string['convertnew'] = 'System update - Conversion Applied';
+$string['convertexist'] = 'System update - Conversion Adjusted';
+$string['pendingimport'] = 'Pending import';
 
 //gcat grade category
 $string['gcat_category'] = 'DO NOT USE';

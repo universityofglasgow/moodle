@@ -135,7 +135,8 @@ if ($fromform = $mform->get_data()) {
         if($gradeitem = $DB->get_record_select('grade_items', $select, ['iteminfo'=>$id], 'id, idnumber')){
             $grade = !is_numeric($fromform->override) ? array_search(strtoupper($fromform->override), local_gugcat::$GRADES) : $fromform->override; 
             //if subcat get scaleid 
-            $scale = $is_subcat ? $subcatactivity->is_converted : null;
+            $scale = $is_subcat ? (!is_null($subcatactivity->is_converted) && !empty($subcatactivity->is_converted) 
+            ? $subcatactivity->is_converted : $DB->get_field('grade_items', 'outcomeid', array('id'=>$gradeitem->id))) : null;
             //if scaleid is not empty or null, then add the scale to notes
             $notes = !is_null($scale) && !empty($scale) ? $fromform->notes." -".$scale : $fromform->notes;
             if($is_subcat && $subcatactivity->is_converted){
@@ -146,7 +147,7 @@ if ($fromform = $mform->get_data()) {
                 $convertedgi = local_gugcat::get_grade_item_id($COURSE->id, $subcatactivity->gradeitemid, get_string('convertedgrade', 'local_gugcat'));
                 local_gugcat::update_grade($studentid, $convertedgi, $grade);
             }else{
-                $notes = !$is_subcat ? ",_scale: $gradeitem->idnumber ,_notes: $fromform->notes" : $fromform->notes;
+                $notes = !$is_subcat ? ",_scale: $gradeitem->idnumber ,_notes: $fromform->notes" : (is_null($scale) ? $fromform->notes : $fromform->notes." -$scale");
                 local_gugcat::update_grade($studentid, $gradeitem->id, $grade, $notes, time());
             }
             
