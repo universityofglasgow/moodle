@@ -453,10 +453,10 @@ class grade_capture{
         $gradetype = $activity->gradeitem->gradetype;
         $grademax = $activity->gradeitem->grademax;
         // Get list of all student idnumbers enrolled on current course
-        $enrolled = grade_aggregation::get_students_per_groups(array(0), $COURSE->id, 'u.id, u.idnumber');
+        $enrolled = self::get_students_per_groups(array(0), $COURSE->id, 'u.id, u.idnumber');
         // Get list of students in group
         if($activity->groupingid && $activity->groupingid > 0){
-            $grouped = grade_aggregation::get_students_per_groups(array($activity->groupingid), $COURSE->id, 'u.id, u.idnumber');
+            $grouped = self::get_students_per_groups(array($activity->groupingid), $COURSE->id, 'u.id, u.idnumber');
         }
         while ($line = $csvdata->next()) {
             if (count(array_filter($line)) == 0) {
@@ -539,7 +539,35 @@ class grade_capture{
             }
         }
         return array($status, $gradebookerrors);
-        
+    }
+
+    /**
+     * Returns list of students based on grouping ids from activities
+     * 
+     * @param array $groupingids ids from activities
+     * @param int $courseid selected course id
+     * @param string $userfields requested user record fields
+     * @return array
+     */
+    public static function get_students_per_groups($groupingids, $courseid, $userfields = 'u.*') {
+        $coursecontext = context_course::instance($courseid);
+        $students = Array();
+        if(array_sum($groupingids) != 0){
+            $groups = array();
+            foreach ($groupingids as $groupingid) {
+                if($groupingid != 0){
+                    $groups += groups_get_all_groups($courseid, 0, $groupingid);
+                }
+            }
+            if(!empty($groups)){
+                foreach ($groups as $group) {
+                    $students += get_enrolled_users($coursecontext, 'local/gugcat:gradable', $group->id, $userfields);
+                }
+            }
+        }else{
+            $students = get_enrolled_users($coursecontext, 'local/gugcat:gradable', 0, $userfields);
+        }
+        return $students;
     }
 
 }

@@ -666,8 +666,7 @@ class grade_aggregation{
         //Retrieve modules and enrolled students per grade category
         $categoryid = optional_param('categoryid', null, PARAM_INT);
         $modules = (is_null($categoryid)) ? local_gugcat::get_activities($courseid) : self::get_parent_child_activities($courseid, $categoryid);
-        $groupingids = array_column($modules, 'groupingid');
-        $students = self::get_students_per_groups($groupingids, $courseid);
+        $students = get_enrolled_users(context_course ::instance($courseid), 'local/gugcat:gradable');
         foreach($modules as $mod) {
             $is_subcat = ($mod->modname == 'category') ? true : false;
             //if mod is subcat or converted then continue
@@ -716,8 +715,7 @@ class grade_aggregation{
         $modules = ($categoryid == null) ? local_gugcat::get_activities($course->id) : 
                                            self::get_parent_child_activities($course->id, $categoryid);
         $category = is_null($categoryid) ? null : grade_category::fetch(array('id' => $categoryid));
-        $groupingids = array_column($modules, 'groupingid');
-        $students = self::get_students_per_groups($groupingids, $course->id);
+        $students = get_enrolled_users(context_course ::instance($course->id), 'local/gugcat:gradable');
         //add the columns before the activities
         array_push($columns, ...['aggregated_grade', 'aggregated_grade_numeric', '%_complete', 'resit_required']);
         //Process the activity names
@@ -853,35 +851,6 @@ class grade_aggregation{
             return $first->timemodified < $second->timemodified;
         });
         return $rows;
-    }
-
-    /**
-     * Returns list of students based on grouping ids from activities
-     * 
-     * @param array $groupingids ids from activities
-     * @param int $courseid selected course id
-     * @param string $userfields requested user record fields
-     * @return array
-     */
-    public static function get_students_per_groups($groupingids, $courseid, $userfields = 'u.*') {
-        $coursecontext = context_course::instance($courseid);
-        $students = Array();
-        if(array_sum($groupingids) != 0){
-            $groups = array();
-            foreach ($groupingids as $groupingid) {
-                if($groupingid != 0){
-                    $groups += groups_get_all_groups($courseid, 0, $groupingid);
-                }
-            }
-            if(!empty($groups)){
-                foreach ($groups as $group) {
-                    $students += get_enrolled_users($coursecontext, 'local/gugcat:gradable', $group->id, $userfields);
-                }
-            }
-        }else{
-            $students = get_enrolled_users($coursecontext, 'local/gugcat:gradable', 0, $userfields);
-        }
-        return $students;
     }
 
     /**
