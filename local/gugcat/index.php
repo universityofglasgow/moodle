@@ -224,12 +224,14 @@ if (isset($release)){
         foreach ($newgrades as $id=>$item) {
             if(isset($item) && !empty($item)){
                 $grade = !is_numeric($item) ? array_search(strtoupper($item), local_gugcat::$GRADES) : $item; 
-                local_gugcat::add_update_grades($id, $gradeitemid, $grade, '');
+                $notes = ",_gradeitem: $gradeitem";
+                local_gugcat::add_update_grades($id, $gradeitemid, $grade, (!$is_converted ? $notes : ''));
                 if($is_converted){
+                    $notes .= ",_scale: $is_converted";
                     // If conversion is enabled, save the converted grade to provisional grade and original grade to converted grade.
                     $conversion = grade_converter::retrieve_grade_conversion($selectedmodule->gradeitemid);
                     $cg = grade_converter::convert($conversion, $grade);
-                    local_gugcat::update_grade($id, local_gugcat::$PRVGRADEID, $cg, '');
+                    local_gugcat::update_grade($id, local_gugcat::$PRVGRADEID, $cg, $notes);
                     $convertedgi = local_gugcat::get_grade_item_id($COURSE->id, $selectedmodule->gradeitemid, get_string('convertedgrade', 'local_gugcat'));
                     local_gugcat::update_grade($id, $convertedgi, $grade, '');
                 }

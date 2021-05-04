@@ -382,7 +382,7 @@ class local_gugcat {
             //if insert successful - update provisional grade
             return (!$grade_->insert()) ? false : 
             ((self::$PRVGRADEID && !is_null($grade))
-            ? self::update_grade($userid, self::$PRVGRADEID, $grade, '') 
+            ? self::update_grade($userid, self::$PRVGRADEID, $grade, $notes) 
             : false);
             
         }else{
@@ -392,7 +392,7 @@ class local_gugcat {
             if($grade_->update()){
                 //update timemodified of grade item
                 $DB->set_field('grade_items', 'timemodified', $grade_->timemodified, array('id' => $itemid));
-                return self::update_grade($userid, self::$PRVGRADEID, $grade, '');
+                return self::update_grade($userid, self::$PRVGRADEID, $grade, $notes);
             }
             return false;
         }
@@ -607,34 +607,51 @@ class local_gugcat {
     /**
      * Returns rows of grade version history
      * 
-     * @param int $courseid
      * @param mixed $module select course module
      * @param int $studentid student's user id
      * 
      * 
      */
-    public static function get_grade_history($courseid, $module, $studentid){
+    public static function get_grade_history($module, $studentid){
         global $DB;
-        $select = 'courseid = '.$courseid.' AND '.self::compare_iteminfo();
-        $gradeitems = $DB->get_records_select('grade_items', $select, ['iteminfo' => $module->gradeitemid]);
-        unset($gradeitems[self::$PRVGRADEID]);
         $grades_arr = array();
         $gt = $module->gradeitem->gradetype;
-        foreach($gradeitems as $gradeitem){
-            $gradehistory_arr = $DB->get_records('grade_grades_history', array('userid'=>$studentid, 'itemid'=>$gradeitem->id), MUST_EXIST);
-            foreach($gradehistory_arr as $grd){
-                $fields = 'firstname, lastname';
-                if(!is_null($grd->usermodified) && !is_null($grd->rawgrade)){
-                $modby = $DB->get_record('user', array('id' => $grd->usermodified), $fields);
-                $grd->modby = (isset($modby->lastname) && isset($modby->firstname)) ? $modby->lastname . ', '.$modby->firstname : null;
-                $grd->notes = !is_null($grd->feedback) ? ($grd->feedback != "" ? $grd->feedback : 'N/A - '.$gradeitem->itemname) : 'N/A - '.$gradeitem->itemname;
-                $grd->type = ($gradeitem->itemname == get_string('moodlegrade', 'local_gugcat')) ? 
-                $gradeitem->itemname. '<br>'.date("j/n/Y", strtotime(userdate($grd->timemodified)))
-                 : $gradeitem->itemname;
-                $grd->date = date("j/n", strtotime(userdate($grd->timemodified))).'<br>'.date("H:i", strtotime(userdate($grd->timemodified)));
-                $grd->grade = !is_null($grd->finalgrade) ? self::convert_grade($grd->finalgrade, $gt) : self::convert_grade($grd->rawgrade, $gt);
-                array_push($grades_arr, $grd);
+        $gradehistory_arr = $DB->get_records('grade_grades_history', array('userid'=>$studentid, 'itemid'=>self::$PRVGRADEID), MUST_EXIST);
+        foreach($gradehistory_arr as $grdhistory){
+            if(!preg_match('/,_gradeitem/i', $grdhistory->feedback)){
+                continue;
+            }
+            $grd = (is_null($grdhistory->finalgrade) ? $grdhistory->rawgrade : $grdhistory->finalgrade);
+            $grdhistory->grade = self::convert_grade($grd, $gt);
+            $pattern = "/,_/i";
+            $feedback = preg_split($pattern, $grdhistory->feedback, -1, PREG_SPLIT_NO_EMPTY);
+            $notes = null;
+            foreach($feedback as $fb){
+                if(preg_match('/notes:/i', $fb)){
+                    $notes = preg_replace('/notes:/i', '', $fb);
                 }
+                if(preg_match('/gradeitem:/i', $fb)){
+                    $grdtype = preg_replace('/.*gradeitem: /i', '', $fb);
+                    $grdhistory->type = preg_match('/converted/i', $grdtype) ? get_string('systemupdate', 'local_gugcat') 
+                    : ($grdtype == get_string('moodlegrade', 'local_gugcat') ? $grdtype . '<br>'.date("j/n/Y", strtotime(userdate($grdhistory->timemodified)))  
+                    : $grdtype);
+                    $notes = !is_null($notes) ? $notes 
+                    : (preg_match('/converted/i', $grdtype)  
+                    ? get_string('systemupdateconversion','local_gugcat') 
+                    : (get_string('systemupdate', 'local_gugcat')." - $grdtype"));
+                }
+                if(preg_match('/scale:/i', $fb)){
+                    $scale = preg_replace('/scale:/i', '', $fb);
+                    $grdhistory->grade = self::convert_grade($grd, null, $scale);
+                }
+            }
+            $fields = 'firstname, lastname';
+            if(!is_null($grdhistory->usermodified) && !is_null($grdhistory->rawgrade)){
+            $modby = $DB->get_record('user', array('id' => $grdhistory->usermodified), $fields);
+            $grdhistory->modby = (isset($modby->lastname) && isset($modby->firstname)) ? $modby->lastname . ', '.$modby->firstname : null;
+            $grdhistory->notes = $notes;
+            $grdhistory->date = date("j/n", strtotime(userdate($grdhistory->timemodified))).'<br>'.date("H:i", strtotime(userdate($grdhistory->timemodified)));
+            array_push($grades_arr, $grdhistory);
             }
         }
         //sort array by timemodified
@@ -1067,9 +1084,9 @@ class local_gugcat {
         $is_convertedmod = $module->is_converted;
         local_gugcat::set_grade_scale(null);
         if($gradehistory_arr > 0){
-            //remove from array if feedback has weightchangesubcat
+            //remove from array if feedback has gradeitem
             foreach($gradehistory_arr as $key=>$gradehistory){
-                if(preg_match('/\bweightchangesubcat/i', $gradehistory->feedback)){
+                if(preg_match('/,_gradeitem/i', $gradehistory->feedback)){
                     unset($gradehistory_arr[$key]);
                 }
             }
@@ -1165,6 +1182,11 @@ class local_gugcat {
             $fields = 'id, itemid, rawgrade, finalgrade, feedback';
             $select = 'feedback IS NOT NULL AND feedback <> "" AND rawgrade IS NOT NULL AND itemid='.$prvgrd->id.' AND userid='.$userid;
             $gradehistory_arr = $DB->get_records_select('grade_grades_history', $select, null, $sort, $fields);
+            foreach($gradehistory_arr as $key=>$grdhistory){
+                if(preg_match('/,_gradeitem:/i', $grdhistory->feedback)){
+                    unset($gradehistory_arr[$key]);
+                }
+            }
             if(sizeof($gradehistory_arr) > 0){
                 foreach($gradehistory_arr as $gradehistory){
                     if(isset($rows[$j])){
