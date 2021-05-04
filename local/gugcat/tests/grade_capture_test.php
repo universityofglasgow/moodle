@@ -253,17 +253,6 @@ class grade_capture_testcase extends advanced_testcase {
 
     }
 
-    public function test_set_provisional_weights() {
-        global $DB;
-        $gi = $this->cm->gradeitem;
-        $weightcoef1 = $gi->aggregationcoef; //Aggregation coeficient used for weighted averages or extra credit
-        $weightcoef2 = $gi->aggregationcoef2; //Aggregation coeficient used for weighted averages only
-        $expectedweight = ((float)$weightcoef1 > 0) ? (float)$weightcoef1 : (float)$weightcoef2;
-        grade_capture::set_provisional_weights($this->course->id, $this->cms, $this->students);
-        $prvweight = $DB->get_field('grade_grades', 'information', array('itemid' => $this->provisionalgi, 'userid' => $this->student->id));
-        $this->assertEquals($prvweight, strval($expectedweight)); //assert provisional grade_grade copied weight from main act
-    }
-
     public function test_get_component_module(){
         global $DB;
         $gen = $this->getDataGenerator();
@@ -320,7 +309,7 @@ class grade_capture_testcase extends advanced_testcase {
         $selectedmodid = $gradecatgi[$mods]->gradeitemid;
         $childactivities = local_gugcat::get_activities($cid, $selectedmodid);
         $totalactivities = $childactivities + $gradecatgi;
-        grade_capture::set_provisional_weights($cid, $totalactivities, $this->students);
+        grade_capture::import_from_gradebook($cid, $childactivities, $totalactivities);
         $subcatstr = get_string('subcategorygrade', 'local_gugcat');
         $subcatgi = $DB->get_record('grade_items', array('itemtype'=>'manual', 'itemname'=>$subcatstr));
         $this->assertNotFalse($subcatgi);
