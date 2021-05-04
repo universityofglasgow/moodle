@@ -194,7 +194,9 @@ class grade_aggregation{
                         $is_scale = true;
                         $grade = local_gugcat::convert_grade($grd, null, $item->is_converted);
                     }
-                    $weight = local_gugcat::is_child_activity($item) ? 0 : (!is_null($pg) ? (float)$pg->information : $item->weight); //get weight from information column of provisional grades
+                    // Get weight from gradebook if adjusted weight in $pg->information is null
+                    $weight = local_gugcat::is_child_activity($item) ? 0 
+                    : (!is_null($pg) && !is_null($pg->information) ? (float)$pg->information : $item->weight); 
                     // Only aggregate grades that are:
                     // - not null
                     // - not MEDICAL_EXEMPTION_AC (MV, -1)
