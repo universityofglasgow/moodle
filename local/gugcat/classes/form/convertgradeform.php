@@ -30,6 +30,9 @@ defined('MOODLE_INTERNAL') || die();
 require_once("$CFG->libdir/formslib.php");
 require_once($CFG->dirroot . '/local/gugcat/locallib.php');
 class convertform extends moodleform {
+    /** @var array templates for conversions */
+    protected $templates; // Conversion templates
+
     //Add elements to form
     public function definition() {
 
@@ -47,7 +50,8 @@ class convertform extends moodleform {
         );
 
         $dbtemplates = grade_converter::get_conversion_templates();
-        $templates = empty($dbtemplates) ? array() : array_column($dbtemplates, 'templatename', 'id');
+        $this->templates = empty($dbtemplates) ? array() : array_column($dbtemplates, 'templatename', 'id');
+        $templates = $this->templates;
         $templates[0] = get_string('selectconversion', 'local_gugcat');
 
         $activity = $this->_customdata['activity'];
@@ -101,7 +105,8 @@ class convertform extends moodleform {
 
         $mform->addElement('html', html_writer::tag('p', get_string('noteconversion', 'local_gugcat'), array('class' => 'mt-3 font-weight-bold'))); 
 
-        $mform->addElement('text', 'templatename', get_string('pleaseprovidetemplatename', 'local_gugcat')); 
+        $mform->addElement('text', 'templatename', get_string('pleaseprovidetemplatename', 'local_gugcat'), array('maxlength' => '50')); 
+        $mform->addRule('templatename', null, 'maxlength', 50, 'client');
         $mform->setType('templatename', PARAM_NOTAGS); 
 
         $mform->addElement('html', '</div>');
@@ -124,6 +129,8 @@ class convertform extends moodleform {
         $mform->setType('grademax', PARAM_INT);
         $mform->addElement('hidden', 'notes', $notes);
         $mform->setType('notes', PARAM_NOTAGS);
+        $mform->addElement('hidden', 'page', optional_param('page', 0, PARAM_INT));
+        $mform->setType('page', PARAM_INT);
 
     }
 
@@ -205,5 +212,16 @@ class convertform extends moodleform {
         $html .= html_writer::end_tag('table');
         $mform->addElement('html', $html); 
         $mform->addElement('html', html_writer::end_tag('div')); 
+    }
+
+    function validation($data, $files) {
+        $errors = parent::validation($data, $files);
+        if(!empty($data['templatename'])){
+            $templates = array_map('strtolower', $this->templates);
+            if(in_array(strtolower($data['templatename']), $templates, true)){
+                $errors['templatename'] = get_string('nameinuse', 'local_gugcat');
+            }
+        }
+        return $errors;
     }
 }

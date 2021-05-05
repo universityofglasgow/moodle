@@ -54,6 +54,8 @@ class grade_capture{
         $gradeitems = array();
         $gt = null; // Gradetype
         $is_converted = false;
+        // Error to display
+        $error = null;
         if(isset($module)){
             $gt = $module->gradeitem->gradetype;
             $gbgrades = grade_get_grades($course->id, 'mod', $module->modname, $module->instance, array_keys($students));
@@ -146,10 +148,23 @@ class grade_capture{
                         array_push($gradecaptureitem->grades, $grdobj);
                     }                        
                 }    
+                // Display error when grade from grade book is different from gcat moodle grade
+                if(!is_null($gradecaptureitem->releasedgrade)){
+                    // If gradebook grade is not null and different from moodle grade
+                    if($gradecaptureitem->firstgrade != $gradecaptureitem->releasedgrade){
+                        $error = get_string('warningreimport', 'local_gugcat');
+                    }
+                }else{
+                    // If gradebook grade is null but moodle grade is not null
+                    if($gradecaptureitem->firstgrade != get_string('nograde', 'local_gugcat')){
+                        $error = get_string('warningreimport', 'local_gugcat');
+                    }
+                }
             }
             array_push($captureitems, $gradecaptureitem);
             $i++;
         }
+        is_null($error) ? null : local_gugcat::notify_error(null, $error);
         return $captureitems;
     }
 
@@ -293,13 +308,13 @@ class grade_capture{
         } else {
             $modules = array($importactivities);
         }
-        // Create Aggregated Grade grade item for this course
-        $aggradeid = local_gugcat::add_grade_item($courseid, get_string('aggregatedgrade', 'local_gugcat'), null, $students);
         
         foreach ($modules as $module) {
             // Create Provisional Grade grade item and grade_grades to all students, then assign it to static PRVID
             local_gugcat::$PRVGRADEID = local_gugcat::add_grade_item($courseid, get_string('provisionalgrd', 'local_gugcat'), $module, $students);
-   
+
+            //Create Aggregated Grade grade item to all students
+            $aggradeid = local_gugcat::add_grade_item($courseid, get_string('aggregatedgrade', 'local_gugcat'), null, $students);
 
             // Create Moodle Grade grade item and grade_grades to all students
             $mggradeitemid = local_gugcat::add_grade_item($courseid, get_string('moodlegrade', 'local_gugcat'), $module, $students);
@@ -329,8 +344,10 @@ class grade_capture{
                 }else{
                     $grade = self::check_gb_grade($gbg);
                 }
-                local_gugcat::add_update_grades($student->id, local_gugcat::$PRVGRADEID, $grade);
-                local_gugcat::add_update_grades($student->id, $mggradeitemid, $grade);
+                //for assessment grade history
+                $notes = ',_gradeitem: '. get_string('moodlegrade', 'local_gugcat');
+                local_gugcat::add_update_grades($student->id, local_gugcat::$PRVGRADEID, $grade, '');
+                local_gugcat::add_update_grades($student->id, $mggradeitemid, $grade, $notes);
 
                 $DB->set_field('grade_grades', 'overridden', 0, array('itemid' => $aggradeid, 'userid'=>$student->id));
             } 
@@ -442,6 +459,8 @@ class grade_capture{
         $status = true;
         $enrolled = array();
         $grouped = array();
+        $gradetype = $activity->gradeitem->gradetype;
+        $grademax = $activity->gradeitem->grademax;
         // Get list of all student idnumbers enrolled on current course
         $enrolled = grade_aggregation::get_students_per_groups(array(0), $COURSE->id, 'u.id, u.idnumber');
         // Get list of students in group
@@ -449,7 +468,7 @@ class grade_capture{
             $grouped = grade_aggregation::get_students_per_groups(array($activity->groupingid), $COURSE->id, 'u.id, u.idnumber');
         }
         while ($line = $csvdata->next()) {
-            if (count($line) <= 1) {
+            if (count(array_filter($line)) == 0) {
                 // There is no data on this line, move on.
                 continue;
             }
@@ -475,18 +494,37 @@ class grade_capture{
                 break;
             }
 
-            // Check if grade not alphanumeric
-            if(!preg_match('/^(?=.*\d)(?=.*[a-zA-Z]).{2,2}$/', $grade)){
-                $gradebookerrors[] = get_string('uploaderrorgradeformat', 'local_gugcat', $errorobj);
-                $status = false;
-                break;
-            }
+            // If activity is scale, validate grades if its valid Schedule A or B
+            if($gradetype == GRADE_TYPE_SCALE){
+                // Check if grade not alphanumeric
+                if(!preg_match('/^([mM][vV]|[Hh]|[a-zA-Z][0-9]|[nN][sS]|[a-zA-Z][0-9]:\d{1,2})$/', str_replace(' ', '', $grade))){
+                    $gradebookerrors[] = get_string('uploaderrorgradeformat', 'local_gugcat', $errorobj);
+                    $status = false;
+                    break;
+                }
 
-            // Check if grade is not in the scale               
-            if(isset($grade) && !in_array($grade, local_gugcat::$GRADES)){
-                $gradebookerrors[] = get_string('uploaderrorgradescale', 'local_gugcat', $errorobj);
-                $status = false;
-                break;
+                // Check if grade is not in the scale               
+                if(isset($grade) && !in_array(strtoupper($grade), local_gugcat::$GRADES)){
+                    $gradebookerrors[] = get_string('uploaderrorgradescale', 'local_gugcat', $errorobj);
+                    $status = false;
+                    break;
+                }
+            }else{
+            // If activity is points, validate grades if its valid points or NS/MV
+
+                // Check if grade is greater than the max  grade of activity
+                if(is_numeric($grade) && $grade > $grademax){
+                    $gradebookerrors[] = get_string('uploaderrorgrademaxpoint', 'local_gugcat', $errorobj);
+                    $status = false;
+                    break;
+                }
+
+                // Check if grade is a valid grade point
+                if(!preg_match('/^([mM][vV]|[0-9]{1,3}|[nN][sS])$/', str_replace(' ', '', $grade))){
+                    $gradebookerrors[] = get_string('uploaderrorgradepoint', 'local_gugcat', $errorobj);
+                    $status = false;
+                    break;
+                }
             }
 
             if($status){
@@ -497,13 +535,15 @@ class grade_capture{
         if($status && count($newgrades) > 0){
             $gradeitemid = local_gugcat::add_grade_item($COURSE->id, $itemname, $activity);
             foreach ($newgrades as $id=>$item) {
-                if($grade = array_search($item, local_gugcat::$GRADES)){
-                    $gradescaleoffset = local_gugcat::is_grademax22($activity->gradeitem->gradetype, $activity->gradeitem->grademax) ? 1 : 0;
-                    $grdobj = new stdClass();
-                    $grdobj->grade = $grade;
-                    $grdobj->feedback = null;
-                    $grade = self::check_gb_grade($grdobj, $gradescaleoffset);
-                    $status = local_gugcat::add_update_grades($id, $gradeitemid, $grade);
+                $grade = !is_numeric($item) ? array_search(strtoupper($item), local_gugcat::$GRADES) : $item; 
+                local_gugcat::add_update_grades($id, $gradeitemid, $grade, '');
+                if($activity->is_converted){
+                    // If conversion is enabled, save the converted grade to provisional grade and original grade to converted grade.
+                    $conversion = grade_converter::retrieve_grade_conversion($activity->gradeitemid);
+                    $cg = grade_converter::convert($conversion, $grade);
+                    local_gugcat::update_grade($id, local_gugcat::$PRVGRADEID, $cg, '');
+                    $convertedgi = local_gugcat::get_grade_item_id($COURSE->id, $activity->gradeitemid, get_string('convertedgrade', 'local_gugcat'));
+                    local_gugcat::update_grade($id, $convertedgi, $grade, '');
                 }
             }
         }

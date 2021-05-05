@@ -38,6 +38,7 @@ class coursegradeform extends moodleform {
             $grades = local_gugcat::$GRADES + grade_aggregation::$AGGRADE;
             unset($grades[NON_SUBMISSION]);
         }
+        $grades[0] = get_string('selectgrade', 'local_gugcat');
         $mform = $this->_form; // Don't forget the underscore! 
         $mform->addElement('html', '<div class="mform-container">');
         $student = $this->_customdata['student'];
@@ -50,7 +51,7 @@ class coursegradeform extends moodleform {
                 $mform->addElement('static', $grdobj->activity, $grdobj->activity.' Weighting', $grdobj->weight .'%'); 
                 $mform->addElement('html', '</div>');
                 $mform->setType($grdobj->activity, PARAM_NOTAGS); 
-            }elseif($this->_customdata['setting'] == '0'){
+            }else if($this->_customdata['setting'] == '0'){
                 $attributes = array(
                     'class' => 'input-percent',
                     'type' => 'number',
@@ -97,7 +98,7 @@ class coursegradeform extends moodleform {
             $mform->setType('gradetype', PARAM_NOTAGS);
             if(!is_null($this->_customdata['gradetype']) && $this->_customdata['gradetype'] == GRADE_TYPE_VALUE){
                 $attributes = array(
-                    'pattern' => '^([mM][vV]|[0-9]|[nN][sS])+$', 
+                    'pattern' => '^([mM][vV]|[0-9]{1,3}|[nN][sS])$', 
                     'size' => '16', 
                     'placeholder' => get_string('typegrade', 'local_gugcat'),
                     'data-toggle' => 'tooltip',
@@ -109,36 +110,41 @@ class coursegradeform extends moodleform {
                 );
                 $mform->addElement('text', 'override', get_string('gradeformgrade', 'local_gugcat'), $attributes); 
                 $mform->setType('override', PARAM_NOTAGS);
-                $mform->addRule('override', get_string('errorinputpoints', 'local_gugcat'), 'regex', '/^([mM][vV]|[0-9]|[nN][sS])+$/', 'client');
-                $mform->addRule('override', get_string('errorinputpoints', 'local_gugcat'), 'regex', '/^([mM][vV]|[0-9]|[nN][sS])+$/', 'server');    
+                $mform->addRule('override', get_string('errorinputpoints', 'local_gugcat'), 'regex', '/^([mM][vV]|[0-9]{1,3}|[nN][sS])$/', 'client');
+                $mform->addRule('override', get_string('errorinputpoints', 'local_gugcat'), 'regex', '/^([mM][vV]|[0-9]{1,3}|[nN][sS])$/', 'server');    
             }else{
                 $mform->addElement('select', 'override', get_string('overridegrade', 'local_gugcat'), array_unique($grades), ['class' => 'mform-custom-select']); 
+                $mform->setDefault('override', 0);
                 $mform->setType('override', PARAM_NOTAGS); 
+                $mform->addRule('override', get_string('required'), 'nonzero', null, 'client');
             }
         }
-        $mform->addElement('textarea', 'notes', get_string('notes', 'local_gugcat'));
+        $mform->addElement('textarea', 'notes', get_string('notes', 'local_gugcat'), array('placeholder' => get_string('specifyreason', 'local_gugcat')));
+        $mform->addRule('notes', null, 'required', null, 'client');
         $mform->setType('notes', PARAM_NOTAGS); 
 
         $mform->addElement('html', '</div>');
         if($this->_customdata['setting'] == '1'){
-            $mform->addElement('submit', 'submit', get_string('savechanges', 'local_gugcat'), ['class' => 'btn-coursegradeform']);
+            $mform->addElement('submit', 'submit', get_string('savechanges', 'local_gugcat'), ['class' => 'btn-blue']);
         }else{
-            $mform->addElement('submit', 'submit', get_string('savechanges', 'local_gugcat'), ['id' => 'coursegradeform-submit', 'class' => 'btn-coursegradeform']);
-            $mform->addElement('button', 'adjustoverride', get_string('savechanges', 'local_gugcat'), ['id' => 'btn-coursegradeform', 'class' => 'btn-coursegradeform']);
+            $mform->addElement('submit', 'submit', get_string('savechanges', 'local_gugcat'), ['id' => 'coursegradeform-submit', 'class' => 'btn-blue']);
+            $mform->addElement('button', 'adjustoverride', get_string('savechanges', 'local_gugcat'), ['id' => 'btn-coursegradeform', 'class' => 'btn-blue']);
         }
         // hidden params
-        $mform->addElement('hidden', 'studentid', $this->_customdata['studentid']);
-        $mform->setType('studentid', PARAM_ACTION);
-        $mform->addElement('hidden', 'id', $this->_customdata['id']);
-        $mform->setType('id', PARAM_ACTION);
+        $mform->addElement('hidden', 'studentid', required_param('studentid', PARAM_INT));
+        $mform->setType('studentid', PARAM_INT);
+        $mform->addElement('hidden', 'id', required_param('id', PARAM_INT));
+        $mform->setType('id', PARAM_INT);
         $mform->addElement('hidden', 'setting', $this->_customdata['setting']);
-        $mform->setType('setting', PARAM_ACTION);
+        $mform->setType('setting', PARAM_INT);
         $mform->addElement('hidden', 'cnum', $student->cnum);
-        $mform->setType('cnum', PARAM_ACTION);
-        $mform->addElement('hidden', 'categoryid', $this->_customdata['categoryid']);
-        $mform->setType('categoryid', PARAM_ACTION);
+        $mform->setType('cnum', PARAM_INT);
+        $mform->addElement('hidden', 'categoryid', optional_param('categoryid', null, PARAM_INT));
+        $mform->setType('categoryid', PARAM_INT);
         $mform->addElement('hidden', 'activityid', optional_param('activityid', null, PARAM_INT));
         $mform->setType('activityid', PARAM_INT);
+        $mform->addElement('hidden', 'page', optional_param('page', 0, PARAM_INT));
+        $mform->setType('page', PARAM_INT);
         
     }
 

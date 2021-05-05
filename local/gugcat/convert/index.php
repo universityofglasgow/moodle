@@ -130,16 +130,16 @@ if($mform->is_cancelled()) {
             $itemname = get_string($is_subcat ? 'subcategorygrade' : 'provisionalgrd', 'local_gugcat');
             
             if($prvid = local_gugcat::get_grade_item_id($courseid, $id, $itemname)){
-                grade_converter::convert_provisional_grades($conversion, $module, $prvid);
+                grade_converter::convert_provisional_grades($conversion, $module, $prvid, $formdata->scale);
                 grade_converter::delete_grade_conversion($modid);
                 grade_converter::save_grade_conversion($conversion, $prvid, $formdata->scale);
                 // Put the scale in notes for grade conversion in grade history
                 $notes = $formdata->notes." -".$formdata->scale;
                 $is_subcat ? grade_aggregation::update_component_notes_for_all_students($prvid, $module->id, $notes) : null;
                 unset($SESSION->wantsurl);
-                redirect($returnurl);
-                $event = \local_gugcat\event\add_grade_converter::create($params);
+                $event = \local_gugcat\event\add_adjust_grade_conversion::create($params);
                 $event->trigger();
+                redirect($returnurl);
             }
         }
     }

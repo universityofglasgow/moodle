@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
  
 /**
- * The local_gugcat add new grade converter event.
+ * the local_gugcat course grade history viewed event.
 *
  * @package    local_gugcat
  * @copyright  2020
@@ -25,30 +25,27 @@
 namespace local_gugcat\event;
 defined('MOODLE_INTERNAL') || die();
 
-class add_grade_converter extends \core\event\base {
+class toggle_assessments_display extends \core\event\base {
     protected function init() {
-        $this->data['crud'] = 'c'; // c(reate), r(ead), u(pdate), d(elete)
+        $this->data['crud'] = 'r'; // c(reate), r(ead), u(pdate), d(elete)
         $this->data['edulevel'] = self::LEVEL_TEACHING;
     }
  
     public static function get_name() {
-        return get_string('eventaddgradeconverter', 'local_gugcat');
+        return get_string('eventtoggleassessmentsdisplay', 'local_gugcat');
     }
  
     public function get_description() {
-        return "The user with id {$this->userid} has added a grade converter to activity with id of {$this->other['activityid']}";
+        return "The user with id {$this->userid} has switch {$this->other['status']} the display of assessments on Student Dashboard for the course with an id of {$this->courseid}.";
     }
  
     public function get_url() {
-        $url = new \moodle_url('local/gugcat/convert/index.php', array('id' => $this->courseid, 'activityid'=>$this->other['activityid'], 'page'=>$this->other['page']));
-        if(!is_null($this->other['categoryid']))
-            $url->param('categoryid', $this->other['categoryid']);
-
+        $url = new \moodle_url('local/gugcat/index.php', array('id' => $this->courseid));
         return $url;
     }
- 
+
     public function get_legacy_logdata() {
-        return array($this->courseid, 'local_gugcat', 'add_grade_converter',
+        return array($this->courseid, 'local_gugcat', 'course_grade_history_viewed',
             '...........',
             '....', $this->contextinstanceid);
     }

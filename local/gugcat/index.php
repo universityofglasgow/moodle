@@ -37,7 +37,7 @@ $page = optional_param('page', 0, PARAM_INT);
 
 $URL = new moodle_url('/local/gugcat/index.php', array('id' => $courseid, 'page' => $page));
 is_null($activityid) ? null : $URL->param('activityid', $activityid);
-is_null($categoryid) ? null : $URL->param('categoryid', $categoryid);
+is_null($categoryid) && $categoryid == 0 ? null : $URL->param('categoryid', $categoryid);
 is_null($childactivityid) ? null : $URL->param('childactivityid', $childactivityid);
 require_login($courseid);
 $PAGE->navbar->add(get_string('navname', 'local_gugcat'));
@@ -62,7 +62,7 @@ $selectedmodule = null;
 $groupingid = 0;
 $valid_import_activity = false;
 $is_converted = false;
-if(!is_null($categoryid)){
+if(!is_null($categoryid) && $categoryid != 0){
     // Retrieve sub categories
     $gcs = grade_category::fetch_all(array('courseid' => $courseid, 'parent' => $categoryid));
 
@@ -86,8 +86,8 @@ if(!is_null($categoryid)){
         $URL->param('activityid', $activityid);
     }
 
-    $childactivities = (isset($totalactivities[$activityid]->modname) && $totalactivities[$activityid]->modname === 'category') ? local_gugcat::get_activities($courseid, $totalactivities[$activityid]->id) : null;
-    if(!is_null($childactivities)){
+    $childactivities = (isset($totalactivities[$activityid]->modname) && $totalactivities[$activityid]->modname === 'category') ? local_gugcat::get_activities($courseid, $totalactivities[$activityid]->id) : array();
+    if(!empty($childactivities)){
         foreach($childactivities as $ca){
             $ca->selected = (strval($childactivityid) === $ca->gradeitemid)? 'selected' : '';
         }
@@ -98,9 +98,23 @@ if(!empty($totalactivities) || !empty($activities)){
     
     $mods = array_reverse($activities);
     $childmods = empty($childactivities) ?  null : array_reverse($childactivities);
-    $selectedmodule = is_null($childmods) ? (is_null($activityid) ? array_pop($mods) : $activities[$activityid]) : (is_null($childactivityid) ? array_pop($childmods) : $childactivities[$childactivityid]);
+    $selectedmodule = is_null($childmods) ? (is_null($activityid) ? array_pop($mods) 
+    : (!empty($activities) ? $activities[$activityid] : null)) 
+    : (is_null($childactivityid) ? array_pop($childmods) : $childactivities[$childactivityid]);
 
     if(isset($selectedmodule)){
+        $is_imported = local_gugcat::get_grade_item_id($courseid, $selectedmodule->gradeitemid, get_string('moodlegrade', 'local_gugcat')) ? true : false;
+        $selectedmodule->is_imported = $is_imported;
+        if($is_imported && local_gugcat::is_child_activity($selectedmodule)){
+            // Get parent category object from array $gradecatgi
+            $index = array_search($selectedmodule->gradeitem->categoryid, array_column($gradecatgi, 'id', 'gradeitemid'));
+            $parent = $gradecatgi[$index];
+            // Create provisional gradeitem of the $parent subcategory if its null
+            if(is_null($parent->provisionalid)){
+                $parent->gradeitemid = $selectedmodule->gradeitem->categoryid;
+                local_gugcat::add_grade_item($courseid, get_string('subcategorygrade', 'local_gugcat'), $parent);
+            }
+        }
         $groupingid = $selectedmodule->groupingid;
 
         $scaleid = $selectedmodule->gradeitem->scaleid;
@@ -126,7 +140,7 @@ $limitnum  = GCAT_MAX_USERS_PER_PAGE;
 // Params from search bar filters
 $filters = optional_param_array('filters', [], PARAM_NOTAGS);
 $filters = local_gugcat::get_filters_from_url($filters);
-$activesearch = (isset($filters) && count($filters) > 0 && count(array_unique($filters)) !== 1) ? true : false;
+$activesearch = isset($filters) && count($filters) > 0 && count(array_filter($filters)) > 0 ? true : false;
 $activesearch ? $URL->param('filter', http_build_query($filters)) : null;
 $PAGE->set_url($URL);
 
@@ -210,19 +224,21 @@ if (isset($release)){
         foreach ($newgrades as $id=>$item) {
             if(isset($item) && !empty($item)){
                 $grade = !is_numeric($item) ? array_search(strtoupper($item), local_gugcat::$GRADES) : $item; 
-                local_gugcat::add_update_grades($id, $gradeitemid, $grade, '');
+                $notes = ",_gradeitem: $gradeitem";
+                local_gugcat::add_update_grades($id, $gradeitemid, $grade, (!$is_converted ? $notes : ''));
                 if($is_converted){
+                    $notes .= ",_scale: $is_converted";
                     // If conversion is enabled, save the converted grade to provisional grade and original grade to converted grade.
                     $conversion = grade_converter::retrieve_grade_conversion($selectedmodule->gradeitemid);
                     $cg = grade_converter::convert($conversion, $grade);
-                    local_gugcat::update_grade($id, local_gugcat::$PRVGRADEID, $cg, '');
+                    local_gugcat::update_grade($id, local_gugcat::$PRVGRADEID, $cg, $notes);
                     $convertedgi = local_gugcat::get_grade_item_id($COURSE->id, $selectedmodule->gradeitemid, get_string('convertedgrade', 'local_gugcat'));
                     local_gugcat::update_grade($id, $convertedgi, $grade, '');
                 }
                 //check if child activities are existing
                 if(!empty($childactivities)){
                     $subcatid = local_gugcat::get_grade_item_id($courseid, $selectedmodule->gradeitem->categoryid, get_string('subcategorygrade', 'local_gugcat'));
-                    $scale = $totalactivities[$activityid]->is_converted;
+                    $scale = $totalactivities[$activityid]->is_converted ? $totalactivities[$activityid]->is_converted : $DB->get_field('grade_items', 'outcomeid', array('id'=>$subcatid));
                     $fields = 'itemid, id, rawgrade, finalgrade, overridden';
                     // Get provisional grades
                     $grade = $DB->get_record('grade_grades', array('itemid' => $subcatid, 'userid'=>$id), $fields);
@@ -232,9 +248,12 @@ if (isset($release)){
                     //if subcat has a grade and it is not overridden.
                     if(isset($grd) && !is_null($grd) && $grade->overridden == 0){
                         $notes = ($scale) ? 'grade -'.$scale : 'grade';
+                        $componentnotes = 'grade';
                         local_gugcat::update_components_notes($id, $subcatid, $notes);
                         $prvgrds = local_gugcat::get_prvgrd_item_ids($courseid, $childactivities);
                         foreach($prvgrds as $prvgrd){
+                            $is_scale = !is_null($prvgrd->idnumber) ? $prvgrd->idnumber : false;
+                            $notes = $is_scale ? $componentnotes . " -" . $is_scale : $componentnotes; 
                             local_gugcat::update_components_notes($id, $prvgrd->id, $notes);
                         }
                     }
@@ -258,9 +277,9 @@ if (isset($release)){
 }else if(isset($importgrades)){
     if ($valid_import_activity){
         if(!empty($childactivities)){
-            $scale = $totalactivities[$activityid]->is_converted;
             grade_capture::import_from_gradebook($courseid, $selectedmodule, $totalactivities);
             $subcatid = local_gugcat::get_grade_item_id($courseid, $selectedmodule->gradeitem->categoryid, get_string('subcategorygrade', 'local_gugcat'));
+            $scale = $totalactivities[$activityid]->is_converted ? $totalactivities[$activityid]->is_converted : $DB->get_field('grade_items', 'outcomeid', array('id'=>$subcatid));
             foreach($students as $student){
                 $fields = 'itemid, id, rawgrade, finalgrade, overridden';
                 // Get provisional grades
@@ -271,9 +290,12 @@ if (isset($release)){
                 //if subcat has a grade and it is not overridden.
                 if(isset($grd) && !is_null($grd) && $grade->overridden == 0){
                     $notes = ($scale) ? 'import -'.$scale : 'import';
+                    $componentnotes = 'import';
                     local_gugcat::update_components_notes($student->id, $subcatid, $notes);
                     $prvgrds = local_gugcat::get_prvgrd_item_ids($courseid, $childactivities);
                     foreach($prvgrds as $prvgrd){
+                        $is_scale = !is_null($prvgrd->idnumber) ? $prvgrd->idnumber : false;
+                        $notes = $is_scale ? $componentnotes . " -" . $is_scale : $componentnotes; 
                         local_gugcat::update_components_notes($student->id, $prvgrd->id, $notes);
                     }
                 }
@@ -334,10 +356,10 @@ if (isset($release)){
     if(!empty($importerror)){
         local_gugcat::notify_error('bulkimporterror');
     }else{
-        $scale = $totalactivities[$activityid]->is_converted;
         // Proceed with bulk import
         grade_capture::import_from_gradebook($courseid, $childactivities, $totalactivities);
         $subcatid = local_gugcat::get_grade_item_id($courseid, $selectedmodule->gradeitem->categoryid, get_string('subcategorygrade', 'local_gugcat'));
+        $scale = $totalactivities[$activityid]->is_converted ? $totalactivities[$activityid]->is_converted : $DB->get_field('grade_items', 'outcomeid', array('id'=>$subcatid));
         //update notes for grade history
         foreach($students as $student){
             $fields = 'itemid, id, rawgrade, finalgrade, overridden';
@@ -349,9 +371,12 @@ if (isset($release)){
             //if subcat has a grade and it is not overridden.
             if(isset($grd) && !is_null($grd) && $grade->overridden == 0){
                 $notes = ($scale) ? 'import -'.$scale : 'import';
+                $componentnotes = 'import';
                 local_gugcat::update_components_notes($student->id, $subcatid, $notes);
                 $prvgrds = local_gugcat::get_prvgrd_item_ids($courseid, $childactivities);
                 foreach($prvgrds as $prvgrd){
+                    $is_scale = !is_null($prvgrd->idnumber) ? $prvgrd->idnumber : false;
+                    $notes = $is_scale ? $componentnotes . " -" . $is_scale : $componentnotes; 
                     local_gugcat::update_components_notes($student->id, $prvgrd->id, $notes);
                 }
             }

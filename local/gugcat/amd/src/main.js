@@ -35,10 +35,10 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
         grade_max = document.getElementsByName('grademax')[0].value;
         if (is_percentage){
             input_point = document.getElementById(target.id.slice(0,10) + "pt_" + target.id.slice(10));
-            input_point.value = rounder((target.value / 100) * grade_max);
+            input_point.value = target.value ? rounder((target.value / 100) * grade_max) : '';
         } else {
             input_percentage = document.getElementById(target.id.slice(0,10) + target.id.slice(13));
-            input_percentage.value = rounder((target.value / grade_max) * 100);
+            input_percentage.value = target.value ? rounder((target.value / grade_max) * 100) : '';
         }
     }
 
@@ -46,6 +46,17 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
         var multiplier = parseInt("1" + "0".repeat(2));
         number = number * multiplier;
         return Math.round(number) / multiplier;
+    }
+
+    const clearConversionTable = () => {
+        var input_percentage_points = document.querySelectorAll('.input-prc,.input-pt');
+        input_percentage_points.forEach(element => {
+            input = element.lastElementChild.firstElementChild
+            is_input_H = input.id == 'id_schedA_pt_1' || input.id == 'id_schedA_1' || input.id == 'id_schedB_1' || input.id == 'id_schedB_pt_1'
+            if (!is_input_H){
+                input.value = "";
+            }
+        })
     }
 
     const update_reason_inputs = (val) => {
@@ -286,14 +297,10 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
             case mform_grade_reason:
                 var selectedOption = event.target.value;
                 var mformReason = document.getElementById('id_otherreason');
-                mformReason.value = selectedOption;
-                if(selectedOption = '8'){
+                if(selectedOption == '9'){
                     mformReason.value = '';
-                    mformReason.required = true;
+                    mformReason.focus();
                 }
-                else
-                    mformReason.required = false;
-                mformReason.focus();
                 break;
             case select_scale:
                 toggleScaleTable();
@@ -309,13 +316,8 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                         var template = data.result;
                         if(template){
                             template = JSON.parse(template);
-                            // Empty all input pt fields first
-                            var input_pts = document.querySelectorAll('.input-pt > div > input');
-                            if(input_pts.length > 0){
-                                input_pts.forEach(input => {
-                                    input.value = '';
-                                });
-                            }
+                            // Empty all input fields first
+                            clearConversionTable();
 
                             // Toggle table scale based on the template scale
                             if(select_scale.value != template.scaletype){
@@ -437,14 +439,7 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                 break;
             case radio_ptprc[0]:
             case radio_ptprc[1]:
-                var input_percentage_points = document.querySelectorAll('.input-prc,.input-pt');
-                input_percentage_points.forEach(element => {
-                    input = element.lastElementChild.firstElementChild
-                    is_input_H = input.id == 'id_schedA_pt_1' || input.id == 'id_schedA_1' || input.id == 'id_schedB_1' || input.id == 'id_schedB_pt_1'
-                    if (!is_input_H){
-                        input.value = "";
-                    }
-                })
+                clearConversionTable();
             default:
                 break;
         }
@@ -493,6 +488,10 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                 var input_percentage_points = document.querySelectorAll('.input-prc,.input-pt');
                 if(input_percentage_points.length > 0){
                     input_percentage_points.forEach(input => {
+                        var field = input.querySelector('input');
+                        if(field.value){
+                            calculatePercentagePoints(field, input.classList.contains('input-prc'));
+                        }
                         input.addEventListener('change', (e) =>{
                             calculatePercentagePoints(e.target, input.classList.contains('input-prc'));
                         });
@@ -583,13 +582,6 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                 if(checkCurrentUrl("gugcat/overview")){
                     document.querySelector('#btn-overviewtab').classList.add('active');
                     document.querySelector('#btn-assessmenttab').classList.remove('active');
-                    var mformNotes = document.getElementById('id_notes');
-                    if(mformNotes){
-                        (async () => {
-                            mformNotes.placeholder = await Str.get_string('specifyreason', 'local_gugcat');
-                            mformNotes.required = true;
-                        })();
-                    }
                 }else if(checkCurrentUrl("gugcat/index")){
                     document.getElementById('btn-release').style.display = 
                     !$(".gradeitems").text().includes("Moodle Grade[Date]") ? 'inline-block' : 'none';
@@ -610,15 +602,6 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                     if(isConverted.value != 0){
                         document.getElementById('btn-release').style.display = 'none';
                     }
-                }else if(checkCurrentUrl("gugcat/add") || checkCurrentUrl("gugcat/edit")){
-                    //Add placeholder
-                    var mformReason = document.getElementById('id_otherreason');
-                    var mformNotes = document.getElementById('id_notes');
-                    (async () => {
-                        mformReason.placeholder = await Str.get_string('pleasespecify', 'local_gugcat');
-                        mformNotes.placeholder = await Str.get_string('specifyreason', 'local_gugcat');
-                        mformNotes.required = true;
-                    })();
                 }
             }
         }

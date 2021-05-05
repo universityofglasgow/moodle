@@ -52,8 +52,9 @@ class grade_converter{
      * @param array $conversion List of grade element conversion
      * @param mixed $module Selected module/activity
      * @param int  $prvid Provisional grade item id
+     * @param int $scale scaletype
      */
-    public static function convert_provisional_grades($conversion, $module, $prvid){
+    public static function convert_provisional_grades($conversion, $module, $prvid, $scale){
         global $COURSE;
         // Get all provisional grade_grades
         if($prvgrades = grade_grade::fetch_all(array('itemid' => $prvid))){
@@ -74,6 +75,7 @@ class grade_converter{
                 }
                 // If grade is not null, convert the grade and save it to provisional grade 
                 if(!is_null($grade)){
+                    $notes = ",_gradeitem: converted ,_scale: $scale";
                     $converted = self::convert($conversion, $grade);
                     // Update converted grade
                     $cvtgrade->finalgrade = $grade;
@@ -84,7 +86,7 @@ class grade_converter{
                     $prvgrade->finalgrade = $converted;
                     $prvgrade->rawgrade = $converted;
                     $prvgrade->timemodified = time();
-                    $prvgrade->feedback = null;
+                    $prvgrade->feedback = $notes;
                     $prvgrade->update();
                 }
             }

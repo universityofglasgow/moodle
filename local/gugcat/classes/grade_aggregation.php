@@ -69,16 +69,23 @@ class grade_aggregation{
      */
     public static function get_rows($course, $modules, $students, $showerrors = false){
         global $DB, $aggradeid;
+        $aggradeid = null;
         $categoryid = optional_param('categoryid', '0', PARAM_INT);
-        //get grade item id for aggregated grade
-        $aggradeid = local_gugcat::get_grade_item_id($course->id, null, get_string('aggregatedgrade', 'local_gugcat'));
+        if(!empty($modules) && count(array_filter(array_column($modules, 'provisionalid'))) > 0){
+            //get or create grade item id for aggregated grade
+            $aggradeid = local_gugcat::add_grade_item($course->id, get_string('aggregatedgrade', 'local_gugcat'), null, $students);
+        }
         $rows = array();
         $gradebook = array();
         foreach ($modules as $mod) {
+            $weightcoef1 = $mod->gradeitem->aggregationcoef; //Aggregation coeficient used for weighted averages or extra credit
+            $weightcoef2 = $mod->gradeitem->aggregationcoef2; //Aggregation coeficient used for weighted averages only
+            $mod->weight = ((float)$weightcoef1 > 0) ? (float)$weightcoef1 : (float)$weightcoef2;
             $mod->scaleid = $mod->gradeitem->scaleid;
             $mod->gradeitemid = $mod->gradeitem->id;
             $grades = new stdClass();
             $prvgrdid = null;
+            $moodlestr = get_string('moodlegrade', 'local_gugcat');
             // Get provisional gradeitem id and grades from gradebook for assessments and sub category
             if($mod->modname == 'category'){
                 // Check if components are imported
@@ -87,7 +94,6 @@ class grade_aggregation{
                     foreach($mod->children as $id){
                         $componentsql .= "iteminfo = $id OR ";
                     }
-                    $moodlestr = get_string('moodlegrade', 'local_gugcat');
                     //remove last OR
                     $componentsql = chop($componentsql, ' OR ');
                     // If atleast 1 component has moodle grade item, subcategory is imported, hence, get the 
@@ -95,12 +101,17 @@ class grade_aggregation{
                     if($DB->record_exists_select('grade_items', "itemname = '$moodlestr' AND ($componentsql)")){
                         // $mod->id - sub category id 
                         $prvgrdid = $mod->provisionalid;
-                        $mod->aggregation_type = $DB->get_field('grade_items', 'calculation', array('id'=>$prvgrdid));
+                        $subcataggscale = $DB->get_record('grade_items', array('id'=>$prvgrdid), 'calculation, outcomeid');
+                        $mod->aggregation_type = !is_null($subcataggscale) && !empty($subcataggscale) ? $subcataggscale->calculation : null;
+                        $mod->automaticscale = !is_null($subcataggscale) && !empty($subcataggscale) ? $subcataggscale->outcomeid : null;
                     }
                 }
                 $gbgrades = grade_get_grades($course->id, 'category', null, $mod->instance, array_keys($students));
             }else{
-                $prvgrdid = $mod->provisionalid;
+                // Check if activity is imported or not by checking its moodle grade item
+                if($DB->record_exists_select('grade_items', "itemname = '$moodlestr' AND iteminfo = $mod->gradeitemid")){
+                    $prvgrdid = $mod->provisionalid;
+                }
                 $gbgrades = grade_get_grades($course->id, 'mod', $mod->modname, $mod->instance, array_keys($students));
             }
 
@@ -142,6 +153,7 @@ class grade_aggregation{
             $aggrdobj->display =  get_string('missinggrade', 'local_gugcat') ;
             if(count($gradebook) > 0){
                 $gradetypes = array();
+                $feedback = ",_weights: ";
                 foreach ($gradebook as $item) {
                     $grditemresit = self::is_resit($item);
                     $grdobj = new stdClass();
@@ -170,7 +182,7 @@ class grade_aggregation{
                     $gt = $item->gradeitem->gradetype;
                     $gm = $item->gradeitem->grademax;
                     $scaleid = is_null($item->scaleid) ? null : $item->scaleid;
-                    $is_scale = !is_null($scaleid) && local_gugcat::is_scheduleAscale($gt, $gm) && isset($pg);
+                    $is_scale = !is_null($scaleid) && local_gugcat::is_scheduleAscale($gt, $gm);
 
                     local_gugcat::set_grade_scale($scaleid);
                     local_gugcat::is_child_activity($item) || $item->is_converted ? null: $gradetypes[] = intval($gt);
@@ -182,22 +194,18 @@ class grade_aggregation{
                         $is_scale = true;
                         $grade = local_gugcat::convert_grade($grd, null, $item->is_converted);
                     }
-                    $weight = local_gugcat::is_child_activity($item) ? 0 : (!is_null($pg) ? (float)$pg->information : 0); //get weight from information column of provisional grades
+                    $weight = local_gugcat::is_child_activity($item) ? 0 : (!is_null($pg) ? (float)$pg->information : $item->weight); //get weight from information column of provisional grades
                     // Only aggregate grades that are:
                     // - not null
                     // - not MEDICAL_EXEMPTION_AC (MV, -1)
                     // - in 22 pt scale
-                    // - grade type in points but converted to schedule A/B
-                    $not_converted = $item->modname == 'category' && $item->gradeitem->gradetype == GRADE_TYPE_VALUE && !$item->is_converted;
                     if(!is_null($grd) && $grade !== MEDICAL_EXEMPTION_AC){
-                        if($not_converted){
-                            $weight_ = 0;
-                        }else if($grade === NON_SUBMISSION_AC || local_gugcat::is_child_activity($item)){
+                        if($grade === NON_SUBMISSION_AC || local_gugcat::is_child_activity($item)){
                             $weight_ = 0;
                         }else{
                             $weight_ = $weight;
+                            $feedback .= "$item->gradeitemid-$weight, ";
                         }
-                        
                         // Add the weights for schedule A or B, to be used in converting aggregated grade
                         if(!empty($item->is_converted)){
                             ($item->is_converted == SCHEDULE_A) ? $schedAweights += $weight_ : $schedBweights += $weight_;
@@ -209,7 +217,6 @@ class grade_aggregation{
                         $grdvalue = !$is_scale ? $grd : (($grade === NON_SUBMISSION_AC) ? 0 : (float)$grd - (float)1);
                         $floatweight += $weight_;
                         $sumaggregated += (float)$grdvalue * $weight_;
-
                     }
                     $get_category = ($item->modname != 'category' 
                         && $category = local_gugcat::is_child_activity($item)) ? $category : false;
@@ -224,23 +231,20 @@ class grade_aggregation{
                     $grdobj->grade = $grade;
                     $grdobj->nonconvertedgrade = (isset($ncg) && !is_null($ncg->finalgrade)) 
                     ? $ncg->finalgrade : (isset($ncg) && !is_null($ncg->rawgrade) ? $ncg->rawgrade : null);
-                    $weightcoef1 = $item->gradeitem->aggregationcoef; //Aggregation coeficient used for weighted averages or extra credit
-                    $weightcoef2 = $item->gradeitem->aggregationcoef2; //Aggregation coeficient used for weighted averages only
-                    $originalweight = ((float)$weightcoef1 > 0) ? (float)$weightcoef1 : (float)$weightcoef2;
-                    $grdobj->originalweight =  round((float)$originalweight * 100 );
+                    $grdobj->originalweight = round((float)$item->weight * 100);
                     $grdobj->rawgrade = $grdvalue;
                     $grdobj->weight =  round((float)$weight * 100 );
                     array_push($gradecaptureitem->grades, $grdobj);
                 }
+                $totalweight = round((float)$floatweight * 100 );
+                $gradecaptureitem->completed = $totalweight . '%';
                 if($gbaggregatedgrade = $DB->get_record('grade_grades', array('itemid'=>$aggradeid, 'userid'=>$student->id))){
                     local_gugcat::set_grade_scale(null);
                     $gradecaptureitem->resit = (preg_match('/\b'.$categoryid.'/i', $gbaggregatedgrade->information) ? $gbaggregatedgrade->information : null);
-                    $totalweight = round((float)$floatweight * 100 );
-                    $gradecaptureitem->completed = $totalweight . '%';
                     $rawaggrade = ($gbaggregatedgrade->overridden == 0) ? $sumaggregated : (!is_null($gbaggregatedgrade->finalgrade) ? $gbaggregatedgrade->finalgrade : $gbaggregatedgrade->rawgrade);
-                    ($gbaggregatedgrade->overridden == 0 && intval($sumaggregated) != intval($rawaggrade)) ? local_gugcat::update_grade($student->id, $aggradeid, $sumaggregated) : null;
                     $aggrade = ($gbaggregatedgrade->overridden == 0) ? round($rawaggrade) + 1 : $rawaggrade; //convert back to moodle scale
                     $aggrdscaletype = ($schedAweights >= $schedBweights) ? SCHEDULE_A : SCHEDULE_B;
+                    $aggrdobj->scale = $aggrdscaletype;
                     $aggrdobj->grade = local_gugcat::convert_grade($aggrade, null, $aggrdscaletype);
                     $aggrdobj->rawgrade = $rawaggrade;
                     $numberformat = number_format($rawaggrade, 3);
@@ -260,8 +264,11 @@ class grade_aggregation{
                         $aggrdobj->display = get_string('missinggrade', 'local_gugcat');
                         $errors[0] = get_string('aggregationwarningcourse', 'local_gugcat');
                     }
+                    $aggradegb = (!is_null($gbaggregatedgrade->finalgrade) ? $gbaggregatedgrade->finalgrade : $gbaggregatedgrade->rawgrade);
+                    $feedback .= ",_grade: $aggrdobj->display ,_$gbaggregatedgrade->feedback";
+                    ($gbaggregatedgrade->overridden == 0 && round((float)$sumaggregated, 5) != round((float)$aggradegb, 5) && $aggrdobj->display != get_string('missinggrade', 'local_gugcat')) ? local_gugcat::update_grade($student->id, $aggradeid, $sumaggregated, $feedback) : null;
+                    $DB->set_field('grade_grades', 'feedback', '', array('id'=>$gbaggregatedgrade->id));
                 }
-
             }
             $gradecaptureitem->aggregatedgrade = $aggrdobj;
             array_push($rows, $gradecaptureitem);
@@ -287,23 +294,24 @@ class grade_aggregation{
      * @return boolean  
      */
     public static function require_resit($studentno){
-        global $aggradeid, $USER;
+        global $aggradeid, $USER, $DB;
         if(!$aggradeid) return false;
         $categoryid = optional_param('categoryid', '0', PARAM_INT);
-        $grade_ = new grade_grade(array('userid' => $studentno, 'itemid' => $aggradeid), true);
+        $aggrade = $DB->get_record('grade_grades', array('itemid'=>$aggradeid, 'userid'=>$studentno), 'id, information');
+        $grade_ = new stdClass();
+        $grade_->id = $aggrade->id;
         $grade_->usermodified = $USER->id;
-        $grade_->itemid = $aggradeid;
-        $grade_->userid = $studentno;
         $grade_->timemodified = time();
-        if(preg_match('/\b'.$categoryid.'/i', $grade_->information)){
-            $grade_->information = preg_replace('/\b'.$categoryid.' /i', '', $grade_->information);
+        $grade_->information = null;
+        if(preg_match('/\b'.$categoryid.'/i', $aggrade->information)){
+            $grade_->information = null;
             $status = "disable";
         }
         else{
             $grade_->information .= $categoryid.' ';
             $status = "enable";
         }
-        $grade_->update();
+        $DB->update_record('grade_grades', $grade_);
         return $status;
     }
 
@@ -354,28 +362,17 @@ class grade_aggregation{
         }
         $is_highest_grade = $subcatobj->aggregation == GRADE_AGGREGATE_MAX;
 
-        // Return grade = null, processed = true if all components are not graded for weighted/mean/mode/median/natural
-        if(!$is_highest_grade && count(array_filter($studentgrades, 'strlen')) != count($subcatobj->children)){
-            return array(null, true, null);
+        $droplow = $subcatobj->droplow;
+        $totalchildren = count($subcatobj->children) - $droplow;
+        // If drop lowest is not empty, remove the n number of lowest grades, including -1, -2
+        if($droplow > 0){
+            asort($studentgrades, SORT_NUMERIC);
+            $studentgrades = array_slice($studentgrades, $subcatobj->droplow, count($studentgrades), true);
         }
 
-        // If calculation field is empty, then update it with aggregation type
-        if($pgobj){
-            is_null($subcatobj->aggregation_type) ? $DB->set_field('grade_items', 'calculation', $subcatobj->aggregation, array('id'=>$pgobj->itemid)) : null;
-            $scale = $subcatobj->is_converted ? $subcatobj->is_converted : null;
-            if(!is_null($subcatobj->aggregation_type) && $subcatobj->aggregation_type != $subcatobj->aggregation){
-                $notes = !is_null($scale) && !empty($scale) ? 'aggregation -'.$scale : 'aggregation';
-                //update feedback field for subcat and child components prvgrade 
-                local_gugcat::update_components_notes($userid, $pgobj->itemid, $notes);
-                foreach($actgrds as $id=>$grades){
-                    if(isset($grades->provisional[$userid]) && $pg = $grades->provisional[$userid]){
-                        // Only get provisional grades $pg from child assessments
-                        local_gugcat::update_components_notes($userid, $pg->itemid, $notes);
-                    }        
-                } 
-                //update calculation field with aggregation type
-                $DB->set_field('grade_items', 'calculation', $subcatobj->aggregation, array('id'=>$pgobj->itemid));
-            }
+        // Return grade = null, processed = true if all components are not graded for weighted/mean/mode/median/natural
+        if(!$is_highest_grade && count(array_filter($studentgrades, 'is_numeric')) != $totalchildren){
+            return array(null, true, null);
         }
 
         // Overall gradetype, grademax and scaleid to be used in subcat grade
@@ -440,17 +437,6 @@ class grade_aggregation{
             return array($grdobj, false, null);
         }
 
-        // Aggregate only graded
-        if($subcatobj->aggregateonlygraded == 1){
-            $studentgrades = array_filter($studentgrades);
-        }
-
-        // If drop lowest is not empty, remove the n number of lowest grades, including -1, -2
-        if($subcatobj->droplow > 0){
-            asort($studentgrades, SORT_NUMERIC);
-            $studentgrades = array_slice($studentgrades, $subcatobj->droplow, count($studentgrades), true);
-        }
-
         // Check if $studentgrades still have admingrades, if yes, return admin grades instead
         if(in_array(NON_SUBMISSION, $studentgrades) && !$is_highest_grade){
             $calculatedgrd = NON_SUBMISSION;
@@ -465,7 +451,50 @@ class grade_aggregation{
         if($subcatobj->is_converted){
             $calculatedgrd = grade_converter::convert($subcatobj->conversion, $calculatedgrd);
         }
-        if($pgobj && isset($calculatedgrd) && $grd != $calculatedgrd){
+
+        // If calculation field is empty, then update it with aggregation type
+        if($pgobj){
+            $updated = false;
+            $autoscale = !is_null($scaleid) ? $scaleid : ($gradetype == GRADE_TYPE_SCALE ? 1 : null); 
+            is_null($subcatobj->aggregation_type) ? $DB->set_field('grade_items', 'calculation', $subcatobj->aggregation, array('id'=>$pgobj->itemid)) : null;
+            is_null($subcatobj->automaticscale) ? $DB->set_field('grade_items', 'outcomeid', $autoscale, array('id'=>$pgobj->itemid)) : null;
+            $scale = $subcatobj->is_converted ? $subcatobj->is_converted : (!is_null($autoscale) ? $autoscale : null);
+            if(!is_null($subcatobj->aggregation_type) && $subcatobj->aggregation_type != $subcatobj->aggregation){
+                $notes = !is_null($scale) && !empty($scale) ? 'aggregation -'.$scale : 'aggregation';
+                $componentnotes = 'aggregation';
+                //update feedback field for subcat and child components prvgrade 
+                local_gugcat::update_components_notes($userid, $pgobj->itemid, $notes);
+                foreach($filtered as $id=>$childact){
+                    if(isset($childact->grades->provisional[$userid]) && $pg = $childact->grades->provisional[$userid]){
+                        // Get idnumber of provisional grades for scales
+                        $scale = $childact->is_converted;
+                        $notes = $scale ? $componentnotes . " -" . $scale : $componentnotes; 
+                        // Only get provisional grades $pg from child assessments
+                        local_gugcat::update_components_notes($userid, $pg->itemid, $notes);
+                    }        
+                } 
+                //update calculation field with aggregation type
+                $DB->set_field('grade_items', 'calculation', $subcatobj->aggregation, array('id'=>$pgobj->itemid));
+            }
+            if(!is_null($scale) && !$subcatobj->is_converted && $subcatobj->automaticscale != $autoscale){
+                $notes = "grade -$scale";
+                $componentnotes = 'grade';
+                local_gugcat::update_grade($userid, $pgobj->itemid, $calculatedgrd, $notes);
+                foreach($filtered as $id=>$childact){
+                    if(isset($childact->grades->provisional[$userid]) && $pg = $childact->grades->provisional[$userid]){
+                        // Get idnumber of provisional grades for scales
+                        $scale = $childact->is_converted;
+                        $notes = $scale ? $componentnotes . " -" . $scale : $componentnotes; 
+                        // Only get provisional grades $pg from child assessments
+                        local_gugcat::update_components_notes($userid, $pg->itemid, $notes);
+                    }        
+                }
+                $updated = true;
+                $DB->set_field('grade_items', 'outcomeid', $autoscale, array('id'=>$pgobj->itemid));
+            }
+        }
+
+        if($pgobj && isset($calculatedgrd) && $grd != $calculatedgrd && !$updated){
             //if subcategory is new then update grade with "import" notes for grade history.
             if(is_null($grd) && !$subcatobj->is_converted){
                 $notes = 'import';
@@ -608,9 +637,8 @@ class grade_aggregation{
      * @param array $weights
      * @param int $courseid
      * @param int $studentid
-     * @param string $notes
      */
-    public static function adjust_course_weight($weights, $courseid, $studentid, $notes){
+    public static function adjust_course_weight($weights, $courseid, $studentid){
         //Iterate the weights, $key = gradeitem id, $value = weight
         foreach($weights as $key=>$value) {
             $weight = number_format(($value/100), 5);
@@ -620,7 +648,6 @@ class grade_aggregation{
             $prvgrdid = local_gugcat::get_grade_item_id($courseid, $id, $itemname);
             $grade_ = new grade_grade(array('userid' => $studentid, 'itemid' => $prvgrdid), true);
             $grade_->information = $weight;
-            $grade_->feedback = ($gradeitem->itemtype == 'category') ? $notes .' weightchangesubcat' : $notes;
             $grade_->timemodified = time();
             $grade_->update();  
         }
@@ -635,7 +662,8 @@ class grade_aggregation{
     public static function release_final_grades($courseid){
         global $USER, $DB;
         //Retrieve modules and enrolled students per grade category
-        $modules = local_gugcat::get_activities($courseid);
+        $categoryid = optional_param('categoryid', null, PARAM_INT);
+        $modules = (is_null($categoryid)) ? local_gugcat::get_activities($courseid) : self::get_parent_child_activities($courseid, $categoryid);
         $groupingids = array_column($modules, 'groupingid');
         $students = self::get_students_per_groups($groupingids, $courseid);
         foreach($modules as $mod) {
@@ -767,112 +795,54 @@ class grade_aggregation{
     public static function get_course_grade_history($course, $modules, $student){
         global $DB;
 
+        $categoryid = optional_param('categoryid', 0, PARAM_INT);
+
         $rows = array();
         local_gugcat::set_grade_scale(null);
-        foreach ($modules as $mod) {
-            $prvgrdid = $mod->provisionalid;
-            $i = 0;
-            $mod->scaleid = $mod->gradeitem->scaleid;
-            $scaleid = $mod->scaleid;
-            if (is_null($scaleid) && local_gugcat::is_grademax22($mod->gradeitem->gradetype, $mod->gradeitem->grademax)){
-                $scaleid = null;
-            }
-            //get provisional grades
-            $sort = 'id DESC';
-            $fields = 'id, itemid, rawgrade, finalgrade, feedback, timemodified, usermodified, information';
-            $select = "feedback IS NOT NULL AND feedback <> '' AND rawgrade IS NOT NULL AND itemid=$prvgrdid AND userid=$student->id";
-            $gradehistory_arr = $DB->get_records_select('grade_grades_history', $select, null, $sort, $fields);
-            if($gradehistory_arr > 0){
-                foreach($gradehistory_arr as $gradehistory){
-                    if($mod->modname == 'category'){
-                        if(preg_match('/\bweightchangesubcat/i', $gradehistory->feedback)){
-                            $gradehistory->feedback = preg_replace('/\bweightchangesubcat/i', '', $gradehistory->feedback);
-                        }else{
-                            continue;
-                        }
-                    }
-                    isset($rows[$i]) ? null : $rows[$i] = new stdClass();
-                    isset($rows[$i]->grades) ? null : $rows[$i]->grades = array();
-                    $rows[$i]->timemodified = $gradehistory->timemodified;
-                    $rows[$i]->date = date("j/n", strtotime(userdate($gradehistory->timemodified))).'<br>'.date("H:i", strtotime(userdate($gradehistory->timemodified)));
-                    $fields = 'firstname, lastname';
-                    $modby = $DB->get_record('user', array('id' => $gradehistory->usermodified), $fields);
-                    $rows[$i]->modby = (isset($modby->lastname) && isset($modby->firstname)) ? $modby->lastname . ', '.$modby->firstname : null;
-                    $rows[$i]->notes = $gradehistory->feedback;
-                    $gradehistory->is_converted = $mod->is_converted;
-                    $gradehistory->modname = $mod->modname;
-                    array_push($rows[$i]->grades, $gradehistory);
-                    $i++;
-                }
-            }
-        }
-        $i = count($rows);
-        foreach($modules as $mod){
-            //add first course grade history
-            $grditemresit = self::is_resit($mod);
-            if(!$grditemresit){
-                $sort = 'id ASC';
-                $select = 'information IS NOT NULL AND rawgrade IS NOT NULL AND rawgrade <= 23 AND itemid='.$mod->provisionalid.' AND '.' userid="'.$student->id.'"'; 
-                //if grdhistory did not get the first provisional grade, get it to gradebook
-                if(!$gradehistory = $DB->get_records_select('grade_grades_history', $select, null, $sort, '*', 0, 1)){
-                    $grdhistoryobj = $DB->get_record('grade_grades', array('itemid'=>$mod->provisionalid, 'userid'=>$student->id));
-                }else{
-                    $grdhistoryobj = $gradehistory[key($gradehistory)];
-                }
-                if($grdhistoryobj){
-                    isset($rows[$i]) ? null : $rows[$i] = new stdClass();
-                    isset($rows[$i]->grades) ? null : $rows[$i]->grades = array();
-                    $rows[$i]->timemodified = $grdhistoryobj->timemodified;
-                    $rows[$i]->date = date("j/n", strtotime(userdate($grdhistoryobj->timemodified))).'<br>'.date("h:i", strtotime(userdate($grdhistoryobj->timemodified)));
-                    $rows[$i]->modby = get_string('nogradeweight','local_gugcat');
-                    $rows[$i]->notes = get_string('nogradeweight','local_gugcat');
-                    $grdhistoryobj->modname = $mod->modname;
-                    $grdhistoryobj->is_converted = $mod->is_converted;
-                    array_push($rows[$i]->grades, $grdhistoryobj);
-                }
-            }
-        }
-
-        $sort = 'id ASC';
-        $aggistr = get_string('aggregatedgrade', 'local_gugcat');
-        $select = "courseid=$course->id AND itemname='$aggistr'";
-        $aggradeitem = $DB->get_record_select('grade_items', $select, null, 'id, idnumber');
-        $scale = $aggradeitem->idnumber;
-    
-        foreach($rows as $row) {
-            $sumgrade = 0;
-            if($row->grades > 0){
-                foreach($row->grades as $grdhistory) {
-                    // $grd = $grdhistory->modname == 'category' ? (float)$grdhistory->rawgrade : (float)$grdhistory->rawgrade - (float)1;
-                    if($grdhistory->modname == 'category'){
-                        $grd = $grdhistory->is_converted ? (float)$grdhistory->rawgrade - 1 : (float)$grdhistory->rawgrade;
-                    }else{
-                        $grd = (float)$grdhistory->rawgrade - 1;
-                    }
-                    $weight = $grdhistory->information;
-                    $sumgrade += (float)$grd * $weight;
-                }
-            }
-            $row->grade = isset($row->grade) && !is_null($row->grade) ? $row->grade : local_gugcat::convert_grade(round((float)$sumgrade + 1), null, $scale);
-        }
-        // Add overridden grades in rows
-        if($aggradeitem->id){
+        $aggradeid = local_gugcat::get_grade_item_id($course->id, $categoryid, get_string('aggregatedgrade', 'local_gugcat'));
+        if($aggradeid){
             $fields = 'id, itemid, rawgrade, finalgrade, feedback, timemodified, usermodified';
-            $select = 'feedback IS NOT NULL AND rawgrade IS NOT NULL AND itemid='.$aggradeitem->id.' AND '.' userid="'.$student->id.'" AND overridden <> "0"'; 
-            $gradehistory_overridden = $DB->get_records_select('grade_grades_history', $select, null, $fields);
-            if($gradehistory_overridden > 0){
-                foreach($gradehistory_overridden as $overriddengrade){
-                    $ovgrade = new stdClass();
-                    $grd = (is_null($overriddengrade->finalgrade) ? (float)$overriddengrade->rawgrade : (float)$overriddengrade->finalgrade);
-                    $ovgrade->grade = local_gugcat::convert_grade($grd, null, $scale);
-                    $ovgrade->notes = $overriddengrade->feedback;
-                    $ovgrade->overridden = true;
-                    $fields = 'firstname, lastname';
-                    $modby = $DB->get_record('user', array('id' => $overriddengrade->usermodified), $fields);
-                    $ovgrade->modby = (isset($modby->lastname) && isset($modby->firstname)) ? $modby->lastname . ', '.$modby->firstname : null;
-                    $ovgrade->timemodified = $overriddengrade->timemodified;
-                    $ovgrade->date = date("j/n", strtotime(userdate($overriddengrade->timemodified))).'<br>'.date("h:i", strtotime(userdate($overriddengrade->timemodified)));
-                    array_push($rows, $ovgrade);
+            $select = 'feedback IS NOT NULL AND rawgrade IS NOT NULL AND itemid='.$aggradeid.' AND '.' userid="'.$student->id.'"'; 
+            $gradehistory_arr = $DB->get_records_select('grade_grades_history', $select, null, $fields);
+            if($gradehistory_arr > 0){
+                foreach($gradehistory_arr as $grdhistory){
+                    $grdobj = new stdClass();
+                    $grd = (is_null($grdhistory->finalgrade) ? (float)$grdhistory->rawgrade : (float)$grdhistory->finalgrade);
+                    $grdobj->notes = null;
+                    $grdobj->modby = null;
+                    $pattern = "/,_/i";
+                    $feedback = preg_split($pattern, $grdhistory->feedback, -1, PREG_SPLIT_NO_EMPTY);
+                        foreach($feedback as $fb){
+                            if(preg_match('/weights:/i', $fb)){
+                                $weightsitemid = preg_replace('/weights:/i', '', $fb);
+                                $j = 0;
+                                foreach($modules as $mod){
+                                    isset($grdobj->weights) ? null : $grdobj->weights = array();
+                                    if(preg_match('/'.$mod->gradeitem->id.'-[0-9\.]*,/i', $weightsitemid, $weightitemid)){
+                                        $weight = preg_replace('/'.$mod->gradeitem->id.'\-/', '', $weightitemid[0]);
+                                        $weight = chop($weight, ',');
+                                        $grdobj->weights[$j] = $weight;
+                                    }
+                                    $j++;
+                                }
+                            }
+                            if(preg_match('/notes:/i', $fb)){
+                                $grdobj->notes = preg_replace('/.*notes:/i', '', $fb);
+                                $modby = $DB->get_record('user', array('id' => $grdhistory->usermodified), 'firstname, lastname');
+                                $grdobj->modby = (isset($modby->lastname) && isset($modby->firstname)) ? $modby->lastname . ', '.$modby->firstname : null;
+                            }
+                            if(preg_match('/grade:/i', $fb)){
+                                $grdobj->grade = preg_replace('/grade:/i', '', $fb);
+                            }
+                            if(preg_match('/scale:/i', $fb)){
+                                $grd = (is_null($grdhistory->finalgrade) ? (float)$grdhistory->rawgrade : (float)$grdhistory->finalgrade);
+                                $scale = preg_replace('/scale:/i', '', $fb);
+                                $grdobj->grade = local_gugcat::convert_grade($grd, null, $scale);
+                            }
+                        }
+                    $grdobj->timemodified = $grdhistory->timemodified;
+                    $grdobj->date = date("j/n", strtotime(userdate($grdhistory->timemodified))).'<br>'.date("h:i", strtotime(userdate($grdhistory->timemodified)));
+                    array_push($rows, $grdobj);
                 }
             }
         }
