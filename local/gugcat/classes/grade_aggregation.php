@@ -597,7 +597,13 @@ class grade_aggregation{
             case GRADE_AGGREGATE_SUM:
                 if(reset($items)->gradetype == GRADE_TYPE_VALUE){
                     $sum = array_sum($grade_values);
-                    $grademax = array_sum(array_column($items, 'grademax'));
+                    $grademax = 0;
+                    foreach ($grade_values as $itemid=>$value) {
+                        if (!isset($items[$itemid])) {
+                            continue;
+                        }
+                        $grademax += intval($items[$itemid]->grademax);
+                    }
                     $agg_grade = ($sum / $grademax) * 100;
                 }else{
                     $num = count($grade_values);
