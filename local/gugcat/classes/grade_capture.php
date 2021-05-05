@@ -322,16 +322,18 @@ class grade_capture{
                 // Get parent category object from array $allactivities
 
                 // Get sub categories
-                $categories = array_filter($allactivities, function ($act) {
-                    return $act->modname == 'category';
+                $categories = array_filter($allactivities, function ($act) use ($module){
+                    return $act->modname == 'category' && $act->instance == $module->gradeitem->categoryid;
                 });
                 // Get parent subcat activity object
-                $index = array_search($module->gradeitem->categoryid, array_column($categories, 'id', 'gradeitemid'));
-                $parent = $categories[$index];
+                $parent = reset($categories);
+
                 // Create provisional gradeitem of the $parent subcategory if its null
                 if(is_null($parent->provisionalid)){
-                    $parent->gradeitemid = $module->gradeitem->categoryid;
-                    $prvid_reset = local_gugcat::add_grade_item($courseid, get_string('subcategorygrade', 'local_gugcat'), $parent);
+                    // Clone category object so original obj will not be updated
+                    $x = clone($parent);
+                    $x->gradeitemid = $module->gradeitem->categoryid;
+                    $prvid_reset = local_gugcat::add_grade_item($courseid, get_string('subcategorygrade', 'local_gugcat'), $x);
                 }else{
                     $prvid_reset = $parent->provisionalid;
                 }
