@@ -264,6 +264,9 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $prevcatid = null;
         $isconvertsubcat = false;
         foreach ($activities as $act) {
+            // Get the activity scale
+            $scalestr = $act->gradetypename;
+            // Get the activity weight 
             $weightcoef1 = $act->gradeitem->aggregationcoef; //Aggregation coeficient used for weighted averages or extra credit
             $weightcoef2 = $act->gradeitem->aggregationcoef2; //Aggregation coeficient used for weighted averages only
             $weight = ((float)$weightcoef1 > 0) ? (float)$weightcoef1 : (float)$weightcoef2;
@@ -281,7 +284,14 @@ class local_gugcat_renderer extends plugin_renderer_base {
                     $is_imported = local_gugcat::get_grade_item_id($courseid, $act->id, get_string('subcategorygrade', 'local_gugcat'));
                 }
             }
-            $header = $act->name.'<br/>'.($weight * 100).'%';
+            $nameattr = array(
+                'data-toggle' => 'tooltip',
+                'data-placement' => 'top',
+                'title' => $act->name
+            );
+            $n = $act->name;
+            $namespan = html_writer::tag('span', strlen($n) > 20 ? substr($n, 0, 20).'...' : $n, $nameattr);
+            $header = "$namespan<br/>".($weight * 100)."% <br/> $scalestr";
             $header = html_writer::tag('span', $header, array('class' => 'sortable')).($act->modname == 'category' ? ($is_imported ? $this->context_actions(null, null, false, $convertgrdparams, false, true).$toggleicon : $toggleicon): null);
             if ($act->modname == 'category') {
                 if($colspan > 0){
