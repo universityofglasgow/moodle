@@ -233,7 +233,11 @@ td a:hover, .dropdown-item a:hover {
 } 
 
 /* Tooltip styles */
-.tooltip > .arrow::before {
+.tooltip.bs-tooltip-top > .arrow::before {
+    border-top-color: #8c8c8c;
+}
+
+.tooltip.bs-tooltip-right > .arrow::before {
     border-right-color: #8c8c8c;
 }
 

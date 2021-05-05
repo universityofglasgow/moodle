@@ -124,6 +124,7 @@ $string['percentcomplete'] = '% Complete';
 $string['pleaseprovidetemplatename'] = 'If you would like to save this conversion for future use, please provide a name for this conversion scale (max 50 characters):';
 $string['pleasespecify'] = 'Please specify';
 $string['pluginname'] = 'UofG Grade Capture and Aggregation Tool';
+$string['points'] = 'Points ({$a->max})';
 $string['pointtooltip'] = '<i>Please ensure value is: 
     <ul class="mb-0">
         <li>Up to 2 decimal places</li>
