@@ -1136,18 +1136,22 @@ class local_gugcat {
                     $previousgrd = !is_null($gradehistory_arr[$key+1]->finalgrade) ? $gradehistory_arr[$key+1]->finalgrade 
                     : (!is_null($gradehistory_arr[$key+1]->rawgrade) ? $gradehistory_arr[$key+1]->rawgrade 
                     : null);
-                    $rows[$i+1]->grade =  !$is_convertedprvgrd ? self::convert_grade($previousgrd, $gt) : (!$prvisscale ? self::convert_grade($previousgrd) : self::convert_grade($previousgrd, null, $prvscale));
+                    $rows[$i+1]->grade = !$is_convertedprvgrd ? self::convert_grade($previousgrd, $gt) : (!$prvisscale ? self::convert_grade($previousgrd) : self::convert_grade($previousgrd, null, $prvscale));
                 }
                 if($is_converted){
                     //make the previous grade into it's own grade
                     if($key != $lastkey){
-                        $is_converted = preg_match('/ \-./i', $gradehistory_arr[$key+1]->feedback);
+                        $is_convertedprvgrd = preg_match('/ \-./i', $gradehistory_arr[$key+1]->feedback);
                         $previousgrd = !is_null($gradehistory_arr[$key+1]->finalgrade) ? $gradehistory_arr[$key+1]->finalgrade 
                         : (!is_null($gradehistory_arr[$key+1]->rawgrade) ? $gradehistory_arr[$key+1]->rawgrade 
                         : null);
-                        if(!$is_converted){
+                        if(!$is_convertedprvgrd){
                             $rows[$i+1]->grade = self::convert_grade($previousgrd, $gt);
                         }
+                    }
+                    if($ghnotes == 'convertnew' || $ghnotes == 'convertexist'){
+                        !$isscale ? self::set_grade_scale($scale) : self::set_grade_scale(null);
+                        $rows[$i]->grade = !$isscale ? self::convert_grade($grd) : self::convert_grade($grd, null, $scale);
                     }
                 }
                 array_push($rows[$i]->grades, $gradehistory);
