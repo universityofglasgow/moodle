@@ -949,8 +949,8 @@ class grade_aggregation{
             foreach($prvgrades as $prvgrd){
                 $componentnotes = preg_replace('/ \-./i', '', $notes);
                 $is_scale = !is_null($prvgrd->idnumber) ? $prvgrd->idnumber : false;
-                $notes = $is_scale ? $componentnotes . " -" . $is_scale : $componentnotes;
-                local_gugcat::update_components_notes($subcatgrd->userid, $prvgrd->id, $notes);
+                $newnotes = $is_scale ? $componentnotes . " -" . $is_scale : $componentnotes;
+                local_gugcat::update_components_notes($subcatgrd->userid, $prvgrd->id, $newnotes);
             }
         }
     }
