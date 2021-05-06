@@ -1090,9 +1090,10 @@ class local_gugcat {
                     unset($gradehistory_arr[$key]);
                 }
             }
+            //reindex array and get first and last index
             $gradehistory_arr = array_values($gradehistory_arr);
-
-            $lastkey = key(array_slice($gradehistory_arr, -1, 1, true));
+            $firstindex = key($gradehistory_arr);
+            $lastindex = key(array_slice($gradehistory_arr, -1, 1, true));
             foreach($gradehistory_arr as $key=>$gradehistory){
                 isset($rows[$i]) ? null : $rows[$i] = new stdClass();
                 isset($rows[$i]->grades) ? null : $rows[$i]->grades = array();
@@ -1102,11 +1103,17 @@ class local_gugcat {
                 $fields = 'firstname, lastname';
                 $modby = (!in_array($gradehistory->feedback, $notes)) ? $DB->get_record('user', array('id' => $gradehistory->usermodified), $fields) : null;
                 $rows[$i]->modby = !is_null($modby) ? ((isset($modby->lastname) && isset($modby->firstname)) ? $modby->lastname . ', '.$modby->firstname : 'System Update') : 'System Update';
-                $is_converted = preg_match('/ \-./i', $gradehistory->feedback);
-                $scale = $is_converted ? preg_replace('/\b[a-zA-Z\- ]*/i', '', $gradehistory->feedback) : null;
+                if($gradehistory->overridden != 0){
+                    $is_converted = preg_match('/ \,\_scale\:[1-9]/i', $gradehistory->feedback);
+                    $scale = $is_converted ? preg_replace('/\b[\w\s\W]*,_scale:/i', '', $gradehistory->feedback) : null;
+                    $ghnotes = $is_converted ? preg_replace('/ \,\_scale\:[1-9]/i', '', $gradehistory->feedback) : $gradehistory->feedback;
+                }else{
+                    $is_converted = preg_match('/ \-./i', $gradehistory->feedback);
+                    $scale = $is_converted ? preg_replace('/\b[a-zA-Z\- ]*/i', '', $gradehistory->feedback) : null;
+                    $ghnotes = $is_converted ? preg_replace('/ \-./i', '', $gradehistory->feedback) : $gradehistory->feedback;
+                }
                 $isscale = ($scale == SCHEDULE_A || $scale == SCHEDULE_B);
                 !$isscale ? self::set_grade_scale($scale) : self::set_grade_scale(null);
-                $ghnotes = $is_converted ? preg_replace('/ \-./i', '', $gradehistory->feedback) : $gradehistory->feedback;
                 $rows[$i]->notes = $ghnotes == 'aggregation' ? get_string('aggregation', 'local_gugcat') 
                 : ($ghnotes == 'grade' ? get_string('grade', 'local_gugcat') : ($ghnotes == 'import' ? get_string('import', 'local_gugcat') 
                 : ($ghnotes == 'convertnew' ? get_string('convertnew', 'local_gugcat') 
@@ -1114,38 +1121,39 @@ class local_gugcat {
                 $grd = !is_null($gradehistory->finalgrade) ? $gradehistory->finalgrade 
                 : (!is_null($gradehistory->rawgrade) ? $gradehistory->rawgrade 
                 : null);
-                
-                if($i+1 < sizeof($gradehistory_arr)){
-                    isset($rows[$i+1]) ? null : $rows[$i+1] = new stdClass();
-                    isset($rows[$i+1]->grade) ? null : $rows[$i+1]->grade = array();
-                    $is_convertedprvgrd = preg_match('/ \-./i', $gradehistory_arr[$key+1]->feedback);
-                    $prvscale = $is_convertedprvgrd ? preg_replace('/\b[a-zA-Z\- ]*/i', '', $gradehistory_arr[$key+1]->feedback) : null;
+                if($key != $lastindex){
+                    if($gradehistory_arr[$key+1]->overridden != 0){
+                        $is_convertedprvgrd = preg_match('/ \,\_scale\:[1-9]/i', $gradehistory_arr[$key+1]->feedback);
+                        $prvscale = $is_convertedprvgrd ? preg_replace('/\b[\w\s\W]*,_scale:/i', '', $gradehistory_arr[$key+1]->feedback) : null;
+                    }else{
+                        $is_convertedprvgrd = preg_match('/ \-./i', $gradehistory_arr[$key+1]->feedback);
+                        $prvscale = $is_convertedprvgrd ? preg_replace('/\b[a-zA-Z\- ]*/i', '', $gradehistory_arr[$key+1]->feedback) : null;
+                    }
                     $prvisscale = ($prvscale == SCHEDULE_A || $prvscale == SCHEDULE_B);
-                    !$prvisscale ? self::set_grade_scale($scale) : self::set_grade_scale(null);
-                    $rows[$i+1]->grade =  !$is_convertedprvgrd ? self::convert_grade($grd, $gt) : (!$prvisscale ? self::convert_grade($grd) : self::convert_grade($grd, null, $prvscale));
-                }
-                //if subcategory is overridden then get the original grade
-                if($gradehistory->overridden != 0){
-                    isset($rows[$i]->grade) ? null : $rows[$i]->grade = array();
-                    $rows[$i]->grade =  !$is_converted ? self::convert_grade($grd, $gt) : (!$isscale ? self::convert_grade($grd) : self::convert_grade($grd, null, $scale));
-                    $is_convertedprvgrd = preg_match('/ \-./i', $gradehistory_arr[$key+1]->feedback);
-                    $prvscale = $is_convertedprvgrd ? preg_replace('/\b[a-zA-Z\- ]*/i', '', $gradehistory_arr[$key+1]->feedback) : null;
-                    $prvisscale = ($prvscale == SCHEDULE_A || $prvscale == SCHEDULE_B);
-                    !$prvisscale ? self::set_grade_scale($scale) : self::set_grade_scale(null);
                     //get the past grade of it's own grade.
                     $previousgrd = !is_null($gradehistory_arr[$key+1]->finalgrade) ? $gradehistory_arr[$key+1]->finalgrade 
                     : (!is_null($gradehistory_arr[$key+1]->rawgrade) ? $gradehistory_arr[$key+1]->rawgrade 
                     : null);
+                }
+                if($i+1 < sizeof($gradehistory_arr)){
+                    isset($rows[$i+1]) ? null : $rows[$i+1] = new stdClass();
+                    isset($rows[$i+1]->grade) ? null : $rows[$i+1]->grade = array();
+                    !$prvisscale ? self::set_grade_scale($scale) : self::set_grade_scale(null);
+                    $rows[$i+1]->grade = !$is_convertedprvgrd ? self::convert_grade($grd, $gt) : (!$prvisscale ? self::convert_grade($grd) : self::convert_grade($grd, null, $prvscale));
+                }
+                //if subcategory is overridden then get the original grade
+                if($gradehistory->overridden != 0){
+                    isset($rows[$i]->grade) ? null : $rows[$i]->grade = array();
+                    !$isscale ? self::set_grade_scale($scale) : self::set_grade_scale(null);
+                    $rows[$i]->grade =  !$is_converted ? self::convert_grade($grd, $gt) : (!$isscale ? self::convert_grade($grd) : self::convert_grade($grd, null, $scale));
+                    !$prvisscale ? self::set_grade_scale($scale) : self::set_grade_scale(null);
                     $rows[$i+1]->grade = !$is_convertedprvgrd ? self::convert_grade($previousgrd, $gt) : (!$prvisscale ? self::convert_grade($previousgrd) : self::convert_grade($previousgrd, null, $prvscale));
                 }
                 if($is_converted){
                     //make the previous grade into it's own grade
-                    if($key != $lastkey){
-                        $is_convertedprvgrd = preg_match('/ \-./i', $gradehistory_arr[$key+1]->feedback);
-                        $previousgrd = !is_null($gradehistory_arr[$key+1]->finalgrade) ? $gradehistory_arr[$key+1]->finalgrade 
-                        : (!is_null($gradehistory_arr[$key+1]->rawgrade) ? $gradehistory_arr[$key+1]->rawgrade 
-                        : null);
+                    if($key != $lastindex){
                         if(!$is_convertedprvgrd){
+                            !$prvisscale ? self::set_grade_scale($scale) : self::set_grade_scale(null);
                             $rows[$i+1]->grade = self::convert_grade($previousgrd, $gt);
                         }
                     }
@@ -1159,9 +1167,13 @@ class local_gugcat {
             }
         }
         //  get the latest grade.
-        $firstindex = key($gradehistory_arr);
-        $is_converted = preg_match('/ \-./i', $gradehistory_arr[$firstindex]->feedback);
-        $scale = $is_converted ? preg_replace('/\b[a-zA-Z\- ]*/i', '', $gradehistory_arr[$firstindex]->feedback) : null;
+        if($gradehistory_arr[$firstindex]->overridden != 0){
+            $is_converted = preg_match('/ \,\_scale\:[1-9]/i', $gradehistory_arr[$firstindex]->feedback);
+            $scale = $is_converted ? preg_replace("/\b[\w\s\W]*,_scale:/i", '', $gradehistory_arr[$firstindex]->feedback) : null;
+        }else{
+            $is_converted = preg_match('/ \-./i', $gradehistory_arr[$firstindex]->feedback);
+            $scale = $is_converted ? preg_replace('/\b[a-zA-Z\- ]*/i', '', $gradehistory_arr[$firstindex]->feedback) : null;
+        }
         !$isscale = ($scale == SCHEDULE_A || $scale == SCHEDULE_B);
         if($grade = $DB->get_record('grade_grades', array('userid'=>$userid, 'itemid'=>$subcatid))){
             $grd = !is_null($grade->finalgrade) ? $grade->finalgrade 
@@ -1169,7 +1181,7 @@ class local_gugcat {
             : null); 
             if(!$is_convertedmod && !$is_converted){
                 isset($rows[0]->grade) ? null : $rows[0]->grade = new stdClass();
-                $rows[0]->grade = self::convert_grade($grade->rawgrade, $gt);
+                $rows[0]->grade = self::convert_grade($grd, $gt);
             }else{
                 !$isscale ? self::set_grade_scale($scale) : null;
                 isset($rows[0]->grade) ? null : $rows[0]->grade = new stdClass();
@@ -1177,12 +1189,12 @@ class local_gugcat {
             }
         }
         
-        //get last key
+        //get last key of $rows
         $key = key(array_slice($rows, -1, 1, true));
         //set last feedback as import grade
         $rows[$key]->notes = get_string('import', 'local_gugcat');
         $fields = 'firstname, lastname';
-        $modby = $DB->get_record('user', array('id' => $gradehistory_arr[$lastkey]->usermodified), $fields);
+        $modby = $DB->get_record('user', array('id' => $gradehistory_arr[$lastindex]->usermodified), $fields);
         $rows[$key]->modby = !is_null($modby) ? ((isset($modby->lastname) && isset($modby->firstname)) ? $modby->lastname . ', '.$modby->firstname : 'System Update') : 'System Update';
         
         $i = 0;

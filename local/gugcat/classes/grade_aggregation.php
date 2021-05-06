@@ -184,14 +184,18 @@ class grade_aggregation{
                     $scaleid = is_null($item->scaleid) ? null : $item->scaleid;
                     $is_scale = !is_null($scaleid) && local_gugcat::is_scheduleAscale($gt, $gm);
                     local_gugcat::set_grade_scale($scaleid);
-                    if($is_scale){
-                        $item->gradetypename = reset(local_gugcat::$GRADES) == 'A0'
-                        ? get_string('scheduleb', 'local_gugcat')
-                        : get_string('schedulea', 'local_gugcat');
+                    if($item->modname == 'category' && is_null($grd)){
+                        $item->gradetypename = get_string('nogradeweight', 'local_gugcat');
                     }else{
-                        $a = new stdClass();
-                        $a->max = ($item->modname == 'category') ? 100 : intval($gm);
-                        $item->gradetypename = get_string('points', 'local_gugcat', $a);
+                        if($is_scale){
+                            $item->gradetypename = reset(local_gugcat::$GRADES) == 'A0'
+                            ? get_string('scheduleb', 'local_gugcat')
+                            : get_string('schedulea', 'local_gugcat');
+                        }else{
+                            $a = new stdClass();
+                            $a->max = ($item->modname == 'category') ? 100 : intval($gm);
+                            $item->gradetypename = get_string('points', 'local_gugcat', $a);
+                        }
                     }
                     local_gugcat::is_child_activity($item) || $item->is_converted ? null: $gradetypes[] = intval($gt);
                     $grade = is_null($grd) ? ( $grditemresit ? get_string('nogradeweight', 'local_gugcat') :( $processed ? get_string('missinggrade', 'local_gugcat') : get_string('nograderecorded', 'local_gugcat'))) 
