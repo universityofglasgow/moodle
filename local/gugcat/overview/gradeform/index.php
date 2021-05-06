@@ -109,7 +109,13 @@ if(!is_null($activityid) && $formtype == OVERRIDE_GRADE_FORM){
 }
 
 if($formtype == OVERRIDE_GRADE_FORM && $student->aggregatedgrade){
-    local_gugcat::set_grade_scale(null, $student->aggregatedgrade->scale);
+    if(!is_null($activityid)){
+        if($scaleid = $subcatactivity->scaleid){
+            local_gugcat::set_grade_scale($scaleid);
+        }
+    }else{
+        local_gugcat::set_grade_scale(null, $student->aggregatedgrade->scale);
+    }
 }
 
 $mform = new coursegradeform(null, array('setting'=>$formtype, 'student'=>$student, 'gradetype' => $gradetype));
