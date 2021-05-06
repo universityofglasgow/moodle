@@ -85,6 +85,11 @@ if($download == 1){
     grade_capture::download_template_csv($module);
 }
 
+// If assessment is assignment, create participant no. for each students
+if($module->modname == 'assign'){
+    assign::allocate_unique_ids($module->instance);
+}
+
 // Set up the upload import form.
 $mform = new uploadform(null, array('includeseparator' => true, 'acceptedtypes' =>
 array('.csv'), 'activity' => $module));
