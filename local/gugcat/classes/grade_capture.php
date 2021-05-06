@@ -24,6 +24,7 @@
  */
 namespace local_gugcat;
 
+use ArrayObject;
 use assign;
 use context_course;
 use context_module;
@@ -468,7 +469,7 @@ class grade_capture{
 
             // Each line is a student record. First element is ID number, second is grade.
             $idnumber = $line[0];
-            $grade = $line[1];
+            $grade = $activity->modname == 'assign' ? $line[2] : $line[3];
             $errorobj = new stdClass();
             $errorobj->id = $idnumber;
             $errorobj->value = $grade;
@@ -570,6 +571,37 @@ class grade_capture{
             $students = get_enrolled_users($coursecontext, 'local/gugcat:gradable', 0, $userfields);
         }
         return $students;
+    }
+
+    /**
+     * Process the structure of the data for upload csv template
+     *
+     * @param mixed $activity
+     */
+    public static function download_template_csv($activity){
+        global $COURSE;
+        $is_assign = $activity->modname == 'assign';
+        $filename = "upload_template_$activity->name"."_".date('Y-m-d_His');    
+        $columns = $is_assign ? ['Student Number', 'Participant Number', 'Grades'] 
+            : ['Student number', 'Last Name', 'First Name', 'Grades'];
+        $fields = $is_assign ? 'u.id, u.idnumber' : 'u.id, u.firstname, u.lastname, u.idnumber';
+        $students = self::get_students_per_groups(array($activity->groupingid), $COURSE->id, $fields);
+        $array = array();
+        foreach($students as $student) {
+            $row = new stdClass();
+            $row->{'Student Number'} = $student->idnumber;
+            if($is_assign){
+                $row->{'Participant Number'} = assign::get_uniqueid_for_user_static($activity->instance, $student->id);
+            }else{
+                $row->{'Last Name'} = $student->lastname;
+                $row->{'First Name'} = $student->firstname;
+            }
+            $row->{'Grades'} = null;
+            array_push($array, $row);
+        }
+        //convert array to ArrayObject to get the iterator
+        $exportdata = new ArrayObject($array);
+        local_gugcat::export_gcat($filename, $columns, $exportdata->getIterator());
     }
 
 }

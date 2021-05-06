@@ -75,7 +75,7 @@ button .fa-caret-down{
     padding-right: 1em;
 }
 /* Buttons style */
-.btn-default {
+.btn-default, .btn-form-default, input[name='userfilechoose']{
     background-color: transparent;
     border: 1px solid #005c8a;
     color: #005c8a;
@@ -86,9 +86,14 @@ button .fa-caret-down{
     text-align: center;
 }
 
-.btn-default:hover {
+.btn-default:hover, .btn-form-default:hover, input[name='userfilechoose']:hover {
     background-color: #005c8a;
     color: white;
+}
+
+/* Choose file button in file picker */
+input[name='userfilechoose']{
+    border-radius: 8px 8px 0 0;
 }
 
 /* Green buttons */
