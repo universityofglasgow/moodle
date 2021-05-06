@@ -144,7 +144,7 @@ if ($fromform = $mform->get_data()) {
             $scale = $is_subcat ? (!is_null($subcatactivity->is_converted) && !empty($subcatactivity->is_converted) 
             ? $subcatactivity->is_converted : $DB->get_field('grade_items', 'outcomeid', array('id'=>$gradeitem->id))) : null;
             //if scaleid is not empty or null, then add the scale to notes
-            $notes = !is_null($scale) && !empty($scale) ? $fromform->notes." -".$scale : $fromform->notes;
+            $notes = !is_null($scale) && !empty($scale) ? $fromform->notes." ,_scale:$scale" : $fromform->notes;
             if($is_subcat && $subcatactivity->is_converted){
                 // If conversion is enabled, save the converted grade to provisional grade and original grade to converted grade.
                 $conversion = grade_converter::retrieve_grade_conversion($subcatactivity->gradeitemid);
@@ -153,7 +153,7 @@ if ($fromform = $mform->get_data()) {
                 $convertedgi = local_gugcat::get_grade_item_id($COURSE->id, $subcatactivity->gradeitemid, get_string('convertedgrade', 'local_gugcat'));
                 local_gugcat::update_grade($studentid, $convertedgi, $grade);
             }else{
-                $notes = !$is_subcat ? ",_scale: $gradeitem->idnumber ,_notes: $fromform->notes" : (is_null($scale) ? $fromform->notes : $fromform->notes." -$scale");
+                $notes = !$is_subcat ? ",_scale: $gradeitem->idnumber ,_notes: $fromform->notes" : (is_null($scale) ? $fromform->notes : $fromform->notes." ,_scale:$scale");
                 local_gugcat::update_grade($studentid, $gradeitem->id, $grade, $notes, time());
             }
             

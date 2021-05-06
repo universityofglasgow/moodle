@@ -71,6 +71,7 @@ class grade_aggregation{
         global $DB, $aggradeid;
         $aggradeid = null;
         $categoryid = optional_param('categoryid', '0', PARAM_INT);
+        $activityid = optional_param('activityid', null, PARAM_INT);
         if(!empty($modules) && count(array_filter(array_column($modules, 'provisionalid'))) > 0){
             //get or create grade item id for aggregated grade
             $aggradeid = local_gugcat::add_grade_item($course->id, get_string('aggregatedgrade', 'local_gugcat'), null, $students);
@@ -184,14 +185,18 @@ class grade_aggregation{
                     $scaleid = is_null($item->scaleid) ? null : $item->scaleid;
                     $is_scale = !is_null($scaleid) && local_gugcat::is_scheduleAscale($gt, $gm);
                     local_gugcat::set_grade_scale($scaleid);
-                    if($is_scale){
-                        $item->gradetypename = reset(local_gugcat::$GRADES) == 'A0'
-                        ? get_string('scheduleb', 'local_gugcat')
-                        : get_string('schedulea', 'local_gugcat');
+                    if($item->modname == 'category' && is_null($grd)){
+                        $item->gradetypename = get_string('nogradeweight', 'local_gugcat');
                     }else{
-                        $a = new stdClass();
-                        $a->max = ($item->modname == 'category') ? 100 : intval($gm);
-                        $item->gradetypename = get_string('points', 'local_gugcat', $a);
+                        if($is_scale){
+                            $item->gradetypename = reset(local_gugcat::$GRADES) == 'A0'
+                            ? get_string('scheduleb', 'local_gugcat')
+                            : get_string('schedulea', 'local_gugcat');
+                        }else{
+                            $a = new stdClass();
+                            $a->max = ($item->modname == 'category') ? 100 : intval($gm);
+                            $item->gradetypename = get_string('points', 'local_gugcat', $a);
+                        }
                     }
                     local_gugcat::is_child_activity($item) || $item->is_converted ? null: $gradetypes[] = intval($gt);
                     $grade = is_null($grd) ? ( $grditemresit ? get_string('nogradeweight', 'local_gugcat') :( $processed ? get_string('missinggrade', 'local_gugcat') : get_string('nograderecorded', 'local_gugcat'))) 
@@ -276,7 +281,9 @@ class grade_aggregation{
                     }
                     $aggradegb = (!is_null($gbaggregatedgrade->finalgrade) ? $gbaggregatedgrade->finalgrade : $gbaggregatedgrade->rawgrade);
                     $feedback .= ",_grade: $aggrdobj->display ,_$gbaggregatedgrade->feedback";
-                    ($gbaggregatedgrade->overridden == 0 && round((float)$sumaggregated, 5) != round((float)$aggradegb, 5) && $aggrdobj->display != get_string('missinggrade', 'local_gugcat')) ? local_gugcat::update_grade($student->id, $aggradeid, $sumaggregated, $feedback) : null;
+                    ($gbaggregatedgrade->overridden == 0 && round((float)$sumaggregated, 5) != round((float)$aggradegb, 5) 
+                    && $aggrdobj->display != get_string('missinggrade', 'local_gugcat') 
+                    && is_null($activityid)) ? local_gugcat::update_grade($student->id, $aggradeid, $sumaggregated, $feedback) : null;
                     $DB->set_field('grade_grades', 'feedback', '', array('id'=>$gbaggregatedgrade->id));
                 }
             }
