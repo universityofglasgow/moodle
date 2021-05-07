@@ -72,6 +72,22 @@ class uploadform extends moodleform {
             $mform->addElement('static', 'maximumgrade', get_string('grademax', 'grades'), intval($activity->gradeitem->grademax)); 
             $mform->setType('maximumgrade', PARAM_NOTAGS); 
         }
+        $mform->addElement('static', 'step', get_string('step', 'local_gugcat', $a=1), get_string('downloadtempcsv', 'local_gugcat')); 
+        // Download template button row
+        global $PAGE;
+        $dlnote = get_string($activity->modname == 'assign' ? 'downloadtempnoteA': 'downloadtempnoteB', 'local_gugcat');
+        $dlurl = 'index.php?'.parse_url($PAGE->url, PHP_URL_QUERY).'&download=1';
+        $dlurl = str_replace('&amp;', '&', $dlurl);
+        $dlbtn = html_writer::tag('div', html_writer::tag('a', html_writer::tag('button', get_string('downloadcsv', 'local_gugcat'), 
+            array('class' => 'btn btn-form-default', 'type' => 'button')), array('href' => $dlurl)), array('class' => 'col-sm-3'));
+        $download = html_writer::tag('div', 
+            $dlbtn.
+            html_writer::tag('span', $dlnote, array('class' => 'col-sm-7 small font-italic'))
+            , array('class' => 'row'));
+        $mform->addGroup(array($mform->createElement('html', $download)));
+        
+        $mform->addElement('static', 'step', get_string('step', 'local_gugcat', $a=2), get_string('uploadfile', 'local_gugcat')); 
+        $mform->setType('step', PARAM_NOTAGS); 
 
         // File upload.
         $mform->addElement('filepicker', 'userfile', get_string('selectfile', 'local_gugcat'), null, array('accepted_types' => $acceptedtypes));

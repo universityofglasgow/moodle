@@ -494,15 +494,21 @@ class local_gugcat_renderer extends plugin_renderer_base {
      * Render display of adjust weights and override grade form page
      * 
      */
-    public function display_import_preview($firstrow, $data) {
+    public function display_import_preview($firstrow, $data, $is_assign) {
         $title = get_string('setupimportoptions' , 'local_gugcat');
         $html = $this->header();
         $html .= html_writer::start_tag('div', array('class' => 'form-container'));
         $html .= html_writer::tag('h5', $title, array('class' => 'title'));
         $html .= html_writer::tag('label', get_string('datapreview', 'local_gugcat'));
         $htmlcolumns = null;
-        $htmlcolumns .= html_writer::tag('th', get_string('studentno', 'local_gugcat'), array('class' => 'sortable'));
-        $htmlcolumns .= html_writer::tag('th', get_string('grade'), array('class' => 'sortable'));
+        $htmlcolumns .= html_writer::tag('th', get_string('studentno', 'local_gugcat'));
+        if($is_assign){
+            $htmlcolumns .= html_writer::tag('th', get_string('participantno', 'local_gugcat'));
+        }else{
+            $htmlcolumns .= html_writer::tag('th', get_string('studentfirstname', 'turnitintooltwo'));
+            $htmlcolumns .= html_writer::tag('th', get_string('studentlastname', 'turnitintooltwo'));
+        }
+        $htmlcolumns .= html_writer::tag('th', get_string('grade'));
         
         $htmlrows = null;
         if(count($firstrow) != 0){
@@ -514,7 +520,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
         }
 
         foreach($data as $row){
-            $fixedcolumns = 2;
+            $fixedcolumns = $is_assign ? 3 : 4;
             $htmlrows .= html_writer::start_tag('tr');
             foreach($row as $rowdata){
                 $htmlrows .= html_writer::tag('td', $rowdata);

@@ -188,8 +188,8 @@ class grade_aggregation{
                     if($item->modname == 'category' && is_null($grd)){
                         $item->gradetypename = get_string('nogradeweight', 'local_gugcat');
                     }else{
-                        if($is_scale){
-                            $item->gradetypename = reset(local_gugcat::$GRADES) == 'A0'
+                        if($gt == GRADE_TYPE_SCALE || $item->is_converted){
+                            $item->gradetypename = reset(local_gugcat::$GRADES) == 'A0' || $item->is_converted == SCHEDULE_B
                             ? get_string('scheduleb', 'local_gugcat')
                             : get_string('schedulea', 'local_gugcat');
                         }else{
