@@ -189,13 +189,8 @@ class grade_aggregation{
                     $gt = $item->gradeitem->gradetype;
                     $gm = $item->gradeitem->grademax;
                     $scaleid = is_null($item->scaleid) ? null : $item->scaleid;
-                    $is_scale = !is_null($scaleid) && local_gugcat::is_scheduleAscale($gt, $gm);
                     // If subcat grades are auto converted to schedule B, set scale to B.
-                    if($autoconvertb){
-                        local_gugcat::set_grade_scale(null, SCHEDULE_B);
-                    }else{
-                        local_gugcat::set_grade_scale($scaleid);
-                    }
+                    local_gugcat::set_grade_scale($scaleid, ($autoconvertb ? SCHEDULE_B : SCHEDULE_A));
                     if($item->modname == 'category' && is_null($grd)){
                         $item->gradetypename = get_string('nogradeweight', 'local_gugcat');
                     }else{
@@ -211,11 +206,12 @@ class grade_aggregation{
                     }
                     local_gugcat::is_child_activity($item) || $item->is_converted ? null: $gradetypes[] = intval($gt);
                     $grade = is_null($grd) ? ( $grditemresit ? get_string('nogradeweight', 'local_gugcat') :( $processed ? get_string('missinggrade', 'local_gugcat') : get_string('nograderecorded', 'local_gugcat'))) 
-                    : local_gugcat::convert_grade($grd, $gt);
+                    : local_gugcat::convert_grade($grd, $gt, ($autoconvertb ? SCHEDULE_B : SCHEDULE_A));
+                    // If subcat grades are auto converted to schedule B, set scale to B.
+
                     $grdvalue = get_string('nograderecorded', 'local_gugcat');
                     $grade = ($grade === (float)0) ? number_format(0, 3) : $grade;
                     if($item->is_converted && !is_null($grd)){
-                        $is_scale = true;
                         $grade = local_gugcat::convert_grade($grd, null, $item->is_converted);
                     }
                     // Get weight from gradebook if adjusted weight in $pg->information is null
@@ -240,7 +236,7 @@ class grade_aggregation{
                         }
 
                         // Normalize to actual grade value (-1) for computation if its grade type is scale
-                        $grdvalue = !$is_scale ? $grd : (($grade === NON_SUBMISSION_AC) ? 0 : (float)$grd - (float)1);
+                        $grdvalue = is_numeric($grade)  ? $grd : (($grade === NON_SUBMISSION_AC) ? 0 : (float)$grd - (float)1);
                         $floatweight += $weight_;
                         $sumaggregated += (float)$grdvalue * $weight_;
                         $calculatedweight += local_gugcat::is_child_activity($item) ? 0 : (float)$weight;
@@ -830,7 +826,7 @@ class grade_aggregation{
                 $is_converted = !is_null($row->grades[$key]->nonconvertedgrade);
                 $is_points = $act[3];
                 $student->{$act[0]} = $row->grades[$key]->originalweight.'%'; //weight
-                $student->{$act[1]} = ($is_converted || !$is_points) ? $row->grades[$key]->grade : get_string('nogradeweight', 'local_gugcat'); //alphanumeric
+                $student->{$act[1]} = !is_numeric($row->grades[$key]->grade) ? $row->grades[$key]->grade : get_string('nogradeweight', 'local_gugcat'); //alphanumeric
                 $is_admin_grade = local_gugcat::is_admin_grade(array_search($row->grades[$key]->grade,local_gugcat::$GRADES));
                 $student->{$act[2]} = $is_admin_grade ? get_string('nogradeweight', 'local_gugcat')
                                                       : ($is_converted ? $row->grades[$key]->nonconvertedgrade : $row->grades[$key]->rawgrade); //numeric
