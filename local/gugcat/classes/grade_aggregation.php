@@ -150,6 +150,7 @@ class grade_aggregation{
             $gradecaptureitem->grades = array();
             $floatweight = 0;
             $sumaggregated = 0;
+            $calculatedweight = 0;
             $aggrdobj = new stdClass();
             $aggrdobj->display =  get_string('missinggrade', 'local_gugcat') ;
             if(count($gradebook) > 0){
@@ -166,6 +167,7 @@ class grade_aggregation{
                     : (isset($pg) && !is_null($pg->rawgrade) ? $pg->rawgrade 
                     : ((isset($gb) && !is_null($gb->grade)) ? $gb->grade : null)); 
                     $processed = false; // Used for subcat grades
+                    $autoconvertb = false; // Used for subcat grades auto converted to schedule B
                     if($item->modname == 'category') {
                         //get aggregation type
                         list($subcatgrd, $processed, $error) = self::get_aggregated_grade($student->id, $item, $gradebook);
@@ -174,7 +176,11 @@ class grade_aggregation{
                             // Set the grade type and scale id of the sub category column
                             $item->scaleid = $subcatgrd->scaleid;
                             $item->gradeitem->gradetype = $subcatgrd->gradetype;                            
-                            $item->gradeitem->grademax = $subcatgrd->grademax;                            
+                            $item->gradeitem->grademax = $subcatgrd->grademax;  
+                            // Check auto convert to B flag for subcat grades
+                            if(isset($subcatgrd->autoconvertb) && $subcatgrd->autoconvertb){
+                                $autoconvertb = true;
+                            }                        
                         }
                         if($error){
                             $errors[$item->gradeitemid] = $error;
@@ -184,7 +190,12 @@ class grade_aggregation{
                     $gm = $item->gradeitem->grademax;
                     $scaleid = is_null($item->scaleid) ? null : $item->scaleid;
                     $is_scale = !is_null($scaleid) && local_gugcat::is_scheduleAscale($gt, $gm);
-                    local_gugcat::set_grade_scale($scaleid);
+                    // If subcat grades are auto converted to schedule B, set scale to B.
+                    if($autoconvertb){
+                        local_gugcat::set_grade_scale(null, SCHEDULE_B);
+                    }else{
+                        local_gugcat::set_grade_scale($scaleid);
+                    }
                     if($item->modname == 'category' && is_null($grd)){
                         $item->gradetypename = get_string('nogradeweight', 'local_gugcat');
                     }else{
@@ -232,6 +243,7 @@ class grade_aggregation{
                         $grdvalue = !$is_scale ? $grd : (($grade === NON_SUBMISSION_AC) ? 0 : (float)$grd - (float)1);
                         $floatweight += $weight_;
                         $sumaggregated += (float)$grdvalue * $weight_;
+                        $calculatedweight += local_gugcat::is_child_activity($item) ? 0 : (float)$weight;
                     }
                     $get_category = ($item->modname != 'category' 
                         && $category = local_gugcat::is_child_activity($item)) ? $category : false;
@@ -251,7 +263,7 @@ class grade_aggregation{
                     $grdobj->weight =  round((float)$weight * 100 );
                     array_push($gradecaptureitem->grades, $grdobj);
                 }
-                $sumaggregated = $sumaggregated != 0 ? $sumaggregated / $floatweight : $sumaggregated;
+                $sumaggregated = $sumaggregated != 0 ? $sumaggregated / $calculatedweight : $sumaggregated;
                 $totalweight = round((float)$floatweight * 100 );
                 $gradecaptureitem->completed = $totalweight . '%';
                 if($gbaggregatedgrade = $DB->get_record('grade_grades', array('itemid'=>$aggradeid, 'userid'=>$student->id))){
@@ -420,6 +432,12 @@ class grade_aggregation{
         $gradetypes = array_column($grditems, 'gradetype', 'id');
         $grademaxs = array_column($grditems, 'grademax', 'id');
 
+        // Check if components are converted to schedule B, if yes, add flag on subcat grade
+        $converted = array_column($filtered, 'is_converted');
+        $autoconverttob = !empty($converted) && count(array_unique($converted)) == 1 && $converted[0] == SCHEDULE_B;
+        if($autoconverttob){
+            $grdobj->autoconvertb = true;
+        }
         // Check if components grade types are the same
         if(count(array_unique($gradetypes)) == 1){
             // Get first grade item
