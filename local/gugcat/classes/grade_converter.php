@@ -140,9 +140,10 @@ class grade_converter{
      *
      * @param array $conversion List of grade element conversion
      * @param int $grade
+     * @param bool $isconvertgrd
      * @return int $grade
      */
-    public static function convert($conversion, $grade){
+    public static function convert($conversion, $grade, $is_schedB = false){
         // Return grade if its admin grade, -1, -2
         if(local_gugcat::is_admin_grade($grade)){
             return $grade;
@@ -168,8 +169,11 @@ class grade_converter{
             // Get the upperbound from the preceding element lowerboundary
             $upperbound = (isset($convs[$index-1]) && $precendent = (object)$convs[$index-1])
                 ? $precendent->lowerboundary : null;
-            // Check if grade is within the range of lower and upper boundary
-            if($upperbound && $grade < $upperbound  && $grade >= $cobj->lowerboundary){
+            // Check if grade is within the range of lower and upper boundary and if is_schedB
+            if($is_schedB && $upperbound && $grade <= $upperbound  && $grade > $cobj->lowerboundary){
+                $convertedgrade = $convs[$index-1]->grade;
+                break;
+            }else if($upperbound && $grade < $upperbound  && $grade >= $cobj->lowerboundary){
                 $convertedgrade = $cobj->grade;
                 break;
             }else{

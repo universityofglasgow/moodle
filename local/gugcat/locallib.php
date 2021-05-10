@@ -435,7 +435,7 @@ class local_gugcat {
                 return number_format($grade, 3);
             }
             if($scaletype != SCHEDULE_A){
-                return grade_converter::convert(self::$SCHEDULE_B, $grade);
+                return grade_converter::convert(self::$SCHEDULE_B, $grade, true);
             }
         }
         $scale = self::$GRADES + grade_aggregation::$AGGRADE;
