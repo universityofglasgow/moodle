@@ -173,7 +173,7 @@ class grade_converter{
             if($isconvertgrd && $upperbound && $grade <= $upperbound  && $grade > $cobj->lowerboundary){
                 $convertedgrade = $convs[$index-1]->grade;
                 break;
-            }elseif($upperbound && $grade <= $upperbound  && $grade > $cobj->lowerboundary){
+            }else if($upperbound && $grade < $upperbound  && $grade >= $cobj->lowerboundary){
                 $convertedgrade = $cobj->grade;
                 break;
             }else{
