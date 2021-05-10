@@ -379,8 +379,11 @@ class grade_capture{
                 local_gugcat::add_update_grades($student->id, $mggradeitemid, $grade, $notes);
 
                 $DB->set_field('grade_grades', 'overridden', 0, array('itemid' => $aggradeid, 'userid'=>$student->id));
-                // Every time import is clicked, reset weights in provisional grade > grade_grades information  to null
+                // Every time import is clicked, reset weights in provisional grade > grade_grades information  to null, and overridden subcategory grades
                 $DB->set_field('grade_grades', 'information', null, array('itemid' => $prvid_reset, 'userid' => $student->id));          
+                if(local_gugcat::is_child_activity($module)){
+                    $DB->set_field('grade_grades', 'overridden', 0, array('itemid' => $prvid_reset, 'userid' => $student->id));          
+                }
             } 
         }
     }
