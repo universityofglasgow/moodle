@@ -101,4 +101,10 @@ class gcat_item{
      * @var string $releasedgrade
      */
     public $releasedgrade;
+
+    /**
+     * The converted grade of the student from gcat.
+     * @var string $releasedgrade
+     */
+    public $convertedgrade;
 }

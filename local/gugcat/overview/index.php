@@ -51,50 +51,28 @@ $PAGE->set_heading($course->fullname);
 require_capability('local/gugcat:view', $coursecontext);
 
 //Retrieve activities
-$activities = local_gugcat::get_activities($courseid);
-
-//Retrieve groupingids from activities
-$groupingids = array_column($activities, 'groupingid');
+if(!is_null($categoryid)){
+    $activities = grade_aggregation::get_parent_child_activities($courseid, $categoryid);
+}else{
+    $activities = local_gugcat::get_activities($courseid);
+}
 
 //Retrieve students
 $limitfrom = $page * GCAT_MAX_USERS_PER_PAGE;
 $limitnum  = GCAT_MAX_USERS_PER_PAGE;
-
+$students = array();
 // Params from search bar filters
 $filters = optional_param_array('filters', [], PARAM_NOTAGS);
 $filters = local_gugcat::get_filters_from_url($filters);
-$activesearch = (isset($filters) && count($filters) > 0 && count(array_unique($filters)) !== 1) ? true : false;
+$activesearch = isset($filters) && count($filters) > 0 && count(array_filter($filters)) > 0 ? true : false;
 $activesearch ? $URL->param('filter', http_build_query($filters)) : null;
 $PAGE->set_url($URL);
 
-if(array_sum($groupingids) != 0){
-    $groups = array();
-    foreach ($groupingids as $groupingid) {
-        if($groupingid != 0){
-            $groups += groups_get_all_groups($courseid, 0, $groupingid);
-        }
-    }
-    $students = Array();
-    $totalenrolled = 0;
-    if(!empty($groups)){
-        foreach ($groups as $group) {
-            if($activesearch){
-                list($groupstudents, $count) = local_gugcat::get_filtered_students($coursecontext, $filters, $group->id, $limitfrom, $limitnum);
-            }else{
-                $count = count_enrolled_users($coursecontext, 'local/gugcat:gradable', $group->id);
-                $groupstudents = get_enrolled_users($coursecontext, 'local/gugcat:gradable', $group->id, 'u.*', null, $limitfrom, $limitnum);
-            }
-            $totalenrolled += $count;
-            $students += $groupstudents;
-        }
-    }
+if($activesearch){
+    list($students, $totalenrolled) = local_gugcat::get_filtered_students($coursecontext, $filters, 0, $limitfrom, $limitnum);
 }else{
-    if($activesearch){
-        list($students, $totalenrolled) = local_gugcat::get_filtered_students($coursecontext, $filters, 0, $limitfrom, $limitnum);
-    }else{
-        $totalenrolled = count_enrolled_users($coursecontext, 'local/gugcat:gradable');
-        $students = get_enrolled_users($coursecontext, 'local/gugcat:gradable', 0, 'u.*', null, $limitfrom, $limitnum);
-    }
+    $totalenrolled = count_enrolled_users($coursecontext, 'local/gugcat:gradable');
+    $students = get_enrolled_users($coursecontext, 'local/gugcat:gradable', 0, 'u.*', null, $limitfrom, $limitnum);
 }
 
 // Go back to first page when new search filters were submitted
@@ -104,7 +82,7 @@ if(count($filters) > 0 && $page > 0){
     redirect($URL);
 }
 
-$rows = grade_aggregation::get_rows($course, $activities, $students);
+$rows = grade_aggregation::get_rows($course, $activities, $students, true);
 
 //params for log
 $params = array(
@@ -159,7 +137,7 @@ if(isset($requireresit) && !empty($rowstudentid)){
     //log of release final assessment grades
     $event = \local_gugcat\event\export_aggregation::create($params);
     $event->trigger();
-    grade_aggregation::export_aggregation_tool($course);
+    grade_aggregation::export_aggregation_tool($course, $categoryid);
     unset($downloadcsv);
     redirect($URL);
     exit;

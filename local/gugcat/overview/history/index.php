@@ -30,14 +30,14 @@ require_once($CFG->dirroot . '/local/gugcat/locallib.php');
 $courseid = required_param('id', PARAM_INT);
 $studentid = required_param('studentid', PARAM_INT);
 $cnum = required_param('cnum', PARAM_INT);
-$categoryid = optional_param('categoryid', null, PARAM_INT);
+$categoryid = optional_param('categoryid', 0, PARAM_INT);
 $page = optional_param('page', 0, PARAM_INT);  
 
 require_login($courseid);
 $urlparams = array('id' => $courseid, 'studentid' => $studentid, 'cnum'=>$cnum, 'page' => $page);
 $URL = new moodle_url('/local/gugcat/overview/history/index.php', $urlparams);
 $indexurl = new moodle_url('/local/gugcat/index.php', array('id' => $courseid));
-is_null($categoryid) ? null : $URL->param('categoryid', $categoryid);
+$categoryid != 0 ? null : $URL->param('categoryid', $categoryid);
 
 $PAGE->set_url($URL);
 $PAGE->set_title(get_string('gugcat', 'local_gugcat'));
@@ -55,6 +55,22 @@ require_capability('local/gugcat:view', $coursecontext);
 
 $student = $DB->get_record('user', array('id'=>$studentid, 'deleted'=>0), '*', MUST_EXIST);
 $modules = local_gugcat::get_activities($courseid);
+if(!is_null($categoryid) && $categoryid != 0){
+    // Retrieve sub categories
+    $gcs = grade_category::fetch_all(array('courseid' => $courseid, 'parent' => $categoryid));
+
+    $gradecatgi = array();
+    if(!empty($gcs)){
+        foreach ($gcs as $gc){
+            $gi = local_gugcat::get_category_gradeitem($courseid, $gc);
+            $gi->name = preg_replace('/\b total/i', '', $gi->name);
+            $gradecatgi[$gi->gradeitemid] = $gi; 
+        }
+        //merging two arrays without changing their index.
+        $modules = $modules + $gradecatgi;
+    }
+}
+
 $student->cnum = $cnum;
 
 $gradehistory = grade_aggregation::get_course_grade_history($course, $modules, $student);

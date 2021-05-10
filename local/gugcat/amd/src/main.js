@@ -31,6 +31,34 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
         return url.match(path);
     }
 
+    const calculatePercentagePoints = (target, is_percentage = true) => {
+        grade_max = document.getElementsByName('grademax')[0].value;
+        if (is_percentage){
+            input_point = document.getElementById(target.id.slice(0,10) + "pt_" + target.id.slice(10));
+            input_point.value = target.value ? rounder((target.value / 100) * grade_max) : '';
+        } else {
+            input_percentage = document.getElementById(target.id.slice(0,10) + target.id.slice(13));
+            input_percentage.value = target.value ? rounder((target.value / grade_max) * 100) : '';
+        }
+    }
+
+    const rounder = (number) => {
+        var multiplier = parseInt("1" + "0".repeat(2));
+        number = number * multiplier;
+        return Math.round(number) / multiplier;
+    }
+
+    const clearConversionTable = () => {
+        var input_percentage_points = document.querySelectorAll('.input-prc,.input-pt');
+        input_percentage_points.forEach(element => {
+            input = element.lastElementChild.firstElementChild
+            is_input_H = input.id == 'id_schedA_pt_1' || input.id == 'id_schedA_1' || input.id == 'id_schedB_1' || input.id == 'id_schedB_pt_1'
+            if (!is_input_H){
+                input.value = "";
+            }
+        })
+    }
+
     const update_reason_inputs = (val) => {
         var list = document.querySelectorAll('.input-reason');
         list.forEach(input => input.value = val);
@@ -64,6 +92,31 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                 });
             });
            
+        }
+    }
+
+    const toggle_child_activities = () =>{
+        var btns = document.querySelectorAll('.btn-colexp');
+        if(btns.length > 0){
+            btns.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    var selected = e.target.getAttribute('data-categoryid');
+                    var classes = document.querySelectorAll(`[data-category="${selected}"]`);
+                    var icon = btn.querySelector('.i-colexp');
+                    classes.forEach(element => {
+                       element.classList.toggle('hidden');
+                       if(element.classList.contains('hidden')){
+                           icon.classList.add('fa-plus');
+                           icon.classList.remove('fa-minus');
+                       }else{
+                           icon.classList.remove('fa-plus');
+                           icon.classList.add('fa-minus');
+                       }
+                   });
+                    var colgroups = document.querySelectorAll(`.catid-${selected}`);
+                    colgroups.forEach(element => element.classList.toggle('hidden'));
+                });
+            });
         }
     }
 
@@ -184,16 +237,26 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
         });
     }
 
+    const toggleScaleTable = () => {
+        var schedA = document.getElementById('table-schedulea');
+        var schedB = document.getElementById('table-scheduleb');
+        schedA.classList.toggle('hidden');
+        schedB.classList.toggle('hidden');
+    }
+
     const onChangeListeners = (event) =>{
         var urlParams = new URLSearchParams(window.location.search);
         var categories = document.getElementById('select-category');
         var activities = document.getElementById('select-activity');
-        var grade_reason = document.getElementById('select-grade-reason');
-        var input_reason = document.getElementById('input-reason');
+        var childactivities = document.getElementById('select-child-act');
+        var grade_reason = document.querySelector('.multi-select-reason > select');
+        var select_scale = document.getElementById('select-scale');
+        var select_template = document.getElementById('select-template');
         var mform_grade_reason = document.getElementById('id_reasons');
         switch (event.target) {
             case categories:
                 urlParams.delete("activityid");
+                urlParams.delete("childactivityid")
                 urlParams.delete("page");
                 if(categories.value === 'null'){
                     urlParams.delete("categoryid");
@@ -211,30 +274,84 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                 break;
             case activities:
                 urlParams.set("activityid", activities.value);
+                urlParams.delete("childactivityid")
+                urlParams.delete("page");
+                window.location.search = urlParams;
+                break;
+            case childactivities:
+                urlParams.set("childactivityid", childactivities.value)
                 urlParams.delete("page");
                 window.location.search = urlParams;
                 break;
             case grade_reason:
-                var selected = event.target.value;    
+                var selected = event.target.value; 
+                var input = document.querySelector('.togglemultigrd > input');
                 update_reason_inputs(selected);
                 if(selected === 'Other'){
                     update_reason_inputs('');
-                    input_reason.style.display = 'block';
+                    input.style.display = 'block';
                 }else{
-                    input_reason.style.display = 'none';
+                    input.style.display = 'none';
                 }
                 break;
             case mform_grade_reason:
                 var selectedOption = event.target.value;
                 var mformReason = document.getElementById('id_otherreason');
-                mformReason.value = selectedOption;
-                if(selectedOption = '8'){
+                if(selectedOption == '9'){
                     mformReason.value = '';
-                    mformReason.required = true;
+                    mformReason.focus();
                 }
-                else
-                    mformReason.required = false;
-                mformReason.focus();
+                break;
+            case select_scale:
+                toggleScaleTable();
+                break;
+            case select_template:
+                if(select_template.value != 0){
+                    var templateid = select_template.value;
+                    var requests = Ajax.call([{
+                        methodname: 'local_gugcat_get_converter_template',
+                        args: { templateid: templateid},
+                    }]);
+                    requests[0].done(function(data) {
+                        var template = data.result;
+                        if(template){
+                            template = JSON.parse(template);
+                            // Empty all input fields first
+                            clearConversionTable();
+
+                            // Toggle table scale based on the template scale
+                            if(select_scale.value != template.scaletype){
+                                toggleScaleTable();
+                            }
+                            
+                            // Assign template scale on the select scale field
+                            select_scale.value = template.scaletype;
+
+                            // Name identifier for the input percentages and input points
+
+                            var nameidprc = template.scaletype != 2 ? "schedA[*]" : "schedB[*]";
+                            var nameidpt = template.scaletype != 2 ? "schedA_pt[*]" : "schedB_pt[*]";
+
+                            // Get maximum grade
+                            var maxgrade = document.getElementsByName('grademax')[0].value;
+
+                            // Start assigning lowerboundary from template on the input pt fields 
+                            var conversions = template.conversion;
+                            for (let key in conversions) {
+                                let conv = conversions[key];
+                                let nameprc = nameidprc.replace("*", conv.grade);
+                                let namept = nameidpt.replace("*", conv.grade);
+                                var inputprc = document.querySelector(`.input-prc > div > input[name="${nameprc}"]`);
+                                var inputpt = document.querySelector(`.input-pt > div > input[name="${namept}"]`);
+                                let lowerboundary = parseFloat(conv.lowerboundary);
+                                inputprc.value =  lowerboundary;
+                                inputpt.value = rounder((lowerboundary / 100) * maxgrade); //convert percentage to points
+                            }
+                        }
+                    }).fail(function(e){
+                        console.log(e);
+                    });
+                }
                 break;
             default:
                 break;
@@ -242,7 +359,8 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
     }
 
     const onClickListeners = (event) =>{
-        var btn_saveadd = document.getElementById('btn-saveadd');
+        var btn_multiadd = document.getElementById('btn-saveadd');
+        var btn_multisave = document.getElementById('btn-multisave');
         var btn_release = document.getElementById('btn-release');
         var btn_import = document.getElementById('btn-import');
         var btn_identities = document.getElementById('btn-identities');
@@ -250,19 +368,18 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
         var btn_download = document.getElementById('btn-download');
         var btn_finalrelease = document.getElementById('btn-finalrelease');
         var btn_switch_display = document.getElementById('btn-switch-display');
+        var btn_bulk_import = document.getElementById('btn-blkimport');
+        var btn_convert = document.getElementById('id_convertbutton');
+        var radio_ptprc = document.getElementsByName('percentpoints');
         switch (event.target) {
-            case btn_saveadd:
-                btn_saveadd.classList.toggle('togglebtn');
-                btn_saveadd.style.display = 'none';
-                Str.get_string('saveallnewgrade', 'local_gugcat').then(function(langString) {
-                    btn_saveadd.style.display = 'inline-block';
-                    if(btn_saveadd.classList.contains('togglebtn')){
-                        btn_saveadd.textContent = langString;
-                    } else {
-                        document.getElementById('multiadd-submit').click();
-                    }
-                });
-                $(".togglemultigrd").show();
+            case btn_multiadd:
+                $(".togglemultigrd").toggle();
+                btn_multisave.classList.toggle('hidden');
+                break;
+            case btn_multisave:
+                if(document.querySelectorAll('input.is-invalid').length == 0){
+                    document.getElementById('multiadd-submit').click();
+                }
                 break;
             case btn_release:   
                 showModal('release', 'modalreleaseprovisionalgrade', 'confirmreleaseprovisionalgrade');
@@ -296,7 +413,8 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                 }
                 break;
             case btn_finalrelease:
-                showModal('finalrelease', 'modalreleasefinalgrades', 'confirmfinalrelease');
+                var isConvertSubcat = document.getElementById('isconvertsubcat');
+                showModal('finalrelease', isConvertSubcat.value != 1 ? 'modalreleasefinalgrades' : 'modalreleasefinalconvertedgrades', 'confirmfinalrelease');
                 break;
             case btn_download:
                 document.getElementById('downloadcsv-submit').click();
@@ -309,6 +427,19 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
             case btn_switch_display:
                 toggle_display_assessments();
                 break;
+            case btn_bulk_import:
+                if(!$(".gradeitems").text().includes("Moodle Grade[Date]")){
+                    showModal('bulkimportgrades', 'modalimportgrades', 'confirmimport');
+                }else{
+                    document.getElementById('bulk-submit').click();
+                }
+                break;
+            case btn_convert:
+                showModal('convertgrades', 'modalconvertgrades', 'continueconvertgrade');
+                break;
+            case radio_ptprc[0]:
+            case radio_ptprc[1]:
+                clearConversionTable();
             default:
                 break;
         }
@@ -326,12 +457,20 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                     Storage.set(BLIND_MARKING_KEY, false);
                 }
                 check_blind_marking();
+                toggle_child_activities();
 
-                var input_reason = document.getElementById('input-reason');
+                var input_reason = document.querySelector('.togglemultigrd > input');
                 if(input_reason){
                     input_reason.addEventListener('input', (e) => {
                         update_reason_inputs(e.target.value);
                     });
+                }
+
+                var select_scale = document.getElementById('select-scale');
+                if(select_scale){
+                    if(select_scale.value != 1){
+                        toggleScaleTable();
+                    }
                 }
 
                 var input_search = document.querySelectorAll('.input-search');
@@ -342,6 +481,38 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                             if(key === 13){
                                 document.getElementById('search-submit').click();
                             }                        
+                        });
+                    });
+                }
+
+                var input_percentage_points = document.querySelectorAll('.input-prc,.input-pt');
+                if(input_percentage_points.length > 0){
+                    input_percentage_points.forEach(input => {
+                        var field = input.querySelector('input');
+                        if(field.value){
+                            calculatePercentagePoints(field, input.classList.contains('input-prc'));
+                        }
+                        input.addEventListener('change', (e) =>{
+                            calculatePercentagePoints(e.target, input.classList.contains('input-prc'));
+                        });
+                    });
+                }
+
+                var input_gradept = document.querySelectorAll('.input-gradept');
+                if(input_gradept.length > 0){
+                    input_gradept.forEach(input => {
+                        input.addEventListener('input', (e) => {
+                            var val = e.target.value;
+                            var grademax = e.target.getAttribute('data-grademax');
+                            if(val && !(/^([mM][vV]|[0-9]|[nN][sS])+$/).test(val)){
+                                input.classList.add('is-invalid');
+                            }else{
+                                if(Number.isInteger(parseInt(val)) && parseInt(val) > parseInt(grademax)){
+                                    input.classList.add('is-invalid');
+                                }else{
+                                    input.classList.remove('is-invalid');
+                                }
+                            }
                         });
                     });
                 }
@@ -411,17 +582,11 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                 if(checkCurrentUrl("gugcat/overview")){
                     document.querySelector('#btn-overviewtab').classList.add('active');
                     document.querySelector('#btn-assessmenttab').classList.remove('active');
-                    var mformNotes = document.getElementById('id_notes');
-                    if(mformNotes){
-                        (async () => {
-                            mformNotes.placeholder = await Str.get_string('specifyreason', 'local_gugcat');
-                            mformNotes.required = true;
-                        })();
-                    }
                 }else if(checkCurrentUrl("gugcat/index")){
                     document.getElementById('btn-release').style.display = 
                     !$(".gradeitems").text().includes("Moodle Grade[Date]") ? 'inline-block' : 'none';
                     var nodeArr = Array.from(document.querySelectorAll('.gradeitems'));
+                    var isConverted = document.getElementById('isconverted');
                     if(nodeArr.find(node => node.innerHTML !== 'Moodle Grade<br>[Date]')){
                         document.getElementById('btn-saveadd').style.display = 'inline-block';
                         var btnnewgrade = document.querySelectorAll('.addnewgrade');
@@ -434,15 +599,9 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                             element.style.display = 'block';
                         });
                     }
-                }else if(checkCurrentUrl("gugcat/add") || checkCurrentUrl("gugcat/edit")){
-                    //Add placeholder
-                    var mformReason = document.getElementById('id_otherreason');
-                    var mformNotes = document.getElementById('id_notes');
-                    (async () => {
-                        mformReason.placeholder = await Str.get_string('pleasespecify', 'local_gugcat');
-                        mformNotes.placeholder = await Str.get_string('specifyreason', 'local_gugcat');
-                        mformNotes.required = true;
-                    })();
+                    if(isConverted.value != 0){
+                        document.getElementById('btn-release').style.display = 'none';
+                    }
                 }
             }
         }

@@ -24,6 +24,7 @@
  */
 namespace local_gugcat;
 
+use ArrayObject;
 use assign;
 use context_course;
 use context_module;
@@ -52,7 +53,12 @@ class grade_capture{
         $captureitems = array();
         global $gradeitems, $firstgradeid;
         $gradeitems = array();
+        $gt = null; // Gradetype
+        $is_converted = false;
+        // Error to display
+        $error = null;
         if(isset($module)){
+            $gt = $module->gradeitem->gradetype;
             $gbgrades = grade_get_grades($course->id, 'mod', $module->modname, $module->instance, array_keys($students));
             $gbgradeitem = array_values(array_filter($gbgrades->items, function($item) use($module){
                 return $item->itemnumber == $module->gradeitem->itemnumber;//filter grades with specific itemnumber
@@ -60,11 +66,23 @@ class grade_capture{
             $releasedgrades = isset($gbgradeitem[0]) ? $gbgradeitem[0]->grades : null;
             if($firstgradeid = local_gugcat::get_grade_item_id($course->id, $module->gradeitemid, get_string('moodlegrade', 'local_gugcat'))){
                 $gradeitems = local_gugcat::get_grade_grade_items($course, $module);
+                $convertedgrades = array();
+                $is_converted = $module->is_converted;
+                if($is_converted){
+                    $conversion = grade_converter::retrieve_grade_conversion($module->gradeitemid);
+                    // Get converted grade item and remove it from the gradeitems array
+                    foreach($gradeitems as $i=>$gi){
+                        if($gi->itemname == get_string('convertedgrade', 'local_gugcat')){
+                            $convertedgrades = $gi->grades;
+                            unset($gradeitems[$i]);
+                            break;
+                        }
+                    }
+                }
                 //---------ids needed for grade discrepancy
                 $agreedgradeid = local_gugcat::get_grade_item_id($course->id, $module->gradeitemid, get_string('gi_agreedgrade', 'local_gugcat'));
                 $secondgradeid = local_gugcat::get_grade_item_id($course->id, $module->gradeitemid, get_string('gi_secondgrade', 'local_gugcat'));
                 $thirdgradeid = local_gugcat::get_grade_item_id($course->id, $module->gradeitemid, get_string('gi_thirdgrade', 'local_gugcat'));    
-                
             }
         }
         $i = 1;
@@ -85,15 +103,23 @@ class grade_capture{
                     $gbg = isset($releasedgrades[$student->id]) ? $releasedgrades[$student->id] : null;
                     $gradescaleoffset = local_gugcat::is_grademax22($module->gradeitem->gradetype, $module->gradeitem->grademax) ? 1 : 0;
                     $grade = self::check_gb_grade($gbg, $gradescaleoffset);
-                    $gradecaptureitem->releasedgrade = is_null($grade) ? null : local_gugcat::convert_grade($grade);
+                    $gradecaptureitem->releasedgrade = is_null($grade) ? null : local_gugcat::convert_grade($grade, $gt);
+                }
+                //get converted grade
+                if($is_converted && count($convertedgrades) > 0){
+                    $cg = isset($convertedgrades[$student->id]) ? $convertedgrades[$student->id] : null;
+                    $cgg = grade_converter::convert($conversion, $cg->grade);
+                    $gradecaptureitem->convertedgrade = local_gugcat::convert_grade($cgg, null, $module->is_converted);
                 }
                 //get first grade and provisional grade
                 $gifg = $gradeitems[$firstgradeid]->grades;
                 $gipg = $gradeitems[intval(local_gugcat::$PRVGRADEID)]->grades;
                 $fg = (isset($gifg[$student->id])) ? $gifg[$student->id]->grade : null;
                 $pg = (isset($gipg[$student->id])) ? $gipg[$student->id]->grade : null;
-                $gradecaptureitem->firstgrade = is_null($fg) ? get_string('nograde', 'local_gugcat') : local_gugcat::convert_grade($fg);
-                $gradecaptureitem->provisionalgrade = is_null($pg) ? get_string('nograde', 'local_gugcat') : local_gugcat::convert_grade($pg);
+                $gradecaptureitem->firstgrade = is_null($fg) ? get_string('nograde', 'local_gugcat') : local_gugcat::convert_grade($fg, $gt);
+                
+                $gradecaptureitem->provisionalgrade = is_null($pg) ? get_string('nograde', 'local_gugcat') : 
+                ($is_converted ? local_gugcat::convert_grade($pg, null, $module->is_converted) : local_gugcat::convert_grade($pg, $gt));
                 $agreedgrade = (!$agreedgradeid) ? null : (isset($gradeitems[$agreedgradeid]->grades[$student->id]) ? $gradeitems[$agreedgradeid]->grades[$student->id]->grade : null);
                 $sndgrade = (!$secondgradeid) ? null : (isset($gradeitems[$secondgradeid]->grades[$student->id]) ? $gradeitems[$secondgradeid]->grades[$student->id]->grade : null);
                 $trdgrade = (!$thirdgradeid) ? null : (isset($gradeitems[$thirdgradeid]->grades[$student->id]) ? $gradeitems[$thirdgradeid]->grades[$student->id]->grade : null);
@@ -104,7 +130,7 @@ class grade_capture{
                     if($item->id != local_gugcat::$PRVGRADEID && $item->id != $firstgradeid){
                         $rawgrade = (isset($item->grades[$student->id])) ? $item->grades[$student->id]->grade : null; 
                         $grdobj = new stdClass();
-                        $grade = is_null($rawgrade) ? 'N/A' : local_gugcat::convert_grade($rawgrade);
+                        $grade = is_null($rawgrade) ? 'N/A' : local_gugcat::convert_grade($rawgrade, $gt);
                         $grdobj->grade = $grade;
                         $grdobj->discrepancy = false;
 
@@ -123,10 +149,23 @@ class grade_capture{
                         array_push($gradecaptureitem->grades, $grdobj);
                     }                        
                 }    
+                // Display error when grade from grade book is different from gcat moodle grade
+                if(!is_null($gradecaptureitem->releasedgrade)){
+                    // If gradebook grade is not null and different from moodle grade
+                    if($gradecaptureitem->firstgrade != $gradecaptureitem->releasedgrade){
+                        $error = get_string('warningreimport', 'local_gugcat');
+                    }
+                }else{
+                    // If gradebook grade is null but moodle grade is not null
+                    if($gradecaptureitem->firstgrade != get_string('nograde', 'local_gugcat')){
+                        $error = get_string('warningreimport', 'local_gugcat');
+                    }
+                }
             }
             array_push($captureitems, $gradecaptureitem);
             $i++;
         }
+        is_null($error) ? null : local_gugcat::notify_error(null, $error);
         return $captureitems;
     }
 
@@ -175,7 +214,7 @@ class grade_capture{
         $gradeitemid = $cm->gradeitem->id;
 
         //set offset value for max 22 points grade
-        $gradescaleoffset = (local_gugcat::is_grademax22($cm->gradeitem->gradetype, $cm->gradeitem->grademax)) ? 1 : 0;
+        $gradescaleoffset = (local_gugcat::is_scheduleAscale($cm->gradeitem->gradetype, $cm->gradeitem->grademax)) ? 1 : 0;
         
         //Retrieve enrolled students' ids only
         $students = get_enrolled_users(context_course ::instance($courseid), 'local/gugcat:gradable', 0, 'u.id');
@@ -257,57 +296,93 @@ class grade_capture{
      * Import grades from assign grades/gradebook grades to GCAT moodle grade item
      *
      * @param int $courseid
-     * @param mixed $module Selected course module
-     * @param array $activities All modules
+     * @param mixed $importactivities Selected course module, or modules to be imported
+     * @param array $allactivities Use to update all weights
      */
-    public static function import_from_gradebook($courseid, $module, $activities){
+    public static function import_from_gradebook($courseid, $importactivities, $allactivities){
         global $DB;
         // Retrieve all enrolled students' ids only
         $students = get_enrolled_users(context_course ::instance($courseid), 'local/gugcat:gradable', 0, 'u.id');
+        $modules = array();
+        if (is_array($importactivities)) {
+            $modules = $importactivities;
+        } else {
+            $modules = array($importactivities);
+        }
         
-        // Create Provisional Grade grade item and grade_grades to all students, then assign it to static PRVID
-        local_gugcat::$PRVGRADEID = local_gugcat::add_grade_item($courseid, get_string('provisionalgrd', 'local_gugcat'), $module, $students);
-        
-        // Create Aggregated Grade grade item for this course
-        $aggradeid = local_gugcat::add_grade_item($courseid, get_string('aggregatedgrade', 'local_gugcat'), null, $students);
-        
-        // Create Moodle Grade grade item and grade_grades to all students
-        $mggradeitemid = local_gugcat::add_grade_item($courseid, get_string('moodlegrade', 'local_gugcat'), $module, $students);
-        // Update Moodle Grade timemodified
-        $gradeitem_ = new grade_item(array('id'=>$mggradeitemid), true);
-        $gradeitem_->timemodified = time();
-        $gradeitem_->update();
+        foreach ($modules as $module) {
+            // Create Provisional Grade grade item and grade_grades to all students, then assign it to static PRVID
+            local_gugcat::$PRVGRADEID = is_null($module->provisionalid) 
+            ? local_gugcat::add_grade_item($courseid, get_string('provisionalgrd', 'local_gugcat'), $module, $students)
+            : $module->provisionalid;
 
-        $grade = null;
-        
-        $gbgrades = grade_get_grades($courseid, 'mod', $module->modname, $module->instance, array_keys($students));
-        $gbgradeitem = array_values(array_filter($gbgrades->items, function($item) use($module){
-            return $item->itemnumber == $module->gradeitem->itemnumber;//filter grades with specific itemnumber
-        }));
-        $gradescaleoffset = local_gugcat::is_grademax22($module->gradeitem->gradetype, $module->gradeitem->grademax) ? 1 : 0;
+            // Get provisional gradeitem id for weights reset
+            // Create subcategory gradeitem for components
+            $prvid_reset = null;
+            if(local_gugcat::is_child_activity($module)){
+                // Get parent category object from array $allactivities
 
-        foreach($students as $student){
-            $gbg = isset($gbgradeitem[0]) ? $gbgradeitem[0]->grades[$student->id] : null;//gradebook grade record
-            //check if assignment
-            if(strcmp($module->modname, 'assign') == 0){
-                $assign = new assign(context_module::instance($module->id), $module, $courseid);
-                $asgrd = $assign->get_user_grade($student->id, false);
-                if($gbg->overridden == 0 && isset($asgrd->grade)){                    
-                    $grade = ($asgrd->grader >=0) ? ($asgrd->grade + $gradescaleoffset) : null;
-                }else {
-                    $grade = self::check_gb_grade($gbg, $gradescaleoffset);
+                // Get sub categories
+                $categories = array_filter($allactivities, function ($act) use ($module){
+                    return $act->modname == 'category' && $act->instance == $module->gradeitem->categoryid;
+                });
+                // Get parent subcat activity object
+                $parent = reset($categories);
+
+                // Create provisional gradeitem of the $parent subcategory if its null
+                if(is_null($parent->provisionalid)){
+                    // Clone category object so original obj will not be updated
+                    $x = clone($parent);
+                    $x->gradeitemid = $module->gradeitem->categoryid;
+                    $prvid_reset = local_gugcat::add_grade_item($courseid, get_string('subcategorygrade', 'local_gugcat'), $x);
+                }else{
+                    $prvid_reset = $parent->provisionalid;
                 }
-                local_gugcat::update_workflow_state($assign, $student->id, ASSIGN_MARKING_WORKFLOW_STATE_INREVIEW);
             }else{
-                $grade = self::check_gb_grade($gbg, $gradescaleoffset);
+                $prvid_reset = local_gugcat::$PRVGRADEID;
             }
-            local_gugcat::add_update_grades($student->id, local_gugcat::$PRVGRADEID, $grade);
-            local_gugcat::add_update_grades($student->id, $mggradeitemid, $grade);
+           
+            //Create Aggregated Grade grade item to all students
+            $aggradeid = local_gugcat::add_grade_item($courseid, get_string('aggregatedgrade', 'local_gugcat'), null, $students);
 
-            $DB->set_field('grade_grades', 'overridden', 0, array('itemid' => $aggradeid, 'userid'=>$student->id));
-        } 
-        //every time import is clicked, weights from the main activity will be copied to provisional grade items
-        self::set_provisional_weights($courseid, $activities, $students);
+            // Create Moodle Grade grade item and grade_grades to all students
+            $mggradeitemid = local_gugcat::add_grade_item($courseid, get_string('moodlegrade', 'local_gugcat'), $module, $students);
+            // Update Moodle Grade timemodified
+            $gradeitem_ = new grade_item(array('id'=>$mggradeitemid), true);
+            $gradeitem_->timemodified = time();
+            $gradeitem_->update();
+            $grade = null;
+            
+            $gbgrades = grade_get_grades($courseid, 'mod', $module->modname, $module->instance, array_keys($students));
+            $gbgradeitem = array_values(array_filter($gbgrades->items, function($item) use($module){
+                return $item->itemnumber == $module->gradeitem->itemnumber;//filter grades with specific itemnumber
+            }));
+
+            foreach($students as $student){
+                $gbg = isset($gbgradeitem[0]) ? $gbgradeitem[0]->grades[$student->id] : null;//gradebook grade record
+                //check if assignment
+                if(strcmp($module->modname, 'assign') == 0){
+                    $assign = new assign(context_module::instance($module->id), $module, $courseid);
+                    $asgrd = $assign->get_user_grade($student->id, false);
+                    if($gbg->overridden == 0 && isset($asgrd->grade)){                    
+                        $grade = ($asgrd->grader >=0) ? ($asgrd->grade) : null;
+                    }else {
+                        $grade = self::check_gb_grade($gbg);
+                    }
+                    local_gugcat::update_workflow_state($assign, $student->id, ASSIGN_MARKING_WORKFLOW_STATE_INREVIEW);
+                }else{
+                    $grade = self::check_gb_grade($gbg);
+                }
+                //for assessment grade history
+                $notes = ',_gradeitem: '. get_string('moodlegrade', 'local_gugcat');
+                local_gugcat::add_update_grades($student->id, local_gugcat::$PRVGRADEID, $grade, '');
+                local_gugcat::add_update_grades($student->id, $mggradeitemid, $grade, $notes);
+
+                $DB->set_field('grade_grades', 'overridden', 0, array('itemid' => $aggradeid, 'userid'=>$student->id));
+                // Every time import is clicked, reset weights in provisional grade > grade_grades information  to null
+                $DB->set_field('grade_grades', 'information', null, array('itemid' => $prvid_reset, 'userid' => $student->id));          
+            } 
+        }
     }
 
     /**
@@ -340,36 +415,12 @@ class grade_capture{
     }
 
     /**
-     * Copy weights from main activity grade item to provisional grade item
-     *
-     * @param int $courseid
-     * @param array $activities All modules
-     * @param array $students All enrolled students
-     */
-    public static function set_provisional_weights($courseid, $activities, $students){
-        global $DB;
-        foreach ($activities as $mod) {
-            $prvgrdid = local_gugcat::get_grade_item_id($courseid, $mod->gradeitemid, get_string('provisionalgrd', 'local_gugcat'));
-            if(!$prvgrdid){//create provisional grade item for modules that has no prv gi yet
-                $prvgrdid = local_gugcat::add_grade_item($courseid, get_string('provisionalgrd', 'local_gugcat'), $mod, $students);
-            }
-            //Work around when setting including no grades in aggregation is not accepted. 
-            $weightcoef1 = $mod->gradeitem->aggregationcoef; //Aggregation coeficient used for weighted averages or extra credit
-            $weightcoef2 = $mod->gradeitem->aggregationcoef2; //Aggregation coeficient used for weighted averages only
-            $weight = ((float)$weightcoef1 > 0) ? (float)$weightcoef1 : (float)$weightcoef2;
-            foreach ($students as $student) {
-                $DB->set_field('grade_grades', 'information', $weight, array('itemid' => $prvgrdid, 'userid' => $student->id));          
-            }
-        }
-    }
-
-    /**
      * Returns gradebook grade, admin grade or null 
      *
      * @param mixed $gbgobj - gradebook grade object per student
      * @param mixed $gradescaleoffset - added to grade
      */
-    public static function check_gb_grade($gbgobj, $gradescaleoffset){
+    public static function check_gb_grade($gbgobj, $gradescaleoffset = 0){
         if(is_null($gbgobj)) return null;
         $gbgrade = $gbgobj->grade;
         $feedback = $gbgobj->feedback;
@@ -385,6 +436,172 @@ class grade_capture{
                 break;
         }
         return !is_null($admingrade) ? $admingrade : ((isset($gbgrade)) ? ($gbgrade + $gradescaleoffset) : null);
+    }
+
+    /**
+     * Checks and prepares grade data for updating grade items in gcat.
+     *
+     * @param object $csvimport csv import reader object for iterating over the imported CSV file.
+     * @param mixed $activity selected course module to grade
+     * @param string $itemname selected grade version for the new grades
+     */
+    public static function prepare_import_data($csvdata, $activity, $itemname){
+        $csvdata->init();
+        global $COURSE;
+        $gradebookerrors = array();
+        $newgrades = array();
+        $status = true;
+        $enrolled = array();
+        $grouped = array();
+        $gradetype = $activity->gradeitem->gradetype;
+        $grademax = $activity->gradeitem->grademax;
+        // Get list of all student idnumbers enrolled on current course
+        $enrolled = self::get_students_per_groups(array(0), $COURSE->id, 'u.id, u.idnumber');
+        // Get list of students in group
+        if($activity->groupingid && $activity->groupingid > 0){
+            $grouped = self::get_students_per_groups(array($activity->groupingid), $COURSE->id, 'u.id, u.idnumber');
+        }
+        while ($line = $csvdata->next()) {
+            if (count(array_filter($line)) == 0) {
+                // There is no data on this line, move on.
+                continue;
+            }
+
+            // Each line is a student record. First element is ID number, second is grade.
+            $idnumber = $line[0];
+            $grade = $activity->modname == 'assign' ? $line[2] : $line[3];
+            $errorobj = new stdClass();
+            $errorobj->id = $idnumber;
+            $errorobj->value = $grade;
+
+            // Check if student is not enrolled in current course
+            if(!in_array($idnumber, array_column($enrolled, 'idnumber'))){
+                $gradebookerrors[] = get_string('uploaderrornotfound', 'local_gugcat', $errorobj);
+                $status = false;
+                break;
+            }
+
+            // Check if student is not in the current group
+            if(count($grouped) > 0 && !in_array($idnumber, array_column($grouped, 'idnumber'))){
+                $gradebookerrors[] = get_string('uploaderrornotmember', 'local_gugcat', $errorobj);
+                $status = false;
+                break;
+            }
+
+            // If activity is scale, validate grades if its valid Schedule A or B
+            if($gradetype == GRADE_TYPE_SCALE){
+                // Check if grade not alphanumeric
+                if(!preg_match('/^([mM][vV]|[Hh]|[a-zA-Z][0-9]|[nN][sS]|[a-zA-Z][0-9]:\d{1,2})$/', str_replace(' ', '', $grade))){
+                    $gradebookerrors[] = get_string('uploaderrorgradeformat', 'local_gugcat', $errorobj);
+                    $status = false;
+                    break;
+                }
+
+                // Check if grade is not in the scale               
+                if(isset($grade) && !in_array(strtoupper($grade), local_gugcat::$GRADES)){
+                    $gradebookerrors[] = get_string('uploaderrorgradescale', 'local_gugcat', $errorobj);
+                    $status = false;
+                    break;
+                }
+            }else{
+            // If activity is points, validate grades if its valid points or NS/MV
+
+                // Check if grade is greater than the max  grade of activity
+                if(is_numeric($grade) && $grade > $grademax){
+                    $gradebookerrors[] = get_string('uploaderrorgrademaxpoint', 'local_gugcat', $errorobj);
+                    $status = false;
+                    break;
+                }
+
+                // Check if grade is a valid grade point
+                if(!preg_match('/^([mM][vV]|[0-9]{1,3}|[nN][sS])$/', str_replace(' ', '', $grade))){
+                    $gradebookerrors[] = get_string('uploaderrorgradepoint', 'local_gugcat', $errorobj);
+                    $status = false;
+                    break;
+                }
+            }
+
+            if($status){
+                $userids = array_column($enrolled, 'id', 'idnumber');
+                $newgrades[$userids[$idnumber]] = $grade;
+            }
+        }
+        if($status && count($newgrades) > 0){
+            $gradeitemid = local_gugcat::add_grade_item($COURSE->id, $itemname, $activity);
+            foreach ($newgrades as $id=>$item) {
+                $grade = !is_numeric($item) ? array_search(strtoupper($item), local_gugcat::$GRADES) : $item; 
+                local_gugcat::add_update_grades($id, $gradeitemid, $grade, '');
+                if($activity->is_converted){
+                    // If conversion is enabled, save the converted grade to provisional grade and original grade to converted grade.
+                    $conversion = grade_converter::retrieve_grade_conversion($activity->gradeitemid);
+                    $cg = grade_converter::convert($conversion, $grade);
+                    local_gugcat::update_grade($id, local_gugcat::$PRVGRADEID, $cg, '');
+                    $convertedgi = local_gugcat::get_grade_item_id($COURSE->id, $activity->gradeitemid, get_string('convertedgrade', 'local_gugcat'));
+                    local_gugcat::update_grade($id, $convertedgi, $grade, '');
+                }
+            }
+        }
+        return array($status, $gradebookerrors);
+    }
+
+    /**
+     * Returns list of students based on grouping ids from activities
+     * 
+     * @param array $groupingids ids from activities
+     * @param int $courseid selected course id
+     * @param string $userfields requested user record fields
+     * @return array
+     */
+    public static function get_students_per_groups($groupingids, $courseid, $userfields = 'u.*') {
+        $coursecontext = context_course::instance($courseid);
+        $students = Array();
+        if(array_sum($groupingids) != 0){
+            $groups = array();
+            foreach ($groupingids as $groupingid) {
+                if($groupingid != 0){
+                    $groups += groups_get_all_groups($courseid, 0, $groupingid);
+                }
+            }
+            if(!empty($groups)){
+                foreach ($groups as $group) {
+                    $students += get_enrolled_users($coursecontext, 'local/gugcat:gradable', $group->id, $userfields);
+                }
+            }
+        }else{
+            $students = get_enrolled_users($coursecontext, 'local/gugcat:gradable', 0, $userfields);
+        }
+        return $students;
+    }
+
+    /**
+     * Process the structure of the data for upload csv template
+     *
+     * @param mixed $activity
+     */
+    public static function download_template_csv($activity){
+        global $COURSE;
+        $is_assign = $activity->modname == 'assign';
+        $filename = "upload_template_$activity->name"."_".date('Y-m-d_His');    
+        $columns = $is_assign ? ['Student Number', 'Participant Number', 'Grades'] 
+            : ['Student number', 'Last Name', 'First Name', 'Grades'];
+        $fields = $is_assign ? 'u.id, u.idnumber' : 'u.id, u.firstname, u.lastname, u.idnumber';
+        $students = self::get_students_per_groups(array($activity->groupingid), $COURSE->id, $fields);
+        $array = array();
+        foreach($students as $student) {
+            $row = new stdClass();
+            $row->{'Student Number'} = $student->idnumber;
+            if($is_assign){
+                $row->{'Participant Number'} = assign::get_uniqueid_for_user_static($activity->instance, $student->id);
+            }else{
+                $row->{'Last Name'} = $student->lastname;
+                $row->{'First Name'} = $student->firstname;
+            }
+            $row->{'Grades'} = null;
+            array_push($array, $row);
+        }
+        //convert array to ArrayObject to get the iterator
+        $exportdata = new ArrayObject($array);
+        local_gugcat::export_gcat($filename, $columns, $exportdata->getIterator());
     }
 
 }
