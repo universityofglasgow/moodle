@@ -251,6 +251,7 @@ class grade_aggregation{
                     $grdobj->weight =  round((float)$weight * 100 );
                     array_push($gradecaptureitem->grades, $grdobj);
                 }
+                $sumaggregated = $sumaggregated != 0 ? $sumaggregated / $floatweight : $sumaggregated;
                 $totalweight = round((float)$floatweight * 100 );
                 $gradecaptureitem->completed = $totalweight . '%';
                 if($gbaggregatedgrade = $DB->get_record('grade_grades', array('itemid'=>$aggradeid, 'userid'=>$student->id))){
