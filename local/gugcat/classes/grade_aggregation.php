@@ -116,7 +116,7 @@ class grade_aggregation{
                 $gbgrades = grade_get_grades($course->id, 'mod', $mod->modname, $mod->instance, array_keys($students));
             }
 
-            $fields = 'userid, itemid, id, rawgrade, finalgrade, information, timemodified, overridden';
+            $fields = 'userid, itemid, id, rawgrade, finalgrade, information, timemodified, overridden, feedback';
             // Get provisional grades
             $grades->provisional = is_null($prvgrdid) ? array() : $DB->get_records('grade_grades', array('itemid' => $prvgrdid), 'id', $fields);
             if($mod->is_converted){
@@ -479,18 +479,6 @@ class grade_aggregation{
             $scale = $subcatobj->is_converted ? $subcatobj->is_converted : (!is_null($autoscale) ? $autoscale : null);
             if(!is_null($subcatobj->aggregation_type) && $subcatobj->aggregation_type != $subcatobj->aggregation){
                 $notes = !is_null($scale) && !empty($scale) ? 'aggregation -'.$scale : 'aggregation';
-                $componentnotes = 'aggregation';
-                //update feedback field for subcat and child components prvgrade 
-                local_gugcat::update_components_notes($userid, $pgobj->itemid, $notes);
-                foreach($filtered as $id=>$childact){
-                    if(isset($childact->grades->provisional[$userid]) && $pg = $childact->grades->provisional[$userid]){
-                        // Get idnumber of provisional grades for scales
-                        $scale = $childact->is_converted;
-                        $notes = $scale ? $componentnotes . " -" . $scale : $componentnotes; 
-                        // Only get provisional grades $pg from child assessments
-                        local_gugcat::update_components_notes($userid, $pg->itemid, $notes);
-                    }        
-                } 
                 //update calculation field with aggregation type
                 $DB->set_field('grade_items', 'calculation', $subcatobj->aggregation, array('id'=>$pgobj->itemid));
             }
@@ -505,14 +493,15 @@ class grade_aggregation{
                         $notes = $scale ? $componentnotes . " -" . $scale : $componentnotes; 
                         // Only get provisional grades $pg from child assessments
                         local_gugcat::update_components_notes($userid, $pg->itemid, $notes);
-                    }        
+                    }
                 }
                 $updated = true;
                 $DB->set_field('grade_items', 'outcomeid', $autoscale, array('id'=>$pgobj->itemid));
             }
+            $DB->set_field('grade_grades', 'feedback', '', array('id'=>$pgobj->id));       
         }
 
-        if($pgobj && isset($calculatedgrd) && $grd != $calculatedgrd && !$updated){
+        if($pgobj && isset($calculatedgrd) && round((float)$grd, 5) != round((float)$calculatedgrd, 5) && !$updated){
             //if subcategory is new then update grade with "import" notes for grade history.
             if(is_null($grd) && !$subcatobj->is_converted){
                 $notes = 'import';
@@ -521,11 +510,62 @@ class grade_aggregation{
                     if(isset($grades->provisional[$userid]) && $pg = $grades->provisional[$userid]){
                         // Only get provisional grades $pg from child assessments
                         local_gugcat::update_components_notes($userid, $pg->itemid, $notes);
-                    }        
+                    }      
+                    $DB->set_field('grade_grades', 'feedback', '', array('id'=>$pgobj->id));        
                 }   
+            }
+            //if subcategory feedback is null or empty, and calculated grade is different from grdbook grade
+            else if((is_null($pgobj->feedback) || empty($pgobj->feedback)) && (!isset($notes) || is_null($notes) || empty($notes))){
+                $notes = !is_null($scale) ? "systemupdatecourse -$scale" : "systemupdatecourse";
+                $componentnotes = 'systemupdatecourse';
+                local_gugcat::update_grade($userid, $pgobj->itemid, $calculatedgrd, $notes);
+                foreach($filtered as $id=>$childact){
+                    if(isset($childact->grades->provisional[$userid]) && $pg = $childact->grades->provisional[$userid]){
+                        // Get idnumber of provisional grades for scales
+                        $scale = $childact->is_converted;
+                        $notes = $scale ? $componentnotes . " -$scale" : $componentnotes; 
+                        // Only get provisional grades $pg from child assessments
+                        local_gugcat::update_components_notes($userid, $pg->itemid, $notes);
+                    }
+                }
+                $DB->set_field('grade_grades', 'feedback', '', array('id'=>$pgobj->id));        
+            }
+            //if subcategory feedback is equal to grade, import or $notes is equal to aggregation and calculated grade is different from grdbook grade
+            else if(preg_match('/grade/i', $pgobj->feedback) || preg_match('/import/i', $pgobj->feedback) || (isset($notes) && preg_match('/aggregation/i', $notes))){
+                $feedback = isset($notes) && preg_match('/aggregation/i', $notes) ? $notes : $pgobj->feedback;
+                local_gugcat::update_grade($userid, $pgobj->itemid, $calculatedgrd, $feedback);
+                foreach($filtered as $id=>$childact){
+                    if(isset($childact->grades->provisional[$userid]) && $pg = $childact->grades->provisional[$userid]){
+                        // Get idnumber of provisional grades for scales
+                        $scale = $childact->is_converted;
+                        $componentnotes = preg_replace('/ \-./i', '', $feedback);
+                        $notes = $scale ? $componentnotes . " -$scale" : $componentnotes; 
+                        // Only get provisional grades $pg from child assessments
+                        local_gugcat::update_components_notes($userid, $pg->itemid, $notes);
+                    }       
+                }
+                $DB->set_field('grade_grades', 'feedback', '', array('id'=>$pgobj->id));        
             }else{
                 local_gugcat::update_grade($userid, $pgobj->itemid, $calculatedgrd, '');
-            }    
+            }
+        }
+        //if subcategory feedback is equal to grade, import or $notes is equal to aggregated and if gradebook grade is not null and equal to calculated grade
+        else if($pgobj && isset($calculatedgrd) && !is_null($grd) && round((float)$grd, 5) == round((float)$calculatedgrd, 5)){
+            if(preg_match('/grade/i', $pgobj->feedback) || preg_match('/import/i', $pgobj->feedback) || (isset($notes) && preg_match('/aggregation/i', $notes))){
+                $feedback = isset($notes) && preg_match('/aggregation/i', $notes) ? $notes : $pgobj->feedback;
+                local_gugcat::update_grade($userid, $pgobj->itemid, $calculatedgrd, $feedback);
+                foreach($filtered as $id=>$childact){
+                    if(isset($childact->grades->provisional[$userid]) && $pg = $childact->grades->provisional[$userid]){
+                        // Get idnumber of provisional grades for scales
+                        $scale = $childact->is_converted;
+                        $componentnotes = preg_replace('/ \-./i', '', $feedback);
+                        $notes = $scale ? $componentnotes . " -$scale" : $componentnotes; 
+                        // Only get provisional grades $pg from child assessments
+                        local_gugcat::update_components_notes($userid, $pg->itemid, $notes);
+                    }       
+                }
+                $DB->set_field('grade_grades', 'feedback', '', array('id'=>$pgobj->id));        
+            }
         }
         $grdobj->grade = $calculatedgrd;
         $grdobj->gradetype = $gradetype;

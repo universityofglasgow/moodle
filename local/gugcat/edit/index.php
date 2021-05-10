@@ -141,14 +141,7 @@ if ($fromform = $mform->get_data()) {
         : null);  
         //check if subcategory has an existing grade.
         if(!is_null($grd) && $grade->overridden == 0){
-            $childactivities = local_gugcat::get_child_activities_id($courseid, $module->gradeitem->categoryid);
-            local_gugcat::update_components_notes($studentid, $subcatid, $notes);
-            $prvgrades = local_gugcat::get_prvgrd_item_ids($courseid, $childactivities);
-            foreach($prvgrades as $prvgrd){
-                $is_scale = !is_null($prvgrd->idnumber) ? $prvgrd->idnumber : false;
-                $notes = $is_scale ? $componentnotes . " -" . $is_scale : $componentnotes;
-                local_gugcat::update_components_notes($studentid, $prvgrd->id, $notes);
-            }
+            $DB->set_field('grade_grades', 'feedback', $notes, array('id'=>$grade->id));
         }
     }
     if((integer)$fromform->overview == 1){

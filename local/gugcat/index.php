@@ -248,14 +248,7 @@ if (isset($release)){
                     //if subcat has a grade and it is not overridden.
                     if(isset($grd) && !is_null($grd) && $grade->overridden == 0){
                         $notes = ($scale) ? 'grade -'.$scale : 'grade';
-                        $componentnotes = 'grade';
-                        local_gugcat::update_components_notes($id, $subcatid, $notes);
-                        $prvgrds = local_gugcat::get_prvgrd_item_ids($courseid, $childactivities);
-                        foreach($prvgrds as $prvgrd){
-                            $is_scale = !is_null($prvgrd->idnumber) ? $prvgrd->idnumber : false;
-                            $notes = $is_scale ? $componentnotes . " -" . $is_scale : $componentnotes; 
-                            local_gugcat::update_components_notes($id, $prvgrd->id, $notes);
-                        }
+                        $DB->set_field('grade_grades', 'feedback', $notes, array('id'=>$grade->id));     
                     }
                 }
             }
@@ -290,14 +283,7 @@ if (isset($release)){
                 //if subcat has a grade and it is not overridden.
                 if(isset($grd) && !is_null($grd) && $grade->overridden == 0){
                     $notes = ($scale) ? 'import -'.$scale : 'import';
-                    $componentnotes = 'import';
-                    local_gugcat::update_components_notes($student->id, $subcatid, $notes);
-                    $prvgrds = local_gugcat::get_prvgrd_item_ids($courseid, $childactivities);
-                    foreach($prvgrds as $prvgrd){
-                        $is_scale = !is_null($prvgrd->idnumber) ? $prvgrd->idnumber : false;
-                        $notes = $is_scale ? $componentnotes . " -" . $is_scale : $componentnotes; 
-                        local_gugcat::update_components_notes($student->id, $prvgrd->id, $notes);
-                    }
+                    $DB->set_field('grade_grades', 'feedback', $notes, array('id'=>$grade->id));     
                 }
             }
         }else{
@@ -371,14 +357,7 @@ if (isset($release)){
             //if subcat has a grade and it is not overridden.
             if(isset($grd) && !is_null($grd) && $grade->overridden == 0){
                 $notes = ($scale) ? 'import -'.$scale : 'import';
-                $componentnotes = 'import';
-                local_gugcat::update_components_notes($student->id, $subcatid, $notes);
-                $prvgrds = local_gugcat::get_prvgrd_item_ids($courseid, $childactivities);
-                foreach($prvgrds as $prvgrd){
-                    $is_scale = !is_null($prvgrd->idnumber) ? $prvgrd->idnumber : false;
-                    $notes = $is_scale ? $componentnotes . " -" . $is_scale : $componentnotes; 
-                    local_gugcat::update_components_notes($student->id, $prvgrd->id, $notes);
-                }
+                $DB->set_field('grade_grades', 'feedback', $notes, array('id'=>$grade->id));     
             }
         }
         local_gugcat::notify_success('successimport');
