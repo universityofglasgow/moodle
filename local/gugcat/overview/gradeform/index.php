@@ -108,10 +108,12 @@ if(!is_null($activityid) && $formtype == OVERRIDE_GRADE_FORM){
 
 if($formtype == OVERRIDE_GRADE_FORM && $student->aggregatedgrade){
     if(!is_null($activityid)){
-        if(is_numeric($student->aggregatedgrade->grade)){
+        if($subcatactivity->is_converted || is_numeric($student->aggregatedgrade->grade)){
             $gradetype = GRADE_TYPE_VALUE;
         }else{
-            local_gugcat::set_grade_scale(null, $student->aggregatedgrade->scale);
+            // Get scaleid of the first component
+            $scaleid = reset($components) ? reset($components)->scaleid : null;
+            local_gugcat::set_grade_scale($scaleid, $student->aggregatedgrade->scale);
         }
     }else{
         local_gugcat::set_grade_scale(null, $student->aggregatedgrade->scale);
