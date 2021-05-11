@@ -264,32 +264,36 @@ class grade_aggregation{
                 $sumaggregated = $sumaggregated != 0 ? $sumaggregated / $calculatedweight : $sumaggregated;
                 $totalweight = round((float)$floatweight * 100 );
                 $gradecaptureitem->completed = $totalweight . '%';
-                if($gbaggregatedgrade = $DB->get_record('grade_grades', array('itemid'=>$aggradeid, 'userid'=>$student->id))){
-                    local_gugcat::set_grade_scale(null);
-                    $gradecaptureitem->resit = (preg_match('/\b'.$categoryid.'/i', $gbaggregatedgrade->information) ? $gbaggregatedgrade->information : null);
-                    $rawaggrade = ($gbaggregatedgrade->overridden == 0) ? $sumaggregated : (!is_null($gbaggregatedgrade->finalgrade) ? $gbaggregatedgrade->finalgrade : $gbaggregatedgrade->rawgrade);
-                    $aggrade = ($gbaggregatedgrade->overridden == 0) ? round($rawaggrade) + 1 : $rawaggrade; //convert back to moodle scale
-                    $aggrdscaletype = ($schedAweights >= $schedBweights) ? SCHEDULE_A : SCHEDULE_B;
-                    $aggrdobj->scale = $aggrdscaletype;
-                    $aggrdobj->grade = local_gugcat::convert_grade($aggrade, null, $aggrdscaletype);
-                    $aggrdobj->rawgrade = $rawaggrade;
-                    $numberformat = number_format($rawaggrade, 3);
-                    // Only get main activities and categories.
-                    $filtered = array_filter($gradecaptureitem->grades, function($item){ return !$item->is_child; });
-                    $filtergrade = array_column($filtered, 'grade');
-                    $aggrdobj->display = in_array(get_string('nograderecorded', 'local_gugcat'), $filtergrade, true)
-                    || in_array(get_string('missinggrade', 'local_gugcat'), $filtergrade, true)
-                    ? get_string('missinggrade', 'local_gugcat') 
-                    : ($gbaggregatedgrade->overridden == 0 ? ($totalweight < 75 ? $numberformat 
-                    : local_gugcat::convert_grade($aggrade, null, $aggrdscaletype) .' ('.$numberformat.')') 
-                    : local_gugcat::convert_grade($aggrade, null, $aggrdscaletype));
-                    // Check if assessments gradetypes has point grade type, if yes, display error and missing grade
-                    if(in_array(GRADE_TYPE_VALUE, $gradetypes)){
-                        $aggrdobj->grade = null;
-                        $aggrdobj->rawgrade = null;
-                        $aggrdobj->display = get_string('missinggrade', 'local_gugcat');
-                        $errors[0] = get_string('aggregationwarningcourse', 'local_gugcat');
-                    }
+                local_gugcat::set_grade_scale(null);
+                $aggrdscaletype = ($schedAweights >= $schedBweights) ? SCHEDULE_A : SCHEDULE_B;
+                $aggrdobj->scale = $aggrdscaletype;
+                
+                $gbaggregatedgrade = !is_null($aggradeid) ? $DB->get_record('grade_grades', array('itemid'=>$aggradeid, 'userid'=>$student->id)) : null;
+                $gradecaptureitem->resit = ($gbaggregatedgrade && preg_match('/\b'.$categoryid.'/i', $gbaggregatedgrade->information) ? $gbaggregatedgrade->information : null);
+                $rawaggrade = (!$gbaggregatedgrade || ($gbaggregatedgrade && $gbaggregatedgrade->overridden == 0)) 
+                ? $sumaggregated : (!is_null($gbaggregatedgrade->finalgrade) 
+                ? $gbaggregatedgrade->finalgrade : $gbaggregatedgrade->rawgrade);
+                $aggrade = ($gbaggregatedgrade && $gbaggregatedgrade->overridden == 0) ? round($rawaggrade) + 1 : $rawaggrade; //convert back to moodle scale
+                $aggrdobj->grade = local_gugcat::convert_grade($aggrade, null, $aggrdscaletype);
+                $aggrdobj->rawgrade = $rawaggrade;
+                $numberformat = number_format($rawaggrade, 3);
+                // Only get main activities and categories.
+                $filtered = array_filter($gradecaptureitem->grades, function($item){ return !$item->is_child; });
+                $filtergrade = array_column($filtered, 'grade');
+                $aggrdobj->display = in_array(get_string('nograderecorded', 'local_gugcat'), $filtergrade, true)
+                || in_array(get_string('missinggrade', 'local_gugcat'), $filtergrade, true)
+                ? get_string('missinggrade', 'local_gugcat') 
+                : (!$gbaggregatedgrade || ($gbaggregatedgrade && $gbaggregatedgrade->overridden == 0)  ? ($totalweight < 75 ? $numberformat 
+                : local_gugcat::convert_grade($aggrade, null, $aggrdscaletype) .' ('.$numberformat.')') 
+                : local_gugcat::convert_grade($aggrade, null, $aggrdscaletype));
+                // Check if assessments gradetypes has point grade type, if yes, display error and missing grade
+                if(in_array(GRADE_TYPE_VALUE, $gradetypes)){
+                    $aggrdobj->grade = null;
+                    $aggrdobj->rawgrade = null;
+                    $aggrdobj->display = get_string('missinggrade', 'local_gugcat');
+                    $errors[0] = get_string('aggregationwarningcourse', 'local_gugcat');
+                }
+                if($gbaggregatedgrade){
                     $aggradegb = (!is_null($gbaggregatedgrade->finalgrade) ? $gbaggregatedgrade->finalgrade : $gbaggregatedgrade->rawgrade);
                     $feedback .= ",_grade: $aggrdobj->display ,_$gbaggregatedgrade->feedback";
                     ($gbaggregatedgrade->overridden == 0 && round((float)$sumaggregated, 5) != round((float)$aggradegb, 5) 
