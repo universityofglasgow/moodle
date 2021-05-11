@@ -35,6 +35,7 @@ $categoryid = optional_param('categoryid', null, PARAM_INT);
 $childactivityid = optional_param('childactivityid', null, PARAM_INT);
 $page = optional_param('page', 0, PARAM_INT);  
 $iid = optional_param('iid', null, PARAM_INT);
+$download = optional_param('download', null, PARAM_INT);
 
 require_login($courseid);
 $urlparams = array('id' => $courseid, 'activityid' => $activityid, 'page' => $page);
@@ -79,6 +80,16 @@ $params = array(
 $module = local_gugcat::get_activity($courseid, $modid);
 $renderer = $PAGE->get_renderer('local_gugcat');
 
+// Download template is clicked
+if($download == 1){
+    grade_capture::download_template_csv($module);
+}
+
+// If assessment is assignment, create participant no. for each students
+if($module->modname == 'assign'){
+    assign::allocate_unique_ids($module->instance);
+}
+
 // Set up the upload import form.
 $mform = new uploadform(null, array('includeseparator' => true, 'acceptedtypes' =>
 array('.csv'), 'activity' => $module));
@@ -102,7 +113,7 @@ if(!$iid){
         $headers = ($formdata->ignorerow == 1) ? array() : $csvimport->get_headers();
         $iid = $csvimport->get_iid(); // Go to import options form
         
-        echo $renderer->display_import_preview($headers, $csvimport->get_previewdata());
+        echo $renderer->display_import_preview($headers, $csvimport->get_previewdata(), $module->modname == 'assign');
     }else{
         // Display the standard upload file form.
         echo $OUTPUT->header();

@@ -59,6 +59,9 @@ $string['coursegrade'] = 'Course Grade';
 $string['datapreview'] = 'Data Preview';
 $string['datetime'] = 'Date & Time';
 $string['downloadcsv'] = 'Download .csv';
+$string['downloadtempnoteA'] = 'Please ensure columns are ordered: student number, participant number, grades.';
+$string['downloadtempnoteB'] = 'Please ensure columns are ordered: student number, student first name, student last name, grades.';
+$string['downloadtempcsv'] = 'Download template csv (optional):';
 $string['errorexceedmax'] = 'Lowerboundary should not be more than the maximum grade.';
 $string['errorduplicate'] = 'Please ensure there are no duplicate grades.';
 $string['errorinputpoints'] = 'Please ensure grade is in proper format.';
@@ -120,10 +123,12 @@ $string['overrideggreassessgrade'] = 'Override aggregated assessment grade';
 $string['overrideggregrade'] = 'Override aggregated course grade';
 $string['overridestudassgrade'] = "Override student's aggregated assessment grade";
 $string['overridestudgrade'] = "Override student's aggregated course grade";
+$string['participantno'] = 'Participant No.';
 $string['percentcomplete'] = '% Complete';
 $string['pleaseprovidetemplatename'] = 'If you would like to save this conversion for future use, please provide a name for this conversion scale (max 50 characters):';
 $string['pleasespecify'] = 'Please specify';
 $string['pluginname'] = 'UofG Grade Capture and Aggregation Tool';
+$string['points'] = 'Points ({$a->max})';
 $string['pointtooltip'] = '<i>Please ensure value is: 
     <ul class="mb-0">
         <li>Up to 2 decimal places</li>
@@ -160,6 +165,7 @@ $string['showgrade'] = 'Show to student';
 $string['showgrademsg'] = 'The grade is now visible to the student';
 $string['showonstudentdashboard'] = 'show_on_studentdashboard';
 $string['specifyreason'] = 'Specify reason(s) for amendment';
+$string['step'] = 'Step {$a}';
 $string['studentno'] = 'Student No.';
 $string['subcategorygrade'] = 'Subcategory Grade';
 $string['successaddall'] = 'Successfully added grades for all participants.';
@@ -173,7 +179,7 @@ $string['surname'] = 'Surname';
 $string['switchoffdisplay'] = 'Switch off display of assessments on Student Dashboard';
 $string['switchondisplay'] = 'Switch on display of assessments on Student Dashboard'; 
 $string['systemupdate'] = 'System update';
-$string['systemupdatecourse'] = 'System update - assessment grade changes';
+$string['systemupdatecourse'] = 'System update - grades or weightings changed in Gradebook';
 $string['systemupdateconversion'] = 'System update - conversion applied / adjusted';
 $string['title'] = 'Grade Capture & Course Grade Aggregation';
 $string['totalweight'] = 'Total Weighting';
@@ -186,6 +192,7 @@ $string['uploaderrorgradepoint'] = 'User with ID number of {$a->id} has an inval
 $string['uploaderrorgradescale'] = 'User with ID number of {$a->id} has an invalid grade: {$a->value}. Grade is not within the scale.';
 $string['uploaderrornotmember'] = 'User with ID number of {$a->id} is not a member of current group.';
 $string['uploaderrornotfound'] = 'User mapping error. Could not find user with ID number of {$a->id}.';
+$string['uploadfile'] = 'Upload file:';
 $string['viewcoursehistory'] = 'View course grade history';
 $string['warningreimport'] = 'The grades in Moodle Gradebook have been updated since the last import into GCAT. Please check if there are any changes which need to be replicated or imported into GCAT.';
 
@@ -220,11 +227,12 @@ $string['eventtoggleassessmentsdisplay'] = 'Toggle assessments display in Studen
 $string['eventuploadgrades'] = 'Upload additional grades';
 
 //aggregated assessment grade history notes
-$string['aggregation'] = 'N/A - Aggregation calculation function updated';
-$string['grade'] = 'N/A - Component grade(s) updated, see component grade history for more information';
-$string['import'] = 'N/A - Component grade(s) imported';
-$string['convertnew'] = 'N/A - Conversion Applied';
-$string['convertexist'] = 'N/A - Conversion Adjusted';
+$string['aggregation'] = 'System update - Aggregation calculation function updated';
+$string['grade'] = 'System update - Component grade(s) updated, see component grade history for more information';
+$string['import'] = 'System update - Component grade(s) imported';
+$string['convertnew'] = 'System update - Conversion Applied';
+$string['convertexist'] = 'System update - Conversion Adjusted';
+$string['pendingimport'] = 'Pending import';
 
 //gcat grade category
 $string['gcat_category'] = 'DO NOT USE';

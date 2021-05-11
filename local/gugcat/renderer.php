@@ -264,6 +264,9 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $prevcatid = null;
         $isconvertsubcat = false;
         foreach ($activities as $act) {
+            // Get the activity scale
+            $scalestr = $act->gradetypename;
+            // Get the activity weight 
             $weightcoef1 = $act->gradeitem->aggregationcoef; //Aggregation coeficient used for weighted averages or extra credit
             $weightcoef2 = $act->gradeitem->aggregationcoef2; //Aggregation coeficient used for weighted averages only
             $weight = ((float)$weightcoef1 > 0) ? (float)$weightcoef1 : (float)$weightcoef2;
@@ -281,7 +284,14 @@ class local_gugcat_renderer extends plugin_renderer_base {
                     $is_imported = local_gugcat::get_grade_item_id($courseid, $act->id, get_string('subcategorygrade', 'local_gugcat'));
                 }
             }
-            $header = $act->name.'<br/>'.($weight * 100).'%';
+            $nameattr = array(
+                'data-toggle' => 'tooltip',
+                'data-placement' => 'top',
+                'title' => $act->name
+            );
+            $n = $act->name;
+            $namespan = html_writer::tag('span', strlen($n) > 20 ? substr($n, 0, 20).'...' : $n, $nameattr);
+            $header = "$namespan<br/>".($weight * 100)."% <br/> $scalestr";
             $header = html_writer::tag('span', $header, array('class' => 'sortable')).($act->modname == 'category' ? ($is_imported ? $this->context_actions(null, null, false, $convertgrdparams, false, true).$toggleicon : $toggleicon): null);
             if ($act->modname == 'category') {
                 if($colspan > 0){
@@ -484,15 +494,21 @@ class local_gugcat_renderer extends plugin_renderer_base {
      * Render display of adjust weights and override grade form page
      * 
      */
-    public function display_import_preview($firstrow, $data) {
+    public function display_import_preview($firstrow, $data, $is_assign) {
         $title = get_string('setupimportoptions' , 'local_gugcat');
         $html = $this->header();
         $html .= html_writer::start_tag('div', array('class' => 'form-container'));
         $html .= html_writer::tag('h5', $title, array('class' => 'title'));
         $html .= html_writer::tag('label', get_string('datapreview', 'local_gugcat'));
         $htmlcolumns = null;
-        $htmlcolumns .= html_writer::tag('th', get_string('studentno', 'local_gugcat'), array('class' => 'sortable'));
-        $htmlcolumns .= html_writer::tag('th', get_string('grade'), array('class' => 'sortable'));
+        $htmlcolumns .= html_writer::tag('th', get_string('studentno', 'local_gugcat'));
+        if($is_assign){
+            $htmlcolumns .= html_writer::tag('th', get_string('participantno', 'local_gugcat'));
+        }else{
+            $htmlcolumns .= html_writer::tag('th', get_string('studentfirstname', 'turnitintooltwo'));
+            $htmlcolumns .= html_writer::tag('th', get_string('studentlastname', 'turnitintooltwo'));
+        }
+        $htmlcolumns .= html_writer::tag('th', get_string('grade'));
         
         $htmlrows = null;
         if(count($firstrow) != 0){
@@ -504,7 +520,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
         }
 
         foreach($data as $row){
-            $fixedcolumns = 2;
+            $fixedcolumns = $is_assign ? 3 : 4;
             $htmlrows .= html_writer::start_tag('tr');
             foreach($row as $rowdata){
                 $htmlrows .= html_writer::tag('td', $rowdata);
@@ -547,7 +563,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
                 $activityid = $act->gradeitemid;
                 $ammendgradeparams = "?id=$courseid&activityid=$activityid&page=$page&categoryid=$categoryid&history";
                 $htmlrows .= html_writer::tag('td', isset($row->childgrades[$i]->grade) ? 
-                $row->childgrades[$i]->grade. $this->context_actions($student->id, null, false, $ammendgradeparams) : 'N/A');
+                $row->childgrades[$i]->grade. $this->context_actions($student->id, null, false, $ammendgradeparams) : get_string('pendingimport', 'local_gugcat'));
                 $i++;
             }
             $htmlrows .= html_writer::tag('td', $row->modby);
