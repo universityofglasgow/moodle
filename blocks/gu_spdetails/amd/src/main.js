@@ -22,7 +22,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define(['core/ajax'], function(Ajax) {
+ define(['core/ajax'], function(Ajax) {
     const onClickListeners = (event) => {
         var currentTab = document.getElementById('current_tab');
         var pastTab = document.getElementById('past_tab');
@@ -186,21 +186,35 @@ define(['core/ajax'], function(Ajax) {
                 break;
         }
     }
-    
-    const loadAssessments = (activetab, page, sortby, sortorder) => {
-        var blockContainer = document.querySelector('.assessments-details-container');
-        var tabContent = document.getElementById('assessments_details_contents');
+
+    const loadAssessments = (activetab, page, sortby, sortorder, subcategory = null) => {
+        var assessmentContainer = document.getElementById('assessments-container');
+        var subcategoryContainer = document.getElementById('subcategory-container');
+        var blockContainer = subcategory === null ? assessmentContainer : subcategoryContainer;
+        var tabContent = subcategory === null ? document.getElementById('assessments_details_contents') : document.getElementById('subcategory_details_contents');
+
+        if (subcategory === null) {
+            assessmentContainer.classList.remove('hidden-container');
+            subcategoryContainer.classList.add('hidden-container');
+        } else {
+            assessmentContainer.classList.add('hidden-container');
+            subcategoryContainer.classList.remove('hidden-container');
+        }
+
         var promise = Ajax.call([{
             methodname: 'block_gu_spdetails_retrieve_assessments',
             args: {
                 activetab: activetab,
                 page: page,
                 sortby: sortby,
-                sortorder: sortorder
+                sortorder: sortorder,
+                subcategory: subcategory
             },
         }]);
         promise[0].done(function(response) {
             tabContent.innerHTML = response.result;
+            var subCategories = document.querySelectorAll('.subcategory-row');
+            onClickSubcategory(subCategories);
             onClickPageLink();
             sortingStatus(sortby, sortorder);
         }).fail(function(response) {
@@ -231,6 +245,27 @@ define(['core/ajax'], function(Ajax) {
                 blockContainer.prepend(errorContainer);
             }
         });
+    }
+
+    const showSubcategoryDetails = (object) => {
+        id = object.getAttribute('data-id');
+        subname = object.getAttribute('data-name');
+        course = object.getAttribute('data-course');
+        grade = object.getAttribute('data-grade');
+        weight = object.getAttribute('data-weight');
+        
+        if(id !== null){
+            loadAssessments('current', 0, 'duedate', 'asc', id);
+            document.getElementById('subcategory-details-course').innerHTML = course;
+            document.getElementById('subcategory-details-weight').innerHTML = weight;
+            document.getElementById('subcategory-details-grade').innerHTML = grade;
+            document.getElementById('subcategory-details-name').innerHTML = subname;
+            document.getElementById('subcategory-return-assessment').addEventListener('click', () => {
+                document.getElementById('assessments-container').classList.remove('hidden-container');
+                document.getElementById('subcategory-container').classList.add('hidden-container');
+                document.getElementById('subcategory_details_contents').innerHTML = "";
+            });
+        }
     }
 
     const sortingStatus = (sortby, sortorder) => {
@@ -316,6 +351,14 @@ define(['core/ajax'], function(Ajax) {
                 item.removeAttribute('href');
             }
         });
+    }
+
+    const onClickSubcategory = (rows) => {
+        if(rows.length > 0){
+            rows.forEach( (element) => {
+                element.addEventListener('click', () => showSubcategoryDetails(element));
+            })
+        }
     }
 
     return {

@@ -46,6 +46,7 @@ class external extends external_api {
                 'page' => new external_value(PARAM_INT, 'The page number', VALUE_DEFAULT),
                 'sortby' => new external_value(PARAM_ALPHA, 'Sort columns by', VALUE_DEFAULT),
                 'sortorder' => new external_value(PARAM_ALPHA, 'Sort by order', VALUE_DEFAULT),
+                'subcategory' => new external_value(PARAM_INT, 'Subcategory id', VALUE_DEFAULT),
             )
         );
     }
@@ -57,15 +58,18 @@ class external extends external_api {
      * @param int $page
      * @param string $sortby
      * @param string $sortorder
+     * @param string $subcategory
      * @return api
      */
-    public static function retrieve_assessments($activetab, $page, $sortby, $sortorder) {
+    public static function retrieve_assessments($activetab, $page, $sortby, $sortorder, $subcategory) {
         $params = self::validate_parameters(self::retrieve_assessments_parameters(),
                                             ['activetab' => $activetab, 'page' => $page,
-                                             'sortby' => $sortby, 'sortorder' => $sortorder]);
+                                             'sortby' => $sortby, 'sortorder' => $sortorder,
+                                             'subcategory' => $subcategory]);
         return [
             'result' => api::retrieve_assessments($params['activetab'], $params['page'],
-                                                  $params['sortby'], $params['sortorder'])
+                                                  $params['sortby'], $params['sortorder'],
+                                                  $params['subcategory'])
         ];
     }
 
