@@ -162,6 +162,8 @@ class grade_aggregation{
                     $grades = $item->grades;
                     $pg = isset($grades->provisional[$student->id]) ? $grades->provisional[$student->id] : null;
                     $gb = isset($grades->gradebook[$student->id]) ? $grades->gradebook[$student->id] : null;
+                    // Normalize grades
+                    $gb = local_gugcat::normalize_gcat_grades($gb);
                     $ncg = isset($grades->converted[$student->id]) ? $grades->converted[$student->id] : null;
                     $grd = (isset($pg) && !is_null($pg->finalgrade)) ? $pg->finalgrade 
                     : (isset($pg) && !is_null($pg->rawgrade) ? $pg->rawgrade 

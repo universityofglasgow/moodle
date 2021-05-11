@@ -101,6 +101,8 @@ class grade_capture{
                 //get released grade
                 if(count($releasedgrades) > 0){
                     $gbg = isset($releasedgrades[$student->id]) ? $releasedgrades[$student->id] : null;
+                    // Normalize grades
+                    $gbg = local_gugcat::normalize_gcat_grades($gbg);
                     $gradescaleoffset = local_gugcat::is_grademax22($module->gradeitem->gradetype, $module->gradeitem->grademax) ? 1 : 0;
                     $grade = self::check_gb_grade($gbg, $gradescaleoffset);
                     $gradecaptureitem->releasedgrade = is_null($grade) ? null : local_gugcat::convert_grade($grade, $gt);
@@ -360,6 +362,8 @@ class grade_capture{
 
             foreach($students as $student){
                 $gbg = isset($gbgradeitem[0]) ? $gbgradeitem[0]->grades[$student->id] : null;//gradebook grade record
+                // Normalize grades
+                $gbg = local_gugcat::normalize_gcat_grades($gbg);
                 //check if assignment
                 if(strcmp($module->modname, 'assign') == 0){
                     $assign = new assign(context_module::instance($module->id), $module, $courseid);
