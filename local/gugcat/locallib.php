@@ -1209,4 +1209,28 @@ class local_gugcat {
         $select = "courseid=$COURSE->id AND itemname='$prvstr' AND ".self::compare_iteminfo();
         return $DB->get_record_select('grade_items', $select, ['iteminfo' => $id], 'id, idnumber');
     }
+
+     /**
+     * Normalize grades from gradebook to gcat (+1)
+     * @param mixed $gradeobj Grade object item from grade_get_grades function
+     * @return mixed |null
+     */
+    public static function normalize_gcat_grades($gradeobj){
+        $schedB = array(
+            23 =>"A0",
+            18 =>"B0",
+            15 =>"C0",
+            12 =>"D0",
+            9 =>"E0",
+            6 =>"F0",
+            3 =>"G0",
+            1 =>"H"
+        );
+        if(isset($gradeobj) && isset($gradeobj->str_grade) ){
+            $grade = $gradeobj->grade;
+            $str = $gradeobj->str_grade;
+            $gradeobj->grade = array_search($str, $schedB) ? array_search($str, $schedB) : $grade;
+        }
+        return $gradeobj;
+    }
 }
