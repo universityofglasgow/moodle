@@ -15,13 +15,13 @@
 
 /**
  * AMD module for local_gugcat.
- * 
+ *
  * @package    local_gugcat
  * @copyright  2020
  * @author     Accenture
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-define(['jquery', 'core/str', 'core/modal_factory', 'local_gugcat/modal_gcat', 'core/sessionstorage', 'core/ajax'], 
+define(['jquery', 'core/str', 'core/modal_factory', 'local_gugcat/modal_gcat', 'core/sessionstorage', 'core/ajax'],
 function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
 
     const BLIND_MARKING_KEY = 'blind-marking';
@@ -29,40 +29,41 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
     const checkCurrentUrl = (path) => {
         var url = window.location.pathname;
         return url.match(path);
-    }
+    };
 
     const calculatePercentagePoints = (target, is_percentage = true) => {
-        grade_max = document.getElementsByName('grademax')[0].value;
+        var grade_max = document.getElementsByName('grademax')[0].value;
         if (is_percentage){
-            input_point = document.getElementById(target.id.slice(0,10) + "pt_" + target.id.slice(10));
+            var input_point = document.getElementById(target.id.slice(0,10) + "pt_" + target.id.slice(10));
             input_point.value = target.value ? rounder((target.value / 100) * grade_max) : '';
         } else {
-            input_percentage = document.getElementById(target.id.slice(0,10) + target.id.slice(13));
+            var input_percentage = document.getElementById(target.id.slice(0,10) + target.id.slice(13));
             input_percentage.value = target.value ? rounder((target.value / grade_max) * 100) : '';
         }
-    }
+    };
 
     const rounder = (number) => {
         var multiplier = parseInt("1" + "0".repeat(2));
         number = number * multiplier;
         return Math.round(number) / multiplier;
-    }
+    };
 
     const clearConversionTable = () => {
         var input_percentage_points = document.querySelectorAll('.input-prc,.input-pt');
         input_percentage_points.forEach(element => {
-            input = element.lastElementChild.firstElementChild
-            is_input_H = input.id == 'id_schedA_pt_1' || input.id == 'id_schedA_1' || input.id == 'id_schedB_1' || input.id == 'id_schedB_pt_1'
+            var input = element.lastElementChild.firstElementChild;
+            var is_input_H = input.id == 'id_schedA_pt_1' || input.id == 'id_schedA_1'
+                || input.id == 'id_schedB_1' || input.id == 'id_schedB_pt_1';
             if (!is_input_H){
                 input.value = "";
             }
-        })
-    }
+        });
+    };
 
     const update_reason_inputs = (val) => {
         var list = document.querySelectorAll('.input-reason');
-        list.forEach(input => input.value = val);
-    }
+        list.forEach(input => {input.value = val;});
+    };
 
     const check_blind_marking = () =>{
         var btn_identities = document.getElementById('btn-identities');
@@ -86,14 +87,16 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                     ?langStrings[0]//show
                     :langStrings[1];//hide
                 classes.forEach(element => {
-                    is_blindmarking 
-                    ? element.classList.add('hide-names')
-                    : element.classList.remove('hide-names');
+                    if(is_blindmarking){
+                        element.classList.add('hide-names');
+                    }else{
+                        element.classList.remove('hide-names');
+                    }
                 });
             });
-           
+
         }
-    }
+    };
 
     const toggle_child_activities = () =>{
         var btns = document.querySelectorAll('.btn-colexp');
@@ -118,7 +121,7 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                 });
             });
         }
-    }
+    };
 
     const toggle_display_assessments = () =>{
         var btn_switch_display = document.getElementById('btn-switch-display');
@@ -151,8 +154,8 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                     btn_switch_display.style.display = 'none';
                 });
         }
-    }
-        
+    };
+
     const sortTable = (n) => {
         var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
         table = document.getElementById("gcat-table");
@@ -206,7 +209,7 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
             }
           }
         }
-    }
+    };
 
     const showModal = (dataAction, messageId, confirmId, cancelId = 'cancelmodal') => {
         var strings = [
@@ -226,8 +229,8 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
         Str.get_strings(strings).then(function(langStrings){
             var templateContext = {
                 bodycontent: langStrings[0],
-                strcancel: langStrings[1], 
-                strconfirm: langStrings[2], 
+                strcancel: langStrings[1],
+                strconfirm: langStrings[2],
                 dataaction: dataAction
             };
             ModalFactory.create({
@@ -235,14 +238,14 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                 templateContext: templateContext
             }).done(modal => modal.show());
         });
-    }
+    };
 
     const toggleScaleTable = () => {
         var schedA = document.getElementById('table-schedulea');
         var schedB = document.getElementById('table-scheduleb');
         schedA.classList.toggle('hidden');
         schedB.classList.toggle('hidden');
-    }
+    };
 
     const onChangeListeners = (event) =>{
         var urlParams = new URLSearchParams(window.location.search);
@@ -256,7 +259,7 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
         switch (event.target) {
             case categories:
                 urlParams.delete("activityid");
-                urlParams.delete("childactivityid")
+                urlParams.delete("childactivityid");
                 urlParams.delete("page");
                 if(categories.value === 'null'){
                     urlParams.delete("categoryid");
@@ -274,17 +277,17 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                 break;
             case activities:
                 urlParams.set("activityid", activities.value);
-                urlParams.delete("childactivityid")
+                urlParams.delete("childactivityid");
                 urlParams.delete("page");
                 window.location.search = urlParams;
                 break;
             case childactivities:
-                urlParams.set("childactivityid", childactivities.value)
+                urlParams.set("childactivityid", childactivities.value);
                 urlParams.delete("page");
                 window.location.search = urlParams;
                 break;
             case grade_reason:
-                var selected = event.target.value; 
+                var selected = event.target.value;
                 var input = document.querySelector('.togglemultigrd > input');
                 update_reason_inputs(selected);
                 if(selected === 'Other'){
@@ -323,7 +326,7 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                             if(select_scale.value != template.scaletype){
                                 toggleScaleTable();
                             }
-                            
+
                             // Assign template scale on the select scale field
                             select_scale.value = template.scaletype;
 
@@ -335,7 +338,7 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                             // Get maximum grade
                             var maxgrade = document.getElementsByName('grademax')[0].value;
 
-                            // Start assigning lowerboundary from template on the input pt fields 
+                            // Start assigning lowerboundary from template on the input pt fields
                             var conversions = template.conversion;
                             for (let key in conversions) {
                                 let conv = conversions[key];
@@ -348,15 +351,15 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                                 inputpt.value = rounder((lowerboundary / 100) * maxgrade); //convert percentage to points
                             }
                         }
-                    }).fail(function(e){
-                        console.log(e);
+                    }).fail(function(){
+                        // console.log(e);
                     });
                 }
                 break;
             default:
                 break;
         }
-    }
+    };
 
     const onClickListeners = (event) =>{
         var btn_multiadd = document.getElementById('btn-saveadd');
@@ -381,7 +384,7 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                     document.getElementById('multiadd-submit').click();
                 }
                 break;
-            case btn_release:   
+            case btn_release:
                 showModal('release', 'modalreleaseprovisionalgrade', 'confirmreleaseprovisionalgrade');
                 break;
             case btn_import:
@@ -399,22 +402,32 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                         var input = div.querySelector('input');
                         total += parseInt(input.value);
                         var invalid = div.querySelector('input.is-invalid');
-                        if(invalid != null){
+                        if(invalid !== null){
                             div.querySelector('div.felement').classList.add('no-after');
                         }else{
                             div.querySelector('div.felement').classList.remove('no-after');
                         }
                     });
                 }
-                if(total != 100){
-                    showModal('adjustweight', 'modaladjustweights', 'confirmchanges');
+                var notes = document.querySelector('textarea#id_notes');
+                var errorNotes = document.getElementById('id_error_notes');
+                if(notes.value == ''){
+                    errorNotes.innerHTML = '- You must supply a value here.';
+                    errorNotes.style.display = 'block';
                 }else{
-                    document.getElementById('coursegradeform-submit').click();
+                    errorNotes.innerHTML = '';
+                    errorNotes.style.display = 'none';
+                    if(total != 100){
+                        showModal('adjustweight', 'modaladjustweights', 'confirmchanges');
+                    }else{
+                        document.getElementById('coursegradeform-submit').click();
+                    }
                 }
                 break;
             case btn_finalrelease:
                 var isConvertSubcat = document.getElementById('isconvertsubcat');
-                showModal('finalrelease', isConvertSubcat.value != 1 ? 'modalreleasefinalgrades' : 'modalreleasefinalconvertedgrades', 'confirmfinalrelease');
+                showModal('finalrelease', isConvertSubcat.value != 1 ?
+                'modalreleasefinalgrades' : 'modalreleasefinalconvertedgrades', 'confirmfinalrelease');
                 break;
             case btn_download:
                 document.getElementById('downloadcsv-submit').click();
@@ -440,10 +453,11 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
             case radio_ptprc[0]:
             case radio_ptprc[1]:
                 clearConversionTable();
+                break;
             default:
                 break;
         }
-    }
+    };
 
     return {
         init: function() {
@@ -451,7 +465,7 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
             if(GCAT){
                 GCAT.addEventListener('change', onChangeListeners);
                 GCAT.addEventListener('click', onClickListeners);
-    
+
                 //if hide identities button is visible, add key in storage
                 if(document.getElementById('btn-identities') && !Storage.get(BLIND_MARKING_KEY)){
                     Storage.set(BLIND_MARKING_KEY, false);
@@ -480,7 +494,7 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                             var key = e.keyCode ? e.keyCode : e.which;
                             if(key === 13){
                                 document.getElementById('search-submit').click();
-                            }                        
+                            }
                         });
                     });
                 }
@@ -524,9 +538,9 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                     input_percentarr.forEach(div => {
                         var input = div.querySelector('input');
                         total += parseInt(input.value);
-                        input.addEventListener('input', (e) => {
+                        input.addEventListener('input', () => {
                             let total = 0;
-                            input_percentarr.forEach(div => total += parseInt(div.querySelector('input').value));
+                            input_percentarr.forEach(div => {total += parseInt(div.querySelector('input').value);});
                             totalweight.innerHTML = `${total}%`;
                         });
                         input.addEventListener('focus', (e) => {
@@ -547,6 +561,13 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                         });
                     });
                     totalweight.innerHTML = `${total}%`;
+                }
+
+                var input_templatename = document.querySelector('.template-name input');
+                if(input_templatename){
+                    input_templatename.addEventListener('input', (e) => {
+                        update_reason_inputs(e.target.value);
+                    });
                 }
 
                 var columns = document.querySelectorAll('.sortable');
@@ -583,7 +604,7 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                     document.querySelector('#btn-overviewtab').classList.add('active');
                     document.querySelector('#btn-assessmenttab').classList.remove('active');
                 }else if(checkCurrentUrl("gugcat/index")){
-                    document.getElementById('btn-release').style.display = 
+                    document.getElementById('btn-release').style.display =
                     !$(".gradeitems").text().includes("Moodle Grade[Date]") ? 'inline-block' : 'none';
                     var nodeArr = Array.from(document.querySelectorAll('.gradeitems'));
                     var isConverted = document.getElementById('isconverted');
