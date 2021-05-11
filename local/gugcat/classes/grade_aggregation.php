@@ -487,7 +487,7 @@ class grade_aggregation{
         // If calculation field is empty, then update it with aggregation type
         if($pgobj){
             $updated = false;
-            $autoscale = !is_null($scaleid) ? $scaleid : ($gradetype == GRADE_TYPE_SCALE ? 1 : null); 
+            $autoscale = !is_null($scaleid) ? $scaleid : ($autoconverttob ? SCHEDULE_B : ($gradetype == GRADE_TYPE_SCALE ? SCHEDULE_A : null)); 
             is_null($subcatobj->aggregation_type) ? $DB->set_field('grade_items', 'calculation', $subcatobj->aggregation, array('id'=>$pgobj->itemid)) : null;
             is_null($subcatobj->automaticscale) ? $DB->set_field('grade_items', 'outcomeid', $autoscale, array('id'=>$pgobj->itemid)) : null;
             $scale = $subcatobj->is_converted ? $subcatobj->is_converted : (!is_null($autoscale) ? $autoscale : null);
