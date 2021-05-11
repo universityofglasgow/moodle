@@ -266,8 +266,8 @@ class grade_aggregation{
                     local_gugcat::set_grade_scale(null);
                     $gradecaptureitem->resit = (preg_match('/\b'.$categoryid.'/i', $gbaggregatedgrade->information) ? $gbaggregatedgrade->information : null);
                     $rawaggrade = ($gbaggregatedgrade->overridden == 0) ? $sumaggregated : (!is_null($gbaggregatedgrade->finalgrade) ? $gbaggregatedgrade->finalgrade : $gbaggregatedgrade->rawgrade);
-                    $aggrade = ($gbaggregatedgrade->overridden == 0) ? round($rawaggrade) + 1 : $rawaggrade; //convert back to moodle scale
                     $aggrdscaletype = ($schedAweights >= $schedBweights) ? SCHEDULE_A : SCHEDULE_B;
+                    $aggrade = ($gbaggregatedgrade->overridden == 0) ? ($aggrdscaletype == SCHEDULE_B ? floor($rawaggrade) + 1 : round($rawaggrade) + 1) : $rawaggrade; //convert back to moodle scale
                     $aggrdobj->scale = $aggrdscaletype;
                     $aggrdobj->grade = local_gugcat::convert_grade($aggrade, null, $aggrdscaletype);
                     $aggrdobj->rawgrade = $rawaggrade;
