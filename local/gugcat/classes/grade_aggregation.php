@@ -269,11 +269,13 @@ class grade_aggregation{
                 $aggrdobj->scale = $aggrdscaletype;
                 
                 $gbaggregatedgrade = !is_null($aggradeid) ? $DB->get_record('grade_grades', array('itemid'=>$aggradeid, 'userid'=>$student->id)) : null;
+                // Aggregated grade condition boolean
+                $defaultaggregated = !$gbaggregatedgrade || ($gbaggregatedgrade && $gbaggregatedgrade->overridden == 0);
                 $gradecaptureitem->resit = ($gbaggregatedgrade && preg_match('/\b'.$categoryid.'/i', $gbaggregatedgrade->information) ? $gbaggregatedgrade->information : null);
-                $rawaggrade = (!$gbaggregatedgrade || ($gbaggregatedgrade && $gbaggregatedgrade->overridden == 0)) 
+                $rawaggrade = ($defaultaggregated) 
                 ? $sumaggregated : (!is_null($gbaggregatedgrade->finalgrade) 
                 ? $gbaggregatedgrade->finalgrade : $gbaggregatedgrade->rawgrade);
-                $aggrade = ($gbaggregatedgrade && $gbaggregatedgrade->overridden == 0) ? round($rawaggrade) + 1 : $rawaggrade; //convert back to moodle scale
+                $aggrade = $defaultaggregated ? ($aggrdscaletype == SCHEDULE_B ? floor($rawaggrade) + 1 : round($rawaggrade) + 1) : $rawaggrade; //convert back to moodle scale
                 $aggrdobj->grade = local_gugcat::convert_grade($aggrade, null, $aggrdscaletype);
                 $aggrdobj->rawgrade = $rawaggrade;
                 $numberformat = number_format($rawaggrade, 3);
@@ -283,7 +285,7 @@ class grade_aggregation{
                 $aggrdobj->display = in_array(get_string('nograderecorded', 'local_gugcat'), $filtergrade, true)
                 || in_array(get_string('missinggrade', 'local_gugcat'), $filtergrade, true)
                 ? get_string('missinggrade', 'local_gugcat') 
-                : (!$gbaggregatedgrade || ($gbaggregatedgrade && $gbaggregatedgrade->overridden == 0)  ? ($totalweight < 75 ? $numberformat 
+                : ($defaultaggregated  ? ($totalweight < 75 ? $numberformat 
                 : local_gugcat::convert_grade($aggrade, null, $aggrdscaletype) .' ('.$numberformat.')') 
                 : local_gugcat::convert_grade($aggrade, null, $aggrdscaletype));
                 // Check if assessments gradetypes has point grade type, if yes, display error and missing grade
@@ -493,7 +495,7 @@ class grade_aggregation{
         // If calculation field is empty, then update it with aggregation type
         if($pgobj){
             $updated = false;
-            $autoscale = !is_null($scaleid) ? $scaleid : ($gradetype == GRADE_TYPE_SCALE ? 1 : null); 
+            $autoscale = !is_null($scaleid) ? $scaleid : ($autoconverttob ? SCHEDULE_B : ($gradetype == GRADE_TYPE_SCALE ? SCHEDULE_A : null)); 
             is_null($subcatobj->aggregation_type) ? $DB->set_field('grade_items', 'calculation', $subcatobj->aggregation, array('id'=>$pgobj->itemid)) : null;
             is_null($subcatobj->automaticscale) ? $DB->set_field('grade_items', 'outcomeid', $autoscale, array('id'=>$pgobj->itemid)) : null;
             $scale = $subcatobj->is_converted ? $subcatobj->is_converted : (!is_null($autoscale) ? $autoscale : null);
