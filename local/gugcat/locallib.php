@@ -439,7 +439,7 @@ class local_gugcat {
                 return number_format($grade, 3);
             }
             if($scaletype != SCHEDULE_A){
-                return grade_converter::convert(self::$SCHEDULE_B, $grade);
+                return grade_converter::convert(self::$SCHEDULE_B, $grade, true);
             }
         }
         $scale = self::$GRADES + grade_aggregation::$AGGRADE;
@@ -1077,7 +1077,6 @@ class local_gugcat {
 
         $i = 0;
         $rows = array();
-        $notes = array('aggregation', 'grade', 'import');
         $subcatid = $module->provisionalid;
         $sort = 'id DESC';
         $fields = 'id, itemid, rawgrade, finalgrade, feedback, timemodified, usermodified, overridden';
@@ -1105,7 +1104,8 @@ class local_gugcat {
                 $rows[$i]->date = date("j/n", strtotime(userdate($gradehistory->timemodified))).'<br>'.date("H:i", strtotime(userdate($gradehistory->timemodified)));
                 $rows[$i]->notes = $gradehistory->feedback;
                 $fields = 'firstname, lastname';
-                $modby = (!in_array($gradehistory->feedback, $notes)) ? $DB->get_record('user', array('id' => $gradehistory->usermodified), $fields) : null;
+                $modby = (preg_match('/import/i', $gradehistory->feedback) || preg_match('/grade/i', $gradehistory->feedback)
+                         || preg_match('/aggregation/i', $gradehistory->feedback) || preg_match('/systemupdatecourse/i', $gradehistory->feedback)) ? null : $DB->get_record('user', array('id' => $gradehistory->usermodified), $fields);
                 $rows[$i]->modby = !is_null($modby) ? ((isset($modby->lastname) && isset($modby->firstname)) ? $modby->lastname . ', '.$modby->firstname : 'System Update') : 'System Update';
                 if($gradehistory->overridden != 0){
                     $is_converted = preg_match('/ \,\_scale\:[1-9]/i', $gradehistory->feedback);
@@ -1121,51 +1121,12 @@ class local_gugcat {
                 $rows[$i]->notes = $ghnotes == 'aggregation' ? get_string('aggregation', 'local_gugcat') 
                 : ($ghnotes == 'grade' ? get_string('grade', 'local_gugcat') : ($ghnotes == 'import' ? get_string('import', 'local_gugcat') 
                 : ($ghnotes == 'convertnew' ? get_string('convertnew', 'local_gugcat') 
-                : ($ghnotes == 'convertexist' ? get_string('convertexist', 'local_gugcat') : $ghnotes))));
+                : ($ghnotes == 'convertexist' ? get_string('convertexist', 'local_gugcat') 
+                : ($ghnotes == 'systemupdatecourse' ? get_string('systemupdatecourse', 'local_gugcat') : $ghnotes)))));
                 $grd = !is_null($gradehistory->finalgrade) ? $gradehistory->finalgrade 
                 : (!is_null($gradehistory->rawgrade) ? $gradehistory->rawgrade 
                 : null);
-                if($key != $lastindex){
-                    if($gradehistory_arr[$key+1]->overridden != 0){
-                        $is_convertedprvgrd = preg_match('/ \,\_scale\:[1-9]/i', $gradehistory_arr[$key+1]->feedback);
-                        $prvscale = $is_convertedprvgrd ? preg_replace('/\b[\w\s\W]*,_scale:/i', '', $gradehistory_arr[$key+1]->feedback) : null;
-                    }else{
-                        $is_convertedprvgrd = preg_match('/ \-./i', $gradehistory_arr[$key+1]->feedback);
-                        $prvscale = $is_convertedprvgrd ? preg_replace('/\b[a-zA-Z\- ]*/i', '', $gradehistory_arr[$key+1]->feedback) : null;
-                    }
-                    $prvisscale = ($prvscale == SCHEDULE_A || $prvscale == SCHEDULE_B);
-                    //get the past grade of it's own grade.
-                    $previousgrd = !is_null($gradehistory_arr[$key+1]->finalgrade) ? $gradehistory_arr[$key+1]->finalgrade 
-                    : (!is_null($gradehistory_arr[$key+1]->rawgrade) ? $gradehistory_arr[$key+1]->rawgrade 
-                    : null);
-                }
-                if($i+1 < sizeof($gradehistory_arr)){
-                    isset($rows[$i+1]) ? null : $rows[$i+1] = new stdClass();
-                    isset($rows[$i+1]->grade) ? null : $rows[$i+1]->grade = array();
-                    !$prvisscale ? self::set_grade_scale($scale) : self::set_grade_scale(null);
-                    $rows[$i+1]->grade = !$is_convertedprvgrd ? self::convert_grade($grd, $gt) : (!$prvisscale ? self::convert_grade($grd) : self::convert_grade($grd, null, $prvscale));
-                }
-                //if subcategory is overridden then get the original grade
-                if($gradehistory->overridden != 0){
-                    isset($rows[$i]->grade) ? null : $rows[$i]->grade = array();
-                    !$isscale ? self::set_grade_scale($scale) : self::set_grade_scale(null);
-                    $rows[$i]->grade =  !$is_converted ? self::convert_grade($grd, $gt) : (!$isscale ? self::convert_grade($grd) : self::convert_grade($grd, null, $scale));
-                    !$prvisscale ? self::set_grade_scale($scale) : self::set_grade_scale(null);
-                    $rows[$i+1]->grade = !$is_convertedprvgrd ? self::convert_grade($previousgrd, $gt) : (!$prvisscale ? self::convert_grade($previousgrd) : self::convert_grade($previousgrd, null, $prvscale));
-                }
-                if($is_converted){
-                    //make the previous grade into it's own grade
-                    if($key != $lastindex){
-                        if(!$is_convertedprvgrd){
-                            !$prvisscale ? self::set_grade_scale($scale) : self::set_grade_scale(null);
-                            $rows[$i+1]->grade = self::convert_grade($previousgrd, $gt);
-                        }
-                    }
-                    if($ghnotes == 'convertnew' || $ghnotes == 'convertexist'){
-                        !$isscale ? self::set_grade_scale($scale) : self::set_grade_scale(null);
-                        $rows[$i]->grade = !$isscale ? self::convert_grade($grd) : self::convert_grade($grd, null, $scale);
-                    }
-                }
+                $rows[$i]->grade =  !$is_converted ? self::convert_grade($grd, $gt) : (!$isscale ? self::convert_grade($grd) : self::convert_grade($grd, null, $scale));
                 array_push($rows[$i]->grades, $gradehistory);
                 $i++;
             }
@@ -1251,5 +1212,29 @@ class local_gugcat {
         $prvstr = get_string(($is_category ? 'subcategorygrade' : 'provisionalgrd'), 'local_gugcat');
         $select = "courseid=$COURSE->id AND itemname='$prvstr' AND ".self::compare_iteminfo();
         return $DB->get_record_select('grade_items', $select, ['iteminfo' => $id], 'id, idnumber');
+    }
+
+     /**
+     * Normalize grades from gradebook to gcat (+1)
+     * @param mixed $gradeobj Grade object item from grade_get_grades function
+     * @return mixed |null
+     */
+    public static function normalize_gcat_grades($gradeobj){
+        $schedB = array(
+            23 =>"A0",
+            18 =>"B0",
+            15 =>"C0",
+            12 =>"D0",
+            9 =>"E0",
+            6 =>"F0",
+            3 =>"G0",
+            1 =>"H"
+        );
+        if(isset($gradeobj) && isset($gradeobj->str_grade) ){
+            $grade = $gradeobj->grade;
+            $str = $gradeobj->str_grade;
+            $gradeobj->grade = array_search($str, $schedB) ? array_search($str, $schedB) : $grade;
+        }
+        return $gradeobj;
     }
 }

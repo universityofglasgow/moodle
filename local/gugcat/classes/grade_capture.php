@@ -101,6 +101,8 @@ class grade_capture{
                 //get released grade
                 if(count($releasedgrades) > 0){
                     $gbg = isset($releasedgrades[$student->id]) ? $releasedgrades[$student->id] : null;
+                    // Normalize grades
+                    $gbg = local_gugcat::normalize_gcat_grades($gbg);
                     $gradescaleoffset = local_gugcat::is_grademax22($module->gradeitem->gradetype, $module->gradeitem->grademax) ? 1 : 0;
                     $grade = self::check_gb_grade($gbg, $gradescaleoffset);
                     $gradecaptureitem->releasedgrade = is_null($grade) ? null : local_gugcat::convert_grade($grade, $gt);
@@ -360,6 +362,8 @@ class grade_capture{
 
             foreach($students as $student){
                 $gbg = isset($gbgradeitem[0]) ? $gbgradeitem[0]->grades[$student->id] : null;//gradebook grade record
+                // Normalize grades
+                $gbg = local_gugcat::normalize_gcat_grades($gbg);
                 //check if assignment
                 if(strcmp($module->modname, 'assign') == 0){
                     $assign = new assign(context_module::instance($module->id), $module, $courseid);
@@ -379,8 +383,11 @@ class grade_capture{
                 local_gugcat::add_update_grades($student->id, $mggradeitemid, $grade, $notes);
 
                 $DB->set_field('grade_grades', 'overridden', 0, array('itemid' => $aggradeid, 'userid'=>$student->id));
-                // Every time import is clicked, reset weights in provisional grade > grade_grades information  to null
+                // Every time import is clicked, reset weights in provisional grade > grade_grades information  to null, and overridden subcategory grades
                 $DB->set_field('grade_grades', 'information', null, array('itemid' => $prvid_reset, 'userid' => $student->id));          
+                if(local_gugcat::is_child_activity($module)){
+                    $DB->set_field('grade_grades', 'overridden', 0, array('itemid' => $prvid_reset, 'userid' => $student->id));          
+                }
             } 
         }
     }

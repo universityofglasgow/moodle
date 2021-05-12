@@ -71,8 +71,6 @@ if(!is_null($categoryid) && $categoryid != 0){
         // Retrieve sub cat child components
         $components = local_gugcat::get_activities($courseid, $subcatactivity->instance);
         $subcatactivity->children = array_column($components, 'gradeitemid');
-        // Get child gradetype
-        $gradetype = array_column($components, 'gradeitem')[0]->gradetype;
         $activities = array_merge($components, [$subcatactivity]);
     }else{
         $activities = grade_aggregation::get_parent_child_activities($courseid, $categoryid);
@@ -110,8 +108,12 @@ if(!is_null($activityid) && $formtype == OVERRIDE_GRADE_FORM){
 
 if($formtype == OVERRIDE_GRADE_FORM && $student->aggregatedgrade){
     if(!is_null($activityid)){
-        if($scaleid = $subcatactivity->scaleid){
-            local_gugcat::set_grade_scale($scaleid);
+        if($subcatactivity->is_converted || is_numeric($student->aggregatedgrade->grade)){
+            $gradetype = GRADE_TYPE_VALUE;
+        }else{
+            // Get scaleid of the first component
+            $scaleid = reset($components) ? reset($components)->scaleid : null;
+            local_gugcat::set_grade_scale($scaleid, $student->aggregatedgrade->scale);
         }
     }else{
         local_gugcat::set_grade_scale(null, $student->aggregatedgrade->scale);
