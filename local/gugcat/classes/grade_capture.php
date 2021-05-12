@@ -101,6 +101,11 @@ class grade_capture{
                 //get released grade
                 if(count($releasedgrades) > 0){
                     $gbg = isset($releasedgrades[$student->id]) ? $releasedgrades[$student->id] : null;
+                    if($module->modname == 'assign'){
+                        $assign = new assign(context_module::instance($module->id), $module, $course->id);
+                        $assigngrd = $assign->get_user_grade($student->id, false);
+                        $gbg = local_gugcat::get_gb_assign_grade($assigngrd, $gbg); 
+                    }
                     // Normalize grades
                     $gbg = local_gugcat::normalize_gcat_grades($gbg);
                     $gradescaleoffset = local_gugcat::is_grademax22($module->gradeitem->gradetype, $module->gradeitem->grademax) ? 1 : 0;
@@ -359,24 +364,17 @@ class grade_capture{
             $gbgradeitem = array_values(array_filter($gbgrades->items, function($item) use($module){
                 return $item->itemnumber == $module->gradeitem->itemnumber;//filter grades with specific itemnumber
             }));
-
             foreach($students as $student){
-                $gbg = isset($gbgradeitem[0]) ? $gbgradeitem[0]->grades[$student->id] : null;//gradebook grade record
-                // Normalize grades
-                $gbg = local_gugcat::normalize_gcat_grades($gbg);
+                $gbg = isset($gbgradeitem[0]) ? $gbgradeitem[0]->grades[$student->id] : null;
                 //check if assignment
-                if(strcmp($module->modname, 'assign') == 0){
+                if($module->modname == 'assign'){
                     $assign = new assign(context_module::instance($module->id), $module, $courseid);
-                    $asgrd = $assign->get_user_grade($student->id, false);
-                    if($gbg->overridden == 0 && isset($asgrd->grade)){                    
-                        $grade = ($asgrd->grader >=0) ? ($asgrd->grade) : null;
-                    }else {
-                        $grade = self::check_gb_grade($gbg);
-                    }
+                    $assigngrd = $assign->get_user_grade($student->id, false);
+                    $gbg = local_gugcat::get_gb_assign_grade($assigngrd, $gbg); 
                     local_gugcat::update_workflow_state($assign, $student->id, ASSIGN_MARKING_WORKFLOW_STATE_INREVIEW);
-                }else{
-                    $grade = self::check_gb_grade($gbg);
                 }
+                $gbg = local_gugcat::normalize_gcat_grades($gbg);
+                $grade = self::check_gb_grade($gbg);
                 //for assessment grade history
                 $notes = ',_gradeitem: '. get_string('moodlegrade', 'local_gugcat');
                 local_gugcat::add_update_grades($student->id, local_gugcat::$PRVGRADEID, $grade, '');
