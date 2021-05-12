@@ -51,6 +51,10 @@ define('UNDER_INVESTIGATION', -6);
 define('AU', -7);
 define('FC', -8);
 
+// Alternative course grade types
+define('MERIT_GRADE', 1);
+define('GPA_GRADE', 2);
+
 define('GCAT_MAX_USERS_PER_PAGE', 50);
 
 require_once($CFG->libdir.'/gradelib.php');
