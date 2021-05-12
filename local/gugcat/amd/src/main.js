@@ -429,7 +429,7 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                         var input = div.querySelector('input');
                         total += parseInt(input.value);
                         var invalid = div.querySelector('input.is-invalid');
-                        if(invalid != null){
+                        if(invalid !== null){
                             div.querySelector('[data-fieldtype="text"]').classList.add('no-after');
                         }else{
                             div.querySelector('[data-fieldtype="text"]').classList.remove('no-after');
