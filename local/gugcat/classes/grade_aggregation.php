@@ -168,7 +168,7 @@ class grade_aggregation{
                         $assign = new assign(context_module::instance($item->id), $item, $course->id);
                         $assigngrd = $assign->get_user_grade($student->id, false);
                         $item->gradeitem->gradetype == GRADE_TYPE_SCALE ? local_gugcat::set_grade_scale($item->gradeitem->scaleid) : null;
-                        $gb = (!is_null($gb) && $gb->overridden == 0) && (!is_null($assigngrd->grade) || !empty($assigngrd->grade)) ? $assigngrd : $gb; 
+                        $gb = local_gugcat::get_gb_assign_grade($assigngrd, $gb);  
                     }
                     // Normalize grades
                     $gb = local_gugcat::normalize_gcat_grades($gb);
