@@ -263,6 +263,9 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $colspan = 0; // Number of columns a column group should span
         $prevcatid = null;
         $isconvertsubcat = false;
+        $is_computed = count(array_unique(array_column(array_column($rows, 'aggregatedgrade'), 'display'))) != 1 ? true : false;
+        // var_dump(count(array_unique(array_column(array_column($rows, 'aggregatedgrade'), 'display'))));
+        
         foreach ($activities as $act) {
             // Get the activity scale
             $scalestr = $act->gradetypename;
@@ -313,7 +316,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
         }
         $htmlcolumns .= html_writer::tag('th', get_string('requiresresit', 'local_gugcat'), array('class' => 'sortable'));
         $htmlcolumns .= html_writer::tag('th', get_string('percentcomplete', 'local_gugcat'), array('class' => 'sortable'));
-        $htmlcolumns .= html_writer::tag('th', get_string('aggregatedgrade', 'local_gugcat'), array('class' => 'sortable'));
+        $htmlcolumns .= html_writer::tag('th', get_string('aggregatedgrade', 'local_gugcat') . ($is_computed ? $this->context_actions(null, null, null, null, false, false, true) : null), array('class' => 'sortable'));
         //grade capture rows
 
         foreach ($rows as $row) {
@@ -641,8 +644,9 @@ class local_gugcat_renderer extends plugin_renderer_base {
      * @param boolean $is_aggregrade Condition for url action
      * @param string $link Url link
      * @param boolean $is_overviewpage Condition for url action
+     * @param boolean $is_acg Condition for url action
      */
-    private function context_actions($studentno = null, $ishidden=null, $is_aggregrade = false, $link = null, $is_overviewpage = false, $is_subcat = false) {
+    private function context_actions($studentno = null, $ishidden=null, $is_aggregrade = false, $link = null, $is_overviewpage = false, $is_subcat = false, $is_acg = false) {
         $class = array('class' => 'dropdown-item');
         $html = html_writer::tag('i', null, array('class' => 'fa fa-ellipsis-h', 'data-toggle' => 'dropdown', 'role' =>'button', 'tabindex' =>'0'));
         $html .= html_writer::start_tag('ul', array('class' => 'dropdown-menu'));
@@ -665,6 +669,8 @@ class local_gugcat_renderer extends plugin_renderer_base {
         }else if($is_subcat){
             $converturl = new moodle_url('/local/gugcat/convert/index.php').$link;
             $html .= html_writer::tag('li', html_writer::tag('a', get_string('adjustassessgrdcvr', 'local_gugcat'), array('href' => $converturl)), $class);
+        }else if($is_acg){
+            $html .= html_writer::tag('li', html_writer::tag('a', get_string('createaltcoursegrade', 'local_gugcat')), $class);
         }else{
             $historylink = new moodle_url('/local/gugcat/history/index.php').$link;
             $editlink = new moodle_url('/local/gugcat/edit/index.php').$link.'&overview='.($is_overviewpage ? 1 : 0);
