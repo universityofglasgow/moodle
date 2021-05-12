@@ -25,7 +25,9 @@
 namespace local_gugcat;
 
 use ArrayObject;
+use assign;
 use context_course;
+use context_module;
 use core\plugininfo\local;
 use local_gugcat;
 use stdClass;
@@ -162,6 +164,12 @@ class grade_aggregation{
                     $grades = $item->grades;
                     $pg = isset($grades->provisional[$student->id]) ? $grades->provisional[$student->id] : null;
                     $gb = isset($grades->gradebook[$student->id]) ? $grades->gradebook[$student->id] : null;
+                    if(is_null($pg) && $item->modname == 'assign'){
+                        $assign = new assign(context_module::instance($item->id), $item, $course->id);
+                        $assigngrd = $assign->get_user_grade($student->id, false);
+                        $item->gradeitem->gradetype == GRADE_TYPE_SCALE ? local_gugcat::set_grade_scale($item->gradeitem->scaleid) : null;
+                        $gb = (!is_null($gb) && $gb->overridden == 0) && (!is_null($assigngrd->grade) || !empty($assigngrd->grade)) ? $assigngrd : $gb; 
+                    }
                     // Normalize grades
                     $gb = local_gugcat::normalize_gcat_grades($gb);
                     $ncg = isset($grades->converted[$student->id]) ? $grades->converted[$student->id] : null;
@@ -925,7 +933,7 @@ class grade_aggregation{
                             }
                         }
                     $grdobj->timemodified = $grdhistory->timemodified;
-                    $grdobj->date = date("j/n", strtotime(userdate($grdhistory->timemodified))).'<br>'.date("h:i", strtotime(userdate($grdhistory->timemodified)));
+                    $grdobj->date = date("j/n/y", strtotime(userdate($grdhistory->timemodified))).'<br>'.date("h:i", strtotime(userdate($grdhistory->timemodified)));
                     array_push($rows, $grdobj);
                 }
             }

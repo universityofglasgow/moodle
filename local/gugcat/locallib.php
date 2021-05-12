@@ -51,6 +51,10 @@ define('UNDER_INVESTIGATION', -6);
 define('AU', -7);
 define('FC', -8);
 
+// Alternative course grade types
+define('MERIT_GRADE', 1);
+define('GPA_GRADE', 2);
+
 define('GCAT_MAX_USERS_PER_PAGE', 50);
 
 require_once($CFG->libdir.'/gradelib.php');
@@ -650,7 +654,7 @@ class local_gugcat {
             $modby = $DB->get_record('user', array('id' => $grdhistory->usermodified), $fields);
             $grdhistory->modby = (isset($modby->lastname) && isset($modby->firstname)) ? $modby->lastname . ', '.$modby->firstname : null;
             $grdhistory->notes = $notes;
-            $grdhistory->date = date("j/n", strtotime(userdate($grdhistory->timemodified))).'<br>'.date("H:i", strtotime(userdate($grdhistory->timemodified)));
+            $grdhistory->date = date("j/n/y", strtotime(userdate($grdhistory->timemodified))).'<br>'.date("H:i", strtotime(userdate($grdhistory->timemodified)));
             array_push($grades_arr, $grdhistory);
             }
         }
@@ -1097,7 +1101,7 @@ class local_gugcat {
                 isset($rows[$i]) ? null : $rows[$i] = new stdClass();
                 isset($rows[$i]->grades) ? null : $rows[$i]->grades = array();
                 $rows[$i]->timemodified = $gradehistory->timemodified;
-                $rows[$i]->date = date("j/n", strtotime(userdate($gradehistory->timemodified))).'<br>'.date("H:i", strtotime(userdate($gradehistory->timemodified)));
+                $rows[$i]->date = date("j/n/y", strtotime(userdate($gradehistory->timemodified))).'<br>'.date("H:i", strtotime(userdate($gradehistory->timemodified)));
                 $rows[$i]->notes = $gradehistory->feedback;
                 $fields = 'firstname, lastname';
                 $modby = (preg_match('/import/i', $gradehistory->feedback) || preg_match('/grade/i', $gradehistory->feedback)
@@ -1226,10 +1230,19 @@ class local_gugcat {
             3 =>"G0",
             1 =>"H"
         );
-        if(isset($gradeobj) && isset($gradeobj->str_grade) ){
+
+
+        if(isset($gradeobj) && isset($gradeobj->str_grade)){
             $grade = $gradeobj->grade;
             $str = $gradeobj->str_grade;
             $gradeobj->grade = array_search($str, $schedB) ? array_search($str, $schedB) : $grade;
+        }else if(isset($gradeobj) && !isset($gradeobj->str_grade)){
+            $grade = $gradeobj->grade;
+            if(!is_null(local_gugcat::$GRADES) && local_gugcat::$GRADES[key(local_gugcat::$GRADES)] == 'A0'){
+                $str = grade_converter::convert($schedB, $grade, true);
+                $gradeobj->grade = array_search($str, $schedB) ? array_search($str, $schedB) : $grade;
+            }
+            $gradeobj->feedback = null;
         }
         return $gradeobj;
     }

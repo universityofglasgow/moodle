@@ -65,19 +65,17 @@
     width: 85%;
 }
 
-.input-percent > div.felement:after {
+.input-percent > [data-fieldtype="text"]:after{
     content: '\f295';
     font: normal normal normal 12px/1 FontAwesome;
     color: #005c8a;
-    position: absolute;
-    left: 62px;
-    top: 38%;
-    height: 34px;
-    padding: 0 8px;
-    pointer-events: none;
+    position: relative;
+    height: 12px;
+    padding: 0px 5px;
+    margin-left: -24px;
 }
 
-.input-percent > div.felement.no-after:after {
+.input-percent > [data-fieldtype="text"].no-after:after{
     content: none;
 }
 
@@ -89,7 +87,7 @@
     width: 150px;
 }
 
-#select-template{
+#select-template, #select-alt-grade{
     width: auto;
 }
 
@@ -142,4 +140,9 @@ abbr > .fa-asterisk {
     border-color: #005c8a;
     background-color: #005c8a;
     color: white;
+}
+
+label.checkbox-field{
+    width: 160px;
+    justify-content: start;
 }

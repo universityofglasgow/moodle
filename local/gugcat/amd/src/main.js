@@ -255,6 +255,7 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
         var grade_reason = document.querySelector('.multi-select-reason > select');
         var select_scale = document.getElementById('select-scale');
         var select_template = document.getElementById('select-template');
+        var select_alt_grade = document.getElementById('select-alt-grade');
         var mform_grade_reason = document.getElementById('id_reasons');
         switch (event.target) {
             case categories:
@@ -356,6 +357,32 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                     });
                 }
                 break;
+            case select_alt_grade:
+                var all = document.querySelectorAll('.merit-lbl, .gpa-lbl');
+                if(select_alt_grade.value != 0){
+                    var merit = document.querySelectorAll('.merit-lbl');
+                    var gpa = document.querySelectorAll('.gpa-lbl');
+                    if(select_alt_grade.value == 1){
+                        if(merit.length > 0 ){
+                            merit.forEach(lbl => lbl.classList.remove('hidden'));
+                        }
+                        if(gpa.length > 0 ){
+                            gpa.forEach(lbl => lbl.classList.add('hidden'));
+                        }
+                    }else if(select_alt_grade.value == 2){
+                        if(merit.length > 0 ){
+                            merit.forEach(lbl => lbl.classList.add('hidden'));
+                        }
+                        if(gpa.length > 0 ){
+                            gpa.forEach(lbl => lbl.classList.remove('hidden'));
+                        }
+                    }
+                }else{
+                    if(all.length > 0 ){
+                        all.forEach(lbl => lbl.classList.add('hidden'));
+                    }
+                }
+                break;
             default:
                 break;
         }
@@ -403,9 +430,9 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                         total += parseInt(input.value);
                         var invalid = div.querySelector('input.is-invalid');
                         if(invalid !== null){
-                            div.querySelector('div.felement').classList.add('no-after');
+                            div.querySelector('[data-fieldtype="text"]').classList.add('no-after');
                         }else{
-                            div.querySelector('div.felement').classList.remove('no-after');
+                            div.querySelector('[data-fieldtype="text"]').classList.remove('no-after');
                         }
                     });
                 }
@@ -532,9 +559,11 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                 }
 
                 var input_percentarr = document.querySelectorAll('.input-percent');
-                if(input_percentarr.length > 0){
+                var totalweight = document.querySelector('.total-weight')
+                    ? document.querySelector('.total-weight')
+                    : document.querySelector('#fitem_id_totalweight .form-inline');
+                if(input_percentarr.length > 0 && totalweight){
                     var total = 0;
-                    var totalweight = document.querySelector('#fitem_id_totalweight .form-inline');
                     input_percentarr.forEach(div => {
                         var input = div.querySelector('input');
                         total += parseInt(input.value);
@@ -546,17 +575,17 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                         input.addEventListener('focus', (e) => {
                             var val = e.target.value;
                             if(val !== "" && val.match(/^[0-9]+$/) === null){
-                                div.querySelector('div.felement').classList.add('no-after');
+                                div.querySelector('[data-fieldtype="text"]').classList.add('no-after');
                             }else{
-                                div.querySelector('div.felement').classList.remove('no-after');
+                                div.querySelector('[data-fieldtype="text"]').classList.remove('no-after');
                             }
                         });
                         input.addEventListener('blur', (e) => {
                             var val = e.target.value;
                             if(val !== "" && val.match(/^[0-9]+$/) === null){
-                                div.querySelector('div.felement').classList.add('no-after');
+                                div.querySelector('[data-fieldtype="text"]').classList.add('no-after');
                             }else{
-                                div.querySelector('div.felement').classList.remove('no-after');
+                                div.querySelector('[data-fieldtype="text"]').classList.remove('no-after');
                             }
                         });
                     });
