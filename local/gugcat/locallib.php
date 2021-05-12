@@ -1231,19 +1231,33 @@ class local_gugcat {
             1 =>"H"
         );
 
-
         if(isset($gradeobj) && isset($gradeobj->str_grade)){
             $grade = $gradeobj->grade;
             $str = $gradeobj->str_grade;
             $gradeobj->grade = array_search($str, $schedB) ? array_search($str, $schedB) : $grade;
         }else if(isset($gradeobj) && !isset($gradeobj->str_grade)){
             $grade = $gradeobj->grade;
-            if(!is_null(local_gugcat::$GRADES) && local_gugcat::$GRADES[key(local_gugcat::$GRADES)] == 'A0'){
+            if(!is_null(local_gugcat::$GRADES) && reset(local_gugcat::$GRADES) == 'A0'){
                 $str = grade_converter::convert($schedB, $grade, true);
                 $gradeobj->grade = array_search($str, $schedB) ? array_search($str, $schedB) : $grade;
             }
             $gradeobj->feedback = null;
         }
         return $gradeobj;
+    }
+
+    /**
+     * get grade from gradebook or assign
+     * @param mixed $assign
+     * @param mixed $gb
+     * 
+     * @return mixed | null
+     */
+    public static function get_gb_assign_grade($assign, $gb){
+
+        $is_valid_assign = $assign && $assign->grader >= 0 && (!is_null($assign->grade) || !empty($assign->grade));
+        $gb = (!is_null($gb) && $gb->overridden == 0) && $is_valid_assign ? $assign : $gb;
+        
+        return $gb;
     }
 }

@@ -104,7 +104,7 @@ class grade_capture{
                     if($module->modname == 'assign'){
                         $assign = new assign(context_module::instance($module->id), $module, $course->id);
                         $assigngrd = $assign->get_user_grade($student->id, false);
-                        $gbg = !is_null($gbg) && $gbg->overridden == 0 && (!is_null($assigngrd->grade) || !empty($assigngrd->grade)) ? $assigngrd : $gbg; 
+                        $gbg = local_gugcat::get_gb_assign_grade($assigngrd, $gbg); 
                     }
                     // Normalize grades
                     $gbg = local_gugcat::normalize_gcat_grades($gbg);
@@ -370,7 +370,7 @@ class grade_capture{
                 if($module->modname == 'assign'){
                     $assign = new assign(context_module::instance($module->id), $module, $courseid);
                     $assigngrd = $assign->get_user_grade($student->id, false);
-                    $gbg = !is_null($gbg) && $gbg->overridden == 0 && (!is_null($assigngrd->grade) || !empty($assigngrd->grade)) ? $assigngrd : $gbg;
+                    $gbg = local_gugcat::get_gb_assign_grade($assigngrd, $gbg); 
                     local_gugcat::update_workflow_state($assign, $student->id, ASSIGN_MARKING_WORKFLOW_STATE_INREVIEW);
                 }
                 $gbg = local_gugcat::normalize_gcat_grades($gbg);
