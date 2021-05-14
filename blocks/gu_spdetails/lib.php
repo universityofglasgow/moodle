@@ -840,6 +840,16 @@ class assessments_details {
           return $grading;
      }
 
+     /**
+      * Returns formatted grade text of an assessment
+      *
+      * @param int $intgrade
+      * @param int $grademax
+      * @param string $convertedgrade
+      * @param boolean $onlyconverted
+      * @return string formatted grade text
+      *
+      */
      public static function return_gradetext($intgrade, $grademax, $convertedgrade, $onlyconverted){
           return $onlyconverted ? $convertedgrade : "$intgrade / $grademax" . ($convertedgrade !== "" ? " - $convertedgrade" : "");
      }
