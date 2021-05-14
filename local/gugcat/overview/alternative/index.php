@@ -34,9 +34,14 @@ $page = optional_param('page', 0, PARAM_INT);
 
 require_login($courseid);
 $urlparams = array('id' => $courseid, 'page' => $page);
-$URL = new moodle_url('/local/gugcat/alternative/index.php', $urlparams);
-(!is_null($categoryid) && $categoryid != 0) ? $URL->param('categoryid', $categoryid) : null;
+$url = new moodle_url('/local/gugcat/alternative/index.php', $urlparams);
 $indexurl = new moodle_url('/local/gugcat/index.php', $urlparams);
+$overviewurl = new moodle_url('/local/gugcat/overview/index.php', $urlparams);
+
+if(!is_null($categoryid) && $categoryid != 0){
+    $url->param('categoryid', $categoryid);
+    $overviewurl->param('categoryid', $categoryid);
+}
 
 $PAGE->navbar->add(get_string('navname', 'local_gugcat'), $indexurl);
 $PAGE->set_title(get_string('gugcat', 'local_gugcat'));
@@ -51,7 +56,7 @@ require_capability('local/gugcat:view', $coursecontext);
 $PAGE->set_context($coursecontext);
 $PAGE->set_course($course);
 $PAGE->set_heading($course->fullname);
-$PAGE->set_url($URL);
+$PAGE->set_url($url);
 
 // Retrieve the activity
 if(!is_null($categoryid) && $categoryid != 0){
@@ -61,22 +66,21 @@ if(!is_null($categoryid) && $categoryid != 0){
 }
 local_gugcat::set_grade_scale(null);
 $renderer = $PAGE->get_renderer('local_gugcat');
-
 // Set up the alternative form.
 $mform = new alternativegradeform(null, array('activities' => $activities));
 // If the upload form has been submitted.
 if ($mform->is_cancelled()) {
-    $overviewurl = new moodle_url('/local/gugcat/overview/index.php', $urlparams);
     redirect($overviewurl);
 } else if ($formdata = $mform->get_data()) {
     $is_merit = $formdata->altgradetype == MERIT_GRADE ? true : false;
     $assessments = $is_merit ? $formdata->merits : $formdata->resits;
     $weights = $is_merit ? $formdata->weights : array();
     $appliedcap = $is_merit ? null : $formdata->appliedcap;
-    $appliedcap = $appliedcap && $appliedcap == 0 ? $formdata->grade : $appliedcap;
+    $appliedcap = !is_null($appliedcap) && $appliedcap == 0 ? $formdata->grade : $appliedcap;
     // Remove unselected assessments
     $assessments = array_filter($assessments);
-    //grade_aggregation::create_edit_alt_grades($formdata->altgradetype, $assessments, $weights);
+    grade_aggregation::create_edit_alt_grades($formdata->altgradetype, $assessments, $weights, $appliedcap);
+    redirect($overviewurl);
 } else {
     // Display the create alternative grade form.
     echo $OUTPUT->header();

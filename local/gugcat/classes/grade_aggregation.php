@@ -77,8 +77,19 @@ class grade_aggregation{
             //get or create grade item id for aggregated grade
             $aggradeid = local_gugcat::add_grade_item($course->id, get_string('aggregatedgrade', 'local_gugcat'), null, $students);
         }
+
+        // Check for alternative course grades
+        $meritgi = local_gugcat::get_grade_item_id($course->id, $categoryid, get_string('meritgrade', 'local_gugcat'));
+        if($meritgi){
+            $meritsettings = $DB->get_records('gcat_acg_settings', array('acgid'=>$meritgi));
+        }
+        $gpagi = local_gugcat::get_grade_item_id($course->id, $categoryid, get_string('gpagrade', 'local_gugcat'));
+        if($gpagi){
+            $gpasettings = $DB->get_records('gcat_acg_settings', array('acgid'=>$gpagi));
+        }
+
         $rows = array();
-        $gradebook = array();
+        $assessments = array();
         foreach ($modules as $mod) {
             $weightcoef1 = $mod->gradeitem->aggregationcoef; //Aggregation coeficient used for weighted averages or extra credit
             $weightcoef2 = $mod->gradeitem->aggregationcoef2; //Aggregation coeficient used for weighted averages only
@@ -129,9 +140,21 @@ class grade_aggregation{
             $gbgradeitem = array_values(array_filter($gbgrades->items, function($item) use($mod){
                 return $item->itemnumber == $mod->gradeitem->itemnumber;
             }));
-            $grades->gradebook = isset($gbgradeitem[0]) ? $gbgradeitem[0]->grades : null;
+            $gradebook = isset($gbgradeitem[0]) ? $gbgradeitem[0]->grades : null;
+            // Get assign grades/gradebook grades and normalize it
+            if(empty($grades->provisional) && $mod->modname == 'assign' && $mod->gradeitem->gradetype == GRADE_TYPE_SCALE){
+                $assign = new assign(context_module::instance($mod->id), $mod, $course->id);
+                local_gugcat::set_grade_scale($mod->gradeitem->scaleid);
+                foreach ($students as $student) {
+                    $gb = isset($gradebook[$student->id]) ? $gradebook[$student->id] : null;
+                    $assigngrd = $assign->get_user_grade($student->id, false);
+                    $gb = local_gugcat::get_gb_assign_grade($assigngrd, $gb);
+                    $gradebook[$student->id] = local_gugcat::normalize_gcat_grades($gb);
+                }
+            }
+            $grades->gradebook = $gradebook;
             $mod->grades = $grades;
-            array_push($gradebook, $mod);
+            array_push($assessments, $mod);
         }
         // Errors to display
         $errors = array();
@@ -154,23 +177,15 @@ class grade_aggregation{
             $calculatedweight = 0;
             $aggrdobj = new stdClass();
             $aggrdobj->display =  get_string('missinggrade', 'local_gugcat') ;
-            if(count($gradebook) > 0){
+            if(count($assessments) > 0){
                 $gradetypes = array();
                 $feedback = ",_weights: ";
-                foreach ($gradebook as $item) {
+                foreach ($assessments as $item) {
                     $grditemresit = self::is_resit($item);
                     $grdobj = new stdClass();
                     $grades = $item->grades;
                     $pg = isset($grades->provisional[$student->id]) ? $grades->provisional[$student->id] : null;
                     $gb = isset($grades->gradebook[$student->id]) ? $grades->gradebook[$student->id] : null;
-                    if(is_null($pg) && $item->modname == 'assign'){
-                        $assign = new assign(context_module::instance($item->id), $item, $course->id);
-                        $assigngrd = $assign->get_user_grade($student->id, false);
-                        $item->gradeitem->gradetype == GRADE_TYPE_SCALE ? local_gugcat::set_grade_scale($item->gradeitem->scaleid) : null;
-                        $gb = local_gugcat::get_gb_assign_grade($assigngrd, $gb);
-                    }
-                    // Normalize grades
-                    $gb = local_gugcat::normalize_gcat_grades($gb);
                     $ncg = isset($grades->converted[$student->id]) ? $grades->converted[$student->id] : null;
                     $grd = (isset($pg) && !is_null($pg->finalgrade)) ? $pg->finalgrade
                     : (isset($pg) && !is_null($pg->rawgrade) ? $pg->rawgrade
@@ -179,7 +194,7 @@ class grade_aggregation{
                     $autoconvertb = false; // Used for subcat grades auto converted to schedule B
                     if($item->modname == 'category') {
                         //get aggregation type
-                        list($subcatgrd, $processed, $error) = self::get_aggregated_grade($student->id, $item, $gradebook);
+                        list($subcatgrd, $processed, $error) = self::get_aggregated_grade($student->id, $item, $assessments);
                         $grd = $processed ? (is_null($subcatgrd) ? null : $subcatgrd->grade) : (is_null($subcatgrd) ? $grd : $subcatgrd->grade);
                         if(!is_null($subcatgrd)){
                             // Set the grade type and scale id of the sub category column
@@ -195,6 +210,8 @@ class grade_aggregation{
                             $errors[$item->gradeitemid] = $error;
                         }
                     }
+
+                    $grades->altgrades[$student->id] = $grd;
                     $gt = $item->gradeitem->gradetype;
                     $gm = $item->gradeitem->grademax;
                     $scaleid = is_null($item->scaleid) ? null : $item->scaleid;
@@ -309,6 +326,36 @@ class grade_aggregation{
                     && $aggrdobj->display != get_string('missinggrade', 'local_gugcat')
                     && is_null($activityid)) ? local_gugcat::update_grade($student->id, $aggradeid, $sumaggregated, $feedback) : null;
                     $DB->set_field('grade_grades', 'feedback', '', array('id'=>$gbaggregatedgrade->id));
+                }
+
+                // Calculate alternative grade ----------
+
+                // Merit grade
+                if($meritgi && $meritsettings){
+                    $ids = array_column($meritsettings, 'itemid');
+                    $weights = array_column($meritsettings, 'weight', 'itemid');
+
+                    $selectedmerits = array_filter($assessments, function($item) use($ids){
+                        return in_array($item->gradeitemid, $ids, true);
+                    });
+                    foreach ($selectedmerits as $item) {
+                        $item->meritweight = $weights[$item->gradeitemid];
+                    }
+                    $gradecaptureitem->meritgrade = self::get_alt_grade(true, $meritgi, $selectedmerits, $student->id);
+                }
+
+                // GPA grade
+                if($gpagi && $gpasettings){
+                    $ids = array_column($gpasettings, 'itemid');
+                    $gpacap = array_column($gpasettings, 'cap', 'itemid');
+
+                    $selectedgpa = array_filter($assessments, function($item) use($ids){
+                        return in_array($item->gradeitemid, $ids, true);
+                    });
+                    foreach ($selectedgpa as $item) {
+                        $item->gpacap = $gpacap[$item->gradeitemid];
+                    }
+                    $gradecaptureitem->gpagrade = self::get_alt_grade(false, $gpagi, $selectedgpa, $student->id, $aggrdobj);
                 }
             }
             $gradecaptureitem->aggregatedgrade = $aggrdobj;
@@ -1039,7 +1086,7 @@ class grade_aggregation{
     }
 
     /**
-     * updates feedback field for subcategory grades and provisional grades
+     * Create or edit alternative course grade settings
      * @param int $alttype Either Merit or GPA
      * @param array $assessments
      * @param array $weights
@@ -1049,101 +1096,89 @@ class grade_aggregation{
     public static function create_edit_alt_grades($alttype, $assessments, $weights = array(), $appliedcap = null){
         global $DB, $COURSE;
         $is_merit = $alttype == MERIT_GRADE;
-        $students = grade_capture::get_students_per_groups(array(0), $COURSE->id, 'u.id');
         $altstr = get_string(($is_merit ? 'meritgrade' : 'gpagrade'), 'local_gugcat');
-        $altgi = local_gugcat::add_grade_item($COURSE->id, $altstr, null, $students);
-
-        if($is_merit){
-            $aggradeid = local_gugcat::add_grade_item($COURSE->id, get_string('aggregatedgrade', 'local_gugcat'), null);
-            // Get aggregated grades
-            $ggfields = 'userid, itemid, id, rawgrade, finalgrade';
-            $aggrades = !$aggradeid ? array() : $DB->get_records('grade_grades', array('itemid' => $aggradeid), 'id', $ggfields);
-        }
-
-        $gradeitems = array();
-        // Get assessments gradeitem and grades
+        $altgi = local_gugcat::add_grade_item($COURSE->id, $altstr, null);
+        // Delete existing settings first
+        $DB->delete_records('gcat_acg_settings', array('acgid'=>$altgi));
+        $acgitems = array();
         foreach ($assessments as $id => $value) {
-            // Get grade item of assessment
-            $gifields = 'id, itemtype, iteminstance, itemmodule, itemnumber, scaleid, gradetype';
-            if($gi = $DB->get_record('grade_items', array('id' => $id), $gifields)){
-                $is_category = $gi->itemtype == 'category' ? true : false;
-                $grades = new stdClass();
-                // Get gradebook grades from category/module
-                if($is_category){
-                    $gbgrades = grade_get_grades($COURSE->id, 'category', null, $gi->iteminstance, array_keys($students));
-                }else{
-                    $gbgrades = grade_get_grades($COURSE->id, 'mod', $gi->itemmodule, $gi->iteminstance, array_keys($students));
-                }
-                // Get provisional id and converted flag
-                $id = $is_category ? $gi->iteminstance : $gi->id;
-                $prvgrd = local_gugcat::get_gradeitem_converted_flag($id, $is_category);
-                $prvgrdid = ($prvgrd) ? $prvgrd->id : null;
-                // Get provisional grades
-                $ggfields = 'userid, itemid, id, rawgrade, finalgrade';
-                $grades->provisional = !$prvgrdid ? array() : $DB->get_records('grade_grades', array('itemid' => $prvgrdid), 'id', $ggfields);
-
-                // Get scale type of each assessments
-                $is_converted = ($prvgrd && !is_null($prvgrd->idnumber)) ? $prvgrd->idnumber : false;
-                if(!$is_converted){
-                    local_gugcat::set_grade_scale($gi->scaleid);
-                    $gi->scale = (reset(local_gugcat::$GRADES) == 'A0') ? SCHEDULE_B : SCHEDULE_A;
-                }else{
-                    $gi->scale = $is_converted;
-                }
-                // Filter grades from gradebook with specific itemnumber
-                $gbgradeitem = array_values(array_filter($gbgrades->items, function($item) use($gi){
-                    return $item->itemnumber == $gi->itemnumber;
-                }));
-                $grades->gradebook = isset($gbgradeitem[0]) ? $gbgradeitem[0]->grades : null;
-                $gi->grades = $grades;
-                $gi->weight = empty($weights) ? null : $weights[$gi->id];
-                array_push($gradeitems, $gi);
-            }
+            $weight = $is_merit && !empty($weights) ? $weights[$id] : null;
+            $acgitems[] = array('acgid'=>$altgi, 'itemid'=>$id, 'weight'=>$weight, 'cap'=>$appliedcap);
         }
-        $scaletype = null;
-        // Calculate students grades
-        foreach ($students as $student) {
-            $schedAweights = 0;
-            $schedBweights = 0;
-            $sumweight = 0;
-            $sumaggregated = 0;
-            foreach ($gradeitems as $item) {
+        return $DB->insert_records('gcat_acg_settings', $acgitems);
+    }
+
+    /**
+     * Calculate and return alternative course grade
+     *
+     * @param boolean $is_merit
+     * @param int $itemid grade item id of alt course grade
+     * @param array $selectedacts selected assessments from alt grade form
+     * @param int $userid student id
+     * @param object $aggrdobj aggregated grade object
+     * @return object $altgrdobj
+     */
+    public static function get_alt_grade($is_merit, $itemid, $selectedacts, $userid, $aggrdobj = null) {
+        global $DB;
+        $meritsumgrade = 0;
+        $meritsumweight = 0;
+        $altgrdobj = new stdClass();
+        $altgg = $DB->get_record('grade_grades', array('itemid'=>$itemid, 'userid'=>$userid));
+        $altggrd = !$altgg ? null : (!is_null($altgg->finalgrade)
+            ? $altgg->finalgrade : $altgg->rawgrade);
+        local_gugcat::set_grade_scale(null);
+        // If merit grade is overridden
+        if($altgg && $altgg->overridden != 0){
+            $altgrdobj->grade = $altggrd ? local_gugcat::convert_grade($altggrd + 1) : get_string('missinggrade', 'local_gugcat');
+            $altgrdobj->rawgrade = $altggrd;
+            return $altgrdobj;
+        }else{
+            $gpagrades = array();
+            $altgrade = null;
+            $cap = null;
+            foreach ($selectedacts as $item) {
                 $grades = $item->grades;
-                $pg = isset($grades->provisional[$student->id]) ? $grades->provisional[$student->id] : null;
-                $gb = isset($grades->gradebook[$student->id]) ? $grades->gradebook[$student->id] : null;
-                if(is_null($pg) && $item->itemmodule == 'assign'){
-                    $cm = get_coursemodule_from_instance($item->itemmodule, $item->iteminstance);
-                    $assign = new assign(context_module::instance($item->iteminstance), $cm, $COURSE->id);
-                    $assigngrd = $assign->get_user_grade($student->id, false);
-                    $item->gradetype == GRADE_TYPE_SCALE ? local_gugcat::set_grade_scale($item->scaleid) : null;
-                    $gb = (!is_null($gb) && $gb->overridden == 0) && $assigngrd  && $assigngrd->grader >= 0 && (!is_null($assigngrd->grade) || !empty($assigngrd->grade)) ? $assigngrd : $gb;
-                }
-                // Normalize grades
-                $gb = local_gugcat::normalize_gcat_grades($gb);
-                $grd = (isset($pg) && !is_null($pg->finalgrade)) ? $pg->finalgrade
-                    : (isset($pg) && !is_null($pg->rawgrade) ? $pg->rawgrade
-                    : ((isset($gb) && !is_null($gb->grade)) ? $gb->grade : null));
-                // Only aggregate grades that are:
-                // - not null
-                // - not MEDICAL_EXEMPTION_AC (MV, -1)
-                // - in 22 pt scale
-                if(!is_null($grd) && intval($grd) !== MEDICAL_EXEMPTION){
-                    $weight = $gi->weight;
+                $cap = $is_merit ? null : $item->gpacap;
+                $grd = isset($grades->altgrades[$userid]) ? $grades->altgrades[$userid] : null;
+                $gpagrades[] = is_null($grd) ? null : intval($grd);
+                if($is_merit){
+                    // Only aggregate grades that are:
+                    // - not null
+                    // - not MEDICAL_EXEMPTION_AC (MV, -1)
+                    // - in 22 pt scale
+                    if(!is_null($grd) && intval($grd) !== MEDICAL_EXEMPTION){
+                        $weight = $item->meritweight;
 
-                    // Add the weights for schedule A or B, to be used in converting aggregated grade
-                    ($item->scale == SCHEDULE_A) ? $schedAweights += $weight : $schedBweights += $weight;
-
-                    // Normalize to actual grade value (-1) for computation if its grade type is scale
-                    $grdvalue = intval($grd) == NON_SUBMISSION ? 0 : (float)$grd - (float)1;
-                    $sumweight += $weight;
-                    $sumaggregated += (float)$grdvalue * $weight;
+                        // Normalize to actual grade value (-1) for computation if its grade type is scale
+                        $grdvalue = intval($grd) == NON_SUBMISSION ? 0 : (float)$grd - (float)1;
+                        $meritsumweight += $weight;
+                        $meritsumgrade += (float)$grdvalue * $weight;
+                    }
                 }
             }
-            $finalgrade = $sumaggregated != 0 ? $sumaggregated / $sumweight : null;
-            $scaletype = ($schedAweights >= $schedBweights) ? SCHEDULE_A : SCHEDULE_B;
-            local_gugcat::update_grade($student->id, $altgi, $finalgrade);
+            if($is_merit){
+                // Merit grade
+                $altgrade = $meritsumgrade != 0 ? $meritsumgrade / $meritsumweight : 0;
+            }else{
+                // GPA grade
+                // If selected assessment grades has missing or no grade, display aggregated
+                if(in_array(null, $gpagrades, true)){
+                    $altgrade = $aggrdobj->rawgrade;
+                }else{
+                    $cap = (intval($cap) == NON_SUBMISSION) ? -1 : intval($cap - 1);
+                    $aggrade = $aggrdobj->rawgrade;
+                    $altgrade = $aggrade <= $cap ? $aggrade : $cap;
+                }
+            }
+
+            if(round((float)$altgrade, 5) != round((float)$altggrd, 5)){
+                local_gugcat::update_grade($userid, $itemid, $altgrade);
+            }
+            $altgrdobj->grade = !is_null($altgrade)
+            ? ($altgrade == 0 ? 0 : local_gugcat::convert_grade($altgrade + 1))
+            : get_string('missinggrade', 'local_gugcat');
+            $altgrdobj->rawgrade = $altgrade;
+            return $altgrdobj;
         }
-        // Update created alt grade item scaletype in idnumber
-        return $DB->set_field('grade_items', 'idnumber', $scaletype, array('id'=>$altgi));
     }
 }

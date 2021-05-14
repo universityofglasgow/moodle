@@ -78,7 +78,7 @@ function xmldb_local_gugcat_upgrade($oldversion) {
     $table_cvt_templateid = new xmldb_field('templateid', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
     $table_cvt_lowerboundary = new xmldb_field('lowerboundary', XMLDB_TYPE_NUMBER, '10,5', null, XMLDB_NOTNULL, null, '0');
     $table_cvt_grade = new xmldb_field('grade', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
-    
+
     // Define keys to table gcat_grade_converter.
     $table_cvt_key1 = new xmldb_key('primary', XMLDB_KEY_PRIMARY, array('id'));
     $table_cvt_key2 = new xmldb_key('gcat_grade_converter_fk', XMLDB_KEY_FOREIGN,  array('templateid'), 'gcat_converter_templates', array('id'));
@@ -86,6 +86,25 @@ function xmldb_local_gugcat_upgrade($oldversion) {
     // Define indexes to table gcat_grade_converter.
     $table_cvt_index1 = new xmldb_index('courseid', XMLDB_INDEX_NOTUNIQUE, array('courseid'));
     $table_cvt_index2 = new xmldb_index('itemid', XMLDB_INDEX_NOTUNIQUE, array('itemid'));
+
+    // ------- Table gcat_acg_settings starts here --------
+
+    // Define table gcat_acg_settings to be created.
+    $table_acg = new xmldb_table('gcat_acg_settings');
+
+    // Define fields to table gcat_acg_settings.
+    $table_acg_id = new xmldb_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+    $table_acg_acgid = new xmldb_field('acgid', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+    $table_acg_itemid = new xmldb_field('itemid', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+    $table_acg_weight = new xmldb_field('weight', XMLDB_TYPE_NUMBER, '10,5', null, null, null, null);
+    $table_acg_cap = new xmldb_field('cap', XMLDB_TYPE_NUMBER, '10,5', null, null, null, null);
+
+    // Define keys to table gcat_acg_settings.
+    $table_acg_key = new xmldb_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+
+    // Define indexes to table gcat_acg_settings.
+    $table_acg_index1 = new xmldb_index('acgid', XMLDB_INDEX_NOTUNIQUE, array('acgid'));
+    $table_acg_index2 = new xmldb_index('itemid', XMLDB_INDEX_NOTUNIQUE, array('itemid'));
 
     if ($oldversion < 2021041600) {
 
@@ -114,11 +133,11 @@ function xmldb_local_gugcat_upgrade($oldversion) {
         // Adding keys to table gcat_grade_converter.
         $table_cvt->addKey($table_cvt_key1);
         $table_cvt->addKey($table_cvt_key2);
-    
+
         // Adding indexes to table gcat_grade_converter.
         $table_cvt->addIndex($table_cvt_index1);
         $table_cvt->addIndex($table_cvt_index2);
-        
+
         // Conditionally launch create table for gcat_grade_converter.
         if($dbman->table_exists($table_cvt)) {
             $dbman->drop_table($table_cvt);
@@ -129,7 +148,7 @@ function xmldb_local_gugcat_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2021041600, 'local', 'gugcat');
     }
     if ($oldversion < 2021041601) {
-        
+
         // Conditionally launch create table for gcat_grade_converter.
         if($dbman->table_exists($table_cvt)) {
             if($dbman->field_exists($table_cvt, $table_cvt_lowerboundary)){
@@ -141,6 +160,30 @@ function xmldb_local_gugcat_upgrade($oldversion) {
 
         // Gugcat savepoint reached.
         upgrade_plugin_savepoint(true, 2021041601, 'local', 'gugcat');
+    }
+    if ($oldversion < 2021051400) {
+
+        // Adding fields to table gcat_acg_settings.
+        $table_acg->addField($table_acg_id);
+        $table_acg->addField($table_acg_acgid);
+        $table_acg->addField($table_acg_itemid);
+        $table_acg->addField($table_acg_weight);
+        $table_acg->addField($table_acg_cap);
+
+        // Adding keys to table gcat_acg_settings.
+        $table_acg->addKey($table_acg_key);
+
+        // Adding indexes to table gcat_acg_settings.
+        $table_cvt->addIndex($table_acg_index1);
+        $table_cvt->addIndex($table_acg_index2);
+
+        // Conditionally launch create table for gcat_acg_settings.
+        if (!$dbman->table_exists($table_acg)) {
+            $dbman->create_table($table_acg);
+        }
+
+        // Gugcat savepoint reached.
+        upgrade_plugin_savepoint(true, 2021051400, 'local', 'gugcat');
     }
 
     return true;
