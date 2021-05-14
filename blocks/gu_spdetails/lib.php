@@ -226,7 +226,7 @@ class assessments_details {
                                               array('class' => 'text-muted mt-3'));
                $html .= html_writer::end_tag('div');
           }
-     
+
           return $html;
      }
 
@@ -278,8 +278,8 @@ class assessments_details {
 
      /**
       * Retrieves Parent and 2nd level category ids
-      * 
-      * @param string $courseids 
+      *
+      * @param string $courseids
       * @return array $ids
       */
      public static function retrieve_parent_category($courseids){
@@ -337,10 +337,11 @@ class assessments_details {
                $categoryids = $issubcategory ? $subcategory : implode(', ', $categories);
 
                $categorylimit = "AND gi.categoryid IN ($categoryids)";
-               $convertedgradeselect ="gic.id as `convertedgradeid`, gp.finalgrade as `provisionalgrade`";
+               $convertedgradeselect ="gic.id as `convertedgradeid`, gp.finalgrade as `provisionalgrade`, gip.idnumber, NULL as `outcomeid`";
                $convertedgradejoin = "LEFT JOIN {grade_items} gic ON (gic.iteminfo = gi.id AND gic.itemname = 'Converted Grade')
                                       LEFT JOIN {grade_items} gip ON (gip.iteminfo = gi.id AND gip.itemname = 'Provisional Grade')
-                                      LEFT JOIN {grade_grades} gp ON (gp.itemid = gip.id AND gp.userid = ?)";
+                                      LEFT JOIN {grade_grades} gp ON (gp.itemid = gip.id AND gp.userid = ?)
+                                      LEFT JOIN {scale} sp ON (sp.id = gip.idnumber)";
                $assignfields = "cm.id, a.course AS courseid,
                                    CASE
                                    WHEN cs.name IS NOT NULL THEN cs.name
@@ -561,18 +562,20 @@ class assessments_details {
                                           gc.fullname AS `activityname`, gp.fullname AS `gradecategoryname`, gp.aggregation,
                                           gi.aggregationcoef, gi.aggregationcoef2, NULL AS `allowsubmissionsfromdate`,
                                           NULL AS `duedate`, NULL AS `cutoffdate`, NULL AS `gradingduedate`, NULL AS `hasextension`,
-                                          gi.gradetype, gi.grademin, gi.grademax, NULL AS `scale`, 
+                                          gi.gradetype, gi.grademin, gi.grademax, sp.scale AS `scale`,
                                           CASE WHEN gg.finalgrade IS NOT NULL THEN gg.finalgrade ELSE gg.rawgrade END AS `finalgrade`,
                                           gg.information AS gradeinformation, gg.feedback, NULL as `feedbackfiles`, NULL as `hasturnitin`,
                                           'category' AS `status`, NULL AS `submissions`, NULL AS `quizfeedback`, NULL AS `startdate`,
-                                          NULL AS `enddate`, NULL AS `convertedgradeid`, 
-                                          CASE WHEN ggp.rawgrade IS NOT NULL THEN ggp.rawgrade ELSE ggp.finalgrade END AS `provisionalgrade`";
+                                          NULL AS `enddate`, NULL AS `convertedgradeid`,
+                                          CASE WHEN ggp.rawgrade IS NOT NULL THEN ggp.rawgrade ELSE ggp.finalgrade END AS `provisionalgrade`,
+                                          gip.idnumber, gip.outcomeid";
                     $subcategoryjoins =  "INNER JOIN {grade_items} AS gi ON (itemtype = 'category' AND iteminstance = gc.id)
                                           INNER JOIN {grade_grades} AS gg ON (gg.itemid = gi.id AND gg.userid = ?)
                                           LEFT JOIN {course} AS c ON c.id = gc.courseid
                                           LEFT JOIN {grade_categories} AS gp ON (gp.id = gc.parent)
                                           LEFT JOIN {grade_items} AS gip ON (gip.itemname = 'Subcategory Grade' AND gip.iteminfo = gc.id)
-                                          LEFT JOIN {grade_grades} AS ggp ON (ggp.itemid = gip.id AND ggp.userid = ?)";
+                                          LEFT JOIN {grade_grades} AS ggp ON (ggp.itemid = gip.id AND ggp.userid = ?)
+                                          LEFT JOIN {scale} AS sp ON (sp.id = gip.idnumber)";
                     $subcategorywhere =  "gc.parent IN ($level2idtext) AND gc.fullname != 'DO NOT USE'";
                     $subcategorysql = "SELECT $subcategoryfields FROM {grade_categories} as gc $subcategoryjoins WHERE $subcategorywhere";
                     array_push($unionparams, $userid, $userid);
@@ -630,7 +633,8 @@ class assessments_details {
                                                                $record->gradingduedate,
                                                                $record->duedate, $record->cutoffdate,
                                                                $record->scale, $record->feedback, $record->convertedgradeid,
-                                                               $record->provisionalgrade, $record->status);
+                                                               $record->provisionalgrade, $record->status,
+                                                               $record->idnumber, $record->outcomeid);
                          $item->feedback = self::return_feedback($record->id, $record->modname,
                                                                  $item->grading->hasgrade,
                                                                  $record->feedback, $record->feedbackfiles,
@@ -761,25 +765,29 @@ class assessments_details {
      public static function return_grading($finalgrade, $gradetype, $grademin, $grademax,
                                            $gradeinformation, $gradingduedate, $duedate,
                                            $cutoffdate, $scale, $feedback, $convertedgradeid,
-                                           $provisionalgrade, $status) {
+                                           $provisionalgrade, $status, $idnumber, $outcomeid) {
           $grading = new stdClass;
           $grading->gradetext = null;
           $grading->hasgrade = false;
           $grading->isprovisional = false;
           $provisionalgraderound = round($provisionalgrade);
-          
+          $scheduleAB = $outcomeid === null ? $idnumber : $outcomeid;
+
+          if(!is_null($scheduleAB) && $scheduleAB > 2){
+               $gradetype ='2';
+          }
           if(isset($finalgrade)) {
                $intgrade = (int)$finalgrade;
                $grading->hasgrade = true;
                $grading->isprovisional = ($gradeinformation || $status === 'category') ? false : true;
                $grademax = (int)$grademax;
                $convertedgrade = !is_null($convertedgradeid) || ($status === 'category' && !is_null($provisionalgrade)) ?
-                                 "- " . self::return_22grademaxpoint((int)$provisionalgraderound - 1) : "";
+                                 "- " . self::return_22grademaxpoint((int)$provisionalgraderound - 1, $scheduleAB) : "";
                switch($gradetype) {
                     // gradetype = value
                     case '1':
                          $grading->gradetext = ($grademax == 22 && $grademin == 0) ?
-                                               self::return_22grademaxpoint($intgrade) : "$intgrade / $grademax $convertedgrade";
+                                               self::return_22grademaxpoint($intgrade, $scheduleAB) : "$intgrade / $grademax $convertedgrade";
                          break;
                     // gradetype = scale
                     case '2':
@@ -827,7 +835,7 @@ class assessments_details {
                }
           }
 
-          return $grading;                               
+          return $grading;
      }
 
      /**
@@ -1069,11 +1077,19 @@ class assessments_details {
       * Returns a corresponding value for grades with gradetype = "value" and grademax = "22"
       *
       * @param int $grade
+      * @param int $idnumber = 1 - Schedule A, 2 - Schedule B
       * @return string 22-grade max point value
       */
-     public static function return_22grademaxpoint($grade) {
+     public static function return_22grademaxpoint($grade, $idnumber) {
           $values = array('H', 'G2', 'G1', 'F3', 'F2', 'F1', 'E3', 'E2', 'E1', 'D3', 'D2', 'D1',
                          'C3', 'C2', 'C1', 'B3', 'B2', 'B1', 'A5', 'A4', 'A3', 'A2', 'A1');
-          return $values[$grade];
+          $value = $values[$grade];
+          if ($idnumber == 2){
+               $stringarray = str_split($value);
+               if ($stringarray[0] != 'H'){
+                    $value = $stringarray[0] . '0';
+               }
+          }
+          return $value;
      }
 }
