@@ -35,22 +35,22 @@ $activityid = required_param('activityid', PARAM_INT);
 $studentid = required_param('studentid', PARAM_INT);
 $categoryid = optional_param('categoryid', null, PARAM_INT);
 $childactivityid = optional_param('childactivityid', null, PARAM_INT);
-$page = optional_param('page', 0, PARAM_INT);  
+$page = optional_param('page', 0, PARAM_INT);
 
 require_login($courseid);
 $urlparams = array('id' => $courseid, 'activityid' => $activityid, 'studentid' => $studentid, 'page' => $page);
-$URL = new moodle_url('/local/gugcat/add/index.php', $urlparams);
-(!is_null($categoryid) && $categoryid != 0) ? $URL->param('categoryid', $categoryid) : null;
+$url = new moodle_url('/local/gugcat/add/index.php', $urlparams);
+(!is_null($categoryid) && $categoryid != 0) ? $url->param('categoryid', $categoryid) : null;
 $indexurl = new moodle_url('/local/gugcat/index.php', array('id' => $courseid));
 
 $modid = $activityid;
-if(!is_null($childactivityid) && $childactivityid != 0){
-    $URL->param('childactivityid', $childactivityid);
+if (!is_null($childactivityid) && $childactivityid != 0) {
+    $url->param('childactivityid', $childactivityid);
     $indexurl->param('childactivityid', $childactivityid);
     $modid = $childactivityid;
 }
 
-$PAGE->set_url($URL);
+$PAGE->set_url($url);
 $PAGE->set_title(get_string('gugcat', 'local_gugcat'));
 $PAGE->navbar->add(get_string('navname', 'local_gugcat'), $indexurl);
 
@@ -65,47 +65,47 @@ $PAGE->set_course($course);
 $PAGE->set_heading($course->fullname);
 require_capability('local/gugcat:view', $coursecontext);
 
-$student = $DB->get_record('user', array('id'=>$studentid, 'deleted'=>0), '*', MUST_EXIST);
+$student = $DB->get_record('user', array('id' => $studentid, 'deleted' => 0), '*', MUST_EXIST);
 $module = local_gugcat::get_activity($courseid, $modid);
 $scaleid = $module->gradeitem->scaleid;
 
-if (is_null($scaleid) && local_gugcat::is_grademax22($module->gradeitem->gradetype, $module->gradeitem->grademax)){
+if (is_null($scaleid) && local_gugcat::is_grademax22($module->gradeitem->gradetype, $module->gradeitem->grademax)) {
     $scaleid = null;
 }
-if($is_converted = $module->is_converted){
-    local_gugcat::set_grade_scale(null, $is_converted);
-}else{
+if ($isconverted = $module->is_converted) {
+    local_gugcat::set_grade_scale(null, $isconverted);
+} else {
     local_gugcat::set_grade_scale($scaleid);
 }
 local_gugcat::set_prv_grade_id($courseid, $module);
-$grading_info = grade_get_grades($courseid, 'mod', $module->modname, $module->instance, $studentid);
+$gradinginfo = grade_get_grades($courseid, 'mod', $module->modname, $module->instance, $studentid);
 $gradeitems = local_gugcat::get_grade_grade_items($course, $module);
-// Get converted grade item and remove it from the gradeitems array
-foreach($gradeitems as $i=>$gi){
-    if($gi->itemname == get_string('convertedgrade', 'local_gugcat')){
+// Get converted grade item and remove it from the gradeitems array.
+foreach ($gradeitems as $i => $gi) {
+    if ($gi->itemname == get_string('convertedgrade', 'local_gugcat')) {
         unset($gradeitems[$i]);
         break;
     }
 }
 $gradeversions = local_gugcat::filter_grade_version($gradeitems, $studentid);
 
-$mform = new addeditgradeform(null, array('id'=>$courseid, 'activity'=>$module, 'studentid'=>$studentid));
+$mform = new addeditgradeform(null, array('id' => $courseid, 'activity' => $module, 'studentid' => $studentid));
 if ($fromform = $mform->get_data()) {
     $gradereason = ($fromform->reasons == 9) ? $fromform->otherreason : local_gugcat::get_reasons()[$fromform->reasons];
-    $grade = !is_numeric($fromform->grade) ? array_search(strtoupper($fromform->grade), local_gugcat::$GRADES) : $fromform->grade; 
+    $grade = !is_numeric($fromform->grade) ? array_search(strtoupper($fromform->grade), local_gugcat::$grades) : $fromform->grade;
     $gradeitemid = local_gugcat::add_grade_item($courseid, $gradereason, $module);
     $notes = ",_gradeitem: $gradereason ,_notes: $fromform->notes";
-    $grades = local_gugcat::add_update_grades($studentid, $gradeitemid, $grade, (!$is_converted ? $notes : ''));
-    if($is_converted){
-        $notes .= " ,_scale: $is_converted";
+    $grades = local_gugcat::add_update_grades($studentid, $gradeitemid, $grade, (!$isconverted ? $notes : ''));
+    if ($isconverted) {
+        $notes .= " ,_scale: $isconverted";
         // If conversion is enabled, save the converted grade to provisional grade and original grade to converted grade.
         $conversion = grade_converter::retrieve_grade_conversion($modid);
         $cg = grade_converter::convert($conversion, $grade);
-        local_gugcat::update_grade($studentid, local_gugcat::$PRVGRADEID, $cg , $notes);
+        local_gugcat::update_grade($studentid, local_gugcat::$prvgradeid, $cg , $notes);
         $convertedgi = local_gugcat::get_grade_item_id($COURSE->id, $modid, get_string('convertedgrade', 'local_gugcat'));
         local_gugcat::update_grade($studentid, $convertedgi, $grade);
     }
-    //log of add grades
+    // Log of add grades.
     $params = array(
         'context' => \context_module::instance($module->id),
         'other' => array(
@@ -116,35 +116,35 @@ if ($fromform = $mform->get_data()) {
             'idnumber' => $student->idnumber,
             'grade' => local_gugcat::convert_grade($fromform->grade),
             'gradeitem' => $gradereason,
-            'page'=> $page
+            'page' => $page
         )
     );
     $event = \local_gugcat\event\add_grade::create($params);
     $event->trigger();
-    //check if activity is a subcat component.'
-    if($module->gradeitem->parent_category->parent === strval($categoryid)){
-        // Get Subcategory prv grade item id and idnumber
+    // Check if activity is a subcat component.
+    if ($module->gradeitem->parent_category->parent === strval($categoryid)) {
+        // Get Subcategory prv grade item id and idnumber.
         $prvgrd = local_gugcat::get_gradeitem_converted_flag($module->gradeitem->categoryid, true);
         $subcatid = $prvgrd->id;
-        $scale = $prvgrd->idnumber ? $prvgrd->idnumber : $DB->get_field('grade_items', 'outcomeid', array('id'=>$subcatid));
-        // Get provisional grades
+        $scale = $prvgrd->idnumber ? $prvgrd->idnumber : $DB->get_field('grade_items', 'outcomeid', array('id' => $subcatid));
+        // Get provisional grades.
         $fields = 'itemid, id, rawgrade, finalgrade, overridden';
-        $grade = $DB->get_record('grade_grades', array('itemid' => $subcatid, 'userid'=>$studentid), $fields);
+        $grade = $DB->get_record('grade_grades', array('itemid' => $subcatid, 'userid' => $studentid), $fields);
         $notes = !is_null($scale) && !empty($scale) ? 'grade -'.$scale : 'grade';
         $componentnotes = 'grade';
-        $grd = !is_null($grade->finalgrade) ? $grade->finalgrade 
-        : (!is_null($grade->rawgrade) ? $grade->rawgrade 
-        : null);  
-        if(!is_null($grd) && $grade->overridden == 0){
-            $DB->set_field('grade_grades', 'feedback', $notes, array('id'=>$grade->id));     
+        $grd = !is_null($grade->finalgrade) ? $grade->finalgrade
+        : (!is_null($grade->rawgrade) ? $grade->rawgrade
+        : null);
+        if (!is_null($grd) && $grade->overridden == 0) {
+            $DB->set_field('grade_grades', 'feedback', $notes, array('id' => $grade->id));
         }
     }
-    $url = new moodle_url('/local/gugcat/index.php', array('id' => $courseid, 'activityid' => $activityid, 'page'=> $page));
+    $url = new moodle_url('/local/gugcat/index.php', array('id' => $courseid, 'activityid' => $activityid, 'page' => $page));
     (!is_null($categoryid) && $categoryid != 0) ? $url->param('categoryid', $categoryid) : null;
     (!is_null($childactivityid) && $childactivityid != 0) ? $url->param('childactivityid', $childactivityid) : null;
     redirect($url);
     exit;
-}   
+}
 
 echo $OUTPUT->header();
 $renderer = $PAGE->get_renderer('local_gugcat');
