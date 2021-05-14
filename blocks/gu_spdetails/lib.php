@@ -772,6 +772,7 @@ class assessments_details {
           $grading->isprovisional = false;
           $provisionalgraderound = round($provisionalgrade);
           $scheduleAB = $outcomeid === null ? $idnumber : $outcomeid;
+          $isoutcomeid = !is_null($outcomeid);
 
           if(!is_null($scheduleAB) && $scheduleAB > 2){
                $gradetype ='2';
@@ -782,12 +783,13 @@ class assessments_details {
                $grading->isprovisional = ($gradeinformation || $status === 'category') ? false : true;
                $grademax = (int)$grademax;
                $convertedgrade = !is_null($convertedgradeid) || ($status === 'category' && !is_null($provisionalgrade)) ?
-                                 "- " . self::return_22grademaxpoint((int)$provisionalgraderound - 1, $scheduleAB) : "";
+                                 self::return_22grademaxpoint((int)$provisionalgraderound - 1, $scheduleAB) : "";
+               $onlyconverted = $isoutcomeid && $convertedgrade !== "";
                switch($gradetype) {
                     // gradetype = value
                     case '1':
                          $grading->gradetext = ($grademax == 22 && $grademin == 0) ?
-                                               self::return_22grademaxpoint($intgrade, $scheduleAB) : "$intgrade / $grademax $convertedgrade";
+                                               self::return_22grademaxpoint($intgrade, $scheduleAB) : self::return_gradetext($intgrade, $grademax, $convertedgrade, $onlyconverted);
                          break;
                     // gradetype = scale
                     case '2':
@@ -836,6 +838,10 @@ class assessments_details {
           }
 
           return $grading;
+     }
+
+     public static function return_gradetext($intgrade, $grademax, $convertedgrade, $onlyconverted){
+          return $onlyconverted ? $convertedgrade : "$intgrade / $grademax" . ($convertedgrade !== "" ? " - $convertedgrade" : "");
      }
 
      /**
