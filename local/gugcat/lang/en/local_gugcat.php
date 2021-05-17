@@ -101,6 +101,7 @@ $string['hiddengrade'] = 'Hidden grade';
 $string['hiddengrademsg'] = 'The grade is now hidden to the student';
 $string['hidefromstudent'] = 'Hide from student';
 $string['hideidentities'] = 'Hide student identities';
+$string['highlightedmv'] = 'The highlighted grade contains MV grade. Please review the alternative course grade and override the grade if necessary. ';
 $string['historicalamendments'] = 'Historical Amendments';
 $string['ignorerow'] = 'Ignore first row?';
 $string['importfile'] = 'Import File';
