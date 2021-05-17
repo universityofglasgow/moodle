@@ -320,7 +320,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
         }
         $htmlcolumns .= html_writer::tag('th', get_string('requiresresit', 'local_gugcat'), array('class' => 'sortable'));
         $htmlcolumns .= html_writer::tag('th', get_string('percentcomplete', 'local_gugcat'), array('class' => 'sortable'));
-        $htmlcolumns .= html_writer::tag('th', get_string('aggregatedgrade', 'local_gugcat') . ($is_computed && !($merit_exists && $gpa_exists) 
+        $htmlcolumns .= html_writer::tag('th', get_string('aggregatedgrade', 'local_gugcat') . ($is_computed && !($merit_exists && $gpa_exists)
         ? $this->context_actions(null, null, null, $acgparams, false, false, 0) : null), array('class' => 'sortable'));
         //grade capture rows
 
@@ -339,8 +339,12 @@ class local_gugcat_renderer extends plugin_renderer_base {
                 $ammendgradeparams = "?id=$courseid&activityid=$grade->activityid&page=$page" . $historyeditcategory;
                 $ammendgradeparams .= $grade->is_subcat ? "&cnum=$row->cnum" : null;
                 $courseformhistoryparams = "?id=$courseid&cnum=$row->cnum&page=$page" . $gradeformhistorycategory;
-                $htmlrows .= html_writer::tag('td', $grade->grade.((strpos($grade->grade, 'No grade') !== false) || (strpos($grade->grade, 'Missing') !== false)
-                ? null : ($grade->is_imported ? $this->context_actions($row->studentno, null, ($grade->is_subcat ? true : false), $ammendgradeparams, true) : null)), $datacategory);
+                $gradecell = $grade->grade.((strpos($grade->grade, 'No grade') !== false) || (strpos($grade->grade, 'Missing') !== false)
+                ? null : ($grade->is_imported ? $this->context_actions($row->studentno, null, ($grade->is_subcat ? true : false), $ammendgradeparams, true) : null));
+                $gradeui = ($grade->grade == MEDICAL_EXEMPTION_AC && ($merit_exists || $gpa_exists))
+                    ? html_writer::tag('div', $gradecell, array('class' => 'highlighted'))
+                    : $gradecell;
+                $htmlrows .= html_writer::tag('td', $gradeui, $datacategory);
             }
             //Require resit row
             $requireresiturl = $actionurl."&rowstudentno=$row->studentno&resit=1";
@@ -481,7 +485,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
             $htmlrows .= html_writer::tag('td', is_null($row->modby) ? get_string('nogradeweight', 'local_gugcat') : $row->modby);
             $htmlrows .= html_writer::tag('td', $row->grade);
             for($i=0; $i<sizeof($activities); $i++){
-                $weight = isset($row->overridden) ? get_string('nogradeweight', 'local_gugcat')  : 
+                $weight = isset($row->overridden) ? get_string('nogradeweight', 'local_gugcat')  :
                 (isset($row->weights[$i]) ? round((float)$row->weights[$i] * 100) . '%' : get_string('nogradeweight', 'local_gugcat'));
                 $htmlrows .= html_writer::tag('td', $weight);
             }
