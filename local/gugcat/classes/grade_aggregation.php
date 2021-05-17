@@ -880,6 +880,8 @@ class grade_aggregation{
             array_push($activities, array($weight, $alpha, $numeric));
             array_push($columns, ...array($weight, $alpha, $numeric));
         }
+        $displaymerit = false;
+        $displaygpa = false;
         //Process the data to be iterated
         $array = array();
         foreach($data as $row) {
