@@ -89,7 +89,7 @@ $string['gugcat:view'] = 'View Grade Capture and Aggregation Tool';
 $string['gradeformgrade'] = "Grade";
 $string['gradebookgrade'] = 'Gradebook Grade ';
 $string['gradediscrepancy'] = 'Grade Discrepancy';
-$string['gradetooltip'] = '<i>Please ensure grade is: 
+$string['gradetooltip'] = '<i>Please ensure grade is:
     <ul class="mb-0">
         <li>A whole number</li>
         <li>A positive number</li>
@@ -109,7 +109,8 @@ $string['lowerboundper'] = 'Lower Bound <br> % Boundary';
 $string['lowerboundpt'] = 'Lower Bound <br> Points Boundary';
 $string['meritgrade'] = 'Merit/Distinction Grade';
 $string['missinggrade'] = 'Missing grade(s)';
-$string['modaladjustweights'] = 'WARNING: The assessment weightings for this student do not total 100%. Do you wish to continue?';
+$string['modaladjustweights'] = 'WARNING: The assessment weightings for this student do not total to 100%. Do you wish to continue?';
+$string['modalmeritweights'] = 'WARNING: The assessments total weightings do not total to 100%. Do you wish to continue?';
 $string['modalconvertgrades'] = 'Warning: The grades for this assessment have not yet been released to students. Once the grades are converted, it will not be possible to release the grades to students via this tool. <br> Do you wish to continue?';
 $string['modalimportgrades'] = 'Please note that grades have already been imported from Moodle. If you continue, you will overwrite all the grades. Do you wish to continue?';
 $string['modalreleasefinalgrades'] = 'You are about to release final assessment grades to the students. Do you wish to continue?';
@@ -132,12 +133,13 @@ $string['overridestudassgrade'] = "Override student's aggregated assessment grad
 $string['overridestudgrade'] = "Override student's aggregated course grade";
 $string['participantno'] = 'Participant No.';
 $string['percentcomplete'] = '% Complete';
+$string['pleaseselectgrade'] = 'Please select grade.';
 $string['pleaseindicateresits'] = 'Please indicate which assessments are resit assessments';
 $string['pleaseprovidetemplatename'] = 'If you would like to save this conversion for future use, please provide a name for this conversion scale (max 50 characters):';
 $string['pleasespecify'] = 'Please specify';
 $string['pluginname'] = 'UofG Grade Capture and Aggregation Tool';
 $string['points'] = 'Points ({$a->max})';
-$string['pointtooltip'] = '<i>Please ensure value is: 
+$string['pointtooltip'] = '<i>Please ensure value is:
     <ul class="mb-0">
         <li>Up to 2 decimal places</li>
         <li>Doesn\'t duplicate any other number</li>
@@ -188,7 +190,7 @@ $string['successadjustweight'] = 'Successfully adjusted course weightings';
 $string['supportingdocument'] = "Supporting Documentation";
 $string['surname'] = 'Surname';
 $string['switchoffdisplay'] = 'Switch off display of assessments on Student Dashboard';
-$string['switchondisplay'] = 'Switch on display of assessments on Student Dashboard'; 
+$string['switchondisplay'] = 'Switch on display of assessments on Student Dashboard';
 $string['systemupdate'] = 'System update';
 $string['systemupdatecourse'] = 'System update - grades or weightings changed in Gradebook';
 $string['systemupdateconversion'] = 'System update - conversion applied / adjusted';
