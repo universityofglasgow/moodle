@@ -62,17 +62,16 @@ class alternativegradeform extends moodleform {
         );
         foreach ($activities as $act) {
             $cbfield = array();
-            $cbfield[] =& $mform->createElement('advcheckbox', "cb[$act->gradeitemid]", $act->name, null,  array('class' => 'checkbox-field'));
+            $cbfield[] =& $mform->createElement('advcheckbox', "merits[$act->gradeitemid]", $act->name, null,  array('class' => 'checkbox-field'));
             $cbfield[] =& $mform->createElement('text', "weights[$act->gradeitemid]", null, $weightattr);
             $mform->addGroup($cbfield, 'cbfield', '', array(''), false);
             $mform->setType("weights[$act->gradeitemid]", PARAM_INT);
             $mform->setDefault("weights[$act->gradeitemid]", 0);
-            $mform->disabledIf("weights[$act->gradeitemid]", "cb[$act->gradeitemid]", 'notchecked');
+            $mform->disabledIf("weights[$act->gradeitemid]", "merits[$act->gradeitemid]", 'notchecked');
             $mform->hideif('cbfield', 'altgradetype', 'neq', MERIT_GRADE);
         }
-        $twnote = html_writer::tag('span', get_string('totalweightvalue', 'local_gugcat'), array('class' => 'font-weight-normal small font-italic'));
         $totalweight = $mform->createElement('html',  html_writer::tag('span', '100%', array('class' => 'total-weight')));
-        $mform->addGroup(array($totalweight), 'totalfield', get_string('totalweight', 'local_gugcat').$twnote, array(''), false);
+        $mform->addGroup(array($totalweight), 'totalfield', get_string('totalweight', 'local_gugcat'), array(''), false);
         $mform->hideif('totalfield', 'altgradetype', 'neq', MERIT_GRADE);
 
         // GPA Grade type form elements
@@ -86,19 +85,20 @@ class alternativegradeform extends moodleform {
         $mform->addElement('html', html_writer::tag('div', get_string('cappedgradenote', 'local_gugcat'), array('class' => 'gpa-lbl hidden small font-italic mb-3')));
 
         $selectcap = array();
-        $selectcap[] = $mform->createElement('radio', 'capapply', '', get_string('cap12', 'local_gugcat'), 0, '');
-        $selectcap[] = $mform->createElement('radio', 'capapply', '', get_string('cap9', 'local_gugcat'), 1, '');
+        $selectcap[] = $mform->createElement('radio', 'appliedcap', '', get_string('cap12', 'local_gugcat'), 13, '');
+        $selectcap[] = $mform->createElement('radio', 'appliedcap', '', get_string('cap9', 'local_gugcat'), 10, '');
         $mform->addGroup($selectcap, 'selectcap', get_string('selectcap', 'local_gugcat'), array(''), false);
 
         $selectcap = array();
         $grades = local_gugcat::$GRADES;
+        unset($grades[MEDICAL_EXEMPTION]);
         $grades[0] = get_string('selectgrade', 'local_gugcat');
-        $selectcap[] = $mform->createElement('radio', 'capapply', '', get_string('capother', 'local_gugcat'), 2, '');
+        $selectcap[] = $mform->createElement('radio', 'appliedcap', '', get_string('capother', 'local_gugcat'), 0, '');
         $selectcap[] = $mform->createElement('select', 'grade', get_string('gradeformgrade', 'local_gugcat'), array_unique($grades), array('class' => 'mform-custom-select', 'size' => '15'));
-        $mform->setDefault('capapply', 0);
+        $mform->setDefault('appliedcap', 13);
         $mform->setDefault('grade', 0);
         $mform->setType('grade', PARAM_NOTAGS);
-        $mform->disabledIf('grade','capapply', 'neg', 2);
+        $mform->disabledIf('grade','appliedcap', 'neg', 0);
         $mform->addGroup($selectcap, 'selectcap', null, array(''), false);
         $mform->hideif('selectcap', 'altgradetype', 'neq', GPA_GRADE);
 
@@ -109,6 +109,12 @@ class alternativegradeform extends moodleform {
         $mform->addGroup($buttonarray, 'buttonarr', '', array(''), false);
 
         $mform->hideIf('buttonarr', 'altgradetype', 'eq', 0);
+
+        // Hidden parameters
+        $mform->addElement('hidden', 'id', required_param('id', PARAM_INT));
+        $mform->setType('id', PARAM_INT);
+        $mform->addElement('hidden', 'categoryid', optional_param('categoryid', null, PARAM_INT));
+        $mform->setType('categoryid', PARAM_INT);
 
     }
 }

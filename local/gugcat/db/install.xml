@@ -33,5 +33,21 @@
         <INDEX NAME="itemid" UNIQUE="false" FIELDS="itemid"/>
       </INDEXES>
     </TABLE>
+    <TABLE NAME="gcat_acg_settings" COMMENT="each record is one gcat_acg_settings resource">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="acgid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="itemid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="weight" TYPE="number" LENGTH="10" NOTNULL="false" DEFAULT="null" SEQUENCE="false" DECIMALS="5"/>
+        <FIELD NAME="cap" TYPE="number" LENGTH="10" NOTNULL="false" DEFAULT="null" SEQUENCE="false" DECIMALS="5"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="acgid" UNIQUE="false" FIELDS="acgid"/>
+        <INDEX NAME="itemid" UNIQUE="false" FIELDS="itemid"/>
+      </INDEXES>
+    </TABLE>
   </TABLES>
 </XMLDB>
