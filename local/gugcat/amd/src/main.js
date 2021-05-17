@@ -622,7 +622,8 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                                 div.querySelector('input').classList.add('is-invalid');
                             }else{
                                 div.querySelector('[data-fieldtype="text"]').classList.remove('no-after');
-                                div.querySelector('input').classList.remove('is-invalid');                            }
+                                div.querySelector('input').classList.remove('is-invalid');
+                            }
                         });
                     });
                     totalweight.innerHTML = `${total}%`;
