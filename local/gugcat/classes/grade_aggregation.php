@@ -807,21 +807,22 @@ class grade_aggregation{
         $students = get_enrolled_users(context_course ::instance($courseid), 'local/gugcat:gradable');
         foreach($modules as $mod) {
             $is_subcat = ($mod->modname == 'category') ? true : false;
-            //if mod is subcat or converted then continue
-            if($mod->is_converted || $is_subcat){
+            //if mod is subcat then continue
+            if($is_subcat){
                 continue;
             }
-            // Get/create provisional grade id of the module
-            $prvgrdid = local_gugcat::add_grade_item($courseid, get_string('provisionalgrd', 'local_gugcat'), $mod);
+            // Get/create provisional/converted grade id of the module
+            $grditemid = ($mod->is_converted) ? local_gugcat::get_grade_item_id($courseid, $mod->gradeitem->id, get_string('convertedgrade', 'local_gugcat'))
+                                         : local_gugcat::add_grade_item($courseid, get_string('provisionalgrd', 'local_gugcat'), $mod);
 
             $gradeitem = new grade_item($mod->gradeitem);
             //set offset value for max 22 points grade
-            $gradescaleoffset = (local_gugcat::is_grademax22($gradeitem->gradetype, $gradeitem->grademax)) ? 1 : 0;
+            $gradescaleoffset = (local_gugcat::is_scheduleAscale($gradeitem->gradetype, $gradeitem->grademax)) ? 1 : 0;
 
             foreach($students as $student) {
-                //get the provisional grade of the student
-                $prvgrd = $DB->get_record('grade_grades', array('itemid'=>$prvgrdid, 'userid' => $student->id), 'rawgrade, finalgrade');
-                $grd = is_null($prvgrd->finalgrade) ? $prvgrd->rawgrade : $prvgrd->finalgrade;
+                //get the provisional/converted grade of the student
+                $prvcnvgrd = $DB->get_record('grade_grades', array('itemid'=>$grditemid, 'userid' => $student->id), 'rawgrade, finalgrade');
+                $grd = is_null($prvcnvgrd->finalgrade) ? $prvcnvgrd->rawgrade : $prvcnvgrd->finalgrade;
 
                 //check if grade is admin grade
                 $grade = intval($grd);
