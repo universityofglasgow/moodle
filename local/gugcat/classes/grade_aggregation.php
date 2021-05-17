@@ -847,46 +847,68 @@ class grade_aggregation{
     public static function export_aggregation_tool($course, $categoryid = null){
         $table = get_string('aggregationtool', 'local_gugcat');
         $filename = "export_$table"."_".date('Y-m-d_His');
-        $columns = ['grade_category', 'student_number'];
+        $columns = ['Grade Category', 'Student Number'];
         $is_blind_marking = local_gugcat::is_blind_marking();
-        $is_blind_marking ? null : array_push($columns, ...array('surname', 'forename'));
+        $is_blind_marking ? null : array_push($columns, ...array('Surname', 'Forename'));
         $modules = ($categoryid == null) ? local_gugcat::get_activities($course->id) :
                                            self::get_parent_child_activities($course->id, $categoryid);
         $category = is_null($categoryid) ? null : grade_category::fetch(array('id' => $categoryid));
         $students = get_enrolled_users(context_course ::instance($course->id), 'local/gugcat:gradable');
         //add the columns before the activities
-        array_push($columns, ...['aggregated_grade', 'aggregated_grade_numeric', '%_complete', 'resit_required']);
+        array_push($columns, ...['Aggregated Grade', 'Aggregated Grade Numeric', '% Complete', 'Resit Required']);
+        $data = self::get_rows($course, $modules, $students);
+
+        // Add alternative grades in columns
+        $meritstr = get_string('meritgrade', 'local_gugcat');
+        $meritstrnum = "$meritstr Numeric";
+        $gpastr = get_string('gpagrade', 'local_gugcat');
+        $gpastrnum = "$gpastr Numeric";
+        if($data[0] && $data[0]->meritgrade){
+            array_push($columns, ...[$meritstr, $meritstrnum]);
+        }
+        if($data[0] && $data[0]->gpagrade){
+            array_push($columns, ...[$gpastr, $gpastrnum]);
+        }
         //Process the activity names
         $activities = array();
         foreach($modules as $cm) {
-            $weight = preg_replace('!\s+!', '_', $cm->name).'_weighting';
-            $alpha = preg_replace('!\s+!', '_', $cm->name).'_alphanumeric_grade';
-            $is_points = is_null($cm->gradeitem->scaleid);
+            $weight = "$cm->name Weighting";
+            $alpha = "$cm->name Alphanumeric Grade";
+            $is_points = is_null($cm->gradeitem->scaleid) && is_null($cm->is_converted);
             $max_grade = (int)$cm->gradeitem->grademax;
-            $numeric = preg_replace('!\s+!', '_', $cm->name). (($is_points) ? '_numeric_points_max(' . $max_grade . ')' : '_numeric_grade');
-            array_push($activities, array($weight, $alpha, $numeric, $is_points));
+            $numeric = ($is_points) ? "$cm->name Numeric Points Max($max_grade)" : "$cm->name Numeric Grade";
+            array_push($activities, array($weight, $alpha, $numeric));
             array_push($columns, ...array($weight, $alpha, $numeric));
         }
+        $displaymerit = false;
+        $displaygpa = false;
         //Process the data to be iterated
-        $data = self::get_rows($course, $modules, $students);
         $array = array();
         foreach($data as $row) {
             $student = new stdClass();
-            $student->grade_category = is_null($categoryid) ? get_string('uncategorised', 'grades') : $category->fullname;
-            $student->student_number = $row->idnumber;
+            $student->{'Grade Category'} = is_null($categoryid) ? get_string('uncategorised', 'grades') : $category->fullname;
+            $student->{'Student Number'} = $row->idnumber;
             if(!$is_blind_marking){
-                $student->surname = $row->surname;
-                $student->forename = $row->forename;
+                $student->{'Surname'} = $row->surname;
+                $student->{'Forename'} = $row->forename;
             }
             //check if grade is aggregated
             $isaggregated = ($row->aggregatedgrade->display != get_string('missinggrade', 'local_gugcat')) ? true : false;
-            $student->aggregated_grade = $isaggregated ? $row->aggregatedgrade->grade : null;
-            $student->aggregated_grade_numeric = $isaggregated ?  (local_gugcat::is_admin_grade($row->aggregatedgrade->rawgrade) ? get_string('nogradeweight', 'local_gugcat') : $row->aggregatedgrade->rawgrade) : null;
-            $student->{'%_complete'} = $row->completed;
-            $student->resit_required = is_null($row->resit) ? 'N' : 'Y';
+            $student->{'Aggregated Grade'} = $isaggregated ? $row->aggregatedgrade->grade : null;
+            $student->{'Aggregated Grade Numeric'} = $isaggregated ?  (local_gugcat::is_admin_grade($row->aggregatedgrade->rawgrade) ? get_string('nogradeweight', 'local_gugcat') : $row->aggregatedgrade->rawgrade) : null;
+            $student->{'% Complete'} = $row->completed;
+            $student->{'Resit Required'} = is_null($row->resit) ? 'N' : 'Y';
+            // Add student's alternative grades
+            $row->meritgrade ?  $student->{$meritstr} = $row->meritgrade->grade : null;
+            $row->meritgrade ?  $student->{$meritstrnum} = (is_null($row->meritgrade->rawgrade)
+            ? get_string('nogradeweight', 'local_gugcat')
+            : $row->meritgrade->rawgrade) : null;
+            $row->gpagrade ?  $student->{$gpastr} = $row->gpagrade->grade : null;
+            $row->gpagrade ?  $student->{$gpastrnum} = (is_null($row->gpagrade->rawgrade)
+            ? get_string('nogradeweight', 'local_gugcat')
+            : $row->gpagrade->rawgrade) : null;
             foreach($activities as $key=>$act) {
                 $is_converted = !is_null($row->grades[$key]->nonconvertedgrade);
-                $is_points = $act[3];
                 $student->{$act[0]} = $row->grades[$key]->originalweight.'%'; //weight
                 $student->{$act[1]} = !is_numeric($row->grades[$key]->grade) ? $row->grades[$key]->grade : get_string('nogradeweight', 'local_gugcat'); //alphanumeric
                 $is_admin_grade = local_gugcat::is_admin_grade(array_search($row->grades[$key]->grade,local_gugcat::$GRADES));
