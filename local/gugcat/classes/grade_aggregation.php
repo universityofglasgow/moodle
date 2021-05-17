@@ -266,6 +266,8 @@ class grade_aggregation{
                         $floatweight += $weight_;
                         $sumaggregated += (float)$grdvalue * $weight_;
                         $calculatedweight += local_gugcat::is_child_activity($item) ? 0 : (float)$weight;
+                    }else if(!is_null($grd) && $grade == MEDICAL_EXEMPTION_AC && ($meritgi || $gpagi)){
+                        $errors[-1] = get_string('highlightedmv', 'local_gugcat');
                     }
                     $get_category = ($item->modname != 'category'
                         && $category = local_gugcat::is_child_activity($item)) ? $category : false;
