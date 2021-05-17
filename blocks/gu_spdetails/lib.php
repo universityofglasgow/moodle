@@ -562,8 +562,12 @@ class assessments_details {
                                           gc.fullname AS `activityname`, gp.fullname AS `gradecategoryname`, gp.aggregation,
                                           gi.aggregationcoef, gi.aggregationcoef2, NULL AS `allowsubmissionsfromdate`,
                                           NULL AS `duedate`, NULL AS `cutoffdate`, NULL AS `gradingduedate`, NULL AS `hasextension`,
-                                          gi.gradetype, gi.grademin, gi.grademax, sp.scale AS `scale`,
-                                          CASE WHEN gg.finalgrade IS NOT NULL THEN gg.finalgrade ELSE gg.rawgrade END AS `finalgrade`,
+                                          CASE WHEN gip.gradetype IS NOT NULL THEN gip.gradetype ELSE gi.gradetype END AS `gradetype`,
+                                          CASE WHEN gip.grademin IS NOT NULL THEN gip.grademin ELSE gi.grademin END AS `grademin`,
+                                          CASE WHEN gip.grademax IS NOT NULL THEN gip.grademax ELSE gi.grademax END AS `grademax`,
+                                          sp.scale AS `scale`,
+                                          CASE WHEN ggp.finalgrade IS NOT NULL THEN ggp.finalgrade WHEN ggp.rawgrade IS NOT NULL THEN ggp.rawgrade
+                                               WHEN gg.finalgrade IS NOT NULL THEN gg.finalgrade ELSE gg.rawgrade END AS `finalgrade`,
                                           gg.information AS gradeinformation, gg.feedback, NULL as `feedbackfiles`, NULL as `hasturnitin`,
                                           'category' AS `status`, NULL AS `submissions`, NULL AS `quizfeedback`, NULL AS `startdate`,
                                           NULL AS `enddate`, NULL AS `convertedgradeid`,
@@ -575,7 +579,7 @@ class assessments_details {
                                           LEFT JOIN {grade_categories} AS gp ON (gp.id = gc.parent)
                                           LEFT JOIN {grade_items} AS gip ON (gip.itemname = 'Subcategory Grade' AND gip.iteminfo = gc.id)
                                           LEFT JOIN {grade_grades} AS ggp ON (ggp.itemid = gip.id AND ggp.userid = ?)
-                                          LEFT JOIN {scale} AS sp ON (sp.id = gip.idnumber)";
+                                          LEFT JOIN {scale} AS sp ON (sp.id = CASE WHEN gip.idnumber IS NOT NULL AND NOT gip.idnumber = '' THEN gip.idnumber ELSE gip.outcomeid END)";
                     $subcategorywhere =  "gc.parent IN ($level2idtext) AND gc.fullname != 'DO NOT USE'";
                     $subcategorysql = "SELECT $subcategoryfields FROM {grade_categories} as gc $subcategoryjoins WHERE $subcategorywhere";
                     array_push($unionparams, $userid, $userid);
@@ -771,11 +775,13 @@ class assessments_details {
           $grading->hasgrade = false;
           $grading->isprovisional = false;
           $provisionalgraderound = round($provisionalgrade);
-          $scheduleAB = $outcomeid === null ? $idnumber : $outcomeid;
-          $isoutcomeid = !is_null($outcomeid);
+          $scheduleAB = empty($outcomeid) ? $idnumber : $outcomeid;
+          $isoutcomeid = !empty($outcomeid);
 
-          if(!is_null($scheduleAB) && $scheduleAB > 2){
+          if(!empty($scheduleAB) && $scheduleAB > 2){
                $gradetype ='2';
+          } else if (empty($scale)){
+               $gradetype = '1';
           }
           if(isset($finalgrade)) {
                $intgrade = (int)$finalgrade;
@@ -851,7 +857,7 @@ class assessments_details {
       *
       */
      public static function return_gradetext($intgrade, $grademax, $convertedgrade, $onlyconverted){
-          return $onlyconverted ? $convertedgrade : "$intgrade / $grademax" . ($convertedgrade !== "" ? " - $convertedgrade" : "");
+          return $onlyconverted ? $convertedgrade : "$intgrade / $grademax" . (!empty($convertedgrade) ? " - $convertedgrade" : "");
      }
 
      /**
