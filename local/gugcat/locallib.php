@@ -1250,14 +1250,14 @@ class local_gugcat {
      * get grade from gradebook or assign
      * @param mixed $assign
      * @param mixed $gb
-     * 
+     *
      * @return mixed | null
      */
     public static function get_gb_assign_grade($assign, $gb){
 
         $is_valid_assign = $assign && $assign->grader >= 0 && (!is_null($assign->grade) || !empty($assign->grade));
         $gb = (!is_null($gb) && $gb->overridden == 0) && $is_valid_assign ? $assign : $gb;
-        
+
         return $gb;
     }
 }
