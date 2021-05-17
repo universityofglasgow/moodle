@@ -401,6 +401,7 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
         var btn_bulk_import = document.getElementById('btn-blkimport');
         var btn_convert = document.getElementById('id_convertbutton');
         var radio_ptprc = document.getElementsByName('percentpoints');
+        var btn_altsave = document.querySelector('[name="savealtbutton"]');
         switch (event.target) {
             case btn_multiadd:
                 $(".togglemultigrd").toggle();
@@ -475,11 +476,43 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                 }
                 break;
             case btn_convert:
-                showModal('convertgrades', 'modalconvertgrades', 'continueconvertgrade');
+                showModal('hiddensubmit', 'modalconvertgrades', 'continueconvertgrade');
                 break;
             case radio_ptprc[0]:
             case radio_ptprc[1]:
                 clearConversionTable();
+                break;
+            case btn_altsave:
+                var alttype = document.getElementById('select-alt-grade');
+                if(alttype.value == 1){
+                    var inputarr = document.querySelectorAll('.input-percent');
+                    var total = 0;
+                    if(inputarr.length > 0){
+                        inputarr.forEach(div => {
+                            var input = div.querySelector('input');
+                            total += parseInt(input.value);
+                            let invalid = div.querySelector('input.is-invalid');
+                            if(invalid !== null){
+                                div.querySelector('input').classList.add('is-invalid');
+                                div.querySelector('[data-fieldtype="text"]').classList.add('no-after');
+                            }else{
+                                div.querySelector('input').classList.remove('is-invalid');
+                                div.querySelector('[data-fieldtype="text"]').classList.remove('no-after');
+                            }
+                        });
+                    }
+                    var invalid = document.querySelectorAll('input.is-invalid');
+                    if(invalid.length == 0){
+                        if(total != 100){
+                            showModal('hiddensubmit', 'modalmeritweights', 'confirmchanges');
+                        }else{
+
+                            document.querySelector('[name="hiddensubmitform"]').click();
+                        }
+                    }
+                }else{
+                    document.querySelector('[name="hiddensubmitform"]').click();
+                }
                 break;
             default:
                 break;
@@ -576,16 +609,20 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                             var val = e.target.value;
                             if(val !== "" && val.match(/^[0-9]+$/) === null){
                                 div.querySelector('[data-fieldtype="text"]').classList.add('no-after');
+                                div.querySelector('input').classList.add('is-invalid');
                             }else{
                                 div.querySelector('[data-fieldtype="text"]').classList.remove('no-after');
+                                div.querySelector('input').classList.remove('is-invalid');
                             }
                         });
                         input.addEventListener('blur', (e) => {
                             var val = e.target.value;
                             if(val !== "" && val.match(/^[0-9]+$/) === null){
                                 div.querySelector('[data-fieldtype="text"]').classList.add('no-after');
+                                div.querySelector('input').classList.add('is-invalid');
                             }else{
                                 div.querySelector('[data-fieldtype="text"]').classList.remove('no-after');
+                                div.querySelector('input').classList.remove('is-invalid');
                             }
                         });
                     });
@@ -626,6 +663,20 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                 var grdDiscExist = document.querySelectorAll('td .grade-discrepancy');
                 if (grdDiscExist.length > 0) {
                     document.getElementById('btn-grddisc').style.display = 'inline-block';
+                }
+
+                //Reset to 0 if merit checkbox is unchecked
+                var meritCheckboxes = document.querySelectorAll('input.checkbox-field');
+                if (meritCheckboxes.length > 0) {
+                meritCheckboxes.forEach(cb => {
+                    cb.addEventListener('change', (e) => {
+                        if(!e.currentTarget.checked){
+                            var id =  e.target.getAttribute('data-itemid');
+                            var input_percent = document.querySelector(`.input-percent input[name="weights[${id}]"]`);
+                            input_percent.value = 0;
+                        }
+                    });
+                });
                 }
 
                 // Hide elements different pages

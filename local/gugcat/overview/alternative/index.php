@@ -66,8 +66,20 @@ if(!is_null($categoryid) && $categoryid != 0){
 }
 local_gugcat::set_grade_scale(null);
 $renderer = $PAGE->get_renderer('local_gugcat');
+
+// Check for exisiting alternative course grades
+$meritgi = local_gugcat::get_grade_item_id($course->id, $categoryid, get_string('meritgrade', 'local_gugcat'));
+$meritsettings = null;
+if($meritgi){
+    $meritsettings = $DB->get_records('gcat_acg_settings', array('acgid'=>$meritgi));
+}
+$gpagi = local_gugcat::get_grade_item_id($course->id, $categoryid, get_string('gpagrade', 'local_gugcat'));
+$gpasettings = null;
+if($gpagi){
+    $gpasettings = $DB->get_records('gcat_acg_settings', array('acgid'=>$gpagi));
+}
 // Set up the alternative form.
-$mform = new alternativegradeform(null, array('activities' => $activities));
+$mform = new alternativegradeform(null, array('activities' => $activities, 'meritsettings' => $meritsettings, 'gpasettings' => $gpasettings));
 // If the upload form has been submitted.
 if ($mform->is_cancelled()) {
     redirect($overviewurl);
@@ -79,12 +91,16 @@ if ($mform->is_cancelled()) {
     $appliedcap = !is_null($appliedcap) && $appliedcap == 0 ? $formdata->grade : $appliedcap;
     // Remove unselected assessments
     $assessments = array_filter($assessments);
-    grade_aggregation::create_edit_alt_grades($formdata->altgradetype, $assessments, $weights, $appliedcap);
+    if(!empty($assessments)){
+        grade_aggregation::create_edit_alt_grades($formdata->altgradetype, $assessments, $weights, $appliedcap);
+        local_gugcat::notify_success('successaltgrades');
+    }
     redirect($overviewurl);
 } else {
+    $isadjust = $meritgi || $gpagi;
     // Display the create alternative grade form.
     echo $OUTPUT->header();
-    echo $renderer->display_empty_form(get_string('createaltcoursegrade', 'local_gugcat'));
+    echo $renderer->display_empty_form(get_string($isadjust ? 'adjustaltcoursegrade' : 'createaltcoursegrade', 'local_gugcat'));
     echo $mform->display();
     echo $OUTPUT->footer();
     die();

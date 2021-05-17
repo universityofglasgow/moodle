@@ -70,14 +70,14 @@ class convertform extends moodleform {
         $keysA1 = array_slice($keys, 0, (count($keys) / 2)+1);
         $keysA2 = array_slice($keys, (count($keys) / 2)+1);
 
-        $mform = $this->_form; // Don't forget the underscore! 
+        $mform = $this->_form; // Don't forget the underscore!
         $mform->addElement('html', '<div class="mform-container">');
-        $mform->addElement('static', 'assessment', get_string('assessment'), $activity->name); 
-        $mform->setType('assessment', PARAM_NOTAGS); 
-        $mform->addElement('static', 'gradetype', get_string('gradetype', 'grades'), $gradetypestr[$activity->gradeitem->gradetype]); 
-        $mform->setType('gradetype', PARAM_NOTAGS); 
-        $mform->addElement('static', 'maximumgrade', get_string('grademax', 'grades'), intval($maxgrade)); 
-        $mform->setType('maximumgrade', PARAM_NOTAGS); 
+        $mform->addElement('static', 'assessment', get_string('assessment'), $activity->name);
+        $mform->setType('assessment', PARAM_NOTAGS);
+        $mform->addElement('static', 'gradetype', get_string('gradetype', 'grades'), $gradetypestr[$activity->gradeitem->gradetype]);
+        $mform->setType('gradetype', PARAM_NOTAGS);
+        $mform->addElement('static', 'maximumgrade', get_string('grademax', 'grades'), intval($maxgrade));
+        $mform->setType('maximumgrade', PARAM_NOTAGS);
 
         // Radio Button for Points/Percentage
         $radioarray = array();
@@ -86,33 +86,33 @@ class convertform extends moodleform {
         $mform->addGroup($radioarray, 'radioar', get_string('conversiontype', 'local_gugcat'), array(' '), false);
         $mform->setDefault('percentpoints', 1);
 
-        $mform->addElement('select', 'scale', get_string('selectscale', 'local_gugcat'), $scales, ['id' => 'select-scale', 'class' => 'mform-custom-select']); 
-        $mform->setType('scale', PARAM_NOTAGS); 
+        $mform->addElement('select', 'scale', get_string('selectscale', 'local_gugcat'), $scales, ['id' => 'select-scale', 'class' => 'mform-custom-select']);
+        $mform->setType('scale', PARAM_NOTAGS);
         $mform->setDefault('scale', $defaulttype);
-        $mform->addElement('select', 'template', get_string('selectprevconv', 'local_gugcat'), $templates, ['id' => 'select-template', 'class' => 'mform-custom-select']); 
-        $mform->setType('template', PARAM_NOTAGS); 
-        $mform->setDefault('template', 0); 
+        $mform->addElement('select', 'template', get_string('selectprevconv', 'local_gugcat'), $templates, ['id' => 'select-template', 'class' => 'mform-custom-select']);
+        $mform->setType('template', PARAM_NOTAGS);
+        $mform->setDefault('template', 0);
         // Schedule A tables
-        $mform->addElement('html', html_writer::start_tag('div', array('id' => 'table-schedulea', 'class' => 'row'))); 
+        $mform->addElement('html', html_writer::start_tag('div', array('id' => 'table-schedulea', 'class' => 'row')));
         $this->setup_table($schedA1, $mform, 'schedA', $keysA1, $maxgrade);
         $this->setup_table($schedA2, $mform, 'schedA', $keysA2, $maxgrade);
-        $mform->addElement('html', html_writer::end_tag('div')); 
+        $mform->addElement('html', html_writer::end_tag('div'));
         // Schedule B table
-        $mform->addElement('html', html_writer::start_tag('div', array('id' => 'table-scheduleb', 'class' => 'row hidden'))); 
+        $mform->addElement('html', html_writer::start_tag('div', array('id' => 'table-scheduleb', 'class' => 'row hidden')));
         $this->setup_table($schedB, $mform, 'schedB', null, $maxgrade);
-        $mform->addElement('html', html_writer::tag('div', null, array('class' => 'col'))); 
-        $mform->addElement('html', html_writer::end_tag('div')); 
+        $mform->addElement('html', html_writer::tag('div', null, array('class' => 'col')));
+        $mform->addElement('html', html_writer::end_tag('div'));
 
-        $mform->addElement('html', html_writer::tag('p', get_string('noteconversion', 'local_gugcat'), array('class' => 'mt-3 font-weight-bold'))); 
+        $mform->addElement('html', html_writer::tag('p', get_string('noteconversion', 'local_gugcat'), array('class' => 'mt-3 font-weight-bold')));
 
-        $mform->addElement('text', 'templatename', get_string('pleaseprovidetemplatename', 'local_gugcat'), array('maxlength' => '50')); 
+        $mform->addElement('text', 'templatename', get_string('pleaseprovidetemplatename', 'local_gugcat'), array('maxlength' => '50'));
         $mform->addRule('templatename', null, 'maxlength', 50, 'client');
-        $mform->setType('templatename', PARAM_NOTAGS); 
+        $mform->setType('templatename', PARAM_NOTAGS);
 
         $mform->addElement('html', '</div>');
         $buttonarray = array();
         $buttonarray[] =& $mform->createElement('cancel', 'cancel', get_string('cancel'));
-        $buttonarray[] =& $mform->createElement('submit', 'submitconvertbutton', get_string('savechanges', 'local_gugcat'));
+        $buttonarray[] =& $mform->createElement('submit', 'hiddensubmitform', get_string('savechanges', 'local_gugcat'));
         $buttonarray[] =& $mform->createElement('button', 'convertbutton', get_string('savechanges', 'local_gugcat'));
         $mform->addGroup($buttonarray, 'buttonarr', '', array(''), false);
 
@@ -153,10 +153,10 @@ class convertform extends moodleform {
             'data-html' => 'true',
             'title' => get_string('pointtooltip', 'local_gugcat')
         );
-        $mform->addElement('html', html_writer::start_tag('div', array('class' => 'col'))); 
+        $mform->addElement('html', html_writer::start_tag('div', array('class' => 'col')));
         $html = html_writer::start_tag('table', array_merge(array('id'=>'gcat-table', 'class' => 'table')));
         $html .= html_writer::start_tag('thead');
-        $html .= html_writer::start_tag('tr');   
+        $html .= html_writer::start_tag('tr');
         $html .= html_writer::tag('th', get_string('grade'));
         $html .= html_writer::tag('th', get_string('lowerboundper', 'local_gugcat'));
         $html .= html_writer::tag('th', get_string('lowerboundpt', 'local_gugcat'));
@@ -168,8 +168,8 @@ class convertform extends moodleform {
             $html .= html_writer::start_tag('tr');
             $html .= html_writer::tag('td', $grd->grade);
             $html .= html_writer::start_tag('td');
-            $mform->addElement('html', $html); 
-            $mform->addElement('text', $name."[$index]", null, $prcattr); 
+            $mform->addElement('html', $html);
+            $mform->addElement('text', $name."[$index]", null, $prcattr);
             $mform->setDefault($name."[$index]", is_null($grd->lowerboundary) ? null : floatval(grade_converter::convert_point_percentage($maxgrade, $grd->lowerboundary)));
             $mform->setType($name."[$index]", PARAM_NOTAGS);
             $mform->addRule($name."[$index]", null, 'numeric', null, 'client');
@@ -182,8 +182,8 @@ class convertform extends moodleform {
             }
             $html = html_writer::end_tag('td');
             $html .= html_writer::start_tag('td');
-            $mform->addElement('html', $html); 
-            $mform->addElement('text', $name."_pt[$index]", null, $pointattr); 
+            $mform->addElement('html', $html);
+            $mform->addElement('text', $name."_pt[$index]", null, $pointattr);
             if($grd->grade == 'H'){
                 $mform->setDefault($name."[$index]", 0);
                 $mform->setDefault($name."_pt[$index]", 0);
@@ -210,8 +210,8 @@ class convertform extends moodleform {
         }
         $html .= html_writer::end_tag('tbody');
         $html .= html_writer::end_tag('table');
-        $mform->addElement('html', $html); 
-        $mform->addElement('html', html_writer::end_tag('div')); 
+        $mform->addElement('html', $html);
+        $mform->addElement('html', html_writer::end_tag('div'));
     }
 
     function validation($data, $files) {
