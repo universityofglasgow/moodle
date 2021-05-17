@@ -97,9 +97,10 @@ if ($mform->is_cancelled()) {
     }
     redirect($overviewurl);
 } else {
+    $isadjust = $meritgi || $gpagi;
     // Display the create alternative grade form.
     echo $OUTPUT->header();
-    echo $renderer->display_empty_form(get_string('createaltcoursegrade', 'local_gugcat'));
+    echo $renderer->display_empty_form(get_string($isadjust ? 'adjustaltcoursegrade' : 'createaltcoursegrade', 'local_gugcat'));
     echo $mform->display();
     echo $OUTPUT->footer();
     die();
