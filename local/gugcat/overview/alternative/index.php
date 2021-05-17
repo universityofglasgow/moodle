@@ -93,6 +93,7 @@ if ($mform->is_cancelled()) {
     $assessments = array_filter($assessments);
     if(!empty($assessments)){
         grade_aggregation::create_edit_alt_grades($formdata->altgradetype, $assessments, $weights, $appliedcap);
+        local_gugcat::notify_success('successaltgrades');
     }
     redirect($overviewurl);
 } else {

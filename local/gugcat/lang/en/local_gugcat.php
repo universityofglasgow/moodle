@@ -182,6 +182,7 @@ $string['step'] = 'Step {$a}';
 $string['studentno'] = 'Student No.';
 $string['subcategorygrade'] = 'Subcategory Grade';
 $string['successaddall'] = 'Successfully added grades for all participants.';
+$string['successaltgrades'] = 'Successfully added/adjusted alternative course grades for all participants.';
 $string['successfinalrelease'] = 'Successfully released final assessment grades for the students.';
 $string['successrelease'] = 'Provisional Grades have been released to students';
 $string['successimport'] = 'Successfully imported grades from gradebook';
