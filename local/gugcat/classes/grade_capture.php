@@ -349,6 +349,13 @@ class grade_capture{
                 $prvid_reset = local_gugcat::$PRVGRADEID;
             }
 
+            // Check if module is converted
+            if($module->is_converted){
+                // If conversion is enabled, get grade conversion and converted grade item id
+                $conversion = grade_converter::retrieve_grade_conversion($module->gradeitemid);
+                $convertedgi = local_gugcat::get_grade_item_id($courseid, $module->gradeitemid, get_string('convertedgrade', 'local_gugcat'));
+            }
+
             //Create Aggregated Grade grade item to all students
             $aggradeid = local_gugcat::add_grade_item($courseid, get_string('aggregatedgrade', 'local_gugcat'), null, $students);
 
@@ -374,10 +381,20 @@ class grade_capture{
                 }
                 $gbg = local_gugcat::normalize_gcat_grades($gbg);
                 $grade = self::check_gb_grade($gbg);
+
                 //for assessment grade history
                 $notes = ',_gradeitem: '. get_string('moodlegrade', 'local_gugcat');
-                local_gugcat::add_update_grades($student->id, local_gugcat::$PRVGRADEID, $grade, '');
-                local_gugcat::add_update_grades($student->id, $mggradeitemid, $grade, $notes);
+                local_gugcat::add_update_grades($student->id, $mggradeitemid, $grade);
+                if($module->is_converted){
+                    // Convert grade
+                    $cg = grade_converter::convert($conversion, $grade);
+                    // Update provisional grade with converted grade
+                    local_gugcat::add_update_grades($student->id, local_gugcat::$PRVGRADEID, $cg, $notes);
+                    // Update converted grade item
+                    local_gugcat::update_grade($student->id, $convertedgi, $grade);
+                }else{
+                    local_gugcat::add_update_grades($student->id, local_gugcat::$PRVGRADEID, $grade, $notes);
+                }
             }
 
             $studentids = implode(array_keys($students), ',');
