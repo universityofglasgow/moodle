@@ -33,7 +33,7 @@ $courseid = required_param('id', PARAM_INT);
 $activityid = optional_param('activityid', null, PARAM_INT);
 $categoryid = optional_param('categoryid', null, PARAM_INT);
 $childactivityid = optional_param('childactivityid', null, PARAM_INT);
-$page = optional_param('page', 0, PARAM_INT);  
+$page = optional_param('page', 0, PARAM_INT);
 
 $URL = new moodle_url('/local/gugcat/index.php', array('id' => $courseid, 'page' => $page));
 is_null($activityid) ? null : $URL->param('activityid', $activityid);
@@ -71,13 +71,13 @@ if(!is_null($categoryid) && $categoryid != 0){
         foreach ($gcs as $gc){
             $gi = local_gugcat::get_category_gradeitem($courseid, $gc);
             $gi->name = preg_replace('/\b total/i', '', $gi->name);
-            $gradecatgi[$gi->gradeitemid] = $gi; 
+            $gradecatgi[$gi->gradeitemid] = $gi;
             $gradecatgi[$gi->gradeitemid]->selected = (strval($activityid) === $gi->gradeitemid)? 'selected' : '';
         }
         //merging two arrays without changing their index.
         $totalactivities = $activities + $gradecatgi;
     }
-    
+
     //if activityid is null and there are no assessments
     if(is_null($activityid) && empty($activities) && !empty($gradecatgi)){
         $mods = array_reverse($totalactivities);
@@ -95,11 +95,11 @@ if(!is_null($categoryid) && $categoryid != 0){
 }
 
 if(!empty($totalactivities) || !empty($activities)){
-    
+
     $mods = array_reverse($activities);
     $childmods = empty($childactivities) ?  null : array_reverse($childactivities);
-    $selectedmodule = is_null($childmods) ? (is_null($activityid) ? array_pop($mods) 
-    : (!empty($activities) ? $activities[$activityid] : null)) 
+    $selectedmodule = is_null($childmods) ? (is_null($activityid) ? array_pop($mods)
+    : (!empty($activities) ? $activities[$activityid] : null))
     : (is_null($childactivityid) ? array_pop($childmods) : $childactivities[$childactivityid]);
 
     if(isset($selectedmodule)){
@@ -223,7 +223,7 @@ if (isset($release)){
         $gradeitemid = local_gugcat::add_grade_item($courseid, $gradeitem, $selectedmodule);
         foreach ($newgrades as $id=>$item) {
             if(isset($item) && !empty($item)){
-                $grade = !is_numeric($item) ? array_search(strtoupper($item), local_gugcat::$GRADES) : $item; 
+                $grade = !is_numeric($item) ? array_search(strtoupper($item), local_gugcat::$GRADES) : $item;
                 $notes = ",_gradeitem: $gradeitem";
                 local_gugcat::add_update_grades($id, $gradeitemid, $grade, (!$is_converted ? $notes : ''));
                 if($is_converted){
@@ -242,13 +242,13 @@ if (isset($release)){
                     $fields = 'itemid, id, rawgrade, finalgrade, overridden';
                     // Get provisional grades
                     $grade = $DB->get_record('grade_grades', array('itemid' => $subcatid, 'userid'=>$id), $fields);
-                    $grd = !is_null($grade->finalgrade) ? $grade->finalgrade 
-                    : (!is_null($grade->rawgrade) ? $grade->rawgrade 
+                    $grd = !is_null($grade->finalgrade) ? $grade->finalgrade
+                    : (!is_null($grade->rawgrade) ? $grade->rawgrade
                     : null);
                     //if subcat has a grade and it is not overridden.
                     if(isset($grd) && !is_null($grd) && $grade->overridden == 0){
                         $notes = ($scale) ? 'grade -'.$scale : 'grade';
-                        $DB->set_field('grade_grades', 'feedback', $notes, array('id'=>$grade->id));     
+                        $DB->set_field('grade_grades', 'feedback', $notes, array('id'=>$grade->id));
                     }
                 }
             }
@@ -273,19 +273,12 @@ if (isset($release)){
             grade_capture::import_from_gradebook($courseid, $selectedmodule, $totalactivities);
             $subcatid = local_gugcat::get_grade_item_id($courseid, $selectedmodule->gradeitem->categoryid, get_string('subcategorygrade', 'local_gugcat'));
             $scale = $totalactivities[$activityid]->is_converted ? $totalactivities[$activityid]->is_converted : $DB->get_field('grade_items', 'outcomeid', array('id'=>$subcatid));
-            foreach($students as $student){
-                $fields = 'itemid, id, rawgrade, finalgrade, overridden';
-                // Get provisional grades
-                $grade = $DB->get_record('grade_grades', array('itemid' => $subcatid, 'userid'=>$student->id), $fields);
-                $grd = !is_null($grade->finalgrade) ? $grade->finalgrade 
-                : (!is_null($grade->rawgrade) ? $grade->rawgrade 
-                : null);
-                //if subcat has a grade and it is not overridden.
-                if(isset($grd) && !is_null($grd) && $grade->overridden == 0){
-                    $notes = ($scale) ? 'import -'.$scale : 'import';
-                    $DB->set_field('grade_grades', 'feedback', $notes, array('id'=>$grade->id));     
-                }
-            }
+
+            $notes = ($scale) ? 'import -'.$scale : 'import';
+            $select = "itemid = $subcatid AND userid in (" . implode(array_keys($students), ',') . ")
+                        and overridden = 0
+                        and (finalgrade is not null or rawgrade is not null)";
+            $DB->set_field_select('grade_grades', 'feedback', $notes, $select);
         }else{
             grade_capture::import_from_gradebook($courseid, $selectedmodule,  empty($totalactivities) ? $activities : $totalactivities);
         }
@@ -347,19 +340,12 @@ if (isset($release)){
         $subcatid = local_gugcat::get_grade_item_id($courseid, $selectedmodule->gradeitem->categoryid, get_string('subcategorygrade', 'local_gugcat'));
         $scale = $totalactivities[$activityid]->is_converted ? $totalactivities[$activityid]->is_converted : $DB->get_field('grade_items', 'outcomeid', array('id'=>$subcatid));
         //update notes for grade history
-        foreach($students as $student){
-            $fields = 'itemid, id, rawgrade, finalgrade, overridden';
-            // Get provisional grades
-            $grade = $DB->get_record('grade_grades', array('itemid' => $subcatid, 'userid'=>$student->id), $fields);
-            $grd = !is_null($grade->finalgrade) ? $grade->finalgrade 
-            : (!is_null($grade->rawgrade) ? $grade->rawgrade 
-            : null);
-            //if subcat has a grade and it is not overridden.
-            if(isset($grd) && !is_null($grd) && $grade->overridden == 0){
-                $notes = ($scale) ? 'import -'.$scale : 'import';
-                $DB->set_field('grade_grades', 'feedback', $notes, array('id'=>$grade->id));     
-            }
-        }
+        $notes = ($scale) ? 'import -'.$scale : 'import';
+        $select = "itemid = $subcatid AND userid in (" . implode(array_keys($students), ',') . ")
+                    and overridden = 0
+                    and (finalgrade is not null or rawgrade is not null)";
+        $DB->set_field_select('grade_grades', 'feedback', $notes, $select);
+
         local_gugcat::notify_success('successimport');
         //log of bulk import
         $params = array(
