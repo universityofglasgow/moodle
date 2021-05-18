@@ -33,7 +33,7 @@ $courseid = required_param('id', PARAM_INT);
 $activityid = required_param('activityid', PARAM_INT);
 $categoryid = optional_param('categoryid', null, PARAM_INT);
 $childactivityid = optional_param('childactivityid', null, PARAM_INT);
-$page = optional_param('page', 0, PARAM_INT);  
+$page = optional_param('page', 0, PARAM_INT);
 $iid = optional_param('iid', null, PARAM_INT);
 $download = optional_param('download', null, PARAM_INT);
 
@@ -91,15 +91,14 @@ if($module->modname == 'assign'){
 }
 
 // Set up the upload import form.
-$mform = new uploadform(null, array('includeseparator' => true, 'acceptedtypes' =>
-array('.csv'), 'activity' => $module));
+$mform = new uploadform(null, array('acceptedtypes' => array('.csv'), 'activity' => $module));
 if(!$iid){
     // If the upload form has been submitted.
     if ($formdata = $mform->get_data()) {
         echo $OUTPUT->header();
         $text = $mform->get_file_content('userfile');
         $csvimport = new gradeimport_csv_load_data();
-        $csvimport->load_csv_content($text, 'UTF-8', $formdata->separator, 10);
+        $csvimport->load_csv_content($text, 'UTF-8', 'comma', 10);
         $csvimporterror = $csvimport->get_error();
         if (!empty($csvimporterror)) {
             foreach (array($csvimporterror) as $error) {
@@ -112,7 +111,7 @@ if(!$iid){
         }
         $headers = ($formdata->ignorerow == 1) ? array() : $csvimport->get_headers();
         $iid = $csvimport->get_iid(); // Go to import options form
-        
+
         echo $renderer->display_import_preview($headers, $csvimport->get_previewdata(), $module->modname == 'assign');
     }else{
         // Display the standard upload file form.
@@ -127,7 +126,7 @@ if(!$iid){
 // Data has already been submitted so we can use the $iid to retrieve it.
 $csvimportdata = new csv_import_reader($iid, 'grade');
 
-// Import form to be able to choose reason 
+// Import form to be able to choose reason
 $mform2 = new importform(null, array('iid' => $iid));
 
 // Here, if we have data, we process the fields and enter the information into the database.
