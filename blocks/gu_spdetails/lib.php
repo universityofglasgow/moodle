@@ -577,9 +577,7 @@ class assessments_details {
                $unionparams = array_merge($assignparams, $forumparams, $quizparams, $workshopparams);
                if(!$issubcategory){
                     $level2idtext = implode(', ', $level2ids);
-                    $subcategorysingleassessment = "SELECT iteminstance, categoryid, itemmodule, ROW_NUMBER() OVER (PARTITION BY categoryid ORDER BY id) AS seqnum FROM {grade_items}";
-                    $subcategoryfields = "gc.id, gc.courseid, CASE WHEN cs.name IS NOT NULL THEN cs.name WHEN cs.section != 0 THEN CONCAT('Topic ', cs.section)
-                                          ELSE c.fullname END AS coursetitle, gi.itemmodule AS `modname`,
+                    $subcategoryfields = "gc.id, gc.courseid, c.fullname AS coursetitle, gi.itemmodule AS `modname`,
                                           gc.fullname AS `activityname`, gp.fullname AS `gradecategoryname`, gp.aggregation,
                                           gi.aggregationcoef, gi.aggregationcoef2, NULL AS `allowsubmissionsfromdate`,
                                           0 AS `duedate`, 0 AS `cutoffdate`, 0 AS `gradingduedate`, NULL AS `hasextension`, gi.gradetype,
@@ -599,11 +597,7 @@ class assessments_details {
                                           LEFT JOIN {grade_categories} AS gp ON (gp.id = gc.parent)
                                           LEFT JOIN {grade_items} AS gip ON (gip.itemname = 'Subcategory Grade' AND gip.iteminfo = gc.id)
                                           LEFT JOIN {grade_grades} AS ggp ON (ggp.itemid = gip.id AND ggp.userid = ?)
-                                          LEFT JOIN {scale} AS sp ON (sp.id = CASE WHEN gip.idnumber IS NOT NULL AND NOT gip.idnumber = '' THEN gip.idnumber ELSE gip.outcomeid END)
-                                          LEFT JOIN ($subcategorysingleassessment) as gism ON (gism.categoryid = gc.id AND gism.seqnum = 1)
-                                          LEFT JOIN {modules} as m ON (m.name = gism.itemmodule)
-                                          LEFT JOIN {course_modules} as cm ON (cm.course = gc.courseid AND cm.`instance` = gism.iteminstance AND cm.module = m.id AND cm.deletioninprogress = 0)
-                                          LEFT JOIN {course_sections} AS cs ON (cs.course = gc.courseid AND cs.id = cm.section)";
+                                          LEFT JOIN {scale} AS sp ON (sp.id = CASE WHEN gip.idnumber IS NOT NULL AND NOT gip.idnumber = '' THEN gip.idnumber ELSE gip.outcomeid END)";
                     $subcategorywhere =  "gc.parent IN ($level2idtext) AND gc.fullname != 'DO NOT USE'";
                     $subcategorysql = "SELECT $subcategoryfields FROM {grade_categories} as gc $subcategoryjoins WHERE $subcategorywhere";
                     array_push($unionparams, $userid, $userid);
@@ -617,6 +611,41 @@ class assessments_details {
 
           $items = ($records) ? self::sanitize_records($records, $subcategoryparent) : array();
           return $items;
+     }
+
+     /**
+      * Returns Topic name for a category
+      *
+      * @param int $categoryid
+      * @param string $coursetitle
+      * @return string $coursetitle || $topicname
+      */
+
+     public static function get_topicname_category($categoryid, $coursetitle){
+          global $DB;
+
+          $gradeitem = $DB->get_record('grade_items', array('categoryid' => $categoryid));
+          if($gradeitem){
+               $params = array($gradeitem->courseid, $gradeitem->iteminstance, $gradeitem->courseid, $gradeitem->itemmodule);
+               $sql = "SELECT
+               CASE
+                   WHEN cs.name IS NOT NULL THEN cs.name
+                   WHEN cs.section != 0 THEN CONCAT('Topic ', cs.section)
+                   ELSE c.fullname
+               END AS coursetitle
+           FROM mdl_modules AS m
+                   LEFT JOIN mdl_course_modules AS cm ON (cm.course = ?
+                         AND cm.instance = ?
+                         AND cm.module = m.id
+                         AND cm.deletioninprogress = 0)
+                   LEFT JOIN mdl_course AS c ON c.id = ?
+                   LEFT JOIN mdl_course_sections AS cs ON (cs.course = c.id AND cs.id = cm.section)
+           WHERE m.name = ?";
+               $coursesection = $DB->get_record_sql($sql, $params);
+               return $coursesection ? $coursesection->coursetitle : $coursetitle;
+          } else {
+               return $coursetitle;
+          }
      }
 
      /**
@@ -640,7 +669,8 @@ class assessments_details {
                     if($iscmvisible) {
                          $item = new stdClass;
                          $item->id = $record->id;
-                         $item->coursetitle = $record->coursetitle;
+                         $item->coursetitle = $record->status === 'category' ? self::get_topicname_category($record->id, $record->coursetitle)
+                                                                             : $record->coursetitle;
                          $item->courseurl = self::return_courseurl($record->courseid);
                          $item->assessmenturl = self::return_assessmenturl($record->id, $record->modname);
                          $item->assessmentname = $record->activityname;
