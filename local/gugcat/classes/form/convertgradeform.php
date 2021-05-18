@@ -105,7 +105,7 @@ class convertform extends moodleform {
 
         $mform->addElement('html', html_writer::tag('p', get_string('noteconversion', 'local_gugcat'), array('class' => 'mt-3 font-weight-bold')));
 
-        $mform->addElement('text', 'templatename', get_string('pleaseprovidetemplatename', 'local_gugcat'), array('maxlength' => '50'));
+        $mform->addElement('textarea', 'templatename', get_string('pleaseprovidetemplatename', 'local_gugcat'), array('rows' => 1, 'maxlength' => '50'));
         $mform->addRule('templatename', null, 'maxlength', 50, 'client');
         $mform->setType('templatename', PARAM_NOTAGS);
 

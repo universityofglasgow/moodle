@@ -64,45 +64,34 @@ class uploadform extends moodleform {
         }
 
         $activity = $features['activity'];
-        $mform->addElement('static', 'assessment', get_string('assessment'), $activity->name); 
-        $mform->setType('assessment', PARAM_NOTAGS); 
-        $mform->addElement('static', 'gradetype', get_string('gradetype', 'grades'), $gradetypestr[$activity->gradeitem->gradetype]); 
-        $mform->setType('gradetype', PARAM_NOTAGS); 
+        $mform->addElement('static', 'assessment', get_string('assessment'), $activity->name);
+        $mform->setType('assessment', PARAM_NOTAGS);
+        $mform->addElement('static', 'gradetype', get_string('gradetype', 'grades'), $gradetypestr[$activity->gradeitem->gradetype]);
+        $mform->setType('gradetype', PARAM_NOTAGS);
         if($activity->gradeitem->gradetype == GRADE_TYPE_VALUE){
-            $mform->addElement('static', 'maximumgrade', get_string('grademax', 'grades'), intval($activity->gradeitem->grademax)); 
-            $mform->setType('maximumgrade', PARAM_NOTAGS); 
+            $mform->addElement('static', 'maximumgrade', get_string('grademax', 'grades'), intval($activity->gradeitem->grademax));
+            $mform->setType('maximumgrade', PARAM_NOTAGS);
         }
-        $mform->addElement('static', 'step', get_string('step', 'local_gugcat', $a=1), get_string('downloadtempcsv', 'local_gugcat')); 
+        $mform->addElement('static', 'step', get_string('step', 'local_gugcat', $a=1), get_string('downloadtempcsv', 'local_gugcat'));
         // Download template button row
         global $PAGE;
         $dlnote = get_string($activity->modname == 'assign' ? 'downloadtempnoteA': 'downloadtempnoteB', 'local_gugcat');
         $dlurl = 'index.php?'.parse_url($PAGE->url, PHP_URL_QUERY).'&download=1';
         $dlurl = str_replace('&amp;', '&', $dlurl);
-        $dlbtn = html_writer::tag('div', html_writer::tag('a', html_writer::tag('button', get_string('downloadcsv', 'local_gugcat'), 
+        $dlbtn = html_writer::tag('div', html_writer::tag('a', html_writer::tag('button', get_string('downloadcsv', 'local_gugcat'),
             array('class' => 'btn btn-form-default', 'type' => 'button')), array('href' => $dlurl)), array('class' => 'col-sm-3'));
-        $download = html_writer::tag('div', 
+        $download = html_writer::tag('div',
             $dlbtn.
             html_writer::tag('span', $dlnote, array('class' => 'col-sm-7 small font-italic'))
             , array('class' => 'row'));
         $mform->addGroup(array($mform->createElement('html', $download)));
-        
-        $mform->addElement('static', 'step', get_string('step', 'local_gugcat', $a=2), get_string('uploadfile', 'local_gugcat')); 
-        $mform->setType('step', PARAM_NOTAGS); 
+
+        $mform->addElement('static', 'step', get_string('step', 'local_gugcat', $a=2), get_string('uploadfile', 'local_gugcat'));
+        $mform->setType('step', PARAM_NOTAGS);
 
         // File upload.
         $mform->addElement('filepicker', 'userfile', get_string('selectfile', 'local_gugcat'), null, array('accepted_types' => $acceptedtypes));
         $mform->addRule('userfile', null, 'required');
-        // Select delimiter
-        if (!empty($features['includeseparator'])) {
-            $radio = array();
-            $radio[] = $mform->createElement('radio', 'separator', null, get_string('septab', 'grades'), 'tab');
-            $radio[] = $mform->createElement('radio', 'separator', null, get_string('sepcomma', 'grades'), 'comma');
-            $radio[] = $mform->createElement('radio', 'separator', null, get_string('sepcolon', 'grades'), 'colon');
-            $radio[] = $mform->createElement('radio', 'separator', null, get_string('sepsemicolon', 'grades'), 'semicolon');
-            $mform->addGroup($radio, 'separator', get_string('selectdelimiter', 'local_gugcat'), ' ', false);
-            $mform->addHelpButton('separator', 'separator', 'grades');
-            $mform->setDefault('separator', 'comma');
-        }
         $mform->addElement('advcheckbox', 'ignorerow', get_string('ignorerow', 'local_gugcat'));
         $mform->setDefault('ignorerow', 1);
         $mform->addElement('html', '</div>');
@@ -133,29 +122,29 @@ class importform extends moodleform {
 
         $reasons = local_gugcat::get_reasons();
         $reasons[0] = get_string('selectreason', 'local_gugcat');
-        $mform->addElement('select', 'reasons', get_string('reasonaddgrade', 'local_gugcat'), $reasons,['class' => 'mform-custom-select']); 
-        $mform->setType('reasons', PARAM_NOTAGS); 
-        $mform->setDefault('reasons', 0);   
-        $mform->addRule('reasons', get_string('required'), 'nonzero', null, 'client');     
-        $mform->addRule('reasons', null, 'required', null, 'client');    
+        $mform->addElement('select', 'reasons', get_string('reasonaddgrade', 'local_gugcat'), $reasons,['class' => 'mform-custom-select']);
+        $mform->setType('reasons', PARAM_NOTAGS);
+        $mform->setDefault('reasons', 0);
+        $mform->addRule('reasons', get_string('required'), 'nonzero', null, 'client');
+        $mform->addRule('reasons', null, 'required', null, 'client');
 
         $mform->addElement('text', 'otherreason', get_string('reasonother', 'local_gugcat'), array('size' => 16, 'placeholder' => get_string('pleasespecify', 'local_gugcat')));
-        $mform->setType('otherreason', PARAM_NOTAGS); 
-        $mform->hideIf('otherreason', 'reasons', 'neq', 9); 
+        $mform->setType('otherreason', PARAM_NOTAGS);
+        $mform->hideIf('otherreason', 'reasons', 'neq', 9);
         $mform->addElement('html', '</div>');
-        
+
         $buttonarray = array();
         $buttonarray[] =& $mform->createElement('cancel', 'cancel', get_string('back'));
         $buttonarray[] =& $mform->createElement('submit', 'submitbutton', get_string('importfile', 'local_gugcat'));
         $mform->addGroup($buttonarray, 'buttonarr', '', array(''), false);
-        
+
     }
 
     function validation($data, $files) {
         $errors = parent::validation($data, $files);
         if ($data['reasons'] == 9 && empty($data['otherreason'])) {
             $errors['otherreason'] = get_string('required');
-        }  
+        }
         return $errors;
     }
 }
