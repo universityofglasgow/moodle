@@ -354,13 +354,13 @@ class local_gugcat_renderer extends plugin_renderer_base {
             $htmlrows .= ($row->aggregatedgrade->display != get_string('missinggrade', 'local_gugcat'))
             ? html_writer::tag('td', $row->aggregatedgrade->display.$this->context_actions($row->studentno, null, true, $courseformhistoryparams, true))
             : html_writer::tag('td', $row->aggregatedgrade->display);
-            $row->meritgrade ? $htmlrows .= ($row->meritgrade != get_string('missinggrade', 'local_gugcat') 
+            $row->meritgrade ? $htmlrows .= ($row->meritgrade->grade != get_string('missinggrade', 'local_gugcat') 
             ? html_writer::tag('td', $row->meritgrade->grade.$this->context_actions($row->studentno, null, true, $courseformhistoryparams.'&alternativecg=1', true))
             : html_writer::tag('td', $row->meritgrade->grade)) : null;
             if($row->meritgrade && !$displaymerit){
                 $displaymerit = true;
             }
-            $row->gpagrade ? $htmlrows .= ($row->gpagrade != get_string('missinggrade', 'local_gugcat') 
+            $row->gpagrade ? $htmlrows .= ($row->gpagrade->grade != get_string('missinggrade', 'local_gugcat') 
             ? html_writer::tag('td', $row->gpagrade->grade.$this->context_actions($row->studentno, null, true, $courseformhistoryparams.'&alternativecg=2', true))
             : html_writer::tag('td', $row->gpagrade->grade)) : null;
             if($row->gpagrade && !$displaygpa){
@@ -618,6 +618,43 @@ class local_gugcat_renderer extends plugin_renderer_base {
     }
 
     /**
+     * Renders display of alternative course grade history page
+     * 
+     * @param array $rows
+     * @param mixed $student user info of the student
+     */
+    public function display_alternative_cg_history($rows, $student){
+
+        $acg = optional_param('alternativecg', null, PARAM_INT);
+        $htmlcolumns = null;
+        $htmlrows = null;
+
+        $htmlcolumns .= html_writer::tag('th', get_string('datetime', 'local_gugcat'));
+        $htmlcolumns .= html_writer::tag('th', get_string('gradeformgrade', 'local_gugcat'));
+        $htmlcolumns .= html_writer::tag('th', get_string('revised', 'local_gugcat'));
+        $htmlcolumns .= html_writer::tag('th', get_string('type', 'local_gugcat'));
+        $htmlcolumns .= html_writer::tag('th', get_string('notes', 'local_gugcat'));
+        foreach($rows as $row){
+            $htmlrows .= html_writer::start_tag('tr');
+            $htmlrows .= html_writer::tag('td', $row->date);
+            $htmlrows .= html_writer::tag('td', $row->grade);
+            $htmlrows .= html_writer::tag('td', $row->modby);
+            $htmlrows .= html_writer::tag('td', $row->type);
+            $htmlrows .= html_writer::tag('td', $row->notes);
+            $htmlrows .= html_writer::end_tag('tr');
+        }
+
+        $html = $this->header();
+        $html .= $this->render_from_template('local_gugcat/gcat_form_details', (object) [
+            'title' => get_string($acg == GPA_GRADE ? 'gpagradehistory' : 'meritgradehistory', 'local_gugcat'),
+            'student' => $student,
+            'blindmarking' => !local_gugcat::is_blind_marking($this->page->cm) ? true : null
+        ]);
+        $html .= $this->display_table($htmlrows, $htmlcolumns, true);
+        return $html;
+    }
+
+    /**
      * Render a reusable custom UI table element
      * @param array $rows
      * @param array $columns
@@ -696,7 +733,8 @@ class local_gugcat_renderer extends plugin_renderer_base {
                 $html .= html_writer::tag('li', html_writer::tag('a', get_string('assessmentgradehistory', 'local_gugcat'), array('href' => $historylink)), $class);
             }else if(strpos($link, 'alternativecg')){
                 $acg = strpos($link, 'alternativecg=1') ? 1 : 2;
-                $html .= html_writer::tag('li', html_writer::tag('a', get_string($acg == 1 ? 'overridestudmeritgrade' : 'overridestudgpagrade', 'local_gugcat'), array('href' => $overridelink)), $class);
+                $html .= html_writer::tag('li', html_writer::tag('a', get_string($acg == MERIT_GRADE ? 'overridestudmeritgrade' : 'overridestudgpagrade', 'local_gugcat'), array('href' => $overridelink)), $class);
+                $html .= html_writer::tag('li', html_writer::tag('a', get_string($acg == MERIT_GRADE ? 'viewmeritgradehistory' : 'viewgpagradehistory', 'local_gugcat'), array('href' => $coursehistoryurl)), $class);
             }else{
                 $html .= html_writer::tag('li', html_writer::tag('a', get_string('adjustcourseweight', 'local_gugcat'), array('href' => $adjustlink)), $class);
                 $html .= html_writer::tag('li', html_writer::tag('a', get_string('overrideggregrade', 'local_gugcat'), array('href' => $overridelink)), $class);

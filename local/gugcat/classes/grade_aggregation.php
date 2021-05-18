@@ -1219,4 +1219,47 @@ class grade_aggregation{
             return $altgrdobj;
         }
     }
+    
+    /**
+     *  Returns rows of history of alternative course grades
+     *
+     * @param mixed $course
+     * @param mixed $student
+     * @return array $rows
+     */
+    public static function acg_grade_history($course, $student){
+        global $DB;
+
+        $categoryid = optional_param('categoryid', 0, PARAM_INT);
+        $acg = optional_param('alternativecg', null, PARAM_INT);
+        local_gugcat::set_grade_scale(null);
+        $rows = array();
+        $acgid = local_gugcat::get_grade_item_id($course->id, $categoryid, get_string($acg == 1 ? 'meritgrade' : 'gpagrade', 'local_gugcat'));
+        if($acgid){
+            $fields = 'id, itemid, rawgrade, finalgrade, feedback, timemodified, usermodified';
+            $select = "rawgrade IS NOT NULL AND itemid=$acgid AND userid='$student->id'";
+            $gradehistory_arr = $DB->get_records_select('grade_grades_history', $select, null, $fields);
+            if($gradehistory_arr>0){
+                foreach($gradehistory_arr as $gradehistory){
+                    $grdobj = new stdClass();
+                    $grd = !is_null($gradehistory->finalgrade) ? $gradehistory->finalgrade : null;
+                    $grdobj->grade = local_gugcat::convert_grade($grd);
+                    $grdobj->notes = !is_null($gradehistory->feedback) && !empty($gradehistory->feedback) ? $gradehistory->feedback : get_string('systemupdatecreateupdate', 'local_gugcat');
+                    $modby = $DB->get_record('user', array('id' => $gradehistory->usermodified), 'firstname, lastname');
+                    $grdobj->modby = (isset($modby->lastname) && isset($modby->firstname)) ? $modby->lastname . ', '.$modby->firstname : null;
+                    $grdobj->date = date("j/n/y", strtotime(userdate($gradehistory->timemodified))).'<br>'.date("h:i", strtotime(userdate($gradehistory->timemodified)));
+                    $grdobj->type = get_string($gradehistory->overridden != 0 ? 'gradeoverridden' : 'systemupdate', 'local_gugcat');
+                    $grdobj->timemodified = $gradehistory->timemodified;
+                    array_push($rows, $grdobj);
+
+                    //sort array by timemodified
+                    usort($rows,function($first,$second){
+                        return $first->timemodified < $second->timemodified;
+                    });
+                }
+            }
+        }
+        
+        return $rows;
+    }
 }
