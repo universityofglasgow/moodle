@@ -169,7 +169,6 @@ $string['selectcap'] = 'Select cap to apply';
 $string['selectincludeassessment'] = 'Select assessments to include';
 $string['selectcategory'] = 'Select Grade Category';
 $string['selectconversion'] = 'Select conversion';
-$string['selectdelimiter'] = 'Select delimiter';
 $string['selectfile'] = 'Select file';
 $string['selectgrade'] = 'Select grade';
 $string['selectprevconv'] = 'Select previously stored conversion';
