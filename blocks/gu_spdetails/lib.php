@@ -581,8 +581,8 @@ class assessments_details {
                                           gc.fullname AS `activityname`, gp.fullname AS `gradecategoryname`, gp.aggregation,
                                           gi.aggregationcoef, gi.aggregationcoef2, NULL AS `allowsubmissionsfromdate`,
                                           0 AS `duedate`, 0 AS `cutoffdate`, 0 AS `gradingduedate`, NULL AS `hasextension`, gi.gradetype,
-                                          CASE WHEN gip.grademin IS NOT NULL THEN gip.grademin ELSE gi.grademin END AS `grademin`,
-                                          CASE WHEN gip.grademax IS NOT NULL THEN gip.grademax ELSE gi.grademax END AS `grademax`,
+                                          CASE WHEN gi.grademin IS NOT NULL THEN gi.grademin ELSE gip.grademin END AS `grademin`,
+                                          CASE WHEN gi.grademax IS NOT NULL THEN gi.grademax ELSE gip.grademax END AS `grademax`,
                                           sp.scale AS `scale`,
                                           CASE WHEN ggp.finalgrade IS NOT NULL THEN ggp.finalgrade WHEN ggp.rawgrade IS NOT NULL THEN ggp.rawgrade
                                                WHEN gg.finalgrade IS NOT NULL THEN gg.finalgrade ELSE gg.rawgrade END AS `finalgrade`,
@@ -841,7 +841,7 @@ class assessments_details {
                $gradetype = '1';
           }
           if(isset($finalgrade)) {
-               $intgrade = !empty($convertedgradeid) ? (int)$finalgrade : (int)$provisionalgrade;
+               $intgrade = !empty($convertedgradeid) ? (int)$finalgrade : (is_null($provisionalgrade) ? (int)$finalgrade :(int)$provisionalgrade);
                $grading->hasgrade = true;
                $grading->isprovisional = ($gradeinformation || $status === 'category') ? false : true;
                $grademax = (int)$grademax;
