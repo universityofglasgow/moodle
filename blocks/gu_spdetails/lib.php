@@ -33,6 +33,8 @@ define('SORTBY_ENDDATE', 'enddate');
 define('SORTORDER_ASC', 'asc');
 define('SORTORDER_DESC', 'desc');
 
+require_once($CFG->libdir . '/gradelib.php');
+
 class assessments_details {
 
      /**
@@ -151,7 +153,18 @@ class assessments_details {
                     if($activetab !== TAB_PAST) {
                          // due date
                          $html .= html_writer::start_tag('td', array('class' => 'td10'));
-                         $html .= $assessment->formattedduedate;
+                         if ($assessment->feedback->issubcategory){
+                              $html .= html_writer::tag('a', $assessment->feedback->feedbacktext,
+                              array('href' => "#assessments-container",
+                                    'class' => 'subcategory-row',
+                                    'data-id' => $assessment->id,
+                                    'data-name' => $assessment->assessmentname,
+                                    'data-course' => $assessment->coursetitle,
+                                    'data-grade' => $assessment->grading->gradetext,
+                                    'data-weight' => $assessment->weight));
+                         }else {
+                              $html .= $assessment->formattedduedate;
+                         }
                          if($assessment->hasextension) {
                               $html .= html_writer::start_span('extended').'*';
                               $html .= html_writer::start_span('extended-tooltip').
@@ -329,6 +342,12 @@ class assessments_details {
           $courses = self::retrieve_courses($activetab, $userid);
           $courseids = implode(', ', $courses);
           $issubcategory = !is_null($subcategory);
+          $subcategoryparent = new stdClass;
+
+          if($issubcategory){
+               $subcat = grade_category::fetch(array('id' => $subcategory));
+               $subcategoryparent = is_null($subcat->parent) ? new stdClass : grade_category::fetch(array('id' => $subcat->parent));
+          }
 
           if(!empty($courses)) {
                $parentids = self::retrieve_parent_category($courses);
@@ -558,12 +577,10 @@ class assessments_details {
                $unionparams = array_merge($assignparams, $forumparams, $quizparams, $workshopparams);
                if(!$issubcategory){
                     $level2idtext = implode(', ', $level2ids);
-                    $subcategorysingleassessment = "SELECT iteminstance, categoryid, itemmodule, ROW_NUMBER() OVER (PARTITION BY categoryid ORDER BY id) AS seqnum FROM {grade_items}";
-                    $subcategoryfields = "gc.id, gc.courseid, CASE WHEN cs.name IS NOT NULL THEN cs.name WHEN cs.section != 0 THEN CONCAT('Topic ', cs.section)
-                                          ELSE c.fullname END AS coursetitle, gi.itemmodule AS `modname`,
+                    $subcategoryfields = "gc.id, gc.courseid, c.fullname AS coursetitle, gi.itemmodule AS `modname`,
                                           gc.fullname AS `activityname`, gp.fullname AS `gradecategoryname`, gp.aggregation,
                                           gi.aggregationcoef, gi.aggregationcoef2, NULL AS `allowsubmissionsfromdate`,
-                                          NULL AS `duedate`, NULL AS `cutoffdate`, NULL AS `gradingduedate`, NULL AS `hasextension`, gi.gradetype,
+                                          0 AS `duedate`, 0 AS `cutoffdate`, 0 AS `gradingduedate`, NULL AS `hasextension`, gi.gradetype,
                                           CASE WHEN gip.grademin IS NOT NULL THEN gip.grademin ELSE gi.grademin END AS `grademin`,
                                           CASE WHEN gip.grademax IS NOT NULL THEN gip.grademax ELSE gi.grademax END AS `grademax`,
                                           sp.scale AS `scale`,
@@ -580,11 +597,7 @@ class assessments_details {
                                           LEFT JOIN {grade_categories} AS gp ON (gp.id = gc.parent)
                                           LEFT JOIN {grade_items} AS gip ON (gip.itemname = 'Subcategory Grade' AND gip.iteminfo = gc.id)
                                           LEFT JOIN {grade_grades} AS ggp ON (ggp.itemid = gip.id AND ggp.userid = ?)
-                                          LEFT JOIN {scale} AS sp ON (sp.id = CASE WHEN gip.idnumber IS NOT NULL AND NOT gip.idnumber = '' THEN gip.idnumber ELSE gip.outcomeid END)
-                                          LEFT JOIN ($subcategorysingleassessment) as gism ON (gism.categoryid = gc.id AND gism.seqnum = 1)
-                                          LEFT JOIN {modules} as m ON (m.name = gism.itemmodule)
-                                          LEFT JOIN {course_modules} as cm ON (cm.course = gc.courseid AND cm.`instance` = gism.iteminstance AND cm.module = m.id AND cm.deletioninprogress = 0)
-                                          LEFT JOIN {course_sections} AS cs ON (cs.course = gc.courseid AND cs.id = cm.section)";
+                                          LEFT JOIN {scale} AS sp ON (sp.id = CASE WHEN gip.idnumber IS NOT NULL AND NOT gip.idnumber = '' THEN gip.idnumber ELSE gip.outcomeid END)";
                     $subcategorywhere =  "gc.parent IN ($level2idtext) AND gc.fullname != 'DO NOT USE'";
                     $subcategorysql = "SELECT $subcategoryfields FROM {grade_categories} as gc $subcategoryjoins WHERE $subcategorywhere";
                     array_push($unionparams, $userid, $userid);
@@ -596,17 +609,53 @@ class assessments_details {
                $records = null;
           }
 
-          $items = ($records) ? self::sanitize_records($records) : array();
+          $items = ($records) ? self::sanitize_records($records, $subcategoryparent) : array();
           return $items;
+     }
+
+     /**
+      * Returns Topic name for a category
+      *
+      * @param int $categoryid
+      * @param string $coursetitle
+      * @return string $coursetitle || $topicname
+      */
+
+     public static function get_topicname_category($categoryid, $coursetitle){
+          global $DB;
+
+          $gradeitem = $DB->get_record('grade_items', array('categoryid' => $categoryid));
+          if($gradeitem){
+               $params = array($gradeitem->courseid, $gradeitem->iteminstance, $gradeitem->courseid, $gradeitem->itemmodule);
+               $sql = "SELECT
+               CASE
+                   WHEN cs.name IS NOT NULL THEN cs.name
+                   WHEN cs.section != 0 THEN CONCAT('Topic ', cs.section)
+                   ELSE c.fullname
+               END AS coursetitle
+           FROM mdl_modules AS m
+                   LEFT JOIN mdl_course_modules AS cm ON (cm.course = ?
+                         AND cm.instance = ?
+                         AND cm.module = m.id
+                         AND cm.deletioninprogress = 0)
+                   LEFT JOIN mdl_course AS c ON c.id = ?
+                   LEFT JOIN mdl_course_sections AS cs ON (cs.course = c.id AND cs.id = cm.section)
+           WHERE m.name = ?";
+               $coursesection = $DB->get_record_sql($sql, $params);
+               return $coursesection ? $coursesection->coursetitle : $coursetitle;
+          } else {
+               return $coursetitle;
+          }
      }
 
      /**
       * Returns sanitized data based from query results
       *
       * @param array $records
+      * @param grade_category $subcategoryparent
       * @return array $items
       */
-     public static function sanitize_records($records) {
+     public static function sanitize_records($records, $subcategoryparent) {
           $items = array();
 
           if($records) {
@@ -620,13 +669,15 @@ class assessments_details {
                     if($iscmvisible) {
                          $item = new stdClass;
                          $item->id = $record->id;
-                         $item->coursetitle = $record->coursetitle;
+                         $item->coursetitle = $record->status === 'category' ? self::get_topicname_category($record->id, $record->coursetitle)
+                                                                             : $record->coursetitle;
                          $item->courseurl = self::return_courseurl($record->courseid);
                          $item->assessmenturl = self::return_assessmenturl($record->id, $record->modname);
                          $item->assessmentname = $record->activityname;
                          $item->assessmenttype = self::return_assessmenttype($record->gradecategoryname);
                          $item->weight = self::return_weight($item->assessmenttype, $record->aggregation,
-                                                             $record->aggregationcoef, $record->aggregationcoef2);
+                                                             $record->aggregationcoef, $record->aggregationcoef2,
+                                                             isset($subcategoryparent->fullname) ? $subcategoryparent->fullname : null);
                          $item->duedate = $record->duedate;
                          $item->formattedduedate = self::return_formattedduedate($record->duedate);
                          $item->hasextension = (!empty($record->hasextension)) ? true : false;
@@ -726,13 +777,14 @@ class assessments_details {
       * @param string $aggregation
       * @param string $aggregationcoef
       * @param string $aggregationcoef2
+      * @param string $subcategoryparentfullname
       * @return string Weight (in percentage), or '—' if empty
       */
-     public static function return_weight($assessmenttype, $aggregation, $aggregationcoef, $aggregationcoef2) {
+     public static function return_weight($assessmenttype, $aggregation, $aggregationcoef, $aggregationcoef2, $subcategoryparentfullname) {
           $summative = get_string('summative', 'block_gu_spdetails');
           $weight = 0;
 
-          if($assessmenttype === $summative) {
+          if($assessmenttype === $summative || $subcategoryparentfullname === $summative) {
                // $aggregation == '10', meaning 'Weighted mean of grades' is used
                $weight = ($aggregation == '10') ?
                          (($aggregationcoef > 1) ? $aggregationcoef : $aggregationcoef * 100) :
@@ -789,7 +841,7 @@ class assessments_details {
                $gradetype = '1';
           }
           if(isset($finalgrade)) {
-               $intgrade = (int)$finalgrade;
+               $intgrade = !empty($convertedgradeid) ? (int)$finalgrade : (int)$provisionalgrade;
                $grading->hasgrade = true;
                $grading->isprovisional = ($gradeinformation || $status === 'category') ? false : true;
                $grademax = (int)$grademax;
