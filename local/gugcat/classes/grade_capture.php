@@ -355,9 +355,8 @@ class grade_capture{
             // Create Moodle Grade grade item and grade_grades to all students
             $mggradeitemid = local_gugcat::add_grade_item($courseid, get_string('moodlegrade', 'local_gugcat'), $module, $students);
             // Update Moodle Grade timemodified
-            $gradeitem_ = new grade_item(array('id'=>$mggradeitemid), true);
-            $gradeitem_->timemodified = time();
-            $gradeitem_->update();
+            $DB->set_field('grade_items', 'timemodified', time(), array('id' => $mggradeitemid));
+
             $grade = null;
 
             $gbgrades = grade_get_grades($courseid, 'mod', $module->modname, $module->instance, array_keys($students));
