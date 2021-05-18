@@ -811,7 +811,7 @@ class assessments_details {
                $gradetype = '1';
           }
           if(isset($finalgrade)) {
-               $intgrade = (int)$finalgrade;
+               $intgrade = !empty($convertedgradeid) ? (int)$finalgrade : (int)$provisionalgrade;
                $grading->hasgrade = true;
                $grading->isprovisional = ($gradeinformation || $status === 'category') ? false : true;
                $grademax = (int)$grademax;
