@@ -558,11 +558,12 @@ class assessments_details {
                $unionparams = array_merge($assignparams, $forumparams, $quizparams, $workshopparams);
                if(!$issubcategory){
                     $level2idtext = implode(', ', $level2ids);
-                    $subcategoryfields = "gc.id, gc.courseid, c.fullname AS coursetitle, gi.itemmodule AS `modname`,
+                    $subcategorysingleassessment = "SELECT iteminstance, categoryid, itemmodule, ROW_NUMBER() OVER (PARTITION BY categoryid ORDER BY id) AS seqnum FROM {grade_items}";
+                    $subcategoryfields = "gc.id, gc.courseid, CASE WHEN cs.name IS NOT NULL THEN cs.name WHEN cs.section != 0 THEN CONCAT('Topic ', cs.section)
+                                          ELSE c.fullname END AS coursetitle, gi.itemmodule AS `modname`,
                                           gc.fullname AS `activityname`, gp.fullname AS `gradecategoryname`, gp.aggregation,
                                           gi.aggregationcoef, gi.aggregationcoef2, NULL AS `allowsubmissionsfromdate`,
-                                          NULL AS `duedate`, NULL AS `cutoffdate`, NULL AS `gradingduedate`, NULL AS `hasextension`,
-                                          CASE WHEN gip.gradetype IS NOT NULL THEN gip.gradetype ELSE gi.gradetype END AS `gradetype`,
+                                          NULL AS `duedate`, NULL AS `cutoffdate`, NULL AS `gradingduedate`, NULL AS `hasextension`, gi.gradetype,
                                           CASE WHEN gip.grademin IS NOT NULL THEN gip.grademin ELSE gi.grademin END AS `grademin`,
                                           CASE WHEN gip.grademax IS NOT NULL THEN gip.grademax ELSE gi.grademax END AS `grademax`,
                                           sp.scale AS `scale`,
@@ -579,7 +580,11 @@ class assessments_details {
                                           LEFT JOIN {grade_categories} AS gp ON (gp.id = gc.parent)
                                           LEFT JOIN {grade_items} AS gip ON (gip.itemname = 'Subcategory Grade' AND gip.iteminfo = gc.id)
                                           LEFT JOIN {grade_grades} AS ggp ON (ggp.itemid = gip.id AND ggp.userid = ?)
-                                          LEFT JOIN {scale} AS sp ON (sp.id = CASE WHEN gip.idnumber IS NOT NULL AND NOT gip.idnumber = '' THEN gip.idnumber ELSE gip.outcomeid END)";
+                                          LEFT JOIN {scale} AS sp ON (sp.id = CASE WHEN gip.idnumber IS NOT NULL AND NOT gip.idnumber = '' THEN gip.idnumber ELSE gip.outcomeid END)
+                                          LEFT JOIN ($subcategorysingleassessment) as gism ON (gism.categoryid = gc.id AND gism.seqnum = 1)
+                                          LEFT JOIN {modules} as m ON (m.name = gism.itemmodule)
+                                          LEFT JOIN {course_modules} as cm ON (cm.course = gc.courseid AND cm.`instance` = gism.iteminstance AND cm.module = m.id AND cm.deletioninprogress = 0)
+                                          LEFT JOIN {course_sections} AS cs ON (cs.course = gc.courseid AND cs.id = cm.section)";
                     $subcategorywhere =  "gc.parent IN ($level2idtext) AND gc.fullname != 'DO NOT USE'";
                     $subcategorysql = "SELECT $subcategoryfields FROM {grade_categories} as gc $subcategoryjoins WHERE $subcategorywhere";
                     array_push($unionparams, $userid, $userid);
