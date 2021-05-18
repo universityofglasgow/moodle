@@ -584,8 +584,8 @@ class assessments_details {
                                           CASE WHEN gi.grademin IS NOT NULL THEN gi.grademin ELSE gip.grademin END AS `grademin`,
                                           CASE WHEN gi.grademax IS NOT NULL THEN gi.grademax ELSE gip.grademax END AS `grademax`,
                                           sp.scale AS `scale`,
-                                          CASE WHEN ggp.finalgrade IS NOT NULL THEN ggp.finalgrade WHEN ggp.rawgrade IS NOT NULL THEN ggp.rawgrade
-                                               WHEN gg.finalgrade IS NOT NULL THEN gg.finalgrade ELSE gg.rawgrade END AS `finalgrade`,
+                                          CASE WHEN gg.finalgrade IS NOT NULL THEN gg.finalgrade WHEN gg.rawgrade IS NOT NULL THEN gg.rawgrade
+                                               WHEN ggp.finalgrade IS NOT NULL THEN ggp.finalgrade ELSE ggp.rawgrade END AS `finalgrade`,
                                           gg.information AS gradeinformation, gg.feedback, NULL as `feedbackfiles`, NULL as `hasturnitin`,
                                           'category' AS `status`, NULL AS `submissions`, NULL AS `quizfeedback`, NULL AS `startdate`,
                                           NULL AS `enddate`, NULL AS `convertedgradeid`,
@@ -852,7 +852,7 @@ class assessments_details {
                     // gradetype = value
                     case '1':
                          $grading->gradetext = ($grademax == 22 && $grademin == 0) ?
-                                               self::return_22grademaxpoint($intgrade, $scheduleAB) : self::return_gradetext($intgrade, $grademax, $convertedgrade, $onlyconverted);
+                                               self::return_22grademaxpoint($intgrade, $scheduleAB) : self::return_gradetext((int)$finalgrade, $grademax, $convertedgrade, $onlyconverted);
                          break;
                     // gradetype = scale
                     case '2':
