@@ -32,6 +32,7 @@ class coursegradeform extends moodleform {
     //Add elements to form
     public function definition() {
         $act = optional_param('activityid', null, PARAM_INT);
+        $acg = optional_param('alternativecg', null, PARAM_INT);
         if(!is_null($act) && $act != 0){
             $grades = local_gugcat::$GRADES;
         }else{
@@ -46,7 +47,7 @@ class coursegradeform extends moodleform {
             $mform->addElement('html', '<div class="mform-override">');
         foreach($student->grades as $grdobj){
 
-            if($this->_customdata['setting'] == '1' || $grdobj->category){
+            if($this->_customdata['setting'] == '1' && $acg != GPA_GRADE || $grdobj->category){
                 $mform->addElement('html', '<div class="mform-override">');
                 $mform->addElement('static', $grdobj->activity, $grdobj->activity.' Weighting', $grdobj->weight .'%'); 
                 $mform->addElement('html', '</div>');
@@ -73,7 +74,7 @@ class coursegradeform extends moodleform {
             $mform->addElement('static', 'totalweight', get_string('totalweight', 'local_gugcat'), '100%'); 
             $mform->setType('totalweight', PARAM_NOTAGS); 
         }
-        $mform->addElement('html', '<div class="mform-grades">');
+        $mform->addElement('html', $acg != GPA_GRADE ? '<div class="mform-grades">' : '<div class="mform-override">');
             foreach($student->grades as $grdobj){
                 if ($grdobj->category){
                     $mform->addElement('html', '<div class="mform-override">');
@@ -91,8 +92,14 @@ class coursegradeform extends moodleform {
         $mform->addElement('html', '</div>');
     
         if($this->_customdata['setting'] == '1'){
-            $mform->addElement('static', 'aggregatedgrade', get_string('aggregatedgrade', 'local_gugcat'), $student->aggregatedgrade->grade); 
-            $mform->setType('aggregatedgrade', PARAM_NOTAGS); 
+            $mform->addElement('static', 'aggregatedgrade', get_string($acg == 1 ? 'meritgrade' : 'aggregatedgrade', 'local_gugcat'), $student->aggregatedgrade->grade); 
+            $mform->setType('aggregatedgrade', PARAM_NOTAGS);
+            if($acg == GPA_GRADE){
+                $mform->addElement('static', 'capselected', get_string('capselected', 'local_gugcat'), local_gugcat::convert_grade($student->gpagrade->gpacap)); 
+                $mform->setType('capselected', PARAM_NOTAGS);
+                $mform->addElement('static', 'gpagrade', get_string('gpagrade', 'local_gugcat'), $student->gpagrade->grade); 
+                $mform->setType('gpagrade', PARAM_NOTAGS);
+            } 
             $mform->addElement('html', '</div>');
             $mform->addElement('hidden', 'gradetype', $this->_customdata['gradetype']); 
             $mform->setType('gradetype', PARAM_NOTAGS);
@@ -143,6 +150,8 @@ class coursegradeform extends moodleform {
         $mform->setType('categoryid', PARAM_INT);
         $mform->addElement('hidden', 'activityid', optional_param('activityid', null, PARAM_INT));
         $mform->setType('activityid', PARAM_INT);
+        $mform->addElement('hidden', 'alternativecg', optional_param('alternativecg', null, PARAM_INT));
+        $mform->setType('alternativecg', PARAM_INT);
         $mform->addElement('hidden', 'page', optional_param('page', 0, PARAM_INT));
         $mform->setType('page', PARAM_INT);
         

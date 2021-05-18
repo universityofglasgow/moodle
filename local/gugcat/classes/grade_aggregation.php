@@ -285,7 +285,7 @@ class grade_aggregation{
                     $grdobj->originalweight = round((float)$item->weight * 100);
                     $grdobj->rawgrade = $grdvalue;
                     $grdobj->weight =  round((float)$weight * 100 );
-                    array_push($gradecaptureitem->grades, $grdobj);
+                    $gradecaptureitem->grades[$grdobj->activityid] = $grdobj;
                 }
                 $sumaggregated = $sumaggregated != 0 ? $sumaggregated / $calculatedweight : $sumaggregated;
                 $totalweight = round((float)$floatweight * 100 );
@@ -334,6 +334,7 @@ class grade_aggregation{
 
                 // Merit grade
                 if($meritgi && $meritsettings){
+                    $meritgradeweights = array();
                     $ids = array_column($meritsettings, 'itemid');
                     $weights = array_column($meritsettings, 'weight', 'itemid');
 
@@ -342,12 +343,17 @@ class grade_aggregation{
                     });
                     foreach ($selectedmerits as $item) {
                         $item->meritweight = $weights[$item->gradeitemid];
+                        $gradeweight = $gradecaptureitem->grades[$item->gradeitemid];
+                        $gradeweight->weight = intval($weights[$item->gradeitemid]);
+                        array_push($meritgradeweights, $gradeweight);
                     }
                     $gradecaptureitem->meritgrade = self::get_alt_grade(true, $meritgi, $selectedmerits, $student->id);
+                    $gradecaptureitem->meritgrade->grades = $meritgradeweights; 
                 }
 
                 // GPA grade
                 if($gpagi && $gpasettings){
+                    $gpagrade = array();
                     $ids = array_column($gpasettings, 'itemid');
                     $gpacap = array_column($gpasettings, 'cap', 'itemid');
 
@@ -356,8 +362,11 @@ class grade_aggregation{
                     });
                     foreach ($selectedgpa as $item) {
                         $item->gpacap = $gpacap[$item->gradeitemid];
+                        array_push($gpagrade, $gradecaptureitem->grades[$item->gradeitemid]);
                     }
                     $gradecaptureitem->gpagrade = self::get_alt_grade(false, $gpagi, $selectedgpa, $student->id, $aggrdobj);
+                    $gradecaptureitem->gpagrade->gpacap = reset($gpacap);
+                    $gradecaptureitem->gpagrade->grades = $gpagrade;
                 }
             }
             $gradecaptureitem->aggregatedgrade = $aggrdobj;
@@ -1153,7 +1162,7 @@ class grade_aggregation{
         local_gugcat::set_grade_scale(null);
         // If merit grade is overridden
         if($altgg && $altgg->overridden != 0){
-            $altgrdobj->grade = $altggrd ? local_gugcat::convert_grade($altggrd + 1) : get_string('missinggrade', 'local_gugcat');
+            $altgrdobj->grade = $altggrd ? local_gugcat::convert_grade($altggrd) : get_string('missinggrade', 'local_gugcat');
             $altgrdobj->rawgrade = $altggrd;
             return $altgrdobj;
         }else{
