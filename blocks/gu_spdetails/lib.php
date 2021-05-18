@@ -33,6 +33,8 @@ define('SORTBY_ENDDATE', 'enddate');
 define('SORTORDER_ASC', 'asc');
 define('SORTORDER_DESC', 'desc');
 
+require_once($CFG->libdir . '/gradelib.php');
+
 class assessments_details {
 
      /**
@@ -329,6 +331,12 @@ class assessments_details {
           $courses = self::retrieve_courses($activetab, $userid);
           $courseids = implode(', ', $courses);
           $issubcategory = !is_null($subcategory);
+          $subcategoryparent = new stdClass;
+
+          if($issubcategory){
+               $subcat = grade_category::fetch(array('id' => $subcategory));
+               $subcategoryparent = is_null($subcat->parent) ? new stdClass : grade_category::fetch(array('id' => $subcat->parent));
+          }
 
           if(!empty($courses)) {
                $parentids = self::retrieve_parent_category($courses);
@@ -596,7 +604,7 @@ class assessments_details {
                $records = null;
           }
 
-          $items = ($records) ? self::sanitize_records($records) : array();
+          $items = ($records) ? self::sanitize_records($records, $subcategoryparent) : array();
           return $items;
      }
 
@@ -604,9 +612,10 @@ class assessments_details {
       * Returns sanitized data based from query results
       *
       * @param array $records
+      * @param grade_category $subcategoryparent
       * @return array $items
       */
-     public static function sanitize_records($records) {
+     public static function sanitize_records($records, $subcategoryparent) {
           $items = array();
 
           if($records) {
@@ -626,7 +635,8 @@ class assessments_details {
                          $item->assessmentname = $record->activityname;
                          $item->assessmenttype = self::return_assessmenttype($record->gradecategoryname);
                          $item->weight = self::return_weight($item->assessmenttype, $record->aggregation,
-                                                             $record->aggregationcoef, $record->aggregationcoef2);
+                                                             $record->aggregationcoef, $record->aggregationcoef2,
+                                                             isset($subcategoryparent->fullname) ? $subcategoryparent->fullname : null);
                          $item->duedate = $record->duedate;
                          $item->formattedduedate = self::return_formattedduedate($record->duedate);
                          $item->hasextension = (!empty($record->hasextension)) ? true : false;
@@ -726,13 +736,14 @@ class assessments_details {
       * @param string $aggregation
       * @param string $aggregationcoef
       * @param string $aggregationcoef2
+      * @param string $subcategoryparentfullname
       * @return string Weight (in percentage), or '—' if empty
       */
-     public static function return_weight($assessmenttype, $aggregation, $aggregationcoef, $aggregationcoef2) {
+     public static function return_weight($assessmenttype, $aggregation, $aggregationcoef, $aggregationcoef2, $subcategoryparentfullname) {
           $summative = get_string('summative', 'block_gu_spdetails');
           $weight = 0;
 
-          if($assessmenttype === $summative) {
+          if($assessmenttype === $summative || $subcategoryparentfullname === $summative) {
                // $aggregation == '10', meaning 'Weighted mean of grades' is used
                $weight = ($aggregation == '10') ?
                          (($aggregationcoef > 1) ? $aggregationcoef : $aggregationcoef * 100) :
