@@ -47,6 +47,7 @@ td > i, th > i {
 .fa-ellipsis-h{
     font-size: 13px;
     margin-left: 2px;
+    cursor: pointer;
 }
 
 th .fa-search, th .fa-ellipsis-h{
@@ -174,18 +175,13 @@ tbody > tr:first-child > td > .multi-select-reason {
 }
 
 /* Grade discrepancy style */
-.grade-discrepancy{
+.grade-discrepancy, .highlighted{
     background-color: rgba(179, 12, 0, 0.49);
     border-radius: 8px;
-    pointer-events: none;    
-}
-
-td > .grade-discrepancy{
+    pointer-events: inherit;
     width: fit-content;
-    padding: 0 5px;
-    height: 32px;
     margin: auto;
-    line-height: 32px;
+    padding: 5px;
 }
 
 .btn.grade-discrepancy{
@@ -218,10 +214,10 @@ td a:hover, .dropdown-item a:hover {
 }
 
 /* Hide submit buttons */
-#release-submit, #importgrades-submit, 
+#release-submit, #importgrades-submit,
 #finalrelease-submit, #downloadcsv-submit,
 #multiadd-submit, #search-submit, #bulk-submit,
-#coursegradeform-submit, .hide-show-grade, 
+#coursegradeform-submit, .hide-show-grade,
 .hide-names, .hidden {
     display: none;
 }
@@ -236,7 +232,7 @@ td a:hover, .dropdown-item a:hover {
 
 .child-select, #btn-blkimport{
     margin: 5px 0 1.5em 0;
-} 
+}
 
 /* Tooltip styles */
 .tooltip.bs-tooltip-top > .arrow::before {
