@@ -36,6 +36,7 @@ $studentid = required_param('studentid', PARAM_INT);
 $cnum = required_param('cnum', PARAM_INT);
 $categoryid = optional_param('categoryid', 0, PARAM_INT);
 $page = optional_param('page', 0, PARAM_INT);  
+$alternativecg = optional_param('alternativecg', null, PARAM_INT);
 $activityid = optional_param('activityid', null, PARAM_INT); 
 $activityid = $activityid == 0 ? null : $activityid;
 
@@ -44,6 +45,7 @@ $urlparams = array('id' => $courseid, 'setting' => $formtype, 'studentid' => $st
 $URL = new moodle_url('/local/gugcat/overview/gradeform/index.php', $urlparams);
 (!is_null($categoryid) && $categoryid != 0) ? $URL->param('categoryid', $categoryid) : null;
 (!is_null($activityid) && $activityid != 0) ? $URL->param('activityid', $activityid) : null;
+!is_null($alternativecg) && $alternativecg != 0 ? $URL->param('alternativecg', $alternativecg) : null; 
 $indexurl = new moodle_url('/local/gugcat/index.php', array('id' => $courseid));
 
 $PAGE->set_url($URL);
@@ -105,6 +107,17 @@ if(!is_null($activityid) && $formtype == OVERRIDE_GRADE_FORM){
     $aggrdobj->display = $subcatgrade->rawgrade;
     $student->aggregatedgrade = $aggrdobj;
 }
+if(!is_null($alternativecg) && $alternativecg != 0){
+    if($alternativecg == 1){
+        $aggrdobj = new stdClass();
+        $aggrdobj->grade = $student->meritgrade->grade;
+        $aggrdobj->rawgrade = $student->meritgrade->rawgrade;
+        $student->aggregatedgrade = $aggrdobj;
+        $student->grades = $student->meritgrade->grades;
+    }else{
+        $student->grades = $student->gpagrade->grades;
+    }
+}
 
 if($formtype == OVERRIDE_GRADE_FORM && $student->aggregatedgrade){
     if(!is_null($activityid)){
@@ -115,6 +128,8 @@ if($formtype == OVERRIDE_GRADE_FORM && $student->aggregatedgrade){
             $scaleid = reset($components) ? reset($components)->scaleid : null;
             local_gugcat::set_grade_scale($scaleid, $student->aggregatedgrade->scale);
         }
+    }else if(!is_null($alternativecg) && $alternativecg != 0){
+        local_gugcat::set_grade_scale(null);
     }else{
         local_gugcat::set_grade_scale(null, $student->aggregatedgrade->scale);
     }
@@ -138,7 +153,12 @@ if ($fromform = $mform->get_data()) {
     if($formtype == OVERRIDE_GRADE_FORM){
         $is_subcat = !is_null($activityid) && isset($subcatactivity) && $subcatactivity->modname == 'category';
         $id = $is_subcat ? $subcatactivity->instance : $categoryid;
-        $itemname = get_string($is_subcat ? 'subcategorygrade' : 'aggregatedgrade', 'local_gugcat');
+        $itemname = null;
+        if(!is_null($alternativecg) && $alternativecg != 0){
+            $itemname = get_string($alternativecg == GPA_GRADE ? 'gpagrade' : 'meritgrade', 'local_gugcat');
+        }else{
+            $itemname = get_string($is_subcat ? 'subcategorygrade' : 'aggregatedgrade', 'local_gugcat');
+        }
         $select = "courseid=$courseid AND itemname='$itemname' AND ".local_gugcat::compare_iteminfo();
         if($gradeitem = $DB->get_record_select('grade_items', $select, ['iteminfo'=>$id], 'id, idnumber')){
             $grade = !is_numeric($fromform->override) ? array_search(strtoupper($fromform->override), local_gugcat::$GRADES) : $fromform->override; 
@@ -155,7 +175,9 @@ if ($fromform = $mform->get_data()) {
                 $convertedgi = local_gugcat::get_grade_item_id($COURSE->id, $subcatactivity->gradeitemid, get_string('convertedgrade', 'local_gugcat'));
                 local_gugcat::update_grade($studentid, $convertedgi, $grade);
             }else{
-                $notes = !$is_subcat ? ",_scale: $gradeitem->idnumber ,_notes: $fromform->notes" : (is_null($scale) ? $fromform->notes : $fromform->notes." ,_scale:$scale");
+                $notes = !is_null($alternativecg) && $alternativecg != 0 ? $fromform->notes 
+                : (!$is_subcat ? ",_scale: $gradeitem->idnumber ,_notes: $fromform->notes" 
+                : (is_null($scale) ? $fromform->notes : $fromform->notes." ,_scale:$scale"));
                 local_gugcat::update_grade($studentid, $gradeitem->id, $grade, $notes, time());
             }
             
