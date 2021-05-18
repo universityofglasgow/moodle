@@ -153,7 +153,18 @@ class assessments_details {
                     if($activetab !== TAB_PAST) {
                          // due date
                          $html .= html_writer::start_tag('td', array('class' => 'td10'));
-                         $html .= $assessment->formattedduedate;
+                         if ($assessment->feedback->issubcategory){
+                              $html .= html_writer::tag('a', $assessment->feedback->feedbacktext,
+                              array('href' => "#assessments-container",
+                                    'class' => 'subcategory-row',
+                                    'data-id' => $assessment->id,
+                                    'data-name' => $assessment->assessmentname,
+                                    'data-course' => $assessment->coursetitle,
+                                    'data-grade' => $assessment->grading->gradetext,
+                                    'data-weight' => $assessment->weight));
+                         }else {
+                              $html .= $assessment->formattedduedate;
+                         }
                          if($assessment->hasextension) {
                               $html .= html_writer::start_span('extended').'*';
                               $html .= html_writer::start_span('extended-tooltip').
@@ -571,7 +582,7 @@ class assessments_details {
                                           ELSE c.fullname END AS coursetitle, gi.itemmodule AS `modname`,
                                           gc.fullname AS `activityname`, gp.fullname AS `gradecategoryname`, gp.aggregation,
                                           gi.aggregationcoef, gi.aggregationcoef2, NULL AS `allowsubmissionsfromdate`,
-                                          NULL AS `duedate`, NULL AS `cutoffdate`, NULL AS `gradingduedate`, NULL AS `hasextension`, gi.gradetype,
+                                          0 AS `duedate`, 0 AS `cutoffdate`, 0 AS `gradingduedate`, NULL AS `hasextension`, gi.gradetype,
                                           CASE WHEN gip.grademin IS NOT NULL THEN gip.grademin ELSE gi.grademin END AS `grademin`,
                                           CASE WHEN gip.grademax IS NOT NULL THEN gip.grademax ELSE gi.grademax END AS `grademax`,
                                           sp.scale AS `scale`,
