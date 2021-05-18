@@ -14,7 +14,7 @@
 {{!
     @template block_gu_spdetails/spdetails
 }}
-<div class="assessments-details-container">
+<div id="assessments-container" class="assessments-details-container">
     <ul id="assessments_details_tabs" class="nav nav-tabs" role="tablist">
         <li class="nav-item">
             <a id="current_tab" class="nav-link h5" data-toggle="tab" role="tab"
@@ -30,4 +30,33 @@
         </li>
     </ul>
     <div id="assessments_details_contents" class="tab-content"></div>
+</div>
+<div id="subcategory-container" class="assessments-details-container">
+    <div id="subcategory-return-assessment" class="return-assessments-container">
+        <div class="return-assessments-img-container">
+            <svg width="20" height="12" viewBox="0 0 20 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M17.2912 1.99499V4.99499H4.12124L7.00124 2.11499C7.39124 1.72499 7.39124 1.09499 7.00124 0.704992C6.81441 0.517739 6.56076 0.412506 6.29624 0.412506C6.03172 0.412506 5.77807 0.517739 5.59124 0.704992L1.00124 5.29499C0.61124 5.68499 0.61124 6.31499 1.00124 6.70499L5.59124 11.295C5.98124 11.685 6.61124 11.685 7.00124 11.295C7.39124 10.905 7.39124 10.275 7.00124 9.88499L4.12124 6.99499H18.2912C18.8412 6.99499 19.2912 6.54499 19.2912 5.99499V1.99499C19.2912 1.44499 18.8412 0.994992 18.2912 0.994992C17.7412 0.994992 17.2912 1.44499 17.2912 1.99499Z" fill="#005C8A"/>
+            </svg>
+        </div>
+        <div class="return-assessments-text">{{tab_asessments}}</div>
+    </div>
+    <div class="subcategory-details-container">
+        <div>
+            <span class="subcategory-details-label">{{label_course}}</span>
+            <span id="subcategory-details-course" class="subcategory-details-value"></span>
+        </div>
+        <div>
+            <span class="subcategory-details-label">{{label_assessment}}</span>
+            <span id="subcategory-details-name" class="subcategory-details-value"></span>
+        </div>
+        <div>
+            <span class="subcategory-details-label">{{label_weight}}</span>
+            <span id="subcategory-details-weight" class="subcategory-details-value"></span>
+        </div>
+        <div>
+            <span class="subcategory-details-label">{{label_grade}}</span>
+            <span id="subcategory-details-grade" class="subcategory-details-grade-value"></span>
+        </div>
+    </div>
+    <div id="subcategory_details_contents" class="tab-content"></div>
 </div>

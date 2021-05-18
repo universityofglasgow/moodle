@@ -8,7 +8,7 @@
 }
 
 .mform-container, .form-container{
-    max-width: 80%;  
+    max-width: 80%;
     padding-left: 1em;
 }
 
@@ -21,7 +21,7 @@
     -moz-appearance: none;
     appearance: none;
     display: block;
-    padding: 0px 15px;
+    padding: 0px 20px 0 10px;
     line-height: 1.75;
     color: #333;
     background-color: #ffffff;
@@ -33,9 +33,10 @@
     outline: none;
 }
 
-.mform-custom-select:not(.has-danger) > div.felement:after {
+.mform-custom-select:not(.has-danger) > div.felement:after,
+.form-group.mform-custom-select-grouped:after {
     content: '\f078';
-    background-color: white;
+    background-color: inherit;
     font: normal normal normal 12px/1 FontAwesome;
     color: #005c8a;
     height: 12px;
@@ -47,7 +48,7 @@
 
 .mform-custom-select.has-danger > div.felement:after {
     content: '\f078';
-    background-color: white;
+    background-color: inherit;
     font: normal normal normal 12px/1 FontAwesome;
     color: #ca3120;
     height: 12px;
@@ -65,19 +66,17 @@
     width: 85%;
 }
 
-.input-percent > div.felement:after {
+.input-percent > [data-fieldtype="text"]:after{
     content: '\f295';
     font: normal normal normal 12px/1 FontAwesome;
     color: #005c8a;
-    position: absolute;
-    left: 62px;
-    top: 38%;
-    height: 34px;
-    padding: 0 8px;
-    pointer-events: none;
+    position: relative;
+    height: 12px;
+    padding: 0px 5px;
+    margin-left: -24px;
 }
 
-.input-percent > div.felement.no-after:after {
+.input-percent > [data-fieldtype="text"].no-after:after{
     content: none;
 }
 
@@ -89,7 +88,7 @@
     width: 150px;
 }
 
-#select-template{
+#select-template, #select-alt-grade{
     width: auto;
 }
 
@@ -115,7 +114,7 @@ textarea#id_notes.form-control {
     }
 }
 
-#id_submitconvertbutton, .fdescription{
+[name="hiddensubmitform"], .fdescription{
     display: none;
 }
 
@@ -137,9 +136,15 @@ abbr > .fa-asterisk {
     color: white;
 }
 
-.mform-container ~ div > div input[type="submit"]:not(input[name="cancel"]), 
+.mform-container ~ div > div input[type="submit"]:not(input[name="cancel"]),
+.mform-container ~ div > div button[name="savealtbutton"],
 .mform-container ~ div > div button[name="convertbutton"] {
     border-color: #005c8a;
     background-color: #005c8a;
     color: white;
+}
+
+label.checkbox-field{
+    width: 160px;
+    justify-content: start;
 }

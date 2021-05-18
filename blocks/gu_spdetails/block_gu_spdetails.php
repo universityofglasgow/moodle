@@ -58,8 +58,13 @@ class block_gu_spdetails extends block_base {
             $this->page->requires->js_call_amd('block_gu_spdetails/main', 'init');
 
             $templatecontext = (array)[
-                'tab_current'   => get_string('tab_current', 'block_gu_spdetails'),
-                'tab_past'      => get_string('tab_past', 'block_gu_spdetails'),
+                'tab_current'       => get_string('tab_current', 'block_gu_spdetails'),
+                'tab_past'          => get_string('tab_past', 'block_gu_spdetails'),
+                'tab_asessments'    => get_string('returnallassessment', 'block_gu_spdetails'),
+                'label_course'      => get_string('label_course', 'block_gu_spdetails'),
+                'label_assessment'  => get_string('label_assessment', 'block_gu_spdetails'),
+                'label_weight'      => get_string('label_weight', 'block_gu_spdetails'),
+                'label_grade'       => get_string('label_grade', 'block_gu_spdetails')
             ];
             $this->content->text = $OUTPUT->render_from_template('block_gu_spdetails/spdetails', $templatecontext);
         }else{

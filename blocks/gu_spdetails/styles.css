@@ -168,3 +168,51 @@
 .assessments-details-container .tab-content .pagination .page-item.active {
     pointer-events: none;
 }
+
+.subcategory-details-container {
+    display: flex;
+    flex-flow: row;
+    flex-basis: auto;
+    width: 100%;
+    font-size: 18px;
+}
+
+.subcategory-details-container > div {
+    width: 100%;
+}
+
+.subcategory-details-label {
+    color: #005C8A;
+    font-weight: bold;
+}
+
+.subcategory-details-value {
+    color: #505057;
+    font-weight: bold;
+}
+
+.subcategory-details-grade-value {
+    color: #006630;
+    font-weight: bold;
+}
+
+.return-assessments-container {
+    display: flex;
+    margin-bottom: 15px;
+    cursor: pointer;
+    width: fit-content;
+}
+
+.return-assessments-img-container {
+    margin-right: 10px;
+}
+
+.return-assessments-text{
+    color: #058;
+    font-weight: 600;
+    font-size: 1.125rem;
+}
+
+.hidden-container{
+    display: none;
+}
