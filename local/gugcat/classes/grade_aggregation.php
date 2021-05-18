@@ -1157,14 +1157,14 @@ class grade_aggregation{
             $altgrdobj->rawgrade = $altggrd;
             return $altgrdobj;
         }else{
-            $gpagrades = array();
+            $allgrades = array();
             $altgrade = null;
             $cap = null;
             foreach ($selectedacts as $item) {
                 $grades = $item->grades;
                 $cap = $is_merit ? null : $item->gpacap;
                 $grd = isset($grades->altgrades[$userid]) ? $grades->altgrades[$userid] : null;
-                $gpagrades[] = is_null($grd) ? null : intval($grd);
+                $allgrades[] = is_null($grd) ? null : intval($grd);
                 if($is_merit){
                     // Only aggregate grades that are:
                     // - not null
@@ -1182,11 +1182,16 @@ class grade_aggregation{
             }
             if($is_merit){
                 // Merit grade
-                $altgrade = $meritsumgrade != 0 ? $meritsumgrade / $meritsumweight : 0;
+                // If selected assessment grades has missing or no grade, display missing grade
+                if(in_array(null, $allgrades, true)){
+                    $altgrade = null;
+                }else{
+                    $altgrade = $meritsumgrade != 0 ? $meritsumgrade / $meritsumweight : 0;
+                }
             }else{
                 // GPA grade
-                // If selected assessment grades has missing or no grade, display aggregated
-                if(in_array(null, $gpagrades, true)){
+                // If selected assessment grades has missing or no grade, display aggregated grade
+                if(in_array(null, $allgrades, true)){
                     $altgrade = $aggrdobj->rawgrade;
                 }else{
                     $cap = (intval($cap) == NON_SUBMISSION) ? -1 : intval($cap - 1);
