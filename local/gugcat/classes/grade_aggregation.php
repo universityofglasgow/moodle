@@ -348,7 +348,7 @@ class grade_aggregation{
                         array_push($meritgradeweights, $gradeweight);
                     }
                     $gradecaptureitem->meritgrade = self::get_alt_grade(true, $meritgi, $selectedmerits, $student->id);
-                    $gradecaptureitem->meritgrade->grades = $meritgradeweights; 
+                    $gradecaptureitem->meritgrade->grades = $meritgradeweights;
                 }
 
                 // GPA grade
@@ -752,6 +752,8 @@ class grade_aggregation{
                 $sum = array_sum($grades);
                 $agg_grade = $sum / $num;
         }
+        $agg_grade = round($agg_grade);
+
         return ($subcatgt == GRADE_TYPE_VALUE)
             ? grade_grade::standardise_score($agg_grade, $subcatgmin, $subcatgmax, 0, 100)
             : $agg_grade;
@@ -1219,7 +1221,7 @@ class grade_aggregation{
             return $altgrdobj;
         }
     }
-    
+
     /**
      *  Returns rows of history of alternative course grades
      *
@@ -1259,7 +1261,7 @@ class grade_aggregation{
                 }
             }
         }
-        
+
         return $rows;
     }
 }
