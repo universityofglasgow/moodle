@@ -348,7 +348,7 @@ class grade_aggregation{
                         array_push($meritgradeweights, $gradeweight);
                     }
                     $gradecaptureitem->meritgrade = self::get_alt_grade(true, $meritgi, $selectedmerits, $student->id);
-                    $gradecaptureitem->meritgrade->grades = $meritgradeweights; 
+                    $gradecaptureitem->meritgrade->grades = $meritgradeweights;
                 }
 
                 // GPA grade
@@ -752,6 +752,8 @@ class grade_aggregation{
                 $sum = array_sum($grades);
                 $agg_grade = $sum / $num;
         }
+        $agg_grade = round($agg_grade);
+
         return ($subcatgt == GRADE_TYPE_VALUE)
             ? grade_grade::standardise_score($agg_grade, $subcatgmin, $subcatgmax, 0, 100)
             : $agg_grade;
@@ -1220,7 +1222,7 @@ class grade_aggregation{
             return $altgrdobj;
         }
     }
-    
+
     /**
      *  Returns rows of history of alternative course grades
      *
@@ -1244,7 +1246,7 @@ class grade_aggregation{
                 foreach($gradehistory_arr as $gradehistory){
                     $grdobj = new stdClass();
                     $grd = !is_null($gradehistory->finalgrade) ? $gradehistory->finalgrade : null;
-                    $grdobj->grade = local_gugcat::convert_grade($grd);
+                    $grdobj->grade = local_gugcat::convert_grade(($gradehistory->overridden != 0 ? $grd : $grd+1));
                     $grdobj->notes = !is_null($gradehistory->feedback) && !empty($gradehistory->feedback) ? $gradehistory->feedback : get_string('systemupdatecreateupdate', 'local_gugcat');
                     $modby = $DB->get_record('user', array('id' => $gradehistory->usermodified), 'firstname, lastname');
                     $grdobj->modby = (isset($modby->lastname) && isset($modby->firstname)) ? $modby->lastname . ', '.$modby->firstname : null;
@@ -1260,7 +1262,7 @@ class grade_aggregation{
                 }
             }
         }
-        
+
         return $rows;
     }
 }
