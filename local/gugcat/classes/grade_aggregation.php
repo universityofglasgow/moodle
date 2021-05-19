@@ -1245,7 +1245,7 @@ class grade_aggregation{
                 foreach($gradehistory_arr as $gradehistory){
                     $grdobj = new stdClass();
                     $grd = !is_null($gradehistory->finalgrade) ? $gradehistory->finalgrade : null;
-                    $grdobj->grade = local_gugcat::convert_grade($grd);
+                    $grdobj->grade = local_gugcat::convert_grade(($gradehistory->overridden != 0 ? $grd : $grd+1));
                     $grdobj->notes = !is_null($gradehistory->feedback) && !empty($gradehistory->feedback) ? $gradehistory->feedback : get_string('systemupdatecreateupdate', 'local_gugcat');
                     $modby = $DB->get_record('user', array('id' => $gradehistory->usermodified), 'firstname, lastname');
                     $grdobj->modby = (isset($modby->lastname) && isset($modby->firstname)) ? $modby->lastname . ', '.$modby->firstname : null;
