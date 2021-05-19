@@ -193,8 +193,19 @@ class assessments_details {
                          $html .= html_writer::tag('td', $assessment->formattedstartdate, array('class' => 'td05'));
                          $html .= html_writer::tag('td', $assessment->formattedenddate, array('class' => 'td05'));
                          $html .= html_writer::start_tag('td', array('class' => 'td15'));
-                         $html .= html_writer::tag('a', get_string('viewsubmission', 'block_gu_spdetails'),
-                                                   array('href' => $assessment->assessmenturl));
+                         if ($assessment->feedback->issubcategory){
+                              $html .= html_writer::tag('a', $assessment->feedback->feedbacktext,
+                                                       array('href' => "#assessments-container",
+                                                                 'class' => 'subcategory-row',
+                                                                 'data-id' => $assessment->id,
+                                                                 'data-name' => $assessment->assessmentname,
+                                                                 'data-course' => $assessment->coursetitle,
+                                                                 'data-grade' => $assessment->grading->gradetext,
+                                                                 'data-weight' => $assessment->weight));
+                         }else {
+                              $html .= html_writer::tag('a', get_string('viewsubmission', 'block_gu_spdetails'),
+                                                       array('href' => $assessment->assessmenturl));
+                         }
                          $html .= html_writer::end_tag('td');
                     }
                     // grade
@@ -589,8 +600,7 @@ class assessments_details {
                                           CASE WHEN gg.finalgrade IS NOT NULL THEN gg.finalgrade WHEN gg.rawgrade IS NOT NULL THEN gg.rawgrade
                                                WHEN ggp.finalgrade IS NOT NULL THEN ggp.finalgrade ELSE ggp.rawgrade END AS `finalgrade`,
                                           gg.information AS gradeinformation, gg.feedback, NULL as `feedbackfiles`, NULL as `hasturnitin`,
-                                          'category' AS `status`, NULL AS `submissions`, NULL AS `quizfeedback`, NULL AS `startdate`,
-                                          NULL AS `enddate`, NULL AS `convertedgradeid`,
+                                          'category' AS `status`, NULL AS `submissions`, NULL AS `quizfeedback`, c.startdate, c.enddate, NULL AS `convertedgradeid`,
                                           CASE WHEN ggp.rawgrade IS NOT NULL THEN ggp.rawgrade ELSE ggp.finalgrade END AS `provisionalgrade`,
                                           gip.idnumber, gip.outcomeid";
                     $subcategoryjoins =  "INNER JOIN {grade_items} AS gi ON (itemtype = 'category' AND iteminstance = gc.id)
@@ -601,8 +611,11 @@ class assessments_details {
                                           LEFT JOIN {grade_grades} AS ggp ON (ggp.itemid = gip.id AND ggp.userid = ?)
                                           LEFT JOIN {scale} AS sp ON (sp.id = CASE WHEN gip.idnumber IS NOT NULL AND NOT gip.idnumber = '' THEN gip.idnumber ELSE gip.outcomeid END)";
                     $subcategorywhere =  "gc.parent IN ($level2idtext) AND gc.fullname != 'DO NOT USE'";
-                    $subcategorysql = "SELECT $subcategoryfields FROM {grade_categories} as gc $subcategoryjoins WHERE $subcategorywhere";
-                    array_push($unionparams, $userid, $userid);
+                    $subcategoryenddate = ($activetab === TAB_CURRENT) ?
+                                             "AND c.enddate + 86400 * 30 > ?" :
+                                             "AND c.enddate  + 86400 * 30 <= ?";
+                    $subcategorysql = "SELECT $subcategoryfields FROM {grade_categories} as gc $subcategoryjoins WHERE $subcategorywhere $subcategoryenddate";
+                    array_push($unionparams, $userid, $userid, $enddate);
                     $unionsql .= " UNION ($subcategorysql)";
                }
                $unionsql .= $orderclause;
