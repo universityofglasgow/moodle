@@ -119,30 +119,25 @@ function xmldb_local_gugcat_upgrade($oldversion) {
         $table_cvt->addIndex($table_cvt_index2);
 
         // Conditionally launch create table for gcat_grade_converter.
-        if($dbman->table_exists($table_cvt)) {
-            $dbman->drop_table($table_cvt);
-        }
-        $dbman->create_table($table_cvt);
-
-        // Gugcat savepoint reached.
-        upgrade_plugin_savepoint(true, 2021041600, 'local', 'gugcat');
-    }
-    if ($oldversion < 2021041601) {
-        $table_cvt = new xmldb_table('gcat_grade_converter');
-        $table_cvt_lowerboundary = new xmldb_field('lowerboundary', XMLDB_TYPE_NUMBER, '10,5', null, XMLDB_NOTNULL, null, '0');
-
-        // Conditionally launch create table for gcat_grade_converter.
-        if($dbman->table_exists($table_cvt)) {
-            if($dbman->field_exists($table_cvt, $table_cvt_lowerboundary)){
-                $dbman->change_field_type($table_cvt, $table_cvt_lowerboundary);
-            }
-        }else{
+        if(!$dbman->table_exists($table_cvt)) {
             $dbman->create_table($table_cvt);
         }
 
         // Gugcat savepoint reached.
+        upgrade_plugin_savepoint(true, 2021041600, 'local', 'gugcat');
+    }
+
+    if ($oldversion < 2021041601) {
+        $table_cvt = new xmldb_table('gcat_grade_converter');
+        $table_cvt_lowerboundary = new xmldb_field('lowerboundary', XMLDB_TYPE_NUMBER, '10,5', null, XMLDB_NOTNULL, null, '0');
+
+        // Change field type for lowerboundary
+        $dbman->change_field_type($table_cvt, $table_cvt_lowerboundary);
+
+        // Gugcat savepoint reached.
         upgrade_plugin_savepoint(true, 2021041601, 'local', 'gugcat');
     }
+
     if ($oldversion < 2021051400) {
 
         // ------- Table gcat_acg_settings starts here --------
@@ -191,19 +186,9 @@ function xmldb_local_gugcat_upgrade($oldversion) {
         $table_acg = new xmldb_table('gcat_acg_settings');
         $table_acg_weight = new xmldb_field('weight', XMLDB_TYPE_NUMBER, '10,5', null, null, null, '0');
         $table_acg_cap = new xmldb_field('cap', XMLDB_TYPE_NUMBER, '10,5', null, null, null, '0');
-
-        // Conditionally launch create table for gcat_grade_converter.
-        if($dbman->table_exists($table_acg)) {
-            // Change the default value for weight and cap fields.
-            if($dbman->field_exists($table_acg, $table_acg_weight)){
-                $dbman->change_field_default($table_acg, $table_acg_weight);
-            }
-            if($dbman->field_exists($table_acg, $table_acg_cap)){
-                $dbman->change_field_default($table_acg, $table_acg_cap);
-            }
-        }else{
-            $dbman->create_table($table_acg);
-        }
+        // Change the default value for weight and cap fields.
+        $dbman->change_field_default($table_acg, $table_acg_weight);
+        $dbman->change_field_default($table_acg, $table_acg_cap);
 
         // Gugcat savepoint reached.
         upgrade_plugin_savepoint(true, 2021051900, 'local', 'gugcat');
