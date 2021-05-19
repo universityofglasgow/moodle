@@ -170,8 +170,8 @@ function xmldb_local_gugcat_upgrade($oldversion) {
         $table_acg->addKey($table_acg_key);
 
         // Adding indexes to table gcat_acg_settings.
-        $table_cvt->addIndex($table_acg_index1);
-        $table_cvt->addIndex($table_acg_index2);
+        $table_acg->addIndex($table_acg_index1);
+        $table_acg->addIndex($table_acg_index2);
 
         // Conditionally launch create table for gcat_acg_settings.
         if (!$dbman->table_exists($table_acg)) {
