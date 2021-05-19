@@ -172,6 +172,7 @@ class grade_aggregation{
             $gradecaptureitem->forename = $student->firstname;
             $gradecaptureitem->idnumber = $student->idnumber;
             $gradecaptureitem->grades = array();
+            $gradecaptureitem->highlightMV = false;
             $floatweight = 0;
             $sumaggregated = 0;
             $calculatedweight = 0;
@@ -267,7 +268,7 @@ class grade_aggregation{
                         $sumaggregated += (float)$grdvalue * $weight_;
                         $calculatedweight += local_gugcat::is_child_activity($item) ? 0 : (float)$weight;
                     }else if(!is_null($grd) && $grade == MEDICAL_EXEMPTION_AC && ($meritgi || $gpagi)){
-                        $errors[-1] = get_string('highlightedmv', 'local_gugcat');
+                        $gradecaptureitem->highlightMV = true;
                     }
                     $get_category = ($item->modname != 'category'
                         && $category = local_gugcat::is_child_activity($item)) ? $category : false;
@@ -349,6 +350,9 @@ class grade_aggregation{
                     }
                     $gradecaptureitem->meritgrade = self::get_alt_grade(true, $meritgi, $selectedmerits, $student->id);
                     $gradecaptureitem->meritgrade->grades = $meritgradeweights;
+                    if($gradecaptureitem->meritgrade->overridden){
+                        $gradecaptureitem->highlightMV = false;
+                    }
                 }
 
                 // GPA grade
@@ -367,12 +371,20 @@ class grade_aggregation{
                     $gradecaptureitem->gpagrade = self::get_alt_grade(false, $gpagi, $selectedgpa, $student->id, $aggrdobj);
                     $gradecaptureitem->gpagrade->gpacap = reset($gpacap);
                     $gradecaptureitem->gpagrade->grades = $gpagrade;
+                    if($gradecaptureitem->meritgrade->overridden){
+                        $gradecaptureitem->highlightMV = false;
+                    }
                 }
             }
             $gradecaptureitem->aggregatedgrade = $aggrdobj;
             array_push($rows, $gradecaptureitem);
             $i++;
         }
+        // Display error for highlighted MV grades
+        if(in_array(true, array_column($rows, 'highlightMV'), true)){
+            $errors[-1] = get_string('highlightedmv', 'local_gugcat');
+        }
+
         // Save aggregated grade scale type for course grade history
         if($aggradeid && !is_null($aggrdscaletype)){
             $DB->set_field('grade_items', 'idnumber', $aggrdscaletype, array('id' => $aggradeid));
@@ -1158,6 +1170,7 @@ class grade_aggregation{
         $meritsumgrade = 0;
         $meritsumweight = 0;
         $altgrdobj = new stdClass();
+        $altgrdobj->overridden = false;
         $altgg = $DB->get_record('grade_grades', array('itemid'=>$itemid, 'userid'=>$userid));
         $altggrd = !$altgg ? null : (!is_null($altgg->finalgrade)
             ? $altgg->finalgrade : $altgg->rawgrade);
@@ -1166,6 +1179,7 @@ class grade_aggregation{
         if($altgg && $altgg->overridden != 0){
             $altgrdobj->grade = $altggrd ? local_gugcat::convert_grade($altggrd) : get_string('missinggrade', 'local_gugcat');
             $altgrdobj->rawgrade = $altggrd;
+            $altgrdobj->overridden = true;
             return $altgrdobj;
         }else{
             $allgrades = array();

@@ -341,7 +341,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
                 $courseformhistoryparams = "?id=$courseid&cnum=$row->cnum&page=$page" . $gradeformhistorycategory;
                 $gradecell = $grade->grade.((strpos($grade->grade, 'No grade') !== false) || (strpos($grade->grade, 'Missing') !== false)
                 ? null : ($grade->is_imported ? $this->context_actions($row->studentno, null, ($grade->is_subcat ? true : false), $ammendgradeparams, true) : null));
-                $gradeui = ($grade->grade == MEDICAL_EXEMPTION_AC && ($merit_exists || $gpa_exists))
+                $gradeui = ($row->highlightMV && $grade->grade == MEDICAL_EXEMPTION_AC && ($merit_exists || $gpa_exists))
                     ? html_writer::tag('div', $gradecell, array('class' => 'highlighted'))
                     : $gradecell;
                 $htmlrows .= html_writer::tag('td', $gradeui, $datacategory);
@@ -354,13 +354,13 @@ class local_gugcat_renderer extends plugin_renderer_base {
             $htmlrows .= ($row->aggregatedgrade->display != get_string('missinggrade', 'local_gugcat'))
             ? html_writer::tag('td', $row->aggregatedgrade->display.$this->context_actions($row->studentno, null, true, $courseformhistoryparams, true))
             : html_writer::tag('td', $row->aggregatedgrade->display);
-            $row->meritgrade ? $htmlrows .= ($row->meritgrade->grade != get_string('missinggrade', 'local_gugcat') 
+            $row->meritgrade ? $htmlrows .= ($row->meritgrade->grade != get_string('missinggrade', 'local_gugcat')
             ? html_writer::tag('td', $row->meritgrade->grade.$this->context_actions($row->studentno, null, true, $courseformhistoryparams.'&alternativecg=1', true))
             : html_writer::tag('td', $row->meritgrade->grade)) : null;
             if($row->meritgrade && !$displaymerit){
                 $displaymerit = true;
             }
-            $row->gpagrade ? $htmlrows .= ($row->gpagrade->grade != get_string('missinggrade', 'local_gugcat') 
+            $row->gpagrade ? $htmlrows .= ($row->gpagrade->grade != get_string('missinggrade', 'local_gugcat')
             ? html_writer::tag('td', $row->gpagrade->grade.$this->context_actions($row->studentno, null, true, $courseformhistoryparams.'&alternativecg=2', true))
             : html_writer::tag('td', $row->gpagrade->grade)) : null;
             if($row->gpagrade && !$displaygpa){
@@ -424,7 +424,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $acg = optional_param('alternativecg', null, PARAM_INT);
         $html = $this->header();
         $html .= $this->render_from_template('local_gugcat/gcat_form_details', (object)[
-            'title' =>get_string(($setting != 0 ? (!is_null($activityid) ? 'overridestudassgrade' : (is_null($acg) ? 'overridestudgrade' 
+            'title' =>get_string(($setting != 0 ? (!is_null($activityid) ? 'overridestudassgrade' : (is_null($acg) ? 'overridestudgrade'
             : ($acg == 1 ? 'overridestudmeritgrade' : 'overridestudgpagrade'))) : 'adjustcourseweight'), 'local_gugcat'),
             'student' => $student,
             'blindmarking'=> !local_gugcat::is_blind_marking() ? true : null
@@ -619,7 +619,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
 
     /**
      * Renders display of alternative course grade history page
-     * 
+     *
      * @param array $rows
      * @param mixed $student user info of the student
      */
