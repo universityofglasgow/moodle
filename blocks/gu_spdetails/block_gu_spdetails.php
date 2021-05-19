@@ -46,15 +46,15 @@ class block_gu_spdetails extends block_base {
      */
     public function get_content() {
         global $USER, $OUTPUT;
-        
+
         if ($this->content !== null) {
             return $this->content;
         }
 
         $this->content = new stdClass();
 
-        if(!empty($this->return_enrolledcourses($USER->id))) {
-            // call JS
+        if (!empty($this->return_enrolledcourses($USER->id))) {
+            // Call JS.
             $this->page->requires->js_call_amd('block_gu_spdetails/main', 'init');
 
             $templatecontext = (array)[
@@ -67,7 +67,7 @@ class block_gu_spdetails extends block_base {
                 'label_grade'       => get_string('label_grade', 'block_gu_spdetails')
             ];
             $this->content->text = $OUTPUT->render_from_template('block_gu_spdetails/spdetails', $templatecontext);
-        }else{
+        } else {
             $this->content->text = null;
         }
 
@@ -76,7 +76,7 @@ class block_gu_spdetails extends block_base {
 
     /**
      * Returns enrolled courses with enabled 'show_on_studentdashboard' custom field
-     * 
+     *
      * @param string $userid
      * @param string $fields
      * @return array Array of Course IDs
@@ -98,15 +98,15 @@ class block_gu_spdetails extends block_base {
         $param = array($userid);
         $results = $DB->get_records_sql($sql, $param);
 
-        if($results) {
+        if ($results) {
             $studentcourses = array();
-            foreach($results as $courseid => $courseobject) {
-                if($this->return_isstudent($courseid)) {
+            foreach ($results as $courseid => $courseobject) {
+                if ($this->return_isstudent($courseid)) {
                     array_push($studentcourses, $courseid);
                 }
             }
             return $studentcourses;
-        }else{
+        } else {
             return array();
         }
     }
