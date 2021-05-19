@@ -96,8 +96,8 @@ function xmldb_local_gugcat_upgrade($oldversion) {
     $table_acg_id = new xmldb_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
     $table_acg_acgid = new xmldb_field('acgid', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
     $table_acg_itemid = new xmldb_field('itemid', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
-    $table_acg_weight = new xmldb_field('weight', XMLDB_TYPE_NUMBER, '10,5', null, null, null, null);
-    $table_acg_cap = new xmldb_field('cap', XMLDB_TYPE_NUMBER, '10,5', null, null, null, null);
+    $table_acg_weight = new xmldb_field('weight', XMLDB_TYPE_NUMBER, '10,5', null, null, null, '0');
+    $table_acg_cap = new xmldb_field('cap', XMLDB_TYPE_NUMBER, '10,5', null, null, null, '0');
 
     // Define keys to table gcat_acg_settings.
     $table_acg_key = new xmldb_key('primary', XMLDB_KEY_PRIMARY, array('id'));
@@ -184,6 +184,25 @@ function xmldb_local_gugcat_upgrade($oldversion) {
 
         // Gugcat savepoint reached.
         upgrade_plugin_savepoint(true, 2021051400, 'local', 'gugcat');
+    }
+
+    if ($oldversion < 2021051900) {
+
+        // Conditionally launch create table for gcat_grade_converter.
+        if($dbman->table_exists($table_acg)) {
+            // Change the default value for weight and cap fields.
+            if($dbman->field_exists($table_acg, $table_acg_weight)){
+                $dbman->change_field_default($table_acg, $table_acg_weight);
+            }
+            if($dbman->field_exists($table_acg, $table_acg_cap)){
+                $dbman->change_field_default($table_acg, $table_acg_cap);
+            }
+        }else{
+            $dbman->create_table($table_cvt);
+        }
+
+        // Gugcat savepoint reached.
+        upgrade_plugin_savepoint(true, 2021051900, 'local', 'gugcat');
     }
 
     return true;
