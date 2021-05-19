@@ -575,9 +575,11 @@ class assessments_details {
                $orderclause = " ORDER BY $sortby $sortorder";
                $unionsql = "($assignsql) UNION ($forumsql) UNION ($quizsql) UNION ($workshopsql)";
                $unionparams = array_merge($assignparams, $forumparams, $quizparams, $workshopparams);
-               if(!$issubcategory){
+               if(!$issubcategory && sizeof($level2ids) > 0){
                     $level2idtext = implode(', ', $level2ids);
-                    $subcategoryfields = "gc.id, gc.courseid, c.fullname AS coursetitle, gi.itemmodule AS `modname`,
+                    $topicnames = self::get_topicname($level2idtext);
+                    $coursetitle = self::generate_topicname_case_statement($topicnames);
+                    $subcategoryfields = "gc.id, gc.courseid, $coursetitle, gi.itemmodule AS `modname`,
                                           gc.fullname AS `activityname`, gp.fullname AS `gradecategoryname`, gp.aggregation,
                                           gi.aggregationcoef, gi.aggregationcoef2, NULL AS `allowsubmissionsfromdate`,
                                           0 AS `duedate`, 0 AS `cutoffdate`, 0 AS `gradingduedate`, NULL AS `hasextension`, gi.gradetype,
@@ -620,7 +622,6 @@ class assessments_details {
       * @param string $coursetitle
       * @return string $coursetitle || $topicname
       */
-
      public static function get_topicname_category($categoryid, $coursetitle){
           global $DB;
 
@@ -649,6 +650,58 @@ class assessments_details {
      }
 
      /**
+      * Returns Topic names and Subcategories
+      *
+      * @param string $level2idtext
+      * @return array $topicnames
+      */
+     public static function get_topicname($level2idtext){
+          global $DB;
+
+          // get subcategories
+          $sql = "SELECT gc.id, c.fullname
+                  FROM {grade_categories} as gc
+                  LEFT JOIN {course} as c ON (gc.courseid = c.id)
+                    WHERE
+                    gc.parent IN ($level2idtext)
+                    AND gc.fullname != 'DO NOT USE'";
+          $subcategories = $DB->get_records_sql($sql);
+
+          if($subcategories){
+               $topicnames = array();
+               foreach($subcategories as $subcategory){
+                    $name = self::get_topicname_category($subcategory->id, $subcategory->fullname);
+                    $topicelement = new stdClass;
+                    $topicelement->id = $subcategory->id;
+                    $topicelement->text = $name;
+                    array_push($topicnames, $topicelement);
+               }
+               return $topicnames;
+          } else {
+               return array();
+          }
+     }
+
+     /**
+      * Returns Generated Case Statement
+      *
+      * @param array $topicnames
+      * @return string $casestatement
+      */
+     public static function generate_topicname_case_statement($topicnames){
+          if(sizeof($topicnames) > 0){
+               $casestatement = "CASE ";
+               foreach($topicnames as $topicelement){
+                    $casestatement .= "WHEN gc.id = $topicelement->id THEN '$topicelement->text' ";
+               }
+               $casestatement .= "ELSE c.fullname END AS coursetitle";
+               return $casestatement;
+          } else {
+               return "c.fullname AS coursetitle";
+          }
+     }
+
+     /**
       * Returns sanitized data based from query results
       *
       * @param array $records
@@ -669,8 +722,7 @@ class assessments_details {
                     if($iscmvisible) {
                          $item = new stdClass;
                          $item->id = $record->id;
-                         $item->coursetitle = $record->status === 'category' ? self::get_topicname_category($record->id, $record->coursetitle)
-                                                                             : $record->coursetitle;
+                         $item->coursetitle = $record->coursetitle;
                          $item->courseurl = self::return_courseurl($record->courseid);
                          $item->assessmenturl = self::return_assessmenturl($record->id, $record->modname);
                          $item->assessmentname = $record->activityname;
