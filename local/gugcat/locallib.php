@@ -1228,7 +1228,7 @@ class local_gugcat {
 
      /**
      * Normalize grades from gradebook to gcat (+1)
-     * @param mixed $gradeobj Grade object item from grade_get_grades function
+     * @param mixed object | string $gradeobj Grade object item from grade_get_grades function
      * @return mixed |null
      */
     public static function normalize_gcat_grades($gradeobj){
@@ -1247,13 +1247,15 @@ class local_gugcat {
             $grade = $gradeobj->grade;
             $str = $gradeobj->str_grade;
             $gradeobj->grade = array_search($str, $schedB) ? array_search($str, $schedB) : $grade;
-        }else if(isset($gradeobj) && !isset($gradeobj->str_grade)){
+        }else if(isset($gradeobj) && !isset($gradeobj->str_grade) && is_object($gradeobj)){
             $grade = $gradeobj->grade;
             if(!is_null(local_gugcat::$GRADES) && reset(local_gugcat::$GRADES) == 'A0'){
                 $str = grade_converter::convert($schedB, $grade, true);
                 $gradeobj->grade = array_search($str, $schedB) ? array_search($str, $schedB) : $grade;
             }
             $gradeobj->feedback = null;
+        }else if(isset($gradeobj) && is_string($gradeobj)){
+            $gradeobj = array_search($gradeobj, $schedB);
         }
         return $gradeobj;
     }

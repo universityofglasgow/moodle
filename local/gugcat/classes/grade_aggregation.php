@@ -211,8 +211,6 @@ class grade_aggregation{
                             $errors[$item->gradeitemid] = $error;
                         }
                     }
-
-                    $grades->altgrades[$student->id] = $grd;
                     $gt = $item->gradeitem->gradetype;
                     $gm = $item->gradeitem->grademax;
                     $scaleid = is_null($item->scaleid) ? null : $item->scaleid;
@@ -241,6 +239,13 @@ class grade_aggregation{
                     if($item->is_converted && !is_null($grd)){
                         $grade = local_gugcat::convert_grade($grd, null, $item->is_converted);
                     }
+
+                    // Normalize sched B grades
+                    $grd = local_gugcat::normalize_gcat_grades($grade) ? local_gugcat::normalize_gcat_grades($grade) : $grd;
+
+                    // Pass final $grd to altgrades
+                    $grades->altgrades[$student->id] = $grd;
+
                     // Get weight from gradebook if adjusted weight in $pg->information is null
                     $weight = local_gugcat::is_child_activity($item) ? 0
                     : (!is_null($pg) && !is_null($pg->information) ? (float)$pg->information : $item->weight);
