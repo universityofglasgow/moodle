@@ -397,12 +397,12 @@ class grade_capture{
                 }
             }
 
-            $studentids = implode(array_keys($students), ',');
+            $studentids = implode(',', array_keys($students));
             $selectag = "itemid = $aggradeid AND userid in ( $studentids )";
             $DB->set_field_select('grade_grades', 'overridden', 0, $selectag);
             // Every time import is clicked, reset weights in provisional grade > grade_grades information  to null, and overridden subcategory grades.
             $selectpg = "itemid = $prvid_reset AND userid in ( $studentids )";
-            $DB->set_field_select('grade_grades', 'information', 0, $selectpg);
+            $DB->set_field_select('grade_grades', 'information', null, $selectpg);
 
             if(local_gugcat::is_child_activity($module)){
                 $DB->set_field_select('grade_grades', 'overridden', 0, $selectpg);
