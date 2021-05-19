@@ -694,7 +694,7 @@ class assessments_details {
                 $name = self::get_topicname_category($subcategory->id, $subcategory->fullname);
                 $topicelement = new stdClass;
                 $topicelement->id = $subcategory->id;
-                $topicelement->text = $name;
+                $topicelement->text = addslashes($name);
                 array_push($topicnames, $topicelement);
             }
             return $topicnames;
