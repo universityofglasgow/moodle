@@ -1230,11 +1230,10 @@ class grade_aggregation{
      * @param mixed $student
      * @return array $rows
      */
-    public static function acg_grade_history($course, $student){
+    public static function acg_grade_history($course, $student, $acg){
         global $DB;
 
         $categoryid = optional_param('categoryid', 0, PARAM_INT);
-        $acg = optional_param('alternativecg', null, PARAM_INT);
         local_gugcat::set_grade_scale(null);
         $rows = array();
         $acgid = local_gugcat::get_grade_item_id($course->id, $categoryid, get_string($acg == 1 ? 'meritgrade' : 'gpagrade', 'local_gugcat'));
