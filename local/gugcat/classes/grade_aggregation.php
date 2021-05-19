@@ -172,6 +172,7 @@ class grade_aggregation{
             $gradecaptureitem->forename = $student->firstname;
             $gradecaptureitem->idnumber = $student->idnumber;
             $gradecaptureitem->grades = array();
+            $gradecaptureitem->highlightMV = false;
             $floatweight = 0;
             $sumaggregated = 0;
             $calculatedweight = 0;
@@ -267,7 +268,7 @@ class grade_aggregation{
                         $sumaggregated += (float)$grdvalue * $weight_;
                         $calculatedweight += local_gugcat::is_child_activity($item) ? 0 : (float)$weight;
                     }else if(!is_null($grd) && $grade == MEDICAL_EXEMPTION_AC && ($meritgi || $gpagi)){
-                        $errors[-1] = get_string('highlightedmv', 'local_gugcat');
+                        $gradecaptureitem->highlightMV = true;
                     }
                     $get_category = ($item->modname != 'category'
                         && $category = local_gugcat::is_child_activity($item)) ? $category : false;
@@ -285,7 +286,7 @@ class grade_aggregation{
                     $grdobj->originalweight = round((float)$item->weight * 100);
                     $grdobj->rawgrade = $grdvalue;
                     $grdobj->weight =  round((float)$weight * 100 );
-                    array_push($gradecaptureitem->grades, $grdobj);
+                    $gradecaptureitem->grades[$grdobj->activityid] = $grdobj;
                 }
                 $sumaggregated = $sumaggregated != 0 ? $sumaggregated / $calculatedweight : $sumaggregated;
                 $totalweight = round((float)$floatweight * 100 );
@@ -334,6 +335,7 @@ class grade_aggregation{
 
                 // Merit grade
                 if($meritgi && $meritsettings){
+                    $meritgradeweights = array();
                     $ids = array_column($meritsettings, 'itemid');
                     $weights = array_column($meritsettings, 'weight', 'itemid');
 
@@ -342,12 +344,20 @@ class grade_aggregation{
                     });
                     foreach ($selectedmerits as $item) {
                         $item->meritweight = $weights[$item->gradeitemid];
+                        $gradeweight = $gradecaptureitem->grades[$item->gradeitemid];
+                        $gradeweight->weight = intval($weights[$item->gradeitemid]);
+                        array_push($meritgradeweights, $gradeweight);
                     }
                     $gradecaptureitem->meritgrade = self::get_alt_grade(true, $meritgi, $selectedmerits, $student->id);
+                    $gradecaptureitem->meritgrade->grades = $meritgradeweights;
+                    if($gradecaptureitem->meritgrade->overridden){
+                        $gradecaptureitem->highlightMV = false;
+                    }
                 }
 
                 // GPA grade
                 if($gpagi && $gpasettings){
+                    $gpagrade = array();
                     $ids = array_column($gpasettings, 'itemid');
                     $gpacap = array_column($gpasettings, 'cap', 'itemid');
 
@@ -356,14 +366,25 @@ class grade_aggregation{
                     });
                     foreach ($selectedgpa as $item) {
                         $item->gpacap = $gpacap[$item->gradeitemid];
+                        array_push($gpagrade, $gradecaptureitem->grades[$item->gradeitemid]);
                     }
                     $gradecaptureitem->gpagrade = self::get_alt_grade(false, $gpagi, $selectedgpa, $student->id, $aggrdobj);
+                    $gradecaptureitem->gpagrade->gpacap = reset($gpacap);
+                    $gradecaptureitem->gpagrade->grades = $gpagrade;
+                    if($gradecaptureitem->meritgrade->overridden){
+                        $gradecaptureitem->highlightMV = false;
+                    }
                 }
             }
             $gradecaptureitem->aggregatedgrade = $aggrdobj;
             array_push($rows, $gradecaptureitem);
             $i++;
         }
+        // Display error for highlighted MV grades
+        if(in_array(true, array_column($rows, 'highlightMV'), true)){
+            $errors[-1] = get_string('highlightedmv', 'local_gugcat');
+        }
+
         // Save aggregated grade scale type for course grade history
         if($aggradeid && !is_null($aggrdscaletype)){
             $DB->set_field('grade_items', 'idnumber', $aggrdscaletype, array('id' => $aggradeid));
@@ -743,6 +764,8 @@ class grade_aggregation{
                 $sum = array_sum($grades);
                 $agg_grade = $sum / $num;
         }
+        $agg_grade = round($agg_grade);
+
         return ($subcatgt == GRADE_TYPE_VALUE)
             ? grade_grade::standardise_score($agg_grade, $subcatgmin, $subcatgmax, 0, 100)
             : $agg_grade;
@@ -1148,14 +1171,16 @@ class grade_aggregation{
         $meritsumgrade = 0;
         $meritsumweight = 0;
         $altgrdobj = new stdClass();
+        $altgrdobj->overridden = false;
         $altgg = $DB->get_record('grade_grades', array('itemid'=>$itemid, 'userid'=>$userid));
         $altggrd = !$altgg ? null : (!is_null($altgg->finalgrade)
             ? $altgg->finalgrade : $altgg->rawgrade);
         local_gugcat::set_grade_scale(null);
         // If merit grade is overridden
         if($altgg && $altgg->overridden != 0){
-            $altgrdobj->grade = $altggrd ? local_gugcat::convert_grade($altggrd + 1) : get_string('missinggrade', 'local_gugcat');
+            $altgrdobj->grade = $altggrd ? local_gugcat::convert_grade($altggrd) : get_string('missinggrade', 'local_gugcat');
             $altgrdobj->rawgrade = $altggrd;
+            $altgrdobj->overridden = true;
             return $altgrdobj;
         }else{
             $allgrades = array();
@@ -1210,5 +1235,47 @@ class grade_aggregation{
             $altgrdobj->rawgrade = $altgrade;
             return $altgrdobj;
         }
+    }
+
+    /**
+     *  Returns rows of history of alternative course grades
+     *
+     * @param mixed $course
+     * @param mixed $student
+     * @return array $rows
+     */
+    public static function acg_grade_history($course, $student, $acg){
+        global $DB;
+
+        $categoryid = optional_param('categoryid', 0, PARAM_INT);
+        local_gugcat::set_grade_scale(null);
+        $rows = array();
+        $acgid = local_gugcat::get_grade_item_id($course->id, $categoryid, get_string($acg == 1 ? 'meritgrade' : 'gpagrade', 'local_gugcat'));
+        if($acgid){
+            $fields = 'id, itemid, rawgrade, finalgrade, feedback, timemodified, usermodified';
+            $select = "rawgrade IS NOT NULL AND itemid=$acgid AND userid='$student->id'";
+            $gradehistory_arr = $DB->get_records_select('grade_grades_history', $select, null, $fields);
+            if($gradehistory_arr>0){
+                foreach($gradehistory_arr as $gradehistory){
+                    $grdobj = new stdClass();
+                    $grd = !is_null($gradehistory->finalgrade) ? $gradehistory->finalgrade : null;
+                    $grdobj->grade = local_gugcat::convert_grade(($gradehistory->overridden != 0 ? $grd : $grd+1));
+                    $grdobj->notes = !is_null($gradehistory->feedback) && !empty($gradehistory->feedback) ? $gradehistory->feedback : get_string('systemupdatecreateupdate', 'local_gugcat');
+                    $modby = $DB->get_record('user', array('id' => $gradehistory->usermodified), 'firstname, lastname');
+                    $grdobj->modby = (isset($modby->lastname) && isset($modby->firstname)) ? $modby->lastname . ', '.$modby->firstname : null;
+                    $grdobj->date = date("j/n/y", strtotime(userdate($gradehistory->timemodified))).'<br>'.date("h:i", strtotime(userdate($gradehistory->timemodified)));
+                    $grdobj->type = get_string($gradehistory->overridden != 0 ? 'gradeoverridden' : 'systemupdate', 'local_gugcat');
+                    $grdobj->timemodified = $gradehistory->timemodified;
+                    array_push($rows, $grdobj);
+
+                    //sort array by timemodified
+                    usort($rows,function($first,$second){
+                        return $first->timemodified < $second->timemodified;
+                    });
+                }
+            }
+        }
+
+        return $rows;
     }
 }

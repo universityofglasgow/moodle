@@ -23,13 +23,13 @@
  * @author     Accenture
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+defined('MOODLE_INTERNAL') || die();
+
 namespace local_gugcat;
 require_once($CFG->dirroot . '/local/gugcat/locallib.php');
 
 use context_course;
 use local_gugcat;
-
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Class containing helper methods for processing data requests.
@@ -67,8 +67,8 @@ class api {
      */
     public static function get_converter_template_data($templateid) {
         global $DB, $USER;
-        $template = $DB->get_record('gcat_converter_templates', array('id'=>$templateid, 'userid'=>$USER->id));
-        ($template) ? $template->conversion = $DB->get_records('gcat_grade_converter', array('templateid'=>$templateid)) : null;
+        $template = $DB->get_record('gcat_converter_templates', array('id' => $templateid, 'userid' => $USER->id));
+        ($template) ? $template->conversion = $DB->get_records('gcat_grade_converter', array('templateid' => $templateid)) : null;
         return ($template) ? json_encode($template) : false;
     }
 }
