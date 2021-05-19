@@ -384,16 +384,18 @@ class grade_capture{
 
                 //for assessment grade history
                 $notes = ',_gradeitem: '. get_string('moodlegrade', 'local_gugcat');
-                local_gugcat::add_update_grades($student->id, $mggradeitemid, $grade);
                 if($module->is_converted){
+                    // Update moodle grade only
+                    local_gugcat::add_update_grades($student->id, $mggradeitemid, $grade, null, false);
                     // Convert grade
                     $cg = grade_converter::convert($conversion, $grade);
                     // Update provisional grade with converted grade
-                    local_gugcat::add_update_grades($student->id, local_gugcat::$PRVGRADEID, $cg, $notes);
+                    local_gugcat::add_update_grades($student->id, local_gugcat::$PRVGRADEID, $cg, $notes, false);
                     // Update converted grade item
                     local_gugcat::update_grade($student->id, $convertedgi, $grade);
                 }else{
-                    local_gugcat::add_update_grades($student->id, local_gugcat::$PRVGRADEID, $grade, $notes);
+                    // Update moodle and provisional grade
+                    local_gugcat::add_update_grades($student->id, $mggradeitemid, $grade, $notes);
                 }
             }
 

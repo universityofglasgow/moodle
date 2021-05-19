@@ -302,6 +302,7 @@ class local_gugcat {
      * @param string $itemname
      */
     public static function add_grade_item($courseid, $itemname, $mod, $students_ = null){
+        global $DB;
         // Get all students ids if students_ param is null
         $students = is_null($students_)
         ? get_enrolled_users(context_course ::instance($courseid), 'local/gugcat:gradable', 0, 'u.id')
@@ -324,9 +325,12 @@ class local_gugcat {
                 return $gradeitem->id;
             }else{
                 $gradeitemid = $gradeitem->insert();
+                // Create new grade_grades for each student
+                $gradegrades = array();
                 foreach($students as $student){
-                    local_gugcat::add_update_grades($student->id, $gradeitemid, null);
+                    $gradegrades[] = new grade_grade(array('userid' => $student->id, 'itemid' => $gradeitemid));
                 }
+                $DB->insert_records('grade_grades', $gradegrades);
                 return $gradeitemid;
             }
         }else{
@@ -340,12 +344,15 @@ class local_gugcat {
                     'iteminfo' => $mod->gradeitemid,
                     'itemname' => $itemname
                 ];
-                // create new gradeitem
+                // Create new gradeitem
                 $gradeitem = new grade_item(array_merge($params, $params_mod));
                 $gradeitemid = $gradeitem->insert();
+                // Create new grade_grades for each student
+                $gradegrades = array();
                 foreach($students as $student){
-                    self::add_update_grades($student->id, $gradeitemid, null);
+                    $gradegrades[] = new grade_grade(array('userid' => $student->id, 'itemid' => $gradeitemid));
                 }
+                $DB->insert_records('grade_grades', $gradegrades);
                 return $gradeitemid;
             }else {
                 return $gradeitemid;
@@ -360,8 +367,9 @@ class local_gugcat {
      * @param int $grade
      * @param mixed $notes
      * @param mixed $gradedocs
+     * @param boolean $updateprovisional
      */
-    public static function add_update_grades($userid, $itemid, $grade, $notes = null){
+    public static function add_update_grades($userid, $itemid, $grade, $notes = null, $updateprovisional = true){
         global $USER, $DB;
 
         $params = array(
@@ -385,9 +393,9 @@ class local_gugcat {
             $grade_->timemodified = time();
             //if insert successful - update provisional grade
             return (!$grade_->insert()) ? false :
-            ((self::$PRVGRADEID && !is_null($grade))
+            (($updateprovisional && self::$PRVGRADEID && !is_null($grade))
             ? self::update_grade($userid, self::$PRVGRADEID, $grade, $notes)
-            : false);
+            : true);
 
         }else{
             //updates grade objects in database
@@ -396,7 +404,11 @@ class local_gugcat {
             if($grade_->update()){
                 //update timemodified of grade item
                 $DB->set_field('grade_items', 'timemodified', $grade_->timemodified, array('id' => $itemid));
-                return self::update_grade($userid, self::$PRVGRADEID, $grade, $notes);
+                if($updateprovisional && self::$PRVGRADEID){
+                    return self::update_grade($userid, self::$PRVGRADEID, $grade, $notes);
+                }else{
+                    return true;
+                }
             }
             return false;
         }
