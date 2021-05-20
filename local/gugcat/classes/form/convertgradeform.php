@@ -103,7 +103,7 @@ class convertform extends moodleform {
         $mform->addElement('html', html_writer::tag('div', null, array('class' => 'col')));
         $mform->addElement('html', html_writer::end_tag('div'));
 
-        $mform->addElement('html', html_writer::tag('p', get_string('noteconversion', 'local_gugcat'), array('class' => 'mt-3 font-weight-bold')));
+        $mform->addElement('html', html_writer::empty_tag('br'));
 
         $mform->addElement('text', 'templatename', get_string('pleaseprovidetemplatename', 'local_gugcat'), array('size' => '50', 'maxlength' => '50'));
         $mform->addRule('templatename', null, 'maxlength', 50, 'client');
