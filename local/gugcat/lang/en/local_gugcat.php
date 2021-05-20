@@ -127,7 +127,6 @@ $string['nograde'] = 'Pending information';
 $string['nograderecorded'] = 'No grade recorded';
 $string['nogradeimport'] = 'Awaiting Grade Import';
 $string['nogradeweight'] = 'N/A';
-$string['noteconversion'] = 'Please note that once conversion has taken place, it will not be possible to release assessment grades to students via Moodle or the Student Dashboard';
 $string['notes'] = 'Notes';
 $string['overrideerror'] = 'Override error: Assessment is not yet imported to GCAT.';
 $string['overridegrade'] = 'Override grade';
