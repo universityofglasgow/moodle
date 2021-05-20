@@ -213,21 +213,13 @@ class grade_capture{
      */
     public static function release_prv_grade($courseid, $cm){
         global $USER, $CFG, $DB;
-        $data = new stdClass();
-        $data->courseid = $courseid;
-        $data->itemmodule = $cm->modname;
-        $data->itemname = $cm->name;
-        $data->iteminstance = $cm->instance;
         $gradeitemid = $cm->gradeitem->id;
-
-        //set offset value for max 22 points grade
-        $gradescaleoffset = (local_gugcat::is_scheduleAscale($cm->gradeitem->gradetype, $cm->gradeitem->grademax)) ? 1 : 0;
 
         //Retrieve enrolled students' ids only
         $students = get_enrolled_users(context_course ::instance($courseid), 'local/gugcat:gradable', 0, 'u.id');
 
         //get grade item
-        $gradeitem = new grade_item($data, true);
+        $gradeitem = $cm->gradeitem;
         if($cm->modname === 'assign'){
             require_once($CFG->dirroot . '/mod/assign/locallib.php');
             $assign = new assign(context_module::instance($cm->id), $cm, $courseid);
@@ -236,7 +228,9 @@ class grade_capture{
         foreach ($students as $student)  {
             //get provisional grade_grade by user id
             $fields = 'rawgrade, finalgrade, hidden';
-            if($prvgrd = $DB->get_record('grade_grades', array('itemid'=>local_gugcat::$PRVGRADEID, 'userid' => $student->id), $fields)){
+            $itemid = $cm->is_converted ? local_gugcat::get_grade_item_id($courseid, $gradeitemid, get_string('convertedgrade', 'local_gugcat'))
+                : local_gugcat::$PRVGRADEID;
+            if($prvgrd = $DB->get_record('grade_grades', array('itemid'=>$itemid, 'userid' => $student->id), $fields)){
                 $grd = is_null($prvgrd->finalgrade) ? $prvgrd->rawgrade : $prvgrd->finalgrade;
                 $hidden = $prvgrd->hidden;
 
@@ -262,9 +256,9 @@ class grade_capture{
                             $is_admingrade = false;
                             $feedback = null;
                             $excluded = 0;
-                            $rawgrade = $rawgrade - $gradescaleoffset;
                             break;
                     }
+
                     //update feedback and excluded field
                     $DB->set_field_select('grade_grades', 'feedback', $feedback, $select);
                     $DB->set_field_select('grade_grades', 'excluded', $excluded, $select);
