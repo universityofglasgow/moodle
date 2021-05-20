@@ -15,15 +15,15 @@
 
 /**
  * Javascript to initialise the Student Dashboard - Assessments Details block
- * 
+ *
  * @package    block_gu_spdetails
  * @copyright  2021 Accenture
  * @author     Franco Louie Magpusao <franco.l.magpusao@accenture.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
- define(['core/ajax'], function(Ajax) {
-    const onClickListeners = (event) => {
+define(['core/ajax'], function(Ajax) {
+    const onClickListeners = function(event) {
         var currentTab = document.getElementById('current_tab');
         var pastTab = document.getElementById('past_tab');
 
@@ -31,6 +31,7 @@
         var sortByDate = document.getElementById('sortby_date');
         var sortByStartDate = document.getElementById('sortby_startdate');
         var sortByEndDate = document.getElementById('sortby_enddate');
+        var isPageClicked = false;
 
         switch(event.target) {
             case currentTab:
@@ -42,7 +43,7 @@
                 currentTab.classList.add('active');
                 pastTab.classList.remove('active');
 
-                loadAssessments(activetab, page, sortby, sortorder);
+                loadAssessments(activetab, page, sortby, sortorder, isPageClicked);
                 break;
             case pastTab:
                 var activetab = 'past';
@@ -53,7 +54,7 @@
                 currentTab.classList.remove('active');
                 pastTab.classList.add('active');
 
-                loadAssessments(activetab, page, sortby, sortorder);
+                loadAssessments(activetab, page, sortby, sortorder, isPageClicked);
                 break;
             case sortByCourse:
                 if(currentTab.classList.contains('active')) {
@@ -75,7 +76,7 @@
                     sortByCourse.classList.add('th-sort-asc');
                     sortByCourse.classList.remove('th-sort-desc');
                 }
-                loadAssessments(activetab, page, sortby, sortorder);
+                loadAssessments(activetab, page, sortby, sortorder, isPageClicked);
                 break;
             case sortByDate:
                 var activetab = 'current';
@@ -92,7 +93,7 @@
                     sortByDate.classList.add('th-sort-asc');
                     sortByDate.classList.remove('th-sort-desc');
                 }
-                loadAssessments(activetab, page, sortby, sortorder);
+                loadAssessments(activetab, page, sortby, sortorder, isPageClicked);
                 break;
             case sortByStartDate:
                 var activetab = 'past';
@@ -109,7 +110,7 @@
                     sortByStartDate.classList.add('th-sort-asc');
                     sortByStartDate.classList.remove('th-sort-desc');
                 }
-                loadAssessments(activetab, page, sortby, sortorder);
+                loadAssessments(activetab, page, sortby, sortorder, isPageClicked);
                 break;
             case sortByEndDate:
                 var activetab = 'past';
@@ -126,20 +127,21 @@
                     sortByEndDate.classList.add('th-sort-asc');
                     sortByEndDate.classList.remove('th-sort-desc');
                 }
-                loadAssessments(activetab, page, sortby, sortorder);
+                loadAssessments(activetab, page, sortby, sortorder, isPageClicked);
                 break;
             default:
                 break;
         }
     }
 
-    const onChangeListeners = (event) => {
+    const onChangeListeners = function(event) {
         var currentSelectSort = document.getElementById('menu_current_assessments_sortby');
         var pastSelectSort = document.getElementById('menu_past_assessments_sortby');
         var sortByCourse = document.getElementById('sortby_course');
         var sortByDate = document.getElementById('sortby_date');
         var sortByStartDate = document.getElementById('sortby_startdate');
         var sortByEndDate = document.getElementById('sortby_enddate');
+        var isPageClicked = false;
 
         switch(event.target) {
             case currentSelectSort:
@@ -158,7 +160,7 @@
                     sortByDate.setAttribute('data-value', 'asc');
                 }
 
-                loadAssessments(activetab, page, sortby, sortorder);
+                loadAssessments(activetab, page, sortby, sortorder, isPageClicked);
                 break;
             case pastSelectSort:
                 var activetab = 'past';
@@ -180,14 +182,15 @@
                     sortByEndDate.setAttribute('data-value', 'asc');
                 }
 
-                loadAssessments(activetab, page, sortby, sortorder);
+                loadAssessments(activetab, page, sortby, sortorder, isPageClicked);
                 break;
             default:
                 break;
         }
     }
 
-    const loadAssessments = (activetab, page, sortby, sortorder, subcategory = null) => {
+    const loadAssessments = function(activetab, page, sortby, sortorder, isPageClicked, subcategory = null) {
+        var blockElement = document.querySelector('.block_gu_spdetails');
         var assessmentContainer = document.getElementById('assessments-container');
         var subcategoryContainer = document.getElementById('subcategory-container');
         var blockContainer = subcategory === null ? assessmentContainer : subcategoryContainer;
@@ -217,6 +220,9 @@
             onClickSubcategory(subCategories);
             onClickPageLink();
             sortingStatus(sortby, sortorder);
+            if(isPageClicked) {
+                blockElement.scrollIntoView();
+            }
         }).fail(function(response) {
             if(response) {
                 var errorContainer = document.createElement('div');
@@ -253,9 +259,9 @@
         course = object.getAttribute('data-course');
         grade = object.getAttribute('data-grade');
         weight = object.getAttribute('data-weight');
-        
+
         if(id !== null){
-            loadAssessments('current', 0, 'duedate', 'asc', id);
+            loadAssessments('current', 0, 'duedate', 'asc', false, id);
             document.getElementById('subcategory-details-course').innerHTML = course;
             document.getElementById('subcategory-details-weight').innerHTML = weight;
             document.getElementById('subcategory-details-grade').innerHTML = grade;
@@ -268,7 +274,7 @@
         }
     }
 
-    const sortingStatus = (sortby, sortorder) => {
+    const sortingStatus = function(sortby, sortorder) {
         var sortByCourse = document.getElementById('sortby_course');
         var sortByDate = document.getElementById('sortby_date');
         var sortByStartDate = document.getElementById('sortby_startdate');
@@ -332,10 +338,10 @@
         }
     }
 
-    const onClickPageLink = () => {
+    const onClickPageLink = function() {
         var pageLinks = document.querySelectorAll('#assessments_details_contents .page-item a.page-link');
 
-        pageLinks.forEach(item => {
+        pageLinks.forEach(function(item) {
             if(item.getAttribute('href') !== '#') {
                 var url = new URL(item.getAttribute('href'));
                 var params = new URLSearchParams(url.search);
@@ -343,9 +349,10 @@
                 var page = params.get('page');
                 var sortby = params.get('sortby');
                 var sortorder = params.get('sortorder');
-                item.addEventListener('click', event => {
+                var isPageClicked = true;
+                item.addEventListener('click', function(event) {
                     event.preventDefault();
-                    loadAssessments(activetab, page, sortby, sortorder);
+                    loadAssessments(activetab, page, sortby, sortorder, isPageClicked);
                 });
             }else{
                 item.removeAttribute('href');
@@ -371,11 +378,12 @@
                 var page = 0;
                 var sortby = 'coursetitle';
                 var sortorder = 'asc';
+                var isPageClicked = false;
 
                 currentTab.classList.add('active');
                 pastTab.classList.remove('active');
 
-                loadAssessments(activetab, page, sortby, sortorder);
+                loadAssessments(activetab, page, sortby, sortorder, isPageClicked);
                 ASSESSMENTS.addEventListener('change', onChangeListeners);
                 ASSESSMENTS.addEventListener('click', onClickListeners);
             }
