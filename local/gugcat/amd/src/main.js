@@ -452,9 +452,7 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                 }
                 break;
             case btn_finalrelease:
-                var isConvertSubcat = document.getElementById('isconvertsubcat');
-                showModal('finalrelease', isConvertSubcat.value != 1 ?
-                'modalreleasefinalgrades' : 'modalreleasefinalconvertedgrades', 'confirmfinalrelease');
+                showModal('finalrelease', 'modalreleasefinalgrades', 'confirmfinalrelease');
                 break;
             case btn_download:
                 document.getElementById('downloadcsv-submit').click();

@@ -494,7 +494,13 @@ class local_gugcat {
         global $DB;
         $scalegrades = array();
         if(is_null($scaleid)){
-            list($scalegrades, $schedB) = self::get_gcat_scale();
+            if (!reset(self::$SCHEDULE_A) && !reset(self::$SCHEDULE_B)) {
+                list($scalegrades, $schedB) = self::get_gcat_scale();
+            } else {
+                $scalegrades = self::$SCHEDULE_A;
+                // Schedule B starts 1 => H
+                $schedB = array_reverse(array_filter(array_merge(array(0), self::$SCHEDULE_B)),true);
+            }
             self::$SCHEDULE_A = $scalegrades;
             // Change the indexes (+1) of Schedule B to its upperbounds
             $upperbounds = array(1, 3, 6, 9, 12, 15, 18, 23);
