@@ -433,7 +433,7 @@ class assessments_details {
                             LEFT JOIN {course} c ON c.id = a.course
                             LEFT JOIN {course_sections} cs ON (cs.course = c.id AND cs.id = cm.section)
                             $convertedgradejoin";
-            $assignenddate = ($activetab === TAB_CURRENT) ?
+            $assignenddate = $issubcategory ? "" : (($activetab === TAB_CURRENT) ?
                             "AND (c.enddate + 86400 * 30 > ? OR
                             CASE
                             WHEN auf.extensionduedate IS NOT NULL AND auf.extensionduedate != 0
@@ -445,7 +445,7 @@ class assessments_details {
                             WHEN auf.extensionduedate IS NOT NULL AND auf.extensionduedate != 0
                             THEN auf.extensionduedate
                             WHEN ao.duedate IS NOT NULL THEN ao.duedate
-                            ELSE a.duedate END + 86400 * 30 <= ?";
+                            ELSE a.duedate END + 86400 * 30 <= ?");
             $assignwhere = "a.course IN ($courseids) $assignenddate $categorylimit";
             $assignsql = "SELECT $assignfields FROM {assign} a $assignjoins WHERE $assignwhere";
             $assignparams = array($userid, $userid, $userid, $userid, $userid, $userid, $enddate, $enddate);
@@ -489,11 +489,11 @@ class assessments_details {
                             LEFT JOIN {forum_discussions} fd ON (fd.course = c.id AND fd.forum = f.id
                                     AND fd.userid = gg.userid)
                             $convertedgradejoin";
-            $forumenddate = ($activetab === TAB_CURRENT) ?
+            $forumenddate = $issubcategory ? "" : (($activetab === TAB_CURRENT) ?
                             "AND (c.enddate + 86400 * 30 > ?
                             OR f.duedate + 86400 * 30 > ?)" :
                             "AND c.enddate + 86400 * 30 <= ?
-                            AND f.duedate + 86400 * 30 <= ?";
+                            AND f.duedate + 86400 * 30 <= ?");
             $forumwhere = "f.course IN ($courseids) $forumenddate $categorylimit";
             $forumsql = "SELECT $forumfields FROM {forum} f $forumjoins WHERE $forumwhere";
             $forumparams = array($userid, $userid, $enddate, $enddate);
@@ -536,7 +536,7 @@ class assessments_details {
                             LEFT JOIN {course} c ON c.id = q.course
                             LEFT JOIN {course_sections} cs ON (cs.course = c.id AND cs.id = cm.section)
                             $convertedgradejoin";
-            $quizenddate = ($activetab === TAB_CURRENT) ?
+            $quizenddate = $issubcategory ? "" : (($activetab === TAB_CURRENT) ?
                             "AND (c.enddate + 86400 * 30 > ? OR
                             CASE
                             WHEN qo.timeclose IS NOT NULL THEN qo.timeclose
@@ -544,7 +544,7 @@ class assessments_details {
                             "AND c.enddate + 86400 * 30 <= ? AND
                             (CASE
                             WHEN qo.timeclose IS NOT NULL THEN qo.timeclose
-                            ELSE q.timeclose END + 86400 * 30 <= ?)";
+                            ELSE q.timeclose END + 86400 * 30 <= ?)");
             $quizwhere = "q.course IN ($courseids) $quizenddate $categorylimit";
             $quizsql = "SELECT $quizfields FROM {quiz} q $quizjoins WHERE $quizwhere";
             $quizparams = array($userid, $userid, $userid, $userid, $userid, $enddate, $enddate);
@@ -579,11 +579,11 @@ class assessments_details {
                             LEFT JOIN {course} c ON c.id = w.course
                             LEFT JOIN {course_sections} cs ON (cs.course = c.id AND cs.id = cm.section)
                             $convertedgradejoin";
-            $workshopenddate = ($activetab === TAB_CURRENT) ?
+            $workshopenddate = $issubcategory ? "" : (($activetab === TAB_CURRENT) ?
                                 "AND (c.enddate + 86400 * 30 > ?
                                 OR w.submissionend + 86400 * 30 > ?)" :
                                 "AND c.enddate  + 86400 * 30 <= ?
-                                AND w.submissionend  + 86400 * 30 <= ?";
+                                AND w.submissionend  + 86400 * 30 <= ?");
             $workshopwhere = "w.course IN ($courseids) $workshopenddate $categorylimit";
             $workshopsql = "SELECT $workshopfields FROM {workshop} w $workshopjoins WHERE $workshopwhere";
             $workshopparams = array($userid, $userid, $userid, $enddate, $enddate);
@@ -618,10 +618,10 @@ class assessments_details {
                                      LEFT JOIN {grade_grades} ggp ON (ggp.itemid = gip.id AND ggp.userid = ?)
                                      LEFT JOIN {scale} sp ON (sp.id = CASE WHEN gip.idnumber IS NOT NULL
                                      AND NOT gip.idnumber = '' THEN gip.idnumber ELSE gip.outcomeid END)";
-                $subcategorywhere = "gc.parent IN ($level2idtext) AND gc.fullname != 'DO NOT USE' $subcategoryenddate";
                 $subcategoryenddate = ($activetab === TAB_CURRENT) ?
                                     "AND c.enddate + 86400 * 30 > ?" :
-                                    "AND c.enddate  + 86400 * 30 <= ?";
+                                    "AND c.enddate + 86400 * 30 <= ?";
+                $subcategorywhere = "gc.parent IN ($level2idtext) AND gc.fullname != 'DO NOT USE' $subcategoryenddate";
                 $subcategorysql = "SELECT $subcategoryfields FROM {grade_categories} gc $subcategoryjoins WHERE $subcategorywhere";
                 array_push($unionparams, $userid, $userid, $enddate);
                 $unionsql .= " UNION ($subcategorysql)";
@@ -651,7 +651,7 @@ class assessments_details {
             $params = array($gradeitem->courseid, $gradeitem->iteminstance, $gradeitem->courseid, $gradeitem->itemmodule);
             $sql = "SELECT
             CASE
-                WHEN cs.name IS NOT NULL THEN cs.name
+                WHEN cs.name IS NOT NULL AND cs.name != '' THEN cs.name
                 WHEN cs.section != 0 THEN CONCAT('Topic ', cs.section)
                 ELSE c.fullname
             END AS coursetitle
@@ -694,7 +694,7 @@ class assessments_details {
                 $name = self::get_topicname_category($subcategory->id, $subcategory->fullname);
                 $topicelement = new stdClass;
                 $topicelement->id = $subcategory->id;
-                $topicelement->text = addslashes($name);
+                $topicelement->text = is_null($name) ? null : addslashes($name);
                 array_push($topicnames, $topicelement);
             }
             return $topicnames;
@@ -857,14 +857,12 @@ class assessments_details {
     public static function return_weight($assessmenttype, $aggregation, $aggregationcoef,
                                          $aggregationcoef2, $subcategoryparentfullname) {
         $summative = get_string('summative', 'block_gu_spdetails');
-        $weight = 0;
 
-        if ($assessmenttype === $summative || $subcategoryparentfullname === $summative) {
-            // If $aggregation == '10', meaning 'Weighted mean of grades' is used.
-            $weight = ($aggregation == '10') ?
-                        (($aggregationcoef > 1) ? $aggregationcoef : $aggregationcoef * 100) :
-                        $aggregationcoef2 * 100;
-        }
+        // If $aggregation == '10', meaning 'Weighted mean of grades' is used.
+        $weight = ($aggregation == '10') ?
+                    (($aggregationcoef > 1) ? $aggregationcoef : $aggregationcoef * 100) :
+                    (($assessmenttype === $summative || $subcategoryparentfullname === $summative) ?
+                        $aggregationcoef2 * 100 : 0);
 
         $finalweight = ($weight > 0) ? round($weight, 2).'%' : get_string('emptyvalue', 'block_gu_spdetails');
 
