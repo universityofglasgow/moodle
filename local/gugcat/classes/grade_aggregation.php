@@ -376,7 +376,7 @@ class grade_aggregation{
                     $gradecaptureitem->gpagrade = self::get_alt_grade(false, $gpagi, $selectedgpa, $student->id, $aggrdobj);
                     $gradecaptureitem->gpagrade->gpacap = reset($gpacap);
                     $gradecaptureitem->gpagrade->grades = $gpagrade;
-                    if($gradecaptureitem->meritgrade->overridden){
+                    if($gradecaptureitem->gpagrade->overridden){
                         $gradecaptureitem->highlightMV = false;
                     }
                 }

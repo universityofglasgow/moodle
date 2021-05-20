@@ -78,7 +78,7 @@ class grade_aggregation_testcase extends advanced_testcase {
             $grade_->information = '1.00000';
             $grade_->rawgrade = ($student->id != $this->student1->id) ? $s2grd : $s1grd;
             $grade_->finalgrade = ($student->id != $this->student1->id) ? $s2grd : $s1grd;
-            $grade_->update();  
+            $grade_->update();
         }
         $modules = array($this->cm);
         $rows = grade_aggregation::get_rows($this->course, $modules, $this->students);
@@ -97,7 +97,7 @@ class grade_aggregation_testcase extends advanced_testcase {
         $this->assertEquals($row1->studentno, $this->student1->id);
         $this->assertEquals(local_gugcat::convert_grade($exp_s1grd), $row1->grades[0]->grade);
         $this->assertEquals($row1->completed, $expectedcompleted); //assert complete percent
-        $this->assertEquals(local_gugcat::convert_grade($exp_aggregatedgrd1), $row1->aggregatedgrade->grade); //assert aggregated grade 
+        $this->assertEquals(local_gugcat::convert_grade($exp_aggregatedgrd1), $row1->aggregatedgrade->grade); //assert aggregated grade
         $row2 = $rows[0];
         $this->assertEquals($row2->cnum, 1);
         $this->assertEquals($row2->studentno, $this->student2->id);
@@ -114,7 +114,7 @@ class grade_aggregation_testcase extends advanced_testcase {
         $grade_->information = '1.00000';
         $grade_->rawgrade = 20;
         $grade_->finalgrade = 20;
-        $grade_->update();  
+        $grade_->update();
         grade_aggregation::adjust_course_weight($weights, $this->course->id, $this->student1->id, null);
         $rows = grade_aggregation::get_rows($this->course, array($this->cm), array($this->student1));
         $student = $rows[0];
@@ -141,7 +141,7 @@ class grade_aggregation_testcase extends advanced_testcase {
         $grade_->information = '1.00000';
         $grade_->rawgrade = 20;
         $grade_->finalgrade = 20;
-        $grade_->update();  
+        $grade_->update();
         $student = array($this->student1);
         $rows = grade_aggregation::get_rows($this->course, $modules, $student);
         $this->assertNotNull($rows[0]->aggregatedgrade->rawgrade);
@@ -164,7 +164,7 @@ class grade_aggregation_testcase extends advanced_testcase {
         $grade_->information = '1.00000';
         $grade_->rawgrade = $expectedgradeint;
         $grade_->finalgrade = $expectedgradeint;
-        $grade_->update();  
+        $grade_->update();
         $gradeitemid = $this->cm->gradeitem->id;
         grade_aggregation::release_final_grades($this->course->id);
         $gg = new grade_grade(array('userid' => $this->student1->id, 'itemid' => $gradeitemid), true);
@@ -190,7 +190,7 @@ class grade_aggregation_testcase extends advanced_testcase {
         $gi2 = new grade_item(array('id'=>2));
         $gi3 = new grade_item(array('id'=>3));
         $gradeitems = array(1 => $gi1, 2 => $gi2, 3 => $gi3);
-        
+
         // Assert normalize grades
         $normgrades = grade_aggregation::normalize_grades($grades, $gradeitems);
         // grademax = 100 (default) grade/100
@@ -204,9 +204,9 @@ class grade_aggregation_testcase extends advanced_testcase {
         // Assert normalize grades
         $normgrades = grade_aggregation::normalize_grades($grades, $gradeitems);
         // grademax = 50 grade/50
-        $this->assertContains(20, $normgrades);        
-        $this->assertContains(40, $normgrades);        
-        $this->assertContains(60, $normgrades);        
+        $this->assertContains(20, $normgrades);
+        $this->assertContains(40, $normgrades);
+        $this->assertContains(60, $normgrades);
     }
 
     public function test_calculate_grade(){
@@ -219,7 +219,7 @@ class grade_aggregation_testcase extends advanced_testcase {
         $gi3 = new grade_item(array('id'=>3));
         $gi3->aggregationcoef = $aggregationcoef;
         $gradeitems = array(1 => $gi1, 2 => $gi2, 3 => $gi3);
-        
+
         $subcatobj = new stdClass();
         $subcatobj->aggregation = GRADE_AGGREGATE_MAX;
         $subcatobj->gradeitem = new grade_item();
@@ -271,10 +271,10 @@ class grade_aggregation_testcase extends advanced_testcase {
     }
 
     public function test_get_aggregated_grade(){
-        $categoryid = 10; 
+        $categoryid = 10;
         $userid = $this->student1->id;
 
-        $prvgi = local_gugcat::add_grade_item($this->course->id, 
+        $prvgi = local_gugcat::add_grade_item($this->course->id,
         get_string('subcategorygrade', 'local_gugcat'), null, [$this->student1]);
 
         $pgobj = grade_grade::fetch(array('itemid' => $prvgi, 'userid' => $userid));
@@ -344,7 +344,7 @@ class grade_aggregation_testcase extends advanced_testcase {
         $gi2->gradeitem->gradetype = GRADE_TYPE_VALUE;
         $gradeitems[$gi2->id] = $gi2;
 
-        // Assert return is the provisional obj itself if sub cat is overridden 
+        // Assert return is the provisional obj itself if sub cat is overridden
         $pgobj->overridden = 1;
         $subcatobj->grades->provisional[$userid] = $pgobj;
         list($aggregatedgrade, $processed, $error) = grade_aggregation::get_aggregated_grade($userid, $subcatobj, $gradeitems);
@@ -415,7 +415,7 @@ class grade_aggregation_testcase extends advanced_testcase {
                 'courseid' => $courseid,
                 'parent' => $category->id)
         );
-        
+
         $modarray = grade_aggregation::get_parent_child_activities($courseid, $category->id);
         $this->assertEquals($subcategory->id, $modarray[1]->gradeitem->iteminstance);
         $this->assertEquals('category', $modarray[1]->modname);
@@ -433,8 +433,55 @@ class grade_aggregation_testcase extends advanced_testcase {
         $this->assertCount(3, $modarray);
     }
 
-    public function test_acg_grade_history(){
+    public function test_create_edit_alt_grades(){
+        global $DB, $COURSE;
+        $COURSE = $this->course;
 
+        // Create merit grade item first
+        // Sample 2 assessments and 50 each weights
+        $assessments = array(1 => 1, 2 => 2);
+        $weights = array(1 => 50, 2 => 50);
+        grade_aggregation::create_edit_alt_grades(MERIT_GRADE, $assessments, $weights);
+
+        // Get for merit grade item
+        $meritgi = grade_item::fetch(array('courseid' => $COURSE->id, 'iteminfo' => 0, 'itemname' => get_string('meritgrade', 'local_gugcat')));
+        $this->assertNotNull($meritgi);
+        $this->assertEquals($meritgi->itemname, get_string('meritgrade', 'local_gugcat'));
+        $this->assertEquals($meritgi->courseid, $COURSE->id);
+        $this->assertEquals($meritgi->iteminfo, '0');
+        // Retrieve merit setup
+        $meritsettings = $DB->get_records('gcat_acg_settings', array('acgid'=>$meritgi->id));
+        $this->assertCount(count($assessments), $meritsettings);
+        foreach($meritsettings as $setup){
+            $this->assertEquals($setup->acgid, $meritgi->id);
+            $this->assertEquals($setup->weight, '50.00000');
+            $this->assertNull($setup->cap);
+        }
+
+        // Create gpa alt grade item
+
+        // Sample 2 assessments and 50 each weights
+        $resits = array(1 => 1, 2 => 2);
+        $cap = 10;
+        grade_aggregation::create_edit_alt_grades(MERIT_GRADE, $resits, [], $cap);
+
+        // Get for gpa grade item
+        $gpagi = grade_item::fetch(array('courseid' => $COURSE->id, 'iteminfo' => 0, 'itemname' => get_string('gpagrade', 'local_gugcat')));
+        $this->assertNotNull($gpagi);
+        $this->assertEquals($gpagi->itemname, get_string('gpagrade', 'local_gugcat'));
+        $this->assertEquals($gpagi->courseid, $COURSE->id);
+        $this->assertEquals($gpagi->iteminfo, '0');
+        // Retrieve gpa setup
+        $gpasettings = $DB->get_records('gcat_acg_settings', array('acgid'=>$gpagi->id));
+        $this->assertCount(count($resits), $gpasettings);
+        foreach($gpasettings as $setup){
+            $this->assertEquals($setup->acgid, $gpagi->id);
+            $this->assertEquals($setup->cap, '10.00000');
+            $this->assertNull($setup->weight);
+        }
+    }
+
+    public function test_acg_grade_history(){
         $expectedgrade = 'A3';
         $expectednotes = get_string('systemupdatecreateupdate', 'local_gugcat');
         $expectedtype = get_string('systemupdate', 'local_gugcat');
@@ -443,7 +490,7 @@ class grade_aggregation_testcase extends advanced_testcase {
         $grade_->information = '1.00000';
         $grade_->rawgrade = 20;
         $grade_->finalgrade = 20;
-        $grade_->update();  
+        $grade_->update();
 
         $gradehistory = grade_aggregation::acg_grade_history($this->course, $this->student1, MERIT_GRADE);
         $grdhistory = $gradehistory[key($gradehistory)];
