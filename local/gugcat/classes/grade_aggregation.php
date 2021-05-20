@@ -846,8 +846,6 @@ class grade_aggregation{
                                          : local_gugcat::add_grade_item($courseid, get_string('provisionalgrd', 'local_gugcat'), $mod);
 
             $gradeitem = new grade_item($mod->gradeitem);
-            //set offset value for max 22 points grade
-            $gradescaleoffset = (local_gugcat::is_scheduleAscale($gradeitem->gradetype, $gradeitem->grademax)) ? 1 : 0;
 
             foreach($students as $student) {
                 //get the provisional/converted grade of the student
@@ -856,7 +854,7 @@ class grade_aggregation{
 
                 //check if grade is admin grade
                 $grade = intval($grd);
-                $grade = ($grade == NON_SUBMISSION || $grade == MEDICAL_EXEMPTION) ? null : $grade - $gradescaleoffset;
+                $grade = ($grade == NON_SUBMISSION || $grade == MEDICAL_EXEMPTION) ? null : $grade;
 
                 //update gradebook grade if provisional grade is not null
                 if(!is_null($grd)){
