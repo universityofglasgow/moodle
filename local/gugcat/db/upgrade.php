@@ -194,6 +194,24 @@ function xmldb_local_gugcat_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2021051900, 'local', 'gugcat');
     }
 
+    if ($oldversion < 2021052000) {
+        // Define indexes to table gcat_acg_settings.
+        $table_acg = new xmldb_table('gcat_acg_settings');
+        $table_acg_index1 = new xmldb_index('acgid', XMLDB_INDEX_NOTUNIQUE, array('acgid'));
+        $table_acg_index2 = new xmldb_index('itemid', XMLDB_INDEX_NOTUNIQUE, array('itemid'));
+
+        // Adding indexes to table gcat_acg_settings.
+        if (!$dbman->index_exists($table_acg, $table_acg_index1)) {
+            $dbman->add_index($table_acg, $table_acg_index1);
+        }
+        if (!$dbman->index_exists($table_acg, $table_acg_index2)) {
+            $dbman->add_index($table_acg, $table_acg_index2);
+        }
+
+        // Gugcat savepoint reached.
+        upgrade_plugin_savepoint(true, 2021052000, 'local', 'gugcat');
+    }
+
     return true;
 }
 

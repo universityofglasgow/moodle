@@ -1155,7 +1155,7 @@ class grade_aggregation{
         $DB->delete_records('gcat_acg_settings', array('acgid'=>$altgi));
         $acgitems = array();
         foreach ($assessments as $id => $value) {
-            $weight = $is_merit && !empty($weights) ? $weights[$id] : null;
+            $weight = $is_merit && !empty($weights) ? number_format(($weights[$id]/100), 5) : null;
             $acgitems[] = array('acgid'=>$altgi, 'itemid'=>$id, 'weight'=>$weight, 'cap'=>$appliedcap);
         }
         return $DB->insert_records('gcat_acg_settings', $acgitems);
