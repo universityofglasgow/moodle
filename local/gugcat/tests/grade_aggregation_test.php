@@ -432,4 +432,23 @@ class grade_aggregation_testcase extends advanced_testcase {
 
         $this->assertCount(3, $modarray);
     }
+
+    public function test_acg_grade_history(){
+
+        $expectedgrade = 'A3';
+        $expectednotes = get_string('systemupdatecreateupdate', 'local_gugcat');
+        $expectedtype = get_string('systemupdate', 'local_gugcat');
+        $acgid = local_gugcat::add_grade_item($this->course->id, get_string('meritgrade', 'local_gugcat'), null);
+        $grade_ = new grade_grade(array('userid' => $this->student1->id, 'itemid' => $acgid), true);
+        $grade_->information = '1.00000';
+        $grade_->rawgrade = 20;
+        $grade_->finalgrade = 20;
+        $grade_->update();  
+
+        $gradehistory = grade_aggregation::acg_grade_history($this->course, $this->student1, MERIT_GRADE);
+        $grdhistory = $gradehistory[key($gradehistory)];
+        $this->assertEquals($expectedgrade, $grdhistory->grade);
+        $this->assertEquals($expectednotes, $grdhistory->notes);
+        $this->assertEquals($expectedtype, $grdhistory->type);
+    }
 }
