@@ -132,7 +132,7 @@ class local_gugcat_testcase extends advanced_testcase {
     public function test_check_prv_grade_item() {
         $prvgradeid = $this->provisionalgi->id;
         local_gugcat::set_prv_grade_id($this->course->id, $this->cm);
-        $this->assertEquals(local_gugcat::$PRVGRADEID, $prvgradeid);
+        $this->assertEquals(local_gugcat::$prvgradeid, $prvgradeid);
     }
 
     public function test_get_grade_reasons() {
@@ -364,7 +364,7 @@ class local_gugcat_testcase extends advanced_testcase {
     }
 
     public function test_convert_grade(){
-        // Populate static $GRADES scales
+        // Populate static $grades scales
         // Setting it to null will call to get gcat scale in json file
         local_gugcat::set_grade_scale(null);
 

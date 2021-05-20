@@ -59,7 +59,7 @@ class grade_aggregation_testcase extends advanced_testcase {
         $modinfo = get_fast_modinfo($this->course);
         $cm_info = $modinfo->get_cm($this->cm->id);
         $this->assign = new assign(context_module::instance($cm_info->id), $cm_info, $this->course->id);
-        local_gugcat::$STUDENTS = $this->students;
+        local_gugcat::$students = $this->students;
         grade_capture::import_from_gradebook($this->course->id, $this->cm, $cm);
         $this->provisionalgi = local_gugcat::add_grade_item($this->course->id, get_string('provisionalgrd', 'local_gugcat'), $this->cm);
     }

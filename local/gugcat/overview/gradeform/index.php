@@ -101,7 +101,7 @@ if(!is_null($activityid) && $formtype == OVERRIDE_GRADE_FORM){
     }
     // Change the data in aggregate grade obj with $subcatgrade
     $aggrdobj = new stdClass();
-    $aggrdobj->scale = in_array($subcatgrade->grade, local_gugcat::$SCHEDULE_A) ? SCHEDULE_A : SCHEDULE_B;
+    $aggrdobj->scale = in_array($subcatgrade->grade, local_gugcat::$schedulea) ? SCHEDULE_A : SCHEDULE_B;
     $aggrdobj->grade = $subcatgrade->grade;
     $aggrdobj->rawgrade = $subcatgrade->rawgrade;
     $aggrdobj->display = $subcatgrade->rawgrade;
@@ -161,7 +161,7 @@ if ($fromform = $mform->get_data()) {
         }
         $select = "courseid=$courseid AND itemname='$itemname' AND ".local_gugcat::compare_iteminfo();
         if($gradeitem = $DB->get_record_select('grade_items', $select, ['iteminfo'=>$id], 'id, idnumber')){
-            $grade = !is_numeric($fromform->override) ? array_search(strtoupper($fromform->override), local_gugcat::$GRADES) : $fromform->override; 
+            $grade = !is_numeric($fromform->override) ? array_search(strtoupper($fromform->override), local_gugcat::$grades) : $fromform->override; 
             //if subcat get scaleid 
             $scale = $is_subcat ? (!is_null($subcatactivity->is_converted) && !empty($subcatactivity->is_converted) 
             ? $subcatactivity->is_converted : $DB->get_field('grade_items', 'outcomeid', array('id'=>$gradeitem->id))) : null;
