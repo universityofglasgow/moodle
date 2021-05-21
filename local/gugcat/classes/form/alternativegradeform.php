@@ -150,7 +150,6 @@ class alternativegradeform extends moodleform {
         $mform->setType('categoryid', PARAM_INT);
         $mform->addElement('hidden', 'alternative', optional_param('alternative', null, PARAM_INT));
         $mform->setType('alternative', PARAM_INT);
-
     }
 
     public function validation($data, $files) {

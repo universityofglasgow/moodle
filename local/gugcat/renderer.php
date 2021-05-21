@@ -316,8 +316,9 @@ class local_gugcat_renderer extends plugin_renderer_base {
         }
         $htmlcolumns .= html_writer::tag('th', get_string('requiresresit', 'local_gugcat'), array('class' => 'sortable'));
         $htmlcolumns .= html_writer::tag('th', get_string('percentcomplete', 'local_gugcat'), array('class' => 'sortable'));
-        $htmlcolumns .= html_writer::tag('th', get_string('aggregatedgrade', 'local_gugcat') . ($is_computed && !($merit_exists && $gpa_exists)
-        ? $this->context_actions(null, null, null, $acgparams, false, false, 0) : null), array('class' => 'sortable'));
+        $sortspan = html_writer::tag('span', get_string('aggregatedgrade', 'local_gugcat'), array('class' => 'sortable'));
+        $htmlcolumns .= html_writer::tag('th', $sortspan . ($is_computed && !($merit_exists && $gpa_exists)
+        ? $this->context_actions(null, null, null, $acgparams, false, false, 0) : null));
         //grade capture rows
 
         $displaymerit = false;
