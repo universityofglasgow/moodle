@@ -45,14 +45,29 @@ class alternativegradeform extends moodleform {
             MERIT_GRADE => get_string('meritgrade', 'local_gugcat'),
             GPA_GRADE => get_string('gpagrade', 'local_gugcat'),
         );
-        $mform->addElement('select', 'altgradetype', get_string('selectaltgrdtype', 'local_gugcat'),
-                 $altgradetypes, ['id' => 'select-alt-grade', 'class' => 'mform-custom-select']);
+        $adjust = optional_param('alternative', null, PARAM_INT);
+        $altgtattr = array(
+            'id' => 'select-alt-grade',
+            'class' => 'mform-custom-select'
+        );
+        if(!is_null($adjust) && $adjust != 0){
+            $altgtattr['disabled'] = true;
+        }
+        $mform->addElement('select', 'altgradetype', get_string('selectaltgrdtype', 'local_gugcat'), $altgradetypes, $altgtattr);
         $mform->setType('altgradetype', PARAM_NOTAGS);
-        $mform->setDefault('altgradetype', 0);
+
+        // Check for existing settings for merit/gpa.
+        $meritsettings = $features['meritsettings'];
+        $gpasettings = $features['gpasettings'];
+        if ($meritsettings) {
+            $mform->setDefault('altgradetype', MERIT_GRADE);
+        } else if ($gpasettings){
+            $mform->setDefault('altgradetype', GPA_GRADE);
+        } else {
+            $mform->setDefault('altgradetype', 0);
+        }
 
         // Merit Grade type form elements.
-        // Existing settings for merit.
-        $meritsettings = $features['meritsettings'];
         $mweights = !is_null($meritsettings) ? array_column($meritsettings, 'weight', 'itemid') : array();
 
         $mform->addElement('html', html_writer::tag('label', get_string('selectincludeassessment', 'local_gugcat'),
@@ -84,8 +99,6 @@ class alternativegradeform extends moodleform {
         $mform->hideif('totalfield', 'altgradetype', 'neq', MERIT_GRADE);
 
         // GPA Grade type form elements.
-        // Existing settings for gpa.
-        $gpasettings = $features['gpasettings'];
         $gcap = !is_null($gpasettings) ? array_column($gpasettings, 'cap', 'itemid') : array();
         $mform->addElement('html', html_writer::tag('label', get_string('pleaseindicateresits', 'local_gugcat'),
                  array('class' => 'gpa-lbl hidden')));
@@ -135,6 +148,8 @@ class alternativegradeform extends moodleform {
         $mform->setType('id', PARAM_INT);
         $mform->addElement('hidden', 'categoryid', optional_param('categoryid', null, PARAM_INT));
         $mform->setType('categoryid', PARAM_INT);
+        $mform->addElement('hidden', 'alternative', optional_param('alternative', null, PARAM_INT));
+        $mform->setType('alternative', PARAM_INT);
 
     }
 
