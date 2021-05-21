@@ -1252,8 +1252,8 @@ class grade_aggregation{
                 }
             } else {
                 // GPA grade.
-                // If selected assessment grades has missing or no grade, display aggregated grade.
-                if (in_array(null, $allgrades, true)) {
+                // If all selected assessment grades has missing or no grade, display aggregated grade.
+                if (in_array(null, $allgrades, true) && count(array_unique($allgrades)) == 1) {
                     $altgrade = $aggrdobj->rawgrade;
                 } else {
                     $cap = (intval($cap) == NON_SUBMISSION) ? -1 : intval($cap - 1);
