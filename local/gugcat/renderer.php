@@ -264,7 +264,6 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $colgroups = null; // Use for grouping the columns of child activities (to add border)
         $colspan = 0; // Number of columns a column group should span
         $prevcatid = null;
-        $isconvertsubcat = false;
         $missinggrade = in_array(get_string('missinggrade', 'local_gugcat'), array_unique(array_column(array_column($rows, 'aggregatedgrade'), 'display'))) ? true : false;
         $is_computed = $missinggrade && count(array_unique(array_column(array_column($rows, 'aggregatedgrade'), 'display'))) == 1 ? false : true;
         $merit_exists = in_array(null, array_column($rows, 'meritgrade')) ? false : true;
@@ -283,11 +282,8 @@ class local_gugcat_renderer extends plugin_renderer_base {
             $convertgrdparams = "?id=$courseid&activityid=$act->gradeitemid&page=$page" . $historyeditcategory;
             $is_imported = false;
             $is_converted = $act->is_converted;
-            //if module is converted then change the value for issubcatconvert to true, else original value.
-            $isconvertsubcat = $is_converted ? true : $isconvertsubcat;
             if($act->modname == 'category'){
                 if($act->gradeitem->gradetype == GRADE_TYPE_VALUE || $is_converted){
-                    $isconvertsubcat = true;
                     $is_imported = local_gugcat::get_grade_item_id($courseid, $act->id, get_string('subcategorygrade', 'local_gugcat'));
                 }
             }
@@ -388,7 +384,6 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $html .= html_writer::empty_tag('input', array('id'=>'resitstudentno', 'name' => 'rowstudentno', 'type' => 'hidden'));
         $html .= html_writer::empty_tag('button', array('id'=>'downloadcsv-submit', 'name'=> 'downloadcsv', 'type'=>'submit'));
         $html .= html_writer::empty_tag('button', array('id'=>'finalrelease-submit', 'name'=> 'finalrelease', 'type'=>'submit'));
-        $html .= html_writer::empty_tag('input', array('id'=>'isconvertsubcat', 'name'=>'isconvertsubcat', 'type'=>'hidden', 'value'=>$isconvertsubcat));
         $html .= html_writer::end_tag('form');
         $html .= $this->footer();
         return $html;

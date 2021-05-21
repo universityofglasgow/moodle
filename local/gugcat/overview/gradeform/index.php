@@ -35,9 +35,9 @@ $formtype = required_param('setting', PARAM_INT);
 $studentid = required_param('studentid', PARAM_INT);
 $cnum = required_param('cnum', PARAM_INT);
 $categoryid = optional_param('categoryid', 0, PARAM_INT);
-$page = optional_param('page', 0, PARAM_INT);  
+$page = optional_param('page', 0, PARAM_INT);
 $alternativecg = optional_param('alternativecg', null, PARAM_INT);
-$activityid = optional_param('activityid', null, PARAM_INT); 
+$activityid = optional_param('activityid', null, PARAM_INT);
 $activityid = $activityid == 0 ? null : $activityid;
 
 require_login($courseid);
@@ -45,7 +45,7 @@ $urlparams = array('id' => $courseid, 'setting' => $formtype, 'studentid' => $st
 $URL = new moodle_url('/local/gugcat/overview/gradeform/index.php', $urlparams);
 (!is_null($categoryid) && $categoryid != 0) ? $URL->param('categoryid', $categoryid) : null;
 (!is_null($activityid) && $activityid != 0) ? $URL->param('activityid', $activityid) : null;
-!is_null($alternativecg) && $alternativecg != 0 ? $URL->param('alternativecg', $alternativecg) : null; 
+!is_null($alternativecg) && $alternativecg != 0 ? $URL->param('alternativecg', $alternativecg) : null;
 $indexurl = new moodle_url('/local/gugcat/index.php', array('id' => $courseid));
 
 $PAGE->set_url($URL);
@@ -83,8 +83,8 @@ if(!is_null($categoryid) && $categoryid != 0){
 $rows = grade_aggregation::get_rows($course, $activities, $studentarr);
 $student = $rows[0];
 $student->cnum = $cnum; //candidate no.
-$student->id = $student->studentno; 
-$student->lastname = $student->surname; 
+$student->id = $student->studentno;
+$student->lastname = $student->surname;
 $student->firstname = $student->forename;
 // Prepare the data displayed if subcat activity
 if(!is_null($activityid) && $formtype == OVERRIDE_GRADE_FORM){
@@ -101,7 +101,9 @@ if(!is_null($activityid) && $formtype == OVERRIDE_GRADE_FORM){
     }
     // Change the data in aggregate grade obj with $subcatgrade
     $aggrdobj = new stdClass();
-    $aggrdobj->scale = in_array($subcatgrade->grade, local_gugcat::$schedulea) ? SCHEDULE_A : SCHEDULE_B;
+
+    $aggrdobj->scale = in_array($subcatgrade->grade, local_gugcat::$schedulea) ? SCHEDULE_A :
+        (in_array($subcatgrade->grade, local_gugcat::$scheduleb) ? SCHEDULE_B : null);
     $aggrdobj->grade = $subcatgrade->grade;
     $aggrdobj->rawgrade = $subcatgrade->rawgrade;
     $aggrdobj->display = $subcatgrade->rawgrade;
@@ -125,8 +127,12 @@ if($formtype == OVERRIDE_GRADE_FORM && $student->aggregatedgrade){
             $gradetype = GRADE_TYPE_VALUE;
         }else{
             // Get scaleid of the first component
-            $scaleid = reset($components) ? reset($components)->scaleid : null;
-            local_gugcat::set_grade_scale($scaleid, $student->aggregatedgrade->scale);
+            if(is_null($student->aggregatedgrade->scale)){
+                $scaleid = reset($components) ? reset($components)->scaleid : null;
+                local_gugcat::set_grade_scale($scaleid, $student->aggregatedgrade->scale);
+            }else{
+                local_gugcat::set_grade_scale(null, $student->aggregatedgrade->scale);
+            }
         }
     }else if(!is_null($alternativecg) && $alternativecg != 0){
         local_gugcat::set_grade_scale(null);
@@ -161,9 +167,9 @@ if ($fromform = $mform->get_data()) {
         }
         $select = "courseid=$courseid AND itemname='$itemname' AND ".local_gugcat::compare_iteminfo();
         if($gradeitem = $DB->get_record_select('grade_items', $select, ['iteminfo'=>$id], 'id, idnumber')){
-            $grade = !is_numeric($fromform->override) ? array_search(strtoupper($fromform->override), local_gugcat::$grades) : $fromform->override; 
-            //if subcat get scaleid 
-            $scale = $is_subcat ? (!is_null($subcatactivity->is_converted) && !empty($subcatactivity->is_converted) 
+            $grade = !is_numeric($fromform->override) ? array_search(strtoupper($fromform->override), local_gugcat::$grades) : $fromform->override;
+            //if subcat get scaleid
+            $scale = $is_subcat ? (!is_null($subcatactivity->is_converted) && !empty($subcatactivity->is_converted)
             ? $subcatactivity->is_converted : $DB->get_field('grade_items', 'outcomeid', array('id'=>$gradeitem->id))) : null;
             //if scaleid is not empty or null, then add the scale to notes
             $notes = !is_null($scale) && !empty($scale) ? $fromform->notes." ,_scale:$scale" : $fromform->notes;
@@ -175,19 +181,19 @@ if ($fromform = $mform->get_data()) {
                 $convertedgi = local_gugcat::get_grade_item_id($COURSE->id, $subcatactivity->gradeitemid, get_string('convertedgrade', 'local_gugcat'));
                 local_gugcat::update_grade($studentid, $convertedgi, $grade);
             }else{
-                $notes = !is_null($alternativecg) && $alternativecg != 0 ? $fromform->notes 
-                : (!$is_subcat ? ",_scale: $gradeitem->idnumber ,_notes: $fromform->notes" 
+                $notes = !is_null($alternativecg) && $alternativecg != 0 ? $fromform->notes
+                : (!$is_subcat ? ",_scale: $gradeitem->idnumber ,_notes: $fromform->notes"
                 : (is_null($scale) ? $fromform->notes : $fromform->notes." ,_scale:$scale"));
                 local_gugcat::update_grade($studentid, $gradeitem->id, $grade, $notes, time());
             }
-            
+
             //also update notes for subcomponents
             if($is_subcat){
                 $prvgrades = local_gugcat::get_prvgrd_item_ids($courseid, $components);
                 $componentnotes = $fromform->notes;
                 foreach($prvgrades as $prvgrades){
                     $scale = $DB->get_field('grade_items', 'idnumber', array("id"=>$prvgrades->id));
-                    $notes = $scale ? $componentnotes . " -" . $scale : $componentnotes; 
+                    $notes = $scale ? $componentnotes . " -" . $scale : $componentnotes;
                     local_gugcat::update_components_notes($studentid, $prvgrades->id, $notes);
                 }
             }
@@ -216,7 +222,7 @@ if ($fromform = $mform->get_data()) {
     (!is_null($categoryid) && $categoryid != 0) ? $url->param('categoryid', $categoryid) : null;
     redirect($url);
     exit;
-}   
+}
 
 echo $OUTPUT->header();
 $renderer = $PAGE->get_renderer('local_gugcat');

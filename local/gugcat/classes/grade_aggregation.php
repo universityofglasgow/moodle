@@ -488,10 +488,10 @@ class grade_aggregation{
             $pg = isset($grades->provisional[$userid]) ? $grades->provisional[$userid] : null;
             // Get gradebook grades $gb from child assessments.
             $gb = isset($grades->gradebook[$userid]) ? $grades->gradebook[$userid] : null;
-            $grd = (isset($pg) && !is_null($pg->finalgrade)) ? $pg->finalgrade
+            $grdca = (isset($pg) && !is_null($pg->finalgrade)) ? $pg->finalgrade
             : (isset($pg) && !is_null($pg->rawgrade) ? $pg->rawgrade
             : ((isset($gb) && !is_null($gb->grade)) ? $gb->grade : null));
-            $studentgrades[$id] = is_null($grd) ? null : intval($grd);
+            $studentgrades[$id] = is_null($grdca) ? null : intval($grdca);
         }
         $ishighestgrade = $subcatobj->aggregation == GRADE_AGGREGATE_MAX;
 
