@@ -96,6 +96,7 @@ class grade_aggregation{
             $mod->weight = ((float)$weightcoef1 > 0) ? (float)$weightcoef1 : (float)$weightcoef2;
             $mod->scaleid = $mod->gradeitem->scaleid;
             $mod->gradeitemid = $mod->gradeitem->id;
+            $mod->is_resit = false;
             $grades = new stdClass();
             $prvgrdid = null;
             $moodlestr = get_string('moodlegrade', 'local_gugcat');
@@ -123,6 +124,7 @@ class grade_aggregation{
                 }
                 $gbgrades = grade_get_grades($course->id, 'category', null, $mod->instance, array_keys($students));
             } else {
+                $mod->is_resit = self::is_resit($mod);
                 // Check if activity is imported or not by checking its moodle grade item.
                 if ($DB->record_exists_select('grade_items', "itemname = '$moodlestr' AND iteminfo = $mod->gradeitemid")) {
                     $prvgrdid = $mod->provisionalid;
@@ -186,7 +188,6 @@ class grade_aggregation{
                 $gradetypes = array();
                 $feedback = ",_weights: ";
                 foreach ($assessments as $item) {
-                    $grditemresit = self::is_resit($item);
                     $grdobj = new stdClass();
                     $grades = $item->grades;
                     $pg = isset($grades->provisional[$student->id]) ? $grades->provisional[$student->id] : null;
@@ -235,7 +236,7 @@ class grade_aggregation{
                         }
                     }
                     local_gugcat::is_child_activity($item) || $item->is_converted ? null : $gradetypes[] = intval($gt);
-                    $grade = is_null($grd) ? ( $grditemresit ? get_string('nogradeweight', 'local_gugcat')
+                    $grade = is_null($grd) ? ( $item->is_resit ? get_string('nogradeweight', 'local_gugcat')
                     : ( $processed ? get_string('missinggrade', 'local_gugcat')
                     : get_string('nograderecorded', 'local_gugcat')))
                     : local_gugcat::convert_grade($grd, $gt, ($autoconvertb ? SCHEDULE_B : SCHEDULE_A));
