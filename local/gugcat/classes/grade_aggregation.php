@@ -366,7 +366,8 @@ class grade_aggregation{
                     foreach ($selectedmerits as $item) {
                         $item->meritweight = $weights[$item->gradeitemid];
                         $gradeweight = $gradecaptureitem->grades[$item->gradeitemid];
-                        $gradeweight->weight = intval($weights[$item->gradeitemid]);
+                        $displayweight = round((float)$weights[$item->gradeitemid] * 100);
+                        $gradeweight->weight = $displayweight;
                         array_push($meritgradeweights, $gradeweight);
                     }
                     $gradecaptureitem->meritgrade = self::get_alt_grade(true, $meritgi, $selectedmerits, $student->id);
