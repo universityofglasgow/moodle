@@ -491,24 +491,24 @@ class grade_aggregation_testcase extends advanced_testcase {
         $act1->gpacap = 10;
         // Add grade in act 1 for student 1
         $grades = new stdClass();
-        $grades->altgrades = array($this->student->id => 23);
+        $grades->altgrades = array($this->student1->id => 23);
         $act1->grades = $grades;
 
         $act2 = new stdClass();
         $act2->meritweight = 0.5;
         $act2->gpacap = 10;
-        // Add grade in act 2 for student 1
+        // Add grade in act 2 for student1 1
         $grades = new stdClass();
-        $grades->altgrades = array($this->student->id => 11);
+        $grades->altgrades = array($this->student1->id => 11);
         $act2->grades = $grades;
 
         // Handle missing grade
         $act3 = new stdClass();
         $act3->meritweight = 0.5;
         $act3->gpacap = 10;
-        // Add grade in act 2 for student 1
+        // Add grade in act 2 for student1 1
         $grades = new stdClass();
-        $grades->altgrades = array($this->student->id => null);// null grade
+        $grades->altgrades = array($this->student1->id => null);// null grade
         $act3->grades = $grades;
 
         // Get merit grade --------
@@ -521,7 +521,7 @@ class grade_aggregation_testcase extends advanced_testcase {
         $meritgi = local_gugcat::get_grade_item_id($COURSE->id, '0', get_string('meritgrade', 'local_gugcat'));
 
         // Merit grade calculated successfully
-        $gradeobj = grade_aggregation::get_alt_grade(true, $meritgi, array($act1, $act2), $this->student->id);
+        $gradeobj = grade_aggregation::get_alt_grade(true, $meritgi, array($act1, $act2), $this->student1->id);
         $this->assertNotNull($gradeobj);
         $this->assertFalse($gradeobj->overridden);
         // Grades are 23 and 11 (-1 to normalize) (22 x 0.50 + 10 x 0.50)/ 1.00 = 16 => B2
@@ -529,7 +529,7 @@ class grade_aggregation_testcase extends advanced_testcase {
         $this->assertEquals($gradeobj->grade, 'B2');
 
         // Handles one null grade
-        $gradeobj = grade_aggregation::get_alt_grade(true, $meritgi, array($act1, $act2, $act3), $this->student->id);
+        $gradeobj = grade_aggregation::get_alt_grade(true, $meritgi, array($act1, $act2, $act3), $this->student1->id);
         $this->assertNotNull($gradeobj);
         $this->assertFalse($gradeobj->overridden);
         // Grades are 23, 11, null
@@ -548,24 +548,24 @@ class grade_aggregation_testcase extends advanced_testcase {
         $aggrdobj = new stdClass();
         $aggrdobj->rawgrade = 5;
         // GPA grade calculated successfully
-        $gradeobj = grade_aggregation::get_alt_grade(false, $gpagi, array($act1, $act2), $this->student->id, $aggrdobj);
+        $gradeobj = grade_aggregation::get_alt_grade(false, $gpagi, array($act1, $act2), $this->student1->id, $aggrdobj);
         $this->assertNotNull($gradeobj);
         $this->assertFalse($gradeobj->overridden);
-        // Grades are 23 and 11, Cap is 10 (-1 to normalize), Aggregated grade is 5, 9 > 5 = 9 => D3
-        $this->assertEquals($gradeobj->rawgrade, 9);
-        $this->assertEquals($gradeobj->grade, 'D3');
+        // Grades are 23 and 11, Cap is 10 (-1 to normalize), Aggregated grade is 5, 9 > 5 = 5 => F1
+        $this->assertEquals($gradeobj->rawgrade, 5);
+        $this->assertEquals($gradeobj->grade, 'F1');
 
         // Aggregated grade greater than cap
         $aggrdobj->rawgrade = 15;
-        $gradeobj = grade_aggregation::get_alt_grade(false, $gpagi, array($act1, $act2), $this->student->id, $aggrdobj);
+        $gradeobj = grade_aggregation::get_alt_grade(false, $gpagi, array($act1, $act2), $this->student1->id, $aggrdobj);
         $this->assertNotNull($gradeobj);
         $this->assertFalse($gradeobj->overridden);
-        // Grades are 23 and 11, Cap is 10 (-1 to normalize), Aggregated grade is 15, 9 < 15 = 15 => B3
-        $this->assertEquals($gradeobj->rawgrade, 15);
-        $this->assertEquals($gradeobj->grade, 'B3');
+        // Grades are 23 and 11, Cap is 10 (-1 to normalize), Aggregated grade is 15, 9 < 15 = 9 => D3
+        $this->assertEquals($gradeobj->rawgrade, 9);
+        $this->assertEquals($gradeobj->grade, 'D3');
 
         // Handles one null grade
-        $gradeobj = grade_aggregation::get_alt_grade(false, $gpagi, array($act1, $act3), $this->student->id, $aggrdobj);
+        $gradeobj = grade_aggregation::get_alt_grade(false, $gpagi, array($act3, $act3), $this->student1->id, $aggrdobj);
         $this->assertNotNull($gradeobj);
         $this->assertFalse($gradeobj->overridden);
         // Grades are 23 and null, display Aggregated grade is 15 => B3
@@ -573,10 +573,10 @@ class grade_aggregation_testcase extends advanced_testcase {
         $this->assertEquals($gradeobj->grade, 'B3');
 
         // Overridden grades
-        $DB->set_field('grade_grades', 'overridden', time(), array('itemid'=>$gpagi, 'userid'=>$this->student->id));
-        $DB->set_field('grade_grades', 'finalgrade', 23, array('itemid'=>$gpagi, 'userid'=>$this->student->id));
+        $DB->set_field('grade_grades', 'overridden', time(), array('itemid'=>$gpagi, 'userid'=>$this->student1->id));
+        $DB->set_field('grade_grades', 'finalgrade', 23, array('itemid'=>$gpagi, 'userid'=>$this->student1->id));
 
-        $gradeobj = grade_aggregation::get_alt_grade(false, $gpagi, array($act1, $act3), $this->student->id, $aggrdobj);
+        $gradeobj = grade_aggregation::get_alt_grade(false, $gpagi, array($act1, $act3), $this->student1->id, $aggrdobj);
         $this->assertNotNull($gradeobj);
         $this->assertTrue($gradeobj->overridden);
         // Overridden grade is 23 => A1
