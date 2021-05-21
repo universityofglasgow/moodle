@@ -463,7 +463,7 @@ class local_gugcat {
         if ($final_grade >= key(array_slice($scale, -1, 1, true)) && $final_grade <= key($scale)){
             return ($final_grade != 0) ? $scale[$final_grade] : $final_grade;
         }else {
-            return $grade;
+            return number_format($grade, 3);
         }
     }
 
