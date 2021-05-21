@@ -68,12 +68,12 @@ local_gugcat::set_grade_scale(null);
 $renderer = $PAGE->get_renderer('local_gugcat');
 
 // Check for exisiting alternative course grades
-$meritgi = local_gugcat::get_grade_item_id($course->id, $categoryid, get_string('meritgrade', 'local_gugcat'));
+$meritgi = local_gugcat::get_grade_item_id($course->id, is_null($categoryid) ? 0 : $categoryid, get_string('meritgrade', 'local_gugcat'));
 $meritsettings = null;
 if($meritgi){
     $meritsettings = $DB->get_records('gcat_acg_settings', array('acgid'=>$meritgi));
 }
-$gpagi = local_gugcat::get_grade_item_id($course->id, $categoryid, get_string('gpagrade', 'local_gugcat'));
+$gpagi = local_gugcat::get_grade_item_id($course->id, is_null($categoryid) ? 0 : $categoryid, get_string('gpagrade', 'local_gugcat'));
 $gpasettings = null;
 if($gpagi){
     $gpasettings = $DB->get_records('gcat_acg_settings', array('acgid'=>$gpagi));

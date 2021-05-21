@@ -74,7 +74,7 @@ class alternativegradeform extends moodleform {
             $cbfield[] =& $mform->createElement('text', "weights[$act->gradeitemid]", null, $weightattr);
             $mform->addGroup($cbfield, 'cbfield', '', array(''), false);
             $mform->setType("weights[$act->gradeitemid]", PARAM_INT);
-            $mform->setDefault("weights[$act->gradeitemid]", ($selectedm ? floatval($selectedm) : 0));
+            $mform->setDefault("weights[$act->gradeitemid]", ($selectedm ? floatval($selectedm * 100) : 0));
             $mform->disabledIf("weights[$act->gradeitemid]", "merits[$act->gradeitemid]", 'notchecked');
             $mform->setDefault("merits[$act->gradeitemid]", ($selectedm ? 1 : 0));
             $mform->hideif('cbfield', 'altgradetype', 'neq', MERIT_GRADE);

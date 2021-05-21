@@ -365,12 +365,14 @@ class local_gugcat_renderer extends plugin_renderer_base {
             $htmlrows .= html_writer::end_tag('tr');
         }
         if($displaymerit){
-            $htmlcolumns .= html_writer::tag('th', get_string('meritgrade', 'local_gugcat')
-            .$this->context_actions(null, null, false, $acgparams, false, false, 1), array('class' => 'sortable'));
+            $sortspan = html_writer::tag('span', get_string('meritgrade', 'local_gugcat'), array('class' => 'sortable'));
+            $htmlcolumns .= html_writer::tag('th', $sortspan
+            .$this->context_actions(null, null, false, $acgparams, false, false, 1));
         }
         if($displaygpa){
-            $htmlcolumns .= html_writer::tag('th', get_string('gpagrade', 'local_gugcat')
-            .$this->context_actions(null, null, false, $acgparams, false, false, 1), array('class' => 'sortable'));
+            $sortspan = html_writer::tag('span', get_string('gpagrade', 'local_gugcat'), array('class' => 'sortable'));
+            $htmlcolumns .= html_writer::tag('th', $sortspan
+            .$this->context_actions(null, null, false, $acgparams, false, false, 1));
         }
         $hide_release = in_array(get_string('missinggrade', 'local_gugcat'), array_column(array_column($rows, 'aggregatedgrade'), 'display'));
         $html = $this->header();
