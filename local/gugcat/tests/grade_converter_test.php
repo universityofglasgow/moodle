@@ -61,7 +61,7 @@ class grade_converter_testcase extends advanced_testcase {
         $modinfo = get_fast_modinfo($this->course);
         $cm_info = $modinfo->get_cm($this->cm->id);
         $this->assign = new assign(context_module::instance($cm_info->id), $cm_info, $this->course->id);
-        local_gugcat::$STUDENTS = $this->students;
+        local_gugcat::$students = $this->students;
         grade_capture::import_from_gradebook($this->course->id, $this->cm, $cm);
         $this->provisionalgi = local_gugcat::add_grade_item($this->course->id, get_string('provisionalgrd', 'local_gugcat'), $this->cm);
     }
@@ -100,19 +100,19 @@ class grade_converter_testcase extends advanced_testcase {
         $item2->grade = 15;
         $defaultvalue[] = $item2;
         // Assert defaultscale is false, returns null lowerboundary of schedule B
-        $return = grade_converter::process_defaults(false, local_gugcat::$SCHEDULE_B, $defaultvalue);
-        $schedBkeys = array_keys(local_gugcat::$SCHEDULE_B);
+        $return = grade_converter::process_defaults(false, local_gugcat::$scheduleb, $defaultvalue);
+        $schedBkeys = array_keys(local_gugcat::$scheduleb);
         foreach ($return as $key => $grade) {
             // Assert key is in schedule b keys array
             $this->assertContains($key, $schedBkeys);
             // Assert same alphanumeric from schedule b
-            $this->assertEquals($grade->grade, local_gugcat::$SCHEDULE_B[$key]);
+            $this->assertEquals($grade->grade, local_gugcat::$scheduleb[$key]);
             // Assert lowerboundary is null
             $this->assertNull($grade->lowerboundary);
         }
 
         // Assert defaultscale is true, returns the $defaultvalue from db to lowerboundary of schedule B
-        $return = grade_converter::process_defaults(true, local_gugcat::$SCHEDULE_B, $defaultvalue);
+        $return = grade_converter::process_defaults(true, local_gugcat::$scheduleb, $defaultvalue);
 
         $keys = array_keys($return);
         // Assert grade 18 from returned array
@@ -224,19 +224,19 @@ class grade_converter_testcase extends advanced_testcase {
         // Test 22 pt with schedule B conversion
         local_gugcat::set_grade_scale();
         // 23 => A0
-        $alphanumgrd = grade_converter::convert(local_gugcat::$SCHEDULE_B, 23);
+        $alphanumgrd = grade_converter::convert(local_gugcat::$scheduleb, 23);
         $this->assertEquals($alphanumgrd, 'A0');
         // 18 => B0
-        $alphanumgrd = grade_converter::convert(local_gugcat::$SCHEDULE_B, 18);
+        $alphanumgrd = grade_converter::convert(local_gugcat::$scheduleb, 18);
         $this->assertEquals($alphanumgrd, 'B0');
         // 10 => E0
-        $alphanumgrd = grade_converter::convert(local_gugcat::$SCHEDULE_B, 10);
+        $alphanumgrd = grade_converter::convert(local_gugcat::$scheduleb, 10);
         $this->assertEquals($alphanumgrd, 'E0');
         // 3 => G0
-        $alphanumgrd = grade_converter::convert(local_gugcat::$SCHEDULE_B, 3);
+        $alphanumgrd = grade_converter::convert(local_gugcat::$scheduleb, 3);
         $this->assertEquals($alphanumgrd, 'G0');
         // 1 => H
-        $alphanumgrd = grade_converter::convert(local_gugcat::$SCHEDULE_B, 1);
+        $alphanumgrd = grade_converter::convert(local_gugcat::$scheduleb, 1);
         $this->assertEquals($alphanumgrd, 'H');
     }
 

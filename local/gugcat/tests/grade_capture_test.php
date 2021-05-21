@@ -62,9 +62,9 @@ class grade_capture_testcase extends advanced_testcase {
         
         //create grade items
         $this->gradeitem = new grade_item($gen->create_grade_item(['courseid' => $this->course->id, 'iteminfo' => $this->cm->gradeitemid]), false);
-        local_gugcat::$STUDENTS = $this->students;
+        local_gugcat::$students = $this->students;
         $this->provisionalgi = local_gugcat::add_grade_item($this->course->id, get_string('provisionalgrd', 'local_gugcat'), $this->cm);
-        local_gugcat::$PRVGRADEID = $this->provisionalgi;
+        local_gugcat::$prvgradeid = $this->provisionalgi;
         
         local_gugcat::set_prv_grade_id($this->course->id, $this->cm);
         
@@ -202,7 +202,7 @@ class grade_capture_testcase extends advanced_testcase {
     public function test_capture_admin_grades() {
         //set grade scale first
         local_gugcat::set_grade_scale(3);
-        $scale = local_gugcat::$GRADES;
+        $scale = local_gugcat::$grades;
         //check scale has NS and MV
         $this->assertContains(NON_SUBMISSION_AC, $scale);
         $this->assertContains(MEDICAL_EXEMPTION_AC, $scale);

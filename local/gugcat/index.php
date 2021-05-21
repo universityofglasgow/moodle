@@ -124,7 +124,7 @@ if(!empty($totalactivities) || !empty($activities)){
         $valid_import_activity = is_null($scaleid) ? local_gugcat::is_validgradepoint($gradetype, $grademin) : local_gugcat::is_scheduleAscale($gradetype, $grademax);
         //if $activities is empty, and activity id parameter is also null add $activityid into $selectmodule
         empty($activities) ? $selectedmodule->activityid = $activityid : null;
-        //Populate static $GRADES scales
+        //Populate static $grades scales
         if($is_converted = $selectedmodule->is_converted){
             local_gugcat::set_grade_scale(null, $is_converted);
         }else{
@@ -176,8 +176,8 @@ if(count($filters) > 0 && $page > 0){
     $URL->remove_params('page');
     redirect($URL);
 }
-//Populate static $STUDENTS
-local_gugcat::$STUDENTS = $students;
+//Populate static $students
+local_gugcat::$students = $students;
 //Populate static provisional grade id
 local_gugcat::set_prv_grade_id($courseid, $selectedmodule);
 
@@ -223,7 +223,7 @@ if (isset($release)){
         $gradeitemid = local_gugcat::add_grade_item($courseid, $gradeitem, $selectedmodule);
         foreach ($newgrades as $id=>$item) {
             if(isset($item) && !empty($item)){
-                $grade = !is_numeric($item) ? array_search(strtoupper($item), local_gugcat::$GRADES) : $item;
+                $grade = !is_numeric($item) ? array_search(strtoupper($item), local_gugcat::$grades) : $item;
                 $notes = ",_gradeitem: $gradeitem";
                 local_gugcat::add_update_grades($id, $gradeitemid, $grade, (!$is_converted ? $notes : ''));
                 if($is_converted){
@@ -231,7 +231,7 @@ if (isset($release)){
                     // If conversion is enabled, save the converted grade to provisional grade and original grade to converted grade.
                     $conversion = grade_converter::retrieve_grade_conversion($selectedmodule->gradeitemid);
                     $cg = grade_converter::convert($conversion, $grade);
-                    local_gugcat::update_grade($id, local_gugcat::$PRVGRADEID, $cg, $notes);
+                    local_gugcat::update_grade($id, local_gugcat::$prvgradeid, $cg, $notes);
                     $convertedgi = local_gugcat::get_grade_item_id($COURSE->id, $selectedmodule->gradeitemid, get_string('convertedgrade', 'local_gugcat'));
                     local_gugcat::update_grade($id, $convertedgi, $grade, '');
                 }
