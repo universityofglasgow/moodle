@@ -934,7 +934,7 @@ class grade_aggregation{
             $ispoints = is_null($cm->gradeitem->scaleid) && is_null($cm->is_converted);
             $maxgrade = (int)$cm->gradeitem->grademax;
             $numeric = ($ispoints) ? "$cm->name Numeric Points Max($maxgrade)" : "$cm->name Numeric Grade";
-            array_push($activities, array($weight, $alpha, $numeric));
+            $activities[$cm->gradeitemid] = array($weight, $alpha, $numeric);
             array_push($columns, ...array($weight, $alpha, $numeric));
         }
         $displaymerit = false;
