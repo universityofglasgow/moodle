@@ -29,12 +29,12 @@ require_once("$CFG->libdir/formslib.php");
 require_once($CFG->dirroot . '/local/gugcat/locallib.php');
 
 class uploadform extends moodleform {
-    function definition (){
+    public function definition () {
 
         $mform =& $this->_form;
         $mform->addElement('html', '<div class="mform-container">');
 
-        if (isset($this->_customdata)) {  // hardcoding plugin names here is hacky
+        if (isset($this->_customdata)) {  // Hardcoding plugin names here is hacky.
             $features = $this->_customdata;
         } else {
             $features = array();
@@ -46,7 +46,7 @@ class uploadform extends moodleform {
             GRADE_TYPE_VALUE => get_string('modgradetypepoint', 'grades'),
         );
 
-        // course id and act id need to be passed for auth purposes
+        // Course id and act id need to be passed for auth purposes.
         $mform->addElement('hidden', 'id', required_param('id', PARAM_INT));
         $mform->setType('id', PARAM_INT);
         $mform->addElement('hidden', 'activityid', required_param('activityid', PARAM_INT));
@@ -66,16 +66,18 @@ class uploadform extends moodleform {
         $activity = $features['activity'];
         $mform->addElement('static', 'assessment', get_string('assessment'), $activity->name);
         $mform->setType('assessment', PARAM_NOTAGS);
-        $mform->addElement('static', 'gradetype', get_string('gradetype', 'grades'), $gradetypestr[$activity->gradeitem->gradetype]);
+        $mform->addElement('static', 'gradetype', get_string('gradetype', 'grades'),
+                 $gradetypestr[$activity->gradeitem->gradetype]);
         $mform->setType('gradetype', PARAM_NOTAGS);
-        if($activity->gradeitem->gradetype == GRADE_TYPE_VALUE){
+        if ($activity->gradeitem->gradetype == GRADE_TYPE_VALUE) {
             $mform->addElement('static', 'maximumgrade', get_string('grademax', 'grades'), intval($activity->gradeitem->grademax));
             $mform->setType('maximumgrade', PARAM_NOTAGS);
         }
-        $mform->addElement('static', 'step', get_string('step', 'local_gugcat', $a=1), get_string('downloadtempcsv', 'local_gugcat'));
-        // Download template button row
+        $mform->addElement('static', 'step', get_string('step', 'local_gugcat', $a = 1),
+                 get_string('downloadtempcsv', 'local_gugcat'));
+        // Download template button row.
         global $PAGE;
-        $dlnote = get_string($activity->modname == 'assign' ? 'downloadtempnoteA': 'downloadtempnoteB', 'local_gugcat');
+        $dlnote = get_string($activity->modname == 'assign' ? 'downloadtempnoteA' : 'downloadtempnoteB', 'local_gugcat');
         $dlurl = 'index.php?'.parse_url($PAGE->url, PHP_URL_QUERY).'&download=1';
         $dlurl = str_replace('&amp;', '&', $dlurl);
         $dlbtn = html_writer::tag('div', html_writer::tag('a', html_writer::tag('button', get_string('downloadcsv', 'local_gugcat'),
@@ -86,11 +88,12 @@ class uploadform extends moodleform {
             , array('class' => 'row'));
         $mform->addGroup(array($mform->createElement('html', $download)));
 
-        $mform->addElement('static', 'step', get_string('step', 'local_gugcat', $a=2), get_string('uploadfile', 'local_gugcat'));
+        $mform->addElement('static', 'step', get_string('step', 'local_gugcat', $a = 2), get_string('uploadfile', 'local_gugcat'));
         $mform->setType('step', PARAM_NOTAGS);
 
         // File upload.
-        $mform->addElement('filepicker', 'userfile', get_string('selectfile', 'local_gugcat'), null, array('accepted_types' => $acceptedtypes));
+        $mform->addElement('filepicker', 'userfile', get_string('selectfile', 'local_gugcat'),
+                 null, array('accepted_types' => $acceptedtypes));
         $mform->addRule('userfile', null, 'required');
         $mform->addElement('advcheckbox', 'ignorerow', get_string('ignorerow', 'local_gugcat'));
         $mform->setDefault('ignorerow', 1);
@@ -101,11 +104,11 @@ class uploadform extends moodleform {
 }
 
 class importform extends moodleform {
-    function definition (){
+    public function definition () {
 
         $mform =& $this->_form;
         $mform->addElement('html', '<div class="mform-container">');
-        // course id and act id need to be passed for auth purposes
+        // Course id and act id need to be passed for auth purposes.
         $mform->addElement('hidden', 'id', required_param('id', PARAM_INT));
         $mform->setType('id', PARAM_INT);
         $mform->addElement('hidden', 'activityid', required_param('activityid', PARAM_INT));
@@ -122,13 +125,15 @@ class importform extends moodleform {
 
         $reasons = local_gugcat::get_reasons();
         $reasons[0] = get_string('selectreason', 'local_gugcat');
-        $mform->addElement('select', 'reasons', get_string('reasonaddgrade', 'local_gugcat'), $reasons,['class' => 'mform-custom-select']);
+        $mform->addElement('select', 'reasons', get_string('reasonaddgrade', 'local_gugcat'),
+                 $reasons, ['class' => 'mform-custom-select']);
         $mform->setType('reasons', PARAM_NOTAGS);
         $mform->setDefault('reasons', 0);
         $mform->addRule('reasons', get_string('required'), 'nonzero', null, 'client');
         $mform->addRule('reasons', null, 'required', null, 'client');
 
-        $mform->addElement('text', 'otherreason', get_string('reasonother', 'local_gugcat'), array('size' => 16, 'placeholder' => get_string('pleasespecify', 'local_gugcat')));
+        $mform->addElement('text', 'otherreason', get_string('reasonother', 'local_gugcat'),
+                 array('size' => 16, 'placeholder' => get_string('pleasespecify', 'local_gugcat')));
         $mform->setType('otherreason', PARAM_NOTAGS);
         $mform->hideIf('otherreason', 'reasons', 'neq', 9);
         $mform->addElement('html', '</div>');
@@ -140,7 +145,7 @@ class importform extends moodleform {
 
     }
 
-    function validation($data, $files) {
+    public function validation($data, $files) {
         $errors = parent::validation($data, $files);
         if ($data['reasons'] == 9 && empty($data['otherreason'])) {
             $errors['otherreason'] = get_string('required');

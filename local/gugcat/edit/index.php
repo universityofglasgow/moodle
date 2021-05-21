@@ -93,7 +93,7 @@ $gradeversions = local_gugcat::filter_grade_version($gradeitems, $studentid);
 $mform = new addeditgradeform(null, array('id'=>$courseid, 'activity'=>$module, 'studentid'=>$studentid, 'overview' => $overview));
 if ($fromform = $mform->get_data()) {
     $gradereason = ($fromform->reasons == 9) ? $fromform->otherreason : local_gugcat::get_reasons()[$fromform->reasons];
-    $grade = !is_numeric($fromform->grade) ? array_search(strtoupper($fromform->grade), local_gugcat::$GRADES) : $fromform->grade; 
+    $grade = !is_numeric($fromform->grade) ? array_search(strtoupper($fromform->grade), local_gugcat::$grades) : $fromform->grade; 
     $gradeitemid = local_gugcat::add_grade_item($courseid, $gradereason, $module);
     $notes = ",_gradeitem: $gradereason ,_notes: $fromform->notes";
     $grades = local_gugcat::add_update_grades($studentid, $gradeitemid, $grade, (!$is_converted ? $notes : ''));
@@ -102,7 +102,7 @@ if ($fromform = $mform->get_data()) {
         // If conversion is enabled, save the converted grade to provisional grade and original grade to converted grade.
         $conversion = grade_converter::retrieve_grade_conversion($modid);
         $cg = grade_converter::convert($conversion, $grade);
-        local_gugcat::update_grade($studentid, local_gugcat::$PRVGRADEID, $cg, $notes);
+        local_gugcat::update_grade($studentid, local_gugcat::$prvgradeid, $cg, $notes);
         $convertedgi = local_gugcat::get_grade_item_id($COURSE->id, $modid, get_string('convertedgrade', 'local_gugcat'));
         local_gugcat::update_grade($studentid, $convertedgi, $grade);
     }
