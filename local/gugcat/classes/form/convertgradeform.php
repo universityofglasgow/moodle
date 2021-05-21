@@ -102,7 +102,7 @@ class convertform extends moodleform {
         $mform->addElement('html', html_writer::end_tag('div'));
         // Schedule B table.
         $mform->addElement('html', html_writer::start_tag('div', array('id' => 'table-scheduleb', 'class' => 'row hidden')));
-        $this->setup_table($schedb, $mform, 'schedb', null, $maxgrade);
+        $this->setup_table($schedb, $mform, 'schedB', null, $maxgrade);
         $mform->addElement('html', html_writer::tag('div', null, array('class' => 'col')));
         $mform->addElement('html', html_writer::end_tag('div'));
 
