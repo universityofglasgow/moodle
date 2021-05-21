@@ -29,6 +29,7 @@ global $CFG, $DB;
 require_once('config.php');
 require_once($CFG->dirroot .'/blocks/moodleblock.class.php');
 require_once($CFG->dirroot .'/blocks/gu_spdetails/block_gu_spdetails.php');
+require_once($CFG->libdir . '/gradelib.php');
 
 class block_gu_spdetails_testcase extends advanced_testcase {
 
@@ -257,6 +258,7 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $baseobject->statustext = get_string('status_notopen', 'block_gu_spdetails');
         $baseobject->class = null;
         $baseobject->hasstatusurl = false;
+        $baseobject->issubcategory = false;
 
         return $baseobject;
     }
@@ -575,12 +577,13 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $fb = new stdClass;
         $fb->feedbacktext = null;
         $fb->hasfeedback = false;
+        $fb->issubcategory = false;
 
         return $fb;
     }
 
     public function test_return_feedback() {
-        $id = null; $modname = null; $hasgrade = null; $feedback = null; $feedbackfiles = null;
+        $id = null; $modname = null; $hasgrade = null; $feedback = null; $feedbackfiles = null; $status = null;
         $hasturnitin = null; $gradingduedate = null; $duedate = null; $cutoffdate = null; $quizfeedback = null;
 
         $duedate = get_string('due', 'block_gu_spdetails').userdate(time() + 1,
@@ -602,7 +605,7 @@ class block_gu_spdetails_testcase extends advanced_testcase {
 
         $assignreturned1 = $this->lib->return_feedback($id, $modname, $hasgrade, $feedback, $feedbackfiles,
                                                     $hasturnitin, $gradingduedate, $duedate, $cutoffdate,
-                                                    $quizfeedback);
+                                                    $quizfeedback, $status);
         $hasturnitin = null;
 
         $assignexpected1 = $this->return_feedbackbaseobject();
@@ -617,7 +620,7 @@ class block_gu_spdetails_testcase extends advanced_testcase {
 
         $assignreturned2 = $this->lib->return_feedback($id, $modname, $hasgrade, $feedback, $feedbackfiles,
                                                     $hasturnitin, $gradingduedate, $duedate, $cutoffdate,
-                                                    $quizfeedback);
+                                                    $quizfeedback, $status);
         $hasturnitin = null; $feedback = null; $feedbackfiles = null;
 
         $assignexpected2 = $this->return_feedbackbaseobject();
@@ -633,7 +636,7 @@ class block_gu_spdetails_testcase extends advanced_testcase {
                    get_string('date_month_d', 'block_gu_spdetails'));
         $assignreturned3 = $this->lib->return_feedback($id, $modname, $hasgrade, $feedback, $feedbackfiles,
                                                     $hasturnitin, $gradingduedate, $duedate, $cutoffdate,
-                                                    $quizfeedback);
+                                                    $quizfeedback, $status);
         $hasturnitin = null; $feedback = null; $feedbackfiles = null;
 
         $assignexpected3 = $this->return_feedbackbaseobject();
@@ -646,7 +649,7 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $hasturnitin = 0; $feedback = array(); $feedbackfiles = 0; $gradingduedate = time() - 1;
         $assignreturned4 = $this->lib->return_feedback($id, $modname, $hasgrade, $feedback, $feedbackfiles,
                                                     $hasturnitin, $gradingduedate, $duedate, $cutoffdate,
-                                                    $quizfeedback);
+                                                    $quizfeedback, $status);
         $hasturnitin = null; $feedback = null; $feedbackfiles = null;
 
         $assignexpected4 = $this->return_feedbackbaseobject();
@@ -659,7 +662,7 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $hasturnitin = 0; $feedback = array(); $feedbackfiles = 0; $gradingduedate = 0;
         $assignreturned5 = $this->lib->return_feedback($id, $modname, $hasgrade, $feedback, $feedbackfiles,
                                                     $hasturnitin, $gradingduedate, $duedate, $cutoffdate,
-                                                    $quizfeedback);
+                                                    $quizfeedback, $status);
         $hasturnitin = null; $feedback = null; $feedbackfiles = null; $gradingduedate = null;
 
         $assignexpected5 = $this->return_feedbackbaseobject();
@@ -675,7 +678,7 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $quizfeedback = true;
         $quizreturned1 = $this->lib->return_feedback($id, $modname, $hasgrade, $feedback, $feedbackfiles,
                                                     $hasturnitin, $gradingduedate, $duedate, $cutoffdate,
-                                                    $quizfeedback);
+                                                    $quizfeedback, $status);
         $quizfeedback = null;
 
         $quizexpected1 = $this->return_feedbackbaseobject();
@@ -689,7 +692,7 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $quizfeedback = false; $gradingduedate = time() + 1;
         $quizreturned2 = $this->lib->return_feedback($id, $modname, $hasgrade, $feedback, $feedbackfiles,
                                                     $hasturnitin, $gradingduedate, $duedate, $cutoffdate,
-                                                    $quizfeedback);
+                                                    $quizfeedback, $status);
         $quizfeedback = null; $gradingduedate = null;
 
         $quizexpected2 = $this->return_feedbackbaseobject();
@@ -701,7 +704,7 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $quizfeedback = false; $gradingduedate = time() - 1;
         $quizreturned3 = $this->lib->return_feedback($id, $modname, $hasgrade, $feedback, $feedbackfiles,
                                                     $hasturnitin, $gradingduedate, $duedate, $cutoffdate,
-                                                    $quizfeedback);
+                                                    $quizfeedback, $status);
         $quizfeedback = null; $gradingduedate = null;
 
         $quizexpected3 = $this->return_feedbackbaseobject();
@@ -713,7 +716,7 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $quizfeedback = false; $gradingduedate = 0;
         $quizreturned3 = $this->lib->return_feedback($id, $modname, $hasgrade, $feedback, $feedbackfiles,
                                                     $hasturnitin, $gradingduedate, $duedate, $cutoffdate,
-                                                    $quizfeedback);
+                                                    $quizfeedback, $status);
         $quizfeedback = null; $gradingduedate = null;
 
         $quizexpected3 = $this->return_feedbackbaseobject();
@@ -725,7 +728,7 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $modname = 'workshop';
         $workshopreturned1 = $this->lib->return_feedback($id, $modname, $hasgrade, $feedback, $feedbackfiles,
                                                         $hasturnitin, $gradingduedate, $duedate, $cutoffdate,
-                                                        $quizfeedback);
+                                                        $quizfeedback, $status);
 
         $workshopexpected1 = $this->return_feedbackbaseobject();
         $workshopexpected1->hasfeedback = true;
@@ -739,7 +742,7 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $modname = 'forum';
         $forumreturned1 = $this->lib->return_feedback($id, $modname, $hasgrade, $feedback, $feedbackfiles,
                                                     $hasturnitin, $gradingduedate, $duedate, $cutoffdate,
-                                                    $quizfeedback);
+                                                    $quizfeedback, $status);
         $feedbackurl = new moodle_url('/mod/'.$modname.'/view.php', array('id' => $id));
 
         $forumexpected1 = $this->return_feedbackbaseobject();
@@ -757,7 +760,7 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $gradingduedate = time() + 1; $feedback = 'MV';
         $returned1 = $this->lib->return_feedback($id, $modname, $hasgrade, $feedback, $feedbackfiles,
                                                 $hasturnitin, $gradingduedate, $duedate, $cutoffdate,
-                                                $quizfeedback);
+                                                $quizfeedback, $status);
 
         $expected1 = $this->return_feedbackbaseobject();
         $expected1->feedbacktext = $duedate;
@@ -768,7 +771,7 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $gradingduedate = time() + 1; $feedback = 'NS'; $cutoffdate = time() - 1; $duedate = time() - 1;
         $returned2 = $this->lib->return_feedback($id, $modname, $hasgrade, $feedback, $feedbackfiles,
                                                 $hasturnitin, $gradingduedate, $duedate, $cutoffdate,
-                                                $quizfeedback);
+                                                $quizfeedback, $status);
 
         $expected2 = $this->return_feedbackbaseobject();
         $expected2->feedbacktext = $na;
@@ -779,7 +782,7 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $gradingduedate = time() - 1; $feedback = 'NS';
         $returned3 = $this->lib->return_feedback($id, $modname, $hasgrade, $feedback, $feedbackfiles,
                                                 $hasturnitin, $gradingduedate, $duedate, $cutoffdate,
-                                                $quizfeedback);
+                                                $quizfeedback, $status);
 
         $expected3 = $this->return_feedbackbaseobject();
         $expected3->feedbacktext = $na;
@@ -790,7 +793,7 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $gradingduedate = time() - 1; $feedback = null;
         $returned4 = $this->lib->return_feedback($id, $modname, $hasgrade, $feedback, $feedbackfiles,
                                                 $hasturnitin, $gradingduedate, $duedate, $cutoffdate,
-                                                $quizfeedback);
+                                                $quizfeedback, $status);
 
         $expected4 = $this->return_feedbackbaseobject();
         $expected4->feedbacktext = $overdue;
@@ -801,7 +804,7 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $gradingduedate = 0;
         $returned5 = $this->lib->return_feedback($id, $modname, $hasgrade, $feedback, $feedbackfiles,
                                                 $hasturnitin, $gradingduedate, $duedate, $cutoffdate,
-                                                $quizfeedback);
+                                                $quizfeedback, $status);
 
         $expected5 = $this->return_feedbackbaseobject();
         $expected5->feedbacktext = $tbc;
@@ -822,6 +825,8 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $finalgrade = null; $gradetype = null; $grademin = null; $grademax = null;
         $gradeinformation = null; $gradingduedate = null; $duedate = null;
         $cutoffdate = null; $scale = null; $feedback = null;
+        $convertedgradeid = null; $provisionalgrade = null; $status = null;
+        $idnumber = null; $outcomeid = null;
         $finalgrade = 3;
         $intgrade = 3;
 
@@ -829,22 +834,26 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $gradetype = '1'; $grademax = 22; $grademin = 0; $gradeinformation = true;
         $returned1 = $this->lib->return_grading($finalgrade, $gradetype, $grademin, $grademax,
                                 $gradeinformation, $gradingduedate, $duedate,
-                                $cutoffdate, $scale, $feedback);
+                                $cutoffdate, $scale, $feedback,
+                                $convertedgradeid, $provisionalgrade, $status,
+                                $idnumber, $outcomeid);
 
         $expected1 = $this->return_gradebaseobj();
         $expected1->hasgrade = true; $expected1->isprovisional = false;
-        $expected1->gradetext = $this->lib->return_22grademaxpoint($intgrade);
+        $expected1->gradetext = $this->lib->return_22grademaxpoint($intgrade, 1);
 
         $this->assertEquals($expected1, $returned1);
         // Test2.
         $gradetype = '1'; $grademax = 21; $grademin = 1; $gradeinformation = false;
         $returned2 = $this->lib->return_grading($finalgrade, $gradetype, $grademin, $grademax,
                                 $gradeinformation, $gradingduedate, $duedate,
-                                $cutoffdate, $scale, $feedback);
+                                $cutoffdate, $scale, $feedback,
+                                $convertedgradeid, $provisionalgrade, $status,
+                                $idnumber, $outcomeid);
 
         $expected2 = $this->return_gradebaseobj();
         $expected2->hasgrade = true; $expected2->isprovisional = true;
-        $expected2->gradetext = round(($intgrade / ($grademax - $grademin)) * 100, 2).'%';
+        $expected2->gradetext = "$finalgrade / $grademax";
 
         $this->assertEquals($expected2, $returned2);
 
@@ -852,7 +861,9 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $gradetype = '2'; $scale = 'A:1,B:2,C:3,D:4,E:5';
         $returned3 = $this->lib->return_grading($finalgrade, $gradetype, $grademin, $grademax,
                                 $gradeinformation, $gradingduedate, $duedate,
-                                $cutoffdate, $scale, $feedback);
+                                $cutoffdate, $scale, $feedback,
+                                $convertedgradeid, $provisionalgrade, $status,
+                                $idnumber, $outcomeid);
 
         $expected3 = $this->return_gradebaseobj();
         $expected3->gradetext = 'C';
@@ -865,7 +876,9 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $gradetype = '2'; $scale = 'A1,B2,C3,D4,E5';
         $returned4 = $this->lib->return_grading($finalgrade, $gradetype, $grademin, $grademax,
                                 $gradeinformation, $gradingduedate, $duedate,
-                                $cutoffdate, $scale, $feedback);
+                                $cutoffdate, $scale, $feedback,
+                                $convertedgradeid, $provisionalgrade, $status,
+                                $idnumber, $outcomeid);
 
         $expected4 = $this->return_gradebaseobj();
         $expected4->gradetext = 'C3';
@@ -878,7 +891,9 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $gradetype = '0'; $feedback = 'feedback';
         $returned4 = $this->lib->return_grading($finalgrade, $gradetype, $grademin, $grademax,
                                 $gradeinformation, $gradingduedate, $duedate,
-                                $cutoffdate, $scale, $feedback);
+                                $cutoffdate, $scale, $feedback,
+                                $convertedgradeid, $provisionalgrade, $status,
+                                $idnumber, $outcomeid);
 
         $expected4 = $this->return_gradebaseobj();
         $expected4->gradetext = $feedback;
@@ -891,7 +906,9 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $gradetype = '0'; $feedback = null;
         $returned5 = $this->lib->return_grading($finalgrade, $gradetype, $grademin, $grademax,
                                 $gradeinformation, $gradingduedate, $duedate,
-                                $cutoffdate, $scale, $feedback);
+                                $cutoffdate, $scale, $feedback,
+                                $convertedgradeid, $provisionalgrade, $status,
+                                $idnumber, $outcomeid);
 
         $expected5 = $this->return_gradebaseobj();
         $expected5->gradetext = get_string('emptyvalue', 'block_gu_spdetails');
@@ -911,7 +928,9 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $gradingduedate = time() + 1; $feedback = 'MV';
         $returned6 = $this->lib->return_grading($finalgrade, $gradetype, $grademin, $grademax,
                                 $gradeinformation, $gradingduedate, $duedate,
-                                $cutoffdate, $scale, $feedback);
+                                $cutoffdate, $scale, $feedback,
+                                $convertedgradeid, $provisionalgrade, $status,
+                                $idnumber, $outcomeid);
 
         $expected6 = $this->return_gradebaseobj();
         $expected6->gradetext = $duedate;
@@ -921,7 +940,9 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $feedback = 'NS'; $cutoffdate = time() - 1; $duedate = time() - 1;
         $returned7 = $this->lib->return_grading($finalgrade, $gradetype, $grademin, $grademax,
                                 $gradeinformation, $gradingduedate, $duedate,
-                                $cutoffdate, $scale, $feedback);
+                                $cutoffdate, $scale, $feedback,
+                                $convertedgradeid, $provisionalgrade, $status,
+                                $idnumber, $outcomeid);
 
         $expected7 = $this->return_gradebaseobj();
         $expected7->gradetext = $na;
@@ -931,7 +952,9 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $feedback = null; $cutoffdate = time() + 1; $duedate = time() + 1; $gradingduedate = time() + 1;
         $returned8 = $this->lib->return_grading($finalgrade, $gradetype, $grademin, $grademax,
                                 $gradeinformation, $gradingduedate, $duedate,
-                                $cutoffdate, $scale, $feedback);
+                                $cutoffdate, $scale, $feedback,
+                                $convertedgradeid, $provisionalgrade, $status,
+                                $idnumber, $outcomeid);
 
         $expected8 = $this->return_gradebaseobj();
         $expected8->gradetext = get_string('due', 'block_gu_spdetails').userdate($duedate,
@@ -942,7 +965,9 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $gradingduedate = time() - 1; $feedback = 'NS';
         $returned9 = $this->lib->return_grading($finalgrade, $gradetype, $grademin, $grademax,
                                 $gradeinformation, $gradingduedate, $duedate,
-                                $cutoffdate, $scale, $feedback);
+                                $cutoffdate, $scale, $feedback,
+                                $convertedgradeid, $provisionalgrade, $status,
+                                $idnumber, $outcomeid);
 
         $duedate = get_string('due', 'block_gu_spdetails').userdate(time() + 1,
                    get_string('date_month_d', 'block_gu_spdetails'));
@@ -954,7 +979,9 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $feedback = null;
         $returned10 = $this->lib->return_grading($finalgrade, $gradetype, $grademin, $grademax,
                                 $gradeinformation, $gradingduedate, $duedate,
-                                $cutoffdate, $scale, $feedback);
+                                $cutoffdate, $scale, $feedback,
+                                $convertedgradeid, $provisionalgrade, $status,
+                                $idnumber, $outcomeid);
 
         $expected10 = $this->return_gradebaseobj();
         $expected10->gradetext = $overdue;
@@ -964,7 +991,9 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $gradingduedate = 0;
         $returned11 = $this->lib->return_grading($finalgrade, $gradetype, $grademin, $grademax,
                                 $gradeinformation, $gradingduedate, $duedate,
-                                $cutoffdate, $scale, $feedback);
+                                $cutoffdate, $scale, $feedback,
+                                $convertedgradeid, $provisionalgrade, $status,
+                                $idnumber, $outcomeid);
 
         $expected11 = $this->return_gradebaseobj();
         $expected11->gradetext = $tbc;
@@ -995,17 +1024,17 @@ class block_gu_spdetails_testcase extends advanced_testcase {
 
         $expected1 = round($aggregationcoef, 2).'%';
         $this->assertEquals($expected1, $this->lib->return_weight($assessmenttype, $aggregation,
-                                                                  $aggregationcoef, $aggregationcoef2));
+                                                                  $aggregationcoef, $aggregationcoef2, ""));
 
         $aggregationcoef = 1;
         $expected2 = round($aggregationcoef * 100, 2).'%';
         $this->assertEquals($expected2, $this->lib->return_weight($assessmenttype, $aggregation,
-                                                                  $aggregationcoef, $aggregationcoef2));
+                                                                  $aggregationcoef, $aggregationcoef2, ""));
 
         $aggregation = '1';
         $expected3 = '—';
         $this->assertEquals($expected3, $this->lib->return_weight($assessmenttype, $aggregation,
-                                                                  $aggregationcoef, $aggregationcoef2));
+                                                                  $aggregationcoef, $aggregationcoef2, ""));
     }
 
     public function test_return_22grademaxpoint() {
@@ -1016,7 +1045,12 @@ class block_gu_spdetails_testcase extends advanced_testcase {
                         'A5', 'A4', 'A3', 'A2', 'A1');
 
         foreach ($values as $index => $value) {
-            $this->assertEquals($value, $this->lib->return_22grademaxpoint($index));
+            $this->assertEquals($value, $this->lib->return_22grademaxpoint($index, 1));
+            $stringarray = str_split($value);
+            if ($stringarray[0] != 'H') {
+                $value = $stringarray[0] . '0';
+            }
+            $this->assertEquals($value, $this->lib->return_22grademaxpoint($index, 2));
         }
     }
 
@@ -1055,12 +1089,12 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $userid = $student->id;
         $sortby = 'coursetitle';
         $sortorder = 'ASC';
-        $returned1 = $this->lib->retrieve_gradable_activities($activetab, $userid, $sortby, $sortorder);
+        $returned1 = $this->lib->retrieve_gradable_activities($activetab, $userid, $sortby, $sortorder, null);
 
         $this->assertEquals(array(), $returned1);
 
         $this->show_ondashboard($course->id);
-        $returned2 = $this->lib->retrieve_gradable_activities($activetab, $userid, $sortby, $sortorder);
+        $returned2 = $this->lib->retrieve_gradable_activities($activetab, $userid, $sortby, $sortorder, null);
         $this->assertEquals($assign->name, $returned2[0]->assessmentname);
     }
 
