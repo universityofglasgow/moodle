@@ -115,14 +115,18 @@ class grade_capture{
                 //get converted grade
                 if($is_converted && count($convertedgrades) > 0){
                     $cg = isset($convertedgrades[$student->id]) ? $convertedgrades[$student->id] : null;
-                    $cgg = grade_converter::convert($conversion, $cg->grade);
-                    $gradecaptureitem->convertedgrade = local_gugcat::convert_grade($cgg, null, $module->is_converted);
+                    $cgg = (is_null($cg) || is_null($cg->grade)) ? null : grade_converter::convert($conversion, $cg->grade);
+                    $gradecaptureitem->convertedgrade = is_null($cgg) ? get_string('nograde', 'local_gugcat') : local_gugcat::convert_grade($cgg, null, $module->is_converted);
                 }
                 //get first grade and provisional grade
                 $gifg = $gradeitems[$firstgradeid]->grades;
                 $gipg = $gradeitems[intval(local_gugcat::$prvgradeid)]->grades;
                 $fg = (isset($gifg[$student->id])) ? $gifg[$student->id]->grade : null;
                 $pg = (isset($gipg[$student->id])) ? $gipg[$student->id]->grade : null;
+                // Create provisional grade for newly added student.
+                if(is_null($pg)){
+                    local_gugcat::add_update_grades($student->id, local_gugcat::$prvgradeid, null, null, false);
+                }
                 $gradecaptureitem->firstgrade = is_null($fg) ? get_string('nograde', 'local_gugcat') : local_gugcat::convert_grade($fg, $gt);
 
                 $gradecaptureitem->provisionalgrade = is_null($pg) ? get_string('nograde', 'local_gugcat') :
@@ -386,7 +390,7 @@ class grade_capture{
                     // Update provisional grade with converted grade
                     local_gugcat::add_update_grades($student->id, local_gugcat::$prvgradeid, $cg, $notes, false);
                     // Update converted grade item
-                    local_gugcat::update_grade($student->id, $convertedgi, $grade);
+                    local_gugcat::add_update_grades($student->id, $convertedgi, $grade, null, false);
                 }else{
                     // Update moodle and provisional grade
                     local_gugcat::add_update_grades($student->id, $mggradeitemid, $grade, $notes);

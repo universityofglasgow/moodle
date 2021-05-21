@@ -16,7 +16,7 @@
 
 /**
  * Class containing helper methods for Grade Convertion page.
- * 
+ *
  * @package    local_gugcat
  * @copyright  2020x
  * @author     Accenture
@@ -62,9 +62,9 @@ class grade_converter{
             $convertedgi = local_gugcat::add_grade_item($COURSE->id, get_string('convertedgrade', 'local_gugcat'), $module);
             foreach ($prvgrades as $prvgrade) {
                 $grade = null;
-                // Get converted grade 
+                // Get converted grade
                 $cvtgrade = grade_grade::fetch(array('itemid' => $convertedgi, 'userid' => $prvgrade->userid));
-                // If converted grade is not null 
+                // If converted grade is not null
                 // Else, get the provisional grade
                 if($cvtgrade && !is_null($cvtgrade->rawgrade)){
                     $grade = $cvtgrade->rawgrade;
@@ -73,7 +73,7 @@ class grade_converter{
                         $grade = $prvgrade->rawgrade;
                     }
                 }
-                // If grade is not null, convert the grade and save it to provisional grade 
+                // If grade is not null, convert the grade and save it to provisional grade
                 if(!is_null($grade)){
                     $notes = ",_gradeitem: converted ,_scale: $scale";
                     $converted = self::convert($conversion, $grade);
@@ -116,12 +116,12 @@ class grade_converter{
     }
 
     /**
-     * Process schedule A or B array on display 
+     * Process schedule A or B array on display
      *
      * @param boolean $defaultscale Boolean if scale is the default one
      * @param array $scale schedule A or B
      * @param array $defaultvalue Default scale values from gcat table
-     * @return array $grades 
+     * @return array $grades
      */
     public static function process_defaults($defaultscale, $scale, $defaultvalue){
         $grades = array();
@@ -145,13 +145,13 @@ class grade_converter{
      */
     public static function convert($conversion, $grade, $is_schedB = false){
         // Return grade if its admin grade, -1, -2
-        if(local_gugcat::is_admin_grade($grade)){
+        if(local_gugcat::is_admin_grade($grade) || is_null($grade)){
             return $grade;
         }
         // If conversion is flat array ([1 => 'A1, ...]) - For schedule B
         if(empty(array_column($conversion, 'lowerboundary'))){
             $convs = array();
-            foreach ($conversion as $lower=>$item) { 
+            foreach ($conversion as $lower=>$item) {
                 $obj = new stdClass();
                 $obj->lowerboundary = $lower;
                 $obj->grade = $item;
@@ -164,8 +164,8 @@ class grade_converter{
 
         $convertedgrade = null;
         $grade = round($grade);
-        foreach ($convs as $index=>$cobj) { 
-            $cobj = (object) $cobj;     
+        foreach ($convs as $index=>$cobj) {
+            $cobj = (object) $cobj;
             // Get the upperbound from the preceding element lowerboundary
             $upperbound = (isset($convs[$index-1]) && $precendent = (object)$convs[$index-1])
                 ? $precendent->lowerboundary : null;
@@ -195,7 +195,7 @@ class grade_converter{
     }
 
     /**
-     * Returns array of grade converter templates 
+     * Returns array of grade converter templates
      *
      * @param int $itemid
      * @return array | false Array of grade elements for conversion
@@ -205,7 +205,7 @@ class grade_converter{
         return $DB->get_records('gcat_converter_templates', array('userid'=>$USER->id));
     }
 
-    
+
     /**
      * Saves new template in gcat_converter_templates table
      * @param string $templatename
@@ -221,7 +221,7 @@ class grade_converter{
         );
         return $DB->insert_record('gcat_converter_templates', $data);
     }
-    
+
     /**
      * Converts points to percentage and vise versa
      * @param int $maxgrade

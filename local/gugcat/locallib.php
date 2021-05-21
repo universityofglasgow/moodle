@@ -604,6 +604,9 @@ class local_gugcat {
      * @param int $grade
      */
     public static function is_admin_grade($grade){
+        if(is_null($grade)){
+            return false;
+        }
         switch (intval($grade)) {
             case NON_SUBMISSION:
                 return true;
