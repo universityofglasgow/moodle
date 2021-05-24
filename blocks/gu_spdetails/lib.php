@@ -655,13 +655,13 @@ class assessments_details {
                 WHEN cs.section != 0 THEN CONCAT('Topic ', cs.section)
                 ELSE c.fullname
             END AS coursetitle
-            FROM mdl_modules AS m
-                LEFT JOIN mdl_course_modules AS cm ON (cm.course = ?
+            FROM {modules} m
+                LEFT JOIN {course_modules} cm ON (cm.course = ?
                         AND cm.instance = ?
                         AND cm.module = m.id
                         AND cm.deletioninprogress = 0)
-                LEFT JOIN mdl_course AS c ON c.id = ?
-                LEFT JOIN mdl_course_sections AS cs ON (cs.course = c.id AND cs.id = cm.section)
+                LEFT JOIN {course} c ON c.id = ?
+                LEFT JOIN {course_sections} cs ON (cs.course = c.id AND cs.id = cm.section)
             WHERE m.name = ?";
             $coursesection = $DB->get_record_sql($sql, $params);
             return $coursesection ? $coursesection->coursetitle : $coursetitle;
