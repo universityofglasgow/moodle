@@ -26,7 +26,7 @@ use local_gugcat\grade_aggregation;
 
 require_once(__DIR__ . '/../../../../config.php');
 require_once($CFG->dirroot . '/local/gugcat/locallib.php');
-require_once($CFG->dirroot. '/local/gugcat/classes/form/alternativegradeform.php');
+require_once($CFG->dirroot . '/local/gugcat/classes/form/alternativegradeform.php');
 
 $courseid = required_param('id', PARAM_INT);
 $categoryid = optional_param('categoryid', null, PARAM_INT);
@@ -39,12 +39,12 @@ $url = new moodle_url('/local/gugcat/alternative/index.php', $urlparams);
 $indexurl = new moodle_url('/local/gugcat/index.php', $urlparams);
 $overviewurl = new moodle_url('/local/gugcat/overview/index.php', $urlparams);
 
-if(!is_null($categoryid) && $categoryid != 0){
+if (!is_null($categoryid) && $categoryid != 0) {
     $url->param('categoryid', $categoryid);
     $overviewurl->param('categoryid', $categoryid);
 }
 
-if(!is_null($alternative) && $alternative != 0){
+if (!is_null($alternative) && $alternative != 0) {
     $url->param('alternative', $alternative);
 }
 
@@ -63,45 +63,48 @@ $PAGE->set_course($course);
 $PAGE->set_heading($course->fullname);
 $PAGE->set_url($url);
 
-// Retrieve the activity
-if(!is_null($categoryid) && $categoryid != 0){
+// Retrieve the activity.
+if (!is_null($categoryid) && $categoryid != 0) {
     $activities = grade_aggregation::get_parent_child_activities($courseid, $categoryid);
-}else{
+} else {
     $activities = local_gugcat::get_activities($courseid);
 }
 local_gugcat::set_grade_scale(null);
 $renderer = $PAGE->get_renderer('local_gugcat');
 
-// Check for exisiting alternative course grades
+// Check for exisiting alternative course grades.
 $meritsettings = null;
 $gpasettings = null;
 
-if($alternative == MERIT_GRADE){
-    $meritgi = local_gugcat::get_grade_item_id($course->id, is_null($categoryid) ? 0 : $categoryid, get_string('meritgrade', 'local_gugcat'));
-    if($meritgi){
-        $meritsettings = $DB->get_records('gcat_acg_settings', array('acgid'=>$meritgi));
+if ($alternative == MERIT_GRADE) {
+    $meritgi = local_gugcat::get_grade_item_id($course->id, is_null($categoryid) ? 0
+    : $categoryid, get_string('meritgrade', 'local_gugcat'));
+    if ($meritgi) {
+        $meritsettings = $DB->get_records('gcat_acg_settings', array('acgid' => $meritgi));
     }
-}else if($alternative == GPA_GRADE){
-    $gpagi = local_gugcat::get_grade_item_id($course->id, is_null($categoryid) ? 0 : $categoryid, get_string('gpagrade', 'local_gugcat'));
-    if($gpagi){
-        $gpasettings = $DB->get_records('gcat_acg_settings', array('acgid'=>$gpagi));
+} else if ($alternative == GPA_GRADE) {
+    $gpagi = local_gugcat::get_grade_item_id($course->id, is_null($categoryid) ? 0
+    : $categoryid, get_string('gpagrade', 'local_gugcat'));
+    if ($gpagi) {
+        $gpasettings = $DB->get_records('gcat_acg_settings', array('acgid' => $gpagi));
     }
 }
 
 // Set up the alternative form.
-$mform = new alternativegradeform(null, array('activities' => $activities, 'meritsettings' => $meritsettings, 'gpasettings' => $gpasettings));
+$mform = new alternativegradeform(null, array('activities' => $activities, 'meritsettings' => $meritsettings,
+ 'gpasettings' => $gpasettings));
 // If the upload form has been submitted.
 if ($mform->is_cancelled()) {
     redirect($overviewurl);
 } else if ($formdata = $mform->get_data()) {
-    $is_merit = $formdata->altgradetype == MERIT_GRADE ? true : false;
-    $assessments = $is_merit ? $formdata->merits : $formdata->resits;
-    $weights = $is_merit ? $formdata->weights : array();
-    $appliedcap = $is_merit ? null : $formdata->appliedcap;
+    $ismerit = $formdata->altgradetype == MERIT_GRADE ? true : false;
+    $assessments = $ismerit ? $formdata->merits : $formdata->resits;
+    $weights = $ismerit ? $formdata->weights : array();
+    $appliedcap = $ismerit ? null : $formdata->appliedcap;
     $appliedcap = !is_null($appliedcap) && $appliedcap == 0 ? $formdata->grade : $appliedcap;
-    // Remove unselected assessments
+    // Remove unselected assessments.
     $assessments = array_filter($assessments);
-    if(!empty($assessments)){
+    if (!empty($assessments)) {
         grade_aggregation::create_edit_alt_grades($formdata->altgradetype, $assessments, $weights, $appliedcap);
         local_gugcat::notify_success('successaltgrades');
     }
