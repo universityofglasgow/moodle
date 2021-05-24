@@ -283,6 +283,7 @@ abstract class testing_util {
                 // Not initialised yet.
                 return array();
             }
+
             $data = file_get_contents($datafile);
             self::$tabledata = unserialize($data);
         }
