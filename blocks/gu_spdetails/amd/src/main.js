@@ -22,7 +22,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define(['core/ajax'], function(Ajax) {
+ define(['core/ajax'], function(Ajax) {
     const onClickListeners = function(event) {
         var currentTab = document.getElementById('current_tab');
         var pastTab = document.getElementById('past_tab');
@@ -222,6 +222,36 @@ define(['core/ajax'], function(Ajax) {
             sortingStatus(sortby, sortorder);
             if(isPageClicked) {
                 blockElement.scrollIntoView();
+            }
+            if(subcategory !== null) {
+                if(sortorder === 'asc') {
+                    document.getElementById('sortby_date_subcategory').classList.add('th-sort-asc');
+                    document.getElementById('sortby_date_subcategory').classList.remove('th-sort-desc');
+                    document.getElementById('sortby_date_subcategory').setAttribute('data-value', 'asc');
+                }else{
+                    document.getElementById('sortby_date_subcategory').classList.add('th-sort-desc');
+                    document.getElementById('sortby_date_subcategory').classList.remove('th-sort-asc');
+                    document.getElementById('sortby_date_subcategory').setAttribute('data-value', 'desc');
+                }
+                document.getElementById('sortby_date_subcategory').addEventListener('click', () => {
+                    console.log("aaaaa");
+                    var activetab = 'current';
+                    var page = 0;
+                    var sortby = 'duedate';
+                    var sortorder = ''
+                    if(document.getElementById('sortby_date_subcategory').getAttribute('data-value') == 'asc') {
+                        sortorder = 'desc';
+                        document.getElementById('sortby_date_subcategory').setAttribute('data-value', 'desc');
+                        document.getElementById('sortby_date_subcategory').classList.add('th-sort-desc');
+                        document.getElementById('sortby_date_subcategory').classList.remove('th-sort-asc');
+                    }else{
+                        sortorder = 'asc';
+                        document.getElementById('sortby_date_subcategory').setAttribute('data-value', 'asc');
+                        document.getElementById('sortby_date_subcategory').classList.add('th-sort-asc');
+                        document.getElementById('sortby_date_subcategory').classList.remove('th-sort-desc');
+                    }
+                    loadAssessments(activetab, page, sortby, sortorder, isPageClicked, subcategory);
+                })
             }
         }).fail(function(response) {
             if(response) {
