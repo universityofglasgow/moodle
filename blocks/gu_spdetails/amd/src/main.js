@@ -22,7 +22,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
- define(['core/ajax'], function(Ajax) {
+define(['core/ajax'], function(Ajax) {
     const onClickListeners = function(event) {
         var currentTab = document.getElementById('current_tab');
         var pastTab = document.getElementById('past_tab');
