@@ -91,7 +91,7 @@ if (!is_null($activityid) && $formtype == OVERRIDE_GRADE_FORM) {
     $subcatgrade = null;
     foreach ($student->grades as $key => $grade) {
         // Get the calculated sub category grade.
-        if ($grade->issubcat) {
+        if ($grade->is_subcat) {
             // Assign it to $subcatgrade.
             $subcatgrade = $grade;
             // Remove it from $student->grades.
