@@ -234,7 +234,6 @@ define(['core/ajax'], function(Ajax) {
                     document.getElementById('sortby_date_subcategory').setAttribute('data-value', 'desc');
                 }
                 document.getElementById('sortby_date_subcategory').addEventListener('click', () => {
-                    console.log("aaaaa");
                     var activetab = 'current';
                     var page = 0;
                     var sortby = 'duedate';
