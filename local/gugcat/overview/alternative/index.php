@@ -31,6 +31,7 @@ require_once($CFG->dirroot. '/local/gugcat/classes/form/alternativegradeform.php
 $courseid = required_param('id', PARAM_INT);
 $categoryid = optional_param('categoryid', null, PARAM_INT);
 $page = optional_param('page', 0, PARAM_INT);
+$alternative = optional_param('alternative', null, PARAM_INT);
 
 require_login($courseid);
 $urlparams = array('id' => $courseid, 'page' => $page);
@@ -41,6 +42,10 @@ $overviewurl = new moodle_url('/local/gugcat/overview/index.php', $urlparams);
 if(!is_null($categoryid) && $categoryid != 0){
     $url->param('categoryid', $categoryid);
     $overviewurl->param('categoryid', $categoryid);
+}
+
+if(!is_null($alternative) && $alternative != 0){
+    $url->param('alternative', $alternative);
 }
 
 $PAGE->navbar->add(get_string('navname', 'local_gugcat'), $indexurl);
@@ -68,16 +73,21 @@ local_gugcat::set_grade_scale(null);
 $renderer = $PAGE->get_renderer('local_gugcat');
 
 // Check for exisiting alternative course grades
-$meritgi = local_gugcat::get_grade_item_id($course->id, $categoryid, get_string('meritgrade', 'local_gugcat'));
 $meritsettings = null;
-if($meritgi){
-    $meritsettings = $DB->get_records('gcat_acg_settings', array('acgid'=>$meritgi));
-}
-$gpagi = local_gugcat::get_grade_item_id($course->id, $categoryid, get_string('gpagrade', 'local_gugcat'));
 $gpasettings = null;
-if($gpagi){
-    $gpasettings = $DB->get_records('gcat_acg_settings', array('acgid'=>$gpagi));
+
+if($alternative == MERIT_GRADE){
+    $meritgi = local_gugcat::get_grade_item_id($course->id, is_null($categoryid) ? 0 : $categoryid, get_string('meritgrade', 'local_gugcat'));
+    if($meritgi){
+        $meritsettings = $DB->get_records('gcat_acg_settings', array('acgid'=>$meritgi));
+    }
+}else if($alternative == GPA_GRADE){
+    $gpagi = local_gugcat::get_grade_item_id($course->id, is_null($categoryid) ? 0 : $categoryid, get_string('gpagrade', 'local_gugcat'));
+    if($gpagi){
+        $gpasettings = $DB->get_records('gcat_acg_settings', array('acgid'=>$gpagi));
+    }
 }
+
 // Set up the alternative form.
 $mform = new alternativegradeform(null, array('activities' => $activities, 'meritsettings' => $meritsettings, 'gpasettings' => $gpasettings));
 // If the upload form has been submitted.
@@ -97,7 +107,7 @@ if ($mform->is_cancelled()) {
     }
     redirect($overviewurl);
 } else {
-    $isadjust = $meritgi || $gpagi;
+    $isadjust = $alternative == MERIT_GRADE || $alternative == GPA_GRADE;
     // Display the create alternative grade form.
     echo $OUTPUT->header();
     echo $renderer->display_empty_form(get_string($isadjust ? 'adjustaltcoursegrade' : 'createaltcoursegrade', 'local_gugcat'));

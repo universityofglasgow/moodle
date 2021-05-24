@@ -115,14 +115,18 @@ class grade_capture{
                 //get converted grade
                 if($is_converted && count($convertedgrades) > 0){
                     $cg = isset($convertedgrades[$student->id]) ? $convertedgrades[$student->id] : null;
-                    $cgg = grade_converter::convert($conversion, $cg->grade);
-                    $gradecaptureitem->convertedgrade = local_gugcat::convert_grade($cgg, null, $module->is_converted);
+                    $cgg = (is_null($cg) || is_null($cg->grade)) ? null : grade_converter::convert($conversion, $cg->grade);
+                    $gradecaptureitem->convertedgrade = is_null($cgg) ? get_string('nograde', 'local_gugcat') : local_gugcat::convert_grade($cgg, null, $module->is_converted);
                 }
                 //get first grade and provisional grade
                 $gifg = $gradeitems[$firstgradeid]->grades;
-                $gipg = $gradeitems[intval(local_gugcat::$PRVGRADEID)]->grades;
+                $gipg = $gradeitems[intval(local_gugcat::$prvgradeid)]->grades;
                 $fg = (isset($gifg[$student->id])) ? $gifg[$student->id]->grade : null;
                 $pg = (isset($gipg[$student->id])) ? $gipg[$student->id]->grade : null;
+                // Create provisional grade for newly added student.
+                if(is_null($pg)){
+                    local_gugcat::add_update_grades($student->id, local_gugcat::$prvgradeid, null, null, false);
+                }
                 $gradecaptureitem->firstgrade = is_null($fg) ? get_string('nograde', 'local_gugcat') : local_gugcat::convert_grade($fg, $gt);
 
                 $gradecaptureitem->provisionalgrade = is_null($pg) ? get_string('nograde', 'local_gugcat') :
@@ -134,7 +138,7 @@ class grade_capture{
                 foreach ($gradeitems as $item) {
                     if(isset($item->grades[$student->id]->hidden) && $item->grades[$student->id]->hidden == 1)
                         $gradecaptureitem->hidden = true;
-                    if($item->id != local_gugcat::$PRVGRADEID && $item->id != $firstgradeid){
+                    if($item->id != local_gugcat::$prvgradeid && $item->id != $firstgradeid){
                         $rawgrade = (isset($item->grades[$student->id])) ? $item->grades[$student->id]->grade : null;
                         $grdobj = new stdClass();
                         $grade = is_null($rawgrade) ? 'N/A' : local_gugcat::convert_grade($rawgrade, $gt);
@@ -198,8 +202,8 @@ class grade_capture{
             }
         }
         //remove provisional column
-        if(local_gugcat::$PRVGRADEID){
-            unset($columns[local_gugcat::$PRVGRADEID]);
+        if(local_gugcat::$prvgradeid){
+            unset($columns[local_gugcat::$prvgradeid]);
         }
         !is_null($firstcolumn) ? array_unshift($columns, $firstcolumn) : null; //always put moodle grade first
         return $columns;
@@ -213,21 +217,13 @@ class grade_capture{
      */
     public static function release_prv_grade($courseid, $cm){
         global $USER, $CFG, $DB;
-        $data = new stdClass();
-        $data->courseid = $courseid;
-        $data->itemmodule = $cm->modname;
-        $data->itemname = $cm->name;
-        $data->iteminstance = $cm->instance;
         $gradeitemid = $cm->gradeitem->id;
-
-        //set offset value for max 22 points grade
-        $gradescaleoffset = (local_gugcat::is_scheduleAscale($cm->gradeitem->gradetype, $cm->gradeitem->grademax)) ? 1 : 0;
 
         //Retrieve enrolled students' ids only
         $students = get_enrolled_users(context_course ::instance($courseid), 'local/gugcat:gradable', 0, 'u.id');
 
         //get grade item
-        $gradeitem = new grade_item($data, true);
+        $gradeitem = $cm->gradeitem;
         if($cm->modname === 'assign'){
             require_once($CFG->dirroot . '/mod/assign/locallib.php');
             $assign = new assign(context_module::instance($cm->id), $cm, $courseid);
@@ -236,7 +232,9 @@ class grade_capture{
         foreach ($students as $student)  {
             //get provisional grade_grade by user id
             $fields = 'rawgrade, finalgrade, hidden';
-            if($prvgrd = $DB->get_record('grade_grades', array('itemid'=>local_gugcat::$PRVGRADEID, 'userid' => $student->id), $fields)){
+            $itemid = $cm->is_converted ? local_gugcat::get_grade_item_id($courseid, $gradeitemid, get_string('convertedgrade', 'local_gugcat'))
+                : local_gugcat::$prvgradeid;
+            if($prvgrd = $DB->get_record('grade_grades', array('itemid'=>$itemid, 'userid' => $student->id), $fields)){
                 $grd = is_null($prvgrd->finalgrade) ? $prvgrd->rawgrade : $prvgrd->finalgrade;
                 $hidden = $prvgrd->hidden;
 
@@ -262,9 +260,9 @@ class grade_capture{
                             $is_admingrade = false;
                             $feedback = null;
                             $excluded = 0;
-                            $rawgrade = $rawgrade - $gradescaleoffset;
                             break;
                     }
+
                     //update feedback and excluded field
                     $DB->set_field_select('grade_grades', 'feedback', $feedback, $select);
                     $DB->set_field_select('grade_grades', 'excluded', $excluded, $select);
@@ -292,7 +290,7 @@ class grade_capture{
                 }
             }
             else
-                local_gugcat::add_update_grades($student->id, local_gugcat::$PRVGRADEID, null);
+                local_gugcat::add_update_grades($student->id, local_gugcat::$prvgradeid, null);
         }
         //unhide gradeitem
         $gradeitem->hidden = 0;
@@ -319,7 +317,7 @@ class grade_capture{
 
         foreach ($modules as $module) {
             // Create Provisional Grade grade item and grade_grades to all students, then assign it to static PRVID
-            local_gugcat::$PRVGRADEID = is_null($module->provisionalid)
+            local_gugcat::$prvgradeid = is_null($module->provisionalid)
             ? local_gugcat::add_grade_item($courseid, get_string('provisionalgrd', 'local_gugcat'), $module, $students)
             : $module->provisionalid;
 
@@ -346,7 +344,7 @@ class grade_capture{
                     $prvid_reset = $parent->provisionalid;
                 }
             }else{
-                $prvid_reset = local_gugcat::$PRVGRADEID;
+                $prvid_reset = local_gugcat::$prvgradeid;
             }
 
             // Check if module is converted
@@ -390,9 +388,9 @@ class grade_capture{
                     // Convert grade
                     $cg = grade_converter::convert($conversion, $grade);
                     // Update provisional grade with converted grade
-                    local_gugcat::add_update_grades($student->id, local_gugcat::$PRVGRADEID, $cg, $notes, false);
+                    local_gugcat::add_update_grades($student->id, local_gugcat::$prvgradeid, $cg, $notes, false);
                     // Update converted grade item
-                    local_gugcat::update_grade($student->id, $convertedgi, $grade);
+                    local_gugcat::add_update_grades($student->id, $convertedgi, $grade, null, false);
                 }else{
                     // Update moodle and provisional grade
                     local_gugcat::add_update_grades($student->id, $mggradeitemid, $grade, $notes);
@@ -421,9 +419,9 @@ class grade_capture{
     public static function hideshowgrade($userid){
         global $USER;
 
-        $grade_ = new grade_grade(array('userid' => $userid, 'itemid' => local_gugcat::$PRVGRADEID), true);
+        $grade_ = new grade_grade(array('userid' => $userid, 'itemid' => local_gugcat::$prvgradeid), true);
         $grade_->usermodified = $USER->id;
-        $grade_->itemid = local_gugcat::$PRVGRADEID;
+        $grade_->itemid = local_gugcat::$prvgradeid;
         $grade_->userid = $userid;
         $grade_->timemodified = time();
         if($grade_->hidden == 0){
@@ -525,7 +523,7 @@ class grade_capture{
                 }
 
                 // Check if grade is not in the scale
-                if(isset($grade) && !in_array(strtoupper($grade), local_gugcat::$GRADES)){
+                if(isset($grade) && !in_array(strtoupper($grade), local_gugcat::$grades)){
                     $gradebookerrors[] = get_string('uploaderrorgradescale', 'local_gugcat', $errorobj);
                     $status = false;
                     break;
@@ -556,13 +554,13 @@ class grade_capture{
         if($status && count($newgrades) > 0){
             $gradeitemid = local_gugcat::add_grade_item($COURSE->id, $itemname, $activity);
             foreach ($newgrades as $id=>$item) {
-                $grade = !is_numeric($item) ? array_search(strtoupper($item), local_gugcat::$GRADES) : $item;
+                $grade = !is_numeric($item) ? array_search(strtoupper($item), local_gugcat::$grades) : $item;
                 local_gugcat::add_update_grades($id, $gradeitemid, $grade, '');
                 if($activity->is_converted){
                     // If conversion is enabled, save the converted grade to provisional grade and original grade to converted grade.
                     $conversion = grade_converter::retrieve_grade_conversion($activity->gradeitemid);
                     $cg = grade_converter::convert($conversion, $grade);
-                    local_gugcat::update_grade($id, local_gugcat::$PRVGRADEID, $cg, '');
+                    local_gugcat::update_grade($id, local_gugcat::$prvgradeid, $cg, '');
                     $convertedgi = local_gugcat::get_grade_item_id($COURSE->id, $activity->gradeitemid, get_string('convertedgrade', 'local_gugcat'));
                     local_gugcat::update_grade($id, $convertedgi, $grade, '');
                 }

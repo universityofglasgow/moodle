@@ -399,7 +399,6 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
         var btn_finalrelease = document.getElementById('btn-finalrelease');
         var btn_switch_display = document.getElementById('btn-switch-display');
         var btn_bulk_import = document.getElementById('btn-blkimport');
-        var btn_convert = document.getElementById('id_convertbutton');
         var radio_ptprc = document.getElementsByName('percentpoints');
         var btn_altsave = document.querySelector('[name="savealtbutton"]');
         switch (event.target) {
@@ -453,9 +452,7 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                 }
                 break;
             case btn_finalrelease:
-                var isConvertSubcat = document.getElementById('isconvertsubcat');
-                showModal('finalrelease', isConvertSubcat.value != 1 ?
-                'modalreleasefinalgrades' : 'modalreleasefinalconvertedgrades', 'confirmfinalrelease');
+                showModal('finalrelease', 'modalreleasefinalgrades', 'confirmfinalrelease');
                 break;
             case btn_download:
                 document.getElementById('downloadcsv-submit').click();
@@ -474,9 +471,6 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                 }else{
                     document.getElementById('bulk-submit').click();
                 }
-                break;
-            case btn_convert:
-                showModal('hiddensubmit', 'modalconvertgrades', 'continueconvertgrade');
                 break;
             case radio_ptprc[0]:
             case radio_ptprc[1]:
@@ -687,7 +681,6 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                     document.getElementById('btn-release').style.display =
                     !$(".gradeitems").text().includes("Moodle Grade[Date]") ? 'inline-block' : 'none';
                     var nodeArr = Array.from(document.querySelectorAll('.gradeitems'));
-                    var isConverted = document.getElementById('isconverted');
                     if(nodeArr.find(node => node.innerHTML !== 'Moodle Grade<br>[Date]')){
                         document.getElementById('btn-saveadd').style.display = 'inline-block';
                         var btnnewgrade = document.querySelectorAll('.addnewgrade');
@@ -699,9 +692,6 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                         hideshowgrade.forEach(element => {
                             element.style.display = 'block';
                         });
-                    }
-                    if(isConverted.value != 0){
-                        document.getElementById('btn-release').style.display = 'none';
                     }
                 }
             }

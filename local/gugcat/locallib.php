@@ -66,11 +66,11 @@ require_once($CFG->libdir.'/dataformatlib.php');
 
 class local_gugcat {
 
-    public static $GRADES = array();
-    public static $SCHEDULE_A = array();
-    public static $SCHEDULE_B = array();
-    public static $PRVGRADEID = null;
-    public static $STUDENTS = array();
+    public static $grades = array();
+    public static $schedulea = array();
+    public static $scheduleb = array();
+    public static $prvgradeid = null;
+    public static $students = array();
 
      /**
      * Returns reasons/grade versions in array
@@ -205,7 +205,7 @@ class local_gugcat {
     }
 
     /**
-     * Set the static $PRVGRADEID when provisional grade item exist, creates if not yet created
+     * Set the static $prvgradeid when provisional grade item exist, creates if not yet created
      * @param int $courseid
      * @param mixed $mod Selected course module
      */
@@ -213,8 +213,8 @@ class local_gugcat {
         if(is_null($mod)) return;
         $pgrd_str = get_string(($mod->modname == 'category' ? 'subcategorygrade' :'provisionalgrd'), 'local_gugcat');
         $id = $mod->modname == 'category' ? $mod->id : $mod->gradeitemid;
-        self::$PRVGRADEID = self::get_grade_item_id($courseid, $id, $pgrd_str);
-        return self::$PRVGRADEID;
+        self::$prvgradeid = self::get_grade_item_id($courseid, $id, $pgrd_str);
+        return self::$prvgradeid;
     }
 
     /**
@@ -339,7 +339,7 @@ class local_gugcat {
                 $params_mod = [
                     'scaleid' => $mod->gradeitem->scaleid,
                     'grademin' => 1,
-                    'grademax' => sizeof(self::$GRADES),
+                    'grademax' => sizeof(self::$grades),
                     'gradetype' => 2,
                     'iteminfo' => $mod->gradeitemid,
                     'itemname' => $itemname
@@ -393,8 +393,8 @@ class local_gugcat {
             $grade_->timemodified = time();
             //if insert successful - update provisional grade
             return (!$grade_->insert()) ? false :
-            (($updateprovisional && self::$PRVGRADEID && !is_null($grade))
-            ? self::update_grade($userid, self::$PRVGRADEID, $grade, $notes)
+            (($updateprovisional && self::$prvgradeid && !is_null($grade))
+            ? self::update_grade($userid, self::$prvgradeid, $grade, $notes)
             : true);
 
         }else{
@@ -404,8 +404,8 @@ class local_gugcat {
             if($grade_->update()){
                 //update timemodified of grade item
                 $DB->set_field('grade_items', 'timemodified', $grade_->timemodified, array('id' => $itemid));
-                if($updateprovisional && self::$PRVGRADEID){
-                    return self::update_grade($userid, self::$PRVGRADEID, $grade, $notes);
+                if($updateprovisional && self::$prvgradeid){
+                    return self::update_grade($userid, self::$prvgradeid, $grade, $notes);
                 }else{
                     return true;
                 }
@@ -451,10 +451,10 @@ class local_gugcat {
                 return number_format($grade, 3);
             }
             if($scaletype != SCHEDULE_A){
-                return grade_converter::convert(self::$SCHEDULE_B, $grade, true);
+                return grade_converter::convert(self::$scheduleb, $grade, true);
             }
         }
-        $scale = self::$GRADES + grade_aggregation::$AGGRADE;
+        $scale = self::$grades + grade_aggregation::$aggrade;
 
         //add admin grades in scale
         $scale[NON_SUBMISSION] = NON_SUBMISSION_AC;
@@ -463,7 +463,7 @@ class local_gugcat {
         if ($final_grade >= key(array_slice($scale, -1, 1, true)) && $final_grade <= key($scale)){
             return ($final_grade != 0) ? $scale[$final_grade] : $final_grade;
         }else {
-            return $grade;
+            return number_format($grade, 3);
         }
     }
 
@@ -480,13 +480,13 @@ class local_gugcat {
                 unset($gradeitems[$gradeitem->id]);
             }
         }
-        unset($gradeitems[self::$PRVGRADEID]);
+        unset($gradeitems[self::$prvgradeid]);
 
         return $gradeitems;
     }
 
     /**
-     * Set the static $GRADES scale based from the scale id
+     * Set the static $grades scale based from the scale id
      * @param int $scaleid
      * @param int $scaletype Scale type can be Schedule or Schedule B
      */
@@ -494,16 +494,22 @@ class local_gugcat {
         global $DB;
         $scalegrades = array();
         if(is_null($scaleid)){
-            list($scalegrades, $schedB) = self::get_gcat_scale();
-            self::$SCHEDULE_A = $scalegrades;
+            if (!reset(self::$schedulea) && !reset(self::$scheduleb)) {
+                list($scalegrades, $schedB) = self::get_gcat_scale();
+            } else {
+                $scalegrades = self::$schedulea;
+                // Schedule B starts 1 => H
+                $schedB = array_reverse(array_filter(array_merge(array(0), self::$scheduleb)),true);
+            }
+            self::$schedulea = $scalegrades;
             // Change the indexes (+1) of Schedule B to its upperbounds
             $upperbounds = array(1, 3, 6, 9, 12, 15, 18, 23);
             $B = array();
             foreach($schedB as $i=>$b){
                 $B[$upperbounds[$i-1]] = $b;
             }
-            self::$SCHEDULE_B = $B;
-            $scalegrades = ($scaletype != SCHEDULE_A) ? self::$SCHEDULE_B : $scalegrades;
+            self::$scheduleb = $B;
+            $scalegrades = ($scaletype != SCHEDULE_A) ? self::$scheduleb : $scalegrades;
         }else{
             if($scale = $DB->get_field('scale', 'scale', array('id'=>$scaleid))){
                 $scalegrades = make_menu_from_list($scale);
@@ -511,7 +517,7 @@ class local_gugcat {
         }
         $scalegrades[NON_SUBMISSION] = NON_SUBMISSION_AC;
         $scalegrades[MEDICAL_EXEMPTION] = MEDICAL_EXEMPTION_AC;
-        self::$GRADES = $scalegrades;
+        self::$grades = $scalegrades;
     }
 
     /**
@@ -598,6 +604,9 @@ class local_gugcat {
      * @param int $grade
      */
     public static function is_admin_grade($grade){
+        if(is_null($grade)){
+            return false;
+        }
         switch (intval($grade)) {
             case NON_SUBMISSION:
                 return true;
@@ -632,7 +641,7 @@ class local_gugcat {
         global $DB;
         $grades_arr = array();
         $gt = $module->gradeitem->gradetype;
-        $gradehistory_arr = $DB->get_records('grade_grades_history', array('userid'=>$studentid, 'itemid'=>self::$PRVGRADEID), MUST_EXIST);
+        $gradehistory_arr = $DB->get_records('grade_grades_history', array('userid'=>$studentid, 'itemid'=>self::$prvgradeid), MUST_EXIST);
         foreach($gradehistory_arr as $grdhistory){
             if(!preg_match('/,_gradeitem/i', $grdhistory->feedback)){
                 continue;
@@ -1228,7 +1237,7 @@ class local_gugcat {
 
      /**
      * Normalize grades from gradebook to gcat (+1)
-     * @param mixed $gradeobj Grade object item from grade_get_grades function
+     * @param mixed object | string $gradeobj Grade object item from grade_get_grades function
      * @return mixed |null
      */
     public static function normalize_gcat_grades($gradeobj){
@@ -1247,13 +1256,15 @@ class local_gugcat {
             $grade = $gradeobj->grade;
             $str = $gradeobj->str_grade;
             $gradeobj->grade = array_search($str, $schedB) ? array_search($str, $schedB) : $grade;
-        }else if(isset($gradeobj) && !isset($gradeobj->str_grade)){
+        }else if(isset($gradeobj) && !isset($gradeobj->str_grade) && is_object($gradeobj)){
             $grade = $gradeobj->grade;
-            if(!is_null(local_gugcat::$GRADES) && reset(local_gugcat::$GRADES) == 'A0'){
+            if(!is_null(local_gugcat::$grades) && reset(local_gugcat::$grades) == 'A0'){
                 $str = grade_converter::convert($schedB, $grade, true);
                 $gradeobj->grade = array_search($str, $schedB) ? array_search($str, $schedB) : $grade;
             }
             $gradeobj->feedback = null;
+        }else if(isset($gradeobj) && is_string($gradeobj)){
+            $gradeobj = array_search($gradeobj, $schedB);
         }
         return $gradeobj;
     }

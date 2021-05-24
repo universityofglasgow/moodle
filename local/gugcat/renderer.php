@@ -76,7 +76,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
         //reindex activities, childactivities, reasons and grades array
         $activities = array_values($activities_);
         $childactivities = !empty($childactivities_) ? array_values($childactivities_) : null;
-        $grades = array_values(array_unique(local_gugcat::$GRADES));
+        $grades = array_values(array_unique(local_gugcat::$grades));
         $reasons = array_values(local_gugcat::get_reasons());
         //grade capture columns and rows in html
         $htmlcolumns = null;
@@ -264,7 +264,6 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $colgroups = null; // Use for grouping the columns of child activities (to add border)
         $colspan = 0; // Number of columns a column group should span
         $prevcatid = null;
-        $isconvertsubcat = false;
         $missinggrade = in_array(get_string('missinggrade', 'local_gugcat'), array_unique(array_column(array_column($rows, 'aggregatedgrade'), 'display'))) ? true : false;
         $is_computed = $missinggrade && count(array_unique(array_column(array_column($rows, 'aggregatedgrade'), 'display'))) == 1 ? false : true;
         $merit_exists = in_array(null, array_column($rows, 'meritgrade')) ? false : true;
@@ -283,11 +282,8 @@ class local_gugcat_renderer extends plugin_renderer_base {
             $convertgrdparams = "?id=$courseid&activityid=$act->gradeitemid&page=$page" . $historyeditcategory;
             $is_imported = false;
             $is_converted = $act->is_converted;
-            //if module is converted then change the value for issubcatconvert to true, else original value.
-            $isconvertsubcat = $is_converted ? true : $isconvertsubcat;
             if($act->modname == 'category'){
                 if($act->gradeitem->gradetype == GRADE_TYPE_VALUE || $is_converted){
-                    $isconvertsubcat = true;
                     $is_imported = local_gugcat::get_grade_item_id($courseid, $act->id, get_string('subcategorygrade', 'local_gugcat'));
                 }
             }
@@ -320,8 +316,9 @@ class local_gugcat_renderer extends plugin_renderer_base {
         }
         $htmlcolumns .= html_writer::tag('th', get_string('requiresresit', 'local_gugcat'), array('class' => 'sortable'));
         $htmlcolumns .= html_writer::tag('th', get_string('percentcomplete', 'local_gugcat'), array('class' => 'sortable'));
-        $htmlcolumns .= html_writer::tag('th', get_string('aggregatedgrade', 'local_gugcat') . ($is_computed && !($merit_exists && $gpa_exists)
-        ? $this->context_actions(null, null, null, $acgparams, false, false, 0) : null), array('class' => 'sortable'));
+        $sortspan = html_writer::tag('span', get_string('aggregatedgrade', 'local_gugcat'), array('class' => 'sortable'));
+        $htmlcolumns .= html_writer::tag('th', $sortspan . ($is_computed && !($merit_exists && $gpa_exists)
+        ? $this->context_actions(null, null, null, $acgparams, false, false, 0) : null));
         //grade capture rows
 
         $displaymerit = false;
@@ -341,7 +338,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
                 $courseformhistoryparams = "?id=$courseid&cnum=$row->cnum&page=$page" . $gradeformhistorycategory;
                 $gradecell = $grade->grade.((strpos($grade->grade, 'No grade') !== false) || (strpos($grade->grade, 'Missing') !== false)
                 ? null : ($grade->is_imported ? $this->context_actions($row->studentno, null, ($grade->is_subcat ? true : false), $ammendgradeparams, true) : null));
-                $gradeui = ($grade->grade == MEDICAL_EXEMPTION_AC && ($merit_exists || $gpa_exists))
+                $gradeui = ($row->highlightMV && $grade->grade == MEDICAL_EXEMPTION_AC && ($merit_exists || $gpa_exists))
                     ? html_writer::tag('div', $gradecell, array('class' => 'highlighted'))
                     : $gradecell;
                 $htmlrows .= html_writer::tag('td', $gradeui, $datacategory);
@@ -354,13 +351,13 @@ class local_gugcat_renderer extends plugin_renderer_base {
             $htmlrows .= ($row->aggregatedgrade->display != get_string('missinggrade', 'local_gugcat'))
             ? html_writer::tag('td', $row->aggregatedgrade->display.$this->context_actions($row->studentno, null, true, $courseformhistoryparams, true))
             : html_writer::tag('td', $row->aggregatedgrade->display);
-            $row->meritgrade ? $htmlrows .= ($row->meritgrade->grade != get_string('missinggrade', 'local_gugcat') 
+            $row->meritgrade ? $htmlrows .= ($row->meritgrade->grade != get_string('missinggrade', 'local_gugcat')
             ? html_writer::tag('td', $row->meritgrade->grade.$this->context_actions($row->studentno, null, true, $courseformhistoryparams.'&alternativecg=1', true))
             : html_writer::tag('td', $row->meritgrade->grade)) : null;
             if($row->meritgrade && !$displaymerit){
                 $displaymerit = true;
             }
-            $row->gpagrade ? $htmlrows .= ($row->gpagrade->grade != get_string('missinggrade', 'local_gugcat') 
+            $row->gpagrade ? $htmlrows .= ($row->gpagrade->grade != get_string('missinggrade', 'local_gugcat')
             ? html_writer::tag('td', $row->gpagrade->grade.$this->context_actions($row->studentno, null, true, $courseformhistoryparams.'&alternativecg=2', true))
             : html_writer::tag('td', $row->gpagrade->grade)) : null;
             if($row->gpagrade && !$displaygpa){
@@ -369,12 +366,14 @@ class local_gugcat_renderer extends plugin_renderer_base {
             $htmlrows .= html_writer::end_tag('tr');
         }
         if($displaymerit){
-            $htmlcolumns .= html_writer::tag('th', get_string('meritgrade', 'local_gugcat')
-            .$this->context_actions(null, null, false, $acgparams, false, false, 1), array('class' => 'sortable'));
+            $sortspan = html_writer::tag('span', get_string('meritgrade', 'local_gugcat'), array('class' => 'sortable'));
+            $htmlcolumns .= html_writer::tag('th', $sortspan
+            .$this->context_actions(null, null, false, "$acgparams&alternative=".MERIT_GRADE, false, false, 1));
         }
         if($displaygpa){
-            $htmlcolumns .= html_writer::tag('th', get_string('gpagrade', 'local_gugcat')
-            .$this->context_actions(null, null, false, $acgparams, false, false, 1), array('class' => 'sortable'));
+            $sortspan = html_writer::tag('span', get_string('gpagrade', 'local_gugcat'), array('class' => 'sortable'));
+            $htmlcolumns .= html_writer::tag('th', $sortspan
+            .$this->context_actions(null, null, false, "$acgparams&alternative=".GPA_GRADE, false, false, 1));
         }
         $hide_release = in_array(get_string('missinggrade', 'local_gugcat'), array_column(array_column($rows, 'aggregatedgrade'), 'display'));
         $html = $this->header();
@@ -388,7 +387,6 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $html .= html_writer::empty_tag('input', array('id'=>'resitstudentno', 'name' => 'rowstudentno', 'type' => 'hidden'));
         $html .= html_writer::empty_tag('button', array('id'=>'downloadcsv-submit', 'name'=> 'downloadcsv', 'type'=>'submit'));
         $html .= html_writer::empty_tag('button', array('id'=>'finalrelease-submit', 'name'=> 'finalrelease', 'type'=>'submit'));
-        $html .= html_writer::empty_tag('input', array('id'=>'isconvertsubcat', 'name'=>'isconvertsubcat', 'type'=>'hidden', 'value'=>$isconvertsubcat));
         $html .= html_writer::end_tag('form');
         $html .= $this->footer();
         return $html;
@@ -424,7 +422,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $acg = optional_param('alternativecg', null, PARAM_INT);
         $html = $this->header();
         $html .= $this->render_from_template('local_gugcat/gcat_form_details', (object)[
-            'title' =>get_string(($setting != 0 ? (!is_null($activityid) ? 'overridestudassgrade' : (is_null($acg) ? 'overridestudgrade' 
+            'title' =>get_string(($setting != 0 ? (!is_null($activityid) ? 'overridestudassgrade' : (is_null($acg) ? 'overridestudgrade'
             : ($acg == 1 ? 'overridestudmeritgrade' : 'overridestudgpagrade'))) : 'adjustcourseweight'), 'local_gugcat'),
             'student' => $student,
             'blindmarking'=> !local_gugcat::is_blind_marking() ? true : null
@@ -619,7 +617,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
 
     /**
      * Renders display of alternative course grade history page
-     * 
+     *
      * @param array $rows
      * @param mixed $student user info of the student
      */
