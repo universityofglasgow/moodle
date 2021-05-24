@@ -171,6 +171,7 @@ class grade_aggregation{
         foreach ($students as $student) {
             $schedaweights = 0;
             $schedbweights = 0;
+            $hasmvgrade = false;
             $gradecaptureitem = new gcat_item();
             $gradecaptureitem->cnum = $i;
             $gradecaptureitem->studentno = $student->id;
@@ -282,7 +283,7 @@ class grade_aggregation{
                         $sumaggregated += (float)$grdvalue * $newweight;
                         $calculatedweight += local_gugcat::is_child_activity($item) ? 0 : (float)$weight;
                     } else if (!is_null($grd) && $grade == MEDICAL_EXEMPTION_AC && ($meritgi || $gpagi)) {
-                        $gradecaptureitem->highlightMV = true;
+                        $hasmvgrade = true;
                     }
                     $getcategory = ($item->modname != 'category'
                         && $category = local_gugcat::is_child_activity($item)) ? $category : false;
@@ -373,9 +374,7 @@ class grade_aggregation{
                     }
                     $gradecaptureitem->meritgrade = self::get_alt_grade(true, $meritgi, $selectedmerits, $student->id);
                     $gradecaptureitem->meritgrade->grades = $meritgradeweights;
-                    if ($gradecaptureitem->meritgrade->overridden) {
-                        $gradecaptureitem->highlightMV = false;
-                    }
+                    $gradecaptureitem->highlightMV = ($gradecaptureitem->meritgrade->overridden) ? false : $hasmvgrade;
                 }
 
                 // GPA grade.
@@ -394,9 +393,7 @@ class grade_aggregation{
                     $gradecaptureitem->gpagrade = self::get_alt_grade(false, $gpagi, $selectedgpa, $student->id, $aggrdobj);
                     $gradecaptureitem->gpagrade->gpacap = reset($gpacap);
                     $gradecaptureitem->gpagrade->grades = $gpagrade;
-                    if ($gradecaptureitem->gpagrade->overridden) {
-                        $gradecaptureitem->highlightMV = false;
-                    }
+                    $gradecaptureitem->highlightMV = ($gradecaptureitem->gpagrade->overridden) ? false : $hasmvgrade;
                 }
             }
             $gradecaptureitem->aggregatedgrade = $aggrdobj;
