@@ -109,7 +109,7 @@ class convertform extends moodleform {
         $mform->addElement('html', html_writer::empty_tag('br'));
 
         $mform->addElement('text', 'templatename', get_string('pleaseprovidetemplatename', 'local_gugcat'),
-                 array('size' => '50', 'maxlength' => '50'));
+                 array('size' => '60', 'maxlength' => '50'));
         $mform->addRule('templatename', null, 'maxlength', 50, 'client');
         $mform->setType('templatename', PARAM_NOTAGS);
 
