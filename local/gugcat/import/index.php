@@ -39,13 +39,13 @@ $download = optional_param('download', null, PARAM_INT);
 
 require_login($courseid);
 $urlparams = array('id' => $courseid, 'activityid' => $activityid, 'page' => $page);
-$URL = new moodle_url('/local/gugcat/import/index.php', $urlparams);
-(!is_null($categoryid) && $categoryid != 0) ? $URL->param('categoryid', $categoryid) : null;
+$url = new moodle_url('/local/gugcat/import/index.php', $urlparams);
+(!is_null($categoryid) && $categoryid != 0) ? $url->param('categoryid', $categoryid) : null;
 $indexurl = new moodle_url('/local/gugcat/index.php', $urlparams);
 
 $modid = $activityid;
-if(!is_null($childactivityid) && $childactivityid != 0){
-    $URL->param('childactivityid', $childactivityid);
+if (!is_null($childactivityid) && $childactivityid != 0) {
+    $url->param('childactivityid', $childactivityid);
     $indexurl->param('childactivityid', $childactivityid);
     $modid = $childactivityid;
 }
@@ -63,36 +63,36 @@ require_capability('local/gugcat:view', $coursecontext);
 $PAGE->set_context($coursecontext);
 $PAGE->set_course($course);
 $PAGE->set_heading($course->fullname);
-$PAGE->set_url($URL);
+$PAGE->set_url($url);
 
-// Logs for upload import grades
+// Logs for upload import grades.
 $params = array(
     'context' => context_course::instance($courseid),
     'other' => array(
         'courseid' => $courseid,
         'activityid' => $modid,
         'categoryid' => $categoryid,
-        'page'=> $page
+        'page' => $page
     )
 );
 
-// Retrieve the activity
+// Retrieve the activity.
 $module = local_gugcat::get_activity($courseid, $modid);
 $renderer = $PAGE->get_renderer('local_gugcat');
 
-// Download template is clicked
-if($download == 1){
+// Download template is clicked.
+if ($download == 1) {
     grade_capture::download_template_csv($module);
 }
 
-// If assessment is assignment, create participant no. for each students
-if($module->modname == 'assign'){
+// If assessment is assignment, create participant no. for each students.
+if ($module->modname == 'assign') {
     assign::allocate_unique_ids($module->instance);
 }
 
 // Set up the upload import form.
 $mform = new uploadform(null, array('acceptedtypes' => array('.csv'), 'activity' => $module));
-if(!$iid){
+if (!$iid) {
     // If the upload form has been submitted.
     if ($formdata = $mform->get_data()) {
         echo $OUTPUT->header();
@@ -110,10 +110,10 @@ if(!$iid){
             die();
         }
         $headers = ($formdata->ignorerow == 1) ? array() : $csvimport->get_headers();
-        $iid = $csvimport->get_iid(); // Go to import options form
+        $iid = $csvimport->get_iid(); // Go to import options form.
 
         echo $renderer->display_import_preview($headers, $csvimport->get_previewdata(), $module->modname == 'assign');
-    }else{
+    } else {
         // Display the standard upload file form.
         echo $OUTPUT->header();
         echo $renderer->display_empty_form();
@@ -126,24 +126,24 @@ if(!$iid){
 // Data has already been submitted so we can use the $iid to retrieve it.
 $csvimportdata = new csv_import_reader($iid, 'grade');
 
-// Import form to be able to choose reason
+// Import form to be able to choose reason.
 $mform2 = new importform(null, array('iid' => $iid));
 
 // Here, if we have data, we process the fields and enter the information into the database.
 if ($formdata = $mform2->get_data()) {
-    //Populate static $GRADES scales
-    if($is_converted = $module->is_converted){
-        local_gugcat::set_grade_scale(null, $is_converted);
-    }else{
+    // Populate static $grades scales.
+    if ($isconverted = $module->is_converted) {
+        local_gugcat::set_grade_scale(null, $isconverted);
+    } else {
         local_gugcat::set_grade_scale($module->gradeitem->scaleid);
     }
-    //Populate static provisional grade id
+    // Populate static provisional grade id.
     local_gugcat::set_prv_grade_id($courseid, $module);
 
-    $gradereason = ($formdata->reasons == 9) ? $formdata->otherreason :  local_gugcat::get_reasons()[$formdata->reasons];
+    $gradereason = ($formdata->reasons == 9) ? $formdata->otherreason : local_gugcat::get_reasons()[$formdata->reasons];
 
     list($status, $errors) = grade_capture::prepare_import_data($csvimportdata, $module, $gradereason);
-    if($status && count($errors) == 0){
+    if ($status && count($errors) == 0) {
         local_gugcat::notify_success('successimportupload');
         (!is_null($categoryid) && $categoryid != 0) ? $indexurl->param('categoryid', $categoryid) : null;
         (!is_null($childactivityid) && $childactivityid != 0) ? $indexurl->param('childactivityid', $childactivityid) : null;
@@ -151,7 +151,7 @@ if ($formdata = $mform2->get_data()) {
         $event->trigger();
         redirect($indexurl);
         exit;
-    }else{
+    } else {
         echo $OUTPUT->header();
         $iid = null;
         $errors[] = get_string('importfailed', 'grades');

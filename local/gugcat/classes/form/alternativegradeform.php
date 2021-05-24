@@ -50,7 +50,7 @@ class alternativegradeform extends moodleform {
             'id' => 'select-alt-grade',
             'class' => 'mform-custom-select'
         );
-        if(!is_null($adjust) && $adjust != 0){
+        if (!is_null($adjust) && $adjust != 0) {
             $altgtattr['disabled'] = true;
         }
         $mform->addElement('select', 'altgradetype', get_string('selectaltgrdtype', 'local_gugcat'), $altgradetypes, $altgtattr);
@@ -61,7 +61,7 @@ class alternativegradeform extends moodleform {
         $gpasettings = $features['gpasettings'];
         if ($meritsettings) {
             $mform->setDefault('altgradetype', MERIT_GRADE);
-        } else if ($gpasettings){
+        } else if ($gpasettings) {
             $mform->setDefault('altgradetype', GPA_GRADE);
         } else {
             $mform->setDefault('altgradetype', 0);

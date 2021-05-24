@@ -218,7 +218,7 @@ $string['viewgpagradehistory'] = 'View GPA grade history';
 $string['viewmeritgradehistory'] = 'View merit / distinction grade history';
 $string['warningreimport'] = 'The grades in Moodle Gradebook have been updated since the last import into GCAT. Please check if there are any changes which need to be replicated or imported into GCAT.';
 
-// Grade item names
+// Grade item names.
 $string['gi_agreedgrade'] = 'Agreed Grade';
 $string['gi_cappedgrade'] = 'Capped Grade';
 $string['gi_conductpenalty'] = 'Conduct Penalty';
@@ -228,7 +228,7 @@ $string['gi_moderatedgrade'] = 'Moderated Grade';
 $string['gi_secondgrade'] = 'Second Grade';
 $string['gi_thirdgrade'] = 'Third Grade';
 
-//Log events
+// Log events.
 $string['eventaddgrades'] = 'Add new grade for user';
 $string['eventaddadjustgradeconverter'] = 'Add / adjust assessment grade conversion';
 $string['eventaddmultiplegrades'] = 'Add multiple grades';
@@ -248,7 +248,7 @@ $string['eventrequireresit'] = 'Require Resit';
 $string['eventtoggleassessmentsdisplay'] = 'Toggle assessments display in Student Dashboard';
 $string['eventuploadgrades'] = 'Upload additional grades';
 
-//aggregated assessment grade history notes
+// Aggregated assessment grade history notes.
 $string['aggregation'] = 'System update - Aggregation calculation function updated';
 $string['grade'] = 'System update - Component grade(s) updated, see component grade history for more information';
 $string['import'] = 'System update - Component grade(s) imported';
@@ -256,5 +256,5 @@ $string['convertnew'] = 'System update - Conversion Applied';
 $string['convertexist'] = 'System update - Conversion Adjusted';
 $string['pendingimport'] = 'Pending import';
 
-//gcat grade category
+// Gcat grade category.
 $string['gcat_category'] = 'DO NOT USE';

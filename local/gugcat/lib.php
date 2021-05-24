@@ -24,7 +24,7 @@
  */
 
 function local_gugcat_extend_navigation_course($parentnode, $course, $context) {
-    if(!has_capability('local/gugcat:view', $context)) {
+    if (!has_capability('local/gugcat:view', $context)) {
         return;
     }
     $url = new moodle_url('/local/gugcat/index.php', array('id' => $course->id));
@@ -34,55 +34,58 @@ function local_gugcat_extend_navigation_course($parentnode, $course, $context) {
     $parentnode->make_active();
 }
 
-function local_gugcat_extend_navigation($navigation){
+function local_gugcat_extend_navigation($navigation) {
     global $USER, $PAGE;
 
     if (empty($USER->id)) {
         return;
     }
 
-    // Check the current page context.  If the context is not of a course or module then we are in another area of Moodle and return void.
+    // Check the current page context.
+    // If the context is not of a course or module then we are in another area of Moodle and return void.
     $context = context::instance_by_id($PAGE->context->id);
     $isvalidcontext = ($context instanceof context_course || $context instanceof context_module) ? true : false;
     if (!$isvalidcontext) {
         return;
     }
 
-     // If the context if a module then get the parent context.
-     $coursecontext = null;
-     if ($context instanceof context_module) {
-         $coursecontext = $context->get_course_context();
-     } else {
-         $coursecontext = $context;
-     }
-     if (!has_capability('local/gugcat:view', $coursecontext)){
+    // If the context if a module then get the parent context.
+    $coursecontext = null;
+    if ($context instanceof context_module) {
+        $coursecontext = $context->get_course_context();
+    } else {
+        $coursecontext = $context;
+    }
+    if (!has_capability('local/gugcat:view', $coursecontext)) {
         return;
-    };     
+    };
 
-    $gugcatLinkName = get_string('navname', 'local_gugcat');
-    $linkUrl = new moodle_url('/local/gugcat/index.php', array('id' => $coursecontext->instanceid));
+    $gugcatlinkname = get_string('navname', 'local_gugcat');
+    $linkurl = new moodle_url('/local/gugcat/index.php', array('id' => $coursecontext->instanceid));
     $icon = new pix_icon('t/grades', '');
-    $currentCourseNode = $navigation->find('currentcourse', $navigation::TYPE_ROOTNODE);
-    if (isNodeNotEmpty($currentCourseNode)) {
-        // we have a 'current course' node, add the link to it.
-        $currentCourseNode->add($gugcatLinkName, $linkUrl, navigation_node::NODETYPE_LEAF, $gugcatLinkName, 'gugcat', $icon);
+    $currentcoursenode = $navigation->find('currentcourse', $navigation::TYPE_ROOTNODE);
+    if (isNodeNotEmpty($currentcoursenode)) {
+        // We have a 'current course' node, add the link to it.
+        $currentcoursenode->add($gugcatlinkname, $linkurl, navigation_node::NODETYPE_LEAF, $gugcatlinkname, 'gugcat', $icon);
     }
 
-    $myCoursesNode = $navigation->find('mycourses', $navigation::TYPE_ROOTNODE);
-    if(isNodeNotEmpty($myCoursesNode)) {
-        $currentCourseInMyCourses = $myCoursesNode->find($coursecontext->instanceid, navigation_node::TYPE_COURSE);
-        if($currentCourseInMyCourses) {
-            // we found the current course in 'my courses' node, add the link to it.
-            $currentCourseInMyCourses->add($gugcatLinkName, $linkUrl, navigation_node::NODETYPE_LEAF, $gugcatLinkName, 'gugcat', $icon);
+    $mycoursesnode = $navigation->find('mycourses', $navigation::TYPE_ROOTNODE);
+    if (isNodeNotEmpty($mycoursesnode)) {
+        $currentcourseinmycourses = $mycoursesnode->find($coursecontext->instanceid, navigation_node::TYPE_COURSE);
+        if ($currentcourseinmycourses) {
+            // We found the current course in 'my courses' node, add the link to it.
+            $currentcourseinmycourses->add($gugcatlinkname, $linkurl, navigation_node::NODETYPE_LEAF,
+             $gugcatlinkname, 'gugcat', $icon);
         }
     }
 
-    $coursesNode = $navigation->find('courses', $navigation::TYPE_ROOTNODE);
-    if (isNodeNotEmpty($coursesNode)) {
-        $currentCourseInCourses = $coursesNode->find($coursecontext->instanceid, navigation_node::TYPE_COURSE);
-        if ($currentCourseInCourses) {
-            // we found the current course in the 'courses' node, add the link to it.
-            $currentCourseInCourses->add($gugcatLinkName, $linkUrl, navigation_node::NODETYPE_LEAF, $gugcatLinkName, 'gugcat', $icon);
+    $coursesnode = $navigation->find('courses', $navigation::TYPE_ROOTNODE);
+    if (isNodeNotEmpty($coursesnode)) {
+        $currentcourseincourses = $coursesnode->find($coursecontext->instanceid, navigation_node::TYPE_COURSE);
+        if ($currentcourseincourses) {
+            // We found the current course in the 'courses' node, add the link to it.
+            $currentcourseincourses->add($gugcatlinkname, $linkurl, navigation_node::NODETYPE_LEAF,
+             $gugcatlinkname, 'gugcat', $icon);
         }
     }
 }
