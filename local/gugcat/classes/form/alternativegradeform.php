@@ -122,6 +122,10 @@ class alternativegradeform extends moodleform {
         $selectcap = array();
         $grades = local_gugcat::$grades;
         unset($grades[MEDICAL_EXEMPTION]);
+        foreach ($grades as $key => $value) {
+            $num = $key - 1;
+            $grades[$key] = $key!= NON_SUBMISSION ? "$num ($value)" : $value;
+        }
         $grades[0] = get_string('selectgrade', 'local_gugcat');
         $selectcap[] = $mform->createElement('radio', 'appliedcap', '', get_string('capother', 'local_gugcat'), 0, '');
         $selectcap[] = $mform->createElement('select', 'grade', get_string('gradeformgrade', 'local_gugcat'),

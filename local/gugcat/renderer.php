@@ -444,14 +444,16 @@ class local_gugcat_renderer extends plugin_renderer_base {
      * @param string $class
      * @param string $id
      */
-    public function display_custom_select($options, $name = null, $default = null, $class = null, $id = null) {
-        $html = $this->render_from_template('local_gugcat/gcat_custom_select', (object)[
+    public function display_custom_select($options, $name = null, $default = null, $class = null,
+    $id = null, $attributes = array()) {
+        $params = array_merge(array(
             'default' => $default,
             'options' => $options,
             'class' => $class,
             'id' => $id,
-            'name' => $name,
-        ]);
+            'name' => $name
+        ), $attributes);
+        $html = $this->render_from_template('local_gugcat/gcat_custom_select', (object)$params);
         return $html;
     }
 
@@ -893,7 +895,8 @@ class local_gugcat_renderer extends plugin_renderer_base {
             'select-category',
             null,
             'select-category',
-            'select-category'
+            'select-category',
+            array('autofocus' => true)
         );
         $html .= (has_capability('local/gugcat:revealidentities', $coursecontext)
             || has_capability('local/gugcat:displayassessments', $coursecontext))
