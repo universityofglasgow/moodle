@@ -1164,7 +1164,7 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         // Create course.
         $course = $this->getDataGenerator()->create_course();
 
-        // Get Parent Category
+        // Get Parent Category.
         $this->getDataGenerator()->create_grade_category(array('courseid' => $course->id));
         $sql = "SELECT id FROM {grade_categories} WHERE parent IS NULL AND courseid = $course->id";
         $expectedparent = $DB->get_record_sql($sql);
@@ -1178,7 +1178,7 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $course = $this->getDataGenerator()->create_course();
 
         // Create categories.
-        $categoryattribute = array('courseid'=>$course->id);
+        $categoryattribute = array('courseid' => $course->id);
         $level2ids = array();
         for ($i = 0; $i < 5; $i++) {
             array_push($level2ids, $this->getDataGenerator()->create_grade_category($categoryattribute)->id);
@@ -1198,7 +1198,7 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $course = $this->getDataGenerator()->create_course();
 
         // Create category.
-        $categoryattribute = array('courseid'=>$course->id);
+        $categoryattribute = array('courseid' => $course->id);
         $category = $this->getDataGenerator()->create_grade_category($categoryattribute);
 
         $returned1 = $this->lib->get_topicname_category($category->id, $course->fullname);
@@ -1247,7 +1247,8 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $casestatement1 = $this->lib->generate_topicname_case_statement($gettopicname1);
         $casestatement2 = $this->lib->generate_topicname_case_statement($gettopicname2);
 
-        $this->assertEquals("CASE WHEN gc.id = $category->id THEN '$coursesection->name' ELSE c.fullname END AS coursetitle", $casestatement1);
+        $this->assertEquals("CASE WHEN gc.id = $category->id THEN '$coursesection->name' " .
+                            "ELSE c.fullname END AS coursetitle", $casestatement1);
         $this->assertEquals("c.fullname AS coursetitle", $casestatement2);
     }
 }

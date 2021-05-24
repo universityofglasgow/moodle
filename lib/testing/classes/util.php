@@ -283,7 +283,7 @@ abstract class testing_util {
                 // Not initialised yet.
                 return array();
             }
-
+            ini_set('memory_limit', '-1');
             $data = file_get_contents($datafile);
             self::$tabledata = unserialize($data);
         }
