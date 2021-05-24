@@ -13,10 +13,10 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
- 
+
 /**
  * the local_gugcat course grade history viewed event.
-*
+ *
  * @package    local_gugcat
  * @copyright  2020
  * @author     Accenture
@@ -27,18 +27,19 @@ defined('MOODLE_INTERNAL') || die();
 
 class toggle_assessments_display extends \core\event\base {
     protected function init() {
-        $this->data['crud'] = 'r'; // c(reate), r(ead), u(pdate), d(elete)
+        $this->data['crud'] = 'r'; // Valid values are c(reate), r(ead), u(pdate), d(elete).
         $this->data['edulevel'] = self::LEVEL_TEACHING;
     }
- 
+
     public static function get_name() {
         return get_string('eventtoggleassessmentsdisplay', 'local_gugcat');
     }
- 
+
     public function get_description() {
-        return "The user with id {$this->userid} has switch {$this->other['status']} the display of assessments on Student Dashboard for the course with an id of {$this->courseid}.";
+        return "The user with id {$this->userid} has switch {$this->other['status']} the display of assessments on ".
+                "Student Dashboard for the course with an id of {$this->courseid}.";
     }
- 
+
     public function get_url() {
         $url = new \moodle_url('local/gugcat/index.php', array('id' => $this->courseid));
         return $url;
@@ -49,7 +50,7 @@ class toggle_assessments_display extends \core\event\base {
             '...........',
             '....', $this->contextinstanceid);
     }
- 
+
     protected function get_legacy_eventdata() {
         $data = new \stdClass();
         $data->userid = $this->relateduserid;

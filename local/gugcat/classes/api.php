@@ -23,9 +23,10 @@
  * @author     Accenture
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+namespace local_gugcat;
+
 defined('MOODLE_INTERNAL') || die();
 
-namespace local_gugcat;
 require_once($CFG->dirroot . '/local/gugcat/locallib.php');
 
 use context_course;

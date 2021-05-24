@@ -24,22 +24,22 @@
  */
 namespace local_gugcat;
 defined('MOODLE_INTERNAL') || die();
- /**
- * Class representing a gcat item. Items displayed in rows on GCAT tables
- */
+   /**
+    *   Class representing a gcat item. Items displayed in rows on GCAT tables
+    */
 
 class gcat_item{
 
-    /**
-     * The student number from student info.
-     * @var int $studentno
-     */
+      /**
+       * The student number from student info.
+       * @var int $studentno
+       */
     public $studentno;
 
       /**
-     * The student number from student info.
-     * @var int $idnumber
-     */
+       * The student number from student info.
+       * @var int $idnumber
+       */
     public $idnumber;
 
     /**
@@ -80,7 +80,7 @@ class gcat_item{
 
     /**
      * The string percentage of the accomplish assessment of the student
-     *@var string $completed
+     * @var string $completed
      */
     public $completed = '0%';
 

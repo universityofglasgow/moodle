@@ -13,10 +13,10 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
- 
+
 /**
  * The local_gugcat add new grade event.
-*
+ *
  * @package    local_gugcat
  * @copyright  2020
  * @author     Accenture
@@ -30,29 +30,31 @@ class bulk_import extends \core\event\base {
         $this->data['crud'] = 'c';
         $this->data['edulevel'] = self::LEVEL_TEACHING;
     }
- 
+
     public static function get_name() {
         return get_string('bulkimport', 'local_gugcat');
     }
- 
+
     public function get_description() {
         return "The user with id {$this->userid} bulk import a sub-category {$this->other['categoryname']}";
     }
- 
+
     public function get_url() {
-        $url = new \moodle_url('local/gugcat/index/index.php', array('id' => $this->courseid, 'page'=>$this->other['page'], 'activityid'=>$this->other['activityid']));
-        if(!is_null($this->other['categoryid']))
+        $url = new \moodle_url('local/gugcat/index/index.php', array('id' => $this->courseid, 'page' => $this->other['page'],
+             'activityid' => $this->other['activityid']));
+        if (!is_null($this->other['categoryid'])) {
             $url->param('categoryid', $this->other['categoryid']);
+        }
 
         return $url;
     }
- 
+
     public function get_legacy_logdata() {
         return array($this->courseid, 'local_gugcat', 'bulk_import',
             '...........',
             '....', $this->contextinstanceid);
     }
- 
+
     protected function get_legacy_eventdata() {
         $data = new \stdClass();
         $data->userid = $this->relateduserid;

@@ -34,22 +34,22 @@ require_once($CFG->libdir.'/filelib.php');
 $courseid = required_param('id', PARAM_INT);
 $activityid = required_param('activityid', PARAM_INT);
 $categoryid = optional_param('categoryid', null, PARAM_INT);
-$page = optional_param('page', 0, PARAM_INT);  
-$childactivityid = optional_param('childactivityid', null, PARAM_INT);  
+$page = optional_param('page', 0, PARAM_INT);
+$childactivityid = optional_param('childactivityid', null, PARAM_INT);
 
 require_login($courseid);
 $urlparams = array('id' => $courseid, 'activityid' => $activityid, 'page' => $page);
-$URL = new moodle_url('/local/gugcat/add/index.php', $urlparams);
-!is_null($categoryid) && $categoryid != 0 ? $URL->param('categoryid', $categoryid) : null;
+$url = new moodle_url('/local/gugcat/add/index.php', $urlparams);
+!is_null($categoryid) && $categoryid != 0 ? $url->param('categoryid', $categoryid) : null;
 $indexurl = new moodle_url('/local/gugcat/index.php',  $urlparams);
 !is_null($categoryid && $categoryid != 0) ? $indexurl->param('categoryid', $categoryid) : null;
 $modid = $activityid;
-if(!is_null($childactivityid) && $childactivityid != 0){
-    $URL->param('childactivityid', $childactivityid);
+if (!is_null($childactivityid) && $childactivityid != 0) {
+    $url->param('childactivityid', $childactivityid);
     $indexurl->param('childactivityid', $childactivityid);
     $modid = $childactivityid;
 }
-$PAGE->set_url($URL);
+$PAGE->set_url($url);
 $PAGE->set_title(get_string('gugcat', 'local_gugcat'));
 $PAGE->navbar->add(get_string('navname', 'local_gugcat'), $indexurl);
 
@@ -64,14 +64,14 @@ $PAGE->set_course($course);
 $PAGE->set_heading($course->fullname);
 require_capability('local/gugcat:view', $coursecontext);
 
-//logs for grade converter
+// Logs for grade converter.
 $params = array(
     'context' => context_course::instance($courseid),
     'other' => array(
         'courseid' => $courseid,
         'activityid' => $modid,
         'categoryid' => $categoryid,
-        'page'=> $page
+        'page' => $page
     )
 );
 
@@ -84,58 +84,61 @@ if (!empty($SESSION->wantsurl)) {
     $returnurl = $SESSION->wantsurl;
 }
 $mform = new convertform(null, array('activity' => $module));
-if($mform->is_cancelled()) {
+if ($mform->is_cancelled()) {
     unset($SESSION->wantsurl);
     redirect($returnurl);
-}else if ($formdata = $mform->get_data()) {
+} else if ($formdata = $mform->get_data()) {
     $ispoints = $formdata->percentpoints == 1 ? true : false;
     $grades = $ispoints ? ($formdata->scale == SCHEDULE_A ? $formdata->schedA_pt : $formdata->schedB_pt)
     : ($formdata->scale == SCHEDULE_A ? $formdata->schedA : $formdata->schedB);
     $grades = array_filter($grades, 'strlen');
-    if(empty($grades)){
+    if (empty($grades)) {
         local_gugcat::notify_error('errorgraderequired');
-    }else if(count($grades) != count(array_unique($grades))){
+    } else if (count($grades) != count(array_unique($grades))) {
         local_gugcat::notify_error('errorduplicate');
-    }else if(($ispoints ? max($grades) : grade_converter::convert_point_percentage($maxgrade, max($grades), false)) > intval($maxgrade)){
+    } else if (($ispoints ? max($grades) : grade_converter::convert_point_percentage($maxgrade,
+        max($grades), false)) > intval($maxgrade)) {
         local_gugcat::notify_error('errorexceedmax');
-    }else{
+    } else {
         $copy = $grades;
         arsort($copy);
-        if(!($copy === $grades)){
+        if (!($copy === $grades)) {
             local_gugcat::notify_error('errorvaluesorder');
-        }else{
+        } else {
             $templateid = null;
             $newtemplate = array();
-            // Save new template in gcat_converter_templates table, and get the id
-            if(!empty($formdata->templatename)){
+            // Save new template in gcat_converter_templates table, and get the id.
+            if (!empty($formdata->templatename)) {
                 $templateid = grade_converter::save_new_template($formdata->templatename, $formdata->scale);
             }
-            
+
             $conversion = array();
-            foreach($grades as $grade=>$grd){
-                if(!empty($formdata->templatename) && $templateid){
-                    // save percentage as decimals
-                    $newtemplate[] = array('templateid'=>$templateid, 'lowerboundary'=>$ispoints ? grade_converter::convert_point_percentage($maxgrade, $grd) : $grd, 'grade'=>$grade);
+            foreach ($grades as $grade => $grd) {
+                if (!empty($formdata->templatename) && $templateid) {
+                    // Save percentage as decimals.
+                    $newtemplate[] = array('templateid' => $templateid, 'lowerboundary' => $ispoints
+                    ? grade_converter::convert_point_percentage($maxgrade, $grd) : $grd, 'grade' => $grade);
                 }
-                $conversion[] = array('courseid'=>$courseid, 'itemid'=>$modid, 'lowerboundary'=>$ispoints ? $grd : grade_converter::convert_point_percentage($maxgrade, $grd, false), 'grade'=>$grade);
+                $conversion[] = array('courseid' => $courseid, 'itemid' => $modid, 'lowerboundary' => $ispoints
+                ? $grd : grade_converter::convert_point_percentage($maxgrade, $grd, false), 'grade' => $grade);
             }
-            
-            // Save template conversions in gcat_grade_converter table
-            if($templateid){
+
+            // Save template conversions in gcat_grade_converter table.
+            if ($templateid) {
                 grade_converter::save_grade_conversion($newtemplate);
             }
 
-            $is_subcat = $module->modname == 'category';
-            $id = $is_subcat  ? $module->instance : $modid;
-            $itemname = get_string($is_subcat ? 'subcategorygrade' : 'provisionalgrd', 'local_gugcat');
-            
-            if($prvid = local_gugcat::get_grade_item_id($courseid, $id, $itemname)){
+            $issubcat = $module->modname == 'category';
+            $id = $issubcat ? $module->instance : $modid;
+            $itemname = get_string($issubcat ? 'subcategorygrade' : 'provisionalgrd', 'local_gugcat');
+
+            if ($prvid = local_gugcat::get_grade_item_id($courseid, $id, $itemname)) {
                 grade_converter::convert_provisional_grades($conversion, $module, $prvid, $formdata->scale);
                 grade_converter::delete_grade_conversion($modid);
                 grade_converter::save_grade_conversion($conversion, $prvid, $formdata->scale);
-                // Put the scale in notes for grade conversion in grade history
-                $notes = $formdata->notes." -".$formdata->scale;
-                $is_subcat ? grade_aggregation::update_component_notes_for_all_students($prvid, $module->id, $notes) : null;
+                // Put the scale in notes for grade conversion in grade history.
+                $notes = "$formdata->notes -$formdata->scale";
+                $issubcat ? grade_aggregation::update_component_notes_for_all_students($prvid, $module->id, $notes) : null;
                 unset($SESSION->wantsurl);
                 $event = \local_gugcat\event\add_adjust_grade_conversion::create($params);
                 $event->trigger();
