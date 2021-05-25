@@ -82,18 +82,12 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $htmlcolumns = null;
         $htmlrows = null;
         foreach ($columns as $col) {
-            $htmlcolumns .= html_writer::tag('th', $col, array('class' => 'gradeitems sortable'));
+            $htmlcolumns .= html_writer::tag('th', $this->sort_header($col), array('class' => 'gradeitems'));
         }
-        $htmlcolumns .= html_writer::tag('th', get_string('addallnewgrade', 'local_gugcat'), array('class' => 'togglemultigrd'));
-        $htmlcolumns .= html_writer::tag('th', get_string('reasonnewgrade', 'local_gugcat'), array('class' => 'togglemultigrd'));
-        $htmlcolumns .= $isconverted ? html_writer::tag('th', get_string('convertedgrade', 'local_gugcat'),
-         array('class' => 'sortable')) : null;
-        $htmlcolumns .= html_writer::tag('th', get_string('provisionalgrd', 'local_gugcat'), array('class' => 'sortable'));
-        // Released grade column.
-        $releasedarr = array_column($rows, 'releasedgrade');
-        $displayreleasedgrade = (count(array_filter($releasedarr, function ($a) {
-            return $a !== null;
-        })) > 0);
+        $htmlcolumns .= html_writer::tag('th', get_string('addallnewgrade', 'local_gugcat'), array('class' => 'togglemultigrd sortable'));
+        $htmlcolumns .= html_writer::tag('th', get_string('reasonnewgrade', 'local_gugcat'), array('class' => 'togglemultigrd sortable'));
+        $htmlcolumns .= $isconverted ? html_writer::tag('th', $this->sort_header(get_string('convertedgrade', 'local_gugcat'))) : null;
+        $htmlcolumns .= html_writer::tag('th', $this->sort_header(get_string('provisionalgrd', 'local_gugcat')));
 
         $htmlcolumns .= html_writer::empty_tag('th');
         // Grade point field attributes.
@@ -161,9 +155,9 @@ class local_gugcat_renderer extends plugin_renderer_base {
                 $row->provisionalgrade == get_string('nograde', 'local_gugcat') ||
                 $row->provisionalgrade == get_string('missinggrade', 'local_gugcat')
             ) {
-                $htmlrows .= '<td class="provisionalgrade"><b>' . $row->provisionalgrade . '</b>' . $isgradehidden . '</td>';
+                $htmlrows .= '<td><b>' . $row->provisionalgrade . '</b>' . $isgradehidden . '</td>';
             } else {
-                $htmlrows .= '<td class="provisionalgrade"><b>' . $row->provisionalgrade . '</b>'
+                $htmlrows .= '<td><b>' . $row->provisionalgrade . '</b>'
                 . $this->context_actions($row->studentno,
                  $isgradehidden, false, $ammendgradeparams, false) .  $isgradehidden . '</td>';
             }
@@ -322,7 +316,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
             $n = $act->name;
             $namespan = html_writer::tag('span', strlen($n) > 20 ? substr($n, 0, 20) . '...' : $n, $nameattr);
             $header = "$namespan<br/>" . ($weight * 100) . "% <br/> $scalestr";
-            $header = html_writer::tag('span', $header, array('class' => 'sortable')) . ($act->modname == 'category'
+            $header = $this->sort_header($header) . ($act->modname == 'category'
             ? ($isimported ? $this->context_actions(null, null, false, $convertgrdparams, false, true)
             . $toggleicon : $toggleicon) : null);
             if ($act->modname == 'category') {
@@ -346,9 +340,9 @@ class local_gugcat_renderer extends plugin_renderer_base {
              'data-category' => $act->gradeitem->categoryid) : null;
             $htmlcolumns .= html_writer::tag('th', $header, $class);
         }
-        $htmlcolumns .= html_writer::tag('th', get_string('requiresresit', 'local_gugcat'), array('class' => 'sortable'));
-        $htmlcolumns .= html_writer::tag('th', get_string('percentcomplete', 'local_gugcat'), array('class' => 'sortable'));
-        $sortspan = html_writer::tag('span', get_string('aggregatedgrade', 'local_gugcat'), array('class' => 'sortable'));
+        $htmlcolumns .= html_writer::tag('th', $this->sort_header(get_string('requiresresit', 'local_gugcat')));
+        $htmlcolumns .= html_writer::tag('th', $this->sort_header(get_string('percentcomplete', 'local_gugcat')));
+        $sortspan = $this->sort_header(get_string('aggregatedgrade', 'local_gugcat'));
         $htmlcolumns .= html_writer::tag('th', $sortspan . ($iscomputed && !($meritexists && $gpaexists)
             ? $this->context_actions(null, null, null, $acgparams, false, false, 0) : null));
         // Grade capture rows.
@@ -404,13 +398,11 @@ class local_gugcat_renderer extends plugin_renderer_base {
             $htmlrows .= html_writer::end_tag('tr');
         }
         if ($displaymerit) {
-            $sortspan = html_writer::tag('span', get_string('meritgrade', 'local_gugcat'), array('class' => 'sortable'));
-            $htmlcolumns .= html_writer::tag('th', $sortspan
+            $htmlcolumns .= html_writer::tag('th', $this->sort_header(get_string('meritgrade', 'local_gugcat'))
             . $this->context_actions(null, null, false, "$acgparams&alternative=" . MERIT_GRADE, false, false, 1));
         }
         if ($displaygpa) {
-            $sortspan = html_writer::tag('span', get_string('gpagrade', 'local_gugcat'), array('class' => 'sortable'));
-            $htmlcolumns .= html_writer::tag('th', $sortspan
+            $htmlcolumns .= html_writer::tag('th', $this->sort_header(get_string('gpagrade', 'local_gugcat'))
                 . $this->context_actions(null, null, false, "$acgparams&alternative=" . GPA_GRADE, false, false, 1));
         }
         $hiderelease = in_array(get_string('missinggrade', 'local_gugcat'),
@@ -739,15 +731,15 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $html .= html_writer::start_tag('tr');
         if (!$simple) {
             if ($aggregation) {
-                $html .= html_writer::tag('th', get_string('candidateno', 'local_gugcat'), array('class' => 'sortable'));
+                $html .= html_writer::tag('th', $this->sort_header(get_string('candidateno', 'local_gugcat')));
             }
-            $html .= html_writer::tag('th', html_writer::tag('span',  get_string('studentno', 'local_gugcat'),
-             array('class' => 'sortable')) . $searchicon . $sbidnumber);
+            $html .= html_writer::tag('th', $this->sort_header(get_string('studentno',
+             'local_gugcat')) . $searchicon . $sbidnumber);
             if (!$isblindmarking) {
-                $html .= html_writer::tag('th', html_writer::tag('span',  get_string('surname', 'local_gugcat'),
-                 array('class' => 'sortable')) . $searchicon . $sblastname, array('class' => 'blind-marking'));
-                $html .= html_writer::tag('th', html_writer::tag('span',  get_string('forename', 'local_gugcat'),
-                 array('class' => 'sortable')) . $searchicon . $sbfirstname, array('class' => 'blind-marking'));
+                $html .= html_writer::tag('th', $this->sort_header(get_string('surname',
+                 'local_gugcat')) . $searchicon . $sblastname, array('class' => 'blind-marking'));
+                $html .= html_writer::tag('th', $this->sort_header(get_string('forename',
+                 'local_gugcat')) . $searchicon . $sbfirstname, array('class' => 'blind-marking'));
             }
         }
         $html .= $columns;
@@ -776,7 +768,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $class = array('class' => 'dropdown-item');
         $html = html_writer::tag('i', null, array('class' => 'fa fa-ellipsis-h',
          'data-toggle' => 'dropdown', 'role' => 'button', 'tabindex' => '0'));
-        $html .= html_writer::start_tag('ul', array('class' => 'dropdown-menu'));
+        $html .= html_writer::start_tag('div', array('class' => 'dropdown-menu'));
         $link .= is_null($studentno) ? null : "&studentid=$studentno";
         if ($isaggregrade) {
             $gradeformurl = new moodle_url('/local/gugcat/overview/gradeform/index.php') . $link;
@@ -786,35 +778,35 @@ class local_gugcat_renderer extends plugin_renderer_base {
             // Check if url params has activity id, then aggregated grade is sub category.
             if (strpos($link, 'activityid')) {
                 $historylink = new moodle_url('/local/gugcat/history/index.php') . $link;
-                $html .= html_writer::tag('li', html_writer::tag('a', get_string('overrideggreassessgrade',
-                 'local_gugcat'), array('href' => $overridelink)), $class);
-                $html .= html_writer::tag('li', html_writer::tag('a', get_string('assessmentgradehistory',
-                 'local_gugcat'), array('href' => $historylink)), $class);
+                $html .= html_writer::tag('a', get_string('overrideggreassessgrade',
+                 'local_gugcat'), array('href' => $overridelink) + $class);
+                $html .= html_writer::tag('a', get_string('assessmentgradehistory',
+                 'local_gugcat'), array('href' => $historylink) + $class);
             } else if (strpos($link, 'alternativecg')) {
                 $acg = strpos($link, 'alternativecg=1') ? 1 : 2;
-                $html .= html_writer::tag('li', html_writer::tag('a', get_string($acg == MERIT_GRADE
+                $html .= html_writer::tag('a', get_string($acg == MERIT_GRADE
                 ? 'overridestudmeritgrade' : 'overridestudgpagrade', 'local_gugcat'),
-                 array('href' => $overridelink)), $class);
-                $html .= html_writer::tag('li', html_writer::tag('a', get_string($acg == MERIT_GRADE
+                 array('href' => $overridelink) + $class);
+                $html .= html_writer::tag('a', get_string($acg == MERIT_GRADE
                 ? 'viewmeritgradehistory' : 'viewgpagradehistory', 'local_gugcat'),
-                 array('href' => $coursehistoryurl)), $class);
+                 array('href' => $coursehistoryurl) + $class);
             } else {
-                $html .= html_writer::tag('li', html_writer::tag('a', get_string('adjustcourseweight', 'local_gugcat'),
-                 array('href' => $adjustlink)), $class);
-                $html .= html_writer::tag('li', html_writer::tag('a', get_string('overrideggregrade', 'local_gugcat'),
-                 array('href' => $overridelink)), $class);
-                $html .= html_writer::tag('li', html_writer::tag('a', get_string('viewcoursehistory', 'local_gugcat'),
-                 array('href' => $coursehistoryurl)), $class);
+                $html .= html_writer::tag('a', get_string('adjustcourseweight', 'local_gugcat'),
+                 array('href' => $adjustlink) + $class);
+                $html .= html_writer::tag('a', get_string('overrideggregrade', 'local_gugcat'),
+                 array('href' => $overridelink) + $class);
+                $html .= html_writer::tag('a', get_string('viewcoursehistory', 'local_gugcat'),
+                 array('href' => $coursehistoryurl) + $class);
             }
         } else if ($issubcat) {
             $converturl = new moodle_url('/local/gugcat/convert/index.php') . $link;
-            $html .= html_writer::tag('li', html_writer::tag('a', get_string('adjustassessgrdcvr', 'local_gugcat'),
-             array('href' => $converturl)), $class);
+            $html .= html_writer::tag('a', get_string('adjustassessgrdcvr', 'local_gugcat'),
+             array('href' => $converturl) + $class);
         } else if (!is_null($isacg)) {
             $acgurl = new moodle_url('/local/gugcat/overview/alternative/index.php') . $link;
-            $html .= html_writer::tag('li', html_writer::tag('a', get_string($isacg == 0
+            $html .= html_writer::tag('a', get_string($isacg == 0
             ? 'createaltcoursegrade' : 'adjustaltcoursegrade', 'local_gugcat'),
-            array('href' => $acgurl)), $class);
+            array('href' => $acgurl) + $class);
         } else {
             $historylink = new moodle_url('/local/gugcat/history/index.php') . $link;
             $editlink = new moodle_url('/local/gugcat/edit/index.php') . $link . '&overview=' . ($isoverviewpage ? 1 : 0);
@@ -822,20 +814,20 @@ class local_gugcat_renderer extends plugin_renderer_base {
             // Check if url params has history for aggregated assessment grade history context action.
             if (preg_match('/\b&history/i', $historylink)) {
                 $historylink = preg_replace('/\b&history/i', '', $historylink);
-                $html .= html_writer::tag('li', html_writer::tag('a', get_string('assessmentgradehistory', 'local_gugcat'),
-                 array('href' => $historylink)), $class);
+                $html .= html_writer::tag('a', get_string('assessmentgradehistory', 'local_gugcat'),
+                 array('href' => $historylink) + $class);
             } else {
                 $hidestr = !empty($ishidden) ? get_string('showgrade', 'local_gugcat')
                 : get_string('hidefromstudent', 'local_gugcat');
-                $html .= html_writer::tag('li', html_writer::tag('a', get_string('amendgrades', 'local_gugcat'),
-                 array('href' => $editlink)), $class);
-                $html .= html_writer::tag('li', html_writer::tag('a', get_string('assessmentgradehistory', 'local_gugcat'),
-                 array('href' => $historylink)), $class);
-                $html .= html_writer::tag('li', html_writer::tag('a', $hidestr, array('href' => $hidelink)),
-                 array('class' => 'dropdown-item hide-show-grade'));
+                $html .= html_writer::tag('a', get_string('amendgrades', 'local_gugcat'),
+                 array('href' => $editlink) + $class);
+                $html .= html_writer::tag('a', get_string('assessmentgradehistory', 'local_gugcat'),
+                 array('href' => $historylink) + $class);
+                $html .= html_writer::tag('a', $hidestr, array('href' => $hidelink,
+                 'class' => 'dropdown-item hide-show-grade'));
             }
         }
-        $html .= html_writer::end_tag('ul');
+        $html .= html_writer::end_tag('div');
         return $html;
     }
 
@@ -845,7 +837,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
     private function gcat_settings() {
         $courseid = (int)$this->page->course->id;
         $coursecontext = context_course::instance($courseid);
-        $class = array('class' => 'dropdown-item');
+        $class = array('class' => 'dropdown-item', 'href' => '#');
         if (has_capability('local/gugcat:displayassessments', $coursecontext)) {
 
             $checkboxvalue = local_gugcat::get_value_of_customfield_checkbox($courseid, $coursecontext->id);
@@ -854,15 +846,24 @@ class local_gugcat_renderer extends plugin_renderer_base {
         }
         $html = html_writer::tag('i', null, array('id' => 'gcat-cog', 'class' => 'fa fa-cog',
          'data-toggle' => 'dropdown', 'role' => 'button', 'tabindex' => '0'));
-        $html .= html_writer::start_tag('ul', array('class' => 'dropdown-menu'));
+        $html .= html_writer::start_tag('div', array('class' => 'dropdown-menu'));
         $html .= has_capability('local/gugcat:revealidentities', $coursecontext)
-        ? html_writer::tag('li', html_writer::tag('a', get_string('hideidentities', 'local_gugcat'),
-        array('id' => 'btn-identities', 'href' => '#')), $class) : null;
+        ? html_writer::tag('a', get_string('hideidentities', 'local_gugcat'),
+        array('id' => 'btn-identities') + $class) : null;
         $html .= has_capability('local/gugcat:displayassessments', $coursecontext)
-        ? html_writer::tag('li', html_writer::tag('a',  $switchstr,
-        array('id' => 'btn-switch-display', 'href' => '#')), $class) : null;
-        $html .= html_writer::end_tag('ul');
+        ? html_writer::tag('a',  $switchstr,
+        array('id' => 'btn-switch-display') + $class) : null;
+        $html .= html_writer::end_tag('div');
         return $html;
+    }
+
+    /**
+     * Display table header in span element with sort properties
+     */
+    private function sort_header($text) {
+        $sortable = array('class' => 'sortable', 'role' => 'button', 'tabindex' => '0');
+        $span = html_writer::tag('span', $text, $sortable);
+        return $span;
     }
 
     /**

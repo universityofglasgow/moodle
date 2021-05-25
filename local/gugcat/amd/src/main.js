@@ -633,6 +633,12 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                 var columns = document.querySelectorAll('.sortable');
                 if(columns.length > 0){
                     for (const [id, column] of columns.entries()) {
+                        column.addEventListener('keyup', (e) => {
+                            if (e.keyCode === 13) {
+                                e.preventDefault();
+                                column.click();
+                            }
+                        });
                         column.addEventListener('click', () => sortTable(id));
                     }
                 }
@@ -640,6 +646,12 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                 var searchIcons = document.querySelectorAll('.fa-search');
                 if(searchIcons.length > 0){
                     searchIcons.forEach(icon => {
+                        icon.addEventListener('keyup', (e) => {
+                            if (e.keyCode === 13) {
+                                e.preventDefault();
+                                icon.click();
+                            }
+                        });
                         icon.addEventListener('click', (e) => {
                             e.currentTarget.blur();
                             var input = e.target.nextSibling;
