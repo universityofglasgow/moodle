@@ -546,6 +546,12 @@ class grade_aggregation{
         if ($autoconverttob) {
             $grdobj->autoconvertb = true;
         }
+
+        // If all components are converted, override subcat->is_converted flag.
+        if (count($converted) == count(array_filter($converted))) {
+            $subcatobj->is_converted = false;
+        }
+
         // Check if components grade types are the same.
         if (count(array_unique($gradetypes)) == 1) {
             // Get first grade item.
