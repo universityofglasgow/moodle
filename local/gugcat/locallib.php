@@ -465,7 +465,7 @@ class local_gugcat {
 
         $finalgrade = round($grade);
         if ($finalgrade >= key(array_slice($scale, -1, 1, true)) && $finalgrade <= key($scale)) {
-            return ($finalgrade != 0) ? $scale[$finalgrade] : $finalgrade;
+            return ($finalgrade != 0 && isset($scale[$finalgrade])) ? $scale[$finalgrade] : $finalgrade;
         } else {
             return number_format($grade, 3);
         }

@@ -48,7 +48,7 @@
 
 .mform-custom-select.has-danger > div.felement:after {
     content: '\f078';
-    background-color: inherit;
+    background-color: white;
     font: normal normal normal 12px/1 FontAwesome;
     color: #ca3120;
     height: 12px;

@@ -101,9 +101,7 @@ if (!is_null($activityid) && $formtype == OVERRIDE_GRADE_FORM) {
     }
     // Change the data in aggregate grade obj with $subcatgrade.
     $aggrdobj = new stdClass();
-
-    $aggrdobj->scale = in_array($subcatgrade->grade, local_gugcat::$schedulea) ? SCHEDULE_A
-    : (in_array($subcatgrade->grade, local_gugcat::$scheduleb) ? SCHEDULE_B : null);
+    $aggrdobj->scale = $subcatgrade->scale;
     $aggrdobj->grade = $subcatgrade->grade;
     $aggrdobj->rawgrade = $subcatgrade->rawgrade;
     $aggrdobj->display = $subcatgrade->rawgrade;
