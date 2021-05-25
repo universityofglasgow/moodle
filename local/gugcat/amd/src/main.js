@@ -35,10 +35,10 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
         var grade_max = document.getElementsByName('grademax')[0].value;
         if (is_percentage){
             var input_point = document.getElementById(target.id.slice(0,10) + "pt_" + target.id.slice(10));
-            input_point.value = target.value ? rounder((target.value / 100) * grade_max) : '';
+            input_point.value = target.value && !isNaN(target.value) ? rounder((target.value / 100) * grade_max) : '';
         } else {
             var input_percentage = document.getElementById(target.id.slice(0,10) + target.id.slice(13));
-            input_percentage.value = target.value ? rounder((target.value / grade_max) * 100) : '';
+            input_percentage.value = target.value && !isNaN(target.value) ? rounder((target.value / grade_max) * 100) : '';
         }
     };
 
