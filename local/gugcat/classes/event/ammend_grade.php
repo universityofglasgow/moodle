@@ -41,7 +41,7 @@ class ammend_grade extends \core\event\base {
     }
 
     public function get_url() {
-        $url = new \moodle_url('local/gugcat/edit/index.php', array('id' => $this->courseid,
+        $url = new \moodle_url('/local/gugcat/edit/index.php', array('id' => $this->courseid,
              'activityid' => $this->other['activityid'], 'studentid' => $this->other['studentno'],
              'page' => $this->other['page'], 'overview' => $this->other['overview']));
         if (!is_null($this->other['categoryid'])) {

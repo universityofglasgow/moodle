@@ -241,25 +241,25 @@ class grade_aggregation_testcase extends advanced_testcase {
         // Assert calculation to get the simple mean grade.
         $subcatobj->aggregation = GRADE_AGGREGATE_MEAN;
         $calgrade = grade_aggregation::calculate_grade($subcatobj, $grades, $gradeitems);
-        // Grades [10 + 20 + 30] / 3 = 20.
+        // The calculation to get the simple mean grade ([10 + 20 + 30] / 3 = 20).
         $this->assertEquals($calgrade, 20);
 
         // Assert calculation to get the lowest grade.
         $subcatobj->aggregation = GRADE_AGGREGATE_MIN;
         $calgrade = grade_aggregation::calculate_grade($subcatobj, $grades, $gradeitems);
-        // Grades [10, 20, 30] => 10.
+        // The calculation to get the lowest grade ([10, 20, 30] => 10).
         $this->assertEquals($calgrade, 10);
 
         // Assert calculation to get the natural sum.
         $subcatobj->aggregation = GRADE_AGGREGATE_SUM;
         $calgrade = grade_aggregation::calculate_grade($subcatobj, $grades, $gradeitems);
-        // Grades [10 + 20 + 30] = 60.
+        // The calculation to get the natural sum ([10 + 20 + 30] = 60).
         $this->assertEquals($calgrade, 60);
 
         // Assert calculation to get the median.
         $subcatobj->aggregation = GRADE_AGGREGATE_MEDIAN;
         $calgrade = grade_aggregation::calculate_grade($subcatobj, $grades, $gradeitems);
-        // Grades [10, 20, 30] => 20.
+        // The calculation to get the median result ([10, 20, 30] => 20).
         $this->assertEquals($calgrade, 20);
 
         // Assert calculation to get the mode.
@@ -269,7 +269,7 @@ class grade_aggregation_testcase extends advanced_testcase {
         $gi4->aggregationcoef = $aggregationcoef;
         $grades[4] = $gi4;
         $calgrade = grade_aggregation::calculate_grade($subcatobj, $grades, $gradeitems);
-        // Grades [10, 20, 30, 10] = 10.
+        // The calculation on getting the most common values ([10, 20, 30, 10] = 10).
         $this->assertEquals($calgrade, 10);
     }
 
@@ -390,7 +390,7 @@ class grade_aggregation_testcase extends advanced_testcase {
         $gradeitems[$gi3->id] = $gi3;
         // Assert return is non submission grade -1.
         list($aggregatedgrade, $processed, $error) = grade_aggregation::get_aggregated_grade($userid, $subcatobj, $gradeitems);
-        // Grades [10, 20, -1] => [-1].
+        // The grades [10, 20, -1] will return the value [-1].
         $this->assertEquals($aggregatedgrade->grade, -1);
         $this->assertTrue($processed);
         $this->assertNull($error);
@@ -398,7 +398,7 @@ class grade_aggregation_testcase extends advanced_testcase {
         // Test including drop lowest.
         $subcatobj->droplow = 1; // Drop 1 lowest.
         list($aggregatedgrade, $processed, $error) = grade_aggregation::get_aggregated_grade($userid, $subcatobj, $gradeitems);
-        // Grades [10, 20, -1] => [10, 20] / 2 = 15.
+        // The grades [10, 20, -1] then dropped the lowest and proceeded with the calculation [10, 20] / 2 = 15.
         $this->assertEquals($aggregatedgrade->grade, 15);
         $this->assertTrue($processed);
         $this->assertNull($error);

@@ -41,7 +41,7 @@ class toggle_assessments_display extends \core\event\base {
     }
 
     public function get_url() {
-        $url = new \moodle_url('local/gugcat/index.php', array('id' => $this->courseid));
+        $url = new \moodle_url('/local/gugcat/index.php', array('id' => $this->courseid));
         return $url;
     }
 

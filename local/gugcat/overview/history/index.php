@@ -86,6 +86,7 @@ $params = array(
         'categoryid' => $categoryid,
         'studentno' => $studentid,
         'idnumber' => $student->idnumber,
+        'alternativecg' => $alternativecg,
         'cnum' => $cnum,
         'page' => $page
     )

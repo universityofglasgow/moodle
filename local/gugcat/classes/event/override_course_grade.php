@@ -36,17 +36,24 @@ class override_course_grade extends \core\event\base {
     }
 
     public function get_description() {
-        return "The user with id {$this->userid} has overridden the course grade for the student with a student number of ".
+        $grade = !is_null($this->other['alternativecg']) && $this->other['alternativecg'] != 0
+        ? get_string($this->other['alternativecg'] == 1
+        ? 'meritgrade' : 'gpagrade', 'local_gugcat') : "Course Grade";
+        return "The user with id {$this->userid} has overridden the $grade for the student with a student number of ".
                 "{$this->other['idnumber']} on the course with the id of {$this->courseid}.";
     }
 
     public function get_url() {
-        $url = new \moodle_url('local/gugcat/overview/gradeform/index.php', array('id' => $this->courseid,
+        $url = new \moodle_url('/local/gugcat/overview/gradeform/index.php', array('id' => $this->courseid,
              'studentid' => $this->other['studentid'], 'cnum' => $this->other['cnum'],
              'page' => $this->other['page'], 'setting' => $this->other['setting']));
         if (!is_null($this->other['categoryid'])) {
             $url->param('categoryid', $this->other['categoryid']);
         }
+        if (!is_null($this->other['alternativecg']) && $this->other['alternativecg'] != 0) {
+            $url->param('alternativecg', $this->other['alternativecg']);
+        }
+
         return $url;
     }
 

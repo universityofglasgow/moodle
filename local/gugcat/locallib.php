@@ -465,7 +465,7 @@ class local_gugcat {
 
         $finalgrade = round($grade);
         if ($finalgrade >= key(array_slice($scale, -1, 1, true)) && $finalgrade <= key($scale)) {
-            return ($finalgrade != 0) ? $scale[$finalgrade] : $finalgrade;
+            return ($finalgrade != 0 && isset($scale[$finalgrade])) ? $scale[$finalgrade] : $finalgrade;
         } else {
             return number_format($grade, 3);
         }
@@ -500,20 +500,18 @@ class local_gugcat {
         if (is_null($scaleid)) {
             if (!reset(self::$schedulea) && !reset(self::$scheduleb)) {
                 list($scalegrades, $schedb) = self::get_gcat_scale();
+                self::$schedulea = $scalegrades;
+                // Change the indexes (+1) of Schedule B to its upperbounds.
+                $upperbounds = array(1, 3, 6, 9, 12, 15, 18, 23);
+                $barr = array();
+                foreach ($schedb as $i => $b) {
+                    $barr[$upperbounds[$i - 1]] = $b;
+                }
+                self::$scheduleb = $barr;
+                $scalegrades = ($scaletype != SCHEDULE_A) ? self::$scheduleb : $scalegrades;
             } else {
-                $scalegrades = self::$schedulea;
-                // Schedule B starts 1 => H.
-                $schedb = array_reverse(array_filter(array_merge(array(0), self::$scheduleb)), true);
+                $scalegrades = ($scaletype != SCHEDULE_A) ? self::$scheduleb : self::$schedulea;
             }
-            self::$schedulea = $scalegrades;
-            // Change the indexes (+1) of Schedule B to its upperbounds.
-            $upperbounds = array(1, 3, 6, 9, 12, 15, 18, 23);
-            $barr = array();
-            foreach ($schedb as $i => $b) {
-                $barr[$upperbounds[$i - 1]] = $b;
-            }
-            self::$scheduleb = $barr;
-            $scalegrades = ($scaletype != SCHEDULE_A) ? self::$scheduleb : $scalegrades;
         } else {
             if ($scale = $DB->get_field('scale', 'scale', array('id' => $scaleid))) {
                 $scalegrades = make_menu_from_list($scale);

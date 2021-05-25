@@ -91,7 +91,7 @@ if (!is_null($activityid) && $formtype == OVERRIDE_GRADE_FORM) {
     $subcatgrade = null;
     foreach ($student->grades as $key => $grade) {
         // Get the calculated sub category grade.
-        if ($grade->issubcat) {
+        if ($grade->is_subcat) {
             // Assign it to $subcatgrade.
             $subcatgrade = $grade;
             // Remove it from $student->grades.
@@ -101,9 +101,7 @@ if (!is_null($activityid) && $formtype == OVERRIDE_GRADE_FORM) {
     }
     // Change the data in aggregate grade obj with $subcatgrade.
     $aggrdobj = new stdClass();
-
-    $aggrdobj->scale = in_array($subcatgrade->grade, local_gugcat::$schedulea) ? SCHEDULE_A
-    : (in_array($subcatgrade->grade, local_gugcat::$scheduleb) ? SCHEDULE_B : null);
+    $aggrdobj->scale = $subcatgrade->scale;
     $aggrdobj->grade = $subcatgrade->grade;
     $aggrdobj->rawgrade = $subcatgrade->rawgrade;
     $aggrdobj->display = $subcatgrade->rawgrade;
@@ -152,6 +150,7 @@ if ($fromform = $mform->get_data()) {
             'cnum' => $cnum,
             'idnumber' => $student->idnumber,
             'studentid' => $studentid,
+            'alternativecg' => $alternativecg,
             'setting' => $formtype,
             'page' => $page
         )

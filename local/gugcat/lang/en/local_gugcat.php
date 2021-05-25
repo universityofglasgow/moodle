@@ -179,7 +179,7 @@ $string['setupimportupload'] = 'Setup import - Upload file';
 $string['showassessment'] = 'Show assessments on Student Dashboard';
 $string['showidentities'] = 'Show student identities';
 $string['showgrade'] = 'Show to student';
-$string['showgrademsg'] = 'The grade is now visible to the student';
+$string['showgrademsg'] = 'Grade will now be visible to student when the grades are released. Please click \'Release provisional grades\' to share the grades with students';
 $string['showonstudentdashboard'] = 'show_on_studentdashboard';
 $string['specifyreason'] = 'Specify reason(s) for amendment';
 $string['step'] = 'Step {$a}';
@@ -230,6 +230,7 @@ $string['gi_thirdgrade'] = 'Third Grade';
 
 // Log events.
 $string['eventaddgrades'] = 'Add new grade for user';
+$string['eventaddadjustalternativecoursegrade'] = 'Add / adjust alternative course grade';
 $string['eventaddadjustgradeconverter'] = 'Add / adjust assessment grade conversion';
 $string['eventaddmultiplegrades'] = 'Add multiple grades';
 $string['eventadjustgrade'] = 'Adjust student\'s course weightings';
