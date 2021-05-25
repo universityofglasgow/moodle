@@ -1121,7 +1121,6 @@ class local_gugcat {
         $scaleid = $module->is_converted;
         $gt = $module->gradeitem->gradetype;
         $isconvertedmod = $module->is_converted;
-        self::set_grade_scale(null);
         if ($gradehistoryarr > 0) {
             // Remove from array if feedback has gradeitem.
             foreach ($gradehistoryarr as $key => $gradehistory) {
@@ -1129,6 +1128,7 @@ class local_gugcat {
                     unset($gradehistoryarr[$key]);
                 }
             }
+            self::set_grade_scale(null);
             // Reindex array and get first and last index.
             $gradehistoryarr = array_values($gradehistoryarr);
             $firstindex = key($gradehistoryarr);
@@ -1149,7 +1149,7 @@ class local_gugcat {
                 ? $modby->lastname . ', ' . $modby->firstname : 'System Update') : 'System Update';
                 if ($gradehistory->overridden != 0) {
                     $isconverted = preg_match('/ \,\_scale\:[1-9]/i', $gradehistory->feedback);
-                    $scale = $isconverted ? preg_replace('/\b[\w\s\W]*,_scale:/i', '', $gradehistory->feedback) : null;
+                    $scale = $isconverted ? preg_replace('/[\w\s\W]*,_scale:/i', '', $gradehistory->feedback) : null;
                     $ghnotes = $isconverted ? preg_replace('/ \,\_scale\:[1-9]/i', '', $gradehistory->feedback)
                     : $gradehistory->feedback;
                 } else {
@@ -1177,7 +1177,7 @@ class local_gugcat {
         // Get the latest grade.
         if ($gradehistoryarr[$firstindex]->overridden != 0) {
             $isconverted = preg_match('/ \,\_scale\:[1-9]/i', $gradehistoryarr[$firstindex]->feedback);
-            $scale = $isconverted ? preg_replace("/\b[\w\s\W]*,_scale:/i", '', $gradehistoryarr[$firstindex]->feedback) : null;
+            $scale = $isconverted ? preg_replace("/[\w\s\W]*,_scale:/i", '', $gradehistoryarr[$firstindex]->feedback) : null;
         } else {
             $isconverted = preg_match('/ \-./i', $gradehistoryarr[$firstindex]->feedback);
             $scale = $isconverted ? preg_replace('/\b[a-zA-Z\- ]*/i', '', $gradehistoryarr[$firstindex]->feedback) : null;
