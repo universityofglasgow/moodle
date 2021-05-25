@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * The local_gugcat add new grade event.
+ * The local_gugcat add new alternative course grade converter event.
  *
  * @package    local_gugcat
  * @copyright  2020
@@ -25,23 +25,26 @@
 namespace local_gugcat\event;
 defined('MOODLE_INTERNAL') || die();
 
-class bulk_import extends \core\event\base {
+class add_adjust_alternative_course_grade extends \core\event\base {
     protected function init() {
-        $this->data['crud'] = 'c';
+        $this->data['crud'] = 'c'; // Valid values are c(reate), r(ead), u(pdate), d(elete).
         $this->data['edulevel'] = self::LEVEL_TEACHING;
     }
 
     public static function get_name() {
-        return get_string('bulkimport', 'local_gugcat');
+        return get_string('eventaddadjustalternativecoursegrade', 'local_gugcat');
     }
 
     public function get_description() {
-        return "The user with id {$this->userid} bulk import a sub-category {$this->other['categoryname']}";
+        // 1 = Merit Grade / 2 = GPA grade.
+        $acg = get_string($this->other['alternative'] == 1 ? 'meritgrade' : 'gpagrade' , 'local_gugcat');
+        return "The user with id {$this->userid} has added/adjusted an alternative course grade - " .
+                "$acg for the course with the id of {$this->courseid}";
     }
 
     public function get_url() {
-        $url = new \moodle_url('/local/gugcat/index/index.php', array('id' => $this->courseid, 'page' => $this->other['page'],
-             'activityid' => $this->other['activityid']));
+        $url = new \moodle_url('/local/gugcat/overview/alternative/index.php',
+        array('id' => $this->courseid, 'alternative' => $this->other['alternative'], 'page' => $this->other['page']));
         if (!is_null($this->other['categoryid'])) {
             $url->param('categoryid', $this->other['categoryid']);
         }
@@ -50,7 +53,7 @@ class bulk_import extends \core\event\base {
     }
 
     public function get_legacy_logdata() {
-        return array($this->courseid, 'local_gugcat', 'bulk_import',
+        return array($this->courseid, 'local_gugcat', 'add_adjust_alternative_course_grade',
             '...........',
             '....', $this->contextinstanceid);
     }

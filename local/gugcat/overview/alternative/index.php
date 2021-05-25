@@ -107,6 +107,18 @@ if ($mform->is_cancelled()) {
     if (!empty($assessments)) {
         grade_aggregation::create_edit_alt_grades($formdata->altgradetype, $assessments, $weights, $appliedcap);
         local_gugcat::notify_success('successaltgrades');
+        // Logs for course grade history viewed.
+        $params = array(
+            'context' => $coursecontext,
+            'other' => array(
+                'courseid' => $courseid,
+                'categoryid' => $categoryid,
+                'alternative' => $alternative,
+                'page' => $page
+            )
+        );
+        $event = \local_gugcat\event\add_adjust_alternative_course_grade::create($params);
+        $event->trigger();
     }
     redirect($overviewurl);
 } else {

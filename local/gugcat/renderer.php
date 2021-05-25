@@ -94,9 +94,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $displayreleasedgrade = (count(array_filter($releasedarr, function ($a) {
             return $a !== null;
         })) > 0);
-        // ...COMMENT OUT FOR NOW.
-        // ...$htmlcolumns .= $displayreleasedgrade ? html_writer::tag('th', get_string('releasedgrade', 'local_gugcat'),
-        // ...array('class' => 'sortable')) : null;
+
         $htmlcolumns .= html_writer::empty_tag('th');
         // Grade point field attributes.
         $gm = ($selectedmodule) ? intval($selectedmodule->gradeitem->grademax) : 0; // Grade max.
@@ -169,9 +167,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
                 . $this->context_actions($row->studentno,
                  $isgradehidden, false, $ammendgradeparams, false) .  $isgradehidden . '</td>';
             }
-            /* ----------COMMENT OUT FOR NOW.
-             $htmlrows .= $displayreleasedgrade ? html_writer::tag('td', is_null($row->releasedgrade)
-             ? get_string('nograde', 'local_gugcat'). : $row->releasedgrade,array('class' => 'font-weight-bold') ) : null; */
+
             $htmlrows .= '<td>
                             <button type="button" class="btn btn-default addnewgrade" onclick="location.href=\''
                             . $addgradeurl . "&studentid=$row->studentno" . '\'">

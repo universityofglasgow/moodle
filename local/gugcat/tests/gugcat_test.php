@@ -303,7 +303,7 @@ class local_gugcat_testcase extends advanced_testcase {
     }
 
     public function test_get_activity() {
-        // Test will include get_category_gradeitem($courseid, $gradecategory) function.
+        // Test will include the function get_category_gradeitem($courseid, $gradecategory).
         $gen = $this->getDataGenerator();
         $cid = $this->course->id;
         // Create grade sub category.

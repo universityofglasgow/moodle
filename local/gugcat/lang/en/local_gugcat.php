@@ -230,6 +230,7 @@ $string['gi_thirdgrade'] = 'Third Grade';
 
 // Log events.
 $string['eventaddgrades'] = 'Add new grade for user';
+$string['eventaddadjustalternativecoursegrade'] = 'Add / adjust alternative course grade';
 $string['eventaddadjustgradeconverter'] = 'Add / adjust assessment grade conversion';
 $string['eventaddmultiplegrades'] = 'Add multiple grades';
 $string['eventadjustgrade'] = 'Adjust student\'s course weightings';

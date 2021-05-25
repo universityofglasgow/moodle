@@ -40,7 +40,7 @@ class aggregation_viewed extends \core\event\base {
     }
 
     public function get_url() {
-        $url = new \moodle_url('local/gugcat/overview/index.php', array('id' => $this->courseid, 'page' => $this->other['page']));
+        $url = new \moodle_url('/local/gugcat/overview/index.php', array('id' => $this->courseid, 'page' => $this->other['page']));
         if (!is_null($this->other['categoryid'])) {
             $url->param('categoryid', $this->other['categoryid']);
         }
