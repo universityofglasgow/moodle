@@ -1055,7 +1055,7 @@ class assessments_details {
                 case 'workshop':
                     $fb->hasfeedback = true;
                     $fb->feedbacktext = $readfeedback;
-                    $workshopurl = new moodle_url('/mod/workshop/submission.php', array('cmid' => $id));
+                    $workshopurl = self::return_assessmenturl($id, 'workshop');
                     $fb->feedbackurl = $workshopurl.$idfooter;
                     break;
                 // Forum.
