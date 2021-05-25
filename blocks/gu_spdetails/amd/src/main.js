@@ -218,13 +218,13 @@ define(['core/ajax'], function(Ajax) {
             tabContent.innerHTML = response.result;
             var subCategories = document.querySelectorAll('.subcategory-row');
             onClickSubcategory(subCategories);
-            onClickPageLink();
+            onClickPageLink(subcategory);
             sortingStatus(sortby, sortorder);
             if(isPageClicked) {
                 blockElement.scrollIntoView();
             }
             if(subcategory !== null) {
-                subcategoryContainer.parentElement.parentElement.parentElement.parentElement.scrollIntoView();
+                blockElement.scrollIntoView();
                 if(sortorder === 'asc') {
                     document.getElementById('sortby_date_subcategory').classList.add('th-sort-asc');
                     document.getElementById('sortby_date_subcategory').classList.remove('th-sort-desc');
@@ -368,11 +368,12 @@ define(['core/ajax'], function(Ajax) {
         }
     }
 
-    const onClickPageLink = function() {
-        var pageLinks = document.querySelectorAll('#assessments_details_contents .page-item a.page-link');
+    const onClickPageLink = function(subcategory) {
+        var pageLinks = subcategory !== null ? document.querySelectorAll('#subcategory_details_contents .page-item a.page-link')
+                                             : document.querySelectorAll('#assessments_details_contents .page-item a.page-link');
 
         pageLinks.forEach(function(item) {
-            if(item.getAttribute('href') !== '#') {
+            if(item.hasAttribute('href') && item.getAttribute('href') !== '#') {
                 var url = new URL(item.getAttribute('href'));
                 var params = new URLSearchParams(url.search);
                 var activetab = params.get('activetab');
@@ -382,7 +383,7 @@ define(['core/ajax'], function(Ajax) {
                 var isPageClicked = true;
                 item.addEventListener('click', function(event) {
                     event.preventDefault();
-                    loadAssessments(activetab, page, sortby, sortorder, isPageClicked);
+                    loadAssessments(activetab, page, sortby, sortorder, isPageClicked, subcategory);
                 });
             }else{
                 item.removeAttribute('href');
