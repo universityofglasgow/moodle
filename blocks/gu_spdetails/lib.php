@@ -139,7 +139,7 @@ class assessments_details {
                 // Assessment name.
                 $html .= html_writer::start_tag('td', array('class' => 'td20'));
                 $html .= html_writer::tag('a', $assessment->assessmentname,
-                                                array('href' => ($assessment->feedback->issubcategory) ? "#assessments-container"
+                                                array('href' => ($assessment->feedback->issubcategory) ? "#-"
                                                                 : $assessment->assessmenturl,
                                                     'class' => ($assessment->feedback->issubcategory) ? 'subcategory-row' : "",
                                                     'data-id' => $assessment->id,
@@ -157,7 +157,7 @@ class assessments_details {
                     $html .= html_writer::start_tag('td', array('class' => 'td10'));
                     if ($assessment->feedback->issubcategory) {
                         $html .= html_writer::tag('a', $assessment->feedback->feedbacktext,
-                        array('href' => "#assessments-container",
+                        array('href' => "#-",
                                 'class' => 'subcategory-row',
                                 'data-id' => $assessment->id,
                                 'data-name' => $assessment->assessmentname,
@@ -197,7 +197,7 @@ class assessments_details {
                     $html .= html_writer::start_tag('td', array('class' => 'td15'));
                     if ($assessment->feedback->issubcategory) {
                         $html .= html_writer::tag('a', $assessment->feedback->feedbacktext,
-                                                array('href' => "#assessments-container",
+                                                array('href' => "#-",
                                                             'class' => 'subcategory-row',
                                                             'data-id' => $assessment->id,
                                                             'data-name' => $assessment->assessmentname,
@@ -227,7 +227,7 @@ class assessments_details {
                 if ($assessment->feedback->hasfeedback) {
                         $html .= html_writer::tag('a', $assessment->feedback->feedbacktext,
                                                     array('href' => ($assessment->feedback->issubcategory)
-                                                            ? "#assessments-container" : $assessment->feedback->feedbackurl,
+                                                            ? "#-" : $assessment->feedback->feedbackurl,
                                                         'class' => ($assessment->feedback->issubcategory) ? 'subcategory-row' : "",
                                                         'data-id' => $assessment->id,
                                                         'data-name' => $assessment->assessmentname,

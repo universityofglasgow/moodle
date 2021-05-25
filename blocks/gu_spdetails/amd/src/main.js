@@ -224,6 +224,7 @@ define(['core/ajax'], function(Ajax) {
                 blockElement.scrollIntoView();
             }
             if(subcategory !== null) {
+                subcategoryContainer.parentElement.parentElement.parentElement.parentElement.scrollIntoView();
                 if(sortorder === 'asc') {
                     document.getElementById('sortby_date_subcategory').classList.add('th-sort-asc');
                     document.getElementById('sortby_date_subcategory').classList.remove('th-sort-desc');
