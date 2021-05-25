@@ -42,7 +42,7 @@ class grade_capture_viewed extends \core\event\base {
     }
 
     public function get_url() {
-        $url = new \moodle_url('local/gugcat/index.php', array('id' => $this->courseid, 'page' => $this->other['page']));
+        $url = new \moodle_url('/local/gugcat/index.php', array('id' => $this->courseid, 'page' => $this->other['page']));
         if (!is_null($this->other['activityid'])) {
             $url->param('activityid', $this->other['activityid']);
         }

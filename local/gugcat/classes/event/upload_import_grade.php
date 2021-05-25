@@ -41,7 +41,7 @@ class upload_import_grade extends \core\event\base {
     }
 
     public function get_url() {
-        $url = new \moodle_url('local/gugcat/import/index.php', array('id' => $this->courseid,
+        $url = new \moodle_url('/local/gugcat/import/index.php', array('id' => $this->courseid,
              'activityid' => $this->other['activityid'], 'page' => $this->other['page']));
         if (!is_null($this->other['categoryid']) && $this->other['categoryid'] != 0) {
             $url->param('categoryid', $this->other['categoryid']);

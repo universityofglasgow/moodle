@@ -152,6 +152,7 @@ if ($fromform = $mform->get_data()) {
             'cnum' => $cnum,
             'idnumber' => $student->idnumber,
             'studentid' => $studentid,
+            'alternativecg' => $alternativecg,
             'setting' => $formtype,
             'page' => $page
         )

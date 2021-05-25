@@ -41,7 +41,7 @@ class add_adjust_grade_conversion extends \core\event\base {
     }
 
     public function get_url() {
-        $url = new \moodle_url('local/gugcat/convert/index.php',
+        $url = new \moodle_url('/local/gugcat/convert/index.php',
                         array('id' => $this->courseid, 'activityid' => $this->other['activityid'], 'page' => $this->other['page']));
         if (!is_null($this->other['categoryid'])) {
             $url->param('categoryid', $this->other['categoryid']);

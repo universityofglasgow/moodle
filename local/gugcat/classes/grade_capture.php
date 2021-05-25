@@ -121,7 +121,7 @@ class grade_capture{
                 if ($isconverted && count($convertedgrades) > 0) {
                     $cg = isset($convertedgrades[$student->id]) ? $convertedgrades[$student->id] : null;
                     $cgg = (is_null($cg) || is_null($cg->grade)) ? null : grade_converter::convert($conversion, $cg->grade);
-                    $gradecaptureitem->convertedgrade = is_null($cgg) ? get_string('nograde', 'local_gugcat') 
+                    $gradecaptureitem->convertedgrade = is_null($cgg) ? get_string('nograde', 'local_gugcat')
                     : local_gugcat::convert_grade($cgg, null, $module->is_converted);
                 }
                 // Get first grade and provisional grade.
@@ -133,7 +133,7 @@ class grade_capture{
                 if (is_null($pg)) {
                     local_gugcat::add_update_grades($student->id, local_gugcat::$prvgradeid, null, null, false);
                 }
-                $gradecaptureitem->firstgrade = is_null($fg) ? get_string('nograde', 'local_gugcat') 
+                $gradecaptureitem->firstgrade = is_null($fg) ? get_string('nograde', 'local_gugcat')
                 : local_gugcat::convert_grade($fg, $gt);
 
                 $gradecaptureitem->provisionalgrade = is_null($pg) ? get_string('nograde', 'local_gugcat') :

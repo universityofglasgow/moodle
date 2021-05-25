@@ -41,7 +41,7 @@ class add_grade extends \core\event\base {
     }
 
     public function get_url() {
-        $url = new \moodle_url('local/gugcat/add/index.php', array('id' => $this->courseid,
+        $url = new \moodle_url('/local/gugcat/add/index.php', array('id' => $this->courseid,
             'activityid' => $this->other['activityid'], 'studentid' => $this->other['studentno'], 'page' => $this->other['page']));
         if (!is_null($this->other['categoryid'])) {
             $url->param('categoryid', $this->other['categoryid']);
