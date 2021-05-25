@@ -417,6 +417,7 @@ class grade_aggregation{
         }
         // Display the errors from aggregation.
         if ($showerrors) {
+            \core\notification::fetch();
             foreach ($errors as $e) {
                 local_gugcat::notify_error(null, $e);
             }
