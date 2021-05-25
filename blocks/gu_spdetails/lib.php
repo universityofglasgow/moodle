@@ -105,7 +105,7 @@ class assessments_details {
                                             array('class' => 'td05'));
             if ($activetab === TAB_CURRENT) {
                 $html .= html_writer::tag('th', get_string('header_duedate', 'block_gu_spdetails'),
-                                                array('id' => 'sortby_date', 'class' => 'td10 th-sortable',
+                                                array('id' => $issubcategory ? 'sortby_date_subcategory' : 'sortby_date', 'class' => 'td10 th-sortable',
                                                     'data-value' => ''));
                 $html .= html_writer::tag('th', get_string('header_status', 'block_gu_spdetails'),
                                                 array('class' => 'td15'));
@@ -139,7 +139,7 @@ class assessments_details {
                 // Assessment name.
                 $html .= html_writer::start_tag('td', array('class' => 'td20'));
                 $html .= html_writer::tag('a', $assessment->assessmentname,
-                                                array('href' => ($assessment->feedback->issubcategory) ? "#assessments-container"
+                                                array('href' => ($assessment->feedback->issubcategory) ? "#-"
                                                                 : $assessment->assessmenturl,
                                                     'class' => ($assessment->feedback->issubcategory) ? 'subcategory-row' : "",
                                                     'data-id' => $assessment->id,
@@ -157,7 +157,7 @@ class assessments_details {
                     $html .= html_writer::start_tag('td', array('class' => 'td10'));
                     if ($assessment->feedback->issubcategory) {
                         $html .= html_writer::tag('a', $assessment->feedback->feedbacktext,
-                        array('href' => "#assessments-container",
+                        array('href' => "#-",
                                 'class' => 'subcategory-row',
                                 'data-id' => $assessment->id,
                                 'data-name' => $assessment->assessmentname,
@@ -197,7 +197,7 @@ class assessments_details {
                     $html .= html_writer::start_tag('td', array('class' => 'td15'));
                     if ($assessment->feedback->issubcategory) {
                         $html .= html_writer::tag('a', $assessment->feedback->feedbacktext,
-                                                array('href' => "#assessments-container",
+                                                array('href' => "#-",
                                                             'class' => 'subcategory-row',
                                                             'data-id' => $assessment->id,
                                                             'data-name' => $assessment->assessmentname,
@@ -227,7 +227,7 @@ class assessments_details {
                 if ($assessment->feedback->hasfeedback) {
                         $html .= html_writer::tag('a', $assessment->feedback->feedbacktext,
                                                     array('href' => ($assessment->feedback->issubcategory)
-                                                            ? "#assessments-container" : $assessment->feedback->feedbackurl,
+                                                            ? "#-" : $assessment->feedback->feedbackurl,
                                                         'class' => ($assessment->feedback->issubcategory) ? 'subcategory-row' : "",
                                                         'data-id' => $assessment->id,
                                                         'data-name' => $assessment->assessmentname,
@@ -1055,7 +1055,7 @@ class assessments_details {
                 case 'workshop':
                     $fb->hasfeedback = true;
                     $fb->feedbacktext = $readfeedback;
-                    $workshopurl = new moodle_url('/mod/workshop/submission.php', array('cmid' => $id));
+                    $workshopurl = self::return_assessmenturl($id, 'workshop');
                     $fb->feedbackurl = $workshopurl.$idfooter;
                     break;
                 // Forum.
