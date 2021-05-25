@@ -733,7 +733,7 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $workshopexpected1 = $this->return_feedbackbaseobject();
         $workshopexpected1->hasfeedback = true;
         $workshopexpected1->feedbacktext = $readfeedback;
-        $workshopurl = new moodle_url('/mod/workshop/submission.php', array('cmid' => $id));
+        $workshopurl = $this->lib->return_assessmenturl($id, 'workshop');
         $workshopexpected1->feedbackurl = $workshopurl.$idfooter;
 
         $this->assertEquals($workshopexpected1, $workshopreturned1);
