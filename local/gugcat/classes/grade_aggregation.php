@@ -301,6 +301,12 @@ class grade_aggregation{
                     $grdobj->originalweight = round((float)$item->weight * 100);
                     $grdobj->rawgrade = $grdvalue;
                     $grdobj->weight = round((float)$weight * 100 );
+
+                    // Check the next grade to check if scale is sched B when grade is H.
+                    $gradescale = ($grade == 'H') ? local_gugcat::convert_grade($grd+1) : $grade;
+                    $grdobj->scale = in_array($gradescale, local_gugcat::$schedulea) ? SCHEDULE_A
+                    : (in_array($gradescale, local_gugcat::$scheduleb) ? SCHEDULE_B : null);
+
                     $gradecaptureitem->grades[$grdobj->activityid] = $grdobj;
                 }
                 $sumaggregated = $sumaggregated != 0 ? $sumaggregated / $calculatedweight : $sumaggregated;
