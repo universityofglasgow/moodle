@@ -202,7 +202,7 @@ function return_assessments_count($userid, $courseids) {
                             if ($record->status === 'submitted') {
                                 $counter->submitted++;
                             } else {
-                                if ($record->submissions < 0) {
+                                if ($record->submissions <= 0) {
                                     if (!($record->allowsubmissionsfromdate > time() || $record->duedate == 0)) {
                                         if ($record->duedate < time()) {
                                             if ($record->cutoffdate == 0 || $record->cutoffdate > time()) {
