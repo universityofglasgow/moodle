@@ -516,14 +516,14 @@ class grade_capture{
             $errorobj->value = $grade;
 
             // Check if student is not enrolled in current course.
-            if (!in_array($idnumber, array_column($enrolled, 'idnumber'))) {
+            if (!in_array($idnumber, array_column($enrolled, 'idnumber'), true)) {
                 $gradebookerrors[] = get_string('uploaderrornotfound', 'local_gugcat', $errorobj);
                 $status = false;
                 break;
             }
 
             // Check if student is not in the current group.
-            if (count($grouped) > 0 && !in_array($idnumber, array_column($grouped, 'idnumber'))) {
+            if (count($grouped) > 0 && !in_array($idnumber, array_column($grouped, 'idnumber'), true)) {
                 $gradebookerrors[] = get_string('uploaderrornotmember', 'local_gugcat', $errorobj);
                 $status = false;
                 break;

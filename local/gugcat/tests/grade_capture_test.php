@@ -346,10 +346,10 @@ class grade_capture_testcase extends advanced_testcase {
         $module->gradeitem->gradetype = GRADE_TYPE_SCALE;
 
         $content1 = array(
-            "ID Number,Grades",
-            ",", // Empty line will skip the validation.
-            "$id1,A1",
-            "$id2,A2",
+            "Student Number,Participant Number,Grades",
+            ",,", // Empty line will skip the validation.
+            "$id1,1,A1",
+            "$id2,2,A2",
         );
         $csvimport = new gradeimport_csv_load_data();
         $csvimport->load_csv_content(implode("\n", $content1), 'UTF-8', 'comma', 0);
@@ -362,13 +362,14 @@ class grade_capture_testcase extends advanced_testcase {
         $this->assertEmpty($errors);
         unset($csvimportdata);
         // Start asserting errors.
+
         $errorobj = new stdClass();
 
         // Assert student not enrolled in current course.
         $content2 = array(
-            "ID Number,Grades",
-            "5,A1",
-            "$id2,A2",
+            "Student Number,Participant Number,Grades",
+            "5,5,A1",
+            "$id2,2,A2",
         );
         $csvimport->load_csv_content(implode("\n", $content2), 'UTF-8', 'comma', 0);
         $csvimportdata = new csv_import_reader($csvimport->get_iid(), 'grade');
@@ -386,7 +387,7 @@ class grade_capture_testcase extends advanced_testcase {
 
         // Create grouping and group first, then add student 1 to the group.
         $grouping = $this->getDataGenerator()->create_grouping(array('courseid' => $this->course->id));
-        $group = self::getDataGenerator()->create_group(array('courseid' => $this->course->id));
+        $group = $this->getDataGenerator()->create_group(array('courseid' => $this->course->id));
         groups_assign_grouping($grouping->id, $group->id);
         groups_add_member($group->id, $this->student->id);
         // Add grouping id on the module.
@@ -408,8 +409,8 @@ class grade_capture_testcase extends advanced_testcase {
 
         // Assert grade in scale is not alphanumeric.
         $content3 = array(
-            "ID Number,Grades",
-            "$id1,AA"
+            "Student Number,Participant Number,Grades",
+            "$id1,1,AA"
         );
         $csvimport->load_csv_content(implode("\n", $content3), 'UTF-8', 'comma', 0);
         $csvimportdata = new csv_import_reader($csvimport->get_iid(), 'grade');
@@ -425,8 +426,8 @@ class grade_capture_testcase extends advanced_testcase {
 
         // Assert grade in scale is alphanumeric but not within the scale.
         $content3 = array(
-            "ID Number,Grades",
-            "$id1,Z0"
+            "Student Number,Participant Number,Grades",
+            "$id1,1,Z0"
         );
         $csvimport->load_csv_content(implode("\n", $content3), 'UTF-8', 'comma', 0);
         $csvimportdata = new csv_import_reader($csvimport->get_iid(), 'grade');
@@ -446,8 +447,8 @@ class grade_capture_testcase extends advanced_testcase {
 
         // Assert grade in points is greater than grademax.
         $content4 = array(
-            "ID Number,Grades",
-            "$id1,100"
+            "Student Number,Participant Number,Grades",
+            "$id1,1,100"
         );
         $csvimport->load_csv_content(implode("\n", $content4), 'UTF-8', 'comma', 0);
         $csvimportdata = new csv_import_reader($csvimport->get_iid(), 'grade');
@@ -476,9 +477,9 @@ class grade_capture_testcase extends advanced_testcase {
 
         // Assert success import for admin grades NS/MV.
         $content5 = array(
-            "ID Number,Grades",
-            "$id1,NS",
-            "$id2,MV"
+            "Student Number,Participant Number,Grades",
+            "$id1,1,NS",
+            "$id2,2,MV"
         );
         $csvimport->load_csv_content(implode("\n", $content5), 'UTF-8', 'comma', 0);
         $csvimportdata = new csv_import_reader($csvimport->get_iid(), 'grade');
