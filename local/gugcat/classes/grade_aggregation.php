@@ -298,8 +298,8 @@ class grade_aggregation{
                     $grdobj->grade = $grade;
                     $grdobj->nonconvertedgrade = (isset($ncg) && !is_null($ncg->finalgrade))
                     ? $ncg->finalgrade : (isset($ncg) && !is_null($ncg->rawgrade) ? $ncg->rawgrade : null);
-                    $grdobj->originalweight = round((float)$item->weight * 100);
                     $grdobj->rawgrade = $grdvalue;
+                    $grdobj->originalweight = round((float)$item->weight * 100);
                     $grdobj->weight = round((float)$weight * 100 );
 
                     // Check the next grade to check if scale is sched B when grade is H.
