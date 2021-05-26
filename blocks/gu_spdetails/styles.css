@@ -175,10 +175,13 @@
     flex-basis: auto;
     width: 100%;
     font-size: 18px;
+    flex-wrap: wrap;
 }
 
 .subcategory-details-container > div {
-    width: 100%;
+    min-width: 180px;
+    margin: 5px 10px;
+    flex-grow: 1;
 }
 
 .subcategory-details-label {
