@@ -788,67 +788,65 @@ class local_gugcat {
         global $DB;
 
         $customfieldcategory = $DB->get_record('customfield_category',
-         array('name' => get_string('gugcatoptions', 'local_gugcat')));
-        if ($customfieldcategory) {
-            $customfieldfield = $DB->get_record('customfield_field',
-             array('categoryid' => $customfieldcategory->id));
-            if (!empty($customfieldfield)) {
-                $customfielddata = $DB->get_record('customfield_data', array('fieldid' => $customfieldfield->id,
-                 'instanceid' => $instanceid, 'contextid' => $contextid));
-                if (!empty($customfielddata)) {
-                    $customfielddatadobj = new stdClass();
-                    $customfielddatadobj->id = (int)$customfielddata->id;
-
-                    if ((int)$customfielddata->intvalue == 1) {
-                        $customfielddatadobj->intvalue = 0;
-                        $customfielddatadobj->value = "0";
-                    } else {
-                        $customfielddatadobj->intvalue = 1;
-                        $customfielddatadobj->value = "1";
-                    }
-
-                    if ($DB->update_record('customfield_data', $customfielddatadobj, $bulk = false)) {
-                        return $customfielddatadobj->intvalue;
-                    };
-                } else {
-                    $customfieldddataobj = self::default_contextfield_data_value($customfieldfield->id, $instanceid, $contextid);
-                    $DB->insert_record('customfield_data', $customfieldddataobj);
-                    return $customfielddatadobj->intvalue;
-                }
-            }
-        } else {
+         array('name' => get_string('gugcatoptions', 'local_gugcat')), 'id');
+        //  Create/Get custom field category id.
+        $customfieldcategoryid = null;
+        if (!$customfieldcategory) {
             $customfieldcategory = new stdClass();
             $customfieldcategory->name = get_string('gugcatoptions', 'local_gugcat');
             $customfieldcategory->component = "core_course";
             $customfieldcategory->area = "course";
             $customfieldcategory->timecreated = time();
             $customfieldcategory->timemodified = time();
-            $customfieldcategoryid = $DB->insert_record('customfield_category', $customfieldcategory,
-             $returnid = true, $bulk = false);
-            if (!is_null($customfieldcategoryid)) {
-                $configdata = '{"required":"0","uniquevalues":"0","checkbydefault":"0","locked":"0","visibility":"0"}';
-                $category = \core_customfield\category_controller::create($customfieldcategoryid);
-                $field = \core_customfield\field_controller::create(0, (object)[
-                    'type' => 'checkbox',
-                    'configdata' => $configdata
-                ], $category);
+            $customfieldcategoryid = $DB->insert_record('customfield_category', $customfieldcategory);
+        } else {
+            $customfieldcategoryid = $customfieldcategory->id;
+        }
 
-                $handler = $field->get_handler();
-                $handler->save_field_configuration($field, (object)[
-                    'name' => get_string('showassessment', 'local_gugcat'),
-                    'shortname' => get_string('showonstudentdashboard', 'local_gugcat')
-                ]);
+        //  Create/Get custom field field id.
+        $customfieldfield = $DB->get_record('customfield_field',
+             array('categoryid' => $customfieldcategoryid), 'id');
+        $customfieldfieldid = null;
+        if (!$customfieldfield) {
+            $configdata = '{"required":"0","uniquevalues":"0","checkbydefault":"0","locked":"0","visibility":"0"}';
+            $category = \core_customfield\category_controller::create($customfieldcategoryid);
+            $field = \core_customfield\field_controller::create(0, (object)[
+                'type' => 'checkbox',
+                'configdata' => $configdata
+            ], $category);
 
-                $customfieldfield = $DB->get_record('customfield_field', array('categoryid' => $customfieldcategoryid));
-                if (!is_null($customfieldfield->id) && !is_null($instanceid) && !is_null($contextid)) {
-                    $customfieldddataobj = self::default_contextfield_data_value($customfieldfield->id, $instanceid, $contextid);
-                    $DB->insert_record('customfield_data', $customfieldddataobj);
-                    $customfielddata = $DB->get_record('customfield_data', array('fieldid' => $customfieldfield->id,
-                     'instanceid' => $instanceid, 'contextid' => $contextid));
-                    return (int)$customfielddata->intvalue;
-                }
-            }
+            $handler = $field->get_handler();
+            $handler->save_field_configuration($field, (object)[
+                'name' => get_string('showassessment', 'local_gugcat'),
+                'shortname' => get_string('showonstudentdashboard', 'local_gugcat')
+            ]);
+            $customfieldfieldid = $field->get('id');
+        } else {
+            $customfieldfieldid = $customfieldfield->id;
+        }
+
+        //  Create/Get custom field data.
+        $customfielddata = $DB->get_record('customfield_data', array('fieldid' => $customfieldfieldid,
+                 'instanceid' => $instanceid, 'contextid' => $contextid));
+        if (!$customfielddata) {
+            $customfieldddataobj = self::default_contextfield_data_value($customfieldfieldid, $instanceid, $contextid);
+            $DB->insert_record('customfield_data', $customfieldddataobj);
             return 1;
+        } else {
+            $customfielddatadobj = new stdClass();
+            $customfielddatadobj->id = (int)$customfielddata->id;
+
+            if ((int)$customfielddata->intvalue == 1) {
+                $customfielddatadobj->intvalue = 0;
+                $customfielddatadobj->value = "0";
+            } else {
+                $customfielddatadobj->intvalue = 1;
+                $customfielddatadobj->value = "1";
+            }
+
+            if ($DB->update_record('customfield_data', $customfielddatadobj)) {
+                return $customfielddatadobj->intvalue;
+            };
         }
     }
 
@@ -859,21 +857,21 @@ class local_gugcat {
      */
     public static function get_value_of_customfield_checkbox($instanceid, $contextid) {
         global $DB;
-
+        $value = 0;
         $customfieldcategory = $DB->get_record('customfield_category',
          array('name' => get_string('gugcatoptions', 'local_gugcat')));
         if ($customfieldcategory) {
             $customfieldfield = $DB->get_record('customfield_field',
              array('categoryid' => $customfieldcategory->id));
-            if (!empty($customfieldfield)) {
+            if ($customfieldfield) {
                 $customfielddata = $DB->get_record('customfield_data', array('fieldid' => $customfieldfield->id,
                  'instanceid' => $instanceid, 'contextid' => $contextid));
-                if (!empty($customfielddata)) {
-                    return (int)$customfielddata->intvalue;
+                if ($customfielddata) {
+                    $value = (int)$customfielddata->intvalue;
                 }
-                return 0;
             }
         }
+        return $value;
     }
 
     /**
