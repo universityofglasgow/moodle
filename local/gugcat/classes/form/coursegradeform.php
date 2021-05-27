@@ -49,7 +49,7 @@ class coursegradeform extends moodleform {
         $alternativecg = optional_param('alternativecg', null, PARAM_INT);
         foreach ($student->grades as $grdobj) {
             $overridemerit = !is_null($alternativecg) && $alternativecg != 0;
-            $weight = $grdobj->is_child && !$overridemerit? $grdobj->originalweight : $grdobj->weight;
+            $weight = $grdobj->is_child && !$overridemerit ? $grdobj->originalweight : $grdobj->weight;
             if ($this->_customdata['setting'] == '1' && $acg != GPA_GRADE || $grdobj->category) {
                 $mform->addElement('html', '<div class="mform-override">');
                 $mform->addElement('static', $grdobj->activity, $grdobj->activity.' Weighting', "$weight%");
