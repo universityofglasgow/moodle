@@ -512,6 +512,8 @@ class grade_aggregation{
         // Return grade = null, processed = true if all components are not graded for weighted/mean/mode/median/natural.
         if (!$ishighestgrade && count(array_filter($studentgrades, 'is_numeric')) != $totalchildren) {
             return array(null, true, null);
+        } else if ($ishighestgrade && count(array_filter($studentgrades, 'is_numeric')) == 0) {
+            return array(null, true, null);
         }
 
         // Overall gradetype, grademax and scaleid to be used in subcat grade.
