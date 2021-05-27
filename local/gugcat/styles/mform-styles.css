@@ -128,7 +128,7 @@ abbr > .fa-asterisk {
 }
 
 /* Form buttons */
-.btn-blue > .form-inline > .btn{
+button.btn-blue, .btn-blue > .form-inline > .btn{
     margin-left: auto !important;
     margin-right: 15px;
     border-color: #005c8a;
