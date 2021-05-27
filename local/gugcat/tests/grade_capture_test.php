@@ -187,7 +187,7 @@ class grade_capture_testcase extends advanced_testcase {
         $instance->markingworkflow = 1; // Enable marking workflow.
         $assign->update_instance($instance);
         $expectedgradeint = 5;
-        $expectedgrade = '4.00000'; // Value of -1 for the grade offset.
+        $expectedgrade = '5.00000'; // Value of -1 for the grade offset.
         // Add provisional grades to student.
         $gradeobj = new grade_grade(array('userid' => $this->student->id, 'itemid' => $this->provisionalgi), true);
         $gradeobj->information = '1.00000';
@@ -249,7 +249,10 @@ class grade_capture_testcase extends advanced_testcase {
     }
 
     public function test_hideshow_grade() {
+        global $DB;
         grade_capture::import_from_gradebook($this->course->id, $this->cm, $this->cms);
+        // Populate static prvgradeid.
+        local_gugcat::set_prv_grade_id($this->course->id, $this->cm);
         // Hide grade.
         $result = grade_capture::hideshowgrade($this->student->id);
         $firstrows = grade_capture::get_rows($this->course, $this->cm, array($this->student));
@@ -258,6 +261,8 @@ class grade_capture_testcase extends advanced_testcase {
         $this->assertTrue($firstrow->hidden);
 
         // Show grade.
+        $DB->set_field('grade_grades', 'hidden', 1, array('userid' => $this->student->id,
+         'itemid' => local_gugcat::$prvgradeid));
         $result = grade_capture::hideshowgrade($this->student->id);
         $this->assertEquals($result, 'shown');
     }
@@ -293,37 +298,6 @@ class grade_capture_testcase extends advanced_testcase {
         $this->assertEquals($selectedmodule->gradeitem->itemtype, $this->cm->gradeitem->itemtype);
         $this->assertEquals($selectedmodule->gradeitem->itemmodule, $this->cm->gradeitem->itemmodule);
         $this->assertNotEquals($selectedmodule->gradeitem->parent_category, $this->cm->gradeitem->parent_category);
-    }
-
-    public function test_create_subcategory_gradeitem() {
-        global $DB;
-        $gen = $this->getDataGenerator();
-        $cid = $this->course->id;
-        $gc1a = new grade_category($gen->create_grade_category(['courseid' => $cid]), false);
-        $gc2a = new grade_category($gen->create_grade_category(['courseid' => $cid]), false);
-        $gc2a->depth = 3;
-        $gc2a->path = $gc1a->path . $gc2a->id . '/';
-        $gc2a->parent = $gc1a->id;
-        $gc2a->update();
-        $categorygi = $DB->get_field('grade_items', 'id', array('courseid' => $this->course->id,
-         'itemtype' => 'category', 'iteminstance' => $gc2a->id));
-        $assignid = $DB->get_field('grade_items', 'id', array('courseid' => $this->course->id, 'itemmodule' => 'assign'));
-        $DB->set_field('grade_items', 'categoryid', $categorygi, array('id' => $assignid));
-        $cm = local_gugcat::get_activities($cid, $gc1a->id);
-        $categoract = grade_category::fetch_all(array('courseid' => $cid, 'parent' => $gc1a->id));
-        $gradecatgi = array();
-        foreach ($categoract as $gc) {
-            $gi = local_gugcat::get_category_gradeitem($cid, $gc);
-            $gradecatgi[$gi->gradeitemid] = $gi;
-        }
-        $mods = key($gradecatgi);
-        $selectedmodid = $gradecatgi[$mods]->gradeitemid;
-        $childactivities = local_gugcat::get_activities($cid, $selectedmodid);
-        $totalactivities = $childactivities + $gradecatgi;
-        grade_capture::import_from_gradebook($cid, $childactivities, $totalactivities);
-        $subcatstr = get_string('subcategorygrade', 'local_gugcat');
-        $subcatgi = $DB->get_record('grade_items', array('itemtype' => 'manual', 'itemname' => $subcatstr));
-        $this->assertNotFalse($subcatgi);
     }
 
     public function test_prepare_import_data() {

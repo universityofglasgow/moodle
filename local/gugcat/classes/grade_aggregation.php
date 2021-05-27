@@ -303,7 +303,7 @@ class grade_aggregation{
                     $grdobj->weight = round((float)$weight * 100 );
 
                     // Check the next grade to check if scale is sched B when grade is H.
-                    $gradescale = ($grade == 'H') ? local_gugcat::convert_grade($grd+1) : $grade;
+                    $gradescale = ($grade == 'H') ? local_gugcat::convert_grade($grd + 1) : $grade;
                     $grdobj->scale = in_array($gradescale, local_gugcat::$schedulea) ? SCHEDULE_A
                     : (in_array($gradescale, local_gugcat::$scheduleb) ? SCHEDULE_B : null);
 

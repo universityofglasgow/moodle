@@ -789,7 +789,7 @@ class local_gugcat {
 
         $customfieldcategory = $DB->get_record('customfield_category',
          array('name' => get_string('gugcatoptions', 'local_gugcat')), 'id');
-        //  Create/Get custom field category id.
+        // Create/Get custom field category id.
         $customfieldcategoryid = null;
         if (!$customfieldcategory) {
             $customfieldcategory = new stdClass();
@@ -803,7 +803,7 @@ class local_gugcat {
             $customfieldcategoryid = $customfieldcategory->id;
         }
 
-        //  Create/Get custom field field id.
+        // Create/Get custom field field id.
         $customfieldfield = $DB->get_record('customfield_field',
              array('categoryid' => $customfieldcategoryid), 'id');
         $customfieldfieldid = null;
@@ -825,7 +825,7 @@ class local_gugcat {
             $customfieldfieldid = $customfieldfield->id;
         }
 
-        //  Create/Get custom field data.
+        // Create/Get custom field data.
         $customfielddata = $DB->get_record('customfield_data', array('fieldid' => $customfieldfieldid,
                  'instanceid' => $instanceid, 'contextid' => $contextid));
         if (!$customfielddata) {
@@ -1119,7 +1119,7 @@ class local_gugcat {
         $scaleid = $module->is_converted;
         $gt = $module->gradeitem->gradetype;
         $isconvertedmod = $module->is_converted;
-        if ($gradehistoryarr > 0) {
+        if (count($gradehistoryarr) > 0) {
             // Remove from array if feedback has gradeitem.
             foreach ($gradehistoryarr as $key => $gradehistory) {
                 if (preg_match('/,_gradeitem/i', $gradehistory->feedback)) {
