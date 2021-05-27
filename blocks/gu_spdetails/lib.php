@@ -925,9 +925,7 @@ class assessments_details {
             switch ($gradetype) {
                 // Gradetype = value.
                 case '1':
-                    $grading->gradetext = ($grademax == 22 && $grademin == 0) ?
-                                        self::return_22grademaxpoint($intgrade, $scheduleab) :
-                                        self::return_gradetext((int)$finalgrade, $grademax, $convertedgrade, $onlyconverted);
+                    $grading->gradetext = self::return_gradetext((int)$finalgrade, $grademax, $convertedgrade, $onlyconverted);
                     break;
                 // Gradetype = scale.
                 case '2':
