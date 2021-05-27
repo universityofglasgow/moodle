@@ -617,7 +617,8 @@ class assessments_details {
                                      LEFT JOIN {grade_items} gip ON (gip.itemname = 'Subcategory Grade' AND gip.iteminfo = gc.id)
                                      LEFT JOIN {grade_grades} ggp ON (ggp.itemid = gip.id AND ggp.userid = ?)
                                      LEFT JOIN {scale} sp ON (sp.id = CASE WHEN gip.idnumber IS NOT NULL
-                                     AND NOT gip.idnumber = '' THEN gip.idnumber ELSE gip.outcomeid END)";
+                                     AND NOT gip.idnumber = '' THEN gip.idnumber WHEN gip.outcomeid IS NOT NULL
+                                     AND NOT gip.outcomeid = '' THEN gip.outcomeid ELSE gi.scaleid END)";
                 $subcategoryenddate = ($activetab === TAB_CURRENT) ?
                                     "AND c.enddate + 86400 * 30 > ?" :
                                     "AND c.enddate + 86400 * 30 <= ?";
