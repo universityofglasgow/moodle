@@ -99,6 +99,8 @@ $string['gradetooltip'] = '<i>Please ensure grade is:
         <li>Within the range of maximum available points</li>
         <li>Or an accepted administrative grade (NS/MV)</li>
     </ul></i>';
+$string['gradesarebeingimport'] = 'The grades are being imported from the Gradebook
+     and you\'ll be able to view them shortly.';
 $string['hiddengrade'] = 'Hidden grade';
 $string['hiddengrademsg'] = 'The grade is now hidden to the student';
 $string['hidefromstudent'] = 'Hide from student';
@@ -142,6 +144,7 @@ $string['pleaseselectgrade'] = 'Please select grade.';
 $string['pleaseindicateresits'] = 'Please indicate which assessments are resit assessments';
 $string['pleaseprovidetemplatename'] = 'If you would like to save this conversion for future use, please provide a name for this conversion scale (max 50 characters):';
 $string['pleasespecify'] = 'Please specify';
+$string['pleasewaitfewmin'] = 'Please wait a few minutes';
 $string['pluginname'] = 'UofG Grade Capture and Aggregation Tool';
 $string['points'] = 'Points ({$a->max})';
 $string['pointtooltip'] = '<i>Please ensure value is:

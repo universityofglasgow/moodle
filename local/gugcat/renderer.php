@@ -188,10 +188,16 @@ class local_gugcat_renderer extends plugin_renderer_base {
             'activities' => $activities,
             'childactivities' => $childactivities,
             'uploadurl' => $uploadurl,
-            'converturl' => $converturl,
+            'converturl' => $converturl
         ] : null;
+
+        $importmodal = [
+            'titlestr' => get_string('pleasewaitfewmin', 'local_gugcat'),
+            'contentstr' => get_string('gradesarebeingimport', 'local_gugcat')
+        ];
         // Start displaying the table.
         $html = $this->header();
+        $html .= $this->render_from_template('local_gugcat/gcat_import_loading', $importmodal);
         $html .= $this->render_from_template('local_gugcat/gcat_tab_header', $tabheader);
         $html .= html_writer::start_tag('form', array('id' => 'multigradesform', 'method' => 'post', 'action' => $actionurl));
         $html .= $this->display_table($htmlrows, $htmlcolumns);
