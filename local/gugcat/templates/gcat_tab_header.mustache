@@ -40,11 +40,12 @@
         {{#addallgrdstr}}<a class="dropdown-item" href="#" id="btn-saveadd">{{addallgrdstr}}</a>{{/addallgrdstr}}
         {{#adjustassconvstr}}<a class="dropdown-item" href="{{converturl}}">{{adjustassconvstr}}</a>{{/adjustassconvstr}}
     </div>
-    {{#saveallgrdstr}}<button class="btn btn-default hidden" id="btn-multisave">{{saveallgrdstr}}</button>{{/saveallgrdstr}}
     {{#downloadcsvstr}}<button class="btn btn-default" id="btn-download">{{downloadcsvstr}}</button>{{/downloadcsvstr}}
     {{#releasefinalstr}}<button class="btn btn-default btn-release" id="btn-finalrelease">{{releasefinalstr}}</button>{{/releasefinalstr}}
     {{#releaseprvgrdstr}}<button class="btn btn-default btn-release" id="btn-release">{{releaseprvgrdstr}}</button>{{/releaseprvgrdstr}}
     {{#grddiscrepancystr}}<button class="btn grade-discrepancy" id="btn-grddisc">{{grddiscrepancystr}}</button>{{/grddiscrepancystr}}
+    {{#saveallgrdstr}}<button class="btn btn-secondary hidden" id="btn-cancelmulti">{{cancelbtnstr}}</button>{{/saveallgrdstr}}
+    {{#saveallgrdstr}}<button class="btn btn-default btn-blue hidden" id="btn-multisave">{{saveallgrdstr}}</button>{{/saveallgrdstr}}
     {{#displaychildactivities}}
     <div class="selectdiv child-select">
         <select id="select-child-act">

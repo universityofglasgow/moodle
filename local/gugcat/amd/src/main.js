@@ -396,6 +396,7 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
     const onClickListeners = (event) =>{
         var btn_multiadd = document.getElementById('btn-saveadd');
         var btn_multisave = document.getElementById('btn-multisave');
+        var btn_cancelmultisave = document.getElementById('btn-cancelmulti');
         var btn_release = document.getElementById('btn-release');
         var btn_import = document.getElementById('btn-import');
         var btn_identities = document.getElementById('btn-identities');
@@ -407,9 +408,11 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
         var radio_ptprc = document.getElementsByName('percentpoints');
         var btn_altsave = document.querySelector('[name="savealtbutton"]');
         switch (event.target) {
+            case btn_cancelmultisave:
             case btn_multiadd:
                 $(".togglemultigrd").toggle();
                 btn_multisave.classList.toggle('hidden');
+                btn_cancelmultisave.classList.toggle('hidden');
                 break;
             case btn_multisave:
                 if(document.querySelectorAll('input.is-invalid').length == 0){
