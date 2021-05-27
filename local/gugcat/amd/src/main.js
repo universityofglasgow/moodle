@@ -388,6 +388,11 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
         }
     };
 
+    const showImportLoading = () => {
+        document.getElementById('import-loading').style.display = 'block';
+        document.querySelector('body').style.overflow = 'hidden';
+    };
+
     const onClickListeners = (event) =>{
         var btn_multiadd = document.getElementById('btn-saveadd');
         var btn_multisave = document.getElementById('btn-multisave');
@@ -418,6 +423,7 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                 if(!$(".gradeitems").text().includes("Moodle Grade[Date]")){
                     showModal('importgrades', 'modalimportgrades', 'confirmimport');
                 }else{
+                    showImportLoading();
                     document.getElementById('importgrades-submit').click();
                 }
                 break;
@@ -469,6 +475,7 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                 if(!$(".gradeitems").text().includes("Moodle Grade[Date]")){
                     showModal('bulkimportgrades', 'modalimportgrades', 'confirmimport');
                 }else{
+                    showImportLoading();
                     document.getElementById('bulk-submit').click();
                 }
                 break;
