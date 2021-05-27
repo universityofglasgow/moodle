@@ -109,17 +109,13 @@ input[name='userfilechoose']{
     color: white;
 }
 
-.btn-default, .btn-release, #btn-cancelmulti,
+.btn-default, .btn-release,
 .tabcontent-header >.selectdiv select {
     height: 40px;
 }
 
 #btn-release, #btn-saveadd, .togglemultigrd, .addnewgrade{
     display: none;
-}
-
-#btn-cancelmulti{
-    border-radius: 8px;
 }
 
 .tabcontent-header >.selectdiv, #btn-blkimport{
