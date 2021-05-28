@@ -301,9 +301,12 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
             case mform_grade_reason:
                 var selectedOption = event.target.value;
                 var mformReason = document.getElementById('id_otherreason');
-                if(selectedOption == '9'){
+                if (selectedOption == '9') {
                     mformReason.value = '';
                     mformReason.focus();
+                    mformReason.required = true;
+                } else {
+                    mformReason.required = false;
                 }
                 break;
             case select_scale:
@@ -407,6 +410,7 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
         var btn_bulk_import = document.getElementById('btn-blkimport');
         var radio_ptprc = document.getElementsByName('percentpoints');
         var btn_altsave = document.querySelector('[name="savealtbutton"]');
+        var btn_upload_submit = document.getElementsByName('submitupload');
         switch (event.target) {
             case btn_cancelmultisave:
             case btn_multiadd:
@@ -486,6 +490,7 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
             case radio_ptprc[1]:
                 clearConversionTable();
                 break;
+
             case btn_altsave:
                 var alttype = document.getElementById('select-alt-grade');
                 if(alttype.value == 1){
@@ -516,6 +521,15 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                     }
                 }else{
                     document.querySelector('[name="hiddensubmitform"]').click();
+                }
+                break;
+            case btn_upload_submit[0]:
+                var selectReason = document.querySelector('select#id_reasons');
+                var otherReason = document.querySelector('input#id_otherreason');
+                if(selectReason.value != '0' && selectReason.value != '9'){
+                    showImportLoading();
+                }else if(selectReason.value == '9' && otherReason.value){
+                    showImportLoading();
                 }
                 break;
             default:
