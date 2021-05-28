@@ -448,7 +448,10 @@ class assessments_details {
                             ELSE a.duedate END + 86400 * 30 <= ?");
             $assignwhere = "a.course IN ($courseids) $assignenddate $categorylimit";
             $assignsql = "SELECT $assignfields FROM {assign} a $assignjoins WHERE $assignwhere";
-            $assignparams = array($userid, $userid, $userid, $userid, $userid, $userid, $enddate, $enddate);
+            $assignparams = array($userid, $userid, $userid, $userid, $userid, $userid);
+            if (!$issubcategory) {
+                array_push($assignparams, $enddate, $enddate);
+            }
 
             $forumfields = "cm.id, f.course AS courseid,
                             CASE
@@ -496,7 +499,10 @@ class assessments_details {
                             AND f.duedate + 86400 * 30 <= ?");
             $forumwhere = "f.course IN ($courseids) $forumenddate $categorylimit";
             $forumsql = "SELECT $forumfields FROM {forum} f $forumjoins WHERE $forumwhere";
-            $forumparams = array($userid, $userid, $enddate, $enddate);
+            $forumparams = array($userid, $userid);
+            if (!$issubcategory) {
+                array_push($forumparams, $enddate, $enddate);
+            }
 
             $quizfields = "cm.id, q.course AS courseid,
                             CASE
@@ -547,7 +553,10 @@ class assessments_details {
                             ELSE q.timeclose END + 86400 * 30 <= ?)");
             $quizwhere = "q.course IN ($courseids) $quizenddate $categorylimit";
             $quizsql = "SELECT $quizfields FROM {quiz} q $quizjoins WHERE $quizwhere";
-            $quizparams = array($userid, $userid, $userid, $userid, $userid, $enddate, $enddate);
+            $quizparams = array($userid, $userid, $userid, $userid, $userid);
+            if (!$issubcategory) {
+                array_push($quizparams, $enddate, $enddate);
+            }
 
             $workshopfields = "cm.id, w.course AS courseid,
                                 CASE
@@ -586,7 +595,11 @@ class assessments_details {
                                 AND w.submissionend  + 86400 * 30 <= ?");
             $workshopwhere = "w.course IN ($courseids) $workshopenddate $categorylimit";
             $workshopsql = "SELECT $workshopfields FROM {workshop} w $workshopjoins WHERE $workshopwhere";
-            $workshopparams = array($userid, $userid, $userid, $enddate, $enddate);
+            $workshopparams = array($userid, $userid, $userid);
+            if (!$issubcategory) {
+                array_push($workshopparams, $enddate, $enddate);
+            }
+
             $orderclause = " ORDER BY $sortby $sortorder";
             $unionsql = "($assignsql) UNION ($forumsql) UNION ($quizsql) UNION ($workshopsql)";
             $unionparams = array_merge($assignparams, $forumparams, $quizparams, $workshopparams);
