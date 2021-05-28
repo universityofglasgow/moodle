@@ -376,7 +376,7 @@ class assessments_details {
                                     LEFT JOIN {grade_items} gip ON (gip.iteminfo = gi.id AND gip.itemname = 'Provisional Grade')
                                     LEFT JOIN {grade_grades} gp ON (gp.itemid = gip.id AND gp.userid = ?)
                                     LEFT JOIN {scale} sp ON (sp.id = gip.idnumber)";
-            $assignfields = "cm.id, a.course AS courseid,
+            $assignfields = "gi.id AS itemid, cm.id, a.course AS courseid,
                                 CASE
                                 WHEN cs.name IS NOT NULL THEN cs.name
                                 WHEN cs.section != 0 THEN CONCAT('Topic ', cs.section)
@@ -453,7 +453,7 @@ class assessments_details {
                 array_push($assignparams, $enddate, $enddate);
             }
 
-            $forumfields = "cm.id, f.course AS courseid,
+            $forumfields = "gi.id AS itemid, cm.id, f.course AS courseid,
                             CASE
                             WHEN cs.name IS NOT NULL THEN cs.name
                             WHEN cs.section > 0 THEN CONCAT('Topic ', cs.section)
@@ -504,7 +504,7 @@ class assessments_details {
                 array_push($forumparams, $enddate, $enddate);
             }
 
-            $quizfields = "cm.id, q.course AS courseid,
+            $quizfields = "gi.id AS itemid, cm.id, q.course AS courseid,
                             CASE
                             WHEN cs.name IS NOT NULL THEN cs.name
                             WHEN cs.section != 0 THEN CONCAT('Topic ', cs.section)
@@ -558,12 +558,12 @@ class assessments_details {
                 array_push($quizparams, $enddate, $enddate);
             }
 
-            $workshopfields = "cm.id, w.course AS courseid,
+            $workshopfields = "gi.id AS itemid, cm.id, w.course AS courseid,
                                 CASE
                                 WHEN cs.name IS NOT NULL THEN cs.name
                                 WHEN cs.section != 0 THEN CONCAT('Topic ', cs.section)
                                 ELSE c.fullname END AS coursetitle,
-                                gi.itemmodule AS modname, w.name AS activityname,
+                                gi.itemmodule AS modname, gi.itemname AS activityname,
                                 gc.fullname AS gradecategoryname, gc.aggregation,
                                 gi.aggregationcoef, gi.aggregationcoef2,
                                 w.submissionstart AS allowsubmissionsfromdate,
@@ -582,7 +582,7 @@ class assessments_details {
                                 AND cm.deletioninprogress = 0)
                             LEFT JOIN {grade_items} gi ON (gi.iteminstance = cm.instance
                                 AND gi.courseid = w.course AND gi.itemtype = 'mod'
-                                AND gi.itemmodule = 'workshop' AND gi.itemnumber = 0)
+                                AND gi.itemmodule = 'workshop')
                             LEFT JOIN {grade_grades} gg ON (gg.itemid = gi.id AND gg.userid = ?)
                             LEFT JOIN {grade_categories} gc ON gc.id = gi.categoryid
                             LEFT JOIN {course} c ON c.id = w.course
@@ -607,7 +607,7 @@ class assessments_details {
                 $level2idtext = implode(', ', $level2ids);
                 $topicnames = self::get_topicname($level2idtext);
                 $coursetitle = self::generate_topicname_case_statement($topicnames);
-                $subcategoryfields = "gc.id, gc.courseid, $coursetitle, gi.itemmodule AS modname,
+                $subcategoryfields = "gi.id AS itemid, gc.id, gc.courseid, $coursetitle, gi.itemmodule AS modname,
                                         gc.fullname AS activityname, gp.fullname AS gradecategoryname, gp.aggregation,
                                         gi.aggregationcoef, gi.aggregationcoef2, NULL AS allowsubmissionsfromdate,
                                         0 AS duedate, 0 AS cutoffdate, 0 AS gradingduedate, NULL AS hasextension, gi.gradetype,
