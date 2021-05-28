@@ -140,7 +140,7 @@ class importform extends moodleform {
 
         $buttonarray = array();
         $buttonarray[] =& $mform->createElement('cancel', 'cancel', get_string('back'));
-        $buttonarray[] =& $mform->createElement('submit', 'submitbutton', get_string('importfile', 'local_gugcat'));
+        $buttonarray[] =& $mform->createElement('submit', 'submitupload', get_string('importfile', 'local_gugcat'));
         $mform->addGroup($buttonarray, 'buttonarr', '', array(''), false);
 
     }

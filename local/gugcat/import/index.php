@@ -54,6 +54,7 @@ $PAGE->navbar->add(get_string('navname', 'local_gugcat'), $indexurl);
 $PAGE->set_title(get_string('gugcat', 'local_gugcat'));
 
 $PAGE->requires->css('/local/gugcat/styles/gugcat.css');
+$PAGE->requires->css('/local/gugcat/styles/import-loading.css');
 $PAGE->requires->js_call_amd('local_gugcat/main', 'init');
 
 $course = get_course($courseid);

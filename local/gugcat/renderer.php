@@ -574,7 +574,12 @@ class local_gugcat_renderer extends plugin_renderer_base {
      */
     public function display_import_preview($firstrow, $data, $isassign) {
         $title = get_string('setupimportoptions', 'local_gugcat');
+        $importmodal = [
+            'titlestr' => get_string('pleasewaitfewmin', 'local_gugcat'),
+            'contentstr' => get_string('gradesarebeingupload', 'local_gugcat')
+        ];
         $html = $this->header();
+        $html .= $this->render_from_template('local_gugcat/gcat_import_loading', $importmodal);
         $html .= html_writer::start_tag('div', array('class' => 'form-container'));
         $html .= html_writer::tag('h5', $title, array('class' => 'title'));
         $html .= html_writer::tag('label', get_string('datapreview', 'local_gugcat'));
