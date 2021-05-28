@@ -112,9 +112,7 @@ class grade_capture{
                     }
                     // Normalize grades.
                     $gbg = local_gugcat::normalize_gcat_grades($gbg);
-                    $gradescaleoffset = local_gugcat::is_grademax22($module->gradeitem->gradetype,
-                     $module->gradeitem->grademax) ? 1 : 0;
-                    $grade = self::check_gb_grade($gbg, $gradescaleoffset);
+                    $grade = self::check_gb_grade($gbg);
                     $gradecaptureitem->releasedgrade = is_null($grade) ? null : local_gugcat::convert_grade($grade, $gt);
                 }
                 // Get converted grade.
