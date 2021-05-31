@@ -84,9 +84,12 @@ class local_gugcat_renderer extends plugin_renderer_base {
         foreach ($columns as $col) {
             $htmlcolumns .= html_writer::tag('th', $this->sort_header($col), array('class' => 'gradeitems'));
         }
-        $htmlcolumns .= html_writer::tag('th', get_string('addallnewgrade', 'local_gugcat'), array('class' => 'togglemultigrd sortable'));
-        $htmlcolumns .= html_writer::tag('th', get_string('reasonnewgrade', 'local_gugcat'), array('class' => 'togglemultigrd sortable'));
-        $htmlcolumns .= $isconverted ? html_writer::tag('th', $this->sort_header(get_string('convertedgrade', 'local_gugcat'))) : null;
+        $htmlcolumns .= html_writer::tag('th', get_string('addallnewgrade', 'local_gugcat'),
+         array('class' => 'togglemultigrd sortable'));
+        $htmlcolumns .= html_writer::tag('th', get_string('reasonnewgrade', 'local_gugcat'),
+         array('class' => 'togglemultigrd sortable'));
+        $htmlcolumns .= $isconverted ? html_writer::tag('th', $this->sort_header(get_string('convertedgrade',
+         'local_gugcat'))) : null;
         $htmlcolumns .= html_writer::tag('th', $this->sort_header(get_string('provisionalgrd', 'local_gugcat')));
 
         $htmlcolumns .= html_writer::empty_tag('th');
