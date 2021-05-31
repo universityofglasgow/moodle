@@ -840,7 +840,7 @@ class block_gu_spdetails_testcase extends advanced_testcase {
 
         $expected1 = $this->return_gradebaseobj();
         $expected1->hasgrade = true; $expected1->isprovisional = false;
-        $expected1->gradetext = $this->lib->return_22grademaxpoint($intgrade, 1);
+        $expected1->gradetext = "$intgrade / $grademax";
 
         $this->assertEquals($expected1, $returned1);
         // Test2.

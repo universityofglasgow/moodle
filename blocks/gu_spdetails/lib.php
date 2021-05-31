@@ -105,7 +105,8 @@ class assessments_details {
                                             array('class' => 'td05'));
             if ($activetab === TAB_CURRENT) {
                 $html .= html_writer::tag('th', get_string('header_duedate', 'block_gu_spdetails'),
-                                                array('id' => $issubcategory ? 'sortby_date_subcategory' : 'sortby_date', 'class' => 'td10 th-sortable',
+                                                array('id' => $issubcategory ? 'sortby_date_subcategory' :
+                                                                               'sortby_date', 'class' => 'td10 th-sortable',
                                                     'data-value' => ''));
                 $html .= html_writer::tag('th', get_string('header_status', 'block_gu_spdetails'),
                                                 array('class' => 'td15'));
