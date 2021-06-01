@@ -157,7 +157,8 @@ class grade_aggregation_testcase extends advanced_testcase {
         $rows = grade_aggregation::get_rows($this->course, $modules, $student);
         $this->assertNotNull($rows[0]->aggregatedgrade);
 
-        $aggradeitem = local_gugcat::add_grade_item($this->course->id, get_string('aggregatedgrade', 'local_gugcat'), null, $student);
+        $aggradeitem = local_gugcat::add_grade_item($this->course->id,
+         get_string('aggregatedgrade', 'local_gugcat'), null, $student);
         $defaultoverridden = 0;
         local_gugcat::update_grade($this->student1->id, $aggradeitem, 19, null, time());
         $rows = grade_aggregation::get_rows($this->course, $modules, $student);
