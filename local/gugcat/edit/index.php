@@ -134,8 +134,7 @@ if ($fromform = $mform->get_data()) {
         // Get Subcategory prv grade item id and idnumber.
         $prvgrd = local_gugcat::get_gradeitem_converted_flag($module->gradeitem->categoryid, true);
         $subcatid = $prvgrd->id;
-        $scale = $prvgrd->idnumber ? $prvgrd->idnumber
-        : $DB->get_field('grade_items', 'outcomeid', array('id' => $subcatid));
+        $scale = $prvgrd->idnumber ? $prvgrd->idnumber : $prvgrd->outcomeid;
         // Get provisional grades.
         $fields = 'itemid, id, rawgrade, finalgrade, overridden';
         $grade = $DB->get_record('grade_grades', array('itemid' => $subcatid,

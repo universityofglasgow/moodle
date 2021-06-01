@@ -590,8 +590,7 @@ class grade_capture{
                 // Get Subcategory prv grade item id and idnumber.
                 $prvgrd = local_gugcat::get_gradeitem_converted_flag($activity->gradeitem->categoryid, true);
                 $subcatid = $prvgrd->id;
-                $scale = $prvgrd->idnumber ? $prvgrd->idnumber
-                : $DB->get_field('grade_items', 'outcomeid', array('id' => $subcatid));
+                $scale = $prvgrd->idnumber ? $prvgrd->idnumber : $prvgrd->outcomeid;
                 $notes = $scale && !empty($scale) ? 'grade -'.$scale : 'grade';
                 $select = "itemid = $subcatid AND userid in (" . implode(',', $userids) . ")
                             and overridden = 0
