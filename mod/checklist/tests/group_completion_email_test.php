@@ -22,53 +22,65 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace mod_checklist;
+
 defined('MOODLE_INTERNAL') || die();
 
-class mod_checklist_group_completion_email_testcase extends advanced_testcase {
+/**
+ * Class group_completion_email_test
+ * @package mod_checklist
+ */
+class group_completion_email_test extends \advanced_testcase {
 
     /**
      * @var \phpunit_mailer_sink
      */
     protected $mailsink;
 
-    /** @var stdClass The student object. */
+    /** @var \stdClass The student object. */
     protected $student;
 
-    /** @var stdClass The teacher object. */
+    /** @var \stdClass The teacher object. */
     protected $teacher;
 
-    /** @var stdClass The teacher2 object. */
+    /** @var \stdClass The teacher2 object. */
     protected $teacher2;
 
-    /** @var stdClass The checklist objects. */
+    /** @var \stdClass The checklist objects. */
     protected $checklist;
 
-    /** @var stdClass The course object. */
+    /** @var \stdClass The course object. */
     protected $course;
 
-    /** @var stdClass The group object. */
+    /** @var \stdClass The group object. */
     protected $group;
 
-    public function setUp() {
+    /**
+     * Set up steps
+     * @throws \coding_exception
+     * @throws \dml_exception
+     */
+    public function setUp(): void {
         global $DB;
 
         $this->resetAfterTest();
         unset_config('noemailever');
         $this->mailsink = $this->redirectEmails();
 
-        $courserecord = new stdClass();
+        $courserecord = new \stdClass();
         $courserecord->groupmode = SEPARATEGROUPS;
         $courserecord->groupmodeforce = true;
         $courserecord->enablecompletion = 1;
         $this->course = $this->getDataGenerator()->create_course($courserecord);
 
         // Create a checklist.
-        /** @var mod_checklist_generator $plugingen */
+        /** @var \mod_checklist_generator $plugingen */
         $plugingen = $this->getDataGenerator()->get_plugin_generator('mod_checklist');
         $params = [
             'course' => $this->course->id,
             'emailoncomplete' => 2, // 2 is teacher only.
             'completionpercent' => 100,
+            'completionpercenttype' => 'percent',
             'completion' => 2, // 2 is complete when completionpercent is reached.
         ];
         $this->checklist = $plugingen->create_instance($params);
@@ -110,7 +122,10 @@ class mod_checklist_group_completion_email_testcase extends advanced_testcase {
 
     }
 
-    public function tearDown() {
+    /**
+     * Tear down steps.
+     */
+    public function tearDown(): void {
         $this->mailsink->clear();
         $this->mailsink->close();
         unset($this->mailsink);
@@ -121,7 +136,7 @@ class mod_checklist_group_completion_email_testcase extends advanced_testcase {
      * teachers not in the same group as the student will not receive the
      * email but teachers in the same group as the student will receive the email
      */
-    public function test_group_completion_emails() {
+    public function test_group_completion_emails(): void {
         global $CFG;
         require_once($CFG->dirroot.'/mod/checklist/lib.php');
 

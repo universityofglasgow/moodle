@@ -14,6 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * Export the checklist items.
+ *
+ * @copyright Davo Smith <moodle@davosmith.co.uk>
+ * @package mod_checklist
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
 require_once(dirname(__FILE__).'/importexportfields.php');
 global $DB, $PAGE, $CFG;
@@ -33,7 +41,7 @@ require_capability('mod/checklist:edit', $context);
 
 $items = $DB->get_records_select('checklist_item', "checklist = ? AND userid = 0", array($checklist->id), 'position');
 if (!$items) {
-    print_error('noitems', 'mod_checklist');
+    throw new moodle_exception('noitems', 'mod_checklist');
 }
 
 $csv = new csv_export_writer();

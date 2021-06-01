@@ -26,12 +26,27 @@ namespace mod_checklist;
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Class dates_test
+ * @package mod_checklist
+ */
 class dates_test extends \advanced_testcase {
-    public function setUp() {
+    /**
+     * Set up steps
+     */
+    public function setUp(): void {
         $this->resetAfterTest();
     }
 
-    public function test_import() {
+    /**
+     * Test importing checklist items
+     * @throws \base_plan_exception
+     * @throws \base_setting_exception
+     * @throws \coding_exception
+     * @throws \dml_exception
+     * @throws \restore_controller_exception
+     */
+    public function test_import(): void {
         global $DB, $CFG;
         require_once($CFG->dirroot.'/backup/util/includes/backup_includes.php');
         require_once($CFG->dirroot.'/backup/util/includes/restore_includes.php');
@@ -66,7 +81,7 @@ class dates_test extends \advanced_testcase {
             $item->userid = 0;
             $item->displaytext = $iteminfo->displaytext;
             $item->position = $position++;
-            $item->duetime = isset($iteminfo->duetime) ? $iteminfo->duetime : null;
+            $item->duetime = $iteminfo->duetime ?? null;
             $item->insert();
         }
 

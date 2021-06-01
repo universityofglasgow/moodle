@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.com/ucla/moodle-mod_zoom.svg?branch=master)](https://travis-ci.com/github/ucla/moodle-mod_zoom/branches)
-
 # Intro
 
 Zoom is the web and app based video conferencing service (http://zoom.us). This
@@ -34,6 +32,36 @@ server is properly synchronized with the time servers.
 
 ## Changelog
 
+v3.7
+
+- Allow administrators to selectively remove Meeting Invitation details #235 (thanks @andrewmadden)
+  - New capabilities `mod/zoom:viewjoinurl` and `mod/zoom:viewdialin`
+- Track completion for mobile users #238 (thanks @nstefanski, @tzerafnx)
+- Fix backup and restore of several zoom activity-level fields #247 (thanks @abias)
+- Fix meeting reports task for some already-numeric end times #236 (thanks @lcollong)
+- Fix list of alternative hosts to only include active users #252 (thanks @abias)
+- Fix PHP 7.1 compatibility issue #243
+- Fix encryption type validation #232 (thanks @abias)
+- Clean up error messages / efficiency on the view page #245 (thanks @abias)
+
+v3.6
+
+- Fixed fatal regression on settings.php for Moodle < 3.7 (Thanks abias)
+- Fixed debugging messages that occur for users without webinar licenses
+- Various string improvements
+
+v3.5
+
+- Removed language translations. Please submit language translations to AMOS (https://lang.moodle.org/)
+- Fixed bug causing downloading of meeting participation reports to fail
+- Added new settings for E2EE, Webinars, Alternative hosts, Download iCal,
+  Meeting capacity warning, and Enable meeting links (Thanks abias)
+- Improved UI for admin and module settings (Thanks abias)
+- Support for admins to update Zoom meeting participation reports
+- Quick editing Zoom meeting name will now update calendar event
+- Support for more advanced passcode requirements
+- This will be the last supported release by UCLA. This plugin will now be maintained by jrchamp and NC State DELTA.
+
 v3.4
 
 - Used Dashboard API to improve get_meeting_reports task
@@ -53,7 +81,7 @@ v3.3
 
 - Fixed problems with error handling (Thanks kbowlerarden and jrchamp)
 - Added language translations for uk, pl, and ru (Thanks mkikets99)
-- Thanks to kubilayagi for all his work on the Zoom plugin these past 2.5 years and good luck on future endevors
+- Thanks to kubilayagi for all his work on the Zoom plugin these past 2.5 years and good luck on future endeavors
 
 v3.2
 

@@ -14,8 +14,20 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * Extra upgrade steps
+ * @copyright Davo Smith <moodle@davosmith.co.uk>
+ * @package mod_checklist
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Extra upgrade steps.
+ * @param int $oldversion
+ * @return bool
+ */
 function xmldb_checklist_upgrade($oldversion = 0) {
     global $DB, $OUTPUT, $CFG;
 
@@ -326,6 +338,22 @@ function xmldb_checklist_upgrade($oldversion = 0) {
         }
         // Checklist savepoint reached.
         upgrade_mod_savepoint(true, 2020012900, 'checklist');
+    }
+
+    if ($oldversion < 2020061500) {
+
+        // Define field completionpercenttype to be added to checklist.
+        $table = new xmldb_table('checklist');
+        $field = new xmldb_field('completionpercenttype', XMLDB_TYPE_CHAR, '8', null, XMLDB_NOTNULL, null, 'percent',
+                                 'completionpercent');
+
+        // Conditionally launch add field completionpercenttype.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Checklist savepoint reached.
+        upgrade_mod_savepoint(true, 2020061500, 'checklist');
     }
 
     return $result;

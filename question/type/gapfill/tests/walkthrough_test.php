@@ -33,7 +33,7 @@ require_once($CFG->dirroot . '/question/type/gapfill/tests/helper.php');
  * @copyright  2012 Marcus Green
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class qtype_gapfill_walkthrough_test extends qbehaviour_walkthrough_test_base {
+class walkthrough_test extends qbehaviour_walkthrough_test_base {
 
     public function test_draggable_items() {
         /* This checks that the bug from line 130 of questiontype is fixed
@@ -406,6 +406,13 @@ What are the colors of the Olympic medals?
         $this->check_step_count(2);
     }
 
+    public function test_no_duplicate_draggables() {
+        $qtext = 'Bicycles have [wheels]. Cars have [wheels|engines].';
+        $gapfill = qtype_gapfill_test_helper::make_question($qtext);
+        $this->start_attempt_at_question($gapfill, 'interactive', $gapfill->gapstofill);
+        // Confirm draggables are unique, i.e. wheels appears only once.
+        $this->assertEquals(2, count($gapfill->allanswers));
+    }
     public function test_get_letter_hints() {
         $gapfill = qtype_gapfill_test_helper::make_question();
         $gapfill->hints = [
@@ -505,14 +512,14 @@ What are the colors of the Olympic medals?
         $this->start_attempt_at_question($gapfill, 'immediatefeedback', $maxmark);
         $this->process_submission(array('-submit' => 1, 'p1' => 'cat', 'p2' => 'dog'));
         $html = $this->quba->render_question($this->slot, $this->displayoptions);
-        $this->assertContains("[mat]", $html );
+        $this->assertStringContainsString("[mat]", $html );
 
         $gapfill = qtype_gapfill_test_helper::make_question( $questiontext);
         $maxmark = 2;
         $this->start_attempt_at_question($gapfill, 'immediatefeedback', $maxmark);
         $this->process_submission(array('-submit' => 1, 'p1' => 'cat', 'p2' => 'mat'));
         $html = $this->quba->render_question($this->slot, $this->displayoptions);
-        $this->assertNotContains("[mat]", $html );
+        $this->assertStringNotContainsString("[mat]", $html );
 
     }
     public function test_deferred_grade_for_blank() {

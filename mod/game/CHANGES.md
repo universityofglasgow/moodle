@@ -1,3 +1,18 @@
+Changes in version 2021-05-31
+* Fix hiddenpicture: Problem when user gives wrong answer
+
+Changes in version 2021-05-08
+* Fix: Compatibility problems for Moodle 3.11
+
+Changes in version 2021-05-03
+* Crossword: Makes better legend
+
+Changes in version 2021-05-02
+* Fix: Compatibility problems for Moodle 3.11
+
+Changes in version 2021-05-01
+* Fix: Updated high score query for postgresql compatibility
+
 Changes in version 2020-08-19
 - Fix: Moodle 2.72 compatibility
 

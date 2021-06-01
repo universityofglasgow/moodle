@@ -47,6 +47,22 @@ $context = context_module::instance($cm->id);
 $PAGE->set_context($context);
 
 require_capability('mod/zoom:view', $context);
+
+// Get meeting state from Zoom.
+list($inprogress, $available, $finished) = zoom_get_state($zoom);
+
+// If the meeting is not yet available, deny access.
+if ($available !== true) {
+    // Get unavailability note.
+    $unavailabilitynote = zoom_get_unavailability_note($zoom, $finished);
+
+    // Get redirect URL.
+    $unavailabilityurl = new moodle_url('/mod/zoom/view.php', array('id' => $id));
+
+    // Redirect the user back to the activity overview page.
+    redirect($unavailabilityurl, $unavailabilitynote, null, \core\output\notification::NOTIFY_ERROR);
+}
+
 if ($userishost) {
     $nexturl = new moodle_url($zoom->start_url);
 } else {
@@ -79,7 +95,7 @@ $completion->set_module_viewed($cm);
 
 // Upgrade host upon joining meeting, if host if not Licensed.
 if ($userishost) {
-    $config = get_config('mod_zoom');
+    $config = get_config('zoom');
     if (!empty($config->recycleonjoin)) {
         $service = new mod_zoom_webservice();
         $service->provide_license($zoom->host_id);

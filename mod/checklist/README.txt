@@ -11,6 +11,11 @@ Students are presented with a simple chart showing how far they have progressed 
 
 ==Changes==
 
+* 2021-05-15 - Further M3.11 compatibility fixes, new setting to disable colour picker (from Peter Mayer)
+* 2021-04-09 - M3.11 compatibility fixes + work with github actions
+* 2020-11-14 - Minor bug fix: remove unwanted warning from student view when 'lock teacher marks' is set + minor layout fix.
+* 2020-11-04 - Fix bug preventing 'save and next' from working
+* 2020-06-15 - Add 'complete by number of items' option
 * 2020-01-29 - "open link in new window" option from Stefan Topfstedt
 * 2019-04-26 - Fix bug with autocompletion updating grades during unenrolment. Autocompletion now only updates checkmarks if the user has capability 'mod/checklist:updateown'.
 * 2018-11-16 - Support new privacy features in M3.4.6, M3.5.3, M3.6+

@@ -44,6 +44,15 @@ $PAGE->set_context($context);
 
 require_capability('mod/zoom:view', $context);
 
+// Get config.
+$config = get_config('zoom');
+
+// Check if the admin did not disable the feature.
+if ($config->showdownloadical == ZOOM_DOWNLOADICAL_DISABLE) {
+    $disabledredirecturl = new moodle_url('/mod/zoom/view.php', array('id' => $id));
+    print_error('err_downloadicaldisabled', 'mod_zoom', $disabledredirecturl);
+}
+
 // Start ical file.
 $ical = new iCalendar;
 $ical->add_property('method', 'PUBLISH');
@@ -62,7 +71,7 @@ $event->add_property('dtend', Bennu::timestamp_to_datetime($zoom->start_time + $
 
 // Get the meeting invite note to add to the description property.
 $service = new mod_zoom_webservice();
-$meetinginvite = $service->get_meeting_invitation($zoom->meeting_id);
+$meetinginvite = $service->get_meeting_invitation($zoom)->get_display_string($cm->id);
 
 // Compute and add description property to event.
 $convertedtext = html_to_text($zoom->intro);

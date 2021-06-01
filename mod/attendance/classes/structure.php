@@ -550,7 +550,7 @@ class mod_attendance_structure {
         global $DB;
 
         if (!$sess = $DB->get_record('attendance_sessions', array('id' => $sessionid) )) {
-            print_error('No such session in this course');
+            throw new moodle_exception('No such session in this course');
         }
 
         $sesstarttime = $formdata->sestime['starthour'] * HOURSECS + $formdata->sestime['startminute'] * MINSECS;
@@ -720,7 +720,7 @@ class mod_attendance_structure {
             if (substr($key, 0, 7) == 'remarks') {
                 $sid = substr($key, 7);
                 if (!(is_numeric($sid))) { // Sanity check on $sid.
-                    print_error('nonnumericid', 'attendance');
+                    throw new moodle_exception('nonnumericid', 'attendance');
                 }
                 $sesslog[$sid] = new stdClass();
                 $sesslog[$sid]->studentid = $sid; // We check is_numeric on this above.
@@ -802,11 +802,8 @@ class mod_attendance_structure {
         global $DB;
 
         $fields = array('username' , 'idnumber' , 'institution' , 'department', 'city', 'country');
-        // Get user identity fields if required - doesn't return original $fields array.
-        $extrafields = get_extra_user_fields($this->context, $fields);
-        $fields = array_merge($fields, $extrafields);
-
-        $userfields = user_picture::fields('u', $fields);
+        $userf = \core_user\fields::for_identity($this->context)->with_userpic()->excluding(...$fields);
+        $userfields = $userf->get_sql('u', false, '', 'id', false)->selects;
 
         if (empty($this->pageparams->sort)) {
             $this->pageparams->sort = ATT_SORT_DEFAULT;
@@ -912,7 +909,7 @@ class mod_attendance_structure {
             'picture' => 0,
             'type' => 'temporary',
         );
-        $allfields = get_all_user_name_fields();
+        $allfields = \core_user\fields::get_name_fields();
         if (!empty($CFG->showuseridentity)) {
             $allfields = array_merge($allfields, explode(',', $CFG->showuseridentity));
         }

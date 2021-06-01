@@ -33,9 +33,7 @@ create and preview wordselect (Select correct words) questions.
 
   # Preview it.
 
-  #When I choose "Preview" action for "Word-Select-001" in the question bank
-    And I follow "Preview"
-
+    When I choose "Preview" action for "Word-Select-001" in the question bank
     And I switch to "questionpreview" window
 
   #################################################
@@ -183,7 +181,7 @@ create and preview wordselect (Select correct words) questions.
     And I am on "Course 1" course homepage
     And I navigate to "Questions" in current page administration
 
-  # Create a new question.
+    # Create a new question.
     And I add a "Word Select" question filling the form with:
     | Question name               | Word-Select-Penalty                            |
     | Introduction                | Select the verbs in the following text         |
@@ -193,9 +191,8 @@ create and preview wordselect (Select correct words) questions.
 
     Then I should see "Word-Select-Penalty"
 
-  # Preview it.
-  #When I choose "Preview" action for "Word-Select-Penalty " in the question bank
-    And I follow "Preview"
+    # Preview it.
+    When I choose "Preview" action for "Word-Select-Penalty " in the question bank
     And I switch to "questionpreview" window
 
   ##########################################################

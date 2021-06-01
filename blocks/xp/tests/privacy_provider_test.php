@@ -50,7 +50,7 @@ use block_xp\privacy\provider;
  */
 class block_xp_privacy_provider_testcase extends block_xp_base_testcase {
 
-    public function setUp() {
+    public function setUp(): void {
         global $CFG;
         if (!class_exists('core_privacy\manager')) {
             $this->markTestSkipped('Moodle versions does not support privacy subsystem.');
@@ -197,7 +197,6 @@ class block_xp_privacy_provider_testcase extends block_xp_base_testcase {
         $strategy->collect_event($e);
         $e = \block_xp\event\something_happened::mock(array('crud' => 'c', 'userid' => $u2->id, 'courseid' => $c2->id));
         $strategy->collect_event($e);
-
 
         $userlist = new userlist(context_system::instance(), 'block_xp');
         $contextlist = provider::get_users_in_context($userlist);

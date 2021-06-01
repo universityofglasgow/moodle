@@ -5,21 +5,17 @@ Feature: Teacher update checklist works as expected
     Given the following "courses" exist:
       | fullname | shortname |
       | Course 1 | C1        |
+    And the following "activities" exist:
+      | activity  | name           | intro               | course | section | idnumber | teacheredit |
+      | checklist | Test checklist | This is a checklist | C1     | 1       | CHK001   | 1           |
     And the following "users" exist:
       | username | firstname | lastname | email            |
       | teacher1 | Teacher   | 1        | teacher1@asd.com |
-      | student1 | Student   | 1        | student1@asd.com |
+      | student1 | Student 1 | -        | student1@asd.com |
     And the following "course enrolments" exist:
       | user     | course | role           |
       | teacher1 | C1     | editingteacher |
       | student1 | C1     | student        |
-    And I log in as "teacher1"
-    And I am on "Course 1" course homepage
-    And I turn editing mode on
-    And I add a "Checklist" to section "1" and I fill the form with:
-      | Checklist    | Test checklist      |
-      | Introduction | This is a checklist |
-      | Updates by   | Teacher only        |
     And the following items exist in checklist "Test checklist":
       | text                      | required |
       | Checklist required item 1 | required |
@@ -27,7 +23,6 @@ Feature: Teacher update checklist works as expected
       | Checklist required item 3 | required |
       | Checklist optional item 4 | optional |
       | Checklist optional item 5 | optional |
-    And I log out
 
   @javascript
   Scenario: A teacher updates a checklist from the report overview and the student can see it
@@ -97,3 +92,56 @@ Feature: Teacher update checklist works as expected
     And ".level0-unchecked.c3" "css_element" should exist in the "Student 1" "table_row"
     And ".level0-checked.c4" "css_element" should exist in the "Student 1" "table_row"
     And ".level0-checked.c5" "css_element" should exist in the "Student 1" "table_row"
+
+  Scenario: A teacher can view the results of multiple students via the 'next' button
+    Given the following "users" exist:
+      | username | firstname | lastname | email                |
+      | student2 | Student 2 | -        | student2@example.com |
+      | student3 | Student 3 | -        | student3@example.com |
+    And the following "course enrolments" exist:
+      | user     | course | role    |
+      | student2 | C1     | student |
+      | student3 | C1     | student |
+    And the following items are checked off in checklist "Test checklist" for user "student1":
+      | itemtext                  | teachermark |
+      | Checklist required item 1 | yes         |
+      | Checklist required item 2 | yes         |
+      | Checklist optional item 5 | yes         |
+    And the following items are checked off in checklist "Test checklist" for user "student2":
+      | itemtext                  | teachermark |
+      | Checklist required item 1 | no          |
+      | Checklist required item 2 | yes         |
+      | Checklist required item 3 | yes         |
+      | Checklist optional item 4 | yes         |
+    And I log in as "teacher1"
+    And I am on "Course 1" course homepage
+    And I follow "Test checklist"
+    And I follow "View progress"
+    And I click on "View progress for this user" "link" in the "Student 1" "table_row"
+    And I should see "Checklist for Student 1"
+    And I should not see "Checklist for Student 2"
+    And the following fields match these values:
+      | Checklist required item 1 | Yes |
+      | Checklist required item 2 | Yes |
+      | Checklist required item 3 |     |
+      | Checklist optional item 4 |     |
+      | Checklist optional item 5 | Yes |
+    When I press "Next"
+    Then I should see "Checklist for Student 2"
+    And I should not see "Checklist for Student 1"
+    And the following fields match these values:
+      | Checklist required item 1 | No  |
+      | Checklist required item 2 | Yes |
+      | Checklist required item 3 | Yes |
+      | Checklist optional item 4 | Yes |
+      | Checklist optional item 5 |     |
+    When I press "Next"
+    Then I should see "Checklist for Student 3"
+    And I should not see "Checklist for Student 2"
+    And the following fields match these values:
+      | Checklist required item 1 |  |
+      | Checklist required item 2 |  |
+      | Checklist required item 3 |  |
+      | Checklist optional item 4 |  |
+      | Checklist optional item 5 |  |
+    And I should not see "Next"

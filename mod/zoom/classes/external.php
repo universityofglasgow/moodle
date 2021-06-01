@@ -104,7 +104,7 @@ class mod_zoom_external extends external_api {
         $result['audioopt'] = $zoom->option_audio;
 
         if (!$zoom->recurring) {
-            if (!$zoom->exists_on_zoom) {
+            if ($zoom->exists_on_zoom == ZOOM_MEETING_EXPIRED) {
                 $status = get_string('meeting_nonexistent_on_zoom', 'mod_zoom');
             } else if ($finished) {
                 $status = get_string('meeting_finished', 'mod_zoom');
@@ -209,6 +209,10 @@ class mod_zoom_external extends external_api {
             // Call the zoom/lib API.
             zoom_grade_item_update($zoom, $grades);
         }
+
+        // Track completion viewed.
+        $completion = new completion_info($course);
+        $completion->set_module_viewed($cm);
 
         // Pass url to join zoom meeting in order to redirect user.
         $joinurl = new moodle_url($zoom->join_url, array('uname' => fullname($USER)));

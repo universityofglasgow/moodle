@@ -153,18 +153,22 @@ class rules_controller extends page_controller {
         return [
             (object) [
                 'name' => get_string('ruleevent', 'block_xp'),
+                'info' => get_string('ruleeventinfo', 'block_xp'),
                 'rule' => new \block_xp_rule_event(),
             ],
             (object) [
                 'name' => get_string('rulecm', 'block_xp'),
+                'info' => get_string('rulecminfo', 'block_xp'),
                 'rule' => new \block_xp_rule_cm($this->courseid),
             ],
             (object) [
                 'name' => get_string('ruleproperty', 'block_xp'),
+                'info' => get_string('rulepropertyinfo', 'block_xp'),
                 'rule' => new \block_xp_rule_property(),
             ],
             (object) [
                 'name' => get_string('ruleset', 'block_xp'),
+                'info' => get_string('rulesetinfo', 'block_xp'),
                 'rule' => new \block_xp_ruleset(),
             ]
         ];
@@ -207,6 +211,7 @@ class rules_controller extends page_controller {
     }
 
     protected function page_content() {
+        global $PAGE;
         $output = $this->get_renderer();
 
         if ($this->get_param('reset')) {
@@ -218,9 +223,11 @@ class rules_controller extends page_controller {
             return;
         }
 
+        echo $output->rules_page_loading_check_init();
         $this->page_plus_promo_content();
         $this->page_rules_content();
         $this->page_danger_zone_content();
+        echo $output->rules_page_loading_check_success();
     }
 
     protected function page_plus_promo_content() {

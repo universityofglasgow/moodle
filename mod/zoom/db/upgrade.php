@@ -435,6 +435,62 @@ function xmldb_zoom_upgrade($oldversion) {
     if ($oldversion < 2020120800) {
         // Delete config no longer used.
         set_config('calls_left', null, 'mod_zoom');
+        upgrade_mod_savepoint(true, 2020120800, 'zoom');
+    }
+
+    if ($oldversion < 2021012902) {
+        // Define field option_encryption_type to be added to zoom.
+        $table = new xmldb_table('zoom');
+        $field = new xmldb_field('option_encryption_type', XMLDB_TYPE_CHAR, '20', null, null, null, 'enhanced_encryption',
+                'option_authenticated_users');
+
+        // Conditionally launch add field option_encryption_type.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Zoom savepoint reached.
+        upgrade_mod_savepoint(true, 2021012902, 'zoom');
+    }
+
+    if ($oldversion < 2021012903) {
+        // Quite all settings in settings.php had the 'mod_zoom' prefix while it should have had a 'zoom' prefix.
+        // After the prefix has been modified in settings.php, the existing settings in DB have to be modified as well.
+
+        // Get the existing settings with the old prefix from the DB,
+        // but don't get the 'version' setting as this one has to have the 'mod_zoom' prefix.
+        $oldsettingsql = 'SELECT name
+                          FROM {config_plugins}
+                          WHERE plugin = :plugin AND name != :name';
+        $oldsettingparams = array('plugin' => 'mod_zoom', 'name' => 'version');
+        $oldsettingkeys = $DB->get_fieldset_sql($oldsettingsql, $oldsettingparams);
+
+        // Change the prefix of each setting.
+        foreach ($oldsettingkeys as $oldsettingkey) {
+            // Get the value of the existing setting with the old prefix.
+            $oldsettingvalue = get_config('mod_zoom', $oldsettingkey);
+            // Set the value of the setting with the new prefix.
+            set_config($oldsettingkey, $oldsettingvalue, 'zoom');
+            // Drop the setting with the old prefix.
+            set_config($oldsettingkey, null, 'mod_zoom');
+        }
+
+        // Zoom savepoint reached.
+        upgrade_mod_savepoint(true, 2021012903, 'zoom');
+    }
+
+    if ($oldversion < 2021030300) {
+        // Define index uuid (not unique) to be added to zoom_meeting_participants.
+        $table = new xmldb_table('zoom_meeting_participants');
+        $index = new xmldb_index('uuid', XMLDB_INDEX_NOTUNIQUE, ['uuid']);
+
+        // Conditionally launch add index uuid.
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Zoom savepoint reached.
+        upgrade_mod_savepoint(true, 2021030300, 'zoom');
     }
 
     return true;
