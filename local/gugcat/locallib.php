@@ -1256,7 +1256,7 @@ class local_gugcat {
         global $COURSE, $DB;
         $prvstr = get_string(($iscategory ? 'subcategorygrade' : 'provisionalgrd'), 'local_gugcat');
         $select = "courseid=$COURSE->id AND itemname='$prvstr' AND " . self::compare_iteminfo();
-        return $DB->get_record_select('grade_items', $select, ['iteminfo' => $id], 'id, idnumber');
+        return $DB->get_record_select('grade_items', $select, ['iteminfo' => $id], 'id, idnumber, outcomeid');
     }
 
     /**
