@@ -298,9 +298,15 @@ class grade_aggregation{
                     $grdobj->grade = $grade;
                     $grdobj->nonconvertedgrade = (isset($ncg) && !is_null($ncg->finalgrade))
                     ? $ncg->finalgrade : (isset($ncg) && !is_null($ncg->rawgrade) ? $ncg->rawgrade : null);
-                    $grdobj->originalweight = round((float)$item->weight * 100);
                     $grdobj->rawgrade = $grdvalue;
+                    $grdobj->originalweight = round((float)$item->weight * 100);
                     $grdobj->weight = round((float)$weight * 100 );
+
+                    // Check the next grade to check if scale is sched B when grade is H.
+                    $gradescale = ($grade == 'H') ? local_gugcat::convert_grade($grd + 1) : $grade;
+                    $grdobj->scale = in_array($gradescale, local_gugcat::$schedulea) ? SCHEDULE_A
+                    : (in_array($gradescale, local_gugcat::$scheduleb) ? SCHEDULE_B : null);
+
                     $gradecaptureitem->grades[$grdobj->activityid] = $grdobj;
                 }
                 $sumaggregated = $sumaggregated != 0 ? $sumaggregated / $calculatedweight : $sumaggregated;
@@ -411,6 +417,7 @@ class grade_aggregation{
         }
         // Display the errors from aggregation.
         if ($showerrors) {
+            \core\notification::fetch();
             foreach ($errors as $e) {
                 local_gugcat::notify_error(null, $e);
             }
@@ -505,6 +512,8 @@ class grade_aggregation{
         // Return grade = null, processed = true if all components are not graded for weighted/mean/mode/median/natural.
         if (!$ishighestgrade && count(array_filter($studentgrades, 'is_numeric')) != $totalchildren) {
             return array(null, true, null);
+        } else if ($ishighestgrade && count(array_filter($studentgrades, 'is_numeric')) == 0) {
+            return array(null, true, null);
         }
 
         // Overall gradetype, grademax and scaleid to be used in subcat grade.
@@ -540,6 +549,12 @@ class grade_aggregation{
         if ($autoconverttob) {
             $grdobj->autoconvertb = true;
         }
+
+        // If all components are converted, override subcat->is_converted flag.
+        if (count($converted) == count(array_filter($converted))) {
+            $subcatobj->is_converted = false;
+        }
+
         // Check if components grade types are the same.
         if (count(array_unique($gradetypes)) == 1) {
             // Get first grade item.

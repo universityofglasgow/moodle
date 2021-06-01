@@ -35,10 +35,10 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
         var grade_max = document.getElementsByName('grademax')[0].value;
         if (is_percentage){
             var input_point = document.getElementById(target.id.slice(0,10) + "pt_" + target.id.slice(10));
-            input_point.value = target.value ? rounder((target.value / 100) * grade_max) : '';
+            input_point.value = target.value && !isNaN(target.value) ? rounder((target.value / 100) * grade_max) : '';
         } else {
             var input_percentage = document.getElementById(target.id.slice(0,10) + target.id.slice(13));
-            input_percentage.value = target.value ? rounder((target.value / grade_max) * 100) : '';
+            input_percentage.value = target.value && !isNaN(target.value) ? rounder((target.value / grade_max) * 100) : '';
         }
     };
 
@@ -301,9 +301,12 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
             case mform_grade_reason:
                 var selectedOption = event.target.value;
                 var mformReason = document.getElementById('id_otherreason');
-                if(selectedOption == '9'){
+                if (selectedOption == '9') {
                     mformReason.value = '';
                     mformReason.focus();
+                    mformReason.required = true;
+                } else {
+                    mformReason.required = false;
                 }
                 break;
             case select_scale:
@@ -388,9 +391,15 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
         }
     };
 
+    const showImportLoading = () => {
+        document.getElementById('import-loading').style.display = 'block';
+        document.querySelector('body').style.overflow = 'hidden';
+    };
+
     const onClickListeners = (event) =>{
         var btn_multiadd = document.getElementById('btn-saveadd');
         var btn_multisave = document.getElementById('btn-multisave');
+        var btn_cancelmultisave = document.getElementById('btn-cancelmulti');
         var btn_release = document.getElementById('btn-release');
         var btn_import = document.getElementById('btn-import');
         var btn_identities = document.getElementById('btn-identities');
@@ -401,10 +410,13 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
         var btn_bulk_import = document.getElementById('btn-blkimport');
         var radio_ptprc = document.getElementsByName('percentpoints');
         var btn_altsave = document.querySelector('[name="savealtbutton"]');
+        var btn_upload_submit = document.getElementsByName('submitupload');
         switch (event.target) {
+            case btn_cancelmultisave:
             case btn_multiadd:
                 $(".togglemultigrd").toggle();
                 btn_multisave.classList.toggle('hidden');
+                btn_cancelmultisave.classList.toggle('hidden');
                 break;
             case btn_multisave:
                 if(document.querySelectorAll('input.is-invalid').length == 0){
@@ -418,6 +430,7 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                 if(!$(".gradeitems").text().includes("Moodle Grade[Date]")){
                     showModal('importgrades', 'modalimportgrades', 'confirmimport');
                 }else{
+                    showImportLoading();
                     document.getElementById('importgrades-submit').click();
                 }
                 break;
@@ -469,6 +482,7 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                 if(!$(".gradeitems").text().includes("Moodle Grade[Date]")){
                     showModal('bulkimportgrades', 'modalimportgrades', 'confirmimport');
                 }else{
+                    showImportLoading();
                     document.getElementById('bulk-submit').click();
                 }
                 break;
@@ -476,6 +490,7 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
             case radio_ptprc[1]:
                 clearConversionTable();
                 break;
+
             case btn_altsave:
                 var alttype = document.getElementById('select-alt-grade');
                 if(alttype.value == 1){
@@ -506,6 +521,15 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                     }
                 }else{
                     document.querySelector('[name="hiddensubmitform"]').click();
+                }
+                break;
+            case btn_upload_submit[0]:
+                var selectReason = document.querySelector('select#id_reasons');
+                var otherReason = document.querySelector('input#id_otherreason');
+                if(selectReason.value != '0' && selectReason.value != '9'){
+                    showImportLoading();
+                }else if(selectReason.value == '9' && otherReason.value){
+                    showImportLoading();
                 }
                 break;
             default:
@@ -633,6 +657,12 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                 var columns = document.querySelectorAll('.sortable');
                 if(columns.length > 0){
                     for (const [id, column] of columns.entries()) {
+                        column.addEventListener('keyup', (e) => {
+                            if (e.keyCode === 13) {
+                                e.preventDefault();
+                                column.click();
+                            }
+                        });
                         column.addEventListener('click', () => sortTable(id));
                     }
                 }
@@ -640,6 +670,12 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                 var searchIcons = document.querySelectorAll('.fa-search');
                 if(searchIcons.length > 0){
                     searchIcons.forEach(icon => {
+                        icon.addEventListener('keyup', (e) => {
+                            if (e.keyCode === 13) {
+                                e.preventDefault();
+                                icon.click();
+                            }
+                        });
                         icon.addEventListener('click', (e) => {
                             e.currentTarget.blur();
                             var input = e.target.nextSibling;

@@ -733,7 +733,7 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $workshopexpected1 = $this->return_feedbackbaseobject();
         $workshopexpected1->hasfeedback = true;
         $workshopexpected1->feedbacktext = $readfeedback;
-        $workshopurl = new moodle_url('/mod/workshop/submission.php', array('cmid' => $id));
+        $workshopurl = $this->lib->return_assessmenturl($id, 'workshop');
         $workshopexpected1->feedbackurl = $workshopurl.$idfooter;
 
         $this->assertEquals($workshopexpected1, $workshopreturned1);
@@ -840,7 +840,7 @@ class block_gu_spdetails_testcase extends advanced_testcase {
 
         $expected1 = $this->return_gradebaseobj();
         $expected1->hasgrade = true; $expected1->isprovisional = false;
-        $expected1->gradetext = $this->lib->return_22grademaxpoint($intgrade, 1);
+        $expected1->gradetext = "$intgrade / $grademax";
 
         $this->assertEquals($expected1, $returned1);
         // Test2.

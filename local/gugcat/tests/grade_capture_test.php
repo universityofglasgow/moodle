@@ -187,7 +187,7 @@ class grade_capture_testcase extends advanced_testcase {
         $instance->markingworkflow = 1; // Enable marking workflow.
         $assign->update_instance($instance);
         $expectedgradeint = 5;
-        $expectedgrade = '4.00000'; // Value of -1 for the grade offset.
+        $expectedgrade = '5.00000'; // Value of -1 for the grade offset.
         // Add provisional grades to student.
         $gradeobj = new grade_grade(array('userid' => $this->student->id, 'itemid' => $this->provisionalgi), true);
         $gradeobj->information = '1.00000';
@@ -249,7 +249,10 @@ class grade_capture_testcase extends advanced_testcase {
     }
 
     public function test_hideshow_grade() {
+        global $DB;
         grade_capture::import_from_gradebook($this->course->id, $this->cm, $this->cms);
+        // Populate static prvgradeid.
+        local_gugcat::set_prv_grade_id($this->course->id, $this->cm);
         // Hide grade.
         $result = grade_capture::hideshowgrade($this->student->id);
         $firstrows = grade_capture::get_rows($this->course, $this->cm, array($this->student));
@@ -258,6 +261,8 @@ class grade_capture_testcase extends advanced_testcase {
         $this->assertTrue($firstrow->hidden);
 
         // Show grade.
+        $DB->set_field('grade_grades', 'hidden', 1, array('userid' => $this->student->id,
+         'itemid' => local_gugcat::$prvgradeid));
         $result = grade_capture::hideshowgrade($this->student->id);
         $this->assertEquals($result, 'shown');
     }
@@ -295,37 +300,6 @@ class grade_capture_testcase extends advanced_testcase {
         $this->assertNotEquals($selectedmodule->gradeitem->parent_category, $this->cm->gradeitem->parent_category);
     }
 
-    public function test_create_subcategory_gradeitem() {
-        global $DB;
-        $gen = $this->getDataGenerator();
-        $cid = $this->course->id;
-        $gc1a = new grade_category($gen->create_grade_category(['courseid' => $cid]), false);
-        $gc2a = new grade_category($gen->create_grade_category(['courseid' => $cid]), false);
-        $gc2a->depth = 3;
-        $gc2a->path = $gc1a->path . $gc2a->id . '/';
-        $gc2a->parent = $gc1a->id;
-        $gc2a->update();
-        $categorygi = $DB->get_field('grade_items', 'id', array('courseid' => $this->course->id,
-         'itemtype' => 'category', 'iteminstance' => $gc2a->id));
-        $assignid = $DB->get_field('grade_items', 'id', array('courseid' => $this->course->id, 'itemmodule' => 'assign'));
-        $DB->set_field('grade_items', 'categoryid', $categorygi, array('id' => $assignid));
-        $cm = local_gugcat::get_activities($cid, $gc1a->id);
-        $categoract = grade_category::fetch_all(array('courseid' => $cid, 'parent' => $gc1a->id));
-        $gradecatgi = array();
-        foreach ($categoract as $gc) {
-            $gi = local_gugcat::get_category_gradeitem($cid, $gc);
-            $gradecatgi[$gi->gradeitemid] = $gi;
-        }
-        $mods = key($gradecatgi);
-        $selectedmodid = $gradecatgi[$mods]->gradeitemid;
-        $childactivities = local_gugcat::get_activities($cid, $selectedmodid);
-        $totalactivities = $childactivities + $gradecatgi;
-        grade_capture::import_from_gradebook($cid, $childactivities, $totalactivities);
-        $subcatstr = get_string('subcategorygrade', 'local_gugcat');
-        $subcatgi = $DB->get_record('grade_items', array('itemtype' => 'manual', 'itemname' => $subcatstr));
-        $this->assertNotFalse($subcatgi);
-    }
-
     public function test_prepare_import_data() {
         global $CFG, $COURSE;
         $COURSE = $this->course;
@@ -346,10 +320,10 @@ class grade_capture_testcase extends advanced_testcase {
         $module->gradeitem->gradetype = GRADE_TYPE_SCALE;
 
         $content1 = array(
-            "ID Number,Grades",
-            ",", // Empty line will skip the validation.
-            "$id1,A1",
-            "$id2,A2",
+            "Student Number,Participant Number,Grades",
+            ",,", // Empty line will skip the validation.
+            "$id1,1,A1",
+            "$id2,2,A2",
         );
         $csvimport = new gradeimport_csv_load_data();
         $csvimport->load_csv_content(implode("\n", $content1), 'UTF-8', 'comma', 0);
@@ -362,13 +336,14 @@ class grade_capture_testcase extends advanced_testcase {
         $this->assertEmpty($errors);
         unset($csvimportdata);
         // Start asserting errors.
+
         $errorobj = new stdClass();
 
         // Assert student not enrolled in current course.
         $content2 = array(
-            "ID Number,Grades",
-            "5,A1",
-            "$id2,A2",
+            "Student Number,Participant Number,Grades",
+            "5,5,A1",
+            "$id2,2,A2",
         );
         $csvimport->load_csv_content(implode("\n", $content2), 'UTF-8', 'comma', 0);
         $csvimportdata = new csv_import_reader($csvimport->get_iid(), 'grade');
@@ -386,7 +361,7 @@ class grade_capture_testcase extends advanced_testcase {
 
         // Create grouping and group first, then add student 1 to the group.
         $grouping = $this->getDataGenerator()->create_grouping(array('courseid' => $this->course->id));
-        $group = self::getDataGenerator()->create_group(array('courseid' => $this->course->id));
+        $group = $this->getDataGenerator()->create_group(array('courseid' => $this->course->id));
         groups_assign_grouping($grouping->id, $group->id);
         groups_add_member($group->id, $this->student->id);
         // Add grouping id on the module.
@@ -408,8 +383,8 @@ class grade_capture_testcase extends advanced_testcase {
 
         // Assert grade in scale is not alphanumeric.
         $content3 = array(
-            "ID Number,Grades",
-            "$id1,AA"
+            "Student Number,Participant Number,Grades",
+            "$id1,1,AA"
         );
         $csvimport->load_csv_content(implode("\n", $content3), 'UTF-8', 'comma', 0);
         $csvimportdata = new csv_import_reader($csvimport->get_iid(), 'grade');
@@ -425,8 +400,8 @@ class grade_capture_testcase extends advanced_testcase {
 
         // Assert grade in scale is alphanumeric but not within the scale.
         $content3 = array(
-            "ID Number,Grades",
-            "$id1,Z0"
+            "Student Number,Participant Number,Grades",
+            "$id1,1,Z0"
         );
         $csvimport->load_csv_content(implode("\n", $content3), 'UTF-8', 'comma', 0);
         $csvimportdata = new csv_import_reader($csvimport->get_iid(), 'grade');
@@ -446,8 +421,8 @@ class grade_capture_testcase extends advanced_testcase {
 
         // Assert grade in points is greater than grademax.
         $content4 = array(
-            "ID Number,Grades",
-            "$id1,100"
+            "Student Number,Participant Number,Grades",
+            "$id1,1,100"
         );
         $csvimport->load_csv_content(implode("\n", $content4), 'UTF-8', 'comma', 0);
         $csvimportdata = new csv_import_reader($csvimport->get_iid(), 'grade');
@@ -476,9 +451,9 @@ class grade_capture_testcase extends advanced_testcase {
 
         // Assert success import for admin grades NS/MV.
         $content5 = array(
-            "ID Number,Grades",
-            "$id1,NS",
-            "$id2,MV"
+            "Student Number,Participant Number,Grades",
+            "$id1,1,NS",
+            "$id2,2,MV"
         );
         $csvimport->load_csv_content(implode("\n", $content5), 'UTF-8', 'comma', 0);
         $csvimportdata = new csv_import_reader($csvimport->get_iid(), 'grade');

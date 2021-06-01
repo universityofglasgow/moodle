@@ -274,7 +274,7 @@ class grade_converter_testcase extends advanced_testcase {
         $templateid = grade_converter::save_new_template($expectedtemplate, $expectedscaletype);
 
         // Save template grade_conversion.
-        $expectedlb = '93';.
+        $expectedlb = '93';
         $expectedgrade = '23';
         $grdconvert = array(['templateid' => $templateid, 'lowerboundary' => $expectedlb,
          'grade' => $expectedgrade]);

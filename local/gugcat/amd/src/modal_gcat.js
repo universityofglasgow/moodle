@@ -44,6 +44,15 @@ define(['jquery', 'core/custom_interaction_events', 'core/modal', 'core/modal_re
         Modal.call(this, root);
     };
 
+    /**
+     * Show import loading modal.
+     *
+     */
+    const showImportLoading = () => {
+        document.getElementById('import-loading').style.display = 'block';
+        document.querySelector('body').style.overflow = 'hidden';
+    };
+
     ModalGcat.TYPE = 'local_gugcat-gcat';
     ModalGcat.prototype = Object.create(Modal.prototype);
     ModalGcat.prototype.constructor = ModalGcat;
@@ -68,6 +77,8 @@ define(['jquery', 'core/custom_interaction_events', 'core/modal', 'core/modal_re
         }.bind(this));
 
         this.getModal().on(CustomEvents.events.activate, SELECTORS.IMPORT_GRADE_BUTTON, function() {
+            this.hide();
+            showImportLoading();
             document.getElementById('importgrades-submit').click();
         }.bind(this));
 
@@ -76,6 +87,8 @@ define(['jquery', 'core/custom_interaction_events', 'core/modal', 'core/modal_re
         }.bind(this));
 
         this.getModal().on(CustomEvents.events.activate, SELECTORS.BULK_IMPORT_BUTTON, function() {
+            this.hide();
+            showImportLoading();
             document.getElementById('bulk-submit').click();
         }.bind(this));
 

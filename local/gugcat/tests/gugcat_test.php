@@ -173,7 +173,7 @@ class local_gugcat_testcase extends advanced_testcase {
     public function test_add_grade() {
         global $gradeitems, $prvgradeid;
         $gradeitems = array();
-        $expectedgrade = '5.00000';
+        $expectedgrade = '5.000';
         $prvgradeid = $this->provisionalgi->id;
         grade_capture::get_rows($this->course, $this->cm, $this->students);
         $mggradeitemstr = get_string('moodlegrade', 'local_gugcat');
@@ -200,26 +200,30 @@ class local_gugcat_testcase extends advanced_testcase {
     public function test_get_grade_history() {
         global $gradeitems, $DB;
         $gradeitems = array();
-        $notesitemid1 = 'Test notes';
+        local_gugcat::set_prv_grade_id($this->course->id, $this->cm);
+        $notesitemid1 = ',_gradeitem: Moodle Grade';
+        $notesitemid2 = ',_gradeitem: Second Grade ,_notes: Test second grade';
         grade_capture::get_rows($this->course, $this->cm, $this->students);
         $mggradeitemstr = get_string('moodlegrade', 'local_gugcat');
         $mggradeitem = local_gugcat::add_grade_item($this->course->id, $mggradeitemstr, $this->cm);
         local_gugcat::add_update_grades($this->student->id, $mggradeitem, '5.00000', $notesitemid1);
         $DB->set_field_select('grade_grades', 'usermodified', $this->teacher->id, "itemid = "
         . $mggradeitem . " AND userid = " . $this->student->id);
-        $sndgrditemstr = get_string('gi_secondgrade', 'local_gugcat');
-        $expectednotes = 'N/A - ' . $sndgrditemstr;
+        $sndgrditemstr = get_string('gi_secondgrade', 'local_gugcat').' ';
+        $expectednotes = 'System update - ' . $mggradeitemstr;
+        $expectednotes2 = " Test second grade";
         $sndgradeitem = local_gugcat::add_grade_item($this->course->id, $sndgrditemstr, $this->cm);
-        local_gugcat::add_update_grades($this->student->id, $sndgradeitem, '21.00000', null);
+        local_gugcat::add_update_grades($this->student->id, $sndgradeitem, '21.00000', $notesitemid2);
         $DB->set_field_select('grade_grades', 'usermodified', $this->teacher->id, "itemid = "
         . $sndgradeitem . " AND userid = " . $this->student->id);
         grade_capture::get_rows($this->course, $this->cm, $this->students);
-        $gradehistory = local_gugcat::get_grade_history($this->course->id, $this->cm, $this->student->id);
+        $this->cm->gradeitem->gradetype = 3;
+        $gradehistory = local_gugcat::get_grade_history($this->cm, $this->student->id);
         $type = preg_replace('/<br>.*/i', '', $gradehistory[0]->type);
         $this->assertEquals($mggradeitemstr, $type);
-        $this->assertEquals($notesitemid1, $gradehistory[0]->notes);
+        $this->assertEquals($expectednotes, $gradehistory[0]->notes);
         $this->assertEquals($sndgrditemstr, $gradehistory[1]->type);
-        $this->assertEquals($expectednotes, $gradehistory[1]->notes);
+        $this->assertEquals($expectednotes2, $gradehistory[1]->notes);
     }
 
     public function test_blind_marking() {
@@ -299,11 +303,11 @@ class local_gugcat_testcase extends advanced_testcase {
 
         $checkboxvalue = local_gugcat::get_value_of_customfield_checkbox($instanceid, $contextid);
 
-        $this->assertEquals(1, $checkboxvalue);
+        $this->assertEquals(0, $checkboxvalue);
     }
 
     public function test_get_activity() {
-        // Test will include get_category_gradeitem($courseid, $gradecategory) function.
+        // Test will include the function get_category_gradeitem($courseid, $gradecategory).
         $gen = $this->getDataGenerator();
         $cid = $this->course->id;
         // Create grade sub category.
@@ -315,7 +319,7 @@ class local_gugcat_testcase extends advanced_testcase {
 
         // Get_activity will return gradeitem of sub category.
         $this->assertEquals($module->modname, 'category');
-        $this->assertEquals($module->name, $gc->fullname . ' total');
+        $this->assertEquals($module->name, $gc->fullname);
         $this->assertEquals($module->gradeitemid, $gcgi->id);
 
         // Get_activity will return assessment data .
@@ -481,9 +485,10 @@ class local_gugcat_testcase extends advanced_testcase {
         $DB->set_field('grade_items', 'iteminfo', $gc2a->id, array('id' => $subcatgiid));
         local_gugcat::update_grade($this->student->id, $subcatgiid, 19, 'import');
         $module = local_gugcat::get_activity($this->course->id, $subcatgi->id);
+        $module->provisionalid = $subcatgiid;
         $rows = local_gugcat::get_aggregated_assessment_history($this->course->id, $this->student->id, $module);
         $this->assertNotEmpty($rows);
-        $this->assertEquals($rows[0]->grade, '19.00000');
+        $this->assertEquals($rows[0]->grade, '19.000');
         $this->assertEquals($rows[0]->notes, get_string('import', 'local_gugcat'));
     }
 }

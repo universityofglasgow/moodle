@@ -41,7 +41,7 @@ class adjust_course_weight extends \core\event\base {
     }
 
     public function get_url() {
-        $url = new \moodle_url('local/gugcat/overview/gradeform/index.php', array('id' => $this->courseid,
+        $url = new \moodle_url('/local/gugcat/overview/gradeform/index.php', array('id' => $this->courseid,
              'studentid' => $this->other['studentid'], 'cnum' => $this->other['cnum'],
              'page' => $this->other['page'], 'setting' => $this->other['setting']));
         if (!is_null($this->other['categoryid'])) {

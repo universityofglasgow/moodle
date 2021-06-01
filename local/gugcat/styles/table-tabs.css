@@ -36,10 +36,14 @@ tr:nth-child(even) {
     line-height: 21px;
     letter-spacing: 0em;
     text-align: center;
+    text-decoration: none;
+    color: inherit;
 }
 
 .tablink:hover {
     opacity: 0.8;
+    text-decoration: none;
+    color: inherit;
 }
 
 .tablink.active {

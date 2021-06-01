@@ -48,7 +48,7 @@
 
 .mform-custom-select.has-danger > div.felement:after {
     content: '\f078';
-    background-color: inherit;
+    background-color: white;
     font: normal normal normal 12px/1 FontAwesome;
     color: #ca3120;
     height: 12px;
@@ -128,7 +128,7 @@ abbr > .fa-asterisk {
 }
 
 /* Form buttons */
-.btn-blue > .form-inline > .btn{
+button.btn-blue, .btn-blue > .form-inline > .btn{
     margin-left: auto !important;
     margin-right: 15px;
     border-color: #005c8a;
@@ -147,4 +147,11 @@ abbr > .fa-asterisk {
 label.checkbox-field{
     width: 160px;
     justify-content: start;
+}
+
+.merit-note{
+    color: gray;
+    font-size: smaller;
+    font-style: italic;
+    font-weight: normal;
 }

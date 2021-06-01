@@ -218,10 +218,40 @@ define(['core/ajax'], function(Ajax) {
             tabContent.innerHTML = response.result;
             var subCategories = document.querySelectorAll('.subcategory-row');
             onClickSubcategory(subCategories);
-            onClickPageLink();
+            onClickPageLink(subcategory);
             sortingStatus(sortby, sortorder);
             if(isPageClicked) {
                 blockElement.scrollIntoView();
+            }
+            if(subcategory !== null) {
+                blockElement.scrollIntoView();
+                if(sortorder === 'asc') {
+                    document.getElementById('sortby_date_subcategory').classList.add('th-sort-asc');
+                    document.getElementById('sortby_date_subcategory').classList.remove('th-sort-desc');
+                    document.getElementById('sortby_date_subcategory').setAttribute('data-value', 'asc');
+                }else{
+                    document.getElementById('sortby_date_subcategory').classList.add('th-sort-desc');
+                    document.getElementById('sortby_date_subcategory').classList.remove('th-sort-asc');
+                    document.getElementById('sortby_date_subcategory').setAttribute('data-value', 'desc');
+                }
+                document.getElementById('sortby_date_subcategory').addEventListener('click', () => {
+                    var activetab = 'current';
+                    var page = 0;
+                    var sortby = 'duedate';
+                    var sortorder = ''
+                    if(document.getElementById('sortby_date_subcategory').getAttribute('data-value') == 'asc') {
+                        sortorder = 'desc';
+                        document.getElementById('sortby_date_subcategory').setAttribute('data-value', 'desc');
+                        document.getElementById('sortby_date_subcategory').classList.add('th-sort-desc');
+                        document.getElementById('sortby_date_subcategory').classList.remove('th-sort-asc');
+                    }else{
+                        sortorder = 'asc';
+                        document.getElementById('sortby_date_subcategory').setAttribute('data-value', 'asc');
+                        document.getElementById('sortby_date_subcategory').classList.add('th-sort-asc');
+                        document.getElementById('sortby_date_subcategory').classList.remove('th-sort-desc');
+                    }
+                    loadAssessments(activetab, page, sortby, sortorder, isPageClicked, subcategory);
+                })
             }
         }).fail(function(response) {
             if(response) {
@@ -338,11 +368,12 @@ define(['core/ajax'], function(Ajax) {
         }
     }
 
-    const onClickPageLink = function() {
-        var pageLinks = document.querySelectorAll('#assessments_details_contents .page-item a.page-link');
+    const onClickPageLink = function(subcategory) {
+        var pageLinks = subcategory !== null ? document.querySelectorAll('#subcategory_details_contents .page-item a.page-link')
+                                             : document.querySelectorAll('#assessments_details_contents .page-item a.page-link');
 
         pageLinks.forEach(function(item) {
-            if(item.getAttribute('href') !== '#') {
+            if(item.hasAttribute('href') && item.getAttribute('href') !== '#') {
                 var url = new URL(item.getAttribute('href'));
                 var params = new URLSearchParams(url.search);
                 var activetab = params.get('activetab');
@@ -352,7 +383,7 @@ define(['core/ajax'], function(Ajax) {
                 var isPageClicked = true;
                 item.addEventListener('click', function(event) {
                     event.preventDefault();
-                    loadAssessments(activetab, page, sortby, sortorder, isPageClicked);
+                    loadAssessments(activetab, page, sortby, sortorder, isPageClicked, subcategory);
                 });
             }else{
                 item.removeAttribute('href');

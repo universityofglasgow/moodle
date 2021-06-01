@@ -69,9 +69,10 @@ class alternativegradeform extends moodleform {
 
         // Merit Grade type form elements.
         $mweights = !is_null($meritsettings) ? array_column($meritsettings, 'weight', 'itemid') : array();
-
-        $mform->addElement('html', html_writer::tag('label', get_string('selectincludeassessment', 'local_gugcat'),
-                 array('class' => 'merit-lbl hidden')));
+        $labelnote = get_string('selectincludeassessment', 'local_gugcat') . html_writer::tag('span',
+                 get_string('meritdisablednote', 'local_gugcat'), array('class' => 'merit-note'));
+        $mform->addElement('html', html_writer::tag('label', $labelnote,
+                 array('class' => 'merit-lbl' . (!is_null($meritsettings) ? '' : ' hidden'))));
         $mform->hideif('selectassessment', 'altgradetype', 'neq', MERIT_GRADE);
         $weightattr = array(
             'class' => 'input-percent',
@@ -82,10 +83,17 @@ class alternativegradeform extends moodleform {
             'pattern' => '[0-9]+'
         );
         foreach ($activities as $act) {
+            $cbattr = array(
+                'class' => 'checkbox-field',
+                'data-itemid' => $act->gradeitemid
+            );
+            if ($act->gradeitem->gradetype == GRADE_TYPE_VALUE && !$act->is_converted) {
+                $cbattr['disabled'] = true;
+                $cbattr['class'] = 'checkbox-field disabled';
+            }
             $selectedm = array_key_exists($act->gradeitemid, $mweights) ? $mweights[$act->gradeitemid] : false;
             $cbfield = array();
-            $cbfield[] =& $mform->createElement('advcheckbox', "merits[$act->gradeitemid]", $act->name, null,
-                         array('data-itemid' => $act->gradeitemid, 'class' => 'checkbox-field'));
+            $cbfield[] =& $mform->createElement('advcheckbox', "merits[$act->gradeitemid]", $act->name, null, $cbattr);
             $cbfield[] =& $mform->createElement('text', "weights[$act->gradeitemid]", null, $weightattr);
             $mform->addGroup($cbfield, 'cbfield', '', array(''), false);
             $mform->setType("weights[$act->gradeitemid]", PARAM_INT);
@@ -124,7 +132,7 @@ class alternativegradeform extends moodleform {
         unset($grades[MEDICAL_EXEMPTION]);
         foreach ($grades as $key => $value) {
             $num = $key - 1;
-            $grades[$key] = $key!= NON_SUBMISSION ? "$num ($value)" : $value;
+            $grades[$key] = $key != NON_SUBMISSION ? "$num ($value)" : $value;
         }
         $grades[0] = get_string('selectgrade', 'local_gugcat');
         $selectcap[] = $mform->createElement('radio', 'appliedcap', '', get_string('capother', 'local_gugcat'), 0, '');

@@ -99,6 +99,10 @@ $string['gradetooltip'] = '<i>Please ensure grade is:
         <li>Within the range of maximum available points</li>
         <li>Or an accepted administrative grade (NS/MV)</li>
     </ul></i>';
+$string['gradesarebeingimport'] = 'The grades are being imported from the Gradebook
+     and you will be able to view them shortly.';
+$string['gradesarebeingupload'] = 'The grades are being uploaded
+     and you will be able to view them shortly.';
 $string['hiddengrade'] = 'Hidden grade';
 $string['hiddengrademsg'] = 'The grade is now hidden to the student';
 $string['hidefromstudent'] = 'Hide from student';
@@ -111,6 +115,7 @@ $string['importgrades'] = 'Import grades from moodle';
 $string['importerror'] = 'Error: You are trying to import grades which are not in an accepted format. Please ensure all component grades are in either Schedule A, Schedule B or Points and re-import';
 $string['lowerboundper'] = 'Lower Bound <br> % Boundary';
 $string['lowerboundpt'] = 'Lower Bound <br> Points Boundary';
+$string['meritdisablednote'] = '</br>Assessments which are graded in Points cannot be selected. </br> Grades must be converted to Schedule A or B.';
 $string['meritgrade'] = 'Merit/Distinction Grade';
 $string['meritgradehistory'] = 'Merit / distinction grade history';
 $string['missinggrade'] = 'Missing grade(s)';
@@ -142,6 +147,7 @@ $string['pleaseselectgrade'] = 'Please select grade.';
 $string['pleaseindicateresits'] = 'Please indicate which assessments are resit assessments';
 $string['pleaseprovidetemplatename'] = 'If you would like to save this conversion for future use, please provide a name for this conversion scale (max 50 characters):';
 $string['pleasespecify'] = 'Please specify';
+$string['pleasewaitfewmin'] = 'Please wait a few minutes';
 $string['pluginname'] = 'UofG Grade Capture and Aggregation Tool';
 $string['points'] = 'Points ({$a->max})';
 $string['pointtooltip'] = '<i>Please ensure value is:
@@ -166,7 +172,7 @@ $string['scheduleb'] = 'Schedule B';
 $string['search'] = 'Search...';
 $string['selectaltgrdtype'] = 'Select alternative course grade type';
 $string['selectcap'] = 'Select cap to apply';
-$string['selectincludeassessment'] = 'Select assessments to include';
+$string['selectincludeassessment'] = 'Select assessments to include in the grade';
 $string['selectcategory'] = 'Select Grade Category';
 $string['selectconversion'] = 'Select conversion';
 $string['selectfile'] = 'Select file';
@@ -179,7 +185,7 @@ $string['setupimportupload'] = 'Setup import - Upload file';
 $string['showassessment'] = 'Show assessments on Student Dashboard';
 $string['showidentities'] = 'Show student identities';
 $string['showgrade'] = 'Show to student';
-$string['showgrademsg'] = 'The grade is now visible to the student';
+$string['showgrademsg'] = 'Grade will now be visible to student when the grades are released. Please click \'Release provisional grades\' to share the grades with students';
 $string['showonstudentdashboard'] = 'show_on_studentdashboard';
 $string['specifyreason'] = 'Specify reason(s) for amendment';
 $string['step'] = 'Step {$a}';
@@ -230,6 +236,7 @@ $string['gi_thirdgrade'] = 'Third Grade';
 
 // Log events.
 $string['eventaddgrades'] = 'Add new grade for user';
+$string['eventaddadjustalternativecoursegrade'] = 'Add / adjust alternative course grade';
 $string['eventaddadjustgradeconverter'] = 'Add / adjust assessment grade conversion';
 $string['eventaddmultiplegrades'] = 'Add multiple grades';
 $string['eventadjustgrade'] = 'Adjust student\'s course weightings';

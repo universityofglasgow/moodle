@@ -46,11 +46,13 @@ class coursegradeform extends moodleform {
         if ($this->_customdata['setting'] == '1') {
             $mform->addElement('html', '<div class="mform-override">');
         }
+        $alternativecg = optional_param('alternativecg', null, PARAM_INT);
         foreach ($student->grades as $grdobj) {
-
+            $overridemerit = !is_null($alternativecg) && $alternativecg != 0;
+            $weight = $grdobj->is_child && !$overridemerit ? $grdobj->originalweight : $grdobj->weight;
             if ($this->_customdata['setting'] == '1' && $acg != GPA_GRADE || $grdobj->category) {
                 $mform->addElement('html', '<div class="mform-override">');
-                $mform->addElement('static', $grdobj->activity, $grdobj->activity.' Weighting', $grdobj->weight .'%');
+                $mform->addElement('static', $grdobj->activity, $grdobj->activity.' Weighting', "$weight%");
                 $mform->addElement('html', '</div>');
                 $mform->setType($grdobj->activity, PARAM_NOTAGS);
             } else if ($this->_customdata['setting'] == '0') {
@@ -69,7 +71,7 @@ class coursegradeform extends moodleform {
                          'regex', '/^[0-9]+$/', 'client');
                 $mform->addRule('weights['.$grdobj->activityid.']', get_string('errorfieldnumbers', 'local_gugcat'),
                          'regex', '/^[0-9]+$/', 'server');
-                $mform->setDefault('weights['.$grdobj->activityid.']', $grdobj->weight);
+                $mform->setDefault('weights['.$grdobj->activityid.']', $weight);
             }
         }
 

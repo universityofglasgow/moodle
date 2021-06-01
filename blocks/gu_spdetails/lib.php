@@ -105,7 +105,8 @@ class assessments_details {
                                             array('class' => 'td05'));
             if ($activetab === TAB_CURRENT) {
                 $html .= html_writer::tag('th', get_string('header_duedate', 'block_gu_spdetails'),
-                                                array('id' => 'sortby_date', 'class' => 'td10 th-sortable',
+                                                array('id' => $issubcategory ? 'sortby_date_subcategory' :
+                                                                               'sortby_date', 'class' => 'td10 th-sortable',
                                                     'data-value' => ''));
                 $html .= html_writer::tag('th', get_string('header_status', 'block_gu_spdetails'),
                                                 array('class' => 'td15'));
@@ -139,7 +140,7 @@ class assessments_details {
                 // Assessment name.
                 $html .= html_writer::start_tag('td', array('class' => 'td20'));
                 $html .= html_writer::tag('a', $assessment->assessmentname,
-                                                array('href' => ($assessment->feedback->issubcategory) ? "#assessments-container"
+                                                array('href' => ($assessment->feedback->issubcategory) ? "#-"
                                                                 : $assessment->assessmenturl,
                                                     'class' => ($assessment->feedback->issubcategory) ? 'subcategory-row' : "",
                                                     'data-id' => $assessment->id,
@@ -157,7 +158,7 @@ class assessments_details {
                     $html .= html_writer::start_tag('td', array('class' => 'td10'));
                     if ($assessment->feedback->issubcategory) {
                         $html .= html_writer::tag('a', $assessment->feedback->feedbacktext,
-                        array('href' => "#assessments-container",
+                        array('href' => "#-",
                                 'class' => 'subcategory-row',
                                 'data-id' => $assessment->id,
                                 'data-name' => $assessment->assessmentname,
@@ -197,7 +198,7 @@ class assessments_details {
                     $html .= html_writer::start_tag('td', array('class' => 'td15'));
                     if ($assessment->feedback->issubcategory) {
                         $html .= html_writer::tag('a', $assessment->feedback->feedbacktext,
-                                                array('href' => "#assessments-container",
+                                                array('href' => "#-",
                                                             'class' => 'subcategory-row',
                                                             'data-id' => $assessment->id,
                                                             'data-name' => $assessment->assessmentname,
@@ -227,7 +228,7 @@ class assessments_details {
                 if ($assessment->feedback->hasfeedback) {
                         $html .= html_writer::tag('a', $assessment->feedback->feedbacktext,
                                                     array('href' => ($assessment->feedback->issubcategory)
-                                                            ? "#assessments-container" : $assessment->feedback->feedbackurl,
+                                                            ? "#-" : $assessment->feedback->feedbackurl,
                                                         'class' => ($assessment->feedback->issubcategory) ? 'subcategory-row' : "",
                                                         'data-id' => $assessment->id,
                                                         'data-name' => $assessment->assessmentname,
@@ -376,7 +377,7 @@ class assessments_details {
                                     LEFT JOIN {grade_items} gip ON (gip.iteminfo = gi.id AND gip.itemname = 'Provisional Grade')
                                     LEFT JOIN {grade_grades} gp ON (gp.itemid = gip.id AND gp.userid = ?)
                                     LEFT JOIN {scale} sp ON (sp.id = gip.idnumber)";
-            $assignfields = "cm.id, a.course AS courseid,
+            $assignfields = "gi.id AS itemid, cm.id, a.course AS courseid,
                                 CASE
                                 WHEN cs.name IS NOT NULL THEN cs.name
                                 WHEN cs.section != 0 THEN CONCAT('Topic ', cs.section)
@@ -448,9 +449,12 @@ class assessments_details {
                             ELSE a.duedate END + 86400 * 30 <= ?");
             $assignwhere = "a.course IN ($courseids) $assignenddate $categorylimit";
             $assignsql = "SELECT $assignfields FROM {assign} a $assignjoins WHERE $assignwhere";
-            $assignparams = array($userid, $userid, $userid, $userid, $userid, $userid, $enddate, $enddate);
+            $assignparams = array($userid, $userid, $userid, $userid, $userid, $userid);
+            if (!$issubcategory) {
+                array_push($assignparams, $enddate, $enddate);
+            }
 
-            $forumfields = "cm.id, f.course AS courseid,
+            $forumfields = "gi.id AS itemid, cm.id, f.course AS courseid,
                             CASE
                             WHEN cs.name IS NOT NULL THEN cs.name
                             WHEN cs.section > 0 THEN CONCAT('Topic ', cs.section)
@@ -496,9 +500,12 @@ class assessments_details {
                             AND f.duedate + 86400 * 30 <= ?");
             $forumwhere = "f.course IN ($courseids) $forumenddate $categorylimit";
             $forumsql = "SELECT $forumfields FROM {forum} f $forumjoins WHERE $forumwhere";
-            $forumparams = array($userid, $userid, $enddate, $enddate);
+            $forumparams = array($userid, $userid);
+            if (!$issubcategory) {
+                array_push($forumparams, $enddate, $enddate);
+            }
 
-            $quizfields = "cm.id, q.course AS courseid,
+            $quizfields = "gi.id AS itemid, cm.id, q.course AS courseid,
                             CASE
                             WHEN cs.name IS NOT NULL THEN cs.name
                             WHEN cs.section != 0 THEN CONCAT('Topic ', cs.section)
@@ -547,14 +554,17 @@ class assessments_details {
                             ELSE q.timeclose END + 86400 * 30 <= ?)");
             $quizwhere = "q.course IN ($courseids) $quizenddate $categorylimit";
             $quizsql = "SELECT $quizfields FROM {quiz} q $quizjoins WHERE $quizwhere";
-            $quizparams = array($userid, $userid, $userid, $userid, $userid, $enddate, $enddate);
+            $quizparams = array($userid, $userid, $userid, $userid, $userid);
+            if (!$issubcategory) {
+                array_push($quizparams, $enddate, $enddate);
+            }
 
-            $workshopfields = "cm.id, w.course AS courseid,
+            $workshopfields = "gi.id AS itemid, cm.id, w.course AS courseid,
                                 CASE
                                 WHEN cs.name IS NOT NULL THEN cs.name
                                 WHEN cs.section != 0 THEN CONCAT('Topic ', cs.section)
                                 ELSE c.fullname END AS coursetitle,
-                                gi.itemmodule AS modname, w.name AS activityname,
+                                gi.itemmodule AS modname, gi.itemname AS activityname,
                                 gc.fullname AS gradecategoryname, gc.aggregation,
                                 gi.aggregationcoef, gi.aggregationcoef2,
                                 w.submissionstart AS allowsubmissionsfromdate,
@@ -573,7 +583,7 @@ class assessments_details {
                                 AND cm.deletioninprogress = 0)
                             LEFT JOIN {grade_items} gi ON (gi.iteminstance = cm.instance
                                 AND gi.courseid = w.course AND gi.itemtype = 'mod'
-                                AND gi.itemmodule = 'workshop' AND gi.itemnumber = 0)
+                                AND gi.itemmodule = 'workshop')
                             LEFT JOIN {grade_grades} gg ON (gg.itemid = gi.id AND gg.userid = ?)
                             LEFT JOIN {grade_categories} gc ON gc.id = gi.categoryid
                             LEFT JOIN {course} c ON c.id = w.course
@@ -586,7 +596,11 @@ class assessments_details {
                                 AND w.submissionend  + 86400 * 30 <= ?");
             $workshopwhere = "w.course IN ($courseids) $workshopenddate $categorylimit";
             $workshopsql = "SELECT $workshopfields FROM {workshop} w $workshopjoins WHERE $workshopwhere";
-            $workshopparams = array($userid, $userid, $userid, $enddate, $enddate);
+            $workshopparams = array($userid, $userid, $userid);
+            if (!$issubcategory) {
+                array_push($workshopparams, $enddate, $enddate);
+            }
+
             $orderclause = " ORDER BY $sortby $sortorder";
             $unionsql = "($assignsql) UNION ($forumsql) UNION ($quizsql) UNION ($workshopsql)";
             $unionparams = array_merge($assignparams, $forumparams, $quizparams, $workshopparams);
@@ -594,7 +608,7 @@ class assessments_details {
                 $level2idtext = implode(', ', $level2ids);
                 $topicnames = self::get_topicname($level2idtext);
                 $coursetitle = self::generate_topicname_case_statement($topicnames);
-                $subcategoryfields = "gc.id, gc.courseid, $coursetitle, gi.itemmodule AS modname,
+                $subcategoryfields = "gi.id AS itemid, gc.id, gc.courseid, $coursetitle, gi.itemmodule AS modname,
                                         gc.fullname AS activityname, gp.fullname AS gradecategoryname, gp.aggregation,
                                         gi.aggregationcoef, gi.aggregationcoef2, NULL AS allowsubmissionsfromdate,
                                         0 AS duedate, 0 AS cutoffdate, 0 AS gradingduedate, NULL AS hasextension, gi.gradetype,
@@ -617,7 +631,8 @@ class assessments_details {
                                      LEFT JOIN {grade_items} gip ON (gip.itemname = 'Subcategory Grade' AND gip.iteminfo = gc.id)
                                      LEFT JOIN {grade_grades} ggp ON (ggp.itemid = gip.id AND ggp.userid = ?)
                                      LEFT JOIN {scale} sp ON (sp.id = CASE WHEN gip.idnumber IS NOT NULL
-                                     AND NOT gip.idnumber = '' THEN gip.idnumber ELSE gip.outcomeid END)";
+                                     AND NOT gip.idnumber = '' THEN gip.idnumber WHEN gip.outcomeid IS NOT NULL
+                                     AND NOT gip.outcomeid = '' THEN gip.outcomeid ELSE gi.scaleid END)";
                 $subcategoryenddate = ($activetab === TAB_CURRENT) ?
                                     "AND c.enddate + 86400 * 30 > ?" :
                                     "AND c.enddate + 86400 * 30 <= ?";
@@ -925,9 +940,7 @@ class assessments_details {
             switch ($gradetype) {
                 // Gradetype = value.
                 case '1':
-                    $grading->gradetext = ($grademax == 22 && $grademin == 0) ?
-                                        self::return_22grademaxpoint($intgrade, $scheduleab) :
-                                        self::return_gradetext((int)$finalgrade, $grademax, $convertedgrade, $onlyconverted);
+                    $grading->gradetext = self::return_gradetext((int)$finalgrade, $grademax, $convertedgrade, $onlyconverted);
                     break;
                 // Gradetype = scale.
                 case '2':
@@ -1055,7 +1068,7 @@ class assessments_details {
                 case 'workshop':
                     $fb->hasfeedback = true;
                     $fb->feedbacktext = $readfeedback;
-                    $workshopurl = new moodle_url('/mod/workshop/submission.php', array('cmid' => $id));
+                    $workshopurl = self::return_assessmenturl($id, 'workshop');
                     $fb->feedbackurl = $workshopurl.$idfooter;
                     break;
                 // Forum.
