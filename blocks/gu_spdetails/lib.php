@@ -619,7 +619,8 @@ class assessments_details {
                                         c.startdate, c.enddate, NULL AS convertedgradeid,
                                         CASE WHEN ggp.rawgrade IS NOT NULL THEN ggp.rawgrade ELSE ggp.finalgrade
                                         END AS provisionalgrade, gip.idnumber, gip.outcomeid";
-                $subcategorysubq = "SELECT id FROM {grade_items} gisqc WHERE gisqc.categoryid = gc.id ORDER BY gisqc.id ASC LIMIT 1";
+                $subcategorysubq = "SELECT id FROM {grade_items} gisqc WHERE gisqc.categoryid = gc.id
+                                    ORDER BY gisqc.id ASC LIMIT 1";
                 $subcategoryjoins = "INNER JOIN {grade_items} gi ON (itemtype = 'category' AND iteminstance = gc.id)
                                      INNER JOIN {grade_grades} gg ON (gg.itemid = gi.id AND gg.userid = ?)
                                      LEFT JOIN {course} c ON c.id = gc.courseid
