@@ -486,7 +486,8 @@ class grade_capture{
      */
     public static function prepare_import_data($csvdata, $activity, $itemname) {
         $csvdata->init();
-        global $COURSE;
+        global $COURSE, $DB;
+        $categoryid = optional_param('categoryid', 0, PARAM_INT);
         $gradebookerrors = array();
         $newgrades = array();
         $status = true;
@@ -569,17 +570,32 @@ class grade_capture{
             $gradeitemid = local_gugcat::add_grade_item($COURSE->id, $itemname, $activity);
             foreach ($newgrades as $id => $item) {
                 $grade = !is_numeric($item) ? array_search(strtoupper($item), local_gugcat::$grades) : $item;
-                local_gugcat::add_update_grades($id, $gradeitemid, $grade, '');
+                $notes = ",_gradeitem: $itemname";
+                local_gugcat::add_update_grades($id, $gradeitemid, $grade, (!$activity->is_converted ? $notes : ''));
                 if ($activity->is_converted) {
                     /* If conversion is enabled, save the converted grade to provisional grade and
                     original grade to converted grade. */
+                    $notes .= " ,_scale: $activity->is_converted";
                     $conversion = grade_converter::retrieve_grade_conversion($activity->gradeitemid);
                     $cg = grade_converter::convert($conversion, $grade);
-                    local_gugcat::update_grade($id, local_gugcat::$prvgradeid, $cg, '');
+                    local_gugcat::update_grade($id, local_gugcat::$prvgradeid, $cg, $notes);
                     $convertedgi = local_gugcat::get_grade_item_id($COURSE->id, $activity->gradeitemid,
                      get_string('convertedgrade', 'local_gugcat'));
-                    local_gugcat::update_grade($id, $convertedgi, $grade, '');
+                    local_gugcat::update_grade($id, $convertedgi, $grade);
                 }
+            }
+            // Check if activity is a subcat component.
+            if ($activity->gradeitem->parent_category->parent === strval($categoryid)
+            && $categoryid != 0) {
+                // Get Subcategory prv grade item id and idnumber.
+                $prvgrd = local_gugcat::get_gradeitem_converted_flag($activity->gradeitem->categoryid, true);
+                $subcatid = $prvgrd->id;
+                $scale = $prvgrd->idnumber ? $prvgrd->idnumber : $prvgrd->outcomeid;
+                $notes = $scale && !empty($scale) ? 'grade -'.$scale : 'grade';
+                $select = "itemid = $subcatid AND userid in (" . implode(',', $userids) . ")
+                            and overridden = 0
+                            and (finalgrade is not null or rawgrade is not null)";
+                $DB->set_field_select('grade_grades', 'feedback', $notes, $select);
             }
         }
         return array($status, $gradebookerrors);
