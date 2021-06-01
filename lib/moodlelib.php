@@ -1284,7 +1284,7 @@ function fix_utf8($value) {
         if ($buggyiconv) {
             if (function_exists('mb_convert_encoding')) {
                 $subst = mb_substitute_character();
-                mb_substitute_character('');
+                mb_substitute_character('none');
                 $result = mb_convert_encoding($value, 'utf-8', 'utf-8');
                 mb_substitute_character($subst);
 
@@ -2354,6 +2354,14 @@ function date_format_string($date, $format, $tz = 99) {
  * @return array An array that represents the date in user time
  */
 function usergetdate($time, $timezone=99) {
+    if ($time === null) {
+        // PHP8 and PHP7 return different results when getdate(null) is called.
+        // Display warning and cast to 0 to make sure the usergetdate() behaves consistently on all versions of PHP.
+        // In the future versions of Moodle we may consider adding a strict typehint.
+        debugging('usergetdate() expects parameter $time to be int, null given', DEBUG_DEVELOPER);
+        $time = 0;
+    }
+
     date_default_timezone_set(core_date::get_user_timezone($timezone));
     $result = getdate($time);
     core_date::set_default_server_timezone();
@@ -4011,7 +4019,6 @@ function truncate_userinfo(array $info) {
         'firstname'   => 100,
         'lastname'    => 100,
         'email'       => 100,
-        'icq'         =>  15,
         'phone1'      =>  20,
         'phone2'      =>  20,
         'institution' => 255,
@@ -4019,7 +4026,6 @@ function truncate_userinfo(array $info) {
         'address'     => 255,
         'city'        => 120,
         'country'     =>   2,
-        'url'         => 255,
     );
 
     // Apply where needed.

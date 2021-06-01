@@ -139,6 +139,17 @@ abstract class activity_custom_completion {
     }
 
     /**
+     * Show the manual completion or not regardless of the course's showcompletionconditions setting.
+     * Returns false by default for plugins that don't need to override the course's showcompletionconditions setting.
+     * Activity plugins that need to always show manual completion need to override this function.
+     *
+     * @return bool
+     */
+    public function manual_completion_always_shown(): bool {
+        return false;
+    }
+
+    /**
      * Fetches the module's custom completion class implementation if it's available.
      *
      * @param string $modname The activity module name. Usually from cm_info::modname.
@@ -158,19 +169,26 @@ abstract class activity_custom_completion {
      * @param string $rule The completion rule.
      * @return int The completion state.
      */
-    public abstract function get_state(string $rule): int;
+    abstract public function get_state(string $rule): int;
 
     /**
      * Fetch the list of custom completion rules that this module defines.
      *
      * @return array
      */
-    public abstract static function get_defined_custom_rules(): array;
+    abstract public static function get_defined_custom_rules(): array;
 
     /**
      * Returns an associative array of the descriptions of custom completion rules.
      *
      * @return array
      */
-    public abstract function get_custom_rule_descriptions(): array;
+    abstract public function get_custom_rule_descriptions(): array;
+
+    /**
+     * Returns an array of all completion rules, in the order they should be displayed to users.
+     *
+     * @return array
+     */
+    abstract public function get_sort_order(): array;
 }

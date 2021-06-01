@@ -1065,6 +1065,56 @@ class mod_assign_locallib_testcase extends advanced_testcase {
         $this->assertFalse($participant->grantedextension);
     }
 
+    /**
+     * Tests that if a student with no submission who can no longer submit is not a participant.
+     */
+    public function test_get_participant_with_no_submission_no_capability() {
+        global $DB;
+        $this->resetAfterTest();
+        $course = self::getDataGenerator()->create_course();
+        $coursecontext = context_course::instance($course->id);
+        $assign = $this->create_instance($course);
+        $teacher = self::getDataGenerator()->create_and_enrol($course, 'teacher');
+        $student = self::getDataGenerator()->create_and_enrol($course, 'student');
+
+        // Remove the students capability to submit.
+        $role = $DB->get_field('role', 'id', ['shortname' => 'student']);
+        assign_capability('mod/assign:submit', CAP_PROHIBIT, $role, $coursecontext);
+
+        $participant = $assign->get_participant($student->id);
+
+        self::assertNull($participant);
+    }
+
+    /**
+     * Tests that if a student that has submitted but can no longer submit is a participant.
+     */
+    public function test_get_participant_with_submission_no_capability() {
+        global $DB;
+        $this->resetAfterTest();
+        $course = self::getDataGenerator()->create_course();
+        $coursecontext = context_course::instance($course->id);
+        $assign = $this->create_instance($course);
+        $teacher = self::getDataGenerator()->create_and_enrol($course, 'teacher');
+        $student = self::getDataGenerator()->create_and_enrol($course, 'student');
+
+        // Simulate a submission.
+        $this->add_submission($student, $assign);
+        $this->submit_for_grading($student, $assign);
+
+        // Remove the students capability to submit.
+        $role = $DB->get_field('role', 'id', ['shortname' => 'student']);
+        assign_capability('mod/assign:submit', CAP_PROHIBIT, $role, $coursecontext);
+
+        $participant = $assign->get_participant($student->id);
+
+        self::assertNotNull($participant);
+        self::assertEquals($student->id, $participant->id);
+        self::assertTrue($participant->submitted);
+        self::assertTrue($participant->requiregrading);
+        self::assertFalse($participant->grantedextension);
+    }
+
     public function test_get_participant_with_graded_submission() {
         $this->resetAfterTest();
         $course = $this->getDataGenerator()->create_course();
@@ -2345,6 +2395,25 @@ class mod_assign_locallib_testcase extends advanced_testcase {
         $output = $assign->view_student_summary($student, true);
         $this->assertDoesNotMatchRegularExpression('/Feedback/', $output,
             'Do not show feedback if the grade is hidden in the gradebook');
+
+        // Freeze the context.
+        $this->setAdminUser();
+        $context = $assign->get_context();
+        $CFG->contextlocking = true;
+        $context->set_locked(true);
+
+        // No feedback should be available because the grade is hidden.
+        $this->setUser($student);
+        $output = $assign->view_student_summary($student, true);
+        $this->assertDoesNotMatchRegularExpression('/Feedback/', $output, 'Do not show feedback if the grade is hidden in the gradebook');
+
+        // Show the feedback again - it should still be visible even in a frozen context.
+        $this->setUser($teacher);
+        $gradeitem->set_hidden(0, false);
+
+        $this->setUser($student);
+        $output = $assign->view_student_summary($student, true);
+        $this->assertMatchesRegularExpression('/Feedback/', $output, 'Show feedback if there is a grade');
     }
 
     public function test_show_student_summary_with_feedback() {
@@ -4150,10 +4219,44 @@ Anchor link 2:<a title=\"bananas\" href=\"../logo-240x60.gif\">Link text</a>
     }
 
     /**
-     * Test showing group override duedate for admin
+     * Data provider for test_view_group_override
+     *
+     * @return array Provider data
      */
-    public function test_view_group_override() {
-        global $DB, $PAGE;
+    public function view_group_override_provider() {
+        return [
+            'Other users should see their duedate' => [
+                'student',
+                ['group2'],
+                'group1',
+                '7 June 2019, 5:37 PM',
+            ],
+            'Teacher should be able to see all group override duedate' => [
+                'teacher',
+                ['group1'],
+                'group1',
+                '20 September 2019, 10:37 PM',
+            ],
+            'Teacher should be able to see all group override duedate even if they are not member' => [
+                'editingteacher',
+                ['group1'],
+                'group2',
+                '7 June 2019, 5:37 PM',
+            ]
+        ];
+    }
+
+    /**
+     * Test showing group override duedate for admin
+     *
+     * @dataProvider view_group_override_provider
+     * @param string $role the role of the user (teacher, student, etc)
+     * @param string[] $groups the groups the user are member of
+     * @param string $activegroup The selected group
+     * @param string $expecteddate The expected due date
+     */
+    public function test_view_group_override(string $role, array $groups, string $activegroup, string $expecteddate) {
+        global $DB, $PAGE, $SESSION;
 
         $this->resetAfterTest();
         $course = $this->getDataGenerator()->create_course();
@@ -4161,17 +4264,18 @@ Anchor link 2:<a title=\"bananas\" href=\"../logo-240x60.gif\">Link text</a>
         $group1 = $this->getDataGenerator()->create_group(['courseid' => $course->id]);
         $group2 = $this->getDataGenerator()->create_group(['courseid' => $course->id]);
 
-        $student1 = $this->getDataGenerator()->create_and_enrol($course, 'student');
-        $teacher = $this->getDataGenerator()->create_and_enrol($course, 'teacher');
-        groups_add_member($group1, $student1);
-        groups_add_member($group1, $teacher);
-
-        $student2 = $this->getDataGenerator()->create_and_enrol($course, 'student');
-        groups_add_member($group2, $student2);
+        $user = $this->getDataGenerator()->create_and_enrol($course, $role);
+        if (in_array('group1', $groups)) {
+            groups_add_member($group1, $user);
+        }
+        if (in_array('group2', $groups)) {
+            groups_add_member($group2, $user);
+        }
+        $activegroup = $$activegroup;
 
         $assign = $this->create_instance($course, [
-            'groupmode' => 1,
-            'duedate' => 1558999899,
+            'groupmode' => SEPARATEGROUPS,
+            'duedate' => 1558999899, // 28 May 2019, 7:31 AM.
         ]);
         $instance = $assign->get_instance();
 
@@ -4182,14 +4286,14 @@ Anchor link 2:<a title=\"bananas\" href=\"../logo-240x60.gif\">Link text</a>
                 'groupid' => $group1->id,
                 'userid' => null,
                 'sortorder' => 1,
-                'duedate' => 1568990258,
+                'duedate' => 1568990258, // 20 September 2019, 10:37 PM.
             ],
             (object) [
                 'assignid' => $instance->id,
                 'groupid' => $group2->id,
                 'userid' => null,
                 'sortorder' => 2,
-                'duedate' => 1559900258,
+                'duedate' => 1559900258, // 7 June 2019, 5:37 PM.
             ],
         ];
 
@@ -4197,25 +4301,21 @@ Anchor link 2:<a title=\"bananas\" href=\"../logo-240x60.gif\">Link text</a>
             $override->id = $DB->insert_record('assign_overrides', $override);
         }
 
-        $currenturl = new moodle_url('/mod/assign/view.php', array('id' => $assign->get_course_module()->id));
+        $currenturl = new moodle_url('/mod/assign/view.php', ['id' => $assign->get_course_module()->id]);
         $PAGE->set_url($currenturl);
-        $output1 = '';
-        // Other users should see duedate of the assignment.
-        $this->setUser($student2);
-        $summary = $assign->get_assign_grading_summary_renderable($group1->id);
-        $output1 .= $assign->get_renderer()->render($summary);
-        $this->assertStringContainsStringIgnoringCase('Tuesday, 28 May 2019, 7:31 AM', $output1);
 
-        $output2 = '';
-        // Teacher should be able to see all group override duedate.
-        $this->setUser($teacher);
-        $summary = $assign->get_assign_grading_summary_renderable($group1->id);
-        $output2 .= $assign->get_renderer()->render($summary);
-        $this->assertStringContainsStringIgnoringCase('Friday, 20 September 2019, 10:37 PM', $output2);
-        $summary = $assign->get_assign_grading_summary_renderable($group2->id);
-        $output3 = '';
-        $output3 .= $assign->get_renderer()->render($summary);
-        $this->assertStringContainsStringIgnoringCase('Friday, 7 June 2019, 5:37 PM', $output3);
+        $this->setUser($user);
+        $_GET['group'] = $activegroup->id;
+
+        /** @var assign $assign */
+        $header = new assign_header(
+            $assign->get_instance(),
+            $assign->get_context(),
+            false,
+            $assign->get_course_module()->id
+        );
+        $output = $assign->get_renderer()->render($header);
+        $this->assertStringContainsStringIgnoringCase($expecteddate, $output);
     }
 
     /**

@@ -149,7 +149,6 @@ $string['computedfromlogs'] = 'Computed from logs since {$a}.';
 $string['condifmodeditdefaults'] = 'Default values are used in the settings form when creating a new activity or resource.';
 $string['confeditorhidebuttons'] = 'Select the buttons that should be hidden in the HTML editor.';
 $string['configallowattachments'] = 'If enabled, emails sent from the site can have attachments, such as badges.';
-$string['configenableactivitychooser'] = 'The activity chooser is a dialog box with a short description of each activity and resource. If disabled, separate resource and activity drop-down menus are provided instead.';
 $string['configallcountrycodes'] = 'This is the list of countries that may be selected in various places, for example in a user\'s profile. If blank (the default) the list in countries.php in the standard English language pack is used. That is the list from ISO 3166-1. Otherwise, you can specify a comma-separated list of codes, for example \'GB,FR,ES\'. If you add new, non-standard codes here, you will need to add them to countries.php in \'en\' and your language pack.';
 $string['configallowassign'] = 'You can allow people who have the roles on the left side to assign some of the column roles to other people';
 $string['configallowcategorythemes'] = 'If you enable this, then themes can be set at the category level. This will affect all child categories and courses unless they have specifically set their own theme. WARNING: Enabling category themes may affect performance.';
@@ -297,13 +296,12 @@ $string['configminpasswordlength'] = 'Passwords must be at least these many char
 $string['configminpasswordlower'] = 'Passwords must have at least these many lower case letters.';
 $string['configminpasswordnonalphanum'] = 'Passwords must have at least these many non-alphanumeric characters.';
 $string['configminpasswordupper'] = 'Passwords must have at least these many upper case letters.';
-$string['configmodchooserdefault'] = 'Should the activity chooser be presented to users by default?';
 $string['configmycoursesperpage'] = 'Maximum number of courses to display in any list of a user\'s own courses';
 $string['configmymoodleredirect'] = 'This setting forces redirects to /my on login for non-admins and replaces the top level site navigation with /my';
 $string['configmypagelocked'] = 'This setting prevents the default page from being edited by any non-admins';
 $string['confignavcourselimit'] = 'Limits the number of courses shown to the user in the navigation.';
-$string['confignavshowallcourses'] = 'This setting determines whether users who are enrolled in courses can see Courses (listing all courses) in the navigation, in addition to My Courses (listing courses in which they are enrolled).';
-$string['confignavshowcategories'] = 'Show course categories in the navigation bar and navigation blocks. This does not occur with courses the user is currently enrolled in, they will still be listed under mycourses without categories.';
+$string['confignavshowallcourses'] = 'This setting determines whether users who are enrolled in courses can see Courses (listing all courses) in the navigation, in addition to My courses (listing courses in which they are enrolled).';
+$string['confignavshowcategories'] = 'Show course categories in the navigation bar and navigation blocks. This does not occur with courses the user is currently enrolled in; they will still be listed under My courses without categories.';
 $string['confignoreplyaddress'] = 'Emails are sometimes sent out on behalf of a user (eg forum posts). The email address you specify here will be used as the "From" address in those cases when the recipients should not be able to reply directly to the user (eg when a user chooses to keep their address private). This setting will also be used as the envelope sender when sending email.';
 $string['confignotifyloginfailures'] = 'Send login failure notification messages to these selected users. This requires an internal logstore (eg Standard Logstore) to be enabled.';
 $string['confignotifyloginthreshold'] = 'If notifications about failed logins are active, how many failed login attempts by one user or one IP address is it worth notifying about?';
@@ -385,7 +383,7 @@ For example:  standard,orangewhite.';
 $string['configtimezone'] = 'This is the default timezone for displaying dates - each user can override this setting in their profile. Cron tasks and other server settings are specified in this timezone. You should change the setting if it shows as "Invalid timezone"';
 $string['configuseblogassociations'] = 'Should users be able to organize their blog by associating entries with courses and course modules?';
 $string['configuseexternalyui'] = 'Instead of using local files, use online files available on Yahoo&#145;s servers. WARNING: This requires an internet connection, or no AJAX will work on your site. This setting is not compatible with sites using https.';
-$string['configusesitenameforsitepages'] = 'If enabled the site\'s shortname will be used for the site pages node in the navigation rather than the string \'Site pages\'';
+$string['configusesitenameforsitepages'] = 'If enabled the site\'s short name will be used for the site pages node in the navigation rather than the string \'Site pages\'.';
 $string['configusetags'] = 'Should tags functionality across the site be enabled?';
 $string['configvariables'] = 'Variables';
 $string['configverifychangedemail'] = 'Enables verification of changed email addresses using allowed and denied email domains settings. If this setting is disabled the domains are enforced only when creating new users.';
@@ -553,7 +551,6 @@ $string['emoticons_desc'] = 'This form defines the emoticons (or smileys) used a
 * Alternative text (optional) - String identifier and component of the alternative text of the emoticon.';
 $string['emoticonsreset'] = 'Reset emoticons setting to default values';
 $string['emptysettingvalue'] = 'Empty';
-$string['enableactivitychooser'] = 'Enable activity chooser';
 $string['enableanalytics'] = 'Analytics';
 $string['enableblogs'] = 'Enable blogs';
 $string['enablecalendarexport'] = 'Enable calendar export';
@@ -852,7 +849,6 @@ $string['mnetrestore_extusers_mismatch'] = '<strong>Note:</strong> This backup f
 $string['mnetrestore_extusers_noadmin'] = '<strong>Note:</strong> This backup file seems to come from a different Moodle installation and contains remote Moodle Network user accounts. You are not allowed to execute this type of restore. Contact the administrator of the site or, alternatively, restore this course without any user information (modules, files...)';
 $string['mnetrestore_extusers_switchuserauth'] = 'Remote Moodle Network user {$a->username} (coming from {$a->mnethosturl}) switched to local {$a->auth} authenticated user.';
 $string['mobilenotconfiguredwarning'] = 'The Moodle app is not enabled.';
-$string['modchooserdefault'] = 'Activity chooser default';
 $string['modeditdefaults'] = 'Default values for activity settings';
 $string['modsettings'] = 'Manage activities';
 $string['modulesecurity'] = 'Module security';
@@ -876,7 +872,7 @@ $string['navshowfrontpagemods_help'] = 'If enabled, front page activities will b
 $string['navshowallcourses'] = 'Show all courses';
 $string['navshowcategories'] = 'Show course categories';
 $string['navshowmycoursecategories'] = 'Show my course categories';
-$string['navshowmycoursecategories_help'] = 'If enabled courses in the users my courses branch will be shown in categories.';
+$string['navshowmycoursecategories_help'] = 'If enabled, courses in the user\'s My courses branch will be shown in categories in the navigation block (Classic-based themes only).';
 $string['navsortmycourseshiddenlast'] = 'Sort my hidden courses last';
 $string['navsortmycourseshiddenlast_help'] = 'If enabled, any hidden courses will be listed after visible courses (for users who can view hidden courses). Otherwise, all courses, regardless of their visibility, will be listed according to the \'Sort my courses\' setting.';
 $string['navsortmycoursessort'] = 'Sort my courses';
@@ -950,7 +946,7 @@ $string['pathtodu'] = 'Path to du';
 $string['pathtogs'] = 'Path to ghostscript';
 $string['pathtogs_help'] = 'On most Linux installs, this can be left as \'/usr/bin/gs\'. On Windows it will be something like \'c:\\gs\\bin\\gswin32c.exe\' (make sure there are no spaces in the path - if necessary copy the files \'gswin32c.exe\' and \'gsdll32.dll\' to a new folder without a space in the path)';
 $string['pathtopdftoppm'] = 'Path to pdftoppm';
-$string['pathtopdftoppm_help'] = '\'pdftoppm\' is a tool that converts PDF pages to PNG at least as fast as \'gs\' does. However, you will probably have a better performance when converting large documents. If present, \'pdftoppm\' will be used instead of \'gs\' for this task. On most Linux installs, this can be left as \'/usr/bin/pdftoppm\'. If not present, install the poppler-utils or poppler package, depending on the Linux distribution. On Windows it will be provided by Cygwin installs. See <a href="https://poppler.freedesktop.org/" target="_blank">Poppler project</a> for more details.';
+$string['pathtopdftoppm_help'] = '<a href="https://poppler.freedesktop.org/">Poppler</a> is a PDF rendering library which includes the tool pdftoppm for converting PDF files to PNG. Performance is generally better than when using Ghostscript, particularly for large files. If available, pdftoppm will be used in preference to Ghostscript. On most Linux installs, the path can be left as /usr/bin/pdftoppm. Otherwise, you need to install the poppler-utils or poppler package, depending on your Linux distribution. On Windows it is provided by Cygwin installs.';
 $string['pathtopgdump'] = 'Path to pg_dump';
 $string['pathtopgdumpdesc'] = 'This is only necessary to enter if you have more than one pg_dump on your system (for example if you have more than one version of postgresql installed)';
 $string['pathtopgdumpinvalid'] = 'Invalid path to pg_dump - either wrong path or not executable';
@@ -988,7 +984,7 @@ $string['profilecommonsettings'] = 'Common settings';
 $string['profileconfirmcategorydeletion'] = 'There is/are {$a} field/s in this category which will be moved into the category above (or below if in the top category).<br />Do you still wish to delete this category?';
 $string['profileconfirmfielddeletion'] = 'There is/are {$a} user record/s for this field which will be deleted.<br />Do you still wish to delete this field?';
 $string['profilecreatecategory'] = 'Create a new profile category';
-$string['profilecreatefield'] = 'Create a new profile field:';
+$string['profilecreatefield'] = 'Create a new profile field';
 $string['profilecreatenewcategory'] = 'Creating a new category';
 $string['profilecreatenewfield'] = 'Creating a new \'{$a}\' profile field';
 $string['profiledefaultcategory'] = 'Other fields';
@@ -1030,11 +1026,13 @@ $string['profilesignup'] = 'Display on signup page?';
 $string['profilespecificsettings'] = 'Specific settings';
 $string['profilevisible'] = 'Who is this field visible to?';
 $string['profilevisible_help'] = '* Not visible - For private data only viewable by administrators
-* Visible to user - For private data only viewable by the user and by administrators
+* Visible to user - For private data only viewable by the user and administrators
+* Visible to user, teachers and admins - For private data only viewable by the user, administrators and teachers (on course profile)
 * Visible to everyone';
 $string['profilevisibleall'] = 'Visible to everyone';
 $string['profilevisiblenone'] = 'Not visible';
 $string['profilevisibleprivate'] = 'Visible to user';
+$string['profilevisibleteachers'] = 'Visible to user, teachers and admins';
 $string['profiling'] = 'Profiling';
 $string['profilingallowall'] = 'Continuous profiling';
 $string['profilingallowall_help'] = 'If you enable this setting, then, at any moment, you can use the PROFILEALL parameter anywhere (PGC) to enable profiling for all the executed scripts along the Moodle session life. Analogously, you can use the PROFILEALLSTOP parameter to stop it.';
@@ -1199,6 +1197,8 @@ $string['sessiontimeout'] = 'Timeout';
 $string['sessiontimeoutwarning'] = 'Timeout Warning';
 $string['settingdependenton'] = 'This setting may be hidden, based on the value of <strong>{$a}</strong>.';
 $string['settingfileuploads'] = 'File uploading is required for normal operation, please enable it in PHP configuration.';
+$string['settingmaxinputvars'] = 'PHP setting max_input_vars is recommended to be at least 5000.';
+$string['settingmaxinputvarsrequired'] = 'PHP setting max_input_vars must be at least 5000.';
 $string['settingmemorylimit'] = 'Insufficient memory detected, please set higher memory limit in PHP settings.';
 $string['settingsafemode'] = 'Moodle is not fully compatible with safe mode, please ask server administrator to turn it off. Running Moodle under safe mode is not supported, please expect various problems if you do so.';
 $string['setupsearchengine'] = 'Setup search engine';
@@ -1531,3 +1531,9 @@ $string['requestcategoryselection'] = 'Enable category selection';
 // Deprecated since Moodle 3.9.
 $string['availablelicenses'] = 'Available licences';
 $string['managelicenses'] = 'Manage licences';
+
+// Deprecated since Moodle 3.11.
+$string['configenableactivitychooser'] = 'The activity chooser is a dialog box with a short description of each activity and resource. If disabled, separate resource and activity drop-down menus are provided instead.';
+$string['enableactivitychooser'] = 'Enable activity chooser';
+$string['configmodchooserdefault'] = 'Should the activity chooser be presented to users by default?';
+$string['modchooserdefault'] = 'Activity chooser default';

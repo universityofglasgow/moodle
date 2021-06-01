@@ -24,6 +24,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use core\report_helper;
+
 require_once(__DIR__.'/../../config.php');
 require_once("{$CFG->libdir}/completionlib.php");
 
@@ -113,6 +115,8 @@ foreach ($completion->get_criteria() as $criterion) {
     }
 }
 
+report_helper::save_selected_report($courseid, $url);
+
 // Can logged in user mark users as complete?
 // (if the logged in user has a role defined in the role criteria)
 $allow_marking = false;
@@ -156,6 +160,9 @@ if ($csv) {
     $PAGE->set_heading($course->fullname);
 
     echo $OUTPUT->header();
+    // Print the selected dropdown.
+    $pluginname = get_string('pluginname', 'report_completion');
+    report_helper::print_report_selector($pluginname);
 
     // Handle groups (if enabled)
     groups_print_course_menu($course, $CFG->wwwroot.'/report/completion/index.php?course='.$course->id);
@@ -547,7 +554,7 @@ foreach ($progress as $user) {
     if ($csv) {
         $row = array();
         $row[] = $user->id;
-        $row[] = fullname($user);
+        $row[] = fullname($user, has_capability('moodle/site:viewfullnames', $context));
         foreach ($extrafields as $field) {
             $row[] = $user->{$field};
         }
@@ -560,7 +567,8 @@ foreach ($progress as $user) {
             $userurl = new moodle_url('/user/view.php', array('id' => $user->id, 'course' => $course->id));
         }
 
-        print '<th scope="row"><a href="'.$userurl->out().'">'.fullname($user).'</a></th>';
+        print '<th scope="row"><a href="' . $userurl->out() . '">' .
+            fullname($user, has_capability('moodle/site:viewfullnames', $context)) . '</a></th>';
         foreach ($extrafields as $field) {
             echo '<td>'.s($user->{$field}).'</td>';
         }

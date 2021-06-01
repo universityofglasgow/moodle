@@ -874,8 +874,10 @@ class assign {
         $conds = array('modulename' => 'assign', 'instance' => $this->get_instance()->id);
         if (isset($override->userid)) {
             $conds['userid'] = $override->userid;
+            $cachekey = "{$cm->instance}_u_{$override->userid}";
         } else {
             $conds['groupid'] = $override->groupid;
+            $cachekey = "{$cm->instance}_g_{$override->groupid}";
         }
         $events = $DB->get_records('event', $conds);
         foreach ($events as $event) {
@@ -884,6 +886,7 @@ class assign {
         }
 
         $DB->delete_records('assign_overrides', array('id' => $overrideid));
+        cache::make('mod_assign', 'overrides')->delete($cachekey);
 
         // Set the common parameters for one of the events we will be triggering.
         $params = array(
@@ -1203,6 +1206,8 @@ class assign {
             }
         }
 
+        $purgeoverrides = false;
+
         // Remove user overrides.
         if (!empty($data->reset_assign_user_overrides)) {
             $DB->delete_records_select('assign_overrides',
@@ -1211,6 +1216,7 @@ class assign {
                 'component' => $componentstr,
                 'item' => get_string('useroverridesdeleted', 'assign'),
                 'error' => false);
+            $purgeoverrides = true;
         }
         // Remove group overrides.
         if (!empty($data->reset_assign_group_overrides)) {
@@ -1220,6 +1226,7 @@ class assign {
                 'component' => $componentstr,
                 'item' => get_string('groupoverridesdeleted', 'assign'),
                 'error' => false);
+            $purgeoverrides = true;
         }
 
         // Updating dates - shift may be negative too.
@@ -1237,6 +1244,8 @@ class assign {
                        WHERE assignid =? AND cutoffdate <> 0",
                 array($data->timeshift, $this->get_instance()->id));
 
+            $purgeoverrides = true;
+
             // Any changes to the list of dates that needs to be rolled should be same during course restore and course reset.
             // See MDL-9367.
             shift_course_mod_dates('assign',
@@ -1246,6 +1255,10 @@ class assign {
             $status[] = array('component'=>$componentstr,
                               'item'=>get_string('datechanged'),
                               'error'=>false);
+        }
+
+        if ($purgeoverrides) {
+            cache::make('mod_assign', 'overrides')->purge();
         }
 
         return $status;
@@ -2092,12 +2105,40 @@ class assign {
     }
 
     /**
+     * Returns array with sql code and parameters returning all ids of users who have submitted an assignment.
+     *
+     * @param int $group The group that the query is for.
+     * @return array list($sql, $params)
+     */
+    protected function get_submitted_sql($group = 0) {
+        // We need to guarentee unique table names.
+        static $i = 0;
+        $i++;
+        $prefix = 'sa' . $i . '_';
+        $params = [
+            "{$prefix}assignment" => (int) $this->get_instance()->id,
+            "{$prefix}status" => ASSIGN_SUBMISSION_STATUS_NEW,
+        ];
+        $capjoin = get_enrolled_with_capabilities_join($this->context, $prefix, '', $group, $this->show_only_active_users());
+        $params += $capjoin->params;
+        $sql = "SELECT {$prefix}s.userid
+                  FROM {assign_submission} {$prefix}s
+                  JOIN {user} {$prefix}u ON {$prefix}u.id = {$prefix}s.userid
+                  $capjoin->joins
+                 WHERE {$prefix}s.assignment = :{$prefix}assignment
+                   AND {$prefix}s.status <> :{$prefix}status
+                   AND $capjoin->wheres";
+        return array($sql, $params);
+    }
+
+    /**
      * Load a list of users enrolled in the current course with the specified permission and group.
      * 0 for no group.
      * Apply any current sort filters from the grading table.
      *
      * @param int $currentgroup
      * @param bool $idsonly
+     * @param bool $tablesort
      * @return array List of user records
      */
     public function list_participants($currentgroup, $idsonly, $tablesort = false) {
@@ -2113,6 +2154,8 @@ class assign {
         if (!isset($this->participants[$key])) {
             list($esql, $params) = get_enrolled_sql($this->context, 'mod/assign:submit', $currentgroup,
                     $this->show_only_active_users());
+            list($ssql, $sparams) = $this->get_submitted_sql($currentgroup);
+            $params += $sparams;
 
             $fields = 'u.*';
             $orderby = 'u.lastname, u.firstname, u.id';
@@ -2159,7 +2202,7 @@ class assign {
 
             $sql = "SELECT $fields
                       FROM {user} u
-                      JOIN ($esql) je ON je.id = u.id
+                      JOIN ($esql UNION $ssql) je ON je.id = u.id
                            $additionaljoins
                      WHERE u.deleted = 0
                            $additionalfilters
@@ -2217,12 +2260,18 @@ class assign {
             return null;
         }
 
-        if (!is_enrolled($this->context, $participant, 'mod/assign:submit', $this->show_only_active_users())) {
+        if (!is_enrolled($this->context, $participant, '', $this->show_only_active_users())) {
             return null;
         }
 
         $result = $this->get_submission_info_for_participants(array($participant->id => $participant));
-        return $result[$participant->id];
+
+        $submissioninfo = $result[$participant->id];
+        if (!$submissioninfo->submitted && !has_capability('mod/assign:submit', $this->context, $userid)) {
+            return null;
+        }
+
+        return $submissioninfo;
     }
 
     /**
@@ -2311,7 +2360,7 @@ class assign {
         if ($currentgroup === null) {
             $currentgroup = groups_get_activity_group($this->get_course_module(), true);
         }
-        list($esql, $params) = get_enrolled_sql($this->get_context(), 'mod/assign:submit', $currentgroup, true);
+        list($esql, $params) = get_enrolled_sql($this->get_context(), '', $currentgroup, true);
 
         $params['assignid'] = $this->get_instance()->id;
         $params['submitted'] = ASSIGN_SUBMISSION_STATUS_SUBMITTED;
@@ -2426,7 +2475,7 @@ class assign {
         if ($currentgroup === null) {
             $currentgroup = groups_get_activity_group($this->get_course_module(), true);
         }
-        list($esql, $params) = get_enrolled_sql($this->get_context(), 'mod/assign:submit', $currentgroup, true);
+        list($esql, $params) = get_enrolled_sql($this->get_context(), '', $currentgroup, true);
 
         $params['assignid'] = $this->get_instance()->id;
         $params['assignid2'] = $this->get_instance()->id;
@@ -4076,7 +4125,7 @@ class assign {
             // and show errors.
             $mform->is_validated();
         }
-        $o .= $this->get_renderer()->heading(get_string('grade'), 3);
+        $o .= $this->get_renderer()->heading(get_string('gradenoun'), 3);
         $o .= $this->get_renderer()->render(new assign_form('gradingform', $mform));
 
         if (count($allsubmissions) > 1) {
@@ -4262,7 +4311,7 @@ class assign {
                                                '',
                                                array('class'=>'gradeform'));
         }
-        $o .= $this->get_renderer()->heading(get_string('grade'), 3);
+        $o .= $this->get_renderer()->heading(get_string('gradenoun'), 3);
         $o .= $this->get_renderer()->render(new assign_form('gradingform', $mform));
 
         if (count($allsubmissions) > 1 && $attemptnumber == -1) {
@@ -4868,7 +4917,7 @@ class assign {
         if (has_any_capability(array('mod/assign:viewgrades', 'mod/assign:grade'), $this->context)) {
             return true;
         }
-        if ($userid == $USER->id && has_capability('mod/assign:submit', $this->context)) {
+        if ($userid == $USER->id) {
             return true;
         }
         return false;
@@ -5441,8 +5490,8 @@ class assign {
         $o = '';
 
         if ($this->can_view_submission($user->id)) {
-
-            if (has_capability('mod/assign:submit', $this->get_context(), $user, false)) {
+            if (has_capability('mod/assign:viewownsubmissionsummary', $this->get_context(), $user, false)) {
+                // The user can view the submission summary.
                 $submissionstatus = $this->get_assign_submission_status_renderable($user, $showlinks);
                 $o .= $this->get_renderer()->render($submissionstatus);
             }
@@ -5471,6 +5520,10 @@ class assign {
      * @return bool
      */
     protected function show_submit_button($submission = null, $teamsubmission = null, $userid = null) {
+        if (!has_capability('mod/assign:submit', $this->get_context(), $userid, false)) {
+            // The user does not have the capability to submit.
+            return false;
+        }
         if ($teamsubmission) {
             if ($teamsubmission->status === ASSIGN_SUBMISSION_STATUS_SUBMITTED) {
                 // The assignment submission has been completed.
@@ -7185,7 +7238,7 @@ class assign {
 
         $info = get_string('gradestudent', 'assign', array('id'=>$user->id, 'fullname'=>fullname($user)));
         if ($grade->grade != '') {
-            $info .= get_string('grade') . ': ' . $this->display_grade($grade->grade, false) . '. ';
+            $info .= get_string('gradenoun') . ': ' . $this->display_grade($grade->grade, false) . '. ';
         } else {
             $info .= get_string('nograde', 'assign');
         }
@@ -7647,11 +7700,11 @@ class assign {
         $gradingdisabled = $this->grading_disabled($userid);
         $gradinginstance = $this->get_grading_instance($userid, $grade, $gradingdisabled);
 
-        $mform->addElement('header', 'gradeheader', get_string('grade'));
+        $mform->addElement('header', 'gradeheader', get_string('gradenoun'));
         if ($gradinginstance) {
             $gradingelement = $mform->addElement('grading',
                                                  'advancedgrading',
-                                                 get_string('grade').':',
+                                                 get_string('gradenoun') . ':',
                                                  array('gradinginstance' => $gradinginstance));
             if ($gradingdisabled) {
                 $gradingelement->freeze();
@@ -7675,7 +7728,7 @@ class assign {
             } else {
                 $grademenu = array(-1 => get_string("nograde")) + make_grades_menu($this->get_instance()->grade);
                 if (count($grademenu) > 1) {
-                    $gradingelement = $mform->addElement('select', 'grade', get_string('grade') . ':', $grademenu);
+                    $gradingelement = $mform->addElement('select', 'grade', get_string('gradenoun') . ':', $grademenu);
 
                     // The grade is already formatted with format_float so it needs to be converted back to an integer.
                     if (!empty($data->grade)) {
@@ -9749,14 +9802,14 @@ function assign_process_group_deleted_in_course($courseid, $groupid = null) {
     if ($groupid) {
         $params['groupid'] = $groupid;
         // We just update the group that was deleted.
-        $sql = "SELECT o.id, o.assignid
+        $sql = "SELECT o.id, o.assignid, o.groupid
                   FROM {assign_overrides} o
                   JOIN {assign} assign ON assign.id = o.assignid
                  WHERE assign.course = :courseid
                    AND o.groupid = :groupid";
     } else {
         // No groupid, we update all orphaned group overrides for all assign in course.
-        $sql = "SELECT o.id, o.assignid
+        $sql = "SELECT o.id, o.assignid, o.groupid
                   FROM {assign_overrides} o
                   JOIN {assign} assign ON assign.id = o.assignid
              LEFT JOIN {groups} grp ON grp.id = o.groupid
@@ -9764,11 +9817,15 @@ function assign_process_group_deleted_in_course($courseid, $groupid = null) {
                    AND o.groupid IS NOT NULL
                    AND grp.id IS NULL";
     }
-    $records = $DB->get_records_sql_menu($sql, $params);
+    $records = $DB->get_records_sql($sql, $params);
     if (!$records) {
         return; // Nothing to do.
     }
     $DB->delete_records_list('assign_overrides', 'id', array_keys($records));
+    $cache = cache::make('mod_assign', 'overrides');
+    foreach ($records as $record) {
+        $cache->delete("{$record->assignid}_g_{$record->groupid}");
+    }
 }
 
 /**
@@ -9783,7 +9840,7 @@ function move_group_override($id, $move, $assignid) {
     global $DB;
 
     // Get the override object.
-    if (!$override = $DB->get_record('assign_overrides', array('id' => $id), 'id, sortorder')) {
+    if (!$override = $DB->get_record('assign_overrides', ['id' => $id], 'id, sortorder, groupid')) {
         return false;
     }
     // Count the number of group overrides.
@@ -9799,8 +9856,8 @@ function move_group_override($id, $move, $assignid) {
     }
 
     // Retrieve the override object that is currently residing in the new position.
-    $params = array('sortorder' => $neworder, 'assignid' => $assignid);
-    if ($swapoverride = $DB->get_record('assign_overrides', $params, 'id, sortorder')) {
+    $params = ['sortorder' => $neworder, 'assignid' => $assignid];
+    if ($swapoverride = $DB->get_record('assign_overrides', $params, 'id, sortorder, groupid')) {
 
         // Swap the sortorders.
         $swapoverride->sortorder = $override->sortorder;
@@ -9809,6 +9866,11 @@ function move_group_override($id, $move, $assignid) {
         // Update the override records.
         $DB->update_record('assign_overrides', $override);
         $DB->update_record('assign_overrides', $swapoverride);
+
+        // Delete cache for the 2 records we updated above.
+        $cache = cache::make('mod_assign', 'overrides');
+        $cache->delete("{$override->assignid}_g_{$override->groupid}");
+        $cache->delete("{$swapoverride->assignid}_g_{$swapoverride->groupid}");
     }
 
     reorder_group_overrides($assignid);
@@ -9825,11 +9887,13 @@ function reorder_group_overrides($assignid) {
 
     $i = 1;
     if ($overrides = $DB->get_records('assign_overrides', array('userid' => null, 'assignid' => $assignid), 'sortorder ASC')) {
+        $cache = cache::make('mod_assign', 'overrides');
         foreach ($overrides as $override) {
             $f = new stdClass();
             $f->id = $override->id;
             $f->sortorder = $i++;
             $DB->update_record('assign_overrides', $f);
+            $cache->delete("{$assignid}_g_{$override->groupid}");
 
             // Update priorities of group overrides.
             $params = [

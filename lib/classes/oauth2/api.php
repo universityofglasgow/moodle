@@ -105,7 +105,6 @@ class api {
             'email' => 'email',
             'first_name' => 'firstname',
             'picture-data-url' => 'picture',
-            'link' => 'url',
         ];
         foreach ($mapping as $external => $internal) {
             $record = (object) [
@@ -264,20 +263,11 @@ class api {
     public static function init_standard_issuer($type) {
         require_capability('moodle/site:config', context_system::instance());
 
-        // TODO: Move these methods to new service classes (to make this API easier to understand and maintain).
-        if ($type == 'microsoft') {
-            return self::init_microsoft();
-        } else if ($type == 'facebook') {
-            return self::init_facebook();
-        } else if ($type == 'nextcloud') {
-            return self::init_nextcloud();
-        } else {
-            $classname = self::get_service_classname($type);
-            if (class_exists($classname)) {
-                return $classname::init();
-            }
-            throw new moodle_exception('OAuth 2 service type not recognised: ' . $type);
+        $classname = self::get_service_classname($type);
+        if (class_exists($classname)) {
+            return $classname::init();
         }
+        throw new moodle_exception('OAuth 2 service type not recognised: ' . $type);
     }
 
     /**
@@ -289,21 +279,12 @@ class api {
     public static function create_endpoints_for_standard_issuer($type, $issuer) {
         require_capability('moodle/site:config', context_system::instance());
 
-        // TODO: Move these methods to new service classes (to make this API easier to understand and maintain).
-        if ($type == 'microsoft') {
-            return self::create_endpoints_for_microsoft($issuer);
-        } else if ($type == 'facebook') {
-            return self::create_endpoints_for_facebook($issuer);
-        } else if ($type == 'nextcloud') {
-            return self::create_endpoints_for_nextcloud($issuer);
-        } else {
-            $classname = self::get_service_classname($type);
-            if (class_exists($classname)) {
-                $classname::create_endpoints($issuer);
-                return $issuer;
-            }
-            throw new moodle_exception('OAuth 2 service type not recognised: ' . $type);
+        $classname = self::get_service_classname($type);
+        if (class_exists($classname)) {
+            $classname::create_endpoints($issuer);
+            return $issuer;
         }
+        throw new moodle_exception('OAuth 2 service type not recognised: ' . $type);
     }
 
     /**
@@ -321,7 +302,13 @@ class api {
                 if (!$baseurl) {
                     throw new moodle_exception('IMS OBv2.1 service type requires the baseurl parameter.');
                 }
+            case 'nextcloud':
+                if (!$baseurl) {
+                    throw new moodle_exception('Nextcloud service type requires the baseurl parameter.');
+                }
             case 'google':
+            case 'facebook':
+            case 'microsoft':
                 $classname = self::get_service_classname($type);
                 $issuer = $classname::init();
                 if ($baseurl) {
@@ -329,25 +316,6 @@ class api {
                 }
                 $issuer->create();
                 return self::create_endpoints_for_standard_issuer($type, $issuer);
-
-            case 'microsoft':
-                $issuer = self::init_microsoft();
-                $issuer->create();
-                return self::create_endpoints_for_microsoft($issuer);
-
-            case 'facebook':
-                $issuer = self::init_facebook();
-                $issuer->create();
-                return self::create_endpoints_for_facebook($issuer);
-
-            case 'nextcloud':
-                if (!$baseurl) {
-                    throw new moodle_exception('Nextcloud service type requires the baseurl parameter.');
-                }
-                $issuer = self::init_nextcloud();
-                $issuer->set('baseurl', $baseurl);
-                $issuer->create();
-                return self::create_endpoints_for_nextcloud($issuer);
         }
 
         throw new moodle_exception('OAuth 2 service type not recognised: ' . $type);
@@ -356,10 +324,17 @@ class api {
 
     /**
      * List all the issuers, ordered by the sortorder field
+     *
+     * @param bool $includeloginonly also include issuers that are configured to be shown only on login page,
+     *     By default false, in this case the method returns all issuers that can be used in services
      * @return \core\oauth2\issuer[]
      */
-    public static function get_all_issuers() {
-        return issuer::get_records([], 'sortorder');
+    public static function get_all_issuers(bool $includeloginonly = false) {
+        if ($includeloginonly) {
+            return issuer::get_records([], 'sortorder');
+        } else {
+            return array_values(issuer::get_records_select('showonloginpage<>?', [issuer::LOGINONLY], 'sortorder'));
+        }
     }
 
     /**

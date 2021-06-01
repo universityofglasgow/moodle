@@ -16,22 +16,29 @@ Feature: View activity completion information in the Page resource
       | user | course | role           |
       | student1 | C1 | student        |
       | teacher1 | C1 | editingteacher |
+    And the following "activity" exists:
+      | activity    | page                     |
+      | course      | C1                       |
+      | idnumber    | page1                    |
+      | name        | Music history            |
+      | intro       | A lesson learned in life |
     And I log in as "teacher1"
     And I am on "Course 1" course homepage
     And I navigate to "Edit settings" in current page administration
     And I expand all fieldsets
     And I set the following fields to these values:
       | Enable completion tracking | Yes |
-      | Show completion conditions | Yes |
+      | Show activity completion conditions | Yes |
     And I press "Save and display"
 
   Scenario: View automatic completion items
     Given I am on "Course 1" course homepage with editing mode on
-    And I add a "Page" to section "1" and I fill the form with:
-      | Name                | Music history                                     |
-      | Page content        | A lesson learned in life                          |
-      | Completion tracking | Show activity as complete when conditions are met |
-      | Require view        | 1                                                 |
+    And I follow "Music history"
+    And I navigate to "Edit settings" in current page administration
+    And I set the following fields to these values:
+      | Completion tracking  | Show activity as complete when conditions are met |
+      | completionview       | 1                                                 |
+    And I press "Save and return to course"
     # Teacher view.
     And I follow "Music history"
     And "Music history" should have the "View" completion condition
@@ -45,10 +52,11 @@ Feature: View activity completion information in the Page resource
   @javascript
   Scenario: Use manual completion
     Given I am on "Course 1" course homepage with editing mode on
-    And I add a "Page" to section "1" and I fill the form with:
-      | Name                | Music history                                        |
-      | Page content        | A lesson learned in life                             |
+    And I follow "Music history"
+    And I navigate to "Edit settings" in current page administration
+    And I set the following fields to these values:
       | Completion tracking | Students can manually mark the activity as completed |
+    And I press "Save and return to course"
     # Teacher view.
     And I follow "Music history"
     And the manual completion button for "Music history" should be disabled
@@ -60,3 +68,24 @@ Feature: View activity completion information in the Page resource
     Then the manual completion button of "Music history" is displayed as "Mark as done"
     And I toggle the manual completion state of "Music history"
     And the manual completion button of "Music history" is displayed as "Done"
+
+  Scenario: The manual completion button will not be shown on the course page if the Show activity completion conditions is set to No
+    Given I am on "Course 1" course homepage with editing mode on
+    And I navigate to "Edit settings" in current page administration
+    And I expand all fieldsets
+    And I set the following fields to these values:
+      | Enable completion tracking | Yes |
+      | Show activity completion conditions | No  |
+    And I press "Save and display"
+    And I follow "Music history"
+    And I navigate to "Edit settings" in current page administration
+    And I set the following fields to these values:
+      | Completion tracking | Students can manually mark the activity as completed |
+    And I press "Save and return to course"
+    # Teacher view.
+    And the manual completion button for "Music history" should not exist
+    And I log out
+    # Student view.
+    When I log in as "student1"
+    And I am on "Course 1" course homepage
+    Then the manual completion button for "Music history" should not exist

@@ -623,10 +623,23 @@ abstract class moodleform_mod extends moodleform {
         if (!empty($CFG->enableavailability)) {
             // Add special button to end of previous section if groups/groupings
             // are enabled.
-            if ($this->_features->groups || $this->_features->groupings) {
+
+            $availabilityplugins = \core\plugininfo\availability::get_enabled_plugins();
+            $groupavailability = $this->_features->groups && array_key_exists('group', $availabilityplugins);
+            $groupingavailability = $this->_features->groupings && array_key_exists('grouping', $availabilityplugins);
+
+            if ($groupavailability || $groupingavailability) {
+                // When creating the button, we need to set type=button to prevent it behaving as a submit.
                 $mform->addElement('static', 'restrictgroupbutton', '',
-                        html_writer::tag('button', get_string('restrictbygroup', 'availability'),
-                        array('id' => 'restrictbygroup', 'disabled' => 'disabled', 'class' => 'btn btn-secondary')));
+                    html_writer::tag('button', get_string('restrictbygroup', 'availability'), [
+                        'id' => 'restrictbygroup',
+                        'type' => 'button',
+                        'disabled' => 'disabled',
+                        'class' => 'btn btn-secondary',
+                        'data-groupavailability' => $groupavailability,
+                        'data-groupingavailability' => $groupingavailability
+                    ])
+                );
             }
 
             // Availability field. This is just a textarea; the user interface
@@ -995,7 +1008,7 @@ abstract class moodleform_mod extends moodleform {
 
         if ($this->_features->hasgrades) {
             if ($this->_features->gradecat) {
-                $mform->addElement('header', 'modstandardgrade', get_string('grade'));
+                $mform->addElement('header', 'modstandardgrade', get_string('gradenoun'));
             }
 
             //if supports grades and grades arent being handled via ratings
@@ -1012,7 +1025,7 @@ abstract class moodleform_mod extends moodleform {
                     $gradeoptions['hasgrades'] = $gradeitem->has_grades();
                 }
             }
-            $mform->addElement('modgrade', $gradefieldname, get_string('grade'), $gradeoptions);
+            $mform->addElement('modgrade', $gradefieldname, get_string('gradenoun'), $gradeoptions);
             $mform->addHelpButton($gradefieldname, 'modgrade', 'grades');
             $mform->setDefault($gradefieldname, $CFG->gradepointdefault);
 

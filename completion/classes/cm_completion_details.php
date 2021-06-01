@@ -18,7 +18,7 @@
  * Contains the class for building the user's activity completion details.
  *
  * @package   core_completion
- * @copyright Jun Pataleta <jun@moodle.com>
+ * @copyright 2021 Jun Pataleta <jun@moodle.com>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -33,12 +33,15 @@ use completion_info;
  * Class for building the user's activity completion details.
  *
  * @package   core_completion
- * @copyright Jun Pataleta <jun@moodle.com>
+ * @copyright 2021 Jun Pataleta <jun@moodle.com>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class cm_completion_details {
     /** @var completion_info The completion info instance for this cm's course. */
     protected $completioninfo = null;
+
+    /** @var object The completion data. */
+    protected $completiondata = null;
 
     /** @var cm_info The course module information. */
     protected $cminfo = null;
@@ -48,6 +51,9 @@ class cm_completion_details {
 
     /** @var bool Whether to return automatic completion details. */
     protected $returndetails = true;
+
+    /** @var activity_custom_completion Activity custom completion object. */
+    protected $cmcompletion = null;
 
     /**
      * Constructor.
@@ -59,15 +65,21 @@ class cm_completion_details {
      */
     public function __construct(completion_info $completioninfo, cm_info $cminfo, int $userid, bool $returndetails = true) {
         $this->completioninfo = $completioninfo;
+        $this->completiondata = $completioninfo->get_data($cminfo, false, $userid);
         $this->cminfo = $cminfo;
         $this->userid = $userid;
         $this->returndetails = $returndetails;
+        $cmcompletionclass = activity_custom_completion::get_cm_completion_class($this->cminfo->modname);
+        if ($cmcompletionclass) {
+            $this->cmcompletion = new $cmcompletionclass($this->cminfo, $this->userid);
+        }
     }
 
     /**
      * Fetches the completion details for a user.
      *
      * @return array An array of completion details for a user containing the completion requirement's description and status.
+     * @throws \coding_exception
      */
     public function get_details(): array {
         if (!$this->is_automatic()) {
@@ -80,7 +92,7 @@ class cm_completion_details {
             return [];
         }
 
-        $completiondata = $this->completioninfo->get_data($this->cminfo, false, $this->userid);
+        $completiondata = $this->completiondata;
         $hasoverride = !empty($this->overridden_by());
 
         $details = [];
@@ -116,23 +128,58 @@ class cm_completion_details {
             ];
         }
 
-        // Custom completion rules.
-        $cmcompletionclass = activity_custom_completion::get_cm_completion_class($this->cminfo->modname);
-        if (!isset($completiondata->customcompletion) || !$cmcompletionclass) {
-            // Return early if there are no custom rules to process or the cm completion class implementation is not available.
-            return $details;
-        }
+        if ($this->cmcompletion) {
+            if (isset($completiondata->customcompletion)) {
+                foreach ($completiondata->customcompletion as $rule => $status) {
+                    $details[$rule] = (object)[
+                        'status' => !$hasoverride ? $status : $completiondata->completionstate,
+                        'description' => $this->cmcompletion->get_custom_rule_description($rule),
+                    ];
+                }
 
-        /** @var activity_custom_completion $cmcompletion */
-        $cmcompletion = new $cmcompletionclass($this->cminfo, $this->userid);
-        foreach ($completiondata->customcompletion as $rule => $status) {
-            $details[$rule] = (object)[
-                'status' => !$hasoverride ? $status : $completiondata->completionstate,
-                'description' => $cmcompletion->get_custom_rule_description($rule),
-            ];
+                $details = $this->sort_completion_details($details);
+            }
+        } else {
+            if (function_exists($this->cminfo->modname . '_get_completion_state')) {
+                // If the plugin does not have the custom completion implementation but implements the get_completion_state() callback,
+                // fallback to displaying the overall completion state of the activity.
+                $details = [
+                    'plugincompletionstate' => (object)[
+                        'status' => $this->get_overall_completion(),
+                        'description' => get_string('completeactivity', 'completion')
+                    ]
+                ];
+            }
         }
 
         return $details;
+    }
+
+    /**
+     * Sort completion details in the order specified by the activity's custom completion implementation.
+     *
+     * @param array $details The completion details to be sorted.
+     * @return array
+     * @throws \coding_exception
+     */
+    protected function sort_completion_details(array $details): array {
+        $sortorder = $this->cmcompletion->get_sort_order();
+        $sorteddetails = [];
+
+        foreach ($sortorder as $sortedkey) {
+            if (isset($details[$sortedkey])) {
+                $sorteddetails[$sortedkey] = $details[$sortedkey];
+            }
+        }
+
+        // Make sure the sorted list includes all of the conditions that were set.
+        if (count($sorteddetails) < count($details)) {
+            $exceptiontext = get_class($this->cmcompletion) .'::get_sort_order() is missing one or more completion conditions.' .
+                ' All custom and standard conditions that apply to this activity must be listed.';
+            throw new \coding_exception($exceptiontext);
+        }
+
+        return $sorteddetails;
     }
 
     /**
@@ -141,8 +188,7 @@ class cm_completion_details {
      * @return int The overall completion state for this course module.
      */
     public function get_overall_completion(): int {
-        $completiondata = $this->completioninfo->get_data($this->cminfo, false, $this->userid);
-        return (int)$completiondata->completionstate;
+        return (int)$this->completiondata->completionstate;
     }
 
     /**
@@ -169,8 +215,7 @@ class cm_completion_details {
      * @return int|null
      */
     public function overridden_by(): ?int {
-        $completiondata = $this->completioninfo->get_data($this->cminfo);
-        return isset($completiondata->overrideby) ? (int)$completiondata->overrideby : null;
+        return isset($this->completiondata->overrideby) ? (int)$this->completiondata->overrideby : null;
     }
 
     /**
@@ -183,6 +228,38 @@ class cm_completion_details {
     }
 
     /**
+     * Determine whether to show the manual completion or not.
+     *
+     * @return bool
+     */
+    public function show_manual_completion(): bool {
+        global $PAGE;
+
+        if ($PAGE->context->contextlevel == CONTEXT_MODULE) {
+            // Manual completion should always be shown on the activity page.
+            return true;
+        } else {
+            $course = $this->cminfo->get_course();
+            if ($course->showcompletionconditions == COMPLETION_SHOW_CONDITIONS) {
+                return true;
+            } else if ($this->cmcompletion) {
+                return $this->cmcompletion->manual_completion_always_shown();
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Completion state timemodified
+     *
+     * @return int timestamp
+     */
+    public function get_timemodified(): int {
+        return (int)$this->completiondata->timemodified;
+    }
+
+    /**
      * Generates an instance of this class.
      *
      * @param cm_info $cminfo The course module info instance.
@@ -192,7 +269,7 @@ class cm_completion_details {
      */
     public static function get_instance(cm_info $cminfo, int $userid, bool $returndetails = true): cm_completion_details {
         $course = $cminfo->get_course();
-        $completioninfo = new completion_info($course);
+        $completioninfo = new \completion_info($course);
         return new self($completioninfo, $cminfo, $userid, $returndetails);
     }
 }

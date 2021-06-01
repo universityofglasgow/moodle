@@ -40,6 +40,16 @@ define('IGNORE_FILE_MERGE', -1);
  */
 define('FILE_AREA_MAX_BYTES_UNLIMITED', -1);
 
+/**
+ * Capacity of the draft area bucket when using the leaking bucket technique to limit the draft upload rate.
+ */
+define('DRAFT_AREA_BUCKET_CAPACITY', 50);
+
+/**
+ * Leaking rate of the draft area bucket when using the leaking bucket technique to limit the draft upload rate.
+ */
+define('DRAFT_AREA_BUCKET_LEAK', 0.2);
+
 require_once("$CFG->libdir/filestorage/file_exceptions.php");
 require_once("$CFG->libdir/filestorage/file_storage.php");
 require_once("$CFG->libdir/filestorage/zip_packer.php");
@@ -390,7 +400,7 @@ function file_get_unused_draft_itemid() {
  * @return string|null returns string if $text was passed in, the rewritten $text is returned. Otherwise NULL.
  */
 function file_prepare_draft_area(&$draftitemid, $contextid, $component, $filearea, $itemid, array $options=null, $text=null) {
-    global $CFG, $USER, $CFG;
+    global $CFG, $USER;
 
     $options = (array)$options;
     if (!isset($options['subdirs'])) {
@@ -604,6 +614,55 @@ function file_is_draft_area_limit_reached($draftitemid, $areamaxbytes, $newfiles
         }
     }
     return false;
+}
+
+/**
+ * Returns whether a user has reached their draft area upload rate.
+ *
+ * @param int $userid The user id
+ * @return bool
+ */
+function file_is_draft_areas_limit_reached(int $userid): bool {
+    global $CFG;
+
+    $capacity = $CFG->draft_area_bucket_capacity ?? DRAFT_AREA_BUCKET_CAPACITY;
+    $leak = $CFG->draft_area_bucket_leak ?? DRAFT_AREA_BUCKET_LEAK;
+
+    $since = time() - floor($capacity / $leak); // The items that were in the bucket before this time are already leaked by now.
+                                                // We are going to be a bit generous to the user when using the leaky bucket
+                                                // algorithm below. We are going to assume that the bucket is empty at $since.
+                                                // We have to do an assumption here unless we really want to get ALL user's draft
+                                                // items without any limit and put all of them in the leaking bucket.
+                                                // I decided to favour performance over accuracy here.
+
+    $fs = get_file_storage();
+    $items = $fs->get_user_draft_items($userid, $since);
+    $items = array_reverse($items); // So that the items are sorted based on time in the ascending direction.
+
+    // We only need to store the time that each element in the bucket is going to leak. So $bucket is array of leaking times.
+    $bucket = [];
+    foreach ($items as $item) {
+        $now = $item->timemodified;
+        // First let's see if items can be dropped from the bucket as a result of leakage.
+        while (!empty($bucket) && ($now >= $bucket[0])) {
+            array_shift($bucket);
+        }
+
+        // Calculate the time that the new item we put into the bucket will be leaked from it, and store it into the bucket.
+        if ($bucket) {
+            $bucket[] = max($bucket[count($bucket) - 1], $now) + (1 / $leak);
+        } else {
+            $bucket[] = $now + (1 / $leak);
+        }
+    }
+
+    // Recalculate the bucket's content based on the leakage until now.
+    $now = time();
+    while (!empty($bucket) && ($now >= $bucket[0])) {
+        array_shift($bucket);
+    }
+
+    return count($bucket) >= $capacity;
 }
 
 /**
@@ -3568,6 +3627,51 @@ class curl {
     }
 
     /**
+     * check_securityhelper_blocklist.
+     * Checks whether the given URL is blocked by checking both plugin's security helpers
+     * and core curl security helper or any curl security helper that passed to curl class constructor.
+     * If ignoresecurity is set to true, skip checking and consider the url is not blocked.
+     * This augments all installed plugin's security helpers if there is any.
+     *
+     * @param string $url the url to check.
+     * @return string - an error message if URL is blocked or null if URL is not blocked.
+     */
+    protected function check_securityhelper_blocklist(string $url): ?string {
+
+        // If curl security is not enabled, do not proceed.
+        if ($this->ignoresecurity) {
+            return null;
+        }
+
+        // Augment all installed plugin's security helpers if there is any.
+        // The plugin's function has to be defined as plugintype_pluginname_security_helper in pluginname/lib.php file.
+        $plugintypes = get_plugins_with_function('curl_security_helper');
+
+        // If any of the security helper's function returns true, treat as URL is blocked.
+        foreach ($plugintypes as $plugins) {
+            foreach ($plugins as $pluginfunction) {
+                // Get curl security helper object from plugin lib.php.
+                $pluginsecurityhelper = $pluginfunction();
+                if ($pluginsecurityhelper instanceof \core\files\curl_security_helper_base) {
+                    if ($pluginsecurityhelper->url_is_blocked($url)) {
+                        $this->error = $pluginsecurityhelper->get_blocked_url_string();
+                        return $this->error;
+                    }
+                }
+            }
+        }
+
+        // Check if the URL is blocked in core curl_security_helper or
+        // curl security helper that passed to curl class constructor.
+        if ($this->securityhelper->url_is_blocked($url)) {
+            $this->error = $this->securityhelper->get_blocked_url_string();
+            return $this->error;
+        }
+
+        return null;
+    }
+
+    /**
      * Single HTTP Request
      *
      * @param string $url The URL to request
@@ -3585,11 +3689,10 @@ class curl {
             }
         }
 
-        // If curl security is enabled, check the URL against the list of blocked URLs before calling curl_exec.
-        // Note: This will only check the base url. In the case of redirects, the blocking check is also after the curl_exec.
-        if (!$this->ignoresecurity && $this->securityhelper->url_is_blocked($url)) {
-            $this->error = $this->securityhelper->get_blocked_url_string();
-            return $this->error;
+        // This will only check the base url. In the case of redirects, the blocking check is also after the curl_exec.
+        $urlisblocked = $this->check_securityhelper_blocklist($url);
+        if (!is_null($urlisblocked)) {
+            return $urlisblocked;
         }
 
         // Set the URL as a curl option.
@@ -3610,12 +3713,13 @@ class curl {
         // Note: $this->response and $this->rawresponse are filled by $hits->formatHeader callback.
 
         // In the case of redirects (which curl blindly follows), check the post-redirect URL against the list of blocked list too.
-        if (intval($this->info['redirect_count']) > 0 && !$this->ignoresecurity
-            && $this->securityhelper->url_is_blocked($this->info['url'])) {
-            $this->reset_request_state_vars();
-            $this->error = $this->securityhelper->get_blocked_url_string();
-            curl_close($curl);
-            return $this->error;
+        if (intval($this->info['redirect_count']) > 0) {
+            $urlisblocked = $this->check_securityhelper_blocklist($this->info['url']);
+            if (!is_null($urlisblocked)) {
+                $this->reset_request_state_vars();
+                curl_close($curl);
+                return $urlisblocked;
+            }
         }
 
         if ($this->emulateredirects and $this->options['CURLOPT_FOLLOWLOCATION'] and $this->info['http_code'] != 200) {

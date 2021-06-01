@@ -2549,5 +2549,113 @@ function xmldb_main_upgrade($oldversion) {
         upgrade_main_savepoint(true, 2021033100.01);
     }
 
+    if ($oldversion < 2021041300.01) {
+
+        // Define field enabled to be added to h5p_libraries.
+        $table = new xmldb_table('h5p_libraries');
+        $field = new xmldb_field('enabled', XMLDB_TYPE_INTEGER, '1', null, null, null, '1', 'example');
+
+        // Conditionally launch add field enabled.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Main savepoint reached.
+        upgrade_main_savepoint(true, 2021041300.01);
+    }
+
+    if ($oldversion < 2021042100.00) {
+
+        // Define field loginpagename to be added to oauth2_issuer.
+        $table = new xmldb_table('oauth2_issuer');
+        $field = new xmldb_field('loginpagename', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'servicetype');
+
+        // Conditionally launch add field loginpagename.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Main savepoint reached.
+        upgrade_main_savepoint(true, 2021042100.00);
+    }
+
+    if ($oldversion < 2021042100.01) {
+        require_once($CFG->dirroot . '/user/profile/field/social/upgradelib.php');
+        $table = new xmldb_table('user');
+        $tablecolumns = ['icq', 'skype', 'aim', 'yahoo', 'msn', 'url'];
+
+        foreach ($tablecolumns as $column) {
+            $field = new xmldb_field($column);
+            if ($dbman->field_exists($table, $field)) {
+                user_profile_social_moveto_profilefield($column);
+                $dbman->drop_field($table, $field);
+            }
+        }
+
+        // Update all module availability if it relies on the old user fields.
+        user_profile_social_update_module_availability();
+
+        // Remove field mapping for oauth2.
+        $DB->delete_records('oauth2_user_field_mapping', array('internalfield' => 'url'));
+
+        // Main savepoint reached.
+        upgrade_main_savepoint(true, 2021042100.01);
+    }
+
+    if ($oldversion < 2021042100.02) {
+        require_once($CFG->libdir . '/db/upgradelib.php');
+
+        // Check if this site has executed the problematic upgrade steps.
+        $needsfixing = upgrade_calendar_site_status(false);
+
+        // Only queue the task if this site has been affected by the problematic upgrade step.
+        if ($needsfixing) {
+
+            // Create adhoc task to search and recover orphaned calendar events.
+            $record = new \stdClass();
+            $record->classname = '\core\task\calendar_fix_orphaned_events';
+
+            // Next run time based from nextruntime computation in \core\task\manager::queue_adhoc_task().
+            $nextruntime = time() - 1;
+            $record->nextruntime = $nextruntime;
+            $DB->insert_record('task_adhoc', $record);
+        }
+
+        // Main savepoint reached.
+        upgrade_main_savepoint(true, 2021042100.02);
+    }
+
+    if ($oldversion < 2021042400.00) {
+        // Changing the default of field showcompletionconditions on table course to 0.
+        $table = new xmldb_table('course');
+        $field = new xmldb_field('showcompletionconditions', XMLDB_TYPE_INTEGER, '1', null, null, null, null, 'showactivitydates');
+
+        // Launch change of nullability for field showcompletionconditions.
+        $dbman->change_field_notnull($table, $field);
+
+        // Launch change of default for field showcompletionconditions.
+        $dbman->change_field_default($table, $field);
+
+        // Set showcompletionconditions to null for courses which don't track completion.
+        $sql = "UPDATE {course}
+                   SET showcompletionconditions = null
+                 WHERE enablecompletion <> 1";
+        $DB->execute($sql);
+
+        // Main savepoint reached.
+        upgrade_main_savepoint(true, 2021042400.00);
+    }
+
+    if ($oldversion < 2021043000.01) {
+        // Remove usemodchooser user preference for every user.
+        $DB->delete_records('user_preferences', ['name' => 'usemodchooser']);
+
+        // Main savepoint reached.
+        upgrade_main_savepoint(true, 2021043000.01);
+    }
+
+    // Automatically generated Moodle v3.11.0 release upgrade line.
+    // Put any upgrade step following this.
+
     return true;
 }

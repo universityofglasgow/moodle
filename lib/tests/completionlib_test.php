@@ -143,6 +143,7 @@ class core_completionlib_testcase extends advanced_testcase {
         $c->update_state($cm);
 
         // Enabled, but current state is same as possible result, do nothing.
+        $cm->completion = COMPLETION_TRACKING_AUTOMATIC;
         $c = $mockbuilder->getMock();
         $current = (object)array('completionstate' => COMPLETION_COMPLETE, 'overrideby' => null);
         $c->expects($this->once())
@@ -151,7 +152,6 @@ class core_completionlib_testcase extends advanced_testcase {
             ->will($this->returnValue(true));
         $c->expects($this->once())
             ->method('get_data')
-            ->with($cm, false, 0)
             ->will($this->returnValue($current));
         $c->update_state($cm, COMPLETION_COMPLETE);
 
@@ -165,7 +165,6 @@ class core_completionlib_testcase extends advanced_testcase {
             ->will($this->returnValue(true));
         $c->expects($this->once())
             ->method('get_data')
-            ->with($cm, false, 0)
             ->will($this->returnValue($current));
         $c->update_state($cm, COMPLETION_COMPLETE);
 
@@ -179,7 +178,6 @@ class core_completionlib_testcase extends advanced_testcase {
             ->will($this->returnValue(true));
         $c->expects($this->once())
             ->method('get_data')
-            ->with($cm, false, 0)
             ->will($this->returnValue($current));
         $c->update_state($cm, COMPLETION_COMPLETE);
 
@@ -191,7 +189,6 @@ class core_completionlib_testcase extends advanced_testcase {
             ->will($this->returnValue(true));
         $c->expects($this->once())
             ->method('get_data')
-            ->with($cm, false, 0)
             ->will($this->returnValue($current));
         $changed = clone($current);
         $changed->timemodified = time();
@@ -213,7 +210,6 @@ class core_completionlib_testcase extends advanced_testcase {
             ->will($this->returnValue(true));
         $c->expects($this->once())
             ->method('get_data')
-            ->with($cm, false, 0)
             ->will($this->returnValue($current));
         $c->expects($this->once())
             ->method('internal_get_state')
@@ -1270,7 +1266,7 @@ class core_completionlib_testcase extends advanced_testcase {
      */
     public function get_grade_completion_provider() {
         return [
-            'Grade not required' => [false, false, null, moodle_exception::class, null],
+            'Grade not required' => [false, false, null, null, null],
             'Grade required, but has no grade yet' => [true, false, null, null, COMPLETION_INCOMPLETE],
             'Grade required, grade received' => [true, true, null, null, COMPLETION_COMPLETE],
             'Grade required, passing grade received' => [true, true, 70, null, COMPLETION_COMPLETE_PASS],
@@ -1315,6 +1311,44 @@ class core_completionlib_testcase extends advanced_testcase {
         }
         $gradecompletion = $completioninfo->get_grade_completion($cm, $this->user->id);
         $this->assertEquals($expectedresult, $gradecompletion);
+    }
+
+    /**
+     * Test the return value for cases when the activity module does not have associated grade_item.
+     */
+    public function test_get_grade_completion_without_grade_item() {
+        global $DB;
+
+        $this->setup_data();
+
+        $assign = $this->getDataGenerator()->get_plugin_generator('mod_assign')->create_instance([
+            'course' => $this->course->id,
+            'completion' => COMPLETION_ENABLED,
+            'completionusegrade' => true,
+            'gradepass' => 42,
+        ]);
+
+        $cm = cm_info::create(get_coursemodule_from_instance('assign', $assign->id));
+
+        $DB->delete_records('grade_items', [
+            'courseid' => $this->course->id,
+            'itemtype' => 'mod',
+            'itemmodule' => 'assign',
+            'iteminstance' => $assign->id,
+        ]);
+
+        // Without the grade_item, the activity is considered incomplete.
+        $completioninfo = new completion_info($this->course);
+        $this->assertEquals(COMPLETION_INCOMPLETE, $completioninfo->get_grade_completion($cm, $this->user->id));
+
+        // Once the activity is graded, the grade_item is automatically created.
+        $assigninstance = new assign($cm->context, $cm, $this->course);
+        $grade = $assigninstance->get_user_grade($this->user->id, true);
+        $grade->grade = 40;
+        $assigninstance->update_grade($grade);
+
+        // The implicitly created grade_item does not have grade to pass defined so it is not distinguished.
+        $this->assertEquals(COMPLETION_COMPLETE, $completioninfo->get_grade_completion($cm, $this->user->id));
     }
 }
 

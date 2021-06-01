@@ -73,6 +73,8 @@ information provided here is intended especially for developers.
   default the key is stored in moodledata but admins can configure a different, more secure
   location in config.php if required. To get the best possible security for this feature, we
   recommend enabling the Sodium PHP extension.
+  The OpenSSL alternative for this API, used when Sodium is not available, is considered deprecated
+  at all effects, and will be removed in Moodle 4.2. See MDL-71421 for more information.
 * Behat timeout constants behat_base::TIMEOUT, EXTENDED_TIMEOUT, and REDUCED_TIMEOUT, which were deprecated in 3.7, have been removed.
 * \core_table\local\filter\filterset::JOINTYPE_DEFAULT is being changed from 1 (ANY) to 2 (ALL). Filterset implementations
   can override the default filterset join type by overriding \core_table\local\filter\filterset::get_join_type() instead.
@@ -103,15 +105,31 @@ information provided here is intended especially for developers.
   - get_custom_rule_descriptions(): Returns an associative array with values containing the user-facing textual description
     of the custom completion rules (which serve as the keys to these values).
     e.g. ['completionsubmit' => 'Must submit']
+  - get_sort_order(): Returns an array listing the order the activity module's completion rules should be displayed to the user,
+    including both custom completion and relevant core completion rules
+    e.g. ['completionview', 'completionsubmit', 'completionusegrade']
 * Admin setting admin_setting_configmulticheckbox now supports lazy-loading the options list by
   supplying a callback function instead of an array of options.
 * A new core API class \core_user\fields provides ways to get lists of user fields, and SQL related to
   those fields. This replaces existing functions get_extra_user_fields(), get_extra_user_fields_sql(),
   get_user_field_name(), get_all_user_name_fields(), and user_picture::fields(), which have all been
   deprecated.
+* Allow plugins to augment the curl security helper via callback. The plugin's function has to be defined as
+  plugintype_pluginname_curl_security_helper in pluginname/lib.php file and the function should return a plugin's security
+  helper instance.
 * The behat transformation 'string time to timestamp' no longer supports datetime format. If provided, the format must
   be strftime compatible. Example:
     - I should see "##tomorrow noon##%A, %d %B %Y, %I:%M %p##"
+* External functions implementation classes should use 'execute' as the method name, in which case the
+  'methodname' property should not be specified in db/services.php file.
+* The core_grades_create_gradecategory webservice has been deprecated in favour of core_grades_create_gradecategories, which is
+  functionally identical but allows for parallel gradecategory creations by supplying a data array to the webservice.
+* The signature of the get_context_name() function in the abstract class context and all extending classes (such as context_course)
+  has been extended. The new parameter allows the to get the name without escaped characters.
+* The signature of the question_category_options() has been extended. The new parameter allows the to get the categories name
+  in the returned array without escaped characters.
+* The \core\hub\site_registration_form::add_select_with_email() method has been deprecated in favour of
+  \core\hub\site_registration_form::add_checkbox_with_email().
 
 === 3.10 ===
 * PHPUnit has been upgraded to 8.5. That comes with a few changes:

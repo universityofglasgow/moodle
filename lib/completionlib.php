@@ -562,10 +562,10 @@ class completion_info {
      * if a forum provides options for marking itself 'completed' once a user makes
      * N posts, this function should be called every time a user makes a new post.
      * [After the post has been saved to the database]. When calling, you do not
-     * need to pass in the new completion state. Instead this function carries out
-     * completion calculation by checking grades and viewed state itself, and
-     * calling the involved module via modulename_get_completion_state() to check
-     * module-specific conditions.
+     * need to pass in the new completion state. Instead this function carries out completion
+     * calculation by checking grades and viewed state itself, and calling the involved module
+     * via mod_{modulename}\\completion\\custom_completion::get_overall_completion_state() to
+     * check module-specific conditions.
      *
      * @param stdClass|cm_info $cm Course-module
      * @param int $possibleresult Expected completion result. If the event that
@@ -596,6 +596,24 @@ class completion_info {
             if (!$this->user_can_override_completion($USER)) {
                 throw new required_capability_exception(context_course::instance($this->course_id),
                                                         'moodle/course:overridecompletion', 'nopermission', '');
+            }
+        }
+
+        // Default to current user if one is not provided.
+        if ($userid == 0) {
+            $userid = $USER->id;
+        }
+
+        // Delete the cm's cached completion data for this user if automatic completion is enabled.
+        // This ensures any changes to the status of individual completion conditions in the activity will be fetched.
+        if ($cm->completion == COMPLETION_TRACKING_AUTOMATIC) {
+            $completioncache = cache::make('core', 'completion');
+            $completionkey = $userid . '_' . $this->course->id;
+            $completiondata = $completioncache->get($completionkey);
+
+            if ($completiondata !== false) {
+                unset($completiondata[$cm->id]);
+                $completioncache->set($completionkey, $completiondata);
             }
         }
 
@@ -634,7 +652,7 @@ class completion_info {
             $newstate = $this->internal_get_state($cm, $userid, $current);
         }
 
-        // If changed, update
+        // If the overall completion state has changed, update it in the cache.
         if ($newstate != $current->completionstate) {
             $current->completionstate = $newstate;
             $current->timemodified    = time();
@@ -701,12 +719,16 @@ class completion_info {
                 }
             } else {
                 // Fallback to the get_completion_state callback.
+                $cmcompletionclass = "mod_{$cminfo->modname}\\completion\\custom_completion";
                 $function = $cminfo->modname . '_get_completion_state';
                 if (!function_exists($function)) {
-                    $this->internal_systemerror("Module {$cminfo->modname} claims to support
-                    FEATURE_COMPLETION_HAS_RULES but does not have required
-                    {$cminfo->modname}_get_completion_state function");
+                    $this->internal_systemerror("Module {$cminfo->modname} claims to support FEATURE_COMPLETION_HAS_RULES " .
+                        "but does not implement the custom completion class $cmcompletionclass which extends " .
+                        "\core_completion\activity_custom_completion.");
                 }
+                debugging("*_get_completion_state() callback functions such as $function have been deprecated and should no " .
+                    "longer be used. Please implement the custom completion class $cmcompletionclass which extends " .
+                    "\core_completion\activity_custom_completion.", DEBUG_DEVELOPER);
                 if (!$function($this->course, $cminfo, $userid, COMPLETION_AND)) {
                     return COMPLETION_INCOMPLETE;
                 }
@@ -747,9 +769,6 @@ class completion_info {
                         item '{$item->id}', user '{$userid}'");
             }
             return self::internal_get_grade_state($item, reset($grades));
-        } else {
-            $this->internal_systemerror("Cannot find grade item for '{$cm->modname}'
-                    cm '{$cm->id}' matching number '{$cm->completiongradeitemnumber}'");
         }
 
         return COMPLETION_INCOMPLETE;
@@ -1117,7 +1136,9 @@ class completion_info {
         // Custom activity module completion data.
 
         // Cast custom data to array before checking for custom completion rules.
-        $customdata = (array)$cm->customdata;
+        // We call ->get_custom_data() instead of ->customdata here because there is the chance of recursive calling,
+        // and we cannot call a getter from a getter in PHP.
+        $customdata = (array) $cm->get_custom_data();
         // Return early if the plugin does not define custom completion rules.
         if (empty($customdata['customcompletionrules'])) {
             return $data;

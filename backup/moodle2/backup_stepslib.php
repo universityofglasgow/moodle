@@ -391,6 +391,8 @@ class backup_course_structure_step extends backup_structure_step {
             'defaultgroupingid', 'lang', 'theme',
             'timecreated', 'timemodified',
             'requested',
+            'showactivitydates',
+            'showcompletionconditions',
             'enablecompletion', 'completionstartonenrol', 'completionnotify'));
 
         $category = new backup_nested_element('category', array('id'), array(
@@ -1361,11 +1363,10 @@ class backup_users_structure_step extends backup_structure_step {
 
         // Then, the fields potentially needing anonymization
         $anonfields = array(
-            'username', 'idnumber', 'email', 'icq', 'skype',
-            'yahoo', 'aim', 'msn', 'phone1',
+            'username', 'idnumber', 'email', 'phone1',
             'phone2', 'institution', 'department', 'address',
             'city', 'country', 'lastip', 'picture',
-            'url', 'description', 'descriptionformat', 'imagealt', 'auth');
+            'description', 'descriptionformat', 'imagealt', 'auth');
         $anonfields = array_merge($anonfields, \core_user\fields::get_name_fields());
 
         // Add anonymized fields to $userfields with custom final element
@@ -1637,6 +1638,55 @@ class backup_course_logstores_structure_step extends backup_structure_step {
         $this->add_subplugin_structure('logstore', $logstore, true, 'tool', 'log');
 
         return $logstores;
+    }
+}
+
+/**
+ * Structure step in charge of constructing the loglastaccess.xml file for the course logs.
+ *
+ * This backup step will backup the logs of the user_lastaccess table.
+ */
+class backup_course_loglastaccess_structure_step extends backup_structure_step {
+
+    /**
+     *  This function creates the structures for the loglastaccess.xml file.
+     *  Expected structure would look like this.
+     *  <loglastaccesses>
+     *      <loglastaccess id=2>
+     *          <userid>5</userid>
+     *          <timeaccess>1616887341</timeaccess>
+     *      </loglastaccess>
+     *  </loglastaccesses>
+     *
+     * @return backup_nested_element
+     */
+    protected function define_structure() {
+
+        // To know if we are including userinfo.
+        $userinfo = $this->get_setting_value('users');
+
+        // Define the structure of logstores container.
+        $lastaccesses = new backup_nested_element('lastaccesses');
+        $lastaccess = new backup_nested_element('lastaccess', array('id'), array('userid', 'timeaccess'));
+
+        // Define build tree.
+        $lastaccesses->add_child($lastaccess);
+
+        // This element should only happen if we are including user info.
+        if ($userinfo) {
+            // Define sources.
+            $lastaccess->set_source_sql('
+                SELECT id, userid, timeaccess
+                  FROM {user_lastaccess}
+                 WHERE courseid = ?',
+                array(backup::VAR_COURSEID));
+
+            // Define userid annotation to user.
+            $lastaccess->annotate_ids('user', 'userid');
+        }
+
+        // Return the root element (lastaccessess).
+        return $lastaccesses;
     }
 }
 

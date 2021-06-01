@@ -131,6 +131,7 @@ $string['browsersecurity_help'] = 'If "Full screen pop-up with some JavaScript s
 * The quiz will only start if the student has a JavaScript-enabled web-browser
 * The quiz appears in a full screen popup window that covers all the other windows and has no navigation controls
 * Students are prevented, as far as is possible, from using facilities like copy and paste';
+$string['cachedef_overrides'] = 'User and group override information';
 $string['calculated'] = 'Calculated';
 $string['calculatedquestion'] = 'Calculated question not supported at line {$a}. The question will be ignored';
 $string['cannotcreatepath'] = 'Path cannot be created ({$a})';
@@ -411,6 +412,7 @@ $string['gradesdeleted'] = 'Quiz grades deleted';
 $string['gradesofar'] = '{$a->method}: {$a->mygrade} / {$a->quizgrade}.';
 $string['gradetopassnotset'] = 'This quiz does not yet have a grade to pass set. It may be set in the Grade section of the quiz settings.';
 $string['gradetopassmustbeset'] = 'Grade to pass cannot be zero as this quiz has its completion method set to require passing grade. Please set a non-zero value.';
+$string['gradetopassoutof'] = 'Grade to pass: {$a->grade} out of {$a->maxgrade}';
 $string['gradingdetails'] = 'Marks for this submission: {$a->raw}/{$a->max}.';
 $string['gradingdetailsadjustment'] = 'With previous penalties this gives <strong>{$a->cur}/{$a->max}</strong>.';
 $string['gradingdetailspenalty'] = 'This submission attracted a penalty of {$a}.';

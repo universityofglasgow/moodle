@@ -37,33 +37,46 @@ Feature: Allow teachers to edit the visibility of completion conditions in a cou
     And I am on "Course 1" course homepage with editing mode on
     And I navigate to "Edit settings" in current page administration
     When I set the following fields to these values:
-      | Show completion conditions | No |
+      | Show activity completion conditions | No |
     And I click on "Save and display" "button"
     # Automatic completion conditions should not be displayed on the course homepage if show completion conditions is disabled.
     And there should be no completion information shown for "Test choice auto"
     # Completion conditions are always shown in the module's view page.
     And I follow "Test choice auto"
     Then "Test choice auto" should have the "Make a choice" completion condition
-    # The manual completion toggle button should be always displayed in both course homepage and activity view.
+    # The manual completion toggle button should not be displayed in the course homepage when completion is disabled.
     And I am on "Course 1" course homepage
-    And the manual completion button for "Test choice manual" should be disabled
+    And the manual completion button for "Test choice manual" should not exist
+    # The manual completion toggle button should always be displayed in the activity view.
     And I follow "Test choice manual"
     And the manual completion button for "Test choice manual" should be disabled
 
-  Scenario: Default show completion conditions value in course form when default show completion conditions admin setting is set to No
+  Scenario Outline: Default showcompletionconditions value in course form on course creation
     Given I log in as "admin"
     And I navigate to "Courses > Course default settings" in site administration
-    When I set the following fields to these values:
-      | Show completion conditions | No |
-    And I click on "Save changes" "button"
-    And I navigate to "Courses > Add a new course" in site administration
-    Then the field "showcompletionconditions" matches value "No"
+    And I set the field "Show activity completion conditions" to "<siteshowcompletion>"
+    And I press "Save changes"
+    When I navigate to "Courses > Add a new course" in site administration
+    Then the field "showcompletionconditions" matches value "<expected>"
 
-  Scenario: Default show completion conditions value in course form when default show completion conditions admin setting is set to Yes
+    Examples:
+      | siteshowcompletion | expected |
+      | Yes                | Yes      |
+      | No                 | No       |
+
+  Scenario Outline: Default showcompletionconditions displayed when editing a course with disabled completion tracking
     Given I log in as "admin"
     And I navigate to "Courses > Course default settings" in site administration
-    When I set the following fields to these values:
-      | Show completion conditions | Yes |
-    And I click on "Save changes" "button"
-    And I navigate to "Courses > Add a new course" in site administration
-    Then the field "showcompletionconditions" matches value "Yes"
+    And I set the field "Show activity completion conditions" to "<siteshowcompletion>"
+    And I press "Save changes"
+    And I am on "Course 1" course homepage with editing mode on
+    And I navigate to "Edit settings" in current page administration
+    And I set the field "Enable completion tracking" to "No"
+    And I press "Save and display"
+    And I navigate to "Edit settings" in current page administration
+    Then the field "Show activity completion conditions" matches value "<expected>"
+
+    Examples:
+      | siteshowcompletion  | expected  |
+      | Yes                 | Yes       |
+      | No                  | No        |

@@ -58,7 +58,8 @@ $contenttype = $content->get_content_type_instance();
 $pageheading = $record->name;
 
 if (!$content->is_view_allowed()) {
-    print_error('notavailable', 'contentbank');
+    $cburl = new \moodle_url('/contentbank/index.php', ['contextid' => $context->id, 'errormsg' => 'notavailable']);
+    redirect($cburl);
 }
 
 if ($content->get_visibility() == content::VISIBILITY_UNLISTED) {
@@ -123,11 +124,17 @@ if ($contenttype->can_manage($content)) {
 
     if ($contenttype->can_upload()) {
         $actionmenu->add_secondary_action(new action_menu_link(
-            new moodle_url('/contentbank/upload.php', ['contextid' => $context->id, 'id' => $content->get_id()]),
+            new moodle_url('/contentbank/view.php', ['contextid' => $context->id, 'id' => $content->get_id()]),
             new pix_icon('i/upload', get_string('upload')),
             get_string('replacecontent', 'contentbank'),
-            false
+            false,
+            ['data-action' => 'upload']
         ));
+        $PAGE->requires->js_call_amd(
+            'core_contentbank/upload',
+            'initModal',
+            ['[data-action=upload]', \core_contentbank\form\upload_files::class, $context->id, $content->get_id()]
+        );
     }
 }
 if ($contenttype->can_download($content)) {

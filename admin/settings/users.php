@@ -196,12 +196,6 @@ if ($hassiteconfig
                              'country' => new lang_string('country'),
                              'moodlenetprofile' => new lang_string('moodlenetprofile', 'user'),
                              'timezone' => new lang_string('timezone'),
-                             'webpage' => new lang_string('webpage'),
-                             'icqnumber' => new lang_string('icqnumber'),
-                             'skypeid' => new lang_string('skypeid'),
-                             'yahooid' => new lang_string('yahooid'),
-                             'aimid' => new lang_string('aimid'),
-                             'msnid' => new lang_string('msnid'),
                              'firstaccess' => new lang_string('firstaccess'),
                              'lastaccess' => new lang_string('lastaccess'),
                              'lastip' => new lang_string('lastip'),
@@ -219,7 +213,8 @@ if ($hassiteconfig
                 new lang_string('showuseridentity', 'admin'),
                 new lang_string('showuseridentity_desc', 'admin'), ['email' => 1],
                 function() {
-                    global $DB;
+                    global $CFG;
+                    require_once($CFG->dirroot.'/user/profile/lib.php');
 
                     // Basic fields available in user table.
                     $fields = [
@@ -235,10 +230,10 @@ if ($hassiteconfig
                     ];
 
                     // Custom profile fields.
-                    $profilefields = $DB->get_records('user_info_field', ['datatype' => 'text'], 'sortorder ASC');
-                    foreach ($profilefields as $key => $field) {
-                        // Only reasonable-length fields can be used as identity fields.
-                        if ($field->param2 > 255) {
+                    $profilefields = profile_get_custom_fields();
+                    foreach ($profilefields as $field) {
+                        // Only reasonable-length text fields can be used as identity fields.
+                        if ($field->param2 > 255 || $field->datatype != 'text') {
                             continue;
                         }
                         $fields['profile_field_' . $field->shortname] = $field->name . ' *';

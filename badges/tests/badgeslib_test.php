@@ -592,9 +592,9 @@ class badgeslib_test extends advanced_testcase {
         require_once($CFG->dirroot.'/user/profile/lib.php');
 
         // Add a custom field of textarea type.
-        $customprofileid = $DB->insert_record('user_info_field', array(
-            'shortname' => 'newfield', 'name' => 'Description of new field', 'categoryid' => 1,
-            'datatype' => 'textarea'));
+        $customprofileid = $this->getDataGenerator()->create_custom_profile_field(array(
+            'shortname' => 'newfield', 'name' => 'Description of new field',
+            'datatype' => 'textarea'))->id;
 
         $this->preventResetByRollback(); // Messaging is not compatible with transactions.
         $badge = new badge($this->coursebadge);
@@ -602,8 +602,8 @@ class badgeslib_test extends advanced_testcase {
         $criteria_overall = award_criteria::build(array('criteriatype' => BADGE_CRITERIA_TYPE_OVERALL, 'badgeid' => $badge->id));
         $criteria_overall->save(array('agg' => BADGE_CRITERIA_AGGREGATION_ANY));
         $criteria_overall1 = award_criteria::build(array('criteriatype' => BADGE_CRITERIA_TYPE_PROFILE, 'badgeid' => $badge->id));
-        $criteria_overall1->save(array('agg' => BADGE_CRITERIA_AGGREGATION_ALL, 'field_address' => 'address', 'field_aim' => 'aim',
-            'field_' . $customprofileid => $customprofileid));
+        $criteria_overall1->save(array('agg' => BADGE_CRITERIA_AGGREGATION_ALL, 'field_address' => 'address',
+            'field_department' => 'department', 'field_' . $customprofileid => $customprofileid));
 
         // Assert the badge will not be issued to the user as is.
         $badge = new badge($this->coursebadge);
@@ -612,7 +612,7 @@ class badgeslib_test extends advanced_testcase {
 
         // Set the required fields and make sure the badge got issued.
         $this->user->address = 'Test address';
-        $this->user->aim = '999999999';
+        $this->user->department = 'sillywalks';
         $sink = $this->redirectEmails();
         profile_save_data((object)array('id' => $this->user->id, 'profile_field_newfield' => 'X'));
         user_update_user($this->user, false);
