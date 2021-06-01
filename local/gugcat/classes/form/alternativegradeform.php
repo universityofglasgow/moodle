@@ -69,8 +69,8 @@ class alternativegradeform extends moodleform {
 
         // Merit Grade type form elements.
         $mweights = !is_null($meritsettings) ? array_column($meritsettings, 'weight', 'itemid') : array();
-        $labelnote = get_string('selectincludeassessment', 'local_gugcat') . html_writer::tag('span', get_string('meritdisablednote',
-            'local_gugcat'), array('class' => 'merit-note'));
+        $labelnote = get_string('selectincludeassessment', 'local_gugcat') . html_writer::tag('span',
+                 get_string('meritdisablednote', 'local_gugcat'), array('class' => 'merit-note'));
         $mform->addElement('html', html_writer::tag('label', $labelnote,
                  array('class' => 'merit-lbl' . (!is_null($meritsettings) ? '' : ' hidden'))));
         $mform->hideif('selectassessment', 'altgradetype', 'neq', MERIT_GRADE);
