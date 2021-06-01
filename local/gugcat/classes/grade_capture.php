@@ -583,27 +583,20 @@ class grade_capture{
                      get_string('convertedgrade', 'local_gugcat'));
                     local_gugcat::update_grade($id, $convertedgi, $grade);
                 }
-                // Check if activity is a subcat component.
-                if ($activity->gradeitem->parent_category->parent === strval($categoryid)
-                    && $categoryid != 0) {
-                    // Get Subcategory prv grade item id and idnumber.
-                    $prvgrd = local_gugcat::get_gradeitem_converted_flag($activity->gradeitem->categoryid, true);
-                    $subcatid = $prvgrd->id;
-                    $scale = $prvgrd->idnumber ? $prvgrd->idnumber
-                    : $DB->get_field('grade_items', 'outcomeid', array('id' => $subcatid));
-                    $notes = $scale && !empty($scale) ? 'grade -'.$scale : 'grade';
-                    // Get provisional grades.
-                    $fields = 'itemid, id, rawgrade, finalgrade, overridden';
-                    $grade = $DB->get_record('grade_grades', array('itemid' => $subcatid,
-                    'userid' => $id), $fields);
-                    $grd = !is_null($grade->finalgrade) ? $grade->finalgrade
-                    : (!is_null($grade->rawgrade) ? $grade->rawgrade
-                    : null);
-                    // Check if subcategory has an existing grade.
-                    if (!is_null($grd) && $grade->overridden == 0) {
-                        $DB->set_field('grade_grades', 'feedback', $notes, array('id' => $grade->id));
-                    }
-                }
+            }
+            // Check if activity is a subcat component.
+            if ($activity->gradeitem->parent_category->parent === strval($categoryid)
+            && $categoryid != 0) {
+                // Get Subcategory prv grade item id and idnumber.
+                $prvgrd = local_gugcat::get_gradeitem_converted_flag($activity->gradeitem->categoryid, true);
+                $subcatid = $prvgrd->id;
+                $scale = $prvgrd->idnumber ? $prvgrd->idnumber
+                : $DB->get_field('grade_items', 'outcomeid', array('id' => $subcatid));
+                $notes = $scale && !empty($scale) ? 'grade -'.$scale : 'grade';
+                $select = "itemid = $subcatid AND userid in (" . implode(',', $userids) . ")
+                            and overridden = 0
+                            and (finalgrade is not null or rawgrade is not null)";
+                $DB->set_field_select('grade_grades', 'feedback', $notes, $select);
             }
         }
         return array($status, $gradebookerrors);
