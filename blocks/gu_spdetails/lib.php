@@ -606,29 +606,30 @@ class assessments_details {
             $unionparams = array_merge($assignparams, $forumparams, $quizparams, $workshopparams);
             if (!$issubcategory && count($level2ids) > 0) {
                 $level2idtext = implode(', ', $level2ids);
-                $topicnames = self::get_topicname($level2idtext);
-                $coursetitle = self::generate_topicname_case_statement($topicnames);
-                $subcategoryfields = "gi.id AS itemid, gc.id, gc.courseid, $coursetitle, gi.itemmodule AS modname,
+                $subcategoryfields = "gi.id AS itemid, gc.id, gc.courseid,
+                                        CASE WHEN cs.name IS NOT NULL AND cs.name != '' THEN cs.name
+                                        WHEN cs.section != 0 THEN CONCAT('Topic ', cs.section)
+                                        ELSE c.fullname END AS coursetitle, gi.itemmodule AS modname,
                                         gc.fullname AS activityname, gp.fullname AS gradecategoryname, gp.aggregation,
                                         gi.aggregationcoef, gi.aggregationcoef2, NULL AS allowsubmissionsfromdate,
                                         0 AS duedate, 0 AS cutoffdate, 0 AS gradingduedate, NULL AS hasextension, gi.gradetype,
-                                        CASE WHEN gi.grademin IS NOT NULL THEN gi.grademin ELSE gip.grademin END AS grademin,
-                                        CASE WHEN gi.grademax IS NOT NULL THEN gi.grademax ELSE gip.grademax END AS grademax,
-                                        sp.scale AS scale,
-                                        CASE WHEN gg.finalgrade IS NOT NULL THEN gg.finalgrade
-                                            WHEN gg.rawgrade IS NOT NULL THEN gg.rawgrade
-                                            WHEN ggp.finalgrade IS NOT NULL THEN ggp.finalgrade ELSE ggp.rawgrade END AS finalgrade,
-                                        gg.information AS gradeinformation, gg.feedback, NULL as feedbackfiles, NULL as hasturnitin,
-                                        'category' AS status, NULL AS submissions, NULL AS quizfeedback,
+                                        gi.grademin, gi.grademax, sp.scale AS scale, gg.finalgrade,
+                                        gg.information AS gradeinformation, gg.feedback, NULL as feedbackfiles,
+                                        NULL as hasturnitin, 'category' AS status, NULL AS submissions, NULL AS quizfeedback,
                                         c.startdate, c.enddate, NULL AS convertedgradeid,
                                         CASE WHEN ggp.rawgrade IS NOT NULL THEN ggp.rawgrade ELSE ggp.finalgrade
-                                        END AS provisionalgrade,
-                                        gip.idnumber, gip.outcomeid";
+                                        END AS provisionalgrade, gip.idnumber, gip.outcomeid";
+                $subcategorysubq = "SELECT id FROM {grade_items} gisqc WHERE gisqc.categoryid = gc.id ORDER BY gisqc.id ASC LIMIT 1";
                 $subcategoryjoins = "INNER JOIN {grade_items} gi ON (itemtype = 'category' AND iteminstance = gc.id)
                                      INNER JOIN {grade_grades} gg ON (gg.itemid = gi.id AND gg.userid = ?)
                                      LEFT JOIN {course} c ON c.id = gc.courseid
                                      LEFT JOIN {grade_categories} gp ON (gp.id = gc.parent)
                                      LEFT JOIN {grade_items} gip ON (gip.itemname = 'Subcategory Grade' AND gip.iteminfo = gc.id)
+                                     LEFT JOIN {grade_items} gic ON (gic.id = ($subcategorysubq))
+                                     LEFT JOIN {modules} m ON (m.name = gic.itemmodule)
+                                     LEFT JOIN {course_modules} cm ON (cm.course = c.id AND cm.instance = gic.iteminstance
+                                     AND cm.module = m.id AND cm.deletioninprogress = 0)
+                                     LEFT JOIN {course_sections} cs ON (cs.course = c.id AND cs.id = cm.section)
                                      LEFT JOIN {grade_grades} ggp ON (ggp.itemid = gip.id AND ggp.userid = ?)
                                      LEFT JOIN {scale} sp ON (sp.id = CASE WHEN gip.idnumber IS NOT NULL
                                      AND NOT gip.idnumber = '' THEN gip.idnumber WHEN gip.outcomeid IS NOT NULL
@@ -682,58 +683,6 @@ class assessments_details {
             return $coursesection ? $coursesection->coursetitle : $coursetitle;
         } else {
             return $coursetitle;
-        }
-    }
-
-    /**
-     * Returns Topic names and Subcategories
-     *
-     * @param string $level2idtext
-     * @return array $topicnames
-     */
-    public static function get_topicname($level2idtext) {
-        global $DB;
-
-        // Get subcategories.
-        $sql = "SELECT gc.id, c.fullname
-                FROM {grade_categories} as gc
-                LEFT JOIN {course} as c ON (gc.courseid = c.id)
-                WHERE
-                gc.parent IN ($level2idtext)
-                AND gc.fullname != 'DO NOT USE'";
-        $subcategories = $DB->get_records_sql($sql);
-
-        if ($subcategories) {
-            $topicnames = array();
-            foreach ($subcategories as $subcategory) {
-                $name = self::get_topicname_category($subcategory->id, $subcategory->fullname);
-                $topicelement = new stdClass;
-                $topicelement->id = $subcategory->id;
-                $topicelement->text = is_null($name) ? null : addslashes($name);
-                array_push($topicnames, $topicelement);
-            }
-            return $topicnames;
-        } else {
-            return array();
-        }
-    }
-
-    /**
-     * Returns Generated Case Statement
-     *
-     * @param array $topicnames
-     * @return string $casestatement
-     */
-    public static function generate_topicname_case_statement($topicnames) {
-        if (count($topicnames) > 0) {
-            $casestatement = "CASE ";
-            foreach ($topicnames as $topicelement) {
-                $casestatement .= "WHEN gc.id = $topicelement->id THEN '$topicelement->text' ";
-            }
-            $casestatement .= "ELSE c.fullname END AS coursetitle";
-            return $casestatement;
-        } else {
-            return "c.fullname AS coursetitle";
         }
     }
 
