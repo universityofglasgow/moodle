@@ -16,7 +16,7 @@
 
 /**
  * Class representing a gcat item. Items displayed in rows on GCAT tables
- * 
+ *
  * @package    local_gugcat
  * @copyright  2020
  * @author     Accenture
@@ -24,22 +24,22 @@
  */
 namespace local_gugcat;
 defined('MOODLE_INTERNAL') || die();
- /**
- * Class representing a gcat item. Items displayed in rows on GCAT tables
- */
+   /**
+    *   Class representing a gcat item. Items displayed in rows on GCAT tables
+    */
 
 class gcat_item{
 
-    /**
-     * The student number from student info.
-     * @var int $studentno
-     */
+      /**
+       * The student number from student info.
+       * @var int $studentno
+       */
     public $studentno;
 
       /**
-     * The student number from student info.
-     * @var int $idnumber
-     */
+       * The student number from student info.
+       * @var int $idnumber
+       */
     public $idnumber;
 
     /**
@@ -77,19 +77,19 @@ class gcat_item{
      * @var boolean $discrepancy
      */
     public $discrepancy;
-    
+
     /**
      * The string percentage of the accomplish assessment of the student
-     *@var string $completed
+     * @var string $completed
      */
     public $completed = '0%';
-    
+
     /**
      * The formated aggregated grade of the student, can also be string 'missing grade'
      * @var string $aggregatedgrade
      */
     public $aggregatedgrade;
-    
+
     /**
      * Boolean value if resit is required to the student
      * @var boolean $resit
@@ -101,4 +101,22 @@ class gcat_item{
      * @var string $releasedgrade
      */
     public $releasedgrade;
+
+    /**
+     * The converted grade of the student from gcat.
+     * @var string $releasedgrade
+     */
+    public $convertedgrade;
+
+    /**
+     * The merit grade of the student from gcat.
+     * @var string $meritgrade
+     */
+    public $meritgrade;
+
+    /**
+     * The gpa grade of the student from gcat.
+     * @var string $gpagrade
+     */
+    public $gpagrade;
 }

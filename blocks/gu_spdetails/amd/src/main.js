@@ -15,7 +15,7 @@
 
 /**
  * Javascript to initialise the Student Dashboard - Assessments Details block
- * 
+ *
  * @package    block_gu_spdetails
  * @copyright  2021 Accenture
  * @author     Franco Louie Magpusao <franco.l.magpusao@accenture.com>
@@ -23,7 +23,7 @@
  */
 
 define(['core/ajax'], function(Ajax) {
-    const onClickListeners = (event) => {
+    const onClickListeners = function(event) {
         var currentTab = document.getElementById('current_tab');
         var pastTab = document.getElementById('past_tab');
 
@@ -31,6 +31,7 @@ define(['core/ajax'], function(Ajax) {
         var sortByDate = document.getElementById('sortby_date');
         var sortByStartDate = document.getElementById('sortby_startdate');
         var sortByEndDate = document.getElementById('sortby_enddate');
+        var isPageClicked = false;
 
         switch(event.target) {
             case currentTab:
@@ -42,7 +43,7 @@ define(['core/ajax'], function(Ajax) {
                 currentTab.classList.add('active');
                 pastTab.classList.remove('active');
 
-                loadAssessments(activetab, page, sortby, sortorder);
+                loadAssessments(activetab, page, sortby, sortorder, isPageClicked);
                 break;
             case pastTab:
                 var activetab = 'past';
@@ -53,7 +54,7 @@ define(['core/ajax'], function(Ajax) {
                 currentTab.classList.remove('active');
                 pastTab.classList.add('active');
 
-                loadAssessments(activetab, page, sortby, sortorder);
+                loadAssessments(activetab, page, sortby, sortorder, isPageClicked);
                 break;
             case sortByCourse:
                 if(currentTab.classList.contains('active')) {
@@ -75,7 +76,7 @@ define(['core/ajax'], function(Ajax) {
                     sortByCourse.classList.add('th-sort-asc');
                     sortByCourse.classList.remove('th-sort-desc');
                 }
-                loadAssessments(activetab, page, sortby, sortorder);
+                loadAssessments(activetab, page, sortby, sortorder, isPageClicked);
                 break;
             case sortByDate:
                 var activetab = 'current';
@@ -92,7 +93,7 @@ define(['core/ajax'], function(Ajax) {
                     sortByDate.classList.add('th-sort-asc');
                     sortByDate.classList.remove('th-sort-desc');
                 }
-                loadAssessments(activetab, page, sortby, sortorder);
+                loadAssessments(activetab, page, sortby, sortorder, isPageClicked);
                 break;
             case sortByStartDate:
                 var activetab = 'past';
@@ -109,7 +110,7 @@ define(['core/ajax'], function(Ajax) {
                     sortByStartDate.classList.add('th-sort-asc');
                     sortByStartDate.classList.remove('th-sort-desc');
                 }
-                loadAssessments(activetab, page, sortby, sortorder);
+                loadAssessments(activetab, page, sortby, sortorder, isPageClicked);
                 break;
             case sortByEndDate:
                 var activetab = 'past';
@@ -126,20 +127,21 @@ define(['core/ajax'], function(Ajax) {
                     sortByEndDate.classList.add('th-sort-asc');
                     sortByEndDate.classList.remove('th-sort-desc');
                 }
-                loadAssessments(activetab, page, sortby, sortorder);
+                loadAssessments(activetab, page, sortby, sortorder, isPageClicked);
                 break;
             default:
                 break;
         }
     }
 
-    const onChangeListeners = (event) => {
+    const onChangeListeners = function(event) {
         var currentSelectSort = document.getElementById('menu_current_assessments_sortby');
         var pastSelectSort = document.getElementById('menu_past_assessments_sortby');
         var sortByCourse = document.getElementById('sortby_course');
         var sortByDate = document.getElementById('sortby_date');
         var sortByStartDate = document.getElementById('sortby_startdate');
         var sortByEndDate = document.getElementById('sortby_enddate');
+        var isPageClicked = false;
 
         switch(event.target) {
             case currentSelectSort:
@@ -158,7 +160,7 @@ define(['core/ajax'], function(Ajax) {
                     sortByDate.setAttribute('data-value', 'asc');
                 }
 
-                loadAssessments(activetab, page, sortby, sortorder);
+                loadAssessments(activetab, page, sortby, sortorder, isPageClicked);
                 break;
             case pastSelectSort:
                 var activetab = 'past';
@@ -180,29 +182,77 @@ define(['core/ajax'], function(Ajax) {
                     sortByEndDate.setAttribute('data-value', 'asc');
                 }
 
-                loadAssessments(activetab, page, sortby, sortorder);
+                loadAssessments(activetab, page, sortby, sortorder, isPageClicked);
                 break;
             default:
                 break;
         }
     }
-    
-    const loadAssessments = (activetab, page, sortby, sortorder) => {
-        var blockContainer = document.querySelector('.assessments-details-container');
-        var tabContent = document.getElementById('assessments_details_contents');
+
+    const loadAssessments = function(activetab, page, sortby, sortorder, isPageClicked, subcategory = null) {
+        var blockElement = document.querySelector('.block_gu_spdetails');
+        var assessmentContainer = document.getElementById('assessments-container');
+        var subcategoryContainer = document.getElementById('subcategory-container');
+        var blockContainer = subcategory === null ? assessmentContainer : subcategoryContainer;
+        var tabContent = subcategory === null ? document.getElementById('assessments_details_contents') : document.getElementById('subcategory_details_contents');
+
+        if (subcategory === null) {
+            assessmentContainer.classList.remove('hidden-container');
+            subcategoryContainer.classList.add('hidden-container');
+        } else {
+            assessmentContainer.classList.add('hidden-container');
+            subcategoryContainer.classList.remove('hidden-container');
+        }
+
         var promise = Ajax.call([{
             methodname: 'block_gu_spdetails_retrieve_assessments',
             args: {
                 activetab: activetab,
                 page: page,
                 sortby: sortby,
-                sortorder: sortorder
+                sortorder: sortorder,
+                subcategory: subcategory
             },
         }]);
         promise[0].done(function(response) {
             tabContent.innerHTML = response.result;
-            onClickPageLink();
+            var subCategories = document.querySelectorAll('.subcategory-row');
+            onClickSubcategory(subCategories);
+            onClickPageLink(subcategory);
             sortingStatus(sortby, sortorder);
+            if(isPageClicked) {
+                blockElement.scrollIntoView();
+            }
+            if(subcategory !== null) {
+                blockElement.scrollIntoView();
+                if(sortorder === 'asc') {
+                    document.getElementById('sortby_date_subcategory').classList.add('th-sort-asc');
+                    document.getElementById('sortby_date_subcategory').classList.remove('th-sort-desc');
+                    document.getElementById('sortby_date_subcategory').setAttribute('data-value', 'asc');
+                }else{
+                    document.getElementById('sortby_date_subcategory').classList.add('th-sort-desc');
+                    document.getElementById('sortby_date_subcategory').classList.remove('th-sort-asc');
+                    document.getElementById('sortby_date_subcategory').setAttribute('data-value', 'desc');
+                }
+                document.getElementById('sortby_date_subcategory').addEventListener('click', () => {
+                    var activetab = 'current';
+                    var page = 0;
+                    var sortby = 'duedate';
+                    var sortorder = ''
+                    if(document.getElementById('sortby_date_subcategory').getAttribute('data-value') == 'asc') {
+                        sortorder = 'desc';
+                        document.getElementById('sortby_date_subcategory').setAttribute('data-value', 'desc');
+                        document.getElementById('sortby_date_subcategory').classList.add('th-sort-desc');
+                        document.getElementById('sortby_date_subcategory').classList.remove('th-sort-asc');
+                    }else{
+                        sortorder = 'asc';
+                        document.getElementById('sortby_date_subcategory').setAttribute('data-value', 'asc');
+                        document.getElementById('sortby_date_subcategory').classList.add('th-sort-asc');
+                        document.getElementById('sortby_date_subcategory').classList.remove('th-sort-desc');
+                    }
+                    loadAssessments(activetab, page, sortby, sortorder, isPageClicked, subcategory);
+                })
+            }
         }).fail(function(response) {
             if(response) {
                 var errorContainer = document.createElement('div');
@@ -233,7 +283,28 @@ define(['core/ajax'], function(Ajax) {
         });
     }
 
-    const sortingStatus = (sortby, sortorder) => {
+    const showSubcategoryDetails = (object) => {
+        id = object.getAttribute('data-id');
+        subname = object.getAttribute('data-name');
+        course = object.getAttribute('data-course');
+        grade = object.getAttribute('data-grade');
+        weight = object.getAttribute('data-weight');
+
+        if(id !== null){
+            loadAssessments('current', 0, 'duedate', 'asc', false, id);
+            document.getElementById('subcategory-details-course').innerHTML = course;
+            document.getElementById('subcategory-details-weight').innerHTML = weight;
+            document.getElementById('subcategory-details-grade').innerHTML = grade;
+            document.getElementById('subcategory-details-name').innerHTML = subname;
+            document.getElementById('subcategory-return-assessment').addEventListener('click', () => {
+                document.getElementById('assessments-container').classList.remove('hidden-container');
+                document.getElementById('subcategory-container').classList.add('hidden-container');
+                document.getElementById('subcategory_details_contents').innerHTML = "";
+            });
+        }
+    }
+
+    const sortingStatus = function(sortby, sortorder) {
         var sortByCourse = document.getElementById('sortby_course');
         var sortByDate = document.getElementById('sortby_date');
         var sortByStartDate = document.getElementById('sortby_startdate');
@@ -297,25 +368,35 @@ define(['core/ajax'], function(Ajax) {
         }
     }
 
-    const onClickPageLink = () => {
-        var pageLinks = document.querySelectorAll('#assessments_details_contents .page-item a.page-link');
+    const onClickPageLink = function(subcategory) {
+        var pageLinks = subcategory !== null ? document.querySelectorAll('#subcategory_details_contents .page-item a.page-link')
+                                             : document.querySelectorAll('#assessments_details_contents .page-item a.page-link');
 
-        pageLinks.forEach(item => {
-            if(item.getAttribute('href') !== '#') {
+        pageLinks.forEach(function(item) {
+            if(item.hasAttribute('href') && item.getAttribute('href') !== '#') {
                 var url = new URL(item.getAttribute('href'));
                 var params = new URLSearchParams(url.search);
                 var activetab = params.get('activetab');
                 var page = params.get('page');
                 var sortby = params.get('sortby');
                 var sortorder = params.get('sortorder');
-                item.addEventListener('click', event => {
+                var isPageClicked = true;
+                item.addEventListener('click', function(event) {
                     event.preventDefault();
-                    loadAssessments(activetab, page, sortby, sortorder);
+                    loadAssessments(activetab, page, sortby, sortorder, isPageClicked, subcategory);
                 });
             }else{
                 item.removeAttribute('href');
             }
         });
+    }
+
+    const onClickSubcategory = (rows) => {
+        if(rows.length > 0){
+            rows.forEach( (element) => {
+                element.addEventListener('click', () => showSubcategoryDetails(element));
+            })
+        }
     }
 
     return {
@@ -328,11 +409,12 @@ define(['core/ajax'], function(Ajax) {
                 var page = 0;
                 var sortby = 'coursetitle';
                 var sortorder = 'asc';
+                var isPageClicked = false;
 
                 currentTab.classList.add('active');
                 pastTab.classList.remove('active');
 
-                loadAssessments(activetab, page, sortby, sortorder);
+                loadAssessments(activetab, page, sortby, sortorder, isPageClicked);
                 ASSESSMENTS.addEventListener('change', onChangeListeners);
                 ASSESSMENTS.addEventListener('click', onClickListeners);
             }

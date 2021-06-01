@@ -8,7 +8,7 @@
 }
 
 .mform-container, .form-container{
-    max-width: 80%;  
+    max-width: 80%;
     padding-left: 1em;
 }
 
@@ -20,32 +20,43 @@
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
-
     display: block;
-    width: 100%;
-    max-width: 150px;
-    padding: 0px 15px;
+    padding: 0px 20px 0 10px;
     line-height: 1.75;
     color: #333;
     background-color: #ffffff;
     background-image: none;
-    border-radius: .5em;
+    border-radius: .25rem;
     border: 1px solid #8c8c8c;
     -ms-word-break: normal;
     word-break: normal;
     outline: none;
 }
 
-.mform-custom-select > div.felement:after {
+.mform-custom-select:not(.has-danger) > div.felement:after,
+.form-group.mform-custom-select-grouped:after {
     content: '\f078';
+    background-color: inherit;
     font: normal normal normal 12px/1 FontAwesome;
     color: #005c8a;
-    left: 125px;
-    top: 32%;
-    height: 34px;
-    padding: 0 8px;
-    position: absolute;
+    height: 12px;
+    padding: 0px 5px;
     pointer-events: none;
+    position: relative;
+    margin-left: -24px;
+}
+
+.mform-custom-select.has-danger > div.felement:after {
+    content: '\f078';
+    background-color: white;
+    font: normal normal normal 12px/1 FontAwesome;
+    color: #ca3120;
+    height: 12px;
+    padding: 0px 5px;
+    pointer-events: none;
+    position: relative;
+    margin-left: 125px;
+    margin-top: -77px;
 }
 
 .mform-grades {
@@ -55,19 +66,17 @@
     width: 85%;
 }
 
-.input-percent > div.felement:after {
+.input-percent > [data-fieldtype="text"]:after{
     content: '\f295';
     font: normal normal normal 12px/1 FontAwesome;
     color: #005c8a;
-    position: absolute;
-    left: 62px;
-    top: 38%;
-    height: 34px;
-    padding: 0 8px;
-    pointer-events: none;
+    position: relative;
+    height: 12px;
+    padding: 0px 5px;
+    margin-left: -24px;
 }
 
-.input-percent > div.felement.no-after:after {
+.input-percent > [data-fieldtype="text"].no-after:after{
     content: none;
 }
 
@@ -77,6 +86,10 @@
 
 .form-inline .input-group, .form-inline .custom-select {
     width: 150px;
+}
+
+#select-template, #select-alt-grade{
+    width: auto;
 }
 
 #fitem_id_submitbutton .btn{
@@ -101,10 +114,44 @@ textarea#id_notes.form-control {
     }
 }
 
-.btn-coursegradeform > .form-inline > .btn{
+[name="hiddensubmitform"], .fdescription{
+    display: none;
+}
+
+[data-groupname="buttonarr"] > .form-inline {
+    justify-content: flex-end;
+    padding-right: 2em;
+}
+
+abbr > .fa-asterisk {
+    color: #f04e69!important;
+}
+
+/* Form buttons */
+button.btn-blue, .btn-blue > .form-inline > .btn{
     margin-left: auto !important;
     margin-right: 15px;
-    color: #fff;
-    background-color: #0f6fc5;
-    border-color: #0f6fc5;
+    border-color: #005c8a;
+    background-color: #005c8a;
+    color: white;
+}
+
+.mform-container ~ div > div input[type="submit"]:not(input[name="cancel"]),
+.mform-container ~ div > div button[name="savealtbutton"],
+.mform-container ~ div > div button[name="convertbutton"] {
+    border-color: #005c8a;
+    background-color: #005c8a;
+    color: white;
+}
+
+label.checkbox-field{
+    width: 160px;
+    justify-content: start;
+}
+
+.merit-note{
+    color: gray;
+    font-size: smaller;
+    font-style: italic;
+    font-weight: normal;
 }

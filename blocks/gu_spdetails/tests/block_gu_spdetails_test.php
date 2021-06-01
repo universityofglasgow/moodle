@@ -28,6 +28,7 @@ global $CFG, $DB;
 
 require_once('config.php');
 require_once($CFG->dirroot .'/blocks/moodleblock.class.php');
+require_once($CFG->dirroot .'/blocks/gu_spdetails/lib.php');
 require_once($CFG->dirroot .'/blocks/gu_spdetails/block_gu_spdetails.php');
 
 class block_gu_spdetails_testcase extends advanced_testcase {
@@ -38,14 +39,14 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $this->spdetails = new block_gu_spdetails();
         $this->lib = new assessments_details();
 
-        //setting up student
-        $student = $this->getDataGenerator()->create_user(array('email'=>'user1@example.com', 'username'=>'user1'));
+        // Setting up student.
+        $student = $this->getDataGenerator()->create_user(array('email' => 'user1@example.com', 'username' => 'user1'));
         $this->setUser($student);
         $this->student = $student;
 
-        //creating course
+        // Creating course.
         $category = $this->getDataGenerator()->create_category();
-        $this->course = $this->getDataGenerator()->create_course(array('name'=>'Some course', 'category'=>$category->id));
+        $this->course = $this->getDataGenerator()->create_course(array('name' => 'Some course', 'category' => $category->id));
         $course = $this->course;
         $this->getDataGenerator()->enrol_user($student->id, $course->id, $this->get_roleid());
 
@@ -54,8 +55,10 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $this->survey = $this->getDataGenerator()->create_module('survey', array('course' => $this->course->id));
         $this->wiki = $this->getDataGenerator()->create_module('wiki', array('course' => $this->course->id));
         $this->workshop = $this->getDataGenerator()->create_module('workshop', array('course' => $this->course->id));
-        $this->forum = $this->getDataGenerator()->create_module('forum', array('course' => $this->course->id, 'grade_forum' => 100));
-        $this->forum2 = $this->getDataGenerator()->create_module('forum', array('course' => $this->course->id, 'grade_forum' => 100));
+        $this->forum = $this->getDataGenerator()->create_module('forum', array('course' => $this->course->id,
+                                                                               'grade_forum' => 100));
+        $this->forum2 = $this->getDataGenerator()->create_module('forum', array('course' => $this->course->id,
+                                                                                'grade_forum' => 100));
 
         $this->gradeitem = $this->getDataGenerator()->create_grade_item(array(
             'itemtype' => 'mod',
@@ -89,14 +92,14 @@ class block_gu_spdetails_testcase extends advanced_testcase {
             'userid' => $student->id
         ));
     }
-    
-    public function add_submissions(){
+
+    public function add_submissions() {
         global $DB, $USER, $CFG;
 
         $userid = $USER->id;
 
-        //assign
-        $assignNotSubmitted = $this->getDataGenerator()->create_module('assign', array('course' => $this->course->id));
+        // Assign.
+        $assignnotsubmitted = $this->getDataGenerator()->create_module('assign', array('course' => $this->course->id));
         $DB->insert_record('assign_submission', array(
             'assignment' => $this->assign->id,
             'userid' => $userid,
@@ -104,19 +107,19 @@ class block_gu_spdetails_testcase extends advanced_testcase {
             'status' => 'submitted'
         ));
 
-        $assignSQL = "SELECT ma.name,
-                        ma.allowsubmissionsfromdate as `startdate`,
-                        ma.duedate, ma.gradingduedate, mgi.id as `gradeid`,
-                        mgi.aggregationcoef as `weight`, mgi.aggregationcoef2 as `weight01`
+        $assignsql = "SELECT ma.name,
+                        ma.allowsubmissionsfromdate as startdate,
+                        ma.duedate, ma.gradingduedate, mgi.id as gradeid,
+                        mgi.aggregationcoef as weight, mgi.aggregationcoef2 as weight01
                         FROM {assign} ma
                         JOIN {grade_items} mgi ON mgi.iteminstance = ma.id
                         AND mgi.itemmodule = ?
                         WHERE ma.id = ?";
-        $assessmentrecord = $DB->get_record_sql($assignSQL, array('assign', $this->assign->id));
+        $assessmentrecord = $DB->get_record_sql($assignsql, array('assign', $this->assign->id));
         $this->assign->gradeid = $assessmentrecord->gradeid;
 
-        //quiz
-        $quizNotSubmitted = $this->getDataGenerator()->create_module('quiz', array('course' => $this->course->id));
+        // Quiz.
+        $quiznotsubmitted = $this->getDataGenerator()->create_module('quiz', array('course' => $this->course->id));
         $DB->insert_record('quiz_grades', array(
             'quiz' => $this->quiz->id,
             'userid' => $userid,
@@ -124,8 +127,8 @@ class block_gu_spdetails_testcase extends advanced_testcase {
             'timemodified' => time()
         ));
 
-        //survey
-        $surveyNotSubmitted = $this->getDataGenerator()->create_module('survey', array('course' => $this->course->id));
+        // Survey.
+        $surveynotsubmitted = $this->getDataGenerator()->create_module('survey', array('course' => $this->course->id));
         $DB->insert_record('survey_answers', array(
             'survey' => $this->survey->id,
             'userid' => $userid,
@@ -133,8 +136,8 @@ class block_gu_spdetails_testcase extends advanced_testcase {
             'answer2' => ''
         ));
 
-        //workshop
-        $workshopNotSubmitted = $this->getDataGenerator()->create_module('workshop', array('course' => $this->course->id));
+        // Workshop.
+        $workshopnotsubmitted = $this->getDataGenerator()->create_module('workshop', array('course' => $this->course->id));
         $DB->insert_record('workshop_submissions', array(
             'workshopid' => $this->workshop->id,
             'authorid' => $userid,
@@ -142,20 +145,20 @@ class block_gu_spdetails_testcase extends advanced_testcase {
             'timemodified' => time()
         ));
 
-        $this->notsubmittedassign = $assignNotSubmitted;
-        $this->notsubmittedquiz = $quizNotSubmitted;
-        $this->notsubmittedsurvey = $surveyNotSubmitted;
-        $this->notsubmittedworkshop = $workshopNotSubmitted;
+        $this->notsubmittedassign = $assignnotsubmitted;
+        $this->notsubmittedquiz = $quiznotsubmitted;
+        $this->notsubmittedsurvey = $surveynotsubmitted;
+        $this->notsubmittedworkshop = $workshopnotsubmitted;
     }
 
-    public function get_roleid($archetype = 'student'){
+    public function get_roleid($archetype = 'student') {
         global $DB;
 
         $role = $DB->get_record("role", array('archetype' => $archetype));
         return $role->id;
     }
 
-    public function show_ondashboard($courseid){
+    public function show_ondashboard($courseid) {
         global $DB;
 
         $DB->insert_record("customfield_field", array(
@@ -171,7 +174,7 @@ class block_gu_spdetails_testcase extends advanced_testcase {
             'timemodified' => time()
         ));
 
-        $cff = $DB->get_record("customfield_field", array('shortname'=>'show_on_studentdashboard'));
+        $cff = $DB->get_record("customfield_field", array('shortname' => 'show_on_studentdashboard'));
 
         $DB->insert_record("customfield_data", array(
             'fieldid' => $cff->id,
@@ -190,12 +193,12 @@ class block_gu_spdetails_testcase extends advanced_testcase {
     /**
      * block_gu_spdetails.php
      */
-    public function test_applicable_formats(){
+    public function test_applicable_formats() {
         $returned = $this->spdetails->applicable_formats();
         $this->assertEquals($returned, array('my' => true));
     }
 
-    public function test_get_content(){
+    public function test_get_content() {
         global $DB;
 
         $returned1 = $this->spdetails->get_content();
@@ -209,14 +212,14 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $this->assertTrue($returned2->text != null);
     }
 
-    public function test_return_enrolledcourses(){
+    public function test_return_enrolledcourses() {
         global $USER;
 
         $this->show_ondashboard($this->course->id);
         $this->assertEquals(array($this->course->id), $this->spdetails->return_enrolledcourses($USER->id));
     }
 
-    public function test_return_isstudent(){
+    public function test_return_isstudent() {
         $courseid = $this->course->id;
 
         $this->assertTrue($this->spdetails->return_isstudent($courseid));
@@ -233,16 +236,16 @@ class block_gu_spdetails_testcase extends advanced_testcase {
      * lib.php
      */
 
-    public function test_return_courseurl(){
+    public function test_return_courseurl() {
         global $CFG;
 
         $url = $this->lib->return_courseurl("1");
 
-        $expectedURL = new moodle_url('/course/view.php', array('id' => "1"));
-        $this->assertEquals($expectedURL, $url);
+        $expectedurl = new moodle_url('/course/view.php', array('id' => "1"));
+        $this->assertEquals($expectedurl, $url);
     }
 
-    public function test_return_assessmenturl(){
+    public function test_return_assessmenturl() {
         $id = $this->assign->id;
         $modname = 'assign';
         $expected = new moodle_url('/mod/'.$modname.'/view.php', array('id' => $id));
@@ -250,16 +253,17 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $this->assertEquals($expected, $this->lib->return_assessmenturl($id, $modname));
     }
 
-    public function return_statusBaseObject(){
-        $baseObject = new stdClass;
-        $baseObject->statustext = get_string('status_notopen', 'block_gu_spdetails');
-        $baseObject->class = null;
-        $baseObject->hasstatusurl = false;
+    public function return_statusbaseobj() {
+        $baseobject = new stdClass;
+        $baseobject->statustext = get_string('status_notopen', 'block_gu_spdetails');
+        $baseobject->class = null;
+        $baseobject->hasstatusurl = false;
+        $baseobject->issubcategory = false;
 
-        return $baseObject;
+        return $baseobject;
     }
 
-    public function test_return_status(){
+    public function test_return_status() {
         $graded = get_string('status_graded', 'block_gu_spdetails');
         $notopen = get_string('status_notopen', 'block_gu_spdetails');
         $notsubmitted = get_string('status_notsubmitted', 'block_gu_spdetails');
@@ -277,308 +281,309 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $allowsubmissionsfromdate = null; $duedate = null; $cutoffdate = null;
         $gradingduedate = null; $hasextension = null; $feedback = null;
 
-        //test1 $hasgrade
+        // Test1 $hasgrade.
         $hasgrade = true;
         $returned1 = $this->lib->return_status($modname, $hasgrade, $status, $submissions,
                                                 $allowsubmissionsfromdate, $duedate, $cutoffdate,
                                                 $gradingduedate, $hasextension, $feedback);
         $hasgrade = null;
 
-        $expected1 = $this->return_statusBaseObject();
+        $expected1 = $this->return_statusbaseobj();
         $expected1->statustext = $graded;
         $expected1->class = $classgraded;
 
         $this->assertEquals($expected1, $returned1);
 
-        //test2 $feedback === 'NS' && $duedate < time() && $cutoffdate > time() && $gradingduedate > time()
+        // Test2 $feedback === 'NS' && $duedate < time() && $cutoffdate > time() && $gradingduedate > time().
         $feedback = 'NS'; $duedate = time() - 1; $cutoffdate = time() + 1; $gradingduedate = time() + 1;
         $returned2 = $this->lib->return_status($modname, $hasgrade, $status, $submissions,
                                                 $allowsubmissionsfromdate, $duedate, $cutoffdate,
                                                 $gradingduedate, $hasextension, $feedback);
         $feedback = null; $duedate = null; $cutoffdate = null; $gradingduedate = null;
 
-        $expected2 = $this->return_statusBaseObject();
+        $expected2 = $this->return_statusbaseobj();
         $expected2->statustext = $overdue;
         $expected2->class = $classoverdue;
         $expected2->hasstatusurl = true;
 
         $this->assertEquals($expected2, $returned2);
 
-        //test3 $feedback === 'NS' && $duedate < time() && $cutoffdate < time() && $gradingduedate > time()
+        // Test3 $feedback === 'NS' && $duedate < time() && $cutoffdate < time() && $gradingduedate > time().
         $feedback = 'NS'; $duedate = time() - 1; $cutoffdate = time() - 1; $gradingduedate = time() + 1;
         $returned3 = $this->lib->return_status($modname, $hasgrade, $status, $submissions,
                                                 $allowsubmissionsfromdate, $duedate, $cutoffdate,
                                                 $gradingduedate, $hasextension, $feedback);
         $feedback = null; $duedate = null; $cutoffdate = null; $gradingduedate = null;
 
-        $expected3 = $this->return_statusBaseObject();
+        $expected3 = $this->return_statusbaseobj();
         $expected3->statustext = $unavailable;
 
         $this->assertEquals($expected3, $returned3);
 
-        //test4 $feedback === 'NS' && $duedate < time() && $cutoffdate < time() && $gradingduedate < time()
+        // Test4 $feedback === 'NS' && $duedate < time() && $cutoffdate < time() && $gradingduedate < time().
         $feedback = 'NS'; $duedate = time() - 1; $cutoffdate = time() - 1; $gradingduedate = time() - 1;
         $returned4 = $this->lib->return_status($modname, $hasgrade, $status, $submissions,
                                                 $allowsubmissionsfromdate, $duedate, $cutoffdate,
                                                 $gradingduedate, $hasextension, $feedback);
         $feedback = null; $duedate = null; $cutoffdate = null; $gradingduedate = null;
 
-        $expected4 = $this->return_statusBaseObject();
+        $expected4 = $this->return_statusbaseobj();
         $expected4->statustext = $notsubmitted;
 
         $this->assertEquals($expected4, $returned4);
 
-        //switch $modname case 'assign'
+        // Switch to assign.
         $modname = 'assign';
-        //test1 $status === $submitted
+        // Test1 $status === $submitted.
         $status = $submitted;
-        $assignReturned1 = $this->lib->return_status($modname, $hasgrade, $status, $submissions,
+        $assignreturned1 = $this->lib->return_status($modname, $hasgrade, $status, $submissions,
                                                 $allowsubmissionsfromdate, $duedate, $cutoffdate,
                                                 $gradingduedate, $hasextension, $feedback);
         $status = null;
 
-        $assignExpected1 = $this->return_statusBaseObject();
-        $assignExpected1->statustext = $submitted;
-        $assignExpected1->class = $classsubmitted;
+        $assignexpected1 = $this->return_statusbaseobj();
+        $assignexpected1->statustext = $submitted;
+        $assignexpected1->class = $classsubmitted;
 
-        $this->assertEquals($assignExpected1, $assignReturned1);
+        $this->assertEquals($assignexpected1, $assignreturned1);
 
-        //test2 $submissions > 0
+        // Test2 $submissions > 0.
         $submissions = 1;
-        $assignReturned2 = $this->lib->return_status($modname, $hasgrade, $status, $submissions,
+        $assignreturned2 = $this->lib->return_status($modname, $hasgrade, $status, $submissions,
                                                 $allowsubmissionsfromdate, $duedate, $cutoffdate,
                                                 $gradingduedate, $hasextension, $feedback);
         $submissions = null;
 
-        $assignExpected2 = $this->return_statusBaseObject();
-        $assignExpected2->statustext = $unavailable;
+        $assignexpected2 = $this->return_statusbaseobj();
+        $assignexpected2->statustext = $unavailable;
 
-        $this->assertEquals($assignExpected2, $assignReturned2);
+        $this->assertEquals($assignexpected2, $assignreturned2);
 
-        //test3 allowsubmissionsfromdate > time() || $duedate == 0
+        // Test3 allowsubmissionsfromdate > time() || $duedate == 0.
         $allowsubmissionsfromdate = time() + 1; $duedate = 0;
-        $assignReturned3 = $this->lib->return_status($modname, $hasgrade, $status, $submissions,
+        $assignreturned3 = $this->lib->return_status($modname, $hasgrade, $status, $submissions,
                                                 $allowsubmissionsfromdate, $duedate, $cutoffdate,
                                                 $gradingduedate, $hasextension, $feedback);
         $allowsubmissionsfromdate = null; $duedate = null;
 
-        $assignExpected3 = $this->return_statusBaseObject();
-        $assignExpected3->statustext = $notopen;
+        $assignexpected3 = $this->return_statusbaseobj();
+        $assignexpected3->statustext = $notopen;
 
-        $this->assertEquals($assignExpected3, $assignReturned3);
+        $this->assertEquals($assignexpected3, $assignreturned3);
 
-        //test4 not ($allowsubmissionsfromdate > time() || $duedate == 0) and duedate < time() $cutoffdate == 0 || $cutoffdate > time()
+        // Test4.
         $allowsubmissionsfromdate = time() - 1; $duedate = time() - 1; $cutoffdate = 0;
-        $assignReturned4 = $this->lib->return_status($modname, $hasgrade, $status, $submissions,
+        $assignreturned4 = $this->lib->return_status($modname, $hasgrade, $status, $submissions,
                                                 $allowsubmissionsfromdate, $duedate, $cutoffdate,
                                                 $gradingduedate, $hasextension, $feedback);
         $allowsubmissionsfromdate = null; $duedate = null; $cutoffdate = null;
 
-        $assignExpected4 = $this->return_statusBaseObject();
-        $assignExpected4->statustext = $overdue;
-        $assignExpected4->class = $classoverdue;
-        $assignExpected4->hasstatusurl = true;
+        $assignexpected4 = $this->return_statusbaseobj();
+        $assignexpected4->statustext = $overdue;
+        $assignexpected4->class = $classoverdue;
+        $assignexpected4->hasstatusurl = true;
 
-        $this->assertEquals($assignExpected4, $assignReturned4);
+        $this->assertEquals($assignexpected4, $assignreturned4);
 
-        //test5 not ($allowsubmissionsfromdate > time() || $duedate == 0) duedate < time() not ($cutoffdate == 0 || $cutoffdate > time())
+        // Test5.
         $allowsubmissionsfromdate = time() - 1; $duedate = time() - 1; $cutoffdate = time() - 1;
-        $assignReturned5 = $this->lib->return_status($modname, $hasgrade, $status, $submissions,
+        $assignreturned5 = $this->lib->return_status($modname, $hasgrade, $status, $submissions,
                                                 $allowsubmissionsfromdate, $duedate, $cutoffdate,
                                                 $gradingduedate, $hasextension, $feedback);
         $allowsubmissionsfromdate = null; $duedate = null; $cutoffdate = null;
 
-        $assignExpected5 = $this->return_statusBaseObject();
-        $assignExpected5->statustext = $notsubmitted;
+        $assignexpected5 = $this->return_statusbaseobj();
+        $assignexpected5->statustext = $notsubmitted;
 
-        $this->assertEquals($assignExpected5, $assignReturned5);
+        $this->assertEquals($assignexpected5, $assignreturned5);
 
-        //test6 not ($allowsubmissionsfromdate > time() || $duedate == 0 duedate < time() )
+        // Test6.
         $allowsubmissionsfromdate = time() - 1; $duedate = time() + 1;
-        $assignReturned6 = $this->lib->return_status($modname, $hasgrade, $status, $submissions,
+        $assignreturned6 = $this->lib->return_status($modname, $hasgrade, $status, $submissions,
                                                 $allowsubmissionsfromdate, $duedate, $cutoffdate,
                                                 $gradingduedate, $hasextension, $feedback);
         $allowsubmissionsfromdate = null; $duedate = null;
 
-        $assignExpected6 = $this->return_statusBaseObject();
-        $assignExpected6->hasstatusurl = true;
-        $assignExpected6->statustext = $submit;
-        $assignExpected6->class = $classsubmit;
+        $assignexpected6 = $this->return_statusbaseobj();
+        $assignexpected6->hasstatusurl = true;
+        $assignexpected6->statustext = $submit;
+        $assignexpected6->class = $classsubmit;
 
-        $this->assertEquals($assignExpected6, $assignReturned6);
+        $this->assertEquals($assignexpected6, $assignreturned6);
 
-        //switch $modname case 'assign'
+        // Switch to quiz.
         $modname = 'quiz';
-        //test1 allowsubmissionsfromdate > time()
+        // Test1 allowsubmissionsfromdate > time().
         $allowsubmissionsfromdate = time() + 1;
-        $quizReturned1 = $this->lib->return_status($modname, $hasgrade, $status, $submissions,
+        $quizreturned1 = $this->lib->return_status($modname, $hasgrade, $status, $submissions,
                                                 $allowsubmissionsfromdate, $duedate, $cutoffdate,
                                                 $gradingduedate, $hasextension, $feedback);
         $allowsubmissionsfromdate = null;
 
-        $quizExpected1 = $this->return_statusBaseObject();
-        $quizExpected1->statustext = $notopen;
+        $quizexpected1 = $this->return_statusbaseobj();
+        $quizexpected1->statustext = $notopen;
 
-        $this->assertEquals($quizExpected1, $quizReturned1);
+        $this->assertEquals($quizexpected1, $quizreturned1);
 
-        //test2 $status === 'finished'
+        // Test2 $status === 'finished'.
         $status = 'finished';
-        $quizReturned2 = $this->lib->return_status($modname, $hasgrade, $status, $submissions,
+        $quizreturned2 = $this->lib->return_status($modname, $hasgrade, $status, $submissions,
                                                 $allowsubmissionsfromdate, $duedate, $cutoffdate,
                                                 $gradingduedate, $hasextension, $feedback);
         $status = null;
 
-        $quizExpected2 = $this->return_statusBaseObject();
-        $quizExpected2->statustext = $submitted;
-        $quizExpected2->class = $classsubmitted;
+        $quizexpected2 = $this->return_statusbaseobj();
+        $quizexpected2->statustext = $submitted;
+        $quizexpected2->class = $classsubmitted;
 
-        $this->assertEquals($quizExpected2, $quizReturned2);
+        $this->assertEquals($quizexpected2, $quizreturned2);
 
-        //test3 $duedate < time() && $duedate != 0
+        // Test3 $duedate < time() && $duedate != 0.
         $duedate = time() - 1;
-        $quizReturned3 = $this->lib->return_status($modname, $hasgrade, $status, $submissions,
+        $quizreturned3 = $this->lib->return_status($modname, $hasgrade, $status, $submissions,
                                                 $allowsubmissionsfromdate, $duedate, $cutoffdate,
                                                 $gradingduedate, $hasextension, $feedback);
         $duedate = null;
-        
-        $quizExpected3 = $this->return_statusBaseObject();
-        $quizExpected3->statustext = $notsubmitted;
 
-        $this->assertEquals($quizExpected3, $quizReturned3);
+        $quizexpected3 = $this->return_statusbaseobj();
+        $quizexpected3->statustext = $notsubmitted;
 
-        //test4 not duedate < time() && $duedate != 0
+        $this->assertEquals($quizexpected3, $quizreturned3);
+
+        // Test4 not duedate < time() && $duedate != 0.
         $duedate = time() + 1;
-        $quizReturned4 = $this->lib->return_status($modname, $hasgrade, $status, $submissions,
+        $quizreturned4 = $this->lib->return_status($modname, $hasgrade, $status, $submissions,
                                                 $allowsubmissionsfromdate, $duedate, $cutoffdate,
                                                 $gradingduedate, $hasextension, $feedback);
         $duedate = null;
-        $quizExpected4 = $this->return_statusBaseObject();
-        $quizExpected4->hasstatusurl = true;
-        $quizExpected4->statustext = $submit;
-        $quizExpected4->class = $classsubmit;
+        $quizexpected4 = $this->return_statusbaseobj();
+        $quizexpected4->hasstatusurl = true;
+        $quizexpected4->statustext = $submit;
+        $quizexpected4->class = $classsubmit;
 
-        $this->assertEquals($quizExpected4, $quizReturned4);
+        $this->assertEquals($quizexpected4, $quizreturned4);
 
-        //switch $modname case 'assign'
+        // Switch to 'workshop'.
         $modname = 'workshop';
-        //test1 !empty($submissions)
-        $submissions = array(1,2,3);
-        $workshopReturned1 = $this->lib->return_status($modname, $hasgrade, $status, $submissions,
+        // Test1 not empy submissions.
+        $submissions = array(1, 2, 3);
+        $workshopreturned1 = $this->lib->return_status($modname, $hasgrade, $status, $submissions,
                                                 $allowsubmissionsfromdate, $duedate, $cutoffdate,
                                                 $gradingduedate, $hasextension, $feedback);
         $submissions = null;
 
-        $workshopExpected1 = $this->return_statusBaseObject();
-        $workshopExpected1->statustext = $submitted;
-        $workshopExpected1->class = $classsubmitted;
+        $workshopexpected1 = $this->return_statusbaseobj();
+        $workshopexpected1->statustext = $submitted;
+        $workshopexpected1->class = $classsubmitted;
 
-        $this->assertEquals($workshopExpected1, $workshopReturned1);
+        $this->assertEquals($workshopexpected1, $workshopreturned1);
 
-        //test2 empty($submissions) ($allowsubmissionsfromdate > time() || $duedate == 0)
+        // Test2.
         $submissions = array(); $allowsubmissionsfromdate = time() + 1; $duedate = 0;
-        $workshopReturned2 = $this->lib->return_status($modname, $hasgrade, $status, $submissions,
+        $workshopreturned2 = $this->lib->return_status($modname, $hasgrade, $status, $submissions,
                                                 $allowsubmissionsfromdate, $duedate, $cutoffdate,
                                                 $gradingduedate, $hasextension, $feedback);
         $submissions = null; $allowsubmissionsfromdate = null; $duedate = null;
 
-        $workshopExpected2 = $this->return_statusBaseObject();
-        $workshopExpected2->statustext = $notopen;
+        $workshopexpected2 = $this->return_statusbaseobj();
+        $workshopexpected2->statustext = $notopen;
 
-        $this->assertEquals($workshopExpected2, $workshopReturned2);
+        $this->assertEquals($workshopexpected2, $workshopreturned2);
 
-        //test3 empty($submissions) not ($allowsubmissionsfromdate > time() || $duedate == 0) $duedate < time()
+        // Test3.
         $submissions = array(); $allowsubmissionsfromdate = time() - 1; $duedate = time() - 1;
-        $workshopReturned3 = $this->lib->return_status($modname, $hasgrade, $status, $submissions,
+        $workshopreturned3 = $this->lib->return_status($modname, $hasgrade, $status, $submissions,
                                                 $allowsubmissionsfromdate, $duedate, $cutoffdate,
                                                 $gradingduedate, $hasextension, $feedback);
         $submissions = null; $allowsubmissionsfromdate = null; $duedate = null;
 
-        $workshopExpected3 = $this->return_statusBaseObject();
-        $workshopExpected3->statustext = $notsubmitted;
+        $workshopexpected3 = $this->return_statusbaseobj();
+        $workshopexpected3->statustext = $notsubmitted;
 
-        $this->assertEquals($workshopExpected3, $workshopReturned3);
+        $this->assertEquals($workshopexpected3, $workshopreturned3);
 
-        //test4 empty($submissions) not ($allowsubmissionsfromdate > time() || $duedate == 0) not $duedate < time()
+        // Test4.
         $submissions = array(); $allowsubmissionsfromdate = time() - 1; $duedate = time() + 1;
-        $workshopReturned4 = $this->lib->return_status($modname, $hasgrade, $status, $submissions,
+        $workshopreturned4 = $this->lib->return_status($modname, $hasgrade, $status, $submissions,
                                                 $allowsubmissionsfromdate, $duedate, $cutoffdate,
                                                 $gradingduedate, $hasextension, $feedback);
         $submissions = null; $allowsubmissionsfromdate = null; $duedate = null;
 
-        $workshopExpected4 = $this->return_statusBaseObject();
-        $workshopExpected4->hasstatusurl = true;
-        $workshopExpected4->statustext = $submit;
-        $workshopExpected4->class = $classsubmit;
+        $workshopexpected4 = $this->return_statusbaseobj();
+        $workshopexpected4->hasstatusurl = true;
+        $workshopexpected4->statustext = $submit;
+        $workshopexpected4->class = $classsubmit;
 
-        $this->assertEquals($workshopExpected4, $workshopReturned4);
+        $this->assertEquals($workshopexpected4, $workshopreturned4);
 
-        //switch $modname case 'assign'
+        // Switch to 'forum'.
         $modname = 'forum';
-        //test1 $status === 'submitted' $duedate < time()
+        // Test1.
         $duedate = time() - 1;
         $status = 'submitted';
-        $forumReturned1 = $this->lib->return_status($modname, $hasgrade, $status, $submissions,
+        $forumreturned1 = $this->lib->return_status($modname, $hasgrade, $status, $submissions,
                                                 $allowsubmissionsfromdate, $duedate, $cutoffdate,
                                                 $gradingduedate, $hasextension, $feedback);
         $status = null;
 
-        $forumExpected1 = $this->return_statusBaseObject();
-        $forumExpected1->statustext = $submitted;
-        $forumExpected1->class = $classsubmitted;
+        $forumexpected1 = $this->return_statusbaseobj();
+        $forumexpected1->statustext = $submitted;
+        $forumexpected1->class = $classsubmitted;
 
-        $this->assertEquals($forumExpected1, $forumReturned1);
+        $this->assertEquals($forumexpected1, $forumreturned1);
 
-        //test2 $cutoffdate == 0 || $cutoffdate > time() $duedate < time()
+        // Test2 $cutoffdate == 0 || $cutoffdate > time() $duedate < time().
         $cutoffdate = time() + 1;
-        $forumReturned2 = $this->lib->return_status($modname, $hasgrade, $status, $submissions,
+        $forumreturned2 = $this->lib->return_status($modname, $hasgrade, $status, $submissions,
                                                 $allowsubmissionsfromdate, $duedate, $cutoffdate,
                                                 $gradingduedate, $hasextension, $feedback);
         $cutoffdate = null;
 
-        $forumExpected2 = $this->return_statusBaseObject();
-        $forumExpected2->statustext = $overdue;
-        $forumExpected2->class = $classoverdue;
-        $forumExpected2->hasstatusurl = true;
+        $forumexpected2 = $this->return_statusbaseobj();
+        $forumexpected2->statustext = $overdue;
+        $forumexpected2->class = $classoverdue;
+        $forumexpected2->hasstatusurl = true;
 
-        $this->assertEquals($forumExpected2, $forumReturned2);
+        $this->assertEquals($forumexpected2, $forumreturned2);
 
-        //test3 ! ($cutoffdate == 0 || $cutoffdate > time()) $duedate < time()
+        // Test3 ! ($cutoffdate == 0 || $cutoffdate > time()) $duedate < time().
         $cutoffdate = time() - 1;
-        $forumReturned3 = $this->lib->return_status($modname, $hasgrade, $status, $submissions,
+        $forumreturned3 = $this->lib->return_status($modname, $hasgrade, $status, $submissions,
                                                 $allowsubmissionsfromdate, $duedate, $cutoffdate,
                                                 $gradingduedate, $hasextension, $feedback);
         $cutoffdate = null;
 
-        $forumExpected3 = $this->return_statusBaseObject();
-        $forumExpected3->statustext = $notsubmitted;
+        $forumexpected3 = $this->return_statusbaseobj();
+        $forumexpected3->statustext = $notsubmitted;
 
-        $this->assertEquals($forumExpected3, $forumReturned3);
+        $this->assertEquals($forumexpected3, $forumreturned3);
 
-        //test4 !($duedate < time())
+        // Test4.
         $duedate = time() + 1;
-        $forumReturned4 = $this->lib->return_status($modname, $hasgrade, $status, $submissions,
+        $forumreturned4 = $this->lib->return_status($modname, $hasgrade, $status, $submissions,
                                                 $allowsubmissionsfromdate, $duedate, $cutoffdate,
                                                 $gradingduedate, $hasextension, $feedback);
         $duedate = null;
 
-        $forumExpected4 = $this->return_statusBaseObject();
-        $forumExpected4->hasstatusurl = true;
-        $forumExpected4->statustext = $submit;
-        $forumExpected4->class = $classsubmit;
+        $forumexpected4 = $this->return_statusbaseobj();
+        $forumexpected4->hasstatusurl = true;
+        $forumexpected4->statustext = $submit;
+        $forumexpected4->class = $classsubmit;
 
-        $this->assertEquals($forumExpected4, $forumReturned4);
+        $this->assertEquals($forumexpected4, $forumreturned4);
     }
 
-    public function return_feedbackBaseObject(){
+    public function return_feedbackbaseobject() {
         $fb = new stdClass;
         $fb->feedbacktext = null;
         $fb->hasfeedback = false;
+        $fb->issubcategory = false;
 
         return $fb;
     }
 
-    public function test_return_feedback(){
-        $id = null; $modname = null; $hasgrade = null; $feedback = null; $feedbackfiles = null;
+    public function test_return_feedback() {
+        $id = null; $modname = null; $hasgrade = null; $feedback = null; $feedbackfiles = null; $status = null;
         $hasturnitin = null; $gradingduedate = null; $duedate = null; $cutoffdate = null; $quizfeedback = null;
 
         $duedate = get_string('due', 'block_gu_spdetails').userdate(time() + 1,
@@ -590,224 +595,224 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $idintro = get_string('id_intro', 'block_gu_spdetails');
         $idfooter = get_string('id_pagefooter', 'block_gu_spdetails');
 
-        //hasgrade
+        // Hasgrade.
         $hasgrade = true;
-        //switch case 'assign'
+        // Switch case to 'assign'.
         $modname = 'assign';
         $feedbackurl = new moodle_url('/mod/'.$modname.'/view.php', array('id' => $id));
-        //test1 $hasturnitin > 0 isset($fb->feedbackurl)
+        // Test1.
         $hasturnitin = 1;
 
-        $assignReturned1 = $this->lib->return_feedback($id, $modname, $hasgrade, $feedback, $feedbackfiles,
+        $assignreturned1 = $this->lib->return_feedback($id, $modname, $hasgrade, $feedback, $feedbackfiles,
                                                     $hasturnitin, $gradingduedate, $duedate, $cutoffdate,
-                                                    $quizfeedback);
+                                                    $quizfeedback, $status);
         $hasturnitin = null;
 
-        $assignExpected1 = $this->return_feedbackBaseObject();
-        $assignExpected1->feedbackurl = $feedbackurl.$idintro;
-        $assignExpected1->feedbacktext = $readfeedback;
-        $assignExpected1->hasfeedback = true;
+        $assignexpected1 = $this->return_feedbackbaseobject();
+        $assignexpected1->feedbackurl = $feedbackurl.$idintro;
+        $assignexpected1->feedbacktext = $readfeedback;
+        $assignexpected1->hasfeedback = true;
 
-        $this->assertEquals($assignExpected1, $assignReturned1);
+        $this->assertEquals($assignexpected1, $assignreturned1);
 
-        //test2 !($hasturnitin > 0) && (!empty($feedback) || $feedbackfiles > 0)
+        // Test2.
         $hasturnitin = 0; $feedback = array(1); $feedbackfiles = 1;
 
-        $assignReturned2 = $this->lib->return_feedback($id, $modname, $hasgrade, $feedback, $feedbackfiles,
+        $assignreturned2 = $this->lib->return_feedback($id, $modname, $hasgrade, $feedback, $feedbackfiles,
                                                     $hasturnitin, $gradingduedate, $duedate, $cutoffdate,
-                                                    $quizfeedback);
+                                                    $quizfeedback, $status);
         $hasturnitin = null; $feedback = null; $feedbackfiles = null;
 
-        $assignExpected2 = $this->return_feedbackBaseObject();
-        $assignExpected2->feedbackurl = $feedbackurl.$idfooter;
-        $assignExpected2->feedbacktext = $readfeedback;
-        $assignExpected2->hasfeedback = true;
+        $assignexpected2 = $this->return_feedbackbaseobject();
+        $assignexpected2->feedbackurl = $feedbackurl.$idfooter;
+        $assignexpected2->feedbacktext = $readfeedback;
+        $assignexpected2->hasfeedback = true;
 
-        $this->assertEquals($assignExpected2, $assignReturned2);
+        $this->assertEquals($assignexpected2, $assignreturned2);
 
-        //test3 !($hasturnitin > 0) && !(!empty($feedback) || $feedbackfiles > 0) $gradingduedate > 0 $gradingduedate > time()
+        // Test3.
         $hasturnitin = 0; $feedback = array(); $feedbackfiles = 0; $gradingduedate = time() + 1;
         $duedate = get_string('due', 'block_gu_spdetails').userdate($gradingduedate,
                    get_string('date_month_d', 'block_gu_spdetails'));
-        $assignReturned3 = $this->lib->return_feedback($id, $modname, $hasgrade, $feedback, $feedbackfiles,
+        $assignreturned3 = $this->lib->return_feedback($id, $modname, $hasgrade, $feedback, $feedbackfiles,
                                                     $hasturnitin, $gradingduedate, $duedate, $cutoffdate,
-                                                    $quizfeedback);
+                                                    $quizfeedback, $status);
         $hasturnitin = null; $feedback = null; $feedbackfiles = null;
 
-        $assignExpected3 = $this->return_feedbackBaseObject();
-        $assignExpected3->feedbackurl = null;
-        $assignExpected3->feedbacktext = $duedate;
+        $assignexpected3 = $this->return_feedbackbaseobject();
+        $assignexpected3->feedbackurl = null;
+        $assignexpected3->feedbacktext = $duedate;
 
-        $this->assertEquals($assignExpected3, $assignReturned3);
+        $this->assertEquals($assignexpected3, $assignreturned3);
 
-        //test4 !($hasturnitin > 0) && !(!empty($feedback) || $feedbackfiles > 0) $gradingduedate > 0 $gradingduedate < time()
+        // Test4.
         $hasturnitin = 0; $feedback = array(); $feedbackfiles = 0; $gradingduedate = time() - 1;
-        $assignReturned4 = $this->lib->return_feedback($id, $modname, $hasgrade, $feedback, $feedbackfiles,
+        $assignreturned4 = $this->lib->return_feedback($id, $modname, $hasgrade, $feedback, $feedbackfiles,
                                                     $hasturnitin, $gradingduedate, $duedate, $cutoffdate,
-                                                    $quizfeedback);
+                                                    $quizfeedback, $status);
         $hasturnitin = null; $feedback = null; $feedbackfiles = null;
 
-        $assignExpected4 = $this->return_feedbackBaseObject();
-        $assignExpected4->feedbackurl = null;
-        $assignExpected4->feedbacktext = $overdue;
+        $assignexpected4 = $this->return_feedbackbaseobject();
+        $assignexpected4->feedbackurl = null;
+        $assignexpected4->feedbacktext = $overdue;
 
-        $this->assertEquals($assignExpected4, $assignReturned4);
+        $this->assertEquals($assignexpected4, $assignreturned4);
 
-        //test5 !($hasturnitin > 0) && !(!empty($feedback) || $feedbackfiles > 0) $gradingduedate == 0
+        // Test5.
         $hasturnitin = 0; $feedback = array(); $feedbackfiles = 0; $gradingduedate = 0;
-        $assignReturned5 = $this->lib->return_feedback($id, $modname, $hasgrade, $feedback, $feedbackfiles,
+        $assignreturned5 = $this->lib->return_feedback($id, $modname, $hasgrade, $feedback, $feedbackfiles,
                                                     $hasturnitin, $gradingduedate, $duedate, $cutoffdate,
-                                                    $quizfeedback);
+                                                    $quizfeedback, $status);
         $hasturnitin = null; $feedback = null; $feedbackfiles = null; $gradingduedate = null;
 
-        $assignExpected5 = $this->return_feedbackBaseObject();
-        $assignExpected5->feedbackurl = null;
-        $assignExpected5->feedbacktext = $tbc;
+        $assignexpected5 = $this->return_feedbackbaseobject();
+        $assignexpected5->feedbackurl = null;
+        $assignexpected5->feedbacktext = $tbc;
 
-        $this->assertEquals($assignExpected5, $assignReturned5);
+        $this->assertEquals($assignexpected5, $assignreturned5);
 
-        //switch case 'quiz'
+        // Switch case to 'quiz'.
         $modname = 'quiz';
         $feedbackurl = new moodle_url('/mod/'.$modname.'/view.php', array('id' => $id));
-        //test1 $quizfeedback
+        // Test1.
         $quizfeedback = true;
-        $quizReturned1 = $this->lib->return_feedback($id, $modname, $hasgrade, $feedback, $feedbackfiles,
+        $quizreturned1 = $this->lib->return_feedback($id, $modname, $hasgrade, $feedback, $feedbackfiles,
                                                     $hasturnitin, $gradingduedate, $duedate, $cutoffdate,
-                                                    $quizfeedback);
+                                                    $quizfeedback, $status);
         $quizfeedback = null;
 
-        $quizExpected1 = $this->return_feedbackBaseObject();
-        $quizExpected1->feedbacktext = $readfeedback;
-        $quizExpected1->hasfeedback = true;
-        $quizExpected1->feedbackurl = $feedbackurl.get_string('id_feedback', 'block_gu_spdetails');
+        $quizexpected1 = $this->return_feedbackbaseobject();
+        $quizexpected1->feedbacktext = $readfeedback;
+        $quizexpected1->hasfeedback = true;
+        $quizexpected1->feedbackurl = $feedbackurl.get_string('id_feedback', 'block_gu_spdetails');
 
-        $this->assertEquals($quizExpected1, $quizReturned1);
+        $this->assertEquals($quizexpected1, $quizreturned1);
 
-        //test2 !$quizfeedback $gradingduedate > 0  $gradingduedate > time()
+        // Test2.
         $quizfeedback = false; $gradingduedate = time() + 1;
-        $quizReturned2 = $this->lib->return_feedback($id, $modname, $hasgrade, $feedback, $feedbackfiles,
+        $quizreturned2 = $this->lib->return_feedback($id, $modname, $hasgrade, $feedback, $feedbackfiles,
                                                     $hasturnitin, $gradingduedate, $duedate, $cutoffdate,
-                                                    $quizfeedback);
+                                                    $quizfeedback, $status);
         $quizfeedback = null; $gradingduedate = null;
 
-        $quizExpected2 = $this->return_feedbackBaseObject();
-        $quizExpected2->feedbacktext = $duedate;
+        $quizexpected2 = $this->return_feedbackbaseobject();
+        $quizexpected2->feedbacktext = $duedate;
 
-        $this->assertEquals($quizExpected2, $quizReturned2);
+        $this->assertEquals($quizexpected2, $quizreturned2);
 
-        //test3 !$quizfeedback $gradingduedate > 0  $gradingduedate < time()
+        // Test3.
         $quizfeedback = false; $gradingduedate = time() - 1;
-        $quizReturned3 = $this->lib->return_feedback($id, $modname, $hasgrade, $feedback, $feedbackfiles,
+        $quizreturned3 = $this->lib->return_feedback($id, $modname, $hasgrade, $feedback, $feedbackfiles,
                                                     $hasturnitin, $gradingduedate, $duedate, $cutoffdate,
-                                                    $quizfeedback);
+                                                    $quizfeedback, $status);
         $quizfeedback = null; $gradingduedate = null;
 
-        $quizExpected3 = $this->return_feedbackBaseObject();
-        $quizExpected3->feedbacktext = $overdue;
+        $quizexpected3 = $this->return_feedbackbaseobject();
+        $quizexpected3->feedbacktext = $overdue;
 
-        $this->assertEquals($quizExpected3, $quizReturned3);
+        $this->assertEquals($quizexpected3, $quizreturned3);
 
-        //test3 !$quizfeedback $gradingduedate > 0  $gradingduedate = 0
+        // Test4.
         $quizfeedback = false; $gradingduedate = 0;
-        $quizReturned3 = $this->lib->return_feedback($id, $modname, $hasgrade, $feedback, $feedbackfiles,
+        $quizreturned3 = $this->lib->return_feedback($id, $modname, $hasgrade, $feedback, $feedbackfiles,
                                                     $hasturnitin, $gradingduedate, $duedate, $cutoffdate,
-                                                    $quizfeedback);
+                                                    $quizfeedback, $status);
         $quizfeedback = null; $gradingduedate = null;
 
-        $quizExpected3 = $this->return_feedbackBaseObject();
-        $quizExpected3->feedbacktext = $tbc;
+        $quizexpected3 = $this->return_feedbackbaseobject();
+        $quizexpected3->feedbacktext = $tbc;
 
-        $this->assertEquals($quizExpected3, $quizReturned3);
+        $this->assertEquals($quizexpected3, $quizreturned3);
 
-        //switch case 'workshop'
+        // Switch case to 'workshop'.
         $modname = 'workshop';
-        $workshopReturned1 = $this->lib->return_feedback($id, $modname, $hasgrade, $feedback, $feedbackfiles,
+        $workshopreturned1 = $this->lib->return_feedback($id, $modname, $hasgrade, $feedback, $feedbackfiles,
                                                         $hasturnitin, $gradingduedate, $duedate, $cutoffdate,
-                                                        $quizfeedback);
-        
-        $workshopExpected1 = $this->return_feedbackBaseObject();
-        $workshopExpected1->hasfeedback = true;
-        $workshopExpected1->feedbacktext = $readfeedback;
-        $workshopurl = new moodle_url('/mod/workshop/submission.php', array('cmid' => $id));
-        $workshopExpected1->feedbackurl = $workshopurl.$idfooter;
+                                                        $quizfeedback, $status);
 
-        $this->assertEquals($workshopExpected1, $workshopReturned1);
+        $workshopexpected1 = $this->return_feedbackbaseobject();
+        $workshopexpected1->hasfeedback = true;
+        $workshopexpected1->feedbacktext = $readfeedback;
+        $workshopurl = $this->lib->return_assessmenturl($id, 'workshop');
+        $workshopexpected1->feedbackurl = $workshopurl.$idfooter;
 
-        //switch case 'forum'
+        $this->assertEquals($workshopexpected1, $workshopreturned1);
+
+        // Switch case to 'forum'.
         $modname = 'forum';
-        $forumReturned1 = $this->lib->return_feedback($id, $modname, $hasgrade, $feedback, $feedbackfiles,
+        $forumreturned1 = $this->lib->return_feedback($id, $modname, $hasgrade, $feedback, $feedbackfiles,
                                                     $hasturnitin, $gradingduedate, $duedate, $cutoffdate,
-                                                    $quizfeedback);
+                                                    $quizfeedback, $status);
         $feedbackurl = new moodle_url('/mod/'.$modname.'/view.php', array('id' => $id));
 
-        $forumExpected1 = $this->return_feedbackBaseObject();
-        $forumExpected1->hasfeedback = true;
-        $forumExpected1->feedbacktext = $readfeedback;
-        $forumExpected1->feedbackurl = $feedbackurl.$idfooter;
+        $forumexpected1 = $this->return_feedbackbaseobject();
+        $forumexpected1->hasfeedback = true;
+        $forumexpected1->feedbacktext = $readfeedback;
+        $forumexpected1->feedbackurl = $feedbackurl.$idfooter;
 
-        $this->assertEquals($forumExpected1, $forumReturned1);
+        $this->assertEquals($forumexpected1, $forumreturned1);
 
         $modname = null;
 
-        //no grade
+        // No grade.
         $hasgrade = false;
-        //test1 gradingduedate > 0 feedback === 'MV' gradingduedate > time()
+        // Test1.
         $gradingduedate = time() + 1; $feedback = 'MV';
         $returned1 = $this->lib->return_feedback($id, $modname, $hasgrade, $feedback, $feedbackfiles,
                                                 $hasturnitin, $gradingduedate, $duedate, $cutoffdate,
-                                                $quizfeedback);
+                                                $quizfeedback, $status);
 
-        $expected1 = $this->return_feedbackBaseObject();
+        $expected1 = $this->return_feedbackbaseobject();
         $expected1->feedbacktext = $duedate;
 
         $this->assertEquals($returned1, $expected1);
 
-        //test2 $gradingduedate > time() $feedback === 'NS' &&  $cutoffdate < time() && $duedate < time()
+        // Test2.
         $gradingduedate = time() + 1; $feedback = 'NS'; $cutoffdate = time() - 1; $duedate = time() - 1;
         $returned2 = $this->lib->return_feedback($id, $modname, $hasgrade, $feedback, $feedbackfiles,
                                                 $hasturnitin, $gradingduedate, $duedate, $cutoffdate,
-                                                $quizfeedback);
+                                                $quizfeedback, $status);
 
-        $expected2 = $this->return_feedbackBaseObject();
+        $expected2 = $this->return_feedbackbaseobject();
         $expected2->feedbacktext = $na;
 
         $this->assertEquals($returned2, $expected2);
 
-        //test3 $gradingduedate < time() $feedback === 'NS' 
+        // Test3.
         $gradingduedate = time() - 1; $feedback = 'NS';
         $returned3 = $this->lib->return_feedback($id, $modname, $hasgrade, $feedback, $feedbackfiles,
                                                 $hasturnitin, $gradingduedate, $duedate, $cutoffdate,
-                                                $quizfeedback);
+                                                $quizfeedback, $status);
 
-        $expected3 = $this->return_feedbackBaseObject();
+        $expected3 = $this->return_feedbackbaseobject();
         $expected3->feedbacktext = $na;
 
         $this->assertEquals($returned3, $expected3);
 
-        //test4 $gradingduedate < time() $feedback === 'NS' 
+        // Test4.
         $gradingduedate = time() - 1; $feedback = null;
         $returned4 = $this->lib->return_feedback($id, $modname, $hasgrade, $feedback, $feedbackfiles,
                                                 $hasturnitin, $gradingduedate, $duedate, $cutoffdate,
-                                                $quizfeedback);
+                                                $quizfeedback, $status);
 
-        $expected4 = $this->return_feedbackBaseObject();
+        $expected4 = $this->return_feedbackbaseobject();
         $expected4->feedbacktext = $overdue;
 
         $this->assertEquals($returned4, $expected4);
 
-        //test5 $gradingduedate < 0
+        // Test5.
         $gradingduedate = 0;
         $returned5 = $this->lib->return_feedback($id, $modname, $hasgrade, $feedback, $feedbackfiles,
                                                 $hasturnitin, $gradingduedate, $duedate, $cutoffdate,
-                                                $quizfeedback);
+                                                $quizfeedback, $status);
 
-        $expected5 = $this->return_feedbackBaseObject();
+        $expected5 = $this->return_feedbackbaseobject();
         $expected5->feedbacktext = $tbc;
 
         $this->assertEquals($returned5, $expected5);
     }
 
-    public function return_gradeBaseObject(){
+    public function return_gradebaseobj() {
         $grading = new stdClass;
         $grading->gradetext = null;
         $grading->hasgrade = false;
@@ -816,90 +821,102 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         return $grading;
     }
 
-    public function test_return_grading(){
+    public function test_return_grading() {
         $finalgrade = null; $gradetype = null; $grademin = null; $grademax = null;
         $gradeinformation = null; $gradingduedate = null; $duedate = null;
         $cutoffdate = null; $scale = null; $feedback = null;
-        //isset($finalgrade)
+        $convertedgradeid = null; $provisionalgrade = null; $status = null;
+        $idnumber = null; $outcomeid = null;
         $finalgrade = 3;
         $intgrade = 3;
 
-        //test1 $gradetype '1' ($grademax == 22 && $grademin == 0) $gradeinformation
+        // Test1.
         $gradetype = '1'; $grademax = 22; $grademin = 0; $gradeinformation = true;
         $returned1 = $this->lib->return_grading($finalgrade, $gradetype, $grademin, $grademax,
                                 $gradeinformation, $gradingduedate, $duedate,
-                                $cutoffdate, $scale, $feedback);
+                                $cutoffdate, $scale, $feedback,
+                                $convertedgradeid, $provisionalgrade, $status,
+                                $idnumber, $outcomeid);
 
-        $expected1 = $this->return_gradeBaseObject();
+        $expected1 = $this->return_gradebaseobj();
         $expected1->hasgrade = true; $expected1->isprovisional = false;
-        $expected1->gradetext = $this->lib->return_22grademaxpoint($intgrade);
+        $expected1->gradetext = "$intgrade / $grademax";
 
         $this->assertEquals($expected1, $returned1);
-        //test2 $gradetype '1' ($grademax != 22 && $grademin != 0) !$gradeinformation
+        // Test2.
         $gradetype = '1'; $grademax = 21; $grademin = 1; $gradeinformation = false;
         $returned2 = $this->lib->return_grading($finalgrade, $gradetype, $grademin, $grademax,
                                 $gradeinformation, $gradingduedate, $duedate,
-                                $cutoffdate, $scale, $feedback);
+                                $cutoffdate, $scale, $feedback,
+                                $convertedgradeid, $provisionalgrade, $status,
+                                $idnumber, $outcomeid);
 
-        $expected2 = $this->return_gradeBaseObject();
+        $expected2 = $this->return_gradebaseobj();
         $expected2->hasgrade = true; $expected2->isprovisional = true;
-        $expected2->gradetext = round(($intgrade / ($grademax - $grademin)) * 100, 2).'%';
+        $expected2->gradetext = "$finalgrade / $grademax";
 
         $this->assertEquals($expected2, $returned2);
 
-        //test3
+        // Test3.
         $gradetype = '2'; $scale = 'A:1,B:2,C:3,D:4,E:5';
         $returned3 = $this->lib->return_grading($finalgrade, $gradetype, $grademin, $grademax,
                                 $gradeinformation, $gradingduedate, $duedate,
-                                $cutoffdate, $scale, $feedback);
+                                $cutoffdate, $scale, $feedback,
+                                $convertedgradeid, $provisionalgrade, $status,
+                                $idnumber, $outcomeid);
 
-        $expected3 = $this->return_gradeBaseObject();
+        $expected3 = $this->return_gradebaseobj();
         $expected3->gradetext = 'C';
         $expected3->hasgrade = true;
         $expected3->isprovisional = true;
 
         $this->assertEquals($expected3, $returned3);
 
-        //test4
+        // Test4.
         $gradetype = '2'; $scale = 'A1,B2,C3,D4,E5';
         $returned4 = $this->lib->return_grading($finalgrade, $gradetype, $grademin, $grademax,
                                 $gradeinformation, $gradingduedate, $duedate,
-                                $cutoffdate, $scale, $feedback);
+                                $cutoffdate, $scale, $feedback,
+                                $convertedgradeid, $provisionalgrade, $status,
+                                $idnumber, $outcomeid);
 
-        $expected4 = $this->return_gradeBaseObject();
+        $expected4 = $this->return_gradebaseobj();
         $expected4->gradetext = 'C3';
         $expected4->hasgrade = true;
         $expected4->isprovisional = true;
 
         $this->assertEquals($expected4, $returned4);
 
-        //test5
+        // Test5.
         $gradetype = '0'; $feedback = 'feedback';
         $returned4 = $this->lib->return_grading($finalgrade, $gradetype, $grademin, $grademax,
                                 $gradeinformation, $gradingduedate, $duedate,
-                                $cutoffdate, $scale, $feedback);
+                                $cutoffdate, $scale, $feedback,
+                                $convertedgradeid, $provisionalgrade, $status,
+                                $idnumber, $outcomeid);
 
-        $expected4 = $this->return_gradeBaseObject();
+        $expected4 = $this->return_gradebaseobj();
         $expected4->gradetext = $feedback;
         $expected4->hasgrade = true;
         $expected4->isprovisional = true;
 
         $this->assertEquals($expected4, $returned4);
 
-        //test5
+        // Test6.
         $gradetype = '0'; $feedback = null;
         $returned5 = $this->lib->return_grading($finalgrade, $gradetype, $grademin, $grademax,
                                 $gradeinformation, $gradingduedate, $duedate,
-                                $cutoffdate, $scale, $feedback);
+                                $cutoffdate, $scale, $feedback,
+                                $convertedgradeid, $provisionalgrade, $status,
+                                $idnumber, $outcomeid);
 
-        $expected5 = $this->return_gradeBaseObject();
+        $expected5 = $this->return_gradebaseobj();
         $expected5->gradetext = get_string('emptyvalue', 'block_gu_spdetails');
         $expected5->hasgrade = true;
         $expected5->isprovisional = true;
 
         $this->assertEquals($expected5, $returned5);
 
-        //!$finalgrade
         $finalgrade = null;
         $duedate = get_string('due', 'block_gu_spdetails').userdate(time() + 1,
                    get_string('date_month_d', 'block_gu_spdetails'));
@@ -907,72 +924,84 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $overdue = get_string('overdue', 'block_gu_spdetails');
         $tbc = get_string('tobeconfirmed', 'block_gu_spdetails');
 
-        //test6 gradingduedate > 0 feedback 'MV'
+        // Test6.
         $gradingduedate = time() + 1; $feedback = 'MV';
         $returned6 = $this->lib->return_grading($finalgrade, $gradetype, $grademin, $grademax,
                                 $gradeinformation, $gradingduedate, $duedate,
-                                $cutoffdate, $scale, $feedback);
+                                $cutoffdate, $scale, $feedback,
+                                $convertedgradeid, $provisionalgrade, $status,
+                                $idnumber, $outcomeid);
 
-        $expected6 = $this->return_gradeBaseObject();
+        $expected6 = $this->return_gradebaseobj();
         $expected6->gradetext = $duedate;
 
         $this->assertEquals($expected6, $returned6);
-        //test7 gradingduedate > 0 ($feedback === 'NS' && $cutoffdate < time() && $duedate < time()
+        // Test7.
         $feedback = 'NS'; $cutoffdate = time() - 1; $duedate = time() - 1;
         $returned7 = $this->lib->return_grading($finalgrade, $gradetype, $grademin, $grademax,
                                 $gradeinformation, $gradingduedate, $duedate,
-                                $cutoffdate, $scale, $feedback);
+                                $cutoffdate, $scale, $feedback,
+                                $convertedgradeid, $provisionalgrade, $status,
+                                $idnumber, $outcomeid);
 
-        $expected7 = $this->return_gradeBaseObject();
+        $expected7 = $this->return_gradebaseobj();
         $expected7->gradetext = $na;
 
         $this->assertEquals($expected7, $returned7);
-        //test8 gradingduedate > 0 ($feedback === 'NS' && $cutoffdate < time() && $duedate > time()
+        // Test8.
         $feedback = null; $cutoffdate = time() + 1; $duedate = time() + 1; $gradingduedate = time() + 1;
         $returned8 = $this->lib->return_grading($finalgrade, $gradetype, $grademin, $grademax,
                                 $gradeinformation, $gradingduedate, $duedate,
-                                $cutoffdate, $scale, $feedback);
+                                $cutoffdate, $scale, $feedback,
+                                $convertedgradeid, $provisionalgrade, $status,
+                                $idnumber, $outcomeid);
 
-        $expected8 = $this->return_gradeBaseObject();
+        $expected8 = $this->return_gradebaseobj();
         $expected8->gradetext = get_string('due', 'block_gu_spdetails').userdate($duedate,
                                 get_string('date_month_d', 'block_gu_spdetails'));
 
         $this->assertEquals($expected8, $returned8);
-        //test9 gradingduedate < time() $feedback === 'NS'
+        // Test9.
         $gradingduedate = time() - 1; $feedback = 'NS';
         $returned9 = $this->lib->return_grading($finalgrade, $gradetype, $grademin, $grademax,
                                 $gradeinformation, $gradingduedate, $duedate,
-                                $cutoffdate, $scale, $feedback);
+                                $cutoffdate, $scale, $feedback,
+                                $convertedgradeid, $provisionalgrade, $status,
+                                $idnumber, $outcomeid);
 
         $duedate = get_string('due', 'block_gu_spdetails').userdate(time() + 1,
                    get_string('date_month_d', 'block_gu_spdetails'));
-        $expected9 = $this->return_gradeBaseObject();
+        $expected9 = $this->return_gradebaseobj();
         $expected9->gradetext = $na;
 
         $this->assertEquals($expected9, $returned9);
-        //test10 gradingduedate < time() $feedback != 'NS'
+        // Test10.
         $feedback = null;
         $returned10 = $this->lib->return_grading($finalgrade, $gradetype, $grademin, $grademax,
                                 $gradeinformation, $gradingduedate, $duedate,
-                                $cutoffdate, $scale, $feedback);
+                                $cutoffdate, $scale, $feedback,
+                                $convertedgradeid, $provisionalgrade, $status,
+                                $idnumber, $outcomeid);
 
-        $expected10 = $this->return_gradeBaseObject();
+        $expected10 = $this->return_gradebaseobj();
         $expected10->gradetext = $overdue;
 
         $this->assertEquals($expected10, $returned10);
-        //test10 gradingduedate = 0
+        // Test11.
         $gradingduedate = 0;
         $returned11 = $this->lib->return_grading($finalgrade, $gradetype, $grademin, $grademax,
                                 $gradeinformation, $gradingduedate, $duedate,
-                                $cutoffdate, $scale, $feedback);
+                                $cutoffdate, $scale, $feedback,
+                                $convertedgradeid, $provisionalgrade, $status,
+                                $idnumber, $outcomeid);
 
-        $expected11 = $this->return_gradeBaseObject();
+        $expected11 = $this->return_gradebaseobj();
         $expected11->gradetext = $tbc;
 
         $this->assertEquals($expected11, $returned11);
     }
 
-    public function test_return_assessmenttype(){
+    public function test_return_assessmenttype() {
         $lang = 'block_gu_spdetails';
 
         $expected1 = get_string("formative", $lang);
@@ -984,7 +1013,7 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $this->assertEquals($expected3, $this->lib->return_assessmenttype(time()));
     }
 
-    public function test_return_weight(){
+    public function test_return_weight() {
         $lang = 'block_gu_spdetails';
         $assessmenttype = get_string('summative', $lang);
         $aggregation = '10';
@@ -994,30 +1023,38 @@ class block_gu_spdetails_testcase extends advanced_testcase {
                       $aggregationcoef2 * 100;
 
         $expected1 = round($aggregationcoef, 2).'%';
-        $this->assertEquals($expected1, $this->lib->return_weight($assessmenttype, $aggregation, $aggregationcoef, $aggregationcoef2));
+        $this->assertEquals($expected1, $this->lib->return_weight($assessmenttype, $aggregation,
+                                                                  $aggregationcoef, $aggregationcoef2, ""));
 
         $aggregationcoef = 1;
         $expected2 = round($aggregationcoef * 100, 2).'%';
-        $this->assertEquals($expected2, $this->lib->return_weight($assessmenttype, $aggregation, $aggregationcoef, $aggregationcoef2));
+        $this->assertEquals($expected2, $this->lib->return_weight($assessmenttype, $aggregation,
+                                                                  $aggregationcoef, $aggregationcoef2, ""));
 
         $aggregation = '1';
         $expected3 = '—';
-        $this->assertEquals($expected3, $this->lib->return_weight($assessmenttype, $aggregation, $aggregationcoef, $aggregationcoef2));
+        $this->assertEquals($expected3, $this->lib->return_weight($assessmenttype, $aggregation,
+                                                                  $aggregationcoef, $aggregationcoef2, ""));
     }
 
-    public function test_return_22grademaxpoint(){
-        
+    public function test_return_22grademaxpoint() {
+
         $values = array('H', 'G2', 'G1', 'F3', 'F2', 'F1',
                         'E3', 'E2', 'E1', 'D3', 'D2', 'D1',
                         'C3', 'C2', 'C1', 'B3', 'B2', 'B1',
                         'A5', 'A4', 'A3', 'A2', 'A1');
 
-        foreach ($values as $index => $value){
-            $this->assertEquals($value, $this->lib->return_22grademaxpoint($index));
+        foreach ($values as $index => $value) {
+            $this->assertEquals($value, $this->lib->return_22grademaxpoint($index, 1));
+            $stringarray = str_split($value);
+            if ($stringarray[0] != 'H') {
+                $value = $stringarray[0] . '0';
+            }
+            $this->assertEquals($value, $this->lib->return_22grademaxpoint($index, 2));
         }
     }
 
-    public function test_retrieve_courses(){
+    public function test_retrieve_courses() {
         $this->show_ondashboard($this->course->id);
 
         // 0 student id
@@ -1025,23 +1062,25 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $return = $this->lib->retrieve_courses($activetab, 0);
         $this->assertEmpty($return);
 
-        // Current tab
+        // Current tab.
         $activetab = TAB_CURRENT;
         $return = $this->lib->retrieve_courses($activetab, $this->student->id);
         $this->assertContains($this->course->id, $return);
-        
-        // Not current tab
+
+        // Not current tab.
         $activetab = "";
         $return = $this->lib->retrieve_courses($activetab, $this->student->id);
         $this->assertContains($this->course->id, $return);
     }
 
-    public function test_retrieve_gradable_activities(){
-        //setting up student
+    public function test_retrieve_gradable_activities() {
+        global $DB;
+
+        // Setting up student.
         $student = $this->getDataGenerator()->create_user();
         $this->setUser($student);
 
-        //creating course
+        // Creating course.
         $category = $this->getDataGenerator()->create_category();
         $course = $this->getDataGenerator()->create_course();
         $this->getDataGenerator()->enrol_user($student->id, $course->id, $this->get_roleid());
@@ -1052,17 +1091,27 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $userid = $student->id;
         $sortby = 'coursetitle';
         $sortorder = 'ASC';
-        $returned1 = $this->lib->retrieve_gradable_activities($activetab, $userid, $sortby, $sortorder);
+        $returned1 = $this->lib->retrieve_gradable_activities($activetab, $userid, $sortby, $sortorder, null);
 
         $this->assertEquals(array(), $returned1);
 
         $this->show_ondashboard($course->id);
-        $returned2 = $this->lib->retrieve_gradable_activities($activetab, $userid, $sortby, $sortorder);
+        $returned2 = $this->lib->retrieve_gradable_activities($activetab, $userid, $sortby, $sortorder, null);
         $this->assertEquals($assign->name, $returned2[0]->assessmentname);
 
+        // Subcategory.
+        $subcategory = $this->getDataGenerator()->create_grade_category(array('courseid' => $course->id));
+
+        // Assign to subcategory.
+        $gradeitem = $DB->get_record("grade_items", ['itemmodule' => 'assign', 'iteminstance' => $assign->id]);
+        $gradeitem->categoryid = $subcategory->id;
+        $DB->update_record("grade_items", $gradeitem);
+
+        $returned3 = $this->lib->retrieve_gradable_activities('current', $userid, $sortby, $sortorder, $subcategory->id);
+        $this->assertEquals($assign->name, $returned2[0]->assessmentname);
     }
 
-    public function test_retrieve_formattedduedate(){
+    public function test_retrieve_formattedduedate() {
         $duedate = 0;
         $return = $this->lib->return_formattedduedate($duedate);
         $expectedempty = '—';
@@ -1072,16 +1121,16 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $return = $this->lib->return_formattedduedate($duedate);
         $expecteddate = userdate($duedate, get_string('date_month_d', 'block_gu_spdetails'));
         $this->assertEquals($expecteddate, $return);
- 
+
     }
 
-    public function test_retrieve_assessments(){
+    public function test_retrieve_assessments() {
         global $OUTPUT;
-        //setting up student
+        // Setting up student.
         $student = $this->getDataGenerator()->create_user();
         $this->setUser($student);
 
-        //creating course
+        // Creating course.
         $category = $this->getDataGenerator()->create_category();
         $course = $this->getDataGenerator()->create_course();
         $this->getDataGenerator()->enrol_user($student->id, $course->id, $this->get_roleid());
@@ -1106,8 +1155,100 @@ class block_gu_spdetails_testcase extends advanced_testcase {
 
         $this->show_ondashboard($course->id);
         $returned2 = $this->lib->retrieve_assessments($activetab, $page, $sortby, $sortorder);
-        
-        // echo($returned2);
+
         $this->assertContains($assign->name, $returned2);
+    }
+
+    public function test_retrieve_parent_category() {
+        global $DB;
+        // Create course.
+        $course = $this->getDataGenerator()->create_course();
+
+        // Get Parent Category.
+        $this->getDataGenerator()->create_grade_category(array('courseid' => $course->id));
+        $sql = "SELECT id FROM {grade_categories} WHERE parent IS NULL AND courseid = $course->id";
+        $expectedparent = $DB->get_record_sql($sql);
+
+        $returnedparent = $this->lib->retrieve_parent_category([$course->id]);
+        $this->assertContains($expectedparent->id, $returnedparent);
+    }
+
+    public function test_retrieve_2nd_level() {
+        // Create course.
+        $course = $this->getDataGenerator()->create_course();
+
+        // Create categories.
+        $categoryattribute = array('courseid' => $course->id);
+        $level2ids = array();
+        for ($i = 0; $i < 5; $i++) {
+            array_push($level2ids, $this->getDataGenerator()->create_grade_category($categoryattribute)->id);
+        }
+
+        $returnedparent = $this->lib->retrieve_parent_category([$course->id]);
+        $returnedcategoryids = $this->lib->retrieve_2nd_level($returnedparent);
+        foreach ($returnedcategoryids as $categoryid) {
+            $this->assertContains($categoryid, $level2ids);
+        }
+    }
+
+    public function test_get_topicname() {
+        global $DB;
+        // Test for get_topicname_category.
+        // Create course.
+        $course = $this->getDataGenerator()->create_course();
+
+        // Create category.
+        $categoryattribute = array('courseid' => $course->id);
+        $category = $this->getDataGenerator()->create_grade_category($categoryattribute);
+
+        $returned1 = $this->lib->get_topicname_category($category->id, $course->fullname);
+
+        $this->assertEquals($course->fullname, $returned1);
+
+        // Create assignment.
+        $assign = $this->getDataGenerator()->create_module('assign', array('course' => $course->id));
+
+        // Assign to subcategory.
+        $gradeitem = $DB->get_record("grade_items", ['itemmodule' => 'assign', 'iteminstance' => $assign->id]);
+        $gradeitem->categoryid = $category->id;
+        $DB->update_record("grade_items", $gradeitem);
+
+        $returned2 = $this->lib->get_topicname_category($category->id, $course->fullname);
+        $this->assertEquals($course->fullname, $returned2);
+
+        // Updating Course Section.
+        $module = $DB->get_record("modules", ['name' => 'assign']);
+        $coursemodule = $DB->get_record("course_modules", ['course' => $course->id,
+                                                           'module' => $module->id,
+                                                           'instance' => $assign->id]);
+        $this->assertEquals($coursemodule->id, $assign->cmid);
+        $coursesection = $DB->get_record("course_sections", ['course' => $course->id,
+                                                             'id' => $coursemodule->section]);
+        $coursesection->name = uniqid();
+        $DB->update_record("course_sections", $coursesection);
+
+        $returned3 = $this->lib->get_topicname_category($category->id, $course->fullname);
+        $this->assertEquals($coursesection->name, $returned3);
+
+        // Test for get_topicname.
+        $sql = "SELECT id FROM {grade_categories} WHERE parent IS NULL AND courseid = $course->id";
+        $expectedparent = $DB->get_record_sql($sql);
+        $gettopicname1 = $this->lib->get_topicname($expectedparent->id);
+        $element = new stdClass;
+        $element->id = $category->id;
+        $element->text = $coursesection->name;
+
+        $this->assertEquals([$element], $gettopicname1);
+
+        $gettopicname2 = $this->lib->get_topicname($category->id);
+        $this->assertEquals(array(), $gettopicname2);
+
+        // Test for generate_topicname_case_statement.
+        $casestatement1 = $this->lib->generate_topicname_case_statement($gettopicname1);
+        $casestatement2 = $this->lib->generate_topicname_case_statement($gettopicname2);
+
+        $this->assertEquals("CASE WHEN gc.id = $category->id THEN '$coursesection->name' " .
+                            "ELSE c.fullname END AS coursetitle", $casestatement1);
+        $this->assertEquals("c.fullname AS coursetitle", $casestatement2);
     }
 }

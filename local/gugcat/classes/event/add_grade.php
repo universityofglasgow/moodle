@@ -13,10 +13,10 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
- 
+
 /**
  * The local_gugcat add new grade event.
-*
+ *
  * @package    local_gugcat
  * @copyright  2020
  * @author     Accenture
@@ -27,32 +27,34 @@ defined('MOODLE_INTERNAL') || die();
 
 class add_grade extends \core\event\base {
     protected function init() {
-        $this->data['crud'] = 'c'; // c(reate), r(ead), u(pdate), d(elete)
+        $this->data['crud'] = 'c'; // Valid values are c(reate), r(ead), u(pdate), d(elete).
         $this->data['edulevel'] = self::LEVEL_TEACHING;
     }
- 
+
     public static function get_name() {
         return get_string('eventaddgrades', 'local_gugcat');
     }
- 
-    public function get_description() {
-        return "The user with id {$this->userid} has added a grade {$this->other['grade']} to {$this->other['gradeitem']} grade version to the student with a student number of {$this->other['idnumber']}.";
-    }
- 
-    public function get_url() {
-        $url = new \moodle_url('local/gugcat/add/index.php', array('id' => $this->courseid, 'activityid'=>$this->other['activityid'], 'studentid'=>$this->other['studentno'], 'page'=>$this->other['page']));
-        if(!is_null($this->other['categoryid']))
-            $url->param('categoryid', $this->other['categoryid']);
 
+    public function get_description() {
+        return "The user with id {$this->userid} has added a grade {$this->other['grade']} to {$this->other['gradeitem']} ".
+                "grade version to the student with a student number of {$this->other['idnumber']}.";
+    }
+
+    public function get_url() {
+        $url = new \moodle_url('/local/gugcat/add/index.php', array('id' => $this->courseid,
+            'activityid' => $this->other['activityid'], 'studentid' => $this->other['studentno'], 'page' => $this->other['page']));
+        if (!is_null($this->other['categoryid'])) {
+            $url->param('categoryid', $this->other['categoryid']);
+        }
         return $url;
     }
- 
+
     public function get_legacy_logdata() {
         return array($this->courseid, 'local_gugcat', 'add_grade',
             '...........',
             '....', $this->contextinstanceid);
     }
- 
+
     protected function get_legacy_eventdata() {
         $data = new \stdClass();
         $data->userid = $this->relateduserid;

@@ -13,10 +13,10 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
- 
+
 /**
  * The local_gugcat ammend grade event.
-*
+ *
  * @package    local_gugcat
  * @copyright  2020
  * @author     Accenture
@@ -27,32 +27,36 @@ defined('MOODLE_INTERNAL') || die();
 
 class ammend_grade extends \core\event\base {
     protected function init() {
-        $this->data['crud'] = 'u'; // c(reate), r(ead), u(pdate), d(elete)
+        $this->data['crud'] = 'u'; // Valid values are c(reate), r(ead), u(pdate), d(elete).
         $this->data['edulevel'] = self::LEVEL_TEACHING;
     }
- 
+
     public static function get_name() {
         return get_string('eventammendgrade', 'local_gugcat');
     }
- 
+
     public function get_description() {
-        return "The user with id {$this->userid} has ammended {$this->other['gradeitem']} grade version with grade {$this->other['grade']} to the student with a student number of {$this->other['idnumber']}.";
+        return "The user with id {$this->userid} has ammended {$this->other['gradeitem']} grade version with grade ".
+                "{$this->other['grade']} to the student with a student number of {$this->other['idnumber']}.";
     }
- 
+
     public function get_url() {
-        $url = new \moodle_url('local/gugcat/edit/index.php', array('id' => $this->courseid, 'activityid'=>$this->other['activityid'], 'studentid'=>$this->other['studentno'], 'page'=>$this->other['page'], 'overview'=>$this->other['overview']));
-        if(!is_null($this->other['categoryid']))
+        $url = new \moodle_url('/local/gugcat/edit/index.php', array('id' => $this->courseid,
+             'activityid' => $this->other['activityid'], 'studentid' => $this->other['studentno'],
+             'page' => $this->other['page'], 'overview' => $this->other['overview']));
+        if (!is_null($this->other['categoryid'])) {
             $url->param('categoryid', $this->other['categoryid']);
+        }
 
         return $url;
     }
- 
+
     public function get_legacy_logdata() {
         return array($this->courseid, 'local_gugcat', 'ammend_grade',
             '...........',
             '....', $this->contextinstanceid);
     }
- 
+
     protected function get_legacy_eventdata() {
         $data = new \stdClass();
         $data->userid = $this->relateduserid;

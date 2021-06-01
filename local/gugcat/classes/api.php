@@ -24,12 +24,13 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 namespace local_gugcat;
+
+defined('MOODLE_INTERNAL') || die();
+
 require_once($CFG->dirroot . '/local/gugcat/locallib.php');
 
 use context_course;
 use local_gugcat;
-
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Class containing helper methods for processing data requests.
@@ -47,6 +48,28 @@ class api {
      */
     public static function display_assessments($id) {
         $currentstate = local_gugcat::switch_display_of_assessment_on_student_dashboard($id, context_course::instance($id)->id);
+        $logparams = array (
+            'context' => context_course::instance($id),
+            'other' => array(
+                'courseid' => $id,
+                'status' => ($currentstate == 1) ? 'on' : 'off'
+            )
+        );
+        $event = \local_gugcat\event\toggle_assessments_display::create($logparams);
+        $event->trigger();
         return ($currentstate == 1) ? true : false;
+    }
+
+    /**
+     * Retrieve grade conversion template data.
+     *
+     * @param int $templateid Template id
+     * @return mixed || false
+     */
+    public static function get_converter_template_data($templateid) {
+        global $DB, $USER;
+        $template = $DB->get_record('gcat_converter_templates', array('id' => $templateid, 'userid' => $USER->id));
+        ($template) ? $template->conversion = $DB->get_records('gcat_grade_converter', array('templateid' => $templateid)) : null;
+        return ($template) ? json_encode($template) : false;
     }
 }

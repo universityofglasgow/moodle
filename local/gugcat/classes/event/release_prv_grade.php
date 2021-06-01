@@ -13,10 +13,10 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
- 
+
 /**
  * The local_gugcat release provisional grade event.
-*
+ *
  * @package    local_gugcat
  * @copyright  2020
  * @author     Accenture
@@ -30,32 +30,34 @@ class release_prv_grade extends \core\event\base {
         $this->data['crud'] = 'c';
         $this->data['edulevel'] = self::LEVEL_TEACHING;
     }
- 
+
     public static function get_name() {
         return get_string('eventreleaseprvgrades', 'local_gugcat');
     }
- 
+
     public function get_description() {
         return "The user with id {$this->userid} have released provisional grades in the course with id of {$this->courseid}.";
     }
- 
+
     public function get_url() {
-        $url = new \moodle_url('local/gugcat/index.php', array('id' => $this->courseid, 'page'=>$this->other['page']));
-        if(!is_null($this->other['activityid']))
+        $url = new \moodle_url('/local/gugcat/index.php', array('id' => $this->courseid, 'page' => $this->other['page']));
+        if (!is_null($this->other['activityid'])) {
             $url->param('activityid', $this->other['activityid']);
-        if(!is_null($this->other['categoryid']))
+        }
+        if (!is_null($this->other['categoryid'])) {
             $url->param('categoryid', $this->other['categoryid']);
+        }
 
         return $url;
     }
- 
+
     public function get_legacy_logdata() {
         // Override if you are migrating an add_to_log() call.
         return array($this->courseid, 'local_gugcat', 'release_prv_grade',
             '...........',
             '....', $this->contextinstanceid);
     }
- 
+
     protected function get_legacy_eventdata() {
         // Override if you migrating events_trigger() call.
         $data = new \stdClass();

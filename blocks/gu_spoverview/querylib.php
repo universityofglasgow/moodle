@@ -54,18 +54,18 @@ function return_assessments_count($userid, $courseids) {
                     a.gradingduedate,
                     gg.finalgrade,
                     gg.feedback,
-                    `as`.`status`, a.nosubmissions AS submissions, c.enddate";
+                    asub.status, a.nosubmissions AS submissions, c.enddate";
     $assignjoins = "LEFT JOIN {assign_overrides} ao ON (ao.assignid = a.id AND ao.userid = ?)
                     LEFT JOIN {assign_user_flags} auf ON (auf.assignment = a.id AND auf.userid = ?)
                     LEFT JOIN (SELECT a.* FROM {assign_submission} a
                                 LEFT OUTER JOIN {assign_submission} b
                                 ON a.id = b.id AND a.attemptnumber < b.attemptnumber
-                                WHERE b.id IS NULL) `as`
-                        ON (`as`.assignment = a.id AND `as`.userid = ?)
+                                WHERE b.id IS NULL) asub
+                        ON (asub.assignment = a.id AND asub.userid = ?)
                     LEFT JOIN {modules} m ON (m.name = 'assign')
-                    JOIN {course_modules} cm ON (cm.course = a.course AND cm.`instance` = a.id
+                    JOIN {course_modules} cm ON (cm.course = a.course AND cm.instance = a.id
                         AND cm.module = m.id AND cm.deletioninprogress = 0)
-                    LEFT JOIN {grade_items} gi ON (gi.iteminstance = cm.`instance` AND gi.courseid = a.course
+                    LEFT JOIN {grade_items} gi ON (gi.iteminstance = cm.instance AND gi.courseid = a.course
                         AND gi.itemtype = 'mod' AND gi.itemmodule = 'assign')
                     LEFT JOIN {grade_grades} gg ON (gg.itemid = gi.id AND gg.userid = ?)
                     LEFT JOIN {course} c ON c.id = a.course";
@@ -81,16 +81,16 @@ function return_assessments_count($userid, $courseids) {
 
     $forumfields = "cm.id, f.course,
                     gi.itemmodule AS modname,
-                    NULL AS `allowsubmissionsfromdate`,
+                    NULL AS allowsubmissionsfromdate,
                     f.duedate, f.cutoffdate, f.cutoffdate AS gradingduedate,
                     gg.finalgrade, gg.feedback,
                     CASE
                     WHEN fd.id IS NOT NULL THEN 'submitted'
                     ELSE NULL
-                    END AS `status`,
+                    END AS status,
                     NULL AS submissions, c.enddate";
     $forumjoins = "LEFT JOIN {modules} m ON (m.name = 'forum')
-                    JOIN {course_modules} cm ON (cm.course = f.course AND cm.`instance` = f.id
+                    JOIN {course_modules} cm ON (cm.course = f.course AND cm.instance = f.id
                         AND cm.module = m.id AND cm.deletioninprogress = 0)
                     LEFT JOIN {course} c ON c.id = f.course
                     JOIN (SELECT gi1.id, gi1.categoryid, gi1.gradetype, gi1.grademax, gi1.grademin,
@@ -123,18 +123,18 @@ function return_assessments_count($userid, $courseids) {
                         WHEN qo.timeclose IS NOT NULL THEN qo.timeclose
                         ELSE q.timeclose END AS gradingduedate,
                     gg.finalgrade, gg.feedback,
-                    qa.state AS `status`, NULL AS submissions, c.enddate";
-    $quizjoins = "LEFT JOIN {quiz_overrides} AS qo ON (qo.quiz = q.id AND qo.userid = ?)
-                    LEFT JOIN {quiz_grades} AS qg ON (qg.quiz = q.id AND qg.userid = ?)
-                    LEFT JOIN {quiz_feedback} AS qf ON (qf.quizid = q.id AND qg.grade IS NOT NULL
+                    qa.state AS status, NULL AS submissions, c.enddate";
+    $quizjoins = "LEFT JOIN {quiz_overrides} qo ON (qo.quiz = q.id AND qo.userid = ?)
+                    LEFT JOIN {quiz_grades} qg ON (qg.quiz = q.id AND qg.userid = ?)
+                    LEFT JOIN {quiz_feedback} qf ON (qf.quizid = q.id AND qg.grade IS NOT NULL
                         AND (qg.grade > qf.mingrade OR (qg.grade = 0 AND qf.mingrade = 0))
                         AND qg.grade <= qf.maxgrade)
-                    LEFT JOIN {quiz_attempts} AS qa ON (qa.quiz = q.id AND qa.userid = ?
+                    LEFT JOIN {quiz_attempts} qa ON (qa.quiz = q.id AND qa.userid = ?
                         AND qa.sumgrades IS NULL)
                     LEFT JOIN {modules} m ON (m.name = 'quiz')
-                    JOIN {course_modules} cm ON (cm.course = q.course AND cm.`instance` = q.id
+                    JOIN {course_modules} cm ON (cm.course = q.course AND cm.instance = q.id
                         AND cm.module = m.id AND cm.deletioninprogress = 0)
-                    LEFT JOIN {grade_items} gi ON (gi.iteminstance = cm.`instance`
+                    LEFT JOIN {grade_items} gi ON (gi.iteminstance = cm.instance
                         AND gi.courseid = q.course AND gi.itemtype = 'mod' AND gi.itemmodule = 'quiz')
                     LEFT JOIN {grade_grades} gg ON (gg.itemid = gi.id AND gg.userid = ?)
                     LEFT JOIN {course} c ON c.id = q.course";
@@ -152,14 +152,14 @@ function return_assessments_count($userid, $courseids) {
                         w.submissionend AS duedate, NULL AS cutoffdate,
                         w.assessmentend AS gradingduedate,
                         gg.finalgrade, gg.feedback,
-                        NULL AS `status`, ws.title AS submissions, c.enddate";
+                        NULL AS status, ws.title AS submissions, c.enddate";
     $workshopjoins = "LEFT JOIN {workshop_submissions} ws
                         ON (ws.workshopid = w.id AND ws.authorid = ?)
                         LEFT JOIN {modules} m ON (m.name = 'workshop')
                         JOIN {course_modules} cm ON (cm.course = w.course
-                            AND cm.`instance` = w.id AND cm.module = m.id
+                            AND cm.instance = w.id AND cm.module = m.id
                             AND cm.deletioninprogress = 0)
-                        LEFT JOIN {grade_items} gi ON (gi.iteminstance = cm.`instance`
+                        LEFT JOIN {grade_items} gi ON (gi.iteminstance = cm.instance
                             AND gi.courseid = w.course AND gi.itemtype = 'mod'
                             AND gi.itemmodule = 'workshop' AND gi.itemnumber = 0)
                         LEFT JOIN {grade_grades} gg ON (gg.itemid = gi.id AND gg.userid = ?)
@@ -180,40 +180,36 @@ function return_assessments_count($userid, $courseids) {
     $counter->overdue = 0;
     $counter->marked = 0;
 
-    if($records) {
+    if ($records) {
         $recordsarray = (array) $records;
-        foreach($recordsarray as $record) {
+        foreach ($recordsarray as $record) {
             $modinfo = get_fast_modinfo($record->courseid);
             $cm = $modinfo->get_cm($record->id);
-            // check if course module is visible to the user
+            // Check if course module is visible to the user.
             $iscmvisible = $cm->uservisible;
 
-            if($iscmvisible) {
-                if(isset($record->finalgrade)) {
+            if ($iscmvisible) {
+                if (isset($record->finalgrade)) {
                     $counter->marked++;
                     $counter->submitted++;
-                }else if($record->feedback === 'NS' && $record->duedate < time()
+                } else if ($record->feedback === 'NS' && $record->duedate < time()
                          && $record->cutoffdate > time() && $record->gradingduedate > time()) {
                     $counter->overdue++;
                     $counter->tosubmit++;
-                }else{
+                } else {
                     switch($record->modname) {
                         case 'assign':
-                            if($record->status === 'submitted') {
+                            if ($record->status === 'submitted') {
                                 $counter->submitted++;
-                            }else{
-                                if($record->submissions > 0) {
-                                    // not available
-                                }else{
-                                    if($record->allowsubmissionsfromdate > time() || $record->duedate == 0) {
-                                        // not open
-                                    }else{
-                                        if($record->duedate < time()) {
-                                            if($record->cutoffdate == 0 || $record->cutoffdate > time()) {
+                            } else {
+                                if ($record->submissions <= 0) {
+                                    if (!($record->allowsubmissionsfromdate > time() || $record->duedate == 0)) {
+                                        if ($record->duedate < time()) {
+                                            if ($record->cutoffdate == 0 || $record->cutoffdate > time()) {
                                                 $counter->overdue++;
                                                 $counter->tosubmit++;
                                             }
-                                        }else{
+                                        } else {
                                             $counter->tosubmit++;
                                         }
                                     }
@@ -221,43 +217,35 @@ function return_assessments_count($userid, $courseids) {
                             }
                             break;
                         case 'quiz':
-                            if($record->allowsubmissionsfromdate > time()) {
-                                // not open
-                            }else{
-                                if($record->status === 'finished'){
+                            if ($record->allowsubmissionsfromdate <= time()) {
+                                if ($record->status === 'finished') {
                                     $counter->submitted++;
-                                }else if($record->duedate < time() && $record->duedate != 0) {
-                                    // not submitted
-                                }else{
+                                } else {
                                     $counter->tosubmit++;
                                 }
                             }
                             break;
                         case 'workshop':
-                            if(!empty($record->submissions)) {
+                            if (!empty($record->submissions)) {
                                 $counter->submitted++;
-                            }else{
-                                if($record->allowsubmissionsfromdate > time() || $record->duedate == 0) {
-                                    // not open
-                                }else{
-                                    if($record->duedate < time()) {
-                                        // not submitted
-                                    }else{
+                            } else {
+                                if (!($record->allowsubmissionsfromdate > time() || $record->duedate == 0)) {
+                                    if ($record->duedate >= time()) {
                                         $counter->tosubmit++;
                                     }
                                 }
                             }
                             break;
-                        // forum
+                        // Forum.
                         default:
-                            if($record->duedate < time()) {
-                                if($record->status === 'submitted'){
+                            if ($record->duedate < time()) {
+                                if ($record->status === 'submitted') {
                                     $counter->submitted++;
-                                }else if($record->cutoffdate == 0 || $record->cutoffdate > time()) {
+                                } else if ($record->cutoffdate == 0 || $record->cutoffdate > time()) {
                                     $counter->overdue++;
                                     $counter->tosubmit++;
                                 }
-                            }else{
+                            } else {
                                 $counter->tosubmit++;
                             }
                             break;

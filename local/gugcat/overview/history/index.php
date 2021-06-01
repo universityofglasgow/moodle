@@ -30,16 +30,18 @@ require_once($CFG->dirroot . '/local/gugcat/locallib.php');
 $courseid = required_param('id', PARAM_INT);
 $studentid = required_param('studentid', PARAM_INT);
 $cnum = required_param('cnum', PARAM_INT);
-$categoryid = optional_param('categoryid', null, PARAM_INT);
-$page = optional_param('page', 0, PARAM_INT);  
+$categoryid = optional_param('categoryid', 0, PARAM_INT);
+$page = optional_param('page', 0, PARAM_INT);
+$alternativecg = optional_param('alternativecg', null, PARAM_INT);
 
 require_login($courseid);
-$urlparams = array('id' => $courseid, 'studentid' => $studentid, 'cnum'=>$cnum, 'page' => $page);
-$URL = new moodle_url('/local/gugcat/overview/history/index.php', $urlparams);
+$urlparams = array('id' => $courseid, 'studentid' => $studentid, 'cnum' => $cnum, 'page' => $page);
+$url = new moodle_url('/local/gugcat/overview/history/index.php', $urlparams);
 $indexurl = new moodle_url('/local/gugcat/index.php', array('id' => $courseid));
-is_null($categoryid) ? null : $URL->param('categoryid', $categoryid);
+$categoryid != 0 ? null : $url->param('categoryid', $categoryid);
+!is_null($alternativecg) && $alternativecg != 0 ? $url->param('alternativecg', $alternativecg) : null;
 
-$PAGE->set_url($URL);
+$PAGE->set_url($url);
 $PAGE->set_title(get_string('gugcat', 'local_gugcat'));
 $PAGE->navbar->add(get_string('navname', 'local_gugcat'), $indexurl);
 
@@ -53,13 +55,30 @@ $PAGE->set_course($course);
 $PAGE->set_heading($course->fullname);
 require_capability('local/gugcat:view', $coursecontext);
 
-$student = $DB->get_record('user', array('id'=>$studentid, 'deleted'=>0), '*', MUST_EXIST);
-$modules = local_gugcat::get_activities($courseid);
+$student = $DB->get_record('user', array('id' => $studentid, 'deleted' => 0), '*', MUST_EXIST);
+$modules = is_null($alternativecg) || $alternativecg == 0 ? local_gugcat::get_activities($courseid) : null;
+if (!is_null($categoryid) && $categoryid != 0 && (is_null($alternativecg) || $alternativecg == 0)) {
+    // Retrieve sub categories.
+    $gcs = grade_category::fetch_all(array('courseid' => $courseid, 'parent' => $categoryid));
+
+    $gradecatgi = array();
+    if (!empty($gcs)) {
+        foreach ($gcs as $gc) {
+            $gi = local_gugcat::get_category_gradeitem($courseid, $gc);
+            $gi->name = preg_replace('/\b total/i', '', $gi->name);
+            $gradecatgi[$gi->gradeitemid] = $gi;
+        }
+        // Merging two arrays without changing their index.
+        $modules = $modules + $gradecatgi;
+    }
+}
+
 $student->cnum = $cnum;
 
-$gradehistory = grade_aggregation::get_course_grade_history($course, $modules, $student);
+$gradehistory = is_null($alternativecg) || $alternativecg == 0 ? grade_aggregation::get_course_grade_history($course,
+ $modules, $student) : grade_aggregation::acg_grade_history($course, $student, $alternativecg);
 
-//logs for course grade history viewed
+// Logs for course grade history viewed.
 $params = array(
     'context' => $coursecontext,
     'other' => array(
@@ -67,8 +86,9 @@ $params = array(
         'categoryid' => $categoryid,
         'studentno' => $studentid,
         'idnumber' => $student->idnumber,
+        'alternativecg' => $alternativecg,
         'cnum' => $cnum,
-        'page'=> $page
+        'page' => $page
     )
 );
 $event = \local_gugcat\event\course_grade_history_viewed::create($params);
@@ -76,5 +96,6 @@ $event->trigger();
 
 echo $OUTPUT->header();
 $renderer = $PAGE->get_renderer('local_gugcat');
-echo $renderer->display_course_grade_history($student, $gradehistory, $modules);
+echo is_null($alternativecg) || $alternativecg == 0 ? $renderer->display_course_grade_history($student, $gradehistory, $modules)
+: $renderer->display_alternative_cg_history($gradehistory, $student);
 echo $OUTPUT->footer();

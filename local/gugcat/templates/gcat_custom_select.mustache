@@ -16,20 +16,20 @@
 }}
 {{!
     @template local_gugcat/gcat_custom_select
-    
+
     The purpose of this template is to render the GCAT custom UI select element.
 
     Example context (json):
     {
-    
+
     }
 }}
 
 <div class="selectdiv {{class}}">
-    <select id="{{id}}" name="{{name}}">
+    <select {{#id}}id="{{id}}"{{/id}} name="{{name}}" autofocus="{{autofocus}}">
         {{#default}}<option selected disabled="disabled">{{default}}</option>{{/default}}
         {{#options}}
-        <option 
+        <option
         {{selected}}
         {{#key}}
             value="{{key}}"

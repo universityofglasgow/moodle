@@ -23,7 +23,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
- 
+
 defined('MOODLE_INTERNAL') || die();
 
 $functions = array(
@@ -32,6 +32,15 @@ $functions = array(
         'classname'   => 'local_gugcat\external',
         'methodname'  => 'display_assessments',
         'description' => 'Toggle display of assessments on Student Dashboard',
+        'type'        => 'read',
+        'ajax'          => true,
+        'loginrequired' => true,
+    ),
+
+    'local_gugcat_get_converter_template' => array(
+        'classname'   => 'local_gugcat\external',
+        'methodname'  => 'get_converter_template',
+        'description' => 'Retrieve converter template grades',
         'type'        => 'read',
         'ajax'          => true,
         'loginrequired' => true,

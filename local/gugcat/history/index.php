@@ -27,18 +27,30 @@ require_once(__DIR__ . '/../../../config.php');
 require_once($CFG->dirroot . '/local/gugcat/locallib.php');
 
 $courseid = required_param('id', PARAM_INT);
-$activityid = required_param('activityid', PARAM_INT);
-$studentid = required_param('studentid', PARAM_INT);
+$activityid = optional_param('activityid', null, PARAM_INT);
+$studentid = optional_param('studentid', null, PARAM_INT);
 $categoryid = optional_param('categoryid', null, PARAM_INT);
+$childactivityid = optional_param('childactivityid', null, PARAM_INT);
 $page = optional_param('page', 0, PARAM_INT);
 
 require_login($courseid);
 $urlparams = array('id' => $courseid, 'activityid' => $activityid, 'studentid' => $studentid, 'page' => $page);
-$URL = new moodle_url('/local/gugcat/history/index.php', $urlparams);
-is_null($categoryid) ? null : $URL->param('categoryid', $categoryid);
+$url = new moodle_url('/local/gugcat/history/index.php', $urlparams);
+is_null($categoryid) ? null : $url->param('categoryid', $categoryid);
 $indexurl = new moodle_url('/local/gugcat/index.php', array('id' => $courseid));
+$modid = $activityid;
+// Redirect to grade capture screen if activityid or studentid is null.
+if (is_null($activityid) || is_null($studentid)) {
+    redirect($indexurl);
+}
+if (!is_null($childactivityid) && $childactivityid != 0) {
+    $url->param('childactivityid', $childactivityid);
+    $indexurl->param('childactivityid', $childactivityid);
+    $modid = $childactivityid;
+}
 
-$PAGE->set_url($URL);
+
+$PAGE->set_url($url);
 $PAGE->set_title(get_string('gugcat', 'local_gugcat'));
 $PAGE->navbar->add(get_string('navname', 'local_gugcat'), $indexurl);
 
@@ -52,35 +64,42 @@ $PAGE->set_course($course);
 $PAGE->set_heading($course->fullname);
 require_capability('local/gugcat:view', $coursecontext);
 
-$student = $DB->get_record('user', array('id'=>$studentid, 'deleted'=>0), '*', MUST_EXIST);
-$module = local_gugcat::get_activities($courseid)[$activityid];
+$student = $DB->get_record('user', array('id' => $studentid, 'deleted' => 0), '*', MUST_EXIST);
+$module = local_gugcat::get_activity($courseid, $modid);
 
 $scaleid = $module->gradeitem->scaleid;
-if (is_null($scaleid) && local_gugcat::is_grademax22($module->gradeitem->gradetype, $module->gradeitem->grademax)){
+if (is_null($scaleid) && local_gugcat::is_grademax22($module->gradeitem->gradetype, $module->gradeitem->grademax)) {
     $scaleid = null;
 }
 local_gugcat::set_grade_scale($scaleid);
 local_gugcat::set_prv_grade_id($courseid, $module);
 
-$history = local_gugcat::get_grade_history($courseid, $module, $studentid);
+$childacts = ($module->modname == 'category') ? local_gugcat::get_activities($courseid, $module->gradeitem->iteminstance) : null;
+$history = ($module->modname == 'category') ? local_gugcat::get_aggregated_assessment_history($courseid, $studentid, $module)
+: local_gugcat::get_grade_history($module, $studentid);
 
-//logs for assessment grade history viewed
+$childact = local_gugcat::get_child_activities_id($courseid, $module->gradeitem->iteminstance);
+
+// Logs for assessment grade history viewed.
 $params = array(
-    'context' => \context_module::instance($module->id),
+    'context' => ($module->modname == 'category') ? context_course::instance($courseid) : \context_module::instance($module->id),
     'other' => array(
         'courseid' => $courseid,
-        'activityid' => $activityid,
+        'activityid' => $modid,
         'categoryid' => $categoryid,
         'studentno' => $studentid,
         'idnumber' => $student->idnumber,
-        'page'=> $page
+        'page' => $page
     )
 );
 $event = \local_gugcat\event\assessment_grade_history_viewed::create($params);
 $event->trigger();
 
 echo $OUTPUT->header();
-$PAGE->set_cm($module);
 $renderer = $PAGE->get_renderer('local_gugcat');
-echo $renderer->display_grade_history($student, $module->name, $history);
+if ($module->modname == 'category') {
+    echo $renderer->display_aggregated_assessment_history($childacts, $history, $student, $module->name);
+} else {
+    echo $renderer->display_grade_history($student, $module->name, $history);
+}
 echo $OUTPUT->footer();

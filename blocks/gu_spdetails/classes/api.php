@@ -38,10 +38,11 @@ class api {
      * @param int $page
      * @param string $sortby
      * @param string $sortorder
+     * @param int $subcategory
      * @return string HTML containing view for paginated assessments
      */
-    public static function retrieve_assessments($activetab, $page, $sortby, $sortorder) {
-        $assessments = assessments_details::retrieve_assessments($activetab, $page, $sortby, $sortorder);
+    public static function retrieve_assessments($activetab, $page, $sortby, $sortorder, $subcategory) {
+        $assessments = assessments_details::retrieve_assessments($activetab, $page, $sortby, $sortorder, $subcategory);
         return $assessments;
     }
 }
