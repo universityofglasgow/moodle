@@ -1,6 +1,6 @@
 <?php
     
-    $topButtons = '<div class="btn-toolbar d-flex justify-content-between m-b-1">';
+    $topButtons = '<div class="btn-toolbar d-flex justify-content-between mb-3">';
     
     $topButtons .= '<div class="btn-holder">';
         
@@ -10,10 +10,10 @@
     
     if($ufservice->favourite_exists('core_course', 'courses', $COURSE->id, \context_course::instance($COURSE->id), 0)) {
         $starURL = new moodle_url('/theme/hillhead/course-unstar.php?id='.$COURSE->id);
-        $topButtons .= '<a class="btn btn-default m-r-1" href="'.$starURL.'"><i class="fa fa-star"></i> Unstar<span class="d-none d-sm-inline"> This Course</span></a>';
+        $topButtons .= '<a class="btn btn-secondary m-r-1" href="'.$starURL.'"><i class="fa fa-star"></i> Unstar<span class="d-none d-sm-inline"> This Course</span></a>';
     } else {
         $starURL = new moodle_url('/theme/hillhead/course-star.php?id='.$COURSE->id);
-        $topButtons .= '<a class="btn btn-default" href="'.$starURL.'"><i class="fa fa-star-o"></i> Star<span class="d-none d-sm-inline"> This Course</span></a>';
+        $topButtons .= '<a class="btn btn-secondary" href="'.$starURL.'"><i class="fa fa-star-o"></i> Star<span class="d-none d-sm-inline"> This Course</span></a>';
     }
     
     
@@ -34,9 +34,9 @@
         $editURL = new moodle_url('/course/view.php?id='.$COURSE->id.'&sesskey='.$USER->sesskey);
         
         if($USER->editing) {
-            $topButtons .= '<a class="btn btn-success" href="'.$editURL.'&edit=off"><i class="fa fa-pencil"></i> <span class="d-none d-sm-inline">Turn </span>Editing Off</a>';
+            $topButtons .= '<a class="btn btn-success ml-1" href="'.$editURL.'&edit=off"><i class="fa fa-pencil"></i> <span class="d-none d-sm-inline">Turn </span>Editing Off</a>';
         } else {
-            $topButtons .= '<a class="btn btn-danger" href="'.$editURL.'&edit=on"><i class="fa fa-pencil"></i> <span class="d-none d-sm-inline">Turn </span>Editing On</a>';
+            $topButtons .= '<a class="btn btn-danger ml-1" href="'.$editURL.'&edit=on"><i class="fa fa-pencil"></i> <span class="d-none d-sm-inline">Turn </span>Editing On</a>';
         } 
 
     }
