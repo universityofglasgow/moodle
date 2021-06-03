@@ -175,6 +175,7 @@ class local_gugcat_testcase extends advanced_testcase {
         $gradeitems = array();
         $expectedgrade = '5.000';
         $prvgradeid = $this->provisionalgi->id;
+        local_gugcat::set_prv_grade_id($this->course->id, $this->cm);
         grade_capture::get_rows($this->course, $this->cm, $this->students);
         $mggradeitemstr = get_string('moodlegrade', 'local_gugcat');
         $mggradeitem = local_gugcat::add_grade_item($this->course->id, $mggradeitemstr, $this->cm);
@@ -189,6 +190,7 @@ class local_gugcat_testcase extends advanced_testcase {
         $gradeitems = array();
         $expectednotes = 'testnote';
         $prvgradeid = $this->provisionalgi->id;
+        local_gugcat::set_prv_grade_id($this->course->id, $this->cm);
         grade_capture::get_rows($this->course, $this->cm, $this->students);
         $mggradeitemstr = get_string('moodlegrade', 'local_gugcat');
         $mggradeitem = local_gugcat::add_grade_item($this->course->id, $mggradeitemstr, $this->cm);
@@ -220,10 +222,10 @@ class local_gugcat_testcase extends advanced_testcase {
         $this->cm->gradeitem->gradetype = 3;
         $gradehistory = local_gugcat::get_grade_history($this->cm, $this->student->id);
         $type = preg_replace('/<br>.*/i', '', $gradehistory[0]->type);
-        $this->assertEquals($mggradeitemstr, $type);
-        $this->assertEquals($expectednotes, $gradehistory[0]->notes);
-        $this->assertEquals($sndgrditemstr, $gradehistory[1]->type);
-        $this->assertEquals($expectednotes2, $gradehistory[1]->notes);
+        $this->assertEquals($sndgrditemstr, $type);
+        $this->assertEquals($expectednotes2, $gradehistory[0]->notes);
+        $this->assertEquals($mggradeitemstr, $gradehistory[1]->type);
+        $this->assertEquals($expectednotes, $gradehistory[1]->notes);
     }
 
     public function test_blind_marking() {
