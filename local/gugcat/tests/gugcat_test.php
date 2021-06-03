@@ -221,7 +221,7 @@ class local_gugcat_testcase extends advanced_testcase {
         grade_capture::get_rows($this->course, $this->cm, $this->students);
         $this->cm->gradeitem->gradetype = 3;
         $gradehistory = local_gugcat::get_grade_history($this->cm, $this->student->id);
-        $type = preg_replace('/<br>.*/i', '', $gradehistory[0]->type);
+        $type = preg_replace('/<br>.*/i', '', $gradehistory[1]->type);
         $this->assertEquals($sndgrditemstr, $type);
         $this->assertEquals($expectednotes2, $gradehistory[0]->notes);
         $this->assertEquals($mggradeitemstr, $gradehistory[1]->type);
