@@ -130,6 +130,7 @@ foreach($flatnav as $navitem) {
                 case 'key_report_allylti':
                 case 'kalturacoursegallerylink-allcourses';
                 case 'kalturacoursegallerylink-mycourses';
+                case 'contentbank':
                     $settingsnav[] = $navitem;
                     $settingsnavexists = true;
                     break;
@@ -157,7 +158,7 @@ foreach($flatnav as $navitem) {
                     break;
                 case 'mymedia': // Not sure this belongs here
                 case 'gugcat':
-                    case 30:
+                case 30:
                     $thiscoursenav[] = $navitem;
                     $thiscoursenavexists = true;
                     break;
