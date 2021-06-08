@@ -1,0 +1,10 @@
+{
+  "name": "moodle-atto_sketchfab-button",
+  "builds": {
+    "moodle-atto_sketchfab-button": {
+      "jsfiles": [
+        "button.js"
+      ]
+    }
+  }
+}
