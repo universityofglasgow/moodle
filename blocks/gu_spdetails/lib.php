@@ -638,7 +638,9 @@ class assessments_details {
                 $subcategoryenddate = ($activetab === TAB_CURRENT) ?
                                     "AND c.enddate + 86400 * 30 > ?" :
                                     "AND c.enddate + 86400 * 30 <= ?";
-                $subcategorywhere = "gc.parent IN ($level2idtext) AND gc.fullname != 'DO NOT USE' $subcategoryenddate";
+                $subcategorywhere = "gc.parent IN ($level2idtext)
+                                     AND gc.fullname != 'DO NOT USE' $subcategoryenddate
+                                     AND gic.id IS NOT NULL";
                 $subcategorysql = "SELECT $subcategoryfields FROM {grade_categories} gc $subcategoryjoins WHERE $subcategorywhere";
                 array_push($unionparams, $userid, $userid, $enddate);
                 $unionsql .= " UNION ($subcategorysql)";
@@ -695,6 +697,7 @@ class assessments_details {
      * @return array $items
      */
     public static function sanitize_records($records, $subcategoryparent) {
+        global $DB;
         $items = array();
 
         if ($records) {
@@ -704,7 +707,23 @@ class assessments_details {
                 $cm = ($record->status != 'category') ? $modinfo->get_cm($record->id) : null;
                 // Check if course module is visible to the user.
                 $iscmvisible = ($record->status != 'category') ? $cm->uservisible : true;
-
+                $echo = false;
+                if ($record->status == 'category') {
+                    $iscmvisible = false;
+                    // Get all course module id for category.
+                    $sql = "SELECT cm.id FROM {course_modules} cm
+                            LEFT JOIN {modules} m ON (cm.module = m.id)
+                            INNER JOIN {grade_items} gi ON (m.name = gi.itemmodule
+                            AND cm.instance = gi.iteminstance AND gi.categoryid = ?);";
+                    $params = [$record->id];
+                    $subcategorycomponents = $DB->get_records_sql($sql, $params);
+                    $cmids = $subcategorycomponents ? $subcategorycomponents : array();
+                    // Filter cmids if applicable to student.
+                    foreach ($cmids as $cmid) {
+                        $cm = $modinfo->get_cm($cmid->id);
+                        $iscmvisible = $iscmvisible || $cm->uservisible;
+                    }
+                }
                 if ($iscmvisible) {
                         $item = new stdClass;
                         $item->id = $record->id;
