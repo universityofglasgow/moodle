@@ -707,7 +707,6 @@ class assessments_details {
                 $cm = ($record->status != 'category') ? $modinfo->get_cm($record->id) : null;
                 // Check if course module is visible to the user.
                 $iscmvisible = ($record->status != 'category') ? $cm->uservisible : true;
-                $echo = false;
                 if ($record->status == 'category') {
                     $iscmvisible = false;
                     // Get all course module id for category.
