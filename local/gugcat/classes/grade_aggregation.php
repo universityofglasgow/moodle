@@ -380,7 +380,8 @@ class grade_aggregation{
                     }
                     $gradecaptureitem->meritgrade = self::get_alt_grade(true, $meritgi, $selectedmerits, $student->id);
                     $gradecaptureitem->meritgrade->grades = $meritgradeweights;
-                    $gradecaptureitem->highlightMV = ($gradecaptureitem->meritgrade->overridden) ? false : $hasmvgrade;
+                    $gradecaptureitem->highlightMV = ($gradecaptureitem->meritgrade->overridden)
+                    ? $gradecaptureitem->highlightMV : $hasmvgrade;
                 }
 
                 // GPA grade.
@@ -399,7 +400,8 @@ class grade_aggregation{
                     $gradecaptureitem->gpagrade = self::get_alt_grade(false, $gpagi, $selectedgpa, $student->id, $aggrdobj);
                     $gradecaptureitem->gpagrade->gpacap = reset($gpacap);
                     $gradecaptureitem->gpagrade->grades = $gpagrade;
-                    $gradecaptureitem->highlightMV = ($gradecaptureitem->gpagrade->overridden) ? false : $hasmvgrade;
+                    $gradecaptureitem->highlightMV = ($gradecaptureitem->gpagrade->overridden)
+                    ? $gradecaptureitem->highlightMV : $hasmvgrade;
                 }
             }
             $gradecaptureitem->aggregatedgrade = $aggrdobj;
