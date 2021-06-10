@@ -1307,4 +1307,33 @@ class local_gugcat {
 
         return $gb;
     }
+
+    /**
+     * Returns list of students based on grouping ids from activities
+     *
+     * @param array $groupingids ids from activities
+     * @param int $courseid selected course id
+     * @param string $userfields requested user record fields
+     * @return array
+     */
+    public static function get_students_per_groups($groupingids, $courseid, $userfields = 'u.*') {
+        $coursecontext = context_course::instance($courseid);
+        $students = Array();
+        if (array_sum($groupingids) != 0) {
+            $groups = array();
+            foreach ($groupingids as $groupingid) {
+                if ($groupingid != 0) {
+                    $groups += groups_get_all_groups($courseid, 0, $groupingid);
+                }
+            }
+            if (!empty($groups)) {
+                foreach ($groups as $group) {
+                    $students += get_enrolled_users($coursecontext, 'local/gugcat:gradable', $group->id, $userfields);
+                }
+            }
+        } else {
+            $students = get_enrolled_users($coursecontext, 'local/gugcat:gradable', 0, $userfields);
+        }
+        return $students;
+    }
 }

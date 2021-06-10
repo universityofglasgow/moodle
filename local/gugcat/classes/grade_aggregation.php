@@ -329,7 +329,7 @@ class grade_aggregation{
                 $aggrade = $defaultaggregated ? ($aggrdscaletype == SCHEDULE_B
                 ? floor($rawaggrade) + 1 : round($rawaggrade) + 1) : $rawaggrade;
                 $aggrdobj->grade = local_gugcat::convert_grade($aggrade, null, $aggrdscaletype);
-                $aggrdobj->rawgrade = $rawaggrade;
+                $aggrdobj->rawgrade = $gbaggregatedgrade && $gbaggregatedgrade->overridden != 0 ? $rawaggrade - 1 : $rawaggrade;
                 $numberformat = number_format($rawaggrade, 3);
                 // Only get main activities and categories.
                 $filtered = array_filter($gradecaptureitem->grades, function($item) {
@@ -875,7 +875,8 @@ class grade_aggregation{
         $categoryid = optional_param('categoryid', null, PARAM_INT);
         $modules = (is_null($categoryid)) ? local_gugcat::get_activities($courseid)
         : self::get_parent_child_activities($courseid, $categoryid);
-        $students = get_enrolled_users(context_course::instance($courseid), 'local/gugcat:gradable');
+        $groupingids = array_column($modules, 'groupingid');
+        $students = local_gugcat::get_students_per_groups($groupingids, $courseid);
         foreach ($modules as $mod) {
             $issubcat = ($mod->modname == 'category') ? true : false;
             // If mod is subcat then continue.
@@ -925,7 +926,8 @@ class grade_aggregation{
         $modules = ($categoryid == null) ? local_gugcat::get_activities($course->id) :
                                            self::get_parent_child_activities($course->id, $categoryid);
         $category = is_null($categoryid) ? null : grade_category::fetch(array('id' => $categoryid));
-        $students = get_enrolled_users(context_course::instance($course->id), 'local/gugcat:gradable');
+        $groupingids = array_column($modules, 'groupingid');
+        $students = local_gugcat::get_students_per_groups($groupingids, $course->id);
         // Add the columns before the activities.
         array_push($columns, ...['Aggregated Grade', 'Aggregated Grade Numeric', '% Complete', 'Resit Required']);
         $data = self::get_rows($course, $modules, $students);
@@ -952,8 +954,6 @@ class grade_aggregation{
             $activities[$cm->gradeitemid] = array($weight, $alpha, $numeric);
             array_push($columns, ...array($weight, $alpha, $numeric));
         }
-        $displaymerit = false;
-        $displaygpa = false;
         // Process the data to be iterated.
         $array = array();
         foreach ($data as $row) {
