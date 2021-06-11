@@ -613,7 +613,7 @@ class grade_capture{
         $columns = $isassign ? ['Student Number', 'Participant Number', 'Grades']
             : ['Student number', 'Last Name', 'First Name', 'Grades'];
         $fields = $isassign ? 'u.id, u.idnumber' : 'u.id, u.firstname, u.lastname, u.idnumber';
-        $students = self::get_students_per_groups(array($activity->groupingid), $COURSE->id, $fields);
+        $students = local_gugcat::get_students_per_groups(array($activity->groupingid), $COURSE->id, $fields);
         $array = array();
         foreach ($students as $student) {
             $row = new stdClass();
