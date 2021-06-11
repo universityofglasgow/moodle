@@ -609,7 +609,7 @@ class grade_capture{
     public static function download_template_csv($activity) {
         global $COURSE;
         $isassign = $activity->modname == 'assign';
-        if ($activity->gradeitem->gradetype == GRADE_TYPE_SCALE || $activity->is_converted) {
+        if ($activity->gradeitem->gradetype == GRADE_TYPE_SCALE) {
             $gradetype = reset(local_gugcat::$grades) == 'A0' ? "_ScheduleB_" : "_ScheduleA_";
         } else {
             $gm = intval($activity->gradeitem->grademax);
