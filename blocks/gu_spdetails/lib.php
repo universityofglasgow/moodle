@@ -332,9 +332,10 @@ class assessments_details {
     public static function retrieve_2nd_level($parentids) {
         global $DB;
 
+        $donotuse = get_string('gcat_category', 'local_gugcat');
         $parents = implode(', ', $parentids);
-        $sql = "SELECT id FROM {grade_categories} WHERE parent IN ($parents) AND fullname != 'DO NOT USE'";
-        $level2 = $DB->get_records_sql($sql);
+        $sql = "SELECT id FROM {grade_categories} WHERE parent IN ($parents) AND fullname != ?";
+        $level2 = $DB->get_records_sql($sql, [$donotuse]);
         $ids = array();
         foreach ($level2 as $key => $value) {
             array_push($ids, $key);
@@ -369,6 +370,7 @@ class assessments_details {
             $level2ids = self::retrieve_2nd_level($parentids);
             $categories = array_merge($parentids, $level2ids);
             $categoryids = $issubcategory ? $subcategory : implode(', ', $categories);
+            $donotuse = get_string('gcat_category', 'local_gugcat');
 
             $categorylimit = "AND gi.categoryid IN ($categoryids)";
             $convertedgradeselect = "gic.id as convertedgradeid, gp.finalgrade as provisionalgrade,
@@ -639,10 +641,10 @@ class assessments_details {
                                     "AND c.enddate + 86400 * 30 > ?" :
                                     "AND c.enddate + 86400 * 30 <= ?";
                 $subcategorywhere = "gc.parent IN ($level2idtext)
-                                     AND gc.fullname != 'DO NOT USE' $subcategoryenddate
+                                     AND gc.fullname != ? $subcategoryenddate
                                      AND gic.id IS NOT NULL";
                 $subcategorysql = "SELECT $subcategoryfields FROM {grade_categories} gc $subcategoryjoins WHERE $subcategorywhere";
-                array_push($unionparams, $userid, $userid, $enddate);
+                array_push($unionparams, $userid, $userid, $donotuse, $enddate);
                 $unionsql .= " UNION ($subcategorysql)";
             }
             $unionsql .= $orderclause;
@@ -730,7 +732,7 @@ class assessments_details {
                         $item->courseurl = self::return_courseurl($record->courseid);
                         $item->assessmenturl = self::return_assessmenturl($record->id, $record->modname);
                         $item->assessmentname = $record->activityname;
-                        $item->assessmenttype = self::return_assessmenttype($record->gradecategoryname);
+                        $item->assessmenttype = self::return_assessmenttype($record->gradecategoryname, $record->aggregationcoef);
                         $item->weight = self::return_weight($item->assessmenttype, $record->aggregation,
                                                             $record->aggregationcoef, $record->aggregationcoef2,
                                                             isset($subcategoryparent->fullname) ? $subcategoryparent->fullname
@@ -811,12 +813,14 @@ class assessments_details {
      * Returns the 'assessment type'
      *
      * @param string $gradecategoryname
+     * @param int $aggregationcoef
      * @return string 'Formative', 'Summative', or '—'
      */
-    public static function return_assessmenttype($gradecategoryname) {
+    public static function return_assessmenttype($gradecategoryname, $aggregationcoef) {
         $type = strtolower($gradecategoryname);
+        $hasweight = !empty((float)$aggregationcoef);
 
-        if (strpos($type, 'summative') !== false) {
+        if (strpos($type, 'summative') !== false || $hasweight) {
             $assessmenttype = get_string('summative', 'block_gu_spdetails');
         } else if (strpos($type, 'formative') !== false) {
             $assessmenttype = get_string('formative', 'block_gu_spdetails');

@@ -1008,9 +1008,10 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $expected2 = get_string("summative", $lang);
         $expected3 = get_string("emptyvalue", $lang);
 
-        $this->assertEquals($expected1, $this->lib->return_assessmenttype("12312 formative"));
-        $this->assertEquals($expected2, $this->lib->return_assessmenttype("123123 summative"));
-        $this->assertEquals($expected3, $this->lib->return_assessmenttype(time()));
+        $this->assertEquals($expected1, $this->lib->return_assessmenttype("12312 formative", 0));
+        $this->assertEquals($expected2, $this->lib->return_assessmenttype("123123 summative", 0));
+        $this->assertEquals($expected2, $this->lib->return_assessmenttype("12312 formative", 1));
+        $this->assertEquals($expected3, $this->lib->return_assessmenttype(time(), 0));
     }
 
     public function test_return_weight() {
