@@ -320,8 +320,9 @@ class grade_aggregation{
                  'userid' => $student->id)) : null;
                 // Aggregated grade condition boolean.
                 $defaultaggregated = !$gbaggregatedgrade || ($gbaggregatedgrade && $gbaggregatedgrade->overridden == 0);
-                $gradecaptureitem->resit = ($gbaggregatedgrade && preg_match('/\b'.$categoryid.'/i',
-                 $gbaggregatedgrade->information) ? $gbaggregatedgrade->information : null);
+                $gradecaptureitem->resit = ($gbaggregatedgrade ? (preg_match('/\b'.$categoryid.'/i',
+                $gbaggregatedgrade->information) ? 'Y' : ($gbaggregatedgrade->information == 'N'
+                ? 'N' : null)) : null);
                 $rawaggrade = ($defaultaggregated)
                 ? $sumaggregated : (!is_null($gbaggregatedgrade->finalgrade)
                 ? $gbaggregatedgrade->finalgrade : $gbaggregatedgrade->rawgrade);
@@ -446,11 +447,14 @@ class grade_aggregation{
         $gradeobj->timemodified = time();
         $gradeobj->information = null;
         if (preg_match('/\b'.$categoryid.'/i', $aggrade->information)) {
+            $gradeobj->information = 'N';
+            $status = "N";
+        } else if ($aggrade->information == 'N') {
             $gradeobj->information = null;
-            $status = "disable";
+            $status = null;
         } else {
-            $gradeobj->information .= $categoryid.' ';
-            $status = "enable";
+            $gradeobj->information = $categoryid;
+            $status = "Y";
         }
         $DB->update_record('grade_grades', $gradeobj);
         return $status;
@@ -970,7 +974,7 @@ class grade_aggregation{
             $student->{'Aggregated Grade Numeric'} = $isaggregated ? (local_gugcat::is_admin_grade($row->aggregatedgrade->rawgrade)
             ? get_string('nogradeweight', 'local_gugcat') : $row->aggregatedgrade->rawgrade) : null;
             $student->{'% Complete'} = $row->completed;
-            $student->{'Resit Required'} = is_null($row->resit) ? 'N' : 'Y';
+            $student->{'Resit Required'} = is_null($row->resit) ? 'N/A' : $row->resit;
             // Add student's alternative grades.
             $row->meritgrade ? $student->{$meritstr} = $row->meritgrade->grade : null;
             $row->meritgrade ? $student->{$meritstrnum} = (is_null($row->meritgrade->rawgrade)
