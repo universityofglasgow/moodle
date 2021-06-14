@@ -54,6 +54,7 @@ $PAGE->navbar->add(get_string('navname', 'local_gugcat'), $indexurl);
 $PAGE->set_title(get_string('gugcat', 'local_gugcat'));
 
 $PAGE->requires->css('/local/gugcat/styles/gugcat.css');
+$PAGE->requires->css('/local/gugcat/styles/import-loading.css');
 $PAGE->requires->js_call_amd('local_gugcat/main', 'init');
 
 $course = get_course($courseid);
@@ -79,6 +80,11 @@ $params = array(
 // Retrieve the activity.
 $module = local_gugcat::get_activity($courseid, $modid);
 $renderer = $PAGE->get_renderer('local_gugcat');
+
+// Set grade scale.
+if ($module->gradeitem->scaleid) {
+    local_gugcat::set_grade_scale($module->gradeitem->scaleid);
+}
 
 // Download template is clicked.
 if ($download == 1) {

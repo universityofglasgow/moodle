@@ -296,6 +296,13 @@ class local_gugcat {
             grade_category::set_properties($gradecategory, $gradecategory->get_record_data());
             $gradecategory->insert();
             $categoryid = $gradecategory->id;
+        } else {
+            $grdcategorystrold = get_string('gcat_category_old', 'local_gugcat');
+            if (!$categoryid && $categoryidold = $DB->get_field('grade_categories', 'id',
+                array('fullname' => $grdcategorystrold, 'courseid' => $courseid))) {
+                $DB->set_field('grade_categories', 'fullname', $grdcategorystr, array('id' => $categoryidold));
+                $categoryid = $categoryidold;
+            }
         }
         return $categoryid;
     }
@@ -1256,7 +1263,7 @@ class local_gugcat {
         global $COURSE, $DB;
         $prvstr = get_string(($iscategory ? 'subcategorygrade' : 'provisionalgrd'), 'local_gugcat');
         $select = "courseid=$COURSE->id AND itemname='$prvstr' AND " . self::compare_iteminfo();
-        return $DB->get_record_select('grade_items', $select, ['iteminfo' => $id], 'id, idnumber');
+        return $DB->get_record_select('grade_items', $select, ['iteminfo' => $id], 'id, idnumber, outcomeid');
     }
 
     /**
@@ -1306,5 +1313,34 @@ class local_gugcat {
         $gb = (!is_null($gb) && $gb->overridden == 0) && $isvalidassign ? $assign : $gb;
 
         return $gb;
+    }
+
+    /**
+     * Returns list of students based on grouping ids from activities
+     *
+     * @param array $groupingids ids from activities
+     * @param int $courseid selected course id
+     * @param string $userfields requested user record fields
+     * @return array
+     */
+    public static function get_students_per_groups($groupingids, $courseid, $userfields = 'u.*') {
+        $coursecontext = context_course::instance($courseid);
+        $students = Array();
+        if (array_sum($groupingids) != 0) {
+            $groups = array();
+            foreach ($groupingids as $groupingid) {
+                if ($groupingid != 0) {
+                    $groups += groups_get_all_groups($courseid, 0, $groupingid);
+                }
+            }
+            if (!empty($groups)) {
+                foreach ($groups as $group) {
+                    $students += get_enrolled_users($coursecontext, 'local/gugcat:gradable', $group->id, $userfields);
+                }
+            }
+        } else {
+            $students = get_enrolled_users($coursecontext, 'local/gugcat:gradable', 0, $userfields);
+        }
+        return $students;
     }
 }

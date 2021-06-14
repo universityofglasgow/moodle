@@ -100,7 +100,9 @@ $string['gradetooltip'] = '<i>Please ensure grade is:
         <li>Or an accepted administrative grade (NS/MV)</li>
     </ul></i>';
 $string['gradesarebeingimport'] = 'The grades are being imported from the Gradebook
-     and you\'ll be able to view them shortly.';
+     and you will be able to view them shortly.';
+$string['gradesarebeingupload'] = 'The grades are being uploaded
+     and you will be able to view them shortly.';
 $string['hiddengrade'] = 'Hidden grade';
 $string['hiddengrademsg'] = 'The grade is now hidden to the student';
 $string['hidefromstudent'] = 'Hide from student';
@@ -262,4 +264,5 @@ $string['convertexist'] = 'System update - Conversion Adjusted';
 $string['pendingimport'] = 'Pending import';
 
 // Gcat grade category.
-$string['gcat_category'] = 'DO NOT USE';
+$string['gcat_category'] = 'DO NOT USE - PLUGIN RELATED DATA';
+$string['gcat_category_old'] = 'DO NOT USE';

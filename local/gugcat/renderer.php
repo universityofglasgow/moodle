@@ -84,9 +84,12 @@ class local_gugcat_renderer extends plugin_renderer_base {
         foreach ($columns as $col) {
             $htmlcolumns .= html_writer::tag('th', $this->sort_header($col), array('class' => 'gradeitems'));
         }
-        $htmlcolumns .= html_writer::tag('th', get_string('addallnewgrade', 'local_gugcat'), array('class' => 'togglemultigrd sortable'));
-        $htmlcolumns .= html_writer::tag('th', get_string('reasonnewgrade', 'local_gugcat'), array('class' => 'togglemultigrd sortable'));
-        $htmlcolumns .= $isconverted ? html_writer::tag('th', $this->sort_header(get_string('convertedgrade', 'local_gugcat'))) : null;
+        $htmlcolumns .= html_writer::tag('th', get_string('addallnewgrade', 'local_gugcat'),
+         array('class' => 'togglemultigrd sortable'));
+        $htmlcolumns .= html_writer::tag('th', get_string('reasonnewgrade', 'local_gugcat'),
+         array('class' => 'togglemultigrd sortable'));
+        $htmlcolumns .= $isconverted ? html_writer::tag('th', $this->sort_header(get_string('convertedgrade',
+         'local_gugcat'))) : null;
         $htmlcolumns .= html_writer::tag('th', $this->sort_header(get_string('provisionalgrd', 'local_gugcat')));
 
         $htmlcolumns .= html_writer::empty_tag('th');
@@ -380,7 +383,8 @@ class local_gugcat_renderer extends plugin_renderer_base {
             }
             // Require resit row.
             $requireresiturl = $actionurl . "&rowstudentno=$row->studentno&resit=1";
-            $classname = (is_null($row->resit) ? "fa fa-times-circle" : "fa fa-check-circle");
+            $classname = (is_null($row->resit) ? "fa fa-circle" : ($row->resit == 'Y' ? "fa fa-check-circle"
+            : "fa fa-times-circle"));
             $htmlrows .= html_writer::tag('td', html_writer::tag('a', null, array('class' => $classname,
              'href' => $requireresiturl)));
             $htmlrows .= html_writer::tag('td', $row->completed);
@@ -574,7 +578,12 @@ class local_gugcat_renderer extends plugin_renderer_base {
      */
     public function display_import_preview($firstrow, $data, $isassign) {
         $title = get_string('setupimportoptions', 'local_gugcat');
+        $importmodal = [
+            'titlestr' => get_string('pleasewaitfewmin', 'local_gugcat'),
+            'contentstr' => get_string('gradesarebeingupload', 'local_gugcat')
+        ];
         $html = $this->header();
+        $html .= $this->render_from_template('local_gugcat/gcat_import_loading', $importmodal);
         $html .= html_writer::start_tag('div', array('class' => 'form-container'));
         $html .= html_writer::tag('h5', $title, array('class' => 'title'));
         $html .= html_writer::tag('label', get_string('datapreview', 'local_gugcat'));
