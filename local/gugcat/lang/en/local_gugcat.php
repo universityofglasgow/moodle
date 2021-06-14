@@ -264,4 +264,5 @@ $string['convertexist'] = 'System update - Conversion Adjusted';
 $string['pendingimport'] = 'Pending import';
 
 // Gcat grade category.
-$string['gcat_category'] = 'DO NOT USE';
+$string['gcat_category'] = 'DO NOT USE - PLUGIN RELATED DATA';
+$string['gcat_category_old'] = 'DO NOT USE';

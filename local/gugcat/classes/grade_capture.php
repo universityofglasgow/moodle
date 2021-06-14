@@ -609,7 +609,13 @@ class grade_capture{
     public static function download_template_csv($activity) {
         global $COURSE;
         $isassign = $activity->modname == 'assign';
-        $filename = "upload_template_$activity->name"."_".date('Y-m-d_His');
+        if ($activity->gradeitem->gradetype == GRADE_TYPE_SCALE) {
+            $gradetype = reset(local_gugcat::$grades) == 'A0' ? "_ScheduleB_" : "_ScheduleA_";
+        } else {
+            $gm = intval($activity->gradeitem->grademax);
+            $gradetype = "_Points$gm"."_";
+        }
+        $filename = "upload_template_$activity->name".$gradetype.date('Y-m-d_His');
         $columns = $isassign ? ['Student Number', 'Participant Number', 'Grades']
             : ['Student number', 'Last Name', 'First Name', 'Grades'];
         $fields = $isassign ? 'u.id, u.idnumber' : 'u.id, u.firstname, u.lastname, u.idnumber';

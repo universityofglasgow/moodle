@@ -39,7 +39,7 @@ td > i, th > i {
     color: #005c8a;
 }
 
-.fa-times-circle{
+.fa-times-circle, .fa-circle{
     font-size: 20px;
     color: #949494;
 }

@@ -81,6 +81,11 @@ $params = array(
 $module = local_gugcat::get_activity($courseid, $modid);
 $renderer = $PAGE->get_renderer('local_gugcat');
 
+// Set grade scale.
+if ($module->gradeitem->scaleid) {
+    local_gugcat::set_grade_scale($module->gradeitem->scaleid);
+}
+
 // Download template is clicked.
 if ($download == 1) {
     grade_capture::download_template_csv($module);

@@ -383,7 +383,8 @@ class local_gugcat_renderer extends plugin_renderer_base {
             }
             // Require resit row.
             $requireresiturl = $actionurl . "&rowstudentno=$row->studentno&resit=1";
-            $classname = (is_null($row->resit) ? "fa fa-times-circle" : "fa fa-check-circle");
+            $classname = (is_null($row->resit) ? "fa fa-circle" : ($row->resit == 'Y' ? "fa fa-check-circle"
+            : "fa fa-times-circle"));
             $htmlrows .= html_writer::tag('td', html_writer::tag('a', null, array('class' => $classname,
              'href' => $requireresiturl)));
             $htmlrows .= html_writer::tag('td', $row->completed);

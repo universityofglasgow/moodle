@@ -296,6 +296,13 @@ class local_gugcat {
             grade_category::set_properties($gradecategory, $gradecategory->get_record_data());
             $gradecategory->insert();
             $categoryid = $gradecategory->id;
+        } else {
+            $grdcategorystrold = get_string('gcat_category_old', 'local_gugcat');
+            if (!$categoryid && $categoryidold = $DB->get_field('grade_categories', 'id',
+                array('fullname' => $grdcategorystrold, 'courseid' => $courseid))) {
+                $DB->set_field('grade_categories', 'fullname', $grdcategorystr, array('id' => $categoryidold));
+                $categoryid = $categoryidold;
+            }
         }
         return $categoryid;
     }

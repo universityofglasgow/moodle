@@ -141,7 +141,7 @@ class grade_aggregation_testcase extends advanced_testcase {
 
         $rows = grade_aggregation::get_rows($this->course, $modules, $student);
         $resit = grade_aggregation::require_resit($this->student1->id);
-        $this->assertEquals($resit, 'enable');
+        $this->assertEquals($resit, 'Y');
     }
 
     public function test_override_grade() {
@@ -163,7 +163,7 @@ class grade_aggregation_testcase extends advanced_testcase {
         local_gugcat::update_grade($this->student1->id, $aggradeitem, 19, null, time());
         $rows = grade_aggregation::get_rows($this->course, $modules, $student);
         $aggrade = $DB->get_record('grade_grades', array('userid' => $this->student1->id, 'itemid' => $aggradeitem));
-        $this->assertEquals($rows[0]->aggregatedgrade->rawgrade, '19.00000');
+        $this->assertEquals($rows[0]->aggregatedgrade->rawgrade, '18.00000');
         $this->assertNotEquals($defaultoverridden, $aggrade->overridden);
     }
 
