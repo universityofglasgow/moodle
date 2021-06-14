@@ -333,9 +333,10 @@ class assessments_details {
         global $DB;
 
         $donotuse = get_string('gcat_category', 'local_gugcat');
+        $donotuseold = get_string('gcat_category_old', 'local_gugcat');
         $parents = implode(', ', $parentids);
-        $sql = "SELECT id FROM {grade_categories} WHERE parent IN ($parents) AND fullname != ?";
-        $level2 = $DB->get_records_sql($sql, [$donotuse]);
+        $sql = "SELECT id FROM {grade_categories} WHERE parent IN ($parents) AND fullname != ? AND fullname != ?";
+        $level2 = $DB->get_records_sql($sql, [$donotuse, $donotuseold]);
         $ids = array();
         foreach ($level2 as $key => $value) {
             array_push($ids, $key);
@@ -371,6 +372,7 @@ class assessments_details {
             $categories = array_merge($parentids, $level2ids);
             $categoryids = $issubcategory ? $subcategory : implode(', ', $categories);
             $donotuse = get_string('gcat_category', 'local_gugcat');
+            $donotuseold = get_string('gcat_category_old', 'local_gugcat');
 
             $categorylimit = "AND gi.categoryid IN ($categoryids)";
             $convertedgradeselect = "gic.id as convertedgradeid, gp.finalgrade as provisionalgrade,
@@ -641,10 +643,10 @@ class assessments_details {
                                     "AND c.enddate + 86400 * 30 > ?" :
                                     "AND c.enddate + 86400 * 30 <= ?";
                 $subcategorywhere = "gc.parent IN ($level2idtext)
-                                     AND gc.fullname != ? $subcategoryenddate
+                                     AND gc.fullname != ? AND gc.fullname != ? $subcategoryenddate
                                      AND gic.id IS NOT NULL";
                 $subcategorysql = "SELECT $subcategoryfields FROM {grade_categories} gc $subcategoryjoins WHERE $subcategorywhere";
-                array_push($unionparams, $userid, $userid, $donotuse, $enddate);
+                array_push($unionparams, $userid, $userid, $donotuse, $donotuseold, $enddate);
                 $unionsql .= " UNION ($subcategorysql)";
             }
             $unionsql .= $orderclause;
