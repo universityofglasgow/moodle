@@ -288,7 +288,7 @@ class assessments_details {
         }
 
         $sql = "SELECT $fields FROM {course} c $customfieldjoin $enrolmentjoin
-                WHERE $customfieldwhere";
+                WHERE $customfieldwhere AND c.visible = 1 AND c.visibleold = 1";
         $results = $DB->get_records_sql($sql, $param);
 
         if ($results) {
@@ -432,7 +432,7 @@ class assessments_details {
                                 AND ptcfg.value = 1 AND ptcfg.cm = cm.id)
                             LEFT JOIN {grade_items} gi ON (gi.iteminstance = cm.instance AND gi.courseid = a.course
                                 AND gi.itemtype = 'mod' AND gi.itemmodule = 'assign')
-                            LEFT JOIN {grade_grades} gg ON (gg.itemid = gi.id AND gg.userid = ?)
+                            LEFT JOIN {grade_grades} gg ON (gg.itemid = gi.id AND gg.userid = ? AND gi.hidden = 0)
                             LEFT JOIN {grade_categories} gc ON gc.id = gi.categoryid
                             LEFT JOIN {scale} s ON s.id = gi.scaleid
                             LEFT JOIN {course} c ON c.id = a.course
@@ -483,7 +483,7 @@ class assessments_details {
                             LEFT JOIN {course_sections} cs ON (cs.course = c.id AND cs.id = cm.section)
                             JOIN (SELECT gi1.id, gi1.categoryid, gi1.gradetype, gi1.grademax, gi1.grademin,
                                 gi1.gradepass, gi1.scaleid, gi1.aggregationcoef, gi1.aggregationcoef2,
-                                gi1.iteminstance, gi1.courseid, gi1.itemmodule
+                                gi1.iteminstance, gi1.courseid, gi1.itemmodule, gi1.hidden
                                 FROM {grade_items} gi1
                                 LEFT JOIN {grade_items} gi2 ON (gi2.iteminstance = gi1.iteminstance
                                 AND gi2.itemmodule = gi1.itemmodule AND gi2.itemnumber <> gi1.itemnumber)
@@ -491,7 +491,7 @@ class assessments_details {
                                     AND (gi1.itemnumber = 1 OR gi2.itemnumber IS NULL)
                                     AND gi1.itemmodule = 'forum') gi
                                     ON (gi.iteminstance = cm.instance AND gi.courseid = c.id)
-                            LEFT JOIN {grade_grades} gg ON (gg.itemid = gi.id AND gg.userid = ?)
+                            LEFT JOIN {grade_grades} gg ON (gg.itemid = gi.id AND gg.userid = ? AND gi.hidden = 0)
                             LEFT JOIN {grade_categories} gc ON gc.id = gi.categoryid
                             LEFT JOIN {scale} s ON s.id = gi.scaleid
                             LEFT JOIN {forum_discussions} fd ON (fd.course = c.id AND fd.forum = f.id
@@ -542,7 +542,7 @@ class assessments_details {
                                 AND cm.module = m.id AND cm.deletioninprogress = 0)
                             LEFT JOIN {grade_items} gi ON (gi.iteminstance = cm.instance
                                 AND gi.courseid = q.course AND gi.itemtype = 'mod' AND gi.itemmodule = 'quiz')
-                            LEFT JOIN {grade_grades} gg ON (gg.itemid = gi.id AND gg.userid = ?)
+                            LEFT JOIN {grade_grades} gg ON (gg.itemid = gi.id AND gg.userid = ? AND gi.hidden = 0)
                             LEFT JOIN {grade_categories} gc ON gc.id = gi.categoryid
                             LEFT JOIN {course} c ON c.id = q.course
                             LEFT JOIN {course_sections} cs ON (cs.course = c.id AND cs.id = cm.section)
@@ -588,7 +588,7 @@ class assessments_details {
                             LEFT JOIN {grade_items} gi ON (gi.iteminstance = cm.instance
                                 AND gi.courseid = w.course AND gi.itemtype = 'mod'
                                 AND gi.itemmodule = 'workshop')
-                            LEFT JOIN {grade_grades} gg ON (gg.itemid = gi.id AND gg.userid = ?)
+                            LEFT JOIN {grade_grades} gg ON (gg.itemid = gi.id AND gg.userid = ? AND gi.hidden = 0)
                             LEFT JOIN {grade_categories} gc ON gc.id = gi.categoryid
                             LEFT JOIN {course} c ON c.id = w.course
                             LEFT JOIN {course_sections} cs ON (cs.course = c.id AND cs.id = cm.section)
@@ -626,7 +626,7 @@ class assessments_details {
                 $subcategorysubq = "SELECT id FROM {grade_items} gisqc WHERE gisqc.categoryid = gc.id
                                     ORDER BY gisqc.id ASC LIMIT 1";
                 $subcategoryjoins = "INNER JOIN {grade_items} gi ON (itemtype = 'category' AND iteminstance = gc.id)
-                                     INNER JOIN {grade_grades} gg ON (gg.itemid = gi.id AND gg.userid = ?)
+                                     INNER JOIN {grade_grades} gg ON (gg.itemid = gi.id AND gg.userid = ? AND gi.hidden = 0)
                                      LEFT JOIN {course} c ON c.id = gc.courseid
                                      LEFT JOIN {grade_categories} gp ON (gp.id = gc.parent)
                                      LEFT JOIN {grade_items} gip ON (gip.itemname = 'Subcategory Grade' AND gip.iteminfo = gc.id)
