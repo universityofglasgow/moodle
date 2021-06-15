@@ -113,7 +113,8 @@ class grade_capture{
                     // Normalize grades.
                     $gbg = local_gugcat::normalize_gcat_grades($gbg);
                     $grade = self::check_gb_grade($gbg);
-                    $gradecaptureitem->releasedgrade = is_null($grade) ? null : local_gugcat::convert_grade($grade, $gt);
+                    $gradecaptureitem->releasedgrade = is_null($grade) ? null : ($gbg->hidden
+                    ? get_string('nogradeweight', 'local_gugcat') : local_gugcat::convert_grade($grade, $gt));
                 }
                 // Get converted grade.
                 if ($isconverted && count($convertedgrades) > 0) {
