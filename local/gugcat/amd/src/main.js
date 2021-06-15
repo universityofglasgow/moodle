@@ -392,6 +392,8 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
     };
 
     const showImportLoading = () => {
+        document.body.scrollTop = 0; // For Safari
+        document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
         document.getElementById('import-loading').style.display = 'block';
         document.querySelector('body').style.overflow = 'hidden';
     };
@@ -728,6 +730,16 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                         hideshowgrade.forEach(element => {
                             element.style.display = 'block';
                         });
+                    }
+                }else if(checkCurrentUrl("gugcat/import")){
+                    var btn_upload = document.getElementsByName('submitupload');
+                    if(btn_upload[0]){
+                        var disabledStyle = "opacity: 0.8; cursor: default; pointer-events: none;";
+                        document.getElementById('select-category').disabled = true;
+                        document.getElementById('select-category').style.cursor = 'default';
+                        document.getElementById('btn-overviewtab').style.cssText = disabledStyle;
+                        document.getElementById('btn-assessmenttab').style.cssText = disabledStyle;
+                        document.getElementById('gcat-cog').style.cssText = disabledStyle;
                     }
                 }
             }

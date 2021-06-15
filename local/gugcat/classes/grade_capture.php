@@ -518,14 +518,12 @@ class grade_capture{
             if (!in_array($idnumber, array_column($enrolled, 'idnumber'), true)) {
                 $gradebookerrors[] = get_string('uploaderrornotfound', 'local_gugcat', $errorobj);
                 $status = false;
-                break;
             }
 
             // Check if student is not in the current group.
             if (count($grouped) > 0 && !in_array($idnumber, array_column($grouped, 'idnumber'), true)) {
                 $gradebookerrors[] = get_string('uploaderrornotmember', 'local_gugcat', $errorobj);
                 $status = false;
-                break;
             }
 
             // If activity is scale, validate grades if its valid Schedule A or B.
@@ -534,14 +532,12 @@ class grade_capture{
                 if (!preg_match('/^([mM][vV]|[Hh]|[a-zA-Z][0-9]|[nN][sS]|[a-zA-Z][0-9]:\d{1,2})$/', str_replace(' ', '', $grade))) {
                     $gradebookerrors[] = get_string('uploaderrorgradeformat', 'local_gugcat', $errorobj);
                     $status = false;
-                    break;
                 }
 
                 // Check if grade is not in the scale.
                 if (isset($grade) && !in_array(strtoupper($grade), local_gugcat::$grades)) {
                     $gradebookerrors[] = get_string('uploaderrorgradescale', 'local_gugcat', $errorobj);
                     $status = false;
-                    break;
                 }
             } else {
                 // If activity is points, validate grades if its valid points or NS/MV.
@@ -550,14 +546,12 @@ class grade_capture{
                 if (is_numeric($grade) && $grade > $grademax) {
                     $gradebookerrors[] = get_string('uploaderrorgrademaxpoint', 'local_gugcat', $errorobj);
                     $status = false;
-                    break;
                 }
 
                 // Check if grade is a valid grade point.
                 if (!preg_match('/^([mM][vV]|[0-9]{1,3}|[nN][sS])$/', str_replace(' ', '', $grade))) {
                     $gradebookerrors[] = get_string('uploaderrorgradepoint', 'local_gugcat', $errorobj);
                     $status = false;
-                    break;
                 }
             }
 
@@ -566,7 +560,7 @@ class grade_capture{
                 $newgrades[$userids[$idnumber]] = $grade;
             }
         }
-        if ($status && count($newgrades) > 0) {
+        if ($status && count($newgrades) > 0 && empty($gradebookerrors)) {
             $gradeitemid = local_gugcat::add_grade_item($COURSE->id, $itemname, $activity);
             foreach ($newgrades as $id => $item) {
                 $grade = !is_numeric($item) ? array_search(strtoupper($item), local_gugcat::$grades) : $item;
@@ -597,6 +591,8 @@ class grade_capture{
                             and (finalgrade is not null or rawgrade is not null)";
                 $DB->set_field_select('grade_grades', 'feedback', $notes, $select);
             }
+        } else {
+            $status = false;
         }
         return array($status, $gradebookerrors);
     }
