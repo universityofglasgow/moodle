@@ -93,7 +93,9 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $htmlcolumns .= html_writer::tag('th', $this->sort_header(get_string('provisionalgrd', 'local_gugcat')));
         // Released grade column.
         $releasedarr = array_column($rows, 'releasedgrade');
-        $displayreleasedgrade = (count(array_filter($releasedarr, function ($a) { return $a !== null;})) > 0);
+        $displayreleasedgrade = (count(array_filter($releasedarr, function ($a) {
+            return $a !== null;
+        } )) > 0);
         $htmlcolumns .= $displayreleasedgrade ? html_writer::tag('th', get_string('releasedgrade', 'local_gugcat')) : null;
         $htmlcolumns .= html_writer::empty_tag('th');
         // Grade point field attributes.

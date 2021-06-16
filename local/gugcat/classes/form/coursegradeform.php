@@ -33,6 +33,9 @@ class coursegradeform extends moodleform {
     public function definition() {
         $act = optional_param('activityid', null, PARAM_INT);
         $acg = optional_param('alternativecg', null, PARAM_INT);
+
+        $overridden = false;
+
         if (!is_null($act) && $act != 0) {
             $grades = local_gugcat::$grades;
         } else {
@@ -98,6 +101,8 @@ class coursegradeform extends moodleform {
         $mform->addElement('html', '</div>');
 
         if ($this->_customdata['setting'] == '1') {
+            // Check if grade has *.
+            $overridden = preg_match('/\*/i', $student->aggregatedgrade->grade) ? true : false;
             $mform->addElement('static', 'aggregatedgrade', get_string($acg == 1 ? 'meritgrade'
                     : 'aggregatedgrade', 'local_gugcat'), $student->aggregatedgrade->grade);
             $mform->setType('aggregatedgrade', PARAM_NOTAGS);
@@ -107,6 +112,7 @@ class coursegradeform extends moodleform {
                 $mform->setType('capselected', PARAM_NOTAGS);
                 $mform->addElement('static', 'gpagrade', get_string('gpagrade', 'local_gugcat'), $student->gpagrade->grade);
                 $mform->setType('gpagrade', PARAM_NOTAGS);
+                $overridden = preg_match('/\*/i', $student->gpagrade->grade) ? true : false;
             }
             $mform->addElement('html', '</div>');
             $mform->addElement('hidden', 'gradetype', $this->_customdata['gradetype']);
@@ -144,7 +150,13 @@ class coursegradeform extends moodleform {
 
         $mform->addElement('html', '</div>');
         if ($this->_customdata['setting'] == '1') {
-            $mform->addElement('submit', 'submit', get_string('savechanges', 'local_gugcat'), ['class' => 'btn-blue']);
+            $buttonarray[] =& $mform->createElement('cancel', 'cancel', get_string('cancel'));
+            if ($overridden) {
+                $mform->registerNoSubmitButton('revertbutton');
+                $buttonarray[] =& $mform->createElement('submit', 'revertbutton', get_string('revertbutton', 'local_gugcat'));
+            }
+            $buttonarray[] =& $mform->createElement('submit', 'convertbutton', get_string('savechanges', 'local_gugcat'));
+            $mform->addGroup($buttonarray, 'buttonarr', '', array(''), false);
         } else {
             $mform->addElement('submit', 'submit', get_string('savechanges', 'local_gugcat'),
                      ['id' => 'coursegradeform-submit', 'class' => 'btn-blue']);
