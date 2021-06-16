@@ -614,7 +614,7 @@ class grade_aggregation_testcase extends advanced_testcase {
         $this->assertTrue($gradeobj->overridden);
         // Overridden grade is 23 => A1.
         $this->assertEquals($gradeobj->rawgrade, '23.00000');
-        $this->assertEquals($gradeobj->grade, 'A1');
+        $this->assertEquals($gradeobj->grade, 'A1*');
     }
 
     public function test_acg_grade_history() {
