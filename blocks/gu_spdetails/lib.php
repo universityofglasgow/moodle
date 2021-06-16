@@ -626,7 +626,7 @@ class assessments_details {
                 $subcategorysubq = "SELECT id FROM {grade_items} gisqc WHERE gisqc.categoryid = gc.id
                                     ORDER BY gisqc.id ASC LIMIT 1";
                 $subcategoryjoins = "INNER JOIN {grade_items} gi ON (itemtype = 'category' AND iteminstance = gc.id)
-                                     INNER JOIN {grade_grades} gg ON (gg.itemid = gi.id AND gg.userid = ? AND gi.hidden = 0)
+                                     LEFT JOIN {grade_grades} gg ON (gg.itemid = gi.id AND gg.userid = ? AND gi.hidden = 0)
                                      LEFT JOIN {course} c ON c.id = gc.courseid
                                      LEFT JOIN {grade_categories} gp ON (gp.id = gc.parent)
                                      LEFT JOIN {grade_items} gip ON (gip.itemname = 'Subcategory Grade' AND gip.iteminfo = gc.id)
