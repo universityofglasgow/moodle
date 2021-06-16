@@ -168,6 +168,7 @@ class grade_aggregation{
         $page = optional_param('page', 0, PARAM_INT);
         $i = $page * GCAT_MAX_USERS_PER_PAGE + 1;
         $aggrdscaletype = null;
+        $overridden = false;
         foreach ($students as $student) {
             $schedaweights = 0;
             $schedbweights = 0;
@@ -292,7 +293,7 @@ class grade_aggregation{
                     $grdobj->activityinstance = $item->instance;
                     $grdobj->activity = $item->name;
                     $grdobj->category = $getcategory;
-                    $grdobj->is_subcat = ($item->modname == 'category') ? true : false;
+                    $grdobj->is_subcat = false;
                     $grdobj->is_imported = !is_null($pg) ? true : false;
                     $grdobj->is_child = local_gugcat::is_child_activity($item) ? true : false;
                     $grdobj->grade = $grade;
@@ -301,6 +302,13 @@ class grade_aggregation{
                     $grdobj->rawgrade = $grdvalue;
                     $grdobj->originalweight = round((float)$item->weight * 100);
                     $grdobj->weight = round((float)$weight * 100 );
+                    if ($item->modname == 'category') {
+                        if (isset($subcatgrd) && isset($subcatgrd->overridden)) {
+                            $grdobj->grade = "$grade*";
+                            $overridden = true;
+                        }
+                        $grdobj->is_subcat = true;
+                    }
 
                     // Check the next grade to check if scale is sched B when grade is H.
                     $gradescale = ($grade == 'H') ? local_gugcat::convert_grade($grd + 1) : $grade;
@@ -342,7 +350,8 @@ class grade_aggregation{
                 ? get_string('missinggrade', 'local_gugcat')
                 : ($defaultaggregated ? ($totalweight < 75 ? $numberformat
                 : local_gugcat::convert_grade($aggrade, null, $aggrdscaletype) .' ('.$numberformat.')')
-                : local_gugcat::convert_grade($aggrade, null, $aggrdscaletype));
+                : local_gugcat::convert_grade($aggrade, null, $aggrdscaletype).'*');
+                $overridden = $defaultaggregated ? $overridden : true;
                 // Check if assessments gradetypes has point grade type, if yes, display error and missing grade.
                 if (in_array(GRADE_TYPE_VALUE, $gradetypes)) {
                     $aggrdobj->grade = null;
@@ -425,6 +434,13 @@ class grade_aggregation{
                 local_gugcat::notify_error(null, $e);
             }
         }
+
+        // Display overridden info notification.
+        if ($overridden) {
+            $message = get_string('overriddeninfo', 'local_gugcat');
+            \core\notification::add($message, \core\output\notification::NOTIFY_INFO);
+        }
+
         return $rows;
     }
 
@@ -590,6 +606,7 @@ class grade_aggregation{
         // Return provisional grade if overridden.
         if ($pgobj && $pgobj->overridden != 0) {
             $grdobj->grade = $grd;
+            $grdobj->overridden = true;
             $grdobj->gradetype = $gradetype;
             $grdobj->grademax = $grademax;
             $grdobj->scaleid = $scaleid;
@@ -1232,7 +1249,7 @@ class grade_aggregation{
         local_gugcat::set_grade_scale(null);
         // If merit grade is overridden.
         if ($altgg && $altgg->overridden != 0) {
-            $altgrdobj->grade = $altggrd ? local_gugcat::convert_grade($altggrd) : get_string('missinggrade', 'local_gugcat');
+            $altgrdobj->grade = $altggrd ? local_gugcat::convert_grade($altggrd).'*' : get_string('missinggrade', 'local_gugcat');
             $altgrdobj->rawgrade = $altggrd;
             $altgrdobj->overridden = true;
             return $altgrdobj;
