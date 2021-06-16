@@ -174,7 +174,8 @@ class grade_capture{
                 // Display error when grade from grade book is different from gcat moodle grade.
                 if (!is_null($gradecaptureitem->releasedgrade)) {
                     // If gradebook grade is not null and different from moodle grade.
-                    if ($gradecaptureitem->firstgrade != $gradecaptureitem->releasedgrade) {
+                    if ($gradecaptureitem->releasedgrade != get_string('nogradeweight', 'local_gugcat') &&
+                        $gradecaptureitem->firstgrade != $gradecaptureitem->releasedgrade) {
                         $error = get_string('warningreimport', 'local_gugcat');
                     }
                 } else {
