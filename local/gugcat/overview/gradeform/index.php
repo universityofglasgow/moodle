@@ -168,7 +168,7 @@ if ($mform->is_cancelled()) {
         $itemname = get_string($issubcat ? 'subcategorygrade' : 'aggregatedgrade', 'local_gugcat');
     }
     $select = "courseid=$courseid AND itemname='$itemname' AND " . local_gugcat::compare_iteminfo();
-    if ($gradeitem = $DB->get_record_select('grade_items', $select, ['iteminfo' => $id], 'id, idnumber')) {
+    if ($gradeitem = $DB->get_record_select('grade_items', $select, ['iteminfo' => $id], 'id, idnumber, outcomeid')) {
         // If subcat get scaleid.
         $scale = $issubcat ? (!is_null($subcatactivity->is_converted) && !empty($subcatactivity->is_converted)
         ? $subcatactivity->is_converted : $gradeitem->outcomeid) : $gradeitem->idnumber;
