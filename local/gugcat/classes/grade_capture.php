@@ -122,6 +122,9 @@ class grade_capture{
                     $cgg = (is_null($cg) || is_null($cg->grade)) ? null : grade_converter::convert($conversion, $cg->grade);
                     $gradecaptureitem->convertedgrade = is_null($cgg) ? get_string('nograde', 'local_gugcat')
                     : local_gugcat::convert_grade($cgg, null, $module->is_converted);
+                    $crg = is_null($grade) ? null : grade_converter::convert($conversion, $grade);
+                    $gradecaptureitem->convertedrg = (isset($gbg->hidden) && $gbg->hidden
+                    ? get_string('nogradeweight', 'local_gugcat') : local_gugcat::convert_grade($crg, null, $module->is_converted));
                 }
                 // Get first grade and provisional grade.
                 $gifg = $gradeitems[$firstgradeid]->grades;
@@ -431,9 +434,13 @@ class grade_capture{
      * @param int $userid
      * @return boolean
      */
-    public static function hideshowgrade($userid) {
-        global $USER;
+    public static function hideshowgrade($userid, $cm, $courseid) {
+        global $USER, $DB;
 
+        $gradeitemid = $cm->gradeitem->id;
+        // Get converted grade gradeitem id .
+        $convertedgi = $cm->is_converted ? local_gugcat::get_grade_item_id($courseid, $gradeitemid,
+        get_string('convertedgrade', 'local_gugcat')) : null;
         $gradeobj = new grade_grade(array('userid' => $userid, 'itemid' => local_gugcat::$prvgradeid), true);
         $gradeobj->usermodified = $USER->id;
         $gradeobj->itemid = local_gugcat::$prvgradeid;
@@ -443,10 +450,14 @@ class grade_capture{
             $gradeobj->hidden = 1;
             $message = 'hiddengrademsg';
             $status = 'hidden';
+            !is_null($convertedgi) ? $DB->set_field('grade_grades', 'hidden', 1,
+             array('userid' => $userid, 'itemid' => $convertedgi)) : null;
         } else {
             $gradeobj->hidden = 0;
             $message = 'showgrademsg';
             $status = 'shown';
+            !is_null($convertedgi) ? $DB->set_field('grade_grades', 'hidden', 0,
+             array('userid' => $userid, 'itemid' => $convertedgi)) : null;
         }
         local_gugcat::notify_success($message);
         $gradeobj->update();

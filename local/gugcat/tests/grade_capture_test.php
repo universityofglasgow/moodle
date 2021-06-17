@@ -287,7 +287,7 @@ class grade_capture_testcase extends advanced_testcase {
         // Populate static prvgradeid.
         local_gugcat::set_prv_grade_id($this->course->id, $this->cm);
         // Hide grade.
-        $result = grade_capture::hideshowgrade($this->student->id);
+        $result = grade_capture::hideshowgrade($this->student->id, $this->cm, $this->course->id);
         $firstrows = grade_capture::get_rows($this->course, $this->cm, array($this->student));
         $firstrow = $firstrows[0];
         $this->assertEquals($result, 'hidden');
@@ -296,7 +296,7 @@ class grade_capture_testcase extends advanced_testcase {
         // Show grade.
         $DB->set_field('grade_grades', 'hidden', 1, array('userid' => $this->student->id,
          'itemid' => local_gugcat::$prvgradeid));
-        $result = grade_capture::hideshowgrade($this->student->id);
+        $result = grade_capture::hideshowgrade($this->student->id, $this->cm, $this->course->id);
         $this->assertEquals($result, 'shown');
     }
 
