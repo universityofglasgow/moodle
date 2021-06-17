@@ -95,7 +95,7 @@ class assessments_details {
             $html .= html_writer::start_tag('tr');
             $html .= $issubcategory ? "" : html_writer::tag('th', get_string('header_course', 'block_gu_spdetails'),
                                             array('id' => 'sortby_course', 'class' => 'td20 th-sortable',
-                                                'data-value' => ''));
+                                                'data-value' => '', 'tabindex' => '0'));
             $html .= html_writer::tag('th', $issubcategory ? get_string('component', 'report_eventlist')
                                                            : get_string('header_assessment', 'block_gu_spdetails'),
                                             array('class' => 'td20'));
@@ -107,16 +107,16 @@ class assessments_details {
                 $html .= html_writer::tag('th', get_string('header_duedate', 'block_gu_spdetails'),
                                                 array('id' => $issubcategory ? 'sortby_date_subcategory' :
                                                                                'sortby_date', 'class' => 'td10 th-sortable',
-                                                    'data-value' => ''));
+                                                    'data-value' => '', 'tabindex' => '0'));
                 $html .= html_writer::tag('th', get_string('header_status', 'block_gu_spdetails'),
                                                 array('class' => 'td15'));
             } else if ($activetab === TAB_PAST) {
                 $html .= html_writer::tag('th', get_string('header_coursestartdate', 'block_gu_spdetails'),
                                                 array('id' => 'sortby_startdate', 'class' => 'td05 th-sortable',
-                                                'data-value' => ''));
+                                                'data-value' => '', 'tabindex' => '0'));
                 $html .= html_writer::tag('th', get_string('header_courseenddate', 'block_gu_spdetails'),
                                                 array('id' => 'sortby_enddate', 'class' => 'td05 th-sortable',
-                                                'data-value' => ''));
+                                                'data-value' => '', 'tabindex' => '0'));
                 $html .= html_writer::tag('th', get_string('header_submission', 'block_gu_spdetails'),
                                                 array('class' => 'td15'));
             }
