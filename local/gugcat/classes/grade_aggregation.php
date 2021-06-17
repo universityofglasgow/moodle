@@ -393,6 +393,7 @@ class grade_aggregation{
                     $gradecaptureitem->meritgrade->grades = $meritgradeweights;
                     $gradecaptureitem->highlightMV = ($gradecaptureitem->meritgrade->overridden)
                     ? $gradecaptureitem->highlightMV : $hasmvgrade;
+                    $overridden = $gradecaptureitem->meritgrade->overridden ? true : $overridden;
                 }
 
                 // GPA grade.
@@ -413,6 +414,7 @@ class grade_aggregation{
                     $gradecaptureitem->gpagrade->grades = $gpagrade;
                     $gradecaptureitem->highlightMV = ($gradecaptureitem->gpagrade->overridden)
                     ? $gradecaptureitem->highlightMV : $hasmvgrade;
+                    $overridden = $gradecaptureitem->gpagrade->overridden ? true : $overridden;
                 }
             }
             $gradecaptureitem->aggregatedgrade = $aggrdobj;
