@@ -38,6 +38,16 @@ defined('MOODLE_INTERNAL') || die();
 class certificate {
 
     /**
+     * Send the file inline to the browser.
+     */
+    const DELIVERY_OPTION_INLINE = 'I';
+
+    /**
+     * Send to the browser and force a file download
+     */
+    const DELIVERY_OPTION_DOWNLOAD = 'D';
+
+    /**
      * @var string the print protection variable
      */
     const PROTECTION_PRINT = 'print';
@@ -165,7 +175,7 @@ class certificate {
      * @param int $userid
      * @return int the total time spent in seconds
      */
-    public static function get_course_time($courseid, $userid = 0) {
+    public static function get_course_time(int $courseid, int $userid = 0): int {
         global $CFG, $DB, $USER;
 
         if (empty($userid)) {
@@ -217,7 +227,7 @@ class certificate {
                     $totaltime = 0;
                 }
                 $delay = $log->$timefield - $lasthit;
-                if ($delay > ($CFG->sessiontimeout * 60)) {
+                if ($delay > $CFG->sessiontimeout) {
                     // The difference between the last log and the current log is more than
                     // the timeout Register session value so that we have found a session!
                     $login = $log->$timefield;
@@ -260,8 +270,11 @@ class certificate {
         $allparams = $conditionsparams + array('customcertid' => $customcertid);
 
         // Return the issues.
-        $extrafields = get_extra_user_fields(\context_module::instance($cm->id));
-        $ufields = \user_picture::fields('u', $extrafields);
+        $context = \context_module::instance($cm->id);
+        $extrafields = \core_user\fields::for_identity($context)->get_required_fields();
+
+        $ufields = \core_user\fields::for_userpic()->including(...$extrafields);
+        $ufields = $ufields->get_sql('u', false, '', '', false)->selects;
         $sql = "SELECT $ufields, ci.id as issueid, ci.code, ci.timecreated
                   FROM {user} u
             INNER JOIN {customcert_issues} ci

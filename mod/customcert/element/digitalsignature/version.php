@@ -24,6 +24,6 @@
 
 defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden.');
 
-$plugin->version   = 2019111800; // The current module version (Date: YYYYMMDDXX).
-$plugin->requires  = 2019111800; // Requires this Moodle version (3.8).
+$plugin->version   = 2021051700; // The current module version (Date: YYYYMMDDXX).
+$plugin->requires  = 2021051700; // Requires this Moodle version (3.11).
 $plugin->component = 'customcertelement_digitalsignature';
