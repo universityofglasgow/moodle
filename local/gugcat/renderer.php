@@ -94,7 +94,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
         // Released grade column.
         $releasedarr = array_column($rows, 'releasedgrade');
         $displayreleasedgrade = (count(array_filter($releasedarr, function ($a) {
-            return $a !== null;
+            return $a !== null && $a !== 'N/A';
         } )) > 0);
         $htmlcolumns .= $displayreleasedgrade ? html_writer::tag('th', get_string('releasedgrade', 'local_gugcat')) : null;
         $htmlcolumns .= html_writer::empty_tag('th');
