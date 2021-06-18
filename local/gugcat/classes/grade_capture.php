@@ -104,26 +104,29 @@ class grade_capture{
             if ($firstgradeid) {
                 // Get released grade.
                 $relgrade = null;
+                $gbgrade = null;
                 if (count($releasedgrades) > 0) {
                     $gbg = isset($releasedgrades[$student->id]) ? $releasedgrades[$student->id] : null;
+                    $isworkflowenabled = false;
                     if ($module->modname == 'assign') {
                         $assign = new assign(context_module::instance($module->id), $module, $course->id);
                         $assigngrd = $assign->get_user_grade($student->id, false);
                         $gbg = local_gugcat::get_gb_assign_grade($assigngrd, $gbg);
+                        $isworkflowenabled = $assign->get_instance()->markingworkflow == 1;
                         $wfstate = $assign->get_user_flags($student->id, true)->workflowstate;
-                        if ($assign->is_blind_marking() && $wfstate != ASSIGN_MARKING_WORKFLOW_STATE_RELEASED) {
-                            $gbg = null;
-                        }
                     }
                     // Normalize grades.
                     $gbg = local_gugcat::normalize_gcat_grades($gbg);
-                    $relgrade = self::check_gb_grade($gbg);
+                    $gbgrade = self::check_gb_grade($gbg);
+                    $relgrade = $isworkflowenabled && $wfstate != ASSIGN_MARKING_WORKFLOW_STATE_RELEASED
+                    ? null : self::check_gb_grade($gbg);
                     $hidden = isset($gbg->hidden) && $gbg->hidden;
-                    $gradecaptureitem->releasedgrade = is_null($relgrade) ? null : ($hidden
-                    ? get_string('nogradeweight', 'local_gugcat') : local_gugcat::convert_grade($relgrade, $gt));
                     if (!is_null($relgrade) && !$hidden && $isconverted) {
                         $crg = grade_converter::convert($conversion, $relgrade);
                         $gradecaptureitem->releasedgrade = local_gugcat::convert_grade($crg, null, $module->is_converted);
+                    } else {
+                        $gradecaptureitem->releasedgrade = is_null($relgrade) ? null : ($hidden
+                        ? get_string('nogradeweight', 'local_gugcat') : local_gugcat::convert_grade($relgrade, $gt));
                     }
                 }
                 // Get converted grade.
@@ -182,10 +185,10 @@ class grade_capture{
                     }
                 }
                 // Display error when grade from grade book is different from gcat moodle grade.
-                if (!is_null($relgrade)) {
+                if (!is_null($gbgrade)) {
                     // If gradebook grade is not null and different from moodle grade.
                     if ($gradecaptureitem->releasedgrade != get_string('nogradeweight', 'local_gugcat') &&
-                        $gradecaptureitem->firstgrade != $relgrade) {
+                        $gradecaptureitem->firstgrade != $gbgrade) {
                         $error = get_string('warningreimport', 'local_gugcat');
                     }
                 } else {
