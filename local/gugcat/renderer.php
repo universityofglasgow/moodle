@@ -170,7 +170,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
                  $isgradehidden, false, $ammendgradeparams, false) .  $isgradehidden . '</td>';
             }
             $htmlrows .= $displayreleasedgrade ? html_writer::tag('td', is_null($row->releasedgrade)
-            ? get_string('nograde', 'local_gugcat') : ($isconverted ? $row->convertedrg : $row->releasedgrade),
+            ? get_string('nograde', 'local_gugcat') : $row->releasedgrade,
              array('class' => 'font-weight-bold')) : null;
 
             $htmlrows .= '<td>

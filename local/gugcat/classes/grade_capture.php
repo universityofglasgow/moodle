@@ -103,6 +103,7 @@ class grade_capture{
             $gradecaptureitem->hidden = null;
             if ($firstgradeid) {
                 // Get released grade.
+                $relgrade = null;
                 if (count($releasedgrades) > 0) {
                     $gbg = isset($releasedgrades[$student->id]) ? $releasedgrades[$student->id] : null;
                     if ($module->modname == 'assign') {
@@ -112,9 +113,14 @@ class grade_capture{
                     }
                     // Normalize grades.
                     $gbg = local_gugcat::normalize_gcat_grades($gbg);
-                    $grade = self::check_gb_grade($gbg);
-                    $gradecaptureitem->releasedgrade = is_null($grade) ? null : (isset($gbg->hidden) && $gbg->hidden
-                    ? get_string('nogradeweight', 'local_gugcat') : local_gugcat::convert_grade($grade, $gt));
+                    $relgrade = self::check_gb_grade($gbg);
+                    $hidden = isset($gbg->hidden) && $gbg->hidden;
+                    $gradecaptureitem->releasedgrade = is_null($relgrade) ? null : ($hidden
+                    ? get_string('nogradeweight', 'local_gugcat') : local_gugcat::convert_grade($relgrade, $gt));
+                    if (!is_null($relgrade) && !$hidden && $isconverted) {
+                        $crg = grade_converter::convert($conversion, $relgrade);
+                        $gradecaptureitem->releasedgrade = local_gugcat::convert_grade($crg, null, $module->is_converted);
+                    }
                 }
                 // Get converted grade.
                 if ($isconverted && count($convertedgrades) > 0) {
@@ -122,9 +128,6 @@ class grade_capture{
                     $cgg = (is_null($cg) || is_null($cg->grade)) ? null : grade_converter::convert($conversion, $cg->grade);
                     $gradecaptureitem->convertedgrade = is_null($cgg) ? get_string('nograde', 'local_gugcat')
                     : local_gugcat::convert_grade($cgg, null, $module->is_converted);
-                    $crg = is_null($grade) ? null : grade_converter::convert($conversion, $grade);
-                    $gradecaptureitem->convertedrg = (isset($gbg->hidden) && $gbg->hidden
-                    ? get_string('nogradeweight', 'local_gugcat') : local_gugcat::convert_grade($crg, null, $module->is_converted));
                 }
                 // Get first grade and provisional grade.
                 $gifg = $gradeitems[$firstgradeid]->grades;
@@ -175,10 +178,10 @@ class grade_capture{
                     }
                 }
                 // Display error when grade from grade book is different from gcat moodle grade.
-                if (!is_null($gradecaptureitem->releasedgrade)) {
+                if (!is_null($relgrade)) {
                     // If gradebook grade is not null and different from moodle grade.
                     if ($gradecaptureitem->releasedgrade != get_string('nogradeweight', 'local_gugcat') &&
-                        $gradecaptureitem->firstgrade != $gradecaptureitem->releasedgrade) {
+                        $gradecaptureitem->firstgrade != $relgrade) {
                         $error = get_string('warningreimport', 'local_gugcat');
                     }
                 } else {
