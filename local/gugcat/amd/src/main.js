@@ -351,7 +351,7 @@ function($, Str, ModalFactory, ModalGcat, Storage, Ajax) {
                                 var inputprc = document.querySelector(`.input-prc > div > input[name="${nameprc}"]`);
                                 var inputpt = document.querySelector(`.input-pt > div > input[name="${namept}"]`);
                                 let lowerboundary = parseFloat(conv.lowerboundary);
-                                inputprc.value =  lowerboundary;
+                                inputprc.value = rounder(lowerboundary);
                                 inputpt.value = rounder((lowerboundary / 100) * maxgrade); //convert percentage to points
                             }
                         }
