@@ -47,6 +47,8 @@ $url = new moodle_url('/local/gugcat/overview/gradeform/index.php', $urlparams);
 (!is_null($activityid) && $activityid != 0) ? $url->param('activityid', $activityid) : null;
 !is_null($alternativecg) && $alternativecg != 0 ? $url->param('alternativecg', $alternativecg) : null;
 $indexurl = new moodle_url('/local/gugcat/index.php', array('id' => $courseid));
+$courseurl = new moodle_url('/local/gugcat/overview/index.php', array('id' => $courseid, 'page' => $page));
+(!is_null($categoryid) && $categoryid != 0) ? $courseurl->param('categoryid', $categoryid) : null;
 
 $PAGE->set_url($url);
 $PAGE->set_title(get_string('gugcat', 'local_gugcat'));
@@ -138,23 +140,53 @@ if ($formtype == OVERRIDE_GRADE_FORM && $student->aggregatedgrade) {
         local_gugcat::set_grade_scale(null, $student->aggregatedgrade->scale);
     }
 }
-
+// Params needed for logs.
+$params = array(
+    'context' => $coursecontext,
+    'other' => array(
+        'courseid' => $courseid,
+        'categoryid' => $categoryid,
+        'cnum' => $cnum,
+        'idnumber' => $student->idnumber,
+        'studentid' => $studentid,
+        'alternativecg' => $alternativecg,
+        'setting' => $formtype,
+        'page' => $page
+    )
+);
 $mform = new coursegradeform(null, array('setting' => $formtype, 'student' => $student, 'gradetype' => $gradetype));
-if ($fromform = $mform->get_data()) {
-    // Params needed for logs.
-    $params = array(
-        'context' => $coursecontext,
-        'other' => array(
-            'courseid' => $courseid,
-            'categoryid' => $categoryid,
-            'cnum' => $cnum,
-            'idnumber' => $student->idnumber,
-            'studentid' => $studentid,
-            'alternativecg' => $alternativecg,
-            'setting' => $formtype,
-            'page' => $page
-        )
-    );
+if ($mform->is_cancelled()) {
+    unset($SESSION->wantsurl);
+    redirect($courseurl);
+} else if ($mform->no_submit_button_pressed()) {
+    $issubcat = !is_null($activityid) && isset($subcatactivity) && $subcatactivity->modname == 'category';
+    $id = $issubcat ? $subcatactivity->instance : $categoryid;
+    $itemname = null;
+    if (!is_null($alternativecg) && $alternativecg != 0) {
+        $itemname = get_string($alternativecg == GPA_GRADE ? 'gpagrade' : 'meritgrade', 'local_gugcat');
+    } else {
+        $itemname = get_string($issubcat ? 'subcategorygrade' : 'aggregatedgrade', 'local_gugcat');
+    }
+    $select = "courseid=$courseid AND itemname='$itemname' AND " . local_gugcat::compare_iteminfo();
+    if ($gradeitem = $DB->get_record_select('grade_items', $select, ['iteminfo' => $id], 'id, idnumber, outcomeid')) {
+        // If subcat get scaleid.
+        $scale = $issubcat ? (!is_null($subcatactivity->is_converted) && !empty($subcatactivity->is_converted)
+        ? $subcatactivity->is_converted : $gradeitem->outcomeid) : $gradeitem->idnumber;
+        $revertstr = get_string('revertoverridden', 'local_gugcat');
+        $notes = !is_null($alternativecg) && $alternativecg != 0 ? $revertstr
+        : ($issubcat ? "revertoverridden" : "notes:$revertstr");
+        $grdobj = new stdClass();
+        $grdobj->id = $DB->get_field('grade_grades', 'id', array('userid' => $studentid, 'itemid' => $gradeitem->id));
+        $grdobj->feedback = $notes;
+        $grdobj->overridden = 0;
+        $DB->update_record('grade_grades', $grdobj);
+    }
+    // Log of revert overriden grade.
+    $event = \local_gugcat\event\revert_overridden_grade::create($params);
+    $event->trigger();
+    redirect($courseurl);
+    exit;
+} else if ($fromform = $mform->get_data()) {
     if ($formtype == OVERRIDE_GRADE_FORM) {
         $issubcat = !is_null($activityid) && isset($subcatactivity) && $subcatactivity->modname == 'category';
         $id = $issubcat ? $subcatactivity->instance : $categoryid;
@@ -199,7 +231,7 @@ if ($fromform = $mform->get_data()) {
                     local_gugcat::update_components_notes($studentid, $prvgrades->id, $notes);
                 }
             }
-            // Log of adjust course weight.
+            // Log of override grades.
             $event = \local_gugcat\event\override_course_grade::create($params);
             $event->trigger();
         } else {
@@ -220,9 +252,7 @@ if ($fromform = $mform->get_data()) {
         $event = \local_gugcat\event\adjust_course_weight::create($params);
         $event->trigger();
     }
-    $url = new moodle_url('/local/gugcat/overview/index.php', array('id' => $courseid, 'page' => $page));
-    (!is_null($categoryid) && $categoryid != 0) ? $url->param('categoryid', $categoryid) : null;
-    redirect($url);
+    redirect($courseurl);
     exit;
 }
 
