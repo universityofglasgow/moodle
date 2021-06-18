@@ -110,6 +110,10 @@ class grade_capture{
                         $assign = new assign(context_module::instance($module->id), $module, $course->id);
                         $assigngrd = $assign->get_user_grade($student->id, false);
                         $gbg = local_gugcat::get_gb_assign_grade($assigngrd, $gbg);
+                        $wfstate = $assign->get_user_flags($student->id, true)->workflowstate;
+                        if ($assign->is_blind_marking() && $wfstate != ASSIGN_MARKING_WORKFLOW_STATE_RELEASED) {
+                            $gbg = null;
+                        }
                     }
                     // Normalize grades.
                     $gbg = local_gugcat::normalize_gcat_grades($gbg);
