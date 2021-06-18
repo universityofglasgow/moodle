@@ -538,9 +538,10 @@ class mod_kalvidassign_renderer extends plugin_renderer_base {
         $html .= html_writer::empty_tag('input', array('type' => 'hidden', 'id' => 'source', 'name' => 'source', 'value' => 0));
         $html .= html_writer::empty_tag('input', array('type' => 'hidden', 'id' => 'metadata', 'name' => 'metadata', 'value' => 0));
 
-        $html .= html_writer::start_tag('center');
+        $html .= html_writer::start_tag('center', ['class' => 'm-t-2 m-b-1']);
 
         $attr = array(
+            'class' => 'btn btn-primary mr-2',
             'type' => 'button',
             'id' => 'id_add_video',
             'name' => 'add_video',
@@ -553,9 +554,8 @@ class mod_kalvidassign_renderer extends plugin_renderer_base {
 
         $html .= html_writer::empty_tag('input', $attr);
 
-        $html .= '&nbsp;';
-
         $attr = array(
+            'class' => 'btn btn-secondary',
             'type' => 'submit',
             'name' => 'submit_video',
             'id' => 'submit_video',
@@ -622,10 +622,11 @@ class mod_kalvidassign_renderer extends plugin_renderer_base {
         $html .= html_writer::empty_tag('input', array('type' => 'hidden', 'id' => 'source', 'name' => 'source', 'value' => 0));
         $html .= html_writer::empty_tag('input', array('type' => 'hidden', 'id' => 'metadata', 'name' => 'metadata', 'value' => 0));
 
-        $html .= html_writer::start_tag('center');
+        $html .= html_writer::start_tag('center', ['class' => 'm-t-2 m-b-1']);
 
         // Add submit and review buttons.
         $attr = array(
+            'class' => 'btn btn-primary mr-2',
             'type' => 'button',
             'name' => 'add_video',
             'id' => 'id_add_video',
@@ -638,9 +639,8 @@ class mod_kalvidassign_renderer extends plugin_renderer_base {
 
         $html .= html_writer::empty_tag('input', $attr);
 
-        $html .= '&nbsp;&nbsp;';
-
         $attr = array(
+            'class' => 'btn btn-secondary',
             'type' => 'submit',
             'id'   => 'submit_video',
             'name' => 'submit_video',
@@ -689,7 +689,8 @@ class mod_kalvidassign_renderer extends plugin_renderer_base {
                      'value' => $cm->id);
         $html .= html_writer::empty_tag('input', $attr);
 
-        $attr = array('type' => 'submit',
+        $attr = array('class' => 'btn btn-secondary',
+                     'type' => 'submit',
                      'name' => 'grade_submissions',
                      'value' => get_string('gradesubmission', 'kalvidassign'),
                      'class' => 'btn btn-secondary');
@@ -717,7 +718,7 @@ class mod_kalvidassign_renderer extends plugin_renderer_base {
      */
     public function display_submissions_table($cm, $groupfilter = 0, $filter = 'all', $perpage, $quickgrade = false, $tifirst = '', $tilast = '', $page = 0) {
 
-        global $DB, $OUTPUT, $COURSE, $USER;
+        global $DB, $COURSE, $USER;
 
         // Get a list of users who have submissions and retrieve grade data for those users.
         $users = kalvidassign_get_submissions($cm->instance, $filter);
@@ -923,7 +924,7 @@ class mod_kalvidassign_renderer extends plugin_renderer_base {
      * @param object $course The course odject.
      */
     public function display_kalvidassignments_table($course) {
-        global $CFG, $DB, $PAGE, $OUTPUT, $USER;
+        global $CFG, $DB, $USER;
 
         echo html_writer::start_tag('center');
 
@@ -931,7 +932,7 @@ class mod_kalvidassign_renderer extends plugin_renderer_base {
 
         if (!$cms = get_coursemodules_in_course('kalvidassign', $course->id, 'm.timedue')) {
             echo get_string('noassignments', 'mod_kalvidassign');
-            echo $OUTPUT->continue_button($CFG->wwwroot.'/course/view.php?id='.$course->id);
+            echo $this->output->continue_button($CFG->wwwroot.'/course/view.php?id='.$course->id);
         }
 
         $strsectionname  = get_string('sectionname', 'format_'.$course->format);
@@ -984,7 +985,7 @@ class mod_kalvidassign_renderer extends plugin_renderer_base {
         }
 
         if ($assignmentcount > 0) {
-            $pagerenderer = $PAGE->get_renderer('mod_kalvidassign');
+            $pagerenderer = $this->page->get_renderer('mod_kalvidassign');
             echo $pagerenderer->render($courseindexsummary);
         }
 
@@ -1066,7 +1067,7 @@ class mod_kalvidassign_renderer extends plugin_renderer_base {
      * TODO: correct documentation for this function
      */
     public function display_grade_feedback($kalvidassign, $context) {
-        global $USER, $CFG, $DB, $OUTPUT;
+        global $USER, $CFG, $DB;
 
         require_once($CFG->libdir.'/gradelib.php');
 
@@ -1101,14 +1102,14 @@ class mod_kalvidassign_renderer extends plugin_renderer_base {
         }
 
         // Print the feedback
-        echo $OUTPUT->heading(get_string('feedbackfromteacher', 'kalvidassign', fullname($teacher)));
+        echo $this->output->heading(get_string('feedbackfromteacher', 'kalvidassign', fullname($teacher)));
 
         echo '<table cellspacing="0" class="feedback">';
 
         echo '<tr>';
         echo '<td class="left picture">';
         if ($teacher) {
-            echo $OUTPUT->user_picture($teacher);
+            echo $this->output->user_picture($teacher);
         }
         echo '</td>';
         echo '<td class="topic">';
