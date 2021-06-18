@@ -30,6 +30,7 @@ defined('MOODLE_INTERNAL') || die;
 define('FILENAME_SHORTEN', 30);
 
 //require_once($CFG->dirroot.'/mod/assign/locallib.php');
+require_once($CFG->dirroot . '/grade/querylib.php');
 
 use \assignfeedback_editpdf\document_services;
 use stdClass;
@@ -54,6 +55,11 @@ class lib {
         // Add plagiarism and feedback status.
         $assignments = [];
         foreach ($assigns as $cm) {
+            // Skip activities deleted in the course.
+            $rec = $cm->get_course_module_record();
+            if ($rec->deletioninprogress) {
+                continue;
+            }
             $context = \context_module::instance($cm->id);
             $assignment = new \assign($context, $cm, $course);
             $instance = $assignment->get_instance();
@@ -495,12 +501,13 @@ class lib {
     /**
      * Add assignment data
      * @param int $assid
-     * @param int $cmid
+     * @param object $dm
      * @param assign $assign
      * @param array $submissions
      * @return array
      */
-    public static function add_assignment_data($courseid, $assid, $cmid, $assign, $submissions) {
+    public static function add_assignment_data($courseid, $assid, $cm, $assign, $submissions) {
+        $cmid = $cm->id;
 
         // Report date format.
         $dateformat = get_string('strftimedatetimeshort', 'langconfig');
@@ -520,6 +527,10 @@ class lib {
 
         foreach ($submissions as $submission) {
             $userid = $submission->id;
+            $coursegrade = grade_get_grades($courseid, 'mod', 'assign', $cm->instance, $userid);
+            $gradeinstance = reset($coursegrade->items[0]->grades);
+            $dategraded = $gradeinstance->dategraded;
+            $submission->released = empty($dategraded) ? '-' : userdate($dategraded, $dateformat);
             $submission->assignmentid = $assid;
             $submission->userid = $userid;
             $userflags = $assign->get_user_flags($userid, false);
@@ -558,9 +569,6 @@ class lib {
             $submission->files = self::get_submission_files($assign, $filesubmission, $usersubmission, $userid);
             $submission->profiledata = self::get_profile_data($profilefields, $submission);
             $submission->isprofiledata = count($profilefields) != 0;
-
-            // User fields.
-            $profilefields = explode(',', get_config('report_assign', 'profilefields'));
         }
 
         return $submissions;
