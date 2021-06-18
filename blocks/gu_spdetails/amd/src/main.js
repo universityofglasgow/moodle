@@ -234,6 +234,13 @@ define(['core/ajax'], function(Ajax) {
                     document.getElementById('sortby_date_subcategory').classList.remove('th-sort-asc');
                     document.getElementById('sortby_date_subcategory').setAttribute('data-value', 'desc');
                 }
+                blockElement.addEventListener("keyup", function(event) {
+                    element = document.activeElement;
+                    if (event.keyCode === 13 && element.hasAttribute('tabindex')) {
+                    event.preventDefault();
+                    element.click();
+                    }
+                });
                 document.getElementById('sortby_date_subcategory').addEventListener('click', () => {
                     var activetab = 'current';
                     var page = 0;
@@ -417,6 +424,13 @@ define(['core/ajax'], function(Ajax) {
                 loadAssessments(activetab, page, sortby, sortorder, isPageClicked);
                 ASSESSMENTS.addEventListener('change', onChangeListeners);
                 ASSESSMENTS.addEventListener('click', onClickListeners);
+                ASSESSMENTS.addEventListener("keyup", function(event) {
+                    element = document.activeElement;
+                    if (event.keyCode === 13 && element.hasAttribute('tabindex')) {
+                    event.preventDefault();
+                    element.click();
+                    }
+                });
             }
         }
     };
