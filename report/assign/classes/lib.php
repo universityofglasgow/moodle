@@ -695,7 +695,7 @@ class lib {
             $myxls->write_string(3, $i++, get_string('groups'));
         }
         $myxls->write_string(3, $i++, get_string('status'));
-        $myxls->write_string(3, $i++, get_string('grade'));
+        $myxls->write_string(3, $i++, get_string('grade', 'report_assign'));
         if ($urkundenabled = self::urkund_enabled($assignment->id)) {
             $myxls->write_string(3, $i++, get_string('urkund', 'report_assign'));
         }
@@ -708,6 +708,7 @@ class lib {
         }
         $myxls->write_string(3, $i++, get_string('grader', 'report_assign'));
         $myxls->write_string(3, $i++, get_string('modified'));
+        $myxls->write_string(3, $i++, get_string('released', 'report_assign'));
         $myxls->write_string(3, $i++, get_string('extension', 'report_assign'));
         $myxls->write_string(3, $i++, get_string('files'));
 
@@ -743,6 +744,7 @@ class lib {
             }
             $myxls->write_string($row, $i++, $s->grader);
             $myxls->write_string($row, $i++, $s->modified);
+            $myxls->write_string($row, $i++, $s->released);
             $myxls->write_string($row, $i++, $s->extensionduedate);
             $myxls->write_string($row, $i++, $s->files);
             $row++;
