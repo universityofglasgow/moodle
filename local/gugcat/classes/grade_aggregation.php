@@ -337,7 +337,8 @@ class grade_aggregation{
                 // Convert back to moodle scale.
                 $aggrade = $defaultaggregated ? ($aggrdscaletype == SCHEDULE_B
                 ? floor($rawaggrade) + 1 : round($rawaggrade) + 1) : $rawaggrade;
-                $aggrdobj->grade = local_gugcat::convert_grade($aggrade, null, $aggrdscaletype);
+                $aggrdobj->grade = local_gugcat::convert_grade($aggrade, null, $aggrdscaletype)
+                . (!$defaultaggregated ? '*' : null);
                 $aggrdobj->rawgrade = $gbaggregatedgrade && $gbaggregatedgrade->overridden != 0 ? $rawaggrade - 1 : $rawaggrade;
                 $numberformat = number_format($rawaggrade, 3);
                 // Only get main activities and categories.
@@ -392,6 +393,7 @@ class grade_aggregation{
                     $gradecaptureitem->meritgrade->grades = $meritgradeweights;
                     $gradecaptureitem->highlightMV = ($gradecaptureitem->meritgrade->overridden)
                     ? $gradecaptureitem->highlightMV : $hasmvgrade;
+                    $overridden = $gradecaptureitem->meritgrade->overridden ? true : $overridden;
                 }
 
                 // GPA grade.
@@ -412,6 +414,7 @@ class grade_aggregation{
                     $gradecaptureitem->gpagrade->grades = $gpagrade;
                     $gradecaptureitem->highlightMV = ($gradecaptureitem->gpagrade->overridden)
                     ? $gradecaptureitem->highlightMV : $hasmvgrade;
+                    $overridden = $gradecaptureitem->gpagrade->overridden ? true : $overridden;
                 }
             }
             $gradecaptureitem->aggregatedgrade = $aggrdobj;
@@ -691,7 +694,7 @@ class grade_aggregation{
                 }
                 $DB->set_field('grade_grades', 'feedback', '', array('id' => $pgobj->id));
             } else if (preg_match('/grade/i', $pgobj->feedback) || preg_match('/import/i', $pgobj->feedback)
-            || (isset($notes) && preg_match('/aggregation/i', $notes))) {
+            || preg_match('/revert/i', $pgobj->feedback) || (isset($notes) && preg_match('/aggregation/i', $notes))) {
                 // If subcategory feedback is equal to grade, import or $notes is equal to aggregation.
                 // If calculated grade is different from grdbook grade.
                 $feedback = isset($notes) && preg_match('/aggregation/i', $notes) ? $notes : $pgobj->feedback;
@@ -715,7 +718,7 @@ class grade_aggregation{
             // If subcategory feedback is equal to grade, import or $notes is equal to aggregated.
             // If gradebook grade is not null and equal to calculated grade.
             if (preg_match('/grade/i', $pgobj->feedback) || preg_match('/import/i', $pgobj->feedback)
-            || (isset($notes) && preg_match('/aggregation/i', $notes))) {
+            || preg_match('/revert/i', $pgobj->feedback) || (isset($notes) && preg_match('/aggregation/i', $notes))) {
                 $feedback = isset($notes) && preg_match('/aggregation/i', $notes) ? $notes : $pgobj->feedback;
                 local_gugcat::update_grade($userid, $pgobj->itemid, $calculatedgrd, $feedback);
                 foreach ($filtered as $id => $childact) {

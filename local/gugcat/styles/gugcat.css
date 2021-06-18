@@ -76,7 +76,7 @@ button .fa-caret-down{
     padding-right: 1em;
 }
 /* Buttons style */
-.btn-default, .btn-form-default, input[name='userfilechoose']{
+.btn-default, .btn-form-default, input[name='userfilechoose'], #id_cancel, #id_revertbutton{
     background-color: transparent;
     border: 1px solid #005c8a;
     color: #005c8a;
@@ -87,7 +87,8 @@ button .fa-caret-down{
     text-align: center;
 }
 
-.btn-default:hover, .btn-form-default:hover, input[name='userfilechoose']:hover {
+.btn-default:hover, .btn-form-default:hover, input[name='userfilechoose']:hover, #id_cancel:hover,
+#id_revertbutton:hover {
     background-color: #005c8a;
     color: white;
 }

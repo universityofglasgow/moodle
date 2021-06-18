@@ -319,7 +319,7 @@ if (isset($release)) {
 
     // Process show/hide grade from the student.
 } else if (isset($showhidegrade) && !empty($rowstudentid)) {
-    $status = grade_capture::hideshowgrade($rowstudentid);
+    $status = grade_capture::hideshowgrade($rowstudentid, $selectedmodule, $courseid);
     // Log of hide show grade.
     $hideshowparam = array(
         'context' => \context_module::instance($selectedmodule->id),
