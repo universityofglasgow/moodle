@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * The local_gugcat override course grade event.
+ * The local_gugcat revert overridden grade event.
  *
  * @package    local_gugcat
  * @copyright  2020
