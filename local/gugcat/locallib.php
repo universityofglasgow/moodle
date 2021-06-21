@@ -1149,7 +1149,7 @@ class local_gugcat {
                 $modby = (preg_match('/import/i', $gradehistory->feedback) || preg_match('/grade/i', $gradehistory->feedback)
                     || preg_match('/aggregation/i', $gradehistory->feedback)
                     || preg_match('/systemupdatecourse/i', $gradehistory->feedback)
-                    || preg_match('/revert/i', $gradehistory->feedback))
+                    || preg_match('/revertoverridden/i', $gradehistory->feedback))
                     ? null : $DB->get_record('user', array('id' => $gradehistory->usermodified), $fields);
                 $rows[$i]->modby = !is_null($modby) ? ((isset($modby->lastname) && isset($modby->firstname))
                 ? $modby->lastname . ', ' . $modby->firstname : 'System Update') : 'System Update';
