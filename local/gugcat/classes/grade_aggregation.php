@@ -694,7 +694,7 @@ class grade_aggregation{
                 }
                 $DB->set_field('grade_grades', 'feedback', '', array('id' => $pgobj->id));
             } else if (preg_match('/grade/i', $pgobj->feedback) || preg_match('/import/i', $pgobj->feedback)
-            || preg_match('/revert/i', $pgobj->feedback) || (isset($notes) && preg_match('/aggregation/i', $notes))) {
+            || preg_match('/revertoverridden/i', $pgobj->feedback) || (isset($notes) && preg_match('/aggregation/i', $notes))) {
                 // If subcategory feedback is equal to grade, import or $notes is equal to aggregation.
                 // If calculated grade is different from grdbook grade.
                 $feedback = isset($notes) && preg_match('/aggregation/i', $notes) ? $notes : $pgobj->feedback;
@@ -718,7 +718,7 @@ class grade_aggregation{
             // If subcategory feedback is equal to grade, import or $notes is equal to aggregated.
             // If gradebook grade is not null and equal to calculated grade.
             if (preg_match('/grade/i', $pgobj->feedback) || preg_match('/import/i', $pgobj->feedback)
-            || preg_match('/revert/i', $pgobj->feedback) || (isset($notes) && preg_match('/aggregation/i', $notes))) {
+            || preg_match('/revertoverridden/i', $pgobj->feedback) || (isset($notes) && preg_match('/aggregation/i', $notes))) {
                 $feedback = isset($notes) && preg_match('/aggregation/i', $notes) ? $notes : $pgobj->feedback;
                 local_gugcat::update_grade($userid, $pgobj->itemid, $calculatedgrd, $feedback);
                 foreach ($filtered as $id => $childact) {

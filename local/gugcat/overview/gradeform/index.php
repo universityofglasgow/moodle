@@ -174,7 +174,8 @@ if ($mform->is_cancelled()) {
         ? $subcatactivity->is_converted : $gradeitem->outcomeid) : $gradeitem->idnumber;
         $revertstr = get_string('revertoverridden', 'local_gugcat');
         $notes = !is_null($alternativecg) && $alternativecg != 0 ? $revertstr
-        : ($issubcat ? "revertoverridden" : "notes:$revertstr");
+        : ($issubcat ? (!is_null($scale) && !empty($scale) ? "revertoverridden -$scale"
+        : "revertoverridden") : "notes:$revertstr");
         $grdobj = new stdClass();
         $grdobj->id = $DB->get_field('grade_grades', 'id', array('userid' => $studentid, 'itemid' => $gradeitem->id));
         $grdobj->feedback = $notes;
