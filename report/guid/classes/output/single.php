@@ -104,9 +104,9 @@ class single implements renderable, templatable {
         }
 
         // Check for entries in enrollments.
-        $enrolments = \report_guid\lib::get_all_enrolments($username);
+        $enrolments = \report_guid\lib::get_all_enrolments($user);
         $noenrolments = empty($enrolments);
-        $formattedenrolments = \report_guid\lib::format_enrolments($enrolments);
+        $formattedenrolments = \report_guid\lib::format_enrolments($user->id, $enrolments);
 
         // Find mycampus enrolment data.
         if (!$gudatabaseerror) {

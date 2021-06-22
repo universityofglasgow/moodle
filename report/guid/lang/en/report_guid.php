@@ -68,6 +68,7 @@ $string['heading'] = 'GUID Search';
 $string['headingcourseupload'] = 'GUID - Upload users & groups to course';
 $string['headingsync'] = 'GUID - Sync user';
 $string['headingupdate'] = 'GUID - Update username';
+$string['hidden'] = 'Hidden';
 $string['idnumber'] = 'ID/Matric number';
 $string['instructions'] = 'Enter whatever you know about the user. Use a * for wildcards (e.g. Mc*). Data Vault will be searched for matches.';
 $string['lastname'] = 'Last name';

@@ -265,80 +265,52 @@ class lib {
     /**
      * go and find enrollments across all Moodles
      * from external enrollment tables
+     * @param object $user
+     * @return array
      */
-    public static function get_all_enrolments( $guid ) {
+    public static function get_all_enrolments($user) {
         global $CFG;
 
-        // Get plugin config for local_gusync.
-        $config = get_config('local_gusync');
-
-        // Is that plugin configured?
-        if (empty($config->dbhost)) {
-            return false;
-        }
-
-        // Just use local_gusync's library functions.
-        if (file_exists($CFG->dirroot . '/local/gusync/lib.php')) {
-            require_once($CFG->dirroot . '/local/gusync/lib.php');
+        // Get student's courses
+        $fields = ['id', 'fullname', 'shortname', 'visible', 'enddate'];
+        $courses = enrol_get_all_users_courses($user->id, false, $fields);
+        if (!$courses) {
+            return [];
         } else {
-            return false;
-        }
-
-        // Attempt to connect to external db.
-        if (!$extdb = local_gusync_dbinit($config)) {
-            return false;
-        }
-
-        // SQL to find user enrolments.
-        $sql = "select * from moodleenrolments join moodlecourses ";
-        $sql .= "on (moodleenrolments.moodlecoursesid = moodlecourses.id) ";
-        $sql .= "where guid='" . addslashes( $guid ) . "' ";
-        $sql .= "order by site, timelastaccess desc ";
-        $enrolments = local_gusync_query( $extdb, $sql );
-
-        $extdb->Close();
-        if (count($enrolments) == 0) {
-            return array();
-        } else {
-            return $enrolments;
+    //echo "<pre>"; var_dump($courses); die;
+            return $courses;
         }
     }
 
     /**
      * print enrolments
      */
-    public static function format_enrolments($enrolments) {
+    public static function format_enrolments($userid, $courses) {
         global $DB;
 
-        if (empty($enrolments)) {
+        if (empty($courses)) {
             return [];
         }
         $formattedenrolments = [];
 
         // Run through enrolments.
-        foreach ($enrolments as $enrolment) {
-
-            // Check target course actually exists
-            if ($course = $DB->get_record('course', ['id' => $enrolment->courseid])) {
-                $courselink = new \moodle_url('/course/view.php', ['id' => $enrolment->courseid]);
-                $ended = ($course->enddate) && (time() > $course->enddate);
-                $notstarted = time() < $course->startdate;
-            } else {
-                $courselink = '';
-                $ended = false;
-                $notstarted = false;
-            }    
-            if (empty($enrolment->timelastaccess)) {
+        foreach ($courses as $course) {
+            $courselink = new \moodle_url('/course/view.php', ['id' => $course->id]);
+            $ended = ($course->enddate) && (time() > $course->enddate);
+            $notstarted = time() < $course->startdate;
+    
+            if (!$lastaccess = $DB->get_record('user_lastaccess', ['userid' => $userid, 'courseid' => $course->id])) {
                 $lasttime = get_string('never');
             } else {
-                $lasttime = date('d/M/y H:i', $enrolment->timelastaccess);
+                $lasttime = userdate($lastaccess->timeaccess);
             }
             $formattedenrolments[] = (object)[
                 'courselink' => $courselink,
-                'name' => $enrolment->name,
+                'name' => $course->fullname,
                 'lastaccess' => $lasttime,
                 'ended' => $ended,
                 'notstarted' => $notstarted,
+                'hidden' => !$course->visible,
             ];
         }
 
