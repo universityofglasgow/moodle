@@ -134,6 +134,7 @@ $string['nogradeimport'] = 'Awaiting Grade Import';
 $string['nogradeweight'] = 'N/A';
 $string['notes'] = 'Notes';
 $string['overrideerror'] = 'Override error: Assessment is not yet imported to GCAT.';
+$string['overriddeninfo'] = 'Aggregated grades with * have been overridden';
 $string['overridegrade'] = 'Override grade';
 $string['overrideggreassessgrade'] = 'Override aggregated assessment grade';
 $string['overrideggregrade'] = 'Override aggregated course grade';
@@ -164,6 +165,8 @@ $string['releasedgrade'] = 'Released Grade';
 $string['releasefinalassessment'] = 'Release final assessment grades';
 $string['releaseprvgrades'] = 'Release provisional grades';
 $string['requiresresit'] = 'Requires Resit';
+$string['revertbutton'] = 'Revert to calculated grade';
+$string['revertoverridden'] = 'Reverted to calculated grade';
 $string['revised'] = 'Revised By';
 $string['saveallnewgrade'] = 'Save multiple grades';
 $string['savechanges'] = 'Save changes';
@@ -252,6 +255,7 @@ $string['eventoverridegrade'] = 'Override student\'s course grade';
 $string['eventreleasefinalgrades'] = 'Release final assessment grades';
 $string['eventreleaseprvgrades'] = 'Release provisional grades';
 $string['eventrequireresit'] = 'Require Resit';
+$string['eventrevertoverriddengrade'] = "Revert overridden grade to calculated grade";
 $string['eventtoggleassessmentsdisplay'] = 'Toggle assessments display in Student Dashboard';
 $string['eventuploadgrades'] = 'Upload additional grades';
 
@@ -264,4 +268,5 @@ $string['convertexist'] = 'System update - Conversion Adjusted';
 $string['pendingimport'] = 'Pending import';
 
 // Gcat grade category.
-$string['gcat_category'] = 'DO NOT USE';
+$string['gcat_category'] = 'DO NOT USE - PLUGIN RELATED DATA';
+$string['gcat_category_old'] = 'DO NOT USE';

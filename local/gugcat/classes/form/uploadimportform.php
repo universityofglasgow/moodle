@@ -72,6 +72,11 @@ class uploadform extends moodleform {
         if ($activity->gradeitem->gradetype == GRADE_TYPE_VALUE) {
             $mform->addElement('static', 'maximumgrade', get_string('grademax', 'grades'), intval($activity->gradeitem->grademax));
             $mform->setType('maximumgrade', PARAM_NOTAGS);
+        } else {
+            $scaletype = reset(local_gugcat::$grades) == 'A0' ? get_string('scheduleb', 'local_gugcat')
+                : get_string('schedulea', 'local_gugcat');
+            $mform->addElement('static', 'scaletype', get_string('modgradetypescale', 'grades'), $scaletype);
+            $mform->setType('scaletype', PARAM_NOTAGS);
         }
         $mform->addElement('static', 'step', get_string('step', 'local_gugcat', $a = 1),
                  get_string('downloadtempcsv', 'local_gugcat'));

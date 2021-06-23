@@ -1008,9 +1008,10 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         $expected2 = get_string("summative", $lang);
         $expected3 = get_string("emptyvalue", $lang);
 
-        $this->assertEquals($expected1, $this->lib->return_assessmenttype("12312 formative"));
-        $this->assertEquals($expected2, $this->lib->return_assessmenttype("123123 summative"));
-        $this->assertEquals($expected3, $this->lib->return_assessmenttype(time()));
+        $this->assertEquals($expected1, $this->lib->return_assessmenttype("12312 formative", 0));
+        $this->assertEquals($expected2, $this->lib->return_assessmenttype("123123 summative", 0));
+        $this->assertEquals($expected2, $this->lib->return_assessmenttype("12312 formative", 1));
+        $this->assertEquals($expected3, $this->lib->return_assessmenttype(time(), 0));
     }
 
     public function test_return_weight() {
@@ -1189,66 +1190,5 @@ class block_gu_spdetails_testcase extends advanced_testcase {
         foreach ($returnedcategoryids as $categoryid) {
             $this->assertContains($categoryid, $level2ids);
         }
-    }
-
-    public function test_get_topicname() {
-        global $DB;
-        // Test for get_topicname_category.
-        // Create course.
-        $course = $this->getDataGenerator()->create_course();
-
-        // Create category.
-        $categoryattribute = array('courseid' => $course->id);
-        $category = $this->getDataGenerator()->create_grade_category($categoryattribute);
-
-        $returned1 = $this->lib->get_topicname_category($category->id, $course->fullname);
-
-        $this->assertEquals($course->fullname, $returned1);
-
-        // Create assignment.
-        $assign = $this->getDataGenerator()->create_module('assign', array('course' => $course->id));
-
-        // Assign to subcategory.
-        $gradeitem = $DB->get_record("grade_items", ['itemmodule' => 'assign', 'iteminstance' => $assign->id]);
-        $gradeitem->categoryid = $category->id;
-        $DB->update_record("grade_items", $gradeitem);
-
-        $returned2 = $this->lib->get_topicname_category($category->id, $course->fullname);
-        $this->assertEquals($course->fullname, $returned2);
-
-        // Updating Course Section.
-        $module = $DB->get_record("modules", ['name' => 'assign']);
-        $coursemodule = $DB->get_record("course_modules", ['course' => $course->id,
-                                                           'module' => $module->id,
-                                                           'instance' => $assign->id]);
-        $this->assertEquals($coursemodule->id, $assign->cmid);
-        $coursesection = $DB->get_record("course_sections", ['course' => $course->id,
-                                                             'id' => $coursemodule->section]);
-        $coursesection->name = uniqid();
-        $DB->update_record("course_sections", $coursesection);
-
-        $returned3 = $this->lib->get_topicname_category($category->id, $course->fullname);
-        $this->assertEquals($coursesection->name, $returned3);
-
-        // Test for get_topicname.
-        $sql = "SELECT id FROM {grade_categories} WHERE parent IS NULL AND courseid = $course->id";
-        $expectedparent = $DB->get_record_sql($sql);
-        $gettopicname1 = $this->lib->get_topicname($expectedparent->id);
-        $element = new stdClass;
-        $element->id = $category->id;
-        $element->text = $coursesection->name;
-
-        $this->assertEquals([$element], $gettopicname1);
-
-        $gettopicname2 = $this->lib->get_topicname($category->id);
-        $this->assertEquals(array(), $gettopicname2);
-
-        // Test for generate_topicname_case_statement.
-        $casestatement1 = $this->lib->generate_topicname_case_statement($gettopicname1);
-        $casestatement2 = $this->lib->generate_topicname_case_statement($gettopicname2);
-
-        $this->assertEquals("CASE WHEN gc.id = $category->id THEN '$coursesection->name' " .
-                            "ELSE c.fullname END AS coursetitle", $casestatement1);
-        $this->assertEquals("c.fullname AS coursetitle", $casestatement2);
     }
 }

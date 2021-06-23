@@ -91,7 +91,12 @@ class local_gugcat_renderer extends plugin_renderer_base {
         $htmlcolumns .= $isconverted ? html_writer::tag('th', $this->sort_header(get_string('convertedgrade',
          'local_gugcat'))) : null;
         $htmlcolumns .= html_writer::tag('th', $this->sort_header(get_string('provisionalgrd', 'local_gugcat')));
-
+        // Released grade column.
+        $releasedarr = array_column($rows, 'releasedgrade');
+        $displayreleasedgrade = (count(array_filter($releasedarr, function ($a) {
+            return $a !== null && $a !== 'N/A';
+        } )) > 0);
+        $htmlcolumns .= $displayreleasedgrade ? html_writer::tag('th', get_string('releasedgrade', 'local_gugcat')) : null;
         $htmlcolumns .= html_writer::empty_tag('th');
         // Grade point field attributes.
         $gm = ($selectedmodule) ? intval($selectedmodule->gradeitem->grademax) : 0; // Grade max.
@@ -164,6 +169,8 @@ class local_gugcat_renderer extends plugin_renderer_base {
                 . $this->context_actions($row->studentno,
                  $isgradehidden, false, $ammendgradeparams, false) .  $isgradehidden . '</td>';
             }
+            $htmlrows .= $displayreleasedgrade ? html_writer::tag('td', is_null($row->releasedgrade)
+            ? get_string('nograde', 'local_gugcat') : $row->releasedgrade, array('class' => 'font-weight-bold')) : null;
 
             $htmlrows .= '<td>
                             <button type="button" class="btn btn-default addnewgrade" onclick="location.href=\''
@@ -383,7 +390,8 @@ class local_gugcat_renderer extends plugin_renderer_base {
             }
             // Require resit row.
             $requireresiturl = $actionurl . "&rowstudentno=$row->studentno&resit=1";
-            $classname = (is_null($row->resit) ? "fa fa-times-circle" : "fa fa-check-circle");
+            $classname = (is_null($row->resit) ? "fa fa-circle" : ($row->resit == 'Y' ? "fa fa-check-circle"
+            : "fa fa-times-circle"));
             $htmlrows .= html_writer::tag('td', html_writer::tag('a', null, array('class' => $classname,
              'href' => $requireresiturl)));
             $htmlrows .= html_writer::tag('td', $row->completed);

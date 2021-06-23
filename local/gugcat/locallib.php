@@ -296,6 +296,13 @@ class local_gugcat {
             grade_category::set_properties($gradecategory, $gradecategory->get_record_data());
             $gradecategory->insert();
             $categoryid = $gradecategory->id;
+        } else {
+            $grdcategorystrold = get_string('gcat_category_old', 'local_gugcat');
+            if (!$categoryid && $categoryidold = $DB->get_field('grade_categories', 'id',
+                array('fullname' => $grdcategorystrold, 'courseid' => $courseid))) {
+                $DB->set_field('grade_categories', 'fullname', $grdcategorystr, array('id' => $categoryidold));
+                $categoryid = $categoryidold;
+            }
         }
         return $categoryid;
     }
@@ -1141,7 +1148,8 @@ class local_gugcat {
                 $fields = 'firstname, lastname';
                 $modby = (preg_match('/import/i', $gradehistory->feedback) || preg_match('/grade/i', $gradehistory->feedback)
                     || preg_match('/aggregation/i', $gradehistory->feedback)
-                    || preg_match('/systemupdatecourse/i', $gradehistory->feedback))
+                    || preg_match('/systemupdatecourse/i', $gradehistory->feedback)
+                    || preg_match('/revertoverridden/i', $gradehistory->feedback))
                     ? null : $DB->get_record('user', array('id' => $gradehistory->usermodified), $fields);
                 $rows[$i]->modby = !is_null($modby) ? ((isset($modby->lastname) && isset($modby->firstname))
                 ? $modby->lastname . ', ' . $modby->firstname : 'System Update') : 'System Update';
@@ -1157,12 +1165,9 @@ class local_gugcat {
                 }
                 $isscale = ($scale == SCHEDULE_A || $scale == SCHEDULE_B);
                 !$isscale ? self::set_grade_scale($scale) : self::set_grade_scale(null);
-                $rows[$i]->notes = $ghnotes == 'aggregation' ? get_string('aggregation', 'local_gugcat')
-                : ($ghnotes == 'grade' ? get_string('grade', 'local_gugcat') : ($ghnotes == 'import'
-                ? get_string('import', 'local_gugcat')
-                : ($ghnotes == 'convertnew' ? get_string('convertnew', 'local_gugcat')
-                : ($ghnotes == 'convertexist' ? get_string('convertexist', 'local_gugcat')
-                : ($ghnotes == 'systemupdatecourse' ? get_string('systemupdatecourse', 'local_gugcat') : $ghnotes)))));
+                $notesarr = array('aggregation', 'grade', 'import', 'convertnew', 'convertexist',
+                 'systemupdatecourse', 'revertoverridden');
+                $rows[$i]->notes = in_array($ghnotes, $notesarr) ? get_string($ghnotes, 'local_gugcat') : $ghnotes;
                 $grd = !is_null($gradehistory->finalgrade) ? $gradehistory->finalgrade
                     : (!is_null($gradehistory->rawgrade) ? $gradehistory->rawgrade
                         : null);
@@ -1306,5 +1311,34 @@ class local_gugcat {
         $gb = (!is_null($gb) && $gb->overridden == 0) && $isvalidassign ? $assign : $gb;
 
         return $gb;
+    }
+
+    /**
+     * Returns list of students based on grouping ids from activities
+     *
+     * @param array $groupingids ids from activities
+     * @param int $courseid selected course id
+     * @param string $userfields requested user record fields
+     * @return array
+     */
+    public static function get_students_per_groups($groupingids, $courseid, $userfields = 'u.*') {
+        $coursecontext = context_course::instance($courseid);
+        $students = Array();
+        if (array_sum($groupingids) != 0) {
+            $groups = array();
+            foreach ($groupingids as $groupingid) {
+                if ($groupingid != 0) {
+                    $groups += groups_get_all_groups($courseid, 0, $groupingid);
+                }
+            }
+            if (!empty($groups)) {
+                foreach ($groups as $group) {
+                    $students += get_enrolled_users($coursecontext, 'local/gugcat:gradable', $group->id, $userfields);
+                }
+            }
+        } else {
+            $students = get_enrolled_users($coursecontext, 'local/gugcat:gradable', 0, $userfields);
+        }
+        return $students;
     }
 }
