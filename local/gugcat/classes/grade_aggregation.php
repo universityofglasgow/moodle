@@ -168,6 +168,7 @@ class grade_aggregation{
         $page = optional_param('page', 0, PARAM_INT);
         $i = $page * GCAT_MAX_USERS_PER_PAGE + 1;
         $aggrdscaletype = null;
+        $overridden = false;
         foreach ($students as $student) {
             $schedaweights = 0;
             $schedbweights = 0;
@@ -292,7 +293,7 @@ class grade_aggregation{
                     $grdobj->activityinstance = $item->instance;
                     $grdobj->activity = $item->name;
                     $grdobj->category = $getcategory;
-                    $grdobj->is_subcat = ($item->modname == 'category') ? true : false;
+                    $grdobj->is_subcat = false;
                     $grdobj->is_imported = !is_null($pg) ? true : false;
                     $grdobj->is_child = local_gugcat::is_child_activity($item) ? true : false;
                     $grdobj->grade = $grade;
@@ -301,6 +302,13 @@ class grade_aggregation{
                     $grdobj->rawgrade = $grdvalue;
                     $grdobj->originalweight = round((float)$item->weight * 100);
                     $grdobj->weight = round((float)$weight * 100 );
+                    if ($item->modname == 'category') {
+                        if (isset($subcatgrd) && isset($subcatgrd->overridden)) {
+                            $grdobj->grade = "$grade*";
+                            $overridden = true;
+                        }
+                        $grdobj->is_subcat = true;
+                    }
 
                     // Check the next grade to check if scale is sched B when grade is H.
                     $gradescale = ($grade == 'H') ? local_gugcat::convert_grade($grd + 1) : $grade;
@@ -320,16 +328,18 @@ class grade_aggregation{
                  'userid' => $student->id)) : null;
                 // Aggregated grade condition boolean.
                 $defaultaggregated = !$gbaggregatedgrade || ($gbaggregatedgrade && $gbaggregatedgrade->overridden == 0);
-                $gradecaptureitem->resit = ($gbaggregatedgrade && preg_match('/\b'.$categoryid.'/i',
-                 $gbaggregatedgrade->information) ? $gbaggregatedgrade->information : null);
+                $gradecaptureitem->resit = ($gbaggregatedgrade ? (preg_match('/\b'.$categoryid.'/i',
+                $gbaggregatedgrade->information) ? 'Y' : ($gbaggregatedgrade->information == 'N'
+                ? 'N' : null)) : null);
                 $rawaggrade = ($defaultaggregated)
                 ? $sumaggregated : (!is_null($gbaggregatedgrade->finalgrade)
                 ? $gbaggregatedgrade->finalgrade : $gbaggregatedgrade->rawgrade);
                 // Convert back to moodle scale.
                 $aggrade = $defaultaggregated ? ($aggrdscaletype == SCHEDULE_B
                 ? floor($rawaggrade) + 1 : round($rawaggrade) + 1) : $rawaggrade;
-                $aggrdobj->grade = local_gugcat::convert_grade($aggrade, null, $aggrdscaletype);
-                $aggrdobj->rawgrade = $rawaggrade;
+                $aggrdobj->grade = local_gugcat::convert_grade($aggrade, null, $aggrdscaletype)
+                . (!$defaultaggregated ? '*' : null);
+                $aggrdobj->rawgrade = $gbaggregatedgrade && $gbaggregatedgrade->overridden != 0 ? $rawaggrade - 1 : $rawaggrade;
                 $numberformat = number_format($rawaggrade, 3);
                 // Only get main activities and categories.
                 $filtered = array_filter($gradecaptureitem->grades, function($item) {
@@ -341,7 +351,8 @@ class grade_aggregation{
                 ? get_string('missinggrade', 'local_gugcat')
                 : ($defaultaggregated ? ($totalweight < 75 ? $numberformat
                 : local_gugcat::convert_grade($aggrade, null, $aggrdscaletype) .' ('.$numberformat.')')
-                : local_gugcat::convert_grade($aggrade, null, $aggrdscaletype));
+                : local_gugcat::convert_grade($aggrade, null, $aggrdscaletype).'*');
+                $overridden = $defaultaggregated ? $overridden : true;
                 // Check if assessments gradetypes has point grade type, if yes, display error and missing grade.
                 if (in_array(GRADE_TYPE_VALUE, $gradetypes)) {
                     $aggrdobj->grade = null;
@@ -380,7 +391,9 @@ class grade_aggregation{
                     }
                     $gradecaptureitem->meritgrade = self::get_alt_grade(true, $meritgi, $selectedmerits, $student->id);
                     $gradecaptureitem->meritgrade->grades = $meritgradeweights;
-                    $gradecaptureitem->highlightMV = ($gradecaptureitem->meritgrade->overridden) ? false : $hasmvgrade;
+                    $gradecaptureitem->highlightMV = ($gradecaptureitem->meritgrade->overridden)
+                    ? $gradecaptureitem->highlightMV : $hasmvgrade;
+                    $overridden = $gradecaptureitem->meritgrade->overridden ? true : $overridden;
                 }
 
                 // GPA grade.
@@ -399,7 +412,9 @@ class grade_aggregation{
                     $gradecaptureitem->gpagrade = self::get_alt_grade(false, $gpagi, $selectedgpa, $student->id, $aggrdobj);
                     $gradecaptureitem->gpagrade->gpacap = reset($gpacap);
                     $gradecaptureitem->gpagrade->grades = $gpagrade;
-                    $gradecaptureitem->highlightMV = ($gradecaptureitem->gpagrade->overridden) ? false : $hasmvgrade;
+                    $gradecaptureitem->highlightMV = ($gradecaptureitem->gpagrade->overridden)
+                    ? $gradecaptureitem->highlightMV : $hasmvgrade;
+                    $overridden = $gradecaptureitem->gpagrade->overridden ? true : $overridden;
                 }
             }
             $gradecaptureitem->aggregatedgrade = $aggrdobj;
@@ -422,6 +437,13 @@ class grade_aggregation{
                 local_gugcat::notify_error(null, $e);
             }
         }
+
+        // Display overridden info notification.
+        if ($overridden) {
+            $message = get_string('overriddeninfo', 'local_gugcat');
+            \core\notification::add($message, \core\output\notification::NOTIFY_INFO);
+        }
+
         return $rows;
     }
 
@@ -444,11 +466,14 @@ class grade_aggregation{
         $gradeobj->timemodified = time();
         $gradeobj->information = null;
         if (preg_match('/\b'.$categoryid.'/i', $aggrade->information)) {
+            $gradeobj->information = 'N';
+            $status = "N";
+        } else if ($aggrade->information == 'N') {
             $gradeobj->information = null;
-            $status = "disable";
+            $status = null;
         } else {
-            $gradeobj->information .= $categoryid.' ';
-            $status = "enable";
+            $gradeobj->information = $categoryid;
+            $status = "Y";
         }
         $DB->update_record('grade_grades', $gradeobj);
         return $status;
@@ -584,6 +609,7 @@ class grade_aggregation{
         // Return provisional grade if overridden.
         if ($pgobj && $pgobj->overridden != 0) {
             $grdobj->grade = $grd;
+            $grdobj->overridden = true;
             $grdobj->gradetype = $gradetype;
             $grdobj->grademax = $grademax;
             $grdobj->scaleid = $scaleid;
@@ -668,7 +694,7 @@ class grade_aggregation{
                 }
                 $DB->set_field('grade_grades', 'feedback', '', array('id' => $pgobj->id));
             } else if (preg_match('/grade/i', $pgobj->feedback) || preg_match('/import/i', $pgobj->feedback)
-            || (isset($notes) && preg_match('/aggregation/i', $notes))) {
+            || preg_match('/revertoverridden/i', $pgobj->feedback) || (isset($notes) && preg_match('/aggregation/i', $notes))) {
                 // If subcategory feedback is equal to grade, import or $notes is equal to aggregation.
                 // If calculated grade is different from grdbook grade.
                 $feedback = isset($notes) && preg_match('/aggregation/i', $notes) ? $notes : $pgobj->feedback;
@@ -692,7 +718,7 @@ class grade_aggregation{
             // If subcategory feedback is equal to grade, import or $notes is equal to aggregated.
             // If gradebook grade is not null and equal to calculated grade.
             if (preg_match('/grade/i', $pgobj->feedback) || preg_match('/import/i', $pgobj->feedback)
-            || (isset($notes) && preg_match('/aggregation/i', $notes))) {
+            || preg_match('/revertoverridden/i', $pgobj->feedback) || (isset($notes) && preg_match('/aggregation/i', $notes))) {
                 $feedback = isset($notes) && preg_match('/aggregation/i', $notes) ? $notes : $pgobj->feedback;
                 local_gugcat::update_grade($userid, $pgobj->itemid, $calculatedgrd, $feedback);
                 foreach ($filtered as $id => $childact) {
@@ -873,7 +899,8 @@ class grade_aggregation{
         $categoryid = optional_param('categoryid', null, PARAM_INT);
         $modules = (is_null($categoryid)) ? local_gugcat::get_activities($courseid)
         : self::get_parent_child_activities($courseid, $categoryid);
-        $students = get_enrolled_users(context_course::instance($courseid), 'local/gugcat:gradable');
+        $groupingids = array_column($modules, 'groupingid');
+        $students = local_gugcat::get_students_per_groups($groupingids, $courseid);
         foreach ($modules as $mod) {
             $issubcat = ($mod->modname == 'category') ? true : false;
             // If mod is subcat then continue.
@@ -923,7 +950,8 @@ class grade_aggregation{
         $modules = ($categoryid == null) ? local_gugcat::get_activities($course->id) :
                                            self::get_parent_child_activities($course->id, $categoryid);
         $category = is_null($categoryid) ? null : grade_category::fetch(array('id' => $categoryid));
-        $students = get_enrolled_users(context_course::instance($course->id), 'local/gugcat:gradable');
+        $groupingids = array_column($modules, 'groupingid');
+        $students = local_gugcat::get_students_per_groups($groupingids, $course->id);
         // Add the columns before the activities.
         array_push($columns, ...['Aggregated Grade', 'Aggregated Grade Numeric', '% Complete', 'Resit Required']);
         $data = self::get_rows($course, $modules, $students);
@@ -950,8 +978,6 @@ class grade_aggregation{
             $activities[$cm->gradeitemid] = array($weight, $alpha, $numeric);
             array_push($columns, ...array($weight, $alpha, $numeric));
         }
-        $displaymerit = false;
-        $displaygpa = false;
         // Process the data to be iterated.
         $array = array();
         foreach ($data as $row) {
@@ -968,7 +994,7 @@ class grade_aggregation{
             $student->{'Aggregated Grade Numeric'} = $isaggregated ? (local_gugcat::is_admin_grade($row->aggregatedgrade->rawgrade)
             ? get_string('nogradeweight', 'local_gugcat') : $row->aggregatedgrade->rawgrade) : null;
             $student->{'% Complete'} = $row->completed;
-            $student->{'Resit Required'} = is_null($row->resit) ? 'N' : 'Y';
+            $student->{'Resit Required'} = is_null($row->resit) ? 'N/A' : $row->resit;
             // Add student's alternative grades.
             $row->meritgrade ? $student->{$meritstr} = $row->meritgrade->grade : null;
             $row->meritgrade ? $student->{$meritstrnum} = (is_null($row->meritgrade->rawgrade)
@@ -1226,7 +1252,7 @@ class grade_aggregation{
         local_gugcat::set_grade_scale(null);
         // If merit grade is overridden.
         if ($altgg && $altgg->overridden != 0) {
-            $altgrdobj->grade = $altggrd ? local_gugcat::convert_grade($altggrd) : get_string('missinggrade', 'local_gugcat');
+            $altgrdobj->grade = $altggrd ? local_gugcat::convert_grade($altggrd).'*' : get_string('missinggrade', 'local_gugcat');
             $altgrdobj->rawgrade = $altggrd;
             $altgrdobj->overridden = true;
             return $altgrdobj;

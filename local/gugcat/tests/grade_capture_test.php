@@ -177,6 +177,39 @@ class grade_capture_testcase extends advanced_testcase {
         $this->assertEquals($row->studentno, $this->student->id);
         $this->assertEquals($row->firstgrade, get_string('nogradeimport', 'local_gugcat'));
         $this->assertFalse($row->discrepancy);
+        $this->assertNull($row->releasedgrade);
+        $this->assertNull($row->provisionalgrade);
+        $this->assertEmpty($row->grades);
+        // Import grades to create moodle grade item.
+        grade_capture::import_from_gradebook($this->course->id, $this->cm, $this->cms);
+
+        $rows = grade_capture::get_rows($this->course, $this->cm, array($this->student));
+        $row = $rows[0];
+        $this->assertEquals($row->studentno, $this->student->id);
+        $this->assertEquals($row->firstgrade, get_string('nograde', 'local_gugcat'));
+        $this->assertEquals($row->provisionalgrade, get_string('nograde', 'local_gugcat'));
+        $this->assertFalse($row->discrepancy);
+        $this->assertNull($row->releasedgrade);
+        $this->assertNotEmpty($row->grades);
+
+        // Add provisional grade to student.
+        $expectedgradeint = 10;
+        $expectedgrade = '10.000';
+        $gradeobj = new grade_grade(array('userid' => $this->student->id, 'itemid' => $this->provisionalgi), true);
+        $gradeobj->rawgrade = $expectedgradeint;
+        $gradeobj->finalgrade = $expectedgradeint;
+        $gradeobj->update();
+        // Test release prv grade.
+        grade_capture::release_prv_grade($this->course->id, $this->cm);
+
+        $students = array($this->student->id => $this->student);
+        $rows = grade_capture::get_rows($this->course, $this->cm, $students);
+        $row = $rows[0];
+        // Assert released grade.
+        $this->assertEquals($row->studentno, $this->student->id);
+        $this->assertEquals($row->firstgrade, get_string('nograde', 'local_gugcat'));
+        $this->assertEquals($row->provisionalgrade, $expectedgrade);
+        $this->assertEquals($row->releasedgrade, $expectedgrade);
     }
 
 
@@ -254,7 +287,7 @@ class grade_capture_testcase extends advanced_testcase {
         // Populate static prvgradeid.
         local_gugcat::set_prv_grade_id($this->course->id, $this->cm);
         // Hide grade.
-        $result = grade_capture::hideshowgrade($this->student->id);
+        $result = grade_capture::hideshowgrade($this->student->id, $this->cm, $this->course->id);
         $firstrows = grade_capture::get_rows($this->course, $this->cm, array($this->student));
         $firstrow = $firstrows[0];
         $this->assertEquals($result, 'hidden');
@@ -263,7 +296,7 @@ class grade_capture_testcase extends advanced_testcase {
         // Show grade.
         $DB->set_field('grade_grades', 'hidden', 1, array('userid' => $this->student->id,
          'itemid' => local_gugcat::$prvgradeid));
-        $result = grade_capture::hideshowgrade($this->student->id);
+        $result = grade_capture::hideshowgrade($this->student->id, $this->cm, $this->course->id);
         $this->assertEquals($result, 'shown');
     }
 

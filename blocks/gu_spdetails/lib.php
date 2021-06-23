@@ -95,7 +95,7 @@ class assessments_details {
             $html .= html_writer::start_tag('tr');
             $html .= $issubcategory ? "" : html_writer::tag('th', get_string('header_course', 'block_gu_spdetails'),
                                             array('id' => 'sortby_course', 'class' => 'td20 th-sortable',
-                                                'data-value' => ''));
+                                                'data-value' => '', 'tabindex' => '0'));
             $html .= html_writer::tag('th', $issubcategory ? get_string('component', 'report_eventlist')
                                                            : get_string('header_assessment', 'block_gu_spdetails'),
                                             array('class' => 'td20'));
@@ -107,16 +107,16 @@ class assessments_details {
                 $html .= html_writer::tag('th', get_string('header_duedate', 'block_gu_spdetails'),
                                                 array('id' => $issubcategory ? 'sortby_date_subcategory' :
                                                                                'sortby_date', 'class' => 'td10 th-sortable',
-                                                    'data-value' => ''));
+                                                    'data-value' => '', 'tabindex' => '0'));
                 $html .= html_writer::tag('th', get_string('header_status', 'block_gu_spdetails'),
                                                 array('class' => 'td15'));
             } else if ($activetab === TAB_PAST) {
                 $html .= html_writer::tag('th', get_string('header_coursestartdate', 'block_gu_spdetails'),
                                                 array('id' => 'sortby_startdate', 'class' => 'td05 th-sortable',
-                                                'data-value' => ''));
+                                                'data-value' => '', 'tabindex' => '0'));
                 $html .= html_writer::tag('th', get_string('header_courseenddate', 'block_gu_spdetails'),
                                                 array('id' => 'sortby_enddate', 'class' => 'td05 th-sortable',
-                                                'data-value' => ''));
+                                                'data-value' => '', 'tabindex' => '0'));
                 $html .= html_writer::tag('th', get_string('header_submission', 'block_gu_spdetails'),
                                                 array('class' => 'td15'));
             }
@@ -288,7 +288,7 @@ class assessments_details {
         }
 
         $sql = "SELECT $fields FROM {course} c $customfieldjoin $enrolmentjoin
-                WHERE $customfieldwhere";
+                WHERE $customfieldwhere AND c.visible = 1 AND c.visibleold = 1";
         $results = $DB->get_records_sql($sql, $param);
 
         if ($results) {
@@ -332,9 +332,11 @@ class assessments_details {
     public static function retrieve_2nd_level($parentids) {
         global $DB;
 
+        $donotuse = get_string('gcat_category', 'local_gugcat');
+        $donotuseold = get_string('gcat_category_old', 'local_gugcat');
         $parents = implode(', ', $parentids);
-        $sql = "SELECT id FROM {grade_categories} WHERE parent IN ($parents) AND fullname != 'DO NOT USE'";
-        $level2 = $DB->get_records_sql($sql);
+        $sql = "SELECT id FROM {grade_categories} WHERE parent IN ($parents) AND fullname != ? AND fullname != ?";
+        $level2 = $DB->get_records_sql($sql, [$donotuse, $donotuseold]);
         $ids = array();
         foreach ($level2 as $key => $value) {
             array_push($ids, $key);
@@ -369,6 +371,8 @@ class assessments_details {
             $level2ids = self::retrieve_2nd_level($parentids);
             $categories = array_merge($parentids, $level2ids);
             $categoryids = $issubcategory ? $subcategory : implode(', ', $categories);
+            $donotuse = get_string('gcat_category', 'local_gugcat');
+            $donotuseold = get_string('gcat_category_old', 'local_gugcat');
 
             $categorylimit = "AND gi.categoryid IN ($categoryids)";
             $convertedgradeselect = "gic.id as convertedgradeid, gp.finalgrade as provisionalgrade,
@@ -428,7 +432,7 @@ class assessments_details {
                                 AND ptcfg.value = 1 AND ptcfg.cm = cm.id)
                             LEFT JOIN {grade_items} gi ON (gi.iteminstance = cm.instance AND gi.courseid = a.course
                                 AND gi.itemtype = 'mod' AND gi.itemmodule = 'assign')
-                            LEFT JOIN {grade_grades} gg ON (gg.itemid = gi.id AND gg.userid = ?)
+                            LEFT JOIN {grade_grades} gg ON (gg.itemid = gi.id AND gg.userid = ? AND gi.hidden = 0)
                             LEFT JOIN {grade_categories} gc ON gc.id = gi.categoryid
                             LEFT JOIN {scale} s ON s.id = gi.scaleid
                             LEFT JOIN {course} c ON c.id = a.course
@@ -479,7 +483,7 @@ class assessments_details {
                             LEFT JOIN {course_sections} cs ON (cs.course = c.id AND cs.id = cm.section)
                             JOIN (SELECT gi1.id, gi1.categoryid, gi1.gradetype, gi1.grademax, gi1.grademin,
                                 gi1.gradepass, gi1.scaleid, gi1.aggregationcoef, gi1.aggregationcoef2,
-                                gi1.iteminstance, gi1.courseid, gi1.itemmodule
+                                gi1.iteminstance, gi1.courseid, gi1.itemmodule, gi1.hidden
                                 FROM {grade_items} gi1
                                 LEFT JOIN {grade_items} gi2 ON (gi2.iteminstance = gi1.iteminstance
                                 AND gi2.itemmodule = gi1.itemmodule AND gi2.itemnumber <> gi1.itemnumber)
@@ -487,7 +491,7 @@ class assessments_details {
                                     AND (gi1.itemnumber = 1 OR gi2.itemnumber IS NULL)
                                     AND gi1.itemmodule = 'forum') gi
                                     ON (gi.iteminstance = cm.instance AND gi.courseid = c.id)
-                            LEFT JOIN {grade_grades} gg ON (gg.itemid = gi.id AND gg.userid = ?)
+                            LEFT JOIN {grade_grades} gg ON (gg.itemid = gi.id AND gg.userid = ? AND gi.hidden = 0)
                             LEFT JOIN {grade_categories} gc ON gc.id = gi.categoryid
                             LEFT JOIN {scale} s ON s.id = gi.scaleid
                             LEFT JOIN {forum_discussions} fd ON (fd.course = c.id AND fd.forum = f.id
@@ -538,7 +542,7 @@ class assessments_details {
                                 AND cm.module = m.id AND cm.deletioninprogress = 0)
                             LEFT JOIN {grade_items} gi ON (gi.iteminstance = cm.instance
                                 AND gi.courseid = q.course AND gi.itemtype = 'mod' AND gi.itemmodule = 'quiz')
-                            LEFT JOIN {grade_grades} gg ON (gg.itemid = gi.id AND gg.userid = ?)
+                            LEFT JOIN {grade_grades} gg ON (gg.itemid = gi.id AND gg.userid = ? AND gi.hidden = 0)
                             LEFT JOIN {grade_categories} gc ON gc.id = gi.categoryid
                             LEFT JOIN {course} c ON c.id = q.course
                             LEFT JOIN {course_sections} cs ON (cs.course = c.id AND cs.id = cm.section)
@@ -584,7 +588,7 @@ class assessments_details {
                             LEFT JOIN {grade_items} gi ON (gi.iteminstance = cm.instance
                                 AND gi.courseid = w.course AND gi.itemtype = 'mod'
                                 AND gi.itemmodule = 'workshop')
-                            LEFT JOIN {grade_grades} gg ON (gg.itemid = gi.id AND gg.userid = ?)
+                            LEFT JOIN {grade_grades} gg ON (gg.itemid = gi.id AND gg.userid = ? AND gi.hidden = 0)
                             LEFT JOIN {grade_categories} gc ON gc.id = gi.categoryid
                             LEFT JOIN {course} c ON c.id = w.course
                             LEFT JOIN {course_sections} cs ON (cs.course = c.id AND cs.id = cm.section)
@@ -622,7 +626,7 @@ class assessments_details {
                 $subcategorysubq = "SELECT id FROM {grade_items} gisqc WHERE gisqc.categoryid = gc.id
                                     ORDER BY gisqc.id ASC LIMIT 1";
                 $subcategoryjoins = "INNER JOIN {grade_items} gi ON (itemtype = 'category' AND iteminstance = gc.id)
-                                     INNER JOIN {grade_grades} gg ON (gg.itemid = gi.id AND gg.userid = ?)
+                                     LEFT JOIN {grade_grades} gg ON (gg.itemid = gi.id AND gg.userid = ? AND gi.hidden = 0)
                                      LEFT JOIN {course} c ON c.id = gc.courseid
                                      LEFT JOIN {grade_categories} gp ON (gp.id = gc.parent)
                                      LEFT JOIN {grade_items} gip ON (gip.itemname = 'Subcategory Grade' AND gip.iteminfo = gc.id)
@@ -638,9 +642,11 @@ class assessments_details {
                 $subcategoryenddate = ($activetab === TAB_CURRENT) ?
                                     "AND c.enddate + 86400 * 30 > ?" :
                                     "AND c.enddate + 86400 * 30 <= ?";
-                $subcategorywhere = "gc.parent IN ($level2idtext) AND gc.fullname != 'DO NOT USE' $subcategoryenddate";
+                $subcategorywhere = "gc.parent IN ($level2idtext)
+                                     AND gc.fullname != ? AND gc.fullname != ? $subcategoryenddate
+                                     AND gic.id IS NOT NULL";
                 $subcategorysql = "SELECT $subcategoryfields FROM {grade_categories} gc $subcategoryjoins WHERE $subcategorywhere";
-                array_push($unionparams, $userid, $userid, $enddate);
+                array_push($unionparams, $userid, $userid, $donotuse, $donotuseold, $enddate);
                 $unionsql .= " UNION ($subcategorysql)";
             }
             $unionsql .= $orderclause;
@@ -695,6 +701,7 @@ class assessments_details {
      * @return array $items
      */
     public static function sanitize_records($records, $subcategoryparent) {
+        global $DB;
         $items = array();
 
         if ($records) {
@@ -704,7 +711,22 @@ class assessments_details {
                 $cm = ($record->status != 'category') ? $modinfo->get_cm($record->id) : null;
                 // Check if course module is visible to the user.
                 $iscmvisible = ($record->status != 'category') ? $cm->uservisible : true;
-
+                if ($record->status == 'category') {
+                    $iscmvisible = false;
+                    // Get all course module id for category.
+                    $sql = "SELECT cm.id FROM {course_modules} cm
+                            LEFT JOIN {modules} m ON (cm.module = m.id)
+                            INNER JOIN {grade_items} gi ON (m.name = gi.itemmodule
+                            AND cm.instance = gi.iteminstance AND gi.categoryid = ?);";
+                    $params = [$record->id];
+                    $subcategorycomponents = $DB->get_records_sql($sql, $params);
+                    $cmids = $subcategorycomponents ? $subcategorycomponents : array();
+                    // Filter cmids if applicable to student.
+                    foreach ($cmids as $cmid) {
+                        $cm = $modinfo->get_cm($cmid->id);
+                        $iscmvisible = $iscmvisible || $cm->uservisible;
+                    }
+                }
                 if ($iscmvisible) {
                         $item = new stdClass;
                         $item->id = $record->id;
@@ -712,7 +734,7 @@ class assessments_details {
                         $item->courseurl = self::return_courseurl($record->courseid);
                         $item->assessmenturl = self::return_assessmenturl($record->id, $record->modname);
                         $item->assessmentname = $record->activityname;
-                        $item->assessmenttype = self::return_assessmenttype($record->gradecategoryname);
+                        $item->assessmenttype = self::return_assessmenttype($record->gradecategoryname, $record->aggregationcoef);
                         $item->weight = self::return_weight($item->assessmenttype, $record->aggregation,
                                                             $record->aggregationcoef, $record->aggregationcoef2,
                                                             isset($subcategoryparent->fullname) ? $subcategoryparent->fullname
@@ -793,12 +815,14 @@ class assessments_details {
      * Returns the 'assessment type'
      *
      * @param string $gradecategoryname
+     * @param int $aggregationcoef
      * @return string 'Formative', 'Summative', or '—'
      */
-    public static function return_assessmenttype($gradecategoryname) {
+    public static function return_assessmenttype($gradecategoryname, $aggregationcoef) {
         $type = strtolower($gradecategoryname);
+        $hasweight = !empty((float)$aggregationcoef);
 
-        if (strpos($type, 'summative') !== false) {
+        if (strpos($type, 'summative') !== false || $hasweight) {
             $assessmenttype = get_string('summative', 'block_gu_spdetails');
         } else if (strpos($type, 'formative') !== false) {
             $assessmenttype = get_string('formative', 'block_gu_spdetails');

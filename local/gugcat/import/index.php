@@ -81,6 +81,11 @@ $params = array(
 $module = local_gugcat::get_activity($courseid, $modid);
 $renderer = $PAGE->get_renderer('local_gugcat');
 
+// Set grade scale.
+if ($module->gradeitem->scaleid) {
+    local_gugcat::set_grade_scale($module->gradeitem->scaleid);
+}
+
 // Download template is clicked.
 if ($download == 1) {
     grade_capture::download_template_csv($module);
@@ -155,10 +160,9 @@ if ($formdata = $mform2->get_data()) {
     } else {
         echo $OUTPUT->header();
         $iid = null;
-        $errors[] = get_string('importfailed', 'grades');
-        foreach ($errors as $error) {
-            echo $OUTPUT->notification($error);
-        }
+        $error = implode("<br>", $errors);
+        echo $OUTPUT->notification(get_string('importfailed', 'grades'));
+        echo $OUTPUT->notification($error);
         // Display the standard upload file form.
         echo $renderer->display_empty_form();
         echo $mform->display();
