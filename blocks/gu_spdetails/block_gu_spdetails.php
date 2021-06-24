@@ -24,6 +24,8 @@
  */
 defined('MOODLE_INTERNAL') || die();
 
+require_once(dirname(__FILE__) . '/lib.php');
+
 class block_gu_spdetails extends block_base {
 
     public function init() {
@@ -101,7 +103,7 @@ class block_gu_spdetails extends block_base {
         if ($results) {
             $studentcourses = array();
             foreach ($results as $courseid => $courseobject) {
-                if ($this->return_isstudent($courseid)) {
+                if (assessments_details::return_isstudent($courseid, $userid)) {
                     array_push($studentcourses, $courseid);
                 }
             }
@@ -111,15 +113,4 @@ class block_gu_spdetails extends block_base {
         }
     }
 
-    /**
-     * Checks if user has capability of a student
-     *
-     * @param string $courseid
-     * @param string $userid
-     * @return boolean has_capability
-     */
-    public function return_isstudent($courseid) {
-        $context = context_course::instance($courseid);
-        return has_capability('moodle/grade:view', $context, null, false);
-    }
 }

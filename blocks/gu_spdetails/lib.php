@@ -294,7 +294,7 @@ class assessments_details {
         if ($results) {
             $studentcourses = array();
             foreach ($results as $courseid => $courseobject) {
-                if (self::return_isstudent($courseid)) {
+                if (self::return_isstudent($courseid, $userid)) {
                         array_push($studentcourses, $courseid);
                 }
             }
@@ -354,6 +354,7 @@ class assessments_details {
      */
     public static function retrieve_gradable_activities($activetab, $userid, $sortby, $sortorder, $subcategory) {
         global $DB;
+        
         $enddate = time();
 
         $courses = self::retrieve_courses($activetab, $userid);
@@ -656,6 +657,7 @@ class assessments_details {
         }
 
         $items = ($records) ? self::sanitize_records($records, $subcategoryparent) : array();
+
         return $items;
     }
 
@@ -779,13 +781,13 @@ class assessments_details {
     /**
      * Checks if user has capability of a student
      *
-     * @param string $courseid
-     * @param string $userid
+     * @param int $courseid
+     * @param int $userid
      * @return boolean has_capability
      */
-    public static function return_isstudent($courseid) {
+    public static function return_isstudent($courseid, $userid) {
         $context = context_course::instance($courseid);
-        return has_capability('moodle/grade:view', $context, null, false);
+        return has_capability('moodle/grade:view', $context, $userid, false);
     }
 
     /**
