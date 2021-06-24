@@ -2,30 +2,53 @@
 
     require_once("$CFG->dirroot/enrol/locallib.php");
     
+$hillheadnotificationtype = get_config('theme_hillhead', 'hillhead_notification_type');
+$hillheadNotificationText =  get_config('theme_hillhead', 'hillhead_notification');
+
+if(empty($_SESSION['SESSION']->hillhead_notifications) || !array_key_exists(md5($hillheadNotificationText), $_SESSION['SESSION']->hillhead_notifications)) {
+    switch($hillheadnotificationtype) {
+        case 'alert-danger':
+            $notiftext = '<div class="alert alert-danger mb-3"><a class="close" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($hillheadNotificationText).'" aria-label="Close"><span aria-hidden="true">&times;</span></a><i class="fa fa-warning"></i><span>'.$hillheadNotificationText.'</span></div>';
+            break;
+        case 'alert-warning':
+            $notiftext = '<div class="alert alert-warning mb-3"><a class="close" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($hillheadNotificationText).'" aria-label="Close"><span aria-hidden="true">&times;</span></a><i class="fa fa-warning"></i><span>'.$hillheadNotificationText.'</span></div>';
+            break;
+        case 'alert-success':
+            $notiftext = '<div class="alert alert-success mb-3"><a class="close" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($hillheadNotificationText).'" aria-label="Close"><span aria-hidden="true">&times;</span></a><i class="fa fa-info-circle"></i><span>'.$hillheadNotificationText.'</span></div>';
+            break;
+        case 'alert-info':
+            $notiftext = '<div class="alert alert-info mb-3"><a class="close" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($hillheadNotificationText).'" aria-label="Close"><span aria-hidden="true">&times;</span></a><i class="fa fa-info-circle"></i><span>'.$hillheadNotificationText.'</span></div>';
+            break;
+        default:
+            $notiftext = '';
+    }
+} else {
     $notiftext = '';
+}
     
     $hillheaddowntimedatetime = get_config('theme_hillhead', 'hillhead_downtime_datetime');
     $hillheaddowntimelength = get_config('theme_hillhead', 'hillhead_downtime_length');
+    $hillheaddowntimedetails = get_config('theme_hillhead', 'hillhead_downtime_details');
     
     if(!empty($hillheaddowntimedatetime)) {
         $countdown = strtotime($hillheaddowntimedatetime);
         $finishtime = $countdown + ($hillheaddowntimelength * 60);
         if($countdown !== false) {
             $timetildowntime = $countdown - time();
-            if($timetildowntime > 604800) {
-                // Downtime is over a week away. Do nothing.
+            if($timetildowntime > 1209600) {
+                // Downtime is over two weeks away. Do nothing.
             } else if ($timetildowntime > 172800) {
                 // Downtime is between 2 and 7 days away.
-                $notiftext .= '<div class="alert mb-3 alert-info d-flex align-items-center"><i class="fa fa-info-circle d-flex-item"></i><span class="d-flex-item"><strong>Moodle is being upgraded</strong> on '.date('l jS F', $countdown).' between '.date('H:i', $countdown).' and '.date('H:i', $finishtime).'. The site may be unavailable or slower than usual during the upgrade.</span></div>';
+                $notiftext .= '<div class="alert mb-3 alert-info d-flex align-items-center"><i class="fa fa-info-circle d-flex-item"></i><span class="d-flex-item"><strong>Moodle is being upgraded</strong> on '.date('l jS F', $countdown).' between '.date('H:i', $countdown).' and '.date('H:i', $finishtime).'. '.$hillheaddowntimedetails.'</span></div>';
             } else if ($timetildowntime > 10800) {
                 // Downtime is between 3 hours and 2 days away.
-                $notiftext .= '<div class="alert mb-3 alert-warning d-flex align-items-center"><i class="fa fa-exclamation-circle d-flex-item"></i><span class="d-flex-item"><strong>Moodle is being upgraded</strong> on '.date('l jS F', $countdown).' between '.date('H:i', $countdown).' and '.date('H:i', $finishtime).'. The site may be unavailable or slower than usual during the upgrade.</span></div>';
+                $notiftext .= '<div class="alert mb-3 alert-warning d-flex align-items-center"><i class="fa fa-exclamation-circle d-flex-item"></i><span class="d-flex-item"><strong>Moodle is being upgraded</strong> on '.date('l jS F', $countdown).' between '.date('H:i', $countdown).' and '.date('H:i', $finishtime).'. '.$hillheaddowntimedetails.'</span></div>';
             } else if ($timetildowntime > 900) {
                 // Downtime is between 30 minutes and 3 hours away
-                $notiftext .= '<div class="alert mb-3 alert-danger d-flex align-items-center"><i class="fa fa-exclamation-triangle d-flex-item"></i><span class="d-flex-item"><strong>Moodle is being upgraded</strong> on '.date('l jS F', $countdown).' between '.date('H:i', $countdown).' and '.date('H:i', $finishtime).'. The site may be unavailable or slower than usual during the upgrade.</span></div>';
+                $notiftext .= '<div class="alert mb-3 alert-danger d-flex align-items-center"><i class="fa fa-exclamation-triangle d-flex-item"></i><span class="d-flex-item"><strong>Moodle is being upgraded</strong> on '.date('l jS F', $countdown).' between '.date('H:i', $countdown).' and '.date('H:i', $finishtime).'. '.$hillheaddowntimedetails.'</span></div>';
             } else if ($timetildowntime > -7200) {
                 // Downtime is less than 30 minutes away
-                $notiftext .= '<div class="alert mb-3 alert-danger alert-pulse d-flex align-items-center"><i class="fa fa-exclamation-triangle d-flex-item"></i><span class="d-flex-item"><strong>Moodle is being upgraded</strong> on '.date('l jS F', $countdown).' between '.date('H:i', $countdown).' and '.date('H:i', $finishtime).'. The site may be unavailable or slower than usual during the upgrade. <strong>Please save your work!</strong></span></div>';
+                $notiftext .= '<div class="alert mb-3 alert-danger alert-pulse d-flex align-items-center"><i class="fa fa-exclamation-triangle d-flex-item"></i><span class="d-flex-item"><strong>Moodle is being upgraded</strong> on '.date('l jS F', $countdown).' between '.date('H:i', $countdown).' and '.date('H:i', $finishtime).'. '.$hillheaddowntimedetails.' <strong>Please save your work!</strong></span></div>';
             }
         }
     }

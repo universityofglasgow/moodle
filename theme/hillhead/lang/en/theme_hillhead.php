@@ -96,3 +96,5 @@ $string['hillhead_downtime_length_120'] = '2 Hours';
 $string['hillhead_downtime_length_180'] = '3 Hours';
 $string['hillhead_downtime_length_240'] = '4 Hours';
 $string['hillhead_downtime_length_480'] = '8 Hours';
+$string['hillhead_downtime_details'] = 'Downtime Details';
+$string['hillhead_downtime_details_desc'] = 'This is shown after the downtime date and time. It should be something like "The system may be slower than usual" or "the system will be down completely". It can be left blank.';

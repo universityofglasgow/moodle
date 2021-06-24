@@ -131,9 +131,30 @@ if ($ADMIN->fulltree) {
     
     $setting = new admin_setting_configselect($name, $title, $description, $default, $choices);                                                                                                                                                                                    
     $page->add($setting);
+    
+    $setting = new admin_setting_configtextarea('theme_hillhead/hillhead_downtime_details',                                                              
+        get_string('hillhead_downtime_details', 'theme_hillhead'), get_string('hillhead_downtime_details_desc', 'theme_hillhead'), 'The site may be unavailable or slower than usual during the upgrade.', PARAM_RAW);                                                                                            
+    $page->add($setting);
  
-    // Custom System Notification                                                                                   
-    /*$setting = new admin_setting_configtextarea('theme_hillhead/hillhead_notification',                                                              
+    // Custom System Notification
+    
+    $name = 'theme_hillhead/hillhead_notification_type';                                                                                                   
+    $title = get_string('hillhead_notification_type', 'theme_hillhead');                                                                                   
+    $description = get_string('hillhead_notification_type_desc', 'theme_hillhead');
+    
+    $choices = Array(
+        'alert-none' => get_string('hillhead_notification_none', 'theme_hillhead'),
+        'alert-danger' => get_string('hillhead_notification_danger', 'theme_hillhead'),
+        'alert-warning' => get_string('hillhead_notification_warning', 'theme_hillhead'),
+        'alert-success' => get_string('hillhead_notification_success', 'theme_hillhead'),
+        'alert-info' => get_string('hillhead_notification_info', 'theme_hillhead')
+    );
+    $default = 'alert-none';
+    
+    $setting = new admin_setting_configselect($name, $title, $description, $default, $choices);                                                                                                                                                                                    
+    $page->add($setting);
+                                                                           
+    $setting = new admin_setting_configtextarea('theme_hillhead/hillhead_notification',                                                              
         get_string('hillhead_notification', 'theme_hillhead'), get_string('hillhead_notification_desc', 'theme_hillhead'), '', PARAM_RAW);                                                                                            
     $page->add($setting);
  
@@ -144,7 +165,7 @@ if ($ADMIN->fulltree) {
  
     $setting = new admin_setting_configtext('theme_hillhead/hillhead_helpcentre', get_string('helplink', 'theme_hillhead'),                           
         get_string('helplink_desc', 'theme_hillhead'), '', PARAM_RAW);                                                                                                                                        
-    $page->add($setting); */
+    $page->add($setting);
  
     // Must add the page after definiting all the settings!                                                                         
     $settings->add($page);  
