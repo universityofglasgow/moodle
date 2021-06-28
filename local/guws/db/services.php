@@ -85,4 +85,11 @@ $functions = array(
         'description' => 'Get course completion status for list of GUIDs ',
         'type'        => 'read',
     ),  
+    'local_guws_gcat_getdashboard' => array(
+        'classname'   => 'local_guws_external',
+        'methodname'  => 'gcat_getdashboard',
+        'classpath'   => 'local/guws/externallib.php',
+        'description' => 'Get data from GCAT student dashboard ',
+        'type'        => 'read',
+    ),  
 );

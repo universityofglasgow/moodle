@@ -354,7 +354,7 @@ class assessments_details {
      */
     public static function retrieve_gradable_activities($activetab, $userid, $sortby, $sortorder, $subcategory) {
         global $DB;
-        
+
         $enddate = time();
 
         $courses = self::retrieve_courses($activetab, $userid);

@@ -597,7 +597,7 @@ class local_guws_external extends external_api {
 
     /**
      * Return definition for guid_completion
-     * @returns external_multiple_structure
+     * @return external_multiple_structure
      */
     public static function guid_completion_returns() {
         return new external_value(PARAM_BOOL, 'Completed');
@@ -626,6 +626,102 @@ class local_guws_external extends external_api {
         }
 
         return !empty($completion->timecompleted);
+    }
+
+    /**
+     * Parameter definition for gcat_getdashboard
+     * @return external_function_parameters
+     */
+    public static function gcat_getdashboard_parameters() {
+        return new external_function_parameters([
+            'guid' => new external_value(PARAM_TEXT, 'GUID', VALUE_REQUIRED),
+        ]);
+    }
+
+    /**
+     * Return definition for gcat_getdashboard
+     * @return external_multiple_structure
+     */
+    public static function gcat_getdashboard_returns() {
+        return new external_multiple_structure(
+            new external_single_structure([
+                'id' => new external_value(PARAM_INT, 'Mystery id'),
+                'coursename' => new external_value(PARAM_TEXT, 'Course full name'),
+                'courseurl' => new external_value(PARAM_TEXT, 'Link to Moodle course'),
+                'assessmentname' => new external_value(PARAM_TEXT, 'Assessment name'),
+                'assessmenturl' => new external_value(PARAM_TEXT, 'Link to Assessment'),
+                'assessmenttype' => new external_value(PARAM_TEXT, 'Type of assessment'),
+                'weight' => new external_value(PARAM_TEXT, 'Weight of assessment'),
+                'duedate' => new external_value(PARAM_INT, 'Due date (unix time stamp)'),
+                'hasextension' => new external_value(PARAM_BOOL, 'Is there an extension'),
+                'startdate' => new external_value(PARAM_INT, 'Start date (unix time stamp)'),
+                'enddate' => new external_value(PARAM_INT, 'End date (unix time stamp)'),
+                'grade' => new external_value(PARAM_TEXT, 'Grade text'),
+                'gradehasgrade' => new external_value(PARAM_BOOL, 'Grade - has grade'),
+                'gradeisprovisional' => new external_value(PARAM_BOOL, 'Grade - provisional'),
+                'feedback' => new external_value(PARAM_TEXT, 'Feedback text'),
+                'feedbackhasfeedback' => new external_value(PARAM_BOOL, 'Feedback - has feedback'),
+                'feedbackissubcategory' => new external_value(PARAM_BOOL, 'Feedback - is subcategory'),
+                'status' => new external_value(PARAM_TEXT, 'Status text'),
+                'statusclass' => new external_value(PARAM_TEXT, 'Status class'),
+                'statushasurl' => new external_value(PARAM_BOOL, 'Status has URL'),
+                'statusissubcategory' => new external_value(PARAM_BOOL, 'Status is subcategory'),
+            ])
+        );
+    }
+
+    /**
+     * GCAT get dashboard
+     */
+    public static function gcat_getdashboard($guid) {
+        global $CFG, $DB;
+
+        require_once($CFG->dirroot . '/blocks/gu_spdetails/lib.php');
+
+        // Check params
+        $params = self::validate_parameters(self::gcat_getdashboard_parameters(),[
+            'guid' => $guid,
+        ]);
+
+        // does this person exist
+        if (!$user = $DB->get_record('user', [
+            'username' => $guid,
+            'mnethostid' => $CFG->mnet_localhost_id,
+        ])) {
+            return [];
+        }
+
+        $gcats = assessments_details::retrieve_gradable_activities('current', $user->id, 'coursetitle', 'asc', null);
+
+        $grades = [];
+        foreach ($gcats as $gcat) {
+            $grade = new stdClass();
+            $grade->id = $gcat->id;
+            $grade->coursename = $gcat->coursetitle;
+            $grade->courseurl = $gcat->courseurl->out();
+            $grade->assessmentname = $gcat->assessmentname;
+            $grade->assessmenturl = $gcat->assessmenturl->out();
+            $grade->assessmenttype = $gcat->assessmenttype;
+            $grade->weight = $gcat->weight;
+            $grade->duedate = $gcat->duedate;
+            $grade->hasextension = $gcat->hasextension;
+            $grade->startdate = $gcat->startdate;
+            $grade->enddate = $gcat->enddate;
+            $grade->grade = $gcat->grading->gradetext;
+            $grade->gradehasgrade = $gcat->grading->hasgrade;
+            $grade->gradeisprovisional = $gcat->grading->isprovisional;
+            $grade->feedback = $gcat->feedback->feedbacktext;
+            $grade->feedbackhasfeedback = $gcat->feedback->hasfeedback;
+            $grade->feedbackissubcategory = $gcat->feedback->issubcategory;
+            $grade->status = $gcat->status->statustext;
+            $grade->statusclass = $gcat->status->class;
+            $grade->statushasurl = $gcat->status->hasstatusurl;
+            $grade->statusissubcategory = $gcat->status->issubcategory;
+
+            $grades[] = $grade;
+        }
+
+        return $grades;
     }
 
 }
