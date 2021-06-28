@@ -48,18 +48,49 @@ if ($ADMIN->fulltree) {
     );
     $settings->add(new admin_setting_configselect($name, $title, $description, $default, $choices));
 
+    /* Toggle display block choices */
+    $name = 'format_topcoll/defaultdisplayblocks';
+    $title = get_string('defaultdisplayblocks', 'format_topcoll');
+    $description = get_string('defaultdisplayblocks_desc', 'format_topcoll');
+    $choices = core_plugin_manager::instance()->get_enabled_plugins('block');
+    // Change the value of the array to have the real string defined in the language file.
+    foreach ($choices as $key => $blockname) {
+        $choices[$key] = get_string('pluginname', 'block_' . $key);
+    }
+    /* See if our desired default blocks '$defaultsearchlist' are in the list of available
+       blocks '$choices' created above, and if so - add each of them to the '$default' array for use. */
+    $default = array();
+    $defaultsearchlist = array('search_forums', 'news_items', 'calendar_upcoming', 'recent_activity');
+    foreach ($defaultsearchlist as $defaultblk) {
+        if (array_key_exists($defaultblk, $choices)) {
+            array_push($default, $defaultblk);
+        }
+    }
+    $settings->add(new admin_setting_configmultiselect($name, $title, $description, $default, $choices));
+
+    // Toggle blocks location. 1 = pre, 2 = post.
+    $name = 'format_topcoll/defaultdisplayblocksloc';
+    $title = get_string('defaultdisplayblocksloc', 'format_topcoll');
+    $description = get_string('defaultdisplayblocksloc_desc', 'format_topcoll');
+    $default = 1;
+    $choices = array(
+        1 => new lang_string('sidepre', 'format_topcoll'),   // Pre.
+        2 => new lang_string('sidepost', 'format_topcoll'),  // Post.
+    );
+    $settings->add(new admin_setting_configselect($name, $title, $description, $default, $choices));
+
     /* Layout configuration.
-      Here you can see what numbers in the array represent what layout for setting the default value below.
-      1 => Toggle word, toggle section x and section number - default.
-      2 => Toggle word and section number.
-      3 => Toggle word and toggle section x.
-      4 => Toggle word.
-      5 => Toggle section x and section number.
-      6 => Section number.
-      7 => No additions.
-      8 => Toggle section x.
-      Default layout to use - used when a new Collapsed Topics course is created or an old one is accessed for the first time
-      after installing this functionality introduced in CONTRIB-3378. */
+       Here you can see what numbers in the array represent what layout for setting the default value below.
+       1 => Toggle word, toggle section x and section number - default.
+       2 => Toggle word and section number.
+       3 => Toggle word and toggle section x.
+       4 => Toggle word.
+       5 => Toggle section x and section number.
+       6 => Section number.
+       7 => No additions.
+       8 => Toggle section x.
+       Default layout to use - used when a new Collapsed Topics course is created or an old one is accessed for the first time
+       after installing this functionality introduced in CONTRIB-3378. */
     $name = 'format_topcoll/defaultlayoutelement';
     $title = get_string('defaultlayoutelement', 'format_topcoll');
     $description = get_string('defaultlayoutelement_descpositive', 'format_topcoll');
@@ -77,14 +108,14 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configselect($name, $title, $description, $default, $choices));
 
     /* Structure configuration.
-      Here so you can see what numbers in the array represent what structure for setting the default value below.
-      1 => Topic.
-      2 => Week.
-      3 => Latest Week First.
-      4 => Current Topic First.
-      5 => Day.
-      Default structure to use - used when a new Collapsed Topics course is created or an old one is accessed for the first time
-      after installing this functionality introduced in CONTRIB-3378. */
+       Here so you can see what numbers in the array represent what structure for setting the default value below.
+       1 => Topic.
+       2 => Week.
+       3 => Latest Week First.
+       4 => Current Topic First.
+       5 => Day.
+       Default structure to use - used when a new Collapsed Topics course is created or an old one is accessed for the first time
+       after installing this functionality introduced in CONTRIB-3378. */
     $name = 'format_topcoll/defaultlayoutstructure';
     $title = get_string('defaultlayoutstructure', 'format_topcoll');
     $description = get_string('defaultlayoutstructure_desc', 'format_topcoll');
@@ -169,24 +200,40 @@ if ($ADMIN->fulltree) {
     );
     $settings->add(new admin_setting_configselect($name, $title, $description, $default, $choices));
 
-    // Toggle icon set.
-    // arrow        => Arrow icon set.
-    // bulb         => Bulb icon set.
-    // cloud        => Cloud icon set.
-    // eye          => Eye icon set.
-    // folder       => Folder icon set.
-    // groundsignal => Ground signal set.
-    // led          => LED icon set.
-    // point        => Point icon set.
-    // power        => Power icon set.
-    // radio        => Radio icon set.
-    // smiley       => Smiley icon set.
-    // square       => Square icon set.
-    // sunmoon      => Sun / Moon icon set.
-    // switch       => Switch icon set.
+    /* Toggle icon set.
+       arrow        => Arrow icon set.
+       bulb         => Bulb icon set.
+       cloud        => Cloud icon set.
+       eye          => Eye icon set.
+       folder       => Folder icon set.
+       groundsignal => Ground signal set.
+       led          => LED icon set.
+       point        => Point icon set.
+       power        => Power icon set.
+       radio        => Radio icon set.
+       smiley       => Smiley icon set.
+       square       => Square icon set.
+       sunmoon      => Sun / Moon icon set.
+       switch       => Switch icon set. */
+    $iconseticons = array(
+        'arrow' => $OUTPUT->pix_icon('arrow_right', get_string('arrow', 'format_topcoll'), 'format_topcoll'),
+        'bulb' => $OUTPUT->pix_icon('bulb_off', get_string('bulb', 'format_topcoll'), 'format_topcoll'),
+        'cloud' => $OUTPUT->pix_icon('cloud_off', get_string('cloud', 'format_topcoll'), 'format_topcoll'),
+        'eye' => $OUTPUT->pix_icon('eye_show', get_string('eye', 'format_topcoll'), 'format_topcoll'),
+        'folder' => $OUTPUT->pix_icon('folder_closed', get_string('folder', 'format_topcoll'), 'format_topcoll'),
+        'groundsignal' => $OUTPUT->pix_icon('ground_signal_off', get_string('groundsignal', 'format_topcoll'), 'format_topcoll'),
+        'led' => $OUTPUT->pix_icon('led_on', get_string('led', 'format_topcoll'), 'format_topcoll'),
+        'point' => $OUTPUT->pix_icon('point_right', get_string('point', 'format_topcoll'), 'format_topcoll'),
+        'power' => $OUTPUT->pix_icon('toggle_plus', get_string('power', 'format_topcoll'), 'format_topcoll'),
+        'radio' => $OUTPUT->pix_icon('radio_on', get_string('radio', 'format_topcoll'), 'format_topcoll'),
+        'smiley' => $OUTPUT->pix_icon('smiley_on', get_string('smiley', 'format_topcoll'), 'format_topcoll'),
+        'square' => $OUTPUT->pix_icon('square_on', get_string('square', 'format_topcoll'), 'format_topcoll'),
+        'sunmoon' => $OUTPUT->pix_icon('sunmoon_on', get_string('sunmoon', 'format_topcoll'), 'format_topcoll'),
+        'switch' => $OUTPUT->pix_icon('switch_on', get_string('switch', 'format_topcoll'), 'format_topcoll')
+    );
     $name = 'format_topcoll/defaulttoggleiconset';
     $title = get_string('defaulttoggleiconset', 'format_topcoll');
-    $description = get_string('defaulttoggleiconset_desc', 'format_topcoll');
+    $description = get_string('defaulttoggleiconset_desc', 'format_topcoll', $iconseticons);
     $default = 'arrow';
     $choices = array(
         'arrow' => new lang_string('arrow', 'format_topcoll'), // Arrow icon set.
@@ -217,9 +264,9 @@ if ($ADMIN->fulltree) {
     );
     $settings->add(new admin_setting_configselect($name, $title, $description, $default, $choices));
 
-    // Toggle all icon hovers.
-    // 1 => No.
-    // 2 => Yes.
+    /* Toggle all icon hovers.
+       1 => No.
+       2 => Yes. */
     $name = 'format_topcoll/defaulttoggleallhover';
     $title = get_string('defaulttoggleallhover', 'format_topcoll');
     $description = get_string('defaulttoggleallhover_desc', 'format_topcoll');
@@ -229,14 +276,6 @@ if ($ADMIN->fulltree) {
         2 => new lang_string('yes')
     );
     $settings->add(new admin_setting_configselect($name, $title, $description, $default, $choices));
-
-    // Default toggle foreground colour in hexadecimal RGB with preceding '#'.
-    $name = 'format_topcoll/defaulttgfgcolour';
-    $title = get_string('defaulttgfgcolour', 'format_topcoll');
-    $description = get_string('defaulttgfgcolour_desc', 'format_topcoll');
-    $default = '#000000';
-    $setting = new admin_setting_configcolourpicker($name, $title, $description, $default);
-    $settings->add($setting);
 
     $opacityvalues = array(
         '0.0' => '0.0',
@@ -252,15 +291,23 @@ if ($ADMIN->fulltree) {
         '1.0' => '1.0'
     );
 
+    // Default toggle foreground colour in hexadecimal RGB with preceding '#'.
+    $name = 'format_topcoll/defaulttoggleforegroundcolour';
+    $title = get_string('defaulttgfgcolour', 'format_topcoll');
+    $description = get_string('defaulttgfgcolour_desc', 'format_topcoll');
+    $default = '#000000';
+    $setting = new admin_setting_configcolourpicker($name, $title, $description, $default);
+    $settings->add($setting);
+
     // Default toggle foreground opacity between 0 and 1 in 0.1 increments.
-    $name = 'format_topcoll/defaulttgfgopacity';
+    $name = 'format_topcoll/defaulttoggleforegroundopacity';
     $title = get_string('defaulttgfgopacity', 'format_topcoll');
     $description = get_string('defaulttgfgopacity_desc', 'format_topcoll');
     $default = '1.0';
     $settings->add(new admin_setting_configselect($name, $title, $description, $default, $opacityvalues));
 
     // Default toggle foreground hover colour in hexadecimal RGB with preceding '#'.
-    $name = 'format_topcoll/defaulttgfghvrcolour';
+    $name = 'format_topcoll/defaulttoggleforegroundhovercolour';
     $title = get_string('defaulttgfghvrcolour', 'format_topcoll');
     $description = get_string('defaulttgfghvrcolour_desc', 'format_topcoll');
     $default = '#888888';
@@ -268,14 +315,14 @@ if ($ADMIN->fulltree) {
     $settings->add($setting);
 
     // Default toggle foreground hover opacity between 0 and 1 in 0.1 increments.
-    $name = 'format_topcoll/defaulttgfghvropacity';
+    $name = 'format_topcoll/defaulttoggleforegroundhoveropacity';
     $title = get_string('defaulttgfghvropacity', 'format_topcoll');
     $description = get_string('defaulttgfghvropacity_desc', 'format_topcoll');
     $default = '1.0';
     $settings->add(new admin_setting_configselect($name, $title, $description, $default, $opacityvalues));
 
     // Default toggle background colour in hexadecimal RGB with preceding '#'.
-    $name = 'format_topcoll/defaulttgbgcolour';
+    $name = 'format_topcoll/defaulttogglebackgroundcolour';
     $title = get_string('defaulttgbgcolour', 'format_topcoll');
     $description = get_string('defaulttgbgcolour_desc', 'format_topcoll');
     $default = '#e2e2f2';
@@ -283,14 +330,14 @@ if ($ADMIN->fulltree) {
     $settings->add($setting);
 
     // Default toggle background opacity between 0 and 1 in 0.1 increments.
-    $name = 'format_topcoll/defaulttgbgopacity';
+    $name = 'format_topcoll/defaulttogglebackgroundopacity';
     $title = get_string('defaulttgbgopacity', 'format_topcoll');
     $description = get_string('defaulttgbgopacity_desc', 'format_topcoll');
     $default = '1.0';
     $settings->add(new admin_setting_configselect($name, $title, $description, $default, $opacityvalues));
 
     // Default toggle background hover colour in hexadecimal RGB with preceding '#'.
-    $name = 'format_topcoll/defaulttgbghvrcolour';
+    $name = 'format_topcoll/defaulttogglebackgroundhovercolour';
     $title = get_string('defaulttgbghvrcolour', 'format_topcoll');
     $description = get_string('defaulttgbghvrcolour_desc', 'format_topcoll');
     $default = '#eeeeff';
@@ -298,15 +345,15 @@ if ($ADMIN->fulltree) {
     $settings->add($setting);
 
     // Default toggle background hover opacity between 0 and 1 in 0.1 increments.
-    $name = 'format_topcoll/defaulttgbghvropacity';
+    $name = 'format_topcoll/defaulttogglebackgroundhoveropacity';
     $title = get_string('defaulttgbghvropacity', 'format_topcoll');
     $description = get_string('defaulttgbghvropacity_desc', 'format_topcoll');
     $default = '1.0';
     $settings->add(new admin_setting_configselect($name, $title, $description, $default, $opacityvalues));
 
-    // Show the section summary when collapsed.
-    // 1 => No.
-    // 2 => Yes.
+    /* Show the section summary when collapsed.
+       1 => No.
+       2 => Yes. */
     $name = 'format_topcoll/defaultshowsectionsummary';
     $title = get_string('defaultshowsectionsummary', 'format_topcoll');
     $description = get_string('defaultshowsectionsummary_desc', 'format_topcoll');
@@ -335,9 +382,9 @@ if ($ADMIN->fulltree) {
     );
     $settings->add(new admin_setting_configselect($name, $title, $description, $default, $choices));
 
-    // Toggle preference for the first time a user accesses a course.
-    // 0 => All closed.
-    // 1 => All open.
+    /* Toggle preference for the first time a user accesses a course.
+       0 => All closed.
+       1 => All open. */
     $name = 'format_topcoll/defaultuserpreference';
     $title = get_string('defaultuserpreference', 'format_topcoll');
     $description = get_string('defaultuserpreference_desc', 'format_topcoll');
@@ -442,9 +489,9 @@ if ($ADMIN->fulltree) {
     );
     $settings->add(new admin_setting_configselect($name, $title, $description, $default, $choices));
 
-    // Show the section summary when collapsed.
-    // 1 => No.
-    // 2 => Yes.
+    /* Show the section summary when collapsed.
+       1 => No.
+       2 => Yes. */
     $name = 'format_topcoll/defaultshowsectionsummary';
     $title = get_string('defaultshowsectionsummary', 'format_topcoll');
     $description = get_string('defaultshowsectionsummary_desc', 'format_topcoll');
@@ -460,6 +507,16 @@ if ($ADMIN->fulltree) {
     $heading = get_string('coursesectionactivityfurtherinformation', 'format_topcoll');
     $setting = new admin_setting_heading($name, $heading, '');
     $settings->add($setting);
+
+    $name = 'format_topcoll/defaultshowadditionalmoddata';
+    $title = get_string('defaultshowadditionalmoddata', 'format_topcoll');
+    $description = get_string('defaultshowadditionalmoddatadesc', 'format_topcoll');
+    $default = 2;
+    $choices = array(
+        1 => new lang_string('no'),
+        2 => new lang_string('yes')
+    );
+    $settings->add(new admin_setting_configselect($name, $title, $description, $default, $choices));
 
     $name = 'format_topcoll/coursesectionactivityfurtherinformationassign';
     $title = get_string('coursesectionactivityfurtherinformationassign', 'format_topcoll');

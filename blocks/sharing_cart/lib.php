@@ -18,15 +18,18 @@
  *  Sharing Cart
  *
  * @package    block_sharing_cart
- * @copyright  2021 (c) Don Hinkelman and others
+ * @copyright  2017 (C) VERSION2, INC.
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die;
+/**
+ * Remove sharing cart entity, when related file was removed from the system
+ * @param $file
+ * @throws dml_exception
+ */
+function block_sharing_cart_after_file_deleted($file) {
+    global $DB;
 
-/** @var stdClass $plugin */
-$plugin->component = 'block_sharing_cart';
-$plugin->version = 2021062600;
-$plugin->requires = 2018120300; // Moodle 3.6
-$plugin->release = '3.10, release 3';
-$plugin->maturity = MATURITY_STABLE;
+    $cleaner = new \block_sharing_cart\files\cleaner($DB, $file);
+    $cleaner->remove_related_sharing_cart_entity();
+}

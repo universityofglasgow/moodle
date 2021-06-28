@@ -18,7 +18,7 @@
  *  Sharing Cart block
  *
  * @package    block_sharing_cart
- * @copyright  2017 (C) VERSION2, INC.
+ * @copyright  2021 (C) Don Hinkelman and others
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -146,7 +146,7 @@ class block_sharing_cart extends block_base {
 		        <select class='custom-select section-dropdown'>
 		            $sections_dropdown
 		        </select>
-		        <a href='javascript:void(0)' class='copy_section' title='get_string('sectionname', \"format_$COURSE->format\") . ' ' . $section->section)'>
+		        <a href='javascript:void(0)' class='copy_section' title='".get_string('copy_section_title', __CLASS__)."'>
 		            <input id='copy' type='button' class='btn btn-primary' value='" . get_string('copy_section', __CLASS__) . "'>
 		        </a>
             </form>
@@ -208,7 +208,7 @@ class block_sharing_cart extends block_base {
      * @return boolean
      */
     private function is_special_version() {
-        return moodle_major_version() >= 3.2;
+        return version_compare(moodle_major_version(), '3.2') === 1;
     }
 
     /**

@@ -57,6 +57,10 @@
     position: relative;
 }
 
+.format-topcoll.path-course-view .completionprogress {
+    z-index: 1;
+}
+
 .course-content ul.ctopics.bsnewgrid li.section.main,
 .course-content ul.ctopics.bsnewgrid li.tcsection {
     margin: 0;
@@ -145,8 +149,18 @@
 }
 
 .course-content ul.ctopics li.section .content .toggle span.the_toggle h3.sectionname,
-.course-content ul.ctopics li.section .content.sectionhidden h3.sectionname {
+.course-content ul.ctopics li.section .content .toggle span.the_toggle h3.sectionname a,
+.course-content ul.ctopics li.section .content .toggle span.the_toggle h3.sectionname a:hover,
+.course-content ul.ctopics li.section .content .toggle span.the_toggle h3.sectionname a:focus,
+.course-content ul.ctopics li.section .content.sectionhidden h3.sectionname,
+.course-content ul.ctopics li.section .content.sectionhidden h3.sectionname a,
+.course-content ul.ctopics li.section .content.sectionhidden h3.sectionname a:hover,
+.course-content ul.ctopics li.section .content.sectionhidden h3.sectionname a:focus {
     color: inherit;
+}
+
+.course-content ul.ctopics li.section .content .toggle span.the_toggle h3.sectionname,
+.course-content ul.ctopics li.section .content.sectionhidden h3.sectionname {
     margin: 4px;
 }
 
@@ -568,6 +582,10 @@ body.format-topcoll.dir-rtl .course-content ul.ctopics li.section .right {
     float: left;
 }
 
+body.format-topcoll .ctopics .mod-indent-outer {
+    width: 100% !important; /* Same as w-100 on MDL-68330. */
+}
+
 body.format-topcoll .ctopics .section .activity .mod-indent-outer,
 body.format-topcoll.editing.dir-rtl .ctopics .section .activity .mod-indent-outer {
     padding-left: 0;
@@ -776,8 +794,8 @@ body.jsenabled #toggle-all {
 
 /* Activity further information styling */
 .format-topcoll .ct-activity-meta-container {
+    margin: 0 10px 0 30px;
     padding: 5px 0 0 0;
-    margin: 0px 10px 0 30px;
 }
 
 .format-topcoll .ct-activity-due-date {
@@ -804,22 +822,59 @@ body.jsenabled #toggle-all {
     font-size: 1.1em;
 }
 
-.format-topcoll .ct-activity-date-overdue {
-    background-color: #ee0000;
+.format-topcoll .ct-activity-action {
+    margin: 0 7px;
+}
+
+.format-topcoll .ct-activity-action i {
+    margin-right: 0.35rem;
 }
 
 .format-topcoll .ct-activity-date-submitted {
-    background-color: #00cc00;
+    background-color: #d4edda;
+}
+
+.format-topcoll .ct-activity-date-submitted a {
+    color: #155724;
 }
 
 .format-topcoll .ct-activity-date-nearly-due {
-    background-color: #f79100;
+    background-color: #FFF3CD;
+}
+
+.format-topcoll .ct-activity-date-nearly-due a {
+    color: #856404;
+}
+
+.format-topcoll .ct-activity-date-overdue {
+    background-color: #f8d7da;
+}
+
+.format-topcoll .ct-activity-date-overdue a {
+    color: #721c24;
+}
+
+.format-topcoll .ct-activity-date-overdue .text-warning {
+    color: #721C24 !important;
 }
 
 .format-topcoll .ct-activity-due-date .icon,
 .format-topcoll .ct-activity-mod-engagement .icon,
 .format-topcoll .ct-activity-mod-feedback .icon {
     font-size: 1.1em;
+}
+
+/* Colour picker */
+.tccolourpopupbox {
+    border: 1px solid black;
+    cursor: pointer;
+    margin: 0 0 0 2px;
+    padding: 0 8px;
+}
+
+.tccolourpopupsel {
+    position: absolute;
+    z-index: 500;
 }
 
 /* Print styles. */

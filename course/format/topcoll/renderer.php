@@ -41,7 +41,7 @@ class format_topcoll_renderer extends format_section_renderer_base {
     protected $tccolumnpadding = 0; // Default padding in pixels of the column(s).
     protected $mobiletheme = false; // As not using a mobile theme we can react to the number of columns setting.
     protected $tablettheme = false; // As not using a tablet theme we can react to the number of columns setting.
-    protected $courseformat = null; // Our course format object as defined in lib.php;
+    protected $courseformat = null; // Our course format object as defined in lib.php.
     protected $tcsettings; // Settings for the format - array.
     protected $defaulttogglepersistence; // Default toggle persistence.
     protected $defaultuserpreference; // Default user preference when none set - bool - true all open, false all closed.
@@ -158,16 +158,18 @@ class format_topcoll_renderer extends format_section_renderer_base {
      * @param stdClass $section The course_section entry from DB.
      * @param stdClass $course The course entry from DB.
      * @param bool $onsectionpage true if being printed on a section page.
+     * @param bool $sectionishidden true if section is hidden.
+     *
      * @return string HTML to output.
      */
-    protected function section_right_content($section, $course, $onsectionpage) {
+    protected function section_right_content($section, $course, $onsectionpage, $sectionishidden = false) {
         $o = '';
 
         if ($section->section != 0) {
             $controls = $this->section_edit_control_items($course, $section, $onsectionpage);
             if (!empty($controls)) {
                 $o .= $this->section_edit_control_menu($controls, $course, $section);
-            } else if (!$onsectionpage) {
+            } else if ((!$onsectionpage) && (!$sectionishidden)) {
                 if (empty($this->tcsettings)) {
                     $this->tcsettings = $this->courseformat->get_settings();
                 }
@@ -326,6 +328,55 @@ class format_topcoll_renderer extends format_section_renderer_base {
     }
 
     /**
+     * Generate the edit control action menu
+     *
+     * @param array $controls The edit control items from section_edit_control_items
+     * @param stdClass $course The course entry from DB
+     * @param stdClass $section The course_section entry from DB
+     * @return string HTML to output.
+     */
+    protected function section_edit_control_menu($controls, $course, $section) {
+        $o = "";
+        if (!empty($controls)) {
+            $menu = new action_menu();
+            $menu->set_menu_trigger(get_string('edit'));
+            $menu->attributes['class'] .= ' section-actions';
+            foreach ($controls as $value) {
+                $url = empty($value['url']) ? '' : $value['url'];
+                $icon = empty($value['icon']) ? '' : $value['icon'];
+                $name = empty($value['name']) ? '' : $value['name'];
+                $attr = empty($value['attr']) ? array() : $value['attr'];
+                $class = empty($value['pixattr']['class']) ? '' : $value['pixattr']['class'];
+                $al = new action_menu_link_secondary(
+                    new moodle_url($url),
+                    new pix_icon($icon, '', null, array('class' => "smallicon " . $class)),
+                    $name,
+                    $attr
+                );
+                $menu->add($al);
+            }
+
+            $coursecontext = context_course::instance($course->id);
+            if (has_capability('moodle/course:manageactivities', $coursecontext)) {
+                $duplicatestr = get_string('duplicate', 'format_topcoll');
+                $duplicateurl = new moodle_url('/course/format/topcoll/duplicate.php',
+                    array('courseid' => $course->id, 'sectionno' => $section->section, 'sesskey' => sesskey()));
+                $link = new action_link($duplicateurl, ' '.$duplicatestr, null,
+                    array('class' => 'menu-action', 'role' => 'menuitem'),
+                    new pix_icon('t/copy', $duplicatestr));
+                $link->add_action(new confirm_action(get_string('duplicateconfirm', 'format_topcoll'), null,
+                    $duplicatestr));
+                $menu->add_secondary_action($link);
+            }
+
+            $o .= html_writer::div($this->render($menu), 'section_action_menu',
+                array('data-sectionid' => $section->id));
+        }
+
+        return $o;
+    }
+
+    /**
      * Generate a summary of a section for display on the 'course index page'.
      *
      * @param stdClass $section The course_section entry from DB.
@@ -348,10 +399,11 @@ class format_topcoll_renderer extends format_section_renderer_base {
         $o = '';
         $title = $this->courseformat->get_topcoll_section_name($course, $section, false);
         $liattributes = array(
-            'id' => 'section-' . $section->section,
+            'id' => 'section-'.$section->section,
             'class' => $classattr,
             'role' => 'region',
-            'aria-label' => $title
+            'aria-label' => $title,
+            'data-sectionid' => $section->section
         );
         if (($this->formatresponsive) && ($this->tcsettings['layoutcolumnorientation'] == 2)) { // Horizontal column layout.
             $liattributes['style'] = 'width: ' . $this->tccolumnwidth . '%;';
@@ -363,7 +415,7 @@ class format_topcoll_renderer extends format_section_renderer_base {
 
         if ($section->uservisible) {
             $title = html_writer::tag('a', $title,
-                            array('href' => course_get_url($course, $section->section), 'class' => $linkclasses));
+                array('href' => course_get_url($course, $section->section), 'class' => $linkclasses));
         }
         $o .= $this->output->heading($title, 3, 'section-title');
 
@@ -409,7 +461,10 @@ class format_topcoll_renderer extends format_section_renderer_base {
             }
         }
 
-        if ((!$this->formatresponsive) && ($section->section != 0) &&
+        if (empty($this->tcsettings)) {
+            $this->tcsettings = $this->courseformat->get_settings();
+        }
+        if ((!$onsectionpage) && (!$this->formatresponsive) && ($section->section != 0) &&
             ($this->tcsettings['layoutcolumnorientation'] == 2)) { // Horizontal column layout.
             $sectionstyle .= ' ' . $this->get_column_class($this->tcsettings['layoutcolumns']);
         }
@@ -417,7 +472,9 @@ class format_topcoll_renderer extends format_section_renderer_base {
             'id' => 'section-' . $section->section,
             'class' => 'section main clearfix' . $sectionstyle,
             'role' => 'region',
-            'aria-label' => $this->courseformat->get_topcoll_section_name($course, $section, false)
+            'aria-labelledby' => "sectionid-{$section->id}-title",
+            'data-sectionid' => $section->section, // MDL-68235.
+            'data-sectionreturnid' => $sectionreturn // MDL-69065.
         );
         if (($this->formatresponsive) && ($this->tcsettings['layoutcolumnorientation'] == 2)) { // Horizontal column layout.
             $liattributes['style'] = 'width: ' . $this->tccolumnwidth . '%;';
@@ -474,9 +531,10 @@ class format_topcoll_renderer extends format_section_renderer_base {
                 $title = $this->courseformat->get_topcoll_section_name($course, $section, true);
             }
             if ((($this->mobiletheme === false) && ($this->tablettheme === false)) || ($this->userisediting)) {
-                $o .= $this->output->heading($title, 3, 'sectionname');
+                $o .= $this->output->heading($title, 3, 'sectionname', "sectionid-{$section->id}-title");
             } else {
-                $o .= html_writer::tag('h3', $title); // Moodle H3's look bad on mobile / tablet with CT so use plain.
+                // Moodle H3's look bad on mobile / tablet with CT so use plain.
+                $o .= html_writer::tag('h3', $title, array('id' => "sectionid-{$section->id}-title"));
             }
 
             $o .= $this->section_availability($section);
@@ -516,8 +574,13 @@ class format_topcoll_renderer extends format_section_renderer_base {
             $hasnamesecpg = ($section->section == 0 && (string) $section->name !== '');
 
             if ($hasnamesecpg) {
-                $o .= $this->output->heading($this->section_title($section, $course), 3, 'section-title');
+                $headingclass = 'section-title';
+                $title = $this->section_title($section, $course);
+            } else {
+                $headingclass = 'accesshide';
+                $title = $this->section_title_without_link($section, $course);
             }
+            $o .= $this->output->heading($title, 3, $headingclass, "sectionid-{$section->id}-title");
             $o .= $this->section_availability($section);
             $o .= html_writer::start_tag('div', array('class' => 'summary'));
             $o .= $this->format_summary_text($section);
@@ -597,25 +660,26 @@ class format_topcoll_renderer extends format_section_renderer_base {
         if ((!$this->formatresponsive) && ($sectionno != 0) && ($this->tcsettings['layoutcolumnorientation'] == 2)) {
             $sectionstyle .= ' ' . $this->get_column_class($this->tcsettings['layoutcolumns']);
         }
+        $section = $this->courseformat->get_section($sectionno);
         $liattributes = array(
             'id' => 'section-' . $sectionno,
             'class' => 'section main clearfix orphaned hidden' . $sectionstyle,
             'role' => 'region',
-            'aria-label' => $this->courseformat->get_topcoll_section_name($course, $sectionno, false)
+            'aria-labelledby' => "sectionid-{$section->id}-title",
+            'data-sectionid' => $sectionno
         );
         if (($this->formatresponsive) && ($this->tcsettings['layoutcolumnorientation'] == 2)) { // Horizontal column layout.
             $liattributes['style'] = 'width: ' . $this->tccolumnwidth . '%;';
         }
         $o .= html_writer::start_tag('li', $liattributes);
         if ($this->rtl) {
-            $section = $this->courseformat->get_section($sectionno);
             $rightcontent = $this->section_right_content($section, $course, false);
             $o .= html_writer::tag('div', $rightcontent, array('class' => 'right side'));
         } else {
             $o .= html_writer::tag('div', '', array('class' => 'left side'));
         }
         $o .= html_writer::start_tag('div', array('class' => 'content'));
-        $o .= $this->output->heading(get_string('orphanedactivitiesinsectionno', '', $sectionno), 3, 'sectionname');
+        $o .= $this->output->heading(get_string('orphanedactivitiesinsectionno', '', $sectionno), 3, 'sectionname', "sectionid-{$section->id}-title");
         return $o;
     }
 
@@ -654,10 +718,11 @@ class format_topcoll_renderer extends format_section_renderer_base {
             $sectionstyle .= ' ' . $this->get_column_class($this->tcsettings['layoutcolumns']);
         }
         $liattributes = array(
-            'id' => 'section-' . $section->section,
+            'id' => 'section-'.$section->section,
             'class' => $sectionstyle,
             'role' => 'region',
-            'aria-label' => $this->courseformat->get_topcoll_section_name($course, $section, false)
+            'aria-labelledby' => "sectionid-{$section->id}-title",
+            'data-sectionid' => $section->section
         );
         if (($this->formatresponsive) && ($this->tcsettings['layoutcolumnorientation'] == 2)) { // Horizontal column layout.
             $liattributes['style'] = 'width: ' . $this->tccolumnwidth . '%;';
@@ -678,12 +743,14 @@ class format_topcoll_renderer extends format_section_renderer_base {
 
         $o .= html_writer::start_tag('div', array('class' => 'content sectionhidden'));
 
-        $title = get_string('notavailable');
+        $title = $this->section_title_without_link($section, $course);
         if ((($this->mobiletheme === false) && ($this->tablettheme === false)) || ($this->userisediting)) {
-            $o .= $this->output->heading($title, 3, 'section-title');
+            $o .= $this->output->heading($title, 3, 'section-title', "sectionid-{$section->id}-title");
         } else {
-            $o .= html_writer::tag('h3', $title); // Moodle H3's look bad on mobile / tablet with CT so use plain.
+            // Moodle H3's look bad on mobile / tablet with CT so use plain.
+            $o .= html_writer::tag('h3', $title, array('id' => "sectionid-{$section->id}-title"));
         }
+        $o .= $this->section_availability($section);
         $o .= html_writer::end_tag('div');
         if ((($this->mobiletheme === false) && ($this->tablettheme === false)) || ($this->userisediting)) {
             if ($this->rtl) {
@@ -691,7 +758,7 @@ class format_topcoll_renderer extends format_section_renderer_base {
                 $leftcontent = $this->section_left_content($section, $course, false);
                 $o .= html_writer::tag('div', $leftcontent, array('class' => 'left side'));
             } else {
-                $rightcontent = $this->section_right_content($section, $course, false);
+                $rightcontent = $this->section_right_content($section, $course, false, true);
                 $o .= html_writer::tag('div', $rightcontent, array('class' => 'right side'));
             }
         }
@@ -710,8 +777,6 @@ class format_topcoll_renderer extends format_section_renderer_base {
      * @param int $displaysection The section number in the course which is being displayed
      */
     public function print_single_section_page($course, $sections, $mods, $modnames, $modnamesused, $displaysection) {
-        global $PAGE;
-
         $modinfo = get_fast_modinfo($course);
         $course = $this->courseformat->get_course();
 
@@ -723,10 +788,15 @@ class format_topcoll_renderer extends format_section_renderer_base {
                 format_string($course->fullname));
         }
 
+        echo html_writer::start_tag('a', array('href' => new moodle_url('/course/view.php', array('id' => $course->id))));
+        $maincoursepage = get_string('maincoursepage', 'format_topcoll');
+        echo $this->output->pix_icon('t/less', $maincoursepage).$maincoursepage;
+        echo html_writer::end_tag('a');
+
         // Copy activity clipboard.
         echo $this->course_activity_clipboard($course, $displaysection);
         $thissection = $modinfo->get_section_info(0);
-        if ($thissection->summary or !empty($modinfo->sections[0]) or $PAGE->user_is_editing()) {
+        if ($thissection->summary or !empty($modinfo->sections[0]) or $this->page->user_is_editing()) {
             echo $this->start_section_list();
             echo $this->section_header($thissection, $course, true, $displaysection);
             echo $this->courserenderer->course_section_cm_list($course, $thissection, $displaysection, array('sr' => $displaysection));
@@ -762,10 +832,6 @@ class format_topcoll_renderer extends format_section_renderer_base {
         echo $this->start_section_list();
 
         echo $this->section_header($thissection, $course, true, $displaysection);
-        // Show completion help icon.
-        $completioninfo = new completion_info($course);
-        echo $completioninfo->display_help_icon();
-
         echo $this->courserenderer->course_section_cm_list($course, $thissection, $displaysection, array('sr' => $displaysection));
         echo $this->courserenderer->course_section_add_cm_control($course, $displaysection, $displaysection);
         echo $this->topcoll_section_footer($thissection, $course, true, $displaysection);
@@ -802,9 +868,6 @@ class format_topcoll_renderer extends format_section_renderer_base {
         }
 
         $context = context_course::instance($course->id);
-        // Title with completion help icon.
-        $completioninfo = new completion_info($course);
-        echo $completioninfo->display_help_icon();
         echo $this->output->heading($this->page_title(), 2, 'accesshide');
 
         // Copy activity clipboard..
