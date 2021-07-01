@@ -442,7 +442,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
      * @param string $user user object
      * @return array of objects course details (false if not found)
      */
-    protected function external_userdata( $user ) {
+    protected function external_userdata($user) {
         global $CFG, $DB;
 
         // Connect to external db.
@@ -1435,6 +1435,13 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
      */
     public function process_user_enrolments($user, $print = false) {
         global $CFG, $DB;
+
+        // If the external DB is down for any reason, we don't want to 
+        // kill logins
+        if (!$extdb = $this->db_init()) {
+            error_log('enrol_gudatabase: unable to access external enrolment database');
+            return true;
+        }
 
         // GUID report
         // If we're running this from the report, we want to exclude some checks
