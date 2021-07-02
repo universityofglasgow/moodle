@@ -88,6 +88,7 @@ $string['gugcat:displayassessments'] = 'Switch display of assessments on Student
 $string['gugcat:gradable'] = 'GCAT gradable item';
 $string['gugcat:revealidentities'] = 'Reveal student identities';
 $string['gugcat:view'] = 'View Grade Capture and Aggregation Tool';
+$string['grade'] = 'Grade';
 $string['gradeformgrade'] = "Grade";
 $string['gradebookgrade'] = 'Gradebook Grade ';
 $string['gradediscrepancy'] = 'Grade Discrepancy';

@@ -602,7 +602,7 @@ class local_gugcat_renderer extends plugin_renderer_base {
             $htmlcolumns .= html_writer::tag('th', get_string('studentfirstname', 'turnitintooltwo'));
             $htmlcolumns .= html_writer::tag('th', get_string('studentlastname', 'turnitintooltwo'));
         }
-        $htmlcolumns .= html_writer::tag('th', get_string('grade'));
+        $htmlcolumns .= html_writer::tag('th', get_string('grade', 'local_gugcat'));
 
         $htmlrows = null;
         if (count($firstrow) != 0) {

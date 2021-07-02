@@ -160,7 +160,7 @@ class convertform extends moodleform {
         $html = html_writer::start_tag('table', array_merge(array('id' => 'gcat-table', 'class' => 'table')));
         $html .= html_writer::start_tag('thead');
         $html .= html_writer::start_tag('tr');
-        $html .= html_writer::tag('th', get_string('grade'));
+        $html .= html_writer::tag('th', get_string('grade', 'local_gugcat'));
         $html .= html_writer::tag('th', get_string('lowerboundper', 'local_gugcat'));
         $html .= html_writer::tag('th', get_string('lowerboundpt', 'local_gugcat'));
         $html .= html_writer::end_tag('tr');
