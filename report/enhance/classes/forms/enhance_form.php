@@ -42,6 +42,8 @@ class enhance_form extends \moodleform {
         $course = $customdata['course'];
         $request = $customdata['request'];
         $entry = $customdata['entry'];
+        $services = $customdata['services'];
+        $audiences = $customdata['audiences'];
 
         // Course id
         $mform->addElement('hidden', 'courseid', $course->id);
@@ -53,7 +55,7 @@ class enhance_form extends \moodleform {
             $mform->setType('id', PARAM_INT);
         }
 
-	if (!$request) {
+	    if (!$request) {
             $mform->addElement('html', '<div class="alert alert-danger">' . get_string('donotuse', 'report_enhance') . '</div>');
         }
 
@@ -65,12 +67,39 @@ class enhance_form extends \moodleform {
             $headline->setValue($request->headline);
         }
 
+        // Service
+        $mform->addElement('select', 'service', get_string('service', 'report_enhance'), $services);
+        $mform->setType('service', PARAM_INT);
+        $mform->addHelpButton('service', 'service', 'report_enhance');
+
+        // College or School
+        $department = $mform->addElement('text', 'department', get_string('department', 'report_enhance'), ['size' => 55, 'maxlength' => 50]);
+        $mform->setType('department', PARAM_TEXT);
+        $mform->addRule('department', null, 'required', null, 'client');
+        if ($request) {
+            $department->setValue($request->department);
+        }
+
+        // Audience
+        $mform->addElement('select', 'audience', get_string('audience', 'report_enhance'), $audiences);
+        $mform->setType('audience', PARAM_INT);
+        $mform->addHelpButton('audience', 'audience', 'report_enhance');
+
         // description
         $editor = $mform->addElement('editor', 'description', get_string('description', 'report_enhance'));
         $mform->setType('description', PARAM_RAW);
         $mform->addRule('description', null, 'required', null, 'client');
         if ($request) {
             $editor->setValue(array('text' => $request->description));
+        }
+
+        // transferability
+        $editor = $mform->addElement('editor', 'transferability', get_string('transferability', 'report_enhance'));
+        $mform->setType('transferability', PARAM_RAW);
+        $mform->addRule('transferability', null, 'required', null, 'client');
+        $mform->addHelpButton('transferability', 'transferability', 'report_enhance');
+        if ($request) {
+            $editor->setValue(array('text' => $request->transferability));
         }
         
         // benefits
@@ -81,13 +110,6 @@ class enhance_form extends \moodleform {
             $benefits->setValue(array('text' => $request->benefits));
         }
 
-        // College or School
-        $department = $mform->addElement('text', 'department', get_string('department', 'report_enhance'), ['size' => 55, 'maxlength' => 50]);
-        $mform->setType('department', PARAM_TEXT);
-        $mform->addRule('department', null, 'required', null, 'client');
-        if ($request) {
-            $department->setValue($request->department);
-        }
 
         // Files
         $filemanager = $mform->addElement('filemanager', 'attachments_filemanager', get_string('attachments', 'report_enhance'), null, ['subdirs' => 0]);

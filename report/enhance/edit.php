@@ -62,7 +62,13 @@ $options = ['subdirs' => 0];
 file_prepare_standard_filemanager($entry, 'attachments', $options, $context, 'report_enhance', 'attachments', $id);
 
 // Form stuff
-$form = new \report_enhance\forms\enhance_form(null, array('course' => $course, 'request' => $request, 'entry' => $entry));
+$form = new \report_enhance\forms\enhance_form(null, [
+    'course' => $course,
+    'request' => $request,
+    'entry' => $entry,
+    'services' => \report_enhance\lib::getserviceoptions(),
+    'audiences' => \report_enhance\lib::getaudienceoptions(),
+]);
 if ($form->is_cancelled()) {
     redirect(new moodle_url('/report/enhance/index.php', array('courseid' => $courseid)));
 } else if ($data = $form->get_data()) {
@@ -73,9 +79,12 @@ if ($form->is_cancelled()) {
         $request->status = ENHANCE_STATUS_NEW;
         $request->userid = $USER->id;
     }
+    $request->service = $data->service;
+    $request->audience = $data->audience;
     $request->headline = $data->headline;
     $request->description = $data->description['text'];
     $request->benefits = $data->benefits['text'];
+    $request->transferability = $data->transferability['text'];
     $request->department = substr($data->department, 0, 50);
     $request->timemodified = time();
     if ($id) {

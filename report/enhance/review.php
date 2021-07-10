@@ -49,11 +49,9 @@ $output = $PAGE->get_renderer('report_enhance');
 
 // Form fields
 $fields = array(
-    'desirability',
-    'impact',
-    'viability',
     'result',
     'reviewernotes',
+    'evaluation',
 );
 
 // Set up files area
@@ -64,14 +62,25 @@ file_prepare_standard_filemanager($entry, 'attachments', $options, $context, 're
 
 // Form stuff
 $status = new \report_enhance\status();
-$form = new \report_enhance\forms\review_form(null, array('course' => $course, 'request' => $request, 'fields' => $fields, 'statuses' => $status->getStatuses(), 'entry' => $entry));
+$form = new \report_enhance\forms\review_form(null, [
+    'course' => $course,
+    'request' => $request,
+    'fields' => $fields,
+    'statuses' => $status->getStatuses(),
+    'services' => \report_enhance\lib::getserviceoptions(),
+    'audiences' => \report_enhance\lib::getaudienceoptions(),
+    'assignments' => \report_enhance\lib::getassignedoptions(),
+    'entry' => $entry
+]);
 $form->set_data($request);
 
 if ($form->is_cancelled()) {
     redirect(new moodle_url('/report/enhance/index.php', array('courseid' => $courseid)));
 } else if ($data = $form->get_data()) {
     $request->status = $data->status;
+    $request->assignedto = $data->assignedto;
     $request->priority = $data->priority;
+    $request->gdpr = $data->gdpr;
     foreach ($fields as $field) {
         $formdata = $data->$field;
         $request->$field = $formdata['text'];

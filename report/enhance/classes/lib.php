@@ -25,7 +25,116 @@ namespace report_enhance;
 
 defined('MOODLE_INTERNAL') || die();
 
+define('ENHANCE_SERVICE_MOODLE', 1);
+define('ENHANCE_SERVICE_MAHARA', 2);
+define('ENHANCE_SERVICE_OTHER', 9);
+
+define('ENHANCE_AUDIENCE_STAFF', 1);
+define('ENHANCE_AUDIENCE_STUDENTS', 2);
+define('ENHANCE_AUDIENCE_STAFFSTUDENTS', 3);
+define('ENHANCE_AUDIENCE_OTHER', 9);
+
+define('ENHANCE_ASSIGNED_LTEC', 1);
+define('ENHANCE_ASSIGNED_ITS', 2);
+define('ENHANCE_ASSIGNED_REQUESTER', 3);
+define('ENHANCE_ASSIGNED_OTHER', 9);
+
 class lib {
+
+    /**
+     * Get service options
+     * @return array
+     */
+    public static function getserviceoptions() {
+        return [
+            ENHANCE_SERVICE_MOODLE => get_string('moodle', 'report_enhance'),
+            ENHANCE_SERVICE_MAHARA => get_string('mahara', 'report_enhance'),
+            ENHANCE_SERVICE_OTHER => get_string('other', 'report_enhance'),
+        ];
+    }
+
+    /**
+     * Get service
+     * @param int $option
+     * @return string
+     */
+    public static function getservice($option) {
+        $services = self::getserviceoptions();
+        if (key_exists($option, $services)) {
+            return $services[$option];
+        } else {
+            throw new \Exception('Invalid value - service');
+        }
+    }
+
+    /**
+     * Get audience options
+     * @return array
+     */
+    public static function getaudienceoptions() {
+        return [
+            ENHANCE_AUDIENCE_STAFF => get_string('staff', 'report_enhance'),
+            ENHANCE_AUDIENCE_STUDENTS => get_string('students', 'report_enhance'),
+            ENHANCE_AUDIENCE_STAFFSTUDENTS => get_string('staffstudents', 'report_enhance'),
+            ENHANCE_AUDIENCE_OTHER  => get_string('other', 'report_enhance'),
+        ];
+    }
+
+    /**
+     * Get audience
+     * @param int $option
+     * @return string
+     */
+    public static function getaudience($option) {
+        $audiences = self::getaudienceoptions();
+        if (key_exists($option, $audiences)) {
+            return $audiences[$option];
+        } else {
+            throw new \Exception('Invalid value - audience -' . $option);
+        }
+    }
+
+    /**
+     * Get assigned options
+     * @return array
+     */
+    public static function getassignedoptions() {
+        return [
+            ENHANCE_ASSIGNED_LTEC => get_string('ltec', 'report_enhance'),
+            ENHANCE_ASSIGNED_ITS => get_string('its', 'report_enhance'),
+            ENHANCE_ASSIGNED_REQUESTER => get_string('requester', 'report_enhance'),
+            ENHANCE_ASSIGNED_OTHER => get_string('other', 'report_enhance'),
+        ];
+    }
+
+    /**
+     * Get assigned
+     * @param int $option
+     * @reurn string
+     */
+    public static function getassigned($option) {
+        $assigned = self::getassignedoptions();
+        if (key_exists($option, $assigned)) {
+            return $assigned[$option];
+        } else {
+            throw new \Exception('Invalid value - assignedto');
+        }
+    }
+
+    /**
+     * Get gdpr
+     * @param int $option
+     * @return string
+     */
+    public static function getgdpr($option) {
+        if ($option == 0) {
+            return get_string('no');
+        } else if ($option == 1) {
+            return get_string('yes');
+        } else {
+            throw new \Exception('Invalid value - gdpr');
+        }
+    }
 
     /**
      * Get voting status for this user/request
@@ -145,6 +254,10 @@ class lib {
             $request->username = fullname($user);
             $request->userdate = userdate($request->timecreated);
             $request->statusformatted = $status->getStatus($request->status);
+            $request->serviceformatted = self::getservice($request->service);
+            $request->audienceformatted = self::getaudience($request->audience);
+            $request->gdprformatted = self::getgdpr($request->gdpr);
+            $request->assignedtoformatted = self::getassigned($request->assignedto);
             $request->priorityformatted = $priorities[$request->priority];
             list($request->votes) = \report_enhance\lib::getvotes($request);
         }
@@ -180,15 +293,16 @@ class lib {
         $myxls->write_string(1, $i++, get_string('submittedby', 'report_enhance'));
         $myxls->write_string(1, $i++, get_string('submittedon', 'report_enhance'));
         $myxls->write_string(1, $i++, get_string('department', 'report_enhance'));
+        $myxls->write_string(1, $i++, get_string('service', 'report_enhance'));
         $myxls->write_string(1, $i++, get_string('status', 'report_enhance'));
+        $myxls->write_string(1, $i++, get_string('assignedto', 'report_enhance'));
+        $myxls->write_string(1, $i++, get_string('gdpr', 'report_enhance'));
         $myxls->write_string(1, $i++, get_string('votes', 'report_enhance'));
         $myxls->write_string(1, $i++, get_string('priority', 'report_enhance'));
         $myxls->write_string(1, $i++, get_string('description', 'report_enhance'));
         $myxls->write_string(1, $i++, get_string('benefits', 'report_enhance'));
-        $myxls->write_string(1, $i++, get_string('desirability', 'report_enhance'));
-        $myxls->write_string(1, $i++, get_string('impact', 'report_enhance'));
-        $myxls->write_string(1, $i++, get_string('viability', 'report_enhance'));
         $myxls->write_string(1, $i++, get_string('result', 'report_enhance'));
+        $myxls->write_string(1, $i++, get_string('evaluation', 'report_enhance'));
         $myxls->write_string(1, $i++, get_string('reviewernotes', 'report_enhance'));
 
         // Add some data.
@@ -200,15 +314,16 @@ class lib {
             $myxls->write_string($row, $i++, $request->username);
             $myxls->write_string($row, $i++, $request->userdate);
             $myxls->write_string($row, $i++, $request->department);
+            $myxls->write_string($row, $i++, $request->serviceformatted);
             $myxls->write_string($row, $i++, $request->statusformatted);
+            $myxls->write_string($row, $i++, $request->assignedtoformatted);
+            $myxls->write_string($row, $i++, $request->gdprformatted);
             $myxls->write_number($row, $i++, $request->votes);
             $myxls->write_string($row, $i++, $request->priorityformatted);
             $myxls->write_string($row, $i++, html_to_text($request->description, 0, false));
             $myxls->write_string($row, $i++, html_to_text($request->benefits, 0, false));
-            $myxls->write_string($row, $i++, html_to_text($request->desirability, 0, false));
-            $myxls->write_string($row, $i++, html_to_text($request->impact, 0, false));
-            $myxls->write_string($row, $i++, html_to_text($request->viability, 0, false));
             $myxls->write_string($row, $i++, html_to_text($request->result, 0, false));
+            $myxls->write_string($row, $i++, html_to_text($request->evaluation, 0, false));
             $myxls->write_string($row, $i++, html_to_text($request->reviewernotes, 0, false));
 
             $row++;

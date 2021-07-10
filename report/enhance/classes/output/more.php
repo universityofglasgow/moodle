@@ -92,7 +92,10 @@ class more implements renderable, templatable {
         $request->user = $user;
         $request->username = fullname($user);
         $request->userdate = userdate($request->timecreated);
+        $request->serviceformatted = \report_enhance\lib::getservice($request->service);
+        $request->audienceformatted = \report_enhance\lib::getaudience($request->audience);
         $request->statusformatted = $status->getStatus($request->status);
+        $request->assignedtoformatted = \report_enhance\lib::getassigned($request->assignedto);
         $request->statusicon = $status->getStatusIcon($request->status);
         $request->statuscolour = $status->getStatusColour($request->status);
         list($request->votes) = \report_enhance\lib::getvotes($request);
