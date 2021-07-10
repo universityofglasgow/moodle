@@ -24,22 +24,50 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Defines the hooks necessary to make the oumultiresponse question type combinable
+ *
+ * @copyright  2019 Jean-Michel Vedrine
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class qtype_combined_combinable_type_multichoiceset extends qtype_combined_combinable_type_base {
 
+    /** @var Name of identifier */
     protected $identifier = 'allornothing';
 
+    /**
+     * Get the extra question properties
+     *
+     * @return array containing the numbering format
+     */
     protected function extra_question_properties() {
         return array('answernumbering' => 'abc') + $this->combined_feedback_properties();
     }
 
+    /**
+     * Get the extra question properties
+     *
+     * @return array containing the numbering format
+     */
     protected function extra_answer_properties() {
         return array('feedback' => array('text' => '', 'format' => FORMAT_PLAIN));
     }
 
+    /**
+     * Get the subquestion option fields
+     *
+     * @return array containing the options
+     */
     public function subq_form_fragment_question_option_fields() {
         return array('shuffleanswers' => false);
     }
 
+    /**
+     * Process the subquestion data
+     *
+     * @param array $subqdata Subquestion data
+     * @return array containing the answer properties
+     */
     protected function transform_subq_form_data_to_full($subqdata) {
         $data = parent::transform_subq_form_data_to_full($subqdata);
         foreach ($data->answer as $anskey => $answer) {
@@ -48,17 +76,30 @@ class qtype_combined_combinable_type_multichoiceset extends qtype_combined_combi
         return $this->add_per_answer_properties($data);
     }
 
+    /**
+     * Get the extra parameters for default
+     *
+     * @return string
+     */
     protected function third_param_for_default_question_text() {
         return 'v';
     }
 }
 
+/**
+ * Defines the hooks necessary to make the oumultiresponse question type combinable
+ *
+ * @copyright  2019 Jean-Michel Vedrine
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class qtype_combined_combinable_multichoiceset extends qtype_combined_combinable_accepts_vertical_or_horizontal_layout_param {
 
     /**
+     * Add a quick form to the basic form
+     *
      * @param moodleform      $combinedform
      * @param MoodleQuickForm $mform
-     * @param                 $repeatenabled
+     * @param bool            $repeatenabled
      */
     public function add_form_fragment(moodleform $combinedform, MoodleQuickForm $mform, $repeatenabled) {
         $mform->addElement('advcheckbox', $this->form_field_name('shuffleanswers'), get_string('shuffle', 'qtype_gapselect'));
@@ -95,9 +136,15 @@ class qtype_combined_combinable_multichoiceset extends qtype_combined_combinable
             QUESTION_NUMANS_ADD,
             get_string('addmorechoiceblanks', 'qtype_gapselect'),
             true);
-
     }
 
+    /**
+     * Fill in the form from the data
+     *
+     * @param context_module $context
+     * @param array $fileoptions
+     * @return array
+     */
     public function data_to_form($context, $fileoptions) {
         $mroptions = array('answer' => array(), 'correctanswer' => array());
         if ($this->questionrec !== null) {
@@ -109,6 +156,11 @@ class qtype_combined_combinable_multichoiceset extends qtype_combined_combinable
         return parent::data_to_form($context, $fileoptions) + $mroptions;
     }
 
+    /**
+     * Validate the input
+     *
+     * @return array of errors if any
+     */
     public function validate() {
         $errors = array();
         $nonemptyanswerblanks = array();
@@ -130,6 +182,11 @@ class qtype_combined_combinable_multichoiceset extends qtype_combined_combinable
         return $errors;
     }
 
+    /**
+     * Check if data has been submitted
+     *
+     * @return bool
+     */
     public function has_submitted_data() {
         return $this->submitted_data_array_not_empty('correctanswer') ||
                 $this->html_field_has_submitted_data($this->form_field_name('answer')) ||

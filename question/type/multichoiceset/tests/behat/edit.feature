@@ -26,6 +26,7 @@ Feature: Test editing a All-or-Nothing Multiple Choice question
 
   Scenario: Edit a All-or-Nothing Multiple Choice question
     When I click on "Edit" "link" in the "All-or-nothing for editing" "table_row"
+    And I follow "Edit question"
     And I set the following fields to these values:
       | Question name | |
     And I press "id_submitbutton"
