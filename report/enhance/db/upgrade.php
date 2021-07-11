@@ -214,6 +214,15 @@ function xmldb_report_enhance_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2021071000, 'report', 'enhance');      
     }
 
+    if ($oldversion < 2021071100) {
+
+        $DB->set_field('report_enhance', 'audience', '0');
+        $DB->set_field('report_enhance', 'assignedto', '0');
+        $DB->set_field('report_enhance', 'service', '0');
+
+        // Enhance savepoint reached.
+        upgrade_plugin_savepoint(true, 2021071100, 'report', 'enhance');      
+    }
 
     return true; //have to be in else get an unknown error
 }

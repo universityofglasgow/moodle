@@ -59,6 +59,9 @@ class lib {
      * @return string
      */
     public static function getservice($option) {
+        if (!$option) {
+            return get_string('notset', 'report_enhance');
+        }
         $services = self::getserviceoptions();
         if (key_exists($option, $services)) {
             return $services[$option];
@@ -86,6 +89,9 @@ class lib {
      * @return string
      */
     public static function getaudience($option) {
+        if (!$option) {
+            return get_string('notset', 'report_enhance');
+        }
         $audiences = self::getaudienceoptions();
         if (key_exists($option, $audiences)) {
             return $audiences[$option];
@@ -113,6 +119,9 @@ class lib {
      * @reurn string
      */
     public static function getassigned($option) {
+        if (!$option) {
+            return get_string('notset', 'report_enhance');
+        }
         $assigned = self::getassignedoptions();
         if (key_exists($option, $assigned)) {
             return $assigned[$option];

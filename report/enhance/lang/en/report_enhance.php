@@ -90,6 +90,7 @@ $string['newcomment'] = 'New comment';
 $string['nocomments'] = 'There are no comments for this enhancement request';
 $string['notifynewfull'] = '<p>A new VLE Enhancement Request has been logged by {$a->username}. <p><h3>Description</h3><p>{$a->description}.</p> <p>View it in <a href="{$a->link}">Moodle</a>.</p>';
 $string['notifynewsubject'] = 'A new VLE Enhancement Request has been logged';
+$string['notset'] = 'Not set';
 $string['oldfields'] = 'Old fields';
 $string['onhold'] = 'On hold';
 $string['other'] = 'Other';
