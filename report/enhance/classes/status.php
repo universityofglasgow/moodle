@@ -71,7 +71,7 @@ class status {
             // ENHANCE_STATUS_DESIRABLE => 'heart',
             ENHANCE_STATUS_CANCELLED => 'times',
             ENHANCE_STATUS_HOLD => 'pause',
-            ENHANCE_STATUS_APPROVAL => 'smile-o',
+            ENHANCE_STATUS_APPROVAL => 'briefcase',
         );
         
         $this->statusclass = array(
