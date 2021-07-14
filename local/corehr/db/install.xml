@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="local/corehr/db" VERSION="20191209" COMMENT="XMLDB file for Moodle local/corehr"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <TABLE NAME="local_corehr_log" COMMENT="Default comment for local_corehr, please edit me">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="personnelno" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="coursecode" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="trainingstatus" TYPE="char" LENGTH="8" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="startdate" TYPE="char" LENGTH="8" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="enddate" TYPE="char" LENGTH="8" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="wsstatus" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="local_corehr" COMMENT="Default comment for the table, please edit me">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="coursecode" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="enrolallstaff" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="courseid" UNIQUE="true" FIELDS="courseid"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="local_corehr_status" COMMENT="Retry status for corehr web service">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="personnelno" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="coursecode" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="completed" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false" COMMENT="Timestamp"/>
+        <FIELD NAME="lasttry" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false" COMMENT="Timestamp"/>
+        <FIELD NAME="retrycount" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="status" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false" COMMENT="pending, retry, error, OK"/>
+        <FIELD NAME="error" TYPE="char" LENGTH="50" NOTNULL="true" SEQUENCE="false" COMMENT="Error string from Core"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="local_corehr_extract" COMMENT="Extract data from Core">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="Moodle user id"/>
+        <FIELD NAME="college" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="College ID number"/>
+        <FIELD NAME="collegedesc" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="College Description"/>
+        <FIELD NAME="costcentre" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="Cost centre"/>
+        <FIELD NAME="costcentredesc" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="Cost centre description"/>
+        <FIELD NAME="title" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="Title"/>
+        <FIELD NAME="forename" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="Forename"/>
+        <FIELD NAME="middlename" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="Middle name"/>
+        <FIELD NAME="surname" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="Surname"/>
+        <FIELD NAME="knownas" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="Known as (name)"/>
+        <FIELD NAME="orgunitno" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="Organisational unit number"/>
+        <FIELD NAME="orgunitdesc" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="Organisational unit description"/>
+        <FIELD NAME="school" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="School number"/>
+        <FIELD NAME="schooldesc" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="School description"/>
+        <FIELD NAME="jobtitle" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="Job title (code)"/>
+        <FIELD NAME="jobtitledesc" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="Job title description"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="ux_uid" UNIQUE="true" FIELDS="userid" COMMENT="Index on userid"/>
+      </INDEXES>
+    </TABLE>
+  </TABLES>
+</XMLDB>

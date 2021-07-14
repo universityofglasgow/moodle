@@ -1,0 +1,69 @@
+{{=<% %>=}}
+
+<%> local_xp/mobile-css %>
+
+<style>
+.mma-xp-ladder .mma-xp-item-ladder.is-mine {
+    border-left: 5px solid #41c2ff;
+    padding-left: 11px;
+}
+.mma-xp-item-ladder [item-end] + [item-end] {
+    margin-left: 5px;
+}
+</style>
+
+<%#tabs%>
+    <%> local_xp/mobile-tabs %>
+<%/tabs%>
+
+<%#ladder%>
+<div class="mma-xp-ladder" margin-bottom>
+    <ion-list>
+        <%#hasbefore%>
+            <ion-item>
+                <button ion-button clear block core-site-plugins-new-content component="local_xp" method="group_ladder_page" samePage="true" [args]="{courseid: <% courseid %>, page: <% prevpage %>}"><%#str%>previous, core<%/str%></button>
+            </ion-item>
+        <%/hasbefore%>
+
+        <%#ranking%>
+            <ion-item class="mma-xp-item-ladder <%#state.subject.ismine%>is-mine<%/state.subject.ismine%>">
+
+                <div class="rank" item-start><% rank %>.</div>
+
+                <%#state.subject%>
+                    <%#imageurl%>
+                    <ion-avatar item-start>
+                        <img src="<% imageurl %>" core-external-content alt="">
+                    </ion-avatar>
+                    <%/imageurl%>
+                    <core-format-text text="<% name %>" component="local_xp"></core-format-text>
+                <%/state.subject%>
+
+                <%#showpoints%>
+                <div item-end>
+                    <%#state.xp%>
+                        <%> local_xp/mobile-xp %>
+                    <%/state.xp%>
+                    <%^state.xp%>
+                        <%> local_xp/mobile-xp-zero %>
+                    <%/state.xp%>
+                </div>
+                <%/showpoints%>
+
+                <%#showprogress%>
+                <div item-end style="min-width: 90px; max-width: 20%">
+                    <%> local_xp/mobile-progress %>
+                </div>
+                <%/showprogress%>
+
+            </ion-item>
+        <%/ranking%>
+
+        <%#hasmore%>
+            <ion-item>
+                <button ion-button clear block core-site-plugins-new-content component="local_xp" method="group_ladder_page" samePage="true" [args]="{courseid: <% courseid %>, page: <% nextpage %>}"><%#str%>next, core<%/str%></button>
+            </ion-item>
+        <%/hasmore%>
+    </ion-list>
+</div>
+<%/ladder%>

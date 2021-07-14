@@ -1,0 +1,83 @@
+<div class="card mb-2">
+    <div class="card-body">
+        <h5 class="card-title">{{# str }}notices, report_guenrol{{/ str }}</h5>
+
+        {{^ visible }}
+            <div class="alert alert-danger">{{# str }}notvisible, report_guenrol{{/ str }}</div>
+        {{/ visible }}
+
+        {{# afterenddate }}
+            <div class="alert alert-danger">{{# str }}afterenddate, report_guenrol{{/ str }}</div>
+        {{/ afterenddate }}
+
+        {{# beforestartdate }}
+            <div class="alert alert-danger">{{# str }}beforestartdate, report_guenrol{{/ str }}</div>
+        {{/ beforestartdate }}
+
+        <div class="alert alert-info">{{# str }}lastupdate, report_guenrol, {{ lastupdate }}{{/ str }}</div>
+
+        {{^ iscodes }}
+            <div class="alert alert-warning">{{# str }}nocodes, report_guenrol{{/ str }}</div>
+        {{/ iscodes }}
+    </div>
+</div>
+
+{{# iscodes }}
+    <div class="card mb-2">
+        <div class="card-body">
+            <h5 class="card-title">{{# str }}listofcodes, report_guenrol{{/ str }}</h5>
+
+            <table class="table table-striped">
+                <tbody>
+                    {{# codes }}
+                        <tr>
+                            <td><b>{{ code }}</b>{{# duplicate }} <span class="badge badge-warning">{{# str }}duplicate, report_guenrol{{/ str }}</span>{{/ duplicate }}</td>
+                            <td>{{ coursename }}</td>
+                            <td>{{ subjectname }}</td> 
+                            <td>{{{ formattedlocation }}}</td>
+                            <td>{{{ more }}}</td>
+                        </tr>
+                    {{/ codes }}
+                </tbody>
+            </table>
+
+            {{# showall }}
+                <a class="btn btn-success" href="{{{ showall }}}">{{# str }}showall, report_guenrol{{/ str }}<a>
+            {{/ showall }}
+            
+        </div>
+    </div>
+
+    <div class="card mb-2">
+        <div class="card-body">
+            <h5 class="card-title">{{# str }}utilities, report_guenrol{{/ str }}</h5>
+
+             <div class="row mb-3">
+                 <div class="col-sm-4">
+                     <a class="btn btn-info" href="{{{ linksync }}}">{{# str }}sync, report_guenrol{{/ str }}</a> 
+                 </div>
+                 <div class="col-sm-8">
+                     {{# str }}sync_desc, report_guenrol{{/ str }}
+                 </div>
+             </div>
+
+             <div class="row mb-3">
+                 <div class="col-sm-4">
+                     <a class="btn btn-danger" href="{{{ linkremove }}}">{{# str }}remove, report_guenrol{{/ str }}</a> 
+                 </div>
+                 <div class="col-sm-8">
+                     {{# str }}remove_desc, report_guenrol{{/ str }}
+                 </div>
+             </div>
+
+             <div class="row mb-3">
+                 <div class="col-sm-4">
+                     <a class="btn btn-danger" href="{{{ linkrevert }}}">{{# str }}revert, report_guenrol{{/ str }}</a> 
+                 </div>
+                 <div class="col-sm-8">
+                     {{# str }}revert_desc, report_guenrol{{/ str }}
+                 </div>
+             </div>
+         </div>
+    </div>
+{{/ iscodes }}

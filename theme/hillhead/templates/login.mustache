@@ -1,0 +1,116 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template theme_boost/login
+
+    Login page template
+
+    Example context (json):
+    {
+        "output": {
+            "doctype": "<!DOCTYPE html>",
+            "page_title": "Login page",
+            "favicon": "favicon.ico",
+            "main_content": "<h1>Headers keep HTML validators happy</h1>"
+            "loginintro": "<h2>Welcome to our Moodle</h2><p>Hello, and welcome to Moodle.</p>"
+        }
+    }
+}}
+{{{ output.doctype }}}
+<html {{{ output.htmlattributes }}}>
+<head>
+    <title>{{{ output.page_title }}}</title>
+    <link rel="shortcut icon" href="{{{ output.favicon }}}" />
+    {{{ output.standard_head_html }}}
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<body {{{ bodyattributes }}}>
+
+<div id="page-wrapper">
+
+    {{{ output.standard_top_of_body_html }}}
+    
+
+    <div id="page" class="container-fluid">
+        <div id="page-content">
+            <div id="region-main-box">
+                <section id="region-main">
+                    {{{ output.course_content_header }}}
+                    <div class="gu-login-spacer d-none d-lg-block">
+                    </div>
+                    <div class="row justify-content-center">
+    <div class=" d-none d-sm-block col-sm-7 col-md-8 col-lg-7 col-xl-7 push-lg-1 push-xl-1">
+        <div class="gu-login-intro">
+            {{#loginintro}}
+            {{{loginintro}}}
+            {{/loginintro}}
+            {{^loginintro}}
+            <h2>Moodle at the University of Glasgow.</h2>
+            <p>Moodle is your Digital Learning Environment. You can use it to download your lecture notes, submit your assignments, and get announcements from your lecturers.</p>
+            <p>Join thousands of students who already use Moodle. Log in today.</p>
+            <p><a href="http://www.gla.ac.uk">Learn more about the University of Glasgow</a>.</p>
+            {{/loginintro}}
+        </div>
+    </div>
+    <div class="col-xs-12 col-sm-5 col-md-4 col-lg-3 col-xl-3 push-lg-1 push-xl-1">
+        {{{ output.main_content }}}
+    </div>
+</div>
+                    {{{ output.course_content_footer }}}
+                </section>
+            </div>
+        </div>
+    </div>
+</div>
+<!--<footer id="page-footer" class="p-y-1">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-6">
+    			<h3 class="glasgow">University <em>of</em> Glasgow</h3>
+    			<p class="address">Glasgow, G12 8QQ, Scotland</p>
+    			<p class="phone">Tel +44 (0) 141 330 2000</p>
+    			<p class="charity">The University of Glasgow is a registered Scottish charity: Registration Number SC004401</p>
+            </div>
+            <div class="col-sm-3 footer-links">
+                <h4>Site Links</h4>
+                <ul>
+    				<li><a href="/my">Dashboard</a></li>
+	            </ul>
+            </div>
+    		<div class="col-sm-3 footer-links">
+    			<h4>Current Students</h4>
+    			<ul>
+    				<li><a href="http://www.gla.ac.uk/students/">Information for students</a></li>
+    				<li><a href="http://www.gla.ac.uk/students/myglasgow/">MyGlasgow students</a></li>
+    			</ul>
+    			
+    			<h4>Staff</h4>
+    			<ul>
+    				<li><a href="http://www.gla.ac.uk/myglasgow/staff/">MyGlasgow staff</a></li>
+    			</ul>
+    		</div>
+        </div>
+    </div>
+</footer>-->
+{{{ output.standard_end_of_body_html }}}
+
+</body>
+</html>
+{{#js}}
+require(['theme_boost/loader']);
+{{/js}}
