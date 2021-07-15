@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="report/enhance/db" VERSION="20201217" COMMENT="XMLDB file for Moodle report/enhance"
+<XMLDB PATH="report/enhance/db" VERSION="20210709" COMMENT="XMLDB file for Moodle report/enhance"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -10,6 +10,11 @@
         <FIELD NAME="status" TYPE="char" LENGTH="30" NOTNULL="true" SEQUENCE="false" COMMENT="Status of request ('Approved', 'Approved in development', 'Approved released', 'Pending', 'Proposed', 'Rejected'"/>
         <FIELD NAME="userid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="headline" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="service" TYPE="int" LENGTH="11" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Moodle, Mahara, Other"/>
+        <FIELD NAME="audience" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Staff, Students, Staff &amp;amp; Students, Other"/>
+        <FIELD NAME="transferability" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="assignedto" TYPE="int" LENGTH="11" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="LTEC, IT Service, Requester, Other"/>
+        <FIELD NAME="gdpr" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="GDPR flag"/>
         <FIELD NAME="description" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="benefits" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="department" TYPE="char" LENGTH="50" NOTNULL="false" SEQUENCE="false" COMMENT="College or school"/>
@@ -18,6 +23,7 @@
         <FIELD NAME="impact" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="result" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="reviewernotes" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Secret notes field"/>
+        <FIELD NAME="evaluation" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="priority" TYPE="int" LENGTH="11" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="timemodified" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false"/>
@@ -42,7 +48,7 @@
         <INDEX NAME="ix_userid" UNIQUE="false" FIELDS="userid"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="changeme" COMMENT="Default comment for the table, please edit me">
+    <TABLE NAME="report_enhance_comment" COMMENT="Enhancement comments">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="enhanceid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false"/>

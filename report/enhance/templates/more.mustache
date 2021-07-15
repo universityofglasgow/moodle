@@ -53,6 +53,21 @@
 </dl>
 
 <dl class="row">
+    <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}service, report_enhance{{/ str }}</dt>
+    <dd class="col-xs-8 col-sm-9 col-lg-10">{{ request.serviceformatted }}</span></dd>
+</dl>
+
+<dl class="row">
+    <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}audience, report_enhance{{/ str }}</dt>
+    <dd class="col-xs-8 col-sm-9 col-lg-10">{{ request.audienceformatted }}</span></dd>
+</dl>
+
+<dl class="row">
+    <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}assignedto, report_enhance{{/ str }}</dt>
+    <dd class="col-xs-8 col-sm-9 col-lg-10">{{ request.assignedtoformatted }}</span></dd>
+</dl>
+
+<dl class="row">
     <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}votes, report_enhance{{/ str }}</dt>
     <dd class="col-xs-8 col-sm-9 col-lg-10">
         {{ request.votes }}
@@ -72,68 +87,46 @@
 <div>
 
 {{#request.description}}
-<div class="card m-t-1 m-b-1">
-<div class="card-body">
-<dl class="row m-b-0">
-    <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}description, report_enhance{{/ str }}</dt>
-    <dd class="col-xs-8 col-sm-9 col-lg-10">{{{ request.description }}}</dd>
-</dl>
-</div>
-</div>
+    <div class="card m-t-1 m-b-1">
+        <div class="card-body">
+            <dl class="row m-b-0">
+                <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}description, report_enhance{{/ str }}</dt>
+                <dd class="col-xs-8 col-sm-9 col-lg-10">{{{ request.description }}}</dd>
+            </dl>
+        </div>
+    </div>
 {{/request.description}}
 
 {{#request.benefits}}
-<div class="card m-b-1">
-<div class="card-body">
-<dl class="row m-b-0">
-    <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}benefits, report_enhance{{/ str }}</dt>
-    <dd class="col-xs-8 col-sm-9 col-lg-10">{{{ request.benefits }}}</dd>
-</dl>
-</div>
-</div>
+    <div class="card m-b-1">
+        <div class="card-body">
+            <dl class="row m-b-0">
+                <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}benefits, report_enhance{{/ str }}</dt>
+                <dd class="col-xs-8 col-sm-9 col-lg-10">{{{ request.benefits }}}</dd>
+            </dl>
+        </div>
+    </div>
 {{/request.benefits}}
 
-{{#request.desirability}}
-<div class="card m-b-1">
-<div class="card-body">
-<dl class="row m-b-0">
-    <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}desirability, report_enhance{{/ str }}</dt>
-    <dd class="col-xs-8 col-sm-9 col-lg-10">{{{ request.desirability }}}</dd>
-</dl>
-</div>
-</div>
-{{/request.desirability}}
-
-{{#request.impact}}
-<div class="card m-b-1">
-<div class="card-body">
-<dl class="row m-b-0">
-    <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}impact, report_enhance{{/ str }}</dt>
-    <dd class="col-xs-8 col-sm-9 col-lg-10">{{{ request.impact }}}</dd>
-</dl>
-</div>
-</div>
-{{/request.impact}}
-
-{{#request.viability}}
-<div class="card m-b-1">
-<div class="card-body">
-<dl class="row m-b-0">
-    <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}viability, report_enhance{{/ str }}</dt>
-    <dd class="col-xs-8 col-sm-9 col-lg-10">{{{ request.viability }}}</dd>
-</dl>
-</div>
-</div>
-{{/request.viability}}
+{{#request.transferability}}
+    <div class="card m-b-1">
+        <div class="card-body">
+            <dl class="row m-b-0">
+                <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}transferability, report_enhance{{/ str }}</dt>
+                <dd class="col-xs-8 col-sm-9 col-lg-10">{{{ request.transferability }}}</dd>
+            </dl>
+        </div>
+    </div>
+{{/request.transferability }}
 
 {{#request.result}}
     <div class="card m-b-1">
-    <div class="card-body">
-        <dl class="row m-b-0">
-        <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}result, report_enhance{{/ str }}</dt>
-        <dd class="col-xs-8 col-sm-9 col-lg-10">{{{ request.result }}}</dd>
-        </dl>
-    </div>
+        <div class="card-body">
+            <dl class="row m-b-0">
+            <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}result, report_enhance{{/ str }}</dt>
+            <dd class="col-xs-8 col-sm-9 col-lg-10">{{{ request.result }}}</dd>
+            </dl>
+        </div>
     </div>
 {{/request.result}}
 
@@ -174,11 +167,11 @@
 {{/ allowreview }}
 
 {{^ hascomments }}
-    <div class="alert alert-warning m-t-2">{{# str }}nocomments, report_enhance{{/ str }}</div>
+    <div class="alert alert-warning mt-2">{{# str }}nocomments, report_enhance{{/ str }}</div>
 {{/ hascomments }}
 
 {{# hascomments}}
-    <div class="card m-b-1 m-t-2">
+    <div class="card mb-1 mt-2">
         <div class="card-body">
             <h5 class="card-title">{{# str }}comments, report_enhance{{/ str }}</h5>
                 {{# comments }}

@@ -41,6 +41,9 @@ class review_form extends \moodleform {
         $request = $customdata['request'];
         $fields = $customdata['fields'];
         $statuses = $customdata['statuses'];
+        $services = $customdata['services'];
+        $audiences = $customdata['audiences'];
+        $assignments = $customdata['assignments'];
         $entry = $customdata['entry'];
 
         // Course id
@@ -54,6 +57,14 @@ class review_form extends \moodleform {
         // Status
         $mform->addElement('select', 'status', get_string('status', 'report_enhance'), $statuses)->setValue($request->status);
         $mform->setType('status', PARAM_INT);
+
+        // Assignments
+        $mform->addElement('select', 'assignedto', get_string('assignedto', 'report_enhance'), $assignments)->setValue($request->assignedto);
+        $mform->setType('assignedto', PARAM_INT);
+
+        // GDPR
+        $mform->addElement('selectyesno', 'gdpr', get_string('gdpr', 'report_enhance'))->setValue($request->gdpr);
+        $mform->setType('gdpr', PARAM_INT);
 
         // Loop over fields
         foreach ($fields as $field) {

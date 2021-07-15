@@ -38,7 +38,7 @@ require_once($CFG->dirroot . '/question/format/xml/format.php');
 class qtype_multichoiceset extends question_type {
     /**
      * Can the answer fields contain HTML?
-     * 
+     *
      * @return bool return true if restore_decode_content_links_worker should be called.
      */
     public function has_html_answers() {
@@ -85,13 +85,14 @@ class qtype_multichoiceset extends question_type {
         $options->incorrectfeedback = get_string('incorrectfeedbackdefault', 'question');
         $options->incorrectfeedbackformat = FORMAT_HTML;
 
-        $config = get_config('qtype_multichoice');
+        $config = get_config('qtype_multichoiceset');
         $options->single = $config->answerhowmany;
         if (isset($question->layout)) {
             $options->layout = $question->layout;
         }
         $options->answernumbering = $config->answernumbering;
         $options->shuffleanswers = $config->shuffleanswers;
+        $options->showstandardinstruction = 0;
         $options->shownumcorrect = 1;
 
         return $options;
@@ -172,6 +173,7 @@ class qtype_multichoiceset extends question_type {
             $options->questionid = $question->id;
             $options->correctfeedback = '';
             $options->incorrectfeedback = '';
+            $options->showstandardinstruction = 0;
             $options->id = $DB->insert_record('qtype_multichoiceset_options', $options);
         }
 
@@ -180,6 +182,7 @@ class qtype_multichoiceset extends question_type {
         }
         $options->answernumbering = $question->answernumbering;
         $options->shuffleanswers = $question->shuffleanswers;
+        $options->showstandardinstruction = !empty($question->showstandardinstruction);
         $options->correctfeedback = $this->import_or_save_files($question->correctfeedback,
                 $context, 'question', 'correctfeedback', $question->id);
         $options->correctfeedbackformat = $question->correctfeedback['format'];
@@ -311,6 +314,7 @@ class qtype_multichoiceset extends question_type {
         parent::initialise_question_instance($question, $questiondata);
         $question->shuffleanswers = $questiondata->options->shuffleanswers;
         $question->answernumbering = $questiondata->options->answernumbering;
+        $question->showstandardinstruction = $questiondata->options->showstandardinstruction;
         if (!empty($questiondata->options->layout)) {
             $question->layout = $questiondata->options->layout;
         } else {
@@ -483,6 +487,7 @@ class qtype_multichoiceset extends question_type {
             $expout .= "    <shownumcorrect/>\n";
         }
         $expout .= "    <answernumbering>{$question->options->answernumbering}</answernumbering>\n";
+        $expout .= "    <showstandardinstruction>{$question->options->showstandardinstruction}</showstandardinstruction>\n";
         $expout .= $format->write_answers($question->options->answers);
 
         return $expout;
@@ -511,6 +516,9 @@ class qtype_multichoiceset extends question_type {
 
         $question->answernumbering = $format->getpath($data,
                 array('#', 'answernumbering', 0, '#'), 'abc');
+
+        $question->showstandardinstruction = $format->trans_single(
+                 $format->getpath($data, array('#', 'showstandardinstruction', 0, '#'), 1));
 
         $question->correctfeedback = array();
         $question->correctfeedback['text'] = $format->getpath($data, array('#', 'correctfeedback', 0, '#', 'text', 0, '#'),
@@ -630,7 +638,7 @@ class qtype_multichoiceset extends question_type {
 }
 
 /**
- * An extension of {@link question_hint_with_parts} for multichoiceset questions.
+ * An extension of function question_hint_with_parts() for multichoiceset questions.
  *
  * This has an extra option for whether to show the feedback for each choice.
  *
