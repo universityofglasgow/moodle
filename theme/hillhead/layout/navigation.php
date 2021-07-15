@@ -135,6 +135,7 @@ foreach($flatnav as $navitem) {
                     $settingsnavexists = true;
                     break;
                 case 'calendar':
+                case 'mymedia':
                 case 'privatefiles';
                 case 'home':
                 case 'helplink':
@@ -156,7 +157,6 @@ foreach($flatnav as $navitem) {
                     $starredCoursesBottom[] = $navitem;
                     $coursenavexists = true;
                     break;
-                case 'mymedia': // Not sure this belongs here
                 case 'gugcat':
                 case 30:
                     $thiscoursenav[] = $navitem;
