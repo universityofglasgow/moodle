@@ -23,7 +23,7 @@
     {}
 }}
 
-<h1 class="m-b-1">{{ request.headline }}</h1>
+<h1 class="mb-1">{{ request.headline }}</h1>
 
 <dl class="row">
     <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}requestnumber, report_enhance{{/ str }}</dt>
@@ -75,7 +75,7 @@
     </dd>
 </dl>
 
-<dl class="row m-b-0">
+<dl class="row mb-0">
     <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}priority, report_enhance{{/ str }}</dt>
     <dd class="col-xs-8 col-sm-9 col-lg-10">
         {{{ priority }}}
@@ -87,9 +87,9 @@
 <div>
 
 {{#request.description}}
-    <div class="card m-t-1 m-b-1">
+    <div class="card m-t-1 mb-1">
         <div class="card-body">
-            <dl class="row m-b-0">
+            <dl class="row mb-0">
                 <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}description, report_enhance{{/ str }}</dt>
                 <dd class="col-xs-8 col-sm-9 col-lg-10">{{{ request.description }}}</dd>
             </dl>
@@ -98,9 +98,9 @@
 {{/request.description}}
 
 {{#request.benefits}}
-    <div class="card m-b-1">
+    <div class="card mb-1">
         <div class="card-body">
-            <dl class="row m-b-0">
+            <dl class="row mb-0">
                 <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}benefits, report_enhance{{/ str }}</dt>
                 <dd class="col-xs-8 col-sm-9 col-lg-10">{{{ request.benefits }}}</dd>
             </dl>
@@ -109,9 +109,9 @@
 {{/request.benefits}}
 
 {{#request.transferability}}
-    <div class="card m-b-1">
+    <div class="card mb-1">
         <div class="card-body">
-            <dl class="row m-b-0">
+            <dl class="row mb-0">
                 <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}transferability, report_enhance{{/ str }}</dt>
                 <dd class="col-xs-8 col-sm-9 col-lg-10">{{{ request.transferability }}}</dd>
             </dl>
@@ -120,9 +120,9 @@
 {{/request.transferability }}
 
 {{#request.result}}
-    <div class="card m-b-1">
+    <div class="card mb-1">
         <div class="card-body">
-            <dl class="row m-b-0">
+            <dl class="row mb-0">
             <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}result, report_enhance{{/ str }}</dt>
             <dd class="col-xs-8 col-sm-9 col-lg-10">{{{ request.result }}}</dd>
             </dl>
@@ -131,9 +131,9 @@
 {{/request.result}}
 
 {{# reviewer }}
-    <div class="card m-b-1">
+    <div class="card mb-1">
     <div class="card-body">
-        <dl class="row m-b-0">
+        <dl class="row mb-0">
         <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}reviewernotes, report_enhance{{/ str }}</dt>
         <dd class="col-xs-8 col-sm-9 col-lg-10">{{{ request.reviewernotes }}}</dd>
         </dl>
@@ -142,9 +142,9 @@
 {{/ reviewer }}
 
 {{# hasattachments }}
-    <div class="card m-b-1">
+    <div class="card mb-1">
         <div class="card-body">
-        <dl class="row m-b-0">
+        <dl class="row mb-0">
         <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}attachments, report_enhance{{/ str }}</dt>
         <dd class="col-xs-8 col-sm-9 col-lg-10">
             <ul>
@@ -175,7 +175,7 @@
         <div class="card-body">
             <h5 class="card-title">{{# str }}comments, report_enhance{{/ str }}</h5>
                 {{# comments }}
-                    <div class="card-text border rounded p-2 m-b-1 bg-secondary">
+                    <div class="card-text border rounded p-2 mb-1 bg-secondary">
                         <div class="border-bottom mb-2 pb-2">
                             <div class="media">
                                 <div class="mr-1">
