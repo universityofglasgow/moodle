@@ -4675,7 +4675,8 @@ function oublog_stats_output_participation($oublog, $cm, $renderer = null, $cour
             $postuser = new stdClass();
             $postuser->id = $post->userid;
             $postuser->groupid = $post->groupid;
-            $fields = explode(',', user_picture::fields('', null, '', null));
+	    //$fields = explode(',', user_picture::fields('', null, '', null));
+	    $fields = \core_user\fields::for_userpic();
             foreach ($fields as $field) {
                 if ($field != 'id') {
                     $pfield = $field;
