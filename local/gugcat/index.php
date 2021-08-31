@@ -215,8 +215,14 @@ $params = array(
     )
 );
 
+// Any actions with no students is an error
+if ((isset($release) || isset($multiadd) | isset($importgrades) || isset($newgrades) || isset($bulkimport)) && !$totalenrolled) {
+    local_gugcat::notify_error('nostudents');
+    redirect($url);
+    die;
+}
 // Process release provisional grades.
-if (isset($release)) {
+else if (isset($release)) {
     grade_capture::release_prv_grade($courseid, $selectedmodule);
     local_gugcat::notify_success('successrelease');
     // Log of release grades.

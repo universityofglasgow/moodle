@@ -133,6 +133,7 @@ $string['nograde'] = 'Pending information';
 $string['nograderecorded'] = 'No grade recorded';
 $string['nogradeimport'] = 'Awaiting Grade Import';
 $string['nogradeweight'] = 'N/A';
+$string['nostudents'] = 'There are no students in this course';
 $string['notes'] = 'Notes';
 $string['overrideerror'] = 'Override error: Assessment is not yet imported to GCAT.';
 $string['overriddeninfo'] = 'Aggregated grades with * have been overridden';
