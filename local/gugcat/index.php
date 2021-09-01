@@ -181,10 +181,15 @@ if ($groupingid != 0) {
 
 // Go back to first page when new search filters were submitted.
 $filters = optional_param_array('filters', [], PARAM_NOTAGS);
+
+// clear any empty filters so they don't 'count'.
+$filters = array_filter($filters);
 if (count($filters) > 0 && $page > 0) {
+    echo "<pre>GOT HERE\n "; var_dump($filters); var_dump($page); die;
     $url->remove_params('page');
     redirect($url);
 }
+
 // Populate static $students.
 local_gugcat::$students = $students;
 // Populate static provisional grade id.
