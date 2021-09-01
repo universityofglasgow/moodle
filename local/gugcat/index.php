@@ -185,7 +185,6 @@ $filters = optional_param_array('filters', [], PARAM_NOTAGS);
 // clear any empty filters so they don't 'count'.
 $filters = array_filter($filters);
 if (count($filters) > 0 && $page > 0) {
-    echo "<pre>GOT HERE\n "; var_dump($filters); var_dump($page); die;
     $url->remove_params('page');
     redirect($url);
 }
