@@ -221,6 +221,7 @@ $string['uploaderrorgradeformat'] = 'User with ID number of {$a->id} has an inva
 $string['uploaderrorgrademaxpoint'] = 'User with ID number of {$a->id} has an invalid grade: {$a->value}. Grade is greater than the maximum grade.';
 $string['uploaderrorgradepoint'] = 'User with ID number of {$a->id} has an invalid grade: {$a->value}. Grade is an invalid point grade.';
 $string['uploaderrorgradescale'] = 'User with ID number of {$a->id} has an invalid grade: {$a->value}. Grade is not within the scale.';
+$string['uploaderrornoid'] = 'Student number field is empty on line {$a}. Cannot identify student.';
 $string['uploaderrornotmember'] = 'User with ID number of {$a->id} is not a member of current group.';
 $string['uploaderrornotfound'] = 'User mapping error. Could not find user with ID number of {$a->id}.';
 $string['uploadfile'] = 'Upload file:';

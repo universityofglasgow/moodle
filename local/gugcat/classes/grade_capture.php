@@ -524,6 +524,7 @@ class grade_capture{
         if ($activity->groupingid && $activity->groupingid > 0) {
             $grouped = local_gugcat::get_students_per_groups(array($activity->groupingid), $COURSE->id, 'u.id, u.idnumber');
         }
+        $linenumber = 2;
         while ($line = $csvdata->next()) {
             if (count(array_filter($line)) == 0) {
                 // There is no data on this line, move on.
@@ -536,6 +537,12 @@ class grade_capture{
             $errorobj = new stdClass();
             $errorobj->id = $idnumber;
             $errorobj->value = $grade;
+
+            // check if student number blank
+            if (empty($idnumber)) {
+                $gradebookerrors[] = get_string('uploaderrornoid', 'local_gugcat', $linenumber);
+                $status = false;
+            }
 
             // Check if student is not enrolled in current course.
             if (!in_array($idnumber, array_column($enrolled, 'idnumber'), true)) {
@@ -582,7 +589,10 @@ class grade_capture{
                 $userids = array_column($enrolled, 'id', 'idnumber');
                 $newgrades[$userids[$idnumber]] = $grade;
             }
+
+            $linenumber++;
         }
+
         if ($status && count($newgrades) > 0 && empty($gradebookerrors)) {
             $gradeitemid = local_gugcat::add_grade_item($COURSE->id, $itemname, $activity);
             foreach ($newgrades as $id => $item) {
