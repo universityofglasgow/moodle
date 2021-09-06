@@ -542,10 +542,8 @@ class grade_capture{
             if (empty($idnumber)) {
                 $gradebookerrors[] = get_string('uploaderrornoid', 'local_gugcat', $linenumber);
                 $status = false;
-            }
-
-            // Check if student is not enrolled in current course.
-            if (!in_array($idnumber, array_column($enrolled, 'idnumber'), true)) {
+            } else if (!in_array($idnumber, array_column($enrolled, 'idnumber'), true)) {
+                // Check if student is not enrolled in current course.
                 $gradebookerrors[] = get_string('uploaderrornotfound', 'local_gugcat', $errorobj);
                 $status = false;
             }
