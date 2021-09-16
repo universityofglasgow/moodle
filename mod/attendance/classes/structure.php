@@ -619,6 +619,10 @@ class mod_attendance_structure {
             $sess->preventsharediptime = $formdata->preventsharediptime;
         }
 
+        if (!empty($formdata->automarkcmid)) {
+            $sess->automarkcmid = $formdata->automarkcmid;
+        }
+
         $sess->timemodified = time();
         $DB->update_record('attendance_sessions', $sess);
 
@@ -1305,9 +1309,16 @@ class mod_attendance_structure {
             }
         } else {
             foreach ($statuses as $status) {
-                if ($status->studentavailability !== '0' &&
-                    $this->sessioninfo[$sessionid]->sessdate + ($status->studentavailability * 60) > $time) {
-
+                if ($status->studentavailability === '0') {
+                    // This status not available to students.
+                    continue;
+                }
+                if (empty($status->studentavailability) && ($session->sessdate + $duration >= $time) &&
+                    !empty(get_config('attendance', 'automark_useempty'))) {
+                    // This is set to null - always available to students until end of session..
+                    return $status->id;
+                }
+                if ($this->sessioninfo[$sessionid]->sessdate + ($status->studentavailability * 60) > $time) {
                     // Found first status we could set.
                     return $status->id;
                 }
