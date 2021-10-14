@@ -1307,7 +1307,7 @@ class local_gugcat {
      */
     public static function get_gb_assign_grade($assign, $gb) {
 
-        $isvalidassign = $assign && $assign->grader >= 0 && (!is_null($assign->grade) || !empty($assign->grade));
+        $isvalidassign = $assign && $assign->grade >= 0 && (!is_null($assign->grade) || !empty($assign->grade));
         $gb = (!is_null($gb) && $gb->overridden == 0) && $isvalidassign ? $assign : $gb;
 
         return $gb;
