@@ -163,7 +163,10 @@ class grade_converter{
         }
 
         $convertedgrade = null;
-        $grade = round($grade);
+        // HM: this rounding breaks it for smaller max grades. I have no idea what it was supposed to do
+        // appears to work fine removed. 
+        // See MOOD-111
+        //$grade = round($grade);
         foreach ($convs as $index => $cobj) {
             $cobj = (object) $cobj;
             // Get the upperbound from the preceding element lowerboundary.
