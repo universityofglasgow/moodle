@@ -56,42 +56,42 @@ $theme_hillhead_contrast = get_user_preferences('theme_hillhead_contrast');
 switch($theme_hillhead_contrast) {
     case 'night':
         $extraclasses[]='hillhead-night';
-        $theme_hillhead_stripstyles = 'on';
+        //$theme_hillhead_stripstyles = 'on';
         break;
     case 'by':
         $extraclasses[]='hillhead-contrast';
         $extraclasses[]='hillhead-contrast-by';
-        $theme_hillhead_stripstyles = 'on';
+        //$theme_hillhead_stripstyles = 'on';
         break;
     case 'yb':
         $extraclasses[]='hillhead-contrast';
         $extraclasses[]='hillhead-contrast-yb';
-        $theme_hillhead_stripstyles = 'on';
+        //$theme_hillhead_stripstyles = 'on';
         break;
     case 'wg':
         $extraclasses[]='hillhead-contrast';
         $extraclasses[]='hillhead-contrast-wg';
-        $theme_hillhead_stripstyles = 'on';
+        //$theme_hillhead_stripstyles = 'on';
         break;
     case 'bb':
         $extraclasses[]='hillhead-contrast';
         $extraclasses[]='hillhead-contrast-bb';
-        $theme_hillhead_stripstyles = 'on';
+        //$theme_hillhead_stripstyles = 'on';
         break;
     case 'br':
         $extraclasses[]='hillhead-contrast';
         $extraclasses[]='hillhead-contrast-br';
-        $theme_hillhead_stripstyles = 'on';
+        //$theme_hillhead_stripstyles = 'on';
         break;
     case 'bw':
         $extraclasses[]='hillhead-contrast';
         $extraclasses[]='hillhead-contrast-bw';
-        $theme_hillhead_stripstyles = 'on';
+        //$theme_hillhead_stripstyles = 'on';
         break;
     case 'wb':
         $extraclasses[]='hillhead-contrast';
         $extraclasses[]='hillhead-contrast-wb';
-        $theme_hillhead_stripstyles = 'on';
+        //$theme_hillhead_stripstyles = 'on';
         break;
 }
 

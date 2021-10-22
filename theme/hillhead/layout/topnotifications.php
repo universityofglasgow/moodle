@@ -8,16 +8,16 @@ $hillheadNotificationText =  get_config('theme_hillhead', 'hillhead_notification
 if(empty($_SESSION['SESSION']->hillhead_notifications) || !array_key_exists(md5($hillheadNotificationText), $_SESSION['SESSION']->hillhead_notifications)) {
     switch($hillheadnotificationtype) {
         case 'alert-danger':
-            $notiftext = '<div class="alert alert-danger mb-3"><a class="close" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($hillheadNotificationText).'" aria-label="Close"><span aria-hidden="true">&times;</span></a><i class="fa fa-warning"></i><span>'.$hillheadNotificationText.'</span></div>';
+            $notiftext = '<div class="alert alert-danger mb-3 d-flex align-items-center"><i class="fa fa-warning"></i><span class="d-flex-item">'.$hillheadNotificationText.'</span><a class="close d-flex-item ml-auto" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($hillheadNotificationText).'" aria-label="Close"><span aria-hidden="true">&times;</span></a></div>';
             break;
         case 'alert-warning':
-            $notiftext = '<div class="alert alert-warning mb-3"><a class="close" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($hillheadNotificationText).'" aria-label="Close"><span aria-hidden="true">&times;</span></a><i class="fa fa-warning"></i><span>'.$hillheadNotificationText.'</span></div>';
+            $notiftext = '<div class="alert alert-warning mb-3 d-flex align-items-center"><i class="fa fa-warning"></i><span class="d-flex-item">'.$hillheadNotificationText.'</span><a class="close d-flex-item ml-auto" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($hillheadNotificationText).'" aria-label="Close"><span aria-hidden="true">&times;</span></a></div>';
             break;
         case 'alert-success':
-            $notiftext = '<div class="alert alert-success mb-3"><a class="close" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($hillheadNotificationText).'" aria-label="Close"><span aria-hidden="true">&times;</span></a><i class="fa fa-info-circle"></i><span>'.$hillheadNotificationText.'</span></div>';
+            $notiftext = '<div class="alert alert-success mb-3 d-flex align-items-center"><i class="fa fa-info-circle"></i><span class="d-flex-item">'.$hillheadNotificationText.'</span><a class="close d-flex-item ml-auto" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($hillheadNotificationText).'" aria-label="Close"><span aria-hidden="true">&times;</span></a></div>';
             break;
         case 'alert-info':
-            $notiftext = '<div class="alert alert-info mb-3"><a class="close" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($hillheadNotificationText).'" aria-label="Close"><span aria-hidden="true">&times;</span></a><i class="fa fa-info-circle"></i><span>'.$hillheadNotificationText.'</span></div>';
+            $notiftext = '<div class="alert alert-info mb-3 d-flex align-items-center"><i class="fa fa-info-circle"></i><span class="d-flex-item">'.$hillheadNotificationText.'</span><a class="close d-flex-item ml-auto" href="'.$CFG->wwwroot.'/theme/hillhead/notification.php?h='.md5($hillheadNotificationText).'" aria-label="Close"><span aria-hidden="true">&times;</span></a></div>';
             break;
         default:
             $notiftext = '';
@@ -58,7 +58,7 @@ $hillheadoldbrowseralerts = get_config('theme_hillhead', 'hillhead_old_browser_a
 
 if($hillheadoldbrowseralerts == 'enabled') {
     $userAgentFlags = Array(
-        'windows-xp'			=>'/(Windows NT 5.1)|(Windows XP)/',
+        'windows-xp'			=> '/(Windows NT 5.1)|(Windows XP)/',
 		'firefox-1-51'          => '/Firefox\/([0-9]|[1-4][0-9]|5[0-1])\b/',
 		'safari-1-7'			=> '/(?=.*?AppleWebKit\/([0-9][0-9]|[0-5][0-9][0-9]|600)\b)(?!.*?Chrome\/).*/',
 		'ie-5-10'               =>  '/MSIE ([5-9]|10)\b/'
