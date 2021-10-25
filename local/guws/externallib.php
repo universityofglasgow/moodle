@@ -514,7 +514,7 @@ class local_guws_external extends external_api {
 
          // Get student's courses
         $fields = ['id', 'fullname', 'shortname', 'visible'];
-        $courses = enrol_get_all_users_courses($user->id, false, $fields);
+        $courses = enrol_get_all_users_courses($user->id, true, $fields);
         if (!$courses) {
             return [];
         }
