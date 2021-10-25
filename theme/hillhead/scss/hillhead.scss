@@ -668,3 +668,29 @@ background-color: #ffffee;
 .alert .close {
     margin-left: 20px;
 }
+
+ul {
+	-webkit-margin-start: 0;
+}
+
+[data-region="drawer"] {
+	padding: 20px !important;
+}
+
+.breadcrumb:not(:empty) {
+	border: none;
+	padding: inherit;
+}
+
+#page-header .card .card-body {
+	padding: 20px;
+}
+
+.course-content ul.topics li.section .summary, .course-content ul.topics li.section .content>.availabilityinfo, .course-content ul.weeks li.section .summary, .course-content ul.weeks li.section .content>.availabilityinfo {
+	margin-left: 20px;
+}
+
+.nav-tabs, .nav-pills {
+	background: transparent;
+	padding: 0;
+}

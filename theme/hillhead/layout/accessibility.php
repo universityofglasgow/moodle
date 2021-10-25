@@ -272,8 +272,8 @@
     $accTxt = '';
     
     if($usesAccessibilityTools) {
-        $accTxt = '<div class="block card m-t-1 accessibility-tools"><div class="block-header"><h3>Accessibility Tools';
-        $accTxt .= '<span class="float-right"><a href="'.$CFG->wwwroot.'/theme/hillhead/accessibility.php?o=theme_hillhead_reset_accessibility&v=yes" class="m-r-1" data-key="accessibility"><i class="fa fa-refresh"></i> Reset All</a>';
+        $accTxt = '<div class="block card accessibility-tools"><div class="block-header"><h3>Accessibility Tools';
+        $accTxt .= '<span class="float-right"><a href="'.$CFG->wwwroot.'/theme/hillhead/accessibility.php?o=theme_hillhead_reset_accessibility&v=yes" class="mr-2" data-key="accessibility"><i class="fa fa-refresh"></i> Reset All</a>';
         $accTxt .= '<a href="'.$CFG->wwwroot.'/theme/hillhead/accessibility.php?o=theme_hillhead_accessibility&v=clear" data-key="accessibility"><i class="fa fa-times"></i> Close</a></span></h3></div><div class="block-body">';
         $accTxt .= '<div class="row">';
         $accTxt .= '<div class="col-xs-12 col-md-6 col-lg-4 accessibility-group">';
