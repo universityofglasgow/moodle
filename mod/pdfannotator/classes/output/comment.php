@@ -14,6 +14,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace mod_pdfannotator\output;
+use moodle_url;
+
 /**
  * Renderable for comments.
  *
@@ -27,6 +30,7 @@ defined('MOODLE_INTERNAL') || die();
 class comment implements \renderable, \templatable {
 
     private $comments = [];
+    private $questionvisibility;
 
     /**
      * Constructor of renderable for comments.
@@ -55,6 +59,7 @@ class comment implements \renderable, \templatable {
         $forwardquestions = has_capability('mod/pdfannotator:forwardquestions', $context);
         $solve = has_capability('mod/pdfannotator:markcorrectanswer', $context);
 
+        $this->questionvisibility = $data[0]->visibility;
         foreach ($data as $comment) {
 
             $comment->buttons = [];
@@ -65,6 +70,9 @@ class comment implements \renderable, \templatable {
 
             $owner = ($comment->userid == $USER->id);
             $comment->owner = ($comment->userid == $USER->id);
+
+            $comment->private = ($comment->visibility == "private");
+            $comment->protected = ($comment->visibility == "protected");
 
             $this->addcssclasses($comment, $owner);
 
@@ -190,7 +198,7 @@ class comment implements \renderable, \templatable {
     private function addcloseopenbutton($comment, $closequestion, $closeanyquestion) {
 
         if (!isset($comment->type) && $comment->isquestion // Only set for textbox and drawing.
-                && (($comment->owner && $closequestion) || $closeanyquestion)) {
+                && (($comment->owner && $closequestion) || $closeanyquestion)  && $comment->visibility != 'private') {
 
             if ($comment->solved) {
                 $comment->buttons[] = ["classes" => "comment-solve-a", "faicon" => ["class" => "fa-unlock"],
@@ -217,6 +225,10 @@ class comment implements \renderable, \templatable {
     }
 
     private function addhidebutton($comment, $seehiddencomments, $hidecomments) {
+        // Don't need to hide personal notes.
+        if ($this->questionvisibility == 'private') {
+            return;
+        }
         if (!empty($comment->ishidden) && !isset($comment->type)) {
             if ($seehiddencomments) {
                 $comment->content = $comment->content;
@@ -253,7 +265,7 @@ class comment implements \renderable, \templatable {
     }
 
     private function addsubscribebutton($comment, $subscribe) {
-        if (!isset($comment->type) && $comment->isquestion && $subscribe) { // Only set for textbox and drawing.
+        if (!isset($comment->type) && $comment->isquestion && $subscribe && $comment->visibility != 'private') { // Only set for textbox and drawing.
             if (!empty($comment->issubscribed)) {
                 $comment->buttons[] = ["classes" => "comment-subscribe-a", "faicon" => ["class" => "fa-bell-slash"],
                     "text" => get_string('unsubscribeQuestion', 'pdfannotator')];
@@ -265,7 +277,7 @@ class comment implements \renderable, \templatable {
     }
 
     private function addforwardbutton($comment, $forwardquestions, $cm) {
-        if (!isset($comment->type) && $comment->isquestion && !$comment->isdeleted && $forwardquestions) {
+        if (!isset($comment->type) && $comment->isquestion && !$comment->isdeleted && $forwardquestions  && $comment->visibility != 'private') {
             global $CFG;
             $urlparams = ['id' => $cm->id, 'action' => 'forwardquestion', 'commentid' => $comment->uuid, 'sesskey' => sesskey()];
             $url = new moodle_url($CFG->wwwroot . '/mod/pdfannotator/view.php', $urlparams);
@@ -276,7 +288,7 @@ class comment implements \renderable, \templatable {
     }
 
     private function addmarksolvedbutton($comment, $solve) {
-        if ($solve && !$comment->isquestion && !$comment->isdeleted && !isset($comment->type)) {
+        if ($solve && !$comment->isquestion && !$comment->isdeleted && !isset($comment->type) && $this->questionvisibility != 'private') {
             if ($comment->solved) {
                 $comment->buttons[] = ["classes" => "comment-solve-a", "text" => get_string('removeCorrect', 'pdfannotator'),
                     "moodleicon" => ["key" => "i/completion-manual-n", "component" => "core", "title" => get_string('removeCorrect', 'pdfannotator')]];

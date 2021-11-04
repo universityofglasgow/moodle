@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Unit tests for qtype_kprime question definition class.
+ *
  * @package     qtype_kprime
  * @author      Amr Hourani (amr.hourani@id.ethz.ch)
  * @author      Martin Hanusch (martin.hanusch@let.ethz.ch)
@@ -32,10 +34,22 @@ require_once($CFG->dirroot . '/question/type/kprime/tests/helper.php');
 require_once($CFG->dirroot . '/question/engine/tests/helpers.php');
 
 /**
- * @group qtype_kprime
+ * Unit tests for qtype_kprime question definition class.
+ *
+ * @copyright   2016 ETHZ {@link http://ethz.ch/}
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @group       qtype_kprime
  */
 class qtype_kprime_walkthrough_test extends qbehaviour_walkthrough_test_base {
 
+    /**
+     * (non-PHPdoc)
+     * @param int $index
+     * @param int $value
+     * @param bool $enabled
+     * @param bool $checked
+     * @return array
+     */
     public function get_contains_kprime_radio_expectation($index, $value, $enabled = null, $checked = null) {
         return $this->get_contains_radio_expectation(array(
             'name' => $this->quba->get_field_prefix($this->slot) .  "option" .  $index,
@@ -43,6 +57,10 @@ class qtype_kprime_walkthrough_test extends qbehaviour_walkthrough_test_base {
         ), $enabled, $checked);
     }
 
+    /**
+     * Makes a qtype_kprime question.
+     * @return qtype_kprime
+     */
     public function make_a_kprime_question() {
         question_bank::load_question_definition_classes('kprime');
         $kprime = new qtype_kprime_question();
@@ -119,6 +137,9 @@ class qtype_kprime_walkthrough_test extends qbehaviour_walkthrough_test_base {
         return $kprime;
     }
 
+    /**
+     * Test deferredfeedback_feedback_kprime
+     */
     public function test_deferredfeedback_feedback_kprime() {
         $kprime = $this->make_a_kprime_question();
         $this->start_attempt_at_question($kprime, 'deferredfeedback', 1);

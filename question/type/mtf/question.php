@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * qtype_mtf question definition class.
+ *
  * @package     qtype_mtf
  * @author      Amr Hourani (amr.hourani@id.ethz.ch)
  * @author      Martin Hanusch (martin.hanusch@let.ethz.ch)
@@ -24,31 +26,38 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Represents a qtype_mtf question.
+ *
+ * @copyright   2016 ETHZ {@link http://ethz.ch/}
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class qtype_mtf_question extends question_graded_automatically_with_countback {
 
+    /** @var array rows */
     public $rows;
-
+    /** @var array columns */
     public $columns;
-
+    /** @var array weights */
     public $weights;
-
+    /** @var string scoringmethod */
     public $scoringmethod;
-
+    /** @var bool shuffleanswers */
     public $shuffleanswers;
-
+    /** @var int numberofrows */
     public $numberofrows;
-
+    /** @var int numberofcols */
     public $numberofcols;
-
+    /** @var array order */
     public $order = null;
-
+    /** @var bool editedquestion */
     public $editedquestion;
 
-    // All the methods needed for option shuffling.
     /**
      * (non-PHPdoc).
-     *
      * @see question_definition::start_attempt()
+     * @param question_attempt_step $step
+     * @param int $variant
      */
     public function start_attempt(question_attempt_step $step, $variant) {
         $this->order = array_keys($this->rows);
@@ -60,8 +69,8 @@ class qtype_mtf_question extends question_graded_automatically_with_countback {
 
     /**
      * (non-PHPdoc).
-     *
      * @see question_definition::apply_attempt_state()
+     * @param question_attempt_step $step
      */
     public function apply_attempt_state(question_attempt_step $step) {
         $this->order = explode(',', $step->get_qt_var('_order'));
@@ -88,10 +97,9 @@ class qtype_mtf_question extends question_graded_automatically_with_countback {
     }
 
     /**
-     *
+     * get the question order
      * @param question_attempt $qa
-     *
-     * @return multitype:
+     * @return array
      */
     public function get_order(question_attempt $qa) {
         $this->init_order($qa);
@@ -100,9 +108,7 @@ class qtype_mtf_question extends question_graded_automatically_with_countback {
     }
 
     /**
-     * Initialises the order (if it is not set yet) by decoding
-     * the question attempt variable '_order'.
-     *
+     * Initialises the order (if it is not set yet) by decoding the question attempt variable '_order'.
      * @param question_attempt $qa
      */
     protected function init_order(question_attempt $qa) {
@@ -114,11 +120,8 @@ class qtype_mtf_question extends question_graded_automatically_with_countback {
     /**
      * Returns the name field name for input cells in the questiondisplay.
      * The column parameter is ignored for now since we don't use multiple answers.
-     *
-     * @param mixed $row
-     * @param mixed $col
-     *
-     * @return type
+     * @param int $key
+     * @return string
      */
     public function field($key) {
         return 'option' . $key;
@@ -126,25 +129,19 @@ class qtype_mtf_question extends question_graded_automatically_with_countback {
 
     /**
      * Checks whether an row is answered by a given response.
-     *
-     * @param type $response
-     * @param type $row
-     * @param type $col
-     *
+     * @param array $response
+     * @param int $rownumber
      * @return bool
      */
     public function is_answered($response, $rownumber) {
         $field = $this->field($rownumber);
-        // Get the value of the radiobutton array, if it exists in the response.
         return isset($response[$field]) && !empty($response[$field]);
     }
 
     /**
      * Checks whether a given column (response) is the correct answer for a given row (option).
-     *
-     * @param string $row The row number.
-     * @param string $col The column number
-     *
+     * @param int $row The row number.
+     * @param int $col The column number
      * @return bool
      */
     public function is_correct($row, $col) {
@@ -159,10 +156,8 @@ class qtype_mtf_question extends question_graded_automatically_with_countback {
 
     /**
      * Returns the weight for the given row and column.
-     *
      * @param mixed $row A row object or a row number.
      * @param mixed $col A column object or a column number.
-     *
      * @return float
      */
     public function weight($row = null, $col = null) {
@@ -177,10 +172,21 @@ class qtype_mtf_question extends question_graded_automatically_with_countback {
         return $weight;
     }
 
+    /**
+     * Checks wether a specific row is selected within the responses
+     * @param array $response
+     * @param int $rownumber
+     * @return bool
+     */
     public function is_row_selected($response, $rownumber) {
         return isset($response[$this->field($rownumber)]);
     }
 
+    /**
+     * Returns the last response in a question attempt.
+     * @param question_attempt $qa
+     * @return array|mixed
+     */
     public function get_response(question_attempt $qa) {
         return $qa->get_last_qt_data();
     }
@@ -190,24 +196,29 @@ class qtype_mtf_question extends question_graded_automatically_with_countback {
      * response to the question is complete.
      * That is, whether the question attempt
      * should move to the COMPLETE or INCOMPLETE state.
-     *
      * @param array $response responses, as returned by
-     *        {@link question_attempt_step::get_qt_data()}.
-     *
+     *        {@see question_attempt_step::get_qt_data()}.
      * @return bool whether this response is a complete answer to this question.
      */
     public function is_complete_response(array $response) {
-        if (count($response) == count($this->rows)) {
+        if ($this->get_num_selected_choices($response) >= count($this->rows)) {
             return true;
         } else {
             return false;
         }
     }
 
+    /**
+     * Use by many of the behaviours to determine whether the student
+     * has provided enough of an answer for the question to be graded automatically,
+     * or whether it must be considered aborted.
+     * @param array $response responses, as returned by
+     *      {@see question_attempt_step::get_qt_data()}.
+     * @return bool whether this response can be graded.
+     */
     public function is_gradable_response(array $response) {
-        unset($response['_order']);
         if ($this->scoringmethod == 'subpoints') {
-            if (count($response) > 0) {
+            if ($this->get_num_selected_choices($response) > 0) {
                 return true;
             } else {
                 return false;
@@ -220,27 +231,25 @@ class qtype_mtf_question extends question_graded_automatically_with_countback {
     /**
      * In situations where is_gradable_response() returns false, this method
      * should generate a description of what the problem is.
-     *
+     * @param array $response
      * @return string the message.
      */
     public function get_validation_error(array $response) {
-        $isgradable = $this->is_gradable_response($response);
-        if ($isgradable) {
+        if ($this->is_complete_response($response)) {
             return '';
         }
         return get_string('oneanswerperrow', 'qtype_mtf');
     }
 
     /**
-     *
+     * Get the number of selected options
      * @param array $response responses, as returned by
-     *        {@link question_attempt_step::get_qt_data()}.
+     *        {@see question_attempt_step::get_qt_data()}.
      * @return int the number of choices that were selected. in this response.
      */
     public function get_num_selected_choices(array $response) {
         $numselected = 0;
         foreach ($response as $key => $value) {
-            // Response keys starting with _ are internal values like _order, so ignore them.
             if (!empty($value) && $key[0] != '_') {
                 $numselected += 1;
             }
@@ -250,10 +259,8 @@ class qtype_mtf_question extends question_graded_automatically_with_countback {
 
     /**
      * Produce a plain text summary of a response.
-     *
-     * @param $response a response, as might be passed to {@link grade_response()}.
-     *
-     * @return string a plain text summary of that response, that could be used in reports.
+     * @param array $response
+     * @return string
      */
     public function summarise_response(array $response) {
         $result = array();
@@ -274,10 +281,12 @@ class qtype_mtf_question extends question_graded_automatically_with_countback {
         }
         return implode('; ', $result);
     }
+
     /**
-     * (non-PHPdoc).
-     *
-     * @see question_with_responses::classify_response()
+     * Categorise the student's response according to the categories defined by get_possible_responses.
+     * @param array $response a response, as might be passed to  grade_response().
+     * @return array subpartid => question_classified_response objects.
+     *      returns an empty array if no analysis is possible.
      */
     public function classify_response(array $response) {
         // See which column numbers have been selected.
@@ -287,7 +296,7 @@ class qtype_mtf_question extends question_graded_automatically_with_countback {
             $field = $this->field($key);
             $row = $this->rows[$rowid];
 
-            if (array_key_exists($field, $response) && $response[$field]) {
+            if (property_exists((object) $response, $field) && $response[$field]) {
                 $selectedcolumns[$rowid] = $response[$field];
             } else {
                 $selectedcolumns[$rowid] = 0;
@@ -336,11 +345,9 @@ class qtype_mtf_question extends question_graded_automatically_with_countback {
      * response has changed.
      * This is normally used to determine that a new set
      * of responses can safely be discarded.
-     *
      * @param array $prevresponse the responses previously recorded for this question,
-     *        as returned by {@link question_attempt_step::get_qt_data()}
+     *        as returned by {@see question_attempt_step::get_qt_data()}
      * @param array $newresponse the new responses, in the same format.
-     *
      * @return bool whether the two sets of responses are the same - that is
      *         whether the new set of responses can safely be discarded.
      */
@@ -364,9 +371,9 @@ class qtype_mtf_question extends question_graded_automatically_with_countback {
     /**
      * What data would need to be submitted to get this question correct.
      * If there is more than one correct answer, this method should just
-     * return one possibility.
-     *
-     * @return array parameter name => value.
+     * return one possibility
+     * @param bool $rowidindex
+     * @return array
      */
     public function get_correct_response($rowidindex = false) {
         $result = array();
@@ -391,8 +398,7 @@ class qtype_mtf_question extends question_graded_automatically_with_countback {
 
     /**
      * Returns an instance of the grading class according to the scoringmethod of the question.
-     *
-     * @return The grading object.
+     * @return string The grading object.
      */
     public function grading() {
         global $CFG;
@@ -405,12 +411,10 @@ class qtype_mtf_question extends question_graded_automatically_with_countback {
 
     /**
      * Grade a response to the question, returning a fraction between
-     * get_min_fraction() and 1.0, and the corresponding {@link question_state}
+     * get_min_fraction() and 1.0, and the corresponding {@see question_state}
      * right, partial or wrong.
-     *
      * @param array $response responses, as returned by
-     *        {@link question_attempt_step::get_qt_data()}.
-     *
+     *        {@see question_attempt_step::get_qt_data()}.
      * @return array (number, integer) the fraction, and the state.
      */
     public function grade_response(array $response) {
@@ -424,10 +428,8 @@ class qtype_mtf_question extends question_graded_automatically_with_countback {
     /**
      * What data may be included in the form submission when a student submits
      * this question in its current state?
-     *
      * This information is used in calls to optional_param. The parameter name
-     * has {@link question_attempt::get_field_prefix()} automatically prepended.
-     *
+     * has {@see question_attempt::get_field_prefix()} automatically prepended.
      * @return array|string variable name => PARAM_... constant, or, as a special case
      *         that should only be used in unavoidable, the constant question_attempt::USE_RAW_DATA
      *         meaning take all the raw submitted data belonging to this question.
@@ -445,7 +447,6 @@ class qtype_mtf_question extends question_graded_automatically_with_countback {
     /**
      * Returns an array where keys are the cell names and the values
      * are the weights.
-     *
      * @return array
      */
     public function cells() {
@@ -464,10 +465,8 @@ class qtype_mtf_question extends question_graded_automatically_with_countback {
     /**
      * Makes HTML text (e.g.
      * option or feedback texts) suitable for inline presentation in renderer.php.
-     *
-     * @param string html The HTML code.
-     *
-     * @return string the purified HTML code without paragraph elements and line breaks.
+     * @param string $html
+     * @return string
      */
     public function make_html_inline($html) {
         $html = preg_replace('~\s*<p>\s*~u', '', $html);
@@ -479,12 +478,9 @@ class qtype_mtf_question extends question_graded_automatically_with_countback {
 
     /**
      * Convert some part of the question text to plain text.
-     * This might be used,
-     * for example, by get_response_summary().
-     *
+     * This might be used, for example, by get_response_summary().
      * @param string $text The HTML to reduce to plain text.
      * @param int $format the FORMAT_... constant.
-     *
      * @return string the equivalent plain text.
      */
     public function html_to_text($text, $format) {
@@ -493,7 +489,6 @@ class qtype_mtf_question extends question_graded_automatically_with_countback {
 
     /**
      * Computes the final grade when "Multiple Attempts" or "Hints" are enabled
-     *
      * @param array $responses Contains the user responses. 1st dimension = attempt, 2nd dimension = answers
      * @param int $totaltries Not needed
      */
@@ -507,34 +502,48 @@ class qtype_mtf_question extends question_graded_automatically_with_countback {
      * Disable those hint settings that we don't want when the student has selected
      * more choices than the number of right choices.
      * This avoids giving the game away.
-     *
      * @param question_hint_with_parts $hint a hint.
      */
     protected function disable_hint_settings_when_too_many_selected(question_hint_with_parts $hint) {
         $hint->clearwrong = false;
     }
 
+    /**
+     * Get one of the question hints. The question_attempt is passed in case
+     * the question type wants to do something complex. For example, the
+     * multiple choice with multiple responses question type will turn off most
+     * of the hint options if the student has selected too many opitions.
+     * @param int $hintnumber Which hint to display. Indexed starting from 0
+     * @param question_attempt $qa The question_attempt.
+     */
     public function get_hint($hintnumber, question_attempt $qa) {
+
         $hint = parent::get_hint($hintnumber, $qa);
         if (is_null($hint)) {
             return $hint;
         }
+
         return $hint;
     }
 
     /**
-     * (non-PHPdoc).
-     *
-     * @see question_definition::check_file_access()
+     * Checks whether the users is allow to be served a particular file.
+     * @param object $qa
+     * @param object $options the options that control display of the question.
+     * @param string $component the name of the component we are serving files for.
+     * @param string $filearea the name of the file area.
+     * @param array $args the remaining bits of the file path.
+     * @param bool $forcedownload whether the user must be forced to download the file.
+     * @return bool true if the user can access this file.
      */
     public function check_file_access($qa, $options, $component, $filearea, $args, $forcedownload) {
+
         if ($component == 'qtype_mtf' && $filearea == 'optiontext') {
             return true;
         } else if ($component == 'qtype_mtf' && $filearea == 'feedbacktext') {
             return true;
-        } else if ($component == 'question' && in_array($filearea,
-                array('correctfeedback', 'partiallycorrectfeedback', 'incorrectfeedback'
-                ))) {
+        } else if ($component == 'question'
+            && in_array($filearea, array('correctfeedback', 'partiallycorrectfeedback', 'incorrectfeedback'))) {
             if ($this->editedquestion == 1) {
                 return true;
             } else {
@@ -543,8 +552,7 @@ class qtype_mtf_question extends question_graded_automatically_with_countback {
         } else if ($component == 'question' && $filearea == 'hint') {
             return $this->check_hint_file_access($qa, $options, $args);
         } else {
-            return parent::check_file_access($qa, $options, $component, $filearea, $args,
-                    $forcedownload);
+            return parent::check_file_access($qa, $options, $component, $filearea, $args, $forcedownload);
         }
     }
 }

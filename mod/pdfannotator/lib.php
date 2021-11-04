@@ -562,6 +562,7 @@ function mod_pdfannotator_core_calendar_provide_event_action(calendar_event $eve
  */
 function pdfannotator_get_recent_mod_activity(&$activities, &$index, $timestart, $courseid, $cmid, $userid = 0, $groupid = 0) {
     global $CFG, $COURSE, $USER, $DB;
+    require_once($CFG->dirroot . '/mod/pdfannotator/locallib.php');
     if ($COURSE->id == $courseid) {
         $course = $COURSE;
     } else {
@@ -586,7 +587,7 @@ function pdfannotator_get_recent_mod_activity(&$activities, &$index, $timestart,
         $groupselect = "";
     }
     $allnames = get_all_user_name_fields(true, 'u');
-    if (!$posts = $DB->get_records_sql("SELECT p.*,c.id, c.userid AS duserid, c.visibility, c.content, c.timecreated, c.annotationid, c.isquestion,
+    if (!$posts = $DB->get_records_sql("SELECT p.*,c.id, c.userid AS userid, c.visibility, c.content, c.timecreated, c.annotationid, c.isquestion,
                                               $allnames, u.email, u.picture, u.imagealt, u.email, a.page
                                          FROM {pdfannotator} p
                                               JOIN {pdfannotator_annotations} a ON  a.pdfannotatorid=p.id
@@ -598,21 +599,23 @@ function pdfannotator_get_recent_mod_activity(&$activities, &$index, $timestart,
         return;
     }
     $printposts = array();
+    $context = context_course::instance($courseid);
     foreach ($posts as $post) {
+        if(!pdfannotator_can_see_comment($post, $context)) {
+            continue;
+        }
         $printposts[] = $post;
     }
     if (!$printposts) {
         return;
     }
 
-    $aname = format_string($cm->name, true);
-
     foreach ($printposts as $post) {
         $tmpactivity = new stdClass();
 
         $tmpactivity->type = 'pdfannotator';
         $tmpactivity->cmid = $cm->id;
-        $tmpactivity->name = $aname;
+        $tmpactivity->name = format_string($cm->name, true);
         $tmpactivity->sectionnum = $cm->sectionnum;
         $tmpactivity->timestamp = $post->timecreated;
 
@@ -629,7 +632,7 @@ function pdfannotator_get_recent_mod_activity(&$activities, &$index, $timestart,
         // $additionalfields = array('id' => 'userid', 'picture', 'imagealt', 'email');
         $additionalfields = explode(',', user_picture::fields());
         $tmpactivity->user = username_load_fields_from_object($tmpactivity->user, $post, null, $additionalfields);
-        $tmpactivity->user->id = $post->duserid;
+        $tmpactivity->user->id = $post->userid;
 
         $activities[$index++] = $tmpactivity;
     }
@@ -662,7 +665,7 @@ function pdfannotator_print_recent_mod_activity($activity, $courseid, $detail, $
     $output = html_writer::start_tag('table', $tableoptions);
     $output .= html_writer::start_tag('tr');
 
-    $authorhidden = ($activity->visible == 'public') ? 0 : 1;
+    $authorhidden = ($activity->visible == 'anonymous') ? 1 : 0;
 
     // Show user picture if author should not be hidden.
     $pictureoptions = [

@@ -416,6 +416,7 @@ body {
 
 .path-mod-pdfannotator .chat-message-container {
     flex-grow: 1;
+    word-break: break-word;
 }
 
 .path-mod-pdfannotator .chat-message.owner:not(.questioncomment) {
@@ -461,7 +462,7 @@ body {
 }
 
 .path-mod-pdfannotator .chat-message .time,
-.path-mod-pdfannotator .chat-message .edited {
+.path-mod-pdfannotator .chat-message .edited { 
     float: right;
     font-size: 11px;
     color: #777;
@@ -470,7 +471,7 @@ body {
     font-weight: 700;
 }
 
-.path-mod-pdfannotator .chat-message button, .path-mod-pdfannotator #comment-nav button {
+.path-mod-pdfannotator .chat-message button:not(.dropdown-item), .path-mod-pdfannotator #comment-nav button {
     border-color: transparent;
     background-color: transparent;
 }
@@ -520,6 +521,20 @@ body {
 
 .path-mod-pdfannotator .icon-wrapper {
     float: right;
+}
+
+.path-mod-pdfannotator #anonymousLabel, .path-mod-pdfannotator #privateLabel, .path-mod-pdfannotator #protectedLabel {
+    margin-left: 5px;
+    margin-bottom: 0;
+}
+
+.path-mod-pdfannotator #comment-list-form > div {
+    margin: 5px 0px;
+    display: block;
+}
+
+.path-mod-pdfannotator #comment-list-form > div > * {
+    vertical-align: middle;
 }
 
 .path-mod-pdfannotator .helperLayer {
@@ -860,4 +875,9 @@ header, section, footer, aside, nav, main, article, figure {
 
 .path-mod-pdfannotator .pdfannotator-statistic #chart-container {
     min-height: 500px;
+}
+
+.toolbaritem .pdfannotator_text {
+    display: inline-block;
+    visibility: visible;
 }

@@ -68,6 +68,10 @@ class invitation {
             if (get_config('zoom', 'invitationremoveinvite')) {
                 $displaystring = $this->remove_element($displaystring, 'invite');
             }
+            // If setting enabled, strip the iCal link.
+            if (get_config('zoom', 'invitationremoveicallink')) {
+                $displaystring = $this->remove_element($displaystring, 'icallink');
+            }
             // Check user capabilities, and remove parts of the invitation they don't have permission to view.
             if (!has_capability('mod/zoom:viewjoinurl', \context_module::instance($coursemoduleid), $userid)) {
                 $displaystring = $this->remove_element($displaystring, 'joinurl');
@@ -103,24 +107,34 @@ class invitation {
      */
     private function remove_element(string $invitation, string $element): string {
         global $PAGE;
+
         $configregex = $this->get_config_invitation_regex();
         if (!array_key_exists($element, $configregex)) {
             throw new \coding_exception('Cannot remove element: ' . $element
                     . '. See mod/zoom/classes/invitation.php:get_default_invitation_regex for valid elements.');
         }
+
+        // If the element pattern is intentionally empty, return the invitation string unaltered.
+        if (empty($configregex[$element])) {
+            return $invitation;
+        }
+
         $count = 0;
         $invitation = @preg_replace($configregex[$element], "", $invitation, -1, $count);
+
         // If invitation is null, an error occurred in preg_replace.
         if ($invitation === null) {
             throw new \moodle_exception('invitationmodificationfailed', 'mod_zoom', $PAGE->url,
                     ['element' => $element, 'pattern' => $configregex[$element]]);
         }
+
         // Add debugging message to assist site administrator in testing regex patterns if no match is found.
         if (empty($count)) {
             debugging(get_string('invitationmatchnotfound', 'mod_zoom',
                     ['element' => $element, 'pattern' => $configregex[$element]]),
                     DEBUG_DEVELOPER);
         }
+
         return $invitation;
     }
 
@@ -204,7 +218,8 @@ class invitation {
             'onetapmobile' => '/^one tap mobile.*(\n\s*\+.+)+$/mi',
             'dialin' => '/^dial by your location.*(\n\s*\+.+)+(\n.*)+find your local number.+$/mi',
             'sip' => '/^join by sip.*\n.+$/mi',
-            'h323' => '/^join by h\.323.*(\n.*)+?(\nmeeting id.+\npasscode.+)$/mi'
+            'h323' => '/^join by h\.323.*(\n.*)+?(\nmeeting id.+\npasscode.+)$/mi',
+            'icallink' => '/^.+download and import the following iCalendar.+$\n.+$/mi',
         ];
     }
 }

@@ -15,6 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Migration script for migration to qtype_kprime
  * @package     qtype_kprime
  * @author      Amr Hourani (amr.hourani@id.ethz.ch)
  * @author      Martin Hanusch (martin.hanusch@let.ethz.ch)
@@ -41,12 +42,15 @@ if (!is_siteadmin()) {
     die();
 }
 
-// Helper function to turn weight records from the database into an array
-// indexed by rowid and columnid.
+/**
+ * Helper function to turn weight records from the database into an array
+ * indexed by rowid and columnid.
+ * @param object $weightrecords
+ */
 function weight_records_to_array($weightrecords) {
     $weights = array();
     foreach ($weightrecords as $weight) {
-        if (!array_key_exists($weight->rowid, $weights)) {
+        if (!property_exists((object) $weights, $weight->rowid)) {
             $weights[$weight->rowid] = array();
         }
         $weights[$weight->rowid][$weight->colid] = $weight;
@@ -173,11 +177,12 @@ foreach ($questions as $question) {
     // Create a new kprime question in the same category.
     unset($question->id);
     $question->qtype = 'kprime';
-    $question->name = $question->name . ' (kprime)';
+    $question->name = substr($question->name . " (Kprime)", 0, 255);
     $question->timecreated = time();
     $question->timemodified = time();
     $question->modifiedby = $USER->id;
     $question->createdby = $USER->id;
+    $question->idnumber = null;
     // Get the new question ID.
     $question->id = $DB->insert_record('question', $question);
 

@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * qtype_mtf grading class for subpoints scoringmethod
+ *
  * @package     qtype_mtf
  * @author      Amr Hourani (amr.hourani@id.ethz.ch)
  * @author      Martin Hanusch (martin.hanusch@let.ethz.ch)
@@ -25,24 +27,39 @@
 defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot . '/question/type/mtf/grading/qtype_mtf_grading.class.php');
 
+/**
+ * Provides grading functionality for subpoints scoring metod
+ *
+ * @package     qtype_mtf
+ * @copyright   2016 ETHZ {@link http://ethz.ch/}
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class qtype_mtf_grading_subpoints extends qtype_mtf_grading {
 
+    /** @var string TYPE */
     const TYPE = 'subpoints';
 
+    /**
+     * Returns the scoringmethod name.
+     * @return string
+     */
     public function get_name() {
         return self::TYPE;
     }
 
+    /**
+     * Returns the gradingmethod title.
+     * @return string
+     */
     public function get_title() {
         return get_string('scoring' . self::TYPE, 'qtype_mtf');
     }
 
     /**
      * Returns the question's grade.
-     *
-     * (non-PHPdoc)
-     *
-     * @see qtype_mtf_grading::grade_question()
+     * @param object $question
+     * @param array $answers
+     * @return int
      */
     public function grade_question($question, $answers) {
         $correctrows = 0;

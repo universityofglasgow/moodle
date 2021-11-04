@@ -30,6 +30,10 @@
  * @authors   Rabea de Groot, Anna Heynkes, Friederike Schwager
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+use mod_pdfannotator\output\comment;
+use mod_pdfannotator\output\printview;
+
 require_once('../../config.php');
 require_once('model/annotation.class.php');
 require_once('model/comment.class.php');
@@ -63,6 +67,11 @@ if ($action === 'read') {
     $records = $DB->get_records('pdfannotator_annotations', array('pdfannotatorid' => $documentid, 'page' => $page));
 
     foreach ($records as $record) {
+
+        $comment = $DB->get_record('pdfannotator_comments', array('annotationid' => $record->id, 'isquestion' => 1));
+        if ($comment && !pdfannotator_can_see_comment($comment, $context)) {
+            continue;
+        }
 
         $entry = json_decode($record->data); // StdClass Object containing data that is specific to the respective annotation type.
         // Add general annotation data.
@@ -320,7 +329,6 @@ if ($action === 'addComment') {
 
     require_capability('mod/pdfannotator:create', $context);
 
-    require_once($CFG->dirroot . '/mod/pdfannotator/classes/output/comment.php');
     // Get the annotation to be commented.
     $annotationid = required_param('annotationId', PARAM_INT);
     $PAGE->set_context($context);
@@ -354,7 +362,6 @@ if ($action === 'addComment') {
 
 if ($action === 'getInformation') { // This concerns only textbox and drawing.
 
-    require_once($CFG->dirroot . '/mod/pdfannotator/classes/output/comment.php');
     $annotationid = required_param('annotationId', PARAM_INT);
 
     $comment = pdfannotator_annotation::get_information($annotationid);
@@ -376,9 +383,11 @@ if ($action === 'getComments') {
     $annotationid = required_param('annotationId', PARAM_INT);
 
     // Create an array of all comment objects on the specified page and annotation.
-    $comments = pdfannotator_comment::read($documentid, $annotationid);
 
-    require_once($CFG->dirroot . '/mod/pdfannotator/classes/output/comment.php');
+    $comments = pdfannotator_comment::read($documentid, $annotationid, $context);
+
+ //   require_once($CFG->dirroot . '/mod/pdfannotator/classes/output/comment.php');
+    
     $myrenderer = $PAGE->get_renderer('mod_pdfannotator');
     $templatable = new comment($comments, $cm, $context);
 
@@ -395,8 +404,12 @@ if ($action === 'getCommentContent') {
 
     $content = $DB->get_field('pdfannotator_comments', 'content', ['id' => $commentid]);
 
-
-    echo json_encode($content);
+    $comment = $DB->get_record('pdfannotator_comments', ['id' => $commentid]);
+    if (pdfannotator_can_see_comment($comment, $context)) {
+        echo json_encode($comment->content);
+    } else {
+        echo json_encode("false");
+    }
 }
 
 /* * ****************************************** Hide a comment for participants ****************************************** */
@@ -439,8 +452,8 @@ if ($action === 'editComment') {
     $editanypost = has_capability('mod/pdfannotator:editanypost', $context);
 
     $commentid = required_param('commentId', PARAM_INT);
-    $content = required_param('content', PARAM_RAW);    
-        
+    $content = required_param('content', PARAM_RAW);
+ 
     $data = pdfannotator_comment::update($commentid, $content, $editanypost);
     echo json_encode($data);
 }
@@ -477,7 +490,7 @@ if ($action === 'subscribeQuestion') {
 
     $annotatorid = $DB->get_field('pdfannotator_annotations', 'pdfannotatorid', ['id' => $annotationid], $strictness = MUST_EXIST);
 
-    $subscriptionid = pdfannotator_comment::insert_subscription($annotationid);
+    $subscriptionid = pdfannotator_comment::insert_subscription($annotationid, $context);
 
     if ($departure == 1) {
         $thisannotator = $pdfannotator->id;
@@ -594,12 +607,10 @@ if ($action === 'getCommentsToPrint') {
         return;
     }
 
-    require_once($CFG->dirroot.'/mod/pdfannotator/classes/output/printview.php');
-
     global $DB;
 
     // The model retrieves and selects data.
-    $conversations = pdfannotator_instance::get_conversations($documentid);
+    $conversations = pdfannotator_instance::get_conversations($documentid, $context);
 
     if ($conversations === -1) { // Sth. went wrong with the database query.
         echo json_encode(['status' => 'error']);

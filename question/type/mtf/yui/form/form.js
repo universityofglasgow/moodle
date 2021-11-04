@@ -21,7 +21,7 @@
               howmanyanswers = $('#id_numberofcolumns').val();
               mtftypechanged(howmanyanswers,'changed');
         });
-        // Number of Qestions.
+        // Number of Questions.
         $('#id_numberofrows').on('change', function() {
               numberofrows = $('#id_numberofrows').val();
               mtfnumberchanged(numberofrows,'changed');
@@ -36,7 +36,7 @@
                  $('#' + radiomtfid).prop('checked', true); // Tick the originally clicked on radio.
             }
         });
-        mtftypechanged = function(howmanyanswers, loadorchanged){
+        mtftypechanged = function(howmanyanswers, loadorchanged) {
               var mtfradionegative = 'input[data-colmtf="negative"]';
               var mtfradiopositive = 'input[data-colmtf="positive"]';
 
@@ -56,7 +56,7 @@
             }
 
         };
-        mtfnumberchanged = function(numberofrows, loadorchanged){
+        mtfnumberchanged = function(numberofrows, loadorchanged) {
 
               numberofrows = parseInt(numberofrows);
               var maxmtfoptions = 15;

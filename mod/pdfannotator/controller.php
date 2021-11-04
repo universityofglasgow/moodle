@@ -20,6 +20,9 @@
  * @authors   Anna Heynkes, Friederike Schwager
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+use mod_pdfannotator\output\statistics;
+
 defined('MOODLE_INTERNAL') || die();
 
 $action = optional_param('action', 'view', PARAM_ALPHA); // The default action is 'view'.
@@ -97,7 +100,7 @@ if ($action === 'forwardquestion') {
         $data = new stdClass();
         $data->course = $cm->course;
         $data->pdfannotatorid = $cm->instance;
-        $data->pdfname = $cm->name;
+        $data->pdfname = format_string($cm->name, true);
         $data->commentid = $commentid;
         $data->id = $cm->id; // Course module id.
         $data->action = 'forwardquestion';
@@ -194,7 +197,7 @@ if ($action === 'subscribeQuestion') {
 
     $annotatorid = $DB->get_field('pdfannotator_annotations', 'pdfannotatorid', ['id' => $annotationid], $strictness = MUST_EXIST);
 
-    $subscriptionid = pdfannotator_comment::insert_subscription($annotationid);
+    $subscriptionid = pdfannotator_comment::insert_subscription($annotationid, $context);
 
     if (!empty($subscriptionid)) {
         $info = get_string('successfullySubscribed', 'pdfannotator');
@@ -435,7 +438,6 @@ if ($action === 'statistic') {
     require_capability('mod/pdfannotator:viewstatistics', $context);
 
     require_once($CFG->dirroot . '/mod/pdfannotator/model/statistics.class.php');
-    require_once($CFG->dirroot . '/mod/pdfannotator/classes/output/statistics.php');
 
     echo $myrenderer->pdfannotator_render_tabs($taburl, $action, $pdfannotator->name, $context);
     $PAGE->set_title("statisticview");
@@ -446,7 +448,7 @@ if ($action === 'statistic') {
     $strings = $stringman->load_component_strings('pdfannotator', 'en'); // Method gets the strings of the language files.
     $PAGE->requires->strings_for_js(array_keys($strings), 'pdfannotator'); // Method to use the language-strings in javascript.
     $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/locallib.js?ver=00002"));
-    $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/statistic.js?ver=0001"));
+    $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/statistic.js?ver=0004"));
     $myrenderer = $PAGE->get_renderer('mod_pdfannotator');
     $capabilities = new stdClass();
     $capabilities->viewquestions = has_capability('mod/pdfannotator:viewquestions', $context);
@@ -474,7 +476,7 @@ if ($action === 'report') {
     $data = new stdClass();
     $data->course = $cm->course;
     $data->pdfannotatorid = $cm->instance;
-    $data->pdfname = $cm->name;
+    $data->pdfname = format_string($cm->name, true);
     $data->commentid = $commentid;
     $data->id = $id; // Course module id.
     $data->action = 'report';
@@ -498,11 +500,12 @@ if ($action === 'report') {
         $report->reportinguser = fullname($USER);
         $report->url = $CFG->wwwroot . '/mod/pdfannotator/view.php?id=' . $cm->id . '&action=overviewreports';
         $messagetext = new stdClass();
-        $messagetext->text = pdfannotator_format_notification_message_text($course, $cm, $context, get_string('modulename', 'pdfannotator'), $cm->name, $report, 'reportadded');      
+        $modulename = format_string($cm->name, true);
+        $messagetext->text = pdfannotator_format_notification_message_text($course, $cm, $context, get_string('modulename', 'pdfannotator'), $modulename, $report, 'reportadded');      
         $messagetext->url = $report->url;
         try {
             foreach ($recipients as $recipient) {
-                $messagetext->html = pdfannotator_format_notification_message_html($course, $cm, $context, get_string('modulename', 'pdfannotator'), $cm->name, $report, 'reportadded', $recipient->id);
+                $messagetext->html = pdfannotator_format_notification_message_html($course, $cm, $context, get_string('modulename', 'pdfannotator'), $modulename, $report, 'reportadded', $recipient->id);
                 $messageid = pdfannotator_notify_manager($recipient, $course, $cm, $name, $messagetext);
             }
             // 2. Notify the reporting user that their report has been sent off (display blue toast box at top of page).

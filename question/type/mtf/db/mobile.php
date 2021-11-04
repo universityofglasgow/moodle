@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Mobile Setup for qtype_mtf.
+ *
  * @package     qtype_mtf
  * @author      Amr Hourani (amr.hourani@id.ethz.ch)
  * @author      Martin Hanusch (martin.hanusch@let.ethz.ch)
@@ -28,7 +30,11 @@ $addons = [
         'handlers' => [
             'mtf' => [
                 'delegate' => 'CoreQuestionDelegate',
-                'method' => 'mtf_view'
+                'method' => 'mtf_view',
+                'styles' => [
+                    'url' => '/question/type/mtf/mobile/styles_app.css',
+                    'version' => '0.02'
+                ]
             ]
         ]
     ]

@@ -1727,8 +1727,8 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
             var button = $('#hideButton'+comment.uuid);
 
             button.click(function(e) {
-                var icon = button.children(":first");
-                var menutext = button.children(":last");
+                var icon = button.children().first();
+                var menutext = button.children().last();
                 if(comment.ishidden){
                     _2.default.getStoreAdapter().redisplayComment(RENDER_OPTIONS.documentId, comment.uuid);
                     menutext.html(M.util.get_string('markhidden', 'pdfannotator'));
@@ -1889,13 +1889,34 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
 	    if (supportsComments(target)) {
                 //showLoader
                 UI.showLoader();
-                $('#comment-wrapper h4')[0].innerHTML = M.util.get_string('comments','pdfannotator');
 	      (function () {
 	        var documentId = target.parentNode.getAttribute('data-pdf-annotate-document');
 	        var annotationId = target.getAttribute('data-pdf-annotate-id');
 
 	        _2.default.getStoreAdapter().getComments(documentId, annotationId).then(function (comments) {
                   UI.hideLoader();
+                  var title;
+                  if(comments.comments[0].visibility == "protected") {
+                    title = M.util.get_string('protected_comments','pdfannotator');
+                    $("#protectedDiv").hide();                    
+                    $("#anonymousDiv").hide();
+                    $("#privateDiv").hide();
+                    $("#myarea").attr("placeholder", M.util.get_string('add_protected_comment', 'pdfannotator'));
+                  } else if (comments.comments[0].visibility == "private") {
+                    title = M.util.get_string('private_comments','pdfannotator');
+                    $("#privateDiv").hide();
+                    $("#protectedDiv").hide();                    
+                    $("#anonymousDiv").hide();
+                    $("#myarea").attr("placeholder", M.util.get_string('add_private_comment', 'pdfannotator'));
+                  } else {
+                    title = M.util.get_string('public_comments','pdfannotator');
+                    $("#privateDiv").hide();
+                    $("#protectedDiv").hide();
+                    $("#anonymousDiv").show();
+                    $("#myarea").attr("placeholder", M.util.get_string('addAComment', 'pdfannotator'));
+                  }
+                  
+                  $('#comment-wrapper h4')[0].innerHTML = title;
 	          commentList.innerHTML = '';
 	          commentForm.style.display = 'inherit';
                   
@@ -1905,10 +1926,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                   button2.style.display = 'inline';
                   commentForm.onsubmit = function (e) {
                       document.querySelector('#commentSubmit').disabled = true;
-                      var commentVisibility= "public";
-                      if(document.querySelector('#anonymousCheckbox').checked){
-                          commentVisibility = "anonymous";
-                      }
+                      var commentVisibility= read_visibility_of_checkbox();
                       var isquestion = 0; // this is a normal comment, so it is not a question
                       if(commentText.value.trim().length < 2){
                           //should be more than one character, otherwise it should not be saved.
@@ -5441,7 +5459,9 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
             var _penSize=void 0;
             var _penColor=void 0;
             var path=void 0;
-            var lines=void 0;/**
+            var lines=void 0;
+            var _svg=void 0;/**
+            
             * Handle document.mousedown event
             */function handleDocumentMousedown(){
                 path=null;
@@ -5478,7 +5498,8 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
             * Handle document.mousemove event
             *
             * @param {Event} e The DOM event to be handled
-            */function handleDocumentMousemove(e){savePoint(e.clientX,e.clientY);}/**
+            */function handleDocumentMousemove(e){
+                savePoint(e.clientX,e.clientY);}/**
             * Handle document.keyup event
             *
             * @param {Event} e The DOM event to be handled
@@ -5494,7 +5515,8 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
             *
             * @param {Number} x The x coordinate of the point
             * @param {Number} y The y coordinate of the point
-            */function savePoint(x,y){
+            */
+            function savePoint(x,y){
                 var svg=(0,_utils.findSVGAtPoint)(x,y);
                 if(!svg){return;}
                 var rect=svg.getBoundingClientRect();
@@ -5503,7 +5525,56 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                 if(lines.length<=1){return;}
                 if(path){svg.removeChild(path);}
                 path=(0,_appendChild2.default)(svg,{type:'drawing',color:_penColor,width:_penSize,lines:lines});
-            }/**
+            }
+            function handleContentTouchstart(e) {
+                path=null;
+                lines=[];
+                _svg = (0, _utils.findSVGAtPoint)(e.touches[0].clientX, e.touches[0].clientY);
+                saveTouchPoint(e.touches[0].clientX,e.touches[0].clientY);
+            }
+            function handleContentTouchmove(e) {
+                e.preventDefault();
+                saveTouchPoint(e.touches[0].clientX,e.touches[0].clientY);
+            }
+            function handleContentTouchend(e) {
+                if (lines.length > 1){
+                    var _getMetadata=(0,_utils.getMetadata)(_svg);
+                    var documentId=_getMetadata.documentId;
+                    var pageNumber=_getMetadata.pageNumber;
+                    _PDFJSAnnotate2.default.getStoreAdapter().addAnnotation(documentId,pageNumber,{type:'drawing',width:_penSize,color:_penColor,lines:lines})
+                            .then(function(annotation){
+                                if(path){_svg.removeChild(path);}
+                                (0,_appendChild2.default)(_svg,annotation);
+                            }, function (err){
+                                // Remove path
+                                if(path){_svg.removeChild(path);}
+                                notification.addNotification({
+                                    message: M.util.get_string('error:addAnnotation','pdfannotator'),
+                                    type: "error"
+                                });
+                            });
+                }
+            }
+            function handleContentTouchcancel(e) {
+                lines=null;
+                path.parentNode.removeChild(path);
+            }
+            
+            /* Save a touchpoint to the line being drawn.
+            *
+            * @param {Number} x The x coordinate of the point
+            * @param {Number} y The y coordinate of the point
+            */function saveTouchPoint(x,y){
+                if(!_svg){return;}
+                var rect=_svg.getBoundingClientRect();
+                var point=(0,_utils.scaleDown)(_svg,{x:(0,_utils.roundDigits)(x-rect.left,4),y:(0,_utils.roundDigits)(y-rect.top,4)});
+                lines.push([point.x,point.y]);
+                if(lines.length<=1){return;}
+                if(path){_svg.removeChild(path);}
+                path=(0,_appendChild2.default)(_svg,{type:'drawing',color:_penColor,width:_penSize,lines:lines});
+            }
+
+            /**
             * Set the attributes of the pen.
             *
             * @param {Number} penSize The size of the lines drawn by the pen
@@ -5515,9 +5586,14 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                                return;
                            }
                            _enabled=true;
-                           document.getElementById('content-wrapper').classList.add('cursor-pen');
+                           var contentWrapper = document.getElementById('content-wrapper');
+                           contentWrapper.classList.add('cursor-pen');
                            document.addEventListener('mousedown',handleDocumentMousedown);
                            document.addEventListener('keyup',handleDocumentKeyup);
+                           contentWrapper.addEventListener('touchstart',handleContentTouchstart);
+                           contentWrapper.addEventListener('touchmove',handleContentTouchmove);
+                           contentWrapper.addEventListener('touchend',handleContentTouchend);
+                           contentWrapper.addEventListener('touchcancel',handleContentTouchcancel);
                            (0,_utils.disableUserSelect)();
                        }/**
             * Disable the pen behavior
@@ -5526,9 +5602,14 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                                return;
                            }
                            _enabled=false;
-                           document.getElementById('content-wrapper').classList.remove('cursor-pen');
+                           var contentWrapper = document.getElementById('content-wrapper');
+                           contentWrapper.classList.remove('cursor-pen');
                            document.removeEventListener('mousedown',handleDocumentMousedown);
                            document.removeEventListener('keyup',handleDocumentKeyup);
+                           contentWrapper.removeEventListener('touchstart',handleContentTouchstart);
+                           contentWrapper.removeEventListener('touchmove',handleContentTouchmove);
+                           contentWrapper.removeEventListener('touchend',handleContentTouchend);
+                           contentWrapper.removeEventListener('touchcancel',handleContentTouchcancel);
                            (0,_utils.enableUserSelect)();
                        }
     /***/},
@@ -5548,6 +5629,9 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
             function _interopRequireDefault(obj){return obj&&obj.__esModule?obj:{default:obj};}
             var _enabled=false;
             var data=void 0;
+            var _svg=void 0;
+            var _rect=void 0;
+            var dragging=false;
             //Test
             var textarea = void 0;
             var submitbutton = void 0;
@@ -5555,6 +5639,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
             var annotationObj;
             var documentId = -1;
             var pageNumber = 1;
+            
             /**
             * Handle document.mouseup event
             *
@@ -5564,7 +5649,40 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                 if(((typeof e.target.getAttribute('id')=='string') && e.target.id.indexOf('comment') !== -1) || e.target.className.indexOf('comment') !== -1 || e.target.parentNode.className.indexOf('comment') !== -1 || e.target.parentNode.className.indexOf('chat') !== -1 || e.target.tagName == 'INPUT' || e.target.tagName == 'LABEL'){
                     return;
                 }
-               let svg = (0,_utils.findSVGAtPoint)(e.clientX,e.clientY);
+                _svg = (0,_utils.findSVGAtPoint)(e.clientX,e.clientY);
+                if(!_svg){
+                    return;
+                }
+                var _getMetadata=(0,_utils.getMetadata)(_svg);
+                documentId=_getMetadata.documentId;
+                pageNumber=_getMetadata.pageNumber;
+                deleteUndefinedPin();
+                [textarea,data] = (0,_commentWrapper.openComment)(e,handleCancelClick,handleSubmitClick,handleToolbarClick,handleSubmitBlur,'pin');
+                renderPin();
+            }
+            
+            // Reset dragging to false.
+            function handleContentTouchstart(e){
+                dragging = false;
+            }
+            // Set dragging to true, so we stop the handleContentTouchend function from running.
+            function handleContentTouchmove(e){
+                dragging = true;
+            }
+            /**
+            * Handle content.touchend event
+            *
+            * @param {Event} The DOM event to be handled
+            */function handleContentTouchend(e){
+                // If the mobile user was scrolling return from this function.
+                if (dragging) {
+                    return;
+                }
+                //if the click is on the Commentlist nothing should happen.
+                if(((typeof e.target.getAttribute('id')=='string') && e.target.id.indexOf('comment') !== -1) || e.target.className.indexOf('comment') !== -1 || e.target.parentNode.className.indexOf('comment') !== -1 || e.target.parentNode.className.indexOf('chat') !== -1 || e.target.tagName == 'INPUT' || e.target.tagName == 'LABEL'){
+                    return;
+                }
+                let svg = (0,_utils.findSVGAtPoint)(e.changedTouches[0].clientX,e.changedTouches[0].clientY);
                 if(!svg){
                     return;
                 }
@@ -5572,8 +5690,9 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                 documentId=_getMetadata.documentId;
                 pageNumber=_getMetadata.pageNumber;
                 deleteUndefinedPin();
-                [textarea,data] = (0,_commentWrapper.openComment)(e,handleCancelClick,handleSubmitClick,handleToolbarClick,handleSubmitBlur,'pin');
-                renderPin();
+                var coordinates = {x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY};
+                renderPinTouchscreen(coordinates);
+                [textarea,data] = (0,_commentWrapper.openCommentTouchscreen)(e,handleCancelClick,handleSubmitClick,handleToolbarClick,handleSubmitBlur,'pin');
             }
             
             /**
@@ -5591,7 +5710,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
             }
             
             function handleSubmitClick(e){
-                savePoint(); 
+                savePoint(_svg);
                 return false;
             }
             function handleCancelClick(e){
@@ -5610,8 +5729,8 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
             *
             * @param {Event} e The DOM event to handle
             */function handleInputKeyup(e){if(e.keyCode===27){disablePoint();closeInput();}else if(e.keyCode===13){/*disablePoint();*/savePoint();}}
-           
-           function renderPin(){
+
+            function renderPin(){
                 var clientX=(0,_utils.roundDigits)(data.x,4);
                 var clientY=(0,_utils.roundDigits)(data.y,4);
                 var content=textarea.value.trim();
@@ -5619,8 +5738,21 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                 if(!svg){
                     return{v:void 0};
                 }
-                var rect=svg.getBoundingClientRect();
-                var annotation = initializeAnnotation(rect,svg);
+                _rect=svg.getBoundingClientRect();
+                var annotation = initializeAnnotation(_rect,svg);
+                annotationObj = annotation;
+                annotation.color = true;
+                (0,_appendChild2.default)(svg,annotation);
+            }
+            function renderPinTouchscreen(coordinates){
+                var clientX=(0,_utils.roundDigits)(coordinates.x,4);
+                var clientY=(0,_utils.roundDigits)(coordinates.y,4);
+                var svg=(0,_utils.findSVGAtPoint)(clientX,clientY);
+                if(!svg){
+                    return{v:void 0};
+                }
+                _rect=svg.getBoundingClientRect();
+                var annotation = initializeAnnotationTouchscreen(_rect,svg,coordinates);
                 annotationObj = annotation;
                 annotation.color = true;
                 (0,_appendChild2.default)(svg,annotation);
@@ -5637,22 +5769,31 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                 }
             }
             
-            
             function initializeAnnotation(rect,svg){
                 var clientX=(0,_utils.roundDigits)(data.x,4);
                 var clientY=(0,_utils.roundDigits)(data.y,4);
                 return Object.assign({type:'point'},(0,_utils.scaleDown)(svg,{x:clientX-((0,_utils.roundDigits)(rect.left,4)),y:clientY-((0,_utils.roundDigits)(rect.top,4))}));
             }
+            function initializeAnnotationTouchscreen(rect,svg,coordinates){
+                var clientX=(0,_utils.roundDigits)(coordinates.x,4);
+                var clientY=(0,_utils.roundDigits)(coordinates.y,4);
+                return Object.assign({type:'point'},(0,_utils.scaleDown)(svg,{x:clientX-((0,_utils.roundDigits)(rect.left,4)),y:clientY-((0,_utils.roundDigits)(rect.top,4))}));
+            }
             /**
             * Save a new point annotation from input
-            */function savePoint(){
+            */
+            function savePoint(svg = null){
                 if(textarea.value.trim().length>1){
                     disablePoint();
+                    var page = pageNumber;
+                    if (!svg) {
+                        var elements=document.querySelectorAll('svg[data-pdf-annotate-container="true"]');
+                        var svg=elements[page-1];
+                    }
                     var _ret=function(){
                         var clientX=(0,_utils.roundDigits)(data.x,4);
                         var clientY=(0,_utils.roundDigits)(data.y,4);
                         var content=textarea.value.trim();
-                        var svg=(0,_utils.findSVGAtPoint)(clientX,clientY);
                         if(!svg){
                             return{v:void 0};
                         }
@@ -5660,12 +5801,9 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                         
                         var _getMetadata=(0,_utils.getMetadata)(svg);
                         var documentId=_getMetadata.documentId;
-                        var pageNumber=_getMetadata.pageNumber;
-                        var annotation=Object.assign({type:'point'},(0,_utils.scaleDown)(svg,{x:clientX-((0,_utils.roundDigits)(rect.left,4)),y:clientY-((0,_utils.roundDigits)(rect.top,4))}));
-                        var commentVisibility = "public";
-                        if(document.querySelector('#anonymousCheckbox').checked){
-                            commentVisibility = "anonymous";
-                        }
+                        var pageNumber=page;
+                        var annotation=Object.assign({type:'point'},(0,_utils.scaleDown)(svg,{x:clientX-((0,_utils.roundDigits)(_rect.left,4)),y:clientY-((0,_utils.roundDigits)(_rect.top,4))}));
+                        var commentVisibility= read_visibility_of_checkbox();
                         var isquestion = 1; //The Point was created so the comment is a question
                         _PDFJSAnnotate2.default.getStoreAdapter().addAnnotation(documentId,pageNumber,annotation)
                                 .then(function(annotation){
@@ -5692,7 +5830,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                                     notification.addNotification({
                                         message: M.util.get_string('error:addAnnotation','pdfannotator'),
                                         type: "error"
-                                    });
+                                    }); 
                                 });
                     }();
                     if((typeof _ret==='undefined'?'undefined':_typeof(_ret))==="object"){
@@ -5713,24 +5851,30 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
             function closeInput(){data.removeEventListener('blur',handleInputBlur);data.removeEventListener('keyup',handleInputKeyup);document.body.removeChild(data);data=null;}/**
             * Enable point annotation behavior
             */function enablePoint(){
-                           if(_enabled){
-                               return;
-                           }
-                           _enabled=true;
-                           document.getElementById('content-wrapper').classList.add('cursor-point');
-                           document.addEventListener('mouseup',handleDocumentMouseup);
-                       }
+                if(_enabled){
+                    return;
+                }
+                _enabled=true;
+                document.getElementById('content-wrapper').classList.add('cursor-point');
+                document.addEventListener('mouseup',handleDocumentMouseup);
+                document.addEventListener('touchstart', handleContentTouchstart);
+                document.addEventListener('touchmove', handleContentTouchmove);
+                document.addEventListener('touchend',handleContentTouchend);
+            }
             /**
             * Disable point annotation behavior
             */function disablePoint(){
-               _enabled=false;
-               document.getElementById('content-wrapper').classList.remove('cursor-point');
-               document.removeEventListener('mouseup',handleDocumentMouseup);
-           }
+                _enabled=false;
+                document.getElementById('content-wrapper').classList.remove('cursor-point');
+                document.removeEventListener('mouseup',handleDocumentMouseup);
+                document.removeEventListener('touchstart', handleContentTouchstart);
+                document.removeEventListener('touchmove', handleContentTouchmove);
+                document.removeEventListener('touchend',handleContentTouchend);
+            }
     /***/},
-    /* 32 */
+ /* 32 */
     /***/function(module,exports,__webpack_require__){
-            'use strict';
+        'use strict';
             Object.defineProperty(exports,"__esModule",{value:true});
             exports.enableRect=enableRect;
             exports.disableRect=disableRect;
@@ -5761,6 +5905,8 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
             var data=void 0;
             var rectsSelection = void 0;
             var rectObj;
+            var _svg=void 0;
+            var rect=void 0;
             /**
             * Get the current window selection as rects
             *
@@ -5786,297 +5932,393 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                 }
                 return null;
             }/**
-            * Handle document.mousedown event
-            *
-            * @param {Event} e The DOM event to handle
-            */function handleDocumentMousedown(e){
-                var svg=void 0;
-                if(_type!=='area'||!(svg=(0,_utils.findSVGAtPoint)(e.clientX,e.clientY))){
-                    return;
-                }
-                var rect=svg.getBoundingClientRect();
-                originY=e.clientY;
-                originX=e.clientX;
-                overlay=document.createElement('div');
-                overlay.style.position='absolute';
-                overlay.style.top=originY-rect.top+'px';
-                overlay.style.left=originX-rect.left+'px';
-                overlay.style.border='3px solid '+_utils.BORDER_COLOR;
-                overlay.style.borderRadius='3px';
-                svg.parentNode.appendChild(overlay);
-                document.addEventListener('mousemove',handleDocumentMousemove);
-                (0,_utils.disableUserSelect)();
-            }/**
-            * Handle document.mousemove event
-            *
-            * @param {Event} e The DOM event to handle
-            */function handleDocumentMousemove(e){
-                var svg=overlay.parentNode.querySelector('svg.annotationLayer');
-                var rect=svg.getBoundingClientRect();
-                if(originX+(e.clientX-originX)<rect.right){
-                    overlay.style.width=e.clientX-originX+'px';
-                }
-                if(originY+(e.clientY-originY)<rect.bottom){
-                    overlay.style.height=e.clientY-originY+'px';
-                }
+        * Handle document.mousedown event
+        *
+        * @param {Event} e The DOM event to handle
+        */function handleDocumentMousedown(e){
+            if(!(_svg=(0,_utils.findSVGAtPoint)(e.clientX,e.clientY))|| _type!=='area'){
+                return;
             }
-            
-            /**
-             * Tests if the overlay is too small. An overlay is too small if the width or height are less 10 px or are NaN
-             * @param {type} overlay
-             * @returns {unresolved}
-             */
-            function isOverlayTooSmall(overlay){
-                var width = parseInt(overlay.style.width);
-                var height = parseInt(overlay.style.height);
-                return isNaN(width) || isNaN(height) || (width<10) || (height < 10);
-            }
-            /**
-            * Handle document.mouseup event
-            * concerns area,highlight and strikeout
-            * @param {Event} e The DOM event to handle
-            */function handleDocumentMouseup(e){
-                //if the cursor is clicked nothing should happen!
-                if((typeof e.target.getAttribute('className')!='string') &&  e.target.className.indexOf('cursor') === -1){
-                    document.removeEventListener('mousemove',handleDocumentMousemove);
-                    disableRect();
-                    if(_type==='area'&&overlay){
-                        if(isOverlayTooSmall(overlay)){
-                            overlay.parentNode.removeChild(overlay);
-                            overlay=null;
-                            enableRect(_type);
-                            return;
-                        }
-                        var _svg=overlay.parentNode.querySelector('svg.annotationLayer');
-                        var rect=_svg.getBoundingClientRect();
-                        renderRect(_type,[{top:parseInt(overlay.style.top,10)+rect.top,left:parseInt(overlay.style.left,10)+rect.left,width:parseInt(overlay.style.width,10),height:parseInt(overlay.style.height,10)}],null);
-                        
-                        [textarea,data] = (0,_commentWrapper.openComment)(e,handleCancelClick,handleSubmitClick,handleToolbarClick,handleSubmitBlur,_type);
-                    }else if((rectsSelection=getSelectionRects()) && _type!=='area'){
-                        
-                        renderRect(_type,[].concat(_toConsumableArray(rectsSelection)).map(function(r){return{top:r.top,left:r.left,width:r.width,height:r.height};}),null);
-                        
-                        [textarea,data] = (0,_commentWrapper.openComment)(e,handleCancelClick,handleSubmitClick,handleToolbarClick,handleSubmitBlur,_type);
-                    }else{
-                        enableRect(_type);
-                        //Do nothing!
-                    }
-                }
-            }
+            rect=_svg.getBoundingClientRect();
+            originY=e.clientY;
+            originX=e.clientX;
+            overlay=document.createElement('div');
+            overlay.style.position='absolute';
+            overlay.style.top=originY-rect.top+'px';
+            overlay.style.left=originX-rect.left+'px';
+            overlay.style.border='3px solid '+_utils.BORDER_COLOR;
+            overlay.style.borderRadius='3px';
+            _svg.parentNode.appendChild(overlay);
+            document.addEventListener('mousemove',handleDocumentMousemove);
+            (0,_utils.disableUserSelect)();
+        }
 
-            
-            function handleToolbarClick(e){
-                //delete Overlay
-                if(_type==='area'&&overlay){
-                    overlay.parentNode.removeChild(overlay);
-                    overlay=null;
-                }
-                document.querySelector('.toolbar').removeEventListener('click',handleToolbarClick);
-                (0,_commentWrapper.closeComment)(documentId,pageNumber,handleSubmitClick,handleCancelClick,null,false);
-                deleteUndefinedRect();
+        // Handle document.touchstart event
+        function handleDocumentTouchstart(e){
+            if(_type =='highlight' || _type == 'strikeout'){
+                // Dont show the contextmenu for highlighting and strikeout.
+                document.getElementById('content-wrapper').addEventListener('contextmenu', event => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    event.stopImmediatePropagation();
+                    return false;
+                });
             }
             
-            function handleSubmitClick(e){
-                var rects=void 0;
-                if(_type!=='area'&&(rects=rectsSelection)){
-                    var svg=(0,_utils.findSVGAtPoint)(rects[0].left,rects[0].top);
-                    saveRect(_type,[].concat(_toConsumableArray(rects)).map(function(r){return{top:r.top,left:r.left,width:r.width,height:r.height};}),null,e);
-                }else if(_type==='area'&&overlay){
+            if(!(_svg=(0,_utils.findSVGAtPoint)(e.touches[0].clientX,e.touches[0].clientY)) || _type!=='area'){
+                return;
+            }
+            // Disable scrolling on the page.
+            document.documentElement.style.overflow = 'hidden';
+            document.getElementById('content-wrapper').style.overflow = 'hidden';
+
+            rect=_svg.getBoundingClientRect();
+            originY=e.touches[0].clientY;
+            originX=e.touches[0].clientX;
+            overlay=document.createElement('div');
+            overlay.style.position='absolute';
+            overlay.style.top=originY-rect.top+'px';
+            overlay.style.left=originX-rect.left+'px';
+            overlay.style.border='3px solid '+_utils.BORDER_COLOR;
+            overlay.style.borderRadius='3px';
+            _svg.parentNode.appendChild(overlay);
+            document.addEventListener('touchmove',handleDocumentTouchmove);
+            
+            (0,_utils.disableUserSelect)();
+        }
+
+
+        /**
+        * Handle document.mousemove event
+        *
+        * @param {Event} e The DOM event to handle
+        */function handleDocumentMousemove(e){
+            if(originX+(e.clientX-originX)<rect.right){
+                overlay.style.width=e.clientX-originX+'px';
+            }
+            if(originY+(e.clientY-originY)<rect.bottom){
+                overlay.style.height=e.clientY-originY+'px';
+            }
+        }
+
+        // Handle document.touchmove event
+        function handleDocumentTouchmove(e){
+            if(originX+(e.touches[0].clientX-originX)<rect.right){
+                overlay.style.width=e.touches[0].clientX-originX+'px';
+            }
+            if(originY+(e.touches[0].clientY-originY)<rect.bottom){
+                overlay.style.height=e.touches[0].clientY-originY+'px';
+            }
+        }
+        
+        /**
+         * Tests if the overlay is too small. An overlay is too small if the width or height are less 10 px or are NaN
+         * @param {type} overlay
+         * @returns {unresolved}
+         */
+        function isOverlayTooSmall(overlay){
+            var width = parseInt(overlay.style.width);
+            var height = parseInt(overlay.style.height);
+            return isNaN(width) || isNaN(height) || (width<10) || (height < 10);
+        }
+        /**
+        * Handle document.mouseup event
+        * concerns area,highlight and strikeout
+        * @param {Event} e The DOM event to handle
+        */function handleDocumentMouseup(e){
+            //if the cursor is clicked nothing should happen!
+            if((typeof e.target.getAttribute('className')!='string') &&  e.target.className.indexOf('cursor') === -1){
+                document.removeEventListener('mousemove',handleDocumentMousemove);
+                disableRect();
+                if(_type==='area'&&overlay){
+                    if(isOverlayTooSmall(overlay)){
+                        overlay.parentNode.removeChild(overlay);
+                        overlay=null;
+                        enableRect(_type);
+                        return;
+                    }
+                    renderRect(_type,[{top:parseInt(overlay.style.top,10)+rect.top,left:parseInt(overlay.style.left,10)+rect.left,width:parseInt(overlay.style.width,10),height:parseInt(overlay.style.height,10)}],null);
+                    
+                    [textarea,data] = (0,_commentWrapper.openComment)(e,handleCancelClick,handleSubmitClick,handleToolbarClick,handleSubmitBlur,_type);
+                }else if((rectsSelection=getSelectionRects()) && _type!=='area'){
+                    renderRect(_type,[].concat(_toConsumableArray(rectsSelection)).map(function(r){return{top:r.top,left:r.left,width:r.width,height:r.height};}),null);
+                    
+                    [textarea,data] = (0,_commentWrapper.openComment)(e,handleCancelClick,handleSubmitClick,handleToolbarClick,handleSubmitBlur,_type);
+                }else{
+                    enableRect(_type);
+                    //Do nothing!
+                }
+            }
+        }
+        // Handle document.touchend event
+        function handleDocumentTouchend(e){
+            // Enable the scrolling again 
+            document.documentElement.style.overflow = 'auto';
+            document.getElementById('content-wrapper').style.overflow = 'auto';
+
+            //if the cursor is clicked nothing should happen!
+            if((typeof e.target.getAttribute('className')!='string') &&  e.target.className.indexOf('cursor') === -1){
+                document.removeEventListener('touchmove',handleDocumentTouchmove);
+                disableRect();
+                if(_type==='area'&&overlay){
+                    if(isOverlayTooSmall(overlay)){
+                        overlay.parentNode.removeChild(overlay);
+                        overlay=null;
+                        enableRect(_type);
+                        return;
+                    }
                     var _svg=overlay.parentNode.querySelector('svg.annotationLayer');
-                    var rect=_svg.getBoundingClientRect();
-                    saveRect(_type,[{top:parseInt(overlay.style.top,10)+rect.top,left:parseInt(overlay.style.left,10)+rect.left,width:parseInt(overlay.style.width,10),height:parseInt(overlay.style.height,10)}],null,e);
+                    renderRect(_type,[{top:parseInt(overlay.style.top,10)+rect.top,left:parseInt(overlay.style.left,10)+rect.left,width:parseInt(overlay.style.width,10),height:parseInt(overlay.style.height,10)}],null);
+                    
+                    [textarea,data] = (0,_commentWrapper.openComment)(e,handleCancelTouch,handleSubmitClick,handleToolbarClick,handleSubmitBlur,_type);
+                }else if((rectsSelection=getSelectionRects()) && _type!=='area'){
+                    renderRect(_type,[].concat(_toConsumableArray(rectsSelection)).map(function(r){return{top:r.top,left:r.left,width:r.width,height:r.height};}),null);
+                    [textarea,data] = (0,_commentWrapper.openComment)(e,handleCancelTouch,handleSubmitClick,handleToolbarClick,handleSubmitBlur,_type);
+                }else{
+                    enableRect(_type);
+                    //Do nothing!
                 }
-                return false;
             }
+        }
+
+        function handleToolbarClick(e){
+            //delete Overlay
+            if(_type==='area'&&overlay){
+                overlay.parentNode.removeChild(overlay);
+                overlay=null;
+            }
+            document.querySelector('.toolbar').removeEventListener('click',handleToolbarClick);
+            (0,_commentWrapper.closeComment)(documentId,pageNumber,handleSubmitClick,handleCancelClick,null,false);
+            deleteUndefinedRect();
+        }
+
+        
+        function handleSubmitClick(e){
+            var rects=void 0;
+            if(_type!=='area'&&(rects=rectsSelection)){
+                saveRect(_type,[].concat(_toConsumableArray(rects)).map(function(r){return{top:r.top,left:r.left,width:r.width,height:r.height};}),null,e);
+            }else if(_type==='area'&&overlay){
+                saveRect(_type,[{top:parseInt(overlay.style.top,10)+rect.top,left:parseInt(overlay.style.left,10)+rect.left,width:parseInt(overlay.style.width,10),height:parseInt(overlay.style.height,10)}],null,e);
+            }
+            return false;
+        }
+        
+        function handleCancelClick(e){
+            //delete Overlay
+            if(_type==='area'&&overlay){
+                overlay.parentNode.removeChild(overlay);
+                overlay=null;
+            }
+            //Hide the form for Comments
+            (0,_commentWrapper.closeComment)(documentId,pageNumber,handleSubmitClick,handleCancelClick,null,false);
+            deleteUndefinedRect();
+            //register EventListeners to allow new Annotations
+            enableRect(_type);
+            (0,_utils.enableUserSelect)();
+        }
+
+        function handleCancelTouch(e){
+            // When using on mobile devices scrolling will be prevented, here we have to allow it again.
+            document.documentElement.style.overflow = 'auto';
+            document.getElementById('content-wrapper').style.overflow = 'auto';
+
+            //delete Overlay
+            if(_type==='area'&&overlay){
+                overlay.parentNode.removeChild(overlay);
+                overlay=null;
+            }
+            //Hide the form for Comments
+            (0,_commentWrapper.closeComment)(documentId,pageNumber,handleSubmitClick,handleCancelClick,null,false);
+            deleteUndefinedRect();
             
-            function handleCancelClick(e){
-                //delete Overlay
-                if(_type==='area'&&overlay){
-                    overlay.parentNode.removeChild(overlay);
-                    overlay=null;
-                }
-                //Hide the form for Comments
-                (0,_commentWrapper.closeComment)(documentId,pageNumber,handleSubmitClick,handleCancelClick,null,false);
-                deleteUndefinedRect();
-                //register EventListeners to allow new Annotations
+            // Because of a scrolling issue we have to disable the area annotation after canceling the annotation.
+            if (_type ==='area') {
+                disableRect();
+                document.querySelector('button.cursor').click();
+            } else {
                 enableRect(_type);
                 (0,_utils.enableUserSelect)();
             }
-            
-            function handleSubmitBlur(){
-                if(overlay){
+        }
+        
+        function handleSubmitBlur(){
+            if(overlay){
+                overlay.parentNode.removeChild(overlay);
+                overlay=null;
+            }
+            (0,_commentWrapper.closeComment)(documentId,pageNumber,handleSubmitClick,handleCancelClick,null,false);
+            deleteUndefinedRect();
+        }
+
+        /**
+        * Handle document.keyup event
+        *
+        * @param {Event} e The DOM event to handle
+        */function handleDocumentKeyup(e){// Cancel rect if Esc is pressed
+            if(e.keyCode===27){var selection=window.getSelection();selection.removeAllRanges();if(overlay&&overlay.parentNode){overlay.parentNode.removeChild(overlay);overlay=null;document.removeEventListener('mousemove',handleDocumentMousemove);}}
+        }
+        
+        function renderRect(type,rects,color){
+            rect=_svg.getBoundingClientRect();
+            var _getMetadata=(0,_utils.getMetadata)(_svg);
+            documentId=_getMetadata.documentId;
+            pageNumber=_getMetadata.pageNumber;
+            var annotation = initializeAnnotation(type,rects,'rgb(255,237,0)',_svg);
+            rectObj = [_svg,annotation];
+            (0,_appendChild2.default)(_svg,annotation);
+        }
+        /**
+         * This function deletes all annotations which data-pdf-annotate-id is undefined. An annotation is undefined, if it is only temporarily displayed.
+         * @returns {undefined}
+         */
+        function deleteUndefinedRect(){
+            let n = document.querySelector('[data-pdf-annotate-id="undefined"]');
+            if(n){
+                n.parentNode.removeChild(n);
+            }
+        }
+
+        
+        function initializeAnnotation(type,rects,color,svg){
+                
+            var node=void 0;
+            var annotation=void 0;
+            if(!svg){return;}
+            if(!color){
+                if(type==='highlight'){
+                    color='rgb(142,186,229)';
+                }else if(type==='strikeout'){
+                    color='rgb(0,84,159)';
+                }
+            }// Initialize the annotation
+            annotation={type:type,color:color,rectangles:[].concat(_toConsumableArray(rects)).map(function(r){var offset=0;if(type==='strikeout'){offset=r.height/2;}return(0,_utils.scaleDown)(svg,{y:r.top+offset-rect.top,x:r.left-rect.left,width:r.width,height:r.height});}).filter(function(r){return r.width>0&&r.height>0&&r.x>-1&&r.y>-1;})};// Short circuit if no rectangles exist
+            if(annotation.rectangles.length===0){
+                return;
+            }// Special treatment for area as it only supports a single rect
+            if(type==='area'){
+                var _rect=annotation.rectangles[0];
+                delete annotation.rectangles;
+                annotation.x=(0,_utils.roundDigits)(_rect.x,4);
+                annotation.y=(0,_utils.roundDigits)(_rect.y,4);
+                annotation.width=(0,_utils.roundDigits)(_rect.width,4);
+                annotation.height=(0,_utils.roundDigits)(_rect.height,4);
+            }else{
+                annotation.rectangles = annotation.rectangles.map(function(elem, index, array){
+                    return {x:(0,_utils.roundDigits)(elem.x,4),y:(0,_utils.roundDigits)(elem.y,4),width:(0,_utils.roundDigits)(elem.width,4),height:(0,_utils.roundDigits)(elem.height,4)};
+                });
+            }
+            return annotation;
+        }
+
+        
+        /**
+        * Save a rect annotation
+        *
+        * @param {String} type The type of rect (area, highlight, strikeout)
+        * @param {Array} rects The rects to use for annotation
+        * @param {String} color The color of the rects
+        */
+        function saveRect(type,rects,color,e){
+            var annotation = initializeAnnotation(type,rects,color,_svg);
+            var _getMetadata=(0,_utils.getMetadata)(_svg);
+            var documentId=_getMetadata.documentId;
+            var pageNumber=_getMetadata.pageNumber;
+            var content=textarea.value.trim();
+            if(textarea.value.trim().length > 1){
+                
+                (0,_commentWrapper.closeComment)(documentId,pageNumber,handleSubmitClick,handleCancelClick,null,true);
+                
+                if(_type==='area'&&overlay){
                     overlay.parentNode.removeChild(overlay);
                     overlay=null;
+                    document.removeEventListener('mousemove',handleDocumentMousemove);
+                    (0,_utils.enableUserSelect)();
                 }
-                (0,_commentWrapper.closeComment)(documentId,pageNumber,handleSubmitClick,handleCancelClick,null,false);
-                deleteUndefinedRect();
-            }
-            
+                // Add the annotation
+                _PDFJSAnnotate2.default.getStoreAdapter()
+                    .addAnnotation(documentId,pageNumber,annotation)
+                    .then(function(annotation){
+                        
+                        var commentVisibility= read_visibility_of_checkbox();
+                        var isquestion = 1; //The annotation was created, so this comment has to be a question;
+                        _PDFJSAnnotate2.default.getStoreAdapter().addComment(documentId,annotation.uuid,content,commentVisibility,isquestion)
+                            .then(function(msg){
+                                //delete previous annotation to render new one with the right id
+                                deleteUndefinedRect();
+                                //get Old rectangles because of scrolling
+                                annotation.rectangles = rectObj[1].rectangles;
 
-            
-            /**
-            * Handle document.keyup event
-            *
-            * @param {Event} e The DOM event to handle
-            */function handleDocumentKeyup(e){// Cancel rect if Esc is pressed
-                if(e.keyCode===27){var selection=window.getSelection();selection.removeAllRanges();if(overlay&&overlay.parentNode){overlay.parentNode.removeChild(overlay);overlay=null;document.removeEventListener('mousemove',handleDocumentMousemove);}}
-            }
-            
-            function renderRect(type,rects,color){
-                var svg=(0,_utils.findSVGAtPoint)(rects[0].left,rects[0].top);
-                var _getMetadata=(0,_utils.getMetadata)(svg);
-                documentId=_getMetadata.documentId;
-                pageNumber=_getMetadata.pageNumber;
-                var annotation = initializeAnnotation(type,rects,'rgb(255,237,0)',svg);
-                rectObj = [svg,annotation];
-                (0,_appendChild2.default)(svg,annotation);
-            }
-            /**
-             * This function deletes all annotations which data-pdf-annotate-id is undefined. An annotation is undefined, if it is only temporarily displayed.
-             * @returns {undefined}
-             */
-            function deleteUndefinedRect(){
-                let n = document.querySelector('[data-pdf-annotate-id="undefined"]');
-                if(n){
-                    n.parentNode.removeChild(n);
-                }
-            }
-            
-            function initializeAnnotation(type,rects,color,svg){
-                
-                var node=void 0;
-                var annotation=void 0;
-                if(!svg){return;}
-                var boundingRect=svg.getBoundingClientRect();
-                if(!color){
-                    if(type==='highlight'){
-                        color='rgb(142,186,229)';
-                    }else if(type==='strikeout'){
-                        color='rgb(0,84,159)';
-                    }
-                }// Initialize the annotation
-                annotation={type:type,color:color,rectangles:[].concat(_toConsumableArray(rects)).map(function(r){var offset=0;if(type==='strikeout'){offset=r.height/2;}return(0,_utils.scaleDown)(svg,{y:r.top+offset-boundingRect.top,x:r.left-boundingRect.left,width:r.width,height:r.height});}).filter(function(r){return r.width>0&&r.height>0&&r.x>-1&&r.y>-1;})};// Short circuit if no rectangles exist
-                if(annotation.rectangles.length===0){
-                    return;
-                }// Special treatment for area as it only supports a single rect
-                if(type==='area'){
-                    var rect=annotation.rectangles[0];
-                    delete annotation.rectangles;
-                    annotation.x=(0,_utils.roundDigits)(rect.x,4);
-                    annotation.y=(0,_utils.roundDigits)(rect.y,4);
-                    annotation.width=(0,_utils.roundDigits)(rect.width,4);
-                    annotation.height=(0,_utils.roundDigits)(rect.height,4);
-                }else{
-                    annotation.rectangles = annotation.rectangles.map(function(elem, index, array){
-                        return {x:(0,_utils.roundDigits)(elem.x,4),y:(0,_utils.roundDigits)(elem.y,4),width:(0,_utils.roundDigits)(elem.width,4),height:(0,_utils.roundDigits)(elem.height,4)};
-                    });
-                }
-                return annotation;
-            }
-            
-            /**
-            * Save a rect annotation
-            *
-            * @param {String} type The type of rect (area, highlight, strikeout)
-            * @param {Array} rects The rects to use for annotation
-            * @param {String} color The color of the rects
-            */function saveRect(type,rects,color,e){
-               var svg=(0,_utils.findSVGAtPoint)(rects[0].left,rects[0].top);
-                var annotation = initializeAnnotation(type,rects,color,svg);
-                var _getMetadata=(0,_utils.getMetadata)(svg);
-                var documentId=_getMetadata.documentId;
-                var pageNumber=_getMetadata.pageNumber;
-                var content=textarea.value.trim();
-                if(content.length > 1){
-                    
-                    (0,_commentWrapper.closeComment)(documentId,pageNumber,handleSubmitClick,handleCancelClick,null,true);
-                    
-                    if(_type==='area'&&overlay){
-                        overlay.parentNode.removeChild(overlay);
-                        overlay=null;
-                        document.removeEventListener('mousemove',handleDocumentMousemove);
-                        (0,_utils.enableUserSelect)();
-                    }
-                    
-                    // Add the annotation
-                    _PDFJSAnnotate2.default.getStoreAdapter()
-                        .addAnnotation(documentId,pageNumber,annotation)
-                        .then(function(annotation){
-                            
-                            var commentVisibility = "public";
-                            if(document.querySelector('#anonymousCheckbox').checked){
-                                commentVisibility = "anonymous";
-                            }
-                            var isquestion = 1; //The annotation was created, so this comment has to be a question;
-                            _PDFJSAnnotate2.default.getStoreAdapter().addComment(documentId,annotation.uuid,content,commentVisibility,isquestion)
-                                .then(function(msg){
-                                    //delete previous annotation to render new one with the right id
-                                    deleteUndefinedRect();
-                                    //get Old rectangles because of scrolling
-                                    annotation.rectangles = rectObj[1].rectangles;
-
-                                    (0,_appendChild2.default)(svg,annotation); 
-                                    document.querySelector('.toolbar').removeEventListener('click',handleToolbarClick);
-                                    //simulate an click on cursor
-                                    document.querySelector('button.cursor').click();
-                                    (0,_commentWrapper.showCommentsAfterCreation)(annotation.uuid);
-                                },function(err){
-                                    notification.addNotification({
-                                        message: M.util.get_string('error:addComment','pdfannotator'),
-                                        type: "error"
-                                    });
-                                    //if there is an error in addComment, the annotation should be deleted!
-                                    var annotationid = annotation.uuid;
-                                    _PDFJSAnnotate2.default.getStoreAdapter().deleteAnnotation(documentId,annotationid);
+                                (0,_appendChild2.default)(_svg,annotation); 
+                                document.querySelector('.toolbar').removeEventListener('click',handleToolbarClick);
+                                //simulate an click on cursor
+                                document.querySelector('button.cursor').click();
+                                (0,_commentWrapper.showCommentsAfterCreation)(annotation.uuid);
+                            },function(err){
+                                notification.addNotification({
+                                    message: M.util.get_string('error:addComment','pdfannotator'),
+                                    type: "error"
                                 });
-                        }, function (err){
-                            deleteUndefinedRect();
-                            notification.addNotification({
-                                message: M.util.get_string('error:addAnnotation','pdfannotator'),
-                                type: "error"
+                                //if there is an error in addComment, the annotation should be deleted!
+                                var annotationid = annotation.uuid;
+                                _PDFJSAnnotate2.default.getStoreAdapter().deleteAnnotation(documentId,annotationid);
                             });
+                    }, function (err){
+                        deleteUndefinedRect();
+                        notification.addNotification({
+                            message: M.util.get_string('error:addAnnotation','pdfannotator'),
+                            type: "error"
                         });
-                }else{
-                   notification.addNotification({
-                        message: M.util.get_string('min2Chars', 'pdfannotator'),
-                        type: "error"
                     });
-                    textarea.focus(); 
-                }
+            }else{
+               notification.addNotification({
+                    message: M.util.get_string('min2Chars', 'pdfannotator'),
+                    type: "error"
+                });
+                textarea.focus(); 
             }
-            /**
-            * Enable rect behavior
-            */function enableRect(type){
-               _type=type;
-               if(_enabled){return;}
-               
-               if(_type === 'area'){
-                   document.getElementById('content-wrapper').classList.add('cursor-area');
-               }else if(_type === 'highlight'){
-                   document.getElementById('content-wrapper').classList.add('cursor-highlight');
-               }else if(_type === 'strikeout'){
-                   document.getElementById('content-wrapper').classList.add('cursor-strikeout');
-               }
-               
-               _enabled=true;
-               document.addEventListener('mouseup',handleDocumentMouseup);
-               document.addEventListener('mousedown',handleDocumentMousedown);
-               document.addEventListener('keyup',handleDocumentKeyup);
-           }/**
-            * Disable rect behavior
-            */function disableRect(){
-                           if(!_enabled){return;}
-                           _enabled=false;
-                           if(_type === 'area'){
-                                document.getElementById('content-wrapper').classList.remove('cursor-area');
-                            }else if(_type === 'highlight'){
-                                document.getElementById('content-wrapper').classList.remove('cursor-highlight');
-                            }else if(_type === 'strikeout'){
-                                document.getElementById('content-wrapper').classList.remove('cursor-strikeout');
-                            }
-                           document.removeEventListener('mouseup',handleDocumentMouseup);document.removeEventListener('mousedown',handleDocumentMousedown);document.removeEventListener('keyup',handleDocumentKeyup);}
-    /***/},
-    /* 33 */
+        }
+        /**
+        * Enable rect behavior
+        */function enableRect(type){
+           _type=type;
+           if(_enabled){return;}
+           
+           if(_type === 'area'){
+               document.getElementById('content-wrapper').classList.add('cursor-area');
+           }else if(_type === 'highlight'){
+               document.getElementById('content-wrapper').classList.add('cursor-highlight');
+           }else if(_type === 'strikeout'){
+               document.getElementById('content-wrapper').classList.add('cursor-strikeout');
+           }
+           
+           _enabled=true;
+           document.addEventListener('mouseup',handleDocumentMouseup);
+           document.addEventListener('mousedown',handleDocumentMousedown);
+           document.addEventListener('keyup',handleDocumentKeyup);
+
+           document.addEventListener('touchstart', handleDocumentTouchstart);
+           document.addEventListener('touchend', handleDocumentTouchend);
+       }/**
+        * Disable rect behavior
+        */function disableRect(){
+            if(!_enabled){return;}
+            _enabled=false;
+            if(_type === 'area'){
+                document.getElementById('content-wrapper').classList.remove('cursor-area');
+            }else if(_type === 'highlight'){
+                document.getElementById('content-wrapper').classList.remove('cursor-highlight');
+            }else if(_type === 'strikeout'){
+                document.getElementById('content-wrapper').classList.remove('cursor-strikeout');
+            }
+            document.removeEventListener('mouseup',handleDocumentMouseup);
+            document.removeEventListener('mousedown',handleDocumentMousedown);
+            document.removeEventListener('keyup',handleDocumentKeyup);
+
+            document.removeEventListener('touchstart', handleDocumentTouchstart);
+            document.removeEventListener('touchend', handleDocumentTouchend);
+        }
+/***/},
+/* 33 */
     /***/function(module,exports,__webpack_require__){
             'use strict';
             Object.defineProperty(exports,"__esModule",{value:true});
@@ -6094,15 +6336,17 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
             var input=void 0;
             var pos = void 0;
             var _textSize=void 0;
-            var _textColor=void 0;/**
+            var _textColor=void 0;
+            var svg=void 0;
+            var rect=void 0;/**
             * Handle document.mouseup event
             *
             *
             * @param {Event} e The DOM event to handle
             */function handleDocumentMouseup(e){ // betrifft textbox
-                if(input||!(0,_utils.findSVGAtPoint)(e.clientX,e.clientY)){
+                if(input||!(svg=(0,_utils.findSVGAtPoint)(e.clientX,e.clientY))){
                     return;
-                }
+                } 
                 let scrollTop = window.pageYOffset;
                 input=document.createElement('input');
                 input.setAttribute('id','pdf-annotate-text-input');
@@ -6117,10 +6361,14 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                 input.addEventListener('keyup',handleInputKeyup);
                 document.body.appendChild(input);
                 input.focus();
+                rect=svg.getBoundingClientRect();
                 pos = {x: e.clientX, y: e.clientY };
-            }/**
+            }
+            /**
             * Handle input.blur event
-            */function handleInputBlur(){saveText();}/**
+            */function handleInputBlur(){
+                saveText();
+            }/**
             * Handle input.keyup event
             *
             * @param {Event} e The DOM event to handle
@@ -6132,14 +6380,14 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                         var clientX=parseInt(pos.x,10);
                         //text size additional to y to render the text right under the mouse click
                         var clientY=parseInt(pos.y,10);
-                        var svg=(0,_utils.findSVGAtPoint)(clientX,clientY);
+                        //var svg=(0,_utils.findSVGAtPoint)(clientX,clientY);
                         if(!svg){
                             return{v:void 0};
                         }
                         var _getMetadata=(0,_utils.getMetadata)(svg);
                         var documentId=_getMetadata.documentId;
                         var pageNumber=_getMetadata.pageNumber;
-                        var rect=svg.getBoundingClientRect();
+                        
                         var annotation=Object.assign({type:'textbox',size:_textSize,color:_textColor,content:input.value.trim()},(0,_utils.scaleDown)(svg,{x:(0,_utils.roundDigits)(clientX-rect.left,4),y:(0,_utils.roundDigits)(clientY-rect.top,4),width:(0,_utils.roundDigits)(input.offsetWidth,4),height:(0,_utils.roundDigits)(input.offsetHeight,4)}));
                         _PDFJSAnnotate2.default.getStoreAdapter().addAnnotation(documentId,pageNumber,annotation)
                                 .then(function(annotation){
@@ -6166,9 +6414,22 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
             * @param {String} textColor The color of the text
             */function setText(){var textSize=arguments.length<=0||arguments[0]===undefined?12:arguments[0];var textColor=arguments.length<=1||arguments[1]===undefined?'000000':arguments[1];_textSize=parseInt(textSize,10);_textColor=textColor;}/**
             * Enable text behavior
-            */function enableText(){if(_enabled){return;}_enabled=true;document.getElementById('content-wrapper').classList.add('cursor-text');document.addEventListener('mouseup',handleDocumentMouseup);}/**
+            */function enableText(){
+                if(_enabled){
+                    return;
+                }
+                _enabled=true;
+                document.getElementById('content-wrapper').classList.add('cursor-text');
+                document.addEventListener('mouseup',handleDocumentMouseup);
+            }/**
             * Disable text behavior
-            */function disableText(){if(!_enabled){return;}_enabled=false;document.getElementById('content-wrapper').classList.remove('cursor-text');document.removeEventListener('mouseup',handleDocumentMouseup);}
+            */function disableText(){
+                if(!_enabled){return;
+                }
+                _enabled=false;
+                document.getElementById('content-wrapper').classList.remove('cursor-text');
+                document.removeEventListener('mouseup',handleDocumentMouseup);
+            }
     /***/},
     /* 34 */
     /***/function(module,exports,__webpack_require__){
@@ -6341,6 +6602,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
             exports.openComment = openComment;
             exports.closeComment = closeComment;
             exports.showCommentsAfterCreation = showCommentsAfterCreation;
+            exports.openCommentTouchscreen = openCommentTouchscreen;
             var _PDFJSAnnotate=__webpack_require__(1);
             var _event=__webpack_require__(4);
             var _PDFJSAnnotate2=_interopRequireDefault(_PDFJSAnnotate);
@@ -6420,7 +6682,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                 button1.style.display = 'inline';
                 var button2 = document.getElementById('questionsOnThisPage'); // to be found in index template
                 button2.style.display = 'inline';
-                
+
                 //title 
                 $('#comment-wrapper h4')[0].innerHTML = M.util.get_string('comments','pdfannotator');
                 //add Eventlistener to Toolbar. Every Click in Toolbar should cancel the Annotation-Comment-Creation
@@ -6428,7 +6690,12 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                 //Hide shown comments
                 document.querySelector('.comment-list-container').innerHTML = '<p></p>';
                 form = document.querySelector('.comment-list-form');
-                form.setAttribute('style','display:inherit');
+                $(document).ready(function(){
+                    form.setAttribute('style','display:inherit');
+                    $('#anonymousDiv').show();
+                    $('#privateDiv').show();
+                    $('#protectedDiv').show();
+                });
                 textarea = document.getElementById('myarea');
                 textarea.placeholder = M.util.get_string('startDiscussion','pdfannotator');
                 submitbutton = document.getElementById('commentSubmit');
@@ -6441,6 +6708,54 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                     data = new Object();
                     data.x = e.clientX;
                     data.y = e.clientY;
+                }else{
+                    data = document.createElement('div');
+                    data.setAttribute('id','pdf-annotate-point-input');
+                    data.style.border='3px solid '+_utils.BORDER_COLOR;
+                    data.style.borderRadius='3px';
+                    data.style.display = 'none';
+                    data.style.position='absolute';
+                    data.style.top=e.clientY+'px';
+                    data.style.left=e.clientX+'px';
+                }
+                
+                form.addEventListener('blur',submitBlur);
+                textarea.focus();
+                return [textarea,data];
+            }
+
+            function openCommentTouchscreen(e,cancelClick,submitClick,toolbarClick,submitBlur,_type){ 
+                //save e for later 
+                _e = e;
+                
+                var button1 = document.getElementById('allQuestions'); // to be found in index template
+                button1.style.display = 'inline';
+                var button2 = document.getElementById('questionsOnThisPage'); // to be found in index template
+                button2.style.display = 'inline';
+                
+                //title 
+                $('#comment-wrapper h4')[0].innerHTML = M.util.get_string('comments','pdfannotator');
+                //add Eventlistener to Toolbar. Every Click in Toolbar should cancel the Annotation-Comment-Creation
+                document.querySelector('.toolbar').addEventListener('click',toolbarClick);
+                //Hide shown comments
+                document.querySelector('.comment-list-container').innerHTML = '<p></p>';
+                form = document.querySelector('.comment-list-form');
+                form.setAttribute('style','display:inherit');
+                $('#anonymousCheckbox').show();
+                $('#privateCheckbox').show();
+                $('#protectedCheckbox').show();
+                textarea = document.getElementById('myarea');
+                textarea.placeholder = M.util.get_string('startDiscussion','pdfannotator');
+                submitbutton = document.getElementById('commentSubmit');
+                submitbutton.value = M.util.get_string('createAnnotation','pdfannotator');
+                resetbutton = document.getElementById('commentCancel');
+                resetbutton.addEventListener('click',cancelClick);
+                form.onsubmit = submitClick;
+                //fixCommentForm();
+                if(_type === 'pin'){
+                    data = new Object();
+                    data.x = e.changedTouches[0].clientX;
+                    data.y = e.changedTouches[0].clientY;
                 }else{
                     data = document.createElement('div');
                     data.setAttribute('id','pdf-annotate-point-input');
@@ -7131,4 +7446,30 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
 /***/ }
 /******/ ]);
 }); //require JQuery closed
+}
+
+/**
+ * 
+ */
+function read_visibility_of_checkbox(){
+    var commentVisibility= "public";
+        if (document.querySelector('#anonymousCheckbox').checked) {
+            commentVisibility = "anonymous";
+            document.querySelector('#anonymousCheckbox').checked = false;
+        } 
+        
+        if (document.querySelector('#privateCheckbox') != null) {
+            if (document.querySelector('#privateCheckbox').checked) {
+              commentVisibility = "private";
+              document.querySelector('#privateCheckbox').checked = false;
+            }
+        } 
+        
+        if (document.querySelector('#protectedCheckbox') != null) {
+            if (document.querySelector('#protectedCheckbox').checked) {
+              commentVisibility = "protected";
+              document.querySelector('#protectedCheckbox').checked = false;
+            } 
+        }                              
+    return commentVisibility;    
 }

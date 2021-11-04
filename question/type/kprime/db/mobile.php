@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Mobile Setup for qtype_kprime.
+ *
  * @package     qtype_kprime
  * @author      Amr Hourani (amr.hourani@id.ethz.ch)
  * @author      Martin Hanusch (martin.hanusch@let.ethz.ch)
@@ -31,7 +33,11 @@ $addons = [
         'handlers' => [
             'kprime' => [
                 'delegate' => 'CoreQuestionDelegate',
-                'method' => 'kprime_view'
+                'method' => 'kprime_view',
+                'styles' => [
+                    'url' => '/question/type/kprime/mobile/styles_app.css',
+                    'version' => '0.02'
+                ]
             ]
         ]
     ]

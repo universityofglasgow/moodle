@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Test helper code for qtype_kprime.
+ *
  * @package     qtype_kprime
  * @author      Amr Hourani (amr.hourani@id.ethz.ch)
  * @author      Martin Hanusch (martin.hanusch@let.ethz.ch)
@@ -29,12 +31,26 @@ defined('MOODLE_INTERNAL') || die();
 global $CFG;
 require_once($CFG->dirroot . '/question/engine/tests/helpers.php');
 
+/**
+ * Test helper class for qtype_kprime.
+ *
+ * @copyright   2016 ETHZ {@link http://ethz.ch/}
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class qtype_kprime_test_helper extends question_test_helper {
 
+    /**
+     * Get predefined questions
+     * @return array
+     */
     public function get_test_questions() {
         return array('question_one', 'question_two', 'question_three', 'question_four');
     }
 
+    /**
+     * Get the question data, as it would be loaded by get_question_options.
+     * @return object
+     */
     public static function get_kprime_question_data_question_one() {
         global $USER;
         $qdata = new stdClass();
@@ -146,6 +162,10 @@ class qtype_kprime_test_helper extends question_test_helper {
         return $qdata;
     }
 
+    /**
+     * Get the question data, as it would be loaded by get_question_options.
+     * @return object
+     */
     public static function get_kprime_question_form_data_question_one() {
         // KPrime Question.
         // Question 1: true.
@@ -240,6 +260,10 @@ class qtype_kprime_test_helper extends question_test_helper {
         return $qdata;
     }
 
+    /**
+     * Get the question data, as it would be loaded by get_question_options.
+     * @return object
+     */
     public static function get_kprime_question_data_question_two() {
         global $USER;
         $qdata = new stdClass();
@@ -351,6 +375,10 @@ class qtype_kprime_test_helper extends question_test_helper {
         return $qdata;
     }
 
+    /**
+     * Get the question data, as it would be loaded by get_question_options.
+     * @return object
+     */
     public static function get_kprime_question_form_data_question_two() {
         // KPrime Question.
         // Shuffle: No.
@@ -446,6 +474,10 @@ class qtype_kprime_test_helper extends question_test_helper {
         return $qdata;
     }
 
+    /**
+     * Get the question data, as it would be loaded by get_question_options.
+     * @return object
+     */
     public static function get_kprime_question_form_data_question_three() {
         // KPrime Question.
         // Shuffle: Yes.
@@ -541,6 +573,10 @@ class qtype_kprime_test_helper extends question_test_helper {
         return $qdata;
     }
 
+    /**
+     * Get the question data, as it would be loaded by get_question_options.
+     * @return object
+     */
     public static function get_kprime_question_form_data_question_four() {
         global $USER;
         $qdata = new stdClass();

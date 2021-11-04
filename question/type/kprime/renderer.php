@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * qtype_kprime renderer classes.
+ *
  * @package     qtype_kprime
  * @author      Amr Hourani (amr.hourani@id.ethz.ch)
  * @author      Martin Hanusch (martin.hanusch@let.ethz.ch)
@@ -30,14 +32,15 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir . '/outputcomponents.php');
 
 /**
- * Subclass for generating the bits of output specific to kprime questions.
+ * Subclass for generating the bits of output specific to qtype_kprime questions.
  *
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright   2016 ETHZ {@link http://ethz.ch/}
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class qtype_kprime_renderer extends qtype_renderer {
 
     /**
-     *
+     * Returns input type
      * @return string
      */
     protected function get_input_type() {
@@ -45,10 +48,9 @@ class qtype_kprime_renderer extends qtype_renderer {
     }
 
     /**
-     *
+     * Returns the name of a given input
      * @param question_attempt $qa
      * @param unknown $value
-     *
      * @return string
      */
     protected function get_input_name(question_attempt $qa, $value) {
@@ -56,9 +58,8 @@ class qtype_kprime_renderer extends qtype_renderer {
     }
 
     /**
-     *
+     * Returns the value of a fiven input
      * @param unknown $value
-     *
      * @return unknown
      */
     protected function get_input_value($value) {
@@ -66,10 +67,9 @@ class qtype_kprime_renderer extends qtype_renderer {
     }
 
     /**
-     *
+     * Returns the id of a given input
      * @param question_attempt $qa
      * @param unknown $value
-     *
      * @return string
      */
     protected function get_input_id(question_attempt $qa, $value) {
@@ -78,39 +78,31 @@ class qtype_kprime_renderer extends qtype_renderer {
 
     /**
      * Generate the display of the formulation part of the question.
-     * This is the
-     * area that contains the question text (stem), and the controls for students to
+     * This is the area that contains the question text (stem), and the controls for students to
      * input their answers.
-     *
      * @param question_attempt $qa the question attempt to display.
-     * @param question_display_options $options controls what should and should not be displayed.
-     *
+     * @param question_display_options $displayoptions controls what should and should not be displayed.
      * @return string HTML fragment.
      */
-    public function formulation_and_controls(question_attempt $qa,
-            question_display_options $displayoptions) {
+    public function formulation_and_controls(question_attempt $qa, question_display_options $displayoptions) {
+
         $question = $qa->get_question();
         $response = $question->get_response($qa);
 
         $inputname = $qa->get_qt_field_name('option');
-        $inputattributes = array('type' => $this->get_input_type(), 'name' => $inputname
-        );
+        $inputattributes = array('type' => $this->get_input_type(), 'name' => $inputname);
 
         if ($displayoptions->readonly) {
             $inputattributes['disabled'] = 'disabled';
         }
 
         $result = '';
-        $result .= html_writer::tag('div', $question->format_questiontext($qa),
-        array('class' => 'qtext'
-        ));
+        $result .= html_writer::tag('div', $question->format_questiontext($qa), array('class' => 'qtext'));
 
         $table = new html_table();
         $table->attributes['class'] = 'generaltable';
 
         $table->head = array();
-        // Add empty header for option texts.
-        $table->head[] = '';
 
         // Add the response texts as table headers.
         foreach ($question->columns as $column) {
@@ -121,6 +113,9 @@ class qtype_kprime_renderer extends qtype_renderer {
                                     $column->id)));
             $table->head[] = $cell;
         }
+
+        // Add empty header for option texts.
+        $table->head[] = '';
 
         // Add empty header for correctness if needed.
         if ($displayoptions->correctness) {
@@ -141,20 +136,11 @@ class qtype_kprime_renderer extends qtype_renderer {
             // Holds the data for one table row.
             $rowdata = array();
 
-            // Add the formated option text to the table.
-            $rowtext = $question->make_html_inline(
-                    $question->format_text($row->optiontext, $row->optiontextformat, $qa,
-                            'qtype_kprime', 'optiontext', $row->id));
-
-            $cell = new html_table_cell('<span class="optiontext">' . $rowtext . '</span>');
-            $cell->attributes['class'] = 'optiontext';
-            $rowdata[] = $cell;
-
             // Add the response radio buttons to the table.
             foreach ($question->columns as $column) {
                 $buttonname = $qa->get_field_prefix() . $field;
                 $ischecked = false;
-                if (array_key_exists($field, $response) && ($response[$field] == $column->number)) {
+                if (property_exists((object) $response, $field) && ($response[$field] == $column->number)) {
                     $ischecked = true;
                 }
                 $radio = $this->radiobutton($buttonname, $column->number, $ischecked, $isreadonly);
@@ -162,16 +148,24 @@ class qtype_kprime_renderer extends qtype_renderer {
                 // Show correctness icon with radio button if needed.
                 if ($displayoptions->correctness) {
                     $weight = $question->weight($row->number, $column->number);
-                    $radio .= '<span class="kprimegreyingout">' . $this->feedback_image($weight > 0.0) .
-                             '</span>';
+                    $radio .= '<span class="kprimegreyingout">' . $this->feedback_image($weight > 0.0) . '</span>';
                 }
                 $cell = new html_table_cell($radio);
                 $cell->attributes['class'] = 'kprimeresponsebutton';
                 $rowdata[] = $cell;
             }
 
+            // Add the formated option text to the table.
+            $rowtext = $question->make_html_inline(
+                $question->format_text($row->optiontext, $row->optiontextformat, $qa, 'qtype_kprime', 'optiontext', $row->id));
+
+            $cell = new html_table_cell('<span class="optiontext">' . $rowtext . '</span>');
+            $cell->attributes['class'] = 'optiontext';
+            $rowdata[] = $cell;
+
             // Has a selection been made for this option?
             $isselected = $question->is_answered($response, $key);
+
             // For correctness we have to grade the option...
             if ($displayoptions->correctness) {
                 $rowgrade = $question->grading()->grade_row($question, $key, $row, $response);
@@ -181,8 +175,10 @@ class qtype_kprime_renderer extends qtype_renderer {
             }
 
             // Add the feedback to the table, if it is visible.
-            if ($displayoptions->feedback && empty($displayoptions->suppresschoicefeedback) &&
-                     $isselected && trim($row->optionfeedback)) {
+            if ($displayoptions->feedback
+            && empty($displayoptions->suppresschoicefeedback)
+            && $isselected
+            && trim($row->optionfeedback)) {
                 $cell = new html_table_cell(
                         html_writer::tag('div',
                                 $question->make_html_inline(
@@ -216,11 +212,10 @@ class qtype_kprime_renderer extends qtype_renderer {
     /**
      * Returns a string containing the rendererd question's scoring method.
      * Appends an info icon containing information about the scoring method.
-     * @param qtype_kprime_question $question
+     * @param qtype_mtf_question $question
      * @return string
      */
     private function showscoringmethod($question) {
-        global $OUTPUT;
 
         $result = '';
 
@@ -233,21 +228,18 @@ class qtype_kprime_renderer extends qtype_renderer {
         if (get_string_manager()->string_exists('scoring' . $question->scoringmethod . '_help', 'qtype_kprime')) {
             $label = get_string('scoringmethod', 'qtype_kprime'). ': <b>' . ucfirst($outputscoringmethod) . '</b>';
             $result .= html_writer::tag('div',
-                '<br>'. $label . $OUTPUT->help_icon('scoring' . $question->scoringmethod, 'qtype_kprime'),
-                array('id' => 'scoringmethodinfo_q' . $question->id,
-                    'label' => $label));
+                '<br>'. $label . $this->output->help_icon('scoring' . $question->scoringmethod, 'qtype_kprime'),
+                array('id' => 'scoringmethodinfo_q' . $question->id, 'label' => $label));
         }
         return $result;
     }
 
     /**
      * Returns the HTML representation of a radio button with the given attributes.
-     *
-     * @param unknown $name
-     * @param unknown $value
-     * @param unknown $checked
-     * @param unknown $readonly
-     *
+     * @param string $name
+     * @param int $value
+     * @param bool $checked
+     * @param bool $readonly
      * @return string
      */
     protected static function radiobutton($name, $value, $checked, $readonly) {
@@ -260,7 +252,6 @@ class qtype_kprime_renderer extends qtype_renderer {
 
     /**
      * The prompt for the user to answer a question.
-     *
      * @return Ambigous <string, lang_string, unknown, mixed>
      */
     protected function prompt() {
@@ -269,8 +260,9 @@ class qtype_kprime_renderer extends qtype_renderer {
 
     /**
      * (non-PHPdoc).
-     *
      * @see qtype_renderer::correct_response()
+     * @param question_attempt $qa
+     * @return string
      */
     public function correct_response(question_attempt $qa) {
         $question = $qa->get_question();

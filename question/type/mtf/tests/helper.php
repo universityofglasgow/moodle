@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Test helper code for qtype_mtf.
+ *
  * @package     qtype_mtf
  * @author      Amr Hourani (amr.hourani@id.ethz.ch)
  * @author      Martin Hanusch (martin.hanusch@let.ethz.ch)
@@ -26,12 +28,26 @@ defined('MOODLE_INTERNAL') || die();
 global $CFG;
 require_once($CFG->dirroot . '/question/engine/tests/helpers.php');
 
+/**
+ * Test helper class for qtype_mtf.
+ *
+ * @copyright   2016 ETHZ {@link http://ethz.ch/}
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class qtype_mtf_test_helper extends question_test_helper {
 
+    /**
+     * Get predefined questions
+     * @return array
+     */
     public function get_test_questions() {
         return array('question_one', 'question_two', 'question_three', 'question_four');
     }
 
+    /**
+     * Get the question data, as it would be loaded by get_question_options.
+     * @return object
+     */
     public static function get_mtf_question_data_question_one() {
         // Option text 1 : true.
         // Option text 2 : false.
@@ -156,6 +172,10 @@ class qtype_mtf_test_helper extends question_test_helper {
         return $qdata;
     }
 
+    /**
+     * Get the question data, as it would be loaded by get_question_options.
+     * @return object
+     */
     public static function get_mtf_question_form_data_question_one() {
         // Option text 1 : true.
         // Option text 2 : false.
@@ -231,6 +251,10 @@ class qtype_mtf_test_helper extends question_test_helper {
         return $qdata;
     }
 
+    /**
+     * Get the question data, as it would be loaded by get_question_options.
+     * @return object
+     */
     public static function get_mtf_question_data_question_two() {
         // Option text 1 : true.
         // Option text 2 : false.
@@ -505,6 +529,10 @@ class qtype_mtf_test_helper extends question_test_helper {
         return $qdata;
     }
 
+    /**
+     * Get the question data, as it would be loaded by get_question_options.
+     * @return object
+     */
     public static function get_mtf_question_form_data_question_two() {
         // Option text 1 : True.
         // Option text 2 : True.
@@ -652,6 +680,10 @@ class qtype_mtf_test_helper extends question_test_helper {
         return $qdata;
     }
 
+    /**
+     * Get the question data, as it would be loaded by get_question_options.
+     * @return object
+     */
     public static function get_mtf_question_form_data_question_three() {
         global $USER;
         $qdata = new stdClass();
@@ -775,6 +807,10 @@ class qtype_mtf_test_helper extends question_test_helper {
         return $qdata;
     }
 
+    /**
+     * Get the question data, as it would be loaded by get_question_options.
+     * @return object
+     */
     public static function get_mtf_question_form_data_question_four() {
         global $USER;
         $qdata = new stdClass();

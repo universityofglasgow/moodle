@@ -47,11 +47,12 @@ class mod_zoom_mod_form extends moodleform_mod {
         global $PAGE, $USER;
         $config = get_config('zoom');
         $PAGE->requires->js_call_amd("mod_zoom/form", 'init');
+        $zoomapiidentifier = zoom_get_api_identifier($USER);
 
         $isnew = empty($this->_cm);
 
         $service = new mod_zoom_webservice();
-        $zoomuser = $service->get_user($USER->email);
+        $zoomuser = $service->get_user($zoomapiidentifier);
 
         // If creating a new instance, but the Zoom user does not exist.
         if ($isnew && $zoomuser === false) {
@@ -69,7 +70,7 @@ class mod_zoom_mod_form extends moodleform_mod {
         $canschedule = false;
         if ($zoomuser !== false) {
             // Get the array of users they can schedule.
-            $canschedule = $service->get_schedule_for_users($USER->email);
+            $canschedule = $service->get_schedule_for_users($zoomapiidentifier);
         }
 
         if (!empty($canschedule)) {
@@ -166,15 +167,15 @@ class mod_zoom_mod_form extends moodleform_mod {
 
         // Add date/time. Validation in validation().
         $mform->addElement('date_time_selector', 'start_time', get_string('start_time', 'zoom'));
-        // Disable for recurring meetings.
-        $mform->disabledIf('start_time', 'recurring', 'checked');
+        // Start time needs to be enabled/disabled based on recurring checkbox as well recurrence_type.
+        // Moved this control to javascript, rather than using disabledIf.
 
         // Add duration.
         $mform->addElement('duration', 'duration', get_string('duration', 'zoom'), array('optional' => false));
         // Validation in validation(). Default to one hour.
         $mform->setDefault('duration', array('number' => 1, 'timeunit' => 3600));
-        // Disable for recurring meetings.
-        $mform->disabledIf('duration', 'recurring', 'checked');
+        // Duration needs to be enabled/disabled based on recurring checkbox as well recurrence_type.
+        // Moved this control to javascript, rather than using disabledIf.
 
         // Add recurring widget.
         $mform->addElement('advcheckbox', 'recurring', get_string('recurringmeeting', 'zoom'),
@@ -182,13 +183,116 @@ class mod_zoom_mod_form extends moodleform_mod {
         $mform->setDefault('recurring', $config->defaultrecurring);
         $mform->addHelpButton('recurring', 'recurringmeeting', 'zoom');
 
+        // Add options for recurring meeting.
+        $recurrencetype = [
+            ZOOM_RECURRINGTYPE_NOTIME => get_string('recurrence_option_no_time', 'zoom'),
+            ZOOM_RECURRINGTYPE_DAILY => get_string('recurrence_option_daily', 'zoom'),
+            ZOOM_RECURRINGTYPE_WEEKLY => get_string('recurrence_option_weekly', 'zoom'),
+            ZOOM_RECURRINGTYPE_MONTHLY => get_string('recurrence_option_monthly', 'zoom'),
+        ];
+        $mform->addElement('select', 'recurrence_type', get_string('recurrencetype', 'zoom'), $recurrencetype);
+        $mform->hideif('recurrence_type', 'recurring', 'notchecked');
+
+        // Repeat Interval options.
+        $options = [];
+        for ($i = 1; $i <= 90; $i++) {
+            $options[$i] = $i;
+        }
+        $group = [];
+        $group[] = $mform->createElement('select', 'repeat_interval', '', $options);
+        $htmlspantextstart = '<span class="repeat_interval" id="interval_';
+        $htmlspantextend = '</span>';
+        $group[] = $mform->createElement('html', $htmlspantextstart . 'daily">' . get_string('day', 'zoom') . $htmlspantextend);
+        $group[] = $mform->createElement('html', $htmlspantextstart . 'weekly">' . get_string('week', 'zoom') . $htmlspantextend);
+        $group[] = $mform->createElement('html', $htmlspantextstart . 'monthly">' . get_string('month', 'zoom') . $htmlspantextend);
+        $mform->addGroup($group, 'repeat_group', get_string('repeatinterval', 'zoom'), null, false);
+        $mform->hideif('repeat_group', 'recurrence_type', 'eq', ZOOM_RECURRINGTYPE_NOTIME);
+        $mform->hideif('repeat_group', 'recurring', 'notchecked');
+
+        // Weekly options.
+        $weekdayoptions = zoom_get_weekday_options();
+        $group = [];
+        foreach ($weekdayoptions as $key => $weekday) {
+            $weekdayid = 'weekly_days_' . $key;
+            $attributes = [];
+            $group[] = $mform->createElement('advcheckbox', $weekdayid, '',
+                $weekday, null, array(0, $key));
+        }
+        $mform->addGroup($group, 'weekly_days_group', get_string('occurson', 'zoom'), ' ', false);
+        $mform->hideif('weekly_days_group', 'recurrence_type', 'noteq', ZOOM_RECURRINGTYPE_WEEKLY);
+        $mform->hideif('weekly_days_group', 'recurring', 'notchecked');
+        if (!empty($this->current->weekly_days)) {
+            $weekdaynumbers = explode(',', $this->current->weekly_days);
+            foreach ($weekdaynumbers as $daynumber) {
+                $weekdayid = 'weekly_days_' . $daynumber;
+                $mform->setDefault($weekdayid, $daynumber);
+            }
+        }
+
+        // Monthly options.
+        $monthoptions = [];
+        for ($i = 1; $i <= 31; $i++) {
+            $monthoptions[$i] = $i;
+        }
+        $monthlyweekoptions = zoom_get_monthweek_options();
+
+        $group = [];
+        $group[] = $mform->createElement(
+            'radio',
+            'monthly_repeat_option',
+            '',
+            get_string('day', 'calendar'),
+            ZOOM_MONTHLY_REPEAT_OPTION_DAY
+        );
+        $group[] = $mform->createElement('select', 'monthly_day', '', $monthoptions);
+        $group[] = $mform->createElement('static', 'month_day_text', '', get_string('month_day_text', 'zoom'));
+        $group[] = $mform->createElement('radio', 'monthly_repeat_option', '', '', ZOOM_MONTHLY_REPEAT_OPTION_WEEK);
+        $group[] = $mform->createElement('select', 'monthly_week', '', $monthlyweekoptions);
+        $group[] = $mform->createElement('select', 'monthly_week_day', '', $weekdayoptions);
+        $group[] = $mform->createElement('static', 'month_week_day_text', '', get_string('month_day_text', 'zoom'));
+        $mform->addGroup($group, 'monthly_day_group', get_string('occurson', 'zoom'), null, false);
+        $mform->hideif('monthly_day_group', 'recurrence_type', 'noteq', ZOOM_RECURRINGTYPE_MONTHLY);
+        $mform->hideif('monthly_day_group', 'recurring', 'notchecked');
+        $mform->setDefault('monthly_repeat_option', ZOOM_MONTHLY_REPEAT_OPTION_DAY);
+
+        // End date option.
+        $maxoptions = [];
+        for ($i = 1; $i <= 50; $i++) {
+            $maxoptions[$i] = $i;
+        }
+        $group = [];
+        $group[] = $mform->createElement(
+            'radio',
+            'end_date_option',
+            '',
+            get_string('end_date_option_by', 'zoom'),
+            ZOOM_END_DATE_OPTION_BY
+        );
+        $group[] = $mform->createElement('date_selector', 'end_date_time', '');
+        $group[] = $mform->createElement(
+            'radio',
+            'end_date_option',
+            '',
+            get_string('end_date_option_after', 'zoom'),
+            ZOOM_END_DATE_OPTION_AFTER
+        );
+        $group[] = $mform->createElement('select', 'end_times', '', $maxoptions);
+        $group[] = $mform->createElement('static', 'end_times_text', '', get_string('end_date_option_occurrences', 'zoom'));
+        $mform->addGroup($group, 'radioenddate', get_string('enddate', 'zoom'), null, false);
+        $mform->hideif('radioenddate', 'recurring', 'notchecked');
+        $mform->hideif('radioenddate', 'recurrence_type', 'eq', ZOOM_RECURRINGTYPE_NOTIME);
+        // Set default option for end date to be "By".
+        $mform->setDefault('end_date_option', ZOOM_END_DATE_OPTION_BY);
+        // Set default end_date_time to be 1 week in the future.
+        $mform->setDefault('end_date_time', strtotime('+1 week'));
+
         // Supplementary feature: Webinars.
         // Only show if the admin did not disable this feature completely.
         if ($config->showwebinars != ZOOM_WEBINAR_DISABLE) {
             // If we are creating a new instance.
             if ($isnew) {
                 // Check if the user has a webinar license.
-                $haswebinarlicense = $service->_get_user_settings($zoomuser->id)->feature->webinar;
+                $haswebinarlicense = $service->get_user_settings($zoomuser->id)->feature->webinar;
 
                 // Only show if the admin always wants to show this widget or
                 // if the admin wants to show this widget conditionally and the user has a valid license.
@@ -391,7 +495,7 @@ class mod_zoom_mod_form extends moodleform_mod {
                     $mform->addElement('checkbox', 'change_schedule_for', get_string('changehost', 'zoom'));
                     $mform->setDefault('schedule_for', strtolower($service->get_user($this->current->host_id)->email));
                 } else {
-                    $mform->setDefault('schedule_for', strtolower($USER->email));
+                    $mform->setDefault('schedule_for', strtolower($zoomapiidentifier));
                 }
                 $mform->addHelpButton('schedule_for', 'schedulefor', 'zoom');
             }
@@ -459,7 +563,7 @@ class mod_zoom_mod_form extends moodleform_mod {
 
             // Proceed only if there is a field of alternative hosts already.
             if ($result !== false) {
-                $alternativehostsdb = explode(',', str_replace(';', ',', $result));
+                $alternativehostsdb = zoom_get_alternative_host_array_from_string($result);
 
                 // Get selectable alternative host users based on the capability.
                 $alternativehostschoices = zoom_get_selectable_alternative_hosts_list($this->context);
@@ -476,6 +580,28 @@ class mod_zoom_mod_form extends moodleform_mod {
                         }
                     }
                 }
+            }
+        }
+
+        // Add some postprocessing around the recurrence settings.
+        if ($data->recurring) {
+            // If "No fixed time" meeting selected, dont need repeat_interval and other options.
+            if ($data->recurrence_type == ZOOM_RECURRINGTYPE_NOTIME) {
+                unset($data->repeat_interval);
+                // Unset end_times and end_date.
+                unset($data->end_date_option);
+                unset($data->end_times);
+                unset($data->end_date_time);
+            }
+            // If weekly recurring is not selected, unset weekly options.
+            if ($data->recurrence_type != ZOOM_RECURRINGTYPE_WEEKLY) {
+                // Unset the weekly fields.
+                $data = zoom_remove_weekly_options($data);
+            }
+            // If monthly recurring is not selected, unset monthly options.
+            if ($data->recurrence_type != ZOOM_RECURRINGTYPE_MONTHLY) {
+                // Unset the weekly fields.
+                $data = zoom_remove_monthly_options($data);
             }
         }
     }
@@ -510,8 +636,9 @@ class mod_zoom_mod_form extends moodleform_mod {
 
                 // According to the documentation, the Zoom API separates the email addresses with commas,
                 // but we also want to deal with semicolon-separated lists just in case.
-                $defaultvalues['alternative_hosts_picker'] =
-                        explode(',', str_replace(';', ',', $defaultvalues['alternative_hosts']));
+                $defaultvalues['alternative_hosts_picker'] = zoom_get_alternative_host_array_from_string(
+                    $defaultvalues['alternative_hosts']
+                );
             }
         }
     }
@@ -552,8 +679,10 @@ class mod_zoom_mod_form extends moodleform_mod {
         if (!empty($data['requirepasscode']) && empty($data['meetingcode'])) {
             $errors['meetingcode'] = get_string('err_password_required', 'mod_zoom');
         }
-        if (isset($data['schedule_for']) &&  $data['schedule_for'] !== $USER->email) {
-            $scheduleusers = $service->get_schedule_for_users($USER->email);
+
+        $zoomapiidentifier = zoom_get_api_identifier($USER);
+        if (isset($data['schedule_for']) && strtolower($data['schedule_for']) !== strtolower($zoomapiidentifier)) {
+            $scheduleusers = $service->get_schedule_for_users($zoomapiidentifier);
             $scheduleok = false;
             foreach ($scheduleusers as $zuser) {
                 if (strtolower($zuser->email) === strtolower($data['schedule_for'])) {
@@ -573,7 +702,7 @@ class mod_zoom_mod_form extends moodleform_mod {
             // If the admin did show the plain input field.
             if ($config->showalternativehosts == ZOOM_ALTERNATIVEHOSTS_INPUTFIELD) {
                 // Check if the listed alternative hosts are valid users on Zoom.
-                $alternativehosts = explode(',', str_replace(';', ',', $data['alternative_hosts']));
+                $alternativehosts = zoom_get_alternative_host_array_from_string($data['alternative_hosts']);
                 foreach ($alternativehosts as $alternativehost) {
                     if (!($service->get_user($alternativehost))) {
                         $errors['alternative_hosts'] = get_string('zoomerr_alternativehostusernotfound', 'zoom', $alternativehost);
@@ -603,6 +732,42 @@ class mod_zoom_mod_form extends moodleform_mod {
                 // This will not happen unless the user tampered with the form.
                 // Because of this, we skip adding this string to the language pack.
                 $errors['option_encryption_type_group'] = 'The submitted encryption type is not valid.';
+            }
+        }
+
+        // Add validation for recurring meeting.
+        if ($data['recurring'] == 1) {
+            if ($data['recurrence_type'] == ZOOM_RECURRINGTYPE_WEEKLY) {
+                $weekdaynumbers = [];
+                for ($i = 1; $i <= 7; $i++) {
+                    $key = 'weekly_days_' . $i;
+                    if (!empty($data[$key])) {
+                        $weekdaynumbers[] = $i;
+                    }
+                }
+                if (empty($weekdaynumbers)) {
+                    $errors['weekly_days_group'] = get_string('err_weekly_days', 'zoom');
+                }
+                // For weekly, maximum is 12 weeks.
+                if ($data['repeat_interval'] > 12) {
+                    $errors['repeat_group'] = get_string('err_repeat_weekly_interval', 'zoom');
+                }
+            }
+
+            if ($data['recurrence_type'] == ZOOM_RECURRINGTYPE_MONTHLY) {
+                // For monthly, max is 3 months.
+                if ($data['repeat_interval'] > 3) {
+                    $errors['repeat_group'] = get_string('err_repeat_monthly_interval', 'zoom');
+                }
+            }
+
+            if ($data['recurrence_type'] != ZOOM_RECURRINGTYPE_NOTIME && $data['end_date_option'] == ZOOM_END_DATE_OPTION_BY) {
+                if ($data['end_date_time'] < time()) {
+                    $errors['radioenddate'] = get_string('err_end_date', 'zoom');
+                }
+                if ($data['end_date_time'] < $data['start_time']) {
+                    $errors['radioenddate'] = get_string('err_end_date_before_start', 'zoom');
+                }
             }
         }
 

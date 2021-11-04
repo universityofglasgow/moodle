@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Unit tests for qtype_mtf question definition class.
+ *
  * @package     qtype_mtf
  * @author      Amr Hourani (amr.hourani@id.ethz.ch)
  * @author      Martin Hanusch (martin.hanusch@let.ethz.ch)
@@ -29,10 +31,22 @@ require_once($CFG->dirroot . '/question/type/mtf/tests/helper.php');
 require_once($CFG->dirroot . '/question/engine/tests/helpers.php');
 
 /**
- * @group qtype_mtf
+ * Unit tests for qtype_mtf question definition class.
+ *
+ * @copyright   2016 ETHZ {@link http://ethz.ch/}
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @group       qtype_mtf
  */
 class qtype_mtf_walkthrough_test extends qbehaviour_walkthrough_test_base {
 
+    /**
+     * (non-PHPdoc)
+     * @param int $index
+     * @param int $value
+     * @param bool $enabled
+     * @param bool $checked
+     * @return array
+     */
     public function get_contains_mtf_radio_expectation($index, $value, $enabled = null, $checked = null) {
         return $this->get_contains_radio_expectation(array(
             'name' => $this->quba->get_field_prefix($this->slot) .  "option" .  $index,
@@ -40,6 +54,10 @@ class qtype_mtf_walkthrough_test extends qbehaviour_walkthrough_test_base {
         ), $enabled, $checked);
     }
 
+    /**
+     * Makes a qtype_mtf question.
+     * @return qtype_mtf
+     */
     public function make_a_mtf_question() {
         question_bank::load_question_definition_classes('mtf');
         $mtf = new qtype_mtf_question();
@@ -128,6 +146,9 @@ class qtype_mtf_walkthrough_test extends qbehaviour_walkthrough_test_base {
         return $mtf;
     }
 
+    /**
+     * Test deferredfeedback_feedback_mtf
+     */
     public function test_deferredfeedback_feedback_mtf() {
         $mtf = $this->make_a_mtf_question();
         $this->start_attempt_at_question($mtf, 'deferredfeedback', 1);

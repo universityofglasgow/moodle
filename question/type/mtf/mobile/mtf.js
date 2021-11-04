@@ -54,7 +54,7 @@ var result = {
 
         divs.forEach(function(d, i) {
 
-            var text = d.querySelector('span.optiontext label');
+            var text = d.querySelector('span.optiontext');
             text = (text !== null) ? text.innerHTML : null;
 
             var name = d.querySelector('.mtfresponsebutton.c0 input');
@@ -63,7 +63,7 @@ var result = {
             var disabled = d.querySelector('input');
             disabled = (disabled !== null) ? (disabled.hasAttribute('disabled') ? true : false) : false;
 
-            var feedback = d.querySelector('div')
+            var feedback = d.querySelector('.mtfspecificfeedback')
             feedback = feedback !== null ? feedback.innerHTML : '';
 
             var qclass = d.getAttribute('class');

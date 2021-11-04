@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Restore code for the qtype_mtf plugin.
+ *
  * @package     qtype_mtf
  * @author      Amr Hourani (amr.hourani@id.ethz.ch)
  * @author      Martin Hanusch (martin.hanusch@let.ethz.ch)
@@ -25,8 +27,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Restore plugin class that provides the necessary information
- * needed to restore one mtf qtype plugin.
+ * Restore plugin class that provides the necessary information needed to restore one mtf qtype plugin.
  */
 class restore_qtype_mtf_plugin extends restore_qtype_plugin {
 
@@ -61,6 +62,7 @@ class restore_qtype_mtf_plugin extends restore_qtype_plugin {
 
     /**
      * Process the qtype/multichoice element.
+     * @param array $data
      */
     public function process_mtf($data) {
         global $DB;
@@ -74,21 +76,17 @@ class restore_qtype_mtf_plugin extends restore_qtype_plugin {
 
         $questioncreated = (bool) $this->get_mappingid('question_created', $oldquestionid);
 
-        // If the question has been created by restore, we need to create its
-        // qtype_mtf_options too.
+        // If the question has been created by restore, we need to create its qtype_mtf_options too.
         if ($questioncreated) {
-            // Adjust some columns.
             $data->questionid = $newquestionid;
-            // Insert record.
             $newitemid = $DB->insert_record('qtype_mtf_options', $data);
-            // Create mapping (needed for decoding links).
+
             $this->set_mapping('qtype_mtf_options', $oldid, $newitemid);
         }
     }
 
     /**
      * Detect if the question is created or mapped.
-     *
      * @return bool
      */
     protected function is_question_created() {
@@ -100,6 +98,7 @@ class restore_qtype_mtf_plugin extends restore_qtype_plugin {
 
     /**
      * Process the qtype/mtf/columns/column.
+     * @param array $data
      */
     public function process_column($data) {
         global $DB;
@@ -121,7 +120,7 @@ class restore_qtype_mtf_plugin extends restore_qtype_plugin {
                 }
             }
         }
-        if (!$newitemid) {
+        if (!isset($newitemid)) {
             $info = new stdClass();
             $info->filequestionid = $oldquestionid;
             $info->dbquestionid = $newquestionid;
@@ -134,6 +133,7 @@ class restore_qtype_mtf_plugin extends restore_qtype_plugin {
 
     /**
      * Process the qtype/mtf/rows/row element.
+     * @param array $data
      */
     public function process_row($data) {
         global $DB;
@@ -168,6 +168,7 @@ class restore_qtype_mtf_plugin extends restore_qtype_plugin {
 
     /**
      * Process the qtype/mtf/weights/weight element.
+     * @param array $data
      */
     public function process_weight($data) {
         global $DB;
@@ -201,8 +202,15 @@ class restore_qtype_mtf_plugin extends restore_qtype_plugin {
         }
     }
 
+    /**
+     * Recode the respones data for a particular step of an attempt at at particular question.
+     * @param int $questionid
+     * @param int $sequencenumber
+     * @param array $response
+     * @return array $response
+     */
     public function recode_response($questionid, $sequencenumber, array $response) {
-        if (array_key_exists('_order', $response)) {
+        if (property_exists((object) $response, '_order')) {
             $response['_order'] = $this->recode_option_order($response['_order']);
         }
         return $response;
@@ -210,9 +218,7 @@ class restore_qtype_mtf_plugin extends restore_qtype_plugin {
 
     /**
      * Recode the option order as stored in the response.
-     *
      * @param string $order the original order.
-     *
      * @return string the recoded order.
      */
     protected function recode_option_order($order) {
@@ -230,9 +236,7 @@ class restore_qtype_mtf_plugin extends restore_qtype_plugin {
      */
     public static function define_decode_contents() {
         $contents = array();
-
-        $fields = array('optiontext', 'optionfeedback'
-        );
+        $fields = array('optiontext', 'optionfeedback');
         $contents[] = new restore_decode_content('qtype_mtf_rows', $fields, 'qtype_mtf_rows');
 
         return $contents;

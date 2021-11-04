@@ -36,10 +36,10 @@ var result = {
         var prompt = div.querySelector('.prompt');
         this.question.prompt = prompt !== null ? prompt.innerHTML : null;
 
-        var headerc1 = div.querySelector('.que.kprime .generaltable thead .header.c1');
+        var headerc1 = div.querySelector('.que.kprime .generaltable thead .header.c0');
         this.question.headerc1 = headerc1 !== null ? headerc1.innerHTML : null;
 
-        var headerc2 = div.querySelector('.que.kprime .generaltable thead .header.c2');
+        var headerc2 = div.querySelector('.que.kprime .generaltable thead .header.c1');
         this.question.headerc2 = headerc2 !== null ? headerc2.innerHTML : null;
 
         var scoringmethod = div.querySelector('.que.kprime [id^="scoringmethodinfo_q"]');
@@ -57,7 +57,7 @@ var result = {
             var text = d.querySelector('span.optiontext');
             text = (text !== null) ? text.innerHTML : null;
 
-            var name = d.querySelector('.kprimeresponsebutton.c1 input');
+            var name = d.querySelector('.kprimeresponsebutton.c0 input');
             name = (name !== null) ? name.getAttribute('name') : null;
 
             var disabled = d.querySelector('input');
@@ -69,9 +69,9 @@ var result = {
             var qclass = d.getAttribute('class');
 
             var selection = null;
-            if (d.querySelector('.kprimeresponsebutton.c1 input[type=radio]').checked) {
+            if (d.querySelector('.kprimeresponsebutton.c0 input[type=radio]').checked) {
                 selection = 1;
-            } else if (d.querySelector('.kprimeresponsebutton.c2 input[type=radio]').checked) {
+            } else if (d.querySelector('.kprimeresponsebutton.c1 input[type=radio]').checked) {
                 selection = 2;
             }
 

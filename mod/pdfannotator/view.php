@@ -46,12 +46,13 @@ if ($r) {
 }
 
 $course = get_course($cm->course); // Get course by id.
-
 require_course_login($course, true, $cm);
 
 $context = context_module::instance($cm->id);
-
 require_capability('mod/pdfannotator:view', $context);
+
+// Apply filters, e.g. multilang.
+$pdfannotator->name = format_text($pdfannotator->name, FORMAT_MOODLE, ['para' => false]);
 
 // Completion and trigger events.
 pdfannotator_view($pdfannotator, $course, $cm, $context);
@@ -75,6 +76,12 @@ $PAGE->set_heading($course->fullname);
 
 // Display course name, navigation bar at the very top and "Dashboard->...->..." bar.
 echo $OUTPUT->header();
+// Render the activity information.
+$modinfo = get_fast_modinfo($course);
+$cminfo = $modinfo->get_cm($cm->id);
+$completiondetails = \core_completion\cm_completion_details::get_instance($cminfo, $USER->id);
+$activitydates = \core\activity_dates::get_dates_for_module($cminfo, $USER->id);
+echo $OUTPUT->activity_information($cminfo, $completiondetails, $activitydates);
 
 require_once($CFG->dirroot . '/mod/pdfannotator/controller.php');
 

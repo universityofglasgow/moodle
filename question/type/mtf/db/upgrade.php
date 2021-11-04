@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * MTF question type upgrade code.
+ *
  * @package     qtype_mtf
  * @author      Amr Hourani (amr.hourani@id.ethz.ch)
  * @author      Martin Hanusch (martin.hanusch@let.ethz.ch)
@@ -26,7 +28,6 @@ defined('MOODLE_INTERNAL') || die();
 
 /**
  * Upgrade code for the mtf question type.
- *
  * @param int $oldversion the version we are upgrading from.
  */
 function xmldb_qtype_mtf_upgrade($oldversion) {

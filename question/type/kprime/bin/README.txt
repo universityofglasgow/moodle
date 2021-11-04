@@ -4,7 +4,7 @@ oder gelöscht, sondern immer nur neue Fragen erstellt. Es werden nur
 Matrix Fragen migriert, die höchstens vier Optionen und höchstens 2
 Anworten haben.
 
-Nur Website-Administratoren dürfen das Skript ausführen. 
+Nur Website-Administratoren dürfen das Skript ausführen.
 
 Das Skript akzeptiert folgende Parameter in der URL:
 
@@ -22,7 +22,7 @@ Das Skript akzeptiert folgende Parameter in der URL:
 
 Ein Aufruf geschieht dann in einem Browser z.B. wiefolgt:
    <URL zum Moodle>/question/type/kprime/bin/mig_matrix_to_kprime.php?courseid=12345&dryrun=1
-oder 
+oder
    <URL zum Moodle>/question/type/kprime/bin/mig_matrix_to_kprime.php?categoryid=56789&dryrun=1
 
 Sobald dryrun nicht angegeben wird (oder auf 0 gesetzt wird), wird die

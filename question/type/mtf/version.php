@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Version information for qtype_mtf.
+ *
  * @package     qtype_mtf
  * @author      Amr Hourani (amr.hourani@id.ethz.ch)
  * @author      Martin Hanusch (martin.hanusch@let.ethz.ch)
@@ -25,7 +27,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'qtype_mtf';
-$plugin->version = 2020042901;
+$plugin->version = 2021092900;
 $plugin->requires = 2017111300; // Moodle >=3.4.
 $plugin->maturity = MATURITY_STABLE;
 $plugin->release = '3.2 for Moodle 3.4+';

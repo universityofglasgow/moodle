@@ -1,7 +1,8 @@
-/**  The mtf question rendering table */
+/* stylelint-disable declaration-no-important  */
+
 .que.mtf table.mtf {
     display: inline-table;
-    border-spacing: 0px 5px;
+    border-spacing: 0 5px;
     border-collapse: separate;
 }
 
@@ -57,34 +58,31 @@
     min-width: 10em;
     text-align: left;
     padding-right: 4em;
-    background: #EEE;
+    background: #eee;
 }
 
 .que.mtf table.mtf tbody td.mtfresponsebutton {
-    background: #EEE;
+    background: #eee;
     max-width: 64px;
     opacity: 0.1;
-    filter: alpha(opacity = 10); /* msie */
     background-color: #000;
 }
 
 .mtfgreyingout {
     opacity: 0.3;
-    filter: alpha(opacity = 30);
 }
 
 .que.mtf table.mtf tbody td.correctness {
     vertical-align: middle;
     display: table-cell;
-    background: #EEE;
-    border-radius: 0px;
+    background: #eee;
+    border-radius: 0;
     border-left: #777 solid 3px !important;
 }
 
 td.mtfcorrectness {
-    border-left: #AAA solid 1px;
+    border-left: #aaa solid 1px;
     text-align: center;
-    align: center;
 }
 
 .que.mtf table.mtf tbody td.feedback {
@@ -92,18 +90,18 @@ td.mtfcorrectness {
 }
 
 .que.mtf table.mtf tbody td.feedback div.specificfeedback {
-    background: #FFF3BF !important;
+    background: #fff3bf !important;
     text-align: left !important;
 }
 
 .mtfspecificfeedback {
-    background: #FFF3BF !important;
+    background: #fff3bf !important;
     text-align: left !important;
 }
 
 .que.mtf table.mtf .lastcol p {
     display: inline;
-    margin: 0px;
+    margin: 0;
     margin-left: 5px;
 }
 
@@ -128,7 +126,7 @@ body#page-question-type-mtf div.optionbox {
     margin-top: 0;
     padding-bottom: 15px;
     padding-top: 5px;
-    display:flex;
+    display: flex;
 }
 body#page-question-type-mtf div.option_question {
     flex: 1;
@@ -142,7 +140,7 @@ body#page-question-type-mtf div.option_answer {
 
 body#page-question-type-mtf div.optionbox label.optiontitle {
     font-weight: bold;
-    margin-bottom: 0px;
+    margin-bottom: 0;
 }
 
 /* Put response checkboxes in the middle */
@@ -155,16 +153,16 @@ body#page-question-type-mtf div.responses {
     position: relative;
 }
 
-@media ( max-width : 986px) {
+@media (max-width: 986px) {
     body#page-question-type-mtf div.responses {
-        padding-top: 0px;
+        padding-top: 0;
         float: left;
     }
 }
 
 body#page-question-type-mtf div.responses fieldset.fgroup span {
     border: 1px;
-    margin: 0px 0px 8px 2px;
+    margin: 0 0 8px 2px;
     background-color: white;
     border-radius: 5px;
     vertical-align: middle;
@@ -188,24 +186,22 @@ body#page-question-type-mtf div.responses div.fitem_fgroup {
     border-width: 0 0 0 0;
 }
 
-body#page-question-type-mtf div.responses div.fitem_fgroup fieldset.fgroup
-    {
-    margin-left: 0px;
+body#page-question-type-mtf div.responses div.fitem_fgroup fieldset.fgroup {
+    margin-left: 0;
 }
 
-body#page-question-type-mtf div.responses div.fitem_fgroup div.fitemtitle
-    {
+body#page-question-type-mtf div.responses div.fitem_fgroup div.fitemtitle {
     text-align: left;
     width: 0;
 }
 
 body#page-question-type-mtf div.optiontext div.fitemtitle {
-    padding-left: 0px;
-    padding-top: 0px;
+    padding-left: 0;
+    padding-top: 0;
 }
 /* Put the feedback text editor to the right */
 body#page-question-type-mtf div.feedbacktext {
-    margin-left: 0px;
+    margin-left: 0;
     display: block;
     clear: both;
 }
@@ -213,13 +209,13 @@ body#page-question-type-mtf div.feedbacktext {
 body#page-question-type-mtf div.optionbox label.feedbacktitle {
     font-weight: normal !important;
     margin-top: 1px !important;
-    margin-bottom: 0px !important;
+    margin-bottom: 0 !important;
     color: #777;
 }
 
 body#page-question-type-mtf div.feedbacktext div.fitemtitle {
-    padding-left: 0px;
-    padding-top: 0px;
+    padding-left: 0;
+    padding-top: 0;
 }
 
 body#page-question-type-multichoice div[id^=fitem_id_][id*=feedback_] {
@@ -227,7 +223,7 @@ body#page-question-type-multichoice div[id^=fitem_id_][id*=feedback_] {
     margin-bottom: 0;
     padding-bottom: 5px;
     padding-top: 5px;
-    border: 1px solid #BBB;
+    border: 1px solid #bbb;
     border-bottom: 0;
 }
 
@@ -238,41 +234,40 @@ body#page-question-type-mtf div[id^=fitem_id_][id*=option_] {
     padding-top: 5px;
 }
 
-body#page-question-type-mtf div[id^=fitem_id_][id*=option_] .fitemtitle
-    {
+body#page-question-type-mtf div[id^=fitem_id_][id*=option_] .fitemtitle {
     font-weight: bold;
 }
 
 body#page-question-type-mtf div[id^=fitem_id_] .fitemtitle {
-    margin-left: 0px;
-    margin-right: 0px;
+    margin-left: 0;
+    margin-right: 0;
     padding-left: 6px;
-    padding-right: 0px;
+    padding-right: 0;
 }
 
 body.dir-rtl#page-question-type-mtf div[id^=fitem_id_] .fitemtitle {
-    margin-left: 0px;
-    margin-right: 0px;
-    padding-left: 0px;
+    margin-left: 0;
+    margin-right: 0;
+    padding-left: 0;
     padding-right: 6px;
 }
 
 body#page-question-type-mtf div[id^=fgroup_id_][id*=responses_] {
-    background: #EEE;
+    background: #eee;
     margin-bottom: 2em;
     margin-top: 0;
     padding-bottom: 5px;
     padding-top: 5px;
-    border: 1px solid #BBB;
+    border: 1px solid #bbb;
     border-top: 0;
 }
 
 body#page-question-type-mtf div[id^=fgroup_id_weightsarray] {
-    background: #EEE;
+    background: #eee;
     margin-top: 0;
     padding-bottom: 5px;
     padding-top: 5px;
-    border: 1px solid #BBB;
+    border: 1px solid #bbb;
     border-top: 0;
 }
 
@@ -309,3 +304,4 @@ body#page-question-type-mtf .optionbox,
 #page-mod-quiz-attempt .que.mtf .mtfresponsebutton label {
     padding: 10px;
 }
+/* stylelint-enable declaration-no-important  */

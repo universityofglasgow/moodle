@@ -56,30 +56,40 @@ $PAGE->requires->js_call_amd("mod_zoom/toggle_text", 'init');
 // Get Zoom user ID of current Moodle user.
 $zoomuserid = zoom_get_user_id(false);
 
-// Get the alternative hosts of the meeting.
-$alternativehosts = array();
-if (!is_null($zoom->alternative_hosts)) {
-    $explodedalthosts = explode(',', str_replace(';', ',', $zoom->alternative_hosts));
-    // Delete empty entries.
-    $alternativehosts = array_filter($explodedalthosts);
-}
-
 // Check if this user is the (real) host.
 $userisrealhost = ($zoomuserid === $zoom->host_id);
+
+// Get the alternative hosts of the meeting.
+$alternativehosts = zoom_get_alternative_host_array_from_string($zoom->alternative_hosts);
+
 // Check if this user is the host or an alternative host.
-$userishost = ($userisrealhost || in_array($USER->email, $alternativehosts));
+$userishost = ($userisrealhost || in_array(zoom_get_api_identifier($USER), $alternativehosts, true));
 
 // Get Zoom webservice instance.
 $service = new mod_zoom_webservice();
 
 // Get host user from Zoom.
 $hostuser = false;
-try {
-    $service->get_meeting_webinar_info($zoom->meeting_id, $zoom->webinar);
-    $showrecreate = false;
-    $hostuser = $service->get_user($zoom->host_id);
-} catch (moodle_exception $error) {
-    $showrecreate = zoom_is_meeting_gone_error($error);
+$showrecreate = false;
+if ($zoom->exists_on_zoom == ZOOM_MEETING_EXPIRED) {
+    $showrecreate = true;
+} else {
+    try {
+        $service->get_meeting_webinar_info($zoom->meeting_id, $zoom->webinar);
+        $hostuser = $service->get_user($zoom->host_id);
+    } catch (moodle_exception $error) {
+        $showrecreate = zoom_is_meeting_gone_error($error);
+
+        if ($showrecreate) {
+            // Mark meeting as expired.
+            $updatedata = new stdClass();
+            $updatedata->id = $zoom->id;
+            $updatedata->exists_on_zoom = ZOOM_MEETING_EXPIRED;
+            $DB->update_record('zoom', $updatedata);
+
+            $zoom->exists_on_zoom = ZOOM_MEETING_EXPIRED;
+        }
+    }
 }
 
 // Compose Moodle user object for host.
@@ -92,6 +102,9 @@ if ($hostuser) {
     $hostmoodleuser->lastnamephonetic = '';
     $hostmoodleuser->middlename = '';
 }
+
+$meetinginvite = $service->get_meeting_invitation($zoom)->get_display_string($cm->id);
+$isrecurringnotime = ($zoom->recurring && $zoom->recurrence_type == ZOOM_RECURRINGTYPE_NOTIME);
 
 $stryes = get_string('yes');
 $strno = get_string('no');
@@ -145,7 +158,7 @@ if ($zoom->intro) {
 // Only show if the admin did not disable this feature completely.
 if (!$showrecreate && $config->showcapacitywarning == true) {
     // Only show if the user viewing this is the host.
-    if ($userishost == true) {
+    if ($userishost) {
         // Get meeting capacity.
         $meetingcapacity = zoom_get_meeting_capacity($zoom->host_id, $zoom->webinar);
 
@@ -223,16 +236,25 @@ $table->align = array('center', 'left');
 $table->size = array('35%', '65%');
 $numcolumns = 2;
 
-// Show start/end date or recurring flag.
-if ($zoom->recurring) {
+// Show start/end date or recurring meeting information.
+if ($isrecurringnotime) {
     $table->data[] = array(get_string('recurringmeeting', 'mod_zoom'), get_string('recurringmeetingexplanation', 'mod_zoom'));
+} else if ($zoom->recurring && $zoom->recurrence_type != ZOOM_RECURRINGTYPE_NOTIME) {
+    $table->data[] = array(get_string('recurringmeeting', 'mod_zoom'), get_string('recurringmeetingthisis', 'mod_zoom'));
+    $nextoccurrence = zoom_get_next_occurrence($zoom);
+    if ($nextoccurrence > 0) {
+        $table->data[] = array(get_string('nextoccurrence', 'mod_zoom'), userdate($nextoccurrence));
+    } else {
+        $table->data[] = array(get_string('nextoccurrence', 'mod_zoom'), get_string('nooccurrenceleft', 'mod_zoom'));
+    }
+    $table->data[] = array($strduration, format_time($zoom->duration));
 } else {
     $table->data[] = array($strtime, userdate($zoom->start_time));
     $table->data[] = array($strduration, format_time($zoom->duration));
 }
 
 // Display add-to-calendar button if meeting was found and isn't recurring and if the admin did not disable the feature.
-if ($config->showdownloadical != ZOOM_DOWNLOADICAL_DISABLE && (!($showrecreate || $zoom->recurring))) {
+if ($config->showdownloadical != ZOOM_DOWNLOADICAL_DISABLE && !$showrecreate && !$isrecurringnotime) {
     $icallink = new moodle_url('/mod/zoom/exportical.php', array('id' => $cm->id));
     $calendaricon = $OUTPUT->pix_icon('i/calendar', get_string('calendariconalt', 'mod_zoom'));
     $calendarbutton = html_writer::div($calendaricon . ' ' . get_string('downloadical', 'mod_zoom'), 'btn btn-primary');
@@ -241,10 +263,10 @@ if ($config->showdownloadical != ZOOM_DOWNLOADICAL_DISABLE && (!($showrecreate |
 }
 
 // Show meeting status.
-if (!$zoom->recurring) {
-    if ($zoom->exists_on_zoom == ZOOM_MEETING_EXPIRED) {
-        $status = get_string('meeting_nonexistent_on_zoom', 'mod_zoom');
-    } else if ($finished) {
+if ($zoom->exists_on_zoom == ZOOM_MEETING_EXPIRED) {
+    $status = get_string('meeting_nonexistent_on_zoom', 'mod_zoom');
+} else if (!$isrecurringnotime) {
+    if ($finished) {
         $status = get_string('meeting_finished', 'mod_zoom');
     } else if ($inprogress) {
         $status = get_string('meeting_started', 'mod_zoom');
@@ -327,17 +349,18 @@ $numcolumns = 2;
 // Get passcode information.
 $haspassword = (isset($zoom->password) && $zoom->password !== '');
 $strhaspass = ($haspassword) ? $stryes : $strno;
+$canviewjoinurl = ($userishost || has_capability('mod/zoom:viewjoinurl', $context));
 
 // Show passcode status.
 $table->data[] = array($strpassprotect, $strhaspass);
 
 // Show passcode.
-if ($userishost && $haspassword || get_config('zoom', 'displaypassword') || has_capability('mod/zoom:viewjoinurl', $context)) {
+if ($haspassword && ($canviewjoinurl || get_config('zoom', 'displaypassword'))) {
     $table->data[] = array($strpassword, $zoom->password);
 }
 
 // Show join link.
-if ($userishost || has_capability('mod/zoom:viewjoinurl', $context)) {
+if ($canviewjoinurl) {
     $table->data[] = array($strjoinlink, html_writer::link($zoom->join_url, $zoom->join_url, array('target' => '_blank')));
 }
 

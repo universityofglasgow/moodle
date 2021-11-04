@@ -343,4 +343,36 @@ $capabilities = array(
         ),
     ),
 
+    'mod/pdfannotator:viewprotectedcomments' => array (
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array(
+            'manager' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
+            'teacher' => CAP_ALLOW,
+        ),
+    ),
+
+    'mod/pdfannotator:writeprivatecomments' => array (
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array(
+            'manager' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
+            'teacher' => CAP_ALLOW,
+            'student' => CAP_ALLOW,
+        ),
+    ),
+
+    'mod/pdfannotator:writeprotectedcomments' => array (
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array(
+            'manager' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
+            'teacher' => CAP_ALLOW,
+            'student' => CAP_ALLOW,
+        ),
+    ),
+
 );

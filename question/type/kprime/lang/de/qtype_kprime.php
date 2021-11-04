@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Strings for component 'qtype_kprime', language 'de'
+ *
  * @package     qtype_kprime
  * @author      Amr Hourani (amr.hourani@id.ethz.ch)
  * @author      Martin Hanusch (martin.hanusch@let.ethz.ch)
@@ -47,7 +49,7 @@ $string['pluginname_help'] = 'Kprim-Fragen bestehen aus einem Item-Stamm und vie
 $string['pluginname_link'] = 'question/type/kprime';
 $string['pluginnameadding'] = 'Kprim-Frage hinzufügen';
 $string['pluginnameediting'] = 'Kprim-Frage bearbeiten';
-$string['pluginnamesummary'] = 'In Kprim-Fragen müssen genau vier Wahlantworten als «richtig» oder «falsch» bewertet werden.';
+$string['pluginnamesummary'] = 'In Kprim-Fragen müssen genau vier Wahlantworten als «richtig» oder «falsch» bewertet werden. Standardmässig wird dabei die Bewertungsmethode “Kprim” verwendet.';
 $string['privacy:metadata'] = 'Das KPrim Fragetyp-Plugin speichert keine persönlichen Daten';
 $string['responsedesc'] = 'Standardtext für die Wahrheitsauswahl {$a}.';
 $string['responseno'] = 'Wahrheitsauswahl {$a}';

@@ -52,12 +52,6 @@ if (!class_exists('Firebase\JWT\JWT')) {
 class mod_zoom_webservice {
 
     /**
-     * API base URL.
-     * @var string
-     */
-    const API_URL = 'https://api.zoom.us/v2/';
-
-    /**
      * API calls: maximum number of retries.
      * @var int
      */
@@ -91,6 +85,12 @@ class mod_zoom_webservice {
     protected $apisecret;
 
     /**
+     * API base URL.
+     * @var string
+     */
+    protected $apiurl;
+
+    /**
      * Whether to recycle licenses.
      * @var bool
      */
@@ -109,7 +109,7 @@ class mod_zoom_webservice {
     protected static $userslist;
 
     /**
-     * Number of retries we've made for _make_call
+     * Number of retries we've made for make_call
      * @var int
      */
     protected $makecallretries = 0;
@@ -120,16 +120,25 @@ class mod_zoom_webservice {
      */
     public function __construct() {
         $config = get_config('zoom');
+
+        // Get and remember the API key.
         if (!empty($config->apikey)) {
             $this->apikey = $config->apikey;
         } else {
             throw new moodle_exception('errorwebservice', 'mod_zoom', '', get_string('zoomerr_apikey_missing', 'zoom'));
         }
+
+        // Get and remember the API secret.
         if (!empty($config->apisecret)) {
             $this->apisecret = $config->apisecret;
         } else {
             throw new moodle_exception('errorwebservice', 'mod_zoom', '', get_string('zoomerr_apisecret_missing', 'zoom'));
         }
+
+        // Get and remember the API URL.
+        $this->apiurl = zoom_get_api_url();
+
+        // Get and remember the plugin settings to recycle licenses.
         if (!empty($config->utmost)) {
             $this->recyclelicenses = $config->utmost;
         }
@@ -144,7 +153,7 @@ class mod_zoom_webservice {
 
     /**
      * Makes the call to curl using the specified method, url, and parameter data.
-     * This has been moved out of _make_call to make unit testing possible.
+     * This has been moved out of make_call to make unit testing possible.
      *
      * @param \curl $curl The curl object used to make the request.
      * @param string $method The HTTP method to use.
@@ -152,7 +161,7 @@ class mod_zoom_webservice {
      * @param array|string $data The data to attach to the call.
      * @return stdClass The call's result.
      */
-    protected function _make_curl_call(&$curl, $method, $url, $data) {
+    protected function make_curl_call(&$curl, $method, $url, $data) {
         return $curl->$method($url, $data);
     }
 
@@ -161,7 +170,7 @@ class mod_zoom_webservice {
      * to enable unit testing for the webservice class.
      * @return curl The curl object used to make the API calls
      */
-    protected function _get_curl_object() {
+    protected function get_curl_object() {
         return new curl();
     }
 
@@ -174,9 +183,9 @@ class mod_zoom_webservice {
      * @return stdClass The call's result in JSON format.
      * @throws moodle_exception Moodle exception is thrown for curl errors.
      */
-    protected function _make_call($path, $data = array(), $method = 'get') {
+    private function make_call($path, $data = array(), $method = 'get') {
         global $CFG;
-        $url = self::API_URL . $path;
+        $url = $this->apiurl . $path;
         $method = strtolower($method);
         $proxyhost = get_config('zoom', 'proxyhost');
         $cfg = new stdClass();
@@ -195,7 +204,7 @@ class mod_zoom_webservice {
             $CFG->proxyuser = '';
             $CFG->proxypassword = '';
         }
-        $curl = $this->_get_curl_object(); // Create $curl, which implicitly uses the proxy settings from $CFG.
+        $curl = $this->get_curl_object(); // Create $curl, which implicitly uses the proxy settings from $CFG.
         if (!empty($proxyhost)) {
             // Restore the stored global proxy settings from above.
             $CFG->proxyhost = $cfg->proxyhost;
@@ -215,7 +224,7 @@ class mod_zoom_webservice {
             $curl->setHeader('Content-Type: application/json');
             $data = is_array($data) ? json_encode($data) : $data;
         }
-        $response = $this->_make_curl_call($curl, $method, $url, $data);
+        $response = $this->make_curl_call($curl, $method, $url, $data);
 
         if ($curl->get_errno()) {
             throw new moodle_exception('errorwebservice', 'mod_zoom', '', $curl->error);
@@ -266,7 +275,7 @@ class mod_zoom_webservice {
                     if ($timediff > 0 && !(defined('PHPUNIT_TEST') && PHPUNIT_TEST)) {
                         sleep($timediff);
                     }
-                    return $this->_make_call($path, $data, $method);
+                    return $this->make_call($path, $data, $method);
                 default:
                     if ($response) {
                         $exception = new moodle_exception('errorwebservice', 'mod_zoom', '', $response->message);
@@ -285,22 +294,22 @@ class mod_zoom_webservice {
 
     /**
      * Makes a paginated REST call.
-     * Makes a call like _make_call() but specifically for GETs with paginated results.
+     * Makes a call like make_call() but specifically for GETs with paginated results.
      *
      * @param string $url The URL to append to the API URL
      * @param array|string $data The data to attach to the call.
      * @param string $datatoget The name of the array of the data to get.
      * @return array The retrieved data.
-     * @see _make_call()
+     * @see make_call()
      * @link https://zoom.github.io/api/#list-users
      */
-    protected function _make_paginated_call($url, $data = array(), $datatoget) {
+    private function make_paginated_call($url, $data = array(), $datatoget) {
         $aggregatedata = array();
         $data['page_size'] = ZOOM_MAX_RECORDS_PER_CALL;
         do {
             $callresult = null;
             $moredata = false;
-            $callresult = $this->_make_call($url, $data);
+            $callresult = $this->make_call($url, $data);
 
             if ($callresult) {
                 $aggregatedata = array_merge($aggregatedata, $callresult->$datatoget);
@@ -328,7 +337,7 @@ class mod_zoom_webservice {
         $url = 'users';
         $data = array('action' => 'autocreate');
         $data['user_info'] = array(
-            'email' => $user->email,
+            'email' => zoom_get_api_identifier($user),
             'type' => ZOOM_USER_TYPE_PRO,
             'first_name' => $user->firstname,
             'last_name' => $user->lastname,
@@ -336,7 +345,7 @@ class mod_zoom_webservice {
         );
 
         try {
-            $this->_make_call($url, $data, 'post');
+            $this->make_call($url, $data, 'post');
         } catch (moodle_exception $error) {
             // If the user already exists, the error will contain 'User already in the account'.
             if (strpos($error->getMessage(), 'User already in the account') === true) {
@@ -357,7 +366,7 @@ class mod_zoom_webservice {
      */
     public function list_users() {
         if (empty(self::$userslist)) {
-            self::$userslist = $this->_make_paginated_call('users', null, 'users');
+            self::$userslist = $this->make_paginated_call('users', null, 'users');
         }
         return self::$userslist;
     }
@@ -369,7 +378,7 @@ class mod_zoom_webservice {
      * @see $numlicenses
      * @return bool Whether the paid user license limit has been reached.
      */
-    protected function _paid_user_limit_reached() {
+    private function paid_user_limit_reached() {
         $userslist = $this->list_users();
         $numusers = 0;
         foreach ($userslist as $user) {
@@ -385,7 +394,7 @@ class mod_zoom_webservice {
      *
      * @return string|false If user is found, returns the User ID. Otherwise, returns false.
      */
-    protected function _get_least_recently_active_paid_user_id() {
+    private function get_least_recently_active_paid_user_id() {
         $usertimes = array();
         $userslist = $this->list_users();
         foreach ($userslist as $user) {
@@ -408,8 +417,8 @@ class mod_zoom_webservice {
      * @return stdClass The call's result in JSON format.
      * @link https://zoom.github.io/api/#retrieve-a-users-settings
      */
-    public function _get_user_settings($userid) {
-        return $this->_make_call('users/' . $userid . '/settings');
+    public function get_user_settings($userid) {
+        return $this->make_call('users/' . $userid . '/settings');
     }
 
     /**
@@ -422,7 +431,7 @@ class mod_zoom_webservice {
         $url = 'accounts/me/settings?option=meeting_security';
         $response = null;
         try {
-            $response = $this->_make_call($url);
+            $response = $this->make_call($url);
             // Set a default meeting password requirment if it is not present.
             if (!isset($response->meeting_security->meeting_password_requirement)) {
                 $response->meeting_security->meeting_password_requirement = (object) DEFAULT_MEETING_PASSWORD_REQUIREMENT;
@@ -446,7 +455,7 @@ class mod_zoom_webservice {
         $url = 'users/' . $identifier;
 
         try {
-            $founduser = $this->_make_call($url);
+            $founduser = $this->make_call($url);
         } catch (moodle_exception $error) {
             if (zoom_is_user_not_found_error($error)) {
                 return false;
@@ -471,7 +480,7 @@ class mod_zoom_webservice {
         $schedulerswithoutkey = [];
         $schedulers = [];
         try {
-            $response = $this->_make_call($url);
+            $response = $this->make_call($url);
             if (is_array($response->schedulers)) {
                 $schedulerswithoutkey = $response->schedulers;
             }
@@ -493,10 +502,8 @@ class mod_zoom_webservice {
      *
      * @param stdClass $zoom The zoom meeting to format.
      * @return array The formatted meetings for the meeting.
-     * @todo Add functionality for 'alternative_hosts' => $zoom->option_alternative_hosts in $data['settings']
-     * @todo Make UCLA data fields and API data fields match?
      */
-    protected function _database_to_api($zoom) {
+    private function database_to_api($zoom) {
         global $CFG;
 
         $data = array(
@@ -528,9 +535,29 @@ class mod_zoom_webservice {
         }
 
         if (!empty($zoom->webinar)) {
-            $data['type'] = $zoom->recurring ? ZOOM_RECURRING_WEBINAR : ZOOM_SCHEDULED_WEBINAR;
+            if ($zoom->recurring) {
+                if ($zoom->recurrence_type == ZOOM_RECURRINGTYPE_NOTIME) {
+                    $data['type'] = ZOOM_RECURRING_WEBINAR;
+                } else {
+                    $data['type'] = ZOOM_RECURRING_FIXED_WEBINAR;
+                }
+            } else {
+                $data['type'] = ZOOM_SCHEDULED_WEBINAR;
+            }
         } else {
-            $data['type'] = $zoom->recurring ? ZOOM_RECURRING_MEETING : ZOOM_SCHEDULED_MEETING;
+            if ($zoom->recurring) {
+                if ($zoom->recurrence_type == ZOOM_RECURRINGTYPE_NOTIME) {
+                    $data['type'] = ZOOM_RECURRING_MEETING;
+                } else {
+                    $data['type'] = ZOOM_RECURRING_FIXED_MEETING;
+                }
+            } else {
+                $data['type'] = ZOOM_SCHEDULED_MEETING;
+            }
+        }
+
+        // Add fields which are effective for meetings only, but not for webinars.
+        if (empty($zoom->webinar)) {
             $data['settings']['participant_video'] = (bool) ($zoom->option_participants_video);
             $data['settings']['join_before_host'] = (bool) ($zoom->option_jbh);
             $data['settings']['encryption_type'] = (isset($zoom->option_encryption_type) &&
@@ -540,7 +567,32 @@ class mod_zoom_webservice {
             $data['settings']['mute_upon_entry'] = (bool) ($zoom->option_mute_upon_entry);
         }
 
-        if ($data['type'] == ZOOM_SCHEDULED_MEETING || $data['type'] == ZOOM_SCHEDULED_WEBINAR) {
+        // Add recurrence object.
+        if ($zoom->recurring && $zoom->recurrence_type != ZOOM_RECURRINGTYPE_NOTIME) {
+            $data['recurrence']['type'] = (int) $zoom->recurrence_type;
+            $data['recurrence']['repeat_interval'] = (int) $zoom->repeat_interval;
+            if ($zoom->recurrence_type == ZOOM_RECURRINGTYPE_WEEKLY) {
+                $data['recurrence']['weekly_days'] = $zoom->weekly_days;
+            }
+            if ($zoom->recurrence_type == ZOOM_RECURRINGTYPE_MONTHLY) {
+                if ($zoom->monthly_repeat_option == ZOOM_MONTHLY_REPEAT_OPTION_DAY) {
+                    $data['recurrence']['monthly_day'] = (int) $zoom->monthly_day;
+                } else {
+                    $data['recurrence']['monthly_week'] = (int) $zoom->monthly_week;
+                    $data['recurrence']['monthly_week_day'] = (int) $zoom->monthly_week_day;
+                }
+            }
+            if ($zoom->end_date_option == ZOOM_END_DATE_OPTION_AFTER) {
+                $data['recurrence']['end_times'] = (int) $zoom->end_times;
+            } else {
+                $data['recurrence']['end_date_time'] = gmdate('Y-m-d\TH:i:s\Z', $zoom->end_date_time);
+            }
+        }
+
+        if ($data['type'] === ZOOM_SCHEDULED_MEETING ||
+            $data['type'] === ZOOM_RECURRING_FIXED_MEETING ||
+            $data['type'] === ZOOM_SCHEDULED_WEBINAR ||
+            $data['type'] === ZOOM_RECURRING_FIXED_WEBINAR) {
             // Convert timestamp to ISO-8601. The API seems to insist that it end with 'Z' to indicate UTC.
             $data['start_time'] = gmdate('Y-m-d\TH:i:s\Z', $zoom->start_time);
             $data['duration'] = (int) ceil($zoom->duration / 60);
@@ -557,14 +609,14 @@ class mod_zoom_webservice {
      */
     public function provide_license($zoomuserid) {
         // Checks whether we need to recycle licenses and acts accordingly.
-        if ($this->recyclelicenses && $this->_make_call("users/$zoomuserid")->type == ZOOM_USER_TYPE_BASIC) {
-            if ($this->_paid_user_limit_reached()) {
-                $leastrecentlyactivepaiduserid = $this->_get_least_recently_active_paid_user_id();
+        if ($this->recyclelicenses && $this->make_call("users/$zoomuserid")->type == ZOOM_USER_TYPE_BASIC) {
+            if ($this->paid_user_limit_reached()) {
+                $leastrecentlyactivepaiduserid = $this->get_least_recently_active_paid_user_id();
                 // Changes least_recently_active_user to a basic user so we can use their license.
-                $this->_make_call("users/$leastrecentlyactivepaiduserid", array('type' => ZOOM_USER_TYPE_BASIC), 'patch');
+                $this->make_call("users/$leastrecentlyactivepaiduserid", array('type' => ZOOM_USER_TYPE_BASIC), 'patch');
             }
             // Changes current user to pro so they can make a meeting.
-            $this->_make_call("users/$zoomuserid", array('type' => ZOOM_USER_TYPE_PRO), 'patch');
+            $this->make_call("users/$zoomuserid", array('type' => ZOOM_USER_TYPE_PRO), 'patch');
         }
     }
 
@@ -579,7 +631,7 @@ class mod_zoom_webservice {
         // Provide license if needed.
         $this->provide_license($zoom->host_id);
         $url = "users/$zoom->host_id/" . (!empty($zoom->webinar) ? 'webinars' : 'meetings');
-        return $this->_make_call($url, $this->_database_to_api($zoom), 'post');
+        return $this->make_call($url, $this->database_to_api($zoom), 'post');
     }
 
     /**
@@ -590,7 +642,7 @@ class mod_zoom_webservice {
      */
     public function update_meeting($zoom) {
         $url = ($zoom->webinar ? 'webinars/' : 'meetings/') . $zoom->meeting_id;
-        $this->_make_call($url, $this->_database_to_api($zoom), 'patch');
+        $this->make_call($url, $this->database_to_api($zoom), 'patch');
     }
 
     /**
@@ -602,7 +654,7 @@ class mod_zoom_webservice {
      */
     public function delete_meeting($id, $webinar) {
         $url = ($webinar ? 'webinars/' : 'meetings/') . $id . '?schedule_for_reminder=false';
-        $this->_make_call($url, null, 'delete');
+        $this->make_call($url, null, 'delete');
     }
 
     /**
@@ -616,7 +668,7 @@ class mod_zoom_webservice {
         $url = ($webinar ? 'webinars/' : 'meetings/') . $id;
         $response = null;
         try {
-            $response = $this->_make_call($url);
+            $response = $this->make_call($url);
         } catch (moodle_exception $error) {
             throw $error;
         }
@@ -631,13 +683,16 @@ class mod_zoom_webservice {
      * @link https://marketplace.zoom.us/docs/api-reference/zoom-api/meetings/meetinginvitation
      */
     public function get_meeting_invitation($zoom) {
+        global $CFG;
+        require_once($CFG->dirroot . '/mod/zoom/classes/invitation.php');
+
         // Webinar does not have meeting invite info.
         if ($zoom->webinar) {
             return new \mod_zoom\invitation(null);
         }
         $url = 'meetings/' . $zoom->meeting_id . '/invitation';
         try {
-            $response = $this->_make_call($url);
+            $response = $this->make_call($url);
         } catch (moodle_exception $error) {
             debugging($error->getMessage());
             return new \mod_zoom\invitation(null);
@@ -657,7 +712,7 @@ class mod_zoom_webservice {
     public function get_user_report($userid, $from, $to) {
         $url = 'report/users/' . $userid . '/meetings';
         $data = array('from' => $from, 'to' => $to, 'page_size' => ZOOM_MAX_RECORDS_PER_CALL);
-        return $this->_make_paginated_call($url, $data, 'meetings');
+        return $this->make_paginated_call($url, $data, 'meetings');
     }
 
     /**
@@ -671,7 +726,7 @@ class mod_zoom_webservice {
      */
     public function list_meetings($userid, $webinar) {
         $url = 'users/' . $userid . ($webinar ? '/webinars' : '/meetings');
-        $instances = $this->_make_paginated_call($url, null, ($webinar ? 'webinars' : 'meetings'));
+        $instances = $this->make_paginated_call($url, null, ($webinar ? 'webinars' : 'meetings'));
         return $instances;
     }
 
@@ -683,7 +738,7 @@ class mod_zoom_webservice {
      */
     public function get_meeting_participants($meetinguuid, $webinar) {
         $meetinguuid = $this->encode_uuid($meetinguuid);
-        return $this->_make_paginated_call('report/' . ($webinar ? 'webinars' : 'meetings') . '/'
+        return $this->make_paginated_call('report/' . ($webinar ? 'webinars' : 'meetings') . '/'
                                            . $meetinguuid . '/participants', null, 'participants');
     }
 
@@ -695,7 +750,7 @@ class mod_zoom_webservice {
      * @return array An array of UUIDs.
      */
     public function get_active_hosts_uuids($from, $to) {
-        $users = $this->_make_paginated_call('report/users', array('type' => 'active', 'from' => $from, 'to' => $to), 'users');
+        $users = $this->make_paginated_call('report/users', array('type' => 'active', 'from' => $from, 'to' => $to), 'users');
         $uuids = array();
         foreach ($users as $user) {
             $uuids[] = $user->id;
@@ -718,7 +773,7 @@ class mod_zoom_webservice {
      * @return array An array of meeting objects.
      */
     public function get_meetings($from, $to) {
-        return $this->_make_paginated_call('metrics/meetings',
+        return $this->make_paginated_call('metrics/meetings',
                 ['type' => 'past', 'from' => $from, 'to' => $to], 'meetings');
     }
 
@@ -737,7 +792,7 @@ class mod_zoom_webservice {
      * @return array An array of meeting objects.
      */
     public function get_webinars($from, $to) {
-        return $this->_make_paginated_call('metrics/webinars',
+        return $this->make_paginated_call('metrics/webinars',
                 ['type' => 'past', 'from' => $from, 'to' => $to], 'webinars');
     }
 

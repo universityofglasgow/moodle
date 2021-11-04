@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * qtype_kprime question grading class.
+ *
  * @package     qtype_kprime
  * @author      Amr Hourani (amr.hourani@id.ethz.ch)
  * @author      Martin Hanusch (martin.hanusch@let.ethz.ch)
@@ -27,24 +29,43 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Provides grading functionality
+ *
+ * @package     qtype_kprime
+ * @copyright   2016 ETHZ {@link http://ethz.ch/}
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 abstract class qtype_kprime_grading {
 
+    /**
+     * Returns the scoringmethod name.
+     * @return string
+     */
     abstract public function get_name();
 
+    /**
+     * Returns the gradingmethod title..
+     * @return string
+     */
     abstract public function get_title();
 
+    /**
+     * Returns the question's grade for a given response..
+     * @param qtype_kprime_question $question
+     * @param array $answers
+     * @return int
+     */
     abstract public function grade_question($question, $answers);
 
     /**
      * Grade a specific row.
      * This is the same for all grading methods.
      * Either the student chose the correct response or not (single choice).
-     *
      * @param qtype_kprime_question $question The question object.
      * @param unknown $key The field key of the row.
      * @param object $row The row object.
      * @param array $answers The answers array.
-     *
      * @return float
      */
     public function grade_row(qtype_kprime_question $question, $key, $row, $answers) {

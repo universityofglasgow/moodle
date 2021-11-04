@@ -24,7 +24,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'mod_pdfannotator'; // Full name of the plugin (used for diagnostics).
-$plugin->version   = 2020080400; // The current module version (Date: YYYYMMDDXX).
-$plugin->release  = 'PDF Annotator v1.4 release 2';
-$plugin->requires  = 2016112900; // Requires this Moodle version.
+$plugin->component = 'mod_pdfannotator';
+$plugin->version   = 2021090100;
+$plugin->release  = 'PDF Annotator v1.4 release 9';
+$plugin->requires  = 2021051700;
+$plugin->maturity  = MATURITY_STABLE;

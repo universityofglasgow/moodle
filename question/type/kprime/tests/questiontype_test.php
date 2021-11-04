@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Unit tests for qtype_kprime definition class.
+ *
  * @package     qtype_kprime
  * @author      Amr Hourani (amr.hourani@id.ethz.ch)
  * @author      Martin Hanusch (martin.hanusch@let.ethz.ch)
@@ -33,16 +35,22 @@ require_once($CFG->dirroot . '/question/type/edit_question_form.php');
 require_once($CFG->dirroot . '/question/type/kprime/edit_kprime_form.php');
 
 /**
- * @group qtype_kprime
+ * Unit tests for qtype_kprime question definition class.
+ *
+ * @copyright   2016 ETHZ {@link http://ethz.ch/}
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @group       qtype_kprime
  */
 class qtype_kprime_test extends advanced_testcase {
 
+    /** @var object qtype */
     protected $qtype;
-    protected function setUp() {
+
+    protected function setUp(): void {
         $this->qtype = new qtype_kprime();
     }
 
-    protected function tearDown() {
+    protected function tearDown(): void {
         $this->qtype = null;
     }
 
@@ -50,6 +58,11 @@ class qtype_kprime_test extends advanced_testcase {
         $this->assertEquals($this->qtype->name(), 'kprime');
     }
 
+    /**
+     * Get some test question data.
+     * @return object the data to construct a question like
+     * {@see test_question_maker::make_question($questiondata)}.
+     */
     protected function get_test_question_data() {
         $qdata = new stdClass();
         $qdata->id = 1;
@@ -140,27 +153,42 @@ class qtype_kprime_test extends advanced_testcase {
         return $qdata;
     }
 
+    /**
+     * Test can_analyse_responses
+     */
     public function test_can_analyse_responses() {
         $this->assertTrue($this->qtype->can_analyse_responses());
     }
 
+    /**
+     * Test get_random_guess_score_kprime
+     */
     public function test_get_random_guess_score_kprime() {
         $question = $this->get_test_question_data();
         $question->options->scoringmethod = "kprime";
         $this->assertEquals(0.1875, $this->qtype->get_random_guess_score($question));
     }
 
+    /**
+     * Test get_random_guess_score_kprimeonezero
+     */
     public function test_get_random_guess_score_kprimeonezero() {
         $question = $this->get_test_question_data();
         $question->options->scoringmethod = "kprimeonezero";
         $this->assertEquals(0.0625, $this->qtype->get_random_guess_score($question));
     }
 
+    /**
+     * Test get_random_guess_score_subpoints
+     */
     public function test_get_random_guess_score_subpoints() {
         $question = $this->get_test_question_data();
         $this->assertEquals(0.5, $this->qtype->get_random_guess_score($question));
     }
 
+    /**
+     * Test get_possible_responses_subpoints
+     */
     public function test_get_possible_responses_subpoints() {
         $question = $this->get_test_question_data();
         $responses = $this->qtype->get_possible_responses($question);
@@ -188,12 +216,17 @@ class qtype_kprime_test extends advanced_testcase {
         ), $this->qtype->get_possible_responses($question));
     }
 
+    /**
+     * Test question_saving_which
+     */
     public function get_question_saving_which() {
         return array(array('question_one'), array('question_two'));
     }
 
     /**
+     * Test question saving
      * @dataProvider get_question_saving_which
+     * @param string $which
      */
     public function test_question_saving_question_one($which) {
         $this->resetAfterTest(true);
@@ -213,19 +246,19 @@ class qtype_kprime_test extends advanced_testcase {
 
         foreach ($questiondata as $property => $value) {
             if (!in_array($property, array('id', 'version', 'timemodified', 'timecreated', 'options', 'hints', 'stamp'))) {
-                $this->assertAttributeEquals($value, $property, $actualquestiondata);
+                $this->assertEquals($value, $actualquestiondata->$property);
             }
         }
         foreach ($questiondata->options as $optionname => $value) {
             if ($optionname != 'rows' && $optionname != 'columns' && $optionname != 'weights') {
-                $this->assertAttributeEquals($value, $optionname, $actualquestiondata->options);
+                $this->assertEquals($value, $actualquestiondata->options->$optionname);
             }
         }
         foreach ($questiondata->hints as $hint) {
             $actualhint = array_shift($actualquestiondata->hints);
             foreach ($hint as $property => $value) {
                 if (!in_array($property, array('id', 'questionid', 'options'))) {
-                    $this->assertAttributeEquals($value, $property, $actualhint);
+                    $this->assertEquals($value, $actualhint->$property);
                 }
             }
         }
@@ -233,7 +266,7 @@ class qtype_kprime_test extends advanced_testcase {
             $actualrow = array_shift($actualquestiondata->options->rows);
             foreach ($row as $rowproperty => $rowvalue) {
                 if (!in_array($rowproperty, array('id', 'questionid'))) {
-                    $this->assertAttributeEquals($rowvalue, $rowproperty, $actualrow);
+                    $this->assertEquals($rowvalue, $actualrow->$rowproperty);
                 }
             }
         }
@@ -241,7 +274,7 @@ class qtype_kprime_test extends advanced_testcase {
             $actualcolumn = array_shift($actualquestiondata->options->columns);
             foreach ($column as $columnproperty => $columnvalue) {
                 if (!in_array($columnproperty, array('id', 'questionid'))) {
-                    $this->assertAttributeEquals($columnvalue, $columnproperty, $actualcolumn);
+                    $this->assertEquals($columnvalue, $actualcolumn->$columnproperty);
                 }
             }
         }
@@ -250,13 +283,16 @@ class qtype_kprime_test extends advanced_testcase {
                 $actualweight = array_shift($actualquestiondata->options->weights[$rowkey]);
                 foreach ($column as $propertykey => $property) {
                     if (!in_array($propertykey, array('id', 'questionid'))) {
-                        $this->assertAttributeEquals($property, $propertykey, $actualweight);
+                        $this->assertEquals($property, $actualweight->$propertykey);
                     }
                 }
             }
         }
     }
 
+    /**
+     * Test get_question_options.
+     */
     public function test_get_question_options() {
         global $DB;
         $this->resetAfterTest(true);

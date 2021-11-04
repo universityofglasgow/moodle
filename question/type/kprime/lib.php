@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * qtype_kprime lib.
+ *
  * @package     qtype_kprime
  * @author      Amr Hourani (amr.hourani@id.ethz.ch)
  * @author      Martin Hanusch (martin.hanusch@let.ethz.ch)
@@ -32,9 +34,7 @@ define('QTYPE_KPRIME_NUMBER_OF_RESPONSES', 2);
 
 /**
  * Checks file/image access for kprime questions.
- *
  * @category files
- *
  * @param stdClass $course        course object
  * @param stdClass $cm            course module object
  * @param stdClass $context       context object
@@ -42,13 +42,11 @@ define('QTYPE_KPRIME_NUMBER_OF_RESPONSES', 2);
  * @param array    $args          extra arguments
  * @param bool     $forcedownload whether or not force download
  * @param array    $options       additional options affecting the file serving
- *
  * @return bool
  */
-function qtype_kprime_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload,
-        array $options = array()) {
+function qtype_kprime_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = array()) {
+
     global $CFG;
     require_once($CFG->libdir.'/questionlib.php');
-    question_pluginfile($course, $context, 'qtype_kprime', $filearea, $args, $forcedownload,
-    $options);
+    question_pluginfile($course, $context, 'qtype_kprime', $filearea, $args, $forcedownload, $options);
 }

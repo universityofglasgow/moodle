@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Admin settings for qtype_mtf.
+ *
  * @package     qtype_mtf
  * @author      Amr Hourani (amr.hourani@id.ethz.ch)
  * @author      Martin Hanusch (martin.hanusch@let.ethz.ch)
@@ -27,13 +29,12 @@ defined('MOODLE_INTERNAL') || die();
 if ($ADMIN->fulltree) {
     require_once($CFG->dirroot . '/question/type/mtf/lib.php');
 
-    // Introductory explanation that all the settings are defaults for the edit_mtf_form.
     $settings->add(new admin_setting_heading('configintro', '', get_string('configintro', 'qtype_mtf')));
 
     // Scoring methods.
-    $options = array('mtfonezero' => get_string('scoringmtfonezero', 'qtype_mtf'),
-        'subpoints' => get_string('scoringsubpoints', 'qtype_mtf')
-    );
+    $options = array(
+        'mtfonezero' => get_string('scoringmtfonezero', 'qtype_mtf'),
+        'subpoints' => get_string('scoringsubpoints', 'qtype_mtf'));
 
     $settings->add(new admin_setting_configselect('qtype_mtf/scoringmethod',
         get_string('configscoringmethod', 'qtype_mtf'),

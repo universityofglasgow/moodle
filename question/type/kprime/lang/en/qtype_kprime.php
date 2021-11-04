@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Strings for component 'qtype_kprime', language 'en'
+ *
  * @package     qtype_kprime
  * @author      Amr Hourani (amr.hourani@id.ethz.ch)
  * @author      Martin Hanusch (martin.hanusch@let.ethz.ch)
@@ -47,7 +49,7 @@ $string['pluginname_help'] = 'Kprime questions consist of an item stem and four 
 $string['pluginname_link'] = 'question/type/kprime';
 $string['pluginnameadding'] = 'Adding a Kprime question';
 $string['pluginnameediting'] = 'Editing a Kprime question';
-$string['pluginnamesummary'] = 'In Kprime questions exactly four options have to be correctly rated as "true" or "false".';
+$string['pluginnamesummary'] = 'In Kprime questions exactly four options have to be correctly rated as "true" or "false". Default scoring method is “kprime”.';
 $string['privacy:metadata'] = 'The KPrime question type plugin does not store any personal data.';
 $string['responsedesc'] = 'The text used as a default for response {$a}.';
 $string['responseno'] = 'Response {$a}';

@@ -3,6 +3,9 @@ language: php
 os: linux
 dist: xenial
 
+addons:
+  postgresql: "10"
+
 services:
   - mysql
   - postgresql
@@ -16,14 +19,15 @@ cache:
 
 jobs:
   include:
-    - php: 7.4
+    - php: 8.0
       env: MOODLE_BRANCH=master            DB=pgsql
-    - php: 7.4
+    - php: 8.0
       env: MOODLE_BRANCH=master            DB=mysqli
-    - php: 7.4
+    - php: 8.0
       env: MOODLE_BRANCH=MOODLE_311_STABLE DB=pgsql
-    - php: 7.4
+    - php: 8.0
       env: MOODLE_BRANCH=MOODLE_311_STABLE DB=mysqli
+
     - php: 7.4
       env: MOODLE_BRANCH=MOODLE_310_STABLE DB=pgsql
     - php: 7.4
@@ -51,11 +55,6 @@ jobs:
     - php: 7.2
       env: MOODLE_BRANCH=MOODLE_35_STABLE  DB=pgsql
 
-    - php: 7.1
-      env: MOODLE_BRANCH=MOODLE_38_STABLE  DB=pgsql
-    - php: 7.1
-      env: MOODLE_BRANCH=MOODLE_37_STABLE  DB=mysqli
-
     # Cannot test with Moodle 3.2 and 3.3 any more because the new composer 2
     # does require all components to be named properly (case-sensitively) and
     # those branches have phpunit/Dbunit, failing. See MDL-64725.
@@ -65,6 +64,10 @@ jobs:
     # be executed with that PHP versions.
 
 before_install:
+  # The following line is only needed if you're going to run php8 jobs and your
+  # plugin needs xmlrpc services.
+  - if [[ ${TRAVIS_PHP_VERSION:0:1} -gt 7 ]]; then pecl install xmlrpc-beta; fi
+  - echo 'max_input_vars=5000' >> ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini
   - phpenv config-rm xdebug.ini
   - cd ../..
   - composer create-project -n --no-dev --prefer-dist moodlehq/moodle-plugin-ci ci ^3
@@ -86,10 +89,10 @@ script:
   - moodle-plugin-ci phpcpd
   - moodle-plugin-ci phpmd
   - moodle-plugin-ci codechecker
+  - moodle-plugin-ci phpdoc
   - moodle-plugin-ci validate
   - moodle-plugin-ci savepoints
   - moodle-plugin-ci mustache
   - moodle-plugin-ci grunt
-  - moodle-plugin-ci phpdoc
-  - moodle-plugin-ci phpunit --coverage-text
+  - moodle-plugin-ci phpunit
   - moodle-plugin-ci behat

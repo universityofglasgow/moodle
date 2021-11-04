@@ -1,0 +1,65 @@
+<section *ngIf="question.text || question.text === ''" class="qtype-kprime">
+    <ion-item class="ion-text-wrap">
+        <ion-label>
+            <p>
+                <core-format-text [component]="component" [componentId]="componentId" [text]="question.text">
+                </core-format-text>
+            </p>
+            <p *ngIf="question.prompt">
+                <core-format-text [component]="component" [componentId]="componentId" [text]="question.prompt">
+                </core-format-text>
+            </p>
+        </ion-label>
+    </ion-item>
+    <ion-grid>
+        <ion-row class="ion-text-wrap">
+            <ion-col></ion-col>
+            <ion-col>
+                <core-format-text [component]="component" [text]="question.headerc1">
+                </core-format-text>
+            </ion-col>
+            <ion-col>
+                <core-format-text [component]="component" [text]="question.headerc2">
+                </core-format-text>
+            </ion-col>
+        </ion-row>
+        <ng-container *ngFor="let option of question.options" >
+            <ion-radio-group [name]="option.name" [(ngModel)]="option.selection" class="{{option.qclass}}">
+                <ion-row>
+                    <ion-col>
+                        <ion-label>
+                            <core-format-text [component]="component" [componentId]="componentId" [text]="option.text">
+                            </core-format-text>
+                            <div *ngIf="option.feedback" class="kprimespecificfeedback">
+                                <core-format-text [text]="option.feedback"></core-format-text>
+                            </div>
+                        </ion-label>
+                    </ion-col>
+                    <ion-col>
+                        <ion-radio [name]="option.name" [value]="1" [disabled]="option.disabled"></ion-radio>
+                    </ion-col>
+                    <ion-col>
+                        <ion-radio [name]="option.name" [value]="2" [disabled]="option.disabled"></ion-radio>
+                    </ion-col>
+                </ion-row>
+                <input type="hidden" [ngModel]="option.selection" [attr.name]="option.name">
+            </ion-radio-group>
+        </ng-container>
+    </ion-grid>
+    <div *ngIf="question.scoringmethod && question.scoringmethodhelp">
+        <hr>
+        <ion-item (click)="scoringmethodhelp=!scoringmethodhelp">
+            <ion-icon name="far-question-circle" aria-hidden="true"></ion-icon>
+            <ion-label>
+                <core-format-text [component]="component" [componentId]="componentId" [text]="question.scoringmethod">
+                </core-format-text>
+            </ion-label>
+        </ion-item>
+        <ion-item *ngIf="scoringmethodhelp">
+            <ion-label>
+                <core-format-text [component]="component" [componentId]="componentId" [text]="question.scoringmethodhelp">
+                </core-format-text>
+            </ion-label>
+        </ion-item>
+    </div>
+</section>

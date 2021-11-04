@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * qtype_mtf renderer classes.
+ *
  * @package     qtype_mtf
  * @author      Amr Hourani (amr.hourani@id.ethz.ch)
  * @author      Martin Hanusch (martin.hanusch@let.ethz.ch)
@@ -27,15 +29,15 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir . '/outputcomponents.php');
 
 /**
- * Subclass for generating the bits of output specific to mtf questions.
+ * Subclass for generating the bits of output specific to qtype_mtf questions.
  *
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright   2016 ETHZ {@link http://ethz.ch/}
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 class qtype_mtf_renderer extends qtype_renderer {
 
     /**
-     *
+     * Returns the input type
      * @return string
      */
     protected function get_input_type() {
@@ -43,7 +45,7 @@ class qtype_mtf_renderer extends qtype_renderer {
     }
 
     /**
-     *
+     * Returns the input name
      * @param question_attempt $qa
      * @param unknown $value
      *
@@ -54,9 +56,8 @@ class qtype_mtf_renderer extends qtype_renderer {
     }
 
     /**
-     *
+     * Returns the input value
      * @param unknown $value
-     *
      * @return unknown
      */
     protected function get_input_value($value) {
@@ -64,10 +65,9 @@ class qtype_mtf_renderer extends qtype_renderer {
     }
 
     /**
-     *
+     * Returns the input id
      * @param question_attempt $qa
      * @param unknown $value
-     *
      * @return string
      */
     protected function get_input_id(question_attempt $qa, $value) {
@@ -76,36 +76,29 @@ class qtype_mtf_renderer extends qtype_renderer {
 
     /**
      * Generate the display of the formulation part of the question.
-     * This is the
-     * area that contains the question text (stem), and the controls for students to
+     * This is the area that contains the question text (stem), and the controls for students to
      * input their answers.
-     *
      * @param question_attempt $qa the question attempt to display.
-     * @param question_display_options $options controls what should and should not be displayed.
-     *
+     * @param question_display_options $displayoptions controls what should and should not be displayed.
      * @return string HTML fragment.
      */
-    public function formulation_and_controls(question_attempt $qa,
-            question_display_options $displayoptions) {
+    public function formulation_and_controls(question_attempt $qa, question_display_options $displayoptions) {
         global $CFG;
+
         $question = $qa->get_question();
         $response = $question->get_response($qa);
 
         $inputname = $qa->get_qt_field_name('option');
-        $inputattributes = array('type' => $this->get_input_type(), 'name' => $inputname
-        );
+        $inputattributes = array('type' => $this->get_input_type(), 'name' => $inputname);
 
         if ($displayoptions->readonly) {
             $inputattributes['disabled'] = 'disabled';
         }
 
-        $this->page->requires->js(
-                new moodle_url($CFG->wwwroot . '/question/type/mtf/js/attempt.js'));
+        $this->page->requires->js(new moodle_url($CFG->wwwroot . '/question/type/mtf/js/attempt.js'));
 
         $result = '';
-        $result .= html_writer::tag('div', $question->format_questiontext($qa),
-                array('class' => 'qtext'
-                ));
+        $result .= html_writer::tag('div', $question->format_questiontext($qa), array('class' => 'qtext'));
 
         $table = new html_table();
         $table->attributes['class'] = 'generaltable';
@@ -135,8 +128,10 @@ class qtype_mtf_renderer extends qtype_renderer {
         $isreadonly = $displayoptions->readonly;
 
         foreach ($question->get_order($qa) as $key => $rowid) {
+
             $field = $question->field($key);
             $row = $question->rows[$rowid];
+
             // Holds the data for one table row.
             $rowdata = array();
 
@@ -147,19 +142,21 @@ class qtype_mtf_renderer extends qtype_renderer {
                 $qtypemtfid = 'qtype_mtf_' . $question->id;
                 $datacol = 'data-mtf="' . $qtypemtfid . '"';
                 $ischecked = false;
-                if (array_key_exists($field, $response) && ($response[$field] == $column->number)) {
+
+                if (property_exists((object) $response, $field) && ($response[$field] == $column->number)) {
                     $ischecked = true;
                 }
+
                 $datamulti = 'data-multimtf="1"';
                 $singleormulti = 2; // Multi.
 
                 $radio = $this->radiobutton($buttonname, $column->number, $ischecked, $isreadonly,
                         $buttonid, $datacol, $datamulti, $singleormulti, $qtypemtfid);
+
                 // Show correctness icon with radio button if needed.
                 if ($displayoptions->correctness) {
                     $weight = $question->weight($row->number, $column->number);
-                    $radio .= '<span class="mtfgreyingout">' . $this->feedback_image($weight > 0.0) .
-                             '</span>';
+                    $radio .= '<span class="mtfgreyingout">' . $this->feedback_image($weight > 0.0) . '</span>';
                 }
                 $cell = new html_table_cell($radio);
                 $cell->attributes['class'] = 'mtfresponsebutton';
@@ -167,15 +164,29 @@ class qtype_mtf_renderer extends qtype_renderer {
             }
 
             // Add the formated option text to the table.
-            $rowtext = $this->number_in_style($rowcount, $question->answernumbering) . $question->make_html_inline(
-                    $question->format_text($row->optiontext, $row->optiontextformat, $qa,
-                            'qtype_mtf', 'optiontext', $row->id));
-            $rowcount++;
-            $cell = new html_table_cell(
-                    '<span class="optiontext"><label>' . $rowtext .
-                             '</label></span>');
+            $rowtext = '<span class="optiontext">' .
+                        $question->make_html_inline(
+                            $this->number_in_style(
+                                $rowcount,
+                                $question->answernumbering
+                            ) .
+                            $question->format_text(
+                                $row->optiontext,
+                                $row->optiontextformat,
+                                $qa,
+                                'qtype_mtf',
+                                'optiontext',
+                                $row->id
+                            )
+                        ) .
+                        '</span>';
+
+            $cell = new html_table_cell($rowtext);
             $cell->attributes['class'] = 'optiontext';
             $rowdata[] = $cell;
+
+            $rowcount++;
+
             // Has a selection been made for this option?
             $isselected = $question->is_answered($response, $key);
             // For correctness we have to grade the option...
@@ -186,8 +197,8 @@ class qtype_mtf_renderer extends qtype_renderer {
                 $rowdata[] = $cell;
             }
             // Add the feedback to the table, if it is visible.
-            if ($displayoptions->feedback && empty($displayoptions->suppresschoicefeedback) &&
-                     $isselected && trim($row->optionfeedback)) {
+            if ($displayoptions->feedback && empty($displayoptions->suppresschoicefeedback)
+            && $isselected && trim($row->optionfeedback)) {
                 $cell = new html_table_cell(
                         html_writer::tag('div',
                                 $question->make_html_inline($question->format_text($row->optionfeedback,
@@ -226,7 +237,6 @@ class qtype_mtf_renderer extends qtype_renderer {
      * @return string
      */
     private function showscoringmethod($question) {
-        global $OUTPUT;
 
         $result = '';
 
@@ -239,25 +249,28 @@ class qtype_mtf_renderer extends qtype_renderer {
         if (get_string_manager()->string_exists('scoring' . $question->scoringmethod . '_help', 'qtype_mtf')) {
             $label = get_string('scoringmethod', 'qtype_mtf') . ': <b>' . ucfirst($outputscoringmethod) . '</b>';
             $result .= html_writer::tag('div',
-                '<br>'. $label . $OUTPUT->help_icon('scoring' . $question->scoringmethod, 'qtype_mtf'),
-                array('id' => 'scoringmethodinfo_q' . $question->id,
-                    'label' => $label));
+                '<br>'. $label . $this->output->help_icon('scoring' . $question->scoringmethod, 'qtype_mtf'),
+                array('id' => 'scoringmethodinfo_q' . $question->id, 'label' => $label));
         }
         return $result;
     }
 
     /**
      * Returns the HTML representation of a radio button with the given attributes.
-     *
      * @param unknown $name
      * @param unknown $value
      * @param unknown $checked
      * @param unknown $readonly
-     *
+     * @param string $id
+     * @param string $datacol
+     * @param string $datamulti
+     * @param int $singleormulti
+     * @param string $qtypemtfid
      * @return string
      */
     protected static function radiobutton($name, $value, $checked, $readonly, $id = '', $datacol = '',
             $datamulti = '', $singleormulti = 2, $qtypemtfid = '') {
+
         $readonly = $readonly ? 'readonly="readonly" disabled="disabled"' : '';
         $checked = $checked ? 'checked="checked"' : '';
         $result = '';
@@ -272,7 +285,6 @@ class qtype_mtf_renderer extends qtype_renderer {
 
     /**
      * The prompt for the user to answer a question.
-     *
      * @return Ambigous <string, lang_string, unknown, mixed>
      */
     protected function prompt() {
@@ -281,14 +293,16 @@ class qtype_mtf_renderer extends qtype_renderer {
 
     /**
      * (non-PHPdoc).
-     *
      * @see qtype_renderer::correct_response()
+     * @param question_attempt $qa
+     * @return string
      */
     public function correct_response(question_attempt $qa) {
         $question = $qa->get_question();
         $result = array();
         $response = '';
         $correctresponse = $question->get_correct_response(true);
+
         foreach ($question->order as $key => $rowid) {
             $row = $question->rows[$rowid];
 
@@ -320,15 +334,20 @@ class qtype_mtf_renderer extends qtype_renderer {
         return $response;
     }
 
+    /**
+     * Returns Questionnumber html
+     * @param string $qnum
+     * @return string
+     */
     protected function number_html($qnum) {
         return $qnum . '. ';
     }
 
     /**
-     *
+     * Returns the number in the requested style.
      * @param int $num The number, starting at 0.
      * @param string $style The style to render the number in. One of the
-     *        options returned by {@link qtype_mtf:;get_numbering_styles()}.
+     *      options returned by {@see qtype_mtf:get_numbering_styles()}.
      * @return string the number $num in the requested style.
      */
     protected function number_in_style($num, $style) {

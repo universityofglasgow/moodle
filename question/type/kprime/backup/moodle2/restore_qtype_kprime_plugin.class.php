@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Restore code for the qtype_kprime plugin.
+ *
  * @package     qtype_kprime
  * @author      Amr Hourani (amr.hourani@id.ethz.ch)
  * @author      Martin Hanusch (martin.hanusch@let.ethz.ch)
@@ -28,8 +30,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Restore plugin class that provides the necessary information
- * needed to restore one kprime qtype plugin.
+ * Restore plugin class that provides the necessary information needed to restore one qtype_kprime plugin.
  */
 class restore_qtype_kprime_plugin extends restore_qtype_plugin {
 
@@ -63,7 +64,8 @@ class restore_qtype_kprime_plugin extends restore_qtype_plugin {
     }
 
     /**
-     * Process the qtype/multichoice element.
+     * Process the qtype/kprime element.
+     * @param array $data
      */
     public function process_kprime($data) {
         global $DB;
@@ -91,7 +93,6 @@ class restore_qtype_kprime_plugin extends restore_qtype_plugin {
 
     /**
      * Detect if the question is created or mapped.
-     *
      * @return bool
      */
     protected function is_question_created() {
@@ -103,6 +104,7 @@ class restore_qtype_kprime_plugin extends restore_qtype_plugin {
 
     /**
      * Process the qtype/kprime/columns/column.
+     * @param array $data
      */
     public function process_column($data) {
         global $DB;
@@ -124,7 +126,7 @@ class restore_qtype_kprime_plugin extends restore_qtype_plugin {
                 }
             }
         }
-        if (!$newitemid) {
+        if (!isset($newitemid)) {
             $info = new stdClass();
             $info->filequestionid = $oldquestionid;
             $info->dbquestionid = $newquestionid;
@@ -137,6 +139,7 @@ class restore_qtype_kprime_plugin extends restore_qtype_plugin {
 
     /**
      * Process the qtype/kprime/rows/row element.
+     * @param array $data
      */
     public function process_row($data) {
         global $DB;
@@ -171,6 +174,7 @@ class restore_qtype_kprime_plugin extends restore_qtype_plugin {
 
     /**
      * Process the qtype/kprime/weights/weight element.
+     * @param array $data
      */
     public function process_weight($data) {
         global $DB;
@@ -204,8 +208,15 @@ class restore_qtype_kprime_plugin extends restore_qtype_plugin {
         }
     }
 
+    /**
+     * Recode the respones data for a particular step of an attempt at at particular question.
+     * @param int $questionid
+     * @param int $sequencenumber
+     * @param array $response
+     * @return array $response
+     */
     public function recode_response($questionid, $sequencenumber, array $response) {
-        if (array_key_exists('_order', $response)) {
+        if (property_exists((object) $response, '_order')) {
             $response['_order'] = $this->recode_option_order($response['_order']);
         }
         return $response;
@@ -213,9 +224,7 @@ class restore_qtype_kprime_plugin extends restore_qtype_plugin {
 
     /**
      * Recode the option order as stored in the response.
-     *
      * @param string $order the original order.
-     *
      * @return string the recoded order.
      */
     protected function recode_option_order($order) {
@@ -234,8 +243,7 @@ class restore_qtype_kprime_plugin extends restore_qtype_plugin {
     public static function define_decode_contents() {
         $contents = array();
 
-        $fields = array('optiontext', 'optionfeedback'
-        );
+        $fields = array('optiontext', 'optionfeedback');
         $contents[] = new restore_decode_content('qtype_kprime_rows', $fields, 'qtype_kprime_rows');
 
         return $contents;

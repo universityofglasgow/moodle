@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Mock class for get_content.
+ *
  * @package     qtype_mtf
  * @author      Amr Hourani (amr.hourani@id.ethz.ch)
  * @author      Martin Hanusch (martin.hanusch@let.ethz.ch)
@@ -26,9 +28,26 @@ namespace qtype_mtf\output;
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Mock class for get_content.
+ *
+ * @package qtype_mtf
+ * @copyright 2016 ETHZ {@link http://ethz.ch/}
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class mobile {
-    public static function mtf_view() {
+
+    /**
+     * Returns a test view.
+     * @param object $args
+     * @return array HTML, javascript and otherdata
+     */
+    public static function mtf_view($args) {
         global $CFG;
+
+        $args = (object) $args;
+        $versionname = $args->appversioncode >= 3950 ? 'latest' : 'ionic3';
+
         // General notes:
         // If you have worked on mobile activities, there is no cmid or courseid in $args here.
         // This is not equivalent to mod/quiz/attempt.php?attempt=57&cmid=147, rather
@@ -37,7 +56,7 @@ class mobile {
         return [
             'templates' => [[
                 'id' => 'main',
-                'html' => file_get_contents($CFG->dirroot . '/question/type/mtf/mobile/mtf.html')
+                'html' => file_get_contents($CFG->dirroot . "/question/type/mtf/mobile/mtf_$versionname.html")
             ]],
             'javascript' => file_get_contents($CFG->dirroot . '/question/type/mtf/mobile/mtf.js')
         ];

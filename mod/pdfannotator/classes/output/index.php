@@ -28,15 +28,22 @@
  *
  * @author degroot
  */
+
+namespace mod_pdfannotator\output;
+
+use stdClass;
+
 defined('MOODLE_INTERNAL') || die();
 
-class index implements renderable, templatable { // Class should be placed elsewhere.
+class index implements \renderable, \templatable { // Class should be placed elsewhere.
 
     private $usestudenttextbox;
     private $usestudentdrawing;
     private $useprint;
     private $useprintcomments;
     private $printurl;
+    private $useprivatecomments;
+    private $useprotectedcomments;
 
     public function __construct($pdfannotator, $capabilities, $file) {
 
@@ -46,6 +53,8 @@ class index implements renderable, templatable { // Class should be placed elsew
         $this->usestudentdrawing = ($pdfannotator->use_studentdrawing || $capabilities->usedrawing);
         $this->useprint = ($pdfannotator->useprint || $capabilities->useprint);
         $this->useprintcomments = ($pdfannotator->useprintcomments || $capabilities->useprintcomments);
+        $this->useprivatecomments = $pdfannotator->useprivatecomments;
+        $this->useprotectedcomments = $pdfannotator->useprotectedcomments;
 
         $contextid = $file->get_contextid();
         $component = $file->get_component();
@@ -57,7 +66,7 @@ class index implements renderable, templatable { // Class should be placed elsew
 
     }
 
-    public function export_for_template(renderer_base $output) {
+    public function export_for_template(\renderer_base $output) {
         global $OUTPUT, $PAGE;
         $url = $PAGE->url;
         $data = new stdClass();
@@ -68,6 +77,14 @@ class index implements renderable, templatable { // Class should be placed elsew
         $data->pixsinglefile = $OUTPUT->image_url('/e/new_document');
         $data->useprint = $this->useprint;
         $data->useprintcomments = $this->useprintcomments;
+        $data->useprivatecomments = $this->useprivatecomments;
+        $data->useprotectedcomments = $this->useprotectedcomments;
+        if ($data->useprotectedcomments) {
+            $data->protectedhelpicon = $OUTPUT->help_icon('protected_comments', 'mod_pdfannotator');
+        }
+        if ($data->useprivatecomments) {
+            $data->privatehelpicon = $OUTPUT->help_icon('private_comments', 'mod_pdfannotator');
+        }
         $data->printlink = $this->printurl;
         $data->pixprintdoc = $OUTPUT->image_url('download', 'mod_pdfannotator');
         $data->pixprintcomments = $OUTPUT->image_url('print_comments', 'mod_pdfannotator');

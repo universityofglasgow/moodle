@@ -60,12 +60,8 @@ class pdfannotator_comment {
             $commentuuid = $DB->insert_record('pdfannotator_comments', $datarecord, $returnid = true);
 
             $datarecord->uuid = $commentuuid;
-            $datarecord->username = $USER->username;
-            if ($visibility === 'anonymous') {
-                $datarecord->username = get_string('anonymous', 'pdfannotator');
-            } else {
-                $datarecord->username = get_string('me', 'pdfannotator');
-            }
+            self::set_username($datarecord);
+
             $datarecord->content = format_text($datarecord->content, $format = FORMAT_MOODLE, $options = ['para' => false]);
             $datarecord->timecreated = pdfannotator_optional_timeago($datarecord->timecreated);
             $datarecord->timemodified = pdfannotator_optional_timeago($datarecord->timemodified);
@@ -76,6 +72,7 @@ class pdfannotator_comment {
             $datarecord->solved = false;
 
             $anonymous = $visibility == 'anonymous' ? true : false;
+            $modulename = format_string($cm->name, true);
             if ($isquestion == 0) {
                 // Notify subscribed users.
                 $comment = new stdClass();
@@ -88,17 +85,17 @@ class pdfannotator_comment {
 
                 $messagetext = new stdClass();
                 $module = get_string('modulename', 'pdfannotator');
-                $messagetext->text = pdfannotator_format_notification_message_text($course, $cm, $context, $module, $cm->name, $comment, 'newanswer');
+                $messagetext->text = pdfannotator_format_notification_message_text($course, $cm, $context, $module, $modulename, $comment, 'newanswer');
                 $messagetext->url = $comment->urltoanswer;
                 $recipients = self::get_subscribed_users($annotationid);
                 foreach ($recipients as $recipient) {
                     if ($recipient != $USER->id) {
-                        $messagetext->html = pdfannotator_format_notification_message_html($course, $cm, $context, $module, $cm->name, $comment, 'newanswer', $recipient);
+                        $messagetext->html = pdfannotator_format_notification_message_html($course, $cm, $context, $module, $modulename, $comment, 'newanswer', $recipient);
                         $messageid = pdfannotator_notify_manager($recipient, $course, $cm, 'newanswer', $messagetext, $anonymous);
                     }
                 }
-            } else {
-                self::insert_subscription($annotationid);
+            } else if ($visibility != 'private') {
+                self::insert_subscription($annotationid, $context);
 
                 // Notify all users, that there is a new question.
                 $recipients = get_enrolled_users($context, 'mod/pdfannotator:recievenewquestionnotifications');
@@ -111,13 +108,16 @@ class pdfannotator_comment {
                 $question->urltoanswer = $CFG->wwwroot . '/mod/pdfannotator/view.php?id=' . $cm->id . '&page=' . $page . '&annoid=' . $annotationid . '&commid=' . $commentuuid;
 
                 $messagetext = new stdClass();
-                $messagetext->text = pdfannotator_format_notification_message_text($course, $cm, $context, get_string('modulename', 'pdfannotator'), $cm->name, $question, 'newquestion');
+                $messagetext->text = pdfannotator_format_notification_message_text($course, $cm, $context, get_string('modulename', 'pdfannotator'), $modulename, $question, 'newquestion');
                 $messagetext->url = $question->urltoanswer;
                 foreach ($recipients as $recipient) {
+                    if (!pdfannotator_can_see_comment($datarecord, $context) ){
+                        continue;
+                    }
                     if ($recipient->id == $USER->id) {
                         continue;
                     }
-                    $messagetext->html = pdfannotator_format_notification_message_html($course, $cm, $context, get_string('modulename', 'pdfannotator'), $cm->name, $question, 'newquestion', $recipient->id);
+                    $messagetext->html = pdfannotator_format_notification_message_html($course, $cm, $context, get_string('modulename', 'pdfannotator'), $modulename, $question, 'newquestion', $recipient->id);
                     $messageid = pdfannotator_notify_manager($recipient, $course, $cm, 'newquestion', $messagetext, $anonymous);
                 }
 
@@ -135,16 +135,19 @@ class pdfannotator_comment {
      * @global type $DB
      * @param type $documentid
      * @param type $highlightid
+     * @param $context
      * @return \stdClass
      */
-    public static function read($documentid, $annotationid) {
+    public static function read($documentid, $annotationid, $context) {
 
-        global $DB;
+        global $DB, $USER;
 
         // Get the ids and text content of all comments attached to this annotation/highlight.
-        $sql = "SELECT c.id, c.content, c.userid, c.visibility, c.isquestion, c.isdeleted, c.ishidden, c.timecreated, c.timemodified, c.modifiedby, c.solved, SUM(vote) AS votes "
+        $sql = "SELECT c.id, c.content, c.userid, c.visibility, c.isquestion, c.isdeleted, c.ishidden, c.timecreated, c.timemodified, c.modifiedby, c.solved, c.annotationid, SUM(vote) AS votes "
                 . "FROM {pdfannotator_comments} c LEFT JOIN {pdfannotator_votes} v"
-                . " ON c.id=v.commentid WHERE annotationid = ? GROUP BY c.id ORDER BY c.timecreated";
+                . " ON c.id=v.commentid WHERE annotationid = ?"
+                . " GROUP BY c.id, c.content, c.userid, c.visibility, c.isquestion, c.isdeleted, c.ishidden, c.timecreated, c.timemodified, c.modifiedby, c.solved, c.annotationid"
+                . " ORDER BY c.timecreated";
         $a = array();
         $a[] = $annotationid;
         $comments = $DB->get_records_sql($sql, $a); // Records taken from table 'comments' as an array of objects.
@@ -156,8 +159,15 @@ class pdfannotator_comment {
         foreach ($comments as $data) {
             $comment = new stdClass();
 
+            $comment->userid = $data->userid; // Author of comment.
             $comment->visibility = $data->visibility;
             $comment->isquestion = $data->isquestion;
+            $comment->annotationid = $annotationid;
+            $comment->annotation = $annotationid;
+            if ( !pdfannotator_can_see_comment($comment, $context)) {
+                continue;
+            }
+
             $comment->timecreated = pdfannotator_optional_timeago($data->timecreated);
             // If the comment was edited.
             if ($data->timecreated != $data->timemodified) {
@@ -172,7 +182,6 @@ class pdfannotator_comment {
                 $comment->modifiedby = $annotation->modifiedby;
             }
 
-            $comment->annotation = $annotationid;
             $comment->isdeleted = $data->isdeleted;
             $comment->uuid = $data->id;
 
@@ -183,13 +192,12 @@ class pdfannotator_comment {
             }
 
             if ($data->isdeleted) {
-                $comment->visibility = 'deleted';
                 $comment->content = get_string('deletedComment', 'pdfannotator');
             } else {
                 $comment->content = $data->content;
                 $comment->content = format_text($data->content, $format = FORMAT_MOODLE, $options = ['para' => false]);
             }
-            $comment->userid = $data->userid; // Author of comment.
+
             self::set_username($comment);
             $comment->solved = $data->solved;
             $comment->votes = $data->votes;
@@ -211,6 +219,8 @@ class pdfannotator_comment {
         global $USER;
         switch ($comment->visibility) {
             case 'public':
+            case 'private':
+            case 'protected':
                 if ($comment->userid === $USER->id) {
                     $comment->username = get_string('me', 'pdfannotator');
                 } else {
@@ -453,17 +463,23 @@ class pdfannotator_comment {
      * @param type $annotationid
      * @return boolean
      */
-    public static function insert_subscription($annotationid) {
+    public static function insert_subscription($annotationid, $context) {
         global $DB, $USER;
 
         // Check if subscription already exists.
         if ($DB->record_exists('pdfannotator_subscriptions', array('annotationid' => $annotationid, 'userid' => $USER->id))) {
             return false;
         }
+        
+        $comment = $DB->get_record('pdfannotator_comments', array('annotationid' => $annotationid, 'isquestion' => '1'));
+        if (!pdfannotator_can_see_comment($comment, $context)) {
+            return false;
+        }
 
         $datarecord = new stdClass();
         $datarecord->annotationid = $annotationid;
         $datarecord->userid = $USER->id;
+
 
         $subscriptionid = $DB->insert_record('pdfannotator_subscriptions', $datarecord, $returnid = true);
         return $subscriptionid;
@@ -571,27 +587,33 @@ class pdfannotator_comment {
     }
 
     public static function get_questions($documentid, $pagenumber, $context) {
-        global $DB;
+        global $DB, $USER;
         $displayhidden = has_capability('mod/pdfannotator:seehiddencomments', $context);
         // Get all questions of a page with a subselect, where all ids of annotations of one page are selected.
         $sql = "SELECT c.* FROM {pdfannotator_comments} c WHERE isquestion = 1 AND annotationid IN "
                 . "(SELECT id FROM {pdfannotator_annotations} a WHERE a.page = :page AND a.pdfannotatorid = :docid)";
         $questions = $DB->get_records_sql($sql, array('page' => $pagenumber, 'docid' => $documentid));
-
+        $ret = [];
         foreach ($questions as $question) {
-            $params = array('isquestion' => 0, 'annotationid' => $question->annotationid);
-            $count = $DB->count_records('pdfannotator_comments', $params);
-            $question->answercount = $count;
+            // Private Comments are only displayed for the author.
+
+            if ( !pdfannotator_can_see_comment($question, $context) ) {
+                continue;
+            }
+
+            $question->answercount = pdfannotator_count_answers($question->annotationid, $context);
             $question->page = $pagenumber;
+
             if ($question->isdeleted == 1) {
                 $question->content = '<em>'.get_string('deletedComment', 'pdfannotator').'</em>';
             }
             if ($question->ishidden == 1 && !$displayhidden) {
                 $question->content = get_string('hiddenComment', 'pdfannotator');
             }
+            $ret[] = $question;
         }
 
-        return $questions;
+        return $ret;
     }
 
     public static function get_all_questions($documentid, $context) {
@@ -604,6 +626,9 @@ class pdfannotator_comment {
 
         $ret = [];
         foreach ($questions as $question) {
+            if ( !pdfannotator_can_see_comment($question, $context) ) {
+                continue;
+            }
             $ret[$question->page][] = $question;
         }
         return $ret;
@@ -632,9 +657,11 @@ class pdfannotator_comment {
         $questions = $DB->get_records_sql($sql, $params);
 
         foreach ($questions as $question) {
-            $params = array('isquestion' => 0, 'annotationid' => $question->annotationid);
-            $count = $DB->count_records('pdfannotator_comments', $params);
-            $question->answercount = $count;
+            if (!pdfannotator_can_see_comment($question, $context)) {
+                continue;
+            }
+
+            $question->answercount = pdfannotator_count_answers($question->annotationid, $context);
             if ($question->isdeleted == 1) {
                 $question->content = '<em>'.get_string('deletedComment', 'pdfannotator').'</em>';
             }

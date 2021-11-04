@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * qtype_kprime grading class for subpoints scoringmethod
+ *
  * @package     qtype_kprime
  * @author      Amr Hourani (amr.hourani@id.ethz.ch)
  * @author      Martin Hanusch (martin.hanusch@let.ethz.ch)
@@ -29,25 +31,39 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/question/type/kprime/grading/qtype_kprime_grading.class.php');
 
-
+/**
+ * Provides grading functionality for subpoints scoring metod
+ *
+ * @package     qtype_kprime
+ * @copyright   2016 ETHZ {@link http://ethz.ch/}
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class qtype_kprime_grading_subpoints extends qtype_kprime_grading {
 
+    /** @var string TYPE */
     const TYPE = 'subpoints';
 
+    /**
+     * Returns the scoringmethod name.
+     * @return string
+     */
     public function get_name() {
         return self::TYPE;
     }
 
+    /**
+     * Returns the scoringmethod title.
+     * @return string
+     */
     public function get_title() {
         return get_string('scoring' . self::TYPE, 'qtype_kprime');
     }
 
     /**
-     * Returns the question's grade.
-     *
-     * (non-PHPdoc)
-     *
-     * @see qtype_kprime_grading::grade_question()
+     * Returns the question's grade for a given response.
+     * @param qtype_kprime_question $question
+     * @param array $answers
+     * @return float
      */
     public function grade_question($question, $answers) {
         $correctrows = 0;

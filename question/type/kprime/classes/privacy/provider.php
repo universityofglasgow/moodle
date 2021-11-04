@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Privacy Subsystem implementation for qtype_kprime.
+ *
  * @package     qtype_kprime
  * @author      Amr Hourani (amr.hourani@id.ethz.ch)
  * @author      Martin Hanusch (martin.hanusch@let.ethz.ch)
@@ -31,10 +33,17 @@ defined('MOODLE_INTERNAL') || die();
 
 /**
  * Privacy Subsystem for qtype_kprime implementing null_provider.
+ *
+ * @copyright   2016 ETHZ {@link http://ethz.ch/}
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 class provider implements \core_privacy\local\metadata\null_provider {
 
+    /**
+     * Get the language string identifier with the component's language
+     * file to explain why this plugin stores no data.
+     * @return string
+     */
     public static function get_reason() : string {
         return 'privacy:metadata';
     }
