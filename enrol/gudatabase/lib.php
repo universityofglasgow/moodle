@@ -1422,7 +1422,21 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
      * @return void
      */
     public function sync_user_enrolments($user) {
-        $this->process_user_enrolments($user, false);
+        global $CFG;
+
+        // if current login in the last hour don't bother (unless in debug mode)
+        $hourago = time() - 3600;
+        if (($user->currentlogin > $hourago) && ($CFG->debug != DEBUG_DEVELOPER)) {
+            return;
+        }
+
+        // Ad-hoc task to enrol user.
+        $syncuser = new \enrol_gudatabase\task\sync_user();
+        $data = [
+            'userid' => $user->id,
+        ];
+        $syncuser->set_custom_data($data);
+        \core\task\manager::queue_adhoc_task($syncuser, true);
     }
 
     /**
@@ -1430,33 +1444,25 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
      * Option to print progress for GUID report
      *
      * @param object $user user record
-     * @param boolean $print
+     * @param boolean $guidreport
      * @return void
      */
-    public function process_user_enrolments($user, $print = false) {
+    public function process_user_enrolments($user, $guidreport = false) {
         global $CFG, $DB;
+
+        mtrace('gudatabase: Processing enrolments for user ' . fullname($user));
 
         // If the external DB is down for any reason, we don't want to 
         // kill logins
         if (!$extdb = $this->db_init()) {
-            error_log('enrol_gudatabase: unable to access external enrolment database');
+            mtrace('enrol_gudatabase: unable to access external enrolment database');
             return true;
-        }
-
-        // GUID report
-        // If we're running this from the report, we want to exclude some checks
-        $guidreport = $print; 
-
-        // Trace.
-        if ($print) {
-            $trace = new text_progress_trace();
-            $this->trace = $trace;
-            $trace->output('Processing enrolments for user ' . fullname($user));
         }
 
         // This is just a bodge to kill this for admin users.
         $admins = explode( ',', $CFG->siteadmins );
         if (in_array($user->id, $admins)) {
+            mtrace('gudatabase: admin, exiting');
             return true;
         }
 
@@ -1465,6 +1471,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
 
         // If there aren't any then there's nothing to see here.
         if (empty($enrolments)) {
+            mtrace('gudatabase: no external enrolments');
             return true;
         }
 
@@ -1483,10 +1490,8 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
             $codes = $DB->get_records('enrol_gudatabase_codes', array('code' => $enrolment->courses));
             if (!empty($codes)) {
                 foreach ($codes as $code) {
-                    $uniquecourses[ $code->courseid ] = $code;
-                    if ($print) {
-                        $trace->output('Found local course for code ' . $code->code . ' (course ID ' . $code->courseid . ')');
-                    }
+                    $uniquecourses[$code->courseid] = $code;
+                    mtrace('gudatabase: found local course for code ' . $code->code . ' (course ID ' . $code->courseid . ')');
                 }
             }
         }
@@ -1497,59 +1502,22 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         // Go through the list of course codes and enrol student.
         if (!empty($uniquecourses)) {
             foreach ($uniquecourses as $courseid => $code) {
-
-                if ($print) {
-                    $trace->output('Processing course id ' . $courseid);
-                }
+                $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
+                mtrace("\n\n" . 'gudatabase: processing course id ' . $courseid . ' "' . $course->fullname . '"');
 
                 // If user is already enrolled on the course then don't bother
                 if (array_key_exists($courseid, $userscourses)) {
-                    if ($print) {
-                        $trace->output('    User is already enrolled in course');
-                    }
+                    mtrace('gudatabase: user is already enrolled in course');
                     if (!$guidreport) {
                         continue;
                     }
                 }
 
-                // Find last updated time for this user/course. If it was last updated within 4 hours
-                // then we won't do it again.
-                // Skip if guidreport run (we're always doing it)
-                if (!$guidreport) {
-                    $dayago = time() - (4 * 60 * 60);
-                    if ($gudusers = $DB->get_record('enrol_gudatabase_users', array('userid' => $user->id, 'courseid' => $courseid))) {
-                        if ($gudusers->timeupdated > $dayago) {
-                            continue;
-                        }
-                    }
-                }
-
-                // Get course object.
-                if (!$course = $DB->get_record('course', array('id' => $courseid))) {
-                    continue;
-                }
-
-                // Trace if debug
-                if ($print) {
-                    $courselink = new moodle_url('/course/view.php', ['id' => $courseid]);
-                    $trace->output('    Sync user course - <a href="' . $courselink . '">' . $course->fullname . '</a>');
-                }
-
-                // If course is not visible then do not enrol.
-                //if (!$course->visible) {
-                //    continue;
-                //}
-
-		        // If course is outside date range then do not enrol
-                //if (($course->startdate > time()) || ($course->enddate < time())) {
-                //    continue;
-                //}
-
                 // Make sure it has this enrolment plugin.
                 $instanceid = $this->check_instance( $course );
 
                 // Get the instances of the enrolment plugin.
-                $instances = $DB->get_records('enrol', array('courseid' => $courseid, 'enrol' => 'gudatabase'));
+                $instances = $DB->get_records('enrol', ['courseid' => $courseid, 'enrol' => 'gudatabase']);
                 foreach ($instances as $instance) {
                     if ($instance->status != ENROL_INSTANCE_ENABLED) {
                         continue;
@@ -1562,10 +1530,12 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
 
                     // Now need to confirm that this instance is the one that defined this code.
                     $instcodes = $this->get_codes($course, $instance);
-                    if ($print) {
-                        $trace->output('        Instance id ' . $instance->id . '. Number of codes ' . count($instcodes));
+                    mtrace('gudatabase: instance id ' . $instance->id . '. Number of codes ' . count($instcodes));
+                    if ($instance->name) {
+                        mtrace('gudatabase: instance name "' . $instance->name . '"');
                     }
                     if (empty($instcodes) || !in_array($code->code, $instcodes)) {
+                        mtrace('gudatabase: not defined in this instance');
                         continue;
                     }
 
@@ -1587,15 +1557,13 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
                     // Enrol user into course (if not already).
                     if (!$this->is_user_enrolled($instance, $user->id)) {
                         $this->enrol_user( $instance, $user->id, $instance->roleid, $timestart, $timeend, ENROL_USER_ACTIVE );
-                        if ($print) {
-                            $trace->output('        Enrolling onto course');
-                        }
-                    } else if ($print) {
-                        $trace->output('        Already enrolled');
+                        mtrace('gudatabase: enrolling onto course');
+                    } else {
+                        mtrace('gudatabase: already enrolled');
                     }
 
                     // Cache enrolment.
-                    $this->cache_user_enrolment( $course, $user, $code->code );
+                    $this->cache_user_enrolment($course, $user, $code->code);
 
                     // Sync the courses groups.
                     $this->sync_groups($course, $instance);
