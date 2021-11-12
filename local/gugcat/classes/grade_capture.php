@@ -533,6 +533,9 @@ class grade_capture{
 
             // Each line is a student record. First element is ID number, second is grade.
             $idnumber = $line[0];
+
+            // make sure leading zero(s) have not been lost
+            $idnumber = str_pad($idnumber, 7, '0', STR_PAD_LEFT);
             $grade = $activity->modname == 'assign' ? $line[2] : $line[3];
             $errorobj = new stdClass();
             $errorobj->id = $idnumber;

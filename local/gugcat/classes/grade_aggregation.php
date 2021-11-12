@@ -572,7 +572,7 @@ class grade_aggregation{
 
         // HM: Check weights add up to 100%
         // skip this check if using 'highest grade' or if grade overridden
-        if (!$ishighestgrade && !$pgobj->overridden) {
+        if (!$ishighestgrade && empty($pgobj->overridden)) {
             list($weightsok, $overanswer) = self::weights100($filtered, $studentgrades);
             if (!$weightsok) {
                 return [null, true, null, $overanswer];
