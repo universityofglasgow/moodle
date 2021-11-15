@@ -1123,6 +1123,7 @@ class local_gugcat {
         $select = 'feedback IS NOT NULL AND feedback <> "" AND rawgrade IS NOT NULL AND itemid='
         . $subcatid . ' AND userid=' . $userid;
         $gradehistoryarr = $DB->get_records_select('grade_grades_history', $select, null, $sort, $fields);
+        //echo "<pre>"; var_dump($gradehistoryarr); die;
         $scaleid = $module->is_converted;
         $gt = $module->gradeitem->gradetype;
         $isconvertedmod = $module->is_converted;
@@ -1176,6 +1177,8 @@ class local_gugcat {
                 array_push($rows[$i]->grades, $gradehistory);
                 $i++;
             }
+        } else {
+            return [];
         }
         // Get the latest grade.
         if ($gradehistoryarr[$firstindex]->overridden != 0) {
