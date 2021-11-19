@@ -18,6 +18,7 @@
  * Defines backup_zoom_activity_structure_step class.
  *
  * @package   mod_zoom
+ * @category  backup
  * @copyright 2015 UC Regents
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -26,11 +27,6 @@ defined('MOODLE_INTERNAL') || die;
 
 /**
  * Define the complete zoom structure for backup, with file and id annotations.
- *
- * @package   mod_zoom
- * @category  backup
- * @copyright 2015 UC Regents
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class backup_zoom_activity_structure_step extends backup_activity_structure_step {
 
@@ -50,10 +46,17 @@ class backup_zoom_activity_structure_step extends backup_activity_structure_step
             'option_authenticated_users', 'option_encryption_type', 'exists_on_zoom', 'alternative_hosts',
         ));
 
+        $trackingfields = new backup_nested_element('trackingfields');
+
+        $trackingfield = new backup_nested_element('trackingfield', array('id'), array('meeting_id', 'tracking_field', 'value'));
+
         // If we had more elements, we would build the tree here.
+        $zoom->add_child($trackingfields);
+        $trackingfields->add_child($trackingfield);
 
         // Define data sources.
         $zoom->set_source_table('zoom', array('id' => backup::VAR_ACTIVITYID));
+        $trackingfield->set_source_table('zoom_meeting_tracking_fields', array('meeting_id' => backup::VAR_ACTIVITYID));
 
         // If we were referring to other tables, we would annotate the relation
         // with the element's annotate_ids() method.

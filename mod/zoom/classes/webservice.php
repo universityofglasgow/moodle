@@ -44,10 +44,6 @@ if (!class_exists('Firebase\JWT\JWT')) {
 
 /**
  * Web service class.
- *
- * @package    mod_zoom
- * @copyright  2015 UC Regents
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class mod_zoom_webservice {
 
@@ -514,7 +510,7 @@ class mod_zoom_webservice {
             )
         );
         if (isset($zoom->intro)) {
-            $data['agenda'] = $zoom->intro;
+            $data['agenda'] = content_to_text($zoom->intro, FORMAT_MOODLE);
         }
         if (isset($CFG->timezone) && !empty($CFG->timezone)) {
             $data['timezone'] = $CFG->timezone;
@@ -597,6 +593,19 @@ class mod_zoom_webservice {
             $data['start_time'] = gmdate('Y-m-d\TH:i:s\Z', $zoom->start_time);
             $data['duration'] = (int) ceil($zoom->duration / 60);
         }
+
+        // Add tracking field to data.
+        $defaulttrackingfields = zoom_clean_tracking_fields();
+        $tfarray = array();
+        foreach ($defaulttrackingfields as $key => $defaulttrackingfield) {
+            if (isset($zoom->$key)) {
+                $tf = new stdClass();
+                $tf->field = $defaulttrackingfield;
+                $tf->value = $zoom->$key;
+                $tfarray[] = $tf;
+            }
+        }
+        $data['tracking_fields'] = $tfarray;
 
         return $data;
     }
@@ -794,6 +803,22 @@ class mod_zoom_webservice {
     public function get_webinars($from, $to) {
         return $this->make_paginated_call('metrics/webinars',
                 ['type' => 'past', 'from' => $from, 'to' => $to], 'webinars');
+    }
+
+    /**
+     * Lists tracking fields configured on the account.
+     *
+     * @return ?stdClass The call's result in JSON format.
+     * @link https://marketplace.zoom.us/docs/api-reference/zoom-api/trackingfield/trackingfieldlist
+     */
+    public function list_tracking_fields() {
+        $response = null;
+        try {
+            $response = $this->make_call('tracking_fields');
+        } catch (moodle_exception $error) {
+            debugging($error->getMessage());
+        }
+        return $response;
     }
 
     /**

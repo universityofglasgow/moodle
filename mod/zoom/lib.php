@@ -115,6 +115,11 @@ function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
 
     $zoom->id = $DB->insert_record('zoom', $zoom);
 
+    // Store tracking field data for meeting.
+    if (isset($response->tracking_fields)) {
+        zoom_sync_meeting_tracking_fields($zoom->id, $response->tracking_fields);
+    }
+
     zoom_calendar_item_update($zoom);
     zoom_grade_item_update($zoom);
 
@@ -180,6 +185,11 @@ function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     // Get the updated meeting info from zoom, before updating calendar events.
     $response = $service->get_meeting_webinar_info($zoom->meeting_id, $zoom->webinar);
     $zoom = populate_zoom_from_response($zoom, $response);
+
+    // Update tracking field data for meeting.
+    if (isset($response->tracking_fields)) {
+        zoom_sync_meeting_tracking_fields($zoom->id, $response->tracking_fields);
+    }
 
     zoom_calendar_item_update($zoom);
     zoom_grade_item_update($zoom);
@@ -261,9 +271,6 @@ function populate_zoom_from_response(stdClass $zoom, stdClass $response) {
     }
     $newzoom->meeting_id = $response->id;
     $newzoom->name = $response->topic;
-    if (isset($response->agenda)) {
-        $newzoom->intro = $response->agenda;
-    }
     if (isset($response->start_time)) {
         $newzoom->start_time = strtotime($response->start_time);
     }
@@ -353,6 +360,9 @@ function zoom_delete_instance($id) {
     }
     $DB->delete_records('zoom_meeting_details', array('meeting_id' => $zoom->meeting_id));
 
+    // Delete tracking field data for deleted meetings.
+    $DB->delete_records('zoom_meeting_tracking_fields', array('meeting_id' => $zoom->id));
+
     // Delete any dependent records here.
     zoom_calendar_item_delete($zoom);
     zoom_grade_item_delete($zoom);
@@ -373,7 +383,30 @@ function zoom_delete_instance($id) {
  * @return bool
  */
 function zoom_refresh_events($courseid, $zoom, $cm) {
-    return zoom_update_instance($zoom);
+    global $CFG;
+
+    require_once($CFG->dirroot . '/mod/zoom/classes/webservice.php');
+
+    try {
+        $service = new mod_zoom_webservice();
+
+        // Get the updated meeting info from zoom, before updating calendar events.
+        $response = $service->get_meeting_webinar_info($zoom->meeting_id, $zoom->webinar);
+        $fullzoom = populate_zoom_from_response($zoom, $response);
+
+        // Only if the name has changed, update meeting on Zoom.
+        if ($zoom->name !== $fullzoom->name) {
+            $fullzoom->name = $zoom->name;
+            $service->update_meeting($zoom);
+        }
+
+        zoom_calendar_item_update($fullzoom);
+        zoom_grade_item_update($fullzoom);
+    } catch (moodle_exception $error) {
+        return false;
+    }
+
+    return true;
 }
 
 /**
@@ -443,63 +476,53 @@ function zoom_get_extra_capabilities() {
  */
 function zoom_calendar_item_update(stdClass $zoom) {
     global $CFG, $DB;
-    require_once($CFG->dirroot.'/calendar/lib.php');
+    require_once($CFG->dirroot . '/calendar/lib.php');
 
+    // Based on data passed back from zoom, create/update/delete events based on data.
+    $newevents = array();
     if (!$zoom->recurring) {
-        $eventid = $DB->get_field('event', 'id', array(
-            'modulename' => 'zoom',
-            'instance' => $zoom->id,
-        ));
-
-        // Load existing event object, or create a new one.
-        $event = zoom_populate_calender_item($zoom);
-        if (!empty($eventid)) {
-            calendar_event::load($eventid)->update($event);
-        } else {
-            calendar_event::create($event);
+        $newevents[''] = zoom_populate_calender_item($zoom);
+    } else if (!empty($zoom->occurrences)) {
+        foreach ($zoom->occurrences as $occurrence) {
+            $uuid = $occurrence->occurrence_id;
+            $newevents[$uuid] = zoom_populate_calender_item($zoom, $occurrence);
         }
-    } else {
-        // Based on data passed back from zoom, create/update/detele events based on data.
-        if (!empty($zoom->occurrences)) {
-            $newevents = array();
-            foreach ($zoom->occurrences as $occurrence) {
-                $uuid = $occurrence->occurrence_id;
-                $newevents[$uuid] = zoom_populate_calender_item($zoom, $occurrence);
-            }
+    }
 
-            // Fetch all the events related to this zoom instance.
-            $conditions = array('modulename' => 'zoom', 'instance' => $zoom->id);
-            $events = $DB->get_records('event', $conditions);
-            $eventfields = array('name', 'timestart', 'timeduration');
-            foreach ($events as $event) {
-                $uuid = $event->uuid;
-                if (isset($newevents[$uuid])) {
-                    // This event already exists in Moodle.
-                    $changed = false;
-                    $newevent = $newevents[$uuid];
-                    // Check if the important fields have actually changed.
-                    foreach ($eventfields as $field) {
-                        if ($newevent->$field !== $event->$field) {
-                            $changed = true;
-                        }
-                    }
-                    if ($changed) {
-                        calendar_event::load($event)->update($newevent);
-                    }
-
-                    // Event has been updated, remove from the list.
-                    unset($newevents[$uuid]);
-                } else {
-                    // Event does not exist in Zoom, so delete from Moodle.
-                    calendar_event::load($event)->delete();
+    // Fetch all the events related to this zoom instance.
+    $conditions = array(
+        'modulename' => 'zoom',
+        'instance' => $zoom->id,
+    );
+    $events = $DB->get_records('event', $conditions);
+    $eventfields = array('name', 'timestart', 'timeduration');
+    foreach ($events as $event) {
+        $uuid = $event->uuid;
+        if (isset($newevents[$uuid])) {
+            // This event already exists in Moodle.
+            $changed = false;
+            $newevent = $newevents[$uuid];
+            // Check if the important fields have actually changed.
+            foreach ($eventfields as $field) {
+                if ($newevent->$field !== $event->$field) {
+                    $changed = true;
                 }
             }
-
-            // Any remaining events in the array, dont exist on Moodle, so create a new event.
-            foreach ($newevents as $uuid => $newevent) {
-                calendar_event::create($newevent);
+            if ($changed) {
+                calendar_event::load($event)->update($newevent);
             }
+
+            // Event has been updated, remove from the list.
+            unset($newevents[$uuid]);
+        } else {
+            // Event does not exist in Zoom, so delete from Moodle.
+            calendar_event::load($event)->delete();
         }
+    }
+
+    // Any remaining events in the array don't exist on Moodle, so create a new event.
+    foreach ($newevents as $uuid => $newevent) {
+        calendar_event::create($newevent);
     }
 }
 
@@ -843,4 +866,43 @@ function mod_zoom_get_fontawesome_icon_map() {
     return [
         'mod_zoom:i/calendar' => 'fa-calendar'
     ];
+}
+
+/**
+ * This function updates the tracking field settings in config_plugins.
+ */
+function mod_zoom_update_tracking_fields() {
+    global $DB;
+
+    $defaulttrackingfields = zoom_clean_tracking_fields();
+    $zoomtrackingfields = zoom_list_tracking_fields();
+    $zoomprops = array('id', 'field', 'required', 'visible', 'recommended_values');
+    $confignames = array();
+
+    foreach ($zoomtrackingfields as $field => $zoomtrackingfield) {
+        if (isset($defaulttrackingfields[$field])) {
+            foreach ($zoomprops as $zoomprop) {
+                $configname = 'tf_' . $field . '_' . $zoomprop;
+                $confignames[] = $configname;
+                if ($zoomprop === 'recommended_values') {
+                    $configvalue = implode(', ', $zoomtrackingfield[$zoomprop]);
+                } else {
+                    $configvalue = $zoomtrackingfield[$zoomprop];
+                }
+                set_config($configname, $configvalue, 'zoom');
+            }
+        }
+    }
+
+    $config = get_config('zoom');
+    $proparray = get_object_vars($config);
+    $properties = array_keys($proparray);
+    $oldconfigs = array_diff($properties, $confignames);
+    $pattern = '/^tf_(?P<oldfield>.*)_(' . implode('|', $zoomprops) . ')$/';
+    foreach ($oldconfigs as $oldconfig) {
+        if (preg_match($pattern, $oldconfig, $matches)) {
+            set_config($oldconfig, null, 'zoom');
+            $DB->delete_records('zoom_meeting_tracking_fields', array('tracking_field' => $matches['oldfield']));
+        }
+    }
 }

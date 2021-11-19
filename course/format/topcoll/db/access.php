@@ -34,7 +34,6 @@
 defined('MOODLE_INTERNAL') || die();
 
 $capabilities = array(
-
     'format/topcoll:changelayout' => array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
@@ -63,6 +62,15 @@ $capabilities = array(
     ),
 
     'format/topcoll:changetoggleiconset' => array(
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_COURSE,
+        'archetypes' => array(
+        'editingteacher' => CAP_ALLOW,
+        'manager' => CAP_ALLOW
+        )
+    ),
+
+    'format/topcoll:changeactivitymeta' => array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
         'archetypes' => array(

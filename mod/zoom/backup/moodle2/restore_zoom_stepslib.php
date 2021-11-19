@@ -30,11 +30,6 @@ require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
 
 /**
  * Structure step to restore one zoom activity
- *
- * @package   mod_zoom
- * @category  backup
- * @copyright 2015 UC Regents
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class restore_zoom_activity_structure_step extends restore_activity_structure_step {
 
@@ -47,6 +42,7 @@ class restore_zoom_activity_structure_step extends restore_activity_structure_st
 
         $paths = array();
         $paths[] = new restore_path_element('zoom', '/activity/zoom');
+        $paths[] = new restore_path_element('zoom_tracking_field', '/activity/zoom/trackingfields/trackingfield');
 
         // Return the paths wrapped into standard activity structure.
         return $this->prepare_activity_structure($paths);
@@ -67,15 +63,17 @@ class restore_zoom_activity_structure_step extends restore_activity_structure_st
         $data->start_time = $this->apply_date_offset($data->start_time);
 
         // Either create a new meeting or set meeting as expired.
-        $updateddata = $service->create_meeting($data);
-        if (!$updateddata) {
-            $updateddata = new stdClass;
-            $updateddata->exists_on_zoom = ZOOM_MEETING_EXPIRED;
+        try {
+            $updateddata = $service->create_meeting($data);
+            $data = populate_zoom_from_response($data, $updateddata);
+            $data->exists_on_zoom = ZOOM_MEETING_EXISTS;
+        } catch (moodle_exception $e) {
+            $data->start_url = '';
+            $data->join_url = '';
+            $data->meeting_id = 0;
+            $data->exists_on_zoom = ZOOM_MEETING_EXPIRED;
         }
 
-        $data->start_url = $updateddata->start_url;
-        $data->join_url = $updateddata->join_url;
-        $data->meeting_id = $updateddata->id;
         $data->course = $this->get_courseid();
 
         if (empty($data->timemodified)) {
@@ -93,8 +91,28 @@ class restore_zoom_activity_structure_step extends restore_activity_structure_st
 
         // Create the calendar events for the new meeting.
         $data->id = $newitemid;
-        $zoom = populate_zoom_from_response($data, $updateddata);
-        zoom_calendar_item_update($zoom);
+        zoom_calendar_item_update($data);
+    }
+
+    /**
+     * Process the zoom tracking fields.
+     *
+     * @param array $data
+     */
+    protected function process_zoom_tracking_field($data) {
+        global $DB;
+
+        $data = (object) $data;
+        $oldid = $data->id;
+
+        $data->meeting_id = $this->get_new_parentid('zoom');
+
+        $defaulttrackingfields = zoom_clean_tracking_fields();
+
+        if (isset($defaulttrackingfields[$data->tracking_field])) {
+            $newitemid = $DB->insert_record('zoom_meeting_tracking_fields', $data);
+            $this->set_mapping('zoom_tracking_field', $oldid, $newitemid);
+        }
     }
 
     /**
