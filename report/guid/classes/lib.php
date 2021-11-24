@@ -320,7 +320,7 @@ class lib {
     /**
      * print MyCampus data
      */
-    public static function format_mycampus($courses, $guid) {
+    public static function format_mycampus($courses, $guid, $enrolments) {
 
         // Normalise.
         $guid = strtolower( $guid );
@@ -335,6 +335,7 @@ class lib {
             $gucourses = self::mycampus_code($course->courses);
             foreach ($gucourses as $gucourse) {
                 $gucourse->link = new \moodle_url('/course/view.php', ['id' => $gucourse->id]);
+                $gucourse->enrolled = array_key_exists($gucourse->id, $enrolments);
             }
 
             $formatted[] = (object)[
@@ -553,6 +554,64 @@ class lib {
             $groupid = groups_create_group($group);
             return $groupid;
         }
+    }
+
+    /**
+     * Get Turnitin EULA status
+     * @param int $userid
+     * @return boolean
+     */
+    public static function get_tii_eula($userid) {
+        global $DB;
+
+        if ($tiiuser = $DB->get_record('plagiarism_turnitin_users', ['userid' => $userid])) {
+            return $tiiuser->user_agreement_accepted == 1;
+        } else { 
+            return false;
+        }
+    }
+
+    /**
+     * Get Turnitin data
+     * @param int $userid
+     * @param string $guid
+     * @return array
+     */
+    public static function get_turnitin($userid, $guid) {
+        global $DB;
+
+        if ($tiifiles = $DB->get_records('plagiarism_turnitin_files', ['userid' => $userid])) {
+            foreach ($tiifiles as $tiifile) {
+                $tiifile->formattedexternalid = !empty($tiifile->externalid) ? $tiifile->externalid : '-';
+                $tiifile->formattedsimilarityscore = !empty($tiifile->similarityscore) ? $tiifile->similarityscore : '-';
+                $tiifile->formattedlastmodified = userdate($tiifile->lastmodified);
+                $tiifile->errortext = !empty($tiifile->errorcode) ? get_string('errorcode' . $tiifile->errorcode, 'plagiarism_turnitin') : ' ';
+                $tiifile->oktoresend = $tiifile->statuscode != 'queued';
+                $tiifile->resendlink = new \moodle_url('/report/guid/index.php', [
+                    'guid' => $guid,
+                    'action' => 'tiiresend',
+                    'tid' => $tiifile->id,
+                ]);
+            }
+            return array_values($tiifiles);
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Reset turnitin submission
+     * @param int $tid
+     */
+    public static function reset_turnitin($tid) {
+        global $DB;
+
+        $plagiarismfile = $DB->get_record('plagiarism_turnitin_files', ['id' => $tid], '*', MUST_EXIST);
+        $plagiarismfile->statuscode = 'queued';
+        $plagiarismfile->similarityscore = null;
+        $plagiarismfile->errorcode = null;
+        $plagiarismfile->errormsg = null;
+        $DB->update_record('plagiarism_turnitin_files', $plagiarismfile);
     }
 
 }
