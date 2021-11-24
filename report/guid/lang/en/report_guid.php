@@ -76,6 +76,7 @@ $string['lastname'] = 'Last name';
 $string['ldapnotloaded'] = 'LDAP drivers are not loaded';
 $string['ldapresults'] = 'LDAP results';
 $string['ldapsearcherror'] = 'LDAP search failed (perhaps try with debugging on)';
+$string['module'] = 'Module';
 $string['more'] = '<i class="fa fa-info-circle"></i> More...';
 $string['moreresults'] = 'There are more results (not shown). Please give more specific search criteria';
 $string['mycampus'] = 'MyCampus enrolments';

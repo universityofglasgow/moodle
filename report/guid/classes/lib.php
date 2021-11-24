@@ -574,6 +574,24 @@ class lib {
     }
 
     /**
+     * Get activity url from cmid
+     * @param int cmid
+     * @return string
+     */
+    private static function get_cm_link($cmid) {
+        global $CFG, $DB;
+
+        if ($cm = $DB->get_record('course_modules', ['id' => $cmid])) {
+            $module = $DB->get_record('modules', ['id' => $cm->module], '*', MUST_EXIST);
+            $link = $CFG->wwwroot . '/mod/' . $module->name . '/view.php?id=' . $cmid;
+        } else {
+            $link = '-';
+        }
+
+        return $link;
+    }
+
+    /**
      * Get Turnitin data
      * @param int $userid
      * @param string $guid
@@ -594,6 +612,7 @@ class lib {
                     'action' => 'tiiresend',
                     'tid' => $tiifile->id,
                 ]);
+                $tiifile->link = self::get_cm_link($tiifile->cm);
             }
             return array_values($tiifiles);
         } else {
