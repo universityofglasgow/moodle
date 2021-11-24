@@ -414,9 +414,11 @@ class lib {
     private static function mycampus_code($code) {
         global $DB;
 
-        $sql = 'SELECT cc.* from {course} cc
+        /*$sql = 'SELECT cc.* from {course} cc
             JOIN {enrol_gudatabase_codes} egc ON egc.courseid = cc.id
-            WHERE code = :code';
+            WHERE code = :code';*/
+        $sql = 'SELECT cc.* from {course} cc
+            WHERE cc.id IN (SELECT courseid FROM {enrol_gudatabase_codes} WHERE code = :code GROUP BY code)';
         $gucourses = $DB->get_records_sql($sql, ['code' => $code]);
         return $gucourses;
     }
