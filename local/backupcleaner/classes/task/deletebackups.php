@@ -59,9 +59,13 @@ class deletebackups extends \core\task\scheduled_task {
 			}
         }
         
-        mtrace('Identified '.$identified.' crusty old backups.');
-        mtrace('Successfully deleted '.$deleted.' of them.');
-        mtrace('Enjoy the '.number_format($bytes/1048576).' megabytes you\'ve saved!');
+        if($identified > 0) {
+	        mtrace('Identified '.$identified.' crusty old backups.');
+	        mtrace('Successfully deleted '.$deleted.' of them.');
+	        mtrace('Enjoy the '.number_format($bytes/1048576).' megabytes you\'ve saved!');
+	    } else {
+		    mtrace('Didn\'t find anything to delete.');
+	    }
     }
 
 }
