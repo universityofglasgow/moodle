@@ -92,6 +92,12 @@ body.hillhead-spacing * {
     body.hillhead-#{$class} .vjs-text-track-display > div {
         background: transparent !important;
     }
+    
+    body.hillhead-#{$class}.path-mod-quiz #mod_quiz_navblock .qnbutton.complete .trafficlight,
+    body.hillhead-#{$class}.path-mod-quiz #mod_quiz_navblock .qnbutton.answersaved .trafficlight,
+    body.hillhead-#{$class}.path-mod-quiz #mod_quiz_navblock .qnbutton.requiresgrading .trafficlight {
+		background-color: $foreground;
+	}
 }
 
 @include accessibility-theme(contrast-yb, #000, #ee6);
@@ -119,6 +125,11 @@ body.hillhead-contrast header .navbar-brand {
 
 body.hillhead-contrast header .navbar-brand span.site-name {
     text-indent: 0;
+}
+
+body.hillhead-contrast.path-mod-quiz #mod_quiz_navblock .thispageholder,
+body.hillhead-contrast.path-mod-quiz #mod_quiz_navblock .trafficlight  {
+	background: transparent !important;
 }
 
 .navbar .popover-region-container {
