@@ -47,6 +47,28 @@ if ($hassiteconfig) {
     $default = '3650';
     
     $setting = new admin_setting_configselect($name, $title, $description, $default, $choices);                                                                                                                                                                                     
-    $settings->add($setting);    
+    $settings->add($setting);
+    
+    $name = 'local_backupcleaner/max_delete';                                                                                                   
+    $title = get_string('max_delete', 'local_backupcleaner');                                                                                   
+    $description = get_string('max_delete_desc', 'local_backupcleaner');
+    
+    $choices = Array(
+        '1' => get_string('max_delete_1', 'local_backupcleaner'),
+        '5' => get_string('max_delete_5', 'local_backupcleaner'),
+        '10' => get_string('max_delete_10', 'local_backupcleaner'),
+        '25' => get_string('max_delete_25', 'local_backupcleaner'),
+        '50' => get_string('max_delete_50', 'local_backupcleaner'),
+        '100' => get_string('max_delete_100', 'local_backupcleaner'),
+        '250' => get_string('max_delete_250', 'local_backupcleaner'),
+        '500' => get_string('max_delete_500', 'local_backupcleaner'),
+        '1000' => get_string('max_delete_1000', 'local_backupcleaner'),
+    );                                                                     
+    $default = '10';
+    
+    $setting = new admin_setting_configselect($name, $title, $description, $default, $choices);                                                                                                                                                                                     
+    $settings->add($setting);
+    
+        
 
 }

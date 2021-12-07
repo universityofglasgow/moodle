@@ -36,13 +36,15 @@ class deletebackups extends \core\task\scheduled_task {
 	    global $DB;
 	    
         $days = get_config('local_backupcleaner', 'min_age');
+        $limit = get_config('local_backupcleaner', 'max_delete');
         
-        $files = $DB->get_records_sql('SELECT * FROM {files} WHERE mimetype="application/vnd.moodle.backup" AND timecreated < '.(time() - ( $days * 86400)));
+        $files = $DB->get_records_sql('SELECT * FROM {files} WHERE mimetype="application/vnd.moodle.backup" AND timecreated < '.(time() - ( $days * 86400)).' LIMIT '.$limit);
         
         $fs = get_file_storage();
         
         $identified = 0;
         $deleted = 0;
+        $bytes = 0;
         
         foreach($files as $thisFile) {
 	        
@@ -51,12 +53,15 @@ class deletebackups extends \core\task\scheduled_task {
 	        $identified += 1;
 	        
 	        if ($file) {
+		        $bytes += $thisFile->filesize;
 			    $file->delete();
 			    $deleted += 1;
 			}
         }
         
-        mtrace('Identified '.$identified.' crusty backups and successfully deleted '.$deleted.' of them.');
+        mtrace('Identified '.$identified.' crusty old backups.');
+        mtrace('Successfully deleted '.$deleted.' of them.');
+        mtrace('Enjoy the '.number_format($bytes/1048576).' megabytes you\'ve saved!');
     }
 
 }
