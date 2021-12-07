@@ -17,21 +17,18 @@
 /**
  * This file contains helper testcase for testing "moodle" CS Sniffs.
  *
- * To run the tests for the Moodle sniffs, you need to use:
- *     vendor/bin/phpunit local/codechecker/moodle/tests/moodlestandard_test.php
- *
  * @package    local_codechecker
  * @category   test
  * @copyright  2013 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace local_codechecker;
+
 defined('MOODLE_INTERNAL') || die(); // Remove this to use me out from Moodle.
 
 if (is_file(__DIR__.'/../phpcs/autoload.php') === true) {
     include_once(__DIR__.'/../phpcs/autoload.php');
-} else {
-    include_once('PHP/CodeSniffer/autoload.php');
 }
 
 $tokens = new \PHP_CodeSniffer\Util\Tokens();
@@ -55,27 +52,8 @@ if (defined('PHP_CODESNIFFER_VERBOSITY') === false) {
 // the autoloader earlier(see https://github.com/squizlabs/PHP_CodeSniffer/issues/1469).
 require_once(dirname(__DIR__) . '/PHPCSAliases.php');
 
-// Interim classes providing conditional extension, so I can run
-// these plugin tests against different Moodle branches that are
-// using different phpunit (namespaced or no) classes.
-// phpcs:disable
-if (class_exists('PHPUnit_Framework_TestCase')) {
-    /**
-     * Conditional class to keep compatibility between php versions. phpunit <7 alternative.
-     */
-    abstract class conditional_PHPUnit_Framework_TestCase extends PHPUnit_Framework_TestCase {
-    }
-} else {
-    /**
-     * Conditional class to keep compatibility between php versions. phpunit >=7 alternative.
-     */
-    abstract class conditional_PHPUnit_Framework_TestCase extends PHPUnit\Framework\TestCase {
-    }
-}
-// phpcs:enable
-
 /**
- * Specialized test case for easy testing of "moodle" CS Sniffs.
+ * Specialized test case for easy testing of "moodle" standard sniffs.
  *
  * If you want to run the tests for the Moodle sniffs, you need to
  * use the specific command-line:
@@ -89,8 +67,13 @@ if (class_exists('PHPUnit_Framework_TestCase')) {
  * Should work for any Sniff part of a given standard (custom or core).
  *
  * Note extension & overriding was impossible because of some "final" stuff.
+ *
+ * @package    local_codechecker
+ * @category   test
+ * @copyright  2013 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-abstract class local_codechecker_testcase extends conditional_PHPUnit_Framework_TestCase {
+abstract class local_codechecker_testcase extends \PHPUnit\Framework\TestCase {
 
     /**
      * @var string name of the standard to be tested.
@@ -178,6 +161,9 @@ abstract class local_codechecker_testcase extends conditional_PHPUnit_Framework_
      * @param string $fixture full path to the file used as input (fixture).
      */
     protected function set_fixture($fixture) {
+        if (!is_readable($fixture)) {
+            $this->fail('Unreadable fixture passed: '. $fixture);
+        }
         $this->fixture = $fixture;
     }
 
@@ -272,6 +258,33 @@ abstract class local_codechecker_testcase extends conditional_PHPUnit_Framework_
         // Let's compare expected errors with returned ones.
         $this->verify_errors($phpcsfile->getErrors());
         $this->verify_warnings($phpcsfile->getWarnings());
+
+        $fixerrors = [];
+        // Let's see if the file has fixable problems and if they become really fixed.
+        if ($phpcsfile->getFixableCount() > 0) {
+            $phpcsfile->fixer->fixFile();
+            // If there are remaining fixable cases, this is a fix problem.
+            $tofix = $phpcsfile->getFixableCount();
+            if ($tofix > 0) {
+                $fixerrors[] = "Failed to fix $tofix fixable problems in $this->fixture";
+            }
+        }
+
+        // Now, if there is a file, with the same name than the
+        // fixture + .fix, use it to verify that the fixed does its job too.
+        if (is_readable($this->fixture . '.fixed')) {
+            $diff = $phpcsfile->fixer->generateDiff($this->fixture . '.fixed');
+            if (trim($diff) !== '') {
+                $filename = basename($this->fixture);
+                $fixedfilename = basename($this->fixture . '.fixed');
+                $fixerrors[] = "Fixed version of $filename does not match expected version in $fixedfilename; the diff is\n$diff";
+            }
+        }
+
+        // Any fix problem detected, report it.
+        if (empty($fixerrors) === false) {
+            $this->fail(implode(PHP_EOL, $fixerrors));
+        }
     }
 
     /**
@@ -324,14 +337,8 @@ abstract class local_codechecker_testcase extends conditional_PHPUnit_Framework_
             // Now verify every expectation requiring matching.
             foreach ($expectation as $key => $expectedcontent) {
                 if (is_string($expectedcontent)) {
-                    // PHPUnit 6 compatibility hack. TODO: Remove once Moodle 3.5 goes out of support.
-                    if (method_exists($this, 'assertStringContainsString')) {
-                        $this->assertStringContainsString($expectedcontent, $results[$line][$key],
-                            'Failed contents matching of ' . $type . ' for element ' . ($key + 1) . ' of line ' . $line . '.');
-                    } else {
-                        $this->assertContains($expectedcontent, $results[$line][$key],
-                            'Failed contents matching of ' . $type . ' for element ' . ($key + 1) . ' of line ' . $line . '.');
-                    }
+                    $this->assertStringContainsString($expectedcontent, $results[$line][$key],
+                        'Failed contents matching of ' . $type . ' for element ' . ($key + 1) . ' of line ' . $line . '.');
                 }
             }
             // Delete this line from results.

@@ -17,7 +17,7 @@
 /**
  * Trait for supporting html content.
  * @author    Guy Thomas <citricity@gmail.com>
- * @copyright Copyright (c) 2018 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2018 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -315,7 +315,13 @@ trait html_content {
      * @throws \moodle_exception
      */
     protected function make_module_instance_url($module, $id) {
-        list($course, $cm) = get_course_and_cm_from_instance($id, $module);
+        try {
+            list($course, $cm) = get_course_and_cm_from_instance($id, $module);
+        } catch (\moodle_exception $e) {
+            // Sometimes this can get called before the module is in the core functions, so just return empty.
+            return '';
+        }
+
         return new \moodle_url('/course/view.php?id=' . $course->id . '#module-' . $cm->id) . '';
     }
 

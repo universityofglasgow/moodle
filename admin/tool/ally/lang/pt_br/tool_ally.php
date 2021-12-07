@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @copyright  Copyright (c) 2020 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright  Copyright (c) 2021 Open LMS (https://www.openlms.net)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -50,7 +50,7 @@ $string['pluginname'] = 'Ally';
 $string['pushurl'] = 'URL de atualizações de arquivos';
 $string['pushurldesc'] = 'Notificações push sobre atualizações de arquivos para este URL.';
 $string['queuesendmessagesfailure'] = 'Ocorreu um erro ao enviar mensagens para AWS SQS. Dados do erro: $a';
-$string['secret'] = 'Secreto';
+$string['secret'] = 'Segredo';
 $string['secretdesc'] = 'O segredo da LTI.';
 $string['showdata'] = 'Mostrar dados';
 $string['hidedata'] = 'Ocultar dados';
@@ -81,10 +81,13 @@ $string['lessonanswertitle'] = 'Resposta para a lição "{$a}"';
 $string['lessonresponsetitle'] = 'Resposta para a lição "{$a}"';
 $string['logs'] = 'Registros do Ally';
 $string['logrange'] = 'Faixa de registros';
-$string['loglevel:none'] = 'Nenhum';
+$string['loglevel:none'] = 'Nenhuma';
 $string['loglevel:light'] = 'Leve';
 $string['loglevel:medium'] = 'Médio';
-$string['loglevel:all'] = 'Tudo';
+$string['loglevel:all'] = 'Todas';
+$string['logcleanuptask'] = 'Tarefa de limpeza de registros do Ally';
+$string['loglifetimedays'] = 'Manter registros por essa quantidade de dias';
+$string['loglifetimedaysdesc'] = 'Manter registros do Ally por essa quantidade de dias. Defina como 0 para não excluir os registros. Uma tarefa agendada é (por padrão) definida para ser executada diariamente e removerá entradas de registro que tiverem mais do que essa quantidade de dias.';
 $string['logger:pushtoallysuccess'] = 'Push bem-sucedido para o terminal do Ally';
 $string['logger:pushtoallyfail'] = 'Push malsucedido para o terminal do Ally';
 $string['logger:pushfilesuccess'] = 'Push bem-sucedido de arquivo(s) para o terminal do Ally';
@@ -103,6 +106,7 @@ $string['logger:annotationmoderror_exp'] = 'O módulo não foi identificado corr
 $string['logger:failedtogetcoursesectionname'] = 'Falha ao obter o nome da seção do curso';
 $string['logger:moduleidresolutionfailure'] = 'Falha ao resolver o código do módulo';
 $string['logger:cmidresolutionfailure'] = 'Falha ao resolver o código do módulo do curso';
+$string['logger:cmvisibilityresolutionfailure'] = 'Falha ao resolver a visibilidade do módulo do curso';
 $string['courseupdatestask'] = 'Enviar eventos do curso para o Ally';
 $string['logger:pushcoursesuccess'] = 'Push bem-sucedido de evento(s) do curso para o terminal do Ally';
 $string['logger:pushcourseliveskip'] = 'Falha no push de evento de curso ativo';
@@ -117,3 +121,5 @@ $string['logger:servicefailure'] = 'Falha ao consumir serviço.';
 $string['logger:servicefailure_exp'] = '<br>Classe: {$a->class}<br>Parâmetros: {$a->params}';
 $string['logger:autoconfigfailureteachercap'] = 'Falha ao atribuir uma competência de arquétipo de professor à função ally_webservice.';
 $string['logger:autoconfigfailureteachercap_exp'] = '<br>Competência: {$a->cap}<br>Permissão: {$a->permission}';
+$string['deferredcourseevents'] = 'Enviar eventos adiados do curso';
+$string['deferredcourseeventsdesc'] = 'Permitir o envio de eventos armazenados do curso que se acumularam durante a falha de comunicação com o Ally';

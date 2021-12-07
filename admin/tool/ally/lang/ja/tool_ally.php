@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @copyright  Copyright (c) 2020 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright  Copyright (c) 2021 Open LMS (https://www.openlms.net)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -85,6 +85,9 @@ $string['loglevel:none'] = 'なし';
 $string['loglevel:light'] = '小';
 $string['loglevel:medium'] = '中';
 $string['loglevel:all'] = 'すべて';
+$string['logcleanuptask'] = 'Allyログのクリーンアップタスク';
+$string['loglifetimedays'] = 'この日数の間ログを保持する';
+$string['loglifetimedaysdesc'] = 'この日数の間Allyログを保持します。0に設定して、決してログを削除しないようにします。スケジュールタスクは毎日実行するように (デフォルトで) 設定され、この日数より古くなったログエントリを削除するようにします。';
 $string['logger:pushtoallysuccess'] = 'Allyエンドポイントへのプッシュ成功';
 $string['logger:pushtoallyfail'] = 'Allyエンドポイントへのプッシュ失敗';
 $string['logger:pushfilesuccess'] = 'Allyエンドポイントへのファイルのプッシュ成功';
@@ -103,6 +106,7 @@ $string['logger:annotationmoderror_exp'] = 'モジュールが正しく識別さ
 $string['logger:failedtogetcoursesectionname'] = 'コースセクション名の取得に失敗しました';
 $string['logger:moduleidresolutionfailure'] = 'モジュールIDの解決に失敗しました';
 $string['logger:cmidresolutionfailure'] = 'コースモジュールIDの解決に失敗しました';
+$string['logger:cmvisibilityresolutionfailure'] = 'コースモジュールの可視性の解決に失敗しました';
 $string['courseupdatestask'] = 'Allyにコースイベントをプッシュする';
 $string['logger:pushcoursesuccess'] = 'Allyエンドポイントへのコースイベントのプッシュに成功しました';
 $string['logger:pushcourseliveskip'] = 'ライブコースイベントプッシュ失敗';
@@ -117,3 +121,5 @@ $string['logger:servicefailure'] = 'サービスの使用中に失敗しまし�
 $string['logger:servicefailure_exp'] = '<br>クラス : {$a->class}<br>パラメータ : {$a->params}';
 $string['logger:autoconfigfailureteachercap'] = 'ally_webserviceロールに教師アーキタイプケイパビリティを割り当て中に失敗しました。';
 $string['logger:autoconfigfailureteachercap_exp'] = '<br>ケイパビリティ : {$a->cap}<br>パーミッション : {$a->permission}';
+$string['deferredcourseevents'] = '保留されたコースイベントを送信する';
+$string['deferredcourseeventsdesc'] = 'Allyとの通信エラーの間に蓄積した、保存されたコースイベントを送信できるようにします。';

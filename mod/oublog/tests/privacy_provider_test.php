@@ -47,7 +47,7 @@ class privacy_provider_testcase extends \core_privacy\tests\provider_testcase {
     /**
      * All tests make database changes.
      */
-    public function setUp() {
+    public function setUp(): void {
         $this->resetAfterTest(true);
     }
 
@@ -68,7 +68,7 @@ class privacy_provider_testcase extends \core_privacy\tests\provider_testcase {
         $writer = \core_privacy\local\request\writer::with_context($context);
         $data = $writer->get_data([]);
         $this->assertEquals('MyBlog', $data->name);
-        $this->assertContains('My intro', $data->intro);
+        $this->assertStringContainsString('My intro', $data->intro);
         $this->assertObjectNotHasAttribute('posts', $data);
         $this->assertObjectNotHasAttribute('edits', $data);
         $this->assertObjectNotHasAttribute('comments', $data);
@@ -857,8 +857,8 @@ class privacy_provider_testcase extends \core_privacy\tests\provider_testcase {
 
         $this->assertCount(1, $userlist1);
         $this->assertCount(1, $userlist2);
-        $this->assertContains($users[1]->id, $users1);
-        $this->assertContains($users[2]->id, $users2);
+        $this->assertContains((int)$users[1]->id, $users1);
+        $this->assertContains((int)$users[2]->id, $users2);
     }
 
     /**
@@ -897,8 +897,8 @@ class privacy_provider_testcase extends \core_privacy\tests\provider_testcase {
 
         $this->assertCount(1, $userlist1);
         $this->assertCount(1, $userlist2);
-        $this->assertContains($users[1]->id, $users1);
-        $this->assertContains($users[2]->id, $users2);
+        $this->assertContains((int)$users[1]->id, $users1);
+        $this->assertContains((int)$users[2]->id, $users2);
     }
 
     /**
@@ -945,8 +945,8 @@ class privacy_provider_testcase extends \core_privacy\tests\provider_testcase {
 
         $this->assertCount(1, $userlist1);
         $this->assertCount(1, $userlist2);
-        $this->assertContains($users[1]->id, $users1);
-        $this->assertContains($users[2]->id, $users2);
+        $this->assertContains((int)$users[1]->id, $users1);
+        $this->assertContains((int)$users[2]->id, $users2);
     }
 
     /**
@@ -977,8 +977,8 @@ class privacy_provider_testcase extends \core_privacy\tests\provider_testcase {
         $users1 = $userlist1->get_userids();
 
         $this->assertCount(2, $userlist1);
-        $this->assertContains($users[1]->id, $users1);
-        $this->assertContains($users[2]->id, $users1);
+        $this->assertContains((int)$users[1]->id, $users1);
+        $this->assertContains((int)$users[2]->id, $users1);
     }
 
     /**
@@ -1020,8 +1020,8 @@ class privacy_provider_testcase extends \core_privacy\tests\provider_testcase {
 
         $this->assertCount(1, $userlist1);
         $this->assertCount(1, $userlist2);
-        $this->assertContains($users[1]->id, $users1);
-        $this->assertContains($users[2]->id, $users2);
+        $this->assertContains((int)$users[1]->id, $users1);
+        $this->assertContains((int)$users[2]->id, $users2);
     }
 
     /**

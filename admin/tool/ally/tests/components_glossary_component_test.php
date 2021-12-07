@@ -19,7 +19,7 @@
  *
  * @package   tool_ally
  * @author    Guy Thomas
- * @copyright Copyright (c) 2018 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2018 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -29,15 +29,17 @@ use tool_ally\testing\traits\component_assertions;
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once('abstract_testcase.php');
+
 /**
  * Testcase class for the tool_ally\componentsupport\glossary_component class.
  *
  * @package   tool_ally
  * @author    Guy Thomas
- * @copyright Copyright (c) 2018 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2018 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class tool_ally_components_glossary_component_testcase extends advanced_testcase {
+class tool_ally_components_glossary_component_testcase extends tool_ally_abstract_testcase {
     use component_assertions;
 
     /**
@@ -85,7 +87,7 @@ class tool_ally_components_glossary_component_testcase extends advanced_testcase
      */
     private $component;
 
-    public function setUp() {
+    public function setUp(): void {
         $this->resetAfterTest();
 
         $gen = $this->getDataGenerator();
@@ -122,11 +124,11 @@ class tool_ally_components_glossary_component_testcase extends advanced_testcase
 
     public function test_get_approved_author_ids_for_context() {
         $authorids = $this->component->get_approved_author_ids_for_context($this->coursecontext);
-        $this->assertContains($this->teacher->id, $authorids,
+        $this->assertTrue(in_array($this->teacher->id, $authorids),
                 'Teacher id '.$this->teacher->id.' should be in list of author ids.');
-        $this->assertContains($this->admin->id, $authorids,
+        $this->assertTrue(in_array($this->admin->id, $authorids),
                 'Admin id '.$this->admin->id.' should be in list of author ids.');
-        $this->assertNotContains($this->student->id, $authorids,
+        $this->assertFalse(in_array($this->student->id, $authorids),
                 'Student id '.$this->student->id.' should NOT be in list of author ids.');
     }
 
@@ -181,5 +183,38 @@ class tool_ally_components_glossary_component_testcase extends advanced_testcase
 
         $this->assertEquals('glossary:glossary_entries:definition:'.$this->teacherentry->id, reset($cis['entries']));
 
+    }
+
+    /**
+     * Test if file in use detection is working with this module.
+     */
+    public function test_check_file_in_use() {
+        $context = context_module::instance($this->glossary->cmid);
+
+        $usedfiles = [];
+        $unusedfiles = [];
+
+        // Check the intro.
+        list($usedfiles[], $unusedfiles[]) = $this->check_html_files_in_use($context, 'mod_glossary', $this->glossary->id,
+            'glossary', 'intro');
+
+        // Check the defintion text.
+        list($usedfiles[], $unusedfiles[]) = $this->check_html_files_in_use($context, 'mod_glossary', $this->teacherentry->id,
+            'glossary_entries', 'definition', $this->teacher);
+
+        // Add some attachments.
+        list($file1, $file2) = $this->setup_check_files($context, 'mod_glossary', 'attachment',
+            $this->teacherentry->id, $this->teacher);
+        $usedfiles[] = $file1; // Silly workaround for PHP code checker.
+        $usedfiles[] = $file2;
+
+        // These student ones will never be included. We will confirm that below.
+        list($discard, $discard2) = $this->setup_check_files($context, 'mod_glossary', 'definition',
+            $this->studententry->id, $this->student);
+        list($discard, $discard2) = $this->setup_check_files($context, 'mod_glossary', 'attachment',
+            $this->studententry->id, $this->student);
+
+        // This will double check that file iterator is working as expected.
+        $this->check_file_iterator_exclusion($context, $usedfiles, $unusedfiles);
     }
 }

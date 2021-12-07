@@ -16,8 +16,8 @@
 
 /**
  * Ally filter context
- * @author    Guy Thomas <osdev@blackboard.com>
- * @copyright Copyright (c) 2017 Blackboard Inc.
+ * @author    Guy Thomas
+ * @copyright Copyright (c) 2017 Open LMS
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -33,8 +33,8 @@ use \tool_ally\models\component_content;
 /**
  * Ally filter context
  *
- * @author    Guy Thomas <osdev@blackboard.com>
- * @copyright Copyright (c) 2017 Blackboard Inc.
+ * @author    Guy Thomas
+ * @copyright Copyright (c) 2017 Open LMS
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @category  test
  * @package   filter_ally
@@ -778,6 +778,12 @@ XPATH;
             $path = "//div[contains(@id, 'folder_tree0')]//div[contains(concat(' ', @class, ' '), ' ygtvchildren ')]";
             $path .= "//div[contains(concat(' ', @class, ' '), ' ygtvitem ')][$anchorx]";
             $path .= "//*[contains(concat(' ', @class, ' '), ' ally-anchor-wrapper ')]";
+        } else if ($type === 'file in subfolder') {
+            $path = "//div[contains(@id, 'folder_tree0')]//div[contains(concat(' ', @class, ' '), ' ygtvchildren ')]";
+            $path .= "//div[contains(concat(' ', @class, ' '), ' ygtvitem ')]";
+            $path .= "//div[contains(concat(' ', @class, ' '), ' ygtvchildren ')]";
+            $path .= "//div[contains(concat(' ', @class, ' '), ' ygtvitem ')][$anchorx]";
+            $path .= "//*[contains(concat(' ', @class, ' '), ' ally-anchor-wrapper ')]";
         } else if ($type === 'glossary attachment') {
             $path = "//td[contains(concat(' ', @class, ' '), ' entry ')]";
             $path .= "//div[contains(concat(' ', @class, ' '), ' attachments ')]";
@@ -813,7 +819,7 @@ XPATH;
 
     /**
      * @Given /^I should see the feedback place holder for the "(\d*)(?:st|nd|rd|th)" \
-     * (anchor|file resource|assignment file|file in folder|glossary attachment)$/
+     * (anchor|file resource|assignment file|file in folder|file in subfolder|glossary attachment)$/
      * @param string $anchorx
      * @param string $type
      */
@@ -825,7 +831,7 @@ XPATH;
 
     /**
      * @Given /^I should not see the feedback place holder for the "(\d*)(?:st|nd|rd|th)" \
-     * (anchor|file resource|assignment file|file in folder|glossary attachment)$/
+     * (anchor|file resource|assignment file|file in folder|file in subfolder|glossary attachment)$/
      * @param string $anchorx
      */
     public function i_should_not_see_feedback_for_anchor_x($anchorx, $type) {
@@ -835,7 +841,7 @@ XPATH;
 
     /**
      * @Given /^I should see the download place holder for the "(\d*)(?:st|nd|rd|th)" \
-     * (anchor|file resource|assignment file|file in folder|glossary attachment)$/
+     * (anchor|file resource|assignment file|file in folder|file in subfolder|glossary attachment)$/
      * @param string $anchorx
      */
     public function i_should_see_download_for_anchor_x($anchorx, $type) {
@@ -846,7 +852,7 @@ XPATH;
 
     /**
      * @Given /^I should not see the download place holder for the "(\d*)(?:st|nd|rd|th)" \
-     * (anchor|file resource|assignment file|file in folder|glossary attachment)$/
+     * (anchor|file resource|assignment file|file in folder|file in subfolder|glossary attachment)$/
      * @param string $anchorx
      */
     public function i_should_not_see_download_for_anchor_x($anchorx, $type) {
@@ -959,6 +965,19 @@ XPATH;
         $coursesection->summaryformat = $format;
         $coursesection->summary = $summary;
         $DB->update_record('course_sections', $coursesection);
+
+        // Trigger an event for course section update - just like is done by core when a course
+        // section is updated. This ensures caches are updated appropriately during testing just
+        // as they are in normal use.
+        $event = \core\event\course_section_updated::create(
+            array(
+                'objectid' => $coursesection->id,
+                'courseid' => $course,
+                'context' => context_course::instance($course),
+                'other' => array('sectionnum' => $coursesection->section)
+            )
+        );
+        $event->trigger();
     }
 
     /**

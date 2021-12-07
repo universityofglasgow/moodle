@@ -334,7 +334,6 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
 
     public function test_forum_view() {
         global $CFG;
-
         $CFG->enablecompletion = 1;
         $this->resetAfterTest();
 
@@ -2131,7 +2130,7 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
         $this->assertArrayHasKey('hsuforum', $results[$course1->id]);
 
         // Make sure the viewer isn't seeing the private unread item.
-        $this->assertContains(get_string('overviewnumunread', 'hsuforum', 1), $results[$course1->id]['hsuforum']);
+        $this->assertStringContainsString(get_string('overviewnumunread', 'hsuforum', 1), $results[$course1->id]['hsuforum']);
 
         // Check back as the author, they should see one unread for the private reply.
         $this->setUser($author->id);
@@ -2140,7 +2139,7 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
         hsuforum_print_overview($courses, $results);
         $this->assertDebuggingCalledCount(2);
 
-        $this->assertContains(get_string('overviewnumunread', 'hsuforum', 1), $results[$course1->id]['hsuforum']);
+        $this->assertStringContainsString(get_string('overviewnumunread', 'hsuforum', 1), $results[$course1->id]['hsuforum']);
     }
 
     public function test_print_overview_groups() {
@@ -3594,9 +3593,9 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
         $wordcount4 = hsuforum_word_count('one\two > three');
         $wordcount5 = hsuforum_word_count('one @ two/three');
         $wordcount6 = hsuforum_word_count('one*two < three');
-        $this->assertEquals(3, $wordcount);
-        $this->assertEquals(3, $wordcount2);
-        $this->assertEquals(2, $wordcount3);// "<three" will not be rendered as it is asumed it is an html entity.
+        $this->assertEquals(5, $wordcount);
+        $this->assertEquals(5, $wordcount2);
+        $this->assertEquals(1, $wordcount3);// "<three" will not be rendered as it is asumed it is an html entity.
         $this->assertEquals(3, $wordcount4);
         $this->assertEquals(3, $wordcount5);
         $this->assertEquals(3, $wordcount6);

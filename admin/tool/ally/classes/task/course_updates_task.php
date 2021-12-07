@@ -18,7 +18,7 @@
  * File updates task.
  *
  * @package   tool_ally
- * @copyright Copyright (c) 2019 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2019 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -35,7 +35,7 @@ defined('MOODLE_INTERNAL') || die();
  * File updates task.
  *
  * @package   tool_ally
- * @copyright Copyright (c) 2019 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2019 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class course_updates_task extends scheduled_task {
@@ -67,6 +67,10 @@ class course_updates_task extends scheduled_task {
     public function execute() {
         $config = $this->config ?: new push_config();
         if (!$config->is_valid()) {
+            return;
+        }
+
+        if (empty(get_config('tool_ally', 'deferredcourseevents'))) {
             return;
         }
 

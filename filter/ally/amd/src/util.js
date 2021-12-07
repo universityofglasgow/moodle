@@ -18,7 +18,7 @@
  *
  * @package   filter_ally
  * @author    Guy Thomas / Branden Visser
- * @copyright Copyright (c) 2017 Blackboard Inc.
+ * @copyright Copyright (c) 2017 Open LMS
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 define(['jquery'], function($) {
@@ -38,15 +38,35 @@ define(['jquery'], function($) {
             var dfd = $.Deferred();
             var i = 0;
 
-            setInterval(function() {
-                i = !i ? 0 : i + 1;
+            // Maintains a handle to the interval timer, so it can be cleaned up when the element is removed.
+            var intervalHandle = null;
+
+            /*!
+             * The function that will be used to try the evaluation repeatedly.
+             */
+            var loop = function() {
+                i++;
                 if (i > maxIterations) {
                     dfd.reject();
+                    if (intervalHandle) {
+                        // Cleanup the interval.
+                        clearInterval(intervalHandle);
+                        intervalHandle = null;
+                    }
+                    return;
                 }
                 if (evaluateFunction()) {
                     dfd.resolve();
+                    if (intervalHandle) {
+                        // Cleanup the interval.
+                        clearInterval(intervalHandle);
+                        intervalHandle = null;
+                    }
+                    return;
                 }
-            }, 200);
+            };
+
+            intervalHandle = setInterval(loop, 200);
 
             return dfd.promise();
         };

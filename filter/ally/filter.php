@@ -16,9 +16,9 @@
 
 /**
  * Filter for processing file links for Ally accessibility enhancements.
- * @author    Guy Thomas <osdev@blackboard.com>
+ * @author    Guy Thomas
  * @package   filter_ally
- * @copyright Copyright (c) 2017 Blackboard Inc.
+ * @copyright Copyright (c) 2017 Open LMS
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die();
@@ -34,9 +34,9 @@ use tool_ally\logging\logger;
 
 /**
  * Filter for processing file links for Ally accessibility enhancements.
- * @author    Guy Thomas <osdev@blackboard.com>
+ * @author    Guy Thomas
  * @package   filter_ally
- * @copyright Copyright (c) 2017 Blackboard Inc.
+ * @copyright Copyright (c) 2017 Open LMS
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class filter_ally extends moodle_text_filter {
@@ -49,7 +49,7 @@ class filter_ally extends moodle_text_filter {
     /**
      * @var bool is the filter active in this context?
      */
-    private $filteractive = false;
+    private $filteractive = null;
 
     /**
      * @var array course ids for which we are currently annotating.
@@ -96,11 +96,17 @@ class filter_ally extends moodle_text_filter {
             if ($file->is_directory()) {
                 continue;
             }
-            $fullpath = $cm->context->id.'/'.$component.'/'.$filearea.'/'.
-                $file->get_itemid().'/'.
-                $file->get_filepath().'/'.
-                $file->get_filename();
-            $fullpath = str_replace('///', '/', $fullpath);
+
+            // Use the logic from moodle_url::make_pluginfile_url() to generate matching URL path.
+            $path = [];
+            $path[] = $cm->context->id;
+            $path[] = $component;
+            $path[] = $filearea;
+            if ($file->get_itemid() !== null) {
+                $path[] = $file->get_itemid();
+            }
+            $fullpath = implode('/', $path) . $file->get_filepath() . $file->get_filename();
+
             $map[$fullpath] = $file->get_pathnamehash();
         }
         return $map;
@@ -157,7 +163,7 @@ class filter_ally extends moodle_text_filter {
         }
 
         if (!empty($cm)) {
-            $map = $this->get_cm_file_map($cm, 'mod_forum', 'attachment', 'image%');
+            $map = $this->get_cm_file_map($cm, 'mod_forum', 'attachment');
         }
 
         return $map;
@@ -210,6 +216,9 @@ class filter_ally extends moodle_text_filter {
             $folders = $DB->get_records('folder', ['course' => $COURSE->id]);
             $map = [];
             foreach ($folders as $folder) {
+                if (empty($folder->name)) {
+                    continue;
+                }
                 try {
                     [$course, $cm] = get_course_and_cm_from_instance($folder->id, 'folder');
                     $map = array_merge($map, $this->get_cm_file_map($cm, 'mod_folder', 'content'));
@@ -259,9 +268,14 @@ class filter_ally extends moodle_text_filter {
         $contextsbymoduleid = [];
         $moduleidsbycontext = [];
         foreach ($modules as $modid => $module) {
-            if ($module->uservisible) {
-                $contextsbymoduleid[$module->id] = $module->context->id;
-                $moduleidsbycontext[$module->context->id] = $module->id;
+            try {
+                if ($module->uservisible) {
+                    $contextsbymoduleid[$module->id] = $module->context->id;
+                    $moduleidsbycontext[$module->context->id] = $module->id;
+                }
+            } catch (Throwable $ex) {
+                $context = ['_exception' => $ex];
+                logger::get()->error('logger:cmvisibilityresolutionfailure', $context);
             }
         }
 
@@ -435,8 +449,13 @@ class filter_ally extends moodle_text_filter {
         // Note - we have to do this for the course context, we can't do granular module contexts since
         // a lot of the ally wrappers are applied via JS as opposed to via the filter - JS has no
         // awareness of contexts.
-        $activefilters = filter_get_active_in_context(context_course::instance($COURSE->id));
-        if (!isset($activefilters['ally'])) {
+        if ($this->filteractive === null) {
+            $activefilters = filter_get_active_in_context(context_course::instance($COURSE->id));
+            if (!isset($activefilters['ally'])) {
+                $this->filteractive = false;
+                return;
+            }
+        } else if ($this->filteractive === false) {
             return;
         }
         $this->filteractive = true;

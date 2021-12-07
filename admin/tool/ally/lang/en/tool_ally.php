@@ -18,7 +18,7 @@
  * Language definitions.
  *
  * @package   tool_ally
- * @copyright Copyright (c) 2016 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2016 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -42,6 +42,8 @@ $string['error:invalidcomponentident'] = 'Invalid component identifier {$a}';
 $string['error:pluginfilequestiononly'] = 'Only question components are supported for this url';
 $string['error:componentcontentnotfound'] = 'Content not found for {$a}';
 $string['error:wstokenmissing'] = 'Web service token is missing. Maybe an admin user needs to run auto configuration?';
+$string['excludeunused'] = 'Exclude unused files';
+$string['excludeunuseddesc'] = 'Omit files that are attached to HTML content, but linked/references in the HTML.';
 $string['filecoursenotfound'] = 'The passed in file does not belong to any course';
 $string['fileupdatestask'] = 'Push file updates to Ally';
 $string['id'] = 'Id';
@@ -76,6 +78,9 @@ $string['privacy:metadata:files:filecontents'] = 'The actual file\'s content is 
 $string['privacy:metadata:files:mimetype'] = 'The file MIME type, EG: text/plain, image/jpeg, etc.';
 $string['privacy:metadata:files:pathnamehash'] = 'The file\'s path name hash to uniquely identify it.';
 $string['privacy:metadata:files:timemodified'] = 'The time when the field was last modified.';
+$string['cachedef_annotationmaps'] = 'Store annotation data for courses';
+$string['cachedef_fileinusecache'] = 'Ally files in use cache';
+$string['cachedef_pluginfilesinhtml'] = 'Ally files in HTML cache';
 $string['cachedef_request'] = 'Ally filter request cache';
 $string['pushfilessummary'] = 'Ally file updates summary.';
 $string['pushfilessummary:explanation'] = 'Summary of file updates sent to Ally.';
@@ -90,6 +95,10 @@ $string['loglevel:none'] = 'None';
 $string['loglevel:light'] = 'Light';
 $string['loglevel:medium'] = 'Medium';
 $string['loglevel:all'] = 'All';
+
+$string['logcleanuptask'] = 'Ally log cleanup task';
+$string['loglifetimedays'] = 'Keep logs for this many days';
+$string['loglifetimedaysdesc'] = 'Retain Ally logs for this many days. Set to 0 to never delete logs. A scheduled task is (by default) set to run daily, and will remove log entries that are more than this many days old.';
 
 $string['logger:pushtoallysuccess'] = 'Successful push to ally end point';
 $string['logger:pushtoallyfail'] = 'Unsuccessful push to ally end point';
@@ -114,6 +123,7 @@ $string['logger:failedtogetcoursesectionname'] = 'Failed to get course section n
 
 $string['logger:moduleidresolutionfailure'] = 'Failed to resolve module id';
 $string['logger:cmidresolutionfailure'] = 'Failed to resolve course module id';
+$string['logger:cmvisibilityresolutionfailure'] = 'Failed to resolve course module visibility';
 
 $string['courseupdatestask'] = 'Push course events to ally';
 $string['logger:pushcoursesuccess'] = 'Successful push of course event(s) to ally end point';
@@ -132,3 +142,6 @@ $string['logger:servicefailure_exp'] = '<br>Class: {$a->class}<br>Params: {$a->p
 
 $string['logger:autoconfigfailureteachercap'] = 'Failed when assigning a teacher archetype capability to the ally_webservice role.';
 $string['logger:autoconfigfailureteachercap_exp'] = '<br>Capability: {$a->cap}<br>Permission: {$a->permission}';
+
+$string['deferredcourseevents'] = 'Send deferred course events';
+$string['deferredcourseeventsdesc'] = 'Allow sending of stored course events, which were accumulated during communication failure with Ally';

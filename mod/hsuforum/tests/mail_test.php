@@ -31,7 +31,7 @@ class mod_hsuforum_mail_testcase extends advanced_testcase {
 
     protected $helper;
 
-    public function setUp() {
+    public function setUp(): void {
 
         global $CFG;
         require_once($CFG->dirroot . '/mod/hsuforum/lib.php');
@@ -63,7 +63,7 @@ class mod_hsuforum_mail_testcase extends advanced_testcase {
         $this->helper = $helper;
     }
 
-    public function tearDown() {
+    public function tearDown(): void {
         $this->helper->messagesink->clear();
         $this->helper->messagesink->close();
 
@@ -935,28 +935,28 @@ class mod_hsuforum_mail_testcase extends advanced_testcase {
         // New posts should not have Re: in the subject.
         list($discussion, $post) = $this->helper_post_to_forum($forum, $author, ['reveal' => 1]);
         $messages = $this->helper_run_cron_check_count($post, 2);
-        $this->assertNotContains($strre, $messages[0]->subject);
+        $this->assertStringNotContainsString($strre, $messages[0]->subject);
         // Author's profile link should be visible for all users subscribed to the post.
-        $this->assertContains(fullname($author), $messages[0]->fullmessagehtml);
-        $this->assertContains($profilelink, $messages[0]->fullmessagehtml);
-        $this->assertContains($profilelink, $messages[1]->fullmessagehtml);
+        $this->assertStringContainsString(fullname($author), $messages[0]->fullmessagehtml);
+        $this->assertStringContainsString($profilelink, $messages[0]->fullmessagehtml);
+        $this->assertStringContainsString($profilelink, $messages[1]->fullmessagehtml);
 
         // Replies should have Re: in the subject.
         $reply = $this->helper_post_to_discussion($forum, $discussion, $commenter);
         $messages = $this->helper_run_cron_check_count($reply, 2);
-        $this->assertContains($strre, $messages[0]->subject);
+        $this->assertStringContainsString($strre, $messages[0]->subject);
         // Commenter's profile link should only be visible only for himself and not for the post author.
-        $this->assertNotContains(fullname($commenter), $messages[0]->fullmessagehtml);
-        $this->assertNotContains($profilelink, $messages[0]->fullmessagehtml);
-        $this->assertContains(fullname($commenter), $messages[1]->fullmessagehtml);
-        $this->assertContains($profilelink, $messages[1]->fullmessagehtml);
+        $this->assertStringNotContainsString(fullname($commenter), $messages[0]->fullmessagehtml);
+        $this->assertStringNotContainsString($profilelink, $messages[0]->fullmessagehtml);
+        $this->assertStringContainsString(fullname($commenter), $messages[1]->fullmessagehtml);
+        $this->assertStringContainsString($profilelink, $messages[1]->fullmessagehtml);
 
         list($discussion, $post) = $this->helper_post_to_forum($forum, $author);
         $messages = $this->helper_run_cron_check_count($post, 2);
         // Author's profile link should only be visible for himself.
-        $this->assertContains(fullname($author), $messages[0]->fullmessagehtml);
-        $this->assertContains($profilelink, $messages[0]->fullmessagehtml);
-        $this->assertNotContains($profilelink, $messages[1]->fullmessagehtml);
+        $this->assertStringContainsString(fullname($author), $messages[0]->fullmessagehtml);
+        $this->assertStringContainsString($profilelink, $messages[0]->fullmessagehtml);
+        $this->assertStringNotContainsString($profilelink, $messages[1]->fullmessagehtml);
 
     }
 

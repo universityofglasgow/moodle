@@ -19,7 +19,7 @@
  *
  * @package    mod
  * @subpackage hsuforum
- * @copyright  Copyright (c) 2012 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright  Copyright (c) 2012 Open LMS (https://www.openlms.net)
  * @author     Mark Nielsen
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -42,7 +42,8 @@ class hsuforum_lib_table_posters extends table_sql {
             get_string('substantive', 'hsuforum'))
         );
 
-        $fields = user_picture::fields('u', null, 'id');
+        $userfieldsapi = \core_user\fields::for_userpic();
+        $fields = $userfieldsapi->get_sql('u', false, '', 'id', false)->selects;
         $params = array('forumid' => $PAGE->activityrecord->id);
 
         if (!has_capability('mod/hsuforum:viewposters', $PAGE->context)) {

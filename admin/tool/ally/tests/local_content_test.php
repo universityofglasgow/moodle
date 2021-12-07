@@ -18,7 +18,7 @@
  * Tests for local content library.
  *
  * @package   tool_ally
- * @copyright Copyright (c) 2018 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2018 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -37,7 +37,7 @@ require_once(__DIR__.'/abstract_testcase.php');
  * Tests for local content library.
  *
  * @package   tool_ally
- * @copyright Copyright (c) 2018 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2018 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class tool_ally_local_content_testcase extends tool_ally_abstract_testcase {
@@ -144,7 +144,7 @@ class tool_ally_local_content_testcase extends tool_ally_abstract_testcase {
             'id' => $section2->id,
             'summary' => $section0summary,
             'summaryformat' => FORMAT_HTML,
-            'title' => '',
+            'name' => '',
             'timemodified' => 0,
         ]);
 
@@ -247,4 +247,52 @@ class tool_ally_local_content_testcase extends tool_ally_abstract_testcase {
             $this->assertNull($content, 'Invalid content for ' . $compkey . ' should be null.');
         }
     }
+
+    public function test_get_pluginfiles_in_html() {
+        global $CFG;
+
+        // First, empty string will return null.
+        $html = '';
+        $results = local_content::get_pluginfiles_in_html($html);
+        $this->assertNull($results);
+
+        // Now just a boring string.
+        $html = 'something empty';
+        $results = local_content::get_pluginfiles_in_html($html);
+        $this->assertIsArray($results);
+        $this->assertCount(0, $results);
+
+        // Now some real a/img tags.
+        $sampleurl = "{$CFG->wwwroot}/pluginfile.php/1/tool_themeassets/assets/0/Folder 1/image2.png";
+        $html = '<div><a href="@@PLUGINFILE@@/some/file/path.txt">A link</a>' .
+                '<a href="@@PLUGINFILE@@some/file/path2.txt">A link without starting /</a>' .
+                '<img src="@@PLUGINFILE@@/image.jpg">' .
+                '<img src="' . $sampleurl . '">' .
+                '<img src="https://google.com/notthis.jpg">';
+
+        $results = local_content::get_pluginfiles_in_html($html);
+        $this->assertCount(4, $results);
+
+        $tmpresults = [];
+        foreach ($results as $result) {
+            $tmpresults[$result->src] = $result;
+        }
+
+        $this->assertNotEmpty($tmpresults['some/file/path.txt']);
+        $this->assertEquals('a', $tmpresults['some/file/path.txt']->tagname);
+        $this->assertEquals('pathonly', $tmpresults['some/file/path.txt']->type);
+
+        $this->assertNotEmpty($tmpresults['some/file/path2.txt']);
+        $this->assertEquals('a', $tmpresults['some/file/path2.txt']->tagname);
+        $this->assertEquals('pathonly', $tmpresults['some/file/path2.txt']->type);
+
+        $this->assertNotEmpty($tmpresults['image.jpg']);
+        $this->assertEquals('img', $tmpresults['image.jpg']->tagname);
+        $this->assertEquals('pathonly', $tmpresults['image.jpg']->type);
+
+        $this->assertNotEmpty($tmpresults[$sampleurl]);
+        $this->assertEquals('img', $tmpresults[$sampleurl]->tagname);
+        $this->assertEquals('fullurl', $tmpresults[$sampleurl]->type);
+    }
+
 }

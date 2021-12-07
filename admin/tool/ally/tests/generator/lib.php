@@ -18,9 +18,11 @@
  * Testing generator.
  *
  * @package   tool_ally
- * @copyright Copyright (c) 2016 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2016 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+use tool_ally\logging\logger;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -28,7 +30,7 @@ defined('MOODLE_INTERNAL') || die();
  * Testing generator.
  *
  * @package   tool_ally
- * @copyright Copyright (c) 2016 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2016 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class tool_ally_generator extends component_generator_base {
@@ -58,6 +60,61 @@ class tool_ally_generator extends component_generator_base {
         ];
 
         return get_file_storage()->create_file_from_string($record + $defaults, $content);
+    }
+
+    /**
+     * Create a file based on the provided info. Will create random contents and filename, if none is provided.
+     *
+     * @param array $record
+     * @param string|null $content
+     * @return stored_file|null
+     * @throws coding_exception
+     */
+    public function create_file(array $record = [], ?string $content = null): ?stored_file {
+
+        if (empty($record['component']) || empty($record['filearea']) || empty($record['contextid'])) {
+            throw new coding_exception('component, filearea, and contextid must be set when creating a file');
+        }
+
+        if (is_null($content)) {
+            // Make some content that is very likely to be random.
+            $content = random_bytes(mt_rand(10, 50));
+        }
+
+        $defaults = [
+                'itemid'    => 0,
+                'filename'  => sha1(random_bytes(20)) . '.txt',
+                'filepath'  => '/'
+        ];
+
+        return get_file_storage()->create_file_from_string($record + $defaults, $content);
+    }
+
+    /**
+     * Take a stored file and return a PLUGINFILE style link.
+     *
+     * @param stored_file $file
+     * @return string
+     */
+    public function create_pluginfile_link_for_file(stored_file $file): string {
+        return '<a href="@@PLUGINFILE@@' . $file->get_filepath() . $file->get_filename() . '">Link</a>';
+    }
+
+    /**
+     * Return a full link string for the provided stored file. This contains the entire file URL, including the wwwroot.
+     *
+     * @param stored_file $file
+     * @param bool $useitemid If true, include the itemid in the link. Not all modules/areas do this.
+     * @return string
+     */
+    public function create_full_link_for_file(stored_file $file, $useitemid = true): string {
+        $itemid = null;
+        if ($useitemid) {
+            $itemid = $file->get_itemid();
+        }
+        $url = moodle_url::make_pluginfile_url($file->get_contextid(), $file->get_component(), $file->get_filearea(),
+                $itemid, $file->get_filepath(), $file->get_filename());
+        return '<a href="' . $url->out() . '">Link</a>';
     }
 
     /**
@@ -119,5 +176,50 @@ class tool_ally_generator extends component_generator_base {
         $DB->update_record('block_instances', $block);
         $block = $DB->get_record('block_instances', ['id' => $block->id]);
         return $block;
+    }
+
+    /**
+     * Create a ally log entry in the database.
+     *
+     * @param array $record Contains values to be set in the log entry.
+     *                      Currently supports level, message, context, and time.
+     * @return stdClass
+     * @throws coding_exception
+     * @throws dml_exception
+     */
+    public function create_log_entry(array $record = []) {
+        global $DB;
+
+        $logger = logger::get();
+
+        if (isset($record['level'])) {
+            $level = $record['level'];
+        } else {
+            $level = 'info';
+        }
+
+        if (isset($record['message'])) {
+            $message = $record['message'];
+        } else {
+            $message = 'Default message';
+        }
+
+        if (isset($record['context'])) {
+            $context = $record['context'];
+        } else {
+            $context = [];
+        }
+
+        $logid = $logger->log($level, $message, $context);
+        if (empty($logid)) {
+            throw new coding_exception("Log insert didn't return an id.");
+        }
+
+        if (isset($record['time'])) {
+            $DB->set_field('tool_ally_log', 'time', (int)$record['time'], ['id' => $logid]);
+        }
+
+        return $DB->get_record('tool_ally_log', ['id' => $logid]);
+
     }
 }

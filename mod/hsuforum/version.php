@@ -21,14 +21,14 @@
  * @subpackage hsuforum
  * @copyright  1999 onwards Martin Dougiamas  {@link http://moodle.com}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright Copyright (c) 2016 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2016 Open LMS (https://www.openlms.net)
  * @author Mark Nielsen
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2020061100;       // The current module version (Date: YYYYMMDDXX)
-$plugin->requires  = 2019111800;       // Requires this Moodle version
+$plugin->version   = 2021112600;       // The current module version (Date: YYYYMMDDXX)
+$plugin->requires  = 2021051700;       // Requires this Moodle version
 $plugin->component = 'mod_hsuforum';   // Full name of the plugin (used for diagnostics).
-$plugin->release   = '3.8.3';
+$plugin->release   = '3.11.3';
 $plugin->maturity  = MATURITY_STABLE;

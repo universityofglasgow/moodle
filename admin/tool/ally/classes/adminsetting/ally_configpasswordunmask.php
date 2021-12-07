@@ -17,7 +17,7 @@
 /**
  * Admin setting for auto configuration.
  * @author    Guy Thomas <citricity@gmail.com>
- * @copyright Copyright (c) 2017 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2017 Open LMS (https://www.openlms.net)
  * @package   tool_ally
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -36,16 +36,11 @@ require_once($CFG->libdir . '/adminlib.php');
 class ally_configpasswordunmask extends \admin_setting_configpasswordunmask {
 
     public function write_setting($data) {
-        global $CFG;
-        if (!empty($CFG->preventexecpath)) {
-            if ($this->get_setting() === null) {
-                // Use default during installation.
-                $data = $this->get_defaultsetting();
-                if ($data === null) {
-                    $data = '';
-                }
-            } else {
-                return '';
+        if ($this->get_setting() === null) {
+            // Use default during installation.
+            $data = $this->get_defaultsetting();
+            if ($data === null) {
+                $data = '';
             }
         }
         $data = trim($data);

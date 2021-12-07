@@ -17,7 +17,7 @@
 /**
  * Library for core hooks.
  * @author    Guy Thomas <citricity@gmail.com>
- * @copyright Copyright (c) 2017 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2017 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -30,6 +30,7 @@ use tool_ally\file_processor,
     tool_ally\componentsupport\interfaces\content_sub_tables,
     tool_ally\local,
     tool_ally\logging\logger;
+use tool_ally\files_in_use;
 
 /**
  * Callback for after file deleted.
@@ -39,10 +40,11 @@ function tool_ally_after_file_deleted($filerecord) {
     $fs = get_file_storage();
     $file = $fs->get_file_instance($filerecord);
 
-    if (!local_file::file_validator()->validate_stored_file($file)) {
+    if (!local_file::file_validator()->validate_stored_file($file, null, true)) {
         return; // Ally does not support files outside of a course.
     }
 
+    files_in_use::delete_file_record($filerecord->id);
     local_file::queue_file_for_deletion($file);
 }
 
@@ -132,4 +134,14 @@ function tool_ally_pluginfile($course, $cm, $context, $filearea, $args, $forcedo
         die('unsupported file area');
     }
     die;
+}
+
+/**
+ * Respond to a change in the exclude unused files setting.
+ */
+function tool_ally_exclude_setting_changed() {
+    global $DB;
+
+    // Clear records when this setting changes.
+    $DB->delete_records('tool_ally_file_in_use');
 }

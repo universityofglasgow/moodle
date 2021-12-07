@@ -18,7 +18,7 @@
  * Course updates local library.
  *
  * @package   tool_ally
- * @copyright Copyright (c) 2019 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2019 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -30,7 +30,7 @@ defined('MOODLE_INTERNAL') || die();
  * Course updates local library.
  *
  * @package   tool_ally
- * @copyright Copyright (c) 2019 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2019 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class local_course {
@@ -44,11 +44,17 @@ class local_course {
      * @return array
      */
     public static function to_crud($event) {
-        return [
+        $result = [
             'event_name' => $event->name,
             'event_time' => local::iso_8601($event->time),
             'context_id' => $event->courseid,
         ];
+
+        if (isset($event->sourcecourseid)) {
+            $result['source_context_id'] = $event->sourcecourseid;
+        }
+
+        return $result;
     }
 
     /**

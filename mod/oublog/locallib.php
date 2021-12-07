@@ -704,9 +704,10 @@ function oublog_get_posts($oublog, $context, $offset = 0, $cm, $groupid, $indivi
             }
         }
     }
-    $usernamefields = get_all_user_name_fields(true, 'u');
-    $delusernamefields = get_all_user_name_fields(true, 'ud', null, 'del');
-    $editusernamefields = get_all_user_name_fields(true, 'ue', null, 'ed');
+    $userfieldsapi = \core_user\fields::for_name();
+    $usernamefields = $userfieldsapi->get_sql('u', false, '', '', false)->selects;
+    $delusernamefields = $userfieldsapi->get_sql('ud', false, 'del', '', false)->selects;
+    $editusernamefields = $userfieldsapi->get_sql('ue', false, 'ed', '', false)->selects;
 
     // Get posts. The post has the field timeposted not timecreated,
     // which is tested in rating::user_can_rate().
@@ -842,9 +843,10 @@ function oublog_get_posts($oublog, $context, $offset = 0, $cm, $groupid, $indivi
  */
 function oublog_get_post($postid, $canaudit=false) {
     global $DB;
-    $usernamefields = get_all_user_name_fields(true, 'u');
-    $delusernamefields = get_all_user_name_fields(true, 'ud', null, 'del');
-    $editusernamefields = get_all_user_name_fields(true, 'ue', null, 'ed');
+    $userfieldsapi = \core_user\fields::for_name();
+    $usernamefields = $userfieldsapi->get_sql('u', false, '', '', false)->selects;
+    $delusernamefields = $userfieldsapi->get_sql('ud', false, 'del', '', false)->selects;
+    $editusernamefields = $userfieldsapi->get_sql('ue', false, 'ed', '', false)->selects;
 
     // Get post
     $sql = "SELECT p.*, bi.oublogid, $usernamefields, u.picture, u.imagealt, bi.userid, u.idnumber, u.email, u.username, u.mailformat,
@@ -1670,7 +1672,8 @@ function oublog_get_feed_comments($blogid, $bloginstancesid, $postid, $user, $al
             }
         }
     }
-    $usernamefields = get_all_user_name_fields(true, 'u');
+    $userfieldsapi = \core_user\fields::for_name();
+    $usernamefields = $userfieldsapi->get_sql('u', false, '', '', false)->selects;
 
     $sql = "SELECT p.title AS posttitle, p.message AS postmessage, c.id, c.postid, c.title,
                     c.message AS description, c.timeposted AS pubdate, c.authorname, c.authorip,
@@ -1781,7 +1784,8 @@ function oublog_get_feed_posts($blogid, $bloginstance, $user, $allowedvisibility
         }
         $scheme .= '&tag=';
     }
-    $usernamefields = get_all_user_name_fields(true, 'u');
+    $userfieldsapi = \core_user\fields::for_name();
+    $usernamefields = $userfieldsapi->get_sql('u', false, '', '', false)->selects;
 
     // Get posts
     $sql = "SELECT p.id, p.title, p.message AS description, p.timeposted AS pubdate, i.userid, $usernamefields, u.email, u.picture, u.imagealt, u.idnumber
@@ -1892,61 +1896,6 @@ function oublog_get_feedurl($format, $oublog, $bloginstance, $groupid, $comments
     }
 
     return($url);
-}
-
-
-
-/**
- * Get a block containing links to the Atom and RSS feeds
- *
- * @param object $oublog
- * @param object $bloginstance
- * @param int $groupid
- * @param int $postid
- * @param object $context
- * @param object $masterblog
- * @return string HTML of block
- * @uses $CFG
- */
-function oublog_get_feedblock($oublog, $bloginstance, $groupid, $postid, $cm, $individualid=-1, $masterblog = null) {
-    global $CFG, $OUTPUT;
-
-    if (!$CFG->enablerssfeeds) {
-        return(false);
-    }
-    // Check master blog.
-    $feedoublog = !empty($masterblog) ? $masterblog : $oublog;
-    $childoublog = !empty($masterblog) ? $oublog : null;
-
-    $blogurlatom = oublog_get_feedurl('atom', $feedoublog, $bloginstance, $groupid, false, false, $cm, $individualid, $childoublog);
-    $blogurlrss = oublog_get_feedurl('rss', $feedoublog, $bloginstance, $groupid, false, false, $cm, $individualid, $childoublog);
-
-    if (!is_string($bloginstance)) {
-        $commentsurlatom = oublog_get_feedurl('atom', $feedoublog, $bloginstance, $groupid, true, $postid, $cm, $individualid, $childoublog);
-        $commentsurlrss = oublog_get_feedurl('rss', $feedoublog, $bloginstance, $groupid, true, $postid, $cm, $individualid, $childoublog);
-    }
-
-    $html  = '<div id="oublog-feedtext">' . get_string('subscribefeed', 'oublog', oublog_get_displayname($oublog));
-    $html .= $OUTPUT->help_icon('feedhelp', 'oublog');
-    $html .= '</div>';
-    $html .= '<div class="oublog-feedlinks">';
-    $html .= '<span class="oublog-feedlinks-feedtitle">' . get_string('blogfeed', 'oublog', oublog_get_displayname($oublog, true)) . ': </span>';
-    $html .= '<span class="oublog-feedlinks-feedtype">';
-    $html .= '<br/><a href="'.$blogurlatom.'">'.get_string('atom', 'oublog').'</a> ';
-    $html .= '<br/><a href="'.$blogurlrss.'">'.get_string('rss', 'oublog').'</a>';
-    $html .= '</span>';
-
-    if ($oublog->allowcomments) {
-        if (!is_string($bloginstance)) {
-            $html .= '<div class="oublog-links">';
-            $html .= '<span class="oublog-feedcommentlinks-feedtitle">'.get_string('commentsfeed', 'oublog') . ': </span>';
-            $html .= '<br/><a href="'.$commentsurlatom.'">'.get_string('comments', 'oublog').' '.get_string('atom', 'oublog').'</a> ';
-            $html .= '<br/><a href="'.$commentsurlrss.'">'.get_string('comments', 'oublog').' '.get_string('rss', 'oublog').'</a>';
-            $html .= '</div>';
-        }
-    }
-    $html .= '</div>';
-    return ($html);
 }
 
 
@@ -3458,7 +3407,7 @@ function oublog_get_participation($oublog, $context, $groupid = 0, $cm,
 
     // get user objects
     list($esql, $params) = get_enrolled_sql($context, 'mod/oublog:post', $groupid);
-    $fields = user_picture::fields('u');
+    $fields = oublog_get_user_picture_fields_sql('u');
     $fields .= ',u.username,u.idnumber';
     $sql = "SELECT $fields
                 FROM {user} u
@@ -3616,8 +3565,10 @@ function oublog_get_user_participation($oublog, $context,
     if ($end) {
         $cperiod .= 'AND c.timeposted < :timeend ';
     }
-    $authornamefields = get_all_user_name_fields(true, 'a');
-    $postauthornamefields = get_all_user_name_fields(true, 'pa', '', 'poster');
+
+    $userfieldsapi = \core_user\fields::for_name();
+    $authornamefields = $userfieldsapi->get_sql('a', false, '', '', false)->selects;
+    $postauthornamefields = $userfieldsapi->get_sql('pa', false, '', 'poster', false)->selects;
     $commentssql = 'SELECT c.id, c.postid, c.title, c.message, c.timeposted,
         a.id AS authorid, ' . $authornamefields . ',' . $postauthornamefields . ',
         p.title AS posttitle, p.timeposted AS postdate
@@ -3637,7 +3588,7 @@ function oublog_get_user_participation($oublog, $context,
         'timeend' => $end
     );
 
-    $fields = user_picture::fields();
+    $fields = oublog_get_user_picture_fields_sql();
     $fields .= ',username,idnumber';
     $user = $DB->get_record('user', array('id' => $userid), $fields, MUST_EXIST);
     $participation = new stdClass();
@@ -4662,6 +4613,8 @@ function oublog_stats_output_participation($oublog, $cm, $renderer = null, $cour
     } else if (count($participation->comments) >= 4) {
         $commenttotal = 4;
     }
+
+    $picturefields = oublog_get_user_picture_fields();
     if (!$participation->posts) {
         if (!$blogtype && $individualmode != OUBLOG_VISIBLE_INDIVIDUAL_BLOGS) {
             $content .= html_writer::tag('p', get_string('nouserposts', 'oublog'));
@@ -4675,11 +4628,8 @@ function oublog_stats_output_participation($oublog, $cm, $renderer = null, $cour
             $postuser = new stdClass();
             $postuser->id = $post->userid;
             $postuser->groupid = $post->groupid;
-	    //$fields = explode(',', user_picture::fields('', null, '', null));
-	    $fields = \core_user\fields::for_userpic();
-            foreach ($fields as $field) {
+            foreach ($picturefields as $field) {
                 if ($field != 'id') {
-                    $pfield = $field;
                     $postuser->$field = $post->$field;
                 }
             }
@@ -4764,8 +4714,7 @@ function oublog_stats_output_participation($oublog, $cm, $renderer = null, $cour
             } else {
                 $commentuser->id = $comment->commenterid;
             }
-            $fields = explode(',', user_picture::fields('', null, '', 'commenter'));
-            foreach ($fields as $field) {
+            foreach ($picturefields as $field) {
                 if ($field != 'id') {
                     $cfield = "commenter" . $field;
                     $commentuser->$field = $comment->$cfield;
@@ -4774,8 +4723,7 @@ function oublog_stats_output_participation($oublog, $cm, $renderer = null, $cour
             // Comment poster object required.
             $commentposter = new stdClass();
             $commentposter->id = $comment->posterid;
-            $fields = explode(',', user_picture::fields('', null, '', 'poster'));
-            foreach ($fields as $field) {
+            foreach ($picturefields as $field) {
                 if ($field != 'id') {
                     $cfield = "poster" . $field;
                     $commentposter->$field = $comment->$cfield;
@@ -4928,7 +4876,7 @@ function oublog_get_participation_details($oublog, $groupid, $individual,
         }
     }
 
-    $posterfields = user_picture::fields('u', null, 'posteridx');
+    $posterfields = oublog_get_user_picture_fields_sql('u', '', 'posteridx');
     $postssql = "SELECT p.id, p.title, p.timeposted, p.groupid, $gmgroup
     p.allowcomments, p.visibility,
     bi.userid, bi.name AS blogname, $posterfields
@@ -4945,8 +4893,8 @@ function oublog_get_participation_details($oublog, $groupid, $individual,
     if ($end) {
         $cperiod .= 'AND c.timeposted < :timeend ';
     }
-    $commenterfields = user_picture::fields('Ua', null, 'commenteridx', 'commenter');
-    $posterfields = user_picture::fields('Ub', null, 'posteridx', 'poster');
+    $commenterfields = oublog_get_user_picture_fields_sql('Ua', 'commenter', 'commenteridx');
+    $posterfields = oublog_get_user_picture_fields_sql('Ub', 'poster', 'posteridx');
     $commentssql = "SELECT c.id, c.postid, c.title, c.timeposted, c.userid,
     Ua.id AS commenterid, $commenterfields, Ub.id AS posterid, $posterfields,
     p.title AS posttitle, p.timeposted AS postdate, p.allowcomments, p.visibility,
@@ -5714,6 +5662,35 @@ function oublog_import_getposts($blogid, $bcontextid, $selected, $inccomments = 
         $rs->close();
     }
     return $posts;
+}
+
+/**
+ * Get the user picture fields.
+ *
+ * @param string $alias Optional (but recommended) alias for user table in query, e.g. 'u'
+ * @param string $prefix Optional prefix for all field names in result, e.g. 'u_'
+ * @param string $renameid Renames the 'id' field if specified, e.g. 'userid'
+ * @param bool $namedparams If true, uses named :parameters instead of indexed ? parameters
+ * @return string[]|false
+ */
+function oublog_get_user_picture_fields(string $alias = '', string $prefix = '', string $renameid = '', bool $namedparams = true) {
+    $sql = oublog_get_user_picture_fields_sql($alias, $prefix, $renameid, false, $namedparams);
+    return array_map('trim', explode(',', $sql));
+}
+
+/**
+ * Get the user picture fields as an SQL string.
+ *
+ * @param string $alias Optional (but recommended) alias for user table in query, e.g. 'u'
+ * @param string $prefix Optional prefix for all field names in result, e.g. 'u_'
+ * @param string $renameid Renames the 'id' field if specified, e.g. 'userid'
+ * @param bool $leadingcomma If true the 'selects' list will start with a comma
+ * @param bool $namedparams If true, uses named :parameters instead of indexed ? parameters
+ * @return string
+ */
+function oublog_get_user_picture_fields_sql(string $alias = '', string $prefix = '', string $renameid = '',
+        bool $leadingcomma = false, bool $namedparams = true) {
+    return \core_user\fields::for_userpic()->get_sql($alias, $namedparams, $prefix, $renameid, $leadingcomma)->selects;
 }
 
 class oublog_participation_timefilter_form extends moodleform {

@@ -18,7 +18,7 @@
  * Tests for content updates task.
  *
  * @package   tool_ally
- * @copyright Copyright (c) 2018 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2018 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -31,16 +31,16 @@ use tool_ally\task\content_updates_task;
 defined('MOODLE_INTERNAL') || die();
 
 require_once(__DIR__.'/abstract_testcase.php');
-require_once(__DIR__.'/../../../../vendor/phpunit/dbunit/src/DataSet/DefaultTableMetadata.php');
 
 /**
  * Tests for content updates task.
  *
  * @package   tool_ally
- * @copyright Copyright (c) 2018 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2018 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class tool_ally_content_updates_task_testcase extends tool_ally_abstract_testcase {
+
     /**
      * First run should set the timestamp then exit.
      */
@@ -149,9 +149,7 @@ class tool_ally_content_updates_task_testcase extends tool_ally_abstract_testcas
 
         set_config('push_content_timestamp', time() - (WEEKSECS * 2), 'tool_ally');
 
-        $this->loadDataSet(
-            $this->createArrayDataSet(include(__DIR__.'/fixtures/deleted_content.php'))
-        );
+        $this->dataset_from_array(include(__DIR__.'/fixtures/deleted_content.php'))->to_database();
 
         $updates = $this->prophesize(push_content_updates::class);
         $updates->send(Argument::type('array'))->shouldBeCalledTimes(3);
@@ -320,8 +318,6 @@ class tool_ally_content_updates_task_testcase extends tool_ally_abstract_testcas
     public function test_performance_delete_glossary() {
         global $DB, $USER;
 
-        $this->markTestSkipped('performance test, to be fixed in INT-15837');
-
         // Prevent it from creating a backup of the deleted module.
         set_config('coursebinenable', 0, 'tool_recyclebin');
 
@@ -343,7 +339,7 @@ class tool_ally_content_updates_task_testcase extends tool_ally_abstract_testcas
         $record->definitionformat = FORMAT_HTML;
         $this->setAdminUser();
 
-        $entries = 100001; // Increase this to test larger volumes (100,001 entires = 13 seconds).
+        $entries = 10001; // Increase this to test larger volumes (100,001 entires = 13 seconds).
         $pushcount = $entries + 1; // Includes the module itself.
 
         // Create 1001 glossary entries for performance testing.
@@ -353,8 +349,7 @@ class tool_ally_content_updates_task_testcase extends tool_ally_abstract_testcas
         }
         $start = microtime(true);
         course_delete_module($glossary->cmid);
-        mtrace('Glossary deletion took ' . (microtime(true) - $start));
-
+        fwrite(STDOUT, "\nGlossary deletion took " . (microtime(true) - $start));
         $task          = new content_updates_task();
         $task->config  = new push_config('url', 'key', 'sceret');
         $updates = $this->prophesize(push_content_updates::class);
@@ -365,7 +360,7 @@ class tool_ally_content_updates_task_testcase extends tool_ally_abstract_testcas
         $start = microtime(true);
         $task->execute();
         $execution = (microtime(true) - $start);
-        mtrace('First task execution took ' . $execution . ' seconds');
+        fwrite(STDOUT, "\nFirst task execution took " . $execution . ' seconds');
         $this->assert_deletion_queue_contains('glossary', 'glossary', 'intro', $glossary->id);
         $this->assert_deletion_queue_contains('glossary', 'glossary_entries', 'definition', $entry->id);
 
@@ -378,7 +373,7 @@ class tool_ally_content_updates_task_testcase extends tool_ally_abstract_testcas
         $start = microtime(true);
         $task->execute();
         $execution = (microtime(true) - $start);
-        mtrace('2nd task execution took ' . $execution . ' seconds');
+        fwrite(STDOUT, "\n2nd task execution took " . $execution . ' seconds');
 
         $updates->checkProphecyMethodsPredictions();
 
@@ -391,7 +386,7 @@ class tool_ally_content_updates_task_testcase extends tool_ally_abstract_testcas
         $start = microtime(true);
         $task->execute();
         $execution = (microtime(true) - $start);
-        mtrace('3nd task execution took ' . $execution . ' seconds');
+        fwrite(STDOUT, "\n3rd task execution took " . $execution . ' seconds');
 
         // On 3rd execution, deletion queue should now be empty.
         $deleted = $DB->get_records('tool_ally_deleted_content');

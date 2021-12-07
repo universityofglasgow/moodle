@@ -18,7 +18,7 @@
  * Test for wspluginfile service class.
  *
  * @package   tool_ally
- * @copyright Copyright (c) 2018 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2018 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -34,7 +34,7 @@ require_once(__DIR__.'/abstract_testcase.php');
  * Test for wspluginfile service class.
  *
  * @package   tool_ally
- * @copyright Copyright (c) 2018 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2018 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class tool_ally_wspluginfile_testcase extends tool_ally_abstract_testcase {
@@ -54,7 +54,7 @@ class tool_ally_wspluginfile_testcase extends tool_ally_abstract_testcase {
      */
     private $allywebuser;
 
-    protected function setUp() {
+    protected function setUp(): void {
         parent::setUp();
 
         $this->wspluginfile = new wspluginfile();
@@ -95,7 +95,7 @@ class tool_ally_wspluginfile_testcase extends tool_ally_abstract_testcase {
         $signature = hash('sha256', $token . ':' . $iat . ':' . $pathnamehash);
 
         $this->expectException(webservice_access_exception::class);
-        $this->expectExceptionMessageRegExp('/Signature is invalid/');
+        $this->expectExceptionMessageMatches('/Signature is invalid/');
         $this->wspluginfile->validate_wspluginfile_signature($signature, $iat, $pathnamehash);
     }
 

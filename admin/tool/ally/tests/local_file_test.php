@@ -18,7 +18,7 @@
  * Tests for local_file library.
  *
  * @package   tool_ally
- * @copyright Copyright (c) 2018 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2018 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -31,7 +31,7 @@ defined('MOODLE_INTERNAL') || die();
  * Tests for local_file library.
  *
  * @package   tool_ally
- * @copyright Copyright (c) 2018 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2018 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class tool_ally_local_file_testcase extends advanced_testcase {
@@ -57,5 +57,22 @@ class tool_ally_local_file_testcase extends advanced_testcase {
         // Check iat is fresh. 5 second buffer for checking iat.
         $this->assertEquals($iat, $signature->iat);
         $this->assertNotEmpty($signature->signature);
+    }
+
+    public function test_get_fileurlproperties() {
+        global $CFG;
+        $this->resetAfterTest();
+
+        $samplefilearea = 'assets';
+        $samplecomponent = 'tool_themeassets';
+        $samplefilename = 'icon.png';
+        $samplefilepath = '/Folder 1/';
+        $sampleurl = "{$CFG->wwwroot}/pluginfile.php/1/{$samplecomponent}/{$samplefilearea}/0{$samplefilepath}{$samplefilename}";
+        $props = local_file::get_fileurlproperties($sampleurl);
+        $this->assertInstanceOf('tool_ally\models\pluginfileurlprops', $props);
+        $this->assertEquals($samplefilearea, $props->filearea);
+        $this->assertEquals($samplecomponent, $props->component);
+        $this->assertEquals($samplefilename, basename($props->filename));
+        $this->assertEquals($samplefilepath, $props->filepath);
     }
 }
