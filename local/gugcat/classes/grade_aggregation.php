@@ -202,7 +202,7 @@ class grade_aggregation{
                     $autoconvertb = false; // Used for subcat grades auto converted to schedule B.
                     if ($item->modname == 'category') {
                         // Get aggregation type.
-                        list($subcatgrd, $processed, $error, $overanswer) = self::get_aggregated_grade($student->id, $item, $assessments);
+                        list($subcatgrd, $processed, $error) = self::get_aggregated_grade($student->id, $item, $assessments);
                         $grd = $processed ? (is_null($subcatgrd) ? null : $subcatgrd->grade)
                         : (is_null($subcatgrd) ? $grd : $subcatgrd->grade);
                         if (!is_null($subcatgrd)) {
@@ -238,26 +238,10 @@ class grade_aggregation{
                         }
                     }
                     local_gugcat::is_child_activity($item) || $item->is_converted ? null : $gradetypes[] = intval($gt);
-                    if (is_null($grd)) {
-                        if ($item->is_resit) {
-                            $grade = get_string('nogradeweight', 'local_gugcat');
-                        } else {
-                            if ($processed) {
-                                $grade = $overanswer ? get_string('overanswer', 'local_gugcat') : get_string('missinggrade', 'local_gugcat');
-                            } else {
-                                $grade = get_string('nograderecorded', 'local_gugcat');
-                            }
-                        }
-                    } else {
-                        $grade = local_gugcat::convert_grade($grd, $gt, ($autoconvertb ? SCHEDULE_B : SCHEDULE_A));
-                    }
-                    // HM: rewriting this nasty nest of ternaries
-                    /*
                     $grade = is_null($grd) ? ( $item->is_resit ? get_string('nogradeweight', 'local_gugcat')
                     : ( $processed ? get_string('missinggrade', 'local_gugcat')
                     : get_string('nograderecorded', 'local_gugcat')))
                     : local_gugcat::convert_grade($grd, $gt, ($autoconvertb ? SCHEDULE_B : SCHEDULE_A));
-                    */
                     // If subcat grades are auto converted to schedule B, set scale to B.
 
                     $grdvalue = get_string('nograderecorded', 'local_gugcat');
@@ -496,25 +480,6 @@ class grade_aggregation{
     }
 
     /**
-     * Check if grade weights add up to 100%
-     * @param array $gradeitems Filtered array of grade items
-     * @param array $studentgrades 
-     * @return bool
-     * @return param $weightok is it == 100%?
-     * @return param $overanswer is it > 100%
-     */
-    private static function weights100($gradeitems, $studentgrades) {
-        $weights = array_column($gradeitems, 'weight', 'gradeitemid');
-        $sumweight = 0;
-        foreach ($studentgrades as $gi => $studentgrade) {
-            if (!empty($weights[$gi]) && !empty($studentgrade)) {
-                $sumweight += round($weights[$gi] * 100, 2);
-            }
-        }
-        return [$sumweight == 100, $sumweight > 100];
-    }
-
-    /**
      * Get the aggregated grade for the sub category total
      *
      * @param int $userid The student's user id
@@ -524,7 +489,6 @@ class grade_aggregation{
      * @return @param mixed $grade Grade object - grade, gradetype, scaleid
      * @return @param boolean $processed - Not necessary aggregated, but checked if the provisional grade can be aggregated
      * @return @param string $error
-     * @return @param boolean $overanswer - two many sub-activities completed
      */
     public static function get_aggregated_grade($userid, $subcatobj, $gradeitems) {
         global $DB;
@@ -543,7 +507,7 @@ class grade_aggregation{
 
         // Return grade = null if there are no children.
         if (count($filtered) == 0) {
-            return array(null, false, null, false);
+            return array(null, false, null);
         }
 
         // Filter child grade items object to grades.
@@ -570,28 +534,11 @@ class grade_aggregation{
             $studentgrades = array_slice($studentgrades, $subcatobj->droplow, count($studentgrades), true);
         }
 
-        // HM: Check weights add up to 100%
-        // skip this check if using 'highest grade' or if grade overridden
-        if (!$ishighestgrade && empty($pgobj->overridden)) {
-            list($weightsok, $overanswer) = self::weights100($filtered, $studentgrades);
-            if (!$weightsok) {
-                return [null, true, null, $overanswer];
-            } else {
-
-                // Remove non-graded from $studentgrades
-                $studentgrades = array_filter($studentgrades, function($studentgrade) {
-                    return !empty($studentgrade);
-                });
-            }
-        } 
-
         // Return grade = null, processed = true if all components are not graded for weighted/mean/mode/median/natural.
-        // HM - If the rule is only that weights of non-null grades add up to 100% then I think this test is redundant
-        // HM - TODO, don't know what $ishigestgrade does
-        /* if (!$ishighestgrade && count(array_filter($studentgrades, 'is_numeric')) != $totalchildren) {
+        if (!$ishighestgrade && count(array_filter($studentgrades, 'is_numeric')) != $totalchildren) {
             return array(null, true, null);
-        } else*/ if ($ishighestgrade && count(array_filter($studentgrades, 'is_numeric')) == 0) {
-            return array(null, true, null, false);
+        } else if ($ishighestgrade && count(array_filter($studentgrades, 'is_numeric')) == 0) {
+            return array(null, true, null);
         }
 
         // Overall gradetype, grademax and scaleid to be used in subcat grade.
@@ -650,13 +597,13 @@ class grade_aggregation{
                 if ($pgobj && !is_null($grd)) {
                     local_gugcat::update_grade($userid, $pgobj->itemid, null, '');
                 }
-                return array(null, true, $errstr, false);
+                return array(null, true, $errstr);
             }
         } else {
             if ($pgobj && !is_null($grd)) {
                 local_gugcat::update_grade($userid, $pgobj->itemid, null, '');
             }
-            return array(null, true, $errstr, false);
+            return array(null, true, $errstr);
         }
 
         // Return provisional grade if overridden.
@@ -666,7 +613,7 @@ class grade_aggregation{
             $grdobj->gradetype = $gradetype;
             $grdobj->grademax = $grademax;
             $grdobj->scaleid = $scaleid;
-            return array($grdobj, false, null, false);
+            return array($grdobj, false, null);
         }
 
         // Check if $studentgrades still have admingrades, if yes, return admin grades instead.
@@ -791,7 +738,7 @@ class grade_aggregation{
         $grdobj->gradetype = $gradetype;
         $grdobj->grademax = $grademax;
         $grdobj->scaleid = $scaleid;
-        return array($grdobj, true, null, false);
+        return array($grdobj, true, null);
     }
 
     /**
