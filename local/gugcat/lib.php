@@ -35,10 +35,21 @@ function local_gugcat_extend_navigation_course($parentnode, $course, $context) {
 }
 
 function local_gugcat_extend_navigation($navigation) {
-    global $USER, $PAGE;
+    global $CFG, $USER, $PAGE;
 
     if (empty($USER->id)) {
         return;
+    }
+
+    require_once($CFG->dirroot . '/blocks/gu_spdetails/lib.php');
+
+    // Link to MyAssessments
+    if (assessments_details::return_enrolledcourses($USER->id)) {
+        $nodehome = $navigation->get('home');
+        $myassessments = get_string('myassessments', 'block_gu_spdetails');
+        $icon = new pix_icon('i/grade_correct', '');
+        $nodemymedia = $nodehome->add($myassessments, new moodle_url('/blocks/gu_spdetails/index.php'), navigation_node::NODETYPE_LEAF, $myassessments, 'myassessments', $icon);
+        $nodemymedia->showinflatnavigation = true;
     }
 
     // Check the current page context.

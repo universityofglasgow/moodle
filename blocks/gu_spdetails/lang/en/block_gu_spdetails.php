@@ -59,6 +59,7 @@ $string['label_grade'] = 'Overall grade: ';
 $string['label_sortby'] = 'Sort by: ';
 $string['label_weight'] = 'Weight towards course: ';
 $string['marked'] = ' marked';
+$string['myassessments'] = 'My assessments';
 $string['navtitle'] = 'Assessments';
 $string['newfeature'] = 'Not all your assessments may be visible on this page. Your course convenor should be contacted in the first instance if you believe an assessment is missing';
 $string['nodetails'] = 'There are no details to show.';
