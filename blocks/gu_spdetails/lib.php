@@ -38,6 +38,44 @@ require_once($CFG->libdir . '/gradelib.php');
 class assessments_details {
 
     /**
+     * Returns enrolled courses with enabled 'show_on_studentdashboard' custom field
+     *
+     * @param string $userid
+     * @param string $fields
+     * @return array Array of Course IDs
+     */
+    public static function return_enrolledcourses($userid) {
+        global $DB;
+        $fields = "c.id";
+        $customfieldjoin = "JOIN {customfield_field} cff
+                            ON cff.shortname = 'show_on_studentdashboard'
+                            JOIN {customfield_data} cfd
+                            ON (cfd.fieldid = cff.id AND cfd.instanceid = c.id)";
+        $customfieldwhere = "cfd.value = 1 AND c.visible = 1 AND c.visibleold = 1";
+        $enrolmentselect = "SELECT DISTINCT e.courseid FROM {enrol} e
+                            JOIN {user_enrolments} ue
+                            ON (ue.enrolid = e.id AND ue.userid = ?)";
+        $enrolmentjoin = "JOIN ($enrolmentselect) en ON (en.courseid = c.id)";
+        $sql = "SELECT $fields FROM {course} c $customfieldjoin $enrolmentjoin
+                WHERE $customfieldwhere";
+        $param = array($userid);
+        $results = $DB->get_records_sql($sql, $param);
+
+        if ($results) {
+            $studentcourses = array();
+            foreach ($results as $courseid => $courseobject) {
+                if (assessments_details::return_isstudent($courseid, $userid)) {
+                    array_push($studentcourses, $courseid);
+                }
+            }
+            return $studentcourses;
+        } else {
+            return array();
+        }
+    }
+
+
+    /**
      * Retrieves paginated assessments
      *
      * @param string $activetab

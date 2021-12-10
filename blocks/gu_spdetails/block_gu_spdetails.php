@@ -55,62 +55,14 @@ class block_gu_spdetails extends block_base {
 
         $this->content = new stdClass();
 
-        if (!empty($this->return_enrolledcourses($USER->id))) {
-            // Call JS.
-            $this->page->requires->js_call_amd('block_gu_spdetails/main', 'init');
-
-            $templatecontext = (array)[
-                'tab_current'       => get_string('tab_current', 'block_gu_spdetails'),
-                'tab_past'          => get_string('tab_past', 'block_gu_spdetails'),
-                'tab_asessments'    => get_string('returnallassessment', 'block_gu_spdetails'),
-                'label_course'      => get_string('label_course', 'block_gu_spdetails'),
-                'label_assessment'  => get_string('label_assessment', 'block_gu_spdetails'),
-                'label_weight'      => get_string('label_weight', 'block_gu_spdetails'),
-                'label_grade'       => get_string('label_grade', 'block_gu_spdetails')
-            ];
-            $this->content->text = $OUTPUT->render_from_template('block_gu_spdetails/spdetails', $templatecontext);
-        } else {
-            $this->content->text = null;
+        if (!empty(assessments_details::return_enrolledcourses($USER->id))) {
+            $link = new moodle_url('/blocks/gu_spdetails/index.php');
+            $this->content->text = $OUTPUT->render_from_template('block_gu_spdetails/block', [
+                'link' => $link,
+            ]);
         }
 
         return $this->content;
-    }
-
-    /**
-     * Returns enrolled courses with enabled 'show_on_studentdashboard' custom field
-     *
-     * @param string $userid
-     * @param string $fields
-     * @return array Array of Course IDs
-     */
-    public function return_enrolledcourses($userid) {
-        global $DB;
-        $fields = "c.id";
-        $customfieldjoin = "JOIN {customfield_field} cff
-                            ON cff.shortname = 'show_on_studentdashboard'
-                            JOIN {customfield_data} cfd
-                            ON (cfd.fieldid = cff.id AND cfd.instanceid = c.id)";
-        $customfieldwhere = "cfd.value = 1 AND c.visible = 1 AND c.visibleold = 1";
-        $enrolmentselect = "SELECT DISTINCT e.courseid FROM {enrol} e
-                            JOIN {user_enrolments} ue
-                            ON (ue.enrolid = e.id AND ue.userid = ?)";
-        $enrolmentjoin = "JOIN ($enrolmentselect) en ON (en.courseid = c.id)";
-        $sql = "SELECT $fields FROM {course} c $customfieldjoin $enrolmentjoin
-                WHERE $customfieldwhere";
-        $param = array($userid);
-        $results = $DB->get_records_sql($sql, $param);
-
-        if ($results) {
-            $studentcourses = array();
-            foreach ($results as $courseid => $courseobject) {
-                if (assessments_details::return_isstudent($courseid, $userid)) {
-                    array_push($studentcourses, $courseid);
-                }
-            }
-            return $studentcourses;
-        } else {
-            return array();
-        }
     }
 
 }
