@@ -38,8 +38,36 @@ $PAGE->navbar->add(get_string('navtitle', 'block_gu_spdetails'), new moodle_url(
 
 $PAGE->requires->js_call_amd('block_gu_spdetails/main', 'init');
 
-if (!empty(assessments_details::return_enrolledcourses($USER->id))) {
+if ($courses = assessments_details::return_enrolledcourses($USER->id)) {
+    $courseids = implode(', ', $courses);
+    $count = assessments_details::return_assessments_count($USER->id, $courseids);
+
+    $submittedstr = ($count->submitted == 1) ? get_string('assessment', 'block_gu_spdetails').
+                                                get_string('submitted', 'block_gu_spdetails') :
+                                                get_string('assessments', 'block_gu_spdetails').
+                                                get_string('submitted', 'block_gu_spdetails');
+    $markedstr = ($count->marked == 1) ? get_string('assessment', 'block_gu_spdetails').
+                                          get_string('marked', 'block_gu_spdetails') :
+                                          get_string('assessments', 'block_gu_spdetails').
+                                          get_string('marked', 'block_gu_spdetails');
+
+    $assessmentssubmittedicon = $OUTPUT->image_url('assessments_submitted', 'theme');
+    $assessmentstosubmiticon = $OUTPUT->image_url('assessments_tosubmit', 'theme');
+    $assessmentsoverdueicon = $OUTPUT->image_url('assessments_overdue', 'theme');
+    $assessmentsmarkedicon = $OUTPUT->image_url('assessments_marked', 'theme');
     $templatecontext = (array)[
+        'assessments_submitted'        => $count->submitted,
+        'assessments_tosubmit'         => $count->tosubmit,
+        'assessments_overdue'          => $count->overdue,
+        'assessments_marked'           => $count->marked,
+        'assessments_submitted_icon'   => $assessmentssubmittedicon,
+        'assessments_tosubmit_icon'    => $assessmentstosubmiticon,
+        'assessments_overdue_icon'     => $assessmentsoverdueicon,
+        'assessments_marked_icon'      => $assessmentsmarkedicon,
+        'assessments_submitted_str'    => $submittedstr,
+        'assessments_tosubmit_str'     => get_string('tobesubmitted', 'block_gu_spdetails'),
+        'assessments_overdue_str'      => get_string('overdue', 'block_gu_spdetails'),
+        'assessments_marked_str'       => $markedstr,
         'tab_current'       => get_string('tab_current', 'block_gu_spdetails'),
         'tab_past'          => get_string('tab_past', 'block_gu_spdetails'),
         'tab_asessments'    => get_string('returnallassessment', 'block_gu_spdetails'),

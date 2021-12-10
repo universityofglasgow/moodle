@@ -22,6 +22,7 @@
  * @author     Franco Louie Magpusao, Jose Maria Abreu
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+$string['assessments'] = 'Assessments';
 $string['class_default'] = 'status-item';
 $string['class_graded'] = ' status-graded';
 $string['class_link'] = 'status-link';
@@ -57,8 +58,9 @@ $string['label_course'] = 'Course: ';
 $string['label_grade'] = 'Overall grade: ';
 $string['label_sortby'] = 'Sort by: ';
 $string['label_weight'] = 'Weight towards course: ';
+$string['marked'] = ' marked';
 $string['navtitle'] = 'Assessments';
-$string['newfeature'] = 'This is a new feature and only shows Moodle courses that have opted in. It may not show all of your assessments.';
+$string['newfeature'] = 'Not all your assessments may be visible on this page. Your course convenor should be contacted in the first instance if you believe an assessment is missing';
 $string['nodetails'] = 'There are no details to show.';
 $string['noassessments'] = 'No assessments.';
 $string['notavailable'] = 'Not available';
@@ -81,10 +83,12 @@ $string['status_overdue'] = 'overdue';
 $string['status_submit'] = 'submit';
 $string['status_submitted'] = 'submitted';
 $string['status_unavailable'] = 'submission unavailable';
+$string['submitted'] = ' submitted';
 $string['summative'] = 'Summative';
 $string['tab_current'] = 'Currently enrolled in';
 $string['tab_past'] = 'Past courses';
 $string['title'] = 'Assessments';
 $string['tobeconfirmed'] = 'To be confirmed';
+$string['tobesubmitted'] = 'To be submitted / attended';
 $string['topic'] = 'Topic ';
 $string['viewsubmission'] = 'View Submission';
