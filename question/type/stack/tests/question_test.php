@@ -27,7 +27,7 @@ require_once(__DIR__ . '/fixtures/test_base.php');
 /**
  * @group qtype_stack
  */
-class qtype_stack_question_test extends qtype_stack_testcase {
+class question_test extends qtype_stack_testcase {
     /**
      * @return qtype_stack_question the requested question object.
      */
@@ -240,8 +240,7 @@ class qtype_stack_question_test extends qtype_stack_testcase {
         $q->start_attempt(new question_attempt_step(), 4);
 
         $expected = "a:3;\nb:9;\nta:x+y;";
-        $s = $q->get_session();
-        $this->assertEquals($expected, $s->get_keyval_representation(true));
+        $this->assertEquals($expected, $q->get_question_session_keyval_representation());
     }
 
     public function test_question_addrow() {

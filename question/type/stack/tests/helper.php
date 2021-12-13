@@ -47,6 +47,7 @@ class qtype_stack_test_helper extends question_test_helper {
             'divide',       // One input, one PRT, tests 1 / ans1 - useful for testing CAS errors like divide by 0.
             'numsigfigs',   // One input, one PRT, tests 1 / ans1 - uses the NumSigFigs test.
             'numsigfigszeros',  // One input, one PRT, tests 1 / ans1 - uses the NumSigFigs test with trailing zeros.
+            'numdpsfeedbackvars',   // Two numerical inputs, one PRT, uses ATNumDPs and feedback variables (illustrates problem).
             '1input2prts',  // Contrived example with one input, 2 prts, all feedback in the specific feedback area.
             'information',  // Neither inputs nor PRTs.
             'survey',       // Inputs, but no PRTs.
@@ -63,7 +64,9 @@ class qtype_stack_test_helper extends question_test_helper {
             'contextvars',        // This question makes use of the context variables.
             'stringsloppy',       // Uses the StringSloppy answer test, and string input.
             'sregexp',            // Uses the SRegExp answer test, and string input.
-            'feedbackstyle'       // Test the various feedbackstyle options.
+            'feedbackstyle',      // Test the various feedbackstyle options.
+            'multilang',          // Check for mismatching languages.
+            'block_locals'        // Make sure local variables within a block are still permitted student input.
         );
     }
 
@@ -94,6 +97,7 @@ class qtype_stack_test_helper extends question_test_helper {
         $q->prtincorrectformat = FORMAT_HTML;
         $q->generalfeedback = '';
         $q->variantsselectionseed = '';
+        $q->compiledcache = array();
 
         $q->inputs = array();
         $q->prts = array();
@@ -971,6 +975,44 @@ class qtype_stack_test_helper extends question_test_helper {
     }
 
     /**
+     * @return qtype_stack_question the question which uses numerical precision feedback variables.
+     */
+    public static function make_stack_question_numdpsfeedbackvars() {
+        $q = self::make_a_stack_question();
+
+        $q->stackversion = '2021052100';
+        $q->name = 'numdpsfeedbackvars';
+        $q->questiontext = '<p>Give me two random numbers to 3 decimal places.</p>
+                            <p>[[input:ans1]] [[validation:ans1]]</p>
+                            <p>[[input:ans2]] [[validation:ans2]]</p>';
+
+        $q->specificfeedback = '[[feedback:prt1]]';
+        $q->penalty = 0.3;
+
+        $q->inputs['ans1'] = stack_input_factory::make(
+            'numerical', 'ans1', '0.356', null, array('boxWidth' => 5));
+        $q->inputs['ans2'] = stack_input_factory::make(
+            'numerical', 'ans2', '3.14', null, array('boxWidth' => 5));
+
+        $feedbackvars = new stack_cas_keyval('sa:min(ans1,ans2);', null, null);
+
+        // Check if the smallest of the two random numbers is within 3dps of pi.
+        $sans = stack_ast_container::make_from_teacher_source('sa');
+        $sans->get_valid();
+        $tans = stack_ast_container::make_from_teacher_source('3.14');
+        $tans->get_valid();
+        $node = new stack_potentialresponse_node($sans, $tans, 'NumDecPlaces', '3');
+        $node->add_branch(0, '=', 0, $q->penalty, -1, 'Your answer was received as {@sa@}.',
+            FORMAT_HTML, 'prt1-1-F');
+        $node->add_branch(1, '=', 1, $q->penalty, -1, 'You are within 3 dps of pi! Was that random?!',
+            FORMAT_HTML, 'prt1-1-T');
+        $q->prts['prt1'] = new stack_potentialresponse_tree('prt1', '', true, 1,
+            $feedbackvars->get_session(), array($node), '0', 1);
+
+        return $q;
+    }
+
+    /**
      * @return qtype_stack_question a question using a numerical precision answertest.
      */
     public static function make_stack_question_units() {
@@ -1193,7 +1235,8 @@ class qtype_stack_test_helper extends question_test_helper {
         $q->inputs['ans1'] = stack_input_factory::make(
                 'algebraic', 'ans1', '[x+y=1,x-y=1]', null, array('boxWidth' => 25));
 
-        $feedbackvars = new stack_cas_keyval('');
+        // This will generate a runtime error in the feedback variables.
+        $feedbackvars = new stack_cas_keyval('S1:1/(7-rhs(first(ans1)));');
 
         $sans = stack_ast_container::make_from_teacher_source('all_listp(equationp,ans1)');
         $sans->get_valid();
@@ -1325,6 +1368,7 @@ class qtype_stack_test_helper extends question_test_helper {
         $qdata->options->logicsymbol               = 'lang';
         $qdata->options->matrixparens              = '[';
         $qdata->options->variantsselectionseed     = '';
+        $qdata->options->compiledcache             = null;
 
         $input = new stdClass();
         $input->name               = 'ans1';
@@ -1449,6 +1493,7 @@ class qtype_stack_test_helper extends question_test_helper {
         $qdata->options->logicsymbol               = 'lang';
         $qdata->options->matrixparens              = '[';
         $qdata->options->variantsselectionseed     = '';
+        $qdata->options->compiledcache             = null;
 
         $input = new stdClass();
         $input->name               = 'ans1';
@@ -2076,7 +2121,11 @@ class qtype_stack_test_helper extends question_test_helper {
         $q = self::make_a_stack_question();
 
         $q->name = 'test-checkbox-empty';
-        $q->questionvariables = '';
+        $q->questionvariables =
+            'texput(olor, lambda([z], block([a,b], [a,b]:args(z), sconcat("\\left(",tex1(a),",",tex1(b),"\\right)"))));' .
+            // A silly example but brackets mess up the regular expression in the test construction.
+            // This is just to make sure the texput gets into the checkbox input mechanism with a function.
+            'texput(clcr, lambda([z], block([a,b], [a,b]:args(z), sconcat("{\\diamond}",tex1(a),",",tex1(b)))));';
         $q->questiontext = 'Which of these are true? [[input:ans1]]
                            [[validation:ans1]]';
 
@@ -2084,7 +2133,7 @@ class qtype_stack_test_helper extends question_test_helper {
         $q->penalty = 0.3; // Non-zero and not the default.
 
         $q->inputs['ans1'] = stack_input_factory::make(
-                'checkbox', 'ans1', '[[x^2+1<0,false],[A,false,"Generalizations are false"]]', null, null);
+                'checkbox', 'ans1', '[[x^2+1<0,false],[A,false,"Generalizations are false"],[clcr(a,b), false]]', null, null);
 
         $q->options->questionsimplify = 0;
 
@@ -2324,6 +2373,7 @@ class qtype_stack_test_helper extends question_test_helper {
         $q->name = 'contextvars';
         $q->questionvariables = "texput(blob, \"\\\\diamond\");\n assume(x>2);\n texput(log, \"\\\\log \", prefix);";
         $q->questiontext = 'What is {@blob@}? [[input:ans1]] [[validation:ans1]]';
+        $q->generalfeedback = 'You should be able to type in {@blob@} as <code>blob</code>.';
 
         $q->specificfeedback = '[[feedback:firsttree]]';
         $q->penalty = 0.35; // Non-zero and not the default.
@@ -2337,10 +2387,108 @@ class qtype_stack_test_helper extends question_test_helper {
         $sans->get_valid();
         $tans = stack_ast_container::make_from_teacher_source('6*(x-2)^(2*k)');
         $tans->get_valid();
-        $node = new stack_potentialresponse_node($sans, $tans, 'AlgEquiv');
-        $node->add_branch(0, '=', 0, $q->penalty, -1, '', FORMAT_HTML, 'firsttree-1-F');
-        $node->add_branch(1, '=', 1, $q->penalty, -1, '', FORMAT_HTML, 'firsttree-1-T');
-        $q->prts['firsttree'] = new stack_potentialresponse_tree('firsttree', '', true, 1, null, array($node), '0', 1);
+        $node1 = new stack_potentialresponse_node($sans, $tans, 'AlgEquiv');
+        $node1->add_branch(0, '=', 0, $q->penalty, 1, '', FORMAT_HTML, 'firsttree-1-F');
+        $node1->add_branch(1, '=', 1, $q->penalty, -1, '', FORMAT_HTML, 'firsttree-1-T');
+
+        $sans = stack_ast_container::make_from_teacher_source('ans1');
+        $sans->get_valid();
+        $tans = stack_ast_container::make_from_teacher_source('a^(x*y)');
+        $tans->get_valid();
+        $node2 = new stack_potentialresponse_node($sans, $tans, 'AlgEquiv');
+        $node2->add_branch(0, '=', 0, $q->penalty, -1, '', FORMAT_HTML, 'firsttree-2-F');
+        $node2->add_branch(1, '=', 0.6, $q->penalty, -1, '', FORMAT_HTML, 'firsttree-2-T');
+
+        $feedbackvars = new stack_cas_keyval('assume(a>0);', null, null);
+
+        $q->prts['firsttree'] = new stack_potentialresponse_tree('firsttree', '', true, 1, $feedbackvars->get_session(),
+                array($node1, $node2), '0', 1);
+
+        return $q;
+    }
+
+    /**
+     * @return qtype_stack_question a question which tests mismatched languages.
+     */
+    public static function make_stack_question_multilang() {
+        $q = self::make_a_stack_question();
+
+        $q->stackversion = '2020112300';
+        $q->name = 'multilang';
+        $q->questionvariables = "mat1:matrix([1,2],[3,4]);\nmat2:matrix([-2,0],[5,7]);\nta:mat1+mat2;";
+        $en = '<p>Let \[ A = {@mat1@} \quad \textrm{and} \quad B = {@mat2@}. \]</p>'
+            . '<p>Compute the sum \(C = A + B\).</p>';
+        $fi = '<p>Olkoot \[ A = {@mat1@} \quad \textrm{ja} \quad B = {@mat2@}. \]'
+            . '</p><p>Laske summa \(C = A + B\).</p>';
+        $enfi = '  <span lang="en" class="multilang">' . $en . '</span>'
+            . '<span lang="fi" class="multilang">' . $fi . '</span>'
+            . '<p>[[input:ans1]]</p><div>[[validation:ans1]]</div>';
+
+        $q->questiontext = $enfi;
+
+        $q->specificfeedback = '[[feedback:firsttree]]';
+        $q->penalty = 0.35; // Non-zero and not the default.
+
+        $q->inputs['ans1'] = stack_input_factory::make(
+            'matrix', 'ans1', 'ta', new stack_options(),
+            array('boxWidth' => 5, 'allowWords' => 'blob'));
+
+        $q->options->questionsimplify = 0;
+
+        $sans = stack_ast_container::make_from_teacher_source('ans1');
+        $sans->get_valid();
+        $tans = stack_ast_container::make_from_teacher_source('ta');
+        $tans->get_valid();
+        $node1 = new stack_potentialresponse_node($sans, $tans, 'AlgEquiv');
+        $enfb = '  <span lang="en" class="multilang">Looks good to me.</span>';
+        $node1->add_branch(0, '=', 0, $q->penalty, 1, $enfb, FORMAT_HTML, 'firsttree-1-F');
+        $node1->add_branch(1, '=', 1, $q->penalty, -1, '', FORMAT_HTML, 'firsttree-1-T');
+
+        $sans = stack_ast_container::make_from_teacher_source('ans1');
+        $sans->get_valid();
+        $tans = stack_ast_container::make_from_teacher_source('mat1.mat2');
+        $tans->get_valid();
+        $node2 = new stack_potentialresponse_node($sans, $tans, 'AlgEquiv');
+        $node2->add_branch(0, '=', 0, $q->penalty, -1, '', FORMAT_HTML, 'firsttree-2-F');
+        $node2->add_branch(1, '=', 0.6, $q->penalty, -1, '', FORMAT_HTML, 'firsttree-2-T');
+
+        $feedbackvars = new stack_cas_keyval('assume(a>0);', null, null);
+
+        $q->prts['firsttree'] = new stack_potentialresponse_tree('firsttree', '', true, 1, $feedbackvars->get_session(),
+            array($node1, $node2), '0', 1);
+
+        return $q;
+    }
+
+    /**
+     * @return qtype_stack_question.
+     */
+    public static function make_stack_question_block_locals() {
+        $q = self::make_a_stack_question();
+
+        $q->name = 'test-1';
+        // We need to check that local variable names within the block are not invalid for student's input.
+        $q->questionvariables = 'tmpf(a):=block([p,q,r],p:a,q:a,r:p+q,return(r)); cans1:p^2+p+1;';
+        $q->questiontext = 'Answer {@cans1@} with input p^2+p+1.'
+                . '<p>[[input:ans1]]</p><div>[[validation:ans1]]</div>';
+        $q->generalfeedback = '';
+        $q->questionnote = '';
+
+        $q->specificfeedback = '[[feedback:PotResTree_1]]';
+        $q->penalty = 0.25; // Non-zero and not the default.
+
+        $q->inputs['ans1'] = stack_input_factory::make(
+                'algebraic', 'ans1', 'p^2+p+1', null,
+                array('boxWidth' => 20, 'forbidWords' => '', 'allowWords' => ''));
+
+        $sans = stack_ast_container::make_from_teacher_source('ans1');
+        $sans->get_valid();
+        $tans = stack_ast_container::make_from_teacher_source('cans1');
+        $tans->get_valid();
+        $node = new stack_potentialresponse_node($sans, $tans, 'AlgEquiv', 'x');
+        $node->add_branch(0, '=', 0, $q->penalty, -1, '', FORMAT_HTML, 'PotResTree_1-0-0');
+        $node->add_branch(1, '=', 1, $q->penalty, -1, '', FORMAT_HTML, 'PotResTree_1-0-1');
+        $q->prts['PotResTree_1'] = new stack_potentialresponse_tree('PotResTree_1', '', true, 1, null, array($node), '0', 1);
 
         return $q;
     }

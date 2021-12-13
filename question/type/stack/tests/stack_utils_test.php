@@ -98,10 +98,6 @@ class stack_utils_test extends qtype_stack_testcase {
         $this->assertEquals(array('hello', 'wor'), stack_utils::all_substring_between('[he[llo] [wor]ld]!', '[', ']'));
     }
 
-    /**
-     * @expectedException stack_exception
-     */
-
     public function test_replace_between() {
         $this->assertEquals('hello world!', stack_utils::replace_between('hello world!', '[', ']', array()));
         $this->assertEquals('[goodbye] world!', stack_utils::replace_between('[hello] world!', '[', ']', array('goodbye')));
@@ -113,6 +109,7 @@ class stack_utils_test extends qtype_stack_testcase {
         $this->assertEquals('$goodbye$ $all$!',
                 stack_utils::replace_between('$hello$ $world$!', '$', '$', array('goodbye', 'all')));
 
+        $this->expectException(stack_exception::class);
         $this->assertEquals('goodbye all!', stack_utils::replace_between('$hello$ $world$!', '$', '$', array('1', '2', '3')));
     }
 
@@ -210,5 +207,24 @@ class stack_utils_test extends qtype_stack_testcase {
         $this->assertEquals('stringa:"" and stringb:""', stack_utils::eliminate_strings("stringa:\"test\" and stringb:\"testb\""));
         $this->assertEquals('stringa:"" and stringb:""', stack_utils::eliminate_strings("stringa:\"\" and stringb:\"\\\"\""));
         $this->assertEquals('ssubst("","",x)', stack_utils::eliminate_strings('ssubst("times",",",x)'));
+    }
+
+    public function test_alttext() {
+        $this->assertEquals(0, stack_utils::count_missing_alttext(
+            'random <img alt="Hello world!" src="https://nowhere.com/images/image0.png" > stuff'));
+        $this->assertEquals(0, stack_utils::count_missing_alttext(
+            'random <IMG alt="Hello world!" src="https://nowhere.com/images/image0.png" > stuff'));
+        $this->assertEquals(0, stack_utils::count_missing_alttext(
+            'random <img ALT = "Hello world!" src="https://nowhere.com/images/image0.png" > stuff'));
+        $this->assertEquals(0, stack_utils::count_missing_alttext(
+            'random <img src="https://nowhere.com/images/image0.png" alt="Hello world!" /> stuff'));
+        $this->assertEquals(1, stack_utils::count_missing_alttext(
+            'random <img src = "https://nowhere.com/images/image0.png" > stuff'));
+        $this->assertEquals(1, stack_utils::count_missing_alttext(
+            'random <img alt = \'\' src="https://nowhere.com/images/image0.png" > stuff'));
+        $this->assertEquals(1, stack_utils::count_missing_alttext(
+            'random <img alt = \'  \' src="https://nowhere.com/images/image0.png" > stuff'));
+        $this->assertEquals(2, stack_utils::count_missing_alttext(
+            '<img src="https://nowhere.com/images/image0.png" > stuff <img src="https://nowhere.com/images/image1.png" >'));
     }
 }

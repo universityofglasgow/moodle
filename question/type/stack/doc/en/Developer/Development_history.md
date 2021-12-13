@@ -2,6 +2,32 @@
 
 For current and future plans, see [Development track](Development_track.md) and [Future plans](Future_plans.md).
 
+## Version 4.3.10
+
+Released December 2021.
+
+1. Add in filter `420_consolidate_subscripts` to consolidate students' input with subscripts from `M_1` to `M1`.
+2. Support [variant matching](../Authoring/Variant_matching.md).
+3. Add in the option `arccos(x)/arcosh(x)` for display of trig.  This notation exists becase `arcsin` gives the arc length on the unit circle for a given y-coordinate. `arsinh` gives an area enclosed by a hyperbola and two rays from the origin for a given y-coordinate.
+4. Allow students to type `arccos` etc. and treat these as synonyms of the trig functions.
+5. Substantially improve the basic question usage report.
+
+## Version 4.3.9
+
+Released July 2021.
+
+Mostly minor bug fixes.
+
+* Add in additional cache `compiledcache` to reduce validation overheads by compiling questions.
+* Improve checking of teacher's code for better security, this requires a new admin setting `caspreparse` for back compatibility.
+* Add in local.mac for site specific code.
+* Move STACK admin UI scripts to `adminui`.
+* Add in ATEqualComAssRules
+* Filter student's input so groups are turned into `ntuple` inert functions.  At last students can type in coordinates as `(x,y)` as input!
+* Add in warnings of language mismatch in parts of a question.
+* Add in warnings where the answer test needs a raw input but appears to get a calculated value.
+* Expand `rand` to accept sets and make a random selection from sets.  Add `rand_selection_with_replacement`.
+
 ## Version 4.3.8
 
 Released December 2020.

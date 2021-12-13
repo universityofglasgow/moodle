@@ -30,7 +30,8 @@ class stack_textarea_input extends stack_input {
 
     protected $extraoptions = array(
         'nounits' => true,
-        'simp' => false
+        'simp' => false,
+        'consolidatesubscripts' => false
     );
 
     public function render(stack_input_state $state, $fieldname, $readonly, $tavalue) {
@@ -271,7 +272,7 @@ class stack_textarea_input extends stack_input {
             if (trim($val) !== '' ) {
                 $cs = stack_ast_container::make_from_teacher_source($val);
                 $cs->get_valid();
-                $val = '<code>'.$cs->get_inputform(true, 0).'</code>';
+                $val = '<code>'.$cs->get_inputform(true, 0, true).'</code>';
             }
             $values[$key] = $val;
         }

@@ -40,7 +40,6 @@ class stack_potentialresponse_tree {
 
     /**
      * Special variables in the question which should be exposed to the inputs.
-     * @var cas_evaluatable[]
      */
     protected $contextsession = array();
 
@@ -85,13 +84,15 @@ class stack_potentialresponse_tree {
         if (is_a($feedbackvariables, 'stack_cas_session2') || null === $feedbackvariables) {
             $this->feedbackvariables = $feedbackvariables;
             if ($this->feedbackvariables === null) {
-                // Using an empty session here makes life so much more simpler.
+                // Using an empty session here makes life so much simpler.
                 $this->feedbackvariables = new stack_cas_session2(array());
             }
         } else {
             throw new stack_exception('stack_potentialresponse_tree: __construct: ' .
                     'expects $feedbackvariables to be null or a stack_cas_session.');
         }
+
+        $this->contextsession = $this->feedbackvariables->get_contextvariables();
 
         if ($nodes === null) {
             $nodes = array();
@@ -121,7 +122,11 @@ class stack_potentialresponse_tree {
      * Set the contextsession values.
      */
     public function add_contextsession($contextsession) {
-        $this->contextsession = $contextsession;
+        if ($contextsession != null) {
+            // Always make this the start of an array.
+            // We may already have some context from the feedback variables.
+            $this->contextsession = array_merge(array($contextsession), $this->contextsession);
+        }
     }
 
     /**
@@ -222,6 +227,10 @@ class stack_potentialresponse_tree {
         if (trim($tr) != '') {
             $tr .= "\n/* ------------------- */";
             $results->add_trace($tr);
+        }
+        $er = $fv->get_errors(true);
+        if (trim($er)) {
+            $results->add_fverrors($er);
         }
 
         // Traverse the tree.
@@ -381,6 +390,43 @@ class stack_potentialresponse_tree {
     }
 
     /**
+     * @return array Languages used in the feedback.
+     */
+    public function get_feedback_languages() {
+        $langs = array();
+        foreach ($this->nodes as $key => $node) {
+            $langs[$key] = $node->get_feedback_languages();
+        }
+        return $langs;
+    }
+
+
+    /**
+     * @return string Raw feedback text as a single blob for checking.
+     */
+    public function get_feedback_test() {
+        $text = '';
+        foreach ($this->nodes as $node) {
+            $text .= $node->get_feedback_text();
+        }
+        return $text;
+    }
+
+    /**
+     * @return array All the "sans" strings used in the nodes with test requiring a raw input.
+     */
+    public function get_raw_sans_used() {
+        $sans = array();
+        foreach ($this->nodes as $key => $node) {
+            if (stack_ans_test_controller::required_raw($node->get_test())) {
+                $name = (string) $this->get_name() . '-' . ($key + 1);
+                $sans[$name] = $node->sans->get_inputform(true, 1);
+            }
+        }
+        return $sans;
+    }
+
+    /**
      * @return boolean whether this PRT contains any tests that use units.
      */
     public function has_units(): bool {
@@ -426,5 +472,40 @@ class stack_potentialresponse_tree {
             '2' => get_string('feedbackstyle2', 'qtype_stack'),
             '3' => get_string('feedbackstyle3', 'qtype_stack'),
         );
+    }
+
+    /*
+     * @param array $labels an array of labels for the branches.
+     */
+    public function get_prt_graph($labels = false) {
+        $graph = new stack_abstract_graph();
+        foreach ($this->nodes as $key => $node) {
+            $summary = $node->summarise_branches();
+
+            if ($summary->truenextnode == -1) {
+                $left = null;
+            } else {
+                $left = $summary->truenextnode + 1;
+            }
+            if ($summary->falsenextnode == -1) {
+                $right = null;
+            } else {
+                $right = $summary->falsenextnode + 1;
+            }
+            $llabel = $summary->truescoremode . round($summary->truescore, 2);
+            if ($labels && array_key_exists($summary->truenote, $labels)) {
+                $llabel = $labels[$summary->truenote];
+            }
+            $rlabel = $summary->falsescoremode . round($summary->falsescore, 2);
+            if ($labels && array_key_exists($summary->falsenote, $labels)) {
+                $rlabel = $labels[$summary->falsenote];
+            }
+
+            $graph->add_node($key + 1, $left, $right, $llabel, $rlabel,
+                '#fgroup_id_' . $this->name . 'node_' . $key);
+        }
+
+        $graph->layout();
+        return $graph;
     }
 }
