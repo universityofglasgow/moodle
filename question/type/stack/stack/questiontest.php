@@ -69,6 +69,10 @@ class stack_question_test {
      */
     public function test_question($questionid, $seed, $context) {
 
+        // We don't permit completely empty test cases.
+        // Completely empty test cases always pass, which is spurious in the bulk test.
+        $emptytestcase = true;
+
         // Create a completely clean version of the question usage we will use.
         // Evaluated state is stored in question variables etc.
         $question = question_bank::load_question($questionid);
@@ -86,22 +90,31 @@ class stack_question_test {
         $results = new stack_question_test_result($this);
         $results->set_questionpenalty($question->penalty);
         foreach ($this->inputs as $inputname => $notused) {
-            $inputstate = $question->get_input_state($inputname, $response);
-            // The _val below is a hack.  Not all inputnames exist explicitly in
-            // the response, but the _val does. Some inputs, e.g. matrices have
-            // many entries in the response so none match $response[$inputname].
-            // Of course, a teacher may have left a test case blank in which case the input isn't there either.
-            $inputresponse = '';
-            if (array_key_exists($inputname, $response)) {
-                $inputresponse = $response[$inputname];
-            } else if (array_key_exists($inputname.'_val', $response)) {
-                $inputresponse = $response[$inputname.'_val'];
-            }
-            $results->set_input_state($inputname, $inputresponse, $inputstate->contentsmodified,
+            // Check input still exits, could have been deleted in a question.
+            if (array_key_exists($inputname, $question->inputs)) {
+                $inputstate = $question->get_input_state($inputname, $response);
+                // The _val below is a hack.  Not all inputnames exist explicitly in
+                // the response, but the _val does. Some inputs, e.g. matrices have
+                // many entries in the response so none match $response[$inputname].
+                // Of course, a teacher may have left a test case blank in which case the input isn't there either.
+                $inputresponse = '';
+                if (array_key_exists($inputname, $response)) {
+                    $inputresponse = $response[$inputname];
+                } else if (array_key_exists($inputname.'_val', $response)) {
+                    $inputresponse = $response[$inputname.'_val'];
+                }
+                if ($inputresponse != '') {
+                    $emptytestcase = false;
+                }
+                $results->set_input_state($inputname, $inputresponse, $inputstate->contentsmodified,
                     $inputstate->contentsdisplayed, $inputstate->status, $inputstate->errors);
+            }
         }
 
         foreach ($this->expectedresults as $prtname => $expectedresult) {
+            if (implode(' | ', $expectedresult->answernotes) !== 'NULL') {
+                $emptytestcase = false;
+            }
             $result = $question->get_prt_result($prtname, $response, false);
             // Adapted from renderer.php prt_feedback_display.
             $feedback = '';
@@ -134,6 +147,8 @@ class stack_question_test {
             $results->set_prt_result($prtname, $result);
 
         }
+
+        $results->emptytestcase = $emptytestcase;
 
         if ($this->testcase) {
             $this->save_result($question, $results);
@@ -170,7 +185,8 @@ class stack_question_test {
         $vars[] = $cs;
         // Now add the expressions we want evaluated.
         foreach ($inputs as $name => $value) {
-            if ('' !== $value) {
+            // Check input still exits, could have been deleted in a question.
+            if ('' !== $value && array_key_exists($name, $question->inputs)) {
                 $val = 'testresponse_' . $name . ':' . $value;
                 $input = $question->inputs[$name];
                 // Except if the input simplifies, then so should the generated testcase.

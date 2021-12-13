@@ -33,7 +33,7 @@ require_once(__DIR__ . '/../stack/input/factory.class.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @group qtype_stack
  */
-class stack_equiv_input_test extends qtype_stack_testcase {
+class input_equiv_test extends qtype_stack_testcase {
 
     public function test_internal_validate_parameter() {
         $el = stack_input_factory::make('equiv', 'input', 'x^2');
@@ -302,6 +302,22 @@ class stack_equiv_input_test extends qtype_stack_testcase {
         $this->assertEquals('\[ \begin{array}{lll} &x^2=4& \cr \color{green}{\Leftrightarrow}&x=2\,{\mbox{ or }}\, x=-2& \cr'.
                 ' \end{array} \]', $state->contentsdisplayed);
         $this->assertEquals('', $state->note);
+    }
+
+    public function test_validate_student_response_with_firstline_neg() {
+        // This test case has some minus signs which were causing problems on older systems.
+        $options = new stack_options();
+        $el = stack_input_factory::make('equiv', 'sans1', '[2*x-2+4 = -6,2*x+2 = -6,2*x = -8,x = -4]');
+        $el->set_parameter('options', 'firstline');
+        $el->set_parameter('insertStars', 1);
+        $state = $el->validate_student_response(array('sans1' => "2x-2+4=-6"), $options,
+                '[2*x-2+4 = -6,2*x+2 = -6,2*x = -8,x = -4]',
+                new stack_cas_security());
+        $this->assertEquals(stack_input::VALID, $state->status);
+        $this->assertEquals('[2*x-2+4 = -6]', $state->contentsmodified);
+        $this->assertEquals('\[ \begin{array}{lll} &2\cdot x-2+4=-6& \cr \end{array} \]',
+                $state->contentsdisplayed);
+        $this->assertEquals('missing_stars', $state->note);
     }
 
     public function test_validate_student_response_with_firstline_false() {

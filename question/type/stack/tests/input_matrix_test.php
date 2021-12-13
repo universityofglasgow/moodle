@@ -27,7 +27,7 @@ require_once(__DIR__ . '/../stack/input/factory.class.php');
 /**
  * @group qtype_stack
  */
-class stack_matrix_input_test extends qtype_stack_testcase {
+class input_matrix_test extends qtype_stack_testcase {
 
     public function test_render_blank() {
         $options = new stack_options();
@@ -56,13 +56,19 @@ class stack_matrix_input_test extends qtype_stack_testcase {
         $el->adapt_to_model_answer('[[1,0],[0,1]]');
 
         $versionused = get_config('qtype_stack', 'maximaversion');
-        $errmsg = '<div class="error"><p>The input has generated the following runtime error which prevents you '.
-                'from answering. Please contact your teacher.</p>' .
+        $errmsg = '<div class="error"><p><i class="icon fa fa-exclamation-circle text-danger fa-fw " title="The input has ' .
+                      'generated the following runtime error which prevents you from answering. Please contact your teacher." ' .
+                      'aria-label="The input has generated the following runtime error which prevents you from answering. Please ' .
+                      'contact your teacher."></i>The input has generated the following runtime error which prevents you from ' .
+                      'answering. Please contact your teacher.</p>' .
                 '<p>The "$first" argument of the function "$matrix_size" must be a matrix</p></div>';
         if ($this->adapt_to_new_maxima('5.42.3')) {
-            $errmsg = '<div class="error"><p>The input has generated the following runtime error which prevents you '.
-                    'from answering. Please contact your teacher.</p>' .
-                    '<p>The first argument of the function matrix_size must be a matrix</p></div>';
+            $errmsg = '<div class="error"><p><i class="icon fa fa-exclamation-circle text-danger fa-fw " title="The input has ' .
+                      'generated the following runtime error which prevents you from answering. Please contact your teacher." ' .
+                      'aria-label="The input has generated the following runtime error which prevents you from answering. Please ' .
+                      'contact your teacher."></i>The input has generated the following runtime error which prevents you from ' .
+                      'answering. Please contact your teacher.</p>' .
+                      '<p>The first argument of the function matrix_size must be a matrix</p></div>';
         }
         $this->assertEquals($errmsg, $el->render(new stack_input_state(stack_input::VALID, array(), '', '', '', '', ''),
                         'ans1', false, null));
@@ -393,5 +399,29 @@ class stack_matrix_input_test extends qtype_stack_testcase {
         $this->assertEquals('\[ \left[\begin{array}{cc} 1 & 2 \\\\ x & \color{red}{?} \end{array}\right] \]',
                 $state->contentsdisplayed);
         $this->assertEquals('\( \left[ x \right]\) ', $state->lvars);
+    }
+
+    public function test_validate_consolidatesubscripts() {
+        $options = new stack_options();
+        $el = stack_input_factory::make('matrix', 'ans1', 'M', $options);
+        $el->set_parameter('options', 'consolidatesubscripts');
+        $el->adapt_to_model_answer('matrix([null,null],[null,null])');
+        $inputvals = array(
+            'ans1_sub_0_0' => 'a1',
+            'ans1_sub_0_1' => 'a_2',
+            'ans1_sub_1_0' => 'abc123',
+            'ans1_sub_1_1' => 'abc_45',
+        );
+
+        $state = $el->validate_student_response($inputvals, $options,
+            'matrix([a,b],[c,d])', new stack_cas_security());
+        $this->assertEquals(stack_input::VALID, $state->status);
+        $this->assertEquals('consolidate_subscripts', $state->note);
+        $this->assertEquals('matrix([a1,a2],[abc123,abc45])', $state->contentsmodified);
+        $this->assertEquals('\[ \left[\begin{array}{cc} a_{1} & a_{2} \\\\ ' .
+            '{\it abc}_{123} & {\it abc}_{45} \end{array}\right] \]',
+            $state->contentsdisplayed);
+        $this->assertEquals('\( \left[ a_{1} , a_{2} , {\it abc}_{123} , {\it abc}_{45} \right]\) ',
+            $state->lvars);
     }
 }

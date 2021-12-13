@@ -33,17 +33,17 @@ $links = array(
     get_string('stackDoc_docs_desc', 'qtype_stack',
             array('link' => (string) new moodle_url('/question/type/stack/doc/doc.php/'))),
     get_string('healthcheck_desc', 'qtype_stack',
-            array('link' => (string) new moodle_url('/question/type/stack/healthcheck.php'))),
+            array('link' => (string) new moodle_url('/question/type/stack/adminui/healthcheck.php'))),
     get_string('chat_desc', 'qtype_stack',
-            array('link' => (string) new moodle_url('/question/type/stack/caschat.php'))),
+            array('link' => (string) new moodle_url('/question/type/stack/adminui/caschat.php'))),
     get_string('stackInstall_testsuite_title_desc', 'qtype_stack',
-            array('link' => (string) new moodle_url('/question/type/stack/answertests.php'))),
+            array('link' => (string) new moodle_url('/question/type/stack/adminui/answertests.php'))),
     get_string('stackInstall_input_title_desc', 'qtype_stack',
-            array('link' => (string) new moodle_url('/question/type/stack/studentinputs.php'))),
+            array('link' => (string) new moodle_url('/question/type/stack/adminui/studentinputs.php'))),
     get_string('bulktestindexintro_desc', 'qtype_stack',
-            array('link' => (string) new moodle_url('/question/type/stack/bulktestindex.php'))),
+            array('link' => (string) new moodle_url('/question/type/stack/adminui/bulktestindex.php'))),
     get_string('stackInstall_replace_dollars_desc', 'qtype_stack',
-            array('link' => (string) new moodle_url('/question/type/stack/replacedollarsindex.php'))),
+            array('link' => (string) new moodle_url('/question/type/stack/adminui/replacedollarsindex.php'))),
 );
 $settings->add(new admin_setting_heading('docs',
         get_string('settingusefullinks', 'qtype_stack'),
@@ -83,6 +83,13 @@ $settings->add(new admin_setting_configselect('qtype_stack/casresultscache',
         get_string('settingcasresultscache_desc', 'qtype_stack'), 'db', array(
             'none' => get_string('settingcasresultscache_none', 'qtype_stack'),
             'db' => get_string('settingcasresultscache_db', 'qtype_stack'),
+        )));
+
+$settings->add(new admin_setting_configselect('qtype_stack/caspreparse',
+        get_string('settingcaspreparse', 'qtype_stack'),
+        get_string('settingcaspreparse_desc', 'qtype_stack'), 'true', array(
+            'true' => get_string('settingcaspreparse_true', 'qtype_stack'),
+            'false' => get_string('settingcaspreparse_false', 'qtype_stack'),
         )));
 
 $settings->add(new admin_setting_configtext('qtype_stack/maximacommand',

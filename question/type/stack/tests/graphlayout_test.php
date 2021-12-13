@@ -26,7 +26,7 @@ require_once(__DIR__ . '/../stack/graphlayout/graph.php');
 /**
  * @group qtype_stack
  */
-class stack_abstract_graph_test extends basic_testcase {
+class graphlayout_test extends basic_testcase {
 
     /**
      * This graph has 4 nodes and should look like:
@@ -135,10 +135,9 @@ class stack_abstract_graph_test extends basic_testcase {
 
     /**
      * This graph has a link to a non-existent node. We verify that throws an exception.
-     *
-     * @expectedException coding_exception
      */
     public function test_missing_node() {
+        $this->expectException(coding_exception::class);
         $graph = new stack_abstract_graph();
         $graph->add_node(1, null, 2, '=1', '=0');
 

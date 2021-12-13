@@ -146,6 +146,10 @@ class qtype_stack extends question_type {
         $options->logicsymbol               = $fromform->logicsymbol;
         $options->matrixparens              = $fromform->matrixparens;
         $options->variantsselectionseed     = $fromform->variantsselectionseed;
+
+        // We will not have the values for this.
+        $options->compiledcache             = '{}';
+
         $DB->update_record('qtype_stack_options', $options);
 
         $inputnames = array_keys($this->get_input_names_from_question_text_lang($fromform->questiontext));
@@ -429,6 +433,15 @@ class qtype_stack extends question_type {
         $question->prtincorrect              = $questiondata->options->prtincorrect;
         $question->prtincorrectformat        = $questiondata->options->prtincorrectformat;
         $question->variantsselectionseed     = $questiondata->options->variantsselectionseed;
+        $question->compiledcache             = $questiondata->options->compiledcache;
+
+        // Parse the cache in advance.
+        if (is_string($question->compiledcache)) {
+            $question->compiledcache = json_decode($question->compiledcache, true);
+        } else if ($question->compiledcache === null) {
+            // If someone has done nulling through the database.
+            $question->compiledcache = [];
+        }
 
         $question->options = new stack_options();
         $question->options->set_option('multiplicationsign', $questiondata->options->multiplicationsign);
@@ -850,6 +863,12 @@ class qtype_stack extends question_type {
             }
         }
 
+        // If someone plays with input names we need to clear compiledcache.
+        $sql = 'UPDATE {qtype_stack_options} SET compiledcache = ? WHERE questionid = ?';
+        $params[] = '{}';
+        $params[] = $questionid;
+        $DB->execute($sql, $params);
+
         $transaction->allow_commit();
         $this->notify_question_edited($questionid);
     }
@@ -889,6 +908,12 @@ class qtype_stack extends question_type {
         $DB->set_field('qtype_stack_prts', 'name', $to,
                 array('questionid' => $questionid, 'name' => $from));
 
+        // If someone plays with PRT names we need to clear compiledcache.
+        $sql = 'UPDATE {qtype_stack_options} SET compiledcache = ? WHERE questionid = ?';
+        $params[] = '{}';
+        $params[] = $questionid;
+        $DB->execute($sql, $params);
+
         $transaction->allow_commit();
         $this->notify_question_edited($questionid);
     }
@@ -920,6 +945,12 @@ class qtype_stack extends question_type {
         // PRT first node link.
         $DB->set_field('qtype_stack_prts', 'firstnodename', $to,
                 array('questionid' => $questionid, 'name' => $prtname, 'firstnodename' => $from));
+
+        // If someone plays with PRT node names we need to clear compiledcache.
+        $sql = 'UPDATE {qtype_stack_options} SET compiledcache = ? WHERE questionid = ?';
+        $params[] = '{}';
+        $params[] = $questionid;
+        $DB->execute($sql, $params);
 
         $transaction->allow_commit();
         $this->notify_question_edited($questionid);
@@ -1429,7 +1460,6 @@ class qtype_stack extends question_type {
      * @return array($errors, $warnings).
      */
     public function validate_fromform($fromform, $errors) {
-        $warnings = array();
 
         $fixingdollars = array_key_exists('fixdollars', $fromform);
 
@@ -1698,7 +1728,7 @@ class qtype_stack extends question_type {
             }
         }
 
-        return array($errors, $warnings);
+        return $errors;
     }
 
     /**
@@ -2302,4 +2332,5 @@ class qtype_stack extends question_type {
                 '', '', false, 0, $feedbackvariables->get_session(), $prtnodes, (string) $prt->firstnodename, 1);
         return $potentialresponsetree->get_required_variables($inputkeys);
     }
+
 }
