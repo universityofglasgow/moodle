@@ -724,4 +724,49 @@ class local_guws_external extends external_api {
         return $grades;
     }
 
+    /**
+     * Parameter definition for gcat_userhasdata
+     * @return external_function_parameters
+     */
+    public static function gcat_userhasdata_parameters() {
+        return new external_function_parameters([
+            'guid' => new external_value(PARAM_TEXT, 'GUID', VALUE_REQUIRED),
+        ]);
+    }
+
+    /**
+     * Return definition for gcat_userhasdata
+     * @return external_value
+     */
+    public static function gcat_userhasdata_returns() {
+        return new external_value(PARAM_BOOL, 'User has GCAT data to display');
+    }
+
+    /**
+     * GCAT userhasdata
+     * @param string $guid
+     */
+    public static function gcat_userhasdata($guid) {
+        global $CFG, $DB;
+
+        require_once($CFG->dirroot . '/blocks/gu_spdetails/lib.php');
+
+        // Check params
+        $params = self::validate_parameters(self::gcat_getdashboard_parameters(),[
+            'guid' => $guid,
+        ]);
+
+        // does this person exist
+        if (!$user = $DB->get_record('user', [
+            'username' => $guid,
+            'mnethostid' => $CFG->mnet_localhost_id,
+        ])) {
+            return false;
+        }
+
+        $gcatcourses = assessments_details::return_enrolledcourses($user->id);
+
+        return !empty($gcatcourses);
+    }
+
 }

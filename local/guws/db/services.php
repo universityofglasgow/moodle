@@ -91,5 +91,12 @@ $functions = array(
         'classpath'   => 'local/guws/externallib.php',
         'description' => 'Get data from GCAT student dashboard ',
         'type'        => 'read',
-    ),  
+    ),
+    'local_guws_gcat_userhasdata' => array(
+        'classname'   => 'local_guws_external',
+        'methodname'  => 'gcat_userhasdata',
+        'classpath'   => 'local/guws/externallib.php',
+        'description' => 'Does the user have any GCAT data to display',
+        'type'        => 'read',
+    ),   
 );
