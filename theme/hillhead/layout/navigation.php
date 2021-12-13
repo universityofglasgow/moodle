@@ -139,6 +139,7 @@ foreach($flatnav as $navitem) {
                 case 'privatefiles';
                 case 'home':
                 case 'helplink':
+                case 'myassessments':
                     $sitenav[] = $navitem;
                     $sitenavexists = true;
                     break;
