@@ -16,16 +16,19 @@
 }}
 {{^ showdetails }}
     <div class="alert alert-warning">
-        {{# str }}nodetails, block_gu_spdetails{{/ str }}
+        {{ message }}
     </div>
 {{/ showdetails }}
 {{# showdetails }}
 
-    <div class="alert alert-info">
-        {{# str }}newfeature, block_gu_spdetails{{/ str }}
-    </div>
+    {{# showmessage }}
+        <div class="alert alert-success">
+            {{ message }}
+        </div>
+    {{/ showmessage }}
 
-    <div class="assessments-overview-container border rounded my-2">
+    <div class="assessments-overview-container border rounded my-2 p-2">
+        <h3>{{# str }}headingataglance, block_gu_spdetails{{/ str }}</h3>
         <div class="row">
             <div class="assessments-item assessments-submitted col-md-3 col-sm-6 col-xs-12">
                 <img src="{{assessments_submitted_icon}}" alt="{{assessments_submitted_str}}"
@@ -54,8 +57,9 @@
         </div>
     </div>
 
-    <div class="border rounded">
-        <div id="assessments-container" class="assessments-details-container">
+    <div class="border rounded p-2">
+        <h3>{{# str }}heading, block_gu_spdetails{{/ str }}</h3>
+        <div id="assessments-container" class="assessments-details-container mt-2">
             <ul id="assessments_details_tabs" class="nav nav-tabs" role="tablist">
                 <li class="nav-item">
                     <a id="current_tab" class="nav-link h5" data-toggle="tab" role="tab"

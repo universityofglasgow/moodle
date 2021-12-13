@@ -38,6 +38,8 @@ $PAGE->navbar->add(get_string('navtitle', 'block_gu_spdetails'), new moodle_url(
 
 $PAGE->requires->js_call_amd('block_gu_spdetails/main', 'init');
 
+$config = get_config('block_gu_spdetails');
+
 if ($courses = assessments_details::return_enrolledcourses($USER->id)) {
     $courseids = implode(', ', $courses);
     $count = assessments_details::return_assessments_count($USER->id, $courseids);
@@ -75,12 +77,15 @@ if ($courses = assessments_details::return_enrolledcourses($USER->id)) {
         'label_assessment'  => get_string('label_assessment', 'block_gu_spdetails'),
         'label_weight'      => get_string('label_weight', 'block_gu_spdetails'),
         'label_grade'       => get_string('label_grade', 'block_gu_spdetails'),
+        'message' => $config->messagedatapage,
+        'showmessage' => !empty($config->messagedatapage),
         'showdetails' => true,
     ];
     
 } else {
     $templatecontext = [
         'showdetails' => false,
+        'message' => $config->messagenodata,
     ];
 }
 $content = $OUTPUT->render_from_template('block_gu_spdetails/spdetails', $templatecontext);
