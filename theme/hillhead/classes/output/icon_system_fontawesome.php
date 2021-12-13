@@ -57,7 +57,8 @@ class icon_system_fontawesome extends \core\output\icon_system_fontawesome {
             'core:hillhead/allcourses'          => 'fa-sitemap',
             'core:hillhead/starred'             => 'fa-star',
             'core:hillhead/vleenhancements'     => 'fa-magic',
-            'core:hillhead/role'                => 'fa-key'
+            'core:hillhead/role'                => 'fa-key',
+            'core:hillhead/gcatdashboard'       => 'fa-check-circle'
         );
         
         $merged = array_merge($iconmap, $overrides);
