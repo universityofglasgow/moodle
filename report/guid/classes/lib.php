@@ -311,7 +311,7 @@ class lib {
             } else {
                 $lasttime = userdate($lastaccess->timeaccess);
             }
-            if ($DB->get_record('customfield_data', ['fieldid' => $gcatid, 'instanceid' => $courseid, , 'intvalue' => 1])) {
+            if ($DB->get_record('customfield_data', ['fieldid' => $gcatid, 'instanceid' => $courseid, 'intvalue' => 1])) {
                 $gcatenabled = true;
             } else {
                 $gcatenabled = false;
