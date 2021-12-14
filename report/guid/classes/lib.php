@@ -306,12 +306,12 @@ class lib {
             $ended = ($course->enddate) && (time() > $course->enddate);
             $notstarted = time() < $course->startdate;
     
-            if (!$lastaccess = $DB->get_record('user_lastaccess', ['userid' => $userid, 'courseid' => $course->id, 'intvalue' => 1])) {
+            if (!$lastaccess = $DB->get_record('user_lastaccess', ['userid' => $userid, 'courseid' => $course->id])) {
                 $lasttime = get_string('never');
             } else {
                 $lasttime = userdate($lastaccess->timeaccess);
             }
-            if ($DB->get_record('customfield_data', ['fieldid' => $gcatid, 'instanceid' => $courseid])) {
+            if ($DB->get_record('customfield_data', ['fieldid' => $gcatid, 'instanceid' => $courseid, , 'intvalue' => 1])) {
                 $gcatenabled = true;
             } else {
                 $gcatenabled = false;
