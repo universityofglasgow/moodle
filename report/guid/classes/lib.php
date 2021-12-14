@@ -293,6 +293,13 @@ class lib {
         }
         $formattedenrolments = [];
 
+        // Get GCAT customfield id
+        if ($customfield = $DB->get_record('customfield_field', ['shortname' => 'show_on_studentdashboard'])) {
+            $gcatid = $customfield->id;
+        } else {
+            $gcatid = 0;
+        }
+
         // Run through enrolments.
         foreach ($courses as $course) {
             $courselink = new \moodle_url('/course/view.php', ['id' => $course->id]);
@@ -304,12 +311,18 @@ class lib {
             } else {
                 $lasttime = userdate($lastaccess->timeaccess);
             }
+            if ($DB->get_record('customfield_data', ['fieldid' => $gcatid, 'instanceid' => $courseid])) {
+                $gcatenabled = true;
+            } else {
+                $gcatenabled = false;
+            }
             $formattedenrolments[] = (object)[
                 'courselink' => $courselink,
                 'name' => $course->fullname,
                 'lastaccess' => $lasttime,
                 'ended' => $ended,
                 'notstarted' => $notstarted,
+                'gcatenabled' => $gcatenabled,
                 'hidden' => !$course->visible,
             ];
         }

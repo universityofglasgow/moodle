@@ -57,6 +57,7 @@ $string['filtererror'] = 'Error building filter. Please refine your search and t
 $string['firstcolumn'] = 'First column data';
 $string['firstcolumn_help'] = 'Specify if the first column of your spreadsheet contains the GUID/username or the idnumber (matric number)';
 $string['firstname'] = 'First name';
+$string['gcat'] = 'GCAT';
 $string['groupadded'] = 'Group add {$a}';
 $string['groupnotadded'] = 'Group add failed {$a}';
 $string['guid'] = 'GUID Search';
