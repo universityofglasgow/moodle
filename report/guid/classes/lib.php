@@ -306,7 +306,7 @@ class lib {
             $ended = ($course->enddate) && (time() > $course->enddate);
             $notstarted = time() < $course->startdate;
     
-            if (!$lastaccess = $DB->get_record('user_lastaccess', ['userid' => $userid, 'courseid' => $course->id])) {
+            if (!$lastaccess = $DB->get_record('user_lastaccess', ['userid' => $userid, 'courseid' => $course->id, 'intvalue' => 1])) {
                 $lasttime = get_string('never');
             } else {
                 $lasttime = userdate($lastaccess->timeaccess);
