@@ -23,10 +23,8 @@ Feature: Report different types of interactions.
     Given the following "mod_h5pactivity > attempts" exist:
       | user     | h5pactivity | attempt | interactiontype | rawscore | maxscore | duration | completion | success |
       | student1 | H5P package | 1       | compound        | 2        | 2        | 4        | 1          | 1       |
-    When I log in as "student1"
-    And I am on "Course 1" course homepage
-    And I follow "H5P package"
-    And I follow "View my attempts"
+    When I am on the "H5P package" "h5pactivity activity" page logged in as student1
+    And I navigate to "Attempts report" in current page administration
     And I follow "View report"
     Then I should see "2 out of 2"
     And I should see "Pass"
@@ -37,10 +35,8 @@ Feature: Report different types of interactions.
     Given the following "mod_h5pactivity > attempts" exist:
       | user     | h5pactivity | attempt | interactiontype | rawscore | maxscore | duration | completion | success |
       | student1 | H5P package | 1       | compound        | 0        | 2        | 4        | 1          | 0       |
-    When I log in as "student1"
-    And I am on "Course 1" course homepage
-    And I follow "H5P package"
-    And I follow "View my attempts"
+    When I am on the "H5P package" "h5pactivity activity" page logged in as student1
+    And I navigate to "Attempts report" in current page administration
     And I follow "View report"
     Then I should see "0 out of 2"
     And I should see "Fail"
@@ -52,10 +48,8 @@ Feature: Report different types of interactions.
       | user     | h5pactivity | attempt | interactiontype | rawscore | maxscore | duration | completion | success |
       | student1 | H5P package | 1       | choice          | 2        | 2        | 1        | 1          | 1       |
       | student1 | H5P package | 1       | compound        | 2        | 2        | 4        | 1          | 1       |
-    When I log in as "student1"
-    And I am on "Course 1" course homepage
-    And I follow "H5P package"
-    And I follow "View my attempts"
+    When I am on the "H5P package" "h5pactivity activity" page logged in as student1
+    And I navigate to "Attempts report" in current page administration
     And I follow "View report"
     Then I should see "Select the correct answers"
     And "Correct answer" "icon" should exist in the "This is also a correct answer" "table_row"
@@ -66,10 +60,8 @@ Feature: Report different types of interactions.
       | user     | h5pactivity | attempt | interactiontype | rawscore | maxscore | duration | completion | success |
       | student1 | H5P package | 1       | choice          | 0        | 2        | 1        | 1          | 0       |
       | student1 | H5P package | 1       | compound        | 0        | 2        | 4        | 1          | 0       |
-    When I log in as "student1"
-    And I am on "Course 1" course homepage
-    And I follow "H5P package"
-    And I follow "View my attempts"
+    When I am on the "H5P package" "h5pactivity activity" page logged in as student1
+    And I navigate to "Attempts report" in current page administration
     And I follow "View report"
     Then I should see "Select the correct answers"
     And "Incorrect answer" "icon" should exist in the "Another wrong answer" "table_row"
@@ -80,10 +72,8 @@ Feature: Report different types of interactions.
       | user     | h5pactivity | attempt | interactiontype | rawscore | maxscore | duration | completion | success |
       | student1 | H5P package | 1       | matching        | 2        | 2        | 1        | 1          | 1       |
       | student1 | H5P package | 1       | compound        | 2        | 2        | 4        | 1          | 1       |
-    When I log in as "student1"
-    And I am on "Course 1" course homepage
-    And I follow "H5P package"
-    And I follow "View my attempts"
+    When I am on the "H5P package" "h5pactivity activity" page logged in as student1
+    And I navigate to "Attempts report" in current page administration
     And I follow "View report"
     Then I should see "Drag and Drop example 1"
     And "Your answer is correct" "icon" should exist in the "Drop item A" "table_row"
@@ -94,10 +84,8 @@ Feature: Report different types of interactions.
       | user     | h5pactivity | attempt | interactiontype | rawscore | maxscore | duration | completion | success |
       | student1 | H5P package | 1       | matching        | 0        | 2        | 1        | 1          | 1       |
       | student1 | H5P package | 1       | compound        | 0        | 2        | 4        | 1          | 1       |
-    When I log in as "student1"
-    And I am on "Course 1" course homepage
-    And I follow "H5P package"
-    And I follow "View my attempts"
+    When I am on the "H5P package" "h5pactivity activity" page logged in as student1
+    And I navigate to "Attempts report" in current page administration
     And I follow "View report"
     Then I should see "Drag and Drop example 1"
     And "Your answer is incorrect" "icon" should exist in the "Drop item A" "table_row"
@@ -108,10 +96,8 @@ Feature: Report different types of interactions.
       | user     | h5pactivity | attempt | interactiontype | rawscore | maxscore | duration | completion | success |
       | student1 | H5P package | 1       | true-false      | 2        | 2        | 1        | 1          | 1       |
       | student1 | H5P package | 1       | compound        | 2        | 2        | 4        | 1          | 1       |
-    When I log in as "student1"
-    And I am on "Course 1" course homepage
-    And I follow "H5P package"
-    And I follow "View my attempts"
+    When I am on the "H5P package" "h5pactivity activity" page logged in as student1
+    And I navigate to "Attempts report" in current page administration
     And I follow "View report"
     Then I should see "The correct answer is true"
     And "Correct answer" "icon" should exist in the "True" "table_row"
@@ -122,10 +108,8 @@ Feature: Report different types of interactions.
       | user     | h5pactivity | attempt | interactiontype | rawscore | maxscore | duration | completion | success |
       | student1 | H5P package | 1       | true-false      | 0        | 2        | 1        | 1          | 0       |
       | student1 | H5P package | 1       | compound        | 0        | 2        | 4        | 1          | 0       |
-    When I log in as "student1"
-    And I am on "Course 1" course homepage
-    And I follow "H5P package"
-    And I follow "View my attempts"
+    When I am on the "H5P package" "h5pactivity activity" page logged in as student1
+    And I navigate to "Attempts report" in current page administration
     And I follow "View report"
     Then I should see "The correct answer is true"
     And "Incorrect answer" "icon" should exist in the "False" "table_row"
@@ -136,10 +120,8 @@ Feature: Report different types of interactions.
       | user     | h5pactivity | attempt | interactiontype | rawscore | maxscore | duration | completion | success |
       | student1 | H5P package | 1       | fill-in         | 2        | 2        | 1        | 1          | 1       |
       | student1 | H5P package | 1       | compound        | 2        | 2        | 4        | 1          | 1       |
-    When I log in as "student1"
-    And I am on "Course 1" course homepage
-    And I follow "H5P package"
-    And I follow "View my attempts"
+    When I am on the "H5P package" "h5pactivity activity" page logged in as student1
+    And I navigate to "Attempts report" in current page administration
     And I follow "View report"
     Then I should see "This an example of missing word text"
     And "Your answer is correct" "icon" should exist in the "Gap #1" "table_row"
@@ -153,10 +135,8 @@ Feature: Report different types of interactions.
       | user     | h5pactivity | attempt | interactiontype | rawscore | maxscore | duration | completion | success |
       | student1 | H5P package | 1       | fill-in         | 0        | 2        | 1        | 1          | 0       |
       | student1 | H5P package | 1       | compound        | 0        | 2        | 4        | 1          | 0       |
-    When I log in as "student1"
-    And I am on "Course 1" course homepage
-    And I follow "H5P package"
-    And I follow "View my attempts"
+    When I am on the "H5P package" "h5pactivity activity" page logged in as student1
+    And I navigate to "Attempts report" in current page administration
     And I follow "View report"
     Then I should see "This an example of missing word text"
     And "Your answer is incorrect" "icon" should exist in the "Gap #1" "table_row"
@@ -172,10 +152,8 @@ Feature: Report different types of interactions.
       | user     | h5pactivity | attempt | interactiontype | rawscore | maxscore | duration | completion | success |
       | student1 | H5P package | 1       | long-fill-in    | 2        | 2        | 1        | 1          | 1       |
       | student1 | H5P package | 1       | compound        | 2        | 2        | 4        | 1          | 1       |
-    When I log in as "student1"
-    And I am on "Course 1" course homepage
-    And I follow "H5P package"
-    And I follow "View my attempts"
+    When I am on the "H5P package" "h5pactivity activity" page logged in as student1
+    And I navigate to "Attempts report" in current page administration
     And I follow "View report"
     Then I should see "Please describe the novel The Hobbit"
     And I should see "The Hobbit is book"
@@ -187,10 +165,8 @@ Feature: Report different types of interactions.
       | user     | h5pactivity | attempt | interactiontype | rawscore | maxscore | duration | completion | success |
       | student1 | H5P package | 1       | long-fill-in    | 0        | 2        | 1        | 1          | 0       |
       | student1 | H5P package | 1       | compound        | 0        | 2        | 4        | 1          | 0       |
-    When I log in as "student1"
-    And I am on "Course 1" course homepage
-    And I follow "H5P package"
-    And I follow "View my attempts"
+    When I am on the "H5P package" "h5pactivity activity" page logged in as student1
+    And I navigate to "Attempts report" in current page administration
     And I follow "View report"
     Then I should see "Please describe the novel The Hobbit"
     And I should see "Who cares?"
@@ -204,10 +180,8 @@ Feature: Report different types of interactions.
       | user     | h5pactivity | attempt | interactiontype | rawscore | maxscore | duration | completion | success |
       | student1 | H5P package | 1       | sequencing      | 2        | 2        | 1        | 1          | 1       |
       | student1 | H5P package | 1       | compound        | 2        | 2        | 4        | 1          | 1       |
-    When I log in as "student1"
-    And I am on "Course 1" course homepage
-    And I follow "H5P package"
-    And I follow "View my attempts"
+    When I am on the "H5P package" "h5pactivity activity" page logged in as student1
+    And I navigate to "Attempts report" in current page administration
     And I follow "View report"
     Then I should see "This interaction (sequencing) does not provide tracking information"
     # Sequencing does not have a partial scope indicador, we only check the general one.
@@ -220,10 +194,8 @@ Feature: Report different types of interactions.
       | user     | h5pactivity | attempt | interactiontype | rawscore | maxscore | duration | completion | success |
       | student1 | H5P package | 1       | sequencing      | 2        | 2        | 1        | 1          | 0       |
       | student1 | H5P package | 1       | compound        | 0        | 2        | 4        | 1          | 0       |
-    When I log in as "student1"
-    And I am on "Course 1" course homepage
-    And I follow "H5P package"
-    And I follow "View my attempts"
+    When I am on the "H5P package" "h5pactivity activity" page logged in as student1
+    And I navigate to "Attempts report" in current page administration
     And I follow "View report"
     Then I should see "This interaction (sequencing) does not provide tracking information"
     # Sequencing does not have a partial scope indicador, we only check the general one.
@@ -236,10 +208,8 @@ Feature: Report different types of interactions.
       | user     | h5pactivity | attempt | interactiontype | rawscore | maxscore | duration | completion | success |
       | student1 | H5P package | 1       | other           | 2        | 2        | 1        | 1          | 1       |
       | student1 | H5P package | 1       | compound        | 2        | 2        | 4        | 1          | 1       |
-    When I log in as "student1"
-    And I am on "Course 1" course homepage
-    And I follow "H5P package"
-    And I follow "View my attempts"
+    When I am on the "H5P package" "h5pactivity activity" page logged in as student1
+    And I navigate to "Attempts report" in current page administration
     And I follow "View report"
     Then I should see "This interaction (other) does not provide tracking information"
     # Other does not have a partial scope indicador, we only check the general one.
@@ -252,10 +222,8 @@ Feature: Report different types of interactions.
       | user     | h5pactivity | attempt | interactiontype | rawscore | maxscore | duration | completion | success |
       | student1 | H5P package | 1       | other           | 2        | 2        | 1        | 1          | 0       |
       | student1 | H5P package | 1       | compound        | 0        | 2        | 4        | 1          | 0       |
-    When I log in as "student1"
-    And I am on "Course 1" course homepage
-    And I follow "H5P package"
-    And I follow "View my attempts"
+    When I am on the "H5P package" "h5pactivity activity" page logged in as student1
+    And I navigate to "Attempts report" in current page administration
     And I follow "View report"
     Then I should see "This interaction (other) does not provide tracking information"
     # Other does not have a partial scope indicador, we only check the general one.

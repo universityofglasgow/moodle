@@ -50,13 +50,6 @@
     <licenseversion>2.1+</licenseversion>
   </library>
   <library>
-    <location>jabber</location>
-    <name>XMPPHP</name>
-    <license>GPL</license>
-    <version>2.2</version>
-    <licenseversion>2.0+</licenseversion>
-  </library>
-  <library>
     <location>minify/matthiasmullie-minify</location>
     <name>MatthiasMullie\Minify</name>
     <license>MIT</license>
@@ -228,7 +221,7 @@
     <location>spout</location>
     <name>Spout</name>
     <license>Apache</license>
-    <version>3.1.0</version>
+    <version>3.3.0</version>
     <licenseversion>2.0</licenseversion>
   </library>
   <library>
@@ -247,7 +240,7 @@
     <location>maxmind/MaxMind</location>
     <name>MaxMind DB Reader API</name>
     <license>Apache 2.0</license>
-    <version>1.9.0</version>
+    <version>1.10.1</version>
   </library>
   <library>
     <location>ltiprovider</location>

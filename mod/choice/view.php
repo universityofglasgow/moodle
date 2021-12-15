@@ -97,13 +97,9 @@ if (data_submitted() && !empty($action) && confirm_sesskey()) {
 // Completion and trigger events.
 choice_view($choice, $course, $cm, $context);
 
-echo $OUTPUT->header();
-echo $OUTPUT->heading(format_string($choice->name), 2, null);
+$PAGE->add_body_class('limitedwidth');
 
-// Render the activity information.
-$completiondetails = \core_completion\cm_completion_details::get_instance($cm, $USER->id);
-$activitydates = \core\activity_dates::get_dates_for_module($cm, $USER->id);
-echo $OUTPUT->activity_information($cm, $completiondetails, $activitydates);
+echo $OUTPUT->header();
 
 if ($notify and confirm_sesskey()) {
     if ($notify === 'choicesaved') {
@@ -132,15 +128,11 @@ $onlyactive = $choice->includeinactive ? false : true;
 $allresponses = choice_get_response_data($choice, $cm, $groupmode, $onlyactive);   // Big function, approx 6 SQL calls per user.
 
 
-if (has_capability('mod/choice:readresponses', $context)) {
+if (has_capability('mod/choice:readresponses', $context) && !$PAGE->has_secondary_navigation()) {
     choice_show_reportlink($allresponses, $cm);
 }
 
 echo '<div class="clearer"></div>';
-
-if ($choice->intro) {
-    echo $OUTPUT->box(format_module_intro('choice', $choice, $cm->id), 'generalbox', 'intro');
-}
 
 $timenow = time();
 $current = choice_get_my_response($choice);

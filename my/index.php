@@ -84,11 +84,17 @@ $params = array();
 $PAGE->set_context($context);
 $PAGE->set_url('/my/index.php', $params);
 $PAGE->set_pagelayout('mydashboard');
+$PAGE->add_body_class('limitedwidth');
 $PAGE->set_pagetype('my-index');
 $PAGE->blocks->add_region('content');
 $PAGE->set_subpage($currentpage->id);
 $PAGE->set_title($pagetitle);
 $PAGE->set_heading($header);
+$PAGE->has_secondary_navigation_setter(false);
+
+if ($block = my_page_add_block_center()) {
+    $PAGE->blocks->add_fake_block($block, 'content');
+}
 
 if (!isguestuser()) {   // Skip default home page for guests
     if (get_home_page() != HOMEPAGE_MY) {
@@ -155,7 +161,10 @@ if (empty($CFG->forcedefaultmymoodle) && $PAGE->user_allowed_editing()) {
     }
 
     $url = new moodle_url("$CFG->wwwroot/my/index.php", $params);
-    $button = $OUTPUT->single_button($url, $editstring);
+    $button = '';
+    if (!$PAGE->theme->haseditswitch) {
+        $button = $OUTPUT->single_button($url, $editstring);
+    }
     $PAGE->set_button($resetbutton . $button);
 
 } else {

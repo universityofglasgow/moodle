@@ -36,10 +36,8 @@ Feature: Attempts review settings.
       | duration        | 4           |
       | completion      | 1           |
       | success         | 1           |
-    When I log in as "student1"
-    And I am on "Course 1" course homepage
-    And I follow "H5P package"
-    Then I should see "View my attempts"
+    When I am on the "H5P package" "h5pactivity activity" page logged in as student1
+    Then "Attempts report" "link" should exist in current page administration
     And I should not see "This content is displayed in preview mode"
 
   Scenario: Student accessing an activity without attempt review
@@ -61,10 +59,8 @@ Feature: Attempts review settings.
       | duration        | 4           |
       | completion      | 1           |
       | success         | 1           |
-    When I log in as "student1"
-    And I am on "Course 1" course homepage
-    And I follow "H5P package"
-    Then I should not see "View my attempts"
+    When I am on the "H5P package" "h5pactivity activity" page logged in as student1
+    Then "Attempts report" "link" should not exist in current page administration
     And I should not see "This content is displayed in preview mode"
 
   Scenario: Student accessing an activity without tracking
@@ -85,10 +81,8 @@ Feature: Attempts review settings.
       | duration        | 4           |
       | completion      | 1           |
       | success         | 1           |
-    When I log in as "student1"
-    And I am on "Course 1" course homepage
-    And I follow "H5P package"
-    Then I should not see "View my attempts"
+    When I am on the "H5P package" "h5pactivity activity" page logged in as student1
+    Then "Attempts report" "link" should not exist in current page administration
     And I should see "This content is displayed in preview mode"
 
   Scenario: Teacher accessing an activity with attempt review
@@ -110,10 +104,8 @@ Feature: Attempts review settings.
       | duration        | 4           |
       | completion      | 1           |
       | success         | 1           |
-    When I log in as "teacher1"
-    And I am on "Course 1" course homepage
-    And I follow "H5P package"
-    Then I should see "View all attempts (1 submitted)"
+    When I am on the "H5P package" "h5pactivity activity" page logged in as teacher1
+    Then "Attempts report" "link" should exist in current page administration
     And I should see "This content is displayed in preview mode"
 
   Scenario: Teacher accessing an activity without attempt review
@@ -135,8 +127,6 @@ Feature: Attempts review settings.
       | duration        | 4           |
       | completion      | 1           |
       | success         | 1           |
-    When I log in as "teacher1"
-    And I am on "Course 1" course homepage
-    And I follow "H5P package"
-    Then I should see "View all attempts (1 submitted)"
+    When I am on the "H5P package" "h5pactivity activity" page logged in as teacher1
+    Then "Attempts report" "link" should exist in current page administration
     And I should see "This content is displayed in preview mode"

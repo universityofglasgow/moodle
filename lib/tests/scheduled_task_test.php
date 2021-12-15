@@ -538,7 +538,7 @@ class core_scheduled_task_testcase extends advanced_testcase {
     }
 
     /**
-     * Data provider for test_tool_health_category_find_missing_parents.
+     * Data provider for test_scheduled_task_override_values.
      */
     public static function provider_schedule_overrides(): array {
         return array(
@@ -771,5 +771,46 @@ class core_scheduled_task_testcase extends advanced_testcase {
 
         // Confirm, that lastruntime is still in place.
         $this->assertEquals(123456789, $taskafterreset->get_last_run_time());
+    }
+
+    /**
+     * Data provider for {@see test_is_component_enabled}
+     *
+     * @return array[]
+     */
+    public function is_component_enabled_provider(): array {
+        return [
+            'Enabled component' => ['auth_cas', true],
+            'Disabled component' => ['auth_ldap', false],
+            'Invalid component' => ['auth_invalid', false],
+        ];
+    }
+
+    /**
+     * Tests whether tasks belonging to components consider the component to be enabled
+     *
+     * @param string $component
+     * @param bool $expected
+     *
+     * @dataProvider is_component_enabled_provider
+     */
+    public function test_is_component_enabled(string $component, bool $expected): void {
+        $this->resetAfterTest();
+
+        // Set cas as the only enabled auth component.
+        set_config('auth', 'cas');
+
+        $task = new \core\task\scheduled_test_task();
+        $task->set_component($component);
+
+        $this->assertEquals($expected, $task->is_component_enabled());
+    }
+
+    /**
+     * Test whether tasks belonging to core components considers the component to be enabled
+     */
+    public function test_is_component_enabled_core(): void {
+        $task = new \core\task\scheduled_test_task();
+        $this->assertTrue($task->is_component_enabled());
     }
 }

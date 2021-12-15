@@ -32,19 +32,6 @@ select {
     }
 }
 
-.path-mod-feedback .feedback_form .col-form-label {
-    display: block !important; /* stylelint-disable-line declaration-no-important */
-}
-
-// Feedback module
-.path-mod-feedback .itemactions {
-    float: right;
-}
-.path-mod-feedback .itemhandle {
-    position: absolute;
-    right: 1rem;
-}
-
 // Forum module
 
 .path-mod-forum .forumsearch {
@@ -117,17 +104,6 @@ select {
             // Do not use the default bold style for the table headings.
             font-weight: inherit;
         }
-    }
-
-    // Style for the forum subscription mode node.
-    .subscriptionmode {
-        color: $body-color;
-    }
-
-    // Style for the currently selected subscription mode.
-    .activesetting {
-        color: $body-color;
-        font-weight: bold;
     }
 }
 
@@ -959,10 +935,6 @@ $grading-content-show-content-button-padding-left: calc(#{map-get($spacers, 2) *
     width: auto;
 }
 
-.path-mod-data form {
-    margin-top: 10px;
-}
-
 .template_heading {
     margin-top: 10px;
 }
@@ -1077,12 +1049,6 @@ div#dock {
 }
 
 // Usermenu
-.usermenu {
-    .login {
-        line-height: 2.25rem;
-    }
-}
-
 .userloggedinas,
 .userswitchedrole,
 .loginfailures {
@@ -1093,8 +1059,8 @@ div#dock {
             margin-right: $spacer / 2;
             height: 35px;
             .meta {
-                display: block;
                 font-size: $font-size-sm;
+                align-items: center;
             }
         }
         .avatar {
@@ -1121,6 +1087,13 @@ div#dock {
                 img {
                     vertical-align: baseline;
                 }
+                .userinitials.size-35 {
+                    width: 20px;
+                    height: 20px;
+                    border: $border-width solid $border-color;
+                    background-color: $white;
+                    font-size: $font-size-base * .6;
+                }
             }
             img {
                 width: inherit;
@@ -1132,6 +1105,31 @@ div#dock {
             height: 35px;
             display: inline-block;
         }
+    }
+}
+
+.userinitials {
+    background-color: $gray-200;
+    vertical-align: middle;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: $gray-800;
+    font-weight: normal;
+    &.size-16,
+    &.size-30 {
+        width: 30px;
+        height: 30px;
+    }
+    &.size-35 {
+        width: 35px;
+        height: 35px;
+    }
+    &.size-100 {
+        width: 100px;
+        height: 100px;
+        font-size: $h2-font-size;
     }
 }
 

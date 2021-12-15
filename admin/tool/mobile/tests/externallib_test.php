@@ -99,6 +99,7 @@ class tool_mobile_external_testcase extends externallib_advanced_testcase {
             'tool_mobile_iosappid' => get_config('tool_mobile', 'iosappid'),
             'tool_mobile_androidappid' => get_config('tool_mobile', 'androidappid'),
             'tool_mobile_setuplink' => get_config('tool_mobile', 'setuplink'),
+            'tool_mobile_qrcodetype' => get_config('tool_mobile', 'qrcodetype'),
             'warnings' => array()
         );
         $this->assertEquals($expected, $result);
@@ -233,6 +234,9 @@ class tool_mobile_external_testcase extends externallib_advanced_testcase {
         $expected[] = ['name' => 'supportname', 'value' => $CFG->supportname];
         $expected[] = ['name' => 'supportemail', 'value' => $CFG->supportemail];
         $expected[] = ['name' => 'supportpage', 'value' => $CFG->supportpage];
+
+        $expected[] = ['name' => 'coursegraceperiodafter', 'value' => $CFG->coursegraceperiodafter];
+        $expected[] = ['name' => 'coursegraceperiodbefore', 'value' => $CFG->coursegraceperiodbefore];
 
         $this->assertCount(0, $result['warnings']);
         $this->assertEquals($expected, $result['settings']);

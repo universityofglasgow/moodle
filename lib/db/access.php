@@ -664,6 +664,7 @@ $capabilities = array(
         )
     ),
 
+    // The ability to override the permissions for any capability.
     'moodle/role:override' => array(
 
         'riskbitmask' => RISK_SPAM | RISK_PERSONAL | RISK_XSS,
@@ -675,6 +676,8 @@ $capabilities = array(
         )
     ),
 
+    // The ability to override the permissions for 'safe' capabilities (those without risks).
+    // If a user has moodle/role:override then you should not check this capability.
     'moodle/role:safeoverride' => array(
 
         'riskbitmask' => RISK_SPAM,
@@ -2623,5 +2626,32 @@ $capabilities = array(
             'manager' => CAP_ALLOW,
             'coursecreator' => CAP_ALLOW,
         ]
+    ],
+
+    // Allow users to view custom reports.
+    'moodle/reportbuilder:view' => [
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+            'user' => CAP_ALLOW,
+        ],
+    ],
+
+    // Allow users to create/edit their own custom reports.
+    'moodle/reportbuilder:edit' => [
+        'captype' => 'write',
+        'riskbitmap' => RISK_PERSONAL,
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+            'manager' => CAP_ALLOW,
+        ],
+    ],
+
+    // Allow users to create/edit all custom reports.
+    'moodle/reportbuilder:editall' => [
+        'captype' => 'write',
+        'riskbitmap' => RISK_PERSONAL,
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [],
     ],
 );

@@ -166,6 +166,7 @@ abstract class section_renderer extends core_course_renderer {
      * @param section_info $section the section info
      * @param cm_info $cm the course module ionfo
      * @param array $displayoptions optional extra display options
+     * @return string the rendered element
      */
     public function course_section_updated_cm_item(
         course_format $format,
@@ -180,9 +181,50 @@ abstract class section_renderer extends core_course_renderer {
     }
 
     /**
+     * Get the updated rendered version of a section.
+     *
+     * This method will only be used when the course editor requires to get an updated cm item HTML
+     * to perform partial page refresh. It will be used for supporting the course editor webservices.
+     *
+     * By default, the template used for update a section is the same as when it renders initially,
+     * but format plugins are free to override this method to provide extra effects or so.
+     *
+     * @param course_format $format the course format
+     * @param section_info $section the section info
+     * @return string the rendered element
+     */
+    public function course_section_updated(
+        course_format $format,
+        section_info $section
+    ): string {
+        $sectionclass = $format->get_output_classname('content\\section');
+        $output = new $sectionclass($format, $section);
+        return $this->render($output);
+    }
+
+    /**
+     * Get the course index drawer with placeholder.
+     *
+     * The default course index is loaded after the page is ready. Format plugins can override
+     * this method to provide an alternative course index.
+     *
+     * If the format is not compatible with the course index, this method will return an empty string.
+     *
+     * @param course_format $format the course format
+     * @return String the course index HTML.
+     */
+    public function course_index_drawer(course_format $format): ?String {
+        if ($format->uses_course_index()) {
+            include_course_editor($format);
+            return $this->render_from_template('core_courseformat/local/courseindex/drawer', []);
+        }
+        return '';
+    }
+
+    /**
      * Generate the edit control action menu
      *
-     * @deprecated since 4.0 - use core_course output components instead.
+     * @deprecated since 4.0 MDL-72656 - use core_course output components instead.
      *
      * The section edit controls are now part of the main section_format output and does
      * not use renderer methods anymore.
@@ -231,7 +273,7 @@ abstract class section_renderer extends core_course_renderer {
      * Generate the content to displayed on the right part of a section
      * before course modules are included
      *
-     * @deprecated since 4.0 - use core_course output components instead.
+     * @deprecated since 4.0 MDL-72656 - use core_course output components instead.
      *
      * Spatial references like "left" or "right" are limiting the way formats and themes can
      * extend courses. The elements from this method are now included in the section_format
@@ -259,7 +301,7 @@ abstract class section_renderer extends core_course_renderer {
      * Generate the content to displayed on the left part of a section
      * before course modules are included
      *
-     * @deprecated since 4.0 - use core_course output components instead.
+     * @deprecated since 4.0 MDL-72656 - use core_course output components instead.
      *
      * Spatial references like "left" or "right" are limiting the way formats and themes can
      * extend courses. The elements from this method are now included in the section_format
@@ -291,7 +333,7 @@ abstract class section_renderer extends core_course_renderer {
      * Generate the display of the header part of a section before
      * course modules are included
      *
-     * @deprecated since 4.0 - use core_course output components instead.
+     * @deprecated since 4.0 MDL-72656 - use core_course output components instead.
      *
      * This element is now a section_format output component and it is displayed using
      * mustache templates instead of a renderer method.
@@ -355,7 +397,7 @@ abstract class section_renderer extends core_course_renderer {
         if ($section->uservisible || $section->visible) {
             // Show summary if section is available or has availability restriction information.
             // Do not show summary if section is hidden but we still display it because of course setting
-            // "Hidden sections are shown in collapsed form".
+            // "Hidden sections are shown as not available".
             $o .= $this->format_summary_text($section);
         }
         $o .= html_writer::end_tag('div');
@@ -366,7 +408,7 @@ abstract class section_renderer extends core_course_renderer {
     /**
      * Generate the display of the footer part of a section.
      *
-     * @deprecated since 4.0 - use core_course output components instead.
+     * @deprecated since 4.0 MDL-72656 - use core_course output components instead.
      *
      * This element is integrated into section_format output component and it is displayed using
      * mustache templates instead of a renderer method.
@@ -397,7 +439,7 @@ abstract class section_renderer extends core_course_renderer {
     /**
      * Generate the edit control items of a section
      *
-     * @deprecated since 4.0 - use core_course output components instead.
+     * @deprecated since 4.0 MDL-72656 - use core_course output components instead.
      *
      * This element is now a section_format output component and it is displayed using
      * mustache templates instead of a renderer method.
@@ -429,7 +471,7 @@ abstract class section_renderer extends core_course_renderer {
     /**
      * Generate a summary of a section for display on the 'course index page'
      *
-     * @deprecated since 4.0 - use core_course output components instead.
+     * @deprecated since 4.0 MDL-72656 - use core_course output components instead.
      *
      * This element is now a section_format output component and it is displayed using
      * mustache templates instead of a renderer method.
@@ -484,7 +526,7 @@ abstract class section_renderer extends core_course_renderer {
         if ($section->uservisible || $section->visible) {
             // Show summary if section is available or has availability restriction information.
             // Do not show summary if section is hidden but we still display it because of course setting
-            // "Hidden sections are shown in collapsed form".
+            // "Hidden sections are shown as not available".
             $o .= $this->format_summary_text($section);
         }
         $o .= html_writer::end_tag('div');
@@ -499,7 +541,7 @@ abstract class section_renderer extends core_course_renderer {
     /**
      * Generate a summary of the activites in a section
      *
-     * @deprecated since 4.0 - use core_course output components instead.
+     * @deprecated since 4.0 MDL-72656 - use core_course output components instead.
      *
      * This element is now a section_format output component and it is displayed using
      * mustache templates instead of a renderer method.
@@ -531,7 +573,7 @@ abstract class section_renderer extends core_course_renderer {
      * are going to be unavailable etc). This logic is the same as for
      * activities.
      *
-     * @deprecated since 4.0 - use core_course output components instead.
+     * @deprecated since 4.0 MDL-72656 - use core_course output components instead.
      *
      * This element is now a section_format output component and it is displayed using
      * mustache templates instead of a renderer method.
@@ -557,7 +599,7 @@ abstract class section_renderer extends core_course_renderer {
     /**
      * Displays availability information for the section (hidden, not available unles, etc.)
      *
-     * @deprecated since 4.0 - use core_course output components instead.
+     * @deprecated since 4.0 MDL-72656 - use core_course output components instead.
      *
      * This element is now a section_format output component and it is displayed using
      * mustache templates instead of a renderer method.
@@ -578,7 +620,7 @@ abstract class section_renderer extends core_course_renderer {
     /**
      * Show if something is on on the course clipboard (moving around)
      *
-     * @deprecated since 4.0 - use core_course output components instead.
+     * @deprecated since 4.0 MDL-72656 - use core_course output components instead.
      *
      * While the non ajax course eidtion is still supported, the old clipboard will be
      * emulated by core_courseformat\output\local\content\section\cmlist.
@@ -615,7 +657,7 @@ abstract class section_renderer extends core_course_renderer {
     /**
      * Generate next/previous section links for naviation.
      *
-     * @deprecated since 4.0 - use core_course output components instead.
+     * @deprecated since 4.0 MDL-72656 - use core_course output components instead.
      *
      * This element is now a section_format output component and it is displayed using
      * mustache templates instead of a renderer method.
@@ -672,7 +714,7 @@ abstract class section_renderer extends core_course_renderer {
     /**
      * Generate the header html of a stealth section
      *
-     * @deprecated since 4.0 - use core_course output components instead.
+     * @deprecated since 4.0 MDL-72656 - use core_course output components instead.
      *
      * This element is now a section_format output component and it is displayed using
      * mustache templates instead of a renderer method.
@@ -707,7 +749,7 @@ abstract class section_renderer extends core_course_renderer {
     /**
      * Generate footer html of a stealth section
      *
-     * @deprecated since 4.0 - use core_course output components instead.
+     * @deprecated since 4.0 MDL-72656 - use core_course output components instead.
      *
      * This element is now a section_format output component and it is displayed using
      * mustache templates instead of a renderer method.
@@ -756,7 +798,7 @@ abstract class section_renderer extends core_course_renderer {
     /**
      * Generate the html for the 'Jump to' menu on a single section page.
      *
-     * @deprecated since 4.0 - use core_course output components instead.
+     * @deprecated since 4.0 MDL-72656 - use core_course output components instead.
      *
      * This element is now a section_format output component and it is displayed using
      * mustache templates instead of a renderer method.
@@ -782,8 +824,7 @@ abstract class section_renderer extends core_course_renderer {
         $numsections = course_get_format($course)->get_last_section_number();
         while ($section <= $numsections) {
             $thissection = $modinfo->get_section_info($section);
-            $showsection = $thissection->uservisible or !$course->hiddensections;
-            if (($showsection) && ($section != $displaysection) && ($url = course_get_url($course, $section))) {
+            if (($thissection->uservisible) && ($section != $displaysection) && ($url = course_get_url($course, $section))) {
                 $sectionmenu[$url->out(false)] = get_section_name($course, $section);
             }
             $section++;
@@ -1035,7 +1076,7 @@ abstract class section_renderer extends core_course_renderer {
     /**
      * Returns controls in the bottom of the page to increase/decrease number of sections
      *
-     * @deprecated since 4.0 - use core_course output components instead.
+     * @deprecated since 4.0 MDL-72656 - use core_course output components instead.
      *
      * @param stdClass $course
      * @param int|null $sectionreturn
@@ -1056,7 +1097,7 @@ abstract class section_renderer extends core_course_renderer {
     /**
      * Generate html for a section summary text
      *
-     * @deprecated since 4.0 - use core_course output components instead.
+     * @deprecated since 4.0 MDL-72656 - use core_course output components instead.
      *
      * @param stdClass $section The course_section entry from DB
      * @return string HTML to output.

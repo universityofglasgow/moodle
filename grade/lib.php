@@ -887,6 +887,15 @@ function grade_get_plugin_info($courseid, $active_type, $active_plugin) {
         $plugin_info['export'] = $exports;
     }
 
+    // Let other plugins add plugins here so that we get extra tabs
+    // in the gradebook.
+    $callbacks = get_plugins_with_function('extend_gradebook_plugininfo', 'lib.php');
+    foreach ($callbacks as $plugins) {
+        foreach ($plugins as $pluginfunction) {
+            $plugin_info = $pluginfunction($plugin_info, $courseid);
+        }
+    }
+
     foreach ($plugin_info as $plugin_type => $plugins) {
         if (!empty($plugins->id) && $active_plugin == $plugins->id) {
             $plugin_info['strings']['active_plugin_str'] = $plugins->string;
@@ -1639,6 +1648,7 @@ class grade_structure {
         }
 
         $title = $element['object']->get_name($fulltotal);
+        $titleunescaped = $element['object']->get_name($fulltotal, false);
         $header .= $title;
 
         if ($element['type'] != 'item' and $element['type'] != 'categoryitem' and
@@ -1649,12 +1659,12 @@ class grade_structure {
         if ($withlink && $url = $this->get_activity_link($element)) {
             $a = new stdClass();
             $a->name = get_string('modulename', $element['object']->itemmodule);
-            $a->title = $title;
+            $a->title = $titleunescaped;
             $title = get_string('linktoactivity', 'grades', $a);
 
             $header = html_writer::link($url, $header, array('title' => $title, 'class' => 'gradeitemheader'));
         } else {
-            $header = html_writer::span($header, 'gradeitemheader', array('title' => $title, 'tabindex' => '0'));
+            $header = html_writer::span($header, 'gradeitemheader', array('title' => $titleunescaped, 'tabindex' => '0'));
         }
 
         if ($withdescription) {
@@ -2844,7 +2854,8 @@ function grade_button($type, $courseid, $object) {
 function grade_extend_settings($plugininfo, $courseid) {
     global $PAGE;
 
-    $gradenode = $PAGE->settingsnav->prepend(get_string('gradeadministration', 'grades'), null, navigation_node::TYPE_CONTAINER);
+    $gradenode = $PAGE->settingsnav->prepend(get_string('gradeadministration', 'grades'), null, navigation_node::TYPE_CONTAINER,
+        null, 'gradeadmin');
 
     $strings = array_shift($plugininfo);
 

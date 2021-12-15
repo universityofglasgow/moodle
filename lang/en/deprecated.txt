@@ -94,6 +94,7 @@ updatesite,core_hub
 unregisterexplained,core_hub
 configrequestcategoryselection,core_admin
 requestcategoryselection,core_admin
+calendarurl,core_calendar
 global,core_calendar
 globalevent,core_calendar
 globalevents,core_calendar
@@ -154,3 +155,15 @@ configenableactivitychooser,core_admin
 enableactivitychooser,core_admin
 coursepreferences,core
 yourprogress,core_completion
+importfrominstructions,core_calendar
+proceedtocourse,core_enrol
+coursepage,core_admin
+invalidpersistenterror,core_competency
+mediapluginswf,core_admin
+mediapluginswfnote,core_admin
+createuserandpass,core
+supplyinfo,core
+monthlyview,core_calendar
+evidence,core_badges
+recipientdetails,core_badges
+recipientidentificationproblem,core_badges
