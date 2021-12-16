@@ -63,6 +63,7 @@ class lib {
             $context = \context_module::instance($cm->id);
             $assignment = new \assign($context, $cm, $course);
             $instance = $assignment->get_instance();
+            $instance->submitcount = $assignment->count_submissions_with_status(ASSIGN_SUBMISSION_STATUS_SUBMITTED);
             $instance->urkundenabled = self::urkund_enabled($instance->id);
             $instance->turnitinenabled = self::turnitin_enabled($instance->id);
             $assignments[$instance->id] = $instance;
@@ -569,7 +570,8 @@ class lib {
                 $submission->grade = '-';
                 $submission->grader = '-';
             }
-            $submission->participantno = empty($submission->recordid) ? '-' : $submission->recordid;
+            //$submission->participantno = empty($submission->recordid) ? '-' : $submission->recordid;
+            $submission->participantno = \assign::get_uniqueid_for_user_static($assid, $userid);
             list($submission->groups, $submission->groupids) = self::get_user_groups($userid, $courseid);
             $submission->urkund = self::get_urkund_score($assid, $cmid, $userid);
             $submission->turnitin = self::get_turnitin_score($assid, $cmid, $userid);
@@ -757,6 +759,75 @@ class lib {
             $row++;
         }
         $workbook->close();
+    }
+
+    /**
+     * Export for offline marking
+     * @param object $assignment
+     * @param string $filename
+     * @param array $submissions
+     */
+    public static function offline($assignment, $filename, $submissions) {
+        global $CFG, $DB;
+        require_once($CFG->libdir.'/csvlib.class.php');
+
+        // Profile fields.
+        $profilefields = [];
+        $fields = get_config('report_assign', 'profilefields');
+        if ($fields != '') {
+            $profilefields = explode(',', $fields);
+        }
+
+        // Group mode?
+        $cm = get_coursemodule_from_instance('assign', $assignment->id);
+        $groupmode = $cm->groupmode;
+
+        // Create csv
+        $csv = new \csv_export_writer();
+        $csv->set_filename($filename);
+
+        // Headers.
+        $headers = [
+            get_string('recordid', 'assign'),
+            get_string('fullname'),
+            get_string('gradenoun'),
+            get_string('lastmodifiedgrade', 'assign'),
+        ];
+        foreach ($profilefields as $profilefield) {
+            $headers[] = get_string($profilefield);
+        }
+        $csv->add_data($headers);
+
+        // Add some data.
+        foreach ($submissions as $s) {
+
+            // Fullname
+            $fullname = '-';
+            if (!$assignment->blindmarking) {
+                if ($user = $DB->get_record('user', ['id' => $s->userid])) {
+                    $fullname = fullname($user);
+                }
+            }
+
+            // Grade
+            $grade = $s->grade == '-' ? '' : $s->grade;
+
+            $line = [
+                'Participant ' . $s->participantno,
+                 $fullname,
+                 $grade,
+                 ' ',
+            ];
+            if ($fields != '') {
+                foreach ($s->profiledata as $value) {
+                    $line[] = $value;
+                }
+            }
+
+            $csv->add_data($line);
+        }
+
+        $csv->download_file();
     }
 
     /**
