@@ -826,11 +826,12 @@ class lib {
             $myxls->write_string($row, $i++, ' ');
             $myxls->write_string($row, $i++, $fullname);
             if ($fields != '') {
+
                 foreach ($s->profiledata as $key => $value) {
-                    if ($profilefield == $key) {
+                    if ($idnumber == $key) {
                         continue;
                     }
-                    $myxls->write_string($row, $i++, $value );
+                    $myxls->write_string($row, $i++, $value);
                 }
             }
 
