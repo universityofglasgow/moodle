@@ -778,6 +778,9 @@ class lib {
             $profilefields = explode(',', $fields);
         }
 
+        // We treat idnumber differently (specific user request)
+        $idnumber = array_search('idnumber', $profilefields);
+
         // Group mode?
         $cm = get_coursemodule_from_instance('assign', $assignment->id);
         $groupmode = $cm->groupmode;
@@ -789,11 +792,15 @@ class lib {
         // Headers.
         $headers = [
             get_string('recordid', 'assign'),
-            get_string('fullname'),
+            get_string('idnumber'),
             get_string('gradenoun'),
             get_string('lastmodifiedgrade', 'assign'),
+            get_string('fullname'),
         ];
         foreach ($profilefields as $profilefield) {
+            if ($profilefield == 'idnumber') {
+                continue;
+            }
             $headers[] = get_string($profilefield);
         }
         $csv->add_data($headers);
@@ -814,12 +821,16 @@ class lib {
 
             $line = [
                 'Participant ' . $s->participantno,
-                 $fullname,
-                 $grade,
-                 ' ',
+                $s->idnumber,
+                $grade,
+                ' ',
+                $fullname,
             ];
             if ($fields != '') {
-                foreach ($s->profiledata as $value) {
+                foreach ($s->profiledata as $key => $value) {
+                    if ($profilefield == $key) {
+                        continue;
+                    }
                     $line[] = $value;
                 }
             }
