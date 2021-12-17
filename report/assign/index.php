@@ -165,7 +165,7 @@ if ($assignid) {
 
     // Export for offline grading
     if ($offline) {
-        $filename = "assign_offline_{$assignment->name}.csv";
+        $filename = "assign_offline_{$assignment->name}.xls";
         report_assign\lib::offline($assignment, $filename, $submissions);
 
         // Trigger an assignment viewed event.

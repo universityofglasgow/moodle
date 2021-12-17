@@ -769,7 +769,7 @@ class lib {
      */
     public static function offline($assignment, $filename, $submissions) {
         global $CFG, $DB;
-        require_once($CFG->libdir.'/csvlib.class.php');
+        require_once($CFG->dirroot.'/lib/excellib.class.php');
 
         // Profile fields.
         $profilefields = [];
@@ -785,27 +785,27 @@ class lib {
         $cm = get_coursemodule_from_instance('assign', $assignment->id);
         $groupmode = $cm->groupmode;
 
-        // Create csv
-        $csv = new \csv_export_writer();
-        $csv->set_filename($filename);
+        // Create workbook
+        $workbook = new \MoodleExcelWorkbook("-");
+        $workbook->send($filename);
+        $myxls = $workbook->add_worksheet(get_string('offlineworkbook', 'report_assign'));
 
         // Headers.
-        $headers = [
-            get_string('recordid', 'assign'),
-            get_string('idnumber'),
-            get_string('gradenoun'),
-            get_string('lastmodifiedgrade', 'assign'),
-            get_string('fullname'),
-        ];
+        $i = 0;
+        $myxls->write_string(0, $i++, get_string('recordid', 'assign'));
+        $myxls->write_string(0, $i++, get_string('idnumber'));
+        $myxls->write_string(0, $i++, get_string('gradenoun'));
+        $myxls->write_string(0, $i++, get_string('lastmodifiedgrade', 'assign'));
+        $myxls->write_string(0, $i++, get_string('fullname'));
         foreach ($profilefields as $profilefield) {
             if ($profilefield == 'idnumber') {
                 continue;
             }
-            $headers[] = get_string($profilefield);
+            $myxls->write_string(0, $i++, get_string($profilefield));
         }
-        $csv->add_data($headers);
 
         // Add some data.
+        $row = 1;
         foreach ($submissions as $s) {
 
             // Fullname
@@ -819,26 +819,25 @@ class lib {
             // Grade
             $grade = $s->grade == '-' ? '' : $s->grade;
 
-            $line = [
-                'Participant ' . $s->participantno,
-                $s->idnumber,
-                $grade,
-                ' ',
-                $fullname,
-            ];
+            $i = 0;
+            $myxls->write_string($row, $i++, 'Participant ' . $s->participantno);
+            $myxls->write_string($row, $i++, $s->idnumber);
+            $myxls->write_string($row, $i++, $grade);
+            $myxls->write_string($row, $i++, ' ');
+            $myxls->write_string($row, $i++, $fullname);
             if ($fields != '') {
                 foreach ($s->profiledata as $key => $value) {
                     if ($profilefield == $key) {
                         continue;
                     }
-                    $line[] = $value;
+                    $myxls->write_string($row, $i++, $value );
                 }
             }
 
-            $csv->add_data($line);
+            $row++;
         }
 
-        $csv->download_file();
+        $workbook->close();
     }
 
     /**

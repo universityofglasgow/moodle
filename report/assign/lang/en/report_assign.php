@@ -63,6 +63,7 @@ $string['nocapability'] = 'You do not have the required capabiltities to view th
 $string['nologdata'] = 'No log data found for this submission';
 $string['notallowed'] = 'You do not have permission to view the selected activity';
 $string['offline'] = 'Offline';
+$string['offlineworkbook'] = 'Offline grading export';
 $string['participantno'] = 'Participant No';
 $string['plagiarism'] = 'Plagiarism';
 $string['pluginname'] = 'Assignment submission report';
