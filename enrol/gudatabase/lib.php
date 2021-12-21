@@ -1502,7 +1502,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         // Go through the list of course codes and enrol student.
         if (!empty($uniquecourses)) {
             foreach ($uniquecourses as $courseid => $code) {
-                if ($course = $DB->get_record('course', ['id' => $courseid])) {
+                if (!$course = $DB->get_record('course', ['id' => $courseid])) {
                     mtrace("gudatabase: course id not found " . $courseid);
                     continue;
                 }
