@@ -334,9 +334,14 @@ class grade_aggregation{
                 $rawaggrade = ($defaultaggregated)
                 ? $sumaggregated : (!is_null($gbaggregatedgrade->finalgrade)
                 ? $gbaggregatedgrade->finalgrade : $gbaggregatedgrade->rawgrade);
+                
+                // Convert rawaggrade to 3 decimals to match display grade MOOD-141
+                $rawaggrade = round($rawaggrade, 3);
+
                 // Convert back to moodle scale.
                 $aggrade = $defaultaggregated ? ($aggrdscaletype == SCHEDULE_B
                 ? floor($rawaggrade) + 1 : round($rawaggrade) + 1) : $rawaggrade;
+               
                 $aggrdobj->grade = local_gugcat::convert_grade($aggrade, null, $aggrdscaletype)
                 . (!$defaultaggregated ? '*' : null);
                 $aggrdobj->rawgrade = $gbaggregatedgrade && $gbaggregatedgrade->overridden != 0 ? $rawaggrade - 1 : $rawaggrade;
