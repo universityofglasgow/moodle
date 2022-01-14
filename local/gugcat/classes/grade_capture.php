@@ -267,8 +267,8 @@ class grade_capture{
                 // Update hidden status.
                 $DB->set_field_select('grade_grades', 'hidden', $hidden, $select);
                 if (!is_null($grd) && !empty($grd) && $hidden == 0) {
-                    $rawgrade = intval($grd);
-                    switch ($rawgrade) {
+                    $rawgrade = $grd;
+                    switch (intval($rawgrade)) {
                         case NON_SUBMISSION:
                             $feedback = NON_SUBMISSION_AC;
                             $isadmingrade = true;
