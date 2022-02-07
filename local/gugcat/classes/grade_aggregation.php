@@ -838,7 +838,8 @@ class grade_aggregation{
                 $sum = array_sum($grades);
                 $aggrade = $sum / $num;
         }
-        $aggrade = round($aggrade);
+        // HM - changing round to 3 decimals in the desperate hope it makes a difference
+        $aggrade = round($aggrade, 3);
 
         return ($subcatgt == GRADE_TYPE_VALUE)
             ? grade_grade::standardise_score($aggrade, $subcatgmin, $subcatgmax, 0, 100)
