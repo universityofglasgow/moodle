@@ -635,6 +635,7 @@ class local_guws_external extends external_api {
     public static function gcat_getdashboard_parameters() {
         return new external_function_parameters([
             'guid' => new external_value(PARAM_TEXT, 'GUID', VALUE_REQUIRED),
+            'subcategory' => new external_value(PARAM_INT, 'Subcategory ID', VALUE_OPTIONAL),
         ]);
     }
 
@@ -673,7 +674,7 @@ class local_guws_external extends external_api {
     /**
      * GCAT get dashboard
      */
-    public static function gcat_getdashboard($guid) {
+    public static function gcat_getdashboard($guid, $subcategory = null) {
         global $CFG, $DB;
 
         require_once($CFG->dirroot . '/blocks/gu_spdetails/lib.php');
@@ -681,6 +682,7 @@ class local_guws_external extends external_api {
         // Check params
         $params = self::validate_parameters(self::gcat_getdashboard_parameters(),[
             'guid' => $guid,
+            'subcategory' => $subcategory,
         ]);
 
         // does this person exist
@@ -691,7 +693,12 @@ class local_guws_external extends external_api {
             return [];
         }
 
-        $gcats = assessments_details::retrieve_gradable_activities('current', $user->id, 'coursetitle', 'asc', null);
+        // Make sure subcategory is null if not specified.
+        if (!$subcategory) {
+            $subcategory = null;
+        }
+
+        $gcats = assessments_details::retrieve_gradable_activities('current', $user->id, 'coursetitle', 'asc', $subcategory);
 
         $grades = [];
         foreach ($gcats as $gcat) {

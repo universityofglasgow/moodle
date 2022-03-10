@@ -5,7 +5,7 @@ require_once('lib.php');
 
 require_login();
 
-$assessments = assessments_details::retrieve_gradable_activities('current', 517, 'coursetitle', 'asc', null);
+$assessments = assessments_details::retrieve_gradable_activities('current', 636, 'coursetitle', 'asc', null);
 
 $grades = [];
 foreach ($assessments as $assessment) {

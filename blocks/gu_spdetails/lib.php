@@ -694,7 +694,7 @@ class assessments_details {
             $records = null;
         }
 
-        $items = ($records) ? self::sanitize_records($records, $subcategoryparent) : array();
+        $items = ($records) ? self::sanitize_records($records, $subcategoryparent, $userid) : array();
 
         return $items;
     }
@@ -738,16 +738,17 @@ class assessments_details {
      *
      * @param array $records
      * @param grade_category $subcategoryparent
+     * @param int $userid (0 implies current user)
      * @return array $items
      */
-    public static function sanitize_records($records, $subcategoryparent) {
+    public static function sanitize_records($records, $subcategoryparent, $userid = 0) {
         global $DB;
         $items = array();
 
         if ($records) {
             $recordsarray = (array) $records;
             foreach ($recordsarray as $record) {
-                $modinfo = get_fast_modinfo($record->courseid);
+                $modinfo = get_fast_modinfo($record->courseid, $userid);
                 $cm = ($record->status != 'category') ? $modinfo->get_cm($record->id) : null;
                 // Check if course module is visible to the user.
                 $iscmvisible = ($record->status != 'category') ? $cm->uservisible : true;
