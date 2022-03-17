@@ -15,13 +15,28 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * GUID Enrolment sync
+ *
  * @package    local_guws
- * @copyright  2018 Howard miller
+ * @copyright  2022 Howard miller
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['alarmbellsettings'] = 'Alarm Bell settings';
-$string['allowedevents'] = "List of allowed events";
-$string['configallowedevents'] = "List permitted events one per line. Only these will be exported in the web service";
-$string['pluginname'] = 'GU web services';
-$string['privacy:metadata'] = 'The GUWS plugin does not store any personal data';
+
+defined('MOODLE_INTERNAL') || die;
+
+if ($hassiteconfig) {
+    $settings = new admin_settingpage(
+            'local_guws', get_string('pluginname', 'local_guws'));
+    $ADMIN->add('localplugins', $settings);
+
+    $average = get_config('local_gusync', 'average');
+    $average = empty($average) ? '-' : $average;
+    $settings->add(new admin_setting_heading('guws_alarmbellsettings', '',
+            get_string('alarmbellsettings', 'local_guws')));
+
+    $settings->add(new admin_setting_configtextarea(
+            'local_guws/allowedevents', get_string('allowedevents', 'local_guws'),
+            get_string('configallowedevents', 'local_guws'), '', PARAM_RAW));
+
+}

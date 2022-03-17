@@ -440,6 +440,12 @@ class local_guws_external extends external_api {
     public static function alarmbell_query($guids, $eventnames) {
         global $CFG, $DB;
 
+        $config = get_config('local_guws');
+        $allowedevents = explode(PHP_EOL, $config->allowedevents);
+        array_walk($allowedevents, function(&$event) {
+            $event = strtolower(trim($event));
+        });
+
         // Check params
         $params = self::validate_parameters(self::alarmbell_query_parameters(), ['guids' => $guids, 'eventnames' => $eventnames]);
 
@@ -465,7 +471,23 @@ class local_guws_external extends external_api {
             AND eventname $eventsql";
         $logs = $DB->get_records_sql($sql, $useridparams + $eventparams);
 
-        return $logs;
+        // Permission to view.
+        $filteredlogs = [];
+        foreach ($logs as $log) {
+            if (!in_array(strtolower($log->eventname), $allowedevents)) {
+                continue;
+            }
+            if ($log->courseid == 0) {
+                $filteredlogs[] = $log;
+            } else {
+                $context = context_course::instance($log->courseid);
+                if (has_capability('report/log:view', $context)) {
+                    $filteredlogs[] = $log;
+                }
+            }
+        }
+
+        return $filteredlogs;
     }
 
     /**
