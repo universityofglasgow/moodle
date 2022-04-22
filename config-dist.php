@@ -105,8 +105,9 @@ $CFG->dboptions = array(
       'latency' => 0.5,      // Set read-only slave sync latency in seconds.
                              // When 'latency' seconds have lapsed after an update to a table
                              // it is deemed safe to use readonly slave for reading from the table.
-                             // It is optional. If omitted once written to a table it will always
-                             // use master handle for reading.
+                             // It is optional, defaults to 1 second. If you want once written to a table
+                             // to always use master handle for reading set it to something ridiculosly big,
+                             // eg 10.
                              // Lower values increase the performance, but setting it too low means
                              // missing the master-slave sync.
       'exclude_tables' => [  // Tables to exclude from read-only slave feature.
@@ -1129,7 +1130,7 @@ $CFG->admin = 'admin';
 //          ],
 //      ];
 //
-// The format for the schedule definition is: '{minute} {hour} {day} {dayofweek} {month}'.
+// The format for the schedule definition is: '{minute} {hour} {day} {month} {dayofweek}'.
 //
 // The classname of the task also supports wildcards:
 //
@@ -1150,6 +1151,31 @@ $CFG->admin = 'admin';
 // applied to all tasks, except for tasks within '\local_plugin\'.
 //
 // When the full classname is used, this rule always takes priority over any wildcard rules.
+//
+//=========================================================================
+// 18. SITE ADMIN PRESETS
+//=========================================================================
+//
+// The site admin presets plugin has been integrated in Moodle LMS. You can use a setting in case you
+// want to apply a preset during the installation:
+//
+//      $CFG->setsitepresetduringinstall = 'starter';
+//
+// This setting accepts the following values:
+// - One of the core preset names (i.e "starter" or "full").
+// - The path of a valid XML preset file, that will be imported and applied. Absolute paths are recommended, to
+//   guarantee the file is found: i.e."MOODLEPATH/admin/presets/tests/fixtures/import_settings_plugins.xml".
+//
+// This setting is only used during the installation process. So once the Moodle site is installed, it is ignored.
+//
+//=========================================================================
+// 19. SERVICES AND SUPPORT CONTENT
+//=========================================================================
+//
+// We have added services and support content to the notifications page, in case you want to hide that from your site
+// you just need to set showservicesandsupportcontent setting to false.
+//
+//      $CFG->showservicesandsupportcontent = false;
 //
 //=========================================================================
 // ALL DONE!  To continue installation, visit your main page with a browser

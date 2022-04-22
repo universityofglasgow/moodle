@@ -989,8 +989,11 @@ function make_editing_buttons() {
  * @deprecated since 2.5
  */
 function print_section() {
-    throw new coding_exception('Function print_section() is removed. Please use core_course\output\section_format '.
-            ' to render a course section instead.');
+    throw new coding_exception(
+        'Function print_section() is removed.' .
+        ' Please use core_courseformat\\output\\local\\content\\section' .
+        ' to render a course section instead.'
+    );
 }
 
 /**
@@ -3541,4 +3544,203 @@ function calendar_import_icalendar_events($ical, $unused = null, $subscriptionid
     $return .= html_writer::tag('li', get_string('eventsupdated', 'calendar', $updatecount));
     $return .= html_writer::end_tag('ul');
     return $return;
+}
+
+/**
+ * Print grading plugin selection tab-based navigation.
+ *
+ * @deprecated since Moodle 4.0. Tabs navigation has been replaced with tertiary navigation.
+ * @param string  $active_type type of plugin on current page - import, export, report or edit
+ * @param string  $active_plugin active plugin type - grader, user, cvs, ...
+ * @param array   $plugin_info Array of plugins
+ * @param boolean $return return as string
+ *
+ * @return nothing or string if $return true
+ */
+function grade_print_tabs($active_type, $active_plugin, $plugin_info, $return=false) {
+    global $CFG, $COURSE;
+
+    debugging('grade_print_tabs() has been deprecated. Tabs navigation has been replaced with tertiary navigation.',
+        DEBUG_DEVELOPER);
+
+    if (!isset($currenttab)) { //TODO: this is weird
+        $currenttab = '';
+    }
+
+    $tabs = array();
+    $top_row  = array();
+    $bottom_row = array();
+    $inactive = array($active_plugin);
+    $activated = array($active_type);
+
+    $count = 0;
+    $active = '';
+
+    foreach ($plugin_info as $plugin_type => $plugins) {
+        if ($plugin_type == 'strings') {
+            continue;
+        }
+
+        // If $plugins is actually the definition of a child-less parent link:
+        if (!empty($plugins->id)) {
+            $string = $plugins->string;
+            if (!empty($plugin_info[$active_type]->parent)) {
+                $string = $plugin_info[$active_type]->parent->string;
+            }
+
+            $top_row[] = new tabobject($plugin_type, $plugins->link, $string);
+            continue;
+        }
+
+        $first_plugin = reset($plugins);
+        $url = $first_plugin->link;
+
+        if ($plugin_type == 'report') {
+            $url = $CFG->wwwroot.'/grade/report/index.php?id='.$COURSE->id;
+        }
+
+        $top_row[] = new tabobject($plugin_type, $url, $plugin_info['strings'][$plugin_type]);
+
+        if ($active_type == $plugin_type) {
+            foreach ($plugins as $plugin) {
+                $bottom_row[] = new tabobject($plugin->id, $plugin->link, $plugin->string);
+                if ($plugin->id == $active_plugin) {
+                    $inactive = array($plugin->id);
+                }
+            }
+        }
+    }
+
+    // Do not display rows that contain only one item, they are not helpful.
+    if (count($top_row) > 1) {
+        $tabs[] = $top_row;
+    }
+    if (count($bottom_row) > 1) {
+        $tabs[] = $bottom_row;
+    }
+    if (empty($tabs)) {
+        return;
+    }
+
+    $rv = html_writer::div(print_tabs($tabs, $active_plugin, $inactive, $activated, true), 'grade-navigation');
+
+    if ($return) {
+        return $rv;
+    } else {
+        echo $rv;
+    }
+}
+
+/**
+ * Print grading plugin selection popup form.
+ *
+ * @deprecated since Moodle 4.0. Dropdown box navigation has been replaced with tertiary navigation.
+ * @param array   $plugin_info An array of plugins containing information for the selector
+ * @param boolean $return return as string
+ *
+ * @return nothing or string if $return true
+ */
+function print_grade_plugin_selector($plugin_info, $active_type, $active_plugin, $return=false) {
+    global $CFG, $OUTPUT, $PAGE;
+
+    debugging('print_grade_plugin_selector() has been deprecated. Dropdown box navigation has been replaced ' .
+        'with tertiary navigation.', DEBUG_DEVELOPER);
+
+    $menu = array();
+    $count = 0;
+    $active = '';
+
+    foreach ($plugin_info as $plugin_type => $plugins) {
+        if ($plugin_type == 'strings') {
+            continue;
+        }
+
+        $first_plugin = reset($plugins);
+
+        $sectionname = $plugin_info['strings'][$plugin_type];
+        $section = array();
+
+        foreach ($plugins as $plugin) {
+            $link = $plugin->link->out(false);
+            $section[$link] = $plugin->string;
+            $count++;
+            if ($plugin_type === $active_type and $plugin->id === $active_plugin) {
+                $active = $link;
+            }
+        }
+
+        if ($section) {
+            $menu[] = array($sectionname=>$section);
+        }
+    }
+
+    // finally print/return the popup form
+    if ($count > 1) {
+        $select = new url_select($menu, $active, null, 'choosepluginreport');
+        $select->set_label(get_string('gradereport', 'grades'), array('class' => 'accesshide'));
+        if ($return) {
+            return $OUTPUT->render($select);
+        } else {
+            echo $OUTPUT->render($select);
+        }
+    } else {
+        // only one option - no plugin selector needed
+        return '';
+    }
+
+    /**
+     * Purge the cache of a course section.
+     *
+     * $sectioninfo must have following attributes:
+     *   - course: course id
+     *   - section: section number
+     *
+     * @param object $sectioninfo section info
+     * @return void
+     * @deprecated since Moodle 4.0. Please use {@link course_modinfo::purge_course_section_cache_by_id()}
+     *             or {@link course_modinfo::purge_course_section_cache_by_number()} instead.
+     */
+    function course_purge_section_cache(object $sectioninfo): void {
+        debugging(__FUNCTION__ . '() is deprecated. ' .
+            'Please use course_modinfo::purge_course_section_cache_by_id() ' .
+            'or course_modinfo::purge_course_section_cache_by_number() instead.',
+            DEBUG_DEVELOPER);
+        $sectionid = $sectioninfo->section;
+        $courseid = $sectioninfo->course;
+        course_modinfo::purge_course_section_cache_by_id($courseid, $sectionid);
+    }
+
+    /**
+     * Purge the cache of a course module.
+     *
+     * $cm must have following attributes:
+     *   - id: cmid
+     *   - course: course id
+     *
+     * @param cm_info|stdClass $cm course module
+     * @return void
+     * @deprecated since Moodle 4.0. Please use {@link course_modinfo::purge_course_module_cache()} instead.
+     */
+    function course_purge_module_cache($cm): void {
+        debugging(__FUNCTION__ . '() is deprecated. ' . 'Please use course_modinfo::purge_course_module_cache() instead.',
+            DEBUG_DEVELOPER);
+        $cmid = $cm->id;
+        $courseid = $cm->course;
+        course_modinfo::purge_course_module_cache($courseid, $cmid);
+    }
+}
+
+/**
+ * For a given course, returns an array of course activity objects
+ * Each item in the array contains he following properties:
+ *
+ * @param int $courseid course id
+ * @param bool $usecache get activities from cache if modinfo exists when $usecache is true
+ * @return array list of activities
+ * @deprecated since Moodle 4.0. Please use {@link course_modinfo::get_array_of_activities()} instead.
+ */
+function get_array_of_activities(int $courseid, bool $usecache = false): array {
+    debugging(__FUNCTION__ . '() is deprecated. ' . 'Please use course_modinfo::get_array_of_activities() instead.',
+        DEBUG_DEVELOPER);
+    return course_modinfo::get_array_of_activities(get_course($courseid), $usecache);
 }

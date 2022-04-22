@@ -382,10 +382,10 @@ Feature: Set up contextual data for tests
       | enableoutcomes | 1 |
     When I log in as "admin"
     And I am on "Course 1" course homepage
-    And I navigate to "Outcomes" in current page administration
+    And I navigate to "More > Outcomes" in the course gradebook
     Then I should see "Grade outcome 1" in the "#addoutcomes" "css_element"
     And I should see "Grade outcome 2" in the "#removeoutcomes" "css_element"
-    And I follow "Edit outcomes"
+    And I press "Manage outcomes"
     And the following should exist in the "generaltable" table:
       | Full name       | Short name | Scale        |
       | Grade outcome 2 | OT2        | Test Scale 1 |

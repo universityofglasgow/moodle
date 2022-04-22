@@ -24,6 +24,14 @@
                 flex: 0 0 $mainwidth-oneblock;
                 max-width: $mainwidth-oneblock;
                 padding: 0 1rem 0 0;
+                #region-main {
+                    border: $card-border-width solid $card-border-color;
+                    padding: $card-spacer-x;
+
+                    @if $enable-rounded {
+                        @include border-radius($card-border-radius);
+                    }
+                }
             }
         }
         &.blocks-post {
@@ -105,6 +113,16 @@
                 }
             }
         }
+    }
+}
+
+.path-grade-report-grader .gradeparent {
+    tr.heading {
+        top: $navbar-height;
+    }
+
+    th.header {
+        left: 0;
     }
 }
 
