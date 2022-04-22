@@ -193,8 +193,12 @@ function filter_generico_callback(array $link) {
         $token = \filter_generico\generico_utils::fetch_token($conf['cpapiuser'], $conf['cpapisecret']);
         if ($token) {
             $genericotemplate = str_replace('@@CLOUDPOODLLTOKEN@@', $token, $genericotemplate);
+            //stash this for passing to js
+            $filterprops['CLOUDPOODLLTOKEN'] = $token;
         } else {
             $genericotemplate = str_replace('@@CLOUDPOODLLTOKEN@@', 'INVALID TOKEN', $genericotemplate);
+            //stash this for passing to js
+            $filterprops['CLOUDPOODLLTOKEN'] = 'INVALID TOKEN';
         }
     }
 
@@ -268,7 +272,29 @@ function filter_generico_callback(array $link) {
 
     //if we have course variables e.g @@COURSE:ID@@
     if (strpos($genericotemplate . ' ' . $dataset_vars, '@@COURSE:') !== false) {
-        $coursevars = get_object_vars($COURSE);
+        $coursevars=false;
+        if(!empty($filterprops['courseid']) && is_numeric($filterprops['courseid'] )){
+            $thecourse = get_course($filterprops['courseid']);
+            if($thecourse){
+                $coursevars = get_object_vars($thecourse);
+                //custom fields
+                if(class_exists('\core_customfield\handler')) {
+                    $handler = \core_customfield\handler::get_handler('core_course', 'course');
+                    $customfields = $handler->get_instance_data($filterprops['courseid']);
+                    foreach ($customfields as $customfield) {
+                        if (empty($customfield->get_value())) {
+                            continue;
+                        }
+                        $shortname = $customfield->get_field()->get('shortname');
+                        $coursevars[$shortname] = $customfield->get_value();
+                    }
+                }
+            }
+        }
+        if(!$coursevars){
+            $coursevars = get_object_vars($COURSE);
+        }
+
         $coursepropstubs = explode('@@COURSE:', $genericotemplate);
         $d_stubs = explode('@@COURSE:', $dataset_vars);
         if ($d_stubs) {
@@ -410,7 +436,7 @@ function filter_generico_callback(array $link) {
         $query_vars = array();
         for ($i = 0; $i < sizeof($vars); $i++) {
             if (is_numeric($vars[$i])) {
-                $query_vars[] = intval($vars[$i]);
+                $query_vars[] = 0 + $vars[$i];
             } else {
                 $query_vars[] = $vars[$i];
             }
@@ -422,7 +448,7 @@ function filter_generico_callback(array $link) {
                 $filterprops['DATASET'] = $alldata;
                 //replace the specified names with spec values, if its a one element array
                 if (sizeof($filterprops['DATASET']) == 1) {
-                    $thedata = get_object_vars(array_pop($alldata));
+                    $thedata = get_object_vars(reset($alldata));
                     foreach ($thedata as $name => $value) {
                         $genericotemplate = str_replace('@@DATASET:' . $name . '@@', $value, $genericotemplate);
                         $alternate_content = str_replace('@@DATASET:' . $name . '@@', $value, $alternate_content);

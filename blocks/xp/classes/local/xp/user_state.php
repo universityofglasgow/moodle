@@ -26,8 +26,11 @@
 namespace block_xp\local\xp;
 defined('MOODLE_INTERNAL') || die();
 
+use block_xp\local\utils\user_utils;
+use moodle_url;
 use renderable;
 use stdClass;
+use user_picture;
 
 /**
  * User state.
@@ -37,8 +40,10 @@ use stdClass;
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class user_state implements renderable, state {
+class user_state implements renderable, state, state_with_subject {
 
+    /** @var int The course ID. */
+    protected $courseid;
     /** @var stdClass The user object. */
     protected $user;
     /** @var int The user's XP. */
@@ -55,11 +60,13 @@ class user_state implements renderable, state {
      * @param stdClass $user The user object.
      * @param int $xp The user XP.
      * @param levels_info $levelsinfo Levels info.
+     * @param int $courseid The course ID.
      */
-    public function __construct(stdClass $user, $xp, levels_info $levelsinfo) {
+    public function __construct(stdClass $user, $xp, levels_info $levelsinfo, $courseid = null) {
         $this->user = $user;
         $this->xp = $xp;
         $this->levelsinfo = $levelsinfo;
+        $this->courseid = !empty($courseid) ? $courseid : SITEID;
     }
 
     public function get_id() {
@@ -71,6 +78,23 @@ class user_state implements renderable, state {
             $this->level = $this->levelsinfo->get_level_from_xp($this->xp);
         }
         return $this->level;
+    }
+
+    public function get_link() {
+        $userid = $this->user->id;
+        $profileurl = new moodle_url('/user/profile.php', ['id' => $userid]);
+        if ($this->courseid != SITEID) {
+            $profileurl = new moodle_url('/user/view.php', ['id' => $userid, 'course' => $this->courseid]);
+        }
+        return $profileurl;
+    }
+
+    public function get_name() {
+        return fullname($this->user);
+    }
+
+    public function get_picture() {
+        return user_utils::user_picture($this->user);
     }
 
     public function get_ratio_in_level() {

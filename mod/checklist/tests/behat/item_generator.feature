@@ -5,6 +5,9 @@ Feature: Check the item generator generates items as expected
     Given the following "courses" exist:
       | fullname | shortname |
       | Course 1 | C1        |
+    And the following "activities" exist:
+      | activity  | name           | intro               | course | section | idnumber |
+      | checklist | Test checklist | This is a checklist | C1     | 1       | CHK001   |
     And the following "users" exist:
       | username | firstname | lastname | email            |
       | teacher1 | Teacher   | 1        | teacher1@asd.com |
@@ -13,13 +16,6 @@ Feature: Check the item generator generates items as expected
       | user     | course | role           |
       | teacher1 | C1     | editingteacher |
       | student1 | C1     | student        |
-    And I log in as "teacher1"
-    And I am on "Course 1" course homepage
-    And I turn editing mode on
-    And I add a "Checklist" to section "1" and I fill the form with:
-      | Checklist    | Test checklist      |
-      | Introduction | This is a checklist |
-    And I log out
 
   Scenario: I add some items with a generator and the student can see them
     Given the following items exist in checklist "Test checklist":
@@ -27,9 +23,7 @@ Feature: Check the item generator generates items as expected
       | The first item  | required | 21 April 2018 |
       | The second item | optional |               |
       | The third item  | heading  |               |
-    When I log in as "student1"
-    And I am on "Course 1" course homepage
-    And I follow "Test checklist"
+    When I am on the "Test checklist" "checklist activity" page logged in as "student1"
     Then "The first item" "text" should appear before "The second item" "text"
     And "The second item" "text" should appear before "The third item" "text"
     And I should see "All items"
@@ -48,9 +42,7 @@ Feature: Check the item generator generates items as expected
       | text            |
       | The fourth item |
       | The last item   |
-    When I log in as "student1"
-    And I am on "Course 1" course homepage
-    And I follow "Test checklist"
+    When I am on the "Test checklist" "checklist activity" page logged in as "student1"
     Then "The first item" "text" should appear before "The second item" "text"
     And "The second item" "text" should appear before "The third item" "text"
     And "The third item" "text" should appear before "The fourth item" "text"
@@ -70,9 +62,7 @@ Feature: Check the item generator generates items as expected
       | The second item | yes         |
       | The fourth item | yes         |
       | The first item  | no          |
-    When I log in as "student1"
-    And I am on "Course 1" course homepage
-    And I follow "Test checklist"
+    When I am on the "Test checklist" "checklist activity" page logged in as "student1"
     # This test seems to fail without the @javascript tag.
     Then the following fields match these values:
       | The first item  | 0 |
@@ -82,10 +72,9 @@ Feature: Check the item generator generates items as expected
       | The last item   | 0 |
 
   Scenario: I add some items to a student checklist and mark them as complete and the student sees them as complete
-    Given I log in as "teacher1"
-    And I am on "Course 1" course homepage
-    And I follow "Test checklist"
-    And I follow "Edit settings"
+    Given I am on the "Test checklist" "checklist activity" page logged in as "teacher1"
+    # Workaround for differences between M3.9 "Edit settings" and M4.0 "Settings".
+    And I follow "ettings"
     And I set the field "Updates by" to "Teacher only"
     And I press "Save and return to course"
     And I log out
@@ -102,9 +91,7 @@ Feature: Check the item generator generates items as expected
       | The fourth item | yes         | admin       |
       | The first item  | no          | teacher1    |
       | The third item  | none        | teacher1    |
-    When I log in as "student1"
-    And I am on "Course 1" course homepage
-    And I follow "Test checklist"
+    When I am on the "Test checklist" "checklist activity" page logged in as "student1"
     Then ".teachermarkyes" "css_element" should exist in the "The second item" "list_item"
     And ".teachermarkyes" "css_element" should exist in the "The fourth item" "list_item"
     And ".teachermarkno" "css_element" should exist in the "The first item" "list_item"

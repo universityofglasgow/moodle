@@ -1,4 +1,4 @@
-@javascript @mod @uon @mod_attendance
+@javascript @mod @mod_attendance
 Feature: Visiting reports
   As a teacher I visit the reports
 
@@ -17,11 +17,12 @@ Feature: Visiting reports
     And the following config values are set as admin:
       | enablewarnings | 1 | attendance |
 
-    And I log in as "teacher1"
-    And I am on "Course 1" course homepage with editing mode on
-    And I add a "Attendance" to section "1" and I fill the form with:
-      | Name        | Attendance       |
-    And I follow "Attendance"
+    And the following "activity" exists:
+      | activity | attendance            |
+      | course   | C1                    |
+      | idnumber | 00001                 |
+      | name     | Attendance    |
+    And I am on the "Attendance" "mod_attendance > View" page logged in as "teacher1"
     And I follow "Add session"
     And I set the following fields to these values:
       | id_sestime_starthour | 01 |
@@ -36,16 +37,14 @@ Feature: Visiting reports
     And I log out
 
   Scenario: Teacher takes attendance
-    Given I log in as "teacher1"
-    And I am on "Course 1" course homepage
-    And I follow "Attendance"
-    And I navigate to "Edit settings" in current page administration
+    Given I am logged in as "teacher1"
+    And I am on the "Attendance" "attendance activity editing" page
     Then I set the following fields to these values:
       | id_grade_modgrade_type  | Point |
       | id_grade_modgrade_point | 50   |
     And I press "Save and display"
 
-    When I follow "Report"
+    And I am on the "Attendance" "mod_attendance > Report" page
     Then "0 / 0" "text" should exist in the "Student 1" "table_row"
     And "0.0%" "text" should exist in the "Student 1" "table_row"
 
@@ -59,7 +58,7 @@ Feature: Visiting reports
     And I click on "td.cell.c4 input" "css_element" in the "Student 1" "table_row"
     And I press "Save attendance"
 
-    When I follow "Report"
+    And I am on the "Attendance" "mod_attendance > Report" page
     Then "1 / 2" "text" should exist in the "Student 1" "table_row"
     And "50.0%" "text" should exist in the "Student 1" "table_row"
 
@@ -69,38 +68,6 @@ Feature: Visiting reports
 
     And I log out
 
-  Scenario: Teacher changes the maximum points in the attendance settings
-    Given I log in as "teacher1"
-    And I am on "Course 1" course homepage
-    And I follow "Attendance"
-    And I navigate to "Edit settings" in current page administration
-    Then I set the following fields to these values:
-      | id_grade_modgrade_type  | Point |
-      | id_grade_modgrade_point | 50   |
-    And I press "Save and display"
-
-    When I follow "Attendance"
-    Then I click on "Take attendance" "link" in the "1AM - 2AM" "table_row"
-    # Excused
-    And I click on "td.cell.c4 input" "css_element" in the "Student 1" "table_row"
-    And I press "Save attendance"
-
-    When I follow "Attendance"
-    And I navigate to "Edit settings" in current page administration
-    Then I set the following fields to these values:
-      | id_grade_modgrade_type  | Point |
-      | id_grade_modgrade_point | 70   |
-    And I press "Save and display"
-
-    When I follow "Report"
-    Then "1 / 2" "text" should exist in the "Student 1" "table_row"
-    And "50.0%" "text" should exist in the "Student 1" "table_row"
-
-    When I follow "Grades" in the user menu
-    And I follow "Course 1"
-    Then "35.00" "text" should exist in the "Student 1" "table_row"
-    And I log out
-
   Scenario: Teacher take attendance of group session
     Given the following "groups" exist:
       | course | name   | idnumber |
@@ -108,18 +75,14 @@ Feature: Visiting reports
     And the following "group members" exist:
       | group  | user     |
       | Group1 | student1 |
-
-    When I log in as "teacher1"
-    And I am on "Course 1" course homepage
-    And I follow "Attendance"
-    And I navigate to "Edit settings" in current page administration
+    And I am logged in as "teacher1"
+    And I am on the "Attendance" "attendance activity editing" page
     And I set the following fields to these values:
       | id_grade_modgrade_type  | Point |
       | id_grade_modgrade_point | 50   |
       | id_groupmode            | Visible groups |
     And I press "Save and display"
-
-    When I follow "Attendance"
+    And I am on the "Attendance" "mod_attendance > View" page
     Then I click on "Take attendance" "link" in the "1AM - 2AM" "table_row"
     # Excused
     And I click on "td.cell.c4 input" "css_element" in the "Student 1" "table_row"
@@ -140,7 +103,7 @@ Feature: Visiting reports
     And I click on "td.cell.c3 input" "css_element" in the "Student 1" "table_row"
     And I press "Save attendance"
 
-    When I follow "Report"
+    And I am on the "Attendance" "mod_attendance > Report" page
     Then "3 / 4" "text" should exist in the "Student 1" "table_row"
     And "75.0%" "text" should exist in the "Student 1" "table_row"
 
@@ -151,15 +114,13 @@ Feature: Visiting reports
     And I log out
 
   Scenario: Teacher visit summary report and absentee report
-    Given I log in as "teacher1"
-    And I am on "Course 1" course homepage
-    And I follow "Attendance"
-    And I navigate to "Edit settings" in current page administration
+    Given I am logged in as "teacher1"
+    And I am on the "Attendance" "attendance activity editing" page
     And I set the following fields to these values:
        | id_grade_modgrade_type  | Point |
        | id_grade_modgrade_point | 50   |
     And I press "Save and display"
-
+    And I am on the "Attendance" "mod_attendance > View" page
     When I click on "Take attendance" "link" in the "1AM - 2AM" "table_row"
     # Late
     And I click on "td.cell.c4 input" "css_element" in the "Student 1" "table_row"
@@ -184,7 +145,7 @@ Feature: Visiting reports
     And I click on "id_submitbutton" "button"
     Then I should see "5AM - 6AM"
 
-    When I follow "Report"
+    And I am on the "Attendance" "mod_attendance > Report" page
     And I click on "Summary" "link" in the "All" "table_row"
 
     Then "3 / 6" "text" should exist in the "Student 1" "table_row"
@@ -198,10 +159,8 @@ Feature: Visiting reports
     And I log out
 
   Scenario: Student visit user report
-    Given I log in as "teacher1"
-    And I am on "Course 1" course homepage
-    And I follow "Attendance"
-    And I navigate to "Edit settings" in current page administration
+    Given I am logged in as "teacher1"
+    And I am on the "Attendance" "attendance activity editing" page
     Then I set the following fields to these values:
       | id_grade_modgrade_type  | Point |
       | id_grade_modgrade_point | 50   |
@@ -230,10 +189,7 @@ Feature: Visiting reports
     And I click on "id_submitbutton" "button"
 
     Then I log out
-
-    When I log in as "student1"
-    And I am on "Course 1" course homepage
-    And I follow "Attendance"
+    Given I am on the "Attendance" "mod_attendance > View" page logged in as "student1"
     And I click on "All" "link" in the ".attfiltercontrols" "css_element"
 
     Then "2" "text" should exist in the "Taken sessions" "table_row"

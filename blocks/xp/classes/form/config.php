@@ -31,6 +31,7 @@ require_once(__DIR__ . '/duration.php');
 
 use block_xp\local\config\course_world_config;
 use moodleform;
+use moodle_url;
 
 /**
  * Block XP config form class.
@@ -48,7 +49,10 @@ class config extends moodleform {
      */
     public function definition() {
         global $PAGE;
-        $showblockconfig = !empty($this->_customdata['showblockconfig']);
+        // Conditional check (on world) for compatibility with older versions of local_xp.
+        $world = !empty($this->_customdata['world']) ? $this->_customdata['world'] : null;
+        $config = \block_xp\di::get('config');
+        $renderer = \block_xp\di::get('renderer');
 
         $mform = $this->_form;
         $mform->setDisableShortforms(true);
@@ -124,58 +128,65 @@ class config extends moodleform {
         $mform->addHelpButton('timebetweensameactions', 'timebetweensameactions', 'block_xp');
         $mform->disabledIf('timebetweensameactions', 'enablecheatguard', 'eq', 0);
 
+        if ($world && $world->get_config()->get('enablecheatguard') && $config->get('enablepromoincourses')) {
+            $worldconfig = $world->get_config();
+            $timeframe = max(0, $worldconfig->get('timebetweensameactions'), $worldconfig->get('timeformaxactions'));
+
+            $promourl = new moodle_url('https://levelup.plus');
+            if (!empty($this->_customdata['promourl'])) {
+                $promourl = $this->_customdata['promourl'];
+            }
+
+            if ($timeframe > HOURSECS * 6) {
+                $mform->addElement('static', '', '', $renderer->notification_without_close(
+                    get_string('promocheatguard', 'block_xp', ['url' => $promourl->out()]
+                ), 'warning'));
+            }
+        }
+
         $mform->addElement('hidden', '__cheatguardend');
         $mform->setType('__cheatguardend', PARAM_BOOL);
 
         $mform->addElement('header', 'hdrblockconfig', get_string('blockappearance', 'block_xp'));
 
-        if ($showblockconfig) {
-            // This is a direct duplicate from the form to edit the block, however we
-            // renamed the arguments to start with 'block_', so remember to update both
-            // this and the block form when adding new "block appearance" settings.
-            $config = \block_xp\di::get('config');
+        $mform->addElement('text', 'blocktitle', get_string('configtitle', 'block_xp'));
+        $mform->addHelpButton('blocktitle', 'configtitle', 'block_xp');
+        $mform->setType('blocktitle', PARAM_TEXT);
 
-            $mform->addElement('text', 'block_title', get_string('configtitle', 'block_xp'));
-            $mform->setDefault('block_title', $config->get('blocktitle'));
-            $mform->addHelpButton('block_title', 'configtitle', 'block_xp');
-            $mform->setType('block_title', PARAM_TEXT);
+        $mform->addElement('textarea', 'blockdescription', get_string('configdescription', 'block_xp'));
+        $mform->addHelpButton('blockdescription', 'configdescription', 'block_xp');
+        $mform->setType('blockdescription', PARAM_TEXT);
 
-            $mform->addElement('textarea', 'block_description', get_string('configdescription', 'block_xp'));
-            $mform->setDefault('block_description', $config->get('blockdescription'));
-            $mform->addHelpButton('block_description', 'configdescription', 'block_xp');
-            $mform->setType('block_description', PARAM_TEXT);
-
-            $mform->addElement('select', 'block_recentactivity', get_string('configrecentactivity', 'block_xp'), [
-                0 => get_string('no'),
-                3 => get_string('yes'),
-            ]);
-            $mform->setDefault('block_recentactivity', $config->get('blockrecentactivity'));
-            $mform->addHelpButton('block_recentactivity', 'configrecentactivity', 'block_xp');
-            $mform->setType('block_recentactivity', PARAM_INT);
-
-        } else {
-            // Advise that we could not find the block.
-            if ($PAGE->course->id == SITEID) {
-                $fp = new \moodle_url('/', ['redirect' => 0]);
-                $mysys = new \moodle_url('/my/indexsys.php');
-                $params = [
-                    'fp' => $fp->out(false),
-                    'mysys' => $mysys->out(false)
-                ];
-                $str = 'cannotshowblockconfigsys';
-            } else {
-                $url = new \moodle_url('/course/view.php', ['id' => $PAGE->course->id]);
-                $str = 'cannotshowblockconfig';
-                $params = $url->out(false);
-            }
-            $mform->addElement('static', 'missingblock', get_string('whoops', 'block_xp'),
-                markdown_to_html(get_string($str, 'block_xp', $params)));
-        }
+        $mform->addElement('select', 'blockrecentactivity', get_string('configrecentactivity', 'block_xp'), [
+            0 => get_string('no'),
+            3 => get_string('yes'),
+        ]);
+        $mform->addHelpButton('blockrecentactivity', 'configrecentactivity', 'block_xp');
+        $mform->setType('blockrecentactivity', PARAM_INT);
 
         $mform->addElement('hidden', '__blockappearanceend');
         $mform->setType('__blockappearanceend', PARAM_BOOL);
 
         $this->add_action_buttons();
+    }
+
+    /**
+     * Definition after data.
+     *
+     * @return void
+     */
+    public function definition_after_data() {
+        $mform = $this->_form;
+
+        // Lock the settings that have been locked by an admin. We do this in definition_after_data
+        // because as we support Moodle 3.1 in which self::after_definition() is not available.
+        $configlocked = \block_xp\di::get('config_locked');
+        foreach ($configlocked->get_all() as $key => $islocked) {
+            if (!$islocked || !$mform->elementExists($key)) {
+                continue;
+            }
+            $mform->hardFreeze($key);
+        }
     }
 
     /**

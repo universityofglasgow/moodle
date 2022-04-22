@@ -26,9 +26,9 @@ define('NO_OUTPUT_BUFFERING', true);
 
 require_once(dirname(__FILE__).'/../../config.php');
 require_once(dirname(__FILE__).'/locallib.php');
-require_once(dirname(__FILE__).'/export_form.php');
 require_once(dirname(__FILE__).'/renderables.php');
 require_once(dirname(__FILE__).'/renderhelpers.php');
+require_once($CFG->libdir.'/formslib.php');
 
 $id             = required_param('id', PARAM_INT);
 
@@ -51,9 +51,12 @@ $PAGE->set_cacheable(true);
 $PAGE->navbar->add(get_string('export', 'attendance'));
 
 $formparams = array('course' => $course, 'cm' => $cm, 'modcontext' => $context);
-$mform = new mod_attendance_export_form($att->url_export(), $formparams);
+$mform = new mod_attendance\form\export($att->url_export(), $formparams);
 
 if ($formdata = $mform->get_data()) {
+    // Exporting large courses may use a bit of memory/take a bit of time.
+    \core_php_time_limit::raise();
+    raise_memory_limit(MEMORY_HUGE);
 
     $pageparams = new mod_attendance_page_with_filter_controls();
     $pageparams->init($cm);
@@ -79,7 +82,9 @@ if ($formdata = $mform->get_data()) {
 
     $reportdata = new attendance_report_data($att);
     if ($reportdata->users) {
-        $filename = clean_filename($course->shortname.'_Attendances_'.userdate(time(), '%Y%m%d-%H%M'));
+        $filename = clean_filename($course->shortname.'_'.
+            get_string('modulenameplural', 'attendance').
+            '_'.userdate(time(), '%Y%m%d-%H%M'));
 
         $group = $formdata->group ? $reportdata->groups[$formdata->group] : 0;
         $data = new stdClass;
@@ -87,25 +92,29 @@ if ($formdata = $mform->get_data()) {
         $data->course = $att->course->fullname;
         $data->group = $group ? $group->name : get_string('allparticipants');
 
-        if (isset($formdata->ident['id'])) {
-            $data->tabhead[] = get_string('studentid', 'attendance');
-        }
-        if (isset($formdata->ident['uname'])) {
-            $data->tabhead[] = get_string('username');
-        }
-
-        $optional = array('idnumber', 'institution', 'department');
-        foreach ($optional as $opt) {
-            if (isset($formdata->ident[$opt])) {
-                $data->tabhead[] = get_string($opt);
-            }
-        }
-
         $data->tabhead[] = get_string('lastname');
         $data->tabhead[] = get_string('firstname');
         $groupmode = groups_get_activity_groupmode($cm, $course);
         if (!empty($groupmode)) {
             $data->tabhead[] = get_string('groups');
+        }
+        require_once($CFG->dirroot . '/user/profile/lib.php');
+        $customfields = profile_get_custom_fields(false);
+
+        if (isset($formdata->ident)) {
+            foreach (array_keys($formdata->ident) as $opt) {
+                if ($opt == 'id') {
+                    $data->tabhead[] = get_string('studentid', 'attendance');
+                } else if (in_array($opt, array_column($customfields, 'shortname'))) {
+                    foreach ($customfields as $customfield) {
+                        if ($opt == $customfield->shortname) {
+                            $data->tabhead[] = format_string($customfield->name, true, array('context' => $context));
+                        }
+                    }
+                } else {
+                    $data->tabhead[] = get_string($opt);
+                }
+            }
         }
 
         if (count($reportdata->sessions) > 0) {
@@ -117,13 +126,16 @@ if ($formdata = $mform->get_data()) {
                 } else {
                     $text .= $sess->groupid ? $reportdata->groups[$sess->groupid]->name : get_string('commonsession', 'attendance');
                 }
+                if (isset($formdata->includedescription) && !empty($sess->description)) {
+                    $text .= " ". strip_tags($sess->description);
+                }
                 $data->tabhead[] = $text;
                 if (isset($formdata->includeremarks)) {
                     $data->tabhead[] = ''; // Space for the remarks.
                 }
             }
         } else {
-            print_error('sessionsnotfound', 'attendance', $att->url_manage());
+            throw new moodle_exception('sessionsnotfound', 'mod_attendance', $att->url_manage());
         }
 
         $setnumber = -1;
@@ -142,19 +154,7 @@ if ($formdata = $mform->get_data()) {
         $i = 0;
         $data->table = array();
         foreach ($reportdata->users as $user) {
-            if (isset($formdata->ident['id'])) {
-                $data->table[$i][] = $user->id;
-            }
-            if (isset($formdata->ident['uname'])) {
-                $data->table[$i][] = $user->username;
-            }
-
-            $optionalrow = array('idnumber', 'institution', 'department');
-            foreach ($optionalrow as $opt) {
-                if (isset($formdata->ident[$opt])) {
-                    $data->table[$i][] = $user->$opt;
-                }
-            }
+            profile_load_custom_fields($user);
 
             $data->table[$i][] = $user->lastname;
             $data->table[$i][] = $user->firstname;
@@ -167,6 +167,22 @@ if ($formdata = $mform->get_data()) {
                 }
                 $data->table[$i][] = implode(', ', $groups);
             }
+
+            if (isset($formdata->ident)) {
+                foreach (array_keys($formdata->ident) as $opt) {
+                    if (in_array($opt, array_column($customfields, 'shortname'))) {
+                        if (isset($user->profile[$opt])) {
+                            $data->table[$i][] = format_string($user->profile[$opt], true, array('context' => $context));
+                        } else {
+                            $data->table[$i][] = '';
+                        }
+                        continue;
+                    }
+
+                    $data->table[$i][] = $user->$opt;
+                }
+            }
+
             $cellsgenerator = new user_sessions_cells_text_generator($reportdata, $user);
             $data->table[$i] = array_merge($data->table[$i], $cellsgenerator->get_cells(isset($formdata->includeremarks)));
 
@@ -194,7 +210,7 @@ if ($formdata = $mform->get_data()) {
         }
         exit;
     } else {
-        print_error('studentsnotfound', 'attendance', $att->url_manage());
+        throw new moodle_exception('studentsnotfound', 'mod_attendance', $att->url_manage());
     }
 }
 

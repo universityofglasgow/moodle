@@ -22,7 +22,12 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-class moodle_Sniffs_WhiteSpace_SpaceAfterCommaSniff implements PHP_CodeSniffer_Sniff {
+namespace MoodleCodeSniffer\moodle\Sniffs\WhiteSpace;
+
+use PHP_CodeSniffer\Sniffs\Sniff;
+use PHP_CodeSniffer\Files\File;
+
+class SpaceAfterCommaSniff implements Sniff {
     public function register() {
         return array(T_COMMA);
     }
@@ -30,18 +35,22 @@ class moodle_Sniffs_WhiteSpace_SpaceAfterCommaSniff implements PHP_CodeSniffer_S
     /**
      * Processes this test, when one of its tokens is encountered.
      *
-     * @param PHP_CodeSniffer_File $file     The file being scanned.
-     * @param int                  $stackptr The position of the current token in
-     *                                       the stack passed in $tokens.
+     * @param File $file The file being scanned.
+     * @param int $stackptr The position of the current token in the stack passed in $tokens.
      *
      * @return void
      */
-    public function process(PHP_CodeSniffer_File $file, $stackptr) {
+    public function process(File $file, $stackptr) {
         $tokens = $file->getTokens();
 
         if ($tokens[$stackptr + 1]['code'] !== T_WHITESPACE) {
             $error = 'Commas (,) must be followed by white space.';
-            $file->addError($error, $stackptr, 'NoSpace');
+            $fix = $file->addFixableError($error, $stackptr, 'NoSpace');
+            if ($fix === true) {
+                $file->fixer->beginChangeset();
+                $file->fixer->addContent($stackptr, ' ');
+                $file->fixer->endChangeset();
+            }
         }
     }
 }

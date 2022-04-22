@@ -49,7 +49,7 @@ $PAGE->set_title("$course->shortname: $strname");
 $PAGE->set_heading($course->fullname);
 $PAGE->set_pagelayout('incourse');
 
-$maskparticipantdata = get_config('mod_zoom', 'maskparticipantdata');
+$maskparticipantdata = get_config('zoom', 'maskparticipantdata');
 // If participant data is masked then display a message stating as such and be done with it.
 if ($maskparticipantdata) {
     zoom_fatal_error(
@@ -59,7 +59,7 @@ if ($maskparticipantdata) {
     );
 }
 
-$sessions = zoom_get_sessions_for_display($zoom->meeting_id, $zoom->webinar, $zoom->host_id);
+$sessions = zoom_get_sessions_for_display($zoom->id);
 $participants = $sessions[$uuid]['participants'];
 
 // Display the headers/etc if we're not exporting, or if there is no data.

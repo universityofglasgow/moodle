@@ -13,6 +13,13 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+/**
+ * Strings for component 'checklist', language 'en'
+ *
+ * @package   mod_checklist
+ * @copyright 2021 Davo Smith
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 $string['addcomments'] = 'Add comments';
 
@@ -66,7 +73,6 @@ $string['checklist:updateother'] = 'Update students\' checklist marks';
 $string['checklist:updateown'] = 'Update your checklist marks';
 $string['checklist:viewmenteereports'] = 'View mentee progress (only)';
 $string['checklist:viewreports'] = 'View students\' progress';
-
 $string['checklistautoupdate'] = 'Allow checklists to automatically update';
 
 $string['checklistfor'] = 'Checklist for';
@@ -78,8 +84,11 @@ $string['checks'] = 'Check marks';
 $string['choosecourse'] = 'Choose course...';
 $string['comments'] = 'Comments';
 
+$string['completiondetail:percent'] = 'Check-off items: {$a}%';
+$string['completiondetail:items'] = 'Check-off items: {$a}';
 $string['completionpercentgroup'] = 'Require checked-off';
-$string['completionpercent'] = 'Percentage of items that should be checked-off:';
+$string['completionpercentgroup_help'] = 'If \'percent of items\' is selected, then users must check-off at least the specified percentage of the checklist items to be considered \'complete\'. If \'items\' is selected, then the user must check-off at least that many individual items in the list. Note if you specify a number of items here that is greater than the number of items in the checklist, then it will never be marked as complete.';
+$string['completionpercent'] = 'Amount of items that should be checked-off:';
 
 $string['configchecklistautoupdate'] = 'Before allowing this you must make a few changes to the core Moodle code, please see mod/checklist/README.txt for details';
 $string['configshowupdateablemymoodle'] = 'If this is checked then only updatable Checklists will be shown from the \'My Moodle\' page';
@@ -108,6 +117,7 @@ View the checklist here:';
 $string['emailoncompletebodyown'] = 'You have completed checklist \'{$a->checklist}\' in the course \'{$a->coursename}\'
 View the checklist here:';
 $string['enterurl'] = 'Enter url ...';
+$string['errorchecklistitemnotvalid'] = 'Checklist item id does not belong to this course module!';
 $string['eventchecklistcomplete'] = 'Checklist complete';
 $string['eventeditpageviewed'] = 'Edit page viewed';
 $string['eventreportviewed'] = 'Report viewed';
@@ -131,6 +141,7 @@ $string['importfromcourse'] = 'Whole course';
 $string['indentitem'] = 'Indent item';
 $string['itemcomplete'] = 'Completed';
 $string['items'] = 'Checklist items';
+$string['itemstype'] = 'Items';
 
 $string['linkcourses'] = 'Allow linking items to courses';
 $string['linkcourses_desc'] = 'When enabled, checklist items can be linked to courses within Moodle - being marked as complete when the associated course is completed. Enabling this may have some performance implications when editing checkist items on sites with a large number of courses.';
@@ -161,6 +172,7 @@ $string['optionalhide'] = 'Hide optional items';
 $string['optionalshow'] = 'Show optional items';
 $string['or'] = 'OR';
 
+$string['percent'] = 'Percent of items';
 $string['percentcomplete'] = 'Required items';
 $string['percentcompleteall'] = 'All items';
 $string['pluginname'] = 'Checklist';
@@ -178,6 +190,10 @@ $string['privacy:metadata:checklist_comment:commentby'] = 'The ID of the user (t
 $string['privacy:metadata:checklist_comment:itemid'] = 'The ID of the checklist item that the comment relates to';
 $string['privacy:metadata:checklist_comment:text'] = 'The text of the comment';
 $string['privacy:metadata:checklist_comment:userid'] = 'The ID of the user (student) that this comment relates to';
+$string['privacy:metadata:checklist_comment_student'] = 'Comments that have been made by a student on a given checklist';
+$string['privacy:metadata:checklist_comment_student:usermodified'] = 'The ID of the user (student) that made this comment';
+$string['privacy:metadata:checklist_comment_student:itemid'] = 'The ID of the checklist item that the comment relates to';
+$string['privacy:metadata:checklist_comment_student:text'] = 'The text of the comment';
 $string['privacy:metadata:checklist_item'] = 'Information about private items the user has added to the given checklist';
 $string['privacy:metadata:checklist_item:checklist'] = 'The ID of the checklist this private item was added to';
 $string['privacy:metadata:checklist_item:displaytext'] = 'The text of the private checklist item';
@@ -202,6 +218,13 @@ $string['showhidechecked'] = 'Show/hide selected items';
 $string['showupdateablemymoodle'] = 'Show only updatable Checklists on \'My Moodle\' page';
 $string['showmymoodle'] = 'Show Checklists on \'My Moodle\' page';
 $string['showprogressbars'] = 'Show progress bars';
+$string['showcolorchooser'] = 'Display color chooser';
+$string['showcolorchooserdesc'] = 'Displays the color chooser of the list elements in edit.php';
+
+$string['studentcomments'] = 'User can add their own comments to checklist items';
+$string['student_comment_updated'] = 'Student comment updated';
+$string['student_comment_updated_desc'] = 'The user with id {$a->userid} has updated a comment in the checklist with course module id {$a->cmid} to have text \'{$a->commenttext}\'';
+$string['student_comment_created'] = 'Student comment created';
 
 $string['teachercomments'] = 'Teachers can add comments';
 $string['teacherdate'] = 'Date a teacher last updated this item';
@@ -222,6 +245,7 @@ $string['toggledates'] = 'Toggle names & dates';
 $string['togglerow'] = 'Toggle Row';
 $string['theme'] = 'Checklist display theme';
 
+$string['update_student_comment_failed'] = 'Failed to update student comment';
 $string['updatecompletescore'] = 'Save completion grades';
 $string['unindentitem'] = 'Unindent item';
 $string['updateitem'] = 'Update';

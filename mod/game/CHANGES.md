@@ -1,60 +1,85 @@
-Changes in version 2020-05-10
+Changes in versionm 2022-03-21
+* Fix: Warning of tool "Code Checker".
+
+Changes in versionm 2022-03-20
+* Fix: Warning of tool "Code Checker".
+
+Changes in versionm 2022-03-19
+* Fix: Moodle 4.0 compatibility.
+
+Changes in version 2021-12-23-04
+* Fix: At backup new field of table game
+
+Changes in version 2021-12-23-03
+* Fix: Warning in test cases.
+
+Changes in version 2021-12-23-02
+* Fix: Rename tests/generator_test.php to tests/generator_testcase.php
+
+Changes in version 2021-12-23-01
+* Fix: Problem when using secondary glossaries as source of questions.
+
+Changes in version 2021-12-23
+* Fix: Millionaire: On errors does not select the correct answer
+
+Changes in version 2021-11-02
+* Fix: Completion problem
+
+Changes in version 2021-06-20
+* Fix Snakes: Shuffles answer in multichoice questions
+
+Changes in version 2021-05-31
+* Fix hiddenpicture: Problem when user gives wrong answer
+
+Changes in version 2021-05-08
+* Fix: Compatibility problems for Moodle 3.11
+
+Changes in version 2021-05-03
+* Crossword: Makes better legend
+
+Changes in version 2021-05-02
+* Fix: Compatibility problems for Moodle 3.11
+
+Changes in version 2021-05-01
+* Fix: Updated high score query for postgresql compatibility
+
+Change for year 2020
+------------------------------------------------------------------
+- Fix: Moodle 2.72 compatibility
+- Fix: Problem when finishing Millionaire game
 - Fix: typo problem in corrert character
 - Fix: max attempts in cryptex
 
-
-Changes in version 2019-06-24
+Change for year 2019
+------------------------------------------------------------------
 - Fixes in Hangman by Filippos Kolovos
-
-Changes in version 2019-06-24
 - Hide "Check crossword" when crossword is finished.
-
-Changes in version 2019-04-26 (2019042600)
 - CONTRIB-7699 Problem with upgrading game plugin
-
-Changes in version 2019-04-23 (2019042311)
 - New: Supports test
 - CONTRIB-7692 Module Game: Intro fields definition inconsistency
-
-Changes in version 2019-04-22-01 (2019042201)
 - Snakes and Laders: Fix problem at ending.
-
-Changes in version 2019-03-30 (20190330)
 - Adds intro text.
-
-Changes in version 2019-03-24 (20190324)
 - Fixes problem on hangman on incorrect answer
 - Removes some bad words from cryptex
 
-Changes in version 2018-12-01 (20181201)
-- Book with questions works again
 
-Changes in version 2018-11-30 (20181130)
+Change for year 2018
+------------------------------------------------------------------
+- Book with questions works again
 - GDPR compliant
 - The game "Book with questions" is now hidden by default
-
-Changes in version 2018-11-28-02 (2018112802)
 - CSS of crossword in a different file
 - Square cell on crossword by changing the css
-
-Changes in version 2018-11-20 (2018112000)
 - CSS of crossword in a different file
 - Square cell on crossword by changing the css
-
-Changes in version 2018-11-18 (2018111800)
 - Completion support
-
-Changes in version 2018-07-07 (2018070701)
 - Fix in hangmang with glossary that contains attached imaged image files
-
-Changes in version 2018-07-07 (2018070701)
 - Fix in cryptex when contains audio files
-
-Changes in version 2018-07-04 (2018070402)
 - Fix in high score
 - New image set on hangman
 - New image set on "Snakes and Ladders"
 - New language string header_footer_options
+
 
 Change for year 2017
 ------------------------------------------------------------------

@@ -48,7 +48,7 @@ function reengagement_add_instance($reengagement) {
     global $DB;
 
     $reengagement->timecreated = time();
-    if (!$reengagement->suppressemail) {
+    if (empty($reengagement->suppressemail)) {
         // User didn't tick the box indicating they wanted to suppress email if a certain activity was complete.
         // Force the 'target activity' field to be 0 (ie no target).
         $reengagement->suppresstarget = 0;
@@ -148,24 +148,6 @@ function reengagement_user_complete($course, $user, $mod, $reengagement) {
     return true;
 }
 
-/**
- * Obtains the automatic completion state for this forum based on any conditions
- * in forum settings.
- *
- * @param object $course Course
- * @param object $cm Course-module
- * @param int $userid User ID
- * @param bool $type Type of comparison (or/and; can be used as return value if no conditions)
- * @return bool True if completed, false if not. (If no conditions, then return
- *   value depends on comparison type)
- */
-function reengagement_get_completion_state($course, $cm, $userid, $type) {
-    global $DB;
-    if ($completion = $DB->get_record('course_modules_completion', array('coursemoduleid' => $cm->id, 'userid' => $userid))) {
-        return $completion->completionstate == COMPLETION_COMPLETE_PASS;
-    }
-    return false;
-}
 
 /**
  * Prints the recent activity.
@@ -206,7 +188,7 @@ function reengagement_crontask() {
 
     $reengagements = $DB->get_recordset_sql($reengagementssql);
     if (!$reengagements->valid()) {
-        // No reengagement module instances in a course
+        // No reengagement module instances in a course.
         mtrace("No reengagement instances found - nothing to do :)");
         return true;
     }
@@ -261,6 +243,7 @@ function reengagement_crontask() {
 
     $inprogresssql = 'SELECT ri.*
                         FROM {reengagement_inprogress} ri
+                        JOIN {reengagement} r ON r.id = ri.reengagement
                         JOIN {user} u ON u.id = ri.userid
                        WHERE u.deleted = 0 AND
                        completiontime < ? AND completed = 0';
@@ -284,7 +267,7 @@ function reengagement_crontask() {
         // Update completion record to indicate completion so the user can continue with any dependant activities.
         $completionrecord = $DB->get_record('course_modules_completion', array('coursemoduleid' => $cmid, 'userid' => $userid));
         if (empty($completionrecord)) {
-            mtrace("Could not find completion record for updating to complete state - userid: $userid, cmid: $cmid - recreating record.");
+            mtrace("Could not find completion record to update complete state, userid: $userid, cmid: $cmid - recreating record.");
             // This might happen when reset_all_state has been triggered, deleting an "in-progress" record. so recreate it.
             $completionrecord = new stdClass();
             $completionrecord->coursemoduleid = $cmid;
@@ -539,7 +522,7 @@ function reengagement_email_user($reengagement, $inprogress) {
 /**
  * Send reengagement notifications using the messaging system.
  *
- * @param object $user
+ * @param object $userto User we are sending the notification to
  * @param string $subject message subject
  * @param string $messageplain plain text message
  * @param string $messagehtml html message
@@ -557,7 +540,7 @@ function reengagement_send_notification($userto, $subject, $messageplain, $messa
     $eventdata->fullmessagehtml = $messagehtml;
     $eventdata->smallmessage = $subject;
 
-    // Required for messaging framework
+    // Required for messaging framework.
     $eventdata->name = 'mod_reengagement';
     $eventdata->component = 'mod_reengagement';
 
@@ -574,6 +557,10 @@ function reengagement_send_notification($userto, $subject, $messageplain, $messa
  * @return array - the content of the fields after templating.
  */
 function reengagement_template_variables($reengagement, $inprogress, $user) {
+    global $CFG, $DB;
+
+    require_once($CFG->dirroot.'/user/profile/lib.php');
+
     $templatevars = array(
         '/%courseshortname%/' => $reengagement->courseshortname,
         '/%coursefullname%/' => $reengagement->coursefullname,
@@ -585,6 +572,44 @@ function reengagement_template_variables($reengagement, $inprogress, $user) {
         '/%userinstitution%/' => $user->institution,
         '/%userdepartment%/' => $user->department,
     );
+    // Add the users course groups as a template item.
+    $groups = $DB->get_records_sql_menu("SELECT g.id, g.name
+                                   FROM {groups_members} gm
+                                   JOIN {groups} g
+                                    ON g.id = gm.groupid
+                                  WHERE gm.userid = ? AND g.courseid = ?
+                                   ORDER BY name ASC", array($user->id, $reengagement->courseid));
+
+    if (!empty($groups)) {
+        $templatevars['/%usergroups%/'] = implode(', ', $groups);
+    } else {
+        $templatevars['/%usergroups%/'] = '';
+    }
+
+    // Now do custom user fields.
+    $fields = profile_get_custom_fields();
+    if (!empty($fields)) {
+        $userfielddata = $DB->get_records('user_info_data', array('userid' => $user->id), '', 'fieldid, data, dataformat');
+        foreach ($fields as $field) {
+            if (!empty($userfielddata[$field->id])) {
+                if ($field->datatype == 'datetime') {
+                    if (!empty($field->param3)) {
+                        $format = get_string('strftimedaydatetime', 'langconfig');
+                    } else {
+                        $format = get_string('strftimedate', 'langconfig');
+                    }
+
+                    $templatevars['/%profilefield_'.$field->shortname.'%/'] = userdate($userfielddata[$field->id]->data, $format);
+                } else {
+                    $templatevars['/%profilefield_'.$field->shortname.'%/'] = format_text($userfielddata[$field->id]->data,
+                                                                                          $userfielddata[$field->id]->dataformat);
+                }
+
+            } else {
+                $templatevars['/%profilefield_'.$field->shortname.'%/'] = '';
+            }
+        }
+    }
     $patterns = array_keys($templatevars); // The placeholders which are to be replaced.
     $replacements = array_values($templatevars); // The values which are to be templated in for the placeholders.
 
@@ -597,6 +622,22 @@ function reengagement_template_variables($reengagement, $inprogress, $user) {
     foreach ($replacementfields as $field) {
         $results[$field] = preg_replace($patterns, $replacements, $reengagement->$field);
     }
+
+    // Apply enabled filters to email content.
+    $options = array(
+            'context' => context_course::instance($reengagement->courseid),
+            'noclean' => true,
+            'trusted' => true
+    );
+    $subjectfields = array('emailsubject', 'emailsubjectmanager', 'emailsubjectthirdparty');
+    foreach ($subjectfields as $field) {
+        $results[$field] = format_text($results[$field], FORMAT_PLAIN, $options);
+    }
+    $contentfields = array('emailcontent', 'emailcontentmanager', 'emailcontentthirdparty');
+    foreach ($contentfields as $field) {
+        $results[$field] = format_text($results[$field], FORMAT_MOODLE, $options);
+    }
+
     return $results;
 }
 
@@ -778,41 +819,42 @@ function reengagement_supports($feature) {
             return true;
         case FEATURE_SHOW_DESCRIPTION:
             return true;
-
+        case FEATURE_MOD_PURPOSE:
+            return MOD_PURPOSE_COMMUNICATION;
         default:
             return null;
     }
 }
 
 /**
- * Process an arbitary number of seconds, and prepare to display it as X minutes, or Y hours or Z weeks.
+ * Process an arbitary number of seconds, and prepare to display it as 'W seconds', 'X minutes', or Y hours or Z weeks.
  *
  * @param int $duration FEATURE_xx constant for requested feature
  * @param boolean $periodstring - return period as string.
  * @return array
  */
 function reengagement_get_readable_duration($duration, $periodstring = false) {
-    if ($duration < 300) {
-        $period = 60;
-        $periodcount = 5;
-    } else {
-        $periods = array(604800, 86400, 3600, 60);
-        foreach ($periods as $period) {
-            if ((($duration % $period) == 0) || ($period == 60)) {
-                // Duration divides exactly into periods, or have reached the min. sensible period.
-                $periodcount = floor((int)$duration / (int)$period);
-                break;
-            }
+    $period = 1; // Default to dealing in seconds.
+    $periodcount = $duration; // Default to dealing in seconds.
+    $periods = array(WEEKSECS, DAYSECS, HOURSECS, MINSECS);
+    foreach ($periods as $period) {
+        if (($duration % $period) == 0) {
+            // Duration divides exactly into periods.
+            $periodcount = floor((int)$duration / (int)$period);
+            break;
         }
     }
     if ($periodstring) {
-        if ($period == 60) {
+        // Caller wants function to return in the format (30, 'minutes'), not (30, 60).
+        if ($period == MINSECS) {
             $period = get_string('minutes', 'reengagement');
-        } else if ($period == 3600) {
+        } else if ($period == HOURSECS) {
             $period = get_string('hours', 'reengagement');
-        } else if ($period == 86400) {
+        } else if ($period == DAYSECS) {
             $period = get_string('days', 'reengagement');
-        } else if ($period == 604800) {
+        } else if ($period == WEEKSECS) {
+            $period = get_string('weeks', 'reengagement');
+        } else {
             $period = get_string('weeks', 'reengagement');
         }
     }
@@ -845,7 +887,7 @@ function reengagement_check_target_completion($userid, $targetcmid) {
  * Method to check if existing user is eligble and cron hasn't run yet.
  * @param stdclass $course the course record.
  * @param stdclass $cm the coursemodule we should be checking.
- * @param stdclass $reengagment the full record.
+ * @param stdclass $reengagement the full record.
  * @return string
  */
 function reengagement_checkstart($course, $cm, $reengagement) {

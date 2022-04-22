@@ -52,10 +52,10 @@ class mod_game_mod_form extends moodleform_mod {
             if ($g = $DB->get_record('game', array('id' => $id))) {
                 $gamekind = $g->gamekind;
             } else {
-                print_error('incorrect game');
+                throw new moodle_exception('game_error', 'game', 'incorrect game');
             }
         } else {
-            $gamekind = required_param('type', PARAM_ALPHA);
+            $gamekind = optional_param('type', '', PARAM_ALPHA);
         }
 
         // Hidden elements.
@@ -71,19 +71,23 @@ class mod_game_mod_form extends moodleform_mod {
 
         $mform->addElement('header', 'general', get_string('general', 'form'));
 
-        $mform->addElement('text', 'name', 'Name', array('size' => '64'));
+        $mform->addElement('text', 'name', get_string('name', 'game'), array('size' => '64'));
         if (!empty($CFG->formatstringstriptags)) {
             $mform->setType('name', PARAM_TEXT);
         } else {
             $mform->setType('name', PARAM_CLEAN);
         }
-        if (!isset( $g)) {
+        if (!isset( $g) && $gamekind != '') {
             $mform->setDefault('name', get_string( 'game_'.$gamekind, 'game'));
         }
         $mform->addRule('name', null, 'required', null, 'client');
 
         // Introduction.
-        $this->standard_intro_elements(get_string('introduction', 'game'));
+        if (game_get_moodle_version() >= '02.09') {
+            $this->standard_intro_elements(get_string('introduction', 'game'));
+        } else {
+            $this->add_intro_editor(true);
+        }
 
         $hasglossary = ($gamekind == 'hangman' || $gamekind == 'cross' ||
                 $gamekind == 'cryptex' || $gamekind == 'sudoku' ||
@@ -175,10 +179,10 @@ class mod_game_mod_form extends moodleform_mod {
         $mform->setType('grade', PARAM_INT);
 
         $gradingtypeoptions = array();
-        $gradingtypeoptions[ GAME_GRADEHIGHEST] = get_string('gradehighest', 'game');
-        $gradingtypeoptions[ GAME_GRADEAVERAGE] = get_string('gradeaverage', 'game');
-        $gradingtypeoptions[ GAME_ATTEMPTFIRST] = get_string('attemptfirst', 'game');
-        $gradingtypeoptions[ GAME_ATTEMPTLAST] = get_string('attemptlast', 'game');
+        $gradingtypeoptions[GAME_GRADEHIGHEST] = get_string('gradehighest', 'game');
+        $gradingtypeoptions[GAME_GRADEAVERAGE] = get_string('gradeaverage', 'game');
+        $gradingtypeoptions[GAME_ATTEMPTFIRST] = get_string('attemptfirst', 'game');
+        $gradingtypeoptions[GAME_ATTEMPTLAST] = get_string('attemptlast', 'game');
         $mform->addElement('select', 'grademethod', get_string('grademethod', 'game'), $gradingtypeoptions);
 
         // Open and close dates.
@@ -220,7 +224,7 @@ class mod_game_mod_form extends moodleform_mod {
             if ($number > 1) {
                 $a = array();
                 for ($i = 1; $i <= $number; $i++) {
-                    $a[ $i] = $i;
+                    $a[$i] = $i;
                 }
                 $mform->addElement('select', 'param3', get_string('hangman_imageset', 'game'), $a);
             }
@@ -231,8 +235,8 @@ class mod_game_mod_form extends moodleform_mod {
 
             $a = array();
             $a = get_string_manager()->get_list_of_translations();
-            $a[ ''] = '----------';
-            $a[ 'user'] = get_string('language_user_defined', 'game');
+            $a[''] = '----------';
+            $a['user'] = get_string('language_user_defined', 'game');
             ksort( $a);
             $mform->addElement('select', 'language', get_string('hangman_language', 'game'), $a);
 
@@ -320,7 +324,7 @@ class mod_game_mod_form extends moodleform_mod {
                     }
                 }
             }
-            $snakesandladdersbackground[ 0] = get_string( 'userdefined', 'game');
+            $snakesandladdersbackground[0] = get_string( 'userdefined', 'game');
             ksort( $snakesandladdersbackground);
             $mform->addElement('select', 'param3', get_string('snakes_background', 'game'), $snakesandladdersbackground);
 
@@ -399,6 +403,7 @@ class mod_game_mod_form extends moodleform_mod {
         }
 
         // Header/Footer options.
+
         $mform->addElement('header', 'headerfooteroptions', get_string('header_footer_options', 'game'));
         $mform->addElement('editor', 'toptext', get_string('toptext', 'game'));
         $mform->addElement('editor', 'bottomtext', get_string('bottomtext', 'game'));
@@ -438,7 +443,7 @@ class mod_game_mod_form extends moodleform_mod {
         $a = array();
 
         // Fills with the count of entries in each glossary.
-        $a[ 0] = '';
+        $a[0] = '';
         // Fills with the count of entries in each category.
         $sql2 = "SELECT COUNT(*) ".
         " FROM {$CFG->prefix}glossary_entries ge, {$CFG->prefix}glossary_entries_categories gec".
@@ -484,7 +489,12 @@ class mod_game_mod_form extends moodleform_mod {
             // Single answer questions.
             $select = " AND q.qtype='shortanswer'";
         }
-        $sql2 = "SELECT COUNT(*) FROM $table WHERE q.category = qc.id $select";
+        if (game_get_moodle_version() >= '04.00') {
+            $sql2 = "SELECT COUNT(*) FROM $table,{$CFG->prefix}question_bank_entries qbe ".
+                " WHERE qbe.questioncategoryid = qc.id AND qbe.id=q.id $select";
+        } else {
+            $sql2 = "SELECT COUNT(*) FROM $table WHERE q.category = qc.id $select";
+        }
         $sql = "SELECT id,name,($sql2) as c FROM {$CFG->prefix}question_categories qc WHERE contextid = $context->id";
         if ($recs = $DB->get_records_sql( $sql)) {
             foreach ($recs as $rec) {
@@ -534,10 +544,10 @@ class mod_game_mod_form extends moodleform_mod {
         if (array_key_exists( 'glossarycategoryid', $data)) {
             if ($data['glossarycategoryid'] != 0) {
                 $sql = "SELECT glossaryid FROM {$CFG->prefix}glossary_categories ".
-                " WHERE id=".$data[ 'glossarycategoryid'];
+                " WHERE id=".$data['glossarycategoryid'];
                 $rec = $DB->get_record_sql( $sql);
                 if ($rec != false) {
-                    if ($data[ 'glossaryid'] != $rec->glossaryid) {
+                    if ($data['glossaryid'] != $rec->glossaryid) {
                         $s = get_string( 'different_glossary_category', 'game');
                         $errors['glossaryid'] = $s;
                         $errors['glossarycategoryid'] = $s;
@@ -646,13 +656,13 @@ class mod_game_mod_form extends moodleform_mod {
 
         if (isset( $defaultvalues->toptext)) {
             $a = array();
-            $a[ 'text'] = $defaultvalues->toptext;
+            $a['text'] = $defaultvalues->toptext;
             $defaultvalues->toptext = $a;
         }
 
         if (isset( $defaultvalues->bottomtext)) {
             $a = array();
-            $a[ 'text'] = $defaultvalues->bottomtext;
+            $a['text'] = $defaultvalues->bottomtext;
             $defaultvalues->bottomtext = $a;
         }
 
@@ -669,15 +679,15 @@ class mod_game_mod_form extends moodleform_mod {
         $items = array();
 
         $group = array();
-        $group[] = $mform->createElement('advcheckbox', 'completionpass', null, get_string('completionpass', 'quiz'),
+        $group[] = $mform->createElement('advcheckbox', 'completionpass', null, get_string('completionpass', 'game'),
                 array('group' => 'cpass'));
         $mform->disabledIf('completionpass', 'completionusegrade', 'notchecked');
         $group[] = $mform->createElement('advcheckbox', 'completionattemptsexhausted', null,
                 get_string('completionattemptsexhausted', 'quiz'),
                 array('group' => 'cattempts'));
         $mform->disabledIf('completionattemptsexhausted', 'completionpass', 'notchecked');
-        $mform->addGroup($group, 'completionpassgroup', get_string('completionpass', 'quiz'), ' &nbsp; ', false);
-        $mform->addHelpButton('completionpassgroup', 'completionpass', 'quiz');
+        $mform->addGroup($group, 'completionpassgroup', get_string('completionpass', 'game'), ' &nbsp; ', false);
+        $mform->addHelpButton('completionpassgroup', 'completionpass', 'game');
         $items[] = 'completionpassgroup';
         return $items;
     }

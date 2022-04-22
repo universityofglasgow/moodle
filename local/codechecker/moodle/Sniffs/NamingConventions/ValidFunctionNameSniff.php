@@ -25,13 +25,15 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-if (class_exists('PHP_CodeSniffer_Standards_AbstractScopeSniff', true) === false) {
-    throw new PHP_CodeSniffer_Exception(
-            'Class PHP_CodeSniffer_Standards_AbstractScopeSniff not found');
-}
+namespace MoodleCodeSniffer\moodle\Sniffs\NamingConventions;
 
-class moodle_Sniffs_NamingConventions_ValidFunctionNameSniff
-        extends PHP_CodeSniffer_Standards_AbstractScopeSniff {
+// phpcs:disable moodle.NamingConventions
+
+use PHP_CodeSniffer\Files\File;
+use PHP_CodeSniffer\Sniffs\AbstractScopeSniff;
+use PHP_CodeSniffer\Util\Tokens;
+
+class ValidFunctionNameSniff extends AbstractScopeSniff {
 
     /** @var array A list of all PHP magic methods. */
     private $magicmethods = array(
@@ -64,26 +66,26 @@ class moodle_Sniffs_NamingConventions_ValidFunctionNameSniff
         'offsetSet',
         'offsetUnset', // Defined by the PHP ArrayAccess interface.
         'tearDownAfterClass',
+        'jsonSerialize',
     );
 
     /**
      * Constructs a moodle_sniffs_namingconventions_validfunctionnamesniff.
      */
     public function __construct() {
-        parent::__construct(array(T_CLASS, T_INTERFACE), array(T_FUNCTION), true);
+        parent::__construct(Tokens::$ooScopeTokens, array(T_FUNCTION), true);
     }
 
     /**
      * Processes the tokens within the scope.
      *
-     * @param PHP_CodeSniffer_File $phpcsfile The file being processed.
-     * @param int                  $stackptr  The position where this token was
-     *                                        found.
-     * @param int                  $currscope The position of the current scope.
+     * @param File $phpcsfile The file being processed.
+     * @param int $stackptr  The position where this token was found.
+     * @param int $currscope The position of the current scope.
      *
      * @return void
      */
-    protected function processTokenWithinScope(PHP_CodeSniffer_File $phpcsfile,
+    protected function processTokenWithinScope(File $phpcsfile,
             $stackptr, $currscope) {
         $classname  = $phpcsfile->getDeclarationName($currscope);
         $methodname = $phpcsfile->getDeclarationName($stackptr);
@@ -95,7 +97,7 @@ class moodle_Sniffs_NamingConventions_ValidFunctionNameSniff
             if (!in_array($magicpart, $this->magicmethods)) {
                  $error = "method name \"$classname::$methodname\" is invalid; " .
                           'only PHP magic methods should be prefixed with a double underscore';
-                 $phpcsfile->addError($error, $stackptr);
+                 $phpcsfile->addError($error, $stackptr, 'MagicLikeMethod');
             }
 
             return;
@@ -105,7 +107,7 @@ class moodle_Sniffs_NamingConventions_ValidFunctionNameSniff
         $scope          = $methodprops['scope'];
         $scopespecified = $methodprops['scope_specified'];
 
-        // Only lower-case accepted
+        // Only lower-case accepted.
         if (preg_match('/[A-Z]+/', $methodname) &&
                 !in_array($methodname, $this->permittedmethods)) {
 
@@ -117,7 +119,14 @@ class moodle_Sniffs_NamingConventions_ValidFunctionNameSniff
                         '" must be in lower-case letters only';
             }
 
-            $phpcsfile->adderror($error, $stackptr);
+            $fix = $phpcsfile->addFixableError($error, $stackptr + 2, 'LowercaseMethod');
+            if ($fix === true) {
+                $phpcsfile->fixer->beginChangeset();
+                $tokens = $phpcsfile->getTokens();
+                $phpcsfile->fixer->replaceToken($stackptr + 2, strtolower($tokens[$stackptr + 2]['content']));
+                $phpcsfile->fixer->endChangeset();
+            }
+
             return;
         }
     }
@@ -125,13 +134,12 @@ class moodle_Sniffs_NamingConventions_ValidFunctionNameSniff
     /**
      * Processes the tokens outside the scope.
      *
-     * @param PHP_CodeSniffer_File $phpcsfile The file being processed.
-     * @param int                  $stackptr  The position where this token was
-     *                                        found.
+     * @param File $phpcsfile The file being processed.
+     * @param int $stackptr  The position where this token was found.
      *
      * @return void
      */
-    protected function processTokenOutsideScope(PHP_CodeSniffer_File $phpcsfile, $stackptr) {
+    protected function processTokenOutsideScope(File $phpcsfile, $stackptr) {
         $functionname = $phpcsfile->getDeclarationName($stackptr);
 
         // Is this a magic function. IE. is prefixed with "__".
@@ -141,17 +149,24 @@ class moodle_Sniffs_NamingConventions_ValidFunctionNameSniff
             if (in_array($magicpart, $this->magicfunctions) === false) {
                  $error = "Function name \"$functionname\" is invalid; " .
                           'only PHP magic methods should be prefixed with a double underscore';
-                 $phpcsfile->adderror($error, $stackptr);
+                 $phpcsfile->adderror($error, $stackptr, 'MagicLikeFunction');
             }
 
             return;
         }
 
-        // Only lower-case accepted
+        // Only lower-case accepted.
         if (preg_match('/[A-Z]+/', $functionname)) {
             $error = "function name \"$functionname\" must be lower-case letters only";
 
-            $phpcsfile->addError($error, $stackptr);
+            $fix = $phpcsfile->addFixableError($error, $stackptr, 'LowercaseFunction');
+            if ($fix === true) {
+                $phpcsfile->fixer->beginChangeset();
+                $tokens = $phpcsfile->getTokens();
+                $phpcsfile->fixer->replaceToken($stackptr + 2, strtolower($tokens[$stackptr + 2]['content']));
+                $phpcsfile->fixer->endChangeset();
+            }
+
             return;
         }
     }

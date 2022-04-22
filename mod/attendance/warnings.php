@@ -70,7 +70,7 @@ if (empty($id)) {
 
 }
 
-$mform = new mod_attendance_add_warning_form($url, array('notid' => $notid, 'id' => $id));
+$mform = new mod_attendance\form\addwarning($url, array('notid' => $notid, 'id' => $id));
 
 if ($data = $mform->get_data()) {
     if (empty($data->notid)) {
@@ -107,7 +107,7 @@ if ($data = $mform->get_data()) {
         $notify = $DB->get_record('attendance_warning', array('id' => $data->notid));
         if (!empty($id) && $data->idnumber != $att->id) {
             // Someone is trying to update a record for a different attendance.
-            print_error('invalidcoursemodule');
+            throw new moodle_exception('invalidcoursemodule');
         } else {
             $notify = new stdClass();
             $notify->id = $data->notid;

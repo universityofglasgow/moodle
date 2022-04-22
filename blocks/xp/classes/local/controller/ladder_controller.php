@@ -71,7 +71,7 @@ class ladder_controller extends page_controller {
     /**
      * Get the leadeboard.
      *
-     * @return leaderboard
+     * @return \block_xp\local\leaderboard\leaderboard
      */
     protected function get_leaderboard() {
         $leaderboardfactory = \block_xp\di::get('course_world_leaderboard_factory');
@@ -81,7 +81,7 @@ class ladder_controller extends page_controller {
     /**
      * Get the table.
      *
-     * @return flexible_table
+     * @return \flexible_table
      */
     protected function get_table() {
         global $USER;
@@ -89,6 +89,7 @@ class ladder_controller extends page_controller {
             $this->get_leaderboard(),
             $this->get_renderer(),
             [
+                'context' => $this->world->get_context(),
                 'identitymode' => $this->world->get_config()->get('identitymode'),
                 'rankmode' => $this->world->get_config()->get('rankmode'),
             ],

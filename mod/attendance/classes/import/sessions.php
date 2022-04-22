@@ -112,6 +112,7 @@ class sessions {
             get_string('preventsharediptime', 'attendance'),
             get_string('calendarevent', 'attendance'),
             get_string('includeqrcode', 'attendance'),
+            get_string('rotateqrcode', 'attendance'),
         );
     }
 
@@ -151,7 +152,8 @@ class sessions {
                 'preventsharedip' => $data->header16,
                 'preventsharediptime' => $data->header17,
                 'calendarevent' => $data->header18,
-                'includeqrcode' => $data->header19
+                'includeqrcode' => $data->header19,
+                'rotateqrcode' => $data->header20,
             );
         } else {
             return array(
@@ -174,7 +176,8 @@ class sessions {
                 'preventsharedip' => 16,
                 'preventsharediptime' => 17,
                 'calendarevent' => 18,
-                'includeqrcode' => 19
+                'includeqrcode' => 19,
+                'rotateqrcode' => 20
             );
         }
     }
@@ -357,6 +360,11 @@ class sessions {
                 }
 
             }
+            if ($mapping['rotateqrcode'] == -1) {
+                $session->rotateqrcode = $pluginconfig->rotateqrcode_default;
+            } else {
+                $session->rotateqrcode = $this->get_column_data($row, $mapping['rotateqrcode']);
+            }
 
             $session->statusset = 0;
 
@@ -449,10 +457,11 @@ class sessions {
 
                         foreach ($sessions as $index => $sess) {
                             // Check for duplicate sessions.
-                            if ($this->session_exists($sess)) {
+                            if ($this->session_exists($sess, $att->id)) {
                                 mod_attendance_notifyqueue::notify_message(get_string('sessionduplicate', 'attendance', (array(
                                     'course' => $session->course,
-                                    'activity' => $cm->name
+                                    'activity' => $cm->name,
+                                    'date' => construct_session_full_date_time($sess->sessdate, $sess->duration)
                                 ))));
                                 unset($sessions[$index]);
                             } else {
@@ -496,19 +505,16 @@ class sessions {
      * Check if an identical session exists.
      *
      * @param stdClass $session
+     * @param int $attid
      * @return boolean
      */
-    private function session_exists(stdClass $session) {
+    private function session_exists(stdClass $session, $attid) {
         global $DB;
 
-        $check = clone $session;
-
-        // Remove the properties that aren't useful to check.
-        unset($check->description);
-        unset($check->descriptionitemid);
-        unset($check->timemodified);
-        $check = (array) $check;
-
+        $check = ['attendanceid' => $attid,
+                  'sessdate' => $session->sessdate,
+                  'duration' => $session->duration,
+                  'groupid' => $session->groupid];
         if ($DB->record_exists('attendance_sessions', $check)) {
             return true;
         }

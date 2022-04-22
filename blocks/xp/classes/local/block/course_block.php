@@ -27,6 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 
 use action_link;
 use block_base;
+use block_xp\local\config\course_world_config;
 use context;
 use context_system;
 use html_writer;
@@ -34,6 +35,8 @@ use lang_string;
 use pix_icon;
 use stdClass;
 use block_xp\local\course_world;
+use block_xp\local\permission\access_report_permissions;
+use block_xp\local\utils\user_utils;
 use block_xp\local\xp\level_with_name;
 use block_xp\output\notice;
 use block_xp\output\dismissable_notice;
@@ -152,6 +155,9 @@ class course_block extends block_base {
             return $this->content;
         }
 
+        // Migrate the old config if needed.
+        $this->migrate_config_data_if_needed($world);
+
         $renderer = \block_xp\di::get('renderer');
         $urlresolver = \block_xp\di::get('url_resolver');
         $state = $world->get_store()->get_state($USER->id);
@@ -159,13 +165,13 @@ class course_block extends block_base {
         $indicator = \block_xp\di::get('user_notice_indicator');
         $courseid = $world->get_courseid();
         $config = $world->get_config();
+        $leaderboardfactory = \block_xp\di::get('course_world_leaderboard_factory');
 
         // Recent activity.
         $activity = [];
         $forcerecentactivity = false;
         $moreurl = null; // TODO Add URL for students to see, and option to control it.
-        $recentactivity = isset($this->config->recentactivity) ? $this->config->recentactivity : // @codingStandardsIgnoreLine.
-            $adminconfig->get('blockrecentactivity');
+        $recentactivity = $config->get('blockrecentactivity');
         if ($recentactivity) {
             $repo = $world->get_user_recent_activity_repository();
             $activity = $repo->get_user_recent_activity($USER->id, $recentactivity);
@@ -178,9 +184,7 @@ class course_block extends block_base {
         $actions = $this->get_block_navigation($world);
 
         // Introduction.
-        $introduction = isset($this->config->description) ?
-            format_string($this->config->description, true, ['context' => $context]) : // @codingStandardsIgnoreLine.
-            format_string($adminconfig->get('blockdescription'), true, ['context' => $context]);
+        $introduction = format_string($config->get('blockdescription'), true, ['context' => $context]);
         $introname = 'block_intro_' . $courseid;
         if (empty($introduction)) {
             // The intro is empty, no need for further checks then...
@@ -205,6 +209,17 @@ class course_block extends block_base {
         );
         $widget->set_force_recent_activity($forcerecentactivity);
 
+        // Add the rank to the widget.
+        if ($config->get('enableladder') && $config->get('rankmode') == course_world_config::RANK_ON) {
+            $groupid = 0;
+            if ($adminconfig->get('context') == CONTEXT_COURSE) {
+                $groupid = user_utils::get_primary_group_id($world->get_courseid(), $USER->id);
+            }
+            $leaderboard = $leaderboardfactory->get_course_leaderboard($world, $groupid);
+            $widget->set_rank($leaderboard->get_rank($USER->id));
+            $widget->set_show_rank(true);
+        }
+
         // When XP gain is disabled, let the teacher now.
         if (!$config->get('enabled') && $canedit) {
             $widget->add_manager_notice(new lang_string('xpgaindisabled', 'block_xp'));
@@ -221,24 +236,15 @@ class course_block extends block_base {
             $service->mark_as_notified($USER->id);
 
             $level = $state->get_level();
-            $name = $level instanceof level_with_name ? $level->get_name() : null;
-            $args = array(
-                'badge' => $renderer->level_badge($level),
-                'level' => $level->get_level(),
-                'name' => $name,
-            );
+            $propsid = html_writer::random_id();
+            echo $renderer->json_script([[
+                'courseid' => $world->get_courseid(),
+                'levelnum' => $level->get_level(),
+                'levelname' => $level instanceof level_with_name ? $level->get_name() : null,
+                'levelbadge' => $renderer->level_badge($level),
+            ]], $propsid);
 
-            $PAGE->requires->yui_module('moodle-block_xp-notification', 'Y.M.block_xp.Notification.init', array($args));
-            $PAGE->requires->strings_for_js(
-                array(
-                    'coolthanks',
-                    'congratulationsyouleveledup',
-                    'youreachedlevela',
-                    'youreachedlevel',
-                    'levelx'
-                ),
-                'block_xp'
-            );
+            $PAGE->requires->js_call_amd('block_xp/popup-notification-queue', 'queueFromJson', ["#{$propsid}"]);
         }
 
         return $this->content;
@@ -251,7 +257,9 @@ class course_block extends block_base {
      * @return action_link[]
      */
     protected function get_block_navigation(course_world $world) {
-        $canedit = $world->get_access_permissions()->can_manage();
+        $accessperms = $world->get_access_permissions();
+        $canedit = $accessperms->can_manage();
+        $canaccessreport = $accessperms instanceof access_report_permissions && $accessperms->can_access_report();
         $courseid = $world->get_courseid();
         $urlresolver = \block_xp\di::get('url_resolver');
         $config = $world->get_config();
@@ -271,12 +279,14 @@ class course_block extends block_base {
                 new pix_icon('i/ladder', '', 'block_xp')
             );
         }
-        if ($canedit) {
+        if ($canaccessreport) {
             $actions[] = new action_link(
                 $urlresolver->reverse('report', ['courseid' => $courseid]),
                 get_string('navreport', 'block_xp'), null, null,
                 new pix_icon('i/report', '', 'block_xp')
             );
+        }
+        if ($canedit) {
             $actions[] = new action_link(
                 $urlresolver->reverse('config', ['courseid' => $courseid]),
                 get_string('navsettings', 'block_xp'), null, null,
@@ -298,6 +308,46 @@ class course_block extends block_base {
     }
 
     /**
+     * Migrate config data if needed.
+     *
+     * This is used for the transition from configdata in the block
+     * to using the configuration object of the world.
+     *
+     * @param \block_xp\local\course_world $world The world.
+     */
+    protected function migrate_config_data_if_needed($world) {
+        $migrateflag = 'block_configdata_migrated_' . $world->get_courseid();
+        if (!get_config('block_xp', $migrateflag)) {
+            $config = $world->get_config();
+
+            // An empty title previously defaulted to admin title, so do not change.
+            if (!empty($this->config->title)) {
+                $config->set('blocktitle', $this->config->title);
+            }
+            if (isset($this->config->description)) {
+                $config->set('blockdescription', $this->config->description);
+            }
+            if (isset($this->config->recentactivity)) {
+                $config->set('blockrecentactivity', (int) $this->config->recentactivity);
+            }
+
+            // Remove config and flag in an admin config. This is polluting the admin
+            // config a bit, but we can remove these values later when we remove this
+            // code, we cannot remove the flags before this code is as well. Note
+            // that we need the flag because there may be multiple instances of the
+            // block in different places and thus we could override the data. This
+            // method here may not convert the right block instances, but it will
+            // convert the first one displayed to a user. It is probably safe enough
+            // and does not require a complex upgrade path to identify block instances.
+            // Instances like the default dashboard are tricky ones to deal with.
+            set_config($migrateflag, time(), 'block_xp');
+
+            // Reset the title as the specialisation has already happened.
+            $this->title = format_string($config->get('blocktitle'), true, ['context' => $world->get_context()]);
+        }
+    }
+
+    /**
      * Specialization.
      *
      * Happens right after the initialisation is complete.
@@ -308,11 +358,8 @@ class course_block extends block_base {
         parent::specialization();
         $world = $this->get_world($this->page->course->id);
         $context = $world->get_context();
-        if (!empty($this->config->title)) {
-            $this->title = format_string($this->config->title, true, ['context' => $context]);
-        } else {
-            $this->title = format_string(\block_xp\di::get('config')->get('blocktitle'), true, ['context' => $context]);
-        }
+        $config = $world->get_config();
+        $this->title = format_string($config->get('blocktitle'), true, ['context' => $context]);
     }
 
 }

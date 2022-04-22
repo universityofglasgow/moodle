@@ -27,8 +27,6 @@
  * @module moodle-block_xp-filters
  */
 
-var NAME = 'moodle-block_xp-filters';
-
 /**
  * Filters.
  *
@@ -166,22 +164,49 @@ Y.namespace('M.block_xp').Filters = Y.extend(FILTERS, Y.Base, {
     },
 
     /**
+     * Get the number of children rules a rule has.
+     *
+     * @param {Node} ruleNode The rule node.
+     * @return {Number}
+     */
+    countChildrenRulesInRule: function(ruleNode) {
+        var childrenRulesContainer = ruleNode.one(SELECTORS.RULES);
+        return childrenRulesContainer ? childrenRulesContainer.all(SELECTORS.RULE).size() : 0;
+    },
+
+    /**
      * Delete a rule.
      *
      * @param  {EventFacade} e
      */
     deleteFilter: function(e) {
         e.preventDefault();
-
         var filter = e.currentTarget.ancestor(SELECTORS.FILTER);
 
-        // Delete the fitler.
-        filter.remove();
-        delete this.rulesDnD[filter.generateID()];
+        var deleteOperation = function() {
+            // Delete the fitler.
+            filter.remove();
+            delete this.rulesDnD[filter.generateID()];
 
-        // Fix the things.
-        this.fixFilterSortorder();
-        this.fixAddFilterLink();
+            // Fix the things.
+            this.fixFilterSortorder();
+            this.fixAddFilterLink();
+        }.bind(this);
+
+        // Check if the filter's main rule has rules.
+        var rulesContainer = filter.one(SELECTORS.FILTERRULES);
+        var firstRule = rulesContainer ? rulesContainer.one(SELECTORS.RULE) : null;
+        if (firstRule && this.countChildrenRulesInRule(firstRule) > 0) {
+            var confirm = new M.core.confirm({
+                title: M.util.get_string('deleterule', 'block_xp'),
+                question: M.util.get_string('areyousure', 'core'),
+            });
+            confirm.on('complete-yes', deleteOperation, this);
+            confirm.show();
+            return;
+        }
+
+        deleteOperation();
     },
 
     /**
@@ -191,7 +216,6 @@ Y.namespace('M.block_xp').Filters = Y.extend(FILTERS, Y.Base, {
      */
     deleteRule: function(e) {
         e.preventDefault();
-
         var rule = e.currentTarget.ancestor(SELECTORS.RULE);
         var parentRule = rule.ancestor(SELECTORS.RULE, false, Y.bind(function(el) {
             return el == this.container;
@@ -202,7 +226,22 @@ Y.namespace('M.block_xp').Filters = Y.extend(FILTERS, Y.Base, {
             return;
         }
 
-        rule.remove(true);
+        var deleteOperation = function() {
+            rule.remove(true);
+        };
+
+        // When rule has children, show confirmation.
+        if (this.countChildrenRulesInRule(rule) > 0) {
+            var confirm = new M.core.confirm({
+                title: M.util.get_string('deletecondition', 'block_xp'),
+                question: M.util.get_string('areyousure', 'core'),
+            });
+            confirm.on('complete-yes', deleteOperation, this);
+            confirm.show();
+            return;
+        }
+
+        deleteOperation();
     },
 
     /**
@@ -374,7 +413,8 @@ Y.namespace('M.block_xp').Filters = Y.extend(FILTERS, Y.Base, {
         Y.Object.each(this.get('rules'), function(v, k) {
             rules.push({
                 id: k,
-                name: v.name
+                name: v.name,
+                info: v.info
             });
         }, this);
         this.rulepicker = Y.namespace('M.block_xp.RulePicker').init({
@@ -465,9 +505,10 @@ Y.namespace('M.block_xp').Filters = Y.extend(FILTERS, Y.Base, {
          *
          * The keys of the object must be a rule identifier.
          *
-         * Each entry must contain the following keys:
-         * - String name
-         * - String template
+         * Each entry contains the following keys:
+         * - String name: The name of the rule.
+         * - String template: The HTML of the template.
+         * - String info (optional): Information about the rule.
          *
          * @type {Object}
          */

@@ -26,7 +26,7 @@ defined('MOODLE_INTERNAL') || die();
 
 use block_xp\local\course_world;
 use block_xp\local\activity\activity;
-use block_xp\local\routing\url_resolver;
+use block_xp\local\utils\user_utils;
 use block_xp\local\xp\level;
 use block_xp\local\xp\level_with_badge;
 use block_xp\local\xp\level_with_name;
@@ -44,6 +44,52 @@ class block_xp_renderer extends plugin_renderer_base {
 
     /** @var string Notices flag. */
     protected $noticesflag = 'block_xp_notices';
+
+    /**
+     * Advanced heading.
+     *
+     * @param string $heading The heading.
+     * @param array $options The options.
+     */
+    public function advanced_heading($heading, $options = []) {
+        $options = array_merge(['level' => 3, 'actions' => [], 'intro' => null, 'help' => null], $options);
+        $level = (int) $options['level'];
+        $actions = (array) $options['actions'];
+        $intro = !empty($options['intro']) ? $options['intro'] : null;
+        /** @var \help_icon|null */
+        $help = $options['help'] instanceof \help_icon ? $options['help'] : null;
+
+        $o = '';
+        $o .= html_writer::start_div('xp-flex xp-mb-6 xp-gap-4');
+        $o .= html_writer::start_div('xp-flex-grow');
+        $o .= html_writer::start_div('');
+        $o .= $this->heading($heading, $level, 'xp-m-0');
+        if (!empty($intro)) {
+            $o .= html_writer::start_div('xp-text-sm xp-text-gray-500 xp-mt-2');
+            $o .= $intro . ' ' . (!empty($help) ? $this->render($help) : '');
+            $o .= html_writer::end_div();
+        }
+        $o .= html_writer::end_div();
+        $o .= html_writer::end_div();
+        $o .= html_writer::start_div('xp-flex xp-flex-wrap xp-gap-4 xp-items-start xp-whitespace-nowrap');
+        $o .= implode('', array_map([$this, 'render'], $actions));
+        $o .= html_writer::end_div();
+        $o .= html_writer::end_div();
+
+        return $o;
+    }
+
+    /**
+     * Get a user's picture.
+     *
+     * @param object $user The user.
+     * @param moodle_url The URL to the picture.
+     */
+    public function get_user_picture($user) {
+        $pic = new user_picture($user);
+        $pic->size = 1;
+        return $pic->get_url($this->page);
+    }
 
     /**
      * Print a level's badge.
@@ -228,21 +274,29 @@ class block_xp_renderer extends plugin_renderer_base {
      * @param course_world $world The world.
      * @param string $page The page we are on.
      * @return string The navigation.
+     * @deprecated Since Level Up XP 3.12, use tab_navigation instead.
      */
     public function course_world_navigation(course_world $world, $page) {
+        debugging('The method course_world_navigation is deprecated, please use tab_navigation instead.', DEBUG_DEVELOPER);
         $factory = \block_xp\di::get('course_world_navigation_factory');
         $links = $factory->get_course_navigation($world);
-
         // If there is only one page, then that is the page we are on.
         if (count($links) <= 1) {
             return '';
         }
+        return $this->tab_navigation($links, $page);
+    }
 
-        $tabs = array_map(function($link) {
-            return new tabobject($link['id'], $link['url'], $link['text'], clean_param($link['text'], PARAM_NOTAGS));
-        }, $links);
-
-        return html_writer::div($this->tabtree($tabs, $page), 'block_xp-page-nav');
+    /**
+     * Output a JSON script.
+     *
+     * @param mixed $data The data.
+     * @param string $id The HTML ID to use.
+     * @return string
+     */
+    public function json_script($data, $id) {
+        $jsondata = json_encode($data, JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS);
+        return html_writer::tag('script', $jsondata, ['id' => $id, 'type' => 'application/json']);
     }
 
     /**
@@ -571,6 +625,7 @@ EOT
             foreach ($widget->rules as $rule) {
                 $templatetypes[] = [
                     'name' => $rule->name,
+                    'info' => !empty($rule->info) ? $rule->info : null,
                     'template' => $this->render($rule->rule, ['iseditable' => true, 'basename' => 'XXXXX'])
                 ];
             }
@@ -581,7 +636,8 @@ EOT
                 'filter' => $templatefilter,
                 'rules' => $templatetypes
             ]]);
-            $this->page->requires->strings_for_js(array('pickaconditiontype'), 'block_xp');
+            $this->page->requires->strings_for_js(['pickaconditiontype', 'deleterule', 'deletecondition'], 'block_xp');
+            $this->page->requires->strings_for_js(['areyousure'], 'core');
         }
 
         echo html_writer::start_div('block-xp-filters-wrapper', ['id' => $containerid]);
@@ -632,8 +688,14 @@ EOT
      * @return string
      */
     public function render_filters_widget_group(renderable $group) {
+        $formid = html_writer::random_id();
+
+        $this->page->requires->string_for_js('changesmadereallygoaway', 'moodle');
+        $this->page->requires->yui_module('moodle-core-formchangechecker', 'M.core_formchangechecker.init',
+            [['formid' => $formid]]);
+
         echo html_writer::start_div('block-xp-filters-group');
-        echo html_writer::start_tag('form', ['method' => 'POST', 'class' => 'block-xp-filters']);
+        echo html_writer::start_tag('form', ['method' => 'POST', 'class' => 'block-xp-filters', 'id' => $formid]);
         echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'sesskey', 'value' => sesskey()]);
 
         $elements = $group->elements;
@@ -646,7 +708,7 @@ EOT
             'class' => 'btn btn-primary']);
         echo ' ';
         echo html_writer::empty_tag('input', ['value' => get_string('cancel'), 'type' => 'submit', 'name' => 'cancel',
-            'class' => 'btn btn-default']);
+            'class' => 'btn btn-default btn-secondary']);
         echo html_writer::end_tag('p');
         echo html_writer::end_tag('form');
 
@@ -715,6 +777,41 @@ EOT
     }
 
     /**
+     * Initialise a react module.
+     *
+     * @param string $module The AMD name of the module.
+     * @param object|array $props The props.
+     * @return void
+     */
+    public function react_module($module, $props) {
+        global $CFG;
+
+        $id = html_writer::random_id('block_xp-react-app');
+        $propsid = html_writer::random_id('block_xp-react-app-props');
+        $iconname = $CFG->branch >= 32 ? 'y/loading' : 'i/loading';
+
+        $o = '';
+        $o .= html_writer::start_div('block_xp-react', ['id' => $id]);
+        $o .= html_writer::start_div('block_xp-react-loading');
+        $o .= html_writer::start_div();
+        $o .= $this->render(new pix_icon($iconname, 'loading'));
+        $o .= ' ' . get_string('loadinghelp');
+        $o .= html_writer::end_div();
+        $o .= html_writer::end_div();
+        $o .= html_writer::end_div();
+
+        $o .= $this->json_script($props, $propsid);
+
+        $this->page->requires->js_amd_inline("
+            require(['block_xp/launcher'], function(launcher) {
+                launcher('$module', '$id', '$propsid');
+            });
+        ");
+
+        return $o;
+    }
+
+    /**
      * Recent activity.
      *
      * @param activity[] $activity The activity entries.
@@ -773,9 +870,27 @@ EOT
         // Level name.
         $o .= $this->level_name($widget->state->get_level());
 
-        // Total XP.
+        // Rank and XP container.
         $xp = $widget->state->get_xp();
+        $o .= html_writer::start_div('xp-flex xp-row-reverse xp-items-center xp-justify-center xp-gap-8 xp-mb-1');
+
+        // Rank.
+        if ($widget->showrank) {
+            $rank = $widget->rank ? $widget->rank->get_rank() : '-';
+            $o .= html_writer::tag('div',
+                $this->render(new pix_icon('i/ladder', '', 'block_xp', ['class' => 'xp-m-0 xp-mr-1', 'role' => 'decoration'])) .
+                $rank, [
+                    'class' => 'xp-rank xp-flex xp-items-center xp-tracking-wider',
+                    'title' => get_string('rank', 'block_xp')
+                ]
+            );
+        }
+
+        // Total XP.
         $o .= html_writer::tag('div', $this->xp($xp), ['class' => 'xp-total']);
+
+        // Rank and XP container end.
+        $o .= html_writer::end_div();
 
         // Progress bar.
         $o .= $this->progress_bar($widget->state);
@@ -796,6 +911,58 @@ EOT
         }
 
         return $o;
+    }
+
+    /**
+     * Rules page loading check init.
+     *
+     * @return html
+     */
+    public function rules_page_loading_check_init() {
+        return $this->render_from_template('block_xp/rules-page-loading-error', []);
+    }
+
+    /**
+     * Rules page loading check success.
+     *
+     * @return html
+     */
+    public function rules_page_loading_check_success() {
+        return $this->render_from_template('block_xp/rules-page-loading-success', []);
+    }
+
+    /**
+     * Sub navigation.
+     *
+     * @return string
+     */
+    public function sub_navigation($items, $activenode) {
+        return $this->render_from_template('block_xp/sub-navigation', [
+            'items' => array_map(function($item) use ($activenode) {
+                $url = $item['url'];
+                if ($url instanceof moodle_url) {
+                    $url = $url->out(false);
+                }
+                return array_merge($item, [
+                    'url' => $url,
+                    'current' => $item['id'] == $activenode
+                ]);
+            }, $items)
+        ]);
+    }
+
+    /**
+     * Outputs the navigation.
+     *
+     * @param array $items The items.
+     * @param string $activenode The active node.
+     * @return string The navigation.
+     */
+    public function tab_navigation($items, $activenode) {
+        $tabs = array_map(function($link) {
+            return new tabobject($link['id'], $link['url'], $link['text'], clean_param($link['text'], PARAM_NOTAGS));
+        }, $items);
+        return html_writer::div($this->tabtree($tabs, $activenode), 'block_xp-page-nav');
     }
 
     /**
@@ -831,6 +998,44 @@ EOT
     }
 
     /**
+     * Renders a user's avatar.
+     *
+     * This is similar to user_picture, except that it takes a URL
+     * as argument instead of taking a user. It's expected to be used
+     * alongside text that describes the user, so that the avatar does
+     * not need to be announced to screen readers.
+     *
+     * This always returns an image.
+     *
+     * @param moodle_url|null $url The URL.
+     * @param moodle_url|null $link The link.
+     * @return string
+     */
+    public function user_avatar(moodle_url $url = null, moodle_url $link = null) {
+        if (!$url) {
+            $url = user_utils::default_picture();
+        }
+
+        // Simulate the behaviour of user_picture.
+        $img = html_writer::empty_tag('img', [
+            'src' => $url->out(false),
+            'role' => 'presentation',
+            'class' => 'userpicture',
+            'width' => 35,
+            'height' => 35,
+            'alt' => '',
+        ]);
+
+        if ($link) {
+            return html_writer::link($link->out(false), $img, [
+                'class' => 'd-inline-block aabtn'
+            ]);
+        }
+
+        return $img;
+    }
+
+    /**
      * Format an amount of XP.
      *
      * @param int $amount The XP.
@@ -843,11 +1048,26 @@ EOT
             $xp = number_format($xp, 0, '.', $thousandssep);
         }
         $o = '';
-        $o .= html_writer::start_div('block_xp-xp');
-        $o .= html_writer::div($xp, 'pts');
-        $o .= html_writer::div('xp', 'sign sign-sup');
-        $o .= html_writer::end_div();
+        $o .= html_writer::start_tag('span', ['class' => 'block_xp-xp']);
+        $o .= html_writer::tag('span', $xp, ['class' => 'pts']);
+        $o .= html_writer::tag('span', 'xp', ['class' => 'sign sign-sup']);
+        $o .= html_writer::end_tag('span');
         return $o;
+    }
+
+    /**
+     * A highlight of the points.
+     *
+     * @param int $amount The XP.
+     */
+    public function xp_highlight($amount) {
+        return html_writer::tag(
+            'span',
+            html_writer::tag('span', $this->xp($amount), [
+                'class' => 'xp-inline-block xp-bg-yellow-200 xp-px-2 xp-py-0.5 xp-rounded-xl xp-leading-none'
+            ]),
+            ['class' => 'block_xp block_xp-xp-highlight']
+        );
     }
 
     /**

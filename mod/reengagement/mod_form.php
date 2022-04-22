@@ -48,7 +48,7 @@ class mod_reengagement_mod_form extends moodleform_mod {
         $mform =& $this->_form;
         // Make sure completion and restriction is enabled.
         if (empty($CFG->enablecompletion) || empty($CFG->enableavailability)) {
-            print_error('mustenablecompletionavailability', 'mod_reengagement');
+            throw new moodle_exception('mustenablecompletionavailability', 'mod_reengagement');
         }
         // Adding the "general" fieldset, where all the common settings are shown.
         $mform->addElement('header', 'general', get_string('general', 'form'));
@@ -76,7 +76,7 @@ class mod_reengagement_mod_form extends moodleform_mod {
         $mform->addElement('header', 'reengagementfieldset', get_string('reengagementfieldset', 'reengagement'));
         $mform->setExpanded('reengagementfieldset', true);
 
-        // Adding email detail fields:
+        // Adding email detail fields.
         $emailuseroptions = array(); // The sorts of emailing this module might do.
         $emailuseroptions[REENGAGEMENT_EMAILUSER_NEVER] = get_string('never', 'reengagement');
         $emailuseroptions[REENGAGEMENT_EMAILUSER_COMPLETION] = get_string('oncompletion', 'reengagement');
@@ -185,7 +185,7 @@ class mod_reengagement_mod_form extends moodleform_mod {
             $mform->setDefault('completion', COMPLETION_TRACKING_AUTOMATIC);
             $mform->freeze('completion');
         }
-        // Hide some elements not relevant to this activity (student visibility)
+        // Hide some elements not relevant to this activity (student visibility).
         if ($mform->elementExists('visible')) {
             $mform->removeElement('visible');
             $mform->addElement('hidden', 'visible', 0);
@@ -293,8 +293,11 @@ class mod_reengagement_mod_form extends moodleform_mod {
                 if (isset($fromform->period) && isset($fromform->periodcount)) {
                     $fromform->duration = $fromform->period * $fromform->periodcount;
                 }
-                if (empty($fromform->duration) || $fromform->duration < 300) {
+                if (empty($fromform->duration)) {
                     $fromform->duration = 300;
+                }
+                if ($fromform->duration < 0) {
+                    $fromform->duration = 0;
                 }
                 unset($fromform->period);
                 unset($fromform->periodcount);
@@ -303,8 +306,11 @@ class mod_reengagement_mod_form extends moodleform_mod {
             if (isset($fromform->emailperiod) && isset($fromform->emailperiodcount)) {
                 $fromform->emaildelay = $fromform->emailperiod * $fromform->emailperiodcount;
             }
-            if (empty($fromform->emaildelay) || $fromform->emaildelay < 300) {
+            if (empty($fromform->emaildelay)) {
                 $fromform->emaildelay = 300;
+            }
+            if ($fromform->emaildelay < 0) {
+                $fromform->emaildelay = 0;
             }
             unset($fromform->emailperiod);
             unset($fromform->emailperiodcount);
@@ -328,10 +334,11 @@ class mod_reengagement_mod_form extends moodleform_mod {
     public function add_completion_rules() {
         $mform =& $this->_form;
         $periods = array();
-        $periods[60] = get_string('minutes', 'reengagement');
-        $periods[3600] = get_string('hours', 'reengagement');
-        $periods[86400] = get_string('days', 'reengagement');
-        $periods[604800] = get_string('weeks', 'reengagement');
+        $periods[1] = get_string('seconds', 'reengagement');
+        $periods[MINSECS] = get_string('minutes', 'reengagement');
+        $periods[HOURSECS] = get_string('hours', 'reengagement');
+        $periods[DAYSECS] = get_string('days', 'reengagement');
+        $periods[WEEKSECS] = get_string('weeks', 'reengagement');
         $duration[] = &$mform->createElement('text', 'periodcount', '', array('class="periodcount"'));
         $mform->setType('periodcount', PARAM_INT);
         $duration[] = &$mform->createElement('select', 'period', '', $periods);
@@ -363,13 +370,13 @@ class mod_reengagement_mod_form extends moodleform_mod {
         if (!empty($data['emailperiod'])) {
             $duration = $data['emailperiod'] * $data['emailperiodcount'];
 
-            if ($duration < (60 * 60 * 24) && $data['remindercount'] > 2) {
+            if ($duration < (DAYSECS) && $data['remindercount'] > 2) {
                 // If less than 24hrs, make sure only 2 e-mails can be sent.
                 $errors['remindercount'] = get_string('frequencytoohigh', 'reengagement', 2);
-            } else if ($duration < (60 * 60 * 24 * 5) && $data['remindercount'] > 10) {
+            } else if ($duration < (5 * DAYSECS) && $data['remindercount'] > 10) {
                 // If less than 5 days, make sure only 10 e-mails can be sent.
                 $errors['remindercount'] = get_string('frequencytoohigh', 'reengagement', 10);
-            } else if ($duration < (60 * 60 * 24 * 15) && $data['remindercount'] > 26) {
+            } else if ($duration < (15 * DAYSECS) && $data['remindercount'] > 26) {
                 // If less than 15 days, make sure only 26 e-mails can be sent.
                 $errors['remindercount'] = get_string('frequencytoohigh', 'reengagement', 26);
             } else if ($data['remindercount'] > 40) {
@@ -378,7 +385,7 @@ class mod_reengagement_mod_form extends moodleform_mod {
             }
         }
 
-        if ($data['emailperiod'] == 60 && $data['emailperiodcount'] < 5) {
+        if ($data['emailperiod'] * $data['emailperiodcount'] < 300) {
             $errors['emaildelay'] = get_string('periodtoolow', 'reengagement');
         }
 

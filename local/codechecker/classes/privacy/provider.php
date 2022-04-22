@@ -14,28 +14,16 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace local_codechecker\privacy;
+
 /**
- * Privacy Subsystem implementation for local_codechecker.
+ * Privacy Subsystem for local_codechecker implementing null_provider.
  *
  * @package    local_codechecker
  * @copyright  2018 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-namespace local_codechecker\privacy;
-
-defined('MOODLE_INTERNAL') || die();
-
-/**
- * Privacy Subsystem for local_codechecker implementing null_provider.
- *
- * @copyright  2018 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
 class provider implements \core_privacy\local\metadata\null_provider {
-
-    // To provide php 5.6 (33_STABLE) and up support.
-    use \core_privacy\local\legacy_polyfill;
 
     /**
      * Get the language string identifier with the component's language
@@ -43,7 +31,7 @@ class provider implements \core_privacy\local\metadata\null_provider {
      *
      * @return  string
      */
-    public static function _get_reason() {
+    public static function get_reason(): string {
         return 'privacy:metadata';
     }
 }

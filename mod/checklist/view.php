@@ -17,18 +17,19 @@
 /**
  * This page prints a particular instance of checklist
  *
- * @author  David Smith <moodle@davosmith.co.uk>
- * @package mod/checklist
+ * @copyright Davo Smith <moodle@davosmith.co.uk>
+ * @package mod_checklist
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
-require_once(dirname(__FILE__).'/lib.php');
-require_once(dirname(__FILE__).'/locallib.php');
-
+require_once(__DIR__.'/../../config.php');
 global $DB, $PAGE, $CFG, $USER;
+require_once($CFG->dirroot.'/mod/checklist/lib.php');
+require_once($CFG->dirroot.'/mod/checklist/locallib.php');
 
-$id = optional_param('id', 0, PARAM_INT); // Course_module ID, or
-$checklistid = optional_param('checklist', 0, PARAM_INT);  // checklist instance ID.
+
+$id = optional_param('id', 0, PARAM_INT); // Course_module ID, or.
+$checklistid = optional_param('checklist', 0, PARAM_INT);  // Checklist instance ID.
 
 $url = new moodle_url('/mod/checklist/view.php');
 if ($id) {
@@ -44,7 +45,7 @@ if ($id) {
     $url->param('checklist', $checklistid);
 
 } else {
-    error('You must specify a course_module ID or an instance ID');
+    throw new moodle_exception('You must specify a course_module ID or an instance ID');
 }
 
 $PAGE->set_url($url);
@@ -54,6 +55,7 @@ $context = context_module::instance($cm->id);
 $userid = 0;
 if (has_capability('mod/checklist:updateown', $context)) {
     $userid = $USER->id;
+    $PAGE->requires->js_call_amd('mod_checklist/student_comment', 'init', [$cm->id]);
 }
 
 $chk = new checklist_class($cm->id, $userid, $checklist, $cm, $course);

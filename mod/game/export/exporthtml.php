@@ -171,16 +171,16 @@ function game_onexporthtml_cross_repair_questions( $game, $context, $filename, $
         if ($contextcourse === false) {
             mkdir( $destdir.'/images');
             if (!$contextcourse = get_context_instance(CONTEXT_COURSE, $game->course)) {
-                print_error('nocontext');
+                throw new moodle_exception( 'game_error', 'game', 'nocontext');
             }
             $fs = get_file_storage();
         }
 
         $inputs = explode( '/', substr( $array, $pos1 + $len, $pos2 - $pos1 - $len));
 
-        $filearea = $inputs[ 0];
-        $id = $inputs[ 1];
-        $fileimage = urldecode( $inputs[ 2]);
+        $filearea = $inputs[0];
+        $id = $inputs[1];
+        $fileimage = urldecode( $inputs[2]);
         $component = 'question';
 
         $params = array( 'component' => $component, 'filearea' => $filearea,
@@ -216,7 +216,7 @@ function game_onexporthtml_cross_repair_questions( $game, $context, $filename, $
 
     $linesbefore[] = $array;
     foreach ($linesafter as $line) {
-        $linesbefore [] = $line;
+        $linesbefore[] = $line;
     }
     file_put_contents( $destdir.'/'.$filename, $linesbefore);
 
@@ -282,7 +282,7 @@ function game_onexporthtml_hangman( $game, $context, $html, $destdir) {
 
     $map = game_exmportjavame_getanswers( $game, $context, $exportattachment, $destdir, $files);
     if ($map == false) {
-        print_error( get_string('no_words', 'game'));
+        throw new moodle_exception( 'no_words', 'game');
     }
 
     ob_start();

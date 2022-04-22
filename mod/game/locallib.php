@@ -25,7 +25,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 // Include those library functions that are also used by core Moodle or other modules.
-require_once($CFG->dirroot . '/mod/game/lib.php');
+require_once(dirname(__FILE__) . '/lib.php');
 require_once($CFG->dirroot . '/mod/quiz/locallib.php');
 
 // CONSTANTS.
@@ -49,7 +49,7 @@ define( "CONST_GAME_TRIES_REPETITION", "5");
 /**
  * Returns the version of Moodle.
  *
- * @return string version
+ * @return string version e.g. 03.10
  */
 function game_get_moodle_version() {
     global $DB;
@@ -65,7 +65,7 @@ function game_get_moodle_version() {
         return $smoodleversion = '';
     } else {
         $a = explode( '.', $rec->value);
-        return $smoodleversion = sprintf( '%02u.%02u', $a[ 0], $a[ 1]);
+        return $smoodleversion = sprintf( '%02u.%02u', $a[0], $a[1]);
     }
 }
 
@@ -134,8 +134,8 @@ function game_showselectcontrol( $name, $a,  $input, $events='') {
  */
 function game_showcheckbox( $name, $value) {
     $a = array();
-    $a[ 0] = get_string( 'no');
-    $a[ 1] = get_string( 'yes');
+    $a[0] = get_string( 'no');
+    $a[1] = get_string( 'yes');
 
     return game_showselectcontrol( $name, $a, $value);
 }
@@ -175,10 +175,10 @@ function game_question_shortanswer_glossary( $game, $allowspaces, $userepetition
     global $DB;
 
     if ($game->glossaryid == 0) {
-        print_error( get_string( 'must_select_glossary', 'game'));
+        throw new moodle_exception( 'must_select_glossary', 'game');
     }
 
-    $select = "glossaryid={$game->glossaryid}";
+    $select = "(glossaryid={$game->glossaryid} OR sourceglossaryid={$game->glossaryid})";
     $table = '{glossary_entries} ge';
     if ($game->glossarycategoryid) {
         $table .= ',{glossary_entries_categories} gec';
@@ -223,7 +223,7 @@ function game_question_shortanswer_quiz( $game, $allowspaces, $userepetitions) {
     global $DB;
 
     if ($game->quizid == 0) {
-        print_error( get_string( 'must_select_quiz', 'game'));
+        throw new moodle_exception( 'must_select_quiz', 'game');
     }
 
     if (game_get_moodle_version() < '02.07') {
@@ -268,23 +268,34 @@ function game_question_shortanswer_quiz( $game, $allowspaces, $userepetitions) {
  * @return the short answer record
  */
 function game_question_shortanswer_question( $game, $allowspaces, $userepetitions) {
-    global $DB;
+    global $CFG, $DB;
 
     if ($game->questioncategoryid == 0) {
-        print_error( get_string( 'must_select_questioncategory', 'game'));
+        throw new moodle_exception( 'must_select_questioncategory', 'game');
     }
-
-    $select = 'category='.$game->questioncategoryid;
-    if ($game->subcategories) {
-        $cats = question_categorylist( $game->questioncategoryid);
-        if (count( $cats) > 0) {
-            $s = implode( ',', $cats);
-            $select = 'category in ('.$s.')';
-        }
-    }
-    $select .= " AND qtype='shortanswer'";
 
     $table = '{question} q';
+    if (game_get_moodle_version() >= '04.00') {
+        $table .= ",{$CFG->prefix}question_bank_entries qbe ";
+        $select = 'qbe.id=q.id AND qbe.questioncategoryid='.$game->questioncategoryid;
+        if ($game->subcategories) {
+            $cats = question_categorylist( $game->questioncategoryid);
+            if (count( $cats) > 0) {
+                $s = implode( ',', $cats);
+                $select = 'qbe.questioncategoryid in ('.$s.')';
+            }
+        }
+    } else {
+        $select = 'category='.$game->questioncategoryid;
+        if ($game->subcategories) {
+            $cats = question_categorylist( $game->questioncategoryid);
+            if (count( $cats) > 0) {
+                $select = 'category in ('.implode( ',', $cats).')';
+            }
+        }
+    }
+    $select .= " AND q.qtype='shortanswer'";
+
     $fields = 'q.id';
 
     if (($id = game_question_selectrandom( $game, $table, $select, $fields, $userepetitions)) == false) {
@@ -292,7 +303,11 @@ function game_question_shortanswer_question( $game, $allowspaces, $userepetition
     }
 
     $select = "q.id=$id AND qa.question=$id".
-        " AND q.hidden=0 AND qtype='shortanswer'";
+        " AND qtype='shortanswer'";
+    if (game_get_moodle_version() < '04.00') {
+        $select .= ' AND q.hidden=0';
+    }
+
     $table = "{question} q,{question_answers} qa";
     $fields = "qa.id as answerid, q.id, q.questiontext as questiontext, ".
         "qa.answer as answertext, q.id as questionid, ".
@@ -401,7 +416,7 @@ function game_update_repetitions( $gameid, $userid, $questionid, $glossaryentryi
         $updrec->id = $rec->id;
         $updrec->repetitions = $rec->r + 1;
         if (!$DB->update_record( 'game_repetitions', $updrec)) {
-            print_error("Update page: can't update game_repetitions id={$updrec->id}");
+            throw new moodle_exception( 'game_error', 'game', "Update page: can't update game_repetitions id={$updrec->id}");
         }
     } else {
         $newrec = new stdClass();
@@ -418,7 +433,7 @@ function game_update_repetitions( $gameid, $userid, $questionid, $glossaryentryi
             $newrec->glossaryentryid = 0;
         }
         if (!$DB->insert_record( 'game_repetitions', $newrec)) {
-            print_error("Insert page: new page game_repetitions not inserted");
+            throw new moodle_exception( 'game_error', 'game', "Insert page: new page game_repetitions not inserted");
         }
     }
 }
@@ -432,26 +447,27 @@ function game_update_repetitions( $gameid, $userid, $questionid, $glossaryentryi
  * @return stdClass the random record(s)
  */
 function game_questions_selectrandom( $game, $count=1) {
-    global $DB;
+    global $CFG, $DB;
 
     switch( $game->sourcemodule)
     {
         case 'quiz':
             if ($game->quizid == 0) {
-                print_error( get_string( 'must_select_quiz', 'game'));
+                throw new moodle_exception( 'must_select_quiz', 'game');
             }
             if (game_get_moodle_version() < '02.07') {
                 $table = '{question} q, {quiz_question_instances} qqi';
                 $select = " qqi.quiz=$game->quizid".
                     " AND qqi.question=q.id ".
-                    " AND q.qtype in ('shortanswer', 'truefalse', 'multichoice')".
-                    " AND q.hidden=0";
+                    " AND q.qtype in ('shortanswer', 'truefalse', 'multichoice')";
             } else {
                 $table = '{question} q, {quiz_slots} qs';
                 $select = " qs.quizid=$game->quizid".
                     " AND qs.questionid=q.id ".
-                    " AND q.qtype in ('shortanswer', 'truefalse', 'multichoice')".
-                    " AND q.hidden=0";
+                    " AND q.qtype in ('shortanswer', 'truefalse', 'multichoice')";
+            }
+            if (game_get_moodle_version() < '04.00') {
+                $select .= " AND q.hidden=0";
             }
             // Todo 'match'.
             $field = "q.id as id";
@@ -460,10 +476,10 @@ function game_questions_selectrandom( $game, $count=1) {
             break;
         case 'glossary':
             if ($game->glossaryid == 0) {
-                print_error( get_string( 'must_select_glossary', 'game'));
+                throw new moodle_exception( 'must_select_glossary', 'game');
             }
             $table = '{glossary_entries} ge';
-            $select = "glossaryid='$game->glossaryid' ";
+            $select = "(glossaryid='{$game->glossaryid}' OR sourceglossaryid='{$game->glossaryid}')";
             if ($game->glossarycategoryid) {
                 $table .= ',{glossary_entries_categories} gec';
                 $select .= " AND gec.entryid = ge.id ".
@@ -475,34 +491,48 @@ function game_questions_selectrandom( $game, $count=1) {
             break;
         case 'question':
             if ($game->questioncategoryid == 0) {
-                print_error( get_string( 'must_select_questioncategory', 'game'));
+                throw new moodle_exception( 'must_select_questioncategory', 'game');
             }
             $table = '{question} q';
 
-            // Inlcude subcategories.
-            $select = 'category='.$game->questioncategoryid;
-            if ($game->subcategories) {
-                $cats = question_categorylist( $game->questioncategoryid);
-                if (count( $cats)) {
-                    $select = 'category in ('.implode( ',', $cats).')';
+            // Include subcategories.
+            if (game_get_moodle_version() >= '04.00') {
+                $table .= ",{$CFG->prefix}question_bank_entries qbe ";
+                $select = 'qbe.id=q.id AND qbe.questioncategoryid='.$game->questioncategoryid;
+                if ($game->subcategories) {
+                    $cats = question_categorylist( $game->questioncategoryid);
+                    if (count( $cats) > 0) {
+                        $select = 'qbe.questioncategoryid in ('.implode( ',', $cats).')';
+                    }
+                }
+            } else {
+                $select = 'category='.$game->questioncategoryid;
+                if ($game->subcategories) {
+                    $cats = question_categorylist( $game->questioncategoryid);
+                    if (count( $cats)) {
+                        $select = 'category in ('.implode( ',', $cats).')';
+                    }
                 }
             }
 
-            $select .= " AND q.qtype in ('shortanswer', 'truefalse', 'multichoice') AND q.hidden=0";
+            $select .= " AND q.qtype in ('shortanswer', 'truefalse', 'multichoice')";
+            if (game_get_moodle_version() < '04.00') {
+                $select .= " AND q.hidden=0";
+            }
             // Todo 'match'.
-            $field = "id";
+            $field = "q.id";
 
             $table2 = 'question';
             $fields2 = 'id as questionid,0 as glossaryentryid';
             break;
         default:
-            print_error( 'No sourcemodule defined');
+            throw new moodle_exception( 'game_error', 'game', 'No sourcemodule defined');
             break;
     }
 
     $ids = game_questions_selectrandom_detail( $table, $select, $field, $count);
     if ($ids === false) {
-        print_error( get_string( 'no_questions', 'game'));
+        throw new moodle_exception( 'no_questions', 'game');
     }
 
     if (count( $ids) > 1) {
@@ -544,7 +574,7 @@ function game_questions_selectrandom_detail( $table, $select, $idfield="id", $co
     // The array contains the ids of all questions.
     $a = array();
     foreach ($recs as $rec) {
-        $a[ $rec->id] = $rec->id;
+        $a[$rec->id] = $rec->id;
     }
 
     if ($count >= count( $a)) {
@@ -569,8 +599,8 @@ function game_detectlanguage( $word) {
 
     // English has more priority.
     if (array_key_exists( 'en', $langs)) {
-        unset( $langs[ 'en']);
-        $langs[ ''] = '';
+        unset( $langs['en']);
+        $langs[''] = '';
     }
     ksort( $langs);
     $langsinstalled = get_string_manager()->get_list_of_translations();
@@ -585,8 +615,8 @@ function game_detectlanguage( $word) {
         }
 
         $strings = get_string_manager()->load_component_strings( 'game', $lang);
-        if (isset( $strings[ 'lettersall'])) {
-            $letters = $strings[ 'lettersall'];
+        if (isset( $strings['lettersall'])) {
+            $letters = $strings['lettersall'];
             $word2 = game_upper( $word, $lang);
 
             if (hangman_existall( $word2, $letters)) {
@@ -618,8 +648,8 @@ function game_getallletters( $word, $lang='', $userlanguage='') {
             }
         } else {
             $strings = get_string_manager()->load_component_strings( 'game', ($lang == '' ? 'en' : $lang));
-            if (isset( $strings[ 'lettersall'])) {
-                $letters = $strings[ 'lettersall'];
+            if (isset( $strings['lettersall'])) {
+                $letters = $strings['lettersall'];
                 $word2 = game_upper( $word, $lang);
                 if (hangman_existall( $word2, $letters)) {
                     return $letters;
@@ -676,7 +706,7 @@ function game_questions_shortanswer( $game) {
             $recs = game_questions_shortanswer_question( $game);
             break;
         default:
-            print_error( 'No sourcemodule '.$game->sourcemodule);
+            throw new moodle_exception( 'game_error', 'game', 'No sourcemodule '.$game->sourcemodule);
     }
 
     return $recs;
@@ -692,7 +722,7 @@ function game_questions_shortanswer( $game) {
 function game_questions_shortanswer_glossary( $game) {
     global $DB;
 
-    $select = "glossaryid={$game->glossaryid}";
+    $select = "(glossaryid={$game->glossaryid} OR sourceglossaryid={$game->glossaryid})";
     $table = '{glossary_entries} ge';
     if ($game->glossarycategoryid) {
         $table .= ',{glossary_entries_categories} gec';
@@ -718,7 +748,7 @@ function game_questions_shortanswer_quiz( $game) {
     global $DB;
 
     if ($game->quizid == 0) {
-        print_error( get_string( 'must_select_quiz', 'game'));
+        throw new moodle_exception( 'must_select_quiz', 'game');
     }
 
     if (game_get_moodle_version() < '02.07') {
@@ -752,23 +782,34 @@ function game_questions_shortanswer_quiz( $game) {
  * @return a question
  */
 function game_questions_shortanswer_question( $game) {
+    global $CFG;
+
     if ($game->questioncategoryid == 0) {
-        print_error( get_string( 'must_select_questioncategory', 'game'));
+        throw new moodle_exception( 'must_select_questioncategory', 'game');
     }
 
     // Include subcategories.
-    $select = 'q.category='.$game->questioncategoryid;
-    if ($game->subcategories) {
-        $cats = question_categorylist( $game->questioncategoryid);
-        if (count( $cats)) {
-            $select = 'q.category in ('.implode(',', $cats).')';
+    $table = "{question} q,{question_answers} qa";
+    if (game_get_moodle_version() >= '04.00') {
+        $table .= ",{$CFG->prefix}question_bank_entries qbe ";
+        $select = 'qbe.id=q.id AND qbe.questioncategoryid='.$game->questioncategoryid;
+        if ($game->subcategories) {
+            $cats = question_categorylist( $game->questioncategoryid);
+            if (count( $cats) > 0) {
+                $select = 'qbe.questioncategoryid in ('.implode( ',', $cats).')';
+            }
+        }
+    } else {
+        $select = "q.category={$game->questioncategoryid} AND q.hidden=0";
+        if ($game->subcategories) {
+            $cats = question_categorylist( $game->questioncategoryid);
+            if (count( $cats)) {
+                $select = 'q.category in ('.implode(',', $cats).')';
+            }
         }
     }
 
-    $select .= " AND qtype='shortanswer' ".
-        " AND qa.question=q.id".
-        " AND q.hidden=0";
-    $table = "{question} q,{question_answers} qa";
+    $select .= " AND qtype='shortanswer' AND qa.question=q.id";
     $fields = "qa.id as qaid, q.id, q.questiontext as questiontext, ".
         "qa.answer as answertext, q.id as questionid";
 
@@ -791,7 +832,7 @@ function game_questions_shortanswer_question_fraction( $table, $fields, $select)
 
     $recs = $DB->get_records_sql( $sql);
     if ($recs == false) {
-        print_error( get_string( 'no_questions', 'game'));
+        throw new moodle_exception( 'no_questions', 'game');
     }
 
     $recs2 = array();
@@ -809,7 +850,7 @@ function game_questions_shortanswer_question_fraction( $table, $fields, $select)
         $rec2->attachment = '';
         $recs2[] = $rec2;
 
-        $map[ $rec->questionid] = $rec->questionid;
+        $map[$rec->questionid] = $rec->questionid;
     }
 
     return $recs2;
@@ -844,7 +885,7 @@ function game_insert_record( $table, $rec) {
     if ($DB->get_record($table, array('id' => $rec->id), 'id,id') == false) {
         $sql = 'INSERT INTO {'.$table.'}(id) VALUES('.$rec->id.')';
         if (!$DB->execute( $sql)) {
-            print_error( "Cannot insert an empty $table with id=$rec->id");
+            throw new moodle_exception( 'game_error', 'game', "Cannot insert an empty $table with id=$rec->id");
             return false;
         }
     }
@@ -884,7 +925,7 @@ function game_updateattempts( $game, $attempt, $score, $finished, $cm, $course) 
         $updrec->attempts = $attempt->attempts + 1;
 
         if (!$DB->update_record( 'game_attempts', $updrec)) {
-            print_error( "game_updateattempts: Can't update game_attempts id=$updrec->id");
+            throw new moodle_exception( 'game_error', 'game', "game_updateattempts: Can't update game_attempts id=$updrec->id");
         }
 
         // Update grade item and send all grades to gradebook.
@@ -981,7 +1022,7 @@ function game_update_queries( $game, $attempt, $query, $score, $studentanswer, $
         }
 
         if (!($recq->id = $DB->insert_record( 'game_queries', $recq))) {
-            print_error( 'Insert page: new page game_queries not inserted');
+            throw new moodle_exception( 'game_error', 'game', 'Insert page: new page game_queries not inserted');
         }
     }
 
@@ -1002,7 +1043,7 @@ function game_update_queries( $game, $attempt, $query, $score, $studentanswer, $
     }
 
     if (!($DB->update_record( 'game_queries', $updrec))) {
-        print_error( "game_update_queries: not updated id=$updrec->id");
+        throw new moodle_exception( 'game_error', 'game', "game_update_queries: not updated id=$updrec->id");
     }
 }
 
@@ -1020,7 +1061,7 @@ function game_getattempt( $game, &$detail, $autoadd=false) {
     if ($USER->id == 1) {
         $key = 'mod/game:instanceid'.$game->id;
         if (array_key_exists( $key, $_SESSION)) {
-            $select .= ' AND id="'.$_SESSION[ $key].'"';
+            $select .= ' AND id="'.$_SESSION[$key].'"';
         } else {
             $select .= ' AND id=-1';
         }
@@ -1029,7 +1070,7 @@ function game_getattempt( $game, &$detail, $autoadd=false) {
     if (($recs = $DB->get_records_select( 'game_attempts', $select))) {
         foreach ($recs as $attempt) {
             if ($USER->id == 1) {
-                $_SESSION[ $key] = $attempt->id;
+                $_SESSION[$key] = $attempt->id;
             }
 
             $detail = $DB->get_record( 'game_'.$game->gamekind, array( 'id' => $attempt->id));
@@ -1265,7 +1306,7 @@ function game_save_best_score($game) {
 
     // Get all the attempts made by the user.
     if (!$attempts = game_get_user_attempts( $game->id, $USER->id, 'all')) {
-        print_error( 'Could not find any user attempts gameid='.$game->id.' userid='.$USER->id);
+        throw new moodle_exception( 'game_error', 'game', "Could not find any user attempts gameid={$game->id} userid={$USER->id}");
     }
 
     // Calculate the best grade.
@@ -1276,7 +1317,7 @@ function game_save_best_score($game) {
         $grade->score = $bestscore;
         $grade->timemodified = time();
         if (!$DB->update_record('game_grades', $grade)) {
-            print_error('Could not update best grade');
+            throw new moodle_exception( 'game_error', 'game', 'Could not update best grade');
         }
     } else {
         $grade = new stdClass();
@@ -1285,7 +1326,7 @@ function game_save_best_score($game) {
         $grade->score = $bestscore;
         $grade->timemodified = time();
         if (!$DB->insert_record( 'game_grades', $grade)) {
-            print_error( 'Could not insert new best grade');
+            throw new moodle_exception( 'game_error', 'game', 'Could not insert new best grade');
         }
     }
 
@@ -1392,12 +1433,33 @@ function game_sudoku_getquestions( $questionlist) {
             " LEFT JOIN {$CFG->prefix}qtype_multichoice_options qmo ON q.id=qmo.questionid AND q.qtype='multichoice' ".
         " WHERE q.id IN ($questionlist)";
     if (!$questions = $DB->get_records_select( 'question', "id IN ($questionlist)")) {
-        print_error( get_string( 'no_questions', 'game'));
+        throw new moodle_exception( 'no_questions', 'game');
     }
 
     // Load the question type specific information.
     if (!get_question_options($questions)) {
-        print_error('Could not load question options');
+        throw new moodle_exception( 'game_error', 'game', 'Could not load question options');
+    }
+
+    $sql = "SELECT value FROM {$CFG->prefix}config_plugins WHERE plugin = ? AND name = ?";
+    $rec = $DB->get_record_select( 'config_plugins', 'plugin = ? AND name = ?', array( 'qtype_multichoice', 'shuffleanswers'));
+    if ($rec != false) {
+        if ($rec->value == 1) {
+            foreach ($questions as $question) {
+                if (isset( $question->options)) {
+                    if (isset( $question->options->answers)) {
+                        $list = $question->options->answers;
+                        $keys = array_keys( $list);
+                        shuffle( $keys);
+                        $random = array();
+                        foreach ($keys as $key) {
+                            $random[$key] = $list[$key];
+                        }
+                        $question->options->answers = $random;
+                    }
+                }
+            }
+        }
     }
 
     return $questions;
@@ -1748,7 +1810,7 @@ function game_select_from_repetitions( $game, $recs, $need) {
     if (count($recs) <= $need) {
         foreach ($recs as $rec) {
             $id = $rec->$field;
-            $ret[ $id] = 1;
+            $ret[$id] = 1;
         }
 
         return $ret;
@@ -1760,9 +1822,9 @@ function game_select_from_repetitions( $game, $recs, $need) {
             'glossaryentryid' => $rec->glossaryentryid);
         $id = $rec->$field;
         if (($rec = $DB->get_record( 'game_repetitions', $a, 'id,repetitions AS r')) != false) {
-            $reps[ $id] = $rec->r;
+            $reps[$id] = $rec->r;
         } else {
-            $reps[ $id] = 0;
+            $reps[$id] = 0;
             if (++$countzero >= $need) {
                 break;
             }
@@ -1770,7 +1832,7 @@ function game_select_from_repetitions( $game, $recs, $need) {
     }
     asort( $reps);
     foreach ($reps as $id => $r) {
-        $ret[ $id] = 1;
+        $ret[$id] = 1;
         if (count( $ret) >= $need) {
             break;
         }
@@ -1801,7 +1863,7 @@ function game_grade_responses( $question, $responses, $maxgrade, &$answertext, &
             return 0;
         }
         $value = $responses->$name;
-        $answer = $question->options->answers[ $value];
+        $answer = $question->options->answers[$value];
         $answertext = $answer->answer;
 
         return $answer->fraction * $maxgrade;
@@ -1844,7 +1906,7 @@ function game_grade_responses_multianswer( $question, $responses, $maxgrade, &$a
 
         $name2 = $name.$value;
         $value2 = $responses->$name2;
-        $answer = $question->options->answers[ $value2];
+        $answer = $question->options->answers[$value2];
         $fraction += $answer->fraction;
     }
 
@@ -1894,6 +1956,11 @@ function game_print_question_multichoice( $game, $question, $context) {
                 $a->answer = substr( $a->answer, 0, -3);
             }
         }
+
+        if (substr( $a->answer, 0, 3) == '<p ' && substr( $a->answer, -4) == '</p>') {
+                $a->answer = '<span '.substr( $a->answer, 3, strlen( $a->answer) - 7).'</span>';
+        }
+
         $a->answer = game_filterquestion_answer(str_replace( '\"', '"', $a->answer), $a->id, $context->id, $game->course);
         $answer->control = "<input  id=\"resp{$question->id}_{$a->id}\" name=\"resp{$question->id}_\"  ".
             " type=\"radio\" value=\"{$a->id}\" /> ".$a->answer;
@@ -1916,21 +1983,21 @@ function game_print_question_multichoice( $game, $question, $context) {
     </div>
 
     <table class="answer">
-<?php
-$row = 1;
-foreach ($anss as $answer) {
-?>
+    <?php
+    $row = 1;
+    foreach ($anss as $answer) {
+    ?>
         <tr class="<?php echo 'r'.$row = $row ? 0 : 1; ?>">
             <td>
                 <?php echo $answer->control; ?>
             </td>
         </tr>
-<?php
-}
-?>        
+        <?php
+    }
+        ?>        
     </table>
 </div>
-<?php
+    <?php
 }
 
 /**
@@ -1979,21 +2046,21 @@ function game_print_question_multianswer( $game, $question, $context) {
     </div>
 
     <table class="answer">
-<?php
-$row = 1;
-foreach ($anss as $answer) {
-?>
+    <?php
+    $row = 1;
+    foreach ($anss as $answer) {
+    ?>
         <tr class="<?php echo 'r'.$row = $row ? 0 : 1; ?>">
             <td>
                 <?php echo $answer->control; ?>
             </td>
         </tr>
-<?php
-}
-?>
+        <?php
+    }
+        ?>
     </table>
 </div>
-<?php
+    <?php
 }
 
 /**
@@ -2008,9 +2075,9 @@ function game_print_question_shortanswer( $game, $question, $context) {
 
 ?>
 <div class="qtext">
-<?php
-echo game_filterquestion(str_replace( '\"', '"', $questiontext), $question->id, $context->id, $game->course);
-?>
+    <?php
+    echo game_filterquestion(str_replace( '\"', '"', $questiontext), $question->id, $context->id, $game->course);
+    ?>
 </div>
 
 <div class="ablock clearfix">
@@ -2021,7 +2088,7 @@ echo game_filterquestion(str_replace( '\"', '"', $questiontext), $question->id, 
     <input type="text" name="resp<?php echo $question->id; ?>_" size="80"/>
   </div>
 </div>
-<?php
+    <?php
 }
 
 /**
@@ -2039,7 +2106,7 @@ function game_snakes_get_board( $game) {
             $board = $DB->get_record( 'game_snakes_database', array( 'id' => $game->param3));
         }
         if ($board == false) {
-            print_error( 'No board');
+            throw new moodle_exception( 'game_error', 'game', 'No board');
         }
         $board->imagesrc = $CFG->wwwroot.'/mod/game/snakes/boards/'.$board->fileboard;
         list( $board->width, $board->height) = getimagesize( __DIR__.'/snakes/boards/'.$board->fileboard);
@@ -2077,7 +2144,7 @@ function game_snakes_create_user_defined_board( &$game) {
             break;
         }
         if ($f === false) {
-            print_error( 'No image specified');
+            throw new moodle_exception( 'game_error', 'game', 'No image specified');
         }
         $im = game_createsnakesboard($f->get_content(), $board->usedcols, $board->usedrows, $board->headery, $board->headery,
             $board->footerx, $board->headerx, $board->data, $board->width, $board->height);
@@ -2091,12 +2158,12 @@ function game_snakes_create_user_defined_board( &$game) {
             'filearea' => 'snakes_board',   // Usually = table name.
             'itemid' => $game->id,          // Usually = ID of row in table.
             'filepath' => '/',              // Any path beginning and ending in /.
-            'filename' => 'board.png');     // any filename.
+            'filename' => 'board.png');     // Any filename.
         $fs->delete_area_files($modcontext->id, 'mod_game', 'snakes_board', $game->id);
         $file = $fs->create_file_from_string($fileinfo, $data);
         $imageinfo = $file->get_imageinfo();
-        $game->param6 = $imageinfo[ 'width'];
-        $game->param7 = $imageinfo[ 'height'];
+        $game->param6 = $imageinfo['width'];
+        $game->param7 = $imageinfo['height'];
         $sql = "UPDATE {$CFG->prefix}game SET param5=0,param6=$game->param6,param7=$game->param7 WHERE id=$game->id";
         if ( !$DB->execute( $sql)) {
             error('problem in '.$sql);
@@ -2229,7 +2296,7 @@ function get_string_from_file($identifier, $langfile, $destination) {
         return false;
     }
 
-    return $string[ $identifier];
+    return $string[$identifier];
 }
 
 /**
@@ -2253,12 +2320,12 @@ function game_addattempt( $game) {
     $newrec->score = 0;
 
     if (!($newid = $DB->insert_record( 'game_attempts', $newrec))) {
-        print_error("Insert game_attempts: new rec not inserted");
+        throw new moodle_exception( 'game_error', 'game', 'Insert game_attempts: new rec not inserted');
     }
 
     if ($USER->username == 'guest') {
         $key = 'mod/game:instanceid'.$game->id;
-        $_SESSION[ $key] = $newid;
+        $_SESSION[$key] = $newid;
     }
 
     return $DB->get_record_select( 'game_attempts', 'id='.$newid);
@@ -2322,7 +2389,7 @@ function game_export_split_files( $courseid, $context, $filearea, $id, $line, $d
         }
 
         $line = substr( $line, 0, $pos1).'images/'.$newfile.substr( $line, $pos2);
-        $files[ $oldfile] = $newfile;
+        $files[$oldfile] = $newfile;
 
         // Have to copy the files.
         if (count( $files) == 1) {
@@ -2331,7 +2398,7 @@ function game_export_split_files( $courseid, $context, $filearea, $id, $line, $d
 
         if ($contextcourse === false) {
             if (!$contextcourse = get_context_instance(CONTEXT_COURSE, $courseid)) {
-                print_error('nocontext');
+                throw new moodle_exception( 'game_error', 'game', 'nocontext');
             }
         }
         $params = array( 'component' => 'question', 'filearea' => $filearea,
@@ -2361,7 +2428,7 @@ function game_grade_questions( $questions) {
         }
 
         if (array_key_exists( $id, $grades)) {
-            $grade = $grades[ $id];
+            $grade = $grades[$id];
         } else {
             $grade = new stdClass();
             $grade->grade = 0;
@@ -2370,9 +2437,9 @@ function game_grade_questions( $questions) {
 
         $grade->response = $value;
 
-        $question = $questions[ $id];
+        $question = $questions[$id];
         if ($question->qtype == 'multichoice') {
-            $answer = $question->options->answers[ $value];
+            $answer = $question->options->answers[$value];
             $grade->grade += $answer->fraction;
         } else if ($question->qtype == 'shortanswer') {
             foreach ($question->options->answers as $answerid => $answer) {
@@ -2383,7 +2450,7 @@ function game_grade_questions( $questions) {
             }
         }
 
-        $grades[ $grade->id] = $grade;
+        $grades[$grade->id] = $grade;
     }
 
     return $grades;
@@ -2399,7 +2466,7 @@ function game_question_get_id_from_name_prefix($name) {
     if (!preg_match('/^resp([0-9]+)_/', $name, $matches)) {
         return false;
     }
-    return (integer) $matches[ 1];
+    return (integer) $matches[1];
 }
 
 /**
@@ -2469,20 +2536,20 @@ function game_substr() {
 
     if ($num == 3) {
         if (game_get_moodle_version() >= '02.08') {
-            return core_text::substr( $a[ 0], $a[ 1], $a[ 2]);
+            return core_text::substr( $a[0], $a[1], $a[2]);
         } else if (game_get_moodle_version() >= '02.04') {
-            return textlib::substr( $a[ 0], $a[ 1], $a[ 2]);
+            return textlib::substr( $a[0], $a[1], $a[2]);
         } else {
-            return textlib_get_instance()->substr( $a[ 0], $a[ 1], $a[ 2]);
+            return textlib_get_instance()->substr( $a[0], $a[1], $a[2]);
         }
     } else if ($num == 2) {
         if (game_get_moodle_version() >= '02.08') {
-            return core_text::substr( $a[ 0], $a[ 1]);
+            return core_text::substr( $a[0], $a[1]);
         }
         if (game_get_moodle_version() >= '02.04') {
-            return textlib::substr( $a[ 0], $a[ 1]);
+            return textlib::substr( $a[0], $a[1]);
         } else {
-            return textlib_get_instance()->substr( $a[ 0], $a[ 1]);
+            return textlib_get_instance()->substr( $a[0], $a[1]);
         }
     } else {
         die( 'Substr requires 2 or 3 parameters');

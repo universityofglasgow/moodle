@@ -628,5 +628,78 @@ function xmldb_attendance_upgrade($oldversion=0) {
 
     }
 
+    if ($oldversion < 2020072900) {
+        $table = new xmldb_table('attendance_sessions');
+
+        // Conditionally launch add index caleventid.
+        $index = new xmldb_index('caleventid', XMLDB_INDEX_NOTUNIQUE, array('caleventid'));
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+        // Attendance savepoint reached.
+        upgrade_mod_savepoint(true, 2020072900, 'attendance');
+    }
+
+    if ($oldversion < 2021050700) {
+        // Restore process sometimes creates orphan attendance calendar events - clean them up.
+        $sql = "modulename = 'attendance' AND id NOT IN (SELECT caleventid
+                                                           FROM {attendance_sessions})";
+        $DB->delete_records_select('event', $sql);
+
+        // Attendance savepoint reached.
+        upgrade_mod_savepoint(true, 2021050700, 'attendance');
+    }
+
+    if ($oldversion < 2021082400) {
+
+        // Changing precision of field statusset on table attendance_log to (1333).
+        $table = new xmldb_table('attendance_sessions');
+        $field = new xmldb_field('automarkcmid', XMLDB_TYPE_CHAR, '10', null, false, null, null, 'rotateqrcodesecret');
+
+        // Launch change of precision for field statusset.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Attendance savepoint reached.
+        upgrade_mod_savepoint(true, 2021082400, 'attendance');
+    }
+
+    if ($oldversion < 2021082401) {
+
+        // Changing the default of field automarkcmid on table attendance_sessions to 0.
+        $table = new xmldb_table('attendance_sessions');
+        $field = new xmldb_field('automarkcmid', XMLDB_TYPE_INTEGER, '10', null, null, null, '0', 'rotateqrcodesecret');
+
+        // Launch change of default for field automarkcmid.
+        $dbman->change_field_default($table, $field);
+
+        // Attendance savepoint reached.
+        upgrade_mod_savepoint(true, 2021082401, 'attendance');
+    }
+
+    if ($oldversion < 2021082402) {
+
+        // Changing the default of field ipaddress on table attendance_log to .
+        $table = new xmldb_table('attendance_log');
+        $field = new xmldb_field('ipaddress', XMLDB_TYPE_CHAR, '45', null, null, null, '', 'remarks');
+
+        // Launch change of default for field ipaddress.
+        $dbman->change_field_default($table, $field);
+
+        // Attendance savepoint reached.
+        upgrade_mod_savepoint(true, 2021082402, 'attendance');
+    }
+
+    if ($oldversion < 2021082600) {
+        // Check if auto-marking in use, and if so, set automark_useempty = 0 to prevent changes in existing behaviour.
+        if ($DB->record_exists_select('attendance_sessions', 'automark > 0')) {
+            set_config('automark_useempty', '0', 'attendance');
+        }
+
+        // Attendance savepoint reached.
+        upgrade_mod_savepoint(true, 2021082600, 'attendance');
+    }
+
     return $result;
 }

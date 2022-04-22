@@ -14,7 +14,12 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-defined('MOODLE_INTERNAL') || die();
+/**
+ * Backup steps.
+ * @copyright Davo Smith <moodle@davosmith.co.uk>
+ * @package mod_checklist
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 /**
  * Define all the backup steps that will be used by the backup_forum_activity_task
@@ -25,6 +30,12 @@ defined('MOODLE_INTERNAL') || die();
  */
 class backup_checklist_activity_structure_step extends backup_activity_structure_step {
 
+    /**
+     * Define the backup structure
+     * @return backup_nested_element
+     * @throws base_element_struct_exception
+     * @throws base_step_exception
+     */
     protected function define_structure() {
 
         // To know if we are including userinfo.
@@ -33,9 +44,9 @@ class backup_checklist_activity_structure_step extends backup_activity_structure
         // Define each element separated.
 
         $checklist = new backup_nested_element('checklist', array('id'), array(
-            'name', 'intro', 'introformat', 'timecreated', 'timemodified', 'useritemsallowed',
+            'name', 'intro', 'introformat', 'timecreated', 'timemodified', 'useritemsallowed', 'studentcomments',
             'teacheredit', 'theme', 'duedatesoncalendar', 'teachercomments', 'maxgrade',
-            'autopopulate', 'autoupdate', 'completionpercent', 'emailoncomplete', 'lockteachermarks'
+            'autopopulate', 'autoupdate', 'completionpercent', 'completionpercenttype', 'emailoncomplete', 'lockteachermarks'
         ));
 
         $items = new backup_nested_element('items');
@@ -59,6 +70,11 @@ class backup_checklist_activity_structure_step extends backup_activity_structure
             'userid', 'commentby', 'text'
         ));
 
+        $studentcomments = new backup_nested_element('studentcomments');
+        $studentcomment = new backup_nested_element('studentcomment', array('id'), array(
+            'usermodified', 'text', 'timecreated', 'timemodified'
+        ));
+
         // Build the tree.
         $checklist->add_child($items);
         $items->add_child($item);
@@ -69,6 +85,9 @@ class backup_checklist_activity_structure_step extends backup_activity_structure
         $item->add_child($comments);
         $comments->add_child($comment);
 
+        $item->add_child($studentcomments);
+        $studentcomments->add_child($studentcomment);
+
         // Define sources.
         $checklist->set_source_table('checklist', array('id' => backup::VAR_ACTIVITYID));
 
@@ -76,6 +95,7 @@ class backup_checklist_activity_structure_step extends backup_activity_structure
             $item->set_source_table('checklist_item', array('checklist' => backup::VAR_PARENTID));
             $check->set_source_table('checklist_check', array('item' => backup::VAR_PARENTID));
             $comment->set_source_table('checklist_comment', array('itemid' => backup::VAR_PARENTID));
+            $studentcomment->set_source_table('checklist_comment_student', array('itemid' => backup::VAR_PARENTID));
         } else {
             $item->set_source_sql('SELECT * FROM {checklist_item} WHERE userid = 0 AND checklist = ?', array(backup::VAR_PARENTID));
         }
@@ -87,6 +107,7 @@ class backup_checklist_activity_structure_step extends backup_activity_structure
         $check->annotate_ids('user', 'teacherid');
         $comment->annotate_ids('user', 'userid');
         $comment->annotate_ids('user', 'commentby');
+        $studentcomment->annotate_ids('user', 'usermodified');
 
         // Define file annotations.
 

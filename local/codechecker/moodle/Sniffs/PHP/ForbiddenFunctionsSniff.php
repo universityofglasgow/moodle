@@ -14,38 +14,56 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace MoodleCodeSniffer\moodle\Sniffs\PHP;
+
+// phpcs:disable moodle.NamingConventions
+
+use PHP_CodeSniffer\Standards\Generic\Sniffs\PHP\ForbiddenFunctionsSniff as GenericForbiddenFunctionsSniff;
+use PHP_CodeSniffer\Sniffs\Sniff;
+use PHP_CodeSniffer\Files\File;
+
 /**
  * Sniff for debugging and other functions that we don't want used in finished code.
+ *
+ * Note that strictly speaking we don't need to extend the Generic Sniff,
+ * just configure it in the ruleset.xml like this, for example:
+ *
+ * <rule ref="Generic.PHP.ForbiddenFunctions">
+ *   <properties>
+ *     <property name="forbiddenFunctions" type="array">
+ *       <element key="xxx" value="yyy"/>
+ *     </property>
+ *   </properties>
+ * </rule>
+ *
+ * But we have decided to, instead, extend and keep the functions
+ * together with the Sniff. Also, this enables to test the Sniff
+ * without having to perform any configuration in the fixture files.
+ * (because unit tests DO NOT parse the ruleset.xml details, like
+ * properties, excludes... and other info).
  *
  * @package    local_codechecker
  * @copyright  2011 The Open University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+class ForbiddenFunctionsSniff extends GenericForbiddenFunctionsSniff {
 
-if (class_exists('Generic_Sniffs_PHP_ForbiddenFunctionsSniff', true) === false) {
-    throw new PHP_CodeSniffer_Exception(
-            'Class Generic_Sniffs_PHP_ForbiddenFunctionsSniff not found');
-}
-
-class moodle_Sniffs_PHP_ForbiddenFunctionsSniff
-        extends Generic_Sniffs_PHP_ForbiddenFunctionsSniff {
-    /** Constructor. */
-    public function __construct() {
-        $this->forbiddenFunctions = array(
-            // Usual development debugging functions.
-            'sizeof'       => 'count',
-            'delete'       => 'unset',
-            'error_log'    => null,
-            'print_r'      => null,
-            'print_object' => null,
-            // Dangerous functions. From coding style.
-            'extract'      => null,
-            // Note that some of these are handled as specific tokens by the Tokenizer
-            // and detected by {@link moodle_Sniffs_PHP_ForbiddenTokensSniff} instead.
-            // With phpcs 2.x these are detected both as tokens and functions, so getting
-            // rid of them as functions to avoid the same error twice.
-            //'eval'         => null, // T_EVAL token.
-            //'goto'         => null, // T_GOTO token.
-        );
-    }
+    /**
+     * A list of forbidden functions with their alternatives.
+     *
+     * The value is NULL if no alternative exists. IE, the
+     * function should just not be used.
+     *
+     * @var array<string, string|null>
+     */
+    public $forbiddenFunctions = [
+        // Usual development debugging functions.
+        'sizeof'       => 'count',
+        'delete'       => 'unset',
+        'error_log'    => 'debugging',
+        'print_r'      => null,
+        'print_object' => null,
+        // Dangerous functions. From coding style.
+        'extract'      => null,
+    ];
 }

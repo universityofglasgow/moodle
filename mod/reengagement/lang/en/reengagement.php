@@ -28,6 +28,21 @@ $string['reengagement'] = 'reengagement';
 $string['pluginadministration'] = '';
 $string['modulename'] = 'Reengagement';
 $string['modulenameplural'] = 'Reengagements';
+$string['modulename_help'] = 'The Reengagement activity provides a way for you to send timely notifications to students and 3rd parties, which can include reminders to return to the course and complete activities.
+
+The notification trigger is a specified period of time after a starting event, which may be enrolment in the course, completing an activity, or other course variables.
+Notifications can be set to repeat for a limited run, and/or until the target activity is completed, and can have delay periods between repeats.
+If the user has already completed the target activity, no email is sent.
+
+You could use this plugin to: <ul>
+<li>Selectively release timed content in a course.</li>
+<li>Repeatedly remind students that an assignment is overdue.</li>
+<li>Advise training managers that the course is complete.</li>
+</ul>
+
+The Reengagement activity is very flexible, explore what you can do with it.
+
+<a href=https://docs.moodle.org/39/en/Reengagement_activity>More Help</a>';
 
 // Alphabetized.
 $string['activitycompleted'] = 'This activity has been marked as complete';
@@ -39,7 +54,7 @@ $string['completeattimex'] = 'This activity will complete at {$a}';
 $string['completiontime'] = 'Completion time';
 $string['completiondatesupdated'] = 'Completion dates updated.';
 $string['crontask'] = 'Reengagement cron task';
-$string['cronwarning'] = 'The Reengagment scheduled task has not been run for at least 60 min - Cron must be configured to allow Reenagagements to function correctly.';
+$string['cronwarning'] = 'The Reengagment scheduled task has not been run in the past 8 hours - Cron must be configured to allow Reenagagements to function correctly.';
 $string['days'] = 'Days';
 $string['duration'] = 'Duration';
 $string['duration_help'] = '<p>The reengagement duration is the period of time between a user starting a reengagement, and being marked as finished.
@@ -75,6 +90,9 @@ $string['emailuser_help'] = 'When the activity should notify users: <ul>
 <li>On reengagement completion: Notify the user when the reengagement activity is completed.</li>
 <li>After Delay: Notify the user a set time after they have started the module.</li>
 </ul>';
+$string['errornoid'] = 'You must specify a course_module ID or an instance ID';
+$string['errorreengagementnotvalid'] = 'This reengagement module is not enabled for your account.
+Please contact your administrator if you feel this is in error';
 $string['frequencytoohigh'] = 'The maximum reminder count with the delay period you have set is {$a}.';
 $string['periodtoolow'] = 'The delay is too low - it must be at least 5 minutes.';
 $string['hours'] = 'Hours';
@@ -121,6 +139,7 @@ $string['weeks'] = 'Weeks';
 $string['withselectedusers'] = 'With selected users...';
 $string['withselectedusers_help'] = '* Send message - For sending a message to one or more participants
 * Reset completion date by course access - For adjusting the reengagement completion date based on the first access to this course.';
+$string['seconds'] = 'Seconds';
 
 $string['privacy:metadata:reengagement'] = 'Reengagement ID';
 $string['privacy:metadata:userid'] = 'User id this record relates to';
@@ -128,4 +147,3 @@ $string['privacy:metadata:completiontime'] = 'When this module will be complete'
 $string['privacy:metadata:emailtime'] = 'When this user should be emailed';
 $string['privacy:metadata:emailsent'] = 'Email has been sent';
 $string['privacy:metadata:reengagement_inprogress'] = 'Reengagement activities in progress';
-

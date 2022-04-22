@@ -21,7 +21,6 @@
  * @copyright  2007 Vasilis Daloukas
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Plays the game "Snakes and Ladders".
@@ -52,7 +51,7 @@ function game_snakes_continue( $cm, $game, $attempt, $snakes, $context, $course)
     $newrec->queryid = 0;
     $newrec->dice = rand( 1, 6);
     if (!game_insert_record(  'game_snakes', $newrec)) {
-        print_error( 'game_snakes_continue: error inserting in game_snakes');
+        throw new moodle_exception('snakes_error', 'game', 'game_snakes_continue: error inserting in game_snakes');
     }
 
     return game_snakes_play( $cm, $game, $attempt, $newrec, $context, $course);
@@ -108,8 +107,8 @@ function game_snakes_play( $cm, $game, $attempt, $snakes, $context, $course) {
     var retVal = new Array();
     var elements = document.getElementsByTagName("*");
     for(var i = 0;i < elements.length;i++){
-        if( elements[ i].type == 'text'){
-            elements[ i].focus();
+        if( elements[i].type == 'text'){
+            elements[i].focus();
             break;
         }
     }
@@ -141,7 +140,7 @@ function game_snakes_play( $cm, $game, $attempt, $snakes, $context, $course) {
     }
 
     if ($showboard and $game->param8 != 0) {
-        game_snakes_showquestion( $id, $game, $snakes, $query, $context);
+        game_snakes_showquestion( $cm->id, $game, $snakes, $query, $context);
     }
 }
 
@@ -166,7 +165,7 @@ left:<?php p( $board->width + round($board->width / 3)); ?>px;
 top:<?php p( -2 * round($board->height / 3));?>px; ">
     <img src="snakes/1/dice<?php p($snakes->dice);?>.png" alt="<?php print_string('snakes_dice', 'game', $snakes->dice) ?>" />
     </div>
-<?php
+    <?php
 }
 
 /**
@@ -250,7 +249,7 @@ function game_snakes_computenextquestion( $game, &$snakes, &$query) {
     $query->score = 0;
     $query->timelastattempt = time();
     if (!($query->id = $DB->insert_record( 'game_queries', $query))) {
-        print_error( "Can't insert to table game_queries");
+        throw new moodle_exception('snakes_error', 'game', 'Can\'t insert to table game_queries');
     }
 
     $snakes->queryid = $query->id;
@@ -261,7 +260,7 @@ function game_snakes_computenextquestion( $game, &$snakes, &$query) {
     $updrec->dice = $snakes->dice = rand( 1, 6);
 
     if (!$DB->update_record( 'game_snakes', $updrec)) {
-        print_error( 'game_questions_selectrandom: error updating in game_snakes');
+        throw new moodle_exception('snakes_error', 'game', 'game_questions_selectrandom: error updating in game_snakes');
     }
 
     game_update_repetitions($game->id, $USER->id, $query->questionid, $query->glossaryentryid);
@@ -486,7 +485,7 @@ function game_snakes_position( $cm, $game, $attempt, $snakes, $correct, $query, 
     $updrec->queryid = 0;
 
     if (!$DB->update_record( 'game_snakes', $updrec)) {
-        print_error( "game_snakes_position: Can't update game_snakes");
+        throw new moodle_exception('snakes_error', 'game', 'game_snakes_position: Can\'t update game_snakes');
     }
 
     $board = $DB->get_record_select( 'game_snakes_database', "id=$snakes->snakesdatabaseid");
@@ -510,7 +509,7 @@ function game_snakes_foundlander( $position, $data) {
     preg_match( "/L$position-([0-9]*)/", $data, $matches);
 
     if (count( $matches)) {
-        return $matches[ 1];
+        return $matches[1];
     }
 
     return 0;
@@ -526,7 +525,7 @@ function game_snakes_foundsnake( $position, $data) {
     preg_match( "/S([0-9]*)-$position,/", $data.',', $matches);
 
     if (count( $matches)) {
-        return $matches[ 1];
+        return $matches[1];
     }
 
     return 0;

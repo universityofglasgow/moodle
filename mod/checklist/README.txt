@@ -4,13 +4,24 @@ Checklist module
 ==Introduction==
 This is a Moodle plugin that allows a teacher to create a checklist for their students to work through.
 The teacher can monitor all the student's progress, as they tick off each of the items in the list.
-Note: This is the Moodle 3.4+ version (other versions are available for Moodle 1.9 & 2.0-2.6, 2.7-3.3).
+Note: This is the Moodle 3.9+ version (other versions are available for Moodle 1.9 and above).
 
 Items can be indented and marked as optional or turned into headings; a range of different colours can be used for the items.
 Students are presented with a simple chart showing how far they have progressed through the required/optional items and can add their own, private, items to the list.
 
 ==Changes==
 
+* 2022-01-22 - 3.9.1.2 - Update checklist items to match renamed activities when being viewed by students (who do not have permission to edit checklist items themselves)
+* 2021-10-23 - 3.9.1.1 - If a checklist is edited (add/delete item, mark item as required/optional) then grades will be recalculated (as a background task, to avoid slowing down the editing)
+* 2021-10-23 - 3.9.1.0 - New feature from Kristian to allow students to add comments to items which are visible to the teacher
+* 2021-10-13 - Fix Behat tests in M4.0
+* 2021-06-30 - 3.9.0.2 - Fix completion debugging error when no checklist items in M3.11
+* 2021-06-12 - 3.9.0.1 - Fix completion sort order error in M3.11
+* 2021-05-15 - Further M3.11 compatibility fixes, new setting to disable colour picker (from Peter Mayer)
+* 2021-04-09 - M3.11 compatibility fixes + work with github actions
+* 2020-11-14 - Minor bug fix: remove unwanted warning from student view when 'lock teacher marks' is set + minor layout fix.
+* 2020-11-04 - Fix bug preventing 'save and next' from working
+* 2020-06-15 - Add 'complete by number of items' option
 * 2020-01-29 - "open link in new window" option from Stefan Topfstedt
 * 2019-04-26 - Fix bug with autocompletion updating grades during unenrolment. Autocompletion now only updates checkmarks if the user has capability 'mod/checklist:updateown'.
 * 2018-11-16 - Support new privacy features in M3.4.6, M3.5.3, M3.6+

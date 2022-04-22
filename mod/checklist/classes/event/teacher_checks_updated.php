@@ -24,8 +24,6 @@
 
 namespace mod_checklist\event;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * The mod_checklist teacher checks updated class.
  *
@@ -90,12 +88,19 @@ class teacher_checks_updated extends \core\event\base {
         );
     }
 
+    /**
+     * Validate the event data
+     */
     protected function validate_data() {
         if (!$this->relateduserid) {
             throw new \coding_exception('Must specify the user whose checks are being updated as the \'relateduserid\'');
         }
     }
 
+    /**
+     * Get the mapping to use when restoring logs from backup
+     * @return string[]
+     */
     public static function get_objectid_mapping() {
         return ['db' => 'checklist', 'restore' => 'checklist'];
     }

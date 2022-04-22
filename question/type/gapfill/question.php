@@ -21,7 +21,6 @@
  * @copyright  2017 Marcus Green
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-defined('MOODLE_INTERNAL') || die();
 /**
  * Gapfill question definition class.
  *
@@ -191,20 +190,18 @@ class qtype_gapfill_question extends question_graded_automatically_with_countbac
          * that will be draggable when answering. It then discards any subsequent
          * fields with an | in it.
          */
-        $temp = array();
+        $answers = [];
+        foreach ($this->allanswers as $answer) {
+            if (strpos($answer, '|')) {
+                $answers = array_merge($answers, explode("|", $answer));
+            } else {
+                array_push($answers, $answer);
+            }
+        }
         /* array_unique is for when you have multiple identical answers separated
          * by |, i.e. olympic medals as [gold|silve|bronze]
          */
-        $this->allanswers = array_unique($this->allanswers);
-        foreach ($this->allanswers as $value) {
-            if (strpos($value, '|')) {
-                $temp = array_merge($temp, explode("|", $value));
-            } else {
-
-                array_push($temp, $value);
-            }
-        }
-        $this->allanswers = $temp;
+        $this->allanswers = array_unique($answers);
         shuffle($this->allanswers);
         $step->set_qt_var('_allanswers', serialize($this->allanswers));
     }
@@ -236,7 +233,7 @@ class qtype_gapfill_question extends question_graded_automatically_with_countbac
      */
     public function get_expected_data() {
         $data = [];
-        foreach ($this->places as $key => $value) {
+        foreach (array_keys($this->places) as $key) {
             $data['p' . $key] = PARAM_RAW_TRIMMED;
         }
         return $data;
@@ -399,6 +396,34 @@ class qtype_gapfill_question extends question_graded_automatically_with_countbac
             return false;
         }
     }
+    /**
+     * Communicate with the dragdrop.js script
+     * tell it if singleuse of draggables is
+     * enabled
+     * @param int $singleuse
+     * @return void
+     */
+    public function initjs($singleuse = 0) {
+        global $PAGE;
+        $PAGE->requires->js_call_amd('qtype_gapfill/dragdrop', 'init', ['singleuse' => $singleuse ?? 0]);
+    }
+
+    /**
+     * Check if singleuse is enabled and if so
+     * hide this draggable if it has already
+     * been dropped into a gap
+     *
+     * @param string $draggable
+     * @param question_attempt $qa
+     * @param string $cssclasses
+     * @return string
+     */
+    public function is_used(string $draggable, question_attempt $qa, string $cssclasses): string {
+        if ((($this->singleuse == 1) && in_array($draggable, $qa->get_last_qt_data()))) {
+            return $cssclasses .= ' hide ';
+        }
+        return $cssclasses;
+    }
 
     /**
      *
@@ -410,7 +435,7 @@ class qtype_gapfill_question extends question_graded_automatically_with_countbac
      */
     public function get_num_parts_right(array $response) {
         $numright = 0;
-        foreach ($this->places as $place => $notused) {
+        foreach (array_keys($this->places) as $place) {
             $rightanswer = $this->get_right_choice_for($place);
             if (!isset($response[$this->field($place)])) {
                 continue;
@@ -431,13 +456,13 @@ class qtype_gapfill_question extends question_graded_automatically_with_countbac
     }
 
     /**
-     * Given a response, rest the parts that are wrong. Relevent in
-     * interactive with multiple tries
+     * Given a response, reset the parts that are wrong to a blank string.
+     * Relevent when usinginteractive with multiple tries behaviour
      * @param array $response a response
      * @return array a cleaned up response with the wrong bits reset.
      */
     public function clear_wrong_from_response(array $response) {
-        foreach ($this->places as $place => $notused) {
+        foreach (array_keys($this->places) as $place) {
             if (!array_key_exists($this->field($place), $response)) {
                 continue;
             }
@@ -470,7 +495,7 @@ class qtype_gapfill_question extends question_graded_automatically_with_countbac
             /* Hash of flatted answer values is is guaranteed
               not to to be an answer for any gap */
             $nonanswer = hash('ripemd160', implode(' ', $this->places));
-            foreach ($response as $key => $value) {
+            foreach (array_keys($response) as $key) {
                 $response[$key] = $nonanswer;
             }
             $response = array_merge($response, $au);
@@ -560,6 +585,9 @@ class qtype_gapfill_question extends question_graded_automatically_with_countbac
 
     /**
      * Compare the answer given with the correct answer, does it match?
+     * To normalise white spaces add
+     * $answergiven = preg_replace('/\s+/', ' ', $answergiven);
+     *  before if($disableregex etc etc
      *
      * @param string $answergiven
      * @param string $answer
@@ -636,7 +664,7 @@ class qtype_gapfill_question extends question_graded_automatically_with_countbac
         $markedgaps = array();
         $question = $qa->get_question();
         $correctgaps = array();
-        foreach ($question->textfragments as $place => $notused) {
+        foreach (array_keys($question->textfragments) as $place) {
             if ($place < 1) {
                 continue;
             }

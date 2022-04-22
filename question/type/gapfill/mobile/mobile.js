@@ -17,9 +17,8 @@
  * support for the mdl35+ mobile app. PHP calls this from within
  * classes/output/mobile.php
  */
-/* jshint esversion: 6 */
 /* eslint-disable no-console */
-
+/* eslint-env es6 */
 var that = this;
 var result = {
 
@@ -59,7 +58,9 @@ var result = {
             var draggables = this.componentContainer.querySelectorAll('.draggable');
             var i;
             for (i = 0; i < draggables.length; i++) {
-                /* Optionsaftertext reference is to stop the listener being applied twice */
+                // If singleuse is set some fields may be hidden .
+               draggables[i].classList.remove('hide');
+              /* Optionsaftertext reference is to stop the listener being applied twice */
                 if (draggables[i].id && !this.question.optionsaftertext) {
                     draggables[i].addEventListener('click', function() {
                         self.LastItemClicked = pickAnswerOption(draggables, event);
@@ -80,7 +81,7 @@ var result = {
         };
 
         if (!this.question) {
-            console.warn('Aborting because of no question received.');
+            logger.warn('Aborting because of no question received.');
             return that.CoreQuestionHelperProvider.showComponentError(that.onAbort);
         }
         var div = document.createElement('div');
@@ -125,15 +126,11 @@ var result = {
             this.logger.warn('Aborting because of an error parsing question.', this.question.name);
             return this.CoreQuestionHelperProvider.showComponentError(this.onAbort);
         }
-
-        // @codingStandardsIgnoreStart
-        // see MDL-64516
-        // Wait for the DOM to be rendered.
         setTimeout(()=> {
             /* Set isdragdrop to true if it is a dragdrop question. This will then be used
             * in template.html to determine when to show the  blue "tap to select..." prompt
             */
-            if (div.querySelectorAll('.draggable').length > 0 ) {
+            if (div.querySelectorAll('.draggable').length > 0) {
                 this.question.isdragdrop = true;
             }
             if (div.querySelector('#gapfill_optionsaftertext') !== null) {
@@ -141,8 +138,8 @@ var result = {
             }
 
         });
-        // @codingStandardsIgnoreEnd
         return true;
     }
 };
+/* eslint-disable-next-line */
 result;

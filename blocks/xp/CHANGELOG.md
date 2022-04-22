@@ -1,6 +1,133 @@
 Changelog
 =========
 
+v3.12.0
+-------
+
+New features
+
+- Display student's rank on the block
+- New shortcode `[xppoints]` to display number of points
+- Additional capability to control access to the report was added
+- Optional usage sharing functionality
+
+Quality of life
+
+- Block title can be left empty
+- Block appearance settings always set from the plugin's settings
+- Navigation improvements by introducing sub-navigation in some pages
+
+Bug fixes
+
+- Shortcode `[xpladder]` with `top` did not display top for neighboured leaderboards
+- Leaderboard only links to profile when course profiles are enabled
+- Event `user_leveledup` could be skipped when leveling up multiple levels at once
+- Other minor bug fixes and improvements
+
+Technical changes
+
+- Raised minimum required version to Moodle 3.3
+- Compatibility with Moodle 4.0
+- Compatibility with PHP 8
+- Support for optional activation of Level Up XP+ for shared hosting (beta)
+
+Additional notes
+
+- The migration of the block appearance settings will happen automatically in most cases. Those settings include the block title, the description shown to students, and whether or not to displays rewards. If those did not migrate accurately, their values can be set from the "Block appearance" section at the bottom of the plugin's settings page.
+- The "Log" page is now found under "Report", and the "Visuals" page under "Levels".
+- Level Up is renamed Level Up XP, and Level Up Plus becomes Level Up XP+.
+
+
+v3.11.4
+-------
+
+Bug fixes
+
+- Class block_edit_form not found in rare occasions
+
+v3.11.3
+-------
+
+Quality of life
+
+- Changed `addinstance` capability to support block_context
+
+Bug fixes
+
+- Fixed invalid reference to language string in levels page
+
+v3.11.2
+-------
+
+Bug fixes
+
+- Some CSS styles were not applied for some older Moodle versions
+
+v3.11.1
+-------
+
+Quality of life
+
+- Update information in promotional page
+
+v3.11.0
+-------
+
+New features
+
+- Complete revamp of the user interface to setup the levels
+- Rule picker redesigned to include a description of each rule
+
+Quality of life
+
+- Confirmation asked when deleting a rule or condition with children
+- A help message is displayed when other plugins cause the rules screen to crash
+
+Bug fixes
+
+- The leaderboard was not accessible when using Oracle
+- The filters on the log table could not be removed when empty
+
+Technical changes
+
+- Compatibility with Moodle 3.11
+
+v3.10.2
+-------
+
+Bug fixes
+
+- The filtered_config class did not work with excluded keys
+
+v3.10.1
+-------
+
+Technical changes
+
+- Rules base class includes the get_renderer method for children classes to use
+- Switched to using numday, numweek, etc. language strings for durations in log settings
+- Travis configuration changes
+
+v3.10.0
+-------
+
+New features
+
+- Administrators can enforce the anonymity of the leaderboard
+- An additional capability to control access to the logs was added
+
+Bug fixes
+
+- The report could be stuck in an empty state after using some filters
+
+Quality of life
+
+- Display a warning when leaving the rules page without saving
+- Inform users when the cheat guard settings may become ineffective
+- Keep promo page visible when the add-on has been installed
+
+_Level Up XP+_ users may be required to upgrade the add-on for some of these changes to take effect.
+
 v3.9.0
 ------
 
@@ -37,7 +164,7 @@ Quality of life
 
 Technical changes
 
-- Changes to filters and rules to support grade-based rewards in _Level up! Plus_
+- Changes to filters and rules to support grade-based rewards in _Level Up XP+_
 
 v3.8.0
 ------
@@ -108,12 +235,12 @@ v3.4.0
 ------
 
 - Support GIFs and SVGs for level badges
-- Maintenance for Level up! Plus group leaderboards
+- Maintenance for Level Up XP+ group leaderboards
 
 v3.3.1
 ------
 
-- Maintenance for Level up! Plus
+- Maintenance for Level Up XP+
 
 v3.3.0
 ------
@@ -143,7 +270,7 @@ v3.1.1
 v3.1.0
 ------
 
-- Changes to support Moodle Mobile in _Level up! Plus_
+- Changes to support Moodle Mobile in _Level Up XP+_
 - Colours of default badges were revised
 - Event 'course_viewed' added to the list of events
 - Permit capability overrides at category, course and module levels
@@ -162,7 +289,7 @@ v3.0.2
 v3.0.1
 ------
 
-- Improved compatibility with older plugins depending on Level up!
+- Improved compatibility with older plugins depending on Level Up XP
 
 v3.0.0
 ------
@@ -171,7 +298,7 @@ v3.0.0
 - The block optionally displays their recent rewards to students
 - The default rules are no longer locked and can be changed by administrators and teachers
 - The visual appearance of the block has been improved
-- Made ready for compatibility with the [Level up! Plus add-on](https://github.com/FMCorz/moodle-local_xp)
+- Made ready for compatibility with the [Level Up XP+ add-on](https://github.com/FMCorz/moodle-local_xp)
 - Visuals no longer require an image to be uploaded for each level
 - A preview of the badges is displayed in the visuals page
 - The levels are displayed as a graphic in pages accessible to students

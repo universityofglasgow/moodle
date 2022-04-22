@@ -23,7 +23,16 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-class moodle_Sniffs_Files_MoodleInternalSniff implements PHP_CodeSniffer_Sniff {
+namespace MoodleCodeSniffer\moodle\Sniffs\Files;
+
+// phpcs:disable moodle.NamingConventions
+
+use PHP_CodeSniffer\Sniffs\Sniff;
+use PHP_CodeSniffer\Files\File;
+use PHP_CodeSniffer\Util\Tokens;
+use MoodleCodeSniffer\moodle\Util\MoodleUtil;
+
+class MoodleInternalSniff implements Sniff {
     /**
      * Register for open tag (only process once per file).
      */
@@ -35,76 +44,121 @@ class moodle_Sniffs_Files_MoodleInternalSniff implements PHP_CodeSniffer_Sniff {
      * Processes php files and looks for MOODLE_INTERNAL or config.php
      * inclusion.
      *
-     * @param PHP_CodeSniffer_File $file The file being scanned.
+     * @param File $file The file being scanned.
      * @param int $pointer The position in the stack.
      */
-    public function process(PHP_CodeSniffer_File $file, $pointer) {
-        // Special dispensation for behat files.
-        if (basename(dirname($file->getFilename())) === 'behat') {
-            return;
-        }
-
-        // Special dispensation for lang files.
-        if (basename(dirname(dirname($file->getFilename()))) === 'lang') {
-            return;
+    public function process(File $file, $pointer) {
+        // Guess moodle root, so we can do better dispensations below.
+        $moodleRoot = MoodleUtil::getMoodleRoot($file);
+        if ($moodleRoot) {
+            $relPath = str_replace('\\', '/', substr($file->path, strlen($moodleRoot)));
+            // Special dispensation for /tests/behat/ and /lib/behat/ dirs at any level.
+            if (strpos($relPath, '/tests/behat/') !== false || strpos($relPath, '/lib/behat/') !== false) {
+                return;
+            }
+            // Special dispensation for lang dirs at any level.
+            if (strpos($relPath, '/lang/') !== false) {
+                return;
+            }
+        } else {
+            // Falback to simpler dispensations, only looking 1 level.
+            // Special dispensation for behat files.
+            if (basename(dirname($file->getFilename())) === 'behat') {
+                return;
+            }
+            // Special dispensation for lang files.
+            if (basename(dirname(dirname($file->getFilename()))) === 'lang') {
+                return;
+            }
         }
 
         // We only want to do this once per file.
         $prevopentag = $file->findPrevious(T_OPEN_TAG, $pointer - 1);
         if ($prevopentag !== false) {
-            return;
+            return; // @codeCoverageIgnore
         }
 
         // Find where real code is and check from there.
         $pointer = $this->get_position_of_relevant_code($file, $pointer);
-
-        // OK, we've got to the first bit of relevant code.
-        if ($this->is_moodle_internal_or_die_check($file, $pointer)) {
-            // There is a MOODLE_INTERNAL check. This file is good, hurrah!
+        if (!$pointer) {
+            // The file only contains non-relevant (and non side-effects) code. We are done.
             return;
         }
+
         if ($this->is_config_php_incluson($file, $pointer)) {
             // We are requiring config.php. This file is good, hurrah!
             return;
         }
 
-        if ($this->is_if_not_moodle_internal_die_check($file, $pointer)) {
-            // It's an old-skool MOODLE_INTERNAL check. This file is good, hurrah!
+        $hasMoodleInternal = false;
+        $isOldMoodleInternal = false;
+        $sideEffectsPointer = $pointer;
+
+        // OK, we've got to the first bit of relevant code. It must be the MOODLE_INTERNAL check.
+        if ($this->is_moodle_internal_or_die_check($file, $pointer)) {
+            $hasMoodleInternal = true;
+            // Let's look for side effects after the check.
+            $sideEffectsPointer = $file->findNext(T_SEMICOLON, $pointer) + 1;
+
+        } else if ($this->is_if_not_moodle_internal_die_check($file, $pointer)) {
+            $hasMoodleInternal = true;
+            $isOldMoodleInternal = true;
+            // Let's look for side effects after the check.
+            $sideEffectsPointer = $file->getTokens()[$pointer]['scope_closer'] + 1;
+        }
+
+        $hasSideEffects = $this->code_changes_global_state($file, $sideEffectsPointer, ($file->numTokens - 1));
+        $hasMultipleArtifacts = ($this->count_artifacts($file) > 1);
+
+        // Missing MOODLE_INTERNAL and having side effects, error.
+        if (!$hasMoodleInternal && $hasSideEffects) {
+            $file->addError('Expected MOODLE_INTERNAL check or config.php inclusion. Change in global state detected.',
+                $pointer, 'MoodleInternalGlobalState');
             return;
         }
 
-        // Got here because, so something is not right.
-        if ($this->code_changes_global_state($file, $pointer, ($file->numTokens - 1))) {
-            $file->addError('Expected MOODLE_INTERNAL check or config.php inclusion. Change in global state detected.', $pointer);
-        } else {
-            // Only if there are more than one artifact (class, interface, trait), we show the warning.
-            // (files with only one, are allowed to be MOODLE_INTERNAL free - MDLSITE-5967).
-            if ($this->count_artifacts($file) > 1) {
-                $file->addWarning('Expected MOODLE_INTERNAL check or config.php inclusion. Multiple artifacts detected.', $pointer);
-            }
+        // Missing MOODLE_INTERNAL, not having side effects, but having multiple artifacts, warning.
+        if (!$hasMoodleInternal && !$hasSideEffects && $hasMultipleArtifacts) {
+            $file->addWarning('Expected MOODLE_INTERNAL check or config.php inclusion. Multiple artifacts detected.',
+                $pointer, 'MoodleInternalMultipleArtifacts');
+            return;
+        }
+
+        // Having MOODLE_INTERNAL, not having side effects and not having multiple artifacts, error.
+        if ($hasMoodleInternal && !$hasSideEffects && !$hasMultipleArtifacts) {
+            $file->addWarning('Unexpected MOODLE_INTERNAL check. No side effects or multiple artifacts detected.',
+                $pointer, 'MoodleInternalNotNeeded');
+            return;
+        }
+
+        // Having old MOODLE_INTERNAL check, warn.
+        if ($hasMoodleInternal && $isOldMoodleInternal) {
+            $file->addWarning('Old MOODLE_INTERNAL check detected. Replace it by "defined(\'MOODLE_INTERNAL\') || die();"',
+                $pointer, 'MoodleInternalOld');
+            return;
         }
     }
 
     /**
-     * Finds the position of the first bit of relevant code (ignoring namespaces
-     * and define statements).
+     * Finds the position of the first bit of relevant code (ignoring namespaces,
+     * uses, declares and define statements).
      *
-     * @param PHP_CodeSniffer_File $file The file being scanned.
+     * @param File $file The file being scanned.
      * @param int $pointer The position in the stack.
      * @return int position in stack of relevant code.
      */
-    protected function get_position_of_relevant_code(PHP_CodeSniffer_File $file, $pointer) {
+    protected function get_position_of_relevant_code(File $file, $pointer) {
         // Advance through tokens until we find some real code.
         $tokens = $file->getTokens();
         $relevantcodefound = false;
-        $ignoredtokens = array_merge([T_OPEN_TAG, T_SEMICOLON], PHP_CodeSniffer_Tokens::$emptyTokens);
+        $ignoredtokens = array_merge([T_OPEN_TAG, T_SEMICOLON], Tokens::$emptyTokens);
 
         do {
             // Find some non-whitespace (etc) code.
             $pointer = $file->findNext($ignoredtokens, $pointer, null, true);
             if ($tokens[$pointer]['code'] === T_NAMESPACE || $tokens[$pointer]['code'] === T_USE) {
                 // Namespace definitions are allowed before anything else, jump to end of namspace statement.
-                $pointer = $file->findEndOfStatement($pointer + 1);
+                $pointer = $file->findEndOfStatement($pointer + 1, T_COMMA);
             } else if ($tokens[$pointer]['code'] === T_STRING && $tokens[$pointer]['content'] == 'define') {
                 // Some things like AJAX_SCRIPT NO_MOODLE_COOKIES need to be defined before config inclusion.
                 // Jump to end of define().
@@ -125,17 +179,17 @@ class moodle_Sniffs_Files_MoodleInternalSniff implements PHP_CodeSniffer_Sniff {
      * Looks for code like:
      *   defined('MOODLE_INTERNAL') or die()
      *
-     * @param PHP_CodeSniffer_File $file The file being scanned.
+     * @param File $file The file being scanned.
      * @param int $pointer The position in the stack.
      * @return bool true if is a moodle internal statement
      */
-    protected function is_moodle_internal_or_die_check(PHP_CodeSniffer_File $file, $pointer) {
+    protected function is_moodle_internal_or_die_check(File $file, $pointer) {
         $tokens = $file->getTokens();
         if ($tokens[$pointer]['code'] !== T_STRING or $tokens[$pointer]['content'] !== 'defined') {
             return false;
         }
 
-        $ignoredtokens = array_merge(PHP_CodeSniffer_Tokens::$emptyTokens, PHP_CodeSniffer_Tokens::$bracketTokens);
+        $ignoredtokens = array_merge(Tokens::$emptyTokens, Tokens::$bracketTokens);
 
         $pointer = $file->findNext($ignoredtokens, $pointer + 1, null, true);
         if ($tokens[$pointer]['code'] !== T_CONSTANT_ENCAPSED_STRING or
@@ -160,11 +214,11 @@ class moodle_Sniffs_Files_MoodleInternalSniff implements PHP_CodeSniffer_Sniff {
     /**
      * Is the code in the passes position a require(config.php) statement?
      *
-     * @param PHP_CodeSniffer_File $file The file being scanned.
+     * @param File $file The file being scanned.
      * @param int $pointer The position in the stack.
      * @return bool true if is a config.php inclusion.
      */
-    protected function is_config_php_incluson(PHP_CodeSniffer_File $file, $pointer) {
+    protected function is_config_php_incluson(File $file, $pointer) {
         $tokens = $file->getTokens();
 
         if ($tokens[$pointer]['code'] !== T_REQUIRE and $tokens[$pointer]['code'] !== T_REQUIRE_ONCE) {
@@ -187,11 +241,11 @@ class moodle_Sniffs_Files_MoodleInternalSniff implements PHP_CodeSniffer_Sniff {
      *       die('Direct access to this script is forbidden.');
      *    }
      *
-     * @param PHP_CodeSniffer_File $file The file being scanned.
+     * @param File $file The file being scanned.
      * @param int $pointer The position in the stack.
      * @return bool true if is a moodle internal statement
      */
-    protected function is_if_not_moodle_internal_die_check(PHP_CodeSniffer_File $file, $pointer) {
+    protected function is_if_not_moodle_internal_die_check(File $file, $pointer) {
         $tokens = $file->getTokens();
 
         // Detect 'if'.
@@ -199,7 +253,7 @@ class moodle_Sniffs_Files_MoodleInternalSniff implements PHP_CodeSniffer_Sniff {
             return false;
         }
 
-        $ignoredtokens = array_merge(PHP_CodeSniffer_Tokens::$emptyTokens, PHP_CodeSniffer_Tokens::$bracketTokens);
+        $ignoredtokens = array_merge(Tokens::$emptyTokens, Tokens::$bracketTokens);
 
         // Detect '!'.
         $pointer = $file->findNext($ignoredtokens, $pointer + 1, null, true);
@@ -232,11 +286,11 @@ class moodle_Sniffs_Files_MoodleInternalSniff implements PHP_CodeSniffer_Sniff {
     /**
      * Counts how many classes, interfaces or traits a file has.
      *
-     * @param PHP_CodeSniffer_File $file The file being scanned.
+     * @param File $file The file being scanned.
      *
      * @return int the number of classes, interfaces and traits in the file.
      */
-    private function count_artifacts(PHP_CodeSniffer_File $file) {
+    private function count_artifacts(File $file) {
         $position = 0;
         $counter = 0;
         while ($position !== false) {
@@ -254,26 +308,25 @@ class moodle_Sniffs_Files_MoodleInternalSniff implements PHP_CodeSniffer_Sniff {
      * Heavily inspired by PSR1.Files.SideEffects:
      * https://github.com/squizlabs/PHP_CodeSniffer/blob/master/CodeSniffer/Standards/PSR1/Sniffs/Files/SideEffectsSniff.php
      *
-     * @param PHP_CodeSniffer_File $file The file being scanned.
-     * @param int                  $start     The token to start searching from.
-     * @param int                  $end       The token to search to.
-     * @param array                $tokens    The stack of tokens that make up
-     *                                        the file.
+     * @param File $file The file being scanned.
+     * @param int $start The token to start searching from.
+     * @param int $end The token to search to.
+     * @param array $tokens The stack of tokens that make up the file.
      * @return true if side effect is detected in the code.
      */
-    private function code_changes_global_state(PHP_CodeSniffer_File $file, $start, $end) {
+    private function code_changes_global_state(File $file, $start, $end) {
         $tokens = $file->getTokens();
         $symbols = [T_CLASS => T_CLASS, T_INTERFACE => T_INTERFACE, T_TRAIT => T_TRAIT, T_FUNCTION => T_FUNCTION];
         $conditions = [T_IF => T_IF, T_ELSE   => T_ELSE, T_ELSEIF => T_ELSEIF];
 
         for ($i = $start; $i <= $end; $i++) {
             // Ignore whitespace and comments.
-            if (isset(PHP_CodeSniffer_Tokens::$emptyTokens[$tokens[$i]['code']]) === true) {
+            if (isset(Tokens::$emptyTokens[$tokens[$i]['code']]) === true) {
                 continue;
             }
 
             // Ignore function/class prefixes.
-            if (isset(PHP_CodeSniffer_Tokens::$methodPrefixes[$tokens[$i]['code']]) === true) {
+            if (isset(Tokens::$methodPrefixes[$tokens[$i]['code']]) === true) {
                 continue;
             }
 
@@ -342,5 +395,3 @@ class moodle_Sniffs_Files_MoodleInternalSniff implements PHP_CodeSniffer_Sniff {
         return false;
     }
 }
-
-

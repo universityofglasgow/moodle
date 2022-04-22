@@ -35,7 +35,7 @@ use core_privacy\local\request\approved_userlist;
 use core_privacy\local\request\transform;
 use core_privacy\local\request\userlist;
 use core_privacy\local\request\writer;
-use block_xp\local\provider\addon_userlist_provider;
+use block_xp\local\privacy\addon_userlist_provider;
 
 /**
  * Data provider class.
@@ -146,7 +146,7 @@ class provider implements
     public static function get_users_in_context(userlist $userlist) {
         $courseid = static::get_courseid_from_context($userlist->get_context());
         if (!$courseid) {
-          return;
+            return;
         }
 
         $userlist->add_from_sql('userid', 'SELECT userid FROM {block_xp} WHERE courseid = ?', [$courseid]);
@@ -327,7 +327,7 @@ class provider implements
         $context = $userlist->get_context();
         $courseid = static::get_courseid_from_context($context);
         if (!$courseid) {
-           return;
+            return;
         }
 
         // Delete all the things.

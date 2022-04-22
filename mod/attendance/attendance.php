@@ -24,7 +24,7 @@
 
 require_once(dirname(__FILE__).'/../../config.php');
 require_once(dirname(__FILE__).'/locallib.php');
-require_once(dirname(__FILE__).'/student_attendance_form.php');
+require_once($CFG->libdir.'/formslib.php');
 
 $pageparams = new mod_attendance_sessions_page_params();
 
@@ -38,6 +38,11 @@ $attendance = $DB->get_record('attendance', array('id' => $attforsession->attend
 $cm = get_coursemodule_from_instance('attendance', $attendance->id, 0, false, MUST_EXIST);
 $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
 
+// Require the user is logged in.
+require_login($course, true, $cm);
+
+$qrpassflag = false;
+
 // If the randomised code is on grab it.
 if ($attforsession->rotateqrcode == 1) {
     $cookiename = 'attendance_'.$attforsession->id;
@@ -49,15 +54,13 @@ if ($attforsession->rotateqrcode == 1) {
         // Check the token.
         if ($secrethash !== $_COOKIE[$cookiename]) {
             // Flag error.
-            print_error('qr_cookie_error', 'mod_attendance', $url);
+            throw new moodle_exception('qr_cookie_error', 'mod_attendance', $url);
         }
     } else {
         // Check password.
         $sql = 'SELECT * FROM {attendance_rotate_passwords}'.
-                ' WHERE attendanceid = ? AND expirytime > ? ORDER BY expirytime ASC LIMIT 2';
-        $qrpassdatabase = $DB->get_records_sql($sql, ['attendanceid' => $id, time() - $attconfig->rotateqrcodeexpirymargin]);
-
-        $qrpassflag = false;
+            ' WHERE attendanceid = ? AND expirytime > ? ORDER BY expirytime ASC';
+        $qrpassdatabase = $DB->get_records_sql($sql, ['attendanceid' => $id, time() - $attconfig->rotateqrcodeexpirymargin], 0, 2);
 
         foreach ($qrpassdatabase as $qrpasselement) {
             if ($qrpass == $qrpasselement->password) {
@@ -70,13 +73,10 @@ if ($attforsession->rotateqrcode == 1) {
             setcookie($cookiename, $secrethash, time() + (60 * 5), "/");
         } else {
             // Flag error.
-            print_error('qr_pass_wrong', 'mod_attendance', $url);
+            throw new moodle_exception('qr_pass_wrong', 'mod_attendance', $url);
         }
     }
 }
-
-// Require the user is logged in.
-require_login($course, true, $cm);
 
 list($canmark, $reason) = attendance_can_student_mark($attforsession);
 if (!$canmark) {
@@ -98,12 +98,12 @@ if (empty($attforsession->includeqrcode)) {
     $qrpass = ''; // Override qrpass if set, as it is not allowed.
 }
 
-// Check to see if autoassignstatus is in use and no password required.
-if ($attforsession->autoassignstatus && empty($attforsession->studentpassword)) {
+// Check to see if autoassignstatus is in use and no password required or Qrpass given and passed.
+if ($attforsession->autoassignstatus && (empty($attforsession->studentpassword)) || $qrpassflag) {
     $statusid = attendance_session_get_highest_status($att, $attforsession);
     $url = new moodle_url('/mod/attendance/view.php', array('id' => $cm->id));
     if (empty($statusid)) {
-        print_error('attendance_no_status', 'mod_attendance', $url);
+        throw new moodle_exception('attendance_no_status', 'mod_attendance', $url);
     }
     $take = new stdClass();
     $take->status = $statusid;
@@ -114,7 +114,7 @@ if ($attforsession->autoassignstatus && empty($attforsession->studentpassword)) 
         // Redirect back to the view page.
         redirect($url, get_string('studentmarked', 'attendance'));
     } else {
-        print_error('attendance_already_submitted', 'mod_attendance', $url);
+        throw new moodle_exception('attendance_already_submitted', 'mod_attendance', $url);
     }
 }
 
@@ -136,7 +136,7 @@ if (!empty($qrpass) && !empty($attforsession->autoassignstatus)) {
     $fromform->status = attendance_session_get_highest_status($att, $attforsession);
     if (empty($fromform->status)) {
         $url = new moodle_url('/mod/attendance/view.php', array('id' => $cm->id));
-        print_error('attendance_no_status', 'mod_attendance', $url);
+        throw new moodle_exception('attendance_no_status', 'mod_attendance', $url);
     }
 
     if (!empty($fromform->status)) {
@@ -147,7 +147,7 @@ if (!empty($qrpass) && !empty($attforsession->autoassignstatus)) {
             // Redirect back to the view page.
             redirect($url, get_string('studentmarked', 'attendance'));
         } else {
-            print_error('attendance_already_submitted', 'mod_attendance', $url);
+            throw new moodle_exception('attendance_already_submitted', 'mod_attendance', $url);
         }
     }
 }
@@ -156,11 +156,11 @@ $PAGE->set_url($att->url_sessions());
 
 // Create the form.
 if ($attforsession->rotateqrcode == 1) {
-    $mform = new mod_attendance_student_attendance_form(null,
+    $mform = new mod_attendance\form\studentattendance(null,
         array('course' => $course, 'cm' => $cm, 'modcontext' => $PAGE->context, 'session' => $attforsession,
             'attendance' => $att, 'password' => $attforsession->studentpassword));
 } else {
-    $mform = new mod_attendance_student_attendance_form(null,
+    $mform = new mod_attendance\form\studentattendance(null,
         array('course' => $course, 'cm' => $cm, 'modcontext' => $PAGE->context, 'session' => $attforsession,
             'attendance' => $att, 'password' => $qrpass));
 }
@@ -181,7 +181,7 @@ if ($mform->is_cancelled()) {
         $fromform->status = attendance_session_get_highest_status($att, $attforsession);
         if (empty($fromform->status)) {
             $url = new moodle_url('/mod/attendance/view.php', array('id' => $cm->id));
-            print_error('attendance_no_status', 'mod_attendance', $url);
+            throw new moodle_exception('attendance_no_status', 'mod_attendance', $url);
         }
     }
 
@@ -193,7 +193,7 @@ if ($mform->is_cancelled()) {
             // Redirect back to the view page.
             redirect($url, get_string('studentmarked', 'attendance'));
         } else {
-            print_error('attendance_already_submitted', 'mod_attendance', $url);
+            throw new moodle_exception('attendance_already_submitted', 'mod_attendance', $url);
         }
     }
 

@@ -255,6 +255,7 @@ class mod_attendance_external extends external_api {
         $sess->subnet = $attendance->subnet;
         $sess->statusset = 0;
         $sess->groupid = $groupid;
+        $sess->automarkcmid = 0;
 
         $sessionid = $attendance->add_session($sess);
         return array('sessionid' => $sessionid);
@@ -531,7 +532,8 @@ class mod_attendance_external extends external_api {
 
         // TODO: Verify statusset and statusid.
 
-        return attendance_handler::update_user_status($params['sessionid'], $params['studentid'], $params['takenbyid'], $params['statusid'], $params['statusset']);
+        return attendance_handler::update_user_status($params['sessionid'], $params['studentid'], $params['takenbyid'],
+            $params['statusid'], $params['statusset']);
     }
 
     /**
@@ -540,5 +542,42 @@ class mod_attendance_external extends external_api {
      */
     public static function update_user_status_returns() {
         return new external_value(PARAM_TEXT, 'Http code');
+    }
+
+    /**
+     * Get sessions params.
+     *
+     * @return external_function_parameters
+     */
+    public static function get_sessions_parameters() {
+        return new external_function_parameters(
+                    array(
+                        'attendanceid' => new external_value(PARAM_INT, 'Attendance id.', VALUE_REQUIRED),
+                    )
+                );
+    }
+
+    /**
+     * Describes get_sessions return values.
+     *
+     * @return external_multiple_structure
+     */
+    public static function get_sessions_returns() {
+        return new external_multiple_structure(self::get_session_returns());
+    }
+
+    /**
+     * Get sessions.
+     *
+     * @param int $attendanceid
+     */
+    public static function get_sessions($attendanceid) {
+        global $DB;
+
+         $params = self::validate_parameters(self::get_sessions_parameters(), array(
+            'attendanceid' => $attendanceid,
+         ));
+
+        return attendance_handler::get_sessions($params['attendanceid']);
     }
 }

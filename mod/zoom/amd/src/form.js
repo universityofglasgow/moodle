@@ -17,42 +17,143 @@
  * Populates or de-populates password field based on whether the
  * password is required or not.
  *
- * @package    mod_zoom
  * @copyright  2018 UC Regents
  * @author     Kubilay Agi
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 define(['jquery'], function($) {
-    return {
-        init: function() {
-            var pwd = $('input[name="meetingcode"]');
-            var reqpwd = $('input[name="requirepassword"][type!="hidden"]');
-            var option_jbh = $('input[name="option_jbh"][type!="hidden"]');
-            var option_waiting_room = $('input[name="option_waiting_room"][type!="hidden"]');
-            $(document).ready(function() {
-                if (!reqpwd.is(':checked')) {
-                    pwd.val('');
-                }
-            });
-            reqpwd.change(function() {
-                if (pwd.attr('disabled') == 'disabled') {
-                    pwd.val('');
-                } else {
-                    // Set value to be a new random 6 digit number
-                    pwd.val(Math.floor(Math.random() * (999999 - 100000) + 100000).toString());
-                }
-            });
-            option_jbh.change(function() {
-                if (option_jbh.is(':checked') == true) {
-                    option_waiting_room.prop('checked', false);
-                }
-            });
-            option_waiting_room.change(function() {
-                if (option_waiting_room.is(':checked') == true) {
-                    option_jbh.prop('checked', false);
-                }
-            });
+
+    /**
+     * CSS selectors used throughout the file.
+     *
+     * @type {object}
+     */
+    var SELECTORS = {
+        REPEAT_SELECT: 'select[name="recurrence_type"]',
+        REPEAT_INTERVAL: '.repeat_interval',
+        REPEAT_INTERVAL_DAILY: '#interval_daily',
+        REPEAT_INTERVAL_WEEKLY: '#interval_weekly',
+        REPEAT_INTERVAL_MONTHLY: '#interval_monthly',
+        REPEAT_INTERVAL_OPTIONS: 'select[name="repeat_interval"] option',
+        START_TIME: 'select[name*="start_time"]',
+        DURATION: '*[name*="duration"]',
+        RECURRING: 'input[name="recurring"][type!="hidden"]',
+        OPTION_JBH: 'input[name="option_jbh"][type!="hidden"]',
+        OPTION_WAITING_ROOM: 'input[name="option_waiting_room"][type!="hidden"]'
+    };
+
+    /**
+     * Repeat interval options.
+     *
+     * @type {object}
+     */
+    var REPEAT_OPTIONS = {
+        REPEAT_OPTION_NONE: 0,
+        REPEAT_OPTION_DAILY: 1,
+        REPEAT_OPTION_WEEKLY: 2,
+        REPEAT_OPTION_MONTHLY: 3
+    };
+
+    /**
+     * The max values for each repeat option.
+     *
+     * @type {object}
+     */
+    var REPEAT_MAX_OPTIONS = {
+        REPEAT_OPTION_DAILY: 90,
+        REPEAT_OPTION_WEEKLY: 12,
+        REPEAT_OPTION_MONTHLY: 3
+    };
+
+    /**
+     * The init function.
+     */
+    var init = function() {
+        var optionJoinBeforeHost = $(SELECTORS.OPTION_JBH);
+        var optionWaitingRoom = $(SELECTORS.OPTION_WAITING_ROOM);
+        optionJoinBeforeHost.change(function() {
+            if (optionJoinBeforeHost.is(':checked') === true) {
+                optionWaitingRoom.prop('checked', false);
+            }
+        });
+        optionWaitingRoom.change(function() {
+            if (optionWaitingRoom.is(':checked') === true) {
+                optionJoinBeforeHost.prop('checked', false);
+            }
+        });
+
+        // First toggle the values based on initial selections.
+        toggleStartTimeDuration();
+        toggleRepeatIntervalText();
+        limitRepeatValues();
+        // Add listerner to "Repeat Every" drop-down.
+        $(SELECTORS.REPEAT_SELECT).change(function() {
+            toggleStartTimeDuration();
+            toggleRepeatIntervalText();
+            limitRepeatValues();
+        });
+        // Add listener for the "Recurring" checkbox
+        $(SELECTORS.RECURRING).change(function() {
+            toggleStartTimeDuration();
+        });
+    };
+
+    /**
+     * Toggle start time and duration elements.
+     */
+    var toggleStartTimeDuration = function() {
+        // Disable start time and duration if "No Fixed Time" recurring meeting/webinar selected.
+        var disabled = false;
+        var repeatVal = parseInt($(SELECTORS.REPEAT_SELECT).val(), 10);
+        if ($(SELECTORS.RECURRING).prop('checked') && repeatVal === REPEAT_OPTIONS.REPEAT_OPTION_NONE) {
+            disabled = true;
         }
+        $(SELECTORS.START_TIME).prop('disabled', disabled);
+        $(SELECTORS.DURATION).prop('disabled', disabled);
+    };
+
+    /**
+     * Toggle the text based on repeat type.
+     * To show either Days, Weeks or Months
+     */
+    var toggleRepeatIntervalText = function() {
+        $(SELECTORS.REPEAT_INTERVAL).hide();
+        var repeatSelectVal = parseInt($(SELECTORS.REPEAT_SELECT).val(), 10);
+        if (repeatSelectVal === REPEAT_OPTIONS.REPEAT_OPTION_DAILY) {
+            $(SELECTORS.REPEAT_INTERVAL_DAILY).show();
+        } else if (repeatSelectVal === REPEAT_OPTIONS.REPEAT_OPTION_WEEKLY) {
+            $(SELECTORS.REPEAT_INTERVAL_WEEKLY).show();
+        } else if (repeatSelectVal === REPEAT_OPTIONS.REPEAT_OPTION_MONTHLY) {
+            $(SELECTORS.REPEAT_INTERVAL_MONTHLY).show();
+        }
+    };
+
+    /**
+     * Limit the options shown in the drop-down based on repeat type selected.
+     * Max value for daily meeting is 90.
+     * Max value for weekly meeting is 12.
+     * Max value for monthly meeting is 3.
+     */
+    var limitRepeatValues = function() {
+        var selectedValue = parseInt($(SELECTORS.REPEAT_SELECT).val(), 10);
+        // Restrict options if weekly or monthly option selected.
+        $(SELECTORS.REPEAT_INTERVAL_OPTIONS).each(function() {
+            if (selectedValue === REPEAT_OPTIONS.REPEAT_OPTION_WEEKLY) {
+                if (this.value > REPEAT_MAX_OPTIONS.REPEAT_OPTION_WEEKLY) {
+                    $(this).hide();
+                }
+            } else if (selectedValue === REPEAT_OPTIONS.REPEAT_OPTION_MONTHLY) {
+                if (this.value > REPEAT_MAX_OPTIONS.REPEAT_OPTION_MONTHLY) {
+                    $(this).hide();
+                }
+            } else {
+                $(this).show();
+            }
+        });
+    };
+
+    return {
+        init: init
     };
 });

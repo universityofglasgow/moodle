@@ -1,5 +1,5 @@
 Game module for Moodle
-Copyright (C) 2004-2015 by Vasilis Daloukas (http://bdaloukas.gr)
+Copyright (C) 2004-2015 by Vasilis Daloukas (https://scholar.google.com/citations?user=jFFbeLsAAAAJ&hl=el)
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -15,7 +15,7 @@ http: www.gnu.org/copyleft/gpl.html
 
 Game module for Moodle
 ===============================================================================
-Created by: Vasilis Daloukas (bdaloukas)
+Created by: Vasilis Daloukas (https://scholar.google.com/citations?user=jFFbeLsAAAAJ)
 
 
 Many ideas and code were taken from other Moodle modules and Moodle itself
@@ -33,7 +33,7 @@ This module gets input from quiz, glossary or questions and plays some games. Th
 * The hidden picture
 * Book with questions
 
-If you like the Game activity module please consider donating at https://www.paypal.me/moodlegame to help me have more time to continue working on this project. This module is and will remain free, but your donation allows me to continue the development, and any amount is greatly appreciated.
+If you like the Game activity module please consider donating at https://www.paypal.com/donate/?hosted_button_id=V24FXGMRSZ37J&Z3JncnB0= to help me have more time to continue working on this project. This module is and will remain free, but your donation allows me to continue the development, and any amount is greatly appreciated.
 
 * Changelog: CHANGES.md
 * Documentation: http://docs.moodle.org/en/Game_module

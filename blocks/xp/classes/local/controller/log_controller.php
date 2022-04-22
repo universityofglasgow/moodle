@@ -26,8 +26,6 @@
 namespace block_xp\local\controller;
 defined('MOODLE_INTERNAL') || die();
 
-use moodle_exception;
-
 /**
  * Log controller class.
  *
@@ -38,8 +36,18 @@ use moodle_exception;
  */
 class log_controller extends page_controller {
 
+    protected $navname = 'report';
     protected $routename = 'log';
+    protected $iswideview = true;
     protected $supportsgroups = true;
+
+    protected function permissions_checks() {
+        $accessperms = $this->world->get_access_permissions();
+        if (!($accessperms instanceof \block_xp\local\permission\access_logs_permissions)) {
+            throw new \coding_exception('Access permissions object requires logs permissions.');
+        }
+        $accessperms->require_access_logs();
+    }
 
     protected function get_table() {
         $table = new \block_xp\output\log_table(

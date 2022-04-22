@@ -32,7 +32,7 @@ ol.checklist .itemheading {
 }
 
 ol.checklist .itemblack {
-    color: #000000;
+    color: #000;
 }
 
 ol.checklist .itemblack.itemoptional {
@@ -40,7 +40,7 @@ ol.checklist .itemblack.itemoptional {
 }
 
 ol.checklist .itemred {
-    color: #ff0000;
+    color: #f00;
 }
 
 ol.checklist .itemred.itemoptional {
@@ -56,7 +56,7 @@ ol.checklist .itemorange.itemoptional {
 }
 
 ol.checklist .itemgreen {
-    color: #00ff00;
+    color: #0f0;
 }
 
 ol.checklist .itemgreen.itemoptional {
@@ -76,6 +76,16 @@ ol.checklist .teachercomment {
     background-color: #ffffb0;
     border: solid black 1px;
     margin: 0 0 0 20px;
+}
+
+ol.checklist .studentcomment {
+    display: inline;
+    color: black;
+    background-color: #dbffb0;
+    border: solid black 1px;
+    margin: 0 0 0 20px;
+    padding: 3px;
+    border-radius: 7px;
 }
 
 ol.checklist .itemauto.itemdisabled {
@@ -113,12 +123,12 @@ ol.checklist li .itemteachername {
 
 .checklist-itemdue {
     font-style: italic;
-    color: #095C09;
+    color: #095c09;
 }
 
 .checklist-itemoverdue {
     font-style: italic;
-    color: #C71212;
+    color: #c71212;
 }
 
 .checklistreport .header {
@@ -155,7 +165,7 @@ ol.checklist li .itemteachername {
 }
 
 .checklistreport .cell.level0-checked {
-    background-color: #00ff00;
+    background-color: #0f0;
 }
 
 .checklistreport .cell.level1-checked {
@@ -167,7 +177,7 @@ ol.checklist li .itemteachername {
 }
 
 .checklistreport .cell.level0-unchecked {
-    background-color: #ff0000;
+    background-color: #f00;
 }
 
 .checklistreport .cell.level1-unchecked {
@@ -254,6 +264,15 @@ p.checklistwarning {
     position: absolute;
     top: 5px;
     left: 5px;
+    width: 16px;
+    height: 16px;
+    background-image: url([[pix:i/loading_small]]);
+}
+
+.checklistspinnerstudent {
+    display: none;
+    top: 5px;
+    margin-left: 5px;
     width: 16px;
     height: 16px;
     background-image: url([[pix:i/loading_small]]);

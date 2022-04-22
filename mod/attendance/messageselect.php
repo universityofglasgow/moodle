@@ -56,9 +56,8 @@ if (!empty($messagebody['text'])) {
     $messagebody = $messagebody['text'];
 }
 $PAGE->set_url($url);
-if (!$course = $DB->get_record('course', array('id' => $id))) {
-    print_error('invalidcourseid');
-}
+$course = $DB->get_record('course', array('id' => $id), '*', MUST_EXIST);
+
 require_login($course);
 $coursecontext = context_course::instance($id);   // Course context.
 $systemcontext = context_system::instance();   // SYSTEM context.
@@ -81,7 +80,9 @@ $messagebody = $SESSION->emailselect[$id]['messagebody'];
 $count = 0;
 if ($data = data_submitted()) {
     require_sesskey();
-    $namefields = get_all_user_name_fields(true);
+    $userfieldsapi = \core_user\fields::for_name();
+    $namefields = $userfieldsapi->get_sql('', false, '', '', false)->selects;
+
     foreach ($data as $k => $v) {
         if (preg_match('/^(user|teacher)(\d+)$/', $k, $m)) {
             if (!array_key_exists($m[2], $SESSION->emailto[$id])) {
@@ -131,7 +132,7 @@ if (!empty($messagebody) && !$edit && !$deluser && ($preview || $send)) {
 <input type="hidden" name="format" value="'.$format.'" />
 <input type="hidden" name="sesskey" value="' . sesskey() . '" />
 ';
-            echo "<h3>".get_string('previewhtml')."</h3>";
+            echo "<h3>".get_string('previewhtml', 'mod_attendance')."</h3>";
             echo "<div class=\"messagepreview\">\n".format_text($messagebody, $format)."\n</div>\n";
             echo '<p align="center"><input type="submit" name="send" value="'.get_string('sendmessage', 'message').'" />'."\n";
             echo '<input type="submit" name="edit" value="'.get_string('update').'" /></p>';
@@ -156,7 +157,7 @@ if (!empty($messagebody) && !$edit && !$deluser && ($preview || $send)) {
                 }
                 echo '</ul>';
             }
-            echo '<p align="center"><a href="index.php?id='.$id.'">'.get_string('backtoparticipants').'</a></p>';
+            echo '<p align="center"><a href="index.php?id='.$id.'">'.get_string('backtoparticipants', 'mod_attendance').'</a></p>';
         }
         echo $OUTPUT->footer();
         exit;

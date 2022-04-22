@@ -14,32 +14,72 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * This file contains the test cases covering the "moodle" standard.
- *
- * @package    local_codechecker
- * @subpackage phpunit
- * @category   phpunit
- * @copyright  2013 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
+namespace local_codechecker;
 
 defined('MOODLE_INTERNAL') || die();
 
 require_once(__DIR__ . '/../../tests/local_codechecker_testcase.php');
 
+// phpcs:disable moodle.NamingConventions
+
 /**
- * PHP CS moodle standard test cases.
+ * Test various "moodle" phpcs standard sniffs.
  *
  * Each case covers one sniff. Self-explanatory
  *
  * To run these tests, you need to use:
  *     vendor/bin/phpunit local/codechecker/moodle/tests/moodlestandard_test.php
  *
+ * @package    local_codechecker
+ * @category   test
+ * @copyright  2013 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ *
  * @todo Complete coverage of all Sniffs.
  */
-class moodlestandard_testcase extends local_codechecker_testcase {
+class moodlestandard_test extends local_codechecker_testcase {
 
+    /**
+     * Test the PSR2.Methods.MethodDeclaration sniff.
+     *
+     * @covers \PHP_CodeSniffer\Standards\PSR2\Sniffs\Methods\MethodDeclarationSniff
+     */
+    public function test_psr2_methods_methoddeclaration() {
+
+        // Define the standard, sniff and fixture to use.
+        $this->set_standard('moodle');
+        $this->set_sniff('PSR2.Methods.MethodDeclaration');
+        $this->set_fixture(__DIR__ . '/fixtures/psr2_methods_methoddeclaration.php');
+
+        // Define expected results (errors and warnings). Format, array of:
+        // - line => number of problems,  or
+        // - line => array of contents for message / source problem matching.
+        // - line => string of contents for message / source problem matching (only 1).
+        $this->set_errors(array(
+            33 => 'The static declaration must come after the visibility',
+            34 => 1,
+            35 => 1,
+            37 => 'The final declaration must precede the visibility',
+            38 => 1,
+            39 => 1,
+            41 => array('FinalAfterVisibility', 'StaticBeforeVisibility'),
+            42 => 2,
+            43 => 2,
+            45 => 'The abstract declaration must precede the visibility',
+            46 => 1,
+            48 => array('AbstractAfterVisibility', 'StaticBeforeVisibility'),
+            49 => 2));
+        $this->set_warnings(array());
+
+        // Let's do all the hard work!
+        $this->verify_cs_results();
+    }
+
+    /**
+     * Test the moodle.Commenting.InlineComment sniff.
+     *
+     * @covers \MoodleCodeSniffer\moodle\Sniffs\Commenting\InlineCommentSniff
+     */
     public function test_moodle_commenting_inlinecomment() {
 
         // Define the standard, sniff and fixture to use.
@@ -51,7 +91,7 @@ class moodlestandard_testcase extends local_codechecker_testcase {
         // - line => number of problems,  or
         // - line => array of contents for message / source problem matching.
         // - line => string of contents for message / source problem matching (only 1).
-        $this->set_errors(array(
+        $this->set_errors([
             4 => array('3 slashes comments are not allowed'),
             6 => 1,
             8 => 'No space found before comment text',
@@ -62,8 +102,19 @@ class moodlestandard_testcase extends local_codechecker_testcase {
            91 => '\'$variable\' does not match next code line \'lets_execute_it...\'',
            94 => 1,
           102 => '\'$cm\' does not match next list() variables @Source: moodle.Commenting.InlineComment.TypeHintingList',
-          112 => '\'$cm\' does not match next foreach() as variable @Source: moodle.Commenting.InlineComment.TypeHintingFor'));
-        $this->set_warnings(array(
+          112 => '\'$cm\' does not match next foreach() as variable @Source: moodle.Commenting.InlineComment.TypeHintingFor',
+          118 => 0,
+          122 => 1,
+          124 => 1,
+          126 => 1,
+          128 => 1,
+          130 => 1,
+          134 => 0,
+          135 => 0,
+          136 => 0,
+          137 => 0,
+        ]);
+        $this->set_warnings([
             4 => 0,
             6 => array(null, 'Commenting.InlineComment.InvalidEndChar'),
            55 => array('19 found'),
@@ -77,17 +128,24 @@ class moodlestandard_testcase extends local_codechecker_testcase {
            71 => 3,
            75 => 2,
            77 => 1,
-           79 => 1));
+           79 => 1,
+          118 => 0,
+          122 => 0,
+        ]);
 
         // Let's do all the hard work!
         $this->verify_cs_results();
     }
 
     /**
+     * Test the moodle.Commenting.InlineComment sniff.
+     *
      * Note that, while this test continues passing, because
      * we load the .js file manually, now the moodle standard
      * by default enforces --extensions=php, so no .js file
      * will be inspected by default ever.
+     *
+     * @covers \MoodleCodeSniffer\moodle\Sniffs\Commenting\InlineCommentSniff
      */
     public function test_moodle_commenting_inlinecomment_js() {
 
@@ -113,6 +171,11 @@ class moodlestandard_testcase extends local_codechecker_testcase {
         $this->verify_cs_results();
     }
 
+    /**
+     * Test the moodle.ControlStructures.ControlSignature sniff.
+     *
+     * @covers \MoodleCodeSniffer\moodle\Sniffs\ControlStructures\ControlSignatureSniff
+     */
     public function test_moodle_controlstructures_controlsignature() {
 
         // Define the standard, sniff and fixture to use.
@@ -135,6 +198,11 @@ class moodlestandard_testcase extends local_codechecker_testcase {
         $this->verify_cs_results();
     }
 
+    /**
+     * Test the moodle.Files.LineLength sniff.
+     *
+     * @covers \MoodleCodeSniffer\moodle\Sniffs\Files\LineLengthSniff
+     */
     public function test_moodle_files_linelength() {
 
         // Define the standard, sniff and fixture to use.
@@ -159,6 +227,61 @@ class moodlestandard_testcase extends local_codechecker_testcase {
         $this->verify_cs_results();
     }
 
+    /**
+     * Test the Generic.Files.LineEndings sniff.
+     *
+     * @covers \PHP_CodeSniffer\Standards\Generic\Sniffs\Files\LineEndingsSniff
+     */
+    public function test_generic_files_lineendings() {
+
+        // Define the standard, sniff and fixture to use.
+        $this->set_standard('moodle');
+        $this->set_sniff('Generic.Files.LineEndings');
+        $this->set_fixture(__DIR__ . '/fixtures/generic_files_linenedings.php');
+
+        // Define expected results (errors and warnings). Format, array of:
+        // - line => number of problems,  or
+        // - line => array of contents for message / source problem matching.
+        // - line => string of contents for message / source problem matching (only 1).
+        $this->set_errors(array(
+            1 => 'line character is invalid; expected "\n" but found "\r\n" @Source: Generic.Files.LineEndings.InvalidEOLChar'));
+
+        $this->set_warnings(array());
+
+        // Let's do all the hard work!
+        $this->verify_cs_results();
+    }
+
+    /**
+     * Test the Generic.Files.EndFileNewline sniff.
+     *
+     * @covers \PHP_CodeSniffer\Standards\Generic\Sniffs\Files\EndFileNewlineSniff
+     */
+    public function test_generic_files_endfilenewline() {
+
+        // Define the standard, sniff and fixture to use.
+        $this->set_standard('moodle');
+        $this->set_sniff('Generic.Files.EndFileNewline');
+        $this->set_fixture(__DIR__ . '/fixtures/generic_files_endfilenewline.php');
+
+        // Define expected results (errors and warnings). Format, array of:
+        // - line => number of problems,  or
+        // - line => array of contents for message / source problem matching.
+        // - line => string of contents for message / source problem matching (only 1).
+        $this->set_errors(array(
+            4 => 'File must end with a newline character @Source: Generic.Files.EndFileNewline.NotFound'));
+
+        $this->set_warnings(array());
+
+        // Let's do all the hard work!
+        $this->verify_cs_results();
+    }
+
+    /**
+     * Test the Generic.WhiteSpace.DisallowTabIndent sniff.
+     *
+     * @covers \PHP_CodeSniffer\Standards\Generic\Sniffs\Whitespace\DisallowTabIndentSniff
+     */
     public function test_generic_whitespace_disalowtabindent() {
 
         // Define the standard, sniff and fixture to use.
@@ -181,6 +304,11 @@ class moodlestandard_testcase extends local_codechecker_testcase {
         $this->verify_cs_results();
     }
 
+    /**
+     * Test the Generic.Functions.OpeningFunctionBraceKernighanRitchie sniff.
+     *
+     * @covers \PHP_CodeSniffer\Standards\Generic\Sniffs\Functions\OpeningFunctionBraceKernighanRitchieSniff
+     */
     public function test_generic_functions_openingfunctionbracekerninghanritchie() {
 
         // Define the standard, sniff and fixture to use.
@@ -208,6 +336,41 @@ class moodlestandard_testcase extends local_codechecker_testcase {
         $this->verify_cs_results();
     }
 
+    /**
+     * Test the Generic.Classes.OpeningBraceSameLine sniff.
+     *
+     * @covers \PHP_CodeSniffer\Standards\Generic\Sniffs\Classes\OpeningBraceSameLineSniff
+     */
+    public function test_generic_classes_openingclassbrace() {
+
+        // Define the standard, sniff and fixture to use.
+        $this->set_standard('moodle');
+        $this->set_sniff('Generic.Classes.OpeningBraceSameLine');
+        $this->set_fixture(__DIR__ . '/fixtures/generic_classes_openingclassbrace.php');
+
+        // Define expected results (errors and warnings). Format, array of:
+        // - line => number of problems,  or
+        // - line => array of contents for message / source problem matching.
+        // - line => string of contents for message / source problem matching (only 1).
+        $this->set_errors([
+            5 => 'Expected 1 space before opening brace; found 0',
+            8 => 'Expected 1 space before opening brace; found 0',
+            11 => 'Expected 1 space before opening brace; found 3',
+            14 => 'Expected 1 space before opening brace; found 3',
+            19 => 'Opening brace should be on the same line as the declaration for class test05',
+        ]);
+
+        $this->set_warnings([]);
+
+        // Let's do all the hard work!
+        $this->verify_cs_results();
+    }
+
+    /**
+     * Test the Generic.WhiteSpace.ScopeIndent sniff.
+     *
+     * @covers \PHP_CodeSniffer\Standards\Generic\Sniffs\WhiteSpace\ScopeIndentSniff
+     */
     public function test_generic_whitespace_scopeindent() {
 
         // Define the standard, sniff and fixture to use.
@@ -220,16 +383,48 @@ class moodlestandard_testcase extends local_codechecker_testcase {
         // - line => array of contents for message / source problem matching.
         // - line => string of contents for message / source problem matching (only 1).
         $this->set_errors(array(
-            6 => 'indented incorrectly; expected at least 4 spaces, found 2 @Source: Generic.WhiteSpace.ScopeIndent.Incorrect',
-            18 => 'indented incorrectly; expected at least 4 spaces, found 2 @Source: Generic.WhiteSpace.ScopeIndent.Incorrect',
-            43 => 'expected at least 8 spaces',
-            50 => 'IncorrectExact'));
+            7 => 'indented incorrectly; expected at least 4 spaces, found 2 @Source: Generic.WhiteSpace.ScopeIndent.Incorrect',
+            19 => 'indented incorrectly; expected at least 4 spaces, found 2 @Source: Generic.WhiteSpace.ScopeIndent.Incorrect',
+            44 => 'expected at least 8 spaces',
+        ));
         $this->set_warnings(array());
 
         // Let's do all the hard work!
         $this->verify_cs_results();
     }
 
+    /**
+     * Test the moodle.PHP.DeprecatedFunctions sniff.
+     *
+     * @covers \MoodleCodeSniffer\moodle\Sniffs\PHP\DeprecatedFunctionsSniff
+     */
+    public function test_moodle_php_deprecatedfunctions() {
+
+        // Define the standard, sniff and fixture to use.
+        $this->set_standard('moodle');
+        $this->set_sniff('moodle.PHP.DeprecatedFunctions');
+        $this->set_fixture(__DIR__ . '/fixtures/moodle_php_deprecatedfunctions.php');
+
+        // Define expected results (errors and warnings). Format, array of:
+        // - line => number of problems,  or
+        // - line => array of contents for message / source problem matching.
+        // - line => string of contents for message / source problem matching (only 1).
+        $this->set_errors(array());
+        $warnings = array(7 => 'print_error() has been deprecated; use throw new moodle_exception()');
+        if (PHP_VERSION_ID >= 70300 && PHP_VERSION_ID < 80000) {
+            $warnings[10] = 'mbsplit() has been deprecated';
+        }
+        $this->set_warnings($warnings);
+
+        // Let's do all the hard work!
+        $this->verify_cs_results();
+    }
+
+    /**
+     * Test the moodle.PHP.ForbiddenFunctions sniff.
+     *
+     * @covers \MoodleCodeSniffer\moodle\Sniffs\PHP\ForbiddenFunctionsSniff
+     */
     public function test_moodle_php_forbiddenfunctions() {
 
         // Define the standard, sniff and fixture to use.
@@ -248,7 +443,7 @@ class moodlestandard_testcase extends local_codechecker_testcase {
             9 => 1,
             10 => 1,
             13 => 'function extract() is forbidden',
-            14 => 0, // These are eval, goto and got labels handled by {@link moodle_Sniffs_PHP_ForbiddenTokensSniff}.
+            14 => 0, // These are eval, goto and got labels handled by {@see moodle_Sniffs_PHP_ForbiddenTokensSniff}.
             15 => 0,
             16 => 0,
             17 => 0,
@@ -259,6 +454,11 @@ class moodlestandard_testcase extends local_codechecker_testcase {
         $this->verify_cs_results();
     }
 
+    /**
+     * Test the moodle.PHP.ForbiddenGlobalUse snifff.
+     *
+     * @covers \MoodleCodeSniffer\moodle\Sniffs\PHP\ForbiddenGlobalUseSniff
+     */
     public function test_moodle_php_forbidden_global_use() {
         // Define the standard, sniff and fixture to use.
         $this->set_standard('moodle');
@@ -338,42 +538,11 @@ class moodlestandard_testcase extends local_codechecker_testcase {
         $this->verify_cs_results();
     }
 
-    public function test_moodle_php_forbiddennamesasinvokedfunctions() {
-
-        // Define the standard, sniff and fixture to use.
-        $this->set_standard('moodle');
-        $this->set_sniff('moodle.PHP.ForbiddenNamesAsInvokedFunctions');
-        $this->set_fixture(__DIR__ . '/fixtures/moodle_php_forbiddennamesasinvokedfunctions.php');
-
-        // Define expected results (errors and warnings). Format, array of:
-        // - line => number of problems,  or
-        // - line => array of contents for message / source problem matching.
-        // - line => string of contents for message / source problem matching (only 1).
-        $this->set_errors(array(
-            5 => 0, // These are allowed as invoked functions in Moodle for now.
-            6 => 0,
-            7 => 0,
-            8 => 0,
-            9 => 0,
-            12 => 0,
-            13 => 0,
-            14 => 0,
-            15 => 0,
-            16 => 0,
-            19 => 1, // These are not allowed as invoked functions.
-            20 => 'T_CALLABLE',
-            21 => 'is a reserved keyword introduced in PHP version 5.0',
-            22 => 'T_FINAL',
-            23 => 1,
-            24 => 1,
-            25 => 0,
-            26 => 1));
-        $this->set_warnings(array());
-
-        // Let's do all the hard work!
-        $this->verify_cs_results();
-    }
-
+    /**
+     * Test the moodle.PHP.ForbiddenTokens sniff.
+     *
+     * @covers \MoodleCodeSniffer\moodle\Sniffs\PHP\ForbiddenTokensSniff
+     */
     public function test_moodle_php_forbiddentokens() {
 
         // Define the standard, sniff and fixture to use.
@@ -397,6 +566,11 @@ class moodlestandard_testcase extends local_codechecker_testcase {
         $this->verify_cs_results();
     }
 
+    /**
+     * Test the moodle.Strings.ForbiddenStrings sniff.
+     *
+     * @covers \MoodleCodeSniffer\moodle\Sniffs\Strings\ForbiddenStringsSniff
+     */
     public function test_moodle_strings_forbiddenstrings() {
 
         // Define the standard, sniff and fixture to use.
@@ -414,7 +588,8 @@ class moodlestandard_testcase extends local_codechecker_testcase {
             11 => 'The use of the AS keyword to alias tables is bad for cross-db',
             12 => 0,
             // Only if the engine supported /e. Completely removed in PHP 7.3.
-            15 => (version_compare(PHP_VERSION, '7.3.0', '<') ? 'The use of the /e modifier in regular expressions is forbidden' : 0),
+            15 => (version_compare(PHP_VERSION, '7.3.0', '<') ?
+                'The use of the /e modifier in regular expressions is forbidden' : 0),
             16 => (version_compare(PHP_VERSION, '7.3.0', '<') ? 1 : 0),
             23 => (version_compare(PHP_VERSION, '7.3.0', '<') ? 2 : 1),
             26 => 0,
@@ -432,6 +607,8 @@ class moodlestandard_testcase extends local_codechecker_testcase {
 
     /**
      * Test external sniff incorporated to moodle standard.
+     *
+     * @covers \PHPCompatibility\Sniffs\FunctionUse\RemovedFunctionsSniff
      */
     public function test_phpcompatibility_php_deprecatedfunctions() {
 
@@ -455,6 +632,8 @@ class moodlestandard_testcase extends local_codechecker_testcase {
 
     /**
      * Test call time pass by reference.
+     *
+     * @covers \PHPCompatibility\Sniffs\Syntax\ForbiddenCallTimePassByReferenceSniff
      */
     public function test_phpcompatibility_php_forbiddencalltimepassbyreference() {
 
@@ -478,6 +657,8 @@ class moodlestandard_testcase extends local_codechecker_testcase {
 
     /**
      * Test variable naming standards
+     *
+     * @covers \MoodleCodeSniffer\moodle\Sniffs\NamingConventions\ValidVariableNameSniff
      */
     public function test_moodle_namingconventions_variablename() {
 
@@ -515,6 +696,8 @@ class moodlestandard_testcase extends local_codechecker_testcase {
 
     /**
      * Test operator spacing standards
+     *
+     * @covers \PHP_CodeSniffer\Standards\Squiz\Sniffs\WhiteSpace\OperatorSpacingSniff
      */
     public function test_squiz_operator_spacing() {
 
@@ -528,50 +711,49 @@ class moodlestandard_testcase extends local_codechecker_testcase {
         // - line => array of contents for message / source problem matching.
         // - line => string of contents for message / source problem matching (only 1).
         $this->set_errors(array(
-                               5 => 0,
-                               6 => 'Expected 1 space before',
-                               7 => 'Expected 1 space after',
-                               8 => array('Expected 1 space before', 'Expected 1 space after'),
-                               9 => 0,
-                               10 => 'Expected 1 space after "=>"; 3 found',
-                               11 => 0,
+                               6 => 0,
+                               7 => 'Expected 1 space before',
+                               8 => 'Expected 1 space after',
+                               9 => array('Expected 1 space before', 'Expected 1 space after'),
+                               10 => 0,
+                               11 => 'Expected 1 space after "=>"; 3 found',
                                12 => 0,
-                               13 => 'Expected 1 space before',
-                               14 => 'Expected 1 space after',
-                               15 => array('Expected 1 space before', 'Expected 1 space after'),
-                               16 => 0,
-                               17 => 'Expected 1 space after "="; 2 found',
-                               18 => 0,
+                               13 => 0,
+                               14 => 'Expected 1 space before',
+                               15 => 'Expected 1 space after',
+                               16 => array('Expected 1 space before', 'Expected 1 space after'),
+                               17 => 0,
+                               18 => 'Expected 1 space after "="; 2 found',
                                19 => 0,
                                20 => 0,
-                               21 => 'Expected 1 space before',
-                               22 => 'Expected 1 space after',
-                               23 => array('Expected 1 space before', 'Expected 1 space after'),
-                               24 => 0,
-                               25 => 'Expected 1 space after "+"; 2 found',
-                               26 => 'Expected 1 space before "+"; 2 found',
-                               27 => 0,
-                               28 => 'Expected 1 space before',
-                               29 => 'Expected 1 space after',
-                               30 => array('Expected 1 space before', 'Expected 1 space after'),
-                               31 => 0,
-                               32 => 'Expected 1 space after "-"; 2 found',
-                               33 => 'Expected 1 space before "-"; 2 found',
-                               34 => 0,
-                               35 => 'Expected 1 space before',
-                               36 => 'Expected 1 space after',
-                               37 => array('Expected 1 space before', 'Expected 1 space after'),
-                               38 => 0,
-                               39 => 'Expected 1 space after "*"; 2 found',
-                               40 => 'Expected 1 space before "*"; 2 found',
-                               41 => 0,
-                               42 => 'Expected 1 space before',
-                               43 => 'Expected 1 space after',
-                               44 => array('Expected 1 space before', 'Expected 1 space after'),
-                               45 => 0,
-                               46 => 'Expected 1 space after "/"; 2 found',
-                               47 => 'Expected 1 space before "/"; 2 found',
-                               48 => 0,
+                               21 => 0,
+                               22 => 'Expected 1 space before',
+                               23 => 'Expected 1 space after',
+                               24 => array('Expected 1 space before', 'Expected 1 space after'),
+                               25 => 0,
+                               26 => 'Expected 1 space after "+"; 2 found',
+                               27 => 'Expected 1 space before "+"; 2 found',
+                               28 => 0,
+                               29 => 'Expected 1 space before',
+                               30 => 'Expected 1 space after',
+                               31 => array('Expected 1 space before', 'Expected 1 space after'),
+                               32 => 0,
+                               33 => 'Expected 1 space after "-"; 2 found',
+                               34 => 'Expected 1 space before "-"; 2 found',
+                               35 => 0,
+                               36 => 'Expected 1 space before',
+                               37 => 'Expected 1 space after',
+                               38 => array('Expected 1 space before', 'Expected 1 space after'),
+                               39 => 0,
+                               40 => 'Expected 1 space after "*"; 2 found',
+                               41 => 'Expected 1 space before "*"; 2 found',
+                               42 => 0,
+                               43 => 'Expected 1 space before',
+                               44 => 'Expected 1 space after',
+                               45 => array('Expected 1 space before', 'Expected 1 space after'),
+                               46 => 0,
+                               47 => 'Expected 1 space after "/"; 2 found',
+                               48 => 'Expected 1 space before "/"; 2 found',
                                49 => 0,
                                50 => 0,
                                51 => 0,
@@ -585,7 +767,8 @@ class moodlestandard_testcase extends local_codechecker_testcase {
                                59 => 0,
                                60 => 0,
                                61 => 0,
-                               62 => 0
+                               62 => 0,
+                               63 => 0
                           ));
         $this->set_warnings(array());
 
@@ -595,6 +778,8 @@ class moodlestandard_testcase extends local_codechecker_testcase {
 
     /**
      * Test object operator spacing standards
+     *
+     * @covers \PHP_CodeSniffer\Standards\Squiz\Sniffs\WhiteSpace\ObjectOperatorSpacingSniff
      */
     public function test_squiz_object_operator_spacing() {
 
@@ -616,6 +801,8 @@ class moodlestandard_testcase extends local_codechecker_testcase {
 
     /**
      * Test object operator indentation standards
+     *
+     * @covers \PHP_CodeSniffer\Standards\PEAR\Sniffs\WhiteSpace\ObjectOperatorIndentSniff
      */
     public function test_pear_object_operator_indent() {
 
@@ -652,6 +839,8 @@ class moodlestandard_testcase extends local_codechecker_testcase {
 
     /**
      * Test variable naming standards
+     *
+     * @covers \PHP_CodeSniffer\Standards\Squiz\Sniffs\PHP\CommentedOutCodeSniff
      */
     public function test_squid_php_commentedoutcode() {
 
@@ -666,7 +855,7 @@ class moodlestandard_testcase extends local_codechecker_testcase {
         // - line => string of contents for message / source problem matching (only 1).
         $this->set_errors(array());
         $this->set_warnings(array(
-            5 => 'This comment is 63% valid code; is this commented out code',
+            5 => 'This comment is 72% valid code; is this commented out code',
             9 => '@Source: Squiz.PHP.CommentedOutCode.Found'
         ));
 
@@ -674,128 +863,11 @@ class moodlestandard_testcase extends local_codechecker_testcase {
         $this->verify_cs_results();
     }
 
-    public function test_moodle_files_moodleinternal_problem() {
-        $this->set_standard('moodle');
-        $this->set_sniff('moodle.Files.MoodleInternal');
-        $this->set_fixture(__DIR__ . '/fixtures/moodle_files_moodleinternal/problem.php');
-
-        // Define expected results (errors and warnings). Format, array of:
-        // - line => number of problems,  or
-        // - line => array of contents for message / source problem matching.
-        // - line => string of contents for message / source problem matching (only 1).
-        $this->set_errors(array(
-            19 => 'Expected MOODLE_INTERNAL check or config.php inclusion'
-        ));
-        $this->set_warnings(array());
-
-        $this->verify_cs_results();
-    }
-
-    public function test_moodle_files_moodleinternal_warning() {
-        $this->set_standard('moodle');
-        $this->set_sniff('moodle.Files.MoodleInternal');
-        $this->set_fixture(__DIR__ . '/fixtures/moodle_files_moodleinternal/warning.php');
-
-        $this->set_errors(array());
-        $this->set_warnings(array(
-            32 => 'Expected MOODLE_INTERNAL check or config.php inclusion. Multiple artifacts'
-        ));
-
-        $this->verify_cs_results();
-    }
-
-    public function test_moodle_files_moodleinternal_nowarning() {
-        $this->set_standard('moodle');
-        $this->set_sniff('moodle.Files.MoodleInternal');
-        $this->set_fixture(__DIR__ . '/fixtures/moodle_files_moodleinternal/nowarning.php');
-
-        $this->set_errors(array());
-        $this->set_warnings(array());
-
-        $this->verify_cs_results();
-    }
-
-    public function test_moodle_files_moodleinternal_declare_ok() {
-        $this->set_standard('moodle');
-        $this->set_sniff('moodle.Files.MoodleInternal');
-        $this->set_fixture(__DIR__ . '/fixtures/moodle_files_moodleinternal/declare_ok.php');
-
-        $this->set_errors(array());
-        $this->set_warnings(array());
-
-        $this->verify_cs_results();
-    }
-
-    public function test_moodle_files_moodleinternal_namespace_ok() {
-        $this->set_standard('moodle');
-        $this->set_sniff('moodle.Files.MoodleInternal');
-        $this->set_fixture(__DIR__ . '/fixtures/moodle_files_moodleinternal/namespace_ok.php');
-
-        $this->set_errors(array());
-        $this->set_warnings(array());
-
-        $this->verify_cs_results();
-    }
-
-    public function test_moodle_files_moodleinternal_no_moodle_cookie_ok() {
-        $this->set_standard('moodle');
-        $this->set_sniff('moodle.Files.MoodleInternal');
-        $this->set_fixture(__DIR__ . '/fixtures/moodle_files_moodleinternal/no_moodle_cookie_ok.php');
-
-        $this->set_errors(array());
-        $this->set_warnings(array());
-
-        $this->verify_cs_results();
-    }
-
-    public function test_moodle_files_moodleinternal_behat_skipped() {
-        // Files in behat dirs are ignored.
-        $this->set_standard('moodle');
-        $this->set_sniff('moodle.Files.MoodleInternal');
-        $this->set_fixture(__DIR__ . '/fixtures/moodle_files_moodleinternal/behat/behat_mod_workshop.php');
-
-        $this->set_errors(array());
-        $this->set_warnings(array());
-
-        $this->verify_cs_results();
-    }
-
-    public function test_moodle_files_moodleinternal_lang_skipped() {
-        // Files in lang dirs are ignored.
-        $this->set_standard('moodle');
-        $this->set_sniff('moodle.Files.MoodleInternal');
-        $this->set_fixture(__DIR__ . '/fixtures/moodle_files_moodleinternal/lang/en/repository_dropbox.php');
-
-        $this->set_errors(array());
-        $this->set_warnings(array());
-
-        $this->verify_cs_results();
-    }
-
-    public function test_moodle_files_moodleinternal_namespace_with_use_ok() {
-        // An edge case which allows use statements before defined().
-        $this->set_standard('moodle');
-        $this->set_sniff('moodle.Files.MoodleInternal');
-        $this->set_fixture(__DIR__ . '/fixtures/moodle_files_moodleinternal/namespace_with_use_ok.php');
-
-        $this->set_errors(array());
-        $this->set_warnings(array());
-
-        $this->verify_cs_results();
-    }
-
-    public function test_moodle_files_moodleinternal_old_style_if_die() {
-        // Old style if statement MOODLE_INTERNAL check.
-        $this->set_standard('moodle');
-        $this->set_sniff('moodle.Files.MoodleInternal');
-        $this->set_fixture(__DIR__ . '/fixtures/moodle_files_moodleinternal/old_style_if_die_ok.php');
-
-        $this->set_errors(array());
-        $this->set_warnings(array());
-
-        $this->verify_cs_results();
-    }
-
+    /**
+     * Test the moodle.Files.RequireLogin sniff detects problems.
+     *
+     * @covers \MoodleCodeSniffer\moodle\Sniffs\Files\RequireLoginSniff
+     */
     public function test_moodle_files_requirelogin_problem() {
         $this->set_standard('moodle');
         $this->set_sniff('moodle.Files.RequireLogin');
@@ -803,12 +875,17 @@ class moodlestandard_testcase extends local_codechecker_testcase {
 
         $this->set_errors(array());
         $this->set_warnings(array(
-            25 => 'check (require_login, require_course_login, require_admin, admin_externalpage_setup) following config inclusion. None found'
+            25 => ', require_course_login, require_admin, admin_externalpage_setup) following config inclusion. None found'
         ));
 
         $this->verify_cs_results();
     }
 
+    /**
+     * Test the moodle.Files.RequireLogin sniff with login.
+     *
+     * @covers \MoodleCodeSniffer\moodle\Sniffs\Files\RequireLoginSniff
+     */
     public function test_moodle_files_requirelogin_require_login_ok() {
         $this->set_standard('moodle');
         $this->set_sniff('moodle.Files.RequireLogin');
@@ -820,6 +897,11 @@ class moodlestandard_testcase extends local_codechecker_testcase {
         $this->verify_cs_results();
     }
 
+    /**
+     * Test the moodle.Files.RequireLogin sniff with require_course_login().
+     *
+     * @covers \MoodleCodeSniffer\moodle\Sniffs\Files\RequireLoginSniff
+     */
     public function test_moodle_files_requirelogin_require_course_login_ok() {
         $this->set_standard('moodle');
         $this->set_sniff('moodle.Files.RequireLogin');
@@ -831,6 +913,11 @@ class moodlestandard_testcase extends local_codechecker_testcase {
         $this->verify_cs_results();
     }
 
+    /**
+     * Test the moodle.Files.RequireLogin sniff with external page setup.
+     *
+     * @covers \MoodleCodeSniffer\moodle\Sniffs\Files\RequireLoginSniff
+     */
     public function test_moodle_files_requirelogin_admin_externalpage_setup_ok() {
         $this->set_standard('moodle');
         $this->set_sniff('moodle.Files.RequireLogin');
@@ -842,6 +929,11 @@ class moodlestandard_testcase extends local_codechecker_testcase {
         $this->verify_cs_results();
     }
 
+    /**
+     * Test the moodle.Files.RequireLogin in a CLI script.
+     *
+     * @covers \MoodleCodeSniffer\moodle\Sniffs\Files\RequireLoginSniff
+     */
     public function test_moodle_files_requirelogin_cliscript_ok() {
         $this->set_standard('moodle');
         $this->set_sniff('moodle.Files.RequireLogin');
@@ -853,6 +945,11 @@ class moodlestandard_testcase extends local_codechecker_testcase {
         $this->verify_cs_results();
     }
 
+    /**
+     * Test the moodle.Files.RequireLogin sniff in a no moodle cookies script.
+     *
+     * @covers \MoodleCodeSniffer\moodle\Sniffs\Files\RequireLoginSniff
+     */
     public function test_moodle_files_requirelogin_nomoodlecookies_ok() {
         $this->set_standard('moodle');
         $this->set_sniff('moodle.Files.RequireLogin');

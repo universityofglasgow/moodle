@@ -33,12 +33,19 @@ use core_privacy\local\request\transform;
 use core_privacy\local\request\userlist;
 use core_privacy\local\request\writer;
 
-defined('MOODLE_INTERNAL') || die();
-
+/**
+ * Class provider
+ * @package mod_checklist
+ */
 class provider implements \core_privacy\local\metadata\provider,
                           \core_privacy\local\request\plugin\provider,
                           \core_privacy\local\request\core_userlist_provider {
 
+    /**
+     * Get a description of the data stored by this plugin.
+     * @param collection $collection
+     * @return collection
+     */
     public static function get_metadata(collection $collection) : collection {
         $collection->add_database_table(
             'checklist_item',
@@ -71,10 +78,26 @@ class provider implements \core_privacy\local\metadata\provider,
             ],
             'privacy:metadata:checklist_comment'
         );
+        $collection->add_database_table(
+            'checklist_comment_student',
+            [
+                'itemid' => 'privacy:metadata:checklist_comment_student:itemid',
+                'usermodified' => 'privacy:metadata:checklist_comment_student:usermodified',
+                'text' => 'privacy:metadata:checklist_comment_student:text',
+            ],
+            'privacy:metadata:checklist_comment_student'
+        );
         return $collection;
     }
 
+    /** @var int */
     private static $modid;
+
+    /**
+     * Get the module id for the 'checklist' module.
+     * @return false|mixed
+     * @throws \dml_exception
+     */
     private static function get_modid() {
         global $DB;
         if (self::$modid === null) {
@@ -83,6 +106,12 @@ class provider implements \core_privacy\local\metadata\provider,
         return self::$modid;
     }
 
+    /**
+     * Get the contexts where the given user has 'checklist' data.
+     * @param int $userid
+     * @return contextlist
+     * @throws \dml_exception
+     */
     public static function get_contexts_for_userid(int $userid) : contextlist {
         $contextlist = new contextlist();
         $modid = self::get_modid();
@@ -193,6 +222,12 @@ class provider implements \core_privacy\local\metadata\provider,
         $userlist->add_from_sql('userid', $sql, $params);
     }
 
+    /**
+     * Export all the checklist data for the given contextlist
+     * @param approved_contextlist $contextlist
+     * @throws \coding_exception
+     * @throws \dml_exception
+     */
     public static function export_user_data(approved_contextlist $contextlist) {
         global $DB;
 
@@ -278,6 +313,12 @@ class provider implements \core_privacy\local\metadata\provider,
         helper::export_context_files($context, $user);
     }
 
+    /**
+     * Delete all checklist data for all users in the given context
+     * @param \context $context
+     * @throws \coding_exception
+     * @throws \dml_exception
+     */
     public static function delete_data_for_all_users_in_context(\context $context) {
         global $DB;
         if (!$context) {
@@ -294,9 +335,16 @@ class provider implements \core_privacy\local\metadata\provider,
             $DB->delete_records_list('checklist_check', 'item', $itemids);
             $DB->delete_records_list('checklist_comment', 'itemid', $itemids);
             $DB->delete_records_select('checklist_item', 'checklist = ? AND userid <> 0', [$cm->instance]);
+            $DB->delete_records_list('checklist_comment_student', 'itemid', $itemids);
         }
     }
 
+    /**
+     * Delete all checklist data for the given contexts and user
+     * @param approved_contextlist $contextlist
+     * @throws \coding_exception
+     * @throws \dml_exception
+     */
     public static function delete_data_for_user(approved_contextlist $contextlist) {
         global $DB;
         if (!$contextlist->count()) {
@@ -317,6 +365,7 @@ class provider implements \core_privacy\local\metadata\provider,
                 $params['userid'] = $userid;
                 $DB->delete_records_select('checklist_check', "item $isql AND userid = :userid", $params);
                 $DB->delete_records_select('checklist_comment', "itemid $isql AND userid = :userid", $params);
+                $DB->delete_records_select('checklist_comment_student', "itemid $isql AND usermodified = :userid", $params);
                 $params = ['instanceid' => $cm->instance, 'userid' => $userid];
                 $DB->delete_records_select('checklist_item', 'checklist = :instanceid AND userid = :userid', $params);
             }

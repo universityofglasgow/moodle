@@ -16,17 +16,39 @@
 /**
  * JavaScript code for the gapfill question type.
  *
- * @package    qtype_gapfill
  * @copyright  2017 Marcus Green
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 
 /* The data is stored in a hidden field */
 define(['jquery', 'qtype_gapfill/Item'], function($, Item) {
   return {
     init: function() {
-      /* A click on the button */
+      $('#id_answerdisplay').change(function() {
+        var selected = $(this).val();
+        if (selected == 'gapfill') {
+          $('#id_fixedgapsize').prop('disabled', false);
+          $("#id_optionsaftertext").prop('disabled', true).prop('checked', false);
+          $('#id_singleuse').prop('disabled', true).prop('checked', false);
+          $('#id_disableregex').prop('disabled', false);
+
+        }
+        if (selected == 'dragdrop') {
+          $('#id_optionsaftertext').prop('disabled', false);
+          $('#id_singleuse').prop('disabled', false);
+          $('#id_fixedgapsize').prop('disabled', false);
+          $('#id_disableregex').prop('disabled', false);
+        }
+        if (selected == 'dropdown') {
+          $('#id_fixedgapsize').prop('disabled', true).prop('checked', false);
+          $('#id_optionsaftertext').prop('disabled', true).prop('checked', false);
+          $('#id_singleuse').prop('disabled', true).prop('checked', false);
+          $('#id_disableregex').prop('disabled', true).prop('checked', false);
+        }
+
+
+      });
+      /* A click on the itemsettings button */
       $('#id_itemsettings_button').on('click', function() {
         var attoIsLive = $('.editor_atto').length;
         /* Show error if Atto is not loaded. It might be because the page has not finished loading
@@ -167,6 +189,7 @@ define(['jquery', 'qtype_gapfill/Item'], function($, Item) {
               buttons: [
                 {
                   text: 'OK',
+                  id: 'SaveItemFeedback',
                   click: function() {
                     var JSONstr = item.updateJson(e);
                     $('[class^=atto_]').removeAttr('disabled');
@@ -332,16 +355,27 @@ define(['jquery', 'qtype_gapfill/Item'], function($, Item) {
                 product[name] = style[name];
               }
             } else if ((style = dom.style)) {
-              for (name in style) {
-                if (typeof style[name] != 'function') {
-                  product[name] = style[name];
-                }
-              }
+              product = getStyle(style, product, name);
             }
             return product;
           }
         }
         return false;
+      }
+      /**
+       * TODO check if this function is needed
+       * @param {string} style
+       * @param {object} product
+       * @param {string} name
+       * @returns {string}
+       */
+      function getStyle(style, product, name) {
+        for (name in style) {
+          if (typeof style[name] != 'function') {
+            product[name] = style[name];
+          }
+        }
+        return product;
       }
     },
   };

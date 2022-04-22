@@ -58,7 +58,7 @@ function game_sudoku_continue( $cm, $game, $attempt, $sudoku, $endofgame, $conte
 
     $recsudoku = getrandomsudoku();
     if ($recsudoku == false) {
-        print_error( 'Empty sudoku database');
+        throw new moodle_exception( 'sudoku_error', 'game', 'Empty sudoku database');
     }
 
     $newrec = new stdClass();
@@ -81,7 +81,7 @@ function game_sudoku_continue( $cm, $game, $attempt, $sudoku, $endofgame, $conte
     if ($recs === false) {
         $sql = "DELETE FROM {game_sudoku} WHERE id={$game->id}";
         $DB->execute( $sql);
-        print_error( get_string( 'no_questions', 'game'));
+        throw new moodle_exception( 'no_questions', 'game');
     }
 
     $closed = array_rand($closed, $n);
@@ -89,7 +89,7 @@ function game_sudoku_continue( $cm, $game, $attempt, $sudoku, $endofgame, $conte
     $selectedrecs = game_select_from_repetitions( $game, $recs, $n);
 
     if (!game_insert_record('game_sudoku', $newrec)) {
-        print_error('error inserting in game_sudoku');
+        throw new moodle_exception( 'error inserting in game_sudoku');
     }
 
     $i = 0;
@@ -110,13 +110,13 @@ function game_sudoku_continue( $cm, $game, $attempt, $sudoku, $endofgame, $conte
         $query->gamekind = $game->gamekind;
         $query->gameid = $game->id;
         $query->userid = $USER->id;
-        $query->mycol = $closed[ $i++];
+        $query->mycol = $closed[$i++];
         $query->sourcemodule = $game->sourcemodule;
         $query->questionid = $rec->questionid;
         $query->glossaryentryid = $rec->glossaryentryid;
         $query->score = 0;
         if (($query->id = $DB->insert_record( 'game_queries', $query)) == 0) {
-            print_error( 'error inserting in game_queries');
+            throw new moodle_exception( 'sudoku_error', 'game', 'error inserting in game_queries');
         }
 
         game_update_repetitions($game->id, $USER->id, $query->questionid, $query->glossaryentryid);
@@ -193,16 +193,16 @@ function game_sudoku_compute_offsetquestions( $sourcemodule, $attempt, &$numbers
     }
     if (($recs = $DB->get_records_select( 'game_queries', $select, null, '', $fields)) == false) {
         $DB->execute( "DELETE FROM {$CFG->prefix}game_sudoku WHERE id={$attempt->id}");
-        print_error( 'There are no questions '.$attempt->id);
+        throw new moodle_exception( 'sudoku_error', 'game', 'There are no questions '.$attempt->id);
     }
 
     $numbers = array();
     $correctquestions = array();
     foreach ($recs as $rec) {
-        $offsetquestions[ $rec->mycol] = $rec->id2;
-        $numbers[ $rec->id2] = $rec->mycol;
+        $offsetquestions[$rec->mycol] = $rec->id2;
+        $numbers[$rec->id2] = $rec->mycol;
         if ( $rec->score == 1) {
-            $correctquestions[ $rec->mycol] = 1;
+            $correctquestions[$rec->mycol] = 1;
         }
     }
 
@@ -250,7 +250,7 @@ function game_sudoku_getclosed( $data) {
     for ($i = 1; $i <= $n; $i++) {
         $c = game_substr( $data, $i - 1, 1);
         if ($c >= "1" and $c <= "9") {
-            $a[ $i] = $i;
+            $a[$i] = $i;
         }
     }
 
@@ -391,7 +391,7 @@ function game_sudoku_getquestionlist( $offsetquestions) {
     $questionlist = substr( $questionlist, 1);
 
     if ($questionlist == '') {
-        print_error( get_string('no_questions', 'game'));
+        throw new moodle_exception( 'no_questions', 'game');
     }
 
     return $questionlist;
@@ -411,12 +411,12 @@ function game_sudoku_getglossaryentries( $game, $offsetentries, &$entrylist, $nu
     $entrylist = implode( ',', $offsetentries);
 
     if ($entrylist == '') {
-        print_error( get_string( 'sudoku_noentriesfound', 'game'));
+        throw new moodle_exception( 'sudoku_noentriesfound', 'game');
     }
 
     // Load the questions.
     if (!$entries = $DB->get_records_select( 'glossary_entries', "id IN ($entrylist)")) {
-        print_error( get_string('sudoku_noentriesfound', 'game'));
+        throw new moodle_exception( 'sudoku_noentriesfound', 'game');
     }
 
     return $entries;
@@ -446,8 +446,8 @@ function game_sudoku_showquestions_quiz( $id, $game, $attempt, $sudoku, $offsetq
     // I will sort with the number of each question.
     $questions2 = array();
     foreach ($questions as $q) {
-        $ofs = $numbers[ $q->id];
-        $questions2[ $ofs] = $q;
+        $ofs = $numbers[$q->id];
+        $questions2[$ofs] = $q;
     }
     ksort( $questions2);
 
@@ -459,7 +459,7 @@ function game_sudoku_showquestions_quiz( $id, $game, $attempt, $sudoku, $offsetq
     $number = 0;
     $found = false;
     foreach ($questions2 as $question) {
-        $ofs = $numbers[ $question->id];
+        $ofs = $numbers[$question->id];
         if (array_key_exists( $ofs, $correctquestions)) {
             continue;   // I don't show the correct answers.
         }
@@ -527,8 +527,8 @@ function game_sudoku_showquestions_glossary( $id, $game, $attempt, $sudoku, $off
     // I will sort with the number of each question.
     $entries2 = array();
     foreach ($entries as $q) {
-        $ofs = $numbers[ $q->id];
-        $entries2[ $ofs] = $q;
+        $ofs = $numbers[$q->id];
+        $entries2[$ofs] = $q;
     }
     ksort( $entries2);
 
@@ -563,7 +563,7 @@ function game_sudoku_showquestions_glossary( $id, $game, $attempt, $sudoku, $off
 
     $number = 0;
     foreach ($entries2 as $entry) {
-        $ofs = $numbers[ $entry->id];
+        $ofs = $numbers[$entry->id];
         if (array_key_exists( $ofs, $correctentries)) {
             continue;   // I don't show the correct answers.
         }
@@ -689,7 +689,7 @@ function game_sudoku_check_glossaryentries( $cm, $game, $attempt, $sudoku, $fini
 
     // Load the glossary entries.
     if (!($entries = $DB->get_records_select( 'glossary_entries', "id IN ($entrieslist)"))) {
-        print_error( get_string('noglossaryentriesfound', 'game'));
+        throw new moodle_exception( 'noglossaryentriesfound', 'game');
     }
     foreach ($entries as $entry) {
         $answerundefined = optional_param('resp'.$entry->id, 'undefined', PARAM_TEXT);
@@ -776,7 +776,7 @@ function game_sudoku_check_number( $id, $game, $attempt, $sudoku, $pos, $num, $c
     game_setchar( $sudoku->guess, $pos - 1, $correct);
 
     if (!$DB->set_field_select('game_sudoku', 'guess', $sudoku->guess, "id=$sudoku->id")) {
-        print_error( 'game_sudoku_check_number: Cannot update table game_sudoku');
+        throw new moodle_exception( 'sudoku_error', 'game', 'game_sudoku_check_number: Cannot update table game_sudoku');
     }
 
     game_sudoku_play( $id, $game, $attempt, $sudoku, false, false, $context, $course);

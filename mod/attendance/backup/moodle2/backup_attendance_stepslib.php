@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Defines all the backup steps that will be used by {@link backup_attendance_activity_task}
+ * Defines all the backup steps that will be used by {@see backup_attendance_activity_task}
  *
  * @package    mod_attendance
  * @copyright  2011 Artem Andreev <andreev.artem@gmail.com>
@@ -59,7 +59,7 @@ class backup_attendance_activity_structure_step extends backup_activity_structur
             'groupid', 'sessdate', 'duration', 'lasttaken', 'lasttakenby', 'timemodified',
             'description', 'descriptionformat', 'studentscanmark', 'studentpassword', 'autoassignstatus',
             'subnet', 'automark', 'automarkcompleted', 'statusset', 'absenteereport', 'preventsharedip',
-            'preventsharediptime', 'caleventid', 'calendarevent', 'includeqrcode'));
+            'preventsharediptime', 'caleventid', 'calendarevent', 'includeqrcode', 'automarkcmid'));
 
         // XML nodes declaration - user data.
         $logs = new backup_nested_element('logs');

@@ -43,18 +43,18 @@ class filtered_config extends proxy_config {
     /** @var array Array where keys are keys to exclude. */
     private $excludedkeys = [];
     /** @var bool Whether or not to check the allowed keys. */
-    private $checkallowed = true;
+    private $checkallowed = false;
 
     /**
      * Constructor.
      *
      * @param config $config The config object.
-     * @param array $allowedkeys Values are allowed keys, empty means everything is allowed.
+     * @param array $allowedkeys Values are allowed keys, use null to allow everything.
      * @param array $excludedkeys Values are excluded keys.
      */
     public function __construct(config $config, array $allowedkeys = null, array $excludedkeys = null) {
         parent::__construct($config);
-        if ($allowedkeys) {
+        if ($allowedkeys !== null) {
             $this->allowedkeys = array_flip($allowedkeys);
             $this->checkallowed = true;
         }

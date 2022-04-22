@@ -1,3 +1,96 @@
+Changes in version 3.1.0 (20220225) - Fondant chocolate
+-------------------------------------------------------
+- [PR#176](https://github.com/moodlehq/moodle-local_codechecker/pull/176): Avoid some `use` statements to make the `MOODLE_INTERNAL` check to be required (stronk7).
+- [PR#177](https://github.com/moodlehq/moodle-local_codechecker/pull/177): Make it possible to show the erroring standard/sniff/rule in the UI executions (Ruslan Kabalin).
+- [PR#178](https://github.com/moodlehq/moodle-local_codechecker/pull/178): Warn, for Moodle 4.0 and up, about [unit tests missing coverage information](https://docs.moodle.org/dev/Writing_PHPUnit_tests#Code_coverage) (stronk7).
+- [PR#180](https://github.com/moodlehq/moodle-local_codechecker/pull/180): Allow `@codeCoverageIgnore` annotations in inline comments (stronk7).
+- [PR#181](https://github.com/moodlehq/moodle-local_codechecker/pull/181): Apply the `ValidFunctionName` sniff to all scoped tokens (stronk7).
+- [PR#183](https://github.com/moodlehq/moodle-local_codechecker/pull/183): Ensure that the "other" checks do observe UI defined exclusions (stronk7).
+- [PR#186](https://github.com/moodlehq/moodle-local_codechecker/pull/186): Add support for installing via Composer (Andrew Lyons).
+- [PR#190](https://github.com/moodlehq/moodle-local_codechecker/pull/190): Control spacing around array indexes (stronk7).
+- [PR#191](https://github.com/moodlehq/moodle-local_codechecker/pull/191): Fix a problem about not detecting relevant code in files without any artifact (stronk7).
+- Various small fixes and tweaks.
+
+Changes in version 3.0.6 (20220117) - January's crunch (take 2)
+---------------------------------------------------------------
+- [PR#174](https://github.com/moodlehq/moodle-local_codechecker/pull/174): Lower the unexpected MOODLE_INTERNAL check to be a warning, instead of error, as originally planned (stronk7).
+
+Changes in version 3.0.5 (20220111) - January's crunch
+------------------------------------------------------
+- PHP_CodeSniffer upgraded to 3.6.2 release (stronk7).
+- [PR#164](https://github.com/moodlehq/moodle-local_codechecker/pull/164): Make testcase class names to be fixable by `phpcbf` (stronk7).
+- [PR#167](https://github.com/moodlehq/moodle-local_codechecker/pull/167): Verify that tescase location matches sub-namespace definition (stronk7).
+- [PR#168](https://github.com/moodlehq/moodle-local_codechecker/pull/168): Check class opening curly brackets correctness (kabalin).
+- [PR#169](https://github.com/moodlehq/moodle-local_codechecker/pull/169): Report unexpected MOODLE_INTERNAL uses (stronk7).
+- [PR#172](https://github.com/moodlehq/moodle-local_codechecker/pull/172): Allow phpcs:xxx annotations in the first line of files (stronk7).
+- Small doc changes and typo fixes here and there.
+
+Changes in version 3.0.4 (20211204) - Downgrading expectations
+--------------------------------------------------------------
+- [PR#162](https://github.com/moodlehq/moodle-local_codechecker/pull/162): Downgrade some recently code added to the "moodle" standard to make it PHP 7.0 compliant, needed to continue supporting old branches by various tools (stronk7).
+
+Changes in version 3.0.3 (20211130) - Cyber releasing
+-----------------------------------------------------
+- Various internal changes and improvements:
+    - Own conformance with new [PHPUnit naming rules](https://docs.moodle.org/dev/PHPUnit_integration#Actual_.28Moodle_3.11_and_up.29).
+    - New [MoodleUtil](https://github.com/moodlehq/moodle-local_codechecker/blob/master/moodle/Util/MoodleUtil.php) class to be able to detect Moodle dir root, branch and components (calculated or imported) within code checker. This new awareness will help improving various sniffs.
+    - Drop some Moodle own &lt; 3.7 testing. Code checker continues supporting Moodle 3.4 and up.
+    - Improvements to the base test case, now able to automatically verify `phpcbf` fixes.
+    - Bye, bye to Travis for self-tests. Now relying only on GHA.
+- [PR#155](https://github.com/moodlehq/moodle-local_codechecker/pull/155): Make some common errors to be fixable by `phpcbf` (cameron1729).
+- [PR#158](https://github.com/moodlehq/moodle-local_codechecker/pull/158): Fixes for the MOODLE_INTERNAL sniff to better detect some allowed exceptions (stronk7).
+- [PR#161](https://github.com/moodlehq/moodle-local_codechecker/pull/161): New sniff to follow [PHPUnit files, classes and namespaces  naming rules](https://docs.moodle.org/dev/PHPUnit_integration#Actual_.28Moodle_3.11_and_up.29) (stronk7).
+
+Changes in version 3.0.2 (20210716) - Summer break
+--------------------------------------------------
+- Various internal changes and improvements:
+    - Removed some legacy code (33_STABLE) and out of support 7.1 tests.
+    - Disable coverage reporting in Travis own builds.
+    - Added PHP 8.0 support in own tests.
+    - Fulfill Moodle 4.0 requirements.
+    - Make mariadb own tests sticky to 10.5 until [MDL-72131](https://tracker.moodle.org/browse/MDL-72131) is fixed.
+- [PR#146](https://github.com/moodlehq/moodle-local_codechecker/pull/146): Suggest debugging() as alternative to error_log() (Ruslan Kabalin).
+- [PR#148](https://github.com/moodlehq/moodle-local_codechecker/pull/148): Verify that there is one and only one EOL @ EOF (stronk7).
+
+Changes in version 3.0.1 (20210423) - April's cool
+--------------------------------------------------
+- Various internal changes and improvements:
+    - Travis and GHA support updated.
+    - Support docker login to workaround anonymous pull limits.
+    - Added instructions to work with VSCode.
+    - Apply for own `coverage.php` to better define coverage reporting.
+- [PR#132](https://github.com/moodlehq/moodle-local_codechecker/pull/132): jsonSerialize() is now a valid function name (Tobias Goltz).
+- [PR#136](https://github.com/moodlehq/moodle-local_codechecker/pull/136): Added support for --exclude option in the CLI runner (Adrian Perez).
+- [PR#139](https://github.com/moodlehq/moodle-local_codechecker/pull/139): Added check for `abstract/final/static` positioning in function declarations (stronk7).
+- [PR#141](https://github.com/moodlehq/moodle-local_codechecker/pull/141): Deprecated `print_error()` (stronk7).
+- [PR#143](https://github.com/moodlehq/moodle-local_codechecker/pull/143): Added support for `return new class extends` PHPDoc blocks (stronk7).
+
+Changes in version 3.0.0 (20201127) - Welcome phpcs 3
+-----------------------------------------------------
+- Upgrade to PHP_CodeSniffer 3.5.8 (stronk7):
+    - PHP_CodeSniffer move to phpcs directory (see readme_moodle.txt for complete instructions).
+    - Move Moodle sniffs to PHP_CodeSniffer 3.
+    - Create own runner/report.
+    - Move as much as possible from locallib.php to classes.
+    - Add PHPUnit 8 compatibility, keeping PHPUnit 6 working.
+    - Min Moodle version required increases from 3.2 to 3.4.
+- [PR#90](https://github.com/moodlehq/moodle-local_codechecker/pull/90): Adapt custom PHP_CodeSniffer runner (classes/runner.php) to use PHP_CodeSniffer 3 API (Sara Arjona).
+- [PR#95](https://github.com/moodlehq/moodle-local_codechecker/pull/95): Unlock session before processing files (Víctor Déniz).
+
+Changes in version 2.9.8 (20201002) - Bye and thank you, phpcs 2.x
+------------------------------------------------------------------
+- [PR#83](https://github.com/moodlehq/moodle-local_codechecker/pull/83) and [PR#84](https://github.com/moodlehq/moodle-local_codechecker/pull/84): Allow a list of files to be checked (Sam Marshall).
+- [PR#80](https://github.com/moodlehq/moodle-local_codechecker/pull/80): Remove require of now-deleted coursecatlib.php (Jun Pataleta).
+- Several travis changes:
+    - [PR#79](https://github.com/moodlehq/moodle-local_codechecker/pull/79): Bump to use moodlehq/moodle-plugin-ci v3.
+    - [PR#81](https://github.com/moodlehq/moodle-local_codechecker/pull/81): Add support for 310 branch.
+- Small README changes: information section improved and travis status badge update to show travis.com build status. 
+
+Changes in version 2.9.7 (20200718) - Bye bye, JS
+-------------------------------------------------
+- [PR#75](https://github.com/moodlehq/moodle-local_codechecker/pull/75) and [PR#77](https://github.com/moodlehq/moodle-local_codechecker/pull/77): Small tweaks for better transition to phpcs3.
+- CONTRIB-8122: Stop processing non-php files (runner and UI).
+
 Changes in version 2.9.6 (20200611) - June's Roentgenium
 --------------------------------------------------------
 - [PR#63](https://github.com/moodlehq/moodle-local_codechecker/pull/63): Make MOODLE_INTERNAL check declare() aware (Peter Burnett).

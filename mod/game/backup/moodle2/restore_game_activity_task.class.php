@@ -53,7 +53,7 @@ class restore_game_activity_task extends restore_activity_task {
      * Define the contents in the activity that must be
      * processed by the link decoder
      */
-    static public function define_decode_contents() {
+    public static function define_decode_contents() {
         $contents = array();
 
         $contents[] = new restore_decode_content('game', array('toptext'), 'game');
@@ -66,7 +66,7 @@ class restore_game_activity_task extends restore_activity_task {
      * Define the decoding rules for links belonging
      * to the activity to be executed by the link decoder
      */
-    static public function define_decode_rules() {
+    public static function define_decode_rules() {
         $rules = array();
 
         return $rules;
@@ -74,11 +74,11 @@ class restore_game_activity_task extends restore_activity_task {
 
     /**
      * Define the restore log rules that will be applied
-     * by the {@link restore_logs_processor} when restoring
+     * by the restore_logs_processor when restoring
      * game logs. It must return one array
-     * of {@link restore_log_rule} objects
+     * of restore_log_rule objects
      */
-    static public function define_restore_log_rules() {
+    public static function define_restore_log_rules() {
         $rules = array();
 
         $rules[] = new restore_log_rule('game', 'add', 'view.php?id={course_module}', '{game}');
@@ -93,15 +93,15 @@ class restore_game_activity_task extends restore_activity_task {
 
     /**
      * Define the restore log rules that will be applied
-     * by the {@link restore_logs_processor} when restoring
+     * by the restore_logs_processor when restoring
      * course logs. It must return one array
-     * of {@link restore_log_rule} objects
+     * of restore_log_rule objects
      *
      * Note this rules are applied when restoring course logs
      * by the restore final task, but are defined here at
      * activity level. All them are rules not linked to any module instance (cmid = 0)
      */
-    static public function define_restore_log_rules_for_course() {
+    public static function define_restore_log_rules_for_course() {
         $rules = array();
 
         // Fix old wrong uses (missing extension).

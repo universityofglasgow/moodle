@@ -26,16 +26,15 @@
 namespace block_xp\local\leaderboard;
 defined('MOODLE_INTERNAL') || die();
 
-use coding_exception;
 use context_helper;
 use course_modinfo;
 use moodle_database;
 use stdClass;
-use user_picture;
 use block_xp\local\iterator\map_recordset;
 use block_xp\local\sql\limit;
-use block_xp\local\xp\course_user_state_store;
+use block_xp\local\utils\user_utils;
 use block_xp\local\xp\levels_info;
+use block_xp\local\xp\state;
 use block_xp\local\xp\state_rank;
 use block_xp\local\xp\user_state;
 
@@ -100,8 +99,11 @@ class course_user_leaderboard implements leaderboard {
             $params['groupid'] = $groupid;
         }
 
+        // We rename the user ID from fields() to 'useridunused' because the xp table
+        // already contains the user ID as 'userid and Oracle would complain if we select
+        // the same field twice with the same alias.
         $this->fields = 'x.*, ' .
-            user_picture::fields('u', null, 'userid') . ', ' .
+            user_utils::picture_fields('u', 'useridunused') . ', ' .
             context_helper::get_preload_record_columns_sql('ctx');
         $this->from = "{{$this->table}} x
                        $groupsql
@@ -269,7 +271,7 @@ class course_user_leaderboard implements leaderboard {
      * Get ranking recordset.
      *
      * @param limit $limit The limit.
-     * @return moodle_recordset
+     * @return \moodle_recordset
      */
     protected function get_ranking_recordset(limit $limit) {
         $sql = "SELECT {$this->fields}
@@ -308,9 +310,9 @@ class course_user_leaderboard implements leaderboard {
      * @return user_state
      */
     protected function make_state_from_record(stdClass $record, $useridfield = 'userid') {
-        $user = user_picture::unalias($record, null, $useridfield);
+        $user = user_utils::unalias_picture_fields($record, $useridfield);
         context_helper::preload_from_record($record);
         $xp = !empty($record->xp) ? $record->xp : 0;
-        return new user_state($user, $xp, $this->levelsinfo);
+        return new user_state($user, $xp, $this->levelsinfo, $this->courseid);
     }
 }

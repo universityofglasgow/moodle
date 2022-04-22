@@ -22,8 +22,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Plays the game hangman
  *
@@ -143,7 +141,7 @@ function game_hangman_continue( $cm, $game, $attempt, $hangman, $newletter, $act
     }
 
     if ($found == false) {
-        print_error( get_string( 'no_words', 'game'));
+        throw new moodle_exception( 'no_words', 'game');
     }
 
     // Found one word for hangman.
@@ -152,7 +150,7 @@ function game_hangman_continue( $cm, $game, $attempt, $hangman, $newletter, $act
     }
 
     if (!$DB->set_field( 'game_attempts', 'language', $min->language, array( 'id' => $attempt->id))) {
-        print_error( "game_hangman_continue: Can't set language");
+        throw new moodle_exception( 'hangman_error', 'game', 'game_hangman_continue: Can\'t set language');
     }
 
     $query = new stdClass();
@@ -170,7 +168,7 @@ function game_hangman_continue( $cm, $game, $attempt, $hangman, $newletter, $act
     $query->answertext = $min->answer;
     $query->answerid = $min->answerid;
     if (!($query->id = $DB->insert_record( 'game_queries', $query))) {
-        print_error( "game_hangman_continue: Can't insert to table game_queries");
+        throw new moodle_exception( 'hangman_error', 'game', 'game_hangman_continue: Can\'t insert to table game_queries');
     }
 
     $newrec = new stdClass();
@@ -199,11 +197,11 @@ function game_hangman_continue( $cm, $game, $attempt, $hangman, $newletter, $act
 
     if ($updatehangman == false) {
         if (!game_insert_record( 'game_hangman', $newrec)) {
-            print_error( 'game_hangman_continue: error inserting in game_hangman');
+            throw new moodle_exception( 'hangman_error', 'game', 'game_hangman_continue: error inserting in game_hangman');
         }
     } else {
         if (!$DB->update_record( 'game_hangman', $newrec)) {
-            print_error( 'game_hangman_continue: error updating in game_hangman');
+            throw new moodle_exception( 'hangman_error', 'game', 'game_hangman_continue: error updating in game_hangman');
         }
         $newrec = $DB->get_record( 'game_hangman', array( 'id' => $newrec->id));
     }
@@ -230,7 +228,7 @@ function game_hangman_onfinishgame( $cm, $game, $attempt, $hangman, $course) {
     game_updateattempts( $game, $attempt, $score, true, $cm, $course);
 
     if (!$DB->set_field( 'game_hangman', 'finishedword', 0, array( 'id' => $hangman->id))) {
-        print_error( "game_hangman_onfinishgame: Can't update game_hangman");
+        throw new moodle_exception( 'hangman_error', 'game', 'game_hangman_onfinishgame: Can\'t update game_hangman');
     }
 }
 
@@ -392,7 +390,7 @@ function hangman_showpage(&$done, &$correct, &$wrong, $max, &$wordline, &$wordli
         if ($query->attachment != '') {
             $args = explode( '/', $query->attachment);
             $sql = "SELECT id,mimetype,filesize,filename FROM {$CFG->prefix}files ".
-            "WHERE component='mod_glossary' AND filearea='attachment' AND itemid =".$args[ 2].
+            "WHERE component='mod_glossary' AND filearea='attachment' AND itemid =".$args[2].
             " ORDER BY filesize DESC LIMIT 1";
             $entry = $DB->get_record_sql( $sql);
             if ($entry != null) {
@@ -490,7 +488,7 @@ function hangman_showpage(&$done, &$correct, &$wrong, $max, &$wordline, &$wordli
     }
 
     if (!$DB->update_record( 'game_hangman', $updrec)) {
-        print_error( "hangman_showpage: Can't update game_hangman id=$updrec->id");
+        throw new moodle_exception( 'hangman_error', 'game', "hangman_showpage: Can't update game_hangman id=$updrec->id");
     }
 
     if ($done) {

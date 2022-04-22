@@ -22,10 +22,12 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
+/**
+ * Class block_checklist_edit_form
+ */
 class block_checklist_edit_form extends block_edit_form {
     /**
+     * Fields specific to this block type
      * @param MoodleQuickForm $mform
      * @throws coding_exception
      */

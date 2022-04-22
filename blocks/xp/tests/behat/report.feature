@@ -28,26 +28,29 @@ Feature: A report displays students' progress
       | user | group |
       | s1   | ga    |
       | s2   | gb    |
+    And the following "activity" exists:
+      | course    | c1                             |
+      | section   | 1                              |
+      | activity  | forum                          |
+      | name      | Test forum name                |
+      | forumtype | Standard forum for general use |
+      | intro     | Test forum description         |
     And I log in as "t1"
     And I am on front page
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I turn editing mode on
-    And I add the "Level up!" block
-    And I add a "Forum" to section "1" and I fill the form with:
-      | Forum name  | Test forum name |
-      | Forum type  | Standard forum for general use |
-      | Description | Test forum description |
+    And I add the "Level Up XP" block
     And I log out
     And I log in as "s1"
     And I am on front page
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I add a new discussion to "Test forum name" forum with:
       | Subject | Discussion one    |
       | Message | This is the body  |
     And I log out
     And I log in as "s2"
     And I am on front page
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I add a new discussion to "Test forum name" forum with:
       | Subject | Discussion two    |
       | Message | This is the body  |
@@ -57,12 +60,12 @@ Feature: A report displays students' progress
     And I log out
     And I log in as "s3"
     And I am on front page
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I log out
     And I log in as "t1"
     And I am on front page
-    And I follow "Course 1"
-    When I click on "Report" "link" in the "Level up!" "block"
+    And I am on "Course 1" course homepage
+    When I click on "Report" "link" in the "Level Up XP" "block"
     Then the following should exist in the "block_xp-report-table" table:
       | Full name     | Level | Total |
       | Student One   | 1     | 63    |
@@ -116,10 +119,10 @@ Feature: A report displays students' progress
       | t1       | c1     | editingteacher |
     And I log in as "t1"
     And I am on front page
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I turn editing mode on
-    And I add the "Level up!" block
-    And I click on "Report" "link" in the "Level up!" "block"
+    And I add the "Level Up XP" block
+    And I click on "Report" "link" in the "Level Up XP" "block"
     And the following should exist in the "block_xp-report-table" table:
       | Full name     | Level | Total |
       | Student One   | -     | -     |

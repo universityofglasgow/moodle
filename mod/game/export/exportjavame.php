@@ -22,8 +22,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Exports to javame.
  *
@@ -134,7 +132,7 @@ function game_exportjavame_exportdata( $src, $destmobiledir, $destdir, $game, $m
 
     $map = game_exmportjavame_getanswers( $game, $exportattachment, false, $destdir, $files);
     if ($map == false) {
-        print_error( 'No Questions');
+        throw new moodle_exception( 'game_error', 'game',  'No Questions');
     }
 
     if ($destmobiledir == 'hangmanp') {
@@ -479,13 +477,13 @@ function game_export_javame_smartcopyimage( $filename, $dest, $maxwidth) {
         return;
     }
 
-    $mul = $maxwidth / $size[ 0];
+    $mul = $maxwidth / $size[0];
     if ($mul > 1) {
         copy( $filename, $dest);
         return;
     }
 
-    $mime = $size[ 'mime'];
+    $mime = $size['mime'];
     switch( $mime) {
         case 'image/png':
             $srcimage = imagecreatefrompng( $filename);
@@ -501,10 +499,10 @@ function game_export_javame_smartcopyimage( $filename, $dest, $maxwidth) {
             return false;
     }
 
-    $dstw = $size[ 0] * $mul;
-    $dsth = $size[ 1] * $mul;
+    $dstw = $size[0] * $mul;
+    $dsth = $size[1] * $mul;
     $dstimage = imagecreatetruecolor( $dstw, $dsth);
-    imagecopyresampled( $dstimage, $srcimage, 0, 0, 0, 0, $dstw, $dsth, $size[ 0], $size[ 1]);
+    imagecopyresampled( $dstimage, $srcimage, 0, 0, 0, 0, $dstw, $dsth, $size[0], $size[1]);
 
     imagejpeg( $dstimage, $dest);
 }

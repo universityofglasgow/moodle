@@ -14,11 +14,18 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * Import checklist items
+ * @copyright Davo Smith <moodle@davosmith.co.uk>
+ * @package mod_checklist
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 use mod_checklist\local\checklist_item;
 
-require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
-require_once(dirname(__FILE__).'/importexportfields.php');
+require_once(__DIR__.'/../../config.php');
 global $CFG, $PAGE, $OUTPUT, $DB;
+require_once($CFG->dirroot.'/mod/checklist/importexportfields.php');
 require_once($CFG->libdir.'/formslib.php');
 require_once($CFG->libdir.'/csvlib.class.php');
 
@@ -37,7 +44,14 @@ require_capability('mod/checklist:edit', $context);
 
 $returl = new moodle_url('/mod/checklist/edit.php', array('id' => $cm->id));
 
+/**
+ * Class checklist_import_form
+ */
 class checklist_import_form extends moodleform {
+    /**
+     * Define form elements
+     * @throws coding_exception
+     */
     public function definition() {
         $mform = $this->_form;
 

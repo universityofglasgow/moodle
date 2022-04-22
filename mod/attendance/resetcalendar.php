@@ -61,7 +61,7 @@ if (get_config('attendance', 'enablecalendar')) {
     } else {
         if ($DB->record_exists('attendance_sessions', array('caleventid' => 0, 'calendarevent' => 1))) {
             $createurl = new moodle_url('/mod/attendance/resetcalendar.php', array('action' => 'create'));
-            $returnurl = new moodle_url('/admin/settings.php', array('section' => 'modsettingattendance'));
+            $returnurl = new moodle_url("/{$CFG->admin}/settings.php", array('section' => 'modsettingattendance'));
 
             echo $OUTPUT->confirm(get_string('resetcaledarcreate', 'mod_attendance'), $createurl, $returnurl);
         } else {
@@ -70,16 +70,14 @@ if (get_config('attendance', 'enablecalendar')) {
     }
 } else {
     if ($action == 'delete' && confirm_sesskey()) {
-        $caleventids = $DB->get_records_select_menu('attendance_sessions', 'caleventid > 0', array(),
-                                                     '', 'caleventid, caleventid as id2');
-        $DB->delete_records_list('event', 'id', $caleventids);
-        $DB->execute("UPDATE {attendance_sessions} set caleventid = 0");
+        // Attendance isn't using Calendar - delete anything that was created.
+        $DB->delete_records('event', ['modulename' => 'attendance', 'eventtype' => 'attendance']);
         echo $OUTPUT->notification(get_string('eventsdeleted', 'mod_attendance'), 'notifysuccess');
     } else {
         // Check to see if there are any events that need to be deleted.
         if ($DB->record_exists_select('attendance_sessions', 'caleventid > 0')) {
             $deleteurl = new moodle_url('/mod/attendance/resetcalendar.php', array('action' => 'delete'));
-            $returnurl = new moodle_url('/admin/settings.php', array('section' => 'modsettingattendance'));
+            $returnurl = new moodle_url("/{$CFG->admin}/settings.php", array('section' => 'modsettingattendance'));
 
             echo $OUTPUT->confirm(get_string('resetcaledardelete', 'mod_attendance'), $deleteurl, $returnurl);
         } else {
