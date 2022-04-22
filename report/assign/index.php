@@ -32,6 +32,7 @@ require_once($CFG->dirroot . '/mod/assign/locallib.php');
 $id = required_param('id', PARAM_INT);
 $assignid = optional_param('assign', 0, PARAM_INT);
 $export = optional_param('export', 0, PARAM_INT);
+$offline = optional_param('offline', 0, PARAM_INT);
 $exportall = optional_param('exportall', 0, PARAM_INT);
 $group = optional_param('group', 0, PARAM_INT);
 $dump = optional_param('dump', 0, PARAM_INT);
@@ -56,7 +57,7 @@ $context = context_course::instance($course->id);
 require_capability('mod/assign:grade', $context);
 require_capability('report/assign:view', $context);
 
-if (!$export && !$exportall && !$dump) {
+if (!$export && !$exportall && !$dump && !$offline) {
     $PAGE->set_title($course->shortname .': '. get_string('pluginname', 'report_assign'));
     $PAGE->set_heading($course->fullname);
 
@@ -81,7 +82,7 @@ if ($exportall) {
         //$assignment = $DB->get_record('assign', ['id' => $assignid], '*', MUST_EXIST);
         $submissions = $assign->list_participants_with_filter_status_and_group(0);
         $cm = get_coursemodule_from_instance('assign', $assignid);
-        $submissions = report_assign\lib::add_assignment_data($course->id, $assignid, $cm->id, $assign, $submissions);
+        $submissions = report_assign\lib::add_assignment_data($course->id, $assignid, $cm, $assign, $submissions);
         foreach ($submissions as $submission) {
             $submission->assignmentname = $assignment->name;
             $submission->duedate = empty($assignment->duedate) ? '-' : userdate($assignment->duedate, get_string('strftimedatetimeshort', 'langconfig'));
@@ -96,6 +97,9 @@ if ($exportall) {
 // Has a link been submitted?
 if ($assignid) {
 
+    // Allocate pairticipant numbers
+    assign::allocate_unique_ids($assignid);
+
     // Create assignment object.
     $assign = \report_assign\lib::get_assign($course, $assignid);
 
@@ -105,7 +109,7 @@ if ($assignid) {
     // Participants.
     $submissions = $assign->list_participants_with_filter_status_and_group($group);
     $cm = get_coursemodule_from_instance('assign', $assignid);
-    $submissions = report_assign\lib::add_assignment_data($course->id, $assignid, $cm->id, $assign, $submissions);
+    $submissions = report_assign\lib::add_assignment_data($course->id, $assignid, $cm, $assign, $submissions);
 
     // Data dump.
     if ($dump) {
@@ -144,12 +148,28 @@ if ($assignid) {
         assign::allocate_unique_ids($assignid);
     }
 
+    // Export as spreadsheet
     if ($export) {
-        $filename = "assign_{$assignment->name}.xls";
+        $filename = "assign_export_{$assignment->name}.xls";
         report_assign\lib::export($assignment, $filename, $submissions);
 
         // Trigger an assignment viewed event.
         $event = \report_assign\event\assignment_export::create([
+            'context' => $context,
+            'objectid' => $assignid,
+        ]);
+        $event->trigger();
+
+        die;
+    }
+
+    // Export for offline grading
+    if ($offline) {
+        $filename = "assign_offline_{$assignment->name}.xls";
+        report_assign\lib::offline($assignment, $filename, $submissions);
+
+        // Trigger an assignment viewed event.
+        $event = \report_assign\event\assignment_offline::create([
             'context' => $context,
             'objectid' => $assignid,
         ]);

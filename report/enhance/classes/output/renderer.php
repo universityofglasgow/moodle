@@ -49,6 +49,14 @@ class renderer extends plugin_renderer_base {
     }
 
     /**
+     * Render edit/new comment
+     * @param elist $elist
+     */
+    public function render_comment(comment $comment) {
+        return $this->render_from_template('report_enhance/comment', $comment->export_for_template($this));
+    }
+
+    /**
      * Render 'more' page
      * @param more $more
      */

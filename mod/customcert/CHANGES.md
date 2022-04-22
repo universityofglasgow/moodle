@@ -4,6 +4,52 @@ All notable changes to this project will be documented in this file.
 
 Note - All hash comments refer to the issue number. Eg. #169 refers to https://github.com/mdjnelson/moodle-mod_customcert/issues/169.
 
+## [3.11.1] - 2021-XX-YY
+
+### Fixed
+- Usage of deprecated functions (#423)
+
+## [3.10.1] - 2021-06-13
+
+### Added
+- Usage of github actions (#407).
+- The ability to show the description on the course page (#406).
+- The ability to choose how to deliver the certificate (#401).
+
+### Fixed
+- Managers are now able to download their students' certificates (#412).
+- Users being able to view the certificate before the required time set (#403).
+- Fixed the issue with displaying PDF when debugging is ON (#420).
+- Using incorrect context when sending emails (#402).
+- Use `cron_setup_user` when sending emails (#414).
+
+## [3.8.5] - 2020-11-26
+
+### Added
+
+- Added ability to select outcomes in the Grade element (#329).
+- The Grade Item Name element now works with all grade items, whereas before it was just activities (#346).
+- Added enrolment start and end dates to the date element (#328).
+- Added username to userfield form element (#390).
+
+### Changed
+
+- Removed unnecessary and confusing 'exampledata' string.
+- Do not email those who can manage the certificate (#376).
+- Do not force the PDF to be downloaded, instead send the file inline to the browser (#153).
+- Updated the 'emailstudents_help', 'emailteachers_help' and 'emailothers_help' strings to warn users about prematurely emailing the certificate (#276).
+- Do not email out certificates that contain no elements (#276).
+
+### Fixed
+
+- Certificates now get marked as viewed via the mobile app (#342).
+- Custom fields not displaying properly (#359).
+- Fix repositioning elements page when resizing the browser (#343).
+- Prevent error when duplicate issues exist when using the code element (#363).
+- Implemented get_objectid_mapping for the course_module_viewed.php event to avoid warning (#374).
+- Fixed exception being thrown when loading a template that has an image element but no image selected (#369).
+- Fixed issue with PDF being generated without a name (#333).
+
 ## [3.8.4] - 2020-03-12
 
 ### Added

@@ -104,15 +104,18 @@ class single implements renderable, templatable {
         }
 
         // Check for entries in enrollments.
-        $enrolments = \report_guid\lib::get_all_enrolments($username);
+        $enrolments = \report_guid\lib::get_all_enrolments($user);
         $noenrolments = empty($enrolments);
-        $formattedenrolments = \report_guid\lib::format_enrolments($enrolments);
+        $formattedenrolments = \report_guid\lib::format_enrolments($user->id, $enrolments);
 
         // Find mycampus enrolment data.
         if (!$gudatabaseerror) {
             $courses = $gudatabase->get_user_courses($username);
-            $formattedcourses = \report_guid\lib::format_mycampus($courses, $username);
+            $formattedcourses = \report_guid\lib::format_mycampus($courses, $username, $enrolments);
+        } else {
+            $formattedcourses = [];
         }
+        //echo "<pre>"; var_dump($enrolments); var_dump($formattedcourses); die;
 
         // Find CoreHR data.
         if (!$isstudent) {
@@ -127,6 +130,9 @@ class single implements renderable, templatable {
         if ($iscorehr) {
             $corehr->timemodified = date('r', $corehr->timemodified);
         }
+
+        // Get turnitin results
+        $tiifiles = \report_guid\lib::get_turnitin($user->id, $user->username);
 
         return [
             'fullname' => $fullname,
@@ -143,6 +149,9 @@ class single implements renderable, templatable {
             'isstudent' => $isstudent,
             'iscorehr' => $iscorehr,
             'corehr' => \report_guid\lib::array_prettyprint((array)$corehr),
+            'notiifiles' => empty($tiifiles),
+            'tiifiles' => $tiifiles,
+            'tiieula' => \report_guid\lib::get_tii_eula($user->id),
             'backlink' => new \moodle_url('/report/guid'),
         ];
     }

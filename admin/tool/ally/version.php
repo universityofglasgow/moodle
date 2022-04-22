@@ -18,7 +18,7 @@
  * Plugin version.
  *
  * @package   tool_ally
- * @copyright Copyright (c) 2016 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2016 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -26,11 +26,11 @@ defined('MOODLE_INTERNAL') || die();
 
 /** @var stdClass $plugin */
 $plugin->component = 'tool_ally';
-$plugin->release   = '3.7.4';
-$plugin->version   = 2019061201;
-$plugin->requires  = 2019052000;
+$plugin->release   = '3.11.3';
+$plugin->version   = 2021112600;
+$plugin->requires  = 2021051700;
 $plugin->maturity  = MATURITY_STABLE;
 $plugin->dependencies = [
-    'filter_ally'    => 2018080801,
-    'report_allylti' => 2018080800,
+    'filter_ally'    => 2021112600,
+    'report_allylti' => 2021112600,
 ];

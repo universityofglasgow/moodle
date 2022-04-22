@@ -1,3 +1,136 @@
+### Date:       2021-September-15
+### Release:	2021091501
+
+#### :wrench: Fixes and enhancements
+
+#### Empty grades in Turnitin will not override Moodle grading
+
+When you had completed grading in Moodle and someone opened the Turnitin viewer for the submission, if no grade had been set in Turnitin, the Moodle grade would be lost. Now, the grade within Moodle will be retained and an ungraded Turnitin viewer can be opened without it causing any problems.
+
+Note: If a grade is removed from Turnitin, it will no longer remove it from Moodle as the viewer will then be ‘empty’ and we assume that the Moodle grade is intended.
+
+#### Only the essay type question in a Moodle Quiz will request a Similarity Report 
+
+We’ve refined this feature to only request a Similarity Report for Essay type questions. Turnitin would only ever create a report for these types of questions anyway, but a request was sent for all question types. This could cause bigger classes to become sluggish. You should notice that bigger classes that use a lot of quizzes are much easier to navigate now.
+
+Thanks to Dan Marsden And Alex Morris for highlighting and providing a fix for this.
+
+#### Test connection now will check the connection to Turnitin at all times
+
+Previously, Test Connection wouldn’t work until the plugin was configured. This could potentially cause confusion with users assuming that as no error had been shown the connection must already be established. We’ve changed it so that the Test Connection feature will always look to see if a successful connection has been made when checking.
+
+### Date:       2021-August-13
+### Release:	2021081301
+
+#### :wrench: Fixes and enhancements
+
+#### Classes will create successfully 
+A bug potentially resulted in classes created in Moodle to not sync correctly when we tried to create them in Turnitin. We’ve fixed this problem and you will now be able to create classes again.
+
+### Date:       2021-June-08
+### Release:	2021060801
+
+#### :wrench: Fixes and enhancements
+
+#### Support for Moodle 3.11
+You can now confidently use this integration with Moodle 3.11.
+
+#### Use Turnitin with Moodle Quizzes
+We can now check for similarity on any files that are uploaded as a part of a Moodle quiz.
+
+#### Cron tasks will no longer run when Moodle is not configured
+Thanks to alexmorrisnz for the pull request!
+
+#### Removed grades change the grade in Moodle
+When a grade is removed from Turnitin, this removal will also be reflected within Moodle as the submission being ungraded.
+
+#### Turnitin classes will now be expired along with a Moodle course
+We will now sync dates in Moodle with the Turnitin database. When the Moodle course expires, we will close out those classes in Turnitin. This will free up the active student count for those classes.
+
+#### Create or access Moodle assignments, forums, and workshops when Turnitin is disabled
+If Turnitin is disabled for an assignment, forum, or workshop and Turnitin is unavailable by having the wrong configuration options or being under maintenance, then an error message would be shown. This bug has been fixed, and Turnitin being unreachable will no longer impact your ability to create or access your content.
+
+#### Changes to the Moodle course name will be reflected everywhere
+When a Moodle course title is changed, this will now be updated in Turnitin too. This will include the digital receipts students receive when they submit their paper.
+
+---
+
+### Date:       2020-November-30
+### Release:	2020113001
+
+#### :wrench: Fixes and enhancements
+
+Hotfix - removed update to config_hash field 
+
+---
+
+### Date:       2020-November-26
+### Release:	2020112601
+
+#### :wrench: Fixes and enhancements
+
+#### Attached rubrics sync with the Moodle assignment
+
+When attaching a rubric via the Turnitin viewer we’ll now sync this with the Moodle assignment so the next time you launch the view it is still viewable.
+
+#### Institutional default settings will now apply in Turnitin and Plagiarism plugin
+
+The option to search the institutional repository will now sync correctly between Turnitin and the Plagiarism plugin allowing you to set this as a default for all your plagiarism plugin assignments.
+
+####Improved logic for get_pseudo_lastname()
+
+Thanks to pauldamiani for bringing this to our attention!
+
+---
+
+### Date:       2020-July-22
+### Release:	2020072201
+
+#### :wrench: Fixes and enhancements
+
+#### Plagiarism Plugin settings will only appear once
+
+A bug had caused the Plagiarism Plugin settings to display twice when creating an assignment in Moodle versions prior to 3.9. This has been fixed for all supported Moodle versions. 
+
+---
+### Date:       2020-July-07
+### Release:	2020070801
+
+#### :zap: What's new
+
+---
+#### We now support Moodle 3.9
+
+You can find out more about Moodle 3.9 via Moodle's [release notes](https://docs.moodle.org/dev/Moodle_3.9_release_notes).
+
+
+#### Use Turnitin in a Moodle Quiz
+
+Turnitin will be usable as a part of a Moodle quiz when Moodle releases the feature. When enabled for your account, simply add an essay question as one of the quiz questions. A similarity report will be generated when the student submits the quiz. Track this release on the Moodle Tracker https://tracker.moodle.org/browse/MDL-32226).
+
+---
+
+#### :wrench: Fixes and enhancements
+
+#### Improved support for large class sizes
+
+When closing the Turnitin viewer, we’d refresh the page so any updates you applied to the assignment would be reflected in Moodle. However, this refresh caused unnecessary load when a class was particularly large. When we identify increased latency like this, we’ll deactivate automatic refreshes of the inbox and prompt you to refresh the inbox manually after grading.
+
+#### View shared rubrics when creating a Moodle assignment
+
+When creating a Moodle assignment it is possible to view all of your Turnitin Rubrics and attach one to a class from its creation. However, a bug had prevented any rubrics that had been shared with you from appearing in this list. You’ll now find them there and ready to be added to any future assignments you create. This fixes a known issue.
+
+#### General accessibility improvements
+
+We’ve made a few accessibility improvements to help ensure that all Turnitin users can use the plugin with the same high-quality experience. These include:
+
+- Made more elements accessible via tab navigation
+- You can launch the Turnitin viewer now by using the enter key on the appropriate element. 
+- Tools tips are available for various settings and readable by a screen reader or via keyboard navigation.
+- General improvements to the plugin configuration screen ensuring unique ARIA labels and logical tab order.
+
+---
+
 ### Date:       2019-December-17
 ### Release:	v2019121701
 

@@ -17,18 +17,18 @@
 /**
  * Echo360 filter plugin version file.
  *
- * @package local_echo360
- * @author  Echo360
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    filter_echo360
+ * @copyright  2020 Echo360 Inc.
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2020011401;                    // The current plugin version (Date: YYYYMMDDXX).
+$plugin->version   = 2020081801;                    // The current plugin version (Date: YYYYMMDDXX).
 $plugin->requires  = 2017010100;                    // Requires this Moodle version.
 $plugin->component = 'filter_echo360';              // Full name of the plugin (used for diagnostics).
 $plugin->maturity  = MATURITY_STABLE;               // Human readable version information.
-$plugin->release   = '1.0.5 (Build 2020011401)';
+$plugin->release   = '1.0.25 (Build 2020081801)';
 $plugin->dependencies = array(
-    'atto_echo360attoplugin' => 2019112901,         // The Echo360 atto plugin must be present.
+    'atto_echo360attoplugin' => 2020060601,         // The Echo360 atto plugin must be present.
 );

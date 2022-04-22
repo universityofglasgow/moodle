@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @copyright  Copyright (c) 2020 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright  Copyright (c) 2021 Open LMS (https://www.openlms.net)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -41,11 +41,11 @@ $string['error:componentcontentnotfound'] = 'Indhold ikke fundet for {$a}';
 $string['error:wstokenmissing'] = 'Webtjenestetoken mangler. Måske skal en administratorbruger køre en automatisk konfiguration?';
 $string['filecoursenotfound'] = 'Den indsendte fil tilhører ikke noget kursus';
 $string['fileupdatestask'] = 'Push filopdateringer til Ally';
-$string['id'] = 'ID';
+$string['id'] = 'Id';
 $string['key'] = 'Nøgle';
 $string['keydesc'] = 'LTI-forbrugernøglen.';
 $string['level'] = 'Niveau';
-$string['message'] = 'Meddelelse';
+$string['message'] = 'Besked';
 $string['pluginname'] = 'Ally';
 $string['pushurl'] = 'URL for filopdateringer';
 $string['pushurldesc'] = 'Push notifikationer om filopdateringer til denne URL.';
@@ -85,6 +85,9 @@ $string['loglevel:none'] = 'Ingen';
 $string['loglevel:light'] = 'Let';
 $string['loglevel:medium'] = 'Mellem';
 $string['loglevel:all'] = 'Alle';
+$string['logcleanuptask'] = 'Oprydningsopgave for Ally-logfiler';
+$string['loglifetimedays'] = 'Behold logfiler så mange dage';
+$string['loglifetimedaysdesc'] = 'Behold Ally-logfiler i så mange dage. Angiv 0 for aldrig at slette logfiler. En planlagt opgave er (som standard) indstillet til at køre dagligt og fjerner logposter, der er mere end så mange dage gamle.';
 $string['logger:pushtoallysuccess'] = 'Push til Ally-slutpunkt lykkedes';
 $string['logger:pushtoallyfail'] = 'Push til Ally-slutpunkt lykkedes ikke';
 $string['logger:pushfilesuccess'] = 'Push af filen/filerne til Ally-slutpunkt blev gennemført.';
@@ -101,7 +104,9 @@ $string['logger:addingconenttoqueue'] = 'Tilføjer indhold til pushkøen';
 $string['logger:annotationmoderror'] = 'Annotering af Ally-modulindhold mislykkedes.';
 $string['logger:annotationmoderror_exp'] = 'Modulet blev ikke identificeret.';
 $string['logger:failedtogetcoursesectionname'] = 'Kunne ikke hente kursussektionens navn.';
+$string['logger:moduleidresolutionfailure'] = 'Kunne ikke løse modulets ID';
 $string['logger:cmidresolutionfailure'] = 'Kunne ikke fortolke kursusmodulets ID';
+$string['logger:cmvisibilityresolutionfailure'] = 'Kunne ikke fortolke kursusmodulets synlighed';
 $string['courseupdatestask'] = 'Push kursusbegivenheder til Ally';
 $string['logger:pushcoursesuccess'] = 'Push af kursusbegivenhed(er) til Ally-slutpunkt blev fuldført';
 $string['logger:pushcourseliveskip'] = 'Direkte push af kursusbegivenhed mislykkedes';
@@ -116,3 +121,5 @@ $string['logger:servicefailure'] = 'Fejl under brug af servicen.';
 $string['logger:servicefailure_exp'] = '<br>Klasse: {$a->class}<br>Parametre: {$a->params}';
 $string['logger:autoconfigfailureteachercap'] = 'Fejl ved tildeling af en egenskab for arketypen lærer til rollen ally_webservice.';
 $string['logger:autoconfigfailureteachercap_exp'] = '<br>Egenskab: {$a->cap}<br>Tilladelse: {$a->permission}';
+$string['deferredcourseevents'] = 'Send udsatte kursusbegivenheder';
+$string['deferredcourseeventsdesc'] = 'Gør det muligt at sende gemte kursusbegivenheder, der blev samlet ved det mislykkede forsøg på at kommunikere med Ally';

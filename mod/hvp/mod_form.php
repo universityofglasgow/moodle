@@ -75,33 +75,33 @@ class mod_hvp_mod_form extends moodleform_mod {
 
         $core = \mod_hvp\framework::instance();
         $displayoptions = $core->getDisplayOptionsForEdit();
-        if (isset($displayoptions[\H5PCore::DISPLAY_OPTION_FRAME])) {
+        if (isset($displayoptions[H5PCore::DISPLAY_OPTION_FRAME])) {
             // Display options group.
             $mform->addElement('header', 'displayoptions', get_string('displayoptions', 'hvp'));
 
-            $mform->addElement('checkbox', \H5PCore::DISPLAY_OPTION_FRAME, get_string('enableframe', 'hvp'));
-            $mform->setType(\H5PCore::DISPLAY_OPTION_FRAME, PARAM_BOOL);
-            $mform->setDefault(\H5PCore::DISPLAY_OPTION_FRAME, true);
+            $mform->addElement('checkbox', H5PCore::DISPLAY_OPTION_FRAME, get_string('enableframe', 'hvp'));
+            $mform->setType(H5PCore::DISPLAY_OPTION_FRAME, PARAM_BOOL);
+            $mform->setDefault(H5PCore::DISPLAY_OPTION_FRAME, true);
 
-            if (isset($displayoptions[\H5PCore::DISPLAY_OPTION_DOWNLOAD])) {
-                $mform->addElement('checkbox', \H5PCore::DISPLAY_OPTION_DOWNLOAD, get_string('enabledownload', 'hvp'));
-                $mform->setType(\H5PCore::DISPLAY_OPTION_DOWNLOAD, PARAM_BOOL);
-                $mform->setDefault(\H5PCore::DISPLAY_OPTION_DOWNLOAD, $displayoptions[\H5PCore::DISPLAY_OPTION_DOWNLOAD]);
-                $mform->disabledIf(\H5PCore::DISPLAY_OPTION_DOWNLOAD, 'frame');
+            if (isset($displayoptions[H5PCore::DISPLAY_OPTION_DOWNLOAD])) {
+                $mform->addElement('checkbox', H5PCore::DISPLAY_OPTION_DOWNLOAD, get_string('enabledownload', 'hvp'));
+                $mform->setType(H5PCore::DISPLAY_OPTION_DOWNLOAD, PARAM_BOOL);
+                $mform->setDefault(H5PCore::DISPLAY_OPTION_DOWNLOAD, $displayoptions[H5PCore::DISPLAY_OPTION_DOWNLOAD]);
+                $mform->disabledIf(H5PCore::DISPLAY_OPTION_DOWNLOAD, 'frame');
             }
 
-            if (isset($displayoptions[\H5PCore::DISPLAY_OPTION_EMBED])) {
-                $mform->addElement('checkbox', \H5PCore::DISPLAY_OPTION_EMBED, get_string('enableembed', 'hvp'));
-                $mform->setType(\H5PCore::DISPLAY_OPTION_EMBED, PARAM_BOOL);
-                $mform->setDefault(\H5PCore::DISPLAY_OPTION_EMBED, $displayoptions[\H5PCore::DISPLAY_OPTION_EMBED]);
-                $mform->disabledIf(\H5PCore::DISPLAY_OPTION_EMBED, 'frame');
+            if (isset($displayoptions[H5PCore::DISPLAY_OPTION_EMBED])) {
+                $mform->addElement('checkbox', H5PCore::DISPLAY_OPTION_EMBED, get_string('enableembed', 'hvp'));
+                $mform->setType(H5PCore::DISPLAY_OPTION_EMBED, PARAM_BOOL);
+                $mform->setDefault(H5PCore::DISPLAY_OPTION_EMBED, $displayoptions[H5PCore::DISPLAY_OPTION_EMBED]);
+                $mform->disabledIf(H5PCore::DISPLAY_OPTION_EMBED, 'frame');
             }
 
-            if (isset($displayoptions[\H5PCore::DISPLAY_OPTION_COPYRIGHT])) {
-                $mform->addElement('checkbox', \H5PCore::DISPLAY_OPTION_COPYRIGHT, get_string('enablecopyright', 'hvp'));
-                $mform->setType(\H5PCore::DISPLAY_OPTION_COPYRIGHT, PARAM_BOOL);
-                $mform->setDefault(\H5PCore::DISPLAY_OPTION_COPYRIGHT, $displayoptions[\H5PCore::DISPLAY_OPTION_COPYRIGHT]);
-                $mform->disabledIf(\H5PCore::DISPLAY_OPTION_COPYRIGHT, 'frame');
+            if (isset($displayoptions[H5PCore::DISPLAY_OPTION_COPYRIGHT])) {
+                $mform->addElement('checkbox', H5PCore::DISPLAY_OPTION_COPYRIGHT, get_string('enablecopyright', 'hvp'));
+                $mform->setType(H5PCore::DISPLAY_OPTION_COPYRIGHT, PARAM_BOOL);
+                $mform->setDefault(H5PCore::DISPLAY_OPTION_COPYRIGHT, $displayoptions[H5PCore::DISPLAY_OPTION_COPYRIGHT]);
+                $mform->disabledIf(H5PCore::DISPLAY_OPTION_COPYRIGHT, 'frame');
             }
         }
 
@@ -130,17 +130,17 @@ class mod_hvp_mod_form extends moodleform_mod {
         if (isset($defaultvalues['disable'])) {
             $h5pcore = \mod_hvp\framework::instance('core');
             $displayoptions = $h5pcore->getDisplayOptionsForEdit($defaultvalues['disable']);
-            if (isset ($displayoptions[\H5PCore::DISPLAY_OPTION_FRAME])) {
-                $defaultvalues[\H5PCore::DISPLAY_OPTION_FRAME] = $displayoptions[\H5PCore::DISPLAY_OPTION_FRAME];
+            if (isset ($displayoptions[H5PCore::DISPLAY_OPTION_FRAME])) {
+                $defaultvalues[H5PCore::DISPLAY_OPTION_FRAME] = $displayoptions[H5PCore::DISPLAY_OPTION_FRAME];
             }
-            if (isset($displayoptions[\H5PCore::DISPLAY_OPTION_DOWNLOAD])) {
-                $defaultvalues[\H5PCore::DISPLAY_OPTION_DOWNLOAD] = $displayoptions[\H5PCore::DISPLAY_OPTION_DOWNLOAD];
+            if (isset($displayoptions[H5PCore::DISPLAY_OPTION_DOWNLOAD])) {
+                $defaultvalues[H5PCore::DISPLAY_OPTION_DOWNLOAD] = $displayoptions[H5PCore::DISPLAY_OPTION_DOWNLOAD];
             }
-            if (isset($displayoptions[\H5PCore::DISPLAY_OPTION_EMBED])) {
-                $defaultvalues[\H5PCore::DISPLAY_OPTION_EMBED] = $displayoptions[\H5PCore::DISPLAY_OPTION_EMBED];
+            if (isset($displayoptions[H5PCore::DISPLAY_OPTION_EMBED])) {
+                $defaultvalues[H5PCore::DISPLAY_OPTION_EMBED] = $displayoptions[H5PCore::DISPLAY_OPTION_EMBED];
             }
-            if (isset($displayoptions[\H5PCore::DISPLAY_OPTION_COPYRIGHT])) {
-                $defaultvalues[\H5PCore::DISPLAY_OPTION_COPYRIGHT] = $displayoptions[\H5PCore::DISPLAY_OPTION_COPYRIGHT];
+            if (isset($displayoptions[H5PCore::DISPLAY_OPTION_COPYRIGHT])) {
+                $defaultvalues[H5PCore::DISPLAY_OPTION_COPYRIGHT] = $displayoptions[H5PCore::DISPLAY_OPTION_COPYRIGHT];
             }
         }
     }
@@ -178,9 +178,6 @@ class mod_hvp_mod_form extends moodleform_mod {
         if (!empty($defaultvalues['id'])) {
             // Load Content.
             $content = $core->loadContent($defaultvalues['id']);
-            if ($content === null) {
-                print_error('invalidhvp');
-            }
         }
 
         $this->set_max_grade($content, $defaultvalues);
@@ -207,6 +204,11 @@ class mod_hvp_mod_form extends moodleform_mod {
             $maincontentdata['metadata'] = $content['metadata'];
         }
         $defaultvalues['h5pparams'] = json_encode($maincontentdata, true);
+
+        // Completion settings check.
+        if (empty($defaultvalues['completionusegrade'])) {
+            $defaultvalues['completionpass'] = 0; // Forced unchecked.
+        }
 
         // Add required editor assets.
         require_once('locallib.php');
@@ -332,6 +334,19 @@ class mod_hvp_mod_form extends moodleform_mod {
         } else {
             $this->validate_created($data, $errors);
         }
+
+        if (array_key_exists('completion', $data) && $data['completion'] == COMPLETION_TRACKING_AUTOMATIC) {
+            $completionpass = isset($data['completionpass']) ? $data['completionpass'] : $this->current->completionpass;
+            // Show an error if require passing grade was selected and the grade to pass was set to 0.
+            if ($completionpass && (empty($data['gradepass']) || grade_floatval($data['gradepass']) == 0)) {
+                if (isset($data['completionpass'])) {
+                    $errors['completionpassgroup'] = get_string('gradetopassnotset', 'hvp');
+                } else {
+                    $errors['gradepass'] = get_string('gradetopassmustbeset', 'hvp');
+                }
+            }
+        }
+
         return $errors;
     }
 
@@ -346,27 +361,28 @@ class mod_hvp_mod_form extends moodleform_mod {
     public function data_postprocessing($data) {
         // Determine disabled content features.
         $options = array(
-            \H5PCore::DISPLAY_OPTION_FRAME     => isset($data->frame) ? $data->frame : 0,
-            \H5PCore::DISPLAY_OPTION_DOWNLOAD  => isset($data->export) ? $data->export : 0,
-            \H5PCore::DISPLAY_OPTION_EMBED     => isset($data->embed) ? $data->embed : 0,
-            \H5PCore::DISPLAY_OPTION_COPYRIGHT => isset($data->copyright) ? $data->copyright : 0,
+            H5PCore::DISPLAY_OPTION_FRAME     => isset($data->frame) ? $data->frame : 0,
+            H5PCore::DISPLAY_OPTION_DOWNLOAD  => isset($data->export) ? $data->export : 0,
+            H5PCore::DISPLAY_OPTION_EMBED     => isset($data->embed) ? $data->embed : 0,
+            H5PCore::DISPLAY_OPTION_COPYRIGHT => isset($data->copyright) ? $data->copyright : 0,
         );
-        $core = \mod_hvp\framework::instance();
+        $core          = \mod_hvp\framework::instance();
         $data->disable = $core->getStorableDisplayOptions($options, 0);
 
-        // Remove metadata wrapper from form data.
-        $params = json_decode($data->h5pparams);
-        if ($params !== null) {
-            $data->params = json_encode($params->params);
-            if (isset($params->metadata)) {
-                $data->metadata = $params->metadata;
+        if (isset($data->h5pparams)) {
+            // Remove metadata wrapper from form data.
+            $params = json_decode($data->h5pparams);
+            if ($params !== null) {
+                $data->params = json_encode($params->params);
+                if (isset($params->metadata)) {
+                    $data->metadata = $params->metadata;
+                }
             }
+            // Cleanup.
+            unset($data->h5pparams);
         }
 
-        // Cleanup.
-        unset($data->h5pparams);
-
-        if ($data->h5paction === 'upload') {
+        if (isset($data->h5paction)  && $data->h5paction === 'upload') {
             if (empty($data->metadata)) {
                 $data->metadata = new stdClass();
             }
@@ -375,7 +391,9 @@ class mod_hvp_mod_form extends moodleform_mod {
                 // Fix for legacy content upload to work.
                 // Fetch title from h5p.json or use a default string if not available.
                 $h5pvalidator = \mod_hvp\framework::instance('validator');
-                $data->metadata->title = empty($h5pvalidator->h5pC->mainJsonData['title']) ? 'Uploaded Content' : $h5pvalidator->h5pC->mainJsonData['title'];
+                $data->metadata->title = empty($h5pvalidator->h5pC->mainJsonData['title'])
+                    ? 'Uploaded Content'
+                    : $h5pvalidator->h5pC->mainJsonData['title'];
             }
             $data->name = $data->metadata->title; // Sort of a hack,
             // but there is no JavaScript that sets the value when there is no editor...
@@ -413,5 +431,19 @@ class mod_hvp_mod_form extends moodleform_mod {
             }
         }
         return $data;
+    }
+
+    public function add_completion_rules() {
+        $mform   =& $this->_form;
+        $items   = array();
+        $group   = array();
+        $group[] = $mform->createElement('advcheckbox', 'completionpass', null, get_string('completionpass', 'hvp'),
+            array('group' => 'cpass'));
+        $mform->disabledIf('completionpass', 'completionusegrade', 'notchecked');
+        $mform->addGroup($group, 'completionpassgroup', get_string('completionpass', 'hvp'), ' &nbsp; ', false);
+        $mform->addHelpButton('completionpassgroup', 'completionpass', 'hvp');
+        $items[] = 'completionpassgroup';
+
+        return $items;
     }
 }

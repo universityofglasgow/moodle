@@ -17,7 +17,7 @@
 /**
  * Test launch config class.
  * @author    Guy Thomas <citricity@gmail.com>
- * @copyright Copyright (c) 2019 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2019 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -26,7 +26,7 @@ use tool_ally\lti\launch_config;
 defined('MOODLE_INTERNAL') || die();
 
 class tool_ally_launch_config_test extends advanced_testcase {
-    public function setUp() {
+    public function setUp(): void {
         global $CFG;
         require_once($CFG->dirroot.'/mod/lti/locallib.php');
     }

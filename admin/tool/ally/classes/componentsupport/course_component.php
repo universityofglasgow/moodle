@@ -16,7 +16,7 @@
 
 /**
  * Html content support for courses.
- * @copyright Copyright (c) 2018 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2018 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -24,19 +24,21 @@ namespace tool_ally\componentsupport;
 
 defined ('MOODLE_INTERNAL') || die();
 
+use context;
+use moodle_url;
+use stored_file;
 use tool_ally\componentsupport\traits\html_content;
 use tool_ally\componentsupport\traits\embedded_file_map;
 use tool_ally\componentsupport\interfaces\html_content as iface_html_content;
 use tool_ally\logging\logger;
 use tool_ally\models\component;
 use tool_ally\models\component_content;
-use moodle_url;
 
 require_once($CFG->dirroot.'/course/lib.php');
 
 /**
  * Html content support for courses.
- * @copyright Copyright (c) 2018 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2018 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class course_component extends component_base implements iface_html_content {
@@ -109,7 +111,7 @@ class course_component extends component_base implements iface_html_content {
         // Add course sections.
         $rs = $this->get_course_section_summary_rows($courseid);
         foreach ($rs as $row) {
-            $sectionname = $this->get_section_name($courseid, $row);
+            $sectionname = !empty($row->name) ? $row->name : $this->get_section_name($courseid, $row);
             $array[] = new component(
                     $row->id, 'course', 'course_sections', 'summary', $courseid, $row->timemodified,
                     $row->summaryformat, $sectionname);
@@ -124,7 +126,11 @@ class course_component extends component_base implements iface_html_content {
         $recordlambda = null;
         if ($table === 'course_sections') {
             $recordlambda = function($record) {
-                if ($record->name !== null) {
+                if (empty($record->timemodified)) {
+                    $course = get_course($record->course);
+                    $record->timemodified = $course->timecreated;
+                }
+                if (!empty($record->name)) {
                     return; // Don't bother modifying $record - we have a name already!
                 }
                 try {
@@ -143,6 +149,7 @@ class course_component extends component_base implements iface_html_content {
                 }
             };
         }
+
         $content = $this->std_get_html_content($id, $table, $field, $courseid, $titlefield, 'timemodified', $recordlambda);
         return $content;
     }
@@ -156,24 +163,8 @@ class course_component extends component_base implements iface_html_content {
     private function get_section_number($sectionid) {
         global $DB;
 
-        static $sections = null; // Static caching for performance.
-
-        if (is_null($sections)) {
-            // With a 1000 courses this would take approx 516k to cache.
-            // With 10000 courses 4M to cache.
-            // With 100000 courses 32M to cache.
-            // So we are good to use static caching.
-            // http://sandbox.onlinephpfunctions.com/code/aaa8f0ed270c7e787caa6428c816fb82b11784d0.
-            $sections = $DB->get_records_menu('course_sections', null, '', 'id, section');
-        }
-
-        if (!isset($sections[$sectionid])) {
-            // Better not to throw an error because the web service might be requesting information for a section
-            // that has been deleted or something.
-            return null;
-        }
-
-        return $sections[$sectionid];
+        $section = $DB->get_record('course_sections', ['id' => $sectionid], 'section');
+        return $section->section;
     }
 
     /**
@@ -266,5 +257,14 @@ class course_component extends component_base implements iface_html_content {
             return 'section';
         }
         return parent::get_file_area($table, $field);
+    }
+
+    public function check_file_in_use(stored_file $file, ?context $context = null): bool {
+        if ($file->get_filearea() == 'overviewfiles') {
+            // Overview files is the area for the course image.
+            return true;
+        }
+
+        return $this->check_embedded_file_in_use($file, $context);
     }
 }

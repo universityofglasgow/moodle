@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @copyright  Copyright (c) 2020 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright  Copyright (c) 2021 Open LMS (https://www.openlms.net)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -45,7 +45,7 @@ $string['id'] = 'ID';
 $string['key'] = 'Clave';
 $string['keydesc'] = 'Clave del consumidor de LTI.';
 $string['level'] = 'Nivel';
-$string['message'] = 'Mensaje';
+$string['message'] = 'Mensajes';
 $string['pluginname'] = 'Ally';
 $string['pushurl'] = 'URL para actualizaciones de archivos';
 $string['pushurldesc'] = 'Inserte notificaciones sobre actualizaciones de archivos en esta URL.';
@@ -83,8 +83,11 @@ $string['logs'] = 'Registros de Ally';
 $string['logrange'] = 'Rango de registro';
 $string['loglevel:none'] = 'Ninguno';
 $string['loglevel:light'] = 'Algo bajo';
-$string['loglevel:medium'] = 'Medio';
-$string['loglevel:all'] = 'Todos';
+$string['loglevel:medium'] = 'Mediano';
+$string['loglevel:all'] = 'Todas';
+$string['logcleanuptask'] = 'Tarea de limpieza del registro de Ally';
+$string['loglifetimedays'] = 'Mantener los registros durante tantos días';
+$string['loglifetimedaysdesc'] = 'Conserve los registros de Ally durante este número de días. Establezca 0 para no borrar nunca los registros. Una tarea programada está (por defecto) configurada para ejecutarse diariamente, y eliminará las entradas de registro que tengan un número superior a este número de días.';
 $string['logger:pushtoallysuccess'] = 'Inserción exitosa en el punto de enlace de Ally';
 $string['logger:pushtoallyfail'] = 'Inserción fallida en el punto de enlace de Ally';
 $string['logger:pushfilesuccess'] = 'Inserción exitosa del/de los archivo(s) en el punto de enlace de Ally';
@@ -101,7 +104,9 @@ $string['logger:addingconenttoqueue'] = 'Adición de contenido a la cola de elem
 $string['logger:annotationmoderror'] = 'Hubo un error en la anotación de contenido del módulo de Ally.';
 $string['logger:annotationmoderror_exp'] = 'El módulo no se identificó correctamente.';
 $string['logger:failedtogetcoursesectionname'] = 'No se pudo obtener el nombre de la sección del curso';
+$string['logger:moduleidresolutionfailure'] = 'No se pudo averiguar el ID del módulo';
 $string['logger:cmidresolutionfailure'] = 'No se pudo averiguar la ID del módulo del curso';
+$string['logger:cmvisibilityresolutionfailure'] = 'No pudo solucionar la visibilidad del módulo del curso';
 $string['courseupdatestask'] = 'Insertar eventos del curso en Ally';
 $string['logger:pushcoursesuccess'] = 'Inserción exitosa del/de los evento(s) en el punto de enlace de Ally';
 $string['logger:pushcourseliveskip'] = 'Error de inserción del evento del curso en vivo';
@@ -116,3 +121,5 @@ $string['logger:servicefailure'] = 'Se produjo un error en el uso del servicio.'
 $string['logger:servicefailure_exp'] = '<br>Clase: {$a->class}<br>Parámetros: {$a->params}';
 $string['logger:autoconfigfailureteachercap'] = 'Se produjo un error al asignar un permiso de arquetipo de profesor al rol ally_webservice.';
 $string['logger:autoconfigfailureteachercap_exp'] = '<br>Capacidad: {$a->cap}<br>Permiso: {$a->permission}';
+$string['deferredcourseevents'] = 'Enviar eventos de cursos aplazados';
+$string['deferredcourseeventsdesc'] = 'Permitir el envío de eventos de cursos almacenados que se acumularon durante el fallo de comunicación con Ally';

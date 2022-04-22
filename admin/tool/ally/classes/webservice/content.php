@@ -18,7 +18,7 @@
  * Get content for single rich content item.
  *
  * @package   tool_ally
- * @copyright Copyright (c) 2018 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2018 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -39,7 +39,7 @@ use external_function_parameters;
  * Get content for single rich content item.
  *
  * @package   tool_ally
- * @copyright Copyright (c) 2018 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2018 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class content extends loggable_external_api {
@@ -66,7 +66,8 @@ class content extends loggable_external_api {
             'embeddedfiles' => new external_multiple_structure(
                 new external_single_structure([
                         'filename'     => new external_value(PARAM_TEXT, 'File name'),
-                        'pathnamehash' => new external_value(PARAM_TEXT, 'File path name hash')
+                        'pathnamehash' => new external_value(PARAM_TEXT, 'File path name hash'),
+                        'tag'          => new external_value(PARAM_TEXT, 'File dom tag')
                     ],
                     'Embedded file information'
                 ), 'Embedded files information'

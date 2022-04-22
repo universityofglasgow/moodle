@@ -19,25 +19,28 @@
  *
  * @package   tool_ally
  * @author    Guy Thomas
- * @copyright Copyright (c) 2019 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2019 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use tool_ally\files_in_use;
 use tool_ally\local_content;
 use tool_ally\componentsupport\book_component;
 use tool_ally\testing\traits\component_assertions;
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once('abstract_testcase.php');
+
 /**
  * Testcase class for the tool_ally\componentsupport\book_component class.
  *
  * @package   tool_ally
  * @author    Guy Thomas
- * @copyright Copyright (c) 2019 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2019 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class tool_ally_components_book_component_testcase extends advanced_testcase {
+class tool_ally_components_book_component_testcase extends tool_ally_abstract_testcase {
     use component_assertions;
 
     /**
@@ -75,7 +78,7 @@ class tool_ally_components_book_component_testcase extends advanced_testcase {
      */
     private $component;
 
-    public function setUp() {
+    public function setUp(): void {
         $this->resetAfterTest();
 
         $gen = $this->getDataGenerator();
@@ -153,8 +156,43 @@ class tool_ally_components_book_component_testcase extends advanced_testcase {
         $this->assertEquals(10, count($introids));
         $this->assertEquals(10, count($chapterids));
         for ($i = 0; $i < $amount; $i++) {
-            $this->assertEquals('book:book:intro:' . $this->books[$i]->id, $intros[$introids[$i]]);
-            $this->assertEquals('book:book_chapters:content:' . $this->chapters[$i]->id, $chapters[$chapterids[$i]]);
+            $this->assertContains('book:book:intro:' . $this->books[$i]->id, $intros);
+            $this->assertContains('book:book_chapters:content:' . $this->chapters[$i]->id, $chapters);
         }
     }
+
+    /**
+     * Test if file in use detection is working with this block.
+     */
+    public function test_files_in_use() {
+        global $DB;
+
+        $this->setup_books();
+
+        $context = context_module::instance($this->books[0]->cmid);
+
+        $usedfiles = [];
+        $unusedfiles = [];
+
+        // Check the intro.
+        list($usedfiles[], $unusedfiles[]) = $this->check_html_files_in_use($context, 'mod_book', $this->books[0]->id,
+            'book', 'intro');
+
+        // Check some chapter content.
+        list($usedfiles[], $unusedfiles[]) = $this->check_html_files_in_use($context, 'mod_book', $this->chapters[0]->id,
+            'book_chapters', 'content');
+
+        // This will double check that file iterator is working as expected.
+        $this->check_file_iterator_exclusion($context, $usedfiles, $unusedfiles);
+
+        // Test with an empty chapter.
+        set_config('excludeunused', 1, 'tool_ally');
+        $DB->set_field('book_chapters', 'content', '', ['id' => $this->chapters[0]->id]);
+
+        files_in_use::set_context_needs_updating($context);
+
+        $fileids = $this->get_file_ids_in_context($context);
+        $this->assertCount(1, $fileids);
+    }
+
 }

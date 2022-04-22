@@ -18,29 +18,105 @@
  * Privacy Subsystem implementation for atto_echo360attoplugin.
  *
  * @package    atto_echo360attoplugin
- * @copyright  COPYRIGHTINFO
+ * @copyright  2020 Echo360 Inc.
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 namespace atto_echo360attoplugin\privacy;
 
+use core_privacy\local\metadata\collection;
+use core_privacy\local\request\approved_contextlist;
+use core_privacy\local\request\approved_userlist;
+use core_privacy\local\request\context;
+use core_privacy\local\request\contextlist;
+use core_privacy\local\request\userlist;
+
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Privacy Subsystem for atto_echo360attoplugin implementing null_provider.
+ * Privacy Subsystem for atto_echo360attoplugin implementing metadata, plugin providers.
  *
- * @copyright  COPYRIGHTINFO
+ * @copyright  2020 Echo360 Inc.
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class provider implements \core_privacy\local\metadata\null_provider {
+class provider implements
+    \core_privacy\local\metadata\provider,
+    \core_privacy\local\request\core_userlist_provider,
+    \core_privacy\local\request\plugin\provider {
 
     /**
-     * Get the language string identifier with the component's language
-     * file to explain why this plugin stores no data.
+     * Return the personal and identifiable data fields transmitted in LTI launch requests to Echo360.
      *
-     * @return  string
+     * @param collection $items a reference to the collection to use to store the metadata.
+     * @return collection the updated collection of metadata items.
      */
-    public static function get_reason() : string {
-        return 'privacy:metadata';
+    public static function get_metadata(collection $items): collection {
+        $items->add_external_location_link(
+            'echo360.com',
+            [
+                'userid' => 'privacy:metadata:userid',
+                'fullname' => 'privacy:metadata:fullname',
+                'firstname' => 'privacy:metadata:firstname',
+                'lastname' => 'privacy:metadata:lastname',
+                'email' => 'privacy:metadata:email',
+                'roles' => 'privacy:metadata:roles',
+                'courseid' => 'privacy:metadata:courseid',
+                'courseshortname' => 'privacy:metadata:courseshortname',
+                'coursefullname' => 'privacy:metadata:coursefullname',
+            ],
+            'privacy:metadata:externalpurpose'
+        );
+
+        return $items;
+    }
+
+    /**
+     * Get the list of contexts that contain user information for the specified user.
+     *
+     * @param int $userid The user to search.
+     * @return contextlist $contextlist The contextlist containing the list of contexts used in this plugin.
+     */
+    public static function get_contexts_for_userid(int $userid) : contextlist {
+        return new contextlist();
+    }
+
+    /**
+     * Get the list of users who have data within a context.
+     *
+     * @param userlist $userlist The userlist containing the list of users who have data in this context/plugin combination.
+     */
+    public static function get_users_in_context(userlist $userlist) {
+    }
+
+    /**
+     * Export all user data for the specified user, in the specified contexts.
+     *
+     * @param approved_contextlist $contextlist The approved contexts to export information for.
+     */
+    public static function export_user_data(approved_contextlist $contextlist) {
+    }
+
+    /**
+     * Delete all data for all users in the specified context.
+     *
+     * @param context $context The specific context to delete data for.
+     */
+    public static function delete_data_for_all_users_in_context(\context $context) {
+    }
+
+    /**
+     * Delete all user data for the specified user, in the specified contexts.
+     *
+     * @param approved_contextlist $contextlist The approved contexts and user information to delete information for.
+     */
+    public static function delete_data_for_user(approved_contextlist $contextlist) {
+    }
+
+    /**
+     * Delete multiple users within a single context.
+     *
+     * @param approved_userlist $userlist The approved context and user information to delete information for.
+     */
+    public static function delete_data_for_users(approved_userlist $userlist) {
     }
 }

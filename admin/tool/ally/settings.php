@@ -18,7 +18,7 @@
  * Admin settings.
  *
  * @package   tool_ally
- * @copyright Copyright (c) 2016 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2016 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -38,6 +38,9 @@ use tool_ally\adminsetting\ally_pickroles;
 use tool_ally\adminsetting\ally_trim;
 
 if ($hassiteconfig) {
+    // We need to import the library to use a setting update callback in here.
+    require_once($CFG->dirroot.'/admin/tool/ally/lib.php');
+
     $settings = new admin_settingpage('tool_ally', get_string('pluginname', 'tool_ally'));
 
     $settings->add(new ally_pickroles('tool_ally/roles', new lang_string('contentauthors', 'tool_ally'),
@@ -64,6 +67,12 @@ if ($hassiteconfig) {
     $settings->add(new ally_config_link('tool_ally/allyclientconfig', new lang_string('allyclientconfig', 'tool_ally'),
         new moodle_url('/admin/tool/ally/lti/view.php')));
 
+    $setting = new admin_setting_configcheckbox('tool_ally/excludeunused',
+        new lang_string('excludeunused', 'tool_ally'),
+        new lang_string('excludeunuseddesc', 'tool_ally'), 0);
+    $setting->set_updatedcallback('tool_ally_exclude_setting_changed');
+    $settings->add($setting);
+
     $choices = [
         constants::RANGE_NONE => get_string('loglevel:none', 'tool_ally'),
         constants::RANGE_LIGHT => get_string('loglevel:light', 'tool_ally'),
@@ -73,6 +82,9 @@ if ($hassiteconfig) {
     $settings->add(new admin_setting_configselect('tool_ally/logrange', new lang_string('logrange', 'tool_ally'),
         null, constants::RANGE_ALL, $choices));
 
+    $settings->add(new admin_setting_configtext('tool_ally/loglifetimedays', new lang_string('loglifetimedays', 'tool_ally'),
+        new lang_string('loglifetimedaysdesc', 'tool_ally'), '14', PARAM_INT));
+
     $config     = get_config('tool_ally');
     $configured = !empty($config) && !empty($config->adminurl) && !empty($config->key) && !empty($config->secret);
     if ($configured) {
@@ -81,6 +93,10 @@ if ($hassiteconfig) {
         $ADMIN->add('tools', new admin_externalpage('allylogs', get_string('logs', 'tool_ally'),
             "$CFG->wwwroot/admin/tool/ally/logs.php", 'tool/ally:viewlogs'));
     }
+
+    $settings->add(new admin_setting_configcheckbox('tool_ally/deferredcourseevents',
+        new lang_string('deferredcourseevents', 'tool_ally'),
+        new lang_string('deferredcourseeventsdesc', 'tool_ally'), 0));
 
     $ADMIN->add('tools', $settings);
 }

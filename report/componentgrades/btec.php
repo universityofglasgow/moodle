@@ -41,6 +41,8 @@ $cm = $modinfo->get_cm($modid);
 $modcontext = context_module::instance($cm->id);
 require_capability('mod/assign:grade', $modcontext);
 
+$showgroups = !empty($course->groupmode) && get_config('report_componentgrades', 'showgroups');
+
 // Trigger event for logging.
 $event = \report_componentgrades\event\report_viewed::create(array(
             'context' => $modcontext,
@@ -71,9 +73,9 @@ $data = $DB->get_records_sql("SELECT gbf.id AS ggfid, crs.shortname AS course, a
                                 JOIN {user} stu ON stu.id = ag.userid
                                 JOIN {user} marker ON marker.id = gin.raterid
                                 JOIN {gradingform_btec_fillings} gbf ON (gbf.instanceid = gin.id)
-                                AND (gbf.criterionid = gbc.id)
-                                WHERE cm.id = ? AND gin.status = 1
-                                ORDER BY lastname ASC, firstname ASC, userid ASC, gbc.sortorder ASC,
+                                 AND (gbf.criterionid = gbc.id)
+                               WHERE cm.id = ? AND gin.status = 1
+                            ORDER BY lastname ASC, firstname ASC, userid ASC, gbc.sortorder ASC,
                                 gbc.shortname ASC", array($cm->id));
 
 foreach ($data as $d) {
@@ -85,7 +87,7 @@ foreach ($data as $d) {
     }
 }
 
-$students = report_componentgrades_get_students($course->id);
+$students = report_componentgrades_get_students($modcontext, $cm);
 
 $first = reset($data);
 if ($first === false) {
@@ -98,7 +100,7 @@ $workbook = new MoodleExcelWorkbook("-");
 $workbook->send($filename);
 $sheet = $workbook->add_worksheet($cm->name);
 
-$pos = report_componentgrades_add_header($workbook, $sheet, $course->fullname, $cm->name, 'btec', $first->btec);
+$pos = report_componentgrades_add_header($workbook, $sheet, $course->fullname, $cm->name, 'btec', $first->btec, $showgroups);
 $format = $workbook->add_format(array('size' => 12, 'bold' => 1));
 $format2 = $workbook->add_format(array('bold' => 1));
 foreach ($data as $line) {
@@ -121,8 +123,16 @@ $sheet->write_string(5, $pos, 'Comment', $format2);
 $sheet->set_column($pos, $pos, 12);
 $pos++;
 report_componentgrades_finish_colheaders($workbook, $sheet, $pos);
+foreach ($data as $item) {
+    $item->commenttext = strip_tags($item->commenttext);
+}
 $students = report_componentgrades_process_data($students, $data);
-report_componentgrades_add_data($sheet, $students, $gradinginfopos, 'btec');
+
+$groups = array();
+if ($showgroups) {
+    $groups = report_componentgrades_get_user_groups($course->id);
+}
+report_componentgrades_add_data($sheet, $students, $gradinginfopos, 'btec', $groups);
 
 $workbook->close();
 

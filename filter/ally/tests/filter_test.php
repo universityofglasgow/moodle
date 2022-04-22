@@ -16,8 +16,8 @@
 
 /**
  * Test filter lib.
- * @author    Guy Thomas <osdev@blackboard.com>
- * @copyright Copyright (c) 2017 Blackboard Inc.
+ * @author    Guy Thomas
+ * @copyright Copyright (c) 2017 Open LMS
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die();
@@ -28,7 +28,7 @@ class filter_ally_testcase extends advanced_testcase {
 
     public $filter;
 
-    public function setUp() {
+    public function setUp(): void {
         global $PAGE, $CFG;
 
         // We reset after every test because the filter modifies $CFG->additionalhtmlfooter.
@@ -311,9 +311,9 @@ EOF;
         $text = $this->img_mock_html($url);
         $filteredtext = $this->filter->filter($text);
         // Make sure seizure guard image cover exists.
-        $this->assertContains('<span class="ally-image-cover"', $filteredtext);
+        $this->assertStringContainsString('<span class="ally-image-cover"', $filteredtext);
         // As we are not logged in as a teacher, we shouldn't get the feedback placeholder.
-        $this->assertNotContains('<span class="ally-feedback"', $filteredtext);
+        $this->assertStringNotContainsString('<span class="ally-feedback"', $filteredtext);
         // Make sure both images were processed.
         $regex = '~<span class="filter-ally-wrapper ally-image-wrapper">'.
             '\\n'.'(?:\s*|)<img src="'.preg_quote($url, '~').'"~';
@@ -327,9 +327,9 @@ EOF;
         $this->setUser($teacher);
         // Make sure teachers get seizure guard and feedback place holder.
         $filteredtext = $this->filter->filter($text);
-        $this->assertContains('<span class="ally-image-cover"', $filteredtext);
+        $this->assertStringContainsString('<span class="ally-image-cover"', $filteredtext);
         // As we are logged in as a teacher, we should get the feedback placeholder.
-        $this->assertContains('<span class="ally-feedback"', $filteredtext);
+        $this->assertStringContainsString('<span class="ally-feedback"', $filteredtext);
         // Make sure both images were processed.
         preg_match_all($regex, $filteredtext, $matches);
         $count = count($matches[0]);
@@ -362,16 +362,16 @@ EOF;
         $text = $this->img_mock_html($url);
         // Make sure neither student created images were processed when logged in as a student.
         $filteredtext = $this->filter->filter($text);
-        $this->assertNotContains('<span class="filter-ally-wrapper ally-image-wrapper">', $filteredtext);
-        $this->assertNotContains('<span class="ally-image-cover"', $filteredtext);
-        $this->assertNotContains('<span class="ally-feedback"', $filteredtext);
+        $this->assertStringNotContainsString('<span class="filter-ally-wrapper ally-image-wrapper">', $filteredtext);
+        $this->assertStringNotContainsString('<span class="ally-image-cover"', $filteredtext);
+        $this->assertStringNotContainsString('<span class="ally-feedback"', $filteredtext);
 
         // Make sure neither student created images were processed when logged in as a teacher.
         $this->setUser($teacher);
         $filteredtext = $this->filter->filter($text);
-        $this->assertNotContains('<span class="filter-ally-wrapper ally-image-wrapper">', $filteredtext);
-        $this->assertNotContains('<span class="ally-image-cover"', $filteredtext);
-        $this->assertNotContains('<span class="ally-feedback"', $filteredtext);
+        $this->assertStringNotContainsString('<span class="filter-ally-wrapper ally-image-wrapper">', $filteredtext);
+        $this->assertStringNotContainsString('<span class="ally-image-cover"', $filteredtext);
+        $this->assertStringNotContainsString('<span class="ally-feedback"', $filteredtext);
     }
 
     public function test_filter_img_noslashargs() {
@@ -421,15 +421,15 @@ EOF;
 
             // We shouldn't get anything when the contexts are blacklisted.
             $filteredtext = $this->filter->filter($text);
-            $this->assertNotContains('<span class="ally-image-cover"', $filteredtext);
-            $this->assertNotContains('<span class="ally-feedback"', $filteredtext);
+            $this->assertStringNotContainsString('<span class="ally-image-cover"', $filteredtext);
+            $this->assertStringNotContainsString('<span class="ally-feedback"', $filteredtext);
             $substr = '<span class="filter-ally-wrapper ally-image-wrapper">' .
                 '<img src="' . $CFG->wwwroot . '/pluginfile.php/' . $path . '"';
-            $this->assertNotContains($substr, $filteredtext);
+            $this->assertStringNotContainsString($substr, $filteredtext);
             $substr = '<span class="ally-image-cover"';
-            $this->assertNotContains($substr, $filteredtext);
+            $this->assertStringNotContainsString($substr, $filteredtext);
             $substr = '<span class="ally-feedback"';
-            $this->assertNotContains($substr, $filteredtext);
+            $this->assertStringNotContainsString($substr, $filteredtext);
         }
     }
 
@@ -542,9 +542,9 @@ EOF;
         $text = $this->anchor_mock_html($url);
         $filteredtext = $this->filter->filter($text);
         // Make sure student gets download palceholder.
-        $this->assertContains('<span class="ally-download"', $filteredtext);
+        $this->assertStringContainsString('<span class="ally-download"', $filteredtext);
         // As we are not logged in as a teacher, we shouldn't get the feedback placeholder.
-        $this->assertNotContains('<span class="ally-feedback"', $filteredtext);
+        $this->assertStringNotContainsString('<span class="ally-feedback"', $filteredtext);
         // Make sure both anchors were processed.
         $regex = '~<span class="filter-ally-wrapper ally-anchor-wrapper">'.
             '\\n'.'(?:\s*|)<a href="'.preg_quote($url, '~').'"~';
@@ -555,9 +555,9 @@ EOF;
         $this->setUser($teacher);
         // Make sure teachers get download and feedback place holder.
         $filteredtext = $this->filter->filter($text);
-        $this->assertContains('<span class="ally-download"', $filteredtext);
+        $this->assertStringContainsString('<span class="ally-download"', $filteredtext);
         // As we are logged in as a teacher, we should get the feedback placeholder.
-        $this->assertContains('<span class="ally-feedback"', $filteredtext);
+        $this->assertStringContainsString('<span class="ally-feedback"', $filteredtext);
         // Make sure both anchors were processed.
         preg_match_all($regex, $filteredtext, $matches);
         $count = count($matches[0]);
@@ -584,16 +584,16 @@ EOF;
         $text = $this->anchor_mock_html($url);
         // Make sure neither student created files were processed when logged in as a student.
         $filteredtext = $this->filter->filter($text);
-        $this->assertNotContains('<span class="filter-ally-wrapper ally-image-wrapper">', $filteredtext);
-        $this->assertNotContains('<span class="ally-download"', $filteredtext);
-        $this->assertNotContains('<span class="ally-feedback"', $filteredtext);
+        $this->assertStringNotContainsString('<span class="filter-ally-wrapper ally-image-wrapper">', $filteredtext);
+        $this->assertStringNotContainsString('<span class="ally-download"', $filteredtext);
+        $this->assertStringNotContainsString('<span class="ally-feedback"', $filteredtext);
 
         // Make sure neither student created files were processed when logged in as a teacher.
         $this->setUser($teacher);
         $filteredtext = $this->filter->filter($text);
-        $this->assertNotContains('<span class="filter-ally-wrapper ally-image-wrapper">', $filteredtext);
-        $this->assertNotContains('<span class="ally-download"', $filteredtext);
-        $this->assertNotContains('<span class="ally-feedback"', $filteredtext);
+        $this->assertStringNotContainsString('<span class="filter-ally-wrapper ally-image-wrapper">', $filteredtext);
+        $this->assertStringNotContainsString('<span class="ally-download"', $filteredtext);
+        $this->assertStringNotContainsString('<span class="ally-feedback"', $filteredtext);
     }
 
     public function test_filter_anchor_noslashargs() {
@@ -634,9 +634,9 @@ EOF;
         $this->setUser($teacher);
         // Make sure teachers get download and feedback place holder.
         $filteredtext = $this->filter->filter($text);
-        $this->assertContains('<span class="ally-download"', $filteredtext);
+        $this->assertStringContainsString('<span class="ally-download"', $filteredtext);
         // As we are logged in as a teacher, we should get the feedback placeholder.
-        $this->assertContains('<span class="ally-feedback"', $filteredtext);
+        $this->assertStringContainsString('<span class="ally-feedback"', $filteredtext);
     }
 
     public function test_filter_anchor_blacklistedcontexts() {
@@ -679,8 +679,8 @@ EOF;
 EOF;
             // We shouldn't get anything when contexts were blacklisted.
             $filteredtext = $this->filter->filter($text);
-            $this->assertNotContains('<span class="ally-download"', $filteredtext);
-            $this->assertNotContains('<span class="ally-feedback"', $filteredtext);
+            $this->assertStringNotContainsString('<span class="ally-download"', $filteredtext);
+            $this->assertStringNotContainsString('<span class="ally-feedback"', $filteredtext);
             // Make sure wrappers do not exist - i.e not processed.
             $regex = '~<span class="filter-ally-wrapper ally-anchor-wrapper">'.
                 '\\n'.'(?:\s*|)<a href="'.preg_quote($url, '~').'"~';
@@ -793,11 +793,11 @@ EOF;
         $fs = get_file_storage();
         $fs->create_file_from_string($filerecord, 'Test content');
 
-        // Should still be empty when a non image file has been added (only image files are mapped).
+        // Add an file.
         $map = phpunit_util::call_internal_method(
             $this->filter, 'map_forum_attachment_file_paths_to_pathhash', [$course], 'filter_ally'
         );
-        $this->assertEmpty($map);
+        $this->assertNotEmpty($map);
 
         // Add an image file.
         $testfile = 'testpng_small.png';

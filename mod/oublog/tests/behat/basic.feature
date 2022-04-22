@@ -36,37 +36,19 @@ Feature: Test Post and Comment on OUBlog entry
 
   Scenario: Multiple blog type tests - basic access etc
     Given I log in as "teacher1"
+    And the following "activities" exist:
+      | activity | name   | course | section | groupmode | individual |
+      | oublog   | B.SG   | C1     | 1       | 1         |            |
+      | oublog   | B.VG   | C1     | 1       | 2         |            |
+      | oublog   | B.SI   | C1     | 1       |           | 1          |
+      | oublog   | B.VI   | C1     | 1       |           | 2          |
+      | oublog   | B.SISG | C1     | 1       | 1         | 1          |
+      | oublog   | B.SIVG | C1     | 1       | 2         | 1          |
+      | oublog   | B.VISG | C1     | 1       | 1         | 2          |
+      | oublog   | B.VIVG | C1     | 1       | 2         | 2          |
     And I am on homepage
     And I am on "Course 1" course homepage
     And I turn editing mode on
-    When I add a "OU blog" to section "1" and I fill the form with:
-      | Blog name | B.SG |
-      | Group mode | Separate groups |
-    And I add a "OU blog" to section "1" and I fill the form with:
-      | Blog name | B.VG |
-      | Group mode | Visible groups |
-    And I add a "OU blog" to section "1" and I fill the form with:
-      | Blog name | B.SI |
-      | Individual blogs | Separate individual blogs |
-    And I add a "OU blog" to section "1" and I fill the form with:
-      | Blog name | B.VI |
-      | Individual blogs | Visible individual blogs |
-    And I add a "OU blog" to section "1" and I fill the form with:
-      | Blog name | B.SISG |
-      | Individual blogs | Separate individual blogs |
-      | Group mode | Separate groups |
-    And I add a "OU blog" to section "1" and I fill the form with:
-      | Blog name | B.SIVG |
-      | Individual blogs | Separate individual blogs |
-      | Group mode | Visible groups |
-    And I add a "OU blog" to section "1" and I fill the form with:
-      | Blog name | B.VISG |
-      | Individual blogs | Visible individual blogs |
-      | Group mode | Separate groups |
-    And I add a "OU blog" to section "1" and I fill the form with:
-      | Blog name | B.VIVG |
-      | Individual blogs | Visible individual blogs |
-      | Group mode | Visible groups |
     Then I should see "Test oublog basics"
     # Editing teacher adds posts to all the blogs.
     Given I follow "Test oublog basics"
@@ -392,7 +374,7 @@ Feature: Test Post and Comment on OUBlog entry
     Then I should see "P0" in the ".oublog-post.oublog-even .oublog-post-content" "css_element"
     And I should see "P1" in the ".oublog-post.oublog-odd .oublog-post-content" "css_element"
 
-  @javascript
+  @javascript @_file_upload
   Scenario: Check tag sorting and filter by tag as student
     Given I log in as "teacher1"
     And I am on homepage
@@ -694,15 +676,12 @@ Feature: Test Post and Comment on OUBlog entry
 
   Scenario: Check group level access when no groups
     Given I log in as "teacher1"
+    And the following "activities" exist:
+      | activity | name   | course | section | groupmode |
+      | oublog   | B.SG   | C1     | 1       | 1         |
+      | oublog   | B.VG   | C1     | 1       | 2         |
     And I am on homepage
     And I am on "Course 1" course homepage
-    And I turn editing mode on
-    When I add a "OU blog" to section "1" and I fill the form with:
-      | Blog name | B.SG |
-      | Group mode | Separate groups |
-    And I add a "OU blog" to section "1" and I fill the form with:
-      | Blog name | B.VG |
-      | Group mode | Visible groups |
     # Editing teacher adds posts to all the blogs.
     Given I am on "Course 1" course homepage
     And I follow "B.SG"
@@ -761,3 +740,20 @@ Feature: Test Post and Comment on OUBlog entry
     When I click on "#close-filter-icon" "css_element"
     Then I should see "Teacher1 blog" in the "div.oublog-post-top-details h2.oublog-title" "css_element"
     And I should see "Teacher1 blog 2" in the "div.oublog-post-top-details h2.oublog-title" "css_element"
+
+  Scenario: Check view count is reset on restore
+    Given I log in as "student1"
+    And I am on "Course 1" course homepage
+    And I follow "Test oublog basics"
+    Then I should see "Total visits to this blog: 1"
+    And I log out
+    Given I log in as "admin"
+    And I am on "Course 1" course homepage
+    And I follow "Test oublog basics"
+    Then I should see "Total visits to this blog: 2"
+    Given I am on "Course 1" course homepage
+    And I turn editing mode on
+    And I duplicate "Test oublog basics" activity editing the new copy with:
+      | Blog name | Test oublog basics - duplicate |
+    And I follow "Test oublog basics - duplicate"
+    Then I should see "Total visits to this blog: 1"

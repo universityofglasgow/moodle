@@ -20,7 +20,7 @@
  * @package   mod_hsuforum
  * @copyright 1999 onwards Martin Dougiamas  {@link http://moodle.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright Copyright (c) 2012 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2012 Open LMS (https://www.openlms.net)
  * @author    Mark Nielsen
  */
 
@@ -78,6 +78,9 @@ $string['cannotupdatepost'] = 'You can not update this post';
 $string['cannotviewpostyet'] = 'You cannot read other students questions in this discussion yet because you haven\'t posted';
 $string['cannotviewusersposts'] = 'There are no posts made by this user that you are able to view.';
 $string['cleanreadtime'] = 'Mark old posts as read hour';
+$string['completiondetail:discussions'] = 'Start discussions: {$a}';
+$string['completiondetail:replies'] = 'Post replies: {$a}';
+$string['completiondetail:posts'] = 'Make forum posts: {$a}';
 $string['completiondiscussions'] = 'Student must create discussions:';
 $string['completiondiscussionsdesc'] = 'Student must create at least {$a} discussion(s)';
 $string['completiondiscussionsgroup'] = 'Require discussions';
@@ -199,6 +202,7 @@ $string['existingsubscribers'] = 'Existing subscribers';
 $string['exportdiscussion'] = 'Export whole discussion to portfolio';
 $string['forcessubscribe'] = 'This forum forces everyone to be subscribed';
 $string['forum'] = 'Forum';
+$string['gradingmethodpreview'] = 'Grading criteria';
 $string['hsuforum:addinstance'] = 'Add a new forum';
 $string['hsuforum:allowforcesubscribe'] = 'Allow force subscribe';
 $string['forumauthorhidden'] = 'Author (hidden)';
@@ -747,3 +751,4 @@ $string['hiderecentposts'] = 'Hide recent Posts';
 $string['confighiderecentposts'] = 'Set to yes to stop the display of recent forum posts on the course page.';
 $string['forumsubjectdeleted'] = 'This forum post has been removed';
 $string['forumbodydeleted'] = 'The content of this forum post has been removed and can no longer be accessed.';
+$string['gradeitem:posts'] = 'Posts';

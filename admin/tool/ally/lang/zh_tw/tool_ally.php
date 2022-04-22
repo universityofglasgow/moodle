@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @copyright  Copyright (c) 2020 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright  Copyright (c) 2021 Open LMS (https://www.openlms.net)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -83,8 +83,11 @@ $string['logs'] = 'Ally 記錄';
 $string['logrange'] = '記錄範圍';
 $string['loglevel:none'] = '無';
 $string['loglevel:light'] = '輕度';
-$string['loglevel:medium'] = '中度';
+$string['loglevel:medium'] = '中';
 $string['loglevel:all'] = '全部';
+$string['logcleanuptask'] = 'Ally 日誌清除工作';
+$string['loglifetimedays'] = '在此天數內保留日誌';
+$string['loglifetimedaysdesc'] = '在此天數內保留 Ally 日誌。設為 0 表示從不刪除日誌。排定的工作 (預設) 設為每天執行，並且將移除比此天數更久的日誌項目。';
 $string['logger:pushtoallysuccess'] = '成功推送至 Ally 端點';
 $string['logger:pushtoallyfail'] = '未成功推送至 Ally 端點';
 $string['logger:pushfilesuccess'] = '成功推送檔案至 Ally 端點';
@@ -101,7 +104,9 @@ $string['logger:addingconenttoqueue'] = '正在新增內容至推送佇列';
 $string['logger:annotationmoderror'] = 'Ally 模組內容批註失敗。';
 $string['logger:annotationmoderror_exp'] = '未正確識別模組。';
 $string['logger:failedtogetcoursesectionname'] = '無法取得課程章節名稱';
+$string['logger:moduleidresolutionfailure'] = '無法解析模組編號';
 $string['logger:cmidresolutionfailure'] = '無法解析課程模組編號';
+$string['logger:cmvisibilityresolutionfailure'] = '無法解析課程模組可見性';
 $string['courseupdatestask'] = '推送課程事件至 Ally';
 $string['logger:pushcoursesuccess'] = '成功推送課程事件至 Ally 端點';
 $string['logger:pushcourseliveskip'] = '即時課程事件推送失敗';
@@ -116,3 +121,5 @@ $string['logger:servicefailure'] = '取用服務時失敗。';
 $string['logger:servicefailure_exp'] = '<br>類別：{$a->class}<br>參數：{$a->params}';
 $string['logger:autoconfigfailureteachercap'] = '指派講師 archetype 功能給 ally_webservice 角色時失敗。';
 $string['logger:autoconfigfailureteachercap_exp'] = '<br>能力：{$a->cap}<br>權限：{$a->permission}';
+$string['deferredcourseevents'] = '傳送延後的課程事件';
+$string['deferredcourseeventsdesc'] = '允許傳送儲存的課程事件，這些事件在與 Ally 通訊失敗期間累積';

@@ -69,7 +69,7 @@ $eventparams = array(
 );
 
 $current = choicegroup_get_user_answer($choicegroup, $USER);
-if ($action == 'delchoicegroup' and confirm_sesskey() and is_enrolled($context, NULL, 'mod/choicegroup:choose') and $choicegroup->allowupdate and !($choicegroup->timeclose and (time() > $choicegroup->timeclose))) {
+if ($action == 'delchoicegroup' and confirm_sesskey() and is_enrolled($context, null, 'mod/choicegroup:choose') and $choicegroup->allowupdate and !($choicegroup->timeclose and (time() > $choicegroup->timeclose))) {
     // user wants to delete his own choice:
     if ($current !== false) {
         if (groups_is_member($current->id, $USER->id)) {
@@ -81,7 +81,7 @@ if ($action == 'delchoicegroup' and confirm_sesskey() and is_enrolled($context, 
             $event->add_record_snapshot('choicegroup', $choicegroup);
             $event->trigger();
         }
-        $current = choicegroup_get_user_answer($choicegroup, $USER, FALSE, TRUE);
+        $current = choicegroup_get_user_answer($choicegroup, $USER, false, true);
         // Update completion state
         $completion = new completion_info($course);
         if ($completion->is_enabled($cm) && $choicegroup->completionsubmit) {
@@ -98,10 +98,24 @@ $completion=new completion_info($course);
 $completion->set_module_viewed($cm);
 
 /// Submit any new data if there is any
-if (data_submitted() && is_enrolled($context, NULL, 'mod/choicegroup:choose') && confirm_sesskey()) {
+if (data_submitted() && is_enrolled($context, null, 'mod/choicegroup:choose') && confirm_sesskey()) {
 
     if ($choicegroup->multipleenrollmentspossible == 1) {
         $number_of_groups = optional_param('number_of_groups', '', PARAM_INT);
+        $enrollmentscount = 0;
+
+        if ($choicegroup->maxenrollments > 0) {
+            for ($i = 0; $i < $number_of_groups; $i++) {
+                $answer_value = optional_param('answer_' . $i, '', PARAM_INT);
+                if ($answer_value != '') {
+                    $enrollmentscount++;
+                }
+            }
+            if ($enrollmentscount > $choicegroup->maxenrollments) {
+                redirect(new moodle_url('/mod/choicegroup/view.php',
+                    array('id' => $cm->id, 'notify' => 'mustchoosemax', 'sesskey' => sesskey())));
+            }
+        }
 
         for ($i = 0; $i < $number_of_groups; $i++) {
             $answer_value = optional_param('answer_' . $i, '', PARAM_INT);
@@ -163,7 +177,18 @@ if ($notify and confirm_sesskey()) {
         echo $OUTPUT->notification(get_string('choicegroupsaved', 'choicegroup'), 'notifysuccess');
     } else if ($notify === 'mustchooseone') {
         echo $OUTPUT->notification(get_string('mustchooseone', 'choicegroup'), 'notifyproblem');
+    } else if ($notify === 'mustchoosemax') {
+        echo $OUTPUT->notification(get_string('mustchoosemax', 'choicegroup', $choicegroup->maxenrollments), 'notifyproblem');
     }
+}
+
+if (class_exists('\core_completion\cm_completion_details') && class_exists('\core\activity_dates')) {
+    // Show the activity dates and completion details.
+    $modinfo = get_fast_modinfo($course);
+    $cminfo = $modinfo->get_cm($cm->id);
+    $cmcompletion = \core_completion\cm_completion_details::get_instance($cminfo, $USER->id);
+    $activitydates = \core\activity_dates::get_dates_for_module($cminfo, $USER->id);
+    echo $OUTPUT->activity_information($cminfo, $cmcompletion, $activitydates);
 }
 
 /// Check to see if groups are being used in this choicegroup
@@ -174,7 +199,8 @@ if ($groupmode) {
     groups_print_activity_menu($cm, $CFG->wwwroot . '/mod/choicegroup/view.php?id='.$id);
 }
 
-$allresponses = choicegroup_get_response_data($choicegroup, $cm);   // Big function, approx 6 SQL calls per user
+// Big function, approx 6 SQL calls per user.
+$allresponses = choicegroup_get_response_data($choicegroup, $cm, $groupmode, $choicegroup->onlyactive);
 
 
 if (has_capability('mod/choicegroup:readresponses', $context)) {
@@ -190,7 +216,7 @@ if ($choicegroup->intro) {
 //if user has already made a selection, and they are not allowed to update it, show their selected answer.
 if (isloggedin() && ($current !== false) ) {
     if ($choicegroup->multipleenrollmentspossible == 1) {
-        $currents = choicegroup_get_user_answer($choicegroup, $USER, TRUE, true);
+        $currents = choicegroup_get_user_answer($choicegroup, $USER, true, true);
 
         $names = array();
         if (is_array($currents)) {
@@ -222,13 +248,13 @@ if ($choicegroup->timeclose !=0) {
 
 $options = choicegroup_prepare_options($choicegroup, $USER, $cm, $allresponses);
 $renderer = $PAGE->get_renderer('mod_choicegroup');
-if ( (!$current or $choicegroup->allowupdate) and $choicegroupopen and is_enrolled($context, NULL, 'mod/choicegroup:choose')) {
+if ( (!$current or $choicegroup->allowupdate) and $choicegroupopen and is_enrolled($context, null, 'mod/choicegroup:choose')) {
 // They haven't made their choicegroup yet or updates allowed and choicegroup is open
 
-    echo $renderer->display_options($options, $cm->id, $choicegroup->display, $choicegroup->publish, $choicegroup->limitanswers, $choicegroup->showresults, $current, $choicegroupopen, false, $choicegroup->multipleenrollmentspossible);
+    echo $renderer->display_options($options, $cm->id, $choicegroup->display, $choicegroup->publish, $choicegroup->limitanswers, $choicegroup->showresults, $current, $choicegroupopen, false, $choicegroup->multipleenrollmentspossible, $choicegroup->onlyactive);
 } else {
     // form can not be updated
-    echo $renderer->display_options($options, $cm->id, $choicegroup->display, $choicegroup->publish, $choicegroup->limitanswers, $choicegroup->showresults, $current, $choicegroupopen, true, $choicegroup->multipleenrollmentspossible);
+    echo $renderer->display_options($options, $cm->id, $choicegroup->display, $choicegroup->publish, $choicegroup->limitanswers, $choicegroup->showresults, $current, $choicegroupopen, true, $choicegroup->multipleenrollmentspossible, $choicegroup->onlyactive);
 }
 $choicegroupformshown = true;
 

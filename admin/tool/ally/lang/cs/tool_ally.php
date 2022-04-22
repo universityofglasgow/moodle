@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @copyright  Copyright (c) 2020 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright  Copyright (c) 2021 Open LMS (https://www.openlms.net)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -50,7 +50,7 @@ $string['pluginname'] = 'Ally';
 $string['pushurl'] = 'Adresa URL aktualizací souborů';
 $string['pushurldesc'] = 'Posune oznámení o aktualizacích souborů na tuto adresu URL.';
 $string['queuesendmessagesfailure'] = 'Při odesílání zpráv do služby AWS SQS došlo k chybě. Data chyby: $a';
-$string['secret'] = 'Soukromí';
+$string['secret'] = 'Tajný klíč';
 $string['secretdesc'] = 'Tajný klíč LTI';
 $string['showdata'] = 'Zobrazit data';
 $string['hidedata'] = 'Skrýt data';
@@ -81,10 +81,13 @@ $string['lessonanswertitle'] = 'Odpověď pro lekci "{$a}"';
 $string['lessonresponsetitle'] = 'Odpověď pro lekci {$a}';
 $string['logs'] = 'Protokoly služby Ally';
 $string['logrange'] = 'Rozsah protokolu';
-$string['loglevel:none'] = 'Žádný';
-$string['loglevel:light'] = 'Mírná';
+$string['loglevel:none'] = 'Bez určení';
+$string['loglevel:light'] = 'Mírný';
 $string['loglevel:medium'] = 'Střední';
-$string['loglevel:all'] = 'Vše';
+$string['loglevel:all'] = 'Všechny';
+$string['logcleanuptask'] = 'Úloha čištění protokolu služby Ally';
+$string['loglifetimedays'] = 'Uchovávat protokoly tento počet dnů';
+$string['loglifetimedaysdesc'] = 'Protokoly Ally se budou uchovávat po tento počet dnů. Když nastavíte 0, protokoly nebudou odstraňovány nikdy. Naplánovaná úloha je (ve výchozím nastavení) nastavena na denní spouštění a odstraní záznamy protokolů, které jsou starší než tento počet dní.';
 $string['logger:pushtoallysuccess'] = 'Úspěšné posunutí do koncového bodu služby Ally';
 $string['logger:pushtoallyfail'] = 'Neúspěšné posunutí do koncového bodu služby Ally';
 $string['logger:pushfilesuccess'] = 'Úspěšné posunutí souboru nebo souborů do koncového bodu služby Ally';
@@ -101,7 +104,9 @@ $string['logger:addingconenttoqueue'] = 'Přidávání obsahu do fronty pro push
 $string['logger:annotationmoderror'] = 'Vytvoření poznámky k obsahu modulu služby Ally se nezdařilo.';
 $string['logger:annotationmoderror_exp'] = 'Modul nebyl správně identifikován.';
 $string['logger:failedtogetcoursesectionname'] = 'Nepodařilo se získat název sekce kurzu';
+$string['logger:moduleidresolutionfailure'] = 'Nepodařilo se vyřešit ID modulu';
 $string['logger:cmidresolutionfailure'] = 'Nepodařilo se vyřešit ID modulu kurzu';
+$string['logger:cmvisibilityresolutionfailure'] = 'Nepodařilo se vyřešit viditelnost modulu kurzu';
 $string['courseupdatestask'] = 'Posunout události kurzu do služby Ally';
 $string['logger:pushcoursesuccess'] = 'Úspěšné posunutí události nebo událostí kurzu do koncového bodu služby Ally';
 $string['logger:pushcourseliveskip'] = 'Selhání posunutí události živého kurzu';
@@ -116,3 +121,5 @@ $string['logger:servicefailure'] = 'Používání služby se nezdařilo.';
 $string['logger:servicefailure_exp'] = '<br>Třída: {$a->class}<br>Parametry: {$a->params}';
 $string['logger:autoconfigfailureteachercap'] = 'Přiřazení pravomoci archetypu učitele k roli ally_webservice se nezdařilo.';
 $string['logger:autoconfigfailureteachercap_exp'] = '<br>Pravomoc: {$a->cap}<br>Oprávnění: {$a->permission}';
+$string['deferredcourseevents'] = 'Odesílat odložené události kurzu';
+$string['deferredcourseeventsdesc'] = 'Povolte odesílání uložených událostí kurzu, které se nahromadily během selhání komunikace s Ally';

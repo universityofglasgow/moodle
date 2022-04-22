@@ -19,7 +19,7 @@
  *
  * @package   tool_ally
  * @author    Guy Thomas
- * @copyright Copyright (c) 2019 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2019 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -38,7 +38,7 @@ require_once('abstract_testcase.php');
  *
  * @package   tool_ally
  * @author    Guy Thomas
- * @copyright Copyright (c) 2019 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2019 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class tool_ally_components_question_component_testcase extends tool_ally_abstract_testcase {
@@ -69,7 +69,7 @@ class tool_ally_components_question_component_testcase extends tool_ally_abstrac
      */
     private $component;
 
-    public function setUp() {
+    public function setUp(): void {
         $this->resetAfterTest();
 
         $gen = $this->getDataGenerator();
@@ -116,14 +116,14 @@ class tool_ally_components_question_component_testcase extends tool_ally_abstrac
     }
 
     public function test_list_intro_and_content() {
-        $this->markTestSkipped('HTML content not yet supported, to be fixed in INT-15837');
+        $this->markTestSkipped('HTML content not yet supported');
     }
 
     public function test_get_all_html_content() {
-        $this->markTestSkipped('HTML content not yet supported, to be fixed in INT-15837');
+        $this->markTestSkipped('HTML content not yet supported');
     }
 
     public function test_get_all_course_annotation_maps() {
-        $this->markTestSkipped('HTML content not yet supported, to be fixed in INT-15837');
+        $this->markTestSkipped('HTML content not yet supported');
     }
 }

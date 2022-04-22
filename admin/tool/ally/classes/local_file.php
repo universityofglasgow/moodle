@@ -18,7 +18,7 @@
  * File library.
  *
  * @package   tool_ally
- * @copyright Copyright (c) 2016 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2016 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -26,6 +26,7 @@ namespace tool_ally;
 
 defined('MOODLE_INTERNAL') || die();
 
+use stored_file;
 use tool_ally\componentsupport\component_base;
 use tool_ally\componentsupport\file_component_base;
 use tool_ally\componentsupport\interfaces\file_replacement;
@@ -37,7 +38,7 @@ use moodle_url;
  * File library.
  *
  * @package   tool_ally
- * @copyright Copyright (c) 2016 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2016 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class local_file {
@@ -365,7 +366,12 @@ class local_file {
             }
         }
 
-        if (count($arr) === 2) {
+        if ((strpos($component, 'mod_') === 0) && ($arr[0] === 'intro')) {
+            // Mod intro files file a specific file format.
+            $filearea = array_shift($arr);
+            $itemid = 0;
+            $filename = implode('/', $arr);
+        } else if (count($arr) === 2) {
             $filearea = array_shift($arr);
             $itemid = 0;
             $filename = array_shift($arr);
@@ -376,7 +382,7 @@ class local_file {
         } else {
             $filearea = array_shift($arr);
             $itemid = array_shift($arr);
-            $filename = implode($arr, '/');
+            $filename = implode('/', $arr);
         }
 
         return new pluginfileurlprops($contextid, $component, $filearea, $itemid, $filename);
@@ -389,9 +395,8 @@ class local_file {
      */
     public static function get_file_fromprops(pluginfileurlprops $props) {
         $fs = new \file_storage();
-        $file = $fs->get_file($props->contextid, $props->component, $props->filearea, $props->itemid, $props->filename);
-        return $file;
-
+        return $fs->get_file($props->contextid, $props->component, $props->filearea, $props->itemid,
+            $props->filepath, basename($props->filename));
     }
 
     /**
@@ -522,5 +527,24 @@ class local_file {
         ], false);
 
         cache::instance()->invalidate_file_keys($file);
+    }
+
+    /**
+     * Remote a file from the deletion queue. This is needed because a file can be readded while still in
+     * the deletion queue, which would cause the file to be 'missing'.
+     *
+     * @param stored_file $file
+     */
+    public static function remove_file_from_deletion_queue(stored_file $file) {
+        global $DB;
+
+        $courseid = self::courseid($file);
+
+        $DB->delete_records('tool_ally_deleted_files', [
+            'courseid'     => $courseid,
+            'pathnamehash' => $file->get_pathnamehash(),
+            'contenthash'  => $file->get_contenthash(),
+        ]);
+
     }
 }

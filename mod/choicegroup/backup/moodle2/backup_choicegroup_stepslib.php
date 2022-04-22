@@ -29,6 +29,9 @@
 /**
  * Define the complete choicegroup structure for backup, with file and id annotations
  */
+
+defined('MOODLE_INTERNAL') || die();
+
 class backup_choicegroup_activity_structure_step extends backup_activity_structure_step {
 
     protected function define_structure() {
@@ -36,9 +39,10 @@ class backup_choicegroup_activity_structure_step extends backup_activity_structu
         // Define each element separated
         $choicegroup = new backup_nested_element('choicegroup', array('id'), array(
             'name', 'intro', 'introformat', 'publish',
-            'showresults', 'display', 'allowupdate', 'allowunanswered',
+            'multipleenrollmentspossible',
+            'showresults', 'display', 'allowupdate', 'showunanswered',
             'limitanswers', 'timeopen', 'timeclose', 'timemodified',
-            'completionsubmit', 'sortgroupsby'));
+            'completionsubmit', 'sortgroupsby', 'onlyactive'));
 
         $options = new backup_nested_element('options');
 

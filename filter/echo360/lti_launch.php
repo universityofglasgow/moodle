@@ -17,9 +17,9 @@
 /**
  * Echo360 view file for LTI content.
  *
- * @package local_echo360
- * @author  Echo360
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    filter_echo360
+ * @copyright  2020 Echo360 Inc.
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 require_once(dirname(dirname(dirname(__FILE__))) . '/config.php');
@@ -49,9 +49,11 @@ try {
     $cm = get_coursemodule_from_id('', $cmid, 0, false, MUST_EXIST);
     $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
     $context = context_course::instance($course->id);
-    $PAGE->set_cm($cm, $course); // Set identified Course Module context for cmid value in authenticated embedded Echo360 media link.
+    // Set identified Course Module context for cmid value in authenticated embedded Echo360 media link.
+    $PAGE->set_cm($cm, $course);
 } catch (Exception $e) {
-    // Do not know the Course by the Course Module specified in the embedded Echo360 media link, use HTTP referer to determine Course context.
+    // Do not know the Course by the Course Module specified in the embedded Echo360 media link,
+    // use HTTP referer to determine Course context.
     if (isset($_SERVER['HTTP_REFERER'])) {
         // Check HTTP_REFERER is a view.php page to extract the id / course query value.
         if (substr(parse_url($_SERVER['HTTP_REFERER'], PHP_URL_PATH), -strlen('view.php')) === 'view.php') {
@@ -75,7 +77,8 @@ try {
     } else {
         $context = context_system::instance(); // Unable to determine Course context, default to Site context.
     }
-    $PAGE->set_context($context); // Set identified Course / Site context for cmid value in authenticated embedded Echo360 media link.
+    // Set identified Course / Site context for cmid value in authenticated embedded Echo360 media link.
+    $PAGE->set_context($context);
 }
 
 // Verify user access.
@@ -98,14 +101,16 @@ if ($width != null && $height != null) {
 }
 $lticonfig = $lti->generate_lti_configuration($params);
 
+// Generate LTI launch form and post details.
 $formid = 'form-' . rand(1000, 9999);
-$action = $url;
-echo '<html><body>';
-echo '<form id="' . $formid . '" action="' . $url . '" method="post">' . "\n";
+echo html_writer::start_tag('html');
+echo html_writer::start_tag('body');
+echo html_writer::start_tag('form', array('id' => $formid, 'action' => $url, 'method' => 'post'));
 foreach ($lticonfig as $key => $value) {
-    echo '<input type="hidden" name="' . $key . '" value="' . $value . '">' . "\n";
+    echo html_writer::empty_tag('input', array('type' => 'hidden', 'name' => $key, 'value' => $value));
 }
-echo '</form>';
-echo '<script>document.getElementById("' . $formid . '").submit();</script>';
-echo '</body></html>';
+echo html_writer::end_tag('form');
+echo html_writer::tag('script', 'document.getElementById("' . $formid . '").submit();', null);
+echo html_writer::end_tag('body');
+echo html_writer::end_tag('html');
 

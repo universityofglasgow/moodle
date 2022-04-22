@@ -16,9 +16,9 @@
 
 /**
  * Filter for processing file links for Ally accessibility enhancements.
- * @author    Guy Thomas <osdev@blackboard.com>
+ * @author    Guy Thomas
  * @package   filter_ally
- * @copyright Copyright (c) 2017 Blackboard Inc.
+ * @copyright Copyright (c) 2017 Open LMS
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die();
@@ -34,9 +34,9 @@ use tool_ally\logging\logger;
 
 /**
  * Filter for processing file links for Ally accessibility enhancements.
- * @author    Guy Thomas <osdev@blackboard.com>
+ * @author    Guy Thomas
  * @package   filter_ally
- * @copyright Copyright (c) 2017 Blackboard Inc.
+ * @copyright Copyright (c) 2017 Open LMS
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class filter_ally extends moodle_text_filter {
@@ -49,7 +49,12 @@ class filter_ally extends moodle_text_filter {
     /**
      * @var bool is the filter active in this context?
      */
-    private $filteractive = false;
+    private $filteractive = null;
+
+    /**
+     * @var array course ids for which we are currently annotating.
+     */
+    private static $isannotating = [];
 
     /**
      * Constants for identifying html element types and 'ally-'.$type.'-wrapper' usage.
@@ -91,11 +96,17 @@ class filter_ally extends moodle_text_filter {
             if ($file->is_directory()) {
                 continue;
             }
-            $fullpath = $cm->context->id.'/'.$component.'/'.$filearea.'/'.
-                $file->get_itemid().'/'.
-                $file->get_filepath().'/'.
-                $file->get_filename();
-            $fullpath = str_replace('///', '/', $fullpath);
+
+            // Use the logic from moodle_url::make_pluginfile_url() to generate matching URL path.
+            $path = [];
+            $path[] = $cm->context->id;
+            $path[] = $component;
+            $path[] = $filearea;
+            if ($file->get_itemid() !== null) {
+                $path[] = $file->get_itemid();
+            }
+            $fullpath = implode('/', $path) . $file->get_filepath() . $file->get_filename();
+
             $map[$fullpath] = $file->get_pathnamehash();
         }
         return $map;
@@ -132,7 +143,7 @@ class filter_ally extends moodle_text_filter {
         } else if (in_array($PAGE->pagetype, ['mod-forum-view', 'mod-forum-discuss'])) {
             $cmid = optional_param('id', false, PARAM_INT);
             if ($cmid) {
-                list($course, $cm) = get_course_and_cm_from_cmid($cmid);
+                [$course, $cm] = get_course_and_cm_from_cmid($cmid);
                 unset($course);
             } else {
                 $forumid = optional_param('forum', false, PARAM_INT);
@@ -152,7 +163,7 @@ class filter_ally extends moodle_text_filter {
         }
 
         if (!empty($cm)) {
-            $map = $this->get_cm_file_map($cm, 'mod_forum', 'attachment', 'image%');
+            $map = $this->get_cm_file_map($cm, 'mod_forum', 'attachment');
         }
 
         return $map;
@@ -173,7 +184,7 @@ class filter_ally extends moodle_text_filter {
             if ($cmid === false) {
                 return $map;
             }
-            list($course, $cm) = get_course_and_cm_from_cmid($cmid);
+            [$course, $cm] = get_course_and_cm_from_cmid($cmid);
             unset($course);
             $map = $this->get_cm_file_map($cm, 'mod_assign', 'introattachment');
         }
@@ -196,7 +207,7 @@ class filter_ally extends moodle_text_filter {
             if ($cmid === false) {
                 return $map;
             }
-            list($course, $cm) = get_course_and_cm_from_cmid($cmid);
+            [$course, $cm] = get_course_and_cm_from_cmid($cmid);
             unset($course);
             /** @var cm_info $cm */
             $cm;
@@ -205,8 +216,11 @@ class filter_ally extends moodle_text_filter {
             $folders = $DB->get_records('folder', ['course' => $COURSE->id]);
             $map = [];
             foreach ($folders as $folder) {
+                if (empty($folder->name)) {
+                    continue;
+                }
                 try {
-                    list ($course, $cm) = get_course_and_cm_from_instance($folder->id, 'folder');
+                    [$course, $cm] = get_course_and_cm_from_instance($folder->id, 'folder');
                     $map = array_merge($map, $this->get_cm_file_map($cm, 'mod_folder', 'content'));
                 } catch (\moodle_exception $ex) {
                     // Course module id not valid, component not identified correctly.
@@ -234,7 +248,7 @@ class filter_ally extends moodle_text_filter {
             if ($cmid === false) {
                 return $map;
             }
-            list($course, $cm) = get_course_and_cm_from_cmid($cmid);
+            [$course, $cm] = get_course_and_cm_from_cmid($cmid);
             unset($course);
             $map = $this->get_cm_file_map($cm, 'mod_glossary', 'attachment');
         }
@@ -254,9 +268,14 @@ class filter_ally extends moodle_text_filter {
         $contextsbymoduleid = [];
         $moduleidsbycontext = [];
         foreach ($modules as $modid => $module) {
-            if ($module->uservisible) {
-                $contextsbymoduleid[$module->id] = $module->context->id;
-                $moduleidsbycontext[$module->context->id] = $module->id;
+            try {
+                if ($module->uservisible) {
+                    $contextsbymoduleid[$module->id] = $module->context->id;
+                    $moduleidsbycontext[$module->context->id] = $module->id;
+                }
+            } catch (Throwable $ex) {
+                $context = ['_exception' => $ex];
+                logger::get()->error('logger:cmvisibilityresolutionfailure', $context);
             }
         }
 
@@ -264,7 +283,7 @@ class filter_ally extends moodle_text_filter {
             return [];
         }
 
-        list($insql, $params) = $DB->get_in_or_equal($contextsbymoduleid);
+        [$insql, $params] = $DB->get_in_or_equal($contextsbymoduleid);
 
         $sql = "contextid $insql
             AND component = 'mod_{$modname}'
@@ -322,7 +341,7 @@ class filter_ally extends moodle_text_filter {
             if ($cmid === false) {
                 return $map;
             }
-            list($course, $cm) = get_course_and_cm_from_cmid($cmid);
+            [$course, $cm] = get_course_and_cm_from_cmid($cmid);
             unset($course);
             $map['page_contents'] = $this->get_cm_file_map($cm, 'mod_lesson', 'page_contents');
             $map['page_answers'] = $this->get_cm_file_map($cm, 'mod_lesson', 'page_answers');
@@ -369,7 +388,7 @@ class filter_ally extends moodle_text_filter {
         if ($pageid === null) {
             $cmid = optional_param('id', null, PARAM_INT);
             if ($cmid) {
-                list ($course, $cm) = get_course_and_cm_from_cmid($cmid);
+                [$course, $cm] = get_course_and_cm_from_cmid($cmid);
                 $lessonid = $cm->instance;
                 // Get first page id for lesson.
                 $sql = 'SELECT min(id) FROM {lesson_pages} WHERE lessonid = ?';
@@ -400,7 +419,7 @@ class filter_ally extends moodle_text_filter {
             }
             if ($cmid) {
                 try {
-                    list ($course, $cm) = get_course_and_cm_from_cmid($cmid);
+                    [$course, $cm] = get_course_and_cm_from_cmid($cmid);
                     $bookid = $cm->instance;
                     // Get first chapter id for book.
                     $sql = 'SELECT min(id) FROM {book_chapters} WHERE bookid = ?';
@@ -424,14 +443,19 @@ class filter_ally extends moodle_text_filter {
      * @param context $context
      */
     public function setup($page, $context) {
-        global $USER, $COURSE, $CFG, $PAGE, $DB;
+        global $USER, $COURSE, $CFG, $PAGE;
 
         // Make sure that the ally filter is active for the course, otherwise do not continue.
         // Note - we have to do this for the course context, we can't do granular module contexts since
         // a lot of the ally wrappers are applied via JS as opposed to via the filter - JS has no
         // awareness of contexts.
-        $activefilters = filter_get_active_in_context(context_course::instance($COURSE->id));
-        if (!isset($activefilters['ally'])) {
+        if ($this->filteractive === null) {
+            $activefilters = filter_get_active_in_context(context_course::instance($COURSE->id));
+            if (!isset($activefilters['ally'])) {
+                $this->filteractive = false;
+                return;
+            }
+        } else if ($this->filteractive === false) {
             return;
         }
         $this->filteractive = true;
@@ -444,13 +468,22 @@ class filter_ally extends moodle_text_filter {
             return;
         }
 
+        // Avoid looping through the filter setup is course caches are being built. There can be a loop here.
+        if (self::is_annotating($COURSE->id)) {
+            return;
+        }
+
         // This only requires execution once per request.
         static $jsinitialised = false;
         if (!$jsinitialised) {
 
             $sectionmap = $this->map_sections_to_ids();
             $sectionjson = json_encode($sectionmap);
+
+            // Possible course cache build recursion avoidance, by adding the course if to a static array.
+            self::start_annotating($COURSE->id);
             $annotationmaps = json_encode(local_content::annotation_maps($COURSE->id));
+            self::end_annotating($COURSE->id);
 
             require_once($CFG->libdir.'/filelib.php');
 
@@ -698,7 +731,7 @@ EOF;
                 if (empty($urlcomps)) {
                     continue;
                 }
-                list($contextid, $component, $filearea, $itemid, $filename) = $urlcomps;
+                [$contextid, $component, $filearea, $itemid, $filename] = $urlcomps;
 
                 if ($component === 'mod_glossary' && $filearea === 'attachment') {
                     // We have to do this with JS as the DOM needs rewriting.
@@ -822,5 +855,39 @@ EOF;
         $text = str_replace('#P#', '', $text);
 
         return $text;
+    }
+
+    /**
+     * Are we currently annotating this course? If so, we should not try to do so again, we can be in a loop.
+     *
+     * Please remove this when MDL-67405 has been closed, as filters will be disabled from looping.
+     *
+     * @param $courseid
+     * @return bool
+     */
+    public static function is_annotating($courseid) : bool {
+        return array_key_exists($courseid, self::$isannotating);
+    }
+
+    /**
+     * @param $courseid
+     */
+    public static function start_annotating($courseid) {
+        if (self::is_annotating($courseid)) {
+            throw new coding_exception('Can\'t start annotating this course.'
+                    . ' Ally filter is already annotating course with id: ' . $courseid);
+        }
+        self::$isannotating[$courseid] = true;
+    }
+
+    /**
+     * @param $courseid
+     */
+    public static function end_annotating($courseid) {
+        if (!self::is_annotating($courseid)) {
+            throw new coding_exception('Can\'t end annotating this course.'
+                . ' Ally filter was not annotating course with id: ' . $courseid);
+        }
+        unset(self::$isannotating[$courseid]);
     }
 }

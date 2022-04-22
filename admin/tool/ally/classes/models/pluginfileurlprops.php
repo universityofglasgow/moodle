@@ -18,7 +18,7 @@
  * Plugin file url properties model.
  *
  * @package   tool_ally
- * @copyright Copyright (c) 2018 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2018 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -54,6 +54,11 @@ class pluginfileurlprops {
     public $filename;
 
     /**
+     * @var string
+     */
+    public $filepath;
+
+    /**
      * pluginfileurlprops constructor.
      * @param int $contextid
      * @param string $component
@@ -81,6 +86,8 @@ class pluginfileurlprops {
 
         $this->filename = urldecode($this->filename);
         $this->filearea = urldecode($this->filearea);
+        $filepath = dirname($this->filename);
+        $this->filepath = $filepath == '.' ? '/' : '/' . $filepath . '/';
     }
 
     public function to_list() {

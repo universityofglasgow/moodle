@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @copyright  Copyright (c) 2020 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright  Copyright (c) 2021 Open LMS (https://www.openlms.net)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -81,10 +81,13 @@ $string['lessonanswertitle'] = 'Risposta per la lezione "{$a}"';
 $string['lessonresponsetitle'] = 'Risultato per la lezione "{$a}"';
 $string['logs'] = 'Log Ally';
 $string['logrange'] = 'Intervallo registro';
-$string['loglevel:none'] = 'Nessuno/a';
-$string['loglevel:light'] = 'Light';
+$string['loglevel:none'] = 'Senza numerazione';
+$string['loglevel:light'] = 'Leggero';
 $string['loglevel:medium'] = 'Medio';
-$string['loglevel:all'] = 'Tutti';
+$string['loglevel:all'] = 'Tutto';
+$string['logcleanuptask'] = 'Attività di pulizia log Ally';
+$string['loglifetimedays'] = 'Conserva i log per questi molti giorni';
+$string['loglifetimedaysdesc'] = 'Per conservare i log Ally per questi molti giorni. Imposta su 0 per non eliminare mai i log. L’esecuzione quotidiana di un’attività pianificata è preimpostata ed elimina le voci log più vecchie di questi molti giorni.';
 $string['logger:pushtoallysuccess'] = 'Forzato con successo al punto finale Ally';
 $string['logger:pushtoallyfail'] = 'Push all\'end point Ally non riuscito';
 $string['logger:pushfilesuccess'] = 'Forzatura dei file al punto finale Ally riuscita';
@@ -101,7 +104,9 @@ $string['logger:addingconenttoqueue'] = 'Aggiunta dei contenuti alla coda di for
 $string['logger:annotationmoderror'] = 'Annotazione dei contenuti del modulo Ally non riuscita.';
 $string['logger:annotationmoderror_exp'] = 'Il modulo non è stato identificato correttamente.';
 $string['logger:failedtogetcoursesectionname'] = 'Impossibile ottenere il nome della sezione del corso';
+$string['logger:moduleidresolutionfailure'] = 'Impossibile risolvere l\'ID del modulo';
 $string['logger:cmidresolutionfailure'] = 'Impossibile risolvere l\'ID del modulo del corso';
+$string['logger:cmvisibilityresolutionfailure'] = 'Impossibile risolvere la visibilità del modulo del corso';
 $string['courseupdatestask'] = 'Forza eventi del corso in Ally';
 $string['logger:pushcoursesuccess'] = 'Forzatura successiva degli eventi del corso al punto di fine di Ally';
 $string['logger:pushcourseliveskip'] = 'Errore di forzatura evento corso in tempo reale';
@@ -116,3 +121,5 @@ $string['logger:servicefailure'] = 'Non andato a buon fine durante la fruizione 
 $string['logger:servicefailure_exp'] = '<br>Classe {$a->class}<br>Parametri: {$a->params}';
 $string['logger:autoconfigfailureteachercap'] = 'Non andato a buon fine durante l\'assegnazione a un docente di una capacità archetipo al ruolo ally_webservice.';
 $string['logger:autoconfigfailureteachercap_exp'] = '<br>Capacità: {$a->cap}<br>Permesso: {$a->permission}';
+$string['deferredcourseevents'] = 'Invia eventi corso rinviati';
+$string['deferredcourseeventsdesc'] = 'Consenti l’invio di eventi corso salvati e conservati durante l’errore di comunicazione con Ally';

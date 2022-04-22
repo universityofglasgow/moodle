@@ -18,14 +18,17 @@
  * Atto echo360attoplugin version file.
  *
  * @package    atto_echo360attoplugin
- * @copyright  COPYRIGHTINFO
+ * @copyright  2020 Echo360 Inc.
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2020031901;                    // The current plugin version (Date: YYYYMMDDXX).
+$plugin->version   = 2020081801;                    // The current plugin version (Date: YYYYMMDDXX).
 $plugin->requires  = 2017010100;                    // Requires this Moodle version.
 $plugin->component = 'atto_echo360attoplugin';      // Full name of the plugin (used for diagnostics).
 $plugin->maturity  = MATURITY_STABLE;               // Human readable version information.
-$plugin->release   = '1.0.19 (Build 2020031901)';   // Update value on lib.php as well.
+$plugin->release   = '1.0.25 (Build 2020081801)';   // Update value on ajax.php as well.
+$plugin->dependencies = array(
+    'filter_echo360' => 2020060601,                 // The Echo360 filter plugin must be present.
+);

@@ -265,80 +265,65 @@ class lib {
     /**
      * go and find enrollments across all Moodles
      * from external enrollment tables
+     * @param object $user
+     * @return array
      */
-    public static function get_all_enrolments( $guid ) {
+    public static function get_all_enrolments($user) {
         global $CFG;
 
-        // Get plugin config for local_gusync.
-        $config = get_config('local_gusync');
-
-        // Is that plugin configured?
-        if (empty($config->dbhost)) {
-            return false;
-        }
-
-        // Just use local_gusync's library functions.
-        if (file_exists($CFG->dirroot . '/local/gusync/lib.php')) {
-            require_once($CFG->dirroot . '/local/gusync/lib.php');
+        // Get student's courses
+        $fields = ['id', 'fullname', 'shortname', 'visible', 'enddate'];
+        $courses = enrol_get_all_users_courses($user->id, false, $fields);
+        if (!$courses) {
+            return [];
         } else {
-            return false;
-        }
-
-        // Attempt to connect to external db.
-        if (!$extdb = local_gusync_dbinit($config)) {
-            return false;
-        }
-
-        // SQL to find user enrolments.
-        $sql = "select * from moodleenrolments join moodlecourses ";
-        $sql .= "on (moodleenrolments.moodlecoursesid = moodlecourses.id) ";
-        $sql .= "where guid='" . addslashes( $guid ) . "' ";
-        $sql .= "order by site, timelastaccess desc ";
-        $enrolments = local_gusync_query( $extdb, $sql );
-
-        $extdb->Close();
-        if (count($enrolments) == 0) {
-            return array();
-        } else {
-            return $enrolments;
+    //echo "<pre>"; var_dump($courses); die;
+            return $courses;
         }
     }
 
     /**
      * print enrolments
      */
-    public static function format_enrolments($enrolments) {
+    public static function format_enrolments($userid, $courses) {
         global $DB;
 
-        if (empty($enrolments)) {
+        if (empty($courses)) {
             return [];
         }
         $formattedenrolments = [];
 
-        // Run through enrolments.
-        foreach ($enrolments as $enrolment) {
+        // Get GCAT customfield id
+        if ($customfield = $DB->get_record('customfield_field', ['shortname' => 'show_on_studentdashboard'])) {
+            $gcatid = $customfield->id;
+        } else {
+            $gcatid = 0;
+        }
 
-            // Check target course actually exists
-            if ($course = $DB->get_record('course', ['id' => $enrolment->courseid])) {
-                $courselink = new \moodle_url('/course/view.php', ['id' => $enrolment->courseid]);
-                $ended = ($course->enddate) && (time() > $course->enddate);
-                $notstarted = time() < $course->startdate;
-            } else {
-                $courselink = '';
-                $ended = false;
-                $notstarted = false;
-            }    
-            if (empty($enrolment->timelastaccess)) {
+        // Run through enrolments.
+        foreach ($courses as $course) {
+            $courselink = new \moodle_url('/course/view.php', ['id' => $course->id]);
+            $ended = ($course->enddate) && (time() > $course->enddate);
+            $notstarted = time() < $course->startdate;
+    
+            if (!$lastaccess = $DB->get_record('user_lastaccess', ['userid' => $userid, 'courseid' => $course->id])) {
                 $lasttime = get_string('never');
             } else {
-                $lasttime = date('d/M/y H:i', $enrolment->timelastaccess);
+                $lasttime = userdate($lastaccess->timeaccess);
+            }
+            if ($DB->get_record('customfield_data', ['fieldid' => $gcatid, 'instanceid' => $course->id, 'intvalue' => 1])) {
+                $gcatenabled = true;
+            } else {
+                $gcatenabled = false;
             }
             $formattedenrolments[] = (object)[
                 'courselink' => $courselink,
-                'name' => $enrolment->name,
+                'name' => $course->fullname,
                 'lastaccess' => $lasttime,
                 'ended' => $ended,
                 'notstarted' => $notstarted,
+                'gcatenabled' => $gcatenabled,
+                'hidden' => !$course->visible,
             ];
         }
 
@@ -348,7 +333,7 @@ class lib {
     /**
      * print MyCampus data
      */
-    public static function format_mycampus($courses, $guid) {
+    public static function format_mycampus($courses, $guid, $enrolments) {
 
         // Normalise.
         $guid = strtolower( $guid );
@@ -363,6 +348,7 @@ class lib {
             $gucourses = self::mycampus_code($course->courses);
             foreach ($gucourses as $gucourse) {
                 $gucourse->link = new \moodle_url('/course/view.php', ['id' => $gucourse->id]);
+                $gucourse->enrolled = array_key_exists($gucourse->id, $enrolments);
             }
 
             $formatted[] = (object)[
@@ -416,8 +402,10 @@ class lib {
         $user = create_user_record( strtolower($guid), 'not cached', 'guid' );
         $user->firstname = $result[$config->field_map_firstname];
         $user->lastname = $result[$config->field_map_lastname];
-        if (!empty($result['workforceid'])) {
+        if (!empty($result['workforceid']) && !empty($config->field_map_idnumber)) {
             $user->idnumber = $result[$config->field_map_idnumber];
+        } else {
+            $user->idnumber = '';
         }
         $user->city = 'Glasgow';
         $user->country = 'GB';
@@ -439,9 +427,11 @@ class lib {
     private static function mycampus_code($code) {
         global $DB;
 
-        $sql = 'SELECT cc.* from {course} cc
+        /*$sql = 'SELECT cc.* from {course} cc
             JOIN {enrol_gudatabase_codes} egc ON egc.courseid = cc.id
-            WHERE code = :code';
+            WHERE code = :code';*/
+        $sql = 'SELECT cc.* from {course} cc
+            WHERE cc.id IN (SELECT courseid FROM {enrol_gudatabase_codes} WHERE code = :code GROUP BY code)';
         $gucourses = $DB->get_records_sql($sql, ['code' => $code]);
         return $gucourses;
     }
@@ -579,6 +569,83 @@ class lib {
             $groupid = groups_create_group($group);
             return $groupid;
         }
+    }
+
+    /**
+     * Get Turnitin EULA status
+     * @param int $userid
+     * @return boolean
+     */
+    public static function get_tii_eula($userid) {
+        global $DB;
+
+        if ($tiiuser = $DB->get_record('plagiarism_turnitin_users', ['userid' => $userid])) {
+            return $tiiuser->user_agreement_accepted == 1;
+        } else { 
+            return false;
+        }
+    }
+
+    /**
+     * Get activity url from cmid
+     * @param int cmid
+     * @return string
+     */
+    private static function get_cm_link($cmid) {
+        global $CFG, $DB;
+
+        if ($cm = $DB->get_record('course_modules', ['id' => $cmid])) {
+            $module = $DB->get_record('modules', ['id' => $cm->module], '*', MUST_EXIST);
+            $link = $CFG->wwwroot . '/mod/' . $module->name . '/view.php?id=' . $cmid;
+        } else {
+            $link = '-';
+        }
+
+        return $link;
+    }
+
+    /**
+     * Get Turnitin data
+     * @param int $userid
+     * @param string $guid
+     * @return array
+     */
+    public static function get_turnitin($userid, $guid) {
+        global $DB;
+
+        if ($tiifiles = $DB->get_records('plagiarism_turnitin_files', ['userid' => $userid])) {
+            foreach ($tiifiles as $tiifile) {
+                $tiifile->formattedexternalid = !empty($tiifile->externalid) ? $tiifile->externalid : '-';
+                $tiifile->formattedsimilarityscore = !empty($tiifile->similarityscore) ? $tiifile->similarityscore : '-';
+                $tiifile->formattedlastmodified = userdate($tiifile->lastmodified);
+                $tiifile->errortext = !empty($tiifile->errorcode) ? get_string('errorcode' . $tiifile->errorcode, 'plagiarism_turnitin') : ' ';
+                $tiifile->oktoresend = $tiifile->statuscode != 'queued';
+                $tiifile->resendlink = new \moodle_url('/report/guid/index.php', [
+                    'guid' => $guid,
+                    'action' => 'tiiresend',
+                    'tid' => $tiifile->id,
+                ]);
+                $tiifile->link = self::get_cm_link($tiifile->cm);
+            }
+            return array_values($tiifiles);
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Reset turnitin submission
+     * @param int $tid
+     */
+    public static function reset_turnitin($tid) {
+        global $DB;
+
+        $plagiarismfile = $DB->get_record('plagiarism_turnitin_files', ['id' => $tid], '*', MUST_EXIST);
+        $plagiarismfile->statuscode = 'queued';
+        $plagiarismfile->similarityscore = null;
+        $plagiarismfile->errorcode = null;
+        $plagiarismfile->errormsg = null;
+        $DB->update_record('plagiarism_turnitin_files', $plagiarismfile);
     }
 
 }

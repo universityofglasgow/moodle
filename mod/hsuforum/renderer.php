@@ -21,7 +21,7 @@
  * @package   mod_hsuforum
  * @copyright 2009 Sam Hemelryk
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright Copyright (c) 2012 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2012 Open LMS (https://www.openlms.net)
  * @author Mark Nielsen
  */
 
@@ -30,6 +30,8 @@ use mod_hsuforum\renderables\advanced_editor;
 
 require_once(__DIR__.'/lib/discussion/subscribe.php');
 require_once($CFG->dirroot.'/lib/formslib.php');
+require_once($CFG->dirroot . '/grade/grading/lib.php');
+
 
 /**
  * A custom renderer class that extends the plugin_renderer_base and
@@ -38,7 +40,7 @@ require_once($CFG->dirroot.'/lib/formslib.php');
  * @package   mod_hsuforum
  * @copyright 2009 Sam Hemelryk
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright Copyright (c) 2012 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2012 Open LMS (https://www.openlms.net)
  * @author Mark Nielsen
  **/
 class mod_hsuforum_renderer extends plugin_renderer_base {
@@ -227,6 +229,33 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             }
         }
 
+        if (!empty($CFG->mod_hsuforum_grading_interface)) {
+            $gradingmanager = get_grading_manager($context, 'mod_hsuforum', 'posts');
+            $gradingcontrollerpreview = '';
+            if ($gradingmethod = $gradingmanager->get_active_method()) {
+                $controller = $gradingmanager->get_controller($gradingmethod);
+                if ($controller->is_form_defined()) {
+                    $gradingcontrollerpreview = $controller->render_preview($PAGE);
+                    if ($gradingcontrollerpreview) {
+                        $output .= '<div class="text-right">';
+                        $output .= \html_writer::link('#hsuforum_gradingcriteria', get_string('gradingmethodpreview', 'hsuforum'),
+                            ['class' => 'btn btn-link text-right', 'data-toggle' => 'collapse', 'role' => 'button', 'aria-expanded' => 'false',
+                                'aria-controls' => 'hsuforum_gradingcriteria']);
+                        $output .= '</div>';
+                        $output .= '<div class="row">
+                                    <div class="col">
+                                    <div class="collapse multi-collapse" id="hsuforum_gradingcriteria">
+                                      <div class="card card-body">
+                                      '. $gradingcontrollerpreview .'
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>';
+                    }
+                }
+            }
+        }
+
         $output = ob_get_contents().$output;
 
         ob_end_clean();
@@ -341,7 +370,8 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $data->replyavatars = array();
         if ($data->replies > 0) {
             // Get actual replies
-            $fields = user_picture::fields('u');
+            $userfieldsapi = \core_user\fields::for_userpic();
+            $fields = $userfieldsapi->get_sql('u', false, '', '', false)->selects;
             $sql = "SELECT $fields, hp.max
                     FROM {user} u
                     JOIN (
@@ -865,7 +895,7 @@ HTML;
             $output .= $this->output->heading(get_string("invalidmodule", "error"));
         } else {
             $cm = $modinfo->instances['hsuforum'][$forum->id];
-            $canviewemail = in_array('email', get_extra_user_fields(context_module::instance($cm->id)));
+            $canviewemail = in_array('email', \core_user\fields::get_identity_fields(context_module::instance($cm->id), false));
             $strparams = new stdclass();
             $strparams->name = format_string($forum->name);
             $strparams->count = count($users);
@@ -1704,7 +1734,7 @@ HTML;
         }
         return <<<HTML
 <div class="hsuforum-reply-wrapper$t->thresholdblocked">
-    <form method="post" role="region" aria-label="$t->legend" class="hsuforum-form $t->class" action="$actionurl" autocomplete="off">
+    <form method="post" role="form" aria-label="$t->legend" class="hsuforum-form $t->class" action="$actionurl" autocomplete="off">
         <fieldset>
             <legend>$t->legend</legend>
             $t->thresholdwarning

@@ -17,16 +17,21 @@
 /**
  * File processor for Ally.
  * @package   tool_ally
- * @copyright Copyright (c) 2018 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2018 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 namespace tool_ally;
+
+use backup;
+
+use context_course;
 
 use core\event\base;
 
 use core\event\course_created;
 use core\event\course_updated;
 use core\event\course_deleted;
+use core\event\course_restored;
 
 use core\event\course_module_created;
 use core\event\course_module_updated;
@@ -36,6 +41,9 @@ use core\event\course_section_created;
 use core\event\course_section_updated;
 use core\event\course_section_deleted;
 
+use core\event\group_created;
+use core\event\group_deleted;
+use core\event\group_updated;
 use mod_forum\event\discussion_created;
 use mod_forum\event\discussion_updated;
 use mod_forum\event\discussion_deleted;
@@ -65,7 +73,7 @@ defined('MOODLE_INTERNAL') || die();
  * Can be used to process individual or groups of files.
  *
  * @package   tool_ally
- * @copyright Copyright (c) 2018 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2018 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -76,11 +84,13 @@ class event_handlers {
     const API_RICH_CNT_DELETED = 'rich_content_deleted';
     const API_COURSE_UPDATED = 'course_updated';
     const API_COURSE_DELETED = 'course_deleted';
+    const API_COURSE_COPIED = 'course_copied';
 
     /**
      * @param course_created $event
      */
     public static function course_created(course_created $event) {
+        \cache::make('tool_ally', 'annotationmaps')->delete($event->courseid);
         $courseid = $event->courseid;
         $contents = local_content::get_html_content($courseid, 'course', 'course', 'summary', $courseid);
         content_processor::push_content_update($contents, self::API_RICH_CNT_CREATED);
@@ -94,8 +104,10 @@ class event_handlers {
      * @param course_updated $event
      */
     public static function course_updated(course_updated $event) {
+        \cache::make('tool_ally', 'annotationmaps')->delete($event->courseid);
         $courseid = $event->courseid;
         $contents = local_content::get_html_content($courseid, 'course', 'course', 'summary', $courseid);
+        files_in_use::set_context_needs_updating($event->get_context());
         content_processor::push_content_update($contents, self::API_RICH_CNT_UPDATED);
         course_processor::push_course_event(
             self::API_COURSE_UPDATED,
@@ -113,6 +125,29 @@ class event_handlers {
             self::API_COURSE_DELETED,
             $event->timecreated,
             $courseid);
+        files_in_use::delete_course_records($courseid);
+    }
+
+    /**
+     * @param course_restored $event
+     */
+    public static function course_restored(course_restored $event) {
+        $destcourseid = $event->courseid;
+
+        $sourcecourseid = $event->other['originalcourseid'] ?? null;
+        $mode = $event->other['mode'] ?? null;
+        $target = $event->other['target'] ?? null;
+
+        // Specifically catch course copy events.
+        if ($mode === backup::MODE_COPY && $target === backup::TARGET_NEW_COURSE && $sourcecourseid) {
+            course_processor::push_course_event(
+                self::API_COURSE_COPIED,
+                $event->timecreated,
+                $destcourseid,
+                $sourcecourseid);
+        }
+
+        // Can intercept more types of restores here if we want.
     }
 
     /**
@@ -121,6 +156,7 @@ class event_handlers {
      * @throws \dml_exception
      */
     private static function course_section_crud(base $event, $apieventname) {
+        \cache::make('tool_ally', 'annotationmaps')->delete($event->courseid);
         $sectionid = $event->objectid;
         $courseid = $event->courseid;
 
@@ -128,7 +164,7 @@ class event_handlers {
             local_content::queue_delete($courseid, $sectionid, 'course', 'course_sections', 'summary');
             return;
         }
-
+        files_in_use::set_context_needs_updating(context_course::instance($courseid));
         $content = local_content::get_html_content($sectionid, 'course', 'course_sections', 'summary', $courseid);
 
         content_processor::push_content_update([$content], $apieventname);
@@ -146,6 +182,7 @@ class event_handlers {
      * @throws \dml_exception
      */
     public static function course_section_updated(course_section_updated $event) {
+        files_in_use::set_context_needs_updating($event->get_context());
         self::course_section_crud($event, self::API_RICH_CNT_UPDATED);
     }
 
@@ -154,7 +191,22 @@ class event_handlers {
      * @throws \dml_exception
      */
     public static function course_section_deleted(course_section_deleted $event) {
+        files_in_use::set_context_needs_updating($event->get_context());
         self::course_section_crud($event, self::API_RICH_CNT_DELETED);
+    }
+
+    /**
+     * @param group_created $event
+     */
+    public static function group_created(group_created $event) {
+        files_in_use::set_group_needs_updating($event->objectid, $event->contextid);
+    }
+
+    /**
+     * @param group_updated $event
+     */
+    public static function group_updated(group_updated $event) {
+        files_in_use::set_group_needs_updating($event->objectid, $event->contextid);
     }
 
     /**
@@ -162,8 +214,15 @@ class event_handlers {
      * @param $apieventname
      */
     private static function course_module_crud(base $event, $apieventname) {
+        \cache::make('tool_ally', 'annotationmaps')->delete($event->courseid);
         $module = $event->other['modulename'];
         $id = $event->other['instanceid'];
+
+        if ($apieventname == self::API_RICH_CNT_UPDATED) {
+            // We only need to do this on update.
+            files_in_use::set_context_needs_updating($event->get_context());
+        }
+
         $contents = local_content::get_all_html_content($id, $module);
         if (empty($contents)) {
             return;
@@ -191,8 +250,11 @@ class event_handlers {
      * @throws \moodle_exception
      */
     public static function course_module_deleted(course_module_deleted $event) {
+        \cache::make('tool_ally', 'annotationmaps')->delete($event->courseid);
         $module = $event->other['modulename'];
         $id = $event->other['instanceid'];
+
+        files_in_use::delete_context_records($event->get_context()->id);
 
         if (!local_content::component_supports_html_content($module)) {
             return;
@@ -207,6 +269,7 @@ class event_handlers {
         foreach ($fields as $field) {
             local_content::queue_delete($event->courseid, $id, $module, $module, $field);
         }
+
     }
 
     /**
@@ -217,12 +280,17 @@ class event_handlers {
      * @throws \moodle_exception
      */
     private static function forum_discussion_crud(base $event, $eventname, $forumtype = 'forum') {
+        \cache::make('tool_ally', 'annotationmaps')->delete($event->courseid);
         $module = $forumtype;
         $component = local_content::component_instance($module);
         $userid = $event->userid;
         // Don't go any further if user is not a teacher / manager / admin, etc..
         if (!$component->user_is_approved_author_type($userid, $event->get_context())) {
             return;
+        }
+
+        if ($eventname == self::API_RICH_CNT_UPDATED) {
+            files_in_use::set_context_needs_updating($event->get_context());
         }
 
         // Get the forum post id from the discussion without hitting the DB!
@@ -276,6 +344,7 @@ class event_handlers {
      * @param string $forumtype
      */
     public static function forum_post_updated(base $event, $forumtype = 'forum') {
+        \cache::make('tool_ally', 'annotationmaps')->delete($event->courseid);
         $module = $forumtype;
         $component = local_content::component_instance($module);
         $userid = $event->userid;
@@ -286,6 +355,7 @@ class event_handlers {
         $discussionid = $event->other['discussionid'];
         $postid = $event->objectid;
         $table = $forumtype.'_posts';
+        files_in_use::set_context_needs_updating($event->get_context());
 
         $recordsnapshot = $event->get_record_snapshot($forumtype.'_discussions', $discussionid);
         if (intval($recordsnapshot->firstpost) === intval($postid)) {
@@ -348,12 +418,17 @@ class event_handlers {
      * @throws \moodle_exception
      */
     private static function module_item_crud(base $event, $eventname, $contentfield, $table = null, $id = null) {
+        \cache::make('tool_ally', 'annotationmaps')->delete($event->courseid);
         $module = local::clean_component_string($event->component);
         $component = local_content::component_instance($module);
         $userid = $event->userid;
         // Don't go any further if user is not a teacher / manager / admin, etc..
         if (!$component->user_is_approved_author_type($userid, $event->get_context())) {
             return;
+        }
+
+        if ($eventname !== self::API_RICH_CNT_CREATED) {
+            files_in_use::set_context_needs_updating($event->get_context());
         }
 
         if ($table === null) {
@@ -439,6 +514,7 @@ class event_handlers {
      */
     private static function lesson_page_crud(base $event, $eventname) {
         global $DB;
+        \cache::make('tool_ally', 'annotationmaps')->delete($event->courseid);
 
         self::module_item_crud($event, $eventname, 'contents');
         // Get answers for page.

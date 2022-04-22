@@ -18,7 +18,7 @@
  * Files that are processed for accessibility.
  *
  * @package   tool_ally
- * @copyright Copyright (c) 2016 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2016 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -30,7 +30,7 @@ defined('MOODLE_INTERNAL') || die();
  * Files that are processed for accessibility.
  *
  * @package   tool_ally
- * @copyright Copyright (c) 2016 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2016 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class files_iterator implements \Iterator {
@@ -107,10 +107,11 @@ class files_iterator implements \Iterator {
 
     /**
      * SQL sorting.
+     * Set a default sort order, as some DBs (like postgres) may return results in an inconsistent order otherwise.
      *
      * @var string
      */
-    private $sort = '';
+    private $sort = 'ORDER BY f.id ASC';
 
     /**
      * Start page to use when rewinding.
@@ -247,8 +248,9 @@ class files_iterator implements \Iterator {
             $params['since'] = $this->since;
         }
         if ($this->context instanceof \context) {
-            $filtersql .= ' AND c.path LIKE :path ';
-            $params['path'] = $this->context->path.'%';
+            $filtersql .= ' AND (c.path LIKE :path OR c.id = :ctxid)';
+            $params['path'] = $this->context->path.'/%';
+            $params['ctxid'] = $this->context->id;
         }
         if (!empty($this->component)) {
             $filtersql .= ' AND f.component = :component ';
@@ -258,7 +260,7 @@ class files_iterator implements \Iterator {
             $filtersql .= ' AND f.filearea = :filearea ';
             $params['filearea'] = $this->filearea;
         }
-        if (!empty($this->itemid)) {
+        if (!empty($this->itemid) && is_numeric($this->itemid)) {
             $filtersql .= ' AND f.itemid = :itemid ';
             $params['itemid'] = $this->itemid;
         }

@@ -26,8 +26,6 @@
 namespace local_xp\local\controller;
 defined('MOODLE_INTERNAL') || die();
 
-use block_xp\local\controller\page_controller;
-
 /**
  * Log controller class.
  *
@@ -36,10 +34,7 @@ use block_xp\local\controller\page_controller;
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class log_controller extends page_controller {
-
-    protected $routename = 'log';
-    protected $supportsgroups = true;
+class log_controller extends \block_xp\local\controller\log_controller {
 
     protected function get_table() {
         $table = new \local_xp\output\log_table(
@@ -48,19 +43,6 @@ class log_controller extends page_controller {
         );
         $table->define_baseurl($this->pageurl);
         return $table;
-    }
-
-    protected function get_page_html_head_title() {
-        return get_string('courselog', 'block_xp');
-    }
-
-    protected function get_page_heading() {
-        return get_string('courselog', 'block_xp');
-    }
-
-    protected function page_content() {
-        $this->print_group_menu();
-        echo $this->get_table()->out(50, true);
     }
 
 }

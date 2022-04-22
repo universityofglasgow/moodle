@@ -23,7 +23,7 @@
     {}
 }}
 
-<h1 class="m-b-1">{{ request.headline }}</h1>
+<h1 class="mb-1">{{ request.headline }}</h1>
 
 <dl class="row">
     <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}requestnumber, report_enhance{{/ str }}</dt>
@@ -53,6 +53,21 @@
 </dl>
 
 <dl class="row">
+    <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}service, report_enhance{{/ str }}</dt>
+    <dd class="col-xs-8 col-sm-9 col-lg-10">{{ request.serviceformatted }}</span></dd>
+</dl>
+
+<dl class="row">
+    <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}audience, report_enhance{{/ str }}</dt>
+    <dd class="col-xs-8 col-sm-9 col-lg-10">{{ request.audienceformatted }}</span></dd>
+</dl>
+
+<dl class="row">
+    <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}assignedto, report_enhance{{/ str }}</dt>
+    <dd class="col-xs-8 col-sm-9 col-lg-10">{{ request.assignedtoformatted }}</span></dd>
+</dl>
+
+<dl class="row">
     <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}votes, report_enhance{{/ str }}</dt>
     <dd class="col-xs-8 col-sm-9 col-lg-10">
         {{ request.votes }}
@@ -60,7 +75,7 @@
     </dd>
 </dl>
 
-<dl class="row m-b-0">
+<dl class="row mb-0">
     <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}priority, report_enhance{{/ str }}</dt>
     <dd class="col-xs-8 col-sm-9 col-lg-10">
         {{{ priority }}}
@@ -72,75 +87,53 @@
 <div>
 
 {{#request.description}}
-<div class="card m-t-1 m-b-1">
-<div class="card-body">
-<dl class="row m-b-0">
-    <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}description, report_enhance{{/ str }}</dt>
-    <dd class="col-xs-8 col-sm-9 col-lg-10">{{{ request.description }}}</dd>
-</dl>
-</div>
-</div>
+    <div class="card m-t-1 mb-1">
+        <div class="card-body">
+            <dl class="row mb-0">
+                <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}description, report_enhance{{/ str }}</dt>
+                <dd class="col-xs-8 col-sm-9 col-lg-10">{{{ request.description }}}</dd>
+            </dl>
+        </div>
+    </div>
 {{/request.description}}
 
 {{#request.benefits}}
-<div class="card m-b-1">
-<div class="card-body">
-<dl class="row m-b-0">
-    <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}benefits, report_enhance{{/ str }}</dt>
-    <dd class="col-xs-8 col-sm-9 col-lg-10">{{{ request.benefits }}}</dd>
-</dl>
-</div>
-</div>
+    <div class="card mb-1">
+        <div class="card-body">
+            <dl class="row mb-0">
+                <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}benefits, report_enhance{{/ str }}</dt>
+                <dd class="col-xs-8 col-sm-9 col-lg-10">{{{ request.benefits }}}</dd>
+            </dl>
+        </div>
+    </div>
 {{/request.benefits}}
 
-{{#request.desirability}}
-<div class="card m-b-1">
-<div class="card-body">
-<dl class="row m-b-0">
-    <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}desirability, report_enhance{{/ str }}</dt>
-    <dd class="col-xs-8 col-sm-9 col-lg-10">{{{ request.desirability }}}</dd>
-</dl>
-</div>
-</div>
-{{/request.desirability}}
-
-{{#request.impact}}
-<div class="card m-b-1">
-<div class="card-body">
-<dl class="row m-b-0">
-    <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}impact, report_enhance{{/ str }}</dt>
-    <dd class="col-xs-8 col-sm-9 col-lg-10">{{{ request.impact }}}</dd>
-</dl>
-</div>
-</div>
-{{/request.impact}}
-
-{{#request.viability}}
-<div class="card m-b-1">
-<div class="card-body">
-<dl class="row m-b-0">
-    <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}viability, report_enhance{{/ str }}</dt>
-    <dd class="col-xs-8 col-sm-9 col-lg-10">{{{ request.viability }}}</dd>
-</dl>
-</div>
-</div>
-{{/request.viability}}
+{{#request.transferability}}
+    <div class="card mb-1">
+        <div class="card-body">
+            <dl class="row mb-0">
+                <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}transferability, report_enhance{{/ str }}</dt>
+                <dd class="col-xs-8 col-sm-9 col-lg-10">{{{ request.transferability }}}</dd>
+            </dl>
+        </div>
+    </div>
+{{/request.transferability }}
 
 {{#request.result}}
-    <div class="card m-b-1">
-    <div class="card-body">
-        <dl class="row m-b-0">
-        <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}result, report_enhance{{/ str }}</dt>
-        <dd class="col-xs-8 col-sm-9 col-lg-10">{{{ request.result }}}</dd>
-        </dl>
-    </div>
+    <div class="card mb-1">
+        <div class="card-body">
+            <dl class="row mb-0">
+            <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}result, report_enhance{{/ str }}</dt>
+            <dd class="col-xs-8 col-sm-9 col-lg-10">{{{ request.result }}}</dd>
+            </dl>
+        </div>
     </div>
 {{/request.result}}
 
 {{# reviewer }}
-    <div class="card m-b-1">
+    <div class="card mb-1">
     <div class="card-body">
-        <dl class="row m-b-0">
+        <dl class="row mb-0">
         <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}reviewernotes, report_enhance{{/ str }}</dt>
         <dd class="col-xs-8 col-sm-9 col-lg-10">{{{ request.reviewernotes }}}</dd>
         </dl>
@@ -149,9 +142,9 @@
 {{/ reviewer }}
 
 {{# hasattachments }}
-    <div class="card m-b-1">
+    <div class="card mb-1">
         <div class="card-body">
-        <dl class="row m-b-0">
+        <dl class="row mb-0">
         <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}attachments, report_enhance{{/ str }}</dt>
         <dd class="col-xs-8 col-sm-9 col-lg-10">
             <ul>
@@ -172,3 +165,38 @@
 {{# allowreview }}
     <a class="btn btn-warning" href="{{{ reviewurl }}}">{{# str }}review, report_enhance{{/ str }}</a>
 {{/ allowreview }}
+
+{{^ hascomments }}
+    <div class="alert alert-warning mt-2">{{# str }}nocomments, report_enhance{{/ str }}</div>
+{{/ hascomments }}
+
+{{# hascomments}}
+    <div class="card mb-1 mt-2">
+        <div class="card-body">
+            <h5 class="card-title">{{# str }}comments, report_enhance{{/ str }}</h5>
+                {{# comments }}
+                    <div class="card-text border rounded p-2 mb-1 bg-secondary">
+                        <div class="border-bottom mb-2 pb-2">
+                            <div class="media">
+                                <div class="mr-1">
+                                    {{{avatar}}}
+                                </div>
+                                <div class="media-body">
+                                    {{# canedit }}
+                                        <a class="float-right" href="{{{ editurl }}}"><i class="fa fa-pencil"></i> {{# str }}edit{{/ str }}</a>
+                                    {{/ canedit }}
+                                    <p class="m-0">{{name}}</p>
+                                    <p class="m-0">{{created}} {{edited}}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {{{ comment }}}
+                    </div>
+                {{/ comments }}
+        </div>
+    </div>
+{{/ hascomments }}
+
+{{# allowcomments }}
+    <a class="btn btn-primary" href="{{{ commenturl }}}">{{# str }}newcomment, report_enhance{{/ str }}</a>
+{{/ allowcomments }}

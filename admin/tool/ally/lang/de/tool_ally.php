@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @copyright  Copyright (c) 2020 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright  Copyright (c) 2021 Open LMS (https://www.openlms.net)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -44,13 +44,13 @@ $string['fileupdatestask'] = 'Datei-Updates per Push in Ally übertragen';
 $string['id'] = 'ID';
 $string['key'] = 'Schlüssel';
 $string['keydesc'] = 'Der LTI-Verbraucherschlüssel.';
-$string['level'] = 'Ebenen';
-$string['message'] = 'Mitteilung';
+$string['level'] = 'Stufe';
+$string['message'] = 'Nachricht';
 $string['pluginname'] = 'Ally';
 $string['pushurl'] = 'URL für Datei-Updates';
 $string['pushurldesc'] = 'Push-Benachrichtigungen über Datei-Updates an diese URL senden.';
 $string['queuesendmessagesfailure'] = 'Beim Versenden von Mitteilungen an den AWS SQS ist ein Fehler aufgetreten. Fehlerdaten: $a';
-$string['secret'] = 'Secret';
+$string['secret'] = 'Geheimer Schlüssel';
 $string['secretdesc'] = 'Das LTI-Secret.';
 $string['showdata'] = 'Daten einblenden';
 $string['hidedata'] = 'Daten ausblenden';
@@ -81,10 +81,13 @@ $string['lessonanswertitle'] = 'Antwort für Lektion "{$a}"';
 $string['lessonresponsetitle'] = 'Beantwortung für Lektion "{$a}"';
 $string['logs'] = 'Ally-Protokolle';
 $string['logrange'] = 'Protokollbereich';
-$string['loglevel:none'] = 'Ohne';
+$string['loglevel:none'] = 'Keine';
 $string['loglevel:light'] = 'Leicht';
 $string['loglevel:medium'] = 'Mittel';
 $string['loglevel:all'] = 'Alle';
+$string['logcleanuptask'] = 'Bereinigungsaufgabe für Ally-Protokolle';
+$string['loglifetimedays'] = 'Protokolle aufbewahren für einen Zeitraum von';
+$string['loglifetimedaysdesc'] = 'Bewahren Sie Ally-Protokolle für den angegebenen Zeitraum auf. Setzen Sie den Wert auf „0“, damit Protokolle niemals gelöscht werden. Eine geplante Aufgabe ist (standardmäßig) so eingestellt, dass sie täglich ausgeführt wird, und entfernt Protokolleinträge, die außerhalb dieses Zeitraums liegen.';
 $string['logger:pushtoallysuccess'] = 'Erfolgreicher Push zu Ally-Endpunkt';
 $string['logger:pushtoallyfail'] = 'Erfolgloser Push zu Ally-Endpunkt';
 $string['logger:pushfilesuccess'] = 'Erfolgreicher Push von Datei(en) zu Ally-Endpunkt';
@@ -101,7 +104,9 @@ $string['logger:addingconenttoqueue'] = 'Hinzufügen von Inhalt zur Push-Wartesc
 $string['logger:annotationmoderror'] = 'Die Kommentierung des Inhalts von Ally-Modulen ist fehlgeschlagen.';
 $string['logger:annotationmoderror_exp'] = 'Das Modul wurde nicht korrekt identifiziert.';
 $string['logger:failedtogetcoursesectionname'] = 'Der Kursabschnittsname konnte nicht abgerufen werden';
+$string['logger:moduleidresolutionfailure'] = 'Modul-ID konnte nicht aufgelöst werden';
 $string['logger:cmidresolutionfailure'] = 'Die Kurs-Modul-ID konnte nicht aufgelöst werden';
+$string['logger:cmvisibilityresolutionfailure'] = 'Die Kursmodulsichtbarkeit konnte nicht aufgelöst werden.';
 $string['courseupdatestask'] = 'Kursereignisse per Push an Ally senden';
 $string['logger:pushcoursesuccess'] = 'Erfolgreicher Push von Kursereignissen an Ally-Endpunkt';
 $string['logger:pushcourseliveskip'] = 'Fehler beim Push von Live-Kursereignissen';
@@ -116,3 +121,5 @@ $string['logger:servicefailure'] = 'Beim Verarbeiten des Service fehlgeschlagen'
 $string['logger:servicefailure_exp'] = '<br>Klasse: {$a->class}<br>Parameter: {$a->params}';
 $string['logger:autoconfigfailureteachercap'] = 'Beim Zuweisen einer Trainer-Basisfähigkeit zur Rolle ally_webservice fehlgeschlagen';
 $string['logger:autoconfigfailureteachercap_exp'] = '<br>Fähigkeit: {$a->cap}<br>Berechtigung: {$a->permission}';
+$string['deferredcourseevents'] = 'Zurückgestellte Kursereignisse senden';
+$string['deferredcourseeventsdesc'] = 'Senden von gespeicherten Kursereignissen zulassen, die während des Kommunikationsausfalls mit Ally angesammelt wurden';

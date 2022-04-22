@@ -399,4 +399,374 @@ class local_guws_external extends external_api {
         return $results;
     }
 
+    /**
+     * Parameter definition for alarmbell query
+     * @return external_funtion_parameters
+     */
+    public static function alarmbell_query_parameters() {
+        error_log(print_r($_POST, true));
+        return new external_function_parameters([
+            'guids' => new external_multiple_structure(
+                new external_value(PARAM_TEXT, 'GUID')
+            ),
+            'eventnames' => new external_multiple_structure(
+                new external_value(PARAM_TEXT, 'Event name')
+            )
+        ]);
+    }
+
+    /**
+     * Return definition for alarmbell query
+     * @returns external_multiple_structure
+     */
+    public static function alarmbell_query_returns() {
+        return new external_multiple_structure(
+            new external_single_structure([
+                'id' => new external_value(PARAM_INT, 'Logs record ID'),
+                'guid' => new external_value(PARAM_TEXT, 'GUID'),
+                'eventname' => new external_value(PARAM_TEXT, 'Event name'),
+                'courseid' => new external_value(PARAM_INT, 'Moodle course id'),
+                'timecreated' => new external_value(PARAM_INT, 'Timestamp when logged'),
+                'ip' => new external_value(PARAM_TEXT, 'Origin IP address'),
+            ])
+        );
+    }
+
+    /**
+     * Alarm Bell Query
+     * @param array $guids
+     * @param array $eventnames
+     */
+    public static function alarmbell_query($guids, $eventnames) {
+        global $CFG, $DB;
+
+        // Check params
+        $params = self::validate_parameters(self::alarmbell_query_parameters(), ['guids' => $guids, 'eventnames' => $eventnames]);
+
+        // Get userids from guid
+        $userids = [];
+        foreach ($guids as $guid) {
+            if ($user = $DB->get_record('user', ['username' => $guid, 'mnethostid' => $CFG->mnet_localhost_id])) {
+                $userids[] = $user->id;
+            }
+        }
+
+        // If no users then no data
+        if (!$userids) {
+            return [];
+        }
+
+        // Get log data
+        list($useridsql, $useridparams) = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED);
+        list($eventsql, $eventparams) = $DB->get_in_or_equal($eventnames, SQL_PARAMS_NAMED);
+        $sql = "SELECT lsl.id, uu.username AS guid, lsl.eventname, lsl.courseid, lsl.timecreated, lsl.ip from {logstore_standard_log} lsl
+            JOIN {user} uu ON uu.id = lsl.userid
+            WHERE userid $useridsql
+            AND eventname $eventsql";
+        $logs = $DB->get_records_sql($sql, $useridparams + $eventparams);
+
+        return $logs;
+    }
+
+    /**
+     * Parameter definition for portal_courses
+     * @return external_function_parameters
+     */
+    public static function portal_courses_parameters() {
+        return new external_function_parameters([
+            'guid' => new external_value(PARAM_TEXT, 'GUID'),
+            'maxresults' => new external_value(PARAM_INT, 'Maximum number of results required')
+        ]);
+    }
+
+    /**
+     * Return definition for portal_courses
+     * @returns external_multiple_structure
+     */
+    public static function portal_courses_returns() {
+        return new external_multiple_structure(
+            new external_single_structure([
+                'name' => new external_value(PARAM_TEXT, 'Course full name'),
+                'shortname' => new external_value(PARAM_TEXT, 'Course short name'),
+                'courseid' => new external_value(PARAM_INT, 'Moodle course id'),
+                'starred' => new external_value(PARAM_BOOL, 'Course is starred'),
+                'visible' => new external_value(PARAM_BOOL, 'Course is visible to students'),
+                'lastvisit' => new external_value(PARAM_INT, 'Last visited (timestamp)'),
+            ])
+        );
+    }
+
+    /**
+     * `portal courses
+     * @param string $guid
+     * @param int $maxresults
+     */
+    public static function portal_courses($guid, $maxresults) {
+        global $CFG, $DB;
+
+         // Check params
+        $params = self::validate_parameters(self::portal_courses_parameters(), ['guid' => $guid, 'maxresults' => $maxresults]);
+
+        // Find userid from GUID
+        if (!$user = $DB->get_record('user', ['username' => $guid, 'mnethostid' => $CFG->mnet_localhost_id])) {
+            return [];
+        }
+
+         // Get student's courses
+        $fields = ['id', 'fullname', 'shortname', 'visible'];
+        $courses = enrol_get_all_users_courses($user->id, true, $fields);
+        if (!$courses) {
+            return [];
+        }
+
+        // Get starred courses
+        $starorder = $DB->get_record('user_preferences', ['userid' => $user->id, 'name' => 'theme_hillhead_starorder']);
+        if ($starorder) {
+            $stars = explode(',', $starorder->value);
+        } else {
+            $stars = null;
+        }
+
+        // Build additional course data 
+        foreach ($courses as $course) {
+            if ($lastaccess = $DB->get_record('user_lastaccess', ['userid' => $user->id, 'courseid' => $course->id])) {
+                $course->lastaccess = $lastaccess->timeaccess;
+            } else {
+                $course->lastaccess = 0;
+            }
+
+            // ...because there's an index...
+            $context = context_course::instance($course->id);
+            if ($favourite = $DB->get_record('favourite', ['component' => 'core_course', 'itemtype' => 'courses', 'contextid' => $context->id, 'userid' => $user->id])) {
+                $course->starred = true;
+            } else {
+                $course->starred = false;
+            }
+        }
+
+        // sort by stars and lastaccess (in that order)
+        usort($courses, function($a, $b) use ($stars) {
+            if ($a->starred && !$b->starred) {
+                return -1;
+            }
+            if (!$a->starred && $b->starred) {
+                return 1;
+            }
+            if (!empty($stars)) {
+                $posA = array_search($a->id, $stars);
+                $posB = array_search($b->id, $stars);
+                $starsort = ($posA !== false) && ($posB !== false);
+            } else {
+                $starsort = false;
+            }
+            if ($starsort && $a->starred && $b->starred) {
+                return $posA - $posB;
+            }
+            return $b->lastaccess - $a->lastaccess;
+        });
+
+        // Get the first $maxresults
+        $courses = array_slice($courses, 0, $maxresults-1);
+
+        // Convert to required format
+        $results = [];
+        foreach ($courses as $course) {
+            $result = new stdClass();
+            $result->name = $course->fullname;
+            $result->shortname = $course->shortname;
+            $result->courseid = $course->id;
+            $result->starred = $course->starred;
+            $result->visible = $course->visible;
+            $result->lastvisit = $course->lastaccess;
+            $results[] = $result;
+        }
+
+        return $results;
+    }
+
+    /**
+     * Parameter definition for guid_completion
+     * @return external_function_parameters
+     */
+    public static function guid_completion_parameters() {
+        return new external_function_parameters([
+            'courseid' => new external_value(PARAM_INT, 'Course ID'),
+            'guid' => new external_value(PARAM_TEXT, 'GUID'),
+        ]);
+    }
+
+    /**
+     * Return definition for guid_completion
+     * @return external_multiple_structure
+     */
+    public static function guid_completion_returns() {
+        return new external_value(PARAM_BOOL, 'Completed');
+    }  
+    
+    /**
+     * guid_completion
+     * @param string $guid
+     * @param int $maxresults
+     */
+    public static function guid_completion($courseid, $guid) {
+        global $CFG, $DB;
+
+        // Check params
+        $params = self::validate_parameters(self::guid_completion_parameters(), ['courseid' => $courseid, 'guid' => $guid]);   
+        
+        // find GUID
+        $user = $DB->get_record('user', ['username' => $guid, 'mnethostid' => $CFG->mnet_localhost_id], '*', MUST_EXIST);
+
+        // Make sure it's a valid course
+        $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
+
+        // Completed?
+        if (!$completion = $DB->get_record('course_completions', ['userid' => $user->id, 'course' => $courseid])) {
+            return false;
+        }
+
+        return !empty($completion->timecompleted);
+    }
+
+    /**
+     * Parameter definition for gcat_getdashboard
+     * @return external_function_parameters
+     */
+    public static function gcat_getdashboard_parameters() {
+        return new external_function_parameters([
+            'guid' => new external_value(PARAM_TEXT, 'GUID', VALUE_REQUIRED),
+        ]);
+    }
+
+    /**
+     * Return definition for gcat_getdashboard
+     * @return external_multiple_structure
+     */
+    public static function gcat_getdashboard_returns() {
+        return new external_multiple_structure(
+            new external_single_structure([
+                'id' => new external_value(PARAM_INT, 'Mystery id'),
+                'coursename' => new external_value(PARAM_TEXT, 'Course full name'),
+                'courseurl' => new external_value(PARAM_TEXT, 'Link to Moodle course'),
+                'assessmentname' => new external_value(PARAM_TEXT, 'Assessment name'),
+                'assessmenturl' => new external_value(PARAM_TEXT, 'Link to Assessment'),
+                'assessmenttype' => new external_value(PARAM_TEXT, 'Type of assessment'),
+                'weight' => new external_value(PARAM_TEXT, 'Weight of assessment'),
+                'duedate' => new external_value(PARAM_INT, 'Due date (unix time stamp)'),
+                'hasextension' => new external_value(PARAM_BOOL, 'Is there an extension'),
+                'startdate' => new external_value(PARAM_INT, 'Start date (unix time stamp)'),
+                'enddate' => new external_value(PARAM_INT, 'End date (unix time stamp)'),
+                'grade' => new external_value(PARAM_TEXT, 'Grade text'),
+                'gradehasgrade' => new external_value(PARAM_BOOL, 'Grade - has grade'),
+                'gradeisprovisional' => new external_value(PARAM_BOOL, 'Grade - provisional'),
+                'feedback' => new external_value(PARAM_TEXT, 'Feedback text'),
+                'feedbackhasfeedback' => new external_value(PARAM_BOOL, 'Feedback - has feedback'),
+                'feedbackissubcategory' => new external_value(PARAM_BOOL, 'Feedback - is subcategory'),
+                'status' => new external_value(PARAM_TEXT, 'Status text'),
+                'statusclass' => new external_value(PARAM_TEXT, 'Status class'),
+                'statushasurl' => new external_value(PARAM_BOOL, 'Status has URL'),
+                'statusissubcategory' => new external_value(PARAM_BOOL, 'Status is subcategory'),
+            ])
+        );
+    }
+
+    /**
+     * GCAT get dashboard
+     */
+    public static function gcat_getdashboard($guid) {
+        global $CFG, $DB;
+
+        require_once($CFG->dirroot . '/blocks/gu_spdetails/lib.php');
+
+        // Check params
+        $params = self::validate_parameters(self::gcat_getdashboard_parameters(),[
+            'guid' => $guid,
+        ]);
+
+        // does this person exist
+        if (!$user = $DB->get_record('user', [
+            'username' => $guid,
+            'mnethostid' => $CFG->mnet_localhost_id,
+        ])) {
+            return [];
+        }
+
+        $gcats = assessments_details::retrieve_gradable_activities('current', $user->id, 'coursetitle', 'asc', null);
+
+        $grades = [];
+        foreach ($gcats as $gcat) {
+            $grade = new stdClass();
+            $grade->id = $gcat->id;
+            $grade->coursename = $gcat->coursetitle;
+            $grade->courseurl = $gcat->courseurl->out();
+            $grade->assessmentname = $gcat->assessmentname;
+            $grade->assessmenturl = $gcat->assessmenturl->out();
+            $grade->assessmenttype = $gcat->assessmenttype;
+            $grade->weight = $gcat->weight;
+            $grade->duedate = $gcat->duedate;
+            $grade->hasextension = $gcat->hasextension;
+            $grade->startdate = $gcat->startdate;
+            $grade->enddate = $gcat->enddate;
+            $grade->grade = $gcat->grading->gradetext;
+            $grade->gradehasgrade = $gcat->grading->hasgrade;
+            $grade->gradeisprovisional = $gcat->grading->isprovisional;
+            $grade->feedback = $gcat->feedback->feedbacktext;
+            $grade->feedbackhasfeedback = $gcat->feedback->hasfeedback;
+            $grade->feedbackissubcategory = $gcat->feedback->issubcategory;
+            $grade->status = $gcat->status->statustext;
+            $grade->statusclass = $gcat->status->class;
+            $grade->statushasurl = $gcat->status->hasstatusurl;
+            $grade->statusissubcategory = $gcat->status->issubcategory;
+
+            $grades[] = $grade;
+        }
+
+        return $grades;
+    }
+
+    /**
+     * Parameter definition for gcat_userhasdata
+     * @return external_function_parameters
+     */
+    public static function gcat_userhasdata_parameters() {
+        return new external_function_parameters([
+            'guid' => new external_value(PARAM_TEXT, 'GUID', VALUE_REQUIRED),
+        ]);
+    }
+
+    /**
+     * Return definition for gcat_userhasdata
+     * @return external_value
+     */
+    public static function gcat_userhasdata_returns() {
+        return new external_value(PARAM_BOOL, 'User has GCAT data to display');
+    }
+
+    /**
+     * GCAT userhasdata
+     * @param string $guid
+     */
+    public static function gcat_userhasdata($guid) {
+        global $CFG, $DB;
+
+        require_once($CFG->dirroot . '/blocks/gu_spdetails/lib.php');
+
+        // Check params
+        $params = self::validate_parameters(self::gcat_getdashboard_parameters(),[
+            'guid' => $guid,
+        ]);
+
+        // does this person exist
+        if (!$user = $DB->get_record('user', [
+            'username' => $guid,
+            'mnethostid' => $CFG->mnet_localhost_id,
+        ])) {
+            return false;
+        }
+
+        $gcatcourses = assessments_details::return_enrolledcourses($user->id);
+
+        return !empty($gcatcourses);
+    }
+
 }

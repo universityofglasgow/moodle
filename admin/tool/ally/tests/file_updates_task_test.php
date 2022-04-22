@@ -18,7 +18,7 @@
  * Tests for file updates task.
  *
  * @package   tool_ally
- * @copyright Copyright (c) 2016 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2016 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -30,16 +30,16 @@ use tool_ally\task\file_updates_task;
 defined('MOODLE_INTERNAL') || die();
 
 require_once(__DIR__.'/abstract_testcase.php');
-require_once(__DIR__.'/../../../../vendor/phpunit/dbunit/src/DataSet/DefaultTableMetadata.php');
 
 /**
  * Tests for file updates task.
  *
  * @package   tool_ally
- * @copyright Copyright (c) 2016 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2016 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class tool_ally_file_updates_task_testcase extends tool_ally_abstract_testcase {
+
     /**
      * First run should set the timestamp then exit.
      */
@@ -137,9 +137,7 @@ class tool_ally_file_updates_task_testcase extends tool_ally_abstract_testcase {
 
         set_config('push_timestamp', time() - (WEEKSECS * 2), 'tool_ally');
 
-        $this->loadDataSet(
-            $this->createArrayDataSet(include(__DIR__.'/fixtures/deleted_files.php'))
-        );
+        $this->dataset_from_array(include(__DIR__.'/fixtures/deleted_files.php'))->to_database();
 
         $updates = $this->prophesize(push_file_updates::class);
         $updates->send(Argument::type('array'))->willReturn(true);

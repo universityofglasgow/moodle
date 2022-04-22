@@ -31,10 +31,17 @@ $username = optional_param('u', '', PARAM_USERNAME);// User login name.
 $tag    = optional_param('tag', null, PARAM_TAG);   // Tag to display.
 $page = optional_param('page', 0, PARAM_INT);
 $tagorder = optional_param('tagorder', '', PARAM_ALPHA);// Tag display order.
+$taglimit = optional_param('taglimit', OUBLOG_TAGS_SHOW, PARAM_INT);// Tag display order.
 
 // Set user value if u (username) set.
 if ($username != '') {
-    if (!$oubloguser = $DB->get_record('user', array('username' => $username))) {
+    if (file_exists($CFG->dirroot . '/local/oudataload/classes/users.php') && is_enabled_auth('saml2')) {
+        // Special code to support different username in request.
+        $oubloguser = \local_oudataload\users::get_user_by_oucu_or_cdcid($username, true);
+    } else {
+        $oubloguser = $DB->get_record('user', array('username' => $username));
+    }
+    if (!$oubloguser) {
         print_error('invaliduser');
     }
     $user = $oubloguser->id;
@@ -53,7 +60,7 @@ if (isloggedin()) {
 }
 
 $url = new moodle_url('/mod/oublog/view.php', array('id' => $id, 'user' => $user,
-        'page' => $page, 'tag' => $tag, 'tagorder' => $tagorder));
+        'page' => $page, 'tag' => $tag, 'tagorder' => $tagorder, 'taglimit' => $taglimit));
 
 $PAGE->set_url($url);
 
@@ -179,6 +186,9 @@ if ($oublog->global) {
 
 if ($tag) {
     $returnurl .= '&amp;tag='.urlencode($tag);
+}
+if ($taglimit) {
+    $returnurl .= '&amp;taglimit='.urlencode($taglimit);
 }
 
 // Set-up individual.
@@ -332,7 +342,7 @@ if (!$hideunusedblog) {
 
     // Tag Cloud.
     list ($tags, $currentfiltertag) = oublog_get_tag_cloud($returnurl, $oublog, $currentgroup, $cm,
-            $oubloginstanceid, $currentindividual, $tagorder, $masterblog);
+            $oubloginstanceid, $currentindividual, $tagorder, $masterblog, $taglimit);
     if ($tags) {
         $bc = new block_contents();
         $bc->attributes['id'] = 'oublog-tags';
@@ -383,19 +393,6 @@ if (!$hideunusedblog) {
         $bc->attributes['data-osepid'] = $id . '_oublog_blockdiscovery';
         $bc->title = get_string('discovery', 'oublog', oublog_get_displayname($oublog, true));
         $bc->content = $stats;
-        $PAGE->blocks->add_fake_block($bc, BLOCK_POS_RIGHT);
-    }
-
-    // Feeds.
-    if ($feeds = oublog_get_feedblock($oublog, $oubloginstance, $currentgroup, false, $cm, $currentindividual,
-                $masterblog)) {
-        $feedicon = ' <img src="'.$OUTPUT->image_url('i/rss').'" alt="'.get_string('blogfeed', 'oublog').'"  class="feedicon" />';
-        $bc = new block_contents();
-        $bc->attributes['id'] = 'oublog-feeds';
-        $bc->attributes['class'] = 'oublog-sideblock block';
-        $bc->attributes['data-osepid'] = $id . '_oublog_blockfeeds';
-        $bc->title = $strfeeds;
-        $bc->content = $feeds;
         $PAGE->blocks->add_fake_block($bc, BLOCK_POS_RIGHT);
     }
 }

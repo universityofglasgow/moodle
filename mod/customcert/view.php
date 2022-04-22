@@ -56,7 +56,8 @@ if ($customcert->requiredtime && !$canmanage) {
     if (\mod_customcert\certificate::get_course_time($course->id) < ($customcert->requiredtime * 60)) {
         $a = new stdClass;
         $a->requiredtime = $customcert->requiredtime;
-        notice(get_string('requiredtimenotmet', 'customcert', $a), "$CFG->wwwroot/course/view.php?id=$course->id");
+        $url = new moodle_url('/course/view.php', ['id' => $course->id]);
+        notice(get_string('requiredtimenotmet', 'customcert', $a), $url);
         die;
     }
 }
@@ -139,7 +140,7 @@ if (!$downloadown && !$downloadissue) {
     if ($canreceive) {
         $linkname = get_string('getcustomcert', 'customcert');
         $link = new moodle_url('/mod/customcert/view.php', array('id' => $cm->id, 'downloadown' => true));
-        $downloadbutton = new single_button($link, $linkname, 'post', true);
+        $downloadbutton = new single_button($link, $linkname, 'get', true);
         $downloadbutton->class .= ' m-b-1';  // Seems a bit hackish, ahem.
         $downloadbutton = $OUTPUT->render($downloadbutton);
     }
@@ -158,7 +159,7 @@ if (!$downloadown && !$downloadissue) {
     }
     echo $OUTPUT->footer($course);
     exit();
-} else if ($canreceive) { // Output to pdf.
+} else if ($canreceive || $canmanage) { // Output to pdf.
     // Set the userid value of who we are downloading the certificate for.
     $userid = $USER->id;
     if ($downloadown) {
@@ -178,6 +179,8 @@ if (!$downloadown && !$downloadissue) {
     if (defined('BEHAT_SITE_RUNNING')) {
         redirect(new moodle_url('/mod/customcert/view.php', array('id' => $cm->id)));
     }
+
+    \core\session\manager::write_close();
 
     // Now we want to generate the PDF.
     $template = new \mod_customcert\template($template);

@@ -61,7 +61,7 @@ class csv_import extends moodleform {
 
         // Delimiter.
         $choices = csv_import_reader::get_delimiter_list();
-        $mform->addElement('select', 'delimname', get_string('csvfieldseparator', 'mod_scheduler'), $choices);
+        $mform->addElement('select', 'delimname', get_string('csvfieldseparator', 'local_xp'), $choices);
         if (array_key_exists('cfg', $choices)) {
             $mform->setDefault('delimname', 'cfg');
         } else if (get_string('listsep', 'langconfig') == ';') {
@@ -88,7 +88,11 @@ class csv_import extends moodleform {
         // Send notification.
         $mform->addElement('advcheckbox', 'sendnotification', get_string('sendawardnotification', 'local_xp'));
         $mform->addHelpButton('sendnotification', 'sendawardnotification', 'local_xp');
-        $mform->hideIf('sendnotification', 'resetoradd', 'eq', user_state_store_points::ACTION_SET);
+        if (method_exists($mform, 'hideIf')) {
+            $mform->hideIf('sendnotification', 'resetoradd', 'eq', user_state_store_points::ACTION_SET);
+        } else {
+            $mform->disabledIf('sendnotification', 'resetoradd', 'eq', user_state_store_points::ACTION_SET);
+        }
 
         $this->add_action_buttons(true, get_string('preview'));
     }

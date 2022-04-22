@@ -174,9 +174,11 @@ class mod_oublog_renderer extends plugin_renderer_base {
         if ($post->deletedby) {
             $deluser = new stdClass();
             // Get user name fields.
-            $delusernamefields = get_all_user_name_fields(false, null, 'del');
-            foreach ($delusernamefields as $namefield => $retnamefield) {
-                $deluser->$namefield = $post->$retnamefield;
+
+            $delusernamefields = \core_user\fields::get_name_fields();
+            foreach ($delusernamefields as $namefield) {
+                $dfield = 'del' . $namefield;
+                $deluser->$namefield = $post->$dfield;
             }
 
             $a = new stdClass();
@@ -240,11 +242,11 @@ class mod_oublog_renderer extends plugin_renderer_base {
         } else if ($post->lasteditedby) {
             $edit = new StdClass;
             // Get user name fields.
-            $editusernamefields = get_all_user_name_fields(false, null, 'ed');
-            foreach ($editusernamefields as $namefield => $retnamefield) {
-                $edit->$namefield = $post->$retnamefield;
+            $editusernamefields = \core_user\fields::get_name_fields();
+            foreach ($editusernamefields as $namefield) {
+                $edfield = 'ed' . $namefield;
+                $edit->$namefield = $post->$edfield;
             }
-
             $a = new stdClass();
             $a->editby = fullname($edit);
             $a->editdate = oublog_date($post->timeupdated);
@@ -803,10 +805,10 @@ class mod_oublog_renderer extends plugin_renderer_base {
 
                     $author = new stdClass();
                     $author->id = $comment->authorid;
-                    $userfields = get_all_user_name_fields(false, '', 'poster');
-                    foreach ($userfields as $field => $retfield) {
-                        $author->$field = $comment->$retfield;
-                    }
+                    $userfields = \core_user\fields::get_name_fields();
+                    foreach ($userfields as $field) {
+                        $author->$field = $comment->$field;
+                     }
                     $authorurl = new moodle_url('/user/view.php', array('id' => $author->id));
                     $authorlink = html_writer::link($authorurl, fullname($author, $viewfullnames));
                     if (isset($comment->posttitle) && !empty($comment->posttitle)) {
@@ -905,7 +907,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
                 foreach ($participation->comments as $comment) {
                     $author = new stdClass();
                     $author->id = $comment->authorid;
-                    $userfields = get_all_user_name_fields();
+                    $userfields = \core_user\fields::get_name_fields();
                     foreach ($userfields as $field) {
                         $author->$field = $comment->$field;
                     }
@@ -967,7 +969,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
         $mform = new MoodleQuickForm('savegrade', 'post', $formaction,
             '', array('class' => 'savegrade'));
         $mform->addElement('header', 'usergrade', get_string('usergrade', 'oublog'));
-        $mform->addElement('select', 'grade', get_string('grade'), $grademenu);
+        $mform->addElement('select', 'grade', get_string('gradenoun'), $grademenu);
         $mform->setDefault('grade', $user->gradeobj->grade);
         $mform->addElement('submit', 'savechanges', get_string('savechanges'));
 
@@ -1029,9 +1031,10 @@ class mod_oublog_renderer extends plugin_renderer_base {
             }
             if ($comment->deletedby) {
                 $deluser = new stdClass();
-                $fields = get_all_user_name_fields(false, null, 'del');
-                foreach ($fields as $field => $dfield) {
-                    $deluser->$field = $comment->$dfield;
+                $fields = \core_user\fields::get_name_fields();
+                foreach ($fields as $field) {
+                    $field = 'del' . $field;
+                    $deluser->$field = $comment->$field;
                 }
 
                 $a = new stdClass();
@@ -1046,7 +1049,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
             if ($comment->userid && !$forexport) {
                 $output .= html_writer::start_tag('div', array('class' => 'oublog-userpic'));
                 $commentuser = new stdClass();
-                $fields = explode(',', user_picture::fields());
+                $fields = oublog_get_user_picture_fields();
                 foreach ($fields as $field) {
                     if ($field != 'id') {
                         $commentuser->$field = $comment->$field;
@@ -1126,8 +1129,6 @@ class mod_oublog_renderer extends plugin_renderer_base {
                     if (!$forexport) {
                         $output .= '<a href="deletecomment.php?comment=' .
                                 $comment->id . $cmparam . $referurlparam  . '">' . $strdelete.'</a>';
-                    } else {
-                        $output .= $strdelete;
                     }
                 }
             }
@@ -1199,6 +1200,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
         require_once($CFG->dirroot.'/mod/oublog/participation_table.php');
         $groupmode = oublog_get_activity_groupmode($cm, $course);
         $thepagingbar = "";
+        $picturefields = oublog_get_user_picture_fields();
         if (!empty($participation->posts) && $participation->postscount > $limitnum) {
             $thepagingbar = $OUTPUT->paging_bar($participation->postscount, $page, $limitnum, $pagingurl);
         } else if (!empty($participation->comments) && $participation->commentscount > $limitnum) {
@@ -1224,8 +1226,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
                 // Post user object required for user_picture.
                 $postuser = new stdClass();
                 $postuser->id = $post->userid;
-                $fields = explode(',', user_picture::fields('', null, '', 'poster'));
-                foreach ($fields as $field) {
+                foreach ($picturefields as $field) {
                     if ($field != 'id') {
                         $postuser->$field = $post->$field;
                     }
@@ -1307,8 +1308,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
                     // Comment author object required for user_picture.
                     $commentauthor = new stdClass();
                     $commentauthor->id = $comment->commenterid;
-                    $fields = explode(',', user_picture::fields('', null, '', 'commenter'));
-                    foreach ($fields as $field) {
+                    foreach ($picturefields as $field) {
                         if ($field != 'id') {
                             $cfield = "commenter" . $field;
                             $commentauthor->$field = $comment->$cfield;
@@ -1339,8 +1339,7 @@ class mod_oublog_renderer extends plugin_renderer_base {
                     $postauthor = new stdClass();
                     $postauthor->id = $comment->posterid;
                     $postauthor->groupid = $comment->groupid;
-                    $fields = explode(',', user_picture::fields('', null, '', 'poster'));
-                    foreach ($fields as $field) {
+                    foreach ($picturefields as $field) {
                         if ($field != 'id') {
                             $pfield = "poster" . $field;
                             $postauthor->$field = $comment->$pfield;
@@ -1744,12 +1743,12 @@ EOF;
         if (!empty($issharedblog) && $issharedblog) {
             $sharemode = true;
             $extraparams['cmid'] = $childcmid;
+            $masterblog = $oublog;
+            $childdata = oublog_get_blog_data_base_on_cmid_of_childblog($childcmid, $masterblog);
+            $oublog = $childdata['ousharedblog'];
+            $cm = $childdata['cm'];
         }
-
-        // Call early to cache group mode - stops debugging warning from oublog_get_posts later.
-        $cm->activitygroupmode = oublog_get_activity_groupmode($cm, $COURSE);
         $context = context_module::instance($cm->id);
-        $modcontext = $context;
         if (empty($oubloguserid)) {
             $oubloguserid = null;
         }
@@ -1758,7 +1757,7 @@ EOF;
         }
         list($posts, $recordcount) = oublog_get_posts($oublog,
                 $context, $offset, $cm, $currentgroup, $currentindividual,
-                $oubloguserid, null, $canaudit, null, null, OUBLOG_POSTS_PER_PAGE_EXPORT, $orderby);
+                $oubloguserid, null, $canaudit, null, $masterblog, OUBLOG_POSTS_PER_PAGE_EXPORT, $orderby);
         $data = [];
         foreach ($posts as $post) {
             $onerow = [];

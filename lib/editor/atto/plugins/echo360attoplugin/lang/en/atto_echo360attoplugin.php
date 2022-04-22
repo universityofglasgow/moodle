@@ -18,7 +18,7 @@
  * Strings for component 'atto_echo360attoplugin', language 'en'.
  *
  * @package    atto_echo360attoplugin
- * @copyright  COPYRIGHTINFO
+ * @copyright  2020 Echo360 Inc.
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -36,3 +36,13 @@ $string['sharedsecret'] = 'Shared Secret';
 $string['hosturl'] = 'Host URL';
 $string['ltiConfiguration'] = 'ltiConfiguration';
 $string['echo360attoplugin:visible'] = 'Visible';
+$string['privacy:metadata:courseid'] = 'The ID of the course the user is accessing the Echo360 Plugin (Atto)';
+$string['privacy:metadata:coursefullname'] = 'The fullname of the course the user is accessing the Echo360 Plugin (Atto)';
+$string['privacy:metadata:courseshortname'] = 'The shortname of the course the user is accessing the Echo360 Plugin (Atto)';
+$string['privacy:metadata:email'] = 'The email address of the user accessing the Echo360 Plugin (Atto)';
+$string['privacy:metadata:externalpurpose'] = 'The Echo360 Plugin (Atto) does not store any personal data, but does transmit user and context data to integrate with Echo360.';
+$string['privacy:metadata:firstname'] = 'The firstname of the user accessing the Echo360 Plugin (Atto)';
+$string['privacy:metadata:fullname'] = 'The fullname of the user accessing the Echo360 Plugin (Atto)';
+$string['privacy:metadata:lastname'] = 'The lastname of the user accessing the Echo360 Plugin (Atto)';
+$string['privacy:metadata:roles'] = 'The roles in the course for the user accessing the Echo360 Plugin (Atto)';
+$string['privacy:metadata:userid'] = 'The ID of the user accessing the Echo360 Plugin (Atto)';

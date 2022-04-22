@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @copyright  Copyright (c) 2020 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright  Copyright (c) 2021 Open LMS (https://www.openlms.net)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -28,7 +28,7 @@ $string['ally:clientconfig'] = 'الوصول وتحديث تكوين العمي�
 $string['ally:viewlogs'] = 'عارض سجلات Ally';
 $string['clientid'] = 'معرف العميل';
 $string['clientiddesc'] = 'معرف عميل Ally';
-$string['code'] = 'الرمز';
+$string['code'] = 'التعليمات البرمجية';
 $string['contentauthors'] = 'مؤلفو المحتوى';
 $string['contentauthorsdesc'] = 'سيقوم المسؤولون والمستخدمون المعينون لهذه الأدوار المحددة بتقييم ملفات المقرر الدراسي التي تم تنزيلها لإتاحة إمكانية وصول ذوي الاحتياجات الخاصة. ويتم إعطاء الملفات تصنيف بشأن إمكانية وصول ذوي الاحتياجات الخاصة. تعني التصنيفات المنخفضة احتياج الملف إلى إجراء تغييرات ليكون الوصول إليه أكثر سهولة.';
 $string['contentupdatestask'] = 'مهمة تحديثات المحتوى';
@@ -82,9 +82,12 @@ $string['lessonresponsetitle'] = 'إجابة عن درس "{$a}"';
 $string['logs'] = 'سجلات Ally';
 $string['logrange'] = 'نطاق السجل';
 $string['loglevel:none'] = 'بلا';
-$string['loglevel:light'] = 'ضعيف';
+$string['loglevel:light'] = 'بسيط';
 $string['loglevel:medium'] = 'متوسط';
 $string['loglevel:all'] = 'الكل';
+$string['logcleanuptask'] = 'مهمة تنظيف سجل Ally';
+$string['loglifetimedays'] = 'احتفظ بالسجلات لهذه الأيام عديدة';
+$string['loglifetimedaysdesc'] = 'احتفظ بسجلات Ally لهذه الأيام العديدة. قم بالتعيين إلى 0 لعدم حذف السجلات مطلقًا. ويتم تعيين مهمة مجدولة (افتراضيًا) للتشغيل يوميًا، وستحذف إدخالات السجل التي مضى عليها أكثر من هذه الأيام العديدة.';
 $string['logger:pushtoallysuccess'] = 'دفع ناجح إلى نقطة نهاية Ally';
 $string['logger:pushtoallyfail'] = 'دفع غير ناجح إلى نقطة نهاية Ally';
 $string['logger:pushfilesuccess'] = 'دفع ناجح للملف (الملفات) إلى نقطة نهاية Ally';
@@ -101,7 +104,9 @@ $string['logger:addingconenttoqueue'] = 'إضافة محتوى إلى قائمة
 $string['logger:annotationmoderror'] = 'فشل التعليق التوضيحي لمحتوى الوحدة النمطية Ally.';
 $string['logger:annotationmoderror_exp'] = 'لم يتم تعريف الوحدة النمطية بشكل صحيح.';
 $string['logger:failedtogetcoursesectionname'] = 'فشل في الحصول على اسم قسم المقرر الدراسي';
+$string['logger:moduleidresolutionfailure'] = 'فشل في حل معرف الوحدة النمطية';
 $string['logger:cmidresolutionfailure'] = 'فشل في حل معرف الوحدة النمطية للمقرر الدراسي';
+$string['logger:cmvisibilityresolutionfailure'] = 'فشل في حل إمكانية الاطلاع على الوحدة النمطية للمقرر الدراسي';
 $string['courseupdatestask'] = 'دفع أحداث المقرر الدراسي إلى Ally.';
 $string['logger:pushcoursesuccess'] = 'دفع ناجح لحدث (أحداث) المقرر الدراسي إلى نقطة نهاية ally';
 $string['logger:pushcourseliveskip'] = 'فشل دفع حدث المقرر الدراسي المباشر';
@@ -116,3 +121,5 @@ $string['logger:servicefailure'] = 'فشلت العملية عند استهلا�
 $string['logger:servicefailure_exp'] = '<br>الفصل الدراسي: {$a->class}<br>Params: {$a->params}';
 $string['logger:autoconfigfailureteachercap'] = 'فشلت العملية عند تعيين إمكانية النموذج الأولي للمدرس إلى دور خدمة ally_webservice.';
 $string['logger:autoconfigfailureteachercap_exp'] = '<br>الإمكانية: {$a->cap}<br>الصلاحية: {$a->permission}';
+$string['deferredcourseevents'] = 'إرسال أحداث المقرر الدراسي المؤجلة';
+$string['deferredcourseeventsdesc'] = 'السماح بإرسال أحداث المقرر الدراسي المخزنة التي تراكمت أثناء فشل الاتصال بـ Ally';

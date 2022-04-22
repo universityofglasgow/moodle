@@ -18,16 +18,29 @@
  * MUC cache defintion.
  *
  * @package   tool_ally
- * @copyright Copyright (c) 2018 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2018 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
 $definitions = [
+    'annotationmaps' => [
+        'mode'       => cache_store::MODE_APPLICATION,
+        'simplekeys' => true,
+        'ttl'        => 300, // 5 minutes.
+    ],
     'request' => [
         'mode'       => cache_store::MODE_APPLICATION,
         'simplekeys' => true,
         'ttl'        => 43200, // 12 hours.
     ],
+    'fileinusecache' => [
+        'mode'       => cache_store::MODE_REQUEST,
+        'simplekeys' => true
+    ],
+    'pluginfilesinhtml' => [
+        'mode'       => cache_store::MODE_REQUEST,
+        'simplekeys' => true
+    ]
 ];

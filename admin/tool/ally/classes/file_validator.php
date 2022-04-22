@@ -18,7 +18,7 @@
  * Validates if the file should be pushed to Ally.
  *
  * @package   tool_ally
- * @copyright Copyright (c) 2018 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2018 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -30,12 +30,13 @@ use stored_file;
 use context;
 use context_course;
 use coding_exception;
+use tool_ally\local_content;
 
 /**
  * Validates if the file should be pushed to Ally.
  *
  * @package   tool_ally
- * @copyright Copyright (c) 2018 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2018 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class file_validator {
@@ -102,6 +103,22 @@ class file_validator {
     ];
 
     /**
+     * Fileareas where all files should be considered in use.
+     * These are fileareas where files in them are automatically in use, even though they don't appear in
+     * any HTML content.
+     */
+    const ALWAYS_IN_USE = [
+        'course~overviewfiles',
+        'calendar~event_description',
+        'mod_assign~introattachment',
+        'mod_folder~content',
+        'mod_forum~attachment',
+        'mod_glossary~attachment',
+        'mod_hsuforum~attachment',
+        'mod_imscp~content',
+        'mod_resource~content'
+    ];
+    /**
      * @var array
      */
     private $userids;
@@ -132,10 +149,12 @@ class file_validator {
      * Validates if the file should be pushed to Ally.
      * @param stored_file $file
      * @param context|null $context
+     * @param bool $skipinusecheck Don't check files for being in use, even if the setting is on. Used during
+     *                           deletions, since we can't check the HTML content at that point.
      * @return bool
      * @throws coding_exception
      */
-    public function validate_stored_file(stored_file $file, context $context = null) {
+    public function validate_stored_file(stored_file $file, context $context = null, $skipinusecheck = false) {
         // Can a course context be gotten?
         try {
             $context = $context ?: context::instance_by_id($file->get_contextid());
@@ -153,9 +172,14 @@ class file_validator {
         // i.e. is it in a component that only teachers should have access to use.
         $component = $file->get_component();
         $area = $file->get_filearea();
+        if (!self::check_pathname($file)) {
+            return false;
+        }
 
-        $compteacheronly = $this->check_component_area_teacher_whitelist($component, $area);
-        if ($compteacheronly) {
+        // Check if the file is in a teacher whitelist area, or if in a valid area with a creator that is
+        // an editing teacher/admin/manager/etc.
+        if ($this->check_component_area_teacher_whitelist($component, $area) ||
+                $this->check_component_area_whitelist_and_user_type($component, $area, $file, $context)) {
             // At this point we do not need to check that the user is still an editing teacher / manager / admin / etc.
             // That is because we know that the file belongs to a context that is whitelisted as teacher only.
             // E.g. the file was created as resource content, or a forum intro.
@@ -163,11 +187,17 @@ class file_validator {
             // WE DO NOT bother checking if the user who created this file is still an editing teacher / manager /
             // admin / etc because they might a) No longer be enrolled on the course, b) Have a different role to the
             // one they had when they created the file.
+
+            if (!$skipinusecheck) {
+                // If we are checking files to see if they are in use, do that now.
+                return files_in_use::check_file_in_use($file, $context);
+            }
+
             return true;
         }
 
-        // Check if component area is valid AND user is an editing teacher / manager / admin / etc.
-        return $this->check_component_area_whitelist_and_user_type($component, $area, $file, $context);
+        // At this point, the file isn't in any area we know about, so it can be considered invalid.
+        return false;
     }
 
     /**
@@ -200,5 +230,16 @@ class file_validator {
         $userid = $file->get_userid();
         return empty($userid) || array_key_exists($userid, $this->userids) ||
             $this->assignments->has($userid, $context);
+    }
+
+    /**
+     * @param stored_file $file
+     * @return bool
+     */
+    public static function check_pathname(stored_file $file) {
+        if ($file->get_filepath() == '/gridimage/') {
+            return false;
+        }
+        return true;
     }
 }

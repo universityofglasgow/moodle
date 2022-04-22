@@ -18,7 +18,7 @@
  * @package   mod_hsuforum
  * @copyright 1999 onwards Martin Dougiamas  {@link http://moodle.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright Copyright (c) 2012 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2012 Open LMS (https://www.openlms.net)
  * @author Mark Nielsen
  */
 
@@ -379,69 +379,6 @@ function hsuforum_supports($feature) {
  */
 function hsuforum_grading_areas_list() {
     return array('posts' => get_string('posts', 'hsuforum'));
-}
-
-/**
- * Obtains the automatic completion state for this forum based on any conditions
- * in forum settings.
- *
- * @global object
- * @global object
- * @param object $course Course
- * @param object $cm Course-module
- * @param int $userid User ID
- * @param bool $type Type of comparison (or/and; can be used as return value if no conditions)
- * @return bool True if completed, false if not. (If no conditions, then return
- *   value depends on comparison type)
- */
-function hsuforum_get_completion_state($course,$cm,$userid,$type) {
-    global $DB;
-
-    // Get forum details
-    if (!($forum=$DB->get_record('hsuforum',array('id'=>$cm->instance)))) {
-        throw new Exception("Can't find forum {$cm->instance}");
-    }
-
-    $result=$type; // Default return value
-
-    $postcountparams=array('userid'=>$userid,'forumid'=>$forum->id);
-    $postcountsql="
-SELECT
-    COUNT(1)
-FROM
-    {hsuforum_posts} fp
-    INNER JOIN {hsuforum_discussions} fd ON fp.discussion=fd.id
-WHERE
-    fp.userid=:userid AND fd.forum=:forumid";
-
-    if ($forum->completiondiscussions) {
-        $value = $forum->completiondiscussions <=
-                 $DB->count_records('hsuforum_discussions',array('forum'=>$forum->id,'userid'=>$userid));
-        if ($type == COMPLETION_AND) {
-            $result = $result && $value;
-        } else {
-            $result = $result || $value;
-        }
-    }
-    if ($forum->completionreplies) {
-        $value = $forum->completionreplies <=
-                 $DB->get_field_sql( $postcountsql.' AND fp.parent<>0',$postcountparams);
-        if ($type==COMPLETION_AND) {
-            $result = $result && $value;
-        } else {
-            $result = $result || $value;
-        }
-    }
-    if ($forum->completionposts) {
-        $value = $forum->completionposts <= $DB->get_field_sql($postcountsql,$postcountparams);
-        if ($type == COMPLETION_AND) {
-            $result = $result && $value;
-        } else {
-            $result = $result || $value;
-        }
-    }
-
-    return $result;
 }
 
 /**
@@ -1311,18 +1248,18 @@ function hsuforum_user_outline($course, $user, $mod, $forum) {
         $result->time = $count->lastpost;
         if ($grade) {
             if (!$grade->hidden || has_capability('moodle/grade:viewhidden', context_course::instance($course->id))) {
-                $result->info .= ', ' . get_string('grade') . ': ' . $grade->str_long_grade;
+                $result->info .= ', ' . get_string('gradenoun') . ': ' . $grade->str_long_grade;
             } else {
-                $result->info = get_string('grade') . ': ' . get_string('hidden', 'grades');
+                $result->info = get_string('gradenoun') . ': ' . get_string('hidden', 'grades');
             }
         }
         return $result;
     } else if ($grade) {
         $result = new stdClass();
         if (!$grade->hidden || has_capability('moodle/grade:viewhidden', context_course::instance($course->id))) {
-            $result->info = get_string('grade') . ': ' . $grade->str_long_grade;
+            $result->info = get_string('gradenoun') . ': ' . $grade->str_long_grade;
         } else {
-            $result->info = get_string('grade') . ': ' . get_string('hidden', 'grades');
+            $result->info = get_string('gradenoun') . ': ' . get_string('hidden', 'grades');
         }
 
         //datesubmitted == time created. dategraded == time modified or time overridden
@@ -1356,12 +1293,12 @@ function hsuforum_user_complete($course, $user, $mod, $forum) {
     if (!empty($grades->items[0]->grades)) {
         $grade = reset($grades->items[0]->grades);
         if (!$grade->hidden || has_capability('moodle/grade:viewhidden', context_course::instance($course->id))) {
-            echo $OUTPUT->container(get_string('grade').': '.$grade->str_long_grade);
+            echo $OUTPUT->container(get_string('gradenoun').': '.$grade->str_long_grade);
             if ($grade->str_feedback) {
                 echo $OUTPUT->container(get_string('feedback').': '.$grade->str_feedback);
             }
         } else {
-            echo $OUTPUT->container(get_string('grade') . ': ' . get_string('hidden', 'grades'));
+            echo $OUTPUT->container(get_string('gradenoun') . ': ' . get_string('hidden', 'grades'));
         }
     }
 
@@ -1645,7 +1582,9 @@ function hsuforum_recent_activity_query($course, $timestart, $forumid = null, $o
         $limitnum = 6;
     }
     $orderquery = $orderasc ? 'ASC' : 'DESC';
-    $allnamefields = user_picture::fields('u', null, 'duserid');
+
+    $userfieldsapi = \core_user\fields::for_userpic();
+    $allnamefields = $userfieldsapi->get_sql('u', false, '', 'duserid', false)->selects;
     $sql = "SELECT p.*, f.anonymous as forumanonymous, f.type AS forumtype,
                    d.forum, d.groupid, d.timestart, d.timeend, $allnamefields
               FROM {hsuforum_posts} p
@@ -1745,7 +1684,7 @@ function hsuforum_recent_activity($course, $viewfullnames, $timestart, $forumid 
 
     if($out) {
         $out = "<div class='hsuforum-recent clearfix'>
-        <h3 class='hsuforum-recent-heading'>".get_string('newforumposts', 'hsuforum')."</h3>".$out."</div>";
+        <h4 class='hsuforum-recent-heading'>".get_string('newforumposts', 'hsuforum')."</h4>".$out."</div>";
     }
     return $out;
 }
@@ -1764,7 +1703,7 @@ function hsuforum_media_object($url, $picture, $username, $time, $subject) {
         $out .= "<a href='$url'>";
         $out .= $picture;
         $out .= "<div class=\"snap-media-body\">";
-        $out .= "<h3>".format_string($username)."</h3>";
+        $out .= "<h5>".format_string($username)."</h5>";
         $out .= "<span class=snap-media-meta>$time</span>";
         $out .= "<p>".format_string($subject)."</p></div>";
         $out .= "</a></div>";
@@ -2010,7 +1949,8 @@ function hsuforum_scale_used_anywhere($scaleid) {
 function hsuforum_get_post_full($postid) {
     global $CFG, $DB;
 
-    $allnames = get_all_user_name_fields(true, 'u');
+    $userfieldsapi = \core_user\fields::for_name();
+    $allnames = $userfieldsapi->get_sql('u', false, '', '', false)->selects;
     return $DB->get_record_sql("SELECT p.*, d.forum, $allnames, u.email, u.picture, u.imagealt, r.lastread AS postread
                              FROM {hsuforum_posts} p
                                   JOIN {hsuforum_discussions} d ON p.discussion = d.id
@@ -2041,7 +1981,8 @@ function hsuforum_get_all_discussion_posts($discussionid, $conditions = array())
     $tr_join = "LEFT JOIN {hsuforum_read} fr ON (fr.postid = p.id AND fr.userid = ?)";
     $params[] = $USER->id;
 
-    $allnames = get_all_user_name_fields(true, 'u');
+    $userfieldsapi = \core_user\fields::for_name();
+    $allnames = $userfieldsapi->get_sql('u', false, '', '', false)->selects;
     $params[] = $discussionid;
     $params[] = $USER->id;
     $params[] = $USER->id;
@@ -2350,7 +2291,8 @@ function hsuforum_search_posts($searchterms, $courseid=0, $limitfrom=0, $limitnu
                    FROM $fromsql
                   WHERE $selectsql";
 
-    $allnames = get_all_user_name_fields(true, 'u');
+    $userfieldsapi = \core_user\fields::for_name();
+    $allnames = $userfieldsapi->get_sql('u', false, '', '', false)->selects;
     $searchsql = "SELECT p.*,
                          d.forum,
                          $allnames,
@@ -2539,8 +2481,8 @@ function hsuforum_get_user_posts($forumid, $userid, context_module $context = nu
             $params[] = $now;
         }
     }
-
-    $allnames = get_all_user_name_fields(true, 'u');
+    $userfieldsapi = \core_user\fields::for_name();
+    $allnames = $userfieldsapi->get_sql('u', false, '', '', false)->selects;
     return $DB->get_records_sql("SELECT p.*, d.forum, $allnames, u.email, u.picture, u.imagealt, r.lastread AS postread
                               FROM {hsuforum} f
                                    JOIN {hsuforum_discussions} d ON d.forum = f.id
@@ -2999,11 +2941,13 @@ LEFT OUTER JOIN {hsuforum_read} r ON (r.postid = p.id AND r.userid = ?)
         $postdata = "p.*";
     }
 
+    $userfieldsapi = \core_user\fields::for_name();
+
     if (empty($userlastmodified)) {  // We don't need to know this
         $umfields = "";
         $umtable  = "";
     } else {
-        $umfields = ', up.reveal AS umreveal, ' . get_all_user_name_fields(true, 'um', null, 'um') . ', um.email AS umemail, um.picture AS umpicture,
+        $umfields = $userfieldsapi->get_sql('um', false, 'um')->selects . ', um.email AS umemail, um.picture AS umpicture,
                         um.imagealt AS umimagealt';
         $umtable  = " LEFT JOIN {user} um ON (d.usermodified = um.id)
                       LEFT OUTER JOIN {hsuforum_posts} up ON lastpost.postid = up.id";
@@ -3019,7 +2963,7 @@ LEFT OUTER JOIN {hsuforum_read} r ON (r.postid = p.id AND r.userid = ?)
     if (is_string($forumselect) and !empty($forumselect)) {
         $selectsql = $forumselect;
     } else {
-        $allnames  = get_all_user_name_fields(true, 'u');
+        $allnames  = $userfieldsapi->get_sql('u', false, '', '', false)->selects;
         $selectsql = "$postdata, d.name, d.timemodified, d.usermodified, d.groupid, d.timestart, d.timeend, d.pinned, d.assessed,
                            d.firstpost, extra.replies, lastpost.postid lastpostid,$trackselect$subscribeselect
                            $allnames, u.email, u.picture, u.imagealt $umfields";
@@ -3029,13 +2973,13 @@ LEFT OUTER JOIN {hsuforum_read} r ON (r.postid = p.id AND r.userid = ?)
               FROM {hsuforum_discussions} d
                    JOIN {hsuforum_posts} p ON p.discussion = d.id
                    JOIN {user} u ON p.userid = u.id
-        LEFT OUTER JOIN (SELECT p.discussion, COUNT(p.id) AS replies
+        LEFT OUTER JOIN (SELECT d.id AS discussion, COUNT(p.id) AS replies
                            FROM {hsuforum_posts} p
                            JOIN {hsuforum_discussions} d ON p.discussion = d.id
                           WHERE p.parent > 0
                             AND d.forum = ?
                             AND (p.privatereply = 0 OR p.privatereply = ? OR p.userid = ?)
-                          GROUP BY p.discussion) extra ON d.id = extra.discussion
+                          GROUP BY d.id) extra ON d.id = extra.discussion
               LEFT JOIN (SELECT p.discussion, p.id postid, p.userid, p.modified
                            FROM {hsuforum_discussions} d
                       LEFT JOIN {hsuforum_posts} p ON d.usermodified = p.userid AND d.id = p.discussion AND p.modified = d.timemodified
@@ -3425,7 +3369,8 @@ function hsuforum_get_potential_subscribers($forumcontext, $groupid, $fields, $s
 function hsuforum_subscribed_users($course, $forum, $groupid=0, $context = null, $fields = null) {
     global $CFG, $DB;
 
-    $allnames = get_all_user_name_fields(true, 'u');
+    $userfieldsapi = \core_user\fields::for_name();
+    $allnames = $userfieldsapi->get_sql('u', false, '', '', false)->selects;
     if (empty($fields)) {
         $fields ="u.id,
                   u.username,
@@ -4466,12 +4411,17 @@ function hsuforum_add_discussion($discussion, $mform=null, $unused=null, $userid
     }
     $post->id = $DB->insert_record("hsuforum_posts", $post);
 
+
     // TODO: Fix the calling code so that there always is a $cm when this function is called
     if (!empty($cm->id) && !empty($discussion->itemid)) {   // In "single simple discussions" this may not exist yet
         $context = context_module::instance($cm->id);
         $text = file_save_draft_area_files($discussion->itemid, $context->id, 'mod_hsuforum', 'post', $post->id,
                 mod_hsuforum_post_form::editor_options($context, null), $post->message);
         $DB->set_field('hsuforum_posts', 'message', $text, array('id'=>$post->id));
+
+        if (isset($discussion->tags)) {
+            core_tag_tag::set_item_tags('mod_hsuforum', 'hsuforum_posts', $post->id, $context, $discussion->tags);
+        }
     }
 
     // Now do the main entry for the discussion, linking to this first post
@@ -5972,7 +5922,8 @@ function hsuforum_get_recent_mod_activity(&$activities, &$index, $timestart, $co
         $groupselect = "";
     }
 
-    $allnames = get_all_user_name_fields(true, 'u');
+    $userfieldsapi = \core_user\fields::for_name();
+    $allnames = $userfieldsapi->get_sql('u', false, '', '', false)->selects;
     if (!$posts = $DB->get_records_sql("SELECT p.*, f.anonymous AS forumanonymous, f.type AS forumtype, d.forum, d.groupid,
                                               d.timestart, d.timeend, d.pinned, d.userid AS duserid,
                                               $allnames, u.email, u.picture, u.imagealt, u.email
@@ -6044,7 +5995,7 @@ function hsuforum_get_recent_mod_activity(&$activities, &$index, $timestart, $co
 
         $tmpactivity->user = new stdClass();
         $additionalfields = array('id' => 'userid', 'picture', 'imagealt', 'email');
-        $additionalfields = explode(',', user_picture::fields());
+        $additionalfields = \core_user\fields::get_picture_fields();
         $tmpactivity->user = username_load_fields_from_object($tmpactivity->user, $post, null, $additionalfields);
         $tmpactivity->user->id = $post->userid;
 
@@ -7522,7 +7473,9 @@ function hsuforum_cm_info_view(cm_info $cm) {
     $out = '';
 
     if (empty($config->hiderecentposts) && $forum->showrecent) {
-        $out .= hsuforum_recent_activity($cm->get_course(), true, 0, $forum->id, false);
+        $context = context_module::instance($cm->id);
+        $viewfullnames = has_capability('moodle/site:viewfullnames', $context);
+        $out .= hsuforum_recent_activity($cm->get_course(), $viewfullnames, 0, $forum->id, false);
     }
 
     if ($unread = hsuforum_count_forum_unread_posts($cm, $cm->get_course())) {
@@ -7907,7 +7860,8 @@ function hsuforum_get_posts_by_user($user, array $courses, $musthaveaccess = fal
     // Prepare SQL to both count and search.
     // We alias user.id to useridx because we hsuforum_posts already has a userid field and not aliasing this would break
     // oracle and mssql.
-    $userfields = user_picture::fields('u', null, 'useridx');
+    $userfieldsapi = \core_user\fields::for_userpic();
+    $userfields = $userfieldsapi->get_sql('u', false, '', 'useridx', false)->selects;
     $countsql = 'SELECT COUNT(*) ';
     $selectsql = 'SELECT p.*, d.forum, d.name AS discussionname, '.$userfields.' ';
     $wheresql = implode(" OR ", $forumsearchwhere);
@@ -7960,7 +7914,7 @@ function hsuforum_extract_postuser($post, $forum, context_module $context) {
     $postuser     = new stdClass();
     $postuser->id = $post->userid;
     $fields = array_merge(
-        get_all_user_name_fields(),
+        \core_user\fields::for_name()->get_required_fields(),
         array('imagealt', 'picture', 'email')
     );
     foreach ($fields as $field) {
@@ -8055,7 +8009,7 @@ function hsuforum_anonymize_user($user, $forum, $post) {
         $anonymous->imagealt = $anonymous->fullname;
 
         // Prevent accidental reveal of user.
-        foreach(get_all_user_name_fields() as $field) {
+        foreach(\core_user\fields::for_name()->get_required_fields() as $field) {
             if (!property_exists($anonymous, $field)) {
                 $anonymous->$field = '';
             }

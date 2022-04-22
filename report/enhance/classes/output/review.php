@@ -47,6 +47,8 @@ class review implements renderable, templatable {
     public function __construct($form, $request) {
         $this->form = $form;
         $this->request = $request;
+        $this->request->audienceformatted = \report_enhance\lib::getaudience($request->audience);
+        $this->request->serviceformatted = \report_enhance\lib::getservice($request->service);
     }
 
     /** 

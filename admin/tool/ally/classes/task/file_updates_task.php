@@ -18,7 +18,7 @@
  * File updates task.
  *
  * @package   tool_ally
- * @copyright Copyright (c) 2016 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2016 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -35,7 +35,7 @@ defined('MOODLE_INTERNAL') || die();
  * File updates task.
  *
  * @package   tool_ally
- * @copyright Copyright (c) 2016 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2016 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class file_updates_task extends scheduled_task {
@@ -81,6 +81,10 @@ class file_updates_task extends scheduled_task {
         if (!$pushupdatesok) {
             return;
         }
+
+        // Process any file in use changes that need to be checked.
+        $this->mark_block_files_needing_updating($time);
+        $this->process_file_in_use_updates();
 
         // Push deleted files.
         $this->push_deletes($config, $updates);
@@ -196,6 +200,48 @@ class file_updates_task extends scheduled_task {
             }
         }
         $deletes->close();
+    }
+
+    /**
+     * Mark the files associated with HTML blocks as needing updating if the block has been updated.
+     * This is needed because blocks don't have events, meaning we have to just look at the time modified.
+     *
+     * @param $time
+     */
+    private function mark_block_files_needing_updating($time) {
+        global $DB;
+
+        $select = 'contextid IN (SELECT ctx.id
+                                   FROM {block_instances} bi
+                                   JOIN {context} ctx ON ctx.instanceid = bi.id AND ctx.contextlevel = ? AND bi.blockname = ?
+                                   WHERE bi.timemodified >= ?)';
+
+        $DB->set_field_select('tool_ally_file_in_use', 'needsupdate', 1, $select, [CONTEXT_BLOCK, 'html', $time]);
+    }
+
+    /**
+     * Process any files that need updating from the files_in_use table.
+     */
+    private function process_file_in_use_updates() {
+        global $DB;
+
+        $fs = get_file_storage();
+        $validator = local_file::file_validator();
+        $records = $DB->get_recordset('tool_ally_file_in_use', ['needsupdate' => 1]);
+
+        foreach ($records as $record) {
+            $file = $fs->get_file_by_id($record->fileid);
+            if (!$file) {
+                // This means the file no longer exists. Just remove the record.
+                $DB->delete_records('tool_ally_file_in_use', ['id' => $record->id]);
+                continue;
+            }
+
+            // The validator will check and update the file, sending whatever messages may be needed.
+            $validator->validate_stored_file($file);
+        }
+
+        $records->close();
     }
 
     /**

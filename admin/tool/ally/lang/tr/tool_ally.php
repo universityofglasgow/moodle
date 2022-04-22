@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @copyright  Copyright (c) 2020 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright  Copyright (c) 2021 Open LMS (https://www.openlms.net)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -81,10 +81,13 @@ $string['lessonanswertitle'] = '"{$a}" dersi için yanıt';
 $string['lessonresponsetitle'] = '"{$a}" dersi için yanıt';
 $string['logs'] = 'Ally günlükleri';
 $string['logrange'] = 'Günlük aralığı';
-$string['loglevel:none'] = 'Hiçbiri';
+$string['loglevel:none'] = 'Yok';
 $string['loglevel:light'] = 'Hafif';
 $string['loglevel:medium'] = 'Orta';
 $string['loglevel:all'] = 'Tümü';
+$string['logcleanuptask'] = 'Ally günlüğü temizleme görevi';
+$string['loglifetimedays'] = 'Günlükleri şu kadar gün boyunca sakla';
+$string['loglifetimedaysdesc'] = 'Ally günlüklerini şu kadar gün boyunca sakla. 0 ila günlükleri asla silme arasında bir değere ayarlayın. Zamanlanmış bir görev (varsayılan olarak) günlük olarak çalışacak şekilde ayarlanır ve belirtilen günden daha eski günlük girdilerini kaldırır.';
 $string['logger:pushtoallysuccess'] = 'Ally uç noktasına başarılı aktarma';
 $string['logger:pushtoallyfail'] = 'Ally uç noktasına başarısız aktarma';
 $string['logger:pushfilesuccess'] = 'Ally uç noktasına başarılı dosya aktarma';
@@ -101,7 +104,9 @@ $string['logger:addingconenttoqueue'] = 'Aktarma kuyruğuna içerik ekleme';
 $string['logger:annotationmoderror'] = 'Ally modülü içerik ek açıklaması başarısız oldu.';
 $string['logger:annotationmoderror_exp'] = 'Modül doğru şekilde tanımlanmamış.';
 $string['logger:failedtogetcoursesectionname'] = 'Kurs bölümünün adı alınamadı';
+$string['logger:moduleidresolutionfailure'] = 'Modül kimliği çözümlenemedi';
 $string['logger:cmidresolutionfailure'] = 'Kurs modülü kimliği çözümlenemedi';
+$string['logger:cmvisibilityresolutionfailure'] = 'Kurs modülü görünürlüğü çözümlenemedi';
 $string['courseupdatestask'] = 'Kurs olaylarını Ally\'a aktar';
 $string['logger:pushcoursesuccess'] = 'Kurs olayları Ally uç noktasına başarıyla aktarıldı';
 $string['logger:pushcourseliveskip'] = 'Canlı kurs olayı aktarma hatası';
@@ -116,3 +121,5 @@ $string['logger:servicefailure'] = 'Hizmet kullanılırken bir hata oldu.';
 $string['logger:servicefailure_exp'] = '<br>Sınıf: {$a->class}<br>Parametreler: {$a->params}';
 $string['logger:autoconfigfailureteachercap'] = 'Bir öğretmen kök örnek yeteneği ally_webservice rolüne atanamadı.';
 $string['logger:autoconfigfailureteachercap_exp'] = '<br>Yetenek: {$a->cap}<br>İzin: {$a->permission}';
+$string['deferredcourseevents'] = 'Ertelenen kurs etkinliklerini gönder';
+$string['deferredcourseeventsdesc'] = 'Ally ile iletişim sorunları yaşandığında biriken ve depolanan kurs etkinliklerinin gönderilmesine izin verin';

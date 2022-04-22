@@ -17,9 +17,9 @@
 /**
  * Echo360 filter plugin file.
  *
- * @package local_echo360
- * @author  Echo360
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    filter_echo360
+ * @copyright  2020 Echo360 Inc.
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
@@ -69,10 +69,11 @@ class filter_echo360 extends moodle_text_filter {
         // Find all Echo360 LTI Embeds that exist in text content.
         $searchfilters = '%<a[\s]+[^>]*?href[\s]?=[\s]?"' .
             preg_quote($CFG->wwwroot . self::FILTER_PATH) .
-            '\?url=(?<url>.+?)?&.*?cmid=(?<cmid>\d*)?&.*?width=(?<width>\d*)?&.*?height=(?<height>\d*)?".*?>(?<text>.*?)<\/a>%';
+            '\?url=(?<url>[^&]+?)?&(amp;)?cmid=(?<cmid>\d*)?&(amp;)?width=(?<width>\d*)?&(amp;)?height=(?<height>\d*)?".*?>'.
+            '(?<text>.*?)<\/a>%';
         if ($nofilterurls = preg_match_all($searchfilters, $text, $result)) {
             // Decode URLs in text content to make <A HREF> regex pattern replacement with <IFRAME> easier.
-            $filteredtext = urldecode($text);
+            $filteredtext = $text;
 
             // Find and replace each Echo360 LTI Launch URL with IFRAME embedded player.
             for ($i = 0; $i < $nofilterurls; $i++) {
@@ -82,9 +83,9 @@ class filter_echo360 extends moodle_text_filter {
                     $cmid = $result['cmid'][$i];
                 }
 
-                $searchfilter = '%<a[\s]+[^>]*?href[\s]?=[\s]?"' .
+                $searchfilter = '~<a[\s]+[^>]*?href[\s]?=[\s]?"' .
                     preg_quote($CFG->wwwroot . self::FILTER_PATH) .
-                    '\?url=' . preg_quote(urldecode($result['url'][$i])) . '*(.*?)[\"\']*.*?>([^<]+|.*?)?<\/a>%';
+                    '\?url=' . preg_quote($result['url'][$i]) . '*(.*?)[\"\']*.*?>([^<]+|.*?)?<\/a>~';
                 $replacement = '<div class="echo360-iframe"><iframe src="' . $CFG->wwwroot . self::FILTER_PATH .
                     '?url=' .     $result['url'][$i] .
                     '&cmid=' .    $cmid .

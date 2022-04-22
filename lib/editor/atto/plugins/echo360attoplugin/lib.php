@@ -18,12 +18,11 @@
  * Atto text editor integration version file.
  *
  * @package   atto_echo360attoplugin
- * @copyright COPYRIGHTINFO
+ * @copyright 2020 Echo360 Inc.
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
-require_once(__DIR__ . '/../../../../../config.php');
 
 const ECHO360ATTOPLUGIN_NAME = 'atto_echo360attoplugin';
 const FILTER_PATH = "/filter/echo360/lti_launch.php";

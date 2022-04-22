@@ -58,8 +58,8 @@ class settings_maker extends \block_xp\local\setting\default_settings_maker {
      * @param config $defaults The config object to get the defaults from.
      * @param url_resolver $urlresolver The URL resolver.
      */
-    public function __construct(config $defaults, url_resolver $urlresolver, iomadfacade $iomad) {
-        parent::__construct($defaults, $urlresolver);
+    public function __construct(config $defaults, url_resolver $urlresolver, iomadfacade $iomad, config $configlocked) {
+        parent::__construct($defaults, $urlresolver, $configlocked);
         $this->iomad = $iomad;
     }
 
@@ -72,10 +72,6 @@ class settings_maker extends \block_xp\local\setting\default_settings_maker {
      */
     public function get_settings(environment $env) {
         $settings = parent::get_settings($env);
-
-        // Remove the promo page.
-        $settings->prune('block_xp_promo');
-
         return $settings;
     }
 
@@ -167,6 +163,8 @@ class settings_maker extends \block_xp\local\setting\default_settings_maker {
                     get_string('grouporderby', 'local_xp'), get_string('grouporderby_help', 'local_xp'),
                     $defaults['grouporderby'], [
                         default_course_world_config::GROUP_ORDER_BY_POINTS => get_string('grouppoints', 'local_xp'),
+                        default_course_world_config::GROUP_ORDER_BY_POINTS_COMPENSATED_BY_AVG =>
+                            get_string('grouppointswithcompensation', 'local_xp'),
                         default_course_world_config::GROUP_ORDER_BY_PROGRESS => get_string('progress', 'block_xp'),
                     ]);
 

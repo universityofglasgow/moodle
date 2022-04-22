@@ -43,6 +43,7 @@ class container implements \block_xp\local\container {
         'collection_logger' => true,
         'collection_strategy' => true,
         'config' => true,
+        'config_locked' => true,
         'course_currency_factory' => true,
         'course_world_factory' => true,
         'course_world_grouped_leaderboard_factory' => true,
@@ -164,6 +165,20 @@ class container implements \block_xp\local\container {
     }
 
     /**
+     * Get global config about locked settings.
+     *
+     * @return config
+     */
+    protected function get_config_locked() {
+        return new \block_xp\local\config\config_stack([
+            new \block_xp\local\config\mdl_locked_config('local_xp', [
+                'groupidentitymode'
+            ]),
+            $this->subcontainer->get('config_locked')
+        ]);
+    }
+
+    /**
      * Get the course config factory.
      *
      * @return course_config_factory
@@ -171,7 +186,7 @@ class container implements \block_xp\local\container {
     private function get_course_config_factory() {
         if (!$this->courseconfigfactory) {
             $this->courseconfigfactory = new \local_xp\local\factory\course_config_factory(
-                $this->get('config'), $this->get('db'));
+                $this->get('config'), $this->get('db'), $this->get('config_locked'));
         }
         return $this->courseconfigfactory;
     }
@@ -358,7 +373,8 @@ class container implements \block_xp\local\container {
                 new \block_xp\local\config\default_admin_config(),
             ]),
             $this->get('url_resolver'),
-            $this->get('iomad_facade')
+            $this->get('iomad_facade'),
+            $this->get('config_locked')
         );
     }
 

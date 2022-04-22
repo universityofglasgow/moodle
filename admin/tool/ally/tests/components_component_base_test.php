@@ -19,7 +19,7 @@
  *
  * @package   tool_ally
  * @author    Guy Thomas
- * @copyright Copyright (c) 2018 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2018 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -34,7 +34,7 @@ defined('MOODLE_INTERNAL') || die();
  *
  * @package   tool_ally
  * @author    Guy Thomas
- * @copyright Copyright (c) 2018 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2018 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class tool_ally_components_component_base_testcase extends advanced_testcase {
@@ -70,7 +70,7 @@ class tool_ally_components_component_base_testcase extends advanced_testcase {
      */
     private $component;
 
-    public function setUp() {
+    public function setUp(): void {
         $this->resetAfterTest();
 
         $gen = $this->getDataGenerator();
@@ -88,11 +88,11 @@ class tool_ally_components_component_base_testcase extends advanced_testcase {
 
     public function test_get_approved_author_ids_for_context() {
         $authorids = $this->component->get_approved_author_ids_for_context($this->coursecontext);
-        $this->assertContains($this->teacher->id, $authorids,
+        $this->assertTrue(in_array($this->teacher->id, $authorids),
                 'Teacher id '.$this->teacher->id.' should be in list of author ids.');
-        $this->assertContains($this->admin->id, $authorids,
+        $this->assertTrue(in_array($this->admin->id, $authorids),
                 'Admin id '.$this->admin->id.' should be in list of author ids.');
-        $this->assertNotContains($this->student->id, $authorids,
+        $this->assertFalse(in_array($this->student->id, $authorids),
                 'Student id '.$this->student->id.' should NOT be in list of author ids.');
     }
 

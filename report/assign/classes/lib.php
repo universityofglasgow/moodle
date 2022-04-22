@@ -30,6 +30,7 @@ defined('MOODLE_INTERNAL') || die;
 define('FILENAME_SHORTEN', 30);
 
 //require_once($CFG->dirroot.'/mod/assign/locallib.php');
+require_once($CFG->dirroot . '/grade/querylib.php');
 
 use \assignfeedback_editpdf\document_services;
 use stdClass;
@@ -54,9 +55,15 @@ class lib {
         // Add plagiarism and feedback status.
         $assignments = [];
         foreach ($assigns as $cm) {
+            // Skip activities deleted in the course.
+            $rec = $cm->get_course_module_record();
+            if ($rec->deletioninprogress) {
+                continue;
+            }
             $context = \context_module::instance($cm->id);
             $assignment = new \assign($context, $cm, $course);
             $instance = $assignment->get_instance();
+            $instance->submitcount = $assignment->count_submissions_with_status(ASSIGN_SUBMISSION_STATUS_SUBMITTED);
             $instance->urkundenabled = self::urkund_enabled($instance->id);
             $instance->turnitinenabled = self::turnitin_enabled($instance->id);
             $assignments[$instance->id] = $instance;
@@ -495,12 +502,13 @@ class lib {
     /**
      * Add assignment data
      * @param int $assid
-     * @param int $cmid
+     * @param object $dm
      * @param assign $assign
      * @param array $submissions
      * @return array
      */
-    public static function add_assignment_data($courseid, $assid, $cmid, $assign, $submissions) {
+    public static function add_assignment_data($courseid, $assid, $cm, $assign, $submissions) {
+        $cmid = $cm->id;
 
         // Report date format.
         $dateformat = get_string('strftimedatetimeshort', 'langconfig');
@@ -520,8 +528,19 @@ class lib {
 
         foreach ($submissions as $submission) {
             $userid = $submission->id;
+            $coursegrade = grade_get_grades($courseid, 'mod', 'assign', $cm->instance, $userid);
+            $gradeinstance = reset($coursegrade->items[0]->grades);
+            $dategraded = $gradeinstance->dategraded;
+            $submission->released = empty($dategraded) ? '-' : userdate($dategraded, $dateformat);
             $submission->assignmentid = $assid;
             $submission->userid = $userid;
+            $submission->loglink = new \moodle_url('/report/assign/userlog.php', [
+                'fullname' => $submission->fullname,
+                'userid' => $userid,
+                'assignid' => $assid,
+                'courseid' => $courseid,
+                'cmid' => $cmid
+            ]);
             $userflags = $assign->get_user_flags($userid, false);
             list($submission->workflow, $submission->marker) = self::get_workflow($userflags);
             if ($instance->teamsubmission) {
@@ -537,7 +556,7 @@ class lib {
             if ($usersubmission) {
                 $submission->created = userdate($usersubmission->timecreated, $dateformat);
                 $submission->modified = userdate($usersubmission->timemodified, $dateformat);
-                $submission->status = $usersubmission->status;
+                $submission->status = get_string('status' . $usersubmission->status, 'report_assign');
                 $submissionid = $usersubmission->id;
                 $grade = $assign->get_user_grade($userid, false);
                 $gradevalue = empty($grade) ? null : $grade->grade;
@@ -551,16 +570,14 @@ class lib {
                 $submission->grade = '-';
                 $submission->grader = '-';
             }
-            $submission->participantno = empty($submission->recordid) ? '-' : $submission->recordid;
+            //$submission->participantno = empty($submission->recordid) ? '-' : $submission->recordid;
+            $submission->participantno = \assign::get_uniqueid_for_user_static($assid, $userid);
             list($submission->groups, $submission->groupids) = self::get_user_groups($userid, $courseid);
             $submission->urkund = self::get_urkund_score($assid, $cmid, $userid);
             $submission->turnitin = self::get_turnitin_score($assid, $cmid, $userid);
             $submission->files = self::get_submission_files($assign, $filesubmission, $usersubmission, $userid);
             $submission->profiledata = self::get_profile_data($profilefields, $submission);
             $submission->isprofiledata = count($profilefields) != 0;
-
-            // User fields.
-            $profilefields = explode(',', get_config('report_assign', 'profilefields'));
         }
 
         return $submissions;
@@ -687,7 +704,7 @@ class lib {
             $myxls->write_string(3, $i++, get_string('groups'));
         }
         $myxls->write_string(3, $i++, get_string('status'));
-        $myxls->write_string(3, $i++, get_string('grade'));
+        $myxls->write_string(3, $i++, get_string('grade', 'report_assign'));
         if ($urkundenabled = self::urkund_enabled($assignment->id)) {
             $myxls->write_string(3, $i++, get_string('urkund', 'report_assign'));
         }
@@ -700,6 +717,7 @@ class lib {
         }
         $myxls->write_string(3, $i++, get_string('grader', 'report_assign'));
         $myxls->write_string(3, $i++, get_string('modified'));
+        $myxls->write_string(3, $i++, get_string('released', 'report_assign'));
         $myxls->write_string(3, $i++, get_string('extension', 'report_assign'));
         $myxls->write_string(3, $i++, get_string('files'));
 
@@ -735,10 +753,91 @@ class lib {
             }
             $myxls->write_string($row, $i++, $s->grader);
             $myxls->write_string($row, $i++, $s->modified);
+            $myxls->write_string($row, $i++, $s->released);
             $myxls->write_string($row, $i++, $s->extensionduedate);
             $myxls->write_string($row, $i++, $s->files);
             $row++;
         }
+        $workbook->close();
+    }
+
+    /**
+     * Export for offline marking
+     * @param object $assignment
+     * @param string $filename
+     * @param array $submissions
+     */
+    public static function offline($assignment, $filename, $submissions) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/lib/excellib.class.php');
+
+        // Profile fields.
+        $profilefields = [];
+        $fields = get_config('report_assign', 'profilefields');
+        if ($fields != '') {
+            $profilefields = explode(',', $fields);
+        }
+
+        // We treat idnumber differently (specific user request)
+        $idnumber = array_search('idnumber', $profilefields);
+
+        // Group mode?
+        $cm = get_coursemodule_from_instance('assign', $assignment->id);
+        $groupmode = $cm->groupmode;
+
+        // Create workbook
+        $workbook = new \MoodleExcelWorkbook("-");
+        $workbook->send($filename);
+        $myxls = $workbook->add_worksheet(get_string('offlineworkbook', 'report_assign'));
+
+        // Headers.
+        $i = 0;
+        $myxls->write_string(0, $i++, get_string('recordid', 'assign'));
+        $myxls->write_string(0, $i++, get_string('idnumber'));
+        $myxls->write_string(0, $i++, get_string('gradenoun'));
+        $myxls->write_string(0, $i++, get_string('lastmodifiedgrade', 'assign'));
+        $myxls->write_string(0, $i++, get_string('fullname'));
+        foreach ($profilefields as $profilefield) {
+            if ($profilefield == 'idnumber') {
+                continue;
+            }
+            $myxls->write_string(0, $i++, get_string($profilefield));
+        }
+
+        // Add some data.
+        $row = 1;
+        foreach ($submissions as $s) {
+
+            // Fullname
+            $fullname = '-';
+            if (!$assignment->blindmarking) {
+                if ($user = $DB->get_record('user', ['id' => $s->userid])) {
+                    $fullname = fullname($user);
+                }
+            }
+
+            // Grade
+            $grade = $s->grade == '-' ? '' : $s->grade;
+
+            $i = 0;
+            $myxls->write_string($row, $i++, 'Participant ' . $s->participantno);
+            $myxls->write_string($row, $i++, $s->idnumber);
+            $myxls->write_string($row, $i++, $grade);
+            $myxls->write_string($row, $i++, ' ');
+            $myxls->write_string($row, $i++, $fullname);
+            if ($fields != '') {
+
+                foreach ($s->profiledata as $key => $value) {
+                    if ($idnumber == $key) {
+                        continue;
+                    }
+                    $myxls->write_string($row, $i++, $value);
+                }
+            }
+
+            $row++;
+        }
+
         $workbook->close();
     }
 

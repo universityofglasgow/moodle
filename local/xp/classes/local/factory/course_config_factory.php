@@ -48,6 +48,8 @@ class course_config_factory { // No interface for now, maybe later...
 
     /** @var config The admin config. */
     protected $adminconfig;
+    /** @var config The config overrides. */
+    protected $configoverrides;
     /** @var moodle_database The DB. */
     protected $db;
     /** @var config Local course defaults. */
@@ -64,7 +66,7 @@ class course_config_factory { // No interface for now, maybe later...
      * @param config $adminconfig The admin config.
      * @param moodle_database $db The DB.
      */
-    public function __construct(config $adminconfig, moodle_database $db) {
+    public function __construct(config $adminconfig, moodle_database $db, config $adminconfiglocked) {
         $this->adminconfig = $adminconfig;
         $this->db = $db;
 
@@ -86,6 +88,12 @@ class course_config_factory { // No interface for now, maybe later...
         $this->remoteadminconfig = new filtered_config(
             $this->adminconfig,
             array_keys($remotedefaultadminconfig->get_all())
+        );
+
+        // The overrides for a course config are based on the admin settings, for those admin settings that have
+        // had their locked status set to true. The whole config is immutable to prevent writes on the admin settings.
+        $this->configoverrides = new immutable_config(
+            new filtered_config($this->adminconfig, array_keys(array_filter($adminconfiglocked->get_all())))
         );
     }
 
@@ -111,6 +119,7 @@ class course_config_factory { // No interface for now, maybe later...
         // out what is not meant to be part of it.
         if (!isset($this->configcache[$courseid])) {
             $this->configcache[$courseid] = new config_stack([
+                $this->configoverrides,
                 new table_row_config($this->db, 'local_xp_config', $this->localcoursedefaults, ['courseid' => $courseid]),
                 new \block_xp\local\config\course_world_config($this->remoteadminconfig, $this->db, $courseid)
             ]);

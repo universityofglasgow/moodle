@@ -123,13 +123,16 @@ class ldaplist implements renderable, templatable {
             $buttons = '';
             if (has_capability('moodle/user:delete', $context)) {
                 $link = new \moodle_url('/report/guid/index.php', ['delete' => $userid, 'sesskey' => sesskey()]);
-                $buttons .= '<a class="btn btn-danger" href="' . $link . '">' . get_string('delete') . '</a>';
+                $buttons .= '<a class="btn btn-danger" href="' . $link . '">' . get_string('delete', 'report_guid') . '</a> ';
             }
             if (has_capability('moodle/user:update', $context)) {
                 $link = new \moodle_url('/report/guid/userupdate.php', ['userid' => $userid, 'sesskey' => sesskey()]);
                 $buttons .= '<a class="btn btn-warning" href="' .
-                    $link . '">' . get_string('changeusername', 'report_guid') . '</a>';
+                    $link . '">' . get_string('changeusername', 'report_guid') . '</a> ';
             }
+            $link = new \moodle_url('/report/guid/sync.php', ['userid' => $userid, 'sesskey' => sesskey()]);
+            $buttons .= '<a class="btn btn-success" href="' .
+                $link . '">' . get_string('syncuser', 'report_guid') . '</a> ';
 
             $userlink = new \moodle_url('/user/view.php', ['id' => $user->id, 'course' => 1]);
             $username = '<a class="btn btn-success" href="' . $userlink . '">' . $user->username . '</a>';

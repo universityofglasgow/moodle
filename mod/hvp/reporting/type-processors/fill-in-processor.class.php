@@ -25,6 +25,16 @@ class FillInProcessor extends TypeProcessor {
   const CRP_REPORT_SEPARATOR = ' / ';
 
   /**
+   * Support for the Alternatives extension in the x-api event.
+   */
+  const CONTENT_TYPE_ALTERNATIVES = 'https://h5p.org/x-api/alternatives';
+
+  /**
+   * Support the Case Sensitivity extension in the x-api event.
+   */
+  const CONTENT_TYPE_CASE_SENSITIVITY = 'https://h5p.org/x-api/case-sensitivity';
+
+  /**
    * Determines options for interaction and generates a human readable HTML
    * report.
    *
@@ -34,12 +44,20 @@ class FillInProcessor extends TypeProcessor {
     // We need some style for our report
     $this->setStyle('styles/fill-in.css');
 
-    // Generate interaction options
-    $caseMatters = $this->determineCaseMatters($crp[0]);
+    if (isset($extras->extensions->{self::CONTENT_TYPE_CASE_SENSITIVITY}) &&
+        isset($extras->extensions->{self::CONTENT_TYPE_ALTERNATIVES})) {
+      $caseMatters    = array('caseSensitive' => $extras->extensions->{self::CONTENT_TYPE_CASE_SENSITIVITY});
+      $processedCRPs  = $extras->extensions->{self::CONTENT_TYPE_ALTERNATIVES};
+    } else {
+      // Generate interaction options
+      $caseMatters      = $this->determineCaseMatters(empty($crp[0]) ?  '' : $crp[0]);
+      
+      // Process correct responses
+      $processedCRPs    = $this->processCRPs($crp, $caseMatters['nextIndex']);
+    }
 
-    // Process correct responses and user responses patterns
-    $processedCRPs     = $this->processCRPs($crp, $caseMatters['nextIndex']);
-    $processedResponse = $this->processResponse($response);
+    // Process user responses patterns
+    $processedResponse  = $this->processResponse($response);
 
     // Build report from description, correct responses and user responses
     $report = $this->buildReportOutput($description,
@@ -49,12 +67,14 @@ class FillInProcessor extends TypeProcessor {
     );
 
     $header = $this->generateHeader($scoreSettings);
+    $longFillIn = property_exists($extras, 'longfillin') ? ' h5p-long-fill-in' : '';
     $container =
-      '<div class="h5p-reporting-container h5p-fill-in-container">' .
+      '<div class="h5p-reporting-container h5p-fill-in-container' . $longFillIn . '">' .
         $header . $report .
       '</div>';
-    $footer = $this->generateFooter();
 
+    // Footer only required if there is a correct responses pattern
+    $footer = (isset($crp)) ? $this->generateFooter() : '';
 
     return $container . $footer;
   }
@@ -106,6 +126,10 @@ class FillInProcessor extends TypeProcessor {
 
     // CRPs sorted by placeholder order
     $sortedCRP = array();
+
+    if (!is_array($crp)) {
+      return $sortedCRP;
+    }
 
     foreach ($crp as $crpString) {
 
@@ -200,6 +224,16 @@ class FillInProcessor extends TypeProcessor {
    */
   private function getPlaceholderReplacements($crp, $response, $caseSensitive) {
     $placeholderReplacements = array();
+
+    // Return response without markup if answers are neither right nor wrong
+    if (sizeof($crp) === 0) {
+      foreach($response as $answer) {
+        $placeholderReplacements[] =
+          '<span class="h5p-fill-in-user-response h5p-fill-in-user-response-correct h5p-fill-in-no-correct">' .
+          nl2br($answer) .
+          '</span>';
+      }
+    }
 
     foreach ($crp as $index => $value) {
 

@@ -17,7 +17,7 @@
 /**
  * Course processor for Ally.
  * @package   tool_ally
- * @copyright Copyright (c) 2019 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2019 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 namespace tool_ally;
@@ -31,7 +31,7 @@ use tool_ally\logging\logger;
  * Can be used to process individual or groups of course events.
  *
  * @package   tool_ally
- * @copyright Copyright (c) 2019 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2019 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class course_processor extends traceable_processor {
@@ -69,16 +69,22 @@ class course_processor extends traceable_processor {
      * @param string $name
      * @param int $time
      * @param int $courseid
+     * @param int|null $sourcecourseid
      * @return bool Successfully pushed event.
      * @throws \dml_exception
      */
-    public static function push_course_event($name, $time, $courseid) {
+    public static function push_course_event($name, $time, $courseid, $sourcecourseid = null) {
         $config = self::get_config();
         $event = (object) [
             'name' => $name,
             'time' => $time,
             'courseid' => $courseid
         ];
+
+        if (isset($sourcecourseid)) {
+            $event->sourcecourseid = $sourcecourseid;
+        }
+
         if (!$config->is_valid() || $config->is_cli_only()) {
             self::add_event_to_queue($config, $event);
             return false;

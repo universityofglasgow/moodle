@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @copyright  Copyright (c) 2020 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright  Copyright (c) 2021 Open LMS (https://www.openlms.net)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -81,10 +81,13 @@ $string['lessonanswertitle'] = 'Antwoord voor les "{$a}"';
 $string['lessonresponsetitle'] = 'Reactie voor les "{$a}"';
 $string['logs'] = 'Ally-logboeken';
 $string['logrange'] = 'Logboekbereik';
-$string['loglevel:none'] = 'Geen';
+$string['loglevel:none'] = 'Niets';
 $string['loglevel:light'] = 'Licht';
 $string['loglevel:medium'] = 'Normaal';
 $string['loglevel:all'] = 'Alle';
+$string['logcleanuptask'] = 'Opschoontaak Ally-logboek';
+$string['loglifetimedays'] = 'Logs dit aantal dagen bewaren';
+$string['loglifetimedaysdesc'] = 'Ally-logboeken worden gedurende dit aantal dagen bewaard. Stel hier 0 in om nooit logboeken te verwijderen. Dit is een geplande taak die (standaard) elke dag wordt uitgevoerd en waarmee logboekregels worden gewist die ouder zijn dan dit aantal dagen.';
 $string['logger:pushtoallysuccess'] = 'Pushen naar Ally-eindpunt gelukt';
 $string['logger:pushtoallyfail'] = 'Pushen naar Ally-eindpunt mislukt';
 $string['logger:pushfilesuccess'] = 'Pushen van bestand(en) naar Ally-eindpunt gelukt';
@@ -101,7 +104,9 @@ $string['logger:addingconenttoqueue'] = 'Inhoud toevoegen aan push-wachtrij';
 $string['logger:annotationmoderror'] = 'Annoteren van inhoud van Ally-module mislukt.';
 $string['logger:annotationmoderror_exp'] = 'Module is niet correct geïdentificeerd.';
 $string['logger:failedtogetcoursesectionname'] = 'Fout bij ophalen van naam van cursussectie';
+$string['logger:moduleidresolutionfailure'] = 'Fout bij omzetten van ID van module';
 $string['logger:cmidresolutionfailure'] = 'Fout bij omzetten van ID van cursusmodule';
+$string['logger:cmvisibilityresolutionfailure'] = 'Fout bij oplossen van zichtbaarheid van cursusmodule';
 $string['courseupdatestask'] = 'Cursusgebeurtenissen naar Ally pushen';
 $string['logger:pushcoursesuccess'] = 'Pushen van een of meer cursusgebeurtenissen naar Ally-eindpunt gelukt';
 $string['logger:pushcourseliveskip'] = 'Fout bij pushen van live cursusgebeurtenis';
@@ -116,3 +121,5 @@ $string['logger:servicefailure'] = 'Mislukt tijdens het gebruik van de service.'
 $string['logger:servicefailure_exp'] = '<br>Cursus: {$a->class}<br>Parameters: {$a->params}';
 $string['logger:autoconfigfailureteachercap'] = 'Mislukt bij het toewijzen van een vaardigheid docentarchetype aan de rol ally_webservice.';
 $string['logger:autoconfigfailureteachercap_exp'] = '<br>Vaardigheid: {$a->cap}<br>Machtiging: {$a->permission}';
+$string['deferredcourseevents'] = 'Uitgestelde cursusgebeurtenissen verzenden';
+$string['deferredcourseeventsdesc'] = 'Verzending van opgeslagen cursusgebeurtenissen toestaan die tijdens een communicatiestoring met Ally zijn verzameld';

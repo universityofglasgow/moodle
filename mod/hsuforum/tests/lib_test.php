@@ -30,6 +30,8 @@ global $CFG;
 require_once($CFG->dirroot . '/mod/hsuforum/lib.php');
 require_once($CFG->dirroot . '/mod/hsuforum/locallib.php');
 require_once($CFG->dirroot . '/rating/lib.php');
+require_once($CFG->dirroot . '/mod/hsuforum/mod_form.php');
+require_once($CFG->dirroot . '/course/modlib.php');
 
 class mod_hsuforum_lib_testcase extends advanced_testcase {
 
@@ -332,7 +334,6 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
 
     public function test_forum_view() {
         global $CFG;
-
         $CFG->enablecompletion = 1;
         $this->resetAfterTest();
 
@@ -2129,7 +2130,7 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
         $this->assertArrayHasKey('hsuforum', $results[$course1->id]);
 
         // Make sure the viewer isn't seeing the private unread item.
-        $this->assertContains(get_string('overviewnumunread', 'hsuforum', 1), $results[$course1->id]['hsuforum']);
+        $this->assertStringContainsString(get_string('overviewnumunread', 'hsuforum', 1), $results[$course1->id]['hsuforum']);
 
         // Check back as the author, they should see one unread for the private reply.
         $this->setUser($author->id);
@@ -2138,7 +2139,7 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
         hsuforum_print_overview($courses, $results);
         $this->assertDebuggingCalledCount(2);
 
-        $this->assertContains(get_string('overviewnumunread', 'hsuforum', 1), $results[$course1->id]['hsuforum']);
+        $this->assertStringContainsString(get_string('overviewnumunread', 'hsuforum', 1), $results[$course1->id]['hsuforum']);
     }
 
     public function test_print_overview_groups() {
@@ -3567,7 +3568,7 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
      */
 
     public function test_hsuforum_word_count() {
-        $this -> resetAfterTest();
+        $this->resetAfterTest();
 
         $generator = $this->getDataGenerator();
         $user = $generator->create_user();
@@ -3592,11 +3593,48 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
         $wordcount4 = hsuforum_word_count('one\two > three');
         $wordcount5 = hsuforum_word_count('one @ two/three');
         $wordcount6 = hsuforum_word_count('one*two < three');
-        $this->assertEquals(3, $wordcount);
-        $this->assertEquals(3, $wordcount2);
-        $this->assertEquals(2, $wordcount3);// "<three" will not be rendered as it is asumed it is an html entity.
+        $this->assertEquals(5, $wordcount);
+        $this->assertEquals(5, $wordcount2);
+        $this->assertEquals(1, $wordcount3);// "<three" will not be rendered as it is asumed it is an html entity.
         $this->assertEquals(3, $wordcount4);
         $this->assertEquals(3, $wordcount5);
         $this->assertEquals(3, $wordcount6);
+    }
+
+    /**
+     * Test $_hideifs array does not have an scale restriction.
+     */
+
+    public function test_hsuforum_scale_dependency_form() {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $course = get_course(1);
+        list($module, $context, $cw, $cm, $data) = prepare_new_moduleinfo_data($course, 'hsuforum', 0);
+        $data->return = 0;
+        $data->sr = 0;
+        $data->add = 'hsuforum';
+        $mform = new mod_hsuforum_mod_form($data, 0, null, $course);
+        $reflection = new ReflectionClass($mform);
+        $property = $reflection->getProperty('_form');
+        $property->setAccessible(true);
+        $form = $property->getValue($mform);
+        $reflection2 = new ReflectionClass($form);
+        $hideifs = $reflection2->getProperty('_hideifs');
+        $hideifs->setAccessible(true);
+        $value = $hideifs->getValue($form);
+        // Dependency should not exist.
+        $this->assertFalse(array_search('scale', $value['assessed']['eq'][0]));
+    }
+
+    public function test_create_instance_with_advanced_grading () {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        global $CFG;
+
+        $CFG->mod_hsuforum_grading_interface = true;
+        $course = $this->getDataGenerator()->create_course();
+        // This will fail if the gradeitems class doesn't exists or is not properly setup.
+        $forum = $this->getDataGenerator()->create_module('hsuforum', array('course' => $course->id,
+            'completionreplies' => 5, 'completiondiscussions' => 2));
     }
 }

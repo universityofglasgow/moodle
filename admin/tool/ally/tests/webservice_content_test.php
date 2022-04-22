@@ -18,7 +18,7 @@
  * Test for content webservice.
  *
  * @package   tool_ally
- * @copyright Copyright (c) 2018 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2018 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -33,7 +33,7 @@ require_once(__DIR__.'/abstract_testcase.php');
  * Test for content webservice.
  *
  * @package   tool_ally
- * @copyright Copyright (c) 2018 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2018 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class tool_ally_webservice_content_testcase extends tool_ally_abstract_testcase {
@@ -161,11 +161,14 @@ class tool_ally_webservice_content_testcase extends tool_ally_abstract_testcase 
 
         $context = context_module::instance($mod->cmid);
         $filename = 'test image.png';
+        $filenameanchor = 'test pdf.pdf';
         $filearea = $field;
         $file = $this->create_test_file($context->id, 'mod_'.$modname, $filearea, 0, $filename);
+        $fileanchor = $this->create_test_file($context->id, 'mod_'.$modname, $filearea, 0, $filenameanchor);
         $modinst = $DB->get_record($table, ['id' => $mod->id]);
-        $modintro = $modinst->$field.' Modified with image file <img src="@@PLUGINFILE@@/'.
-            rawurlencode($filename).'" alt="test alt" />';
+        $modintro = $modinst->$field.' Modified with image file' .
+            '<a href="@@PLUGINFILE@@/'. rawurlencode($filenameanchor).'" alt="test alt anchor" />' . $filenameanchor.'</a>' .
+            '<img src="@@PLUGINFILE@@/'. rawurlencode($filename).'" alt="test alt" /></img>';
         $modinst->$field = $modintro;
 
         $DB->update_record($table, $modinst);
@@ -191,8 +194,14 @@ class tool_ally_webservice_content_testcase extends tool_ally_abstract_testcase 
         );
         $expected->embeddedfiles = [
             [
+                'filename' => rawurlencode($fileanchor->get_filename()),
+                'pathnamehash' => $fileanchor->get_pathnamehash(),
+                'tag' => 'a'
+            ],
+            [
                 'filename' => rawurlencode($file->get_filename()),
-                'pathnamehash' => $file->get_pathnamehash()
+                'pathnamehash' => $file->get_pathnamehash(),
+                'tag' => 'img'
             ]
         ];
         $this->assertEquals($expected, $content);

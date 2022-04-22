@@ -31,7 +31,7 @@
             <th>{{# str }}groups{{/ str }}</th>
         {{/ groupselect }}
         <th>{{# str }}status{{/ str }}</th>
-        <th>{{# str }}grade{{/ str }}</th>
+        <th>{{# str }}grade, report_assign{{/ str }}</th>
         {{# urkundenabled }}
             <th>{{# str }}urkund, report_assign{{/ str }}</th>
         {{/ urkundenabled }}
@@ -44,8 +44,10 @@
         {{/ assignment.markingallocation }}
         <th>{{# str }}grader, report_assign{{/ str }}</th>
         <th>{{# str }}modified{{/ str }}</th>
+        <th>{{# str }}released, report_assign{{/ str }}</th>
         <th>{{# str }}extension, report_assign{{/ str }}</th>
         <th class="w-25">{{# str }}files{{/ str }}</th>
+        <th>&nbsp;</th>
     </thead>
     <tbody>
         {{# submissions }}
@@ -84,6 +86,7 @@
                 {{/ assignment.markingallocation }}
                 <td>{{ grader }}</td>
                 <td>{{ modified }}</td>
+                <td>{{ released }}</td>
                 <td><span id="extensionuser_{{ userid }}">{{ extensionduedate }}</span>
                     {{# extensionsok }}
                         <a href="#" class="doextension" data-assignmentid="{{ assignmentid }}" data-userid="{{ userid }}" data-fullname="{{ fullname }}" title="{{# str }}addextension, report_assign{{/ str }}">
@@ -92,6 +95,7 @@
                     {{/ extensionsok}}
                 </td>
                 <td class="w-25">{{ files }}</td>
+                <td><a class="btn btn-info btn-sm" href="{{{ loglink }}}">{{# str }}log, report_assign{{/ str }}</a></td>
             </tr>
         {{/ submissions }}
     <tbody>

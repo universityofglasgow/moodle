@@ -26,6 +26,7 @@
 namespace local_xp\local\notification;
 defined('MOODLE_INTERNAL') || die();
 
+use coding_exception;
 use core_user;
 use block_xp\local\config\config;
 use block_xp\local\course_world;
@@ -96,7 +97,12 @@ class award_notifier {
         $message->fullmessagehtml = markdown_to_html($fullmessage);
         $message->smallmessage = $smallmessage;
         $message->notification = 1;
-        $message->courseid = $this->world->get_courseid();
+
+        try {
+            $message->courseid = $this->world->get_courseid();
+        } catch (coding_exception $e) {
+            // The property courseid did not exist in older versions.
+        }
 
         message_send($message);
     }

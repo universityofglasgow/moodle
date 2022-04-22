@@ -24,14 +24,17 @@
 namespace report_enhance;
 
 define('ENHANCE_STATUS_NEW', 1);
-define('ENHANCE_STATUS_PENDINGREVIEW', 2);
+define('ENHANCE_STATUS_PENDINGREVIEW', 2);  // deprecated
 define('ENHANCE_STATUS_UNDERREVIEW', 3);
-define('ENHANCE_STATUS_MOREINFORMATION', 4);
-define('ENHANCE_STATUS_WAITINGDEVELOPMENT', 5);
+define('ENHANCE_STATUS_MOREINFORMATION', 4); // deprecated
+define('ENHANCE_STATUS_WAITINGDEVELOPMENT', 5); // deprecated
 define('ENHANCE_STATUS_DEVELOPMENTINPROGRESS', 6);
 define('ENHANCE_STATUS_COMPLETE', 7);
 define('ENHANCE_STATUS_REJECTED', 8);
-define('ENHANCE_STATUS_DESIRABLE', 9);
+define('ENHANCE_STATUS_DESIRABLE', 9); // deprecated
+define('ENHANCE_STATUS_CANCELLED', 10);
+define('ENHANCE_STATUS_HOLD', 11);
+define('ENHANCE_STATUS_APPROVAL', 12);
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -43,38 +46,47 @@ class status {
 
         $this->statuses = array(
             ENHANCE_STATUS_NEW => get_string('new', 'report_enhance'),
-            ENHANCE_STATUS_PENDINGREVIEW => get_string('pendingreview', 'report_enhance'),
+            // ENHANCE_STATUS_PENDINGREVIEW => get_string('pendingreview', 'report_enhance'),
             ENHANCE_STATUS_UNDERREVIEW => get_string('underreview', 'report_enhance'),
-            ENHANCE_STATUS_MOREINFORMATION => get_string('moreinformation', 'report_enhance'),
-            ENHANCE_STATUS_WAITINGDEVELOPMENT => get_string('waitingdevelopment', 'report_enhance'),
+            // ENHANCE_STATUS_MOREINFORMATION => get_string('deprecatedstatus', 'report_enhance'),
+            // ENHANCE_STATUS_WAITINGDEVELOPMENT => get_string('deprecatedstatus', 'report_enhance'),
             ENHANCE_STATUS_DEVELOPMENTINPROGRESS => get_string('developmentinprogress', 'report_enhance'),
             ENHANCE_STATUS_COMPLETE => get_string('complete', 'report_enhance'),
             ENHANCE_STATUS_REJECTED => get_string('rejected', 'report_enhance'),
-            ENHANCE_STATUS_DESIRABLE => get_string('desirable', 'report_enhance'),
+            // ENHANCE_STATUS_DESIRABLE => get_string('desirable', 'report_enhance'),
+            ENHANCE_STATUS_CANCELLED => get_string('cancelled', 'report_enhance'),
+            ENHANCE_STATUS_HOLD => get_string('onhold', 'report_enhance'),
+            ENHANCE_STATUS_APPROVAL => get_string('approval', 'report_enhance'),
         );
         
         $this->statusicons = array(
             ENHANCE_STATUS_NEW => 'star-o',
-            ENHANCE_STATUS_PENDINGREVIEW => 'clock-o',
+            // ENHANCE_STATUS_PENDINGREVIEW => 'clock-o',
             ENHANCE_STATUS_UNDERREVIEW => 'gavel',
-            ENHANCE_STATUS_MOREINFORMATION => 'info-circle',
-            ENHANCE_STATUS_WAITINGDEVELOPMENT => 'thumbs-o-up',
+            // ENHANCE_STATUS_MOREINFORMATION => 'info-circle',
+            // ENHANCE_STATUS_WAITINGDEVELOPMENT => 'thumbs-o-up',
             ENHANCE_STATUS_DEVELOPMENTINPROGRESS => 'gear',
             ENHANCE_STATUS_COMPLETE => 'check-circle',
             ENHANCE_STATUS_REJECTED => 'thumbs-o-down',
-            ENHANCE_STATUS_DESIRABLE => 'heart',
+            // ENHANCE_STATUS_DESIRABLE => 'heart',
+            ENHANCE_STATUS_CANCELLED => 'times',
+            ENHANCE_STATUS_HOLD => 'pause',
+            ENHANCE_STATUS_APPROVAL => 'briefcase',
         );
         
         $this->statusclass = array(
             ENHANCE_STATUS_NEW => 'info',
-            ENHANCE_STATUS_PENDINGREVIEW => 'good',
+            // ENHANCE_STATUS_PENDINGREVIEW => 'good',
             ENHANCE_STATUS_UNDERREVIEW => 'wait',
-            ENHANCE_STATUS_MOREINFORMATION => 'info',
-            ENHANCE_STATUS_WAITINGDEVELOPMENT => 'good',
+            // ENHANCE_STATUS_MOREINFORMATION => 'info',
+            // ENHANCE_STATUS_WAITINGDEVELOPMENT => 'good',
             ENHANCE_STATUS_DEVELOPMENTINPROGRESS => 'wait',
             ENHANCE_STATUS_COMPLETE => 'good',
             ENHANCE_STATUS_REJECTED => 'fail',
-            ENHANCE_STATUS_DESIRABLE => 'wait',
+            // ENHANCE_STATUS_DESIRABLE => 'wait',
+            ENHANCE_STATUS_CANCELLED => 'fail',
+            ENHANCE_STATUS_HOLD => 'wait',
+            ENHANCE_STATUS_APPROVAL => 'wait',
         );
     }
 

@@ -42,11 +42,12 @@ class mod_choicegroup_renderer extends plugin_renderer_base {
      * @param bool $choicegroupopen
      * @param bool $disabled
      * @param bool $multipleenrollmentspossible
+     * @param bool $onlyactive
      *
      * @return string
      */
-    public function display_options($options, $coursemoduleid, $vertical = true, $publish = false, $limitanswers = false, $showresults = false, $current = false, $choicegroupopen = false, $disabled = false, $multipleenrollmentspossible = false) {
-        global $DB, $PAGE, $choicegroup_groups, $choicegroup_users;
+    public function display_options($options, $coursemoduleid, $vertical = true, $publish = false, $limitanswers = false, $showresults = false, $current = false, $choicegroupopen = false, $disabled = false, $multipleenrollmentspossible = false, $onlyactive = false) {
+        global $DB, $PAGE, $choicegroup_groups;
 
         $target = new moodle_url('/mod/choicegroup/view.php');
         $attributes = array('method'=>'POST', 'action'=>$target, 'class'=> 'tableform');
@@ -109,25 +110,23 @@ class mod_choicegroup_renderer extends plugin_renderer_base {
             } else {
                 $option->attributes->name = 'answer';
                 $option->attributes->type = 'radio';
-                if (array_key_exists('attributes', $option) && array_key_exists('checked', $option->attributes) && $option->attributes->checked == true) {
+                if (property_exists($option, 'attributes') && property_exists($option->attributes, 'checked') && $option->attributes->checked == true) {
                     $initiallyHideSubmitButton = true;
                 }
             }
 
+            $context = \context_course::instance($group->courseid);
             $labeltext = html_writer::tag('label', format_string($group->name), array('for' => 'choiceid_' . $option->attributes->value));
-            $group_members = $DB->get_records('groups_members', array('groupid' => $group->id));
+            $group_members = get_enrolled_users($context, '', $group->id, 'u.*', 'u.lastname, u.firstname', 0, 0, $onlyactive);
             $group_members_names = array();
             foreach ($group_members as $group_member) {
-                $group_user = (isset($choicegroup_users[$group_member->userid])) ? ($choicegroup_users[$group_member->userid]) : ($DB->get_record('user', array('id' => $group_member->userid)));
-                $group_members_names[] = $group_user->lastname . ', ' . $group_user->firstname;
+                $group_members_names[] = fullname($group_member);
             }
-            sort($group_members_names);
             if (!empty($option->attributes->disabled) || ($limitanswers && sizeof($group_members) >= $option->maxanswers) && empty($option->attributes->checked)) {
                 $labeltext .= ' ' . html_writer::tag('em', get_string('full', 'choicegroup'));
                 $option->attributes->disabled=true;
                 $availableoption--;
             }
-            $context = \context_course::instance($group->courseid);
             $labeltext .= html_writer::tag('div', format_text(file_rewrite_pluginfile_urls($group->description,
             'pluginfile.php',
                 $context->id,
@@ -325,7 +324,7 @@ class mod_choicegroup_renderer extends plugin_renderer_base {
 
             $actiondata .= html_writer::link($selecturl, get_string('deselectall'), ['data-select-info' => false]);
             $actiondata .= html_writer::end_div();
-            $actiondata .= html_writer::tag('label', ' ' . get_string('withselected', 'choice') . ' ', array('for'=>'menuaction'));
+            $actiondata .= html_writer::tag('label', ' ' . get_string('withselected', 'choice') . ' ', array('for'=>'menuaction', 'class' => 'mr-1'));
 
             $actionurl = new moodle_url($PAGE->url, array('sesskey'=>sesskey(), 'action'=>'delete_confirmation()'));
             $select = new single_select($actionurl, 'action', array('delete'=>get_string('delete')), null, array(''=>get_string('chooseaction', 'choicegroup')), 'attemptsform');

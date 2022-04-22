@@ -53,10 +53,21 @@ $action = optional_param('action', '', PARAM_ALPHA);
 $resetbutton = optional_param('resetbutton', '', PARAM_ALPHA);
 $delete = optional_param('delete', 0, PARAM_INT);
 $confirm = optional_param('confirm', '', PARAM_TEXT);
+$tid = optional_param('tid', 0, PARAM_INT);
 
 // Has form been reset?
 if ($resetbutton) {
     redirect(new moodle_url('/report/guid'));
+}
+
+// Resend Turnitin
+if (($action == 'tiiresend') && $tid) {
+    report_guid\lib::reset_turnitin($tid);
+    $link = new moodle_url('/report/guid/index.php', [
+        'guid' => $guid,
+        'action' => 'more'
+    ]);
+    redirect($link);
 }
 
 // Start the page.
@@ -77,7 +88,7 @@ if (($action == 'create') && confirm_sesskey()) {
         $result = array_shift($results);
         $user = report_guid\lib::create_user_from_ldap($result);
         $link = new moodle_url('/report/guid/index.php', ['guid' => $guid, 'action' => 'more']);
-        notice(get_string('usercreated', 'report_guid', fullname($user)), $link);
+        notice(get_string('usercreated', 'report_guid', fullname($user) . ', ' . $user->username), $link);
     }
 }
 

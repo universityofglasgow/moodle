@@ -15,8 +15,8 @@
  * along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @package   mod_hsuforum
- * @author    Rafael Becerra rafael.becerrarodriguez@blackboard.com
- * @copyright Copyright (c) 2019 Blackboard Inc. (http://www.blackboard.com)
+ * @author    Rafael Becerra rafael.becerrarodriguez@openlms.net
+ * @copyright Copyright (c) 2019 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -28,20 +28,18 @@ define(['jquery'],
         return {
             init: function() {
                 // Change pin button class on click to aria-pressed = "true".
+
                 $('.pinbutton.btn.btn-default').click(function() {
                     $(this).attr('aria-pressed', 'true');
                 });
 
                 // Add event handler to include space key as user's input to bookmark and substantive.
                 var hsuforumThreadFlags = $('a.hsuforum-toggle-bookmark, a.hsuforum-toggle-substantive');
-
-                hsuforumThreadFlags.each(function(){
-                    hsuforumThreadFlags.off('keypress').on('keypress', function(e) {
-                        e.preventDefault();
-                        if (e.keyCode === 32) {
-                            e.target.click();
-                        }
-                    });
+                hsuforumThreadFlags.off('keypress').on('keypress', function(e) {
+                    e.preventDefault();
+                    if (e.keyCode === 32) {
+                        e.target.click();
+                    }
                 });
             }
         }

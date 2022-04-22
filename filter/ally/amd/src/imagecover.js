@@ -17,8 +17,8 @@
  * Library to add image covers to prevent seizure inducing images from showing.
  *
  * @package   filter_ally
- * @author    Guy Thomas <osdev@blackboard.com>
- * @copyright Copyright (c) 2016 Blackboard Inc.
+ * @author    Guy Thomas
+ * @copyright Copyright (c) 2016 Open LMS
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -69,10 +69,19 @@ define(['jquery', 'filter_ally/util'], function($, Util) {
             /**
              *  By using the an event combined with a mutation observer that disconnects itself,
              *  we can manage to have a mutation observer that works after page content lazy loaded by loaded in snap.
-            * */
+             *  the interval is added as a redundancy to prevent calculation errors by correcting the indicator position.
+             * */
             $(document).on('snap-course-content-loaded', function() {
                 var observer = new MutationObserver(() => {
-                    applySizing();
+                    let count = 0;
+                    let interval = setInterval(function(){
+                        if (count < 5) {
+                            applySizing();
+                            count++;
+                        } else {
+                            clearTimeout(interval);
+                        }
+                    },500);
                     observer.disconnect();
                 });
                 observer.observe(targetNode, observerOptions);

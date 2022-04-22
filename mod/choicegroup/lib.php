@@ -87,13 +87,13 @@ function choicegroup_user_outline($course, $user, $mod, $choicegroup) {
         $result->time = $groupmembership->timeuseradded;
         return $result;
     }
-    return NULL;
+    return null;
 }
 
 /**
  *
  */
-function choicegroup_get_user_answer($choicegroup, $user, $returnArray = FALSE, $refresh = FALSE) {
+function choicegroup_get_user_answer($choicegroup, $user, $returnArray = false, $refresh = false) {
     global $DB, $choicegroup_groups;
 
     static $user_answers = array();
@@ -106,7 +106,7 @@ function choicegroup_get_user_answer($choicegroup, $user, $returnArray = FALSE, 
     }
 
     if (!$refresh and isset($user_answers[$userid])) {
-        if ($returnArray === TRUE) {
+        if ($returnArray === true) {
             return $user_answers[$userid];
         } else {
             return $user_answers[$userid][0];
@@ -138,7 +138,7 @@ function choicegroup_get_user_answer($choicegroup, $user, $returnArray = FALSE, 
         }
         if (count($groups) > 0) {
             $user_answers[$userid] = $groups;
-            if ($returnArray === TRUE) {
+            if ($returnArray === true) {
                 return $groups;
             } else {
                 return $groups[0];
@@ -313,8 +313,11 @@ function choicegroup_prepare_options($choicegroup, $user, $coursemodule, $allres
 
     $cdisplay['limitanswers'] = true;
     $context = context_module::instance($coursemodule->id);
-    $answers = choicegroup_get_user_answer($choicegroup, $user, TRUE, true);
+    $answers = choicegroup_get_user_answer($choicegroup, $user, true, true);
 
+    if (!isset($choicegroup->option)) {
+        $choicegroup->option = [];
+    }
     foreach ($choicegroup->option as $optionid => $text) {
         if (isset($text)) { //make sure there are no dud entries in the db with blank text values.
             $option = new stdClass;
@@ -343,7 +346,7 @@ function choicegroup_prepare_options($choicegroup, $user, $coursemodule, $allres
         }
     }
 
-    $cdisplay['hascapability'] = is_enrolled($context, NULL, 'mod/choicegroup:choose'); //only enrolled users are allowed to make a choicegroup
+    $cdisplay['hascapability'] = is_enrolled($context, null, 'mod/choicegroup:choose'); //only enrolled users are allowed to make a choicegroup
 
     if ($choicegroup->allowupdate && is_array($answers)) {
         $cdisplay['allowupdate'] = true;
@@ -881,20 +884,29 @@ function choicegroup_reset_course_form_defaults($course) {
  * @uses CONTEXT_MODULE
  * @param object $choicegroup
  * @param object $cm
+ * @param int $groupmode Group mode
+ * @param bool $onlyactive Whether to get response data for active users only
  * @return array
  */
-function choicegroup_get_response_data($choicegroup, $cm) {
+function choicegroup_get_response_data($choicegroup, $cm, $groupmode, $onlyactive) {
     // Initialise the returned array, which is a matrix:  $allresponses[responseid][userid] = responseobject.
     static $allresponses = array();
 
     if (count($allresponses)) {
         return $allresponses;
     }
- 
+
+    // Get the current group.
+    if ($groupmode > 0) {
+        $currentgroup = groups_get_activity_group($cm);
+    } else {
+        $currentgroup = 0;
+    }
+
     // First get all the users who have access here.
     // To start with we assume they are all "unanswered" then move them later.
     $ctx = \context_module::instance($cm->id);
-    $users = get_enrolled_users($ctx, 'mod/choicegroup:choose', 0, user_picture::fields('u', array('idnumber')), 'u.lastname ASC,u.firstname ASC');
+    $users = get_enrolled_users($ctx, 'mod/choicegroup:choose', $currentgroup, 'u.*', 'u.lastname, u.firstname', 0, 0, $onlyactive);
     if ($users) {
         $modinfo = get_fast_modinfo($cm->course);
         $cminfo = $modinfo->get_cm($cm->id);
@@ -904,7 +916,7 @@ function choicegroup_get_response_data($choicegroup, $cm) {
 
     $allresponses[0] = $users;
 
-    $responses = choicegroup_get_responses($choicegroup, $ctx);
+    $responses = choicegroup_get_responses($choicegroup, $ctx, $currentgroup, $onlyactive);
     foreach ($responses as $response){
         if (isset($users[$response->userid])) {
             $allresponses[$response->groupid][$response->userid] = clone $users[$response->userid];
@@ -919,10 +931,12 @@ function choicegroup_get_response_data($choicegroup, $cm) {
 /* Return an array with the options selected of users of the $choicegroup 
  * 
  * @param object $choicegroup choicegroup record
- * @param object $cm course module object
+ * @param context_module $ctx Context instance
+ * @param int $currentgroup Current group
+ * @param bool $onlyactive Whether to get responses for active users only
  * @return array of selected options by all users 
 */
-function choicegroup_get_responses($choicegroup, $cm){
+function choicegroup_get_responses($choicegroup, $ctx, $currentgroup, $onlyactive) {
 
     global $DB;
 
@@ -933,7 +947,7 @@ function choicegroup_get_responses($choicegroup, $cm){
     }
 
     $params1 = array('choicegroupid'=>$choicegroupid);
-    list($esql, $params2) = get_enrolled_sql($cm, 'mod/choicegroup:choose', 0);
+    list($esql, $params2) = get_enrolled_sql($ctx, 'mod/choicegroup:choose', $currentgroup, $onlyactive);
     $params = array_merge($params1, $params2);
 
     $sql = 'SELECT gm.* FROM {user} u JOIN ('.$esql.') je ON je.id = u.id
@@ -1000,7 +1014,9 @@ function choicegroup_extend_settings_navigation(settings_navigation $settings, n
             print_error('invalidcoursemodule');
             return false;
         }
-        $allresponses = choicegroup_get_response_data($choicegroup, $PAGE->cm, $groupmode);   // Big function, approx 6 SQL calls per user
+
+        // Big function, approx 6 SQL calls per user.
+        $allresponses = choicegroup_get_response_data($choicegroup, $PAGE->cm, $groupmode, $choicegroup->onlyactive);
 
         $responsecount = 0;
         $respondents = array();
@@ -1049,7 +1065,6 @@ function choicegroup_get_completion_state($course, $cm, $userid, $type) {
         return $type;
     }
 }
-
 
 /**
  * Return a list of page types

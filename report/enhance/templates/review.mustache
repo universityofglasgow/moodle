@@ -25,17 +25,29 @@
 
 <h1>Review ehancement request</h1>
 
-<h4>#{{ request.id }} "{{ request.headline }}"</h4>
+    <div class="border-bottom mb-4">
 
-<p><strong>Department:</strong> {{ request.department }}</p>
+    <h4>#{{ request.id }} "{{ request.headline }}"</h4>
 
-<h3>Description</h3>
+    <p><strong>Service:</strong> {{ request.serviceformatted }}</p>
 
-{{{ request.description }}}
+    <p><strong>Department:</strong> {{ request.department }}</p>
 
-<h3>Benefits</h3>
+    <p><strong>Audience:</strong> {{ request.audienceformatted }}</p>
 
-{{{ request.benefits }}}
+    <h3>Description</h3>
+
+    {{{ request.description }}}
+
+    <h3>Benefits</h3>
+
+    {{{ request.benefits }}}
+
+    <h3>Transferability</h3>
+
+    {{{ request.transferability }}}
+
+</div>
 
 <div>
     {{{ form }}}

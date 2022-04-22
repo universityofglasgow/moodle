@@ -253,7 +253,7 @@ class template {
      * @param bool $return Do we want to return the contents of the PDF?
      * @return string|void Can return the PDF in string format if specified.
      */
-    public function generate_pdf($preview = false, $userid = null, $return = false) {
+    public function generate_pdf(bool $preview = false, int $userid = null, bool $return = false) {
         global $CFG, $DB, $USER;
 
         if (empty($userid)) {
@@ -269,12 +269,18 @@ class template {
             // Create the pdf object.
             $pdf = new \pdf();
 
+            $customcert = $DB->get_record('customcert', ['templateid' => $this->id]);
+
             // If the template belongs to a certificate then we need to check what permissions we set for it.
-            if ($protection = $DB->get_field('customcert', 'protection', array('templateid' => $this->id))) {
-                if (!empty($protection)) {
-                    $protection = explode(', ', $protection);
-                    $pdf->SetProtection($protection);
-                }
+            if (!empty($customcert->protection)) {
+                $protection = explode(', ', $customcert->protection);
+                $pdf->SetProtection($protection);
+            }
+
+            if (empty($customcert->deliveryoption)) {
+                $deliveryoption = certificate::DELIVERY_OPTION_INLINE;
+            } else {
+                $deliveryoption = $customcert->deliveryoption;
             }
 
             $pdf->setPrintHeader(false);
@@ -283,6 +289,16 @@ class template {
             $pdf->SetAutoPageBreak(true, 0);
             // Remove full-stop at the end, if it exists, to avoid "..pdf" being created and being filtered by clean_filename.
             $filename = rtrim($this->name, '.');
+
+            // This is the logic the TCPDF library uses when processing the name. This makes names
+            // such as 'الشهادة' become empty, so set a default name in these cases.
+            $filename = preg_replace('/[\s]+/', '_', $filename);
+            $filename = preg_replace('/[^a-zA-Z0-9_\.-]/', '', $filename);
+
+            if (empty($filename)) {
+                $filename = get_string('certificate', 'customcert');
+            }
+
             $filename = clean_filename($filename . '.pdf');
             // Loop through the pages and display their content.
             foreach ($pages as $page) {
@@ -305,10 +321,12 @@ class template {
                     }
                 }
             }
+
             if ($return) {
                 return $pdf->Output('', 'S');
             }
-            $pdf->Output($filename, 'D');
+
+            $pdf->Output($filename, $deliveryoption);
         }
     }
 

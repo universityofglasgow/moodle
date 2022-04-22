@@ -33,15 +33,6 @@ $services = array(
             'restrictedusers' => 1,
             'enabled' => 1,
         ),
-
-        // Define service for GRMS
-        'AMS' => array(
-            'functions' => [],
-            'requiredcapability' => '',
-            'restrictedusers' => 1,
-            'enabled' => 1,
-        ),
-
 );
 
 $functions = array(
@@ -73,4 +64,39 @@ $functions = array(
         'description' => 'Upload assignment grades and feedback.',
         'type'        => 'write',
     ),
+    'local_guws_alarmbell_query' => array(
+        'classname'   => 'local_guws_external',
+        'methodname'  => 'alarmbell_query',
+        'classpath'   => 'local/guws/externallib.php',
+        'description' => 'Query log info for Alarm Bell project',
+        'type'        => 'read',
+    ),
+    'local_guws_portal_courses' => array(
+        'classname'   => 'local_guws_external',
+        'methodname'  => 'portal_courses',
+        'classpath'   => 'local/guws/externallib.php',
+        'description' => 'Get list of courses for portal ',
+        'type'        => 'read',
+    ),
+    'local_guws_guid_completion' => array(
+        'classname'   => 'local_guws_external',
+        'methodname'  => 'guid_completion',
+        'classpath'   => 'local/guws/externallib.php',
+        'description' => 'Get course completion status for list of GUIDs ',
+        'type'        => 'read',
+    ),  
+    'local_guws_gcat_getdashboard' => array(
+        'classname'   => 'local_guws_external',
+        'methodname'  => 'gcat_getdashboard',
+        'classpath'   => 'local/guws/externallib.php',
+        'description' => 'Get data from GCAT student dashboard ',
+        'type'        => 'read',
+    ),
+    'local_guws_gcat_userhasdata' => array(
+        'classname'   => 'local_guws_external',
+        'methodname'  => 'gcat_userhasdata',
+        'classpath'   => 'local/guws/externallib.php',
+        'description' => 'Does the user have any GCAT data to display',
+        'type'        => 'read',
+    ),   
 );

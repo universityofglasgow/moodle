@@ -18,7 +18,7 @@
  * Ally event hooks.
  *
  * @package   tool_ally
- * @copyright Copyright (c) 2018 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2018 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -36,6 +36,10 @@ $observers = [
     [
         'eventname' => \core\event\course_deleted::class,
         'callback'  => '\tool_ally\event_handlers::course_deleted'
+    ],
+    [
+        'eventname' => \core\event\course_restored::class,
+        'callback'  => '\tool_ally\event_handlers::course_restored'
     ],
     [
         'eventname' => \core\event\course_section_created::class,
@@ -60,6 +64,14 @@ $observers = [
     [
         'eventname' => \core\event\course_module_deleted::class,
         'callback'  => '\tool_ally\event_handlers::course_module_deleted'
+    ],
+    [
+        'eventname' => \core\event\group_created::class,
+        'callback'  => '\tool_ally\event_handlers::group_created'
+    ],
+    [
+        'eventname' => \core\event\group_updated::class,
+        'callback'  => '\tool_ally\event_handlers::group_updated'
     ],
     [
         'eventname' => \mod_forum\event\discussion_created::class,

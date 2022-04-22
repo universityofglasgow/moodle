@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @copyright  Copyright (c) 2020 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright  Copyright (c) 2021 Open LMS (https://www.openlms.net)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -81,10 +81,13 @@ $string['lessonanswertitle'] = 'Vastaus oppitunnille {$a}';
 $string['lessonresponsetitle'] = 'Vastaus oppitunnille {$a}';
 $string['logs'] = 'Ally-lokit';
 $string['logrange'] = 'Lokitaso';
-$string['loglevel:none'] = 'Ei mitään';
+$string['loglevel:none'] = 'ei mitään';
 $string['loglevel:light'] = 'Kevyt';
-$string['loglevel:medium'] = 'Keskitaso';
-$string['loglevel:all'] = 'Kaikki';
+$string['loglevel:medium'] = 'Keskisuuri';
+$string['loglevel:all'] = 'Kaikkien';
+$string['logcleanuptask'] = 'Ally-lokin puhdistustehtävä';
+$string['loglifetimedays'] = 'Säilytä lokit näin monen päivän ajan';
+$string['loglifetimedaysdesc'] = 'Säilytä Ally-lokit näin monen päivän ajan. Kun arvoksi on määritetty 0, lokeja ei poisteta koskaan. Ajastettu tehtävä on (oletusarvoisesti) määritetty siten, että se suoritetaan päivittäin ja että se poistaa lokitietueet, joita on säilytetty kauemmin kuin näin monen päivän ajan.';
 $string['logger:pushtoallysuccess'] = 'Lähetettiin Ally-päätepisteeseen';
 $string['logger:pushtoallyfail'] = 'Lähetys Ally-päätepisteeseen epäonnistui';
 $string['logger:pushfilesuccess'] = 'Tiedostot lähetettiin Ally-päätepisteeseen';
@@ -101,7 +104,9 @@ $string['logger:addingconenttoqueue'] = 'Lisätään sisältöä lähetysjonoon'
 $string['logger:annotationmoderror'] = 'Ally-moduulin sisällön merkitseminen epäonnistui.';
 $string['logger:annotationmoderror_exp'] = 'Moduulia ei tunnistettu oikein';
 $string['logger:failedtogetcoursesectionname'] = 'Kurssiosion nimen hakeminen epäonnistui';
+$string['logger:moduleidresolutionfailure'] = 'Kurssimoduulitunnuksen tarkistaminen epäonnistui';
 $string['logger:cmidresolutionfailure'] = 'Kurssimoduulitunnuksen tarkistaminen epäonnistui';
+$string['logger:cmvisibilityresolutionfailure'] = 'Kurssimoduulin näkyvyyden tarkistaminen epäonnistui';
 $string['courseupdatestask'] = 'Lähetä kurssitapahtumat Allyyn';
 $string['logger:pushcoursesuccess'] = 'Kurssitapahtumat lähetettiin Ally-päätepisteeseen';
 $string['logger:pushcourseliveskip'] = 'Kurssitapahtumien live-lähetysvirhe';
@@ -116,3 +121,5 @@ $string['logger:servicefailure'] = 'Palvelun käyttäminen epäonnistui.';
 $string['logger:servicefailure_exp'] = '<br>Luokka: {$a->class}<br>Parametrit: {$a->params}';
 $string['logger:autoconfigfailureteachercap'] = 'Roolin ally_webservice perustoimintojen määrittäminen opettajalle epäonnistui.';
 $string['logger:autoconfigfailureteachercap_exp'] = '<br>Kyky: {$a->cap}<br>Käyttöoikeus: {$a->permission}';
+$string['deferredcourseevents'] = 'Lähetä lykkäytyneet kurssin tapahtumat';
+$string['deferredcourseeventsdesc'] = 'Salli tallennettujen kurssin tapahtumien lähetys, joita on kertynyt Ally-tietoyhteysongelman aikana';

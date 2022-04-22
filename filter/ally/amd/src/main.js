@@ -17,8 +17,8 @@
  * Main library.
  *
  * @package   filter_ally
- * @author    Guy Thomas <osdev@blackboard.com>
- * @copyright Copyright (c) 2016 Blackboard Inc.
+ * @author    Guy Thomas
+ * @copyright Copyright (c) 2016 Open LMS
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -191,7 +191,8 @@ function($, Templates, Strings, Ally, ImageCover, Util) {
          */
         var placeHoldForumModule = function(forumFileMapping) {
             var dfd = $.Deferred();
-            placeHoldSelector('.forumpost .attachedimages img[src*="pluginfile.php"]', forumFileMapping)
+            placeHoldSelector('.forumpost .attachedimages img[src*="pluginfile.php"], ' +
+                '.forumpost .body-content-container a[href*="pluginfile.php"]', forumFileMapping)
                 .done(function(){
                     dfd.resolve();
                 });
@@ -856,16 +857,18 @@ function($, Templates, Strings, Ally, ImageCover, Util) {
                         try {
                             var selector = $('.foldertree > .filemanager');
                             var targetNode = selector[0];
-                            var observerConfig = { attributes: true, childList: true, subtree: true };
-                            var callback = function(mutationsList) {
-                                mutationsList.filter( function (mutation) {
-                                    return mutation.type === 'childList';
-                                }).forEach( function () {
-                                    placeHoldFolderModule(ally_module_maps.folder_files);
-                                });
-                            };
-                            var observer = new MutationObserver(callback);
-                            observer.observe(targetNode, observerConfig);
+                            if (targetNode) {
+                                var observerConfig = { attributes: true, childList: true, subtree: true };
+                                var callback = function(mutationsList) {
+                                    mutationsList.filter( function (mutation) {
+                                        return mutation.type === 'childList';
+                                    }).forEach( function () {
+                                        placeHoldFolderModule(ally_module_maps.folder_files);
+                                    });
+                                };
+                                var observer = new MutationObserver(callback);
+                                observer.observe(targetNode, observerConfig);
+                            }
                         } catch (error) {
                             setInterval(function() {
                                 placeHoldFolderModule(ally_module_maps.folder_files);

@@ -17,10 +17,10 @@
 #
 # @package    filter_ally
 # @author     Guy Thomas
-# @copyright  Copyright (c) 2017 Blackboard Inc.
+# @copyright  Copyright (c) 2017 Open LMS
 # @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
 
-@filter @filter_ally
+@filter @filter_ally @_file_upload
 Feature: When the ally filter is enabled ally place holders are inserted when appropriate into forum attachments.
 
   Background:
@@ -28,7 +28,6 @@ Feature: When the ally filter is enabled ally place holders are inserted when ap
 
   @javascript
   Scenario Outline: Forum attachments are processed appropriately.
-    Given I skip because "Ally decorator is not present, to be fixed in INT-15838"
     Given the following "courses" exist:
       | fullname | shortname | category | format |
       | Course 1 | C1        | 0        | topics |
@@ -115,7 +114,6 @@ Feature: When the ally filter is enabled ally place holders are inserted when ap
 
   @javascript
   Scenario Outline: Social format attachments are processed appropriately.
-    Given I skip because "Ally decorator is not present, to be fixed in INT-15838"
     Given the following "courses" exist:
       | fullname | shortname | category | format |
       | Course 1 | C1        | 0        | social |
@@ -132,7 +130,7 @@ Feature: When the ally filter is enabled ally place holders are inserted when ap
       | slasharguments      | <slasharguments> |
     And I log in as "teacher1"
     And I am on "Course 1" course homepage
-    And I add a new discussion to "Course 1" forum with:
+    And I add a new discussion to "Social forum" forum with:
       | Subject | Teacher discussion |
       | Message | This is the body |
       | Attachment | lib/tests/fixtures/empty.txt |
