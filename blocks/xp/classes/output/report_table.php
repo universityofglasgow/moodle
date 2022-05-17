@@ -29,7 +29,6 @@ require_once($CFG->libdir . '/tablelib.php');
 
 use context_course;
 use context_helper;
-use html_writer;
 use moodle_database;
 use moodle_url;
 use pix_icon;
@@ -40,6 +39,7 @@ use block_xp\di;
 use block_xp\local\course_world;
 use block_xp\local\xp\course_user_state_store;
 use block_xp\local\utils\user_utils;
+use block_xp\local\xp\state_with_subject;
 
 /**
  * Block XP report table class.
@@ -52,14 +52,16 @@ class report_table extends table_sql {
 
     /** @var moodle_database The DB. */
     protected $db;
-    /** @var block_xp\local\course_world The world. */
+    /** @var \block_xp\local\course_world The world. */
     protected $world = null;
-    /** @var block_xp\local\xp\course_user_state_store The store. */
+    /** @var \block_xp\local\xp\course_user_state_store The store. */
     protected $store = null;
     /** @var renderer_base The renderer. */
     protected $renderer = null;
     /** @var int The groupd ID. */
     protected $groupid = null;
+    /** @var array The columns definition where keys are IDs, values are lang strings. */
+    protected $columnsdefinition;
 
     /**
      * Constructor.
@@ -96,8 +98,9 @@ class report_table extends table_sql {
      * @return void
      */
     protected function init() {
-        $this->define_columns($this->get_columns());
-        $this->define_headers($this->get_headers());
+        $columnsdef = $this->get_columns_definition();
+        $this->define_columns(array_keys($columnsdef));
+        $this->define_headers(array_values($columnsdef));
         $this->init_sql();
 
         $this->sortable(true, 'lvl', SORT_DESC);
@@ -165,35 +168,56 @@ class report_table extends table_sql {
     }
 
     /**
-     * Get the columns.
+     * Generate the columns definition.
      *
      * @return array
      */
-    protected function get_columns() {
-        return [
-            'userpic',
-            'fullname',
-            'lvl',
-            'xp',
-            'progress',
-            'actions'
+    protected function generate_columns_definition() {
+        $cols = [
+            'userpic' => '',
+            'fullname' => get_string('fullname', 'core'),
+            'lvl' => get_string('level', 'block_xp'),
+            'xp' => get_string('total', 'block_xp'),
+            'progress' => get_string('progress', 'block_xp'),
         ];
+        if ($this->world->get_access_permissions()->can_manage()) {
+            $cols['actions'] = '';
+        }
+        return $cols;
+    }
+
+    /**
+     * Get the columns definition.
+     *
+     * @return array
+     */
+    final protected function get_columns_definition() {
+        if (!isset($this->columnsdefinition)) {
+            $this->columnsdefinition = $this->generate_columns_definition();
+        }
+        return $this->columnsdefinition;
+    }
+
+    /**
+     * Get the columns.
+     *
+     * @return array
+     * @deprecated Since Level Up XP 3.12, please use self::get_columns_definition instead.
+     */
+    protected function get_columns() {
+        return array_keys($this->get_columns_definition());
     }
 
     /**
      * Get the headers.
      *
      * @return void
+     * @deprecated Since Level Up XP 3.12, please use self::get_columns_definition instead.
      */
     protected function get_headers() {
-        return [
-            '',
-            get_string('fullname'),
-            get_string('level', 'block_xp'),
-            get_string('total', 'block_xp'),
-            get_string('progress', 'block_xp'),
-            ''
-        ];
+        return array_map(function($header) {
+            return (string) $header;
+        }, array_values($this->get_columns_definition()));
     }
 
     /**
@@ -229,7 +253,7 @@ class report_table extends table_sql {
         $actions[] = $this->renderer->action_icon($url, new pix_icon('t/edit', get_string('edit')));
 
         if (isset($row->xp)) {
-            $url = new moodle_url($this->baseurl, ['delete' => 1, 'userid' => $row->id]);
+            $url = new moodle_url($this->baseurl, ['action' => '', 'delete' => 1, 'userid' => $row->id]);
             $actions[] = $this->renderer->action_icon($url, new pix_icon('t/delete', get_string('delete')));
         }
 
@@ -273,7 +297,13 @@ class report_table extends table_sql {
      * @return string Output produced.
      */
     protected function col_userpic($row) {
-        return $this->renderer->user_picture($row->state->get_user());
+        $picture = null;
+        $link = null;
+        if ($row->state instanceof state_with_subject) {
+            $picture = $row->state->get_picture();
+            $link = $row->state->get_link();
+        }
+        return $this->renderer->user_avatar($picture, $link);
     }
 
     /**

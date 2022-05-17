@@ -27,8 +27,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Event observers supported by this format.
  */
@@ -51,13 +49,14 @@ class format_grid_observer {
     /**
      * Observer for the event course_restored.
      *
-     * Deletes the settings entry for the given course upon course deletion.
+     * Deletes the settings entry for the given course upon course restoration.
      *
      * @param \core\event\course_restored $event
      */
     public static function course_restored(\core\event\course_restored $event) {
         global $DB;
         $format = $DB->get_field('course', 'format', array('id' => $event->objectid));
+        // If not in the grid format, then don't need the images etc.
         if ($format != 'grid') {
             // Then delete the images and any summary.
             self::delete_images_and_summary($event->objectid);
@@ -67,8 +66,7 @@ class format_grid_observer {
     protected static function delete_images_and_summary($courseid) {
         global $DB;
         // Delete any images associated with the course.
-        $courseformat = format_grid::get_instance($courseid);
-        $courseformat->delete_images();
+        \format_grid\toolbox::delete_images($courseid);
         unset($courseformat);  // Destruct.
 
         $DB->delete_records("format_grid_summary", array("courseid" => $courseid));

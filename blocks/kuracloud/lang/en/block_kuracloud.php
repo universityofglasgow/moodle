@@ -25,6 +25,7 @@
 
 $string['pluginname'] = 'kuraCloud';
 $string['kuracloud:addinstance'] = 'Add a kuraCloud block';
+$string['kuracloud:configureapi'] = 'Configure kuraCloud API';
 $string['kuracloud:myaddinstance'] = 'Add a kuraCloud block to my Moodle';
 $string['kuracloud:mapcourses'] = 'Map courses between Moodle and kuraCloud';
 $string['kuracloud:syncusers'] = 'Sync users with kuraCloud';

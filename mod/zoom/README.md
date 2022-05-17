@@ -32,6 +32,41 @@ server is properly synchronized with the time servers.
 
 ## Changelog
 
+v4.5.1
+
+- Regression: Fix Zoom activity icon visibility #375 (thanks @foxlapinou)
+- Compatibility: Fix PHPUnit deprecation warnings #373
+
+v4.5.0
+
+- Feature: Support for Reset course functionality #370 (thanks @izendegi)
+- Compatibility: Improved support for Moodle 4.0 #369
+
+v4.4.0
+
+- Feature: Allow configuration of section visibility on the view page #363 (thanks @aduranterres, @rayjbarrett1)
+  - New settings `zoom/defaultshowschedule`, `zoom/defaultshowsecurity`, `zoom/defaultshowmedia`
+  - New per activity settings `show_schedule`, `show_security`, `show_media`
+- Feature: Allow administrator to set webinar by default (when available) #367 (thanks @marcellobarile)
+  - New setting `zoom/webinardefault`
+- Code quality: specify code coverage for tests #367
+
+v4.3.4
+
+- Privacy: Add tests, support recordings, fix existing code #345 (thanks @jwalits, @tuanngocnguyen, @mattporritt, @marcghaly)
+- Compatibility: grunt rebuild for MDL-73915 #364
+
+v4.3.3
+
+- Fix recording table database schema definitions #358 (thanks @jwalits)
+- Compatibility: Moodle upstream upgraded to php-jwt v6.0 #359
+- Renamed primary branch in GitHub to `main` #353
+
+v4.3.2
+
+- Only cache successful Zoom user ID values #350 (thanks @merrill-oakland)
+- Code quality: Align with moodle-local_codechecker v3.0.5 #351
+
 v4.3.1
 
 - Fix database schema alignment and associated code #335 (thanks @TomoTsuyuki)

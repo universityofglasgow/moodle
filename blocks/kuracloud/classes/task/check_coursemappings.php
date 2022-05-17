@@ -25,8 +25,6 @@
 
 namespace block_kuracloud\task;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Cron task to check the state of the kuraCloud API connection
  *

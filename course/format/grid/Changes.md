@@ -1,14 +1,76 @@
 History
 =============
-Version 3.8.1.0 - 14/11/20
+Version 3.11.1.1 - 17/01/2022
+=============================
+ 1. Fix 'core_text' inclusion issue - #153.
+ 2. Fix more inclusion issues - #156.
+ 3. Fix "'format_grid\output\completion_info' not found" - #152.
+
+Version 3.11.1.0 - 14/01/2022
+=============================
+ 1. Fix 'Observer throws error on course restore format_{name}::get_contextid()' - #149.
+ 2. Added support information and settings for such.
+
+Version 3.10.1.4 - 01/07/2021
+=============================
+ 1. Fix 'Exception when using course import function' - #144.
+ 2. Fix 'Course restore fails with cannotgetimagesforcourse error' - #145.
+
+Version 3.10.1.3 - 02/06/2021
+=============================
+Due to the changes, this is a 'release candidate' release, therefore it is imperative that you test on a test server
+first and report any issues back to me please.  Please see the 'Reporting issues' section of the 'Readme.md' file.
+
+ 1. Rewrite of update of displayed images process, such that should fix #143 when upgrades are conducted on
+    staged Moodle installations where there is no data folder.  This also speeds up in general the update process
+    as the displayed images are only regenerated when the course is accessed - thus a 'reset all' should be
+    much faster.  The downside of all of this is a slower page load for the first user to access a course that has
+    had the displayed images updated.
+ 2. Fix backup files do not contain 'alttext' field for the image.
+
+Version 3.10.1.2 - 19/05/2021
+=============================
+ 1. Fix grid image placement for RTL languages.
+ 2. Fix missing 'set' prefix on 'section0ownpagenogridonesection' causing offset error on course restore.
+ 3. Fix 'PNG files not transparent' - #142.
+
+Version 3.10.1.1 - 12/05/2021
+=============================
+ 1. Fix 'Site default not applied to setsection0ownpagenogridonesection'.
+ 2. Add new 'single page summary image' functionality (with settings) to show the section image in the section summary on a
+    single section page.
+
+Version 3.10.1.0 - 29/03/2021
+=============================
+ 1. Fix 'Duplicated section name' - #134.
+ 2. All course settings now have an option to track the value of the global default as set by the administrator.  Thus, when they change,
+    then the course changes without any user interaction on the course.  The reset course functionality is still there and will
+    set the value of the setting to the this 'new' default value.  The default colour value is '-' and the colour picker box will
+    show the colour that has been set as the default.  All other settings will state what the default currently is.
+ 3. Fix settings not being reset: 'Greyout hidden' and 'Section 0 on its own page'.
+ 4. Fix incorrect value of 'numsections' when not present in the backup file.
+Note: If you see 'Default - {$a}' in a setting dropdown then you need to update core Moodle, please see: MDL-71048.
+
+Version 3.10.0.1 - 14/11/2020
+=============================
+Note: Functionally the same as 3.9.1.0.
+  1. Fix summary tooltip dismissing itself when floating over the section name.  If you find it is still an issue, then
+     consider using the 'sectiontitlesummarymaxlength' setting.
+
+Version 3.9.0.1 - 19/07/2020
+============================
+  1. Apply MDL-65539.
+  2. Apply MDL-68231.
+  3. Apply MDL-68235.
+  4. Apply MDL-69065.
+  5. Apply 'Add index to courseid format_grid_icon could improve performance' - #122,
+     thanks to John (https://github.com/yao9394) for the patch.
+
+Version 3.8.0.2 - TDB
   1. Fix 'Same color setting for "set or change img" as currentselectedimagecontainertextcolor in editing on' - #106.
   2. Fix scroll bar in main region when editing in Boost.
   3. Remove redundant 'defaultcoursedisplay' setting - #119.
   4. Tidy up old strings.
-  5. Apply 'Add index to courseid format_grid_icon could improve performance' - #122,
-     thanks to John (https://github.com/yao9394) for the patch.
-  6. Fix summary tooltip dismissing itself when floating over the section name.  If you find it is still an issue, then
-     consider using the 'sectiontitlesummarymaxlength' setting.
 
 Version 3.8.0.1 - 17/11/2019
   1. Fix section one not shown - #105.

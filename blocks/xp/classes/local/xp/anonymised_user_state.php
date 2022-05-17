@@ -26,6 +26,7 @@
 namespace block_xp\local\xp;
 defined('MOODLE_INTERNAL') || die();
 
+use block_xp\local\utils\user_utils;
 use stdClass;
 
 /**
@@ -57,6 +58,18 @@ class anonymised_user_state extends user_state {
 
     public function get_id() {
         return $this->anonuser->id;
+    }
+
+    public function get_link() {
+        return null;
+    }
+
+    public function get_name() {
+        return get_string('someoneelse', 'block_xp');
+    }
+
+    public function get_picture() {
+        return user_utils::default_picture();
     }
 
     public function get_level() {

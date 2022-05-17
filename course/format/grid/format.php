@@ -77,8 +77,8 @@ if ($devicetype == "mobile") {
 $renderer->set_portable($portable);
 
 $gfsettings = $courseformat->get_settings();
-$imageproperties = $courseformat->calculate_image_container_properties(
-$gfsettings['imagecontainerwidth'], $gfsettings['imagecontainerratio'], $gfsettings['borderwidth']);
+$imageproperties = \format_grid\toolbox::calculate_image_container_properties(
+    $gfsettings['imagecontainerwidth'], $gfsettings['imagecontainerratio'], $gfsettings['borderwidth']);
 
 echo '<style type="text/css" media="screen">';
 echo '/* <![CDATA[ */';
@@ -100,7 +100,7 @@ if ($gfsettings['sectiontitlefontsize']) { // Font size is set.
 }
 echo 'text-align: '.$gfsettings['sectiontitlealignment'].';';
 if ($gfsettings['sectiontitleboxposition'] == 1) { // Inside.
-    echo 'width: '.($gfsettings['imagecontainerwidth'] - 20).'px;'; // '20' is the total '.icon_content.content_inside' padding.
+    echo 'width: '.($gfsettings['imagecontainerwidth'] - 20).'px;'; // The '20' is the total '.icon_content.content_inside' padding.
 } else {
     echo 'width: '.($gfsettings['imagecontainerwidth'] + ($gfsettings['borderwidth'] * 2)).'px;';
 }

@@ -21,7 +21,9 @@
  * @copyright  2012 Marcus Green
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+namespace qtype_wordselect;
 defined('MOODLE_INTERNAL') || die();
+use \qtype_wordselect_test_helper as helper;
 
 global $CFG;
 
@@ -32,59 +34,66 @@ require_once($CFG->dirroot . '/question/type/wordselect/tests/helper.php');
  *
  * @copyright  2018 Marcus Green
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @coversDefaultClass \question\type\wordselect\renderer
  */
-class qtype_wordselect_walkthrough_test extends qbehaviour_walkthrough_test_base {
+class walkthrough_test extends \qbehaviour_walkthrough_test_base {
 
+     /**
+      * Test the behaviour of the renderer when ussing interactive with correct behaviour.
+      * TODO add methods for testing other behaviours
+      *
+      * @covers ::formulation_and_controls
+      */
     public function test_interactive_with_correct() {
         // Create a wordselect question.
-        $question = qtype_wordselect_test_helper::make_question('wordselect');
+        $question = helper::make_question('wordselect');
         $maxmark = 1;
         $this->start_attempt_at_question($question, 'interactive', $maxmark);
 
         // Check the initial state.
-        $this->check_current_state(question_state::$todo);
+        $this->check_current_state(\question_state::$todo);
         $this->check_current_mark(null);
 
         $this->check_step_count(1);
 
         $this->check_current_output(
-                $this->get_contains_marked_out_of_summary(),
-                $this->get_does_not_contain_try_again_button_expectation(),
-                $this->get_does_not_contain_feedback_expectation(),
-                $this->get_does_not_contain_validation_error_expectation(),
-                $this->get_does_not_contain_try_again_button_expectation(),
-                $this->get_no_hint_visible_expectation());
+              $this->get_contains_marked_out_of_summary(),
+              $this->get_does_not_contain_try_again_button_expectation(),
+              $this->get_does_not_contain_feedback_expectation(),
+              $this->get_does_not_contain_validation_error_expectation(),
+              $this->get_does_not_contain_try_again_button_expectation(),
+              $this->get_no_hint_visible_expectation());
 
         // Save a  correct response.
         // Default quesiton text is The cat [sat].
         $this->process_submission(array('p4' => 'on'));
         $this->check_step_count(2);
 
-        $this->check_current_state(question_state::$todo);
+        $this->check_current_state(\question_state::$todo);
 
         $this->check_current_output(
-                $this->get_contains_marked_out_of_summary(),
-                $this->get_does_not_contain_try_again_button_expectation(),
-                $this->get_does_not_contain_feedback_expectation(),
-                $this->get_does_not_contain_validation_error_expectation(),
-                $this->get_does_not_contain_try_again_button_expectation(),
-                $this->get_no_hint_visible_expectation());
+              $this->get_contains_marked_out_of_summary(),
+              $this->get_does_not_contain_try_again_button_expectation(),
+              $this->get_does_not_contain_feedback_expectation(),
+              $this->get_does_not_contain_validation_error_expectation(),
+              $this->get_does_not_contain_try_again_button_expectation(),
+              $this->get_no_hint_visible_expectation());
 
         // Submit saved response.
         $this->process_submission(array('-submit' => 1, 'p4' => 'on'));
         $this->check_step_count(3);
         // Verify.
-        $this->check_current_state(question_state::$gradedright);
+        $this->check_current_state(\question_state::$gradedright);
 
         $this->check_current_output(
-                $this->get_does_not_contain_try_again_button_expectation(),
-                $this->get_does_not_contain_validation_error_expectation(),
-                $this->get_does_not_contain_try_again_button_expectation(),
-                $this->get_no_hint_visible_expectation());
+              $this->get_does_not_contain_try_again_button_expectation(),
+              $this->get_does_not_contain_validation_error_expectation(),
+              $this->get_does_not_contain_try_again_button_expectation(),
+              $this->get_no_hint_visible_expectation());
 
         $this->check_current_mark(1);
         // Finish the attempt.
         $this->quba->finish_all_questions();
-                $this->check_current_state(question_state::$gradedright);
+              $this->check_current_state(\question_state::$gradedright);
     }
 }

@@ -22,10 +22,10 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+namespace mod_zoom;
 
-global $CFG;
-require_once($CFG->dirroot.'/mod/zoom/locallib.php');
+use basic_testcase;
+use mod_zoom_webservice;
 
 /**
  * PHPunit testcase class.
@@ -38,8 +38,34 @@ class advanced_passcode_test extends basic_testcase {
      */
     private $zoomdata;
 
+    // phpcs:disable moodle.NamingConventions.ValidFunctionName.LowercaseMethod
+    /**
+     * Backward compatibility support for PHPUnit 8 (PHP 7.2 and 7.3).
+     *
+     * @param string $pattern Regular expression.
+     * @param string $string String.
+     * @param string $message Message.
+     */
+    public static function assertMatchesRegularExpression($pattern, $string, $message = ''): void {
+        // phpcs:enable
+        if (method_exists('basic_testcase', 'assertMatchesRegularExpression')) {
+            parent::assertMatchesRegularExpression($pattern, $string, $message);
+        } else {
+            parent::assertRegExp($pattern, $string, $message);
+        }
+    }
+
+    /**
+     * Setup to ensure that fixtures are loaded.
+     */
+    public static function setUpBeforeClass(): void {
+        global $CFG;
+        require_once($CFG->dirroot . '/mod/zoom/locallib.php');
+    }
+
     /**
      * Tests that a default password of 6 numbers is created when settings are null.
+     * @covers ::zoom_create_default_passcode
      */
     public function test_settings_default() {
         $this->zoomdata = (object) mod_zoom_webservice::DEFAULT_MEETING_PASSWORD_REQUIREMENT;
@@ -51,6 +77,7 @@ class advanced_passcode_test extends basic_testcase {
 
     /**
      * Tests that a password has the given minimum length.
+     * @covers ::zoom_create_default_passcode
      */
     public function test_settings_length() {
         $data = array('length' => 8,
@@ -67,6 +94,7 @@ class advanced_passcode_test extends basic_testcase {
 
     /**
      * Tests that a password is all numbers when the setting is specified.
+     * @covers ::zoom_create_default_passcode
      */
     public function test_settings_only_numeric() {
         $data = array('length' => 10,
@@ -84,6 +112,7 @@ class advanced_passcode_test extends basic_testcase {
 
     /**
      * Tests that a password has a letter when the setting is specified.
+     * @covers ::zoom_create_default_passcode
      */
     public function test_settings_letter() {
         $data = array('length' => null,
@@ -95,12 +124,13 @@ class advanced_passcode_test extends basic_testcase {
 
         $passcode = zoom_create_default_passcode($this->zoomdata);
         $this->assertEquals(strlen($passcode), 6);
-        $this->assertRegExp('/\d/', $passcode);
-        $this->assertRegExp('/[a-zA-Z]/', $passcode);
+        $this->assertMatchesRegularExpression('/\d/', $passcode);
+        $this->assertMatchesRegularExpression('/[a-zA-Z]/', $passcode);
     }
 
     /**
      * Tests that a password has uppercase and lowercase letters when the setting is specified.
+     * @covers ::zoom_create_default_passcode
      */
     public function test_settings_upper_and_lower_letters() {
         $data = array('length' => null,
@@ -112,13 +142,14 @@ class advanced_passcode_test extends basic_testcase {
 
         $passcode = zoom_create_default_passcode($this->zoomdata);
         $this->assertEquals(strlen($passcode), 6);
-        $this->assertRegExp('/\d/', $passcode);
-        $this->assertRegExp('/[A-Z]/', $passcode);
-        $this->assertRegExp('/[a-z]/', $passcode);
+        $this->assertMatchesRegularExpression('/\d/', $passcode);
+        $this->assertMatchesRegularExpression('/[A-Z]/', $passcode);
+        $this->assertMatchesRegularExpression('/[a-z]/', $passcode);
     }
 
     /**
      * Tests that a password has a special character when the setting is specified.
+     * @covers ::zoom_create_default_passcode
      */
     public function test_settings_special_character() {
         $data = array('length' => null,
@@ -130,12 +161,13 @@ class advanced_passcode_test extends basic_testcase {
 
         $passcode = zoom_create_default_passcode($this->zoomdata);
         $this->assertEquals(strlen($passcode), 6);
-        $this->assertRegExp('/\d/', $passcode);
-        $this->assertRegExp('/[^a-zA-Z\d]/', $passcode);
+        $this->assertMatchesRegularExpression('/\d/', $passcode);
+        $this->assertMatchesRegularExpression('/[^a-zA-Z\d]/', $passcode);
     }
 
     /**
      * Tests that a password has correct length, a letter, and a special character when setting is specified.
+     * @covers ::zoom_create_default_passcode
      */
     public function test_settings_all() {
         $data = array('length' => 7,
@@ -147,13 +179,14 @@ class advanced_passcode_test extends basic_testcase {
 
         $passcode = zoom_create_default_passcode($this->zoomdata);
         $this->assertEquals(strlen($passcode), 7);
-        $this->assertRegExp('/\d/', $passcode);
-        $this->assertRegExp('/[a-zA-Z]/', $passcode);
-        $this->assertRegExp('/[^a-zA-Z\d]/', $passcode);
+        $this->assertMatchesRegularExpression('/\d/', $passcode);
+        $this->assertMatchesRegularExpression('/[a-zA-Z]/', $passcode);
+        $this->assertMatchesRegularExpression('/[^a-zA-Z\d]/', $passcode);
     }
 
     /**
      * Tests that the password description is correct when all settings are present.
+     * @covers ::zoom_create_passcode_description
      */
     public function test_pasword_description_all() {
         $data = array('length' => 9,
@@ -175,6 +208,7 @@ class advanced_passcode_test extends basic_testcase {
 
     /**
      * Tests that the password description is correct when the only numeric option is present.
+     * @covers ::zoom_create_passcode_description
      */
     public function test_pasword_description_only_numeric() {
         $data = array('length' => 8,
@@ -195,6 +229,7 @@ class advanced_passcode_test extends basic_testcase {
 
     /**
      * Tests that the password description is correct when the default settings are present.
+     * @covers ::zoom_create_passcode_description
      */
     public function test_pasword_description_default() {
         $this->zoomdata = (object) mod_zoom_webservice::DEFAULT_MEETING_PASSWORD_REQUIREMENT;

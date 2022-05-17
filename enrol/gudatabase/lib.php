@@ -1312,7 +1312,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
 
                             // Remove group members no longer in classgroup.
                             // There MUST be an end date
-                            $enrolguard = $config->enrolguard;
+                            $unenrolguard = $config->unenrolguard;
                             if (!empty($instance->customint5) && $this->get_config('allowunenrol') && !empty($course->enddate)) {
                                 if ($members = $DB->get_records('groups_members', array('groupid' => $groupid))) {
                                     foreach ($members as $member) {

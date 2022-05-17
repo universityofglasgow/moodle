@@ -23,8 +23,6 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die;
-
 /**
  * Define the complete zoom structure for backup, with file and id annotations.
  */
@@ -44,7 +42,7 @@ class backup_zoom_activity_structure_step extends backup_activity_structure_step
             'webinar', 'duration', 'timezone', 'password', 'option_jbh', 'option_start_type', 'option_host_video',
             'option_participants_video', 'option_audio', 'option_mute_upon_entry', 'option_waiting_room',
             'option_authenticated_users', 'option_encryption_type', 'exists_on_zoom', 'alternative_hosts',
-            'recordings_visible_default',
+            'recordings_visible_default', 'show_schedule', 'show_security', 'show_media',
         ));
 
         $trackingfields = new backup_nested_element('trackingfields');

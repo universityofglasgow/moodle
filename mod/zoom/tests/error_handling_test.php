@@ -22,10 +22,10 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+namespace mod_zoom;
 
-global $CFG;
-require_once($CFG->dirroot.'/mod/zoom/locallib.php');
+use basic_testcase;
+use zoom_not_found_exception;
 
 /**
  * PHPunit testcase class.
@@ -34,13 +34,13 @@ class error_handling_test extends basic_testcase {
 
     /**
      * Exception for when the meeting isn't found on Zoom.
-     * @var mod_zoom\zoom_not_found_exception
+     * @var zoom_not_found_exception
      */
     private $meetingnotfoundexception;
 
     /**
      * Exception for when the user isn't found on Zoom.
-     * @var mod_zoom\zoom_not_found_exception
+     * @var zoom_not_found_exception
      */
     private $usernotfoundexception;
 
@@ -48,15 +48,23 @@ class error_handling_test extends basic_testcase {
      * Exception for when the user is found in the system but they haven't
      * accepted their invite, so they don't have permissions to do what was
      * requested.
-     * @var mod_zoom\zoom_not_found_exception
+     * @var zoom_not_found_exception
      */
     private $invaliduserexception;
 
     /**
      * Exception for when the meeting isn't found on Zoom.
-     * @var mod_zoom\zoom_not_found_exception
+     * @var zoom_not_found_exception
      */
     private $othererrorcodeexception;
+
+    /**
+     * Setup to ensure that fixtures are loaded.
+     */
+    public static function setUpBeforeClass(): void {
+        global $CFG;
+        require_once($CFG->dirroot . '/mod/zoom/locallib.php');
+    }
 
     /**
      * Setup before every test.
@@ -70,6 +78,8 @@ class error_handling_test extends basic_testcase {
 
     /**
      * Tests that uuid are encoded properly for use in web service calls.
+     * @covers ::zoom_is_meeting_gone_error
+     * @covers ::zoom_is_user_not_found_error
      */
     public function test_correct_error_recognition() {
         // Check meeting not found behavior.

@@ -39,6 +39,9 @@ require_once($CFG->dirroot.'/mod/helixmedia/locallib.php');
  */
 class assign_submission_helixassign extends assign_submission_plugin {
 
+    // Used for group assignments on the submission summary page so we have a unique frame ID
+    private $count = 0;
+
     /**
      * Get the name of the online text submission plugin
      * @return string
@@ -110,7 +113,7 @@ class assign_submission_helixassign extends assign_submission_plugin {
      * @return true if elements were added to the form
      */
     public function get_form_elements($submission, MoodleQuickForm $mform, stdClass $data) {
-        global $CFG, $COURSE, $PAGE;
+        global $CFG, $COURSE, $PAGE, $USER;
 
         $elements = array();
 
@@ -119,49 +122,38 @@ class assign_submission_helixassign extends assign_submission_plugin {
         $mform->addElement('hidden', 'helixassign_preid');
         $mform->setType('helixassign_preid', PARAM_INT);
 
-        $mform->addElement('hidden', 'helixassign_activated');
-        $mform->setType('helixassign_activated', PARAM_INT);
+        $thumbparams = array('type' => HML_LAUNCH_STUDENT_SUBMIT_THUMBNAILS);
+        $params = array('type' => HML_LAUNCH_STUDENT_SUBMIT);
 
         if ($submission) {
             $helixassignsubmission = $this->get_helixassign_submission($submission->id);
             if ($helixassignsubmission) {
                 $preid = $helixassignsubmission->preid;
-                $param = "e_assign=".$helixassignsubmission->preid;
+                $thumbparams['e_assign'] = $helixassignsubmission->preid;
+                $params['e_assign'] = $helixassignsubmission->preid;
                 $mform->setDefault('helixassign_preid', $helixassignsubmission->preid);
             }
         }
 
-        if (!isset($param)) {
-            $preid = helixmedia_preallocate_id();
-            $param = "n_assign=".$preid."&aid=".$PAGE->cm->id;
+        if (!array_key_exists('e_assign', $params)) {
+            $nassign = optional_param('helixassign_preid', false, PARAM_INT);
+            if ($nassign === FALSE) {
+                $preid = helixmedia_preallocate_id();
+            } else {
+                $preid = $nassign;
+            }
+            $thumbparams['n_assign'] = $preid;
+            $thumbparams['aid'] = $PAGE->cm->id;
+            $params['n_assign'] = $preid;
+            $params['aid'] = $PAGE->cm->id;
             $mform->setDefault('helixassign_preid', $preid);
         }
 
-        $html = helixmedia_get_modal_dialog($preid, "type=".HML_LAUNCH_STUDENT_SUBMIT_THUMBNAILS."&".$param,
-                "type=".HML_LAUNCH_STUDENT_SUBMIT."&".$param);
-        $html .= "<script type='text/javascript'>\n".
-            "document.addEventListener('DOMContentLoaded', function() {\n".
-            "var cbtn=document.getElementById('id_cancel');\n".
-            "if (cbtn!=null) {\n".
-            "cbtn.addEventListener('click', helixCancelClick);\n".
-            "}\n".
-            "});\n".
-            "function helixCancelClick()\n".
-            "{\n".
-            "var xmlDoc=null;\n".
+        $output = $PAGE->get_renderer('mod_helixmedia');
+        $disp = new \mod_helixmedia\output\modal($preid, $thumbparams, $params, "moodle-lti-upload-btn.png");
+        $html = $output->render($disp);
 
-            "    if (typeof window.ActiveXObject != 'undefined' )\n".
-            "        xmlDoc = new ActiveXObject('Microsoft.XMLHTTP');\n".
-            "    else\n".
-            "        xmlDoc = new XMLHttpRequest();\n".
-
-            "    var params='resource_link_id='+resID+'&user_id='+userID;\n".
-            "    xmlDoc.open('POST', statusURL , false);\n".
-            "    xmlDoc.setRequestHeader('Content-type','application/x-www-form-urlencoded');\n".
-            "    xmlDoc.send(params);\n".
-            "}\n".
-            "</script>";
-
+        $PAGE->requires->js_call_amd('assignsubmission_helixassign/cancel', 'init', array($preid, $USER->id, helixmedia_get_status_url()));
         $mform->addElement('static', 'helixassign_choosemedia', "", $html);
 
         return true;
@@ -176,11 +168,12 @@ class assign_submission_helixassign extends assign_submission_plugin {
       */
     public function save(stdClass $submission, stdClass $data) {
         global $DB, $USER;
-        $helixassignsubmission = $this->get_helixassign_submission($submission->id);
 
-        if ($data->helixassign_activated != 1) {
+        if (helixmedia_is_preid_empty($data->helixassign_preid, $this, $submission->userid)) {
             return true;
         }
+
+        $helixassignsubmission = $this->get_helixassign_submission($submission->id);
 
         $params = array(
             'context' => context_module::instance($this->assignment->get_course_module()->id),
@@ -247,29 +240,39 @@ class assign_submission_helixassign extends assign_submission_plugin {
       * @param bool $showviewlink - If the summary has been truncated set this to true
       * @return string
       */
-    public function view_summary(stdClass $submission, & $showviewlink) {
-        $showviewlink = true;
+    public function view_summary(stdClass $submission, &$showviewlink) {
+        // We want to show just the link on the grading table to keep things condensed, otherwise the normal graphic button.
+        if (optional_param('action', false, PARAM_TEXT) != 'grading') {
+            return $this->view($submission);
+        }
+
         $helixassignsubmission = $this->get_helixassign_submission($submission->id);
+
         if ($helixassignsubmission) {
-
             global $PAGE;
+            $params = array('e_assign' =>$helixassignsubmission->preid, 'userid' => $submission->userid);
 
-            $type = HML_LAUNCH_STUDENT_SUBMIT_PREVIEW;
-            $thumbtype = HML_LAUNCH_STUDENT_SUBMIT_THUMBNAILS;
             if (has_capability('mod/assign:grade', $PAGE->context)) {
-                $type = HML_LAUNCH_VIEW_SUBMISSIONS;
-                $thumbtype = HML_LAUNCH_VIEW_SUBMISSIONS_THUMBNAILS;
+                $params['type'] = HML_LAUNCH_VIEW_SUBMISSIONS;
+            } else {
+                $params['type'] = HML_LAUNCH_STUDENT_SUBMIT_PREVIEW;
             }
 
-            $param = "e_assign=".$helixassignsubmission->preid."&userid=".$submission->userid;
-            return helixmedia_get_modal_dialog($helixassignsubmission->preid,
-                "type=".$thumbtype."&".$param,
-                "type=".$type."&".$param, "margin-left:auto;margin-right:auto;",
-                get_string('view_submission', 'assignsubmission_helixassign'), -1, -1, -1, "false");
+            if (!empty($submission->groupid)) {
+                $extraid = $this->count;
+                $this->count++;
+            } else {
+                $extraid = false;
+            }
+
+            $output = $PAGE->get_renderer('mod_helixmedia');
+            $disp = new \mod_helixmedia\output\modal($helixassignsubmission->preid, array(), $params, false,
+                get_string('view_submission', 'assignsubmission_helixassign'), false, false, 'row', $extraid);
+            return $output->render($disp);
         }
 
         return "<br /><br /><div class='box generalbox boxaligncenter'><p style='text-align:center;'>"
-            .get_string('nosubmission', 'assignsubmission_helixassign')."</p></div>";
+            .get_string('nosubmissionshort', 'assignsubmission_helixassign')."</p></div>";
     }
 
     /**
@@ -287,23 +290,23 @@ class assign_submission_helixassign extends assign_submission_plugin {
 
             global $PAGE;
 
-            $type = HML_LAUNCH_STUDENT_SUBMIT_PREVIEW;
-            $thumbtype = HML_LAUNCH_STUDENT_SUBMIT_THUMBNAILS;
+            $thumbparams = array('e_assign' =>$helixassignsubmission->preid, 'userid' => $submission->userid);
+            $params = array('e_assign' =>$helixassignsubmission->preid, 'userid' => $submission->userid);
+
             if (has_capability('mod/assign:grade', $PAGE->context)) {
-                $type = HML_LAUNCH_VIEW_SUBMISSIONS;
-                $thumbtype = HML_LAUNCH_VIEW_SUBMISSIONS_THUMBNAILS;
+                $thumbparams['type'] = HML_LAUNCH_VIEW_SUBMISSIONS_THUMBNAILS;
+                $params['type'] = HML_LAUNCH_VIEW_SUBMISSIONS;
+                $align = 'column';
+            } else {
+                $thumbparams['type'] = HML_LAUNCH_STUDENT_SUBMIT_THUMBNAILS;
+                $params['type'] = HML_LAUNCH_STUDENT_SUBMIT_PREVIEW;
+                $align = 'row';
             }
 
-            $splitline = false;
-            if ($CFG->version >= 2016052300 ) {
-                 $splitline = true;
-            }
-
-            $param = "e_assign=".$helixassignsubmission->preid."&userid=".$submission->userid;
-            return helixmedia_get_modal_dialog($helixassignsubmission->preid,
-                "type=".$thumbtype."&".$param,
-                "type=".$type."&".$param, "margin-left:auto;margin-right:auto;",
-                "moodle-lti-viewsub-btn.png", "", "", -1, "false", true);
+            $output = $PAGE->get_renderer('mod_helixmedia');
+            $disp = new \mod_helixmedia\output\modal($helixassignsubmission->preid, $thumbparams, $params, "moodle-lti-viewsub-btn.png",
+                get_string('view_submission', 'assignsubmission_helixassign'), false, false, $align);
+            return $output->render($disp);
         }
 
         return "<br /><br /><div class='box generalbox boxaligncenter'><p style='text-align:center;'>"

@@ -41,6 +41,7 @@ class default_container implements container {
 
     /** @var array The objects supported by this container. */
     protected static $supports = [
+        'addon' => true,
         'ajax_base_url' => true,
         'ajax_router' => true,
         'ajax_url_resolver' => true,
@@ -48,7 +49,6 @@ class default_container implements container {
         'badge_url_resolver' => true,
         'block_class' => true,
         'block_edit_form_class' => true,
-        'block_instance_finder' => true,
         'collection_logger' => true,
         'collection_strategy' => true,
         'config' => true,
@@ -58,6 +58,7 @@ class default_container implements container {
         'course_world_block_instances_finder_in_context' => true,
         'course_world_factory' => true,
         'course_world_leaderboard_factory' => true,
+        'course_world_leaderboard_factory_with_config' => true,
         'course_world_navigation_factory' => true,
         'db' => true,
         'file_server' => true,
@@ -69,6 +70,7 @@ class default_container implements container {
         'shortcodes_definition_maker' => true,
         'tasks_definition_maker' => true,
         'url_resolver' => true,
+        'usage_reporter' => true,
         'user_generic_indicator' => true,
         'user_notice_indicator' => true,
     ];
@@ -94,6 +96,15 @@ class default_container implements container {
     }
 
     /**
+     * Get the addon.
+     *
+     * @return plugin\addon
+     */
+    protected function get_addon() {
+        return new plugin\addon();
+    }
+
+    /**
      * Get the router.
      *
      * @return router
@@ -116,7 +127,7 @@ class default_container implements container {
     /**
      * Get the routes config.
      *
-     * @return routes_config
+     * @return routing\routes_config
      */
     protected function get_ajax_routes_config() {
         return new \block_xp\local\routing\ajax_routes_config();
@@ -168,17 +179,6 @@ class default_container implements container {
      */
     protected function get_block_edit_form_class() {
         return 'block_xp\form\edit_form';
-    }
-
-    /**
-     * Get the block instance finder.
-     *
-     * @return instance_finder
-     * @deprecated Since 3.1.0, will be removed in 3.3.0
-     */
-    protected function get_block_instance_finder() {
-        debugging('The generic block_instance_finder getter is deprecated, please do not use any more.', DEBUG_DEVELOPER);
-        return new \block_xp\local\block\default_instance_finder($this->get('db'));
     }
 
     /**
@@ -272,12 +272,19 @@ class default_container implements container {
     /**
      * Get the course world leaderboard factory.
      *
-     * @return course_world_leaderboard_factory
+     * @return factory\course_world_leaderboard_factory
      */
     protected function get_course_world_leaderboard_factory() {
-        return new \block_xp\local\factory\default_course_world_leaderboard_factory(
-            $this->get('db')
-        );
+        return $this->get('course_world_leaderboard_factory_with_config');
+    }
+
+    /**
+     * Get the course world leaderboard factory with options.
+     *
+     * @return factory\course_world_leaderboard_factory_with_config
+     */
+    protected function get_course_world_leaderboard_factory_with_config() {
+        return new \block_xp\local\factory\default_course_world_leaderboard_factory($this->get('db'));
     }
 
     /**
@@ -332,7 +339,7 @@ class default_container implements container {
      */
     protected function get_renderer() {
         global $PAGE;
-        if (!$PAGE->has_set_url()) {
+        if (!$PAGE->has_set_url() && !defined('PHPUNIT_TEST')) {
             debugging('The renderer was requested too early in the request.', DEBUG_DEVELOPER);
         }
         return $PAGE->get_renderer('block_xp');
@@ -352,7 +359,7 @@ class default_container implements container {
     /**
      * Get the routes config.
      *
-     * @return routes_config
+     * @return routing\routes_config
      */
     protected function get_routes_config() {
         return new \block_xp\local\routing\default_routes_config();
@@ -396,6 +403,16 @@ class default_container implements container {
      */
     protected function get_tasks_definition_maker() {
         return new \block_xp\local\task\default_tasks_definition_maker();
+    }
+
+    /**
+     * Get usage reporter.
+     *
+     * @return plugin\usage_reporter
+     */
+    protected function get_usage_reporter() {
+        $config = $this->get('config');
+        return new \block_xp\local\plugin\usage_reporter($config, new plugin\usage_report_maker($this->get('db'), $config));
     }
 
     /**

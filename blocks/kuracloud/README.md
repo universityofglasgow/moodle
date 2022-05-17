@@ -1,5 +1,7 @@
 # kuraCloud Moodle integration
 
+**This integration is no longer being maintained. The supported way to connect Moodle and Lt is using our new LTI based integration. See <https://www.adinstruments.com/lt/lms-integration>**
+
 A block that allows a kuraCloud course to be mapped to a Moodle course. Student accounts are synchronised from Moodle to kuraCloud and grades are synchronised back from kuraCloud to Moodle.
 
 ## Requirements

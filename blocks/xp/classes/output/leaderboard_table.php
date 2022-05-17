@@ -28,14 +28,15 @@ namespace block_xp\output;
 defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir . '/tablelib.php');
 
-use html_writer;
-use paging_bar;
-use renderer_base;
-use flexible_table;
 use block_xp\local\config\course_world_config;
 use block_xp\local\leaderboard\leaderboard;
 use block_xp\local\routing\url;
 use block_xp\local\sql\limit;
+use block_xp\local\xp\state_with_subject;
+use flexible_table;
+use html_writer;
+use paging_bar;
+use renderer_base;
 
 /**
  * Leaderboard table.
@@ -46,6 +47,11 @@ use block_xp\local\sql\limit;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class leaderboard_table extends flexible_table {
+
+    /** @var \context The context. */
+    protected $context;
+    /** @var bool Whether the user can view profiles. */
+    protected $canviewprofiles = false;
 
     /** @var leaderboard The leaderboard. */
     protected $leaderboard;
@@ -80,7 +86,7 @@ class leaderboard_table extends flexible_table {
             $userid
         ) {
 
-        global $CFG, $USER;
+        global $CFG, $PAGE, $USER;
         parent::__construct('block_xp_ladder');
 
         // The user ID we're viewing the ladder for.
@@ -91,6 +97,11 @@ class leaderboard_table extends flexible_table {
         $this->xpoutput = $renderer;
 
         // Check options.
+        if (isset($options['context'])) {
+            $this->context = $options['context'];
+        } else {
+            $this->context = $PAGE->context;
+        }
         if (isset($options['rankmode'])) {
             $this->rankmode = $options['rankmode'];
         }
@@ -104,6 +115,8 @@ class leaderboard_table extends flexible_table {
         if (isset($options['discardcolumns'])) {
             $leaderboardcols = array_diff_key($leaderboardcols, array_flip($options['discardcolumns']));
         }
+
+        $this->canviewprofiles = has_capability('moodle/user:viewdetails', $this->context);
 
         // Define columns, and headers.
         $columns = array_keys($leaderboardcols);
@@ -128,8 +141,11 @@ class leaderboard_table extends flexible_table {
     public function out($pagesize) {
         $this->setup();
 
-        // Compute where to start from.
-        if (empty($this->fence)) {
+        if ($this->is_downloading()) {
+            $limit = new limit(0);
+
+        } else if (empty($this->fence)) {
+            // Compute where to start from.
             $requestedpage = optional_param($this->request[TABLE_VAR_PAGE], null, PARAM_INT);
             if ($requestedpage === null) {
                 $mypos = $this->leaderboard->get_position($this->userid);
@@ -161,11 +177,22 @@ class leaderboard_table extends flexible_table {
      */
     public function col_fullname($row) {
         $o = $this->col_userpic($row);
-        if ($this->identitymode == course_world_config::IDENTITY_OFF && $row->state->get_id() != $this->userid) {
-            $o .= get_string('someoneelse', 'block_xp');
-        } else {
-            $o .= parent::col_fullname($row->state->get_user());
+
+        $link = null;
+        $name = null;
+        $state = $row->state;
+        if ($state instanceof state_with_subject) {
+            $link = $state->get_link();
+            $name = $state->get_name();
         }
+
+        $name = empty($name) ? '?' : $name;
+        if ($link && $this->canviewprofiles) {
+            $o .= html_writer::link($link->out(false), $name);
+        } else {
+            $o .= $name;
+        }
+
         return $o;
     }
 
@@ -222,11 +249,14 @@ class leaderboard_table extends flexible_table {
      * @return string Output produced.
      */
     public function col_userpic($row) {
-        $options = [];
-        if ($this->identitymode == course_world_config::IDENTITY_OFF && $this->userid != $row->state->get_id()) {
-            $options = ['link' => false, 'alttext' => false];
+        $picture = null;
+        $link = null;
+        $state = $row->state;
+        if ($state instanceof state_with_subject) {
+            $picture = $state->get_picture();
+            $link = $this->canviewprofiles ? $state->get_link() : null;
         }
-        return $this->xpoutput->user_picture($row->state->get_user(), $options);
+        return $this->xpoutput->user_avatar($picture, $link);
     }
 
     /**
@@ -237,6 +267,10 @@ class leaderboard_table extends flexible_table {
      * @return void
      */
     public function start_html() {
+        if (in_array(TABLE_P_TOP, $this->showdownloadbuttonsat)) {
+            echo $this->download_buttons();
+        }
+
         $this->wrap_html_start();
         echo html_writer::start_tag('div', array('class' => 'no-overflow'));
         echo html_writer::start_tag('table', $this->attributes);
@@ -262,6 +296,11 @@ class leaderboard_table extends flexible_table {
             echo html_writer::end_tag('table');
             echo html_writer::end_tag('div');
             $this->wrap_html_finish();
+
+            // Paging bar.
+            if (in_array(TABLE_P_BOTTOM, $this->showdownloadbuttonsat)) {
+                echo $this->download_buttons();
+            }
             // End copy from parent method.
 
             $url20 = new url($this->baseurl);

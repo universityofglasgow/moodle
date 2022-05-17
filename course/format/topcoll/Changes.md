@@ -1,6 +1,12 @@
 ﻿Version Information
 ===================
 
+Version 3.11.1.0 - 12/05/22
+-----------------------------
+  1. Fix 'Error during course creation if defaultdisplayblocks is empty' - CONTRIB-8824.
+  2. Fix 'Mark as done completion box displaying above label activity in Collapsed topics when editing is turned off' - CONTRIB-8818.
+  3. Fix 'Broken ARIA controls name'.
+
 Version 3.11.0.5 - 15/11/21
 -----------------------------
   1. Fix 'Error in urls for additional information' - #116.

@@ -24,8 +24,11 @@
 
 namespace MoodleCodeSniffer\moodle\Sniffs\Files;
 
+// phpcs:disable moodle.NamingConventions
+
 use PHP_CodeSniffer\Sniffs\Sniff;
 use PHP_CodeSniffer\Files\File;
+use PHP_CodeSniffer\Util\Tokens;
 
 class BoilerplateCommentSniff implements Sniff {
     protected static $comment = array(
@@ -52,7 +55,7 @@ class BoilerplateCommentSniff implements Sniff {
         // We only want to do this once per file.
         $prevopentag = $file->findPrevious(T_OPEN_TAG, $stackptr - 1);
         if ($prevopentag !== false) {
-            return;
+            return; // @codeCoverageIgnore
         }
 
         if ($stackptr > 0) {
@@ -62,13 +65,18 @@ class BoilerplateCommentSniff implements Sniff {
 
         $tokens = $file->getTokens();
 
+        // Allow T_PHPCS_XXX comment annotations in the first line (skip them).
+        if ($commentptr = $file->findNext(Tokens::$phpcsCommentTokens, $stackptr + 1, $stackptr + 3)) {
+            $stackptr = $commentptr;
+        }
+
         // Find count the number of newlines after the opening <?PHP. We only
         // count enough to see if the number is right.
         // Note that the opening PHP tag includes one newline.
         $numnewlines = 0;
-        for ($i = 1; $i <= 5; ++$i) {
+        for ($i = $stackptr + 1; $i <= $stackptr + 5; ++$i) {
             if ($tokens[$i]['code'] == T_WHITESPACE && $tokens[$i]['content'] == "\n") {
-                $numnewlines = $i;
+                $numnewlines++;
             } else {
                 break;
             }
@@ -76,10 +84,10 @@ class BoilerplateCommentSniff implements Sniff {
 
         if ($numnewlines > 0) {
             $file->addError('The opening <?php tag must be followed by exactly one newline.',
-                    1, 'WrongWhitespace');
+                $stackptr + 1, 'WrongWhitespace');
             return;
         }
-        $offset = $numnewlines + 1;
+        $offset = $stackptr + $numnewlines + 1;
 
         // Now check the text of the comment.
         foreach (self::$comment as $lineindex => $line) {

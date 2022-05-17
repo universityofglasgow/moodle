@@ -24,8 +24,6 @@
  */
 
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * kuraCloud block
  *
@@ -54,13 +52,13 @@ class block_kuracloud extends block_base {
             return $this->content;
         }
 
-        global $COURSE, $PAGE;
+        global $COURSE;
 
         if (!isset($COURSE->id)) {
             return '';
         }
 
-        $output = $PAGE->get_renderer('block_kuracloud');
+        $output = $this->page->get_renderer('block_kuracloud');
 
         $mapping = \block_kuracloud\courses::get_mapping($COURSE->id);
 
@@ -105,16 +103,16 @@ class block_kuracloud extends block_base {
     /**
      * User can only add block if there's a valid endpoint
      *
-     * @param page $PAGE Moodle page object
+     * @param page $page Moodle page object
      * @return boolean
      */
-    public function user_can_addto($PAGE) {
+    public function user_can_addto($page) {
 
         if (empty(\block_kuracloud\endpoints::get_all())) {
             return false;
         }
 
-        return parent::user_can_addto($PAGE);
+        return parent::user_can_addto($page);
     }
 
     /**

@@ -26,7 +26,6 @@ namespace block_xp\local\xp;
 defined('MOODLE_INTERNAL') || die();
 
 use cache;
-use coding_exception;
 use moodle_database;
 
 /**
@@ -69,20 +68,6 @@ class course_filter_manager {
     public function convert_static_filters_to_regular() {
         $filters = $this->get_static_filters();
         $this->import_filters($filters);
-    }
-
-    /**
-     * Get all the filter objects.
-     *
-     * Positive indexes are user filters, negatives are static ones.
-     * Do not reorder this array, it is ordered by priority.
-     *
-     * @return array of filters.
-     * @deprecated Since 3.0.0
-     */
-    public function get_all_filters() {
-        debugging('The method get_all_filters() is deprecated, use get_filters() instead.', DEBUG_DEVELOPER);
-        return $this->get_filters();
     }
 
     /**

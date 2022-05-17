@@ -21,7 +21,6 @@
  * @copyright  2019 Marcus Green
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Generates the output for gapfill questions
@@ -78,7 +77,7 @@ class qtype_gapfill_renderer extends qtype_with_combined_feedback_renderer {
         if ($question->answerdisplay == "dragdrop") {
             $answeroptions = $this->setup_answeroptions($qa);
         }
-        $questiontext = html_writer::empty_tag('div', array('class' => 'qtext'));
+        $questiontext = '';
         $markedgaps = $question->get_markedgaps($qa, $options);
 
         foreach ($question->textfragments as $place => $fragment) {
@@ -93,7 +92,7 @@ class qtype_gapfill_renderer extends qtype_with_combined_feedback_renderer {
         }
 
         if ($question->answerdisplay == 'dragdrop') {
-            $questiontext = $this->app_connect($question, $questiontext)."</div>";
+            $questiontext = $this->app_connect($question, $questiontext);
             if ($question->optionsaftertext == true) {
                 $output .= '<div>'.$questiontext . '</div>' . $answeroptions;
             } else {
@@ -108,6 +107,7 @@ class qtype_gapfill_renderer extends qtype_with_combined_feedback_renderer {
             $output .= html_writer::nonempty_tag('div', $question->get_validation_error(array('answer' => $output)),
              ['class' => 'validationerror']);
         }
+        $output = html_writer::tag('div', $output, ['class' => 'qtext']);
         return $output;
     }
     /**
@@ -118,7 +118,8 @@ class qtype_gapfill_renderer extends qtype_with_combined_feedback_renderer {
      */
     public function setup_answeroptions(question_attempt $qa) : string {
         $question = $qa->get_question();
-        $answeroptions = html_writer::empty_tag('div', array('class' => ' answeroptions '));
+        $answeroptions = '';
+
         $potentialanswerid = 0;
         foreach ($this->allanswers as $potentialanswer) {
             if (!preg_match($question->blankregex, trim($potentialanswer))) {
@@ -134,6 +135,7 @@ class qtype_gapfill_renderer extends qtype_with_combined_feedback_renderer {
                     $potentialanswer . "</span>";
             }
         }
+        $answeroptions = html_writer::tag('div', $answeroptions, array('class' => 'answeroptions'));
         return $answeroptions;
     }
     /**
@@ -151,7 +153,7 @@ class qtype_gapfill_renderer extends qtype_with_combined_feedback_renderer {
         if ($question->singleuse == true) {
             $questiontext .= "<div id='gapfill_singleuse'></div>";
         }
-        return $questiontext.'</div>';
+        return $questiontext;
     }
     /**
      * Construct the gaps, e.g. textentry or dropdowns and
@@ -265,7 +267,7 @@ class qtype_gapfill_renderer extends qtype_with_combined_feedback_renderer {
         $aftergaptext = "";
         if (($fraction == 0) && ($rightanswer != "") && ($rightanswer != ".+")) {
             /* replace | operator with the word or */
-            $rightanswerdisplay = preg_replace("/\|/", get_string("or", "qtype_gapfill"), $rightanswer);
+            $rightanswerdisplay = preg_replace("/\|/", " ".get_string("or", "qtype_gapfill")." ", $rightanswer);
             /* replace !! with the 'blank' */
             $rightanswerdisplay = preg_replace("/\!!/", get_string("blank", "qtype_gapfill"), $rightanswerdisplay);
             $question = $qa->get_question();

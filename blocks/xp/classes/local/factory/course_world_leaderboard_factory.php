@@ -43,7 +43,7 @@ interface course_world_leaderboard_factory {
      *
      * @param course_world $world The world.
      * @param course_world $groupid The group ID, or 0 for none or all participants.
-     * @return block_xp\local\leaderboard\leaderboard
+     * @return \block_xp\local\leaderboard\leaderboard
      */
     public function get_course_leaderboard(course_world $world, $groupid = 0);
 

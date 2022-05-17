@@ -68,6 +68,9 @@ class TestCaseNamesSniff implements Sniff {
         // Guess moodle component (from $file being processed).
         $moodleComponent = MoodleUtil::getMoodleComponent($file);
 
+        // Detect if we are running PHPUnit.
+        $runningPHPUnit = defined('PHPUNIT_TEST') && PHPUNIT_TEST;
+
         // We have all we need from core, let's start processing the file.
 
         // Get the file tokens, for ease of use.
@@ -76,27 +79,25 @@ class TestCaseNamesSniff implements Sniff {
         // We only want to do this once per file.
         $prevopentag = $file->findPrevious(T_OPEN_TAG, $pointer - 1);
         if ($prevopentag !== false) {
-            return;
+            return; // @codeCoverageIgnore
         }
 
         // If the file isn't under tests directory, nothing to check.
         if (strpos($file->getFilename(), '/tests/') === false) {
-            return;
+            return; // @codeCoverageIgnore
         }
 
         // If the file isn't called, _test.php, nothing to check.
+        // Make an exception for codechecker own phpunit fixtures here, allowing any name for them.
         $fileName = basename($file->getFilename());
-        if (substr($fileName, -9) !== '_test.php') {
-            // Make an exception for codechecker own phpunit fixtures here, allowing any name for them.
-            if (!defined('PHPUNIT_TEST') || !PHPUNIT_TEST) {
-                return;
-            }
+        if (substr($fileName, -9) !== '_test.php' && !$runningPHPUnit) {
+            return; // @codeCoverageIgnore
         }
 
         // In order to cover the duplicates detection, we need to set some
         // properties (caches) here. It's extremely hard to do
         // this via mocking / extending (at very least for this humble developer).
-        if (defined('PHPUNIT_TEST') && PHPUNIT_TEST) {
+        if ($runningPHPUnit) {
             $this->prepareCachesForPHPUnit();
         }
 
@@ -113,7 +114,9 @@ class TestCaseNamesSniff implements Sniff {
         // verify that it extends something and that has a test_ method.
         $class = '';
         $classFound = false;
+        $classPointers = []; // Save all class pointers to report later if no class is found.
         while ($cStart = $file->findNext(T_CLASS, $pointer)) {
+            $classPointers[] = $cStart;
             $pointer = $cStart + 1; // Move the pointer to the class start.
 
             // Only if the class is extending something.
@@ -146,7 +149,10 @@ class TestCaseNamesSniff implements Sniff {
 
         // No testcase class found, this is plain-wrong.
         if (!$classFound) {
-            $file->addError('PHPUnit test file missing any valid testcase class declaration', 0, 'Missing');
+            $classPointers = $classPointers ?: [0];
+            foreach ($classPointers as $classPointer) {
+                $file->addError('PHPUnit test file missing any valid testcase class declaration', $classPointer, 'Missing');
+            }
             return; // If arrived here we don't have a valid class, we are finished.
         }
 
@@ -161,8 +167,14 @@ class TestCaseNamesSniff implements Sniff {
         // Check if the file name and the class name match, warn if not.
         $baseName = pathinfo($fileName, PATHINFO_FILENAME);
         if ($baseName !== $class) {
-            $file->addWarning('PHPUnit testcase name "%s" does not match file name "%s"', $cStart,
+            $fix = $file->addFixableWarning('PHPUnit testcase name "%s" does not match file name "%s"', $cStart,
                 'NoMatch', [$class, $baseName]);
+
+            if ($fix === true) {
+                if ($cNameToken = $file->findNext(T_STRING, $cStart + 1, $tokens[$cStart]['scope_opener'])) {
+                    $file->fixer->replaceToken($cNameToken, $baseName);
+                }
+            }
         }
 
         // Check if the class has been already found (this is useful when running against a lot of files).
@@ -194,6 +206,8 @@ class TestCaseNamesSniff implements Sniff {
             }
         }
 
+        // TODO: When all the namespace general rules Sniff is created, all these namespace checks
+        // should be moved there and reused here.
         // Validate 1st level namespace.
 
         if ($namespace && $moodleComponent) {
@@ -202,10 +216,31 @@ class TestCaseNamesSniff implements Sniff {
                 $file->addError('PHPUnit class namespace "%s" does not match expected file namespace "%s"', $nsStart,
                     'UnexpectedNS', [$namespace, $moodleComponent]);
             }
+
+            // Verify that level2 and down match the directory structure under tests. Soft warn if not (till we fix all).
+            $bspos = strpos(trim($namespace, ' \\'), '\\');
+            if ($bspos !== false) { // Only if there are level2 and down namespace.
+                $relns = str_replace('\\', '/', substr(trim($namespace, ' \\'), $bspos + 1));
+
+                // Calculate the relative path under tests directory.
+                $dirpos = strrpos(trim(dirname($file->getFilename()), ' /') . '/', '/tests/');
+                $reldir = str_replace('\\', '/', substr(trim(dirname($file->getFilename()), ' /'), $dirpos + 7));
+
+                // Warning if the relative namespace does not match the relative directory.
+                if ($reldir !== $relns) {
+                    $file->addWarning('PHPUnit class "%s", with namespace "%s", currently located at "tests/%s" directory, '.
+                        'does not match its expected location at "tests/%s"', $nsStart,
+                        'UnexpectedLevel2NS', [$fdqnClass, $namespace, $reldir, $relns]);
+                }
+
+                // TODO: When we have APIs (https://docs.moodle.org/dev/Core_APIs) somewhere at hand (in core)
+                // let's add here an error when incorrect ones are used. See MDL-71096 about it.
+            }
+
         }
 
         if (!$namespace && $moodleComponent) {
-            $file->addWarning('PHUnit class "%s" does not have any namespace. It is recommended to add it to the "%s" ' .
+            $file->addWarning('PHPUnit class "%s" does not have any namespace. It is recommended to add it to the "%s" ' .
                 'namespace, using more levels if needed, in order to match the code being tested', $cStart,
                 'MissingNS', [$fdqnClass, $moodleComponent]);
 

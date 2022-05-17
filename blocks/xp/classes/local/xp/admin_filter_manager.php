@@ -26,10 +26,10 @@
 namespace block_xp\local\xp;
 defined('MOODLE_INTERNAL') || die();
 
-use coding_exception;
 use moodle_database;
 use block_xp\di;
 use block_xp\local\config\course_world_config;
+use coding_exception;
 
 /**
  * Admin filter manager class.
@@ -182,7 +182,7 @@ class admin_filter_manager {
     public function reset_all_courses_to_defaults() {
         $config = di::get('config');
         if ($config->get('context') != CONTEXT_COURSE) {
-            throw coding_exception('Cannot reset filters for all courses in current mode.');
+            throw new coding_exception('Cannot reset filters for all courses in current mode.');
         }
         $courseworldfactory = di::get('course_world_factory');
 

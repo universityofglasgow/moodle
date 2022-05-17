@@ -21,7 +21,11 @@
  * @copyright  2012 Marcus Green
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+namespace qtype_gapfill;
+
 defined('MOODLE_INTERNAL') || die();
+
+use \qtype_gapfill_test_helper as helper;
 
 global $CFG;
 
@@ -33,7 +37,7 @@ require_once($CFG->dirroot . '/question/type/gapfill/tests/helper.php');
  * @copyright  2012 Marcus Green
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class walkthrough_test extends qbehaviour_walkthrough_test_base {
+class walkthrough_test extends \qbehaviour_walkthrough_test_base {
 
     public function test_draggable_items() {
         /* This checks that the bug from line 130 of questiontype is fixed
@@ -45,23 +49,53 @@ class walkthrough_test extends qbehaviour_walkthrough_test_base {
             'disableregex' => 1,
             'noduplicates' => 0,
             'delimitchars' => '[]',
-            'optionsaftertext' => false
+            'optionsaftertext' => false,
+            'singleuse' => false
         ];
-        $gapfill = qtype_gapfill_test_helper::make_question( $questiontext, $options);
+        $gapfill = helper::make_question( $questiontext, $options);
         $maxmark = 2;
         $this->start_attempt_at_question($gapfill, 'deferredfeedback', $maxmark);
         $this->check_output_contains('1.0');
         $this->check_output_contains('1.00');
     }
 
+    public function test_app_connect() {
+        global $PAGE;
+
+        $questiontext = "The [cat] sat on the [mat]";
+        $options = [
+            'optionsaftertext' => true,
+            'singleuse' => true
+        ];
+        $gapfill = helper::make_question( $questiontext, $options);
+        $renderer = $gapfill->get_renderer($PAGE);
+        $html = $renderer->app_connect($gapfill, 'randomstring');
+        $this->assertStringContainsString('gapfill_singleuse', $html, ' missing gapfill singleuse tag');
+    }
+
+    public function test_dropdowns() {
+        $questiontext = "The [cat] sat on the [mat]";
+        $options = [
+            'optionsaftertext' => true,
+            'singleuse' => true,
+            'answerdisplay' => 'dropdown'
+        ];
+
+        $gapfill = helper::make_question( $questiontext, $options);
+        $this->start_attempt_at_question($gapfill, 'immediatefeedback');
+        $html = $this->quba->render_question($this->slot, $this->displayoptions);
+        $this->assertStringContainsString('select type', $html, ' missing select tags tag');
+    }
+
+
     public function test_deferred_feedback_unanswered() {
 
         // Create a gapfill question.
-        $gapfill = qtype_gapfill_test_helper::make_question();
+        $gapfill = helper::make_question();
         $maxmark = 2;
         $this->start_attempt_at_question($gapfill, 'deferredfeedback', $maxmark);
         /* Check the initial state. */
-        $this->check_current_state(question_state::$todo);
+        $this->check_current_state(\question_state::$todo);
         $this->check_current_mark(null);
         $this->check_step_count(1);
 
@@ -76,32 +110,32 @@ class walkthrough_test extends qbehaviour_walkthrough_test_base {
         // Save an  correct response.
         $this->process_submission(array('p1' => '', 'p2' => ''));
         $this->check_step_count(2);
-        $this->check_current_state(question_state::$todo);
+        $this->check_current_state(\question_state::$todo);
 
         $this->quba->finish_all_questions();
         $this->check_step_count(3);
-        $this->check_current_state(question_state::$gaveup);
+        $this->check_current_state(\question_state::$gaveup);
         $this->check_current_mark(null);
     }
 
     public function test_deferred_with_correct() {
         // Create a gapfill question.
-        $gapfill = qtype_gapfill_test_helper::make_question();
+        $gapfill = helper::make_question();
         $maxmark = 2;
         $this->start_attempt_at_question($gapfill, 'deferredfeedback', $maxmark);
         // Check the initial state.
-        $this->check_current_state(question_state::$todo);
+        $this->check_current_state(\question_state::$todo);
         $this->check_current_mark(null);
         $this->check_step_count(1);
 
         // Save an  correct response.
         $this->process_submission(array('p1' => 'cat', 'p2' => 'mat'));
         $this->check_step_count(2);
-        $this->check_current_state(question_state::$complete);
+        $this->check_current_state(\question_state::$complete);
 
         $this->quba->finish_all_questions();
         $this->check_step_count(3);
-        $this->check_current_state(question_state::$gradedright);
+        $this->check_current_state(\question_state::$gradedright);
         $this->check_current_mark(2);
         $this->quba->finish_all_questions();
     }
@@ -109,22 +143,22 @@ class walkthrough_test extends qbehaviour_walkthrough_test_base {
     public function test_deferred_with_incorrect() {
 
         // Create a gapfill question.
-        $gapfill = qtype_gapfill_test_helper::make_question();
+        $gapfill = helper::make_question();
         $maxmark = 2;
         $this->start_attempt_at_question($gapfill, 'deferredfeedback', $maxmark);
         // Check the initial state.
-        $this->check_current_state(question_state::$todo);
+        $this->check_current_state(\question_state::$todo);
         $this->check_current_mark(null);
         $this->check_step_count(1);
 
         // Save an  correct response.
         $this->process_submission(array('p1' => 'dog', 'p2' => 'cat'));
         $this->check_step_count(2);
-        $this->check_current_state(question_state::$complete);
+        $this->check_current_state(\question_state::$complete);
 
         $this->quba->finish_all_questions();
         $this->check_step_count(3);
-        $this->check_current_state(question_state::$gradedwrong);
+        $this->check_current_state(\question_state::$gradedwrong);
         $this->check_current_mark(0);
     }
 
@@ -144,61 +178,58 @@ class walkthrough_test extends qbehaviour_walkthrough_test_base {
 
         $options = [
             'disableregex' => 1,
-            'noduplicates' => 0,
-            'delimitchars' => '[]',
-            'optionsaftertext' => false
         ];
 
-        $gapfill = qtype_gapfill_test_helper::make_question( $questiontext, $options);
+        $gapfill = helper::make_question( $questiontext, $options);
         $maxmark = 1;
             $this->start_attempt_at_question($gapfill, 'deferredfeedback', $maxmark);
         // Check the initial state.
-        $this->check_current_state(question_state::$todo);
+        $this->check_current_state(\question_state::$todo);
         $this->check_current_mark(null);
         $this->check_step_count(1);
               $this->process_submission(array('p1' => 'getSize();'));
         $this->quba->finish_all_questions();
         $this->check_step_count(3);
-        $this->check_current_state(question_state::$gradedright);
+        $this->check_current_state(\question_state::$gradedright);
         $this->check_current_mark(1);
     }
 
     public function test_deferred_with_partially_correct() {
 
         // Create a gapfill question.
-        $gapfill = qtype_gapfill_test_helper::make_question();
+        $gapfill = helper::make_question();
         $maxmark = 2;
         $this->start_attempt_at_question($gapfill, 'deferredfeedback', $maxmark);
         // Check the initial state.
-        $this->check_current_state(question_state::$todo);
+        $this->check_current_state(\question_state::$todo);
         $this->check_current_mark(null);
         $this->check_step_count(1);
 
         // Save an  correct response.
         $this->process_submission(array('p1' => 'cat', 'p2' => 'dog'));
         $this->check_step_count(2);
-        $this->check_current_state(question_state::$complete);
+        $this->check_current_state(\question_state::$complete);
 
         $this->quba->finish_all_questions();
         $this->check_step_count(3);
-        $this->check_current_state(question_state::$gradedpartial);
+        $this->check_current_state(\question_state::$gradedpartial);
         $this->check_current_mark(1);
     }
 
     public function test_deferred_with_blanks() {
         // Create a gapfill question.
         $questiontext = "The [cat] sat on the [mat]";
-        $gapfill = qtype_gapfill_test_helper::make_question( $questiontext);
+        $gapfill = helper::make_question( $questiontext);
         $maxmark = 2;
         $this->start_attempt_at_question($gapfill, 'deferredfeedback', $maxmark);
         // Check the initial state.
-        $this->check_current_state(question_state::$todo);
+        $this->check_current_state(\question_state::$todo);
         $this->check_current_mark(null);
         $this->check_step_count(1);
         $this->process_submission(array('p1' => 'cat', 'p2' => ''));
         $this->quba->finish_all_questions();
         $this->check_step_count(3);
-        $this->check_current_state(question_state::$gradedpartial);
+        $this->check_current_state(\question_state::$gradedpartial);
         $this->check_current_mark(1);
     }
 
@@ -210,29 +241,29 @@ class walkthrough_test extends qbehaviour_walkthrough_test_base {
          */
         $questiontext = "Moscow is the capital of [Россия], The French word for boy is [garçon]. A word that
                 ends with an accent is [andrà]  ";
-        $gapfill = qtype_gapfill_test_helper::make_question( $questiontext);
+        $gapfill = helper::make_question( $questiontext);
         $maxmark = 3;
         $this->start_attempt_at_question($gapfill, 'deferredfeedback', $maxmark);
         // Check the initial state.
-        $this->check_current_state(question_state::$todo);
+        $this->check_current_state(\question_state::$todo);
         $this->check_current_mark(null);
         $this->check_step_count(1);
         $this->process_submission(array('p1' => 'Россия', 'p2' => 'garçon', 'p3' => 'andrà' ));
         $this->quba->finish_all_questions();
         $this->check_step_count(3);
-        $this->check_current_state(question_state::$gradedright);
+        $this->check_current_state(\question_state::$gradedright);
         $this->check_current_mark(3);
     }
 
     public function test_interactive_with_correct() {
 
         // Create a gapfill question.
-        $gapfill = qtype_gapfill_test_helper::make_question();
+        $gapfill = helper::make_question();
         $maxmark = 2;
         $this->start_attempt_at_question($gapfill, 'interactive', $maxmark);
 
         // Check the initial state.
-        $this->check_current_state(question_state::$todo);
+        $this->check_current_state(\question_state::$todo);
         $this->check_current_mark(null);
 
         $this->check_step_count(1);
@@ -249,7 +280,7 @@ class walkthrough_test extends qbehaviour_walkthrough_test_base {
         $this->process_submission(array('p0' => 'cat', 'p1' => 'mat'));
         $this->check_step_count(2);
 
-        $this->check_current_state(question_state::$todo);
+        $this->check_current_state(\question_state::$todo);
 
         $this->check_current_output(
                 $this->get_contains_marked_out_of_summary(),
@@ -263,7 +294,7 @@ class walkthrough_test extends qbehaviour_walkthrough_test_base {
         $this->process_submission(array('-submit' => 1, 'p1' => 'cat', 'p2' => 'mat'));
         $this->check_step_count(3);
         // Verify.
-        $this->check_current_state(question_state::$gradedright);
+        $this->check_current_state(\question_state::$gradedright);
 
         $this->check_current_output(
                 $this->get_does_not_contain_try_again_button_expectation(),
@@ -274,12 +305,12 @@ class walkthrough_test extends qbehaviour_walkthrough_test_base {
         $this->check_current_mark(2);
         // Finish the attempt.
         $this->quba->finish_all_questions();
-        $this->check_current_state(question_state::$gradedright);
+        $this->check_current_state(\question_state::$gradedright);
     }
     public function test_interactive_wildcard_with_correct() {
         // Create a gapfill question.
         $questiontext = " The [cat|dog] sat on the [mat] ";
-        $gapfill = qtype_gapfill_test_helper::make_question($questiontext);
+        $gapfill = helper::make_question($questiontext);
         $maxmark = 2;
 
         $this->start_attempt_at_question($gapfill, 'interactive', $maxmark);
@@ -291,7 +322,7 @@ class walkthrough_test extends qbehaviour_walkthrough_test_base {
                 $this->get_no_hint_visible_expectation());
 
         // Check the initial state.
-        $this->check_current_state(question_state::$todo);
+        $this->check_current_state(\question_state::$todo);
 
         $this->check_step_count(1);
 
@@ -305,7 +336,7 @@ class walkthrough_test extends qbehaviour_walkthrough_test_base {
                 $this->get_does_not_contain_try_again_button_expectation(),
                 $this->get_no_hint_visible_expectation());
 
-        $this->check_current_state(question_state::$todo);
+        $this->check_current_state(\question_state::$todo);
 
         /*There was a word boundary bug in the regex previously that has been addressed by adding
         *a leading \b( and trailing )\b where the | character is found in the gap. This could be
@@ -316,13 +347,13 @@ class walkthrough_test extends qbehaviour_walkthrough_test_base {
 
         // Verify.
         $this->quba->finish_all_questions();
-        $this->check_current_state(question_state::$gradedpartial);
+        $this->check_current_state(\question_state::$gradedpartial);
 
         $this->check_current_mark(1);
         $this->start_attempt_at_question($gapfill, 'interactive', $maxmark);
 
         // Check the initial state.
-        $this->check_current_state(question_state::$todo);
+        $this->check_current_state(\question_state::$todo);
 
         $this->check_step_count(1);
         // Submit correct resonse.
@@ -331,7 +362,7 @@ class walkthrough_test extends qbehaviour_walkthrough_test_base {
 
         // Verify.
         $this->quba->finish_all_questions();
-        $this->check_current_state(question_state::$gradedright);
+        $this->check_current_state(\question_state::$gradedright);
         $this->check_current_mark(2);
 
         // Finish the attempt.
@@ -341,14 +372,11 @@ class walkthrough_test extends qbehaviour_walkthrough_test_base {
         $questiontext = 'for([$i]=0;$<10;$i++)';
         $options = [
             'disableregex' => 1,
-            'noduplicates' => 0,
-            'delimitchars' => '[]',
-            'optionsaftertext' => false
         ];
-        $gapfill = qtype_gapfill_test_helper::make_question($questiontext, $options);
+        $gapfill = helper::make_question($questiontext, $options);
         $this->start_attempt_at_question($gapfill, 'interactive', $gapfill->gapstofill);
 
-        $this->check_current_state(question_state::$todo);
+        $this->check_current_state(\question_state::$todo);
         $this->check_current_mark(null);
         $this->check_step_count(1);
         $this->process_submission(array('-submit' => 1, 'p1' => '$i'));
@@ -357,7 +385,7 @@ class walkthrough_test extends qbehaviour_walkthrough_test_base {
 
         $this->quba->finish_all_questions();
 
-        $this->check_current_state(question_state::$gradedright);
+        $this->check_current_state(\question_state::$gradedright);
         $this->check_current_mark(1);
         $this->quba->finish_all_questions();
     }
@@ -381,18 +409,16 @@ What are the colors of the Olympic medals?
         $options = [
             'disableregex' => 1,
             'noduplicates' => 1,
-            'delimitchars' => '[]',
-            'optionsaftertext' => false
         ];
         /* answer with duplicate values, only one of each duplicate should get a mark */
         $submission = array('-submit' => 1, 'p1' => 'gold', 'p2' => 'silver', 'p3' => 'silver');
 
-        $gapfill = qtype_gapfill_test_helper::make_question( $questiontext, $options);
+        $gapfill = helper::make_question( $questiontext, $options);
 
         $this->start_attempt_at_question($gapfill, 'interactive', $gapfill->gapstofill);
 
         // Check the initial state.
-        $this->check_current_state(question_state::$todo);
+        $this->check_current_state(\question_state::$todo);
         $this->check_step_count(1);
 
         $this->check_current_output(
@@ -406,7 +432,7 @@ What are the colors of the Olympic medals?
         $this->process_submission($submission);
 
         $this->quba->finish_all_questions();
-        $this->check_current_state(question_state::$gradedpartial);
+        $this->check_current_state(\question_state::$gradedpartial);
 
         $this->check_current_mark(2);
         $this->check_step_count(2);
@@ -414,16 +440,16 @@ What are the colors of the Olympic medals?
 
     public function test_no_duplicate_draggables() {
         $qtext = 'Bicycles have [wheels]. Cars have [wheels|engines].';
-        $gapfill = qtype_gapfill_test_helper::make_question($qtext);
+        $gapfill = helper::make_question($qtext);
         $this->start_attempt_at_question($gapfill, 'interactive', $gapfill->gapstofill);
         // Confirm draggables are unique, i.e. wheels appears only once.
         $this->assertEquals(2, count($gapfill->allanswers));
     }
     public function test_get_letter_hints() {
-        $gapfill = qtype_gapfill_test_helper::make_question();
+        $gapfill = helper::make_question();
         $gapfill->hints = [
-            new question_hint(1, 'This is the first hint.', FORMAT_HTML),
-            new question_hint(2, 'This is the second hint.', FORMAT_HTML),
+            new \question_hint(1, 'This is the first hint.', FORMAT_HTML),
+            new \question_hint(2, 'This is the second hint.', FORMAT_HTML),
         ];
         $this->start_attempt_at_question($gapfill, 'interactive', $gapfill->gapstofill);
         $this->process_submission([ '-submit' => 1, 'p1' => 'cat', 'p2' => 'cat']);
@@ -455,7 +481,7 @@ What are the colors of the Olympic medals?
         $questiontext = '
  [one] sat on the [two] [!!] ';
 
-        $gapfill = qtype_gapfill_test_helper::make_question( $questiontext);
+        $gapfill = helper::make_question( $questiontext);
 
         $this->start_attempt_at_question($gapfill, 'interactive', $gapfill->gapstofill);
 
@@ -464,7 +490,7 @@ What are the colors of the Olympic medals?
         $submission = array('p1' => 'one', 'p2' => 'two', 'p3' => '');
 
         // Check the initial state.
-        $this->check_current_state(question_state::$todo);
+        $this->check_current_state(\question_state::$todo);
         $this->check_step_count(1);
         // Save a  correct response.
         $this->process_submission($submission);
@@ -483,7 +509,7 @@ What are the colors of the Olympic medals?
 
         $this->process_submission($submission);
         $this->check_current_mark(3);
-        $this->check_current_state(question_state::$gradedright);
+        $this->check_current_state(\question_state::$gradedright);
 
         /* start again but put a value in the field expecting a blank */
         $this->start_attempt_at_question($gapfill, 'interactive', $gapfill->gapstofill);
@@ -492,7 +518,7 @@ What are the colors of the Olympic medals?
         $this->check_step_count(2);
 
         $this->check_current_mark(null);
-        $this->check_current_state(question_state::$todo);
+        $this->check_current_state(\question_state::$todo);
 
         $this->check_current_output(
                 $this->get_does_not_contain_try_again_button_expectation(),
@@ -504,7 +530,7 @@ What are the colors of the Olympic medals?
         $submission = array('-submit' => 1, 'p1' => 'one', 'p2' => 'two', 'p3' => "three");
         $this->process_submission($submission);
         $this->check_current_mark(2);
-        $this->check_current_state(question_state::$gradedpartial);
+        $this->check_current_state(\question_state::$gradedpartial);
 
         $this->check_step_count(3);
 
@@ -514,7 +540,7 @@ What are the colors of the Olympic medals?
     public function test_matching_divs() {
         $questiontext = "The [cat] sat on the [mat]";
         // Defaults to optionsaftertext being false.
-        $gapfill = qtype_gapfill_test_helper::make_question($questiontext);
+        $gapfill = helper::make_question($questiontext);
         $this->start_attempt_at_question($gapfill, 'immediatefeedback');
         $html = $this->quba->render_question($this->slot, $this->displayoptions);
         $divstarts = substr_count($html, "<div");
@@ -522,11 +548,9 @@ What are the colors of the Olympic medals?
         $this->assertEquals($divstarts, $divends, ' Mismatch in opening and closing div tags');
         $options = [
             'disableregex' => 1,
-            'noduplicates' => 0,
-            'delimitchars' => '[]',
-            'optionsaftertext' => true
+            'optionsaftertext' => true,
         ];
-        $gapfill = qtype_gapfill_test_helper::make_question($questiontext);
+        $gapfill = helper::make_question($questiontext, $options);
         $this->start_attempt_at_question($gapfill, 'immediatefeedback');
         $html = $this->quba->render_question($this->slot, $this->displayoptions);
         $divstarts = substr_count($html, "<div");
@@ -535,14 +559,14 @@ What are the colors of the Olympic medals?
     }
     public function test_get_aftergap_text() {
         $questiontext = "The [cat] sat on the [mat]";
-        $gapfill = qtype_gapfill_test_helper::make_question( $questiontext);
+        $gapfill = helper::make_question( $questiontext);
         $maxmark = 2;
         $this->start_attempt_at_question($gapfill, 'immediatefeedback', $maxmark);
         $this->process_submission(array('-submit' => 1, 'p1' => 'cat', 'p2' => 'dog'));
         $html = $this->quba->render_question($this->slot, $this->displayoptions);
         $this->assertStringContainsString("[mat]", $html );
 
-        $gapfill = qtype_gapfill_test_helper::make_question( $questiontext);
+        $gapfill = helper::make_question( $questiontext);
         $maxmark = 2;
         $this->start_attempt_at_question($gapfill, 'immediatefeedback', $maxmark);
         $this->process_submission(array('-submit' => 1, 'p1' => 'cat', 'p2' => 'mat'));
@@ -563,14 +587,14 @@ What are the colors of the Olympic medals?
         $questiontext = '
  [one] sat on the [two] [!!] ';
 
-        $gapfill = qtype_gapfill_test_helper::make_question( $questiontext);
+        $gapfill = helper::make_question( $questiontext);
 
         $this->start_attempt_at_question($gapfill, 'deferredfeedback', $gapfill->gapstofill);
         /* A mark for a blank submission where the gap is [!!] */
         $submission = array('p1' => 'one', 'p2' => 'two', 'p3' => '');
 
         // Check the initial state.
-        $this->check_current_state(question_state::$todo);
+        $this->check_current_state(\question_state::$todo);
         $this->check_step_count(1);
         // Save a  correct response.
         $this->process_submission($submission);
@@ -585,21 +609,21 @@ What are the colors of the Olympic medals?
         $this->process_submission(array('-finish' => 1));
 
         $this->check_current_mark(3);
-        $this->check_current_state(question_state::$gradedright);
+        $this->check_current_state(\question_state::$gradedright);
         $this->quba->finish_all_questions();
     }
 
     public function test_immediatefeedback_with_correct() {
 
         // Create a gapfill question.
-        $gapfill = qtype_gapfill_test_helper::make_question();
+        $gapfill = helper::make_question();
         $maxmark = 2;
 
         $gapfill->showanswers = true;
         $this->start_attempt_at_question($gapfill, 'immediatefeedback', $maxmark);
 
         // Check the initial state.
-        $this->check_current_state(question_state::$todo);
+        $this->check_current_state(\question_state::$todo);
 
         $this->check_step_count(1);
 
@@ -608,21 +632,20 @@ What are the colors of the Olympic medals?
         $this->check_step_count(2);
         $this->check_current_mark(null);
 
-        $this->check_current_state(question_state::$todo);
+        $this->check_current_state(\question_state::$todo);
         // Submit saved response.
         $this->process_submission(array('-submit' => 1, 'p1' => 'cat', 'p2' => 'mat'));
         $this->check_step_count(3);
         // Verify.
         $this->quba->finish_all_questions();
-        $this->check_current_state(question_state::$gradedright);
+        $this->check_current_state(\question_state::$gradedright);
 
         $this->check_current_mark(2);
         // Finish the attempt.
     }
     public function test_get_gapsize() {
-        $gapfill = qtype_gapfill_test_helper::make_question( "");
+        $gapfill = helper::make_question( "");
         $this->assertEquals($gapfill->get_size("one"), 3);
         $this->assertEquals($gapfill->get_size("one|twleve"), 6);
     }
-
 }

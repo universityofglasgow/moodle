@@ -29,15 +29,6 @@
  * @copyright 2007 Vasilis Daloukas
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-defined('MOODLE_INTERNAL') || die();
-
-/**
- * Define the complete game structure for backup, with file and id annotations
- *
- * @copyright 2007 Vasilis Daloukas
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
 class backup_game_activity_structure_step extends backup_activity_structure_step {
 
     /**
@@ -57,7 +48,8 @@ class backup_game_activity_structure_step extends backup_activity_structure_step
             'shuffle', 'timemodified', 'toptext', 'bottomtext',
             'grademethod', 'grade', 'decimalpoints', 'popup',
             'review', 'attempts', 'glossaryid2', 'glossarycategoryid2',
-            'language', 'subcategories', 'maxattempts', 'userlanguage', 'disablesummarize', 'glossaryonlyapproved'
+            'language', 'subcategories', 'maxattempts', 'userlanguage', 'disablesummarize', 'glossaryonlyapproved',
+            'completionattemptsexhausted', 'completionpass', 'highscore'
             ));
 
         $exporthtmls = new backup_nested_element('game_export_htmls');

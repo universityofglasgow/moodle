@@ -28,8 +28,6 @@
 
 namespace block_kuracloud\privacy;
 
-defined('MOODLE_INTERNAL') || die();
-
 use \core_privacy\local\metadata\collection;
 use \core_privacy\local\request\contextlist;
 use \core_privacy\local\request\writer;
@@ -68,6 +66,9 @@ function kuracloud_delete_stale_data_for_user(int $userid) {
 }
 
 
+/**
+ * Implement the metadata and request interfaces.
+ */
 class provider implements
     \core_privacy\local\metadata\provider,
     \core_privacy\local\request\plugin\provider,
@@ -189,7 +190,7 @@ class provider implements
                 $data = new \stdClass();
                 $data->moodleuserid = $details[$courseid]->userid;
                 $data->kuracloudstudentid = $details[$courseid]->remote_studentid;
-                // studentid is within instance and course, but not much value in adding them to exported data.
+                // The studentid is within instance and course, but not much value in adding them to exported data.
                 writer::with_context($context)->export_data(['kuraCloud'], $data);
             }
         }

@@ -54,10 +54,9 @@ class turnitintooltwo_view {
      * Load the Javascript and CSS components for page.
      *
      * @global type $PAGE
-     * @global type $CFG
      */
     public function load_page_components($hidebg = false) {
-        global $PAGE, $CFG;
+        global $PAGE;
 
         // Include CSS.
         if ($hidebg) {
@@ -117,10 +116,11 @@ class turnitintooltwo_view {
      * Output the Menu in the settings area as an HTML list
      *
      * @global type $CFG
+     * @global type $DB
      * @return output the menu as an HTML list
      */
     public function draw_settings_menu($cmd) {
-        global $CFG, $OUTPUT, $DB;
+        global $CFG, $DB;
 
         $tabs = array();
 
@@ -622,25 +622,19 @@ class turnitintooltwo_view {
                 $messagesinbox = '';
                 if ($turnitintooltwouser->get_user_role() == 'Instructor') {
                     $icon = html_writer::tag('i', '', array('class' => 'fa fa-envelope-o fa-lg'));
+                    $loading_icon = $OUTPUT->pix_icon('loading',
+                        get_string('turnitinloading', 'turnitintooltwo'), 'mod_turnitintooltwo');
                     $messagesinbox = html_writer::link($CFG->wwwroot.'/mod/turnitintooltwo/view.php?id='.$cm->id.
-                                                        '&user='.$turnitintooltwouser->id.'&do=loadmessages&view_context=box',
-                                                            $icon.' '.get_string('messagesinbox', 'turnitintooltwo').
-                                                            ' ('.html_writer::tag('span', '', array('class' => 'messages_amount')).
-                                                                html_writer::tag('span', $OUTPUT->pix_icon('loading',
-                                                                get_string('turnitinloading', 'turnitintooltwo'), 'mod_turnitintooltwo'),
-                                                                array('class' => 'mod_turnitintooltwo_messages_loading')).')',
+                                                    '&user='.$turnitintooltwouser->id.'&do=loadmessages&view_context=box',
+                                                        $icon.' '.get_string('messagesinbox', 'turnitintooltwo').
+                                                        ' ('.html_writer::tag('span', '', array('class' => 'messages_amount')).
+                                                            html_writer::tag('span', $loading_icon,
+                                                            array('class' => 'mod_turnitintooltwo_messages_loading')).')',
                                                 array("class" => "mod_turnitintooltwo_messages_inbox"));
                 }
 
                 // Check that nonsubmitter messages have been configured to be sent.
-                $messageoutputs = get_config('message');
-                $nonsubsemailpermitted = false;
-                foreach ($messageoutputs as $k => $v) {
-                    if (strpos($k, '_mod_turnitintooltwo_nonsubmitters_loggedin') !== false ) {
-                        $nonsubsemailpermitted = true;
-                        break;
-                    }
-                }
+                $nonsubsemailpermitted = $this->is_nonsubmitter_emails_enabled();
 
                 // Link to email nonsubmitters.
                 $emailnonsubmitters = '';
@@ -1423,7 +1417,8 @@ class turnitintooltwo_view {
             $submissionexists = empty($submission->submission_objectid);
 
             // Show option to submit only when due date has passed, late submissions are allowed and student has not submitted.
-            if ($duedatepassed && ($latesubmissionsallowed == 0 || ($latesubmissionsallowed == 1 && !$istutor && !$submissionexists))) {
+            // An instructor will always have the ability to make a late submission - to account for student exemptions.
+            if (!$istutor && ($duedatepassed && ($latesubmissionsallowed == 0 || ($latesubmissionsallowed == 1 && !$submissionexists)))) {
                 $upload = "&nbsp";
             }
 
@@ -2013,5 +2008,28 @@ class turnitintooltwo_view {
 
         $output = $OUTPUT->box($form->display(), 'generalbox boxaligncenter', 'general');
         return $output;
+    }
+
+    /**
+     * Check whether email nosubmitters is enabled, and return true if so.
+     */
+    private function is_nonsubmitter_emails_enabled() {
+        global $CFG;
+
+        $messageoutputs = get_config('message');
+
+        if ($CFG->branch >= 400) {
+            if (isset($messageoutputs->mod_turnitintooltwo_nonsubmitters_disable) && $messageoutputs->mod_turnitintooltwo_nonsubmitters_disable == "0") {
+                return true;
+            }
+        } else {
+            // Support for older versions.
+            foreach ($messageoutputs as $k => $v) {
+                if (strpos($k, '_mod_turnitintooltwo_nonsubmitters_loggedin') !== false) {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 }

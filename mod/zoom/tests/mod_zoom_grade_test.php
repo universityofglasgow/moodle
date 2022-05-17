@@ -22,16 +22,23 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+namespace mod_zoom;
 
-global $CFG;
-require_once($CFG->dirroot.'/mod/zoom/lib.php');
-require_once($CFG->dirroot.'/mod/zoom/locallib.php');
+use advanced_testcase;
 
 /**
  * PHPunit testcase class.
  */
 class mod_zoom_grade_test extends advanced_testcase {
+
+    /**
+     * Setup to ensure that fixtures are loaded.
+     */
+    public static function setUpBeforeClass(): void {
+        global $CFG;
+        require_once($CFG->dirroot . '/mod/zoom/lib.php');
+        require_once($CFG->dirroot . '/mod/zoom/locallib.php');
+    }
 
     /**
      * Setup before every test.
@@ -48,6 +55,7 @@ class mod_zoom_grade_test extends advanced_testcase {
 
     /**
      * Tests that Zoom grades can be added and updated in the gradebook.
+     * @covers ::zoom_grade_item_update
      */
     public function test_grade_added() {
         $params['course'] = $this->course->id;
@@ -80,6 +88,7 @@ class mod_zoom_grade_test extends advanced_testcase {
 
     /**
      * Tests that the Zoom grade type cannot be changed to NONE if grades are already inputted.
+     * @covers ::zoom_grade_item_update
      */
     public function test_grade_type_not_none() {
         $params['course'] = $this->course->id;
@@ -110,6 +119,7 @@ class mod_zoom_grade_test extends advanced_testcase {
 
     /**
      * Tests that the Zoom grades can be deleted.
+     * @covers ::zoom_grade_item_delete
      */
     public function test_grade_delete() {
         $params['course'] = $this->course->id;

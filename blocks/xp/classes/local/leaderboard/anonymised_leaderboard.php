@@ -45,6 +45,7 @@ use block_xp\local\xp\user_state;
  * @copyright  2018 Frédéric Massart
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @deprecated Since v3.12.0, use anonymisable_leaderboard instead.
  */
 class anonymised_leaderboard implements leaderboard {
 
@@ -69,6 +70,9 @@ class anonymised_leaderboard implements leaderboard {
      * @param string $name The name to use when anonymising non-user_state states.
      */
     public function __construct(leaderboard $leaderboard, levels_info $levelsinfo, $anonymous, $exceptids = [], $name = '?') {
+
+        debugging('The class anonymised_leaderboard is deprecated, use anonymisable_leaderboard instead.', DEBUG_DEVELOPER);
+
         $this->leaderboard = $leaderboard;
         $this->anonymous = $anonymous;
         $this->exceptids = $exceptids;

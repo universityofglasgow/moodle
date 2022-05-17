@@ -42,10 +42,14 @@ abstract class course_route_controller extends route_controller {
     protected $course;
     /** @var int The course ID. */
     protected $courseid;
+    /** @var bool Requires a wide view. */
+    protected $iswideview = false;
     /** @var bool Whether the page supports groups. */
     protected $supportsgroups = false;
     /** @var \block_xp\local\course_world */
     protected $world;
+    /** @var \block_xp\local\factory\course_world_navigation_factory The navigation factory. */
+    protected $navfactory;
 
     /** @var int The group ID. */
     private $groupid;
@@ -78,6 +82,7 @@ abstract class course_route_controller extends route_controller {
         parent::post_login();
         $this->world = \block_xp\di::get('course_world_factory')->get_world($this->courseid);
         $this->courseid = $this->world->get_courseid();
+        $this->navfactory = \block_xp\di::get('course_world_navigation_factory');
     }
 
     /**
@@ -86,13 +91,17 @@ abstract class course_route_controller extends route_controller {
      * @return void
      */
     protected function page_setup() {
-        global $PAGE;
+        global $CFG, $PAGE;
 
         // Note that the context was set by require_login().
         $PAGE->set_url($this->pageurl->get_compatible_url());
         $PAGE->set_pagelayout($this->get_page_layout());
         $PAGE->set_title($this->get_page_html_head_title());
         $PAGE->set_heading($this->get_page_title());
+
+        if (!$this->iswideview) {
+            $PAGE->add_body_class('limitedwidth');
+        }
     }
 
     /**

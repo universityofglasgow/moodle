@@ -55,7 +55,7 @@ class behat_report_allylti extends behat_base {
      */
     public function navigate_ax_report() {
         if ($this->findnofail('xpath', '//div[@id="settingsnav"]')) {
-            $node = $this->find('xpath', '//div[@id="settingsnav"]//ul//li//p//span[contains(text(),"Reports")]');
+            $node = $this->find('xpath', '//div[@id="settingsnav"]//ul//li//p//a[text()="Reports"]');
             $node->click();
         }
 

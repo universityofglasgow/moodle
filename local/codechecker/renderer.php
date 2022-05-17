@@ -15,23 +15,16 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Code checker renderers.
+ * Renderer for displaying code-checker reports as HTML.
  *
  * @package    local_codechecker
  * @copyright  2011 The Open University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-defined('MOODLE_INTERNAL') || die;
-
-
-/**
- * Renderer for displaying code-checker reports as HTML.
- *
- * @copyright  2011 The Open University
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
 class local_codechecker_renderer extends plugin_renderer_base {
+    /** @var bool show phpsc standard flag. */
+    private $showstandard;
+
     /** @var array string replaces used to clean up the input line for display. */
     protected $replaces = array(
         "\t" => '<span>&#x25b6;</span>',
@@ -102,9 +95,11 @@ class local_codechecker_renderer extends plugin_renderer_base {
      * @param SimpleXMLElement $xml structure containing all the information to be rendered.
      * @param int $numerrors total number of error-level violations in the run.
      * @param int $numwarnings total number of warning-level violations in the run.
+     * @param bool $showstandard Show phpcs standard associated with problem.
      * @return string the report html
      */
-    public function report(SimpleXMLElement $xml, $numerrors, $numwarnings) {
+    public function report(SimpleXMLElement $xml, $numerrors, $numwarnings, $showstandard = false) {
+        $this->showstandard = $showstandard;
 
         $grandsummary = '';
         $grandtype = '';
@@ -221,6 +216,9 @@ class local_codechecker_renderer extends plugin_renderer_base {
         }
 
         $sourceclass = str_replace('.', '_', $problem['source']);
+        if ($this->showstandard) {
+            $problem = (string) $problem . ' (' . $problem['source'] . ')';
+        }
         $info = html_writer::tag('div', s($problem), array('class' => 'info ' . $sourceclass));
 
         return $code .  html_writer::tag('li', $info, array('class' => 'fail ' . $level));

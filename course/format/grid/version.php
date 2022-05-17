@@ -29,10 +29,13 @@
 defined('MOODLE_INTERNAL') || die();
 
 // Plugin version.
-$plugin->version = 2019111703;
+$plugin->version = 2021102701;
 
 // Required Moodle version.
-$plugin->requires  = 2019111500.00; // 3.8rc1 (Build: 20191115).
+$plugin->requires  = 2021051700.00; // 3.11 (Build: 20210517).
+
+// Supported Moodle version.
+$plugin->supported = array(311, 311);
 
 // Full name of the plugin.
 $plugin->component = 'format_grid';
@@ -41,4 +44,4 @@ $plugin->component = 'format_grid';
 $plugin->maturity = MATURITY_STABLE;
 
 // User-friendly version number.
-$plugin->release = '3.8.1.0';
+$plugin->release = '3.11.1.1';

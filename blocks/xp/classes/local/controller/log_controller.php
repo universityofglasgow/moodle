@@ -26,8 +26,6 @@
 namespace block_xp\local\controller;
 defined('MOODLE_INTERNAL') || die();
 
-use moodle_exception;
-
 /**
  * Log controller class.
  *
@@ -38,7 +36,9 @@ use moodle_exception;
  */
 class log_controller extends page_controller {
 
+    protected $navname = 'report';
     protected $routename = 'log';
+    protected $iswideview = true;
     protected $supportsgroups = true;
 
     protected function permissions_checks() {

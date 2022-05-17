@@ -5838,7 +5838,7 @@ var LevelTile = function (_a) {
     var minPoints = _a.minPoints, level = _a.level, pointsEditable = _a.pointsEditable, onPointsChange = _a.onPointsChange, onNameChange = _a.onNameChange, onDescChange = _a.onDescChange;
     var getStr = (0, hooks_1.useStrings)(['noname', 'nodescription', 'pointsrequired', 'description', 'name']);
     var levelx = (0, hooks_1.useString)('levelx', 'block_xp', level.level);
-    return (react_1.default.createElement("div", { className: "xp-flex-none md:xp-w-1/3 lg:xp-w-1/4 xp-w-1/2 xp-pl-4 xp-mb-4" },
+    return (react_1.default.createElement("div", { className: "xp-flex-none md:xp-w-1/3 xp-w-1/2 xp-pl-4 xp-mb-4" },
         react_1.default.createElement("div", { className: "xp-bg-gray-100 xp-p-4 xp-pt-2 xp-rounded" },
             react_1.default.createElement("div", { className: "xp-flex xp-flex-col xp-items-center" },
                 react_1.default.createElement("div", null,

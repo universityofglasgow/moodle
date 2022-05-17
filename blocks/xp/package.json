@@ -1,7 +1,7 @@
 {
   "name": "block_xp",
   "version": "3.12.0",
-  "description": "Level up! plugin for Moodle",
+  "description": "Level Up XP plugin for Moodle",
   "repository": "git@github.com:FMCorz/moodle-block_xp.git",
   "author": "Frédéric Massart <fred@branchup.tech>",
   "license": "GPLv3",
@@ -11,6 +11,7 @@
     "gulp": "^4.0.2",
     "gulp-cli": "^2.3.0",
     "gulp-postcss": "^9.0.0",
+    "gulp-replace": "^1.1.3",
     "postcss": "^8.2.9",
     "postcss-cli": "^8.3.1",
     "postcss-color-rgba-fallback": "^4.0.0",

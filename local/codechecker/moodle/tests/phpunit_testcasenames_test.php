@@ -45,7 +45,8 @@ class phpunit_testcasenames_test extends local_codechecker_testcase {
             'Missing' => [
                 'fixture' => 'fixtures/phpunit/testcasenames_missing.php',
                 'errors' => [
-                    1 => '@Message: PHPUnit test file missing any valid testcase class',
+                    7 => '@Message: PHPUnit test file missing any valid testcase class',
+                    14 => 'Missing',
                 ],
                 'warnings' => [],
             ],
@@ -67,6 +68,22 @@ class phpunit_testcasenames_test extends local_codechecker_testcase {
                 'fixture' => 'fixtures/phpunit/testcasenames_unexpected_ns.php',
                 'errors' => [
                     2 => 'namespace "local_wrong" does not match expected file namespace "local_codechecker"',
+                    8 => 1,
+                ],
+                'warnings' => [],
+            ],
+            'UnexpectedLevel2NS' => [
+                'fixture' => 'fixtures/phpunit/testcasenames_unexpected_level2ns.php',
+                'errors' => [
+                    8 => 1,
+                ],
+                'warnings' => [
+                    2 => 'does not match its expected location at "tests/level2/level3"'
+                ],
+            ],
+            'CorrectLevel2NS' => [
+                'fixture' => 'fixtures/phpunit/testcasenames_correct_level2ns.php',
+                'errors' => [
                     8 => 1,
                 ],
                 'warnings' => [],
