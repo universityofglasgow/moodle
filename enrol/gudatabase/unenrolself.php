@@ -65,7 +65,7 @@ foreach ($usercourses as $uc) {
 
 if ($confirm and confirm_sesskey()) {
     $plugin->unenrol_user($instance, $USER->id);
-    add_to_log($course->id, 'course', 'unenrol', '../enrol/users.php?id='.$course->id, $course->id);
+
     redirect(new moodle_url('/index.php'));
 }
 
