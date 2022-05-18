@@ -38,7 +38,7 @@ $string['courseupload'] = 'Upload users and groups to course';
 $string['courseuploadinstructions'] = 'Upload your CSV file. First column is either GUID or ID number (= matric number for students) as selected below. 
     Remaining columns (if present) contain the names of groups those students should be added to. 
     Users will be created, enrolled on the course and added to groups as required<br /><br />
-    <b>NOTE: First line is for headers and is always ignored.';
+    <b>NOTE:</b> First line is for headers and is always ignored.';
 $string['create'] = 'Create a Moodle profile for {$a}';
 $string['createbutton'] = 'Create';
 $string['csverror'] = 'There is an error in the CSV file';
