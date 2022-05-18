@@ -161,7 +161,7 @@ class lib {
 
         if (self::turnitin_enabled($assid)) {
             if ($turnitins = $DB->get_records('plagiarism_turnitin_files',
-                ['cm' => $cmid, 'userid' => $userid, 'statuscode' => 'success'], 'id DESC')) {
+                ['cm' => $cmid, 'userid' => $userid], 'id DESC')) {
                 return reset($turnitins);
             }
             return null;
