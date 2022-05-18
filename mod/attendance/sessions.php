@@ -60,7 +60,7 @@ $PAGE->force_settings_menu(true);
 $PAGE->set_cacheable(true);
 $PAGE->navbar->add($att->name);
 
-$currenttab = attendance_tabs::TAB_ADD;
+$currenttab = mod_attendance\output\tabs::TAB_ADD;
 $formparams = array('course' => $course, 'cm' => $cm, 'modcontext' => $context, 'att' => $att);
 switch ($att->pageparams->action) {
     case mod_attendance_sessions_page_params::ACTION_ADD:
@@ -106,7 +106,7 @@ switch ($att->pageparams->action) {
             mod_attendance_notifyqueue::notify_success(get_string('sessionupdated', 'attendance'));
             redirect($att->url_manage());
         }
-        $currenttab = attendance_tabs::TAB_UPDATE;
+        $currenttab = mod_attendance\output\tabs::TAB_UPDATE;
         break;
     case mod_attendance_sessions_page_params::ACTION_DELETE:
         $sessionid = required_param('sessionid', PARAM_INT);
@@ -129,7 +129,6 @@ switch ($att->pageparams->action) {
         $params = array('action' => $att->pageparams->action, 'sessionid' => $sessionid, 'confirm' => 1, 'sesskey' => sesskey());
 
         echo $OUTPUT->header();
-        echo $OUTPUT->heading(get_string('attendanceforthecourse', 'attendance').' :: ' .format_string($course->fullname));
         echo $OUTPUT->confirm($message, $att->url_sessions($params), $att->url_manage());
         echo $OUTPUT->footer();
         exit;
@@ -165,7 +164,6 @@ switch ($att->pageparams->action) {
                         'confirm' => 1, 'sesskey' => sesskey());
 
         echo $OUTPUT->header();
-        echo $OUTPUT->heading(get_string('attendanceforthecourse', 'attendance').' :: ' .format_string($course->fullname));
         echo $OUTPUT->confirm($message, $att->url_sessions($params), $att->url_manage());
         echo $OUTPUT->footer();
         exit;
@@ -210,16 +208,14 @@ switch ($att->pageparams->action) {
 
         $params = array('action' => $att->pageparams->action, 'confirm' => 1, 'sesskey' => sesskey());
         echo $OUTPUT->header();
-        echo $OUTPUT->heading(get_string('attendanceforthecourse', 'attendance').' :: ' .format_string($course->fullname));
         echo $OUTPUT->confirm($message, $att->url_sessions($params), $att->url_manage());
         echo $OUTPUT->footer();
         exit;
 }
 
 $output = $PAGE->get_renderer('mod_attendance');
-$tabs = new attendance_tabs($att, $currenttab);
+$tabs = new mod_attendance\output\tabs($att, $currenttab);
 echo $output->header();
-echo $output->heading(get_string('attendanceforthecourse', 'attendance').' :: ' .format_string($course->fullname));
 echo $output->render($tabs);
 
 $mform->display();

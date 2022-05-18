@@ -46,7 +46,7 @@ $PAGE->set_cacheable(true);
 $PAGE->navbar->add(get_string('tempusers', 'attendance'));
 
 $output = $PAGE->get_renderer('mod_attendance');
-$tabs = new attendance_tabs($att, attendance_tabs::TAB_TEMPORARYUSERS);
+$tabs = new mod_attendance\output\tabs($att, mod_attendance\output\tabs::TAB_TEMPORARYUSERS);
 
 $formdata = (object)array(
     'id' => $cm->id,
@@ -80,7 +80,6 @@ if ($data = $mform->get_data()) {
 
 // Output starts here.
 echo $output->header();
-echo $output->heading(get_string('tempusers', 'attendance').' : '.format_string($course->fullname));
 echo $output->render($tabs);
 $mform->display();
 

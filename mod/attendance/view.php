@@ -102,7 +102,7 @@ if (has_any_capability($capabilities, $context) &&
     $PAGE->set_button($OUTPUT->render($button));
 }
 
-$userdata = new attendance_user_data($att, $userid);
+$userdata = new mod_attendance\output\user_data($att, $userid);
 
 // Create url for link in log screen.
 $filterparams = array(
@@ -113,15 +113,14 @@ $filterparams = array(
 );
 $params = array_merge($userdata->pageparams->get_significant_params(), $filterparams);
 
-$header = new mod_attendance_header($att);
 
 if (empty($userdata->pageparams->studentid)) {
     $relateduserid = $USER->id;
 } else {
     $relateduserid = $userdata->pageparams->studentid;
 }
-
-if (($formdata = data_submitted()) && confirm_sesskey() && $edit == -1) {
+// We check if formdata includes sesskey first because the javascript calendar does a post to the page on change.
+if (($formdata = data_submitted()) && !empty($formdata->sesskey) && confirm_sesskey() && $edit == -1) {
     $userdata->take_sessions_from_form_data($formdata);
 
     // Trigger updated event.
@@ -151,8 +150,5 @@ $PAGE->navbar->add(get_string('attendancereport', 'attendance'));
 $output = $PAGE->get_renderer('mod_attendance');
 
 echo $output->header();
-
-echo $output->render($header);
 echo $output->render($userdata);
-
 echo $output->footer();

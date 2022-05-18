@@ -95,13 +95,12 @@ $PAGE->set_cacheable(true);
 $PAGE->navbar->add($att->name);
 
 $output = $PAGE->get_renderer('mod_attendance');
-$tabs = new attendance_tabs($att);
-$sesstable = new attendance_take_data($att);
+$tabs = new mod_attendance\output\tabs($att);
+$sesstable = new mod_attendance\output\take_data($att);
 
 // Output starts here.
 
 echo $output->header();
-echo $output->heading(get_string('attendanceforthecourse', 'attendance').' :: ' .format_string($course->fullname));
 echo $output->render($tabs);
 echo $output->render($sesstable);
 
