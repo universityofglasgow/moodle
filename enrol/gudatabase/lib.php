@@ -1267,10 +1267,13 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
                     }
 
                     // Get enrolments.
+                    // Multiple IDNumbers are possible. Just enrol all of them
                     $enrolments = $this->external_enrolments(array($code));
                     foreach ($enrolments as $enrolment) {
-                        if ($user = $DB->get_record('user', array('idnumber' => $enrolment->matric_no))) {
-                            groups_add_member($group, $user);
+                        if ($users = $DB->get_records('user', ['idnumber' => $enrolment->matric_no, 'deleted' => 0])) {
+                            foreach ($users as $user) {
+                                groups_add_member($group, $user);
+                            }
                         }
                     }
                 }
@@ -1371,8 +1374,8 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
                 }
 
                 // Code is not in use so find associated groups.
-                $sql = "select distinct groupid from {enrol_gudatabase_groups} where substring_index(originalname, ' ', 1) = :code";
-                if ($groupids = $DB->get_records_sql($sql, ['code' => $code])) {
+                $sql = "select distinct groupid from {enrol_gudatabase_groups} where substring_index(originalname, ' ', 1) = :code and courseid=:courseid";
+                if ($groupids = $DB->get_records_sql($sql, ['code' => $code, 'courseid' => $course->id])) {
                     foreach ($groupids as $groupid => $morejunk) {
                         groups_delete_group($groupid);
                         $DB->delete_records('enrol_gudatabase_groups', ['groupid' => $groupid]);
