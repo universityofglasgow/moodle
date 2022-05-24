@@ -1,4 +1,4 @@
-<?php
+<?PHP
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -15,20 +15,16 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Events subscription.
+ * This file contains the moodle hooks for the submission Mahara plugin
  *
- * @package    assignsubmission_mahara
- * @copyright  2015 Lancaster University
+ * @package    assignsubmission_maharaws
+ * @copyright  2020 Catalyst IT
+ * @copyright  2012 Lancaster University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+defined('MOODLE_INTERNAL') || die();
 
-$observers = array(
-    array(
-        'eventname'   => '\mod_assign\event\submission_graded',
-        'callback'    => 'assignsubmission_mahara_observers::submission_graded',
-    ),
-    array(
-        'eventname'   => '\mod_assign\event\workflow_state_updated',
-        'callback'    => 'assignsubmission_mahara_observers::workflow_state_updated',
-    ),
-);
+// Statuses for locking setting.
+define('ASSIGNSUBMISSION_MAHARAWS_SETTING_DONTLOCK', 0);
+define('ASSIGNSUBMISSION_MAHARAWS_SETTING_KEEPLOCKED', 1);
+define('ASSIGNSUBMISSION_MAHARAWS_SETTING_UNLOCK', 2);

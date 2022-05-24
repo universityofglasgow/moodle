@@ -17,7 +17,8 @@
 /**
  * This file contains the class for restore of this submission plugin
  *
- * @package    assignsubmission_mahara
+ * @package    assignsubmission_maharaws
+ * @copyright  2020 Catalyst IT
  * @copyright  2012 Lancaster University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -25,11 +26,12 @@
 /**
  * restore subplugin class that provides the necessary information needed to restore one assign_submission subplugin.
  *
- * @package    assignsubmission_mahara
+ * @package    assignsubmission_maharaws
+ * @copyright  2020 Catalyst IT
  * @copyright  2012 Lancaster University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class restore_assignsubmission_mahara_subplugin extends restore_subplugin {
+class restore_assignsubmission_maharaws_subplugin extends restore_subplugin {
 
     /**
      *
@@ -41,18 +43,18 @@ class restore_assignsubmission_mahara_subplugin extends restore_subplugin {
         $paths = array();
 
         $elename = $this->get_namefor('submission');
-        $elepath = $this->get_pathfor('/submission_mahara');
+        $elepath = $this->get_pathfor('/submission_maharaws');
         $paths[] = new restore_path_element($elename, $elepath);
 
-        return $paths; // And we return the interesting paths
+        return $paths; // And we return the interesting paths.
     }
 
     /**
-     * Processes one assignsubmission_mahara element
+     * Processes one assignsubmission_maharaws element
      *
      * @param mixed $data
      */
-    public function process_assignsubmission_mahara_submission($data) {
+    public function process_assignsubmission_maharaws_submission($data) {
         global $DB;
 
         $data = (object)$data;
@@ -61,7 +63,7 @@ class restore_assignsubmission_mahara_subplugin extends restore_subplugin {
         // The mapping is set in the restore for the core assign activity. When a submission node is processed.
         $data->submission = $this->get_mappingid('submission', $data->submission);
 
-        $DB->insert_record('assignsubmission_mahara', $data);
+        $DB->insert_record('assignsubmission_maharaws', $data);
     }
 
 }

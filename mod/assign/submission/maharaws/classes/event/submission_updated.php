@@ -15,38 +15,34 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * The assignsubmission_mahara submission_created event.
+ * The assignsubmission_maharaws submission_updated event.
  *
- * @package    assignsubmission_mahara
- * @copyright  2014 Lancaster University (@link http://www.lancaster.ac.uk/)
+ * @package    assignsubmission_maharaws
+ * @copyright  2020 Catalyst IT
+ * @copyright  2014 Lancaster University {@link http://www.lancaster.ac.uk/}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace assignsubmission_mahara\event;
+namespace assignsubmission_maharaws\event;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * The assignsubmission_mahara submission_created event class.
+ * The assignsubmission_maharaws submission_updated event class.
  *
- * @property-read array $other {
- *      Extra information about the event.
- *
- * }
- *
- * @package    assignsubmission_mahara
+ * @package    assignsubmission_maharaws
  * @since      Moodle 2.7
- * @copyright  2014 Lancaster University (@link http://www.lancaster.ac.uk/)
+ * @copyright  2014 Lancaster University {@link http://www.lancaster.ac.uk/}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class submission_created extends \mod_assign\event\submission_created {
+class submission_updated extends \mod_assign\event\submission_updated {
 
     /**
      * Init method.
      */
     protected function init() {
         parent::init();
-        $this->data['objecttable'] = 'assignsubmission_mahara';
+        $this->data['objecttable'] = 'assignsubmission_maharaws';
     }
 
     /**
@@ -55,7 +51,7 @@ class submission_created extends \mod_assign\event\submission_created {
      * @return string
      */
     public function get_description() {
-        $descriptionstring = "The user with id '$this->userid' created a Mahara submission with " .
+        $descriptionstring = "The user with id '$this->userid' updated a Mahara submission with " .
             "id '$this->objectid' in the assignment with the course module id '$this->contextinstanceid'";
         if (!empty($this->other['groupid'])) {
             $descriptionstring .= " for the group with id '{$this->other['groupid']}'.";

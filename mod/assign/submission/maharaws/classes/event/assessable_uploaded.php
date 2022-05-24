@@ -15,28 +15,24 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * The assignsubmission_mahara assessable uploaded event.
+ * The assignsubmission_maharaws assessable uploaded event.
  *
- * @package    assignsubmission_mahara
- * @copyright  2014 Lancaster University (@link http://www.lancaster.ac.uk/)
+ * @package    assignsubmission_maharaws
+ * @copyright  2020 Catalyst IT
+ * @copyright  2014 Lancaster University {@link http://www.lancaster.ac.uk/}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace assignsubmission_mahara\event;
+namespace assignsubmission_maharaws\event;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * The assignsubmission_mahara assessable uploaded event class.
+ * The assignsubmission_maharaws assessable uploaded event class.
  *
- * @property-read array $other {
- *      Extra information about event.
- *
- * }
- *
- * @package    assignsubmission_mahara
+ * @package    assignsubmission_maharaws
  * @since      Moodle 2.7
- * @copyright  2014 Lancaster University (@link http://www.lancaster.ac.uk/)
+ * @copyright  2014 Lancaster University {@link http://www.lancaster.ac.uk/}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class assessable_uploaded extends \core\event\assessable_uploaded {
@@ -81,7 +77,7 @@ class assessable_uploaded extends \core\event\assessable_uploaded {
      * @return string
      */
     public static function get_name() {
-        return get_string('eventassessableuploaded', 'assignsubmission_mahara');
+        return get_string('eventassessableuploaded', 'assignsubmission_maharaws');
     }
 
     /**

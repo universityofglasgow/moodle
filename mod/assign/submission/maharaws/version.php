@@ -17,15 +17,16 @@
 /**
  * This file contains the version information for Mahara submission plugin
  *
- * @package    assignsubmission_mahara
+ * @package    assignsubmission_maharaws
+ * @copyright  2020 Catalyst IT
  * @copyright  2012 Lancaster University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2019011700;
-$plugin->requires  = 2017111300; // This version requires Moodle 3.4
-$plugin->component = 'assignsubmission_mahara';
+$plugin->version   = 2021112200;
+$plugin->requires  = 2020061500;
+$plugin->component = 'assignsubmission_maharaws';
 $plugin->maturity  = MATURITY_STABLE;
-$plugin->release   = '1.3';
+$plugin->release   = '1.5.1';

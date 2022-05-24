@@ -15,17 +15,23 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * This file contains the definition for the mnetservice class for Mahara submission plugin
+ * Capability definitions for this module.
  *
- * This class is just required for mnet services subscription registration
- * during plugin installation. It does not do anything.
- *
- * @package    assignsubmission_mahara
- * @copyright  2013 Lancaster University
+ * @package    assignsubmission_maharaws
+ * @copyright  2020 Catalyst IT
+ * @copyright  2012 Lancaster University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-class mnetservice_assign_submission_mahara {
-    public function donothing() {
-    }
-}
+defined('MOODLE_INTERNAL') || die();
+
+$capabilities = array(
+    'assignsubmission/maharaws:configure' => array(
+        'riskbitmask' => RISK_MANAGETRUST,
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array(
+            'manager' => CAP_ALLOW
+        )
+    ),
+);

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="mod/assign/submission/mahara/db" VERSION="20140711" COMMENT="XMLDB file for Moodle mod/assign/submission/mahara"
+<XMLDB PATH="mod/assign/submission/maharaws/db" VERSION="20191231" COMMENT="XMLDB file for Moodle mod/assign/submission/maharaws"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../../../lib/xmldb/xmldb.xsd"
 >
   <TABLES>
-    <TABLE NAME="assignsubmission_mahara" COMMENT="Data for Mahara submission">
+    <TABLE NAME="assignsubmission_maharaws" COMMENT="Data for Mahara submission">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="assignment" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>

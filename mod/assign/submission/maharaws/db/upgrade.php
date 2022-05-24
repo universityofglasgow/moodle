@@ -17,7 +17,8 @@
 /**
  * Upgrade code for install
  *
- * @package    assignsubmission_mahara
+ * @package    assignsubmission_maharaws
+ * @copyright  2020 Catalyst IT
  * @copyright  2012 Lancaster University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -27,7 +28,7 @@
  * @param int $oldversion
  * @return bool
  */
-function xmldb_assignsubmission_mahara_upgrade($oldversion) {
+function xmldb_assignsubmission_maharaws_upgrade($oldversion) {
     global $CFG, $DB, $OUTPUT;
 
     $dbman = $DB->get_manager();
@@ -36,9 +37,9 @@ function xmldb_assignsubmission_mahara_upgrade($oldversion) {
 
         // If you're migrating from the Portland U version of the plugin, we can skip this part because
         // the table won't exist at all.
-        if ($dbman->table_exists('assignsubmission_mahara')) {
-            // Define field iscollection to be added to assignsubmission_mahara.
-            $table = new xmldb_table('assignsubmission_mahara');
+        if ($dbman->table_exists('assignsubmission_maharaws')) {
+            // Define field iscollection to be added to assignsubmission_maharaws.
+            $table = new xmldb_table('assignsubmission_maharaws');
             $field = new xmldb_field('iscollection', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'viewaccesskey');
 
             // Conditionally launch add field iscollection.
@@ -49,19 +50,19 @@ function xmldb_assignsubmission_mahara_upgrade($oldversion) {
         }
 
         // Mahara savepoint reached.
-        upgrade_plugin_savepoint(true, 2013062401, 'assignsubmission', 'mahara');
+        upgrade_plugin_savepoint(true, 2013062401, 'assignsubmission', 'maharaws');
     }
 
     if ($oldversion < 2014071000) {
 
         // If you're upgrading from the Portland U version of the plugin, this table won't exist yet, so you don't need to add the
         // viewstatus column.
-        if ($dbman->table_exists('assignsubmission_mahara')) {
+        if ($dbman->table_exists('assignsubmission_maharaws')) {
             require_once($CFG->dirroot.'/mod/assign/submissionplugin.php');
-            require_once($CFG->dirroot.'/mod/assign/submission/mahara/locallib.php');
+            require_once($CFG->dirroot.'/mod/assign/submission/maharaws/locallib.php');
 
-            // Define field viewstatus to be added to assignsubmission_mahara.
-            $table = new xmldb_table('assignsubmission_mahara');
+            // Define field viewstatus to be added to assignsubmission_maharaws.
+            $table = new xmldb_table('assignsubmission_maharaws');
             $field = new xmldb_field('viewstatus', XMLDB_TYPE_CHAR, '20', null, null, null, null, 'iscollection');
 
             // Conditionally launch add field viewstatus.
@@ -69,11 +70,16 @@ function xmldb_assignsubmission_mahara_upgrade($oldversion) {
                 $dbman->add_field($table, $field);
             }
 
-            $DB->execute("update {assignsubmission_mahara} set viewstatus='".assign_submission_mahara::STATUS_SELECTED."' where viewaccesskey is null");
-            $DB->execute("update {assignsubmission_mahara} set viewstatus='".assign_submission_mahara::STATUS_SUBMITTED."' where viewaccesskey is not null");
+            $DB->execute("update {assignsubmission_maharaws}
+                             set viewstatus='".assign_submission_mahara::STATUS_SELECTED."'
+                           where viewaccesskey is null");
 
-            // Define field viewaccesskey to be dropped from assignsubmission_mahara.
-            $table = new xmldb_table('assignsubmission_mahara');
+            $DB->execute("update {assignsubmission_maharaws}
+                             set viewstatus='".assign_submission_mahara::STATUS_SUBMITTED."'
+                           where viewaccesskey is not null");
+
+            // Define field viewaccesskey to be dropped from assignsubmission_maharaws.
+            $table = new xmldb_table('assignsubmission_maharaws');
             $field = new xmldb_field('viewaccesskey');
 
             // Conditionally launch drop field viewaccesskey.
@@ -83,36 +89,36 @@ function xmldb_assignsubmission_mahara_upgrade($oldversion) {
         }
 
         // Mahara savepoint reached.
-        upgrade_plugin_savepoint(true, 2014071000, 'assignsubmission', 'mahara');
+        upgrade_plugin_savepoint(true, 2014071000, 'assignsubmission', 'maharaws');
     }
 
     if ($oldversion < 2014082000) {
 
-        // Migrate from the Portland U version of the plugin
+        // Migrate from the Portland U version of the plugin.
         if (
-                !$dbman->table_exists('assignsubmission_mahara')
+                !$dbman->table_exists('assignsubmission_maharaws')
                 && $dbman->table_exists('assign_mahara_submit_views')
                 && $dbman->table_exists('mahara_portfolio')
         ) {
             require_once($CFG->dirroot.'/mod/assign/submissionplugin.php');
-            require_once($CFG->dirroot.'/mod/assign/submission/mahara/locallib.php');
+            require_once($CFG->dirroot.'/mod/assign/submission/maharaws/locallib.php');
 
-            // Change config name
+            // Change config name.
             $DB->set_field(
                     'assign_plugin_config',
                     'name',
                     'mnethostid',
                     array(
-                            'plugin' => 'mahara',
+                            'plugin' => 'maharaws',
                             'subtype' => 'assignsubmission',
                             'name' => 'mahara_host'
                     )
             );
 
-            // Define table assignsubmission_mahara to be created.
-            $table = new xmldb_table('assignsubmission_mahara');
+            // Define table assignsubmission_maharaws to be created.
+            $table = new xmldb_table('assignsubmission_maharaws');
 
-            // Adding fields to table assignsubmission_mahara.
+            // Adding fields to table assignsubmission_maharaws.
             $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
             $table->add_field('assignment', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
             $table->add_field('submission', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
@@ -122,16 +128,16 @@ function xmldb_assignsubmission_mahara_upgrade($oldversion) {
             $table->add_field('iscollection', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0');
             $table->add_field('viewstatus', XMLDB_TYPE_CHAR, '20', null, null, null, null);
 
-            // Adding keys to table assignsubmission_mahara.
+            // Adding keys to table assignsubmission_maharaws.
             $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
             $table->add_key('assignment', XMLDB_KEY_FOREIGN, array('assignment'), 'assign', array('id'));
             $table->add_key('submission', XMLDB_KEY_FOREIGN, array('submission'), 'assign_submission', array('id'));
             $dbman->create_table($table);
 
-            // Migrate data from assign_mahara_submit_views && mahara_portfolio tables
+            // Migrate data from assign_mahara_submit_views && mahara_portfolio tables.
             $rs = $DB->get_recordset('assign_mahara_submit_views', null, 'id');
             foreach ($rs as $submissiondata) {
-                $page = $DB->get_record('mahara_portfolio', array('id'=>$submissiondata->portfolio));
+                $page = $DB->get_record('mahara_portfolio', array('id' => $submissiondata->portfolio));
                 $todb = new stdClass();
                 $todb->assignment = $submissiondata->assignment;
                 $todb->submission = $submissiondata->submission;
@@ -140,41 +146,46 @@ function xmldb_assignsubmission_mahara_upgrade($oldversion) {
                 $todb->viewtitle = $page->title;
                 $todb->iscollection = 0;
                 $status = $submissiondata->status;
-                if ($status == assign_submission_mahara::STATUS_RELEASED || $status == assign_submission_mahara::STATUS_SELECTED || $status == assign_submission_mahara::STATUS_SUBMITTED) {
+                if ($status == assign_submission_mahara::STATUS_RELEASED ||
+                    $status == assign_submission_mahara::STATUS_SELECTED ||
+                    $status == assign_submission_mahara::STATUS_SUBMITTED) {
                     $todb->status = $status;
                 }
-                else {
-                }
                 $todb->status = $submissiondata->status;
-                $DB->insert_record('assignsubmission_mahara', $todb);
+                $DB->insert_record('assignsubmission_maharaws', $todb);
             }
             $dbman->drop_table(new xmldb_table('assign_mahara_submit_views'));
             $dbman->drop_table(new xmldb_table('mahara_portfolio'));
 
         }
         // Mahara savepoint reached.
-        upgrade_plugin_savepoint(true, 2014082000, 'assignsubmission', 'mahara');
+        upgrade_plugin_savepoint(true, 2014082000, 'assignsubmission', 'maharaws');
     }
 
     if ($oldversion < 2015021002) {
         // First of all, fetch assignments that have assignfeedback enabled.
         $sql = 'SELECT assignment FROM {assign_plugin_config} WHERE plugin = ? AND subtype = ? AND name = ? AND value = ?';
         $records = $DB->get_recordset_sql($sql, array(
-                $DB->sql_compare_text('mahara'), $DB->sql_compare_text('assignfeedback'),
+                $DB->sql_compare_text('maharaws'), $DB->sql_compare_text('assignfeedback'),
                 $DB->sql_compare_text('enabled'), $DB->sql_compare_text('1')));
         // Now update assignment settings, making unlocking enabled in assignment lock
         // setting for those where assignfeedback_mahara was enabled.
         foreach ($records as $record) {
-            $sql = "UPDATE {assign_plugin_config} SET value = '2' WHERE plugin = 'mahara' AND subtype = 'assignsubmission' AND name = 'lock' AND value = '1' AND assignment = ?";
+            $sql = "UPDATE {assign_plugin_config} SET value = '2'
+                     WHERE plugin = 'maharaws' AND
+                           subtype = 'assignsubmission' AND
+                           name = 'lock' AND
+                           value = '1' AND
+                           assignment = ?";
             $DB->execute($sql, array($record->assignment));
         }
-        upgrade_plugin_savepoint(true, 2015021002, 'assignsubmission', 'mahara');
+        upgrade_plugin_savepoint(true, 2015021002, 'assignsubmission', 'maharaws');
     }
 
     if ($oldversion < 2015021003) {
         $result = true;
         $feedbackplugins = core_component::get_plugin_list('assignfeedback');
-        if (!empty($feedbackplugins['mahara'])) {
+        if (!empty($feedbackplugins['maharaws'])) {
             $pluginman = core_plugin_manager::instance();
             $uninstallurl = $pluginman->get_uninstall_url('assignfeedback_mahara', 'overview');
             $uninstall = html_writer::link($uninstallurl, 'uninstall');
@@ -188,7 +199,14 @@ function xmldb_assignsubmission_mahara_upgrade($oldversion) {
         }
 
         // Mahara savepoint reached.
-        upgrade_plugin_savepoint($result, 2015021003, 'assignsubmission', 'mahara');
+        upgrade_plugin_savepoint(true, 2015021003, 'assignsubmission', 'maharaws');
+    }
+
+    if ($oldversion < 2021081800) {
+        // We don't want to break existing sites, but we don't want new ones
+        // to do this either as it doesn't match how the lti login behaves.
+        set_config('legacy_ext_usr_username', true, 'assignsubmission_maharaws');
+        upgrade_plugin_savepoint(true, 2021081800, 'assignsubmission', 'maharaws');
     }
 
     return true;

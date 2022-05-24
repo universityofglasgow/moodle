@@ -15,15 +15,14 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Privacy Subsystem implementation for assignsubmission_mahara.
+ * Privacy Subsystem implementation for assignsubmission_maharaws.
  *
- * @package    assignsubmission_mahara
- * @copyright  2018 Catalyst IT
- * @author     Dan Marsden
+ * @package    assignsubmission_maharaws
+ * @copyright  2020 Catalyst IT
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace assignsubmission_mahara\privacy;
+namespace assignsubmission_maharaws\privacy;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -34,10 +33,9 @@ use \core_privacy\local\request\writer;
 use \mod_assign\privacy\assign_plugin_request_data;
 
 /**
- * Privacy Subsystem for assignsubmission_mahara.
+ * Privacy Subsystem for assignsubmission_maharaws.
  *
- * @copyright  2018 Catalyst IT
- * @author     Dan Marsden
+ * @copyright  2020 Catalyst IT
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class provider implements metadataprovider, \mod_assign\privacy\assignsubmission_provider {
@@ -50,7 +48,20 @@ class provider implements metadataprovider, \mod_assign\privacy\assignsubmission
      */
     public static function get_metadata(collection $collection) : collection {
 
-        $collection->add_database_table('assignsubmission_mahara', [
+        $collection->add_external_location_link('assignsubmission_maharaws', [
+            'userid' => 'privacy:metadata:assignmentsubmission_maharaws:userid',
+            'username' => 'privacy:metadata:assignmentsubmission_maharaws:username',
+            'fullname' => 'privacy:metadata:assignmentsubmission_maharaws:fullname',
+            'email' => 'privacy:metadata:assignmentsubmission_maharaws:email',
+            'idnumber' => 'privacy:metadata:assignmentsubmission_maharaws:idnumber',
+            'firstname' => 'privacy:metadata:assignmentsubmission_maharaws:firstname',
+            'lastname' => 'privacy:metadata:assignmentsubmission_maharaws:lastname',
+            'courseid' => 'privacy:metadata:assignmentsubmission_maharaws:courseid',
+            'courseshortname' => 'privacy:metadata:assignmentsubmission_maharaws:courseshortname',
+            'coursefullname' => 'privacy:metadata:assignmentsubmission_maharaws:coursefullname',
+        ]   , 'privacy:metadata:assignsubmission_maharaws');
+
+        $collection->add_database_table('assignsubmission_maharaws', [
             'assignment' => 'privacy:metadata:assignment',
             'submission' => 'privacy:metadata:submission',
             'viewid' => 'privacy:metadata:viewid',
@@ -58,7 +69,7 @@ class provider implements metadataprovider, \mod_assign\privacy\assignsubmission
             'viewtitle' => 'privacy:metadata:viewtitle',
             'iscollection' => 'privacy:metadata:iscollection',
             'viewstatus' => 'privacy:metadata:viewstatus'
-        ], 'privacy:metadata:assignsubmission_mahara');
+        ], 'privacy:metadata:assignsubmission_maharaws');
 
         return $collection;
     }
@@ -96,9 +107,9 @@ class provider implements metadataprovider, \mod_assign\privacy\assignsubmission
         }
         $context = $exportdata->get_context();
         $currentpath = $exportdata->get_subcontext();
-        $currentpath[] = get_string('privacy:path', 'assignsubmission_mahara');
+        $currentpath[] = get_string('privacy:path', 'assignsubmission_maharaws');
         $submission = $exportdata->get_pluginobject();
-        $maharasubmission = $DB->get_record('assignsubmission_mahara', array('submission' => $submission->id));
+        $maharasubmission = $DB->get_record('assignsubmission_maharaws', array('submission' => $submission->id));
         if (!empty($maharasubmission)) {
             writer::with_context($context)
                 // Add the text to the exporter.
@@ -113,7 +124,7 @@ class provider implements metadataprovider, \mod_assign\privacy\assignsubmission
      */
     public static function delete_submission_for_context(assign_plugin_request_data $requestdata) {
         global $DB;
-        $DB->delete_records('assignsubmission_mahara', ['assignment' => $requestdata->get_assign()->get_instance()->id]);
+        $DB->delete_records('assignsubmission_maharaws', ['assignment' => $requestdata->get_assign()->get_instance()->id]);
     }
 
     /**
@@ -127,7 +138,7 @@ class provider implements metadataprovider, \mod_assign\privacy\assignsubmission
         $submissionid = $deletedata->get_pluginobject()->id;
 
         // Delete the records in the table.
-        $DB->delete_records('assignsubmission_mahara', ['assignment' => $deletedata->get_assign()->get_instance()->id,
+        $DB->delete_records('assignsubmission_maharaws', ['assignment' => $deletedata->get_assign()->get_instance()->id,
             'submission' => $submissionid]);
 
     }

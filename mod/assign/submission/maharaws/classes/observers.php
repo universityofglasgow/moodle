@@ -17,35 +17,36 @@
 /**
  * assign_submission_mahara events subscription
  *
- * @package    assignsubmission_mahara
+ * @package    assignsubmission_maharaws
+ * @copyright  2020 Catalyst IT
  * @copyright  2015 Lancaster University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
-require_once($CFG->dirroot . '/mod/assign/submission/mahara/lib.php');
+require_once($CFG->dirroot . '/mod/assign/submission/maharaws/lib.php');
 
 /**
  * Event handler for assign_submission_mahara plugin.
  */
-class assignsubmission_mahara_observers {
+class assignsubmission_maharaws_observers {
 
-   /**
-    * Process assignment grading function called by event trigger (see db/events.php).
-    * It unlocks pages on Mahara when submission has been graded.
-    *
-    * @param object $event Event data object passed over by mod_assign
-    * @return void
-    */
+    /**
+     * Process assignment grading function called by event trigger (see db/events.php).
+     * It unlocks pages on Mahara when submission has been graded.
+     *
+     * @param \mod_assign\event\submission_graded $event Event data object passed over by mod_assign
+     * @return void
+     */
     public static function submission_graded(\mod_assign\event\submission_graded $event) {
         global $DB;
         $eventdata = $event->get_data();
         $grade = $event->get_record_snapshot('assign_grades', $eventdata['objectid']);
         $assign = $event->get_assign();
-        $maharasubmissionplugin = $assign->get_submission_plugin_by_type('mahara');
+        $maharasubmissionplugin = $assign->get_submission_plugin_by_type('maharaws');
 
         // See if need to unlock anything at all.
-        if ((int)$maharasubmissionplugin->get_config('lock') !== ASSIGNSUBMISSION_MAHARA_SETTING_UNLOCK) {
+        if ((int)$maharasubmissionplugin->get_config('lock') !== ASSIGNSUBMISSION_MAHARAWS_SETTING_UNLOCK) {
             return;
         }
 
@@ -55,12 +56,12 @@ class assignsubmission_mahara_observers {
         }
 
         // Get Mahara submission.
-        $maharasubmission = $DB->get_record('assignsubmission_mahara', array('submission'=>$submission->id));
+        $maharasubmission = $DB->get_record('assignsubmission_maharaws', array('submission' => $submission->id));
 
         // Process further only if we are dealing with mahara submission that is locked.
-        if ($maharasubmission && $maharasubmission->viewstatus == assign_submission_mahara::STATUS_SUBMITTED) {
+        if ($maharasubmission && $maharasubmission->viewstatus == assign_submission_maharaws::STATUS_SUBMITTED) {
             // Check if marking workflow is in place, page unlocking will be handled in
-            // assignsubmission_mahara_observers::workflow_state_updated unless .
+            // assignsubmission_maharaws_observers::workflow_state_updated unless .
             if ($assign->get_instance()->markingworkflow) {
                 return;
             }
@@ -74,21 +75,21 @@ class assignsubmission_mahara_observers {
         }
     }
 
-   /**
-    * Process workflow state update called by event trigger (see db/events.php).
-    * It unlocks pages on Mahara when grades are released to students.
-    *
-    * @param object $event Event data object passed over by mod_assign
-    * @return void
-    */
+    /**
+     * Process workflow state update called by event trigger (see db/events.php).
+     * It unlocks pages on Mahara when grades are released to students.
+     *
+     * @param mod_assign\event\workflow_state_updated $event Event data object passed over by mod_assign
+     * @return void
+     */
     public static function workflow_state_updated(\mod_assign\event\workflow_state_updated $event) {
         global $DB;
         $eventdata = $event->get_data();
         $assign = $event->get_assign();
-        $maharasubmissionplugin = $assign->get_submission_plugin_by_type('mahara');
+        $maharasubmissionplugin = $assign->get_submission_plugin_by_type('maharaws');
 
         // See if need to unlock anything at all.
-        if ((int)$maharasubmissionplugin->get_config('lock') !== ASSIGNSUBMISSION_MAHARA_SETTING_UNLOCK) {
+        if ((int)$maharasubmissionplugin->get_config('lock') !== ASSIGNSUBMISSION_MAHARAWS_SETTING_UNLOCK) {
             return;
         }
 
@@ -98,10 +99,10 @@ class assignsubmission_mahara_observers {
         }
 
         // Get Mahara submission.
-        $maharasubmission = $DB->get_record('assignsubmission_mahara', array('submission'=>$submission->id));
+        $maharasubmission = $DB->get_record('assignsubmission_maharaws', array('submission' => $submission->id));
 
         // Process further only if we are dealing with mahara submission that is locked.
-        if ($maharasubmission && $maharasubmission->viewstatus == assign_submission_mahara::STATUS_SUBMITTED) {
+        if ($maharasubmission && $maharasubmission->viewstatus == assign_submission_maharaws::STATUS_SUBMITTED) {
             // Check marking workflow state, only unlock page if marks are released.
             if ($eventdata['other']['newstate'] !== ASSIGN_MARKING_WORKFLOW_STATE_RELEASED) {
                 return;
@@ -111,25 +112,28 @@ class assignsubmission_mahara_observers {
         }
     }
 
-   /**
-    * Process unlocking Mahara page.
-    *
-    * @param \assign_submission_mahara $maharasubmissionplugin
-    * @param object $maharasubmission Mahara submission data object.
-    * @return void
-    */
+    /**
+     * Process unlocking Mahara page.
+     *
+     * @param \assign_submission_maharaws $maharasubmissionplugin
+     * @param object $maharasubmission Mahara submission data object.
+     * @return void
+     */
     protected static function release_submitted_view($maharasubmissionplugin, $maharasubmission) {
         // Relese submitted page, but provide no outcomes.
-        $maharasubmissionplugin->mnet_release_submitted_view(
+        $maharasubmissionplugin->release_submitted_view(
             $maharasubmission->viewid,
             array(),
             $maharasubmission->iscollection
         );
 
         if ($maharasubmissionplugin->get_error()) {
-            $this->set_error($maharasubmissionplugin->get_error());
+            throw new moodle_exception('releasefailed', 'error', $maharasubmissionplugin->get_error());
         } else {
-            $maharasubmissionplugin->set_mahara_submission_status($maharasubmission->submission, assign_submission_mahara::STATUS_RELEASED);
+            $maharasubmissionplugin->set_mahara_submission_status(
+                $maharasubmission->submission,
+                assign_submission_maharaws::STATUS_RELEASED
+            );
         }
     }
 }

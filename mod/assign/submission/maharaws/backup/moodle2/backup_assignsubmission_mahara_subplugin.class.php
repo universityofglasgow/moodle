@@ -17,7 +17,8 @@
 /**
  * This file contains the class for backup of this submission plugin
  *
- * @package    assignsubmission_mahara
+ * @package    assignsubmission_maharaws
+ * @copyright  2020 Catalyst IT
  * @copyright  2012 Lancaster University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -28,12 +29,12 @@ defined('MOODLE_INTERNAL') || die();
 /**
  * Provides the information to backup Mahara portfolio submissions
  *
- * @package    assignsubmission_mahara
+ * @package    assignsubmission_maharaws
+ * @copyright  2020 Catalyst IT
  * @copyright  2012 Lancaster University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-class backup_assignsubmission_mahara_subplugin extends backup_subplugin {
+class backup_assignsubmission_maharaws_subplugin extends backup_subplugin {
 
     /**
      *
@@ -42,17 +43,21 @@ class backup_assignsubmission_mahara_subplugin extends backup_subplugin {
      */
     protected function define_submission_subplugin_structure() {
 
-        // create XML elements
-        $subplugin = $this->get_subplugin_element(); // virtual optigroup element
+        // Create XML elements.
+        $subplugin = $this->get_subplugin_element(); // Virtual optigroup element.
         $subpluginwrapper = new backup_nested_element($this->get_recommended_name());
-        $subpluginelement = new backup_nested_element('submission_mahara', null, array('viewid', 'viewurl', 'viewtitle', 'submission'));
+        $subpluginelement = new backup_nested_element(
+            'submission_maharaws',
+            null,
+            array('viewid', 'viewurl', 'viewtitle', 'submission', 'iscollection', 'viewstatus')
+        );
 
-        // connect XML elements into the tree
+        // Connect XML elements into the tree.
         $subplugin->add_child($subpluginwrapper);
         $subpluginwrapper->add_child($subpluginelement);
 
-        // set source to populate the data
-        $subpluginelement->set_source_table('assignsubmission_mahara', array('submission' => backup::VAR_PARENTID));
+        // Set source to populate the data.
+        $subpluginelement->set_source_table('assignsubmission_maharaws', array('submission' => backup::VAR_PARENTID));
         return $subplugin;
     }
 

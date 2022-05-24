@@ -15,11 +15,23 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Capability definitions for this module.
+ * Events subscription.
  *
- * @package    assignsubmission_mahara
- * @copyright  2012 Lancaster University
+ * @package    assignsubmission_maharaws
+ * @copyright  2020 Catalyst IT
+ * @copyright  2015 Lancaster University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$capabilities = array();
+defined('MOODLE_INTERNAL') || die();
+
+$observers = array(
+    array(
+        'eventname'   => '\mod_assign\event\submission_graded',
+        'callback'    => 'assignsubmission_maharaws_observers::submission_graded',
+    ),
+    array(
+        'eventname'   => '\mod_assign\event\workflow_state_updated',
+        'callback'    => 'assignsubmission_maharaws_observers::workflow_state_updated',
+    ),
+);
