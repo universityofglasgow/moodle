@@ -72,6 +72,7 @@ class qtype_kprime_walkthrough_test extends qbehaviour_walkthrough_test_base {
         $kprime->qtype = question_bank::get_qtype('kprime');
         $kprime->options = new stdClass();
         $kprime->options->shuffleanswers = 1;
+        $kprime->status = \core_question\local\bank\question_version_status::QUESTION_STATUS_READY;
         $kprime->answernumbering = 'abc';
         $kprime->scoringmethod = "subpoints";
         $kprime->rows = array(

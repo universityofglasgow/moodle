@@ -53,6 +53,7 @@ class qtype_kprime_question_test extends advanced_testcase {
         $kprime->questiontext = 'the right choices are option 1 and option 2';
         $kprime->generalfeedback = 'You should do this and that';
         $kprime->qtype = question_bank::get_qtype('kprime');
+        $kprime->status = \core_question\local\bank\question_version_status::QUESTION_STATUS_READY;
         $kprime->options = new stdClass();
         $kprime->shuffleanswers = 0;
         $kprime->answernumbering = 'abc';

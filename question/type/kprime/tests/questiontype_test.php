@@ -71,6 +71,7 @@ class qtype_kprime_test extends advanced_testcase {
         $qdata->contextid = 1;
         $qdata->parent = 0;
         $qdata->name = "Kprime001";
+        $qdata->status = \core_question\local\bank\question_version_status::QUESTION_STATUS_READY;
         $qdata->questiontext = array("text" => 'Questiontext for Question 1');
         $qdata->questiontextformat = FORMAT_HTML;
         $qdata->generalfeedback = array("text" => 'This feedback is general');
