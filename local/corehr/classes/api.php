@@ -415,8 +415,8 @@ class api {
 
         // Check if this user has already completed this
         // We don't make them do it twice (for the same course id)
-        // If we really want them to do it again then create a new course.
-        if ($status = $DB->get_record('local_corehr_status', ['userid' => $userid, 'courseid' => $courseid, 'status' => 'OK'])) {
+        // Recompletion==1 allows multiple completions
+        if (!$corehr->recompletion && $status = $DB->get_record('local_corehr_status', ['userid' => $userid, 'courseid' => $courseid, 'status' => 'OK'])) {
             self::log($user, $completion, $courseid, $coursecode, "Completed " . $status->id);
         } else {
 
@@ -507,9 +507,10 @@ class api {
      * A blank course code deletes the matching record
      * @param int $courseid Moodle course id
      * @param int $enrolallstaff 
+     * @param int $recompletion
      * @param string $coursecode CoreHR course identifier (or empty)
      */
-    public static function savecoursecode($courseid, $coursecode, $enrolallstaff) {
+    public static function savecoursecode($courseid, $coursecode, $enrolallstaff, $recompletion) {
         global $DB;
 
         // find existing record
@@ -530,12 +531,14 @@ class api {
         if ($corehr) {
             $corehr->coursecode = $coursecode;
             $corehr->enrolallstaff = $enrolallstaff;
+            $corehr->recompletion = $recompletion;
             $DB->update_record('local_corehr', $corehr);
         } else {
             $corehr = new stdClass;
             $corehr->courseid = $courseid;
             $corehr->coursecode = $coursecode;
             $corehr->enrolallstaff = $enrolallstaff;
+            $corehr->recompletion = $recompletion;
             $DB->insert_record('local_corehr', $corehr);
         }
 

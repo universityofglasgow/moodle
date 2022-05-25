@@ -45,6 +45,9 @@ class config extends \moodleform {
         $mform->addElement('advcheckbox', 'enrolallstaff', get_string('enrolallstaff', 'local_corehr'));
         $mform->addHelpButton('enrolallstaff', 'enrolallstaff', 'local_corehr');
 
+        $mform->addElement('advcheckbox', 'recompletion', get_string('recompletion', 'local_corehr'));
+        $mform->addHelpButton('recompletion', 'recompletion', 'local_corehr');
+
         $this->add_action_buttons();
     }
 
