@@ -747,6 +747,14 @@ class local_guws_external extends external_api {
             $grade->statushasurl = $gcat->status->hasstatusurl;
             $grade->statusissubcategory = $gcat->status->issubcategory;
 
+            // get course name
+            $courseid = $gcat->courseid;
+            if ($DB->get_record('course', ['id' => $courseid])) {
+                $grade->moodlecourse = $course->fullname;
+            } else {
+                $grade->moodlecourse = '';
+            }
+
             $grades[] = $grade;
         }
 

@@ -773,6 +773,7 @@ class assessments_details {
                         $item->id = $record->id;
                         $item->coursetitle = $record->coursetitle;
                         $item->courseurl = self::return_courseurl($record->courseid);
+                        $item->courseid = $record->courseid;
                         $item->assessmenturl = self::return_assessmenturl($record->id, $record->modname);
                         $item->assessmentname = $record->activityname;
                         $item->assessmenttype = self::return_assessmenttype($record->gradecategoryname, $record->aggregationcoef);
