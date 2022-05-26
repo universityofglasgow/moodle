@@ -752,7 +752,7 @@ class local_guws_external extends external_api {
 
             // get course name
             $courseid = $gcat->courseid;
-            if ($DB->get_record('course', ['id' => $courseid])) {
+            if ($course = $DB->get_record('course', ['id' => $courseid])) {
                 $grade->moodlecourse = $course->fullname;
             } else {
                 $grade->moodlecourse = '';
