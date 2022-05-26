@@ -728,6 +728,7 @@ class local_guws_external extends external_api {
             $grade->id = $gcat->id;
             $grade->coursename = $gcat->coursetitle;
             $grade->courseurl = $gcat->courseurl->out();
+            $grade->courseid = $gcat->courseid;
             $grade->assessmentname = $gcat->assessmentname;
             $grade->assessmenturl = $gcat->assessmenturl->out();
             $grade->assessmenttype = $gcat->assessmenttype;
