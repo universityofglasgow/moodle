@@ -671,6 +671,8 @@ class local_guws_external extends external_api {
                 'id' => new external_value(PARAM_INT, 'Mystery id'),
                 'coursename' => new external_value(PARAM_TEXT, 'Course full name'),
                 'courseurl' => new external_value(PARAM_TEXT, 'Link to Moodle course'),
+                'courseid' => new external_value(PARAM_INT, 'Moodle course id'),
+                'moodlecourse' => new external_value(PARAM_TEXT, 'Name of Moodle course'),
                 'assessmentname' => new external_value(PARAM_TEXT, 'Assessment name'),
                 'assessmenturl' => new external_value(PARAM_TEXT, 'Link to Assessment'),
                 'assessmenttype' => new external_value(PARAM_TEXT, 'Type of assessment'),
