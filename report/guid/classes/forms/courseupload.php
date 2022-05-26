@@ -73,6 +73,10 @@ class courseupload extends moodleform {
         $mform->addHelpButton('action', 'uploadaction', 'report_guid');
         $mform->setDefault('action', 'enrol');
 
+        // Allow multiple enrolments
+        $mform->addElement('selectyesno', 'allowmultiple', get_string('allowmultiple', 'report_guid'), 0);
+        $mform->addHelpButton('allowmultiple', 'allowmultiple', 'report_guid');
+
         // Action buttons.
         $this->add_action_buttons(false, get_string('submitfile', 'report_guid'));
 

@@ -74,6 +74,7 @@ if ($mform->is_cancelled()) {
     $firstcolumn = $data->firstcolumn;
     $addgroups = $data->addgroups;
     $action = $data->action;
+    $allowmultiple = $data->allowmultiple;
 
     // Get the data from the file.
     $filedata = $mform->get_file_content('csvfile');
@@ -185,13 +186,15 @@ if ($mform->is_cancelled()) {
 
         // Enrol the user in the course (with the specified role)
         // Check user is permitted to assign this role too!
-        $roleid = $data->role;
-        if (array_key_exists($roleid, $roles)) {
-            if (enrol_try_internal_enrol($courseid, $user->id, $roleid)) {
-                $output->courseuploadnote('userenrolled', 'success');
-            } else {
-                $output->courseuploadnote('usernotenrolled', 'warning');
-                continue;
+        if ($allowmultiple || !is_enrolled($context, $user)) {
+            $roleid = $data->role;
+            if (array_key_exists($roleid, $roles)) {
+                if (enrol_try_internal_enrol($courseid, $user->id, $roleid)) {
+                    $output->courseuploadnote('userenrolled', 'success');
+                } else {
+                    $output->courseuploadnote('usernotenrolled', 'warning');
+                    continue;
+                }
             }
         }
 
