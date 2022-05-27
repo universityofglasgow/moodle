@@ -68,7 +68,7 @@ function local_gumenu_extend_settings_navigation(settings_navigation $nav, conte
     );
     $uofgnode = $courseadminnode->add_node(new navigation_node($props));
 
-    // Add a link to anonymous report
+    // Add a link to assignment report
     if (has_capability('report/assign:view', $context)) {
         $props = array(
             'text' => get_string('pluginname', 'report_assign'),
@@ -150,6 +150,21 @@ function local_gumenu_extend_settings_navigation(settings_navigation $nav, conte
         $uofgnode->add_node(new navigation_node($props));
     }
 
+}
+
+/**
+ * This function extends the navigation with the recompletion item
+ *
+ * @param navigation_node $navigation The navigation node to extend
+ * @param stdClass        $course     The course to object for the tool
+ * @param context         $context    The context of the course
+ */
+function local_gumenu_extend_navigation_course($navigation, $course, $context) {
+
+    // add link for assignment report
+    $url = new moodle_url('/report/assign/index.php', array('id' => $course->id));
+    $name = get_string('pluginname', 'report_assign');
+    $navigation->add($name, $url, navigation_node::TYPE_SETTING, null, null, new pix_icon('i/report', ''));
 }
 
 
