@@ -25,7 +25,7 @@
 
 defined('MOODLE_INTERNAL') || die;
 
-$plugin->version   = 2020120400;
+$plugin->version   = 2022052700;
 $plugin->requires  = 2014111000;
 $plugin->component = 'report_guid';
 $plugin->dependencies = array(

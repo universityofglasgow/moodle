@@ -40,6 +40,7 @@ class courseupload extends moodleform {
         $roles = $this->_customdata['roles'];
         $studentroleid = $this->_customdata['studentroleid'];
         $courseid = $this->_customdata['id'];
+        $downloadlink = $this->_customdata['downloadlink'];
         $firstcoloptions = array(
             'guid' => get_string('guidusername', 'report_guid'),
             'idnumber' => get_string('idnumber', 'report_guid'),
@@ -48,6 +49,11 @@ class courseupload extends moodleform {
             'enrol' => get_string('enrol', 'report_guid'),
             'unenrol' => get_string('unenrol', 'report_guid')
         ];
+
+        // File download
+        $mform->addElement('header', 'guidenroldownload', get_string('enroldownloadheader', 'report_guid'));
+        $mform->addElement('html', '<div>' . get_string('enroldownloadinstructions', 'report_guid') . '</div>');
+        $mform->addElement('html', '<a class="btn btn-primary mb-3 mt-3" href="' . $downloadlink . '">' . get_string('downloadcsv', 'report_guid') . '</a>');
 
         // File upload.
         $mform->addElement('header', 'guidcourseupload', get_string('uploadheader', 'report_guid' ) );

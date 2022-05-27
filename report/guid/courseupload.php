@@ -63,6 +63,7 @@ $mform = new report_guid\forms\courseupload(null, [
     'id' => $courseid,
     'roles' => $roles,
     'studentroleid' => $studentrole ? $studentrole->id : 1,
+    'downloadlink' => new moodle_url('/report/guid/enroldownload.php', ['id' => $courseid]),
 ]);
 if ($mform->is_cancelled()) {
     redirect($url);
