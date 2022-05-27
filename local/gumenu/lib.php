@@ -162,9 +162,11 @@ function local_gumenu_extend_settings_navigation(settings_navigation $nav, conte
 function local_gumenu_extend_navigation_course($navigation, $course, $context) {
 
     // add link for assignment report
-    $url = new moodle_url('/report/assign/index.php', array('id' => $course->id));
-    $name = get_string('pluginname', 'report_assign');
-    $navigation->add($name, $url, navigation_node::TYPE_SETTING, null, null, new pix_icon('i/report', ''));
+    if (has_capability('report/assign:view', $context)) {
+        $url = new moodle_url('/report/assign/index.php', array('id' => $course->id));
+        $name = get_string('pluginname', 'report_assign');
+        $navigation->add($name, $url, navigation_node::TYPE_SETTING, null, null, new pix_icon('i/report', ''));
+    }
 }
 
 
