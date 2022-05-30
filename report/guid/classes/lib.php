@@ -617,6 +617,7 @@ class lib {
             foreach ($tiifiles as $tiifile) {
                 $tiifile->formattedexternalid = !empty($tiifile->externalid) ? $tiifile->externalid : '-';
                 $tiifile->formattedsimilarityscore = !empty($tiifile->similarityscore) ? $tiifile->similarityscore : '-';
+                $tiifile->formattedsimilarityscore = ($tiifile->similarityscore === 0) ? 0 : $tiifile->formattedsimilarityscore;
                 $tiifile->formattedlastmodified = userdate($tiifile->lastmodified);
                 $tiifile->errortext = !empty($tiifile->errorcode) ? get_string('errorcode' . $tiifile->errorcode, 'plagiarism_turnitin') : ' ';
                 $tiifile->oktoresend = $tiifile->statuscode != 'queued';
