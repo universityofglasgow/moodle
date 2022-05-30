@@ -75,10 +75,17 @@
     </dd>
 </dl>
 
-<dl class="row mb-0">
+<dl class="row">
     <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}priority, report_enhance{{/ str }}</dt>
     <dd class="col-xs-8 col-sm-9 col-lg-10">
         {{{ priority }}}
+    </dd>
+</dl>
+
+<dl class="row mb-0">
+    <dt class="col-xs-4 col-sm-3 col-lg-2">{{# str }}vote, report_enhance{{/ str }}</dt>
+    <dd class="enhance_votes col-xs-8 col-sm-9 col-lg-10">
+        {{> report_enhance/votes }}
     </dd>
 </dl>
 

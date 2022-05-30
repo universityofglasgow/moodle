@@ -98,7 +98,7 @@ class more implements renderable, templatable {
         $request->assignedtoformatted = \report_enhance\lib::getassigned($request->assignedto);
         $request->statusicon = $status->getStatusIcon($request->status);
         $request->statuscolour = $status->getStatusColour($request->status);
-        list($request->votes) = \report_enhance\lib::getvotes($request);
+        list($request->votes, $request->ownrequest, $request->voted) = \report_enhance\lib::getvotes($request);
 
         return $request;
     }
@@ -111,6 +111,7 @@ class more implements renderable, templatable {
 
         return [
             'request' => $this->request,
+            'id' => $this->request->id,
             'back' => new \moodle_url('/report/enhance/index.php', ['courseid' => $this->course->id]),
 	        'editurl' => new \moodle_url('/report/enhance/edit.php', ['courseid' => $this->course->id, 'id' => $this->request->id]),
             'reviewurl' => new \moodle_url('/report/enhance/review.php', ['courseid' => $this->course->id, 'id' => $this->request->id]),
@@ -128,6 +129,9 @@ class more implements renderable, templatable {
             'voteslink' => new \moodle_url('/report/enhance/voters.php', ['courseid' => $this->course->id, 'id' => $this->request->id]),
             'reviewer' => has_capability('report/enhance:review', \context_course::instance($this->course->id)),
             'priority' => \report_enhance\lib::getpriorities()[$this->request->priority],
+            'ownrequest' => $this->request->ownrequest,
+            'voted' => $this->request->voted,
+            'votecount' => $this->request->votes,
         ];
     }
 
