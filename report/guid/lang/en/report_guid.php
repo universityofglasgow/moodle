@@ -29,6 +29,7 @@ $string['accountcreated'] = 'Account created for {$a}';
 $string['accountexists'] = 'Account not created, {$a} already exists';
 $string['allowmultiple'] = 'Allow multiple enrolment methods';
 $string['allowmultiple_help'] = 'If \'Yes\' user can be enrolled with more than one enrolment method. If \'No\' they are skipped if already enrolled. If in doubt, leave at \'No\'';
+$string['attempt'] = 'Attempt';
 $string['changeuserdesc'] = 'Change username for \'{$a}\'. Take care - mistakes will stop them logging in';
 $string['changeusername'] = '<i class="fa fa-wrench"></i> Update';
 $string['corehrresults'] = 'CoreHR extract';
