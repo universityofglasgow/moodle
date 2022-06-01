@@ -524,6 +524,9 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
             }
             $rs->Close();
         }
+        if (count($data) == 0) {
+            return false;
+        }
 
         // Munge bits of data
         $this->write_user_info($user->id, 'program', $data->prog_descr);
@@ -551,7 +554,6 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         $this->write_user_info($user->id, 'finalyear', $data->final_yr_flag);
 
         $extdb->Close();
-        return $data;
     }
 
     /**
