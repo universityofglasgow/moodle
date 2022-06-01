@@ -673,6 +673,7 @@ class local_guws_external extends external_api {
                 'courseurl' => new external_value(PARAM_TEXT, 'Link to Moodle course'),
                 'courseid' => new external_value(PARAM_INT, 'Moodle course id'),
                 'moodlecourse' => new external_value(PARAM_TEXT, 'Name of Moodle course'),
+                'shortname' => new external_value(PARAM_TEXT, 'Shortname of course'),
                 'assessmentname' => new external_value(PARAM_TEXT, 'Assessment name'),
                 'assessmenturl' => new external_value(PARAM_TEXT, 'Link to Assessment'),
                 'assessmenttype' => new external_value(PARAM_TEXT, 'Type of assessment'),
@@ -731,6 +732,8 @@ class local_guws_external extends external_api {
             $grade->coursename = $gcat->coursetitle;
             $grade->courseurl = $gcat->courseurl->out();
             $grade->courseid = $gcat->courseid;
+            $grade->moodlecourse = $gcat->moodlecourse;
+            $grade->shortname = $gcat->shortname;
             $grade->assessmentname = $gcat->assessmentname;
             $grade->assessmenturl = $gcat->assessmenturl->out();
             $grade->assessmenttype = $gcat->assessmenttype;
@@ -749,14 +752,6 @@ class local_guws_external extends external_api {
             $grade->statusclass = $gcat->status->class;
             $grade->statushasurl = $gcat->status->hasstatusurl;
             $grade->statusissubcategory = $gcat->status->issubcategory;
-
-            // get course name
-            $courseid = $gcat->courseid;
-            if ($course = $DB->get_record('course', ['id' => $courseid])) {
-                $grade->moodlecourse = $course->fullname;
-            } else {
-                $grade->moodlecourse = '';
-            }
 
             $grades[] = $grade;
         }

@@ -171,7 +171,7 @@ class assessments_details {
                 // Course title.
                 if (!$issubcategory) {
                         $html .= html_writer::start_tag('td', array('class' => 'td20'));
-                        $html .= html_writer::tag('a', $assessment->coursetitle,
+                        $html .= html_writer::tag('a', $assessment->shortname,
                                                 array('href' => $assessment->courseurl));
                         $html .= html_writer::end_tag('td');
                 }
@@ -200,7 +200,8 @@ class assessments_details {
                                 'class' => 'subcategory-row',
                                 'data-id' => $assessment->id,
                                 'data-name' => $assessment->assessmentname,
-                                'data-course' => $assessment->coursetitle,
+                                //'data-course' => $assessment->coursetitle,
+                                'data-course' => $assessment->shortname,
                                 'data-grade' => $assessment->grading->gradetext,
                                 'data-weight' => $assessment->weight));
                     } else {
@@ -240,7 +241,8 @@ class assessments_details {
                                                             'class' => 'subcategory-row',
                                                             'data-id' => $assessment->id,
                                                             'data-name' => $assessment->assessmentname,
-                                                            'data-course' => $assessment->coursetitle,
+                                                            //'data-course' => $assessment->coursetitle,
+                                                            'data-course' => $assessment->shortname,
                                                             'data-grade' => $assessment->grading->gradetext,
                                                             'data-weight' => $assessment->weight));
                     } else {
@@ -734,6 +736,25 @@ class assessments_details {
     }
 
     /**
+     * Get course short and full names
+     * @param int $courseid
+     * @return array(shortname, fullname)
+     */
+    private static function get_coursenames($courseid) {
+        global $DB;
+
+        if ($course = $DB->get_record('course', ['id' => $courseid])) {
+            $shortname = $course->shortname;
+            $fullname = $course->fullname;
+        } else {
+            $shortname = '';
+            $fullname = '';
+        }
+
+        return [$shortname, $fullname];
+    }
+
+    /**
      * Returns sanitized data based from query results
      *
      * @param array $records
@@ -773,6 +794,7 @@ class assessments_details {
                         $item->id = $record->id;
                         $item->coursetitle = $record->coursetitle;
                         $item->courseurl = self::return_courseurl($record->courseid);
+                        list($item->shortname, $item->moodlecourse) = self::get_coursenames($record->courseid);
                         $item->courseid = $record->courseid;
                         $item->assessmenturl = self::return_assessmenturl($record->id, $record->modname);
                         $item->assessmentname = $record->activityname;
