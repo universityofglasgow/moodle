@@ -453,7 +453,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
             $userinfo->data = $data;
             $DB->update_record('user_info_data', $userinfo);
         } else {
-            $userinfo = new stdClass;
+            $userinfo = new stdClass();
             $userinfo->userid = $userid;
             $userinfo->fieldid = $field->id;
             $userinfo->data = $data;
