@@ -451,14 +451,14 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         }
         if ($userinfo = $DB->get_record('user_info_data', ['userid' => $userid, 'fieldid' => $field->id])) {
             $userinfo->data = $data;
-            $DB->update_record('user_info_field', $data);
+            $DB->update_record('user_info_field', $userinfo);
         } else {
             $userinfo = new stdClass;
             $userinfo->userid = $userid;
             $userinfo->fieldid = $field->id;
             $userinfo->data = $data;
             $userinfo->dataformat = 0;
-            $DB->insert_record('user_info_field', $data);
+            $DB->insert_record('user_info_field', $userinfo);
         }
     }
 
