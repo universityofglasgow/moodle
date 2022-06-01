@@ -528,6 +528,9 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
             return false;
         }
 
+        // Horrid bodge
+        $data = reset($data);
+
         // Munge bits of data
         $this->write_user_info($user->id, 'program', $data->prog_descr);
         $this->write_user_info($user->id, 'year', $data->crrnt_yr_of_crse);
