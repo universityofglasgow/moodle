@@ -443,7 +443,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
      * @param string $data
      */
     private function write_user_info($userid, $fieldname, $data) {
-        global $CFG;
+        global $CFG, $DB;
 
         $field = $DB->get_record('user_info_field', ['name' => $fieldname], '*', MUST_EXIST);
         if ($userinfo = $DB->get_record('user_info_data', ['userid' => $userid, 'fieldid' => $field->id])) {
@@ -526,7 +526,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         }
 
         // Munge bits of data
-        $this->write_user_info($user->id, 'program', $data->program);
+        $this->write_user_info($user->id, 'program', $data->prog_descr);
         $this->write_user_info($user->id, 'year', $data->crrnt_yr_of_crse);
         if ($school = array_column($schools, null, 'costcode')[$data->school] ?? false) {
             $this->write_user_info($user->id, 'school', $school);
