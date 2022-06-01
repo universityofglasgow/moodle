@@ -437,6 +437,124 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
     }
 
     /**
+     * Write record to user_info
+     * @param int $userid
+     * @param string $fieldname
+     * @param string $data
+     */
+    private function write_user_info($userid, $fieldname, $data) {
+        global $CFG;
+
+        $field = $DB->get_record('user_info_field', ['name' => $fieldname], '*', MUST_EXIST);
+        if ($userinfo = $DB->get_record('user_info_data', ['userid' => $userid, 'fieldid' => $field->id])) {
+            $userinfo->data = $data;
+            $DB->update_record('user_info_field', $data);
+        } else {
+            $userinfo = new stdClass;
+            $userinfo->userid = $userid;
+            $userinfo->fieldid = $field->id;
+            $userinfo->data = $data;
+            $userinfo->dataformat = 0;
+            $DB->insert_record('user_info_field', $data);
+        }
+    }
+
+    /**
+     * Get external program data
+     * @param object $user
+     * @return object
+     */
+    public function external_programdata($user) {
+        global $CFG, $DB;
+
+        // stuff we need to translate date
+        $schoolsjson = get_config('schoolsjson');
+        $schools = json_decode($schoolsjson);
+        $ugpg = [
+            'PGT' => 'Postgraduate Taught',
+            'LLL' => 'Lifelong Learning',
+            'UG' => 'Undergraduate',
+            'PGR' => 'Postgraduate Research',
+            'EXTN' => 'External',
+        ];
+        $method = [
+            'F' => 'Full-time',
+            'P' => 'Part-time',
+            'T' => 'Part-time full fee',
+        ];
+        $attendance = [
+            'DIST' => 'Distance',
+            'ENRL' => 'Class enrolment',
+            'ERAO' => 'Erasmus outgoing',
+            'ERIN' => 'Erasmus in',
+            'EXCO' => 'Exchange out',
+            'EXIN' => 'Exchange in',
+            'EXON' => 'Exams only',
+            'LANG' => 'Language year out',
+            'RSCH' => 'Research',
+            'SABB' => 'Sabbatical',
+            'VIST' => 'Visiting',
+            'WRKP' => 'Work replacement',
+        ];
+
+        // if no idnumber then we can't help
+        if (!$user->idnumber) {
+            return false;
+        }
+
+        // Connect to external db.
+        if (!$extdb = $this->db_init()) {
+            $this->error('Error while communicating with external enrolment database');
+            return false;
+        }
+
+        // Get connection details.
+        $table = $this->get_config('programtable');   
+        if (!$table) {
+            return false;
+        }
+
+        // Get data
+        $sql = "select * from $table where stdnt_nbr = '" . $this->db_addslashes($user->idnumber) . "'";
+        $data = array();
+        if ($rs = $extdb->Execute($sql)) {
+            while (!$rs->EOF) {
+                $row = $rs->FetchRow();
+                $data[] = (object)$row;
+            }
+            $rs->Close();
+        }
+
+        // Munge bits of data
+        $self->write_user_info($user->id, 'program', $data->program);
+        $self->write_user_info($user->id, 'year', $data->crrnt_yr_of_crse);
+        if ($school = array_column($schools, null, 'costcode')[$data->school] ?? false) {
+            $self->write_user_info($user->id, 'school', $school);
+        } else {
+            $self->write_user_info($user->id, 'school', $data->school);
+        }
+        if (!empty($ugpg[$data->ug_pg_ind])) {
+            $self->write_user_info($user->id, 'ugpg', $ugpg[$data->ug_pg_ind]);
+        } else {
+            $self->write_user_info($user->id, 'ugpg', $data->ug_pg_ind);
+        }
+        if (!empty($method[$data->mthd_study_cd])) {
+            $self->write_user_info($user->id, 'method', $method[$data->mthd_study_cd]);
+        } else {
+            $self->write_user_info($user->id, 'method', $data->mthd_study_cd);
+        }
+        if (!empty($attendance[$data->attndnc_stts_cd])) {
+            $self->write_user_info($user->id, 'attendance', $attendance[$data->attndnc_stts_cd]);
+        } else {
+            $self->write_user_info($user->id, 'attendance', $data->attndnc_stts_cd);
+        }
+        $self->write_user_info($user->id, 'finalyear', $data->final_yr_flag);
+
+        $extdb->Close();
+        return $data;
+    }
+
+    /**
      * get course information from
      * external database by user
      * @param string $user user object

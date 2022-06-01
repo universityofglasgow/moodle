@@ -182,4 +182,9 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configtext('enrol_gudatabase/classlisttable',
         get_string('classlisttable', 'enrol_gudatabase'), get_string('classlisttable_desc', 'enrol_gudatabase'), ''));
 
+    $settings->add(new admin_setting_configtext('enrol_gudatabase/programtable',
+        get_string('programtable', 'enrol_gudatabase'), get_string('programtable_desc', 'enrol_gudatabase'), ''));
+
+    $settings->add(new admin_setting_configtextarea('enrol_gudatabase/schoolsjson',
+        get_string('schoolsjson', 'enrol_gudatabase'), get_string('schoolsjson_desc', 'enrol_gudatabase'), ''));
 }
