@@ -468,7 +468,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         global $CFG, $DB;
 
         // stuff we need to translate date
-        $schoolsjson = get_config('schoolsjson');
+        $schoolsjson = $this->get_config('schoolsjson');
         $schools = json_decode($schoolsjson);
         $ugpg = [
             'PGT' => 'Postgraduate Taught',
@@ -526,29 +526,29 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         }
 
         // Munge bits of data
-        $self->write_user_info($user->id, 'program', $data->program);
-        $self->write_user_info($user->id, 'year', $data->crrnt_yr_of_crse);
+        $this->write_user_info($user->id, 'program', $data->program);
+        $this->write_user_info($user->id, 'year', $data->crrnt_yr_of_crse);
         if ($school = array_column($schools, null, 'costcode')[$data->school] ?? false) {
-            $self->write_user_info($user->id, 'school', $school);
+            $this->write_user_info($user->id, 'school', $school);
         } else {
-            $self->write_user_info($user->id, 'school', $data->school);
+            $this->write_user_info($user->id, 'school', $data->school);
         }
         if (!empty($ugpg[$data->ug_pg_ind])) {
-            $self->write_user_info($user->id, 'ugpg', $ugpg[$data->ug_pg_ind]);
+            $this->write_user_info($user->id, 'ugpg', $ugpg[$data->ug_pg_ind]);
         } else {
-            $self->write_user_info($user->id, 'ugpg', $data->ug_pg_ind);
+            $this->write_user_info($user->id, 'ugpg', $data->ug_pg_ind);
         }
         if (!empty($method[$data->mthd_study_cd])) {
-            $self->write_user_info($user->id, 'method', $method[$data->mthd_study_cd]);
+            $this->write_user_info($user->id, 'method', $method[$data->mthd_study_cd]);
         } else {
-            $self->write_user_info($user->id, 'method', $data->mthd_study_cd);
+            $this->write_user_info($user->id, 'method', $data->mthd_study_cd);
         }
         if (!empty($attendance[$data->attndnc_stts_cd])) {
-            $self->write_user_info($user->id, 'attendance', $attendance[$data->attndnc_stts_cd]);
+            $this->write_user_info($user->id, 'attendance', $attendance[$data->attndnc_stts_cd]);
         } else {
-            $self->write_user_info($user->id, 'attendance', $data->attndnc_stts_cd);
+            $this->write_user_info($user->id, 'attendance', $data->attndnc_stts_cd);
         }
-        $self->write_user_info($user->id, 'finalyear', $data->final_yr_flag);
+        $this->write_user_info($user->id, 'finalyear', $data->final_yr_flag);
 
         $extdb->Close();
         return $data;
