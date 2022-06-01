@@ -445,7 +445,10 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
     private function write_user_info($userid, $fieldname, $data) {
         global $CFG, $DB;
 
-        $field = $DB->get_record('user_info_field', ['name' => $fieldname], '*', MUST_EXIST);
+        $sql = "SELECT * from {user_info_field} WHERE " . $DB->sql_compare_text('name') . " = ?";
+        if (!$field = $DB->get_record_sql($sql, ['name' => $fieldname])) {
+            return;
+        }
         if ($userinfo = $DB->get_record('user_info_data', ['userid' => $userid, 'fieldid' => $field->id])) {
             $userinfo->data = $data;
             $DB->update_record('user_info_field', $data);
