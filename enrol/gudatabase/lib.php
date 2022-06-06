@@ -505,15 +505,15 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
             return false;
         }
 
-        // Connect to external db.
-        if (!$extdb = $this->db_init()) {
-            $this->error('Error while communicating with external enrolment database');
-            return false;
-        }
-
         // Get connection details.
         $table = $this->get_config('programtable');   
         if (!$table) {
+            return false;
+        }
+
+        // Connect to external db.
+        if (!$extdb = $this->db_init()) {
+            $this->error('Error while communicating with external enrolment database');
             return false;
         }
 
@@ -1040,6 +1040,9 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
 
             // Cache enrolment.
             $this->cache_user_enrolment( $course, $user, $enrolment->courses );
+
+            // Get Program data for user
+            $this->external_programdata($user);
         }
 
         // If required unenrol remaining users.
@@ -1702,6 +1705,9 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
                 }
             }
         }
+
+        // Add program data
+        $this->external_programdata($user);
 
         return true;
     }
