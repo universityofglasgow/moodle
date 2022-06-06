@@ -692,6 +692,7 @@ class lib {
             'program' => 'program name',
             'year' => 'year of study',
             'school' => 'school code',
+            'costcode' => 'Cost centre code',
             'ugpg' => 'Undergrad, Postgrad etc.',
             'method' => 'Method of study',
             'attendance' => 'Attendance',

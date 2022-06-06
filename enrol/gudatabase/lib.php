@@ -537,6 +537,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         // Munge bits of data
         $this->write_user_info($user->id, 'program', $data->prog_descr);
         $this->write_user_info($user->id, 'year', $data->crrnt_yr_of_crse);
+        $this->write_user_info($user->id, 'costcode', $data->school);
         if ($school = array_column($schools, null, 'costcode')[$data->school] ?? false) {
             $this->write_user_info($user->id, 'school', $school->school);
         } else {
