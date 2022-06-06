@@ -1458,7 +1458,13 @@ class assessments_details {
             $recordsarray = (array) $records;
             foreach ($recordsarray as $record) {
                 $modinfo = get_fast_modinfo($record->courseid);
-                $cm = $modinfo->get_cm($record->id);
+                $cms = $modinfo->get_cms();
+                //$cm = $modinfo->get_cm($record->id);
+                // Added this check because sometimes it doesn't exist - MOOD-165
+                if (!array_key_exists($record->id, $cms)) {
+                    continue;
+                }
+                $cm = $cms[$record->id];
                 // Check if course module is visible to the user.
                 $iscmvisible = $cm->uservisible;
 
