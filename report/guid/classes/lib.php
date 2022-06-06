@@ -649,6 +649,15 @@ class lib {
     }
 
     /**
+     * Get plan for individual user
+     * @param object $user
+     */
+    public static function get_plan_for_user($user) {
+        $gudatabase = enrol_get_plugin('gudatabase');
+        $gudatabase->external_programdata($user);
+    }
+
+    /**
      * Populate user plan data
      */
     public static function populate_user_plan() {

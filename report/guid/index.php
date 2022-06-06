@@ -138,6 +138,12 @@ if ($mform->is_cancelled()) {
 } else if ($data = $mform->get_data()) {
     $result = report_guid\lib::filter($output, $data->firstname, $data->lastname, $data->guid, $data->email, $data->idnumber);
     $users = report_guid\lib::user_search($data->firstname, $data->lastname, $data->guid, $data->email, $data->idnumber);
+
+    // Add profile data
+    foreach ($users as $user) {
+        report_guid\lib::get_plan_for_user($user);
+    }
+    
     report_guid\lib::add_enrol_counts($users);
 
     // Display ldap search results.
