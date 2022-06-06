@@ -37,5 +37,12 @@ function xmldb_report_guid_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2022060100, 'report', 'guid');
     }
 
+    if ($oldversion < 2022060601) {
+        report_guid\lib::check_create_userprofile();
+
+        // Gudatabase savepoint reached.
+        upgrade_plugin_savepoint(true, 2022060601, 'report', 'guid');
+    }
+
     return true;
 }
