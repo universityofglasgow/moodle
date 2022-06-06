@@ -68,6 +68,9 @@ class default_course_world_config extends immutable_config {
     /** THe group ladder ordering by points with compensation using the team's average. */
     const GROUP_ORDER_BY_POINTS_COMPENSATED_BY_AVG = 3;
 
+    /** Identity displays first name and first letter of last name. */
+    const IDENTITY_FIRSTNAME_INITIAL_LASTNAME = 2;
+
     /**
      * Constructor.
      */

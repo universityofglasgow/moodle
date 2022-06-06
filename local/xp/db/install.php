@@ -39,12 +39,4 @@ function xmldb_local_xp_install() {
     // The local plugin needs logs to be kept for a longer time.
     unset_config('keeplogs', 'block_xp');
 
-    // Force the themes upgrade.
-    try {
-        $themeupdater = \block_xp\di::get('theme_updater');
-        $themeupdater->update_themes();
-    } catch (Exception $e) {
-        debugging('Exception caught during call to local_xp::theme_updater.');
-    }
-
 }

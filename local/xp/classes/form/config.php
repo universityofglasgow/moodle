@@ -59,6 +59,19 @@ class config extends \block_xp\form\config {
         $iomad = \block_xp\di::get('iomad_facade');
         $forwholesite = $config->get('context') == CONTEXT_SYSTEM;
 
+        // Re-implement to include additional option.
+        $mform->removeElement('identitymode');
+        $el = $mform->createElement('select', 'identitymode', get_string('anonymity', 'block_xp'), [
+            course_world_config::IDENTITY_OFF => get_string('hideparticipantsidentity', 'block_xp'),
+            course_world_config::IDENTITY_ON => get_string('displayparticipantsidentity', 'block_xp'),
+            default_course_world_config::IDENTITY_FIRSTNAME_INITIAL_LASTNAME =>
+                get_string('displayfirstnameinitiallastname', 'local_xp'),
+        ]);
+        $mform->insertElementBefore($el, 'neighbours');
+        unset($el);
+        $mform->addHelpButton('identitymode', 'anonymity', 'block_xp');
+        $mform->disabledIf('identitymode', 'enableladder', 'eq', 0);
+
         // Change the help text of the cheat guard.
         $mform->addHelpButton('enablecheatguard', 'enablecheatguard', 'local_xp');
 

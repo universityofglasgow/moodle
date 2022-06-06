@@ -68,11 +68,18 @@ class admin_rules_controller extends \block_xp\local\controller\admin_rules_cont
             if (get_class($rule->rule) == 'block_xp_rule_property') {
                 array_splice($rules, -1, 0, [
                     (object) [
-                        'name' => get_string('activitycompletion', 'completion'),
+                        'name' => get_string('rulecmname', 'local_xp'),
+                        'info' => get_string('rulecmnameinfo', 'local_xp'),
+                        'rule' => new \local_xp\local\rule\cm_name(),
+                    ],
+                    (object) [
+                        'name' => get_string('ruleactivitycompletion', 'local_xp'),
+                        'info' => get_string('ruleactivitycompletioninfo', 'local_xp'),
                         'rule' => new \local_xp\local\rule\activity_completion(),
                     ],
                     (object) [
-                        'name' => get_string('coursecompletion', 'completion'),
+                        'name' => get_string('rulecoursecompletion', 'local_xp'),
+                        'info' => get_string('rulecoursecompletioninfo', 'local_xp'),
                         'rule' => new \local_xp\local\rule\course_completion(),
                     ]
                 ]);
@@ -100,10 +107,12 @@ class admin_rules_controller extends \block_xp\local\controller\admin_rules_cont
         $rules = array_filter([
             (object) [
                 'name' => get_string('rulegradeitemtype', 'local_xp'),
+                'info' => get_string('rulegradeitemtypeinfo', 'local_xp'),
                 'rule' => new \local_xp\local\rule\grade_item_type(),
             ],
             (object) [
                 'name' => get_string('ruleset', 'block_xp'),
+                'info' => get_string('rulesetinfo', 'block_xp'),
                 'rule' => new \block_xp_ruleset(),
             ]
         ]);

@@ -26,6 +26,7 @@
 namespace local_xp\local\rule;
 defined('MOODLE_INTERNAL') || die();
 
+use backup;
 use base_logger;
 use block_xp_rule_base;
 use context_course;
@@ -132,7 +133,7 @@ class grade_item extends block_xp_rule_base {
      * @return string
      */
     protected function get_advanced_form($basename) {
-        $output = \block_xp\di::get('renderer');
+        $output = $this->get_renderer();
         $hasgi = !empty($this->value);
 
         $o = parent::get_form($basename);

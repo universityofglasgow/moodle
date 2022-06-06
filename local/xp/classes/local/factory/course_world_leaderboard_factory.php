@@ -28,12 +28,14 @@ defined('MOODLE_INTERNAL') || die();
 
 use moodle_database;
 use block_xp\local\course_world;
+use block_xp\local\config\config;
 use block_xp\local\factory\default_course_world_leaderboard_factory;
 use block_xp\local\leaderboard\ranker;
 use local_xp\local\config\default_course_world_config;
 use local_xp\local\iomad\course_user_leaderboard as iomad_course_user_leaderboard;
 use local_xp\local\iomad\facade as iomadfacade;
 use local_xp\local\leaderboard\course_user_leaderboard;
+use local_xp\local\xp\firstname_initial_lastname_anonymiser;
 use local_xp\local\xp\user_global_state;
 
 /**
@@ -61,19 +63,31 @@ class course_world_leaderboard_factory extends default_course_world_leaderboard_
     }
 
     /**
+     * Get the anonymiser.
+     *
+     * @inheritDoc
+     */
+    protected function get_anonymiser_with_config(course_world $world, config $config) {
+        global $USER;
+
+        if ($config->get('identitymode') == default_course_world_config::IDENTITY_FIRSTNAME_INITIAL_LASTNAME) {
+            return new firstname_initial_lastname_anonymiser([$USER->id]);
+        }
+
+        return parent::get_anonymiser_with_config($world, $config);
+    }
+
+    /**
      * Get the leaderboard instance.
      *
-     * @param course_world $world The world.
-     * @param int $groupid The group ID.
-     * @param array $columns The columns.
-     * @param ranker|null $ranker The ranker.
-     * @return leaderboard
+     * @inheritDoc
      */
-    protected function get_leaderboard_instance(course_world $world, $groupid, array $columns, ranker $ranker = null) {
+    protected function get_leaderboard_instance_with_config(course_world $world, $groupid, array $columns,
+            config $config, ranker $ranker = null) {
 
         $userstatefactory = null;
         $levelsinfo = $world->get_levels_info();
-        if ($world->get_config()->get('progressbarmode') == default_course_world_config::PROGRESS_BAR_MODE_OVERALL) {
+        if ($config->get('progressbarmode') == default_course_world_config::PROGRESS_BAR_MODE_OVERALL) {
             $userstatefactory = function($user, $points) use ($levelsinfo) {
                 return new user_global_state($user, $points, $levelsinfo);
             };

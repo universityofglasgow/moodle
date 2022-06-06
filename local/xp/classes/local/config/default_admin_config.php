@@ -45,7 +45,11 @@ class default_admin_config extends immutable_config {
      */
     public function __construct() {
         parent::__construct(new static_config([
-            // Override block_xp's.
+
+            // Override block_xp's. Note that any config here, that should not take precedence
+            // over block_xp's config, need to be explicitely removed from di::get('config').
+            // For instance, 'keeplogs' has a new default, but as local_xp does not define it,
+            // we need to remove it from local_xp's defaults when creating the global config object.
             'enablepromoincourses' => false,
             'keeplogs' => 90,
 

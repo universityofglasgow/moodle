@@ -92,9 +92,11 @@ class settings_maker extends \block_xp\local\setting\default_settings_maker {
                     get_string('keeplogsdesc', 'local_xp'),
                     $this->defaults->get('keeplogs'), [
                         '0' => get_string('forever', 'block_xp'),
-                        '14' => get_string('for2weeks', 'local_xp'),
-                        '30' => get_string('for1month', 'block_xp'),
-                        '90' => get_string('for3months', 'local_xp'),
+                        '14' => get_string('numweeks', 'core', 2),
+                        '30' => get_string('nummonth', 'core', 1),
+                        '90' => get_string('nummonths', 'core', 3),
+                        '180' => get_string('nummonths', 'core', 6),
+                        '365' => get_string('numyear', 'core', 1),
                     ]
                 ));
             }
@@ -116,6 +118,20 @@ class settings_maker extends \block_xp\local\setting\default_settings_maker {
 
         // We loop over each setting to inject what more when we need.
         foreach ($parentsettings as $setting) {
+
+            // Replace the setting identity mode.
+            if ($setting->name == 'identitymode') {
+                $setting = new admin_setting_configselect(
+                    $setting->plugin . '/' . $setting->name,
+                    $setting->visiblename,
+                    $setting->description,
+                    $setting->defaultsetting,
+                    array_merge($setting->choices, [
+                        default_course_world_config::IDENTITY_FIRSTNAME_INITIAL_LASTNAME => get_string(
+                            'displayfirstnameinitiallastname', 'local_xp')
+                    ])
+                );
+            }
 
             if ($setting->name == 'hdrcheatguard') {
 

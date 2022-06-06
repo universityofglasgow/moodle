@@ -29,10 +29,11 @@ defined('MOODLE_INTERNAL') || die();
 use context_helper;
 use moodle_database;
 use stdClass;
-use user_picture;
 use block_xp\local\xp\levels_info;
 use block_xp\local\logger\reason_collection_logger;
 use block_xp\local\observer\level_up_state_store_observer;
+use block_xp\local\observer\points_increased_state_store_observer;
+use block_xp\local\utils\user_utils;
 
 /**
  * User state course store.
@@ -56,11 +57,13 @@ class course_user_state_store extends \block_xp\local\xp\course_user_state_store
      * @param reason_collection_logger $logger The reason logger.
      * @param Closure $userstatefactory The user state factory, if any.
      * @param level_up_state_store_observer $observer The observer.
+     * @param points_increased_state_store_observer $pointsobserver The observer.
      */
     public function __construct(moodle_database $db, levels_info $levelsinfo, $courseid, reason_collection_logger $logger,
-            $userstatefactory = null, level_up_state_store_observer $observer = null) {
+            $userstatefactory = null, level_up_state_store_observer $observer = null,
+            points_increased_state_store_observer $pointsobserver = null) {
 
-        parent::__construct($db, $levelsinfo, $courseid, $logger, $observer);
+        parent::__construct($db, $levelsinfo, $courseid, $logger, $observer, $pointsobserver);
         $this->userstatefactory = $userstatefactory;
     }
 
@@ -73,7 +76,7 @@ class course_user_state_store extends \block_xp\local\xp\course_user_state_store
      */
     public function make_state_from_record(stdClass $record, $useridfield = 'userid') {
         if (!empty($this->userstatefactory)) {
-            $user = user_picture::unalias($record, null, $useridfield);
+            $user = user_utils::unalias_picture_fields($record, $useridfield);
             context_helper::preload_from_record($record);
             $xp = !empty($record->xp) ? $record->xp : 0;
             $cb = $this->userstatefactory;

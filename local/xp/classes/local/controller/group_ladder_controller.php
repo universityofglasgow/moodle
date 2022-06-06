@@ -43,6 +43,12 @@ class group_ladder_controller extends \block_xp\local\controller\page_controller
     protected $supportsgroups = false;
     protected $routename = 'group_ladder';
 
+    protected function define_optional_params() {
+        return [
+            ['download', '', PARAM_ALPHA, false]
+        ];
+    }
+
     protected function permissions_checks() {
         parent::permissions_checks();
         $config = \block_xp\di::get('config');
@@ -56,6 +62,18 @@ class group_ladder_controller extends \block_xp\local\controller\page_controller
         parent::page_setup();
         $PAGE->add_body_class('block_xp-ladder');
         $PAGE->add_body_class('block_xp-group-ladder');
+    }
+
+    protected function pre_content() {
+        parent::pre_content();
+
+        // We must send the table before the output starts.
+        $table = $this->get_table();
+        if ($table->is_downloading()) {
+            \core\session\manager::write_close();
+            $table->out(0, false);   // Page size is irrelevant when downloading.
+            die();
+        }
     }
 
     protected function get_highlighted_ids() {
@@ -76,7 +94,16 @@ class group_ladder_controller extends \block_xp\local\controller\page_controller
             $this->get_renderer(),
             $this->get_highlighted_ids()
         );
-        $table->define_baseurl($this->pageurl);
+        $table->define_baseurl($this->pageurl->get_compatible_url());
+
+        // Managers can download the table.
+        $canmanage = $this->world->get_access_permissions()->can_manage();
+        if ($canmanage) {
+            $table->is_downloadable(true);
+            $table->is_downloading($this->get_param('download'), 'xp_team_ladder_' . $this->world->get_courseid());
+            $table->show_download_buttons_at([TABLE_P_BOTTOM]);
+        }
+
         return $table;
     }
 

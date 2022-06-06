@@ -26,6 +26,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $string['activitycompleted'] = 'Activity completed';
+$string['adddrop'] = 'Add a drop';
 $string['afterimport'] = 'After import';
 $string['anonymousgroup'] = 'Another team';
 $string['anonymousiomadcompany'] = 'Another company';
@@ -48,7 +49,33 @@ $string['currencysign_help'] = 'With this setting you can change the meaning of 
 
 For instance you could upload the image of a carrot for the users to be rewarded with carrots for their actions.';
 $string['currencysignformhelp'] = 'The image uploaded here will be displayed next to the points as a substitute for the reference to experience points. The recommended image height is 18 pixels.';
+$string['dropcollected'] = 'Drop collected';
+$string['dropherea'] = 'Drop: {$a}';
+$string['dropenabled'] = 'Enabled';
+$string['dropenabled_help'] = 'A drop will not award any points unless it is enabled.';
+$string['dropname'] = 'Name';
+$string['dropname_help'] = 'The name of the drop for your reference. This is not displayed to users.';
+$string['droppoints'] = 'Points';
+$string['droppoints_help'] = 'The number of points to award when this drop is found.';
+$string['drops'] = 'Drops';
+$string['dropsintro'] = 'Drops are code snippets directly placed in content that award points when encountered by a user.';
+$string['drops_help'] = '
+In video games, some characters can _drop_ items or experience points on the ground for the player to pick up. These items and points are commonly referred to as drops.
+
+In Level Up, drops are shortcodes (e.g. `[xpdrop abcdef]`) that an instructor can place in regular Moodle content. When encountered by a user, these drops will be _picked up_ and a certain amount of points will be awarded.
+
+At present, drops are invible to the user and passively award points the first time they are encountered.
+
+Drops can be use to cleverly award points when certain type of content is consumed by a student. Here are some ideas:
+
+- Place a drop in the feedback of a quiz only visible for perfect scores
+- Place a drop in deep content to reward their consumption
+- Place a drop in an interesting forum discussion
+- Place a drop in a hard-to-get-to page in a lesson module
+';
 $string['displaygroupidentity'] = 'Display teams identity';
+$string['displayfirstnameinitiallastname'] = 'Display first name and initial (e.g. Sam H.)';
+$string['editdrop'] = 'Edit drop';
 $string['enablecheatguard'] = 'Enable cheat guard';
 $string['enablecheatguard_help'] = 'The cheat guard prevents students from being rewarded once they reach certain limits.
 
@@ -57,8 +84,7 @@ $string['enablecheatguard_help'] = 'The cheat guard prevents students from being
 $string['errorunknowncourse'] = 'Error: unknown course';
 $string['errorunknowngradeitem'] = 'Error: unknown grade item';
 $string['filtergradeitems'] = 'Filter grade items';
-$string['for2weeks'] = 'For 2 weeks';
-$string['for3months'] = 'For 3 months';
+$string['filtershortcodesrequiredfordrops'] = 'The plugin [Shortcodes]({$a->url}) needs to be installed and enabled to use drops, it is freely available from [moodle.org]({$a->url}). This plugin will also unlock [Level Up\'s shortcodes]({$a->shortcodesdocsurl}).';
 $string['keeplogsdesc'] = 'The logs are playing an important role in the plugin. They are used for
 the cheat guard, for finding the recent rewards, and for some other things. Reducing the time for
 which the logs are kept can affect how points are distributed over time and should be dealt with carefully.';
@@ -69,16 +95,16 @@ $string['gradesrules'] = 'Grades rules';
 $string['gradesrules_help'] = '
 The rules below determine when students earn points for the grades they receive.
 
-Student will earn as many points as their grade.
-A grade of 5/10, and a grade of 5/100 will both award the student 5 points
+Students will earn as many points as their grade.
+A grade of 5/10, and a grade of 5/100 will both award the student 5 points.
 When a student\'s grade changes multiple times, they will earn points equal to the maximum grade they have received.
 Points are never taken away from students, and negative grades are ignored.
 
-Example: Alice submits an assignment, and receives the mark of 40/100. In _Level up!_, Alice receives 40 points for her grade.
-Alice reattempts her assignment, but this time her grade is lowered to 25/100. Alice\'s points in _Level up!_ do not change.
-For her final attempt, Alice scores 60/100, she earns 20 additional points in _Level up!_, her total of points earned is 60.
+Example: Alice submits an assignment, and receives the mark of 40/100. In _Level Up XP_, Alice receives 40 points for her grade.
+Alice reattempts her assignment, but this time her grade is lowered to 25/100. Alice\'s points in _Level Up XP_ do not change.
+For her final attempt, Alice scores 60/100, she earns 20 additional points in _Level Up XP_, her total of points earned is 60.
 
-[More at _Level up!_ documentation](https://levelup.plus/docs/article/grade-based-rewards?ref=localxp_help)
+[More at _Level Up XP_ documentation](https://levelup.plus/docs/article/grade-based-rewards?ref=localxp_help)
 ';
 $string['groupanonymity'] = 'Anonymity';
 $string['groupanonymity_help'] = 'This setting controls whether participants can see the names of the teams they do not belong to.';
@@ -97,7 +123,7 @@ as teams with more members will have more points remaining than others, even tho
 Press the CTRL or CMD key while clicking to select more than one column, or to unselect a selected column.';
 $string['groupladdersource'] = 'Team up students using';
 $string['groupladdersource_help'] = 'The team ladder displays a leaderboard of an aggregate of the students\' points.
-The value you choose determines what _Level up!_ uses to group the students together.
+The value you choose determines what _Level Up XP_ uses to group the students together.
 When set to _Nothing_ the team ladder will not be available.
 
 To limit the _Course groups_ that appear in the leaderboard, you may create a new grouping containing the relevant groups, and then set this grouping as the _Default grouping_ in the course settings.';
@@ -144,7 +170,7 @@ $string['increasemsg_help'] = 'When a message is provided, it is added to the no
 $string['invalidpointscannotbenegative'] = 'Points cannot be negative.';
 $string['levelbadges'] = 'Level badges override';
 $string['levelbadges_help'] = 'Upload images to override the designs provided by the badge theme.';
-$string['levelup'] = 'Level up!';
+$string['levelup'] = 'Level up!'; // The action, not the brand!
 $string['manualawardsubject'] = 'You were awarded {$a->points} points!';
 $string['manualawardnotification'] = 'You were awarded {$a->points} points by {$a->fullname}.';
 $string['manualawardnotificationwithcourse'] = 'You were awarded {$a->points} points by {$a->fullname} in the course {$a->coursename}.';
@@ -152,11 +178,12 @@ $string['manuallyawarded'] = 'Manually awarded';
 $string['maxn'] = 'Max: {$a}';
 $string['maxpointspertime'] = 'Max. points in time frame';
 $string['maxpointspertime_help'] = 'The maxmimum number of points that can be earned during the time frame given. When this value is empty, or equals to zero, it does not apply.';
-$string['messageprovider:manualaward'] = 'Level up! points manually awarded';
+$string['messageprovider:manualaward'] = 'Level Up XP points manually awarded';
 $string['missingpermssionsmessage'] = 'You do not have the required permissions to access this content.';
 $string['mylevel'] = 'My level';
+$string['navdrops'] = 'Drops';
 $string['navgroupladder'] = 'Team ladder';
-$string['pluginname'] = 'Level up! Plus';
+$string['pluginname'] = 'Level Up XP+';
 $string['points'] = 'Points';
 $string['previewmore'] = 'Preview more';
 $string['privacy:metadata:log'] = 'Stores a log of events';
@@ -174,6 +201,7 @@ When set to _The ultimate level_, the progress bar will indicate the percentage 
 In either case, the progress bar will remain full when the last level is attained.';
 $string['progressbarmodelevel'] = 'The next level';
 $string['progressbarmodeoverall'] = 'The ultimate level';
+$string['reallyedeletedrop'] = 'Are you sure that you want to delete this drop? This action is not reversible.';
 $string['ruleactivitycompletion'] = 'Activity completion';
 $string['ruleactivitycompletion_help'] = '
 This condition is met when an activity was just marked as complete, so long as the completion was not marked as failed.
@@ -186,6 +214,17 @@ as complete.
 This condition will only reward the student once.';
 $string['ruleactivitycompletion_link'] = 'Activity_completion';
 $string['ruleactivitycompletiondesc'] = 'An activity or resource was successfully completed';
+$string['ruleactivitycompletioninfo'] = 'This condition matches when a student completes an activity or resource.';
+$string['rulecmname'] = 'Activity name';
+$string['rulecmname_help'] = 'This condition is met when the event occurs in an activity that is named as specified.
+
+Notes:
+
+- The comparison is not case sensitive.
+- An empty value will never match.
+- Consider using **contains** when the activity name includes [multilang](https://docs.moodle.org/en/Multi-language_content_filter) tags.';
+$string['rulecmnamedesc'] = 'The activity name {$a->compare} \'{$a->value}\'.';
+$string['rulecmnameinfo'] = 'Specifies the name of the activities or resources in which the action must occur.';
 $string['rulecoursecompletion'] = 'Course completion';
 $string['rulecoursecompletion_help'] = 'This rule is met when a course is completed by a student.
 
@@ -193,18 +232,22 @@ __Note:__ Students will not instantaneously receive their points, it takes a lit
 $string['rulecoursecompletion_link'] = 'Course_completion';
 $string['rulecoursecompletiondesc'] = 'A course was completed';
 $string['rulecoursecompletioncoursemodedesc'] = 'The course was completed';
+$string['rulecoursecompletioninfo'] = 'This condition matches when a student completes a course.';
 $string['rulecourse'] = 'Course';
 $string['rulecourse_help'] = 'This condition is met when the event occurs in the course specified.
 
 It is only available when the plugin is used for the whole site. When the plugin is used per course, this condition becomes ineffective.';
 $string['rulecoursedesc'] = 'The course is: {$a}';
+$string['rulecourseinfo'] = 'This condition requires that the action takes place in a specific course.';
 $string['rulegradeitem'] = 'Specific grade item';
 $string['rulegradeitem_help'] = 'This condition is met when a grade is given for the grade item specified.';
 $string['rulegradeitemdesc'] = 'The grade item is \'{$a->gradeitemname}\'';
 $string['rulegradeitemdescwithcourse'] = 'The grade item is: \'{$a->gradeitemname}\' in \'{$a->coursename}\'';
+$string['rulegradeiteminfo'] = 'This condition matches for grades received for a particular grade item.';
 $string['rulegradeitemtype'] = 'Grade type';
 $string['rulegradeitemtype_help'] = 'This condition is met when the grade item is of the required type. When an activity type is selected, any grade originating from this activity type would match.';
 $string['rulegradeitemtypedesc'] = 'The grade is a \'{$a}\' grade';
+$string['rulegradeitemtypeinfo'] = 'This condition matches when the grade item is of the required type.';
 $string['ruleusergraded'] = 'Grade received';
 $string['ruleusergraded_help'] = 'This condition is met when:
 
@@ -218,6 +261,7 @@ This condition will only reward the student once.';
 $string['ruleusergradeddesc'] = 'The student received a passing grade';
 $string['sendawardnotification'] = 'Send award notification';
 $string['sendawardnotification_help'] = 'When enabled, the student will receive a notification that they were awarded points. The message will contain your name, the amount of points, and the name of the course if any.';
+$string['shortcode:xpdrop'] = 'Include a drop in the content.';
 $string['shortcode:xpteamladder'] = 'Display a portion of the team ladder.';
 $string['shortcode:xpteamladder_help'] = '
 By default, a portion of the team ladder surrounding the current user will be displayed.
@@ -247,9 +291,11 @@ By default, the table does not include the progress column which displays the pr
 
 Note that when the current user belongs to multiple teams, the plugin will use the one with the best rank as reference.
 ';
+$string['studentsearnpointsforgradeswhen'] = 'Students earn points for grades when:';
 $string['unabletoidentifyuser'] = 'Unable to identify user.';
 $string['unknowngradeitemtype'] = 'Unknown type ({$a})';
 $string['uptoleveln'] = 'Up to level {$a}';
+$string['team'] = 'Team';
 $string['themestandard'] = 'Standard';
 $string['theyleftthefollowingmessage'] = 'They left the following message:';
 $string['timeformaxpoints'] = 'Time frame for max. points';
@@ -259,3 +305,7 @@ $string['visualsintro'] = 'Customise the appearance of the levels, and the point
 // Deprecated since v1.7.
 $string['enablegroupladder'] = 'Enable group ladder';
 $string['enablegroupladder_help'] = 'When enabled, students can view a leaderboard of the course groups. The group points are computed from the points accrued by the members of each group. This currently only applies when the plugin is used per course, and not for the whole site.';
+
+// Deprecated since v1.10.2.
+$string['for2weeks'] = 'For 2 weeks';
+$string['for3months'] = 'For 3 months';

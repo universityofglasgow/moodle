@@ -16,15 +16,13 @@
 /**
  * Grade item selector.
  *
- * @package    local_xp
  * @copyright  2019 Frédéric Massart
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define(['jquery', 'core/ajax', 'block_xp/course-resource-selector', 'local_xp/grade-item-resource-selector'], function(
+define(['jquery', 'block_xp/course-resource-selector', 'local_xp/grade-item-resource-selector'], function(
     $,
-    Ajax,
     CourseResourceSelector,
     GradeItemResourceSelector
 ) {

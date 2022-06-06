@@ -52,6 +52,7 @@ class import_controller extends page_controller {
 
     protected $confirmform;
     protected $form;
+    protected $navname = 'report';
     protected $routename = 'import';
 
     protected function define_optional_params() {

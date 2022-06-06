@@ -213,12 +213,61 @@ function xmldb_local_xp_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2019061001, 'local', 'xp');
     }
 
-    // Force the themes upgrade.
-    try {
-        $themeupdater = \block_xp\di::get('theme_updater');
-        $themeupdater->update_themes();
-    } catch (Exception $e) {
-        debugging('Exception caught during call to local_xp::theme_updater.');
+    if ($oldversion < 2022021118) {
+
+        // Define table local_xp_drops to be created.
+        $table = new xmldb_table('local_xp_drops');
+
+        // Adding fields to table local_xp_drops.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('name', XMLDB_TYPE_CHAR, '64', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('courseid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('points', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('secret', XMLDB_TYPE_CHAR, '12', null, XMLDB_NOTNULL, null, null);
+
+        // Adding keys to table local_xp_drops.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+
+        // Adding indexes to table local_xp_drops.
+        $table->add_index('courseid', XMLDB_INDEX_NOTUNIQUE, ['courseid']);
+
+        // Conditionally launch create table for local_xp_drops.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Xp savepoint reached.
+        upgrade_plugin_savepoint(true, 2022021118, 'local', 'xp');
+    }
+
+    if ($oldversion < 2022021119) {
+
+        // Define field enabled to be added to local_xp_drops.
+        $table = new xmldb_table('local_xp_drops');
+        $field = new xmldb_field('enabled', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1', 'points');
+
+        // Conditionally launch add field enabled.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Xp savepoint reached.
+        upgrade_plugin_savepoint(true, 2022021119, 'local', 'xp');
+    }
+
+    if ($oldversion < 2022021120) {
+
+        // Define field secret to be added to local_xp_drops.
+        $table = new xmldb_table('local_xp_drops');
+        $field = new xmldb_field('secret', XMLDB_TYPE_CHAR, '12', null, XMLDB_NOTNULL, null, null, 'enabled');
+
+        // Conditionally launch add field secret.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Xp savepoint reached.
+        upgrade_plugin_savepoint(true, 2022021120, 'local', 'xp');
     }
 
     // Lastly, force update of block_xp, because it won't update automatically.

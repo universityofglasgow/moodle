@@ -34,6 +34,7 @@ use context;
 use context_course;
 use core_text;
 use external_api;
+use external_description;
 use external_function_parameters;
 use external_multiple_structure;
 use external_single_structure;
@@ -50,13 +51,13 @@ use block_xp\local\config\filtered_config;
 use block_xp\local\config\mapped_config;
 use block_xp\local\iterator\map_iterator;
 use block_xp\local\sql\limit;
+use block_xp\local\xp\anonymised_state;
 use block_xp\local\xp\level;
 use block_xp\local\xp\level_with_badge;
 use block_xp\local\xp\level_with_description;
 use block_xp\local\xp\level_with_name;
 use block_xp\local\xp\levels_info;
 use block_xp\local\xp\state;
-use block_xp\local\xp\state_rank;
 use block_xp\local\xp\state_with_subject;
 use block_xp\local\xp\user_state;
 use local_xp\local\config\default_course_world_config;
@@ -98,6 +99,7 @@ class external extends external_api {
         $userid = $USER->id;
         $context = context_course::instance($courseid);
         self::validate_context($context);
+        di::get('addon')->require_activated();
 
         $course = get_course($courseid);
         $groupmode = groups_get_course_groupmode($course);
@@ -180,6 +182,7 @@ class external extends external_api {
         $courseid = $world->get_courseid(); // Ensure that we get the real course ID.
         $userid = $USER->id;
         self::validate_context($world->get_context());
+        di::get('addon')->require_activated();
 
         // Permission checks: can manage, or can access, and the ladder is enabled.
         $perms = $world->get_access_permissions();
@@ -198,7 +201,6 @@ class external extends external_api {
         $neighbours = $config->get('neighbours');
         $rankmode = $config->get('rankmode');
         $identitymode = $config->get('identitymode');
-        $isanon = $identitymode == course_world_config::IDENTITY_OFF;
 
         // Leaderboard.
         $leaderboard = \block_xp\di::get('course_world_leaderboard_factory')->get_course_leaderboard($world, $groupid);
@@ -223,14 +225,10 @@ class external extends external_api {
             'total' => $leaderboard->get_count(),
             'ranking' => iterator_to_array(new map_iterator(
                     $leaderboard->get_ranking($limit),
-                    function($rank) use ($userid, $isanon) {
+                    function($rank) {
                         return [
                             'rank' => $rank->get_rank(),
-                            'state' => self::serialize_state(
-                                $rank->get_state(),
-                                true,
-                                $isanon && $rank->get_state()->get_id() != $userid
-                            )
+                            'state' => self::serialize_state($rank->get_state(), true)
                         ];
                     }
             ), false),
@@ -296,6 +294,7 @@ class external extends external_api {
         $courseid = $world->get_courseid(); // Ensure that we get the real course ID.
         $userid = $USER->id;
         self::validate_context($world->get_context());
+        di::get('addon')->require_activated();
 
         // Permission checks: can manage, or can access.
         $perms = $world->get_access_permissions();
@@ -390,6 +389,7 @@ class external extends external_api {
         $world = $worldfactory->get_world($courseid);
         $courseid = $world->get_courseid(); // Ensure that we get the real course ID.
         self::validate_context($world->get_context());
+        di::get('addon')->require_activated();
 
         // Permission checks: can manage, or can access, and the info page is enabled.
         $perms = $world->get_access_permissions();
@@ -438,6 +438,7 @@ class external extends external_api {
         $world = $worldfactory->get_world($courseid);
         $courseid = $world->get_courseid(); // Ensure that we get the real course ID.
         self::validate_context($world->get_context());
+        di::get('addon')->require_activated();
 
         // Permission checks.
         $perms = $world->get_access_permissions();
@@ -505,6 +506,7 @@ class external extends external_api {
         $world = $worldfactory->get_world($courseid);
         $courseid = $world->get_courseid(); // Ensure that we get the real course ID.
         self::validate_context($world->get_context());
+        di::get('addon')->require_activated();
 
         // Find the block instance, we use the course context because the front page is a course.
         $bi = $bifinder->get_any_instance_in_context('xp', $world->get_context());
@@ -619,6 +621,7 @@ class external extends external_api {
         $world = di::get('course_world_factory')->get_world($courseid);
         $courseid = $world->get_courseid();
         self::validate_context($world->get_context());
+        di::get('addon')->require_activated();
 
         $world->get_access_permissions()->require_access();
         if ($userid != $USER->id) {
@@ -638,6 +641,17 @@ class external extends external_api {
      */
     public static function get_user_state_returns() {
         return self::state_description();
+    }
+
+    /**
+     * External function response.
+     *
+     * @return external_function_parameters
+     */
+    public static function pickup_drop_returns() {
+        return new external_function_parameters([
+            'xp' => new external_value(PARAM_INT)
+        ]);
     }
 
     /**
@@ -666,6 +680,7 @@ class external extends external_api {
 
         $world = di::get('course_world_factory')->get_world($courseid);
         self::validate_context($world->get_context());
+        di::get('addon')->require_activated();
         $world->get_access_permissions()->require_manage();
 
         // Iterate over the tree, reduce the items, fitler out the null values,
@@ -989,6 +1004,8 @@ class external extends external_api {
      *
      * @param state $state The state.
      * @param bool $withuser True when the user info has to be added.
+     * @param bool $anonymously No longer used.
+     * @param int[] $myids The user IDs.
      * @return array
      */
     public static function serialize_state(state $state, $withuser = false, $anonymously = false, array $myids = []) {
@@ -1003,40 +1020,35 @@ class external extends external_api {
             'xpinlevel' => $state->get_xp_in_level(),
         ];
 
-        if ($withuser && $state instanceof user_state) {
-            $user = $state->get_user();
-            if ($anonymously !== false) {
-                $data['id'] = 0;
-                $userid = 0;
-                $fullname = get_string('someoneelse', 'block_xp');
-            } else {
-                $userid = $user->id;
-                $fullname = fullname($user);
-            }
-            $userpicture = new \user_picture($user);
-            $userpicture->size = 1;
-            $profileimageurl = $userpicture->get_url($PAGE)->out(false);
-            $data['user'] = [
-                'id' => $userid,
-                'fullname' => $fullname,
-                'profileimageurl' => $profileimageurl,
-            ];
-
-        } else if ($state instanceof state_with_subject) {
+        if ($state instanceof state_with_subject) {
             $data['subject'] = [
                 'id' => $state->get_id(),
                 'name' => $state->get_name(),
                 'imageurl' => self::serialize_url($state->get_picture()),
                 'ismine' => in_array($state->get_id(), $myids)
             ];
+        }
 
+        // This is the legacy support for users, other types should use subjects. This is so that
+        // older versions of the Mobile app may still work with the key 'user'. However, as the latest
+        // user_state now implements state_with_subject, and that anonymity is built-in the leaderboard
+        // factory, we basically just defer to calling the state_with_subject methods. We throw in the
+        // anonymised state if a user was requested, because anonymous users are not necessarily user_state.
+        if ($withuser) {
+            if ($state instanceof user_state || $state instanceof anonymised_state) {
+                $data['user'] = [
+                    'id' => $state->get_id(),
+                    'fullname' => $state->get_name(),
+                    'profileimageurl' => self::serialize_url($state->get_picture()),
+                    'isme' => in_array($state->get_id(), $myids)
+                ];
+            }
         }
 
         // Keep this as legacy support for groups, other types should use subjects. This is so that older
         // versions of the Mobile app may still work with the key 'group'. However, as the latest levelless_group_state
         // now implements 'state_with_subject', we basically call its subjet methods.
         if ($state instanceof levelless_group_state) {
-            $group = $state->get_group();
             $data['group'] = [
                 'id' => $state->get_id(),
                 'name' => $state->get_name(),

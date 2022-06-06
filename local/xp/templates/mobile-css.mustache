@@ -1,7 +1,13 @@
 {{=<% %>=}}
 <style>
+.mma-xp-ladder ion-button.prev-page,
+.mma-xp-ladder ion-button.next-page {
+    width: 100%;
+}
+
 .mma-xp-level {
     display: inline-block;
+    line-height: 1;
     width: 100px;
 }
 .mma-xp-level .level {
@@ -116,9 +122,9 @@
 }
 .mma-xp-tabs-bar button {
     contain: none;
-    min-height: 4.8rem;
+    padding: 8px 0;
 }
-.mma-xp-tabs-bar button[active] {
+.mma-xp-tabs-bar ion-button[active] {
     border-bottom: 2px solid #41c2ff;
 }
 </style>

@@ -31,6 +31,7 @@ use stdClass;
 use block_xp\local\xp\levels_info;
 use local_xp\local\xp\levelless_state;
 use local_xp\local\leaderboard\grouped_leaderboard;
+use local_xp\local\team\static_team;
 
 /**
  * Department leaderboard.
@@ -87,14 +88,14 @@ class department_leaderboard extends grouped_leaderboard {
     /**
      * Get the team join.
      *
-     * @return \core\dml\sql_join
+     * @return \local_xp\local\sql\join
      */
     protected function get_team_join() {
         $joins = "JOIN {company_users} cu
                     ON cu.userid = x.userid
                   JOIN {department} t
                     ON t.id = cu.departmentid";
-        return new \core\dml\sql_join(
+        return new \local_xp\local\sql\join(
             $joins,
             'cu.companyid = :companyid AND cu.managertype = :managertype',
             ['companyid' => $this->companyid, 'managertype' => 0]
@@ -108,6 +109,24 @@ class department_leaderboard extends grouped_leaderboard {
      */
     protected function get_team_table() {
         return 'department';
+    }
+
+    /**
+     * Get the teams of a member.
+     *
+     * @param int $memberid The member ID.
+     * @return \local_xp\local\team\team[] The teams.
+     */
+    public function get_teams_of_member($memberid) {
+        $sql = "SELECT DISTINCT t.id
+                  FROM {department} t
+                  JOIN {company_users} cu
+                    ON t.id = cu.departmentid
+                 WHERE cu.userid = :userid";
+        $params = ['userid' => $memberid];
+        return array_map(function($row) {
+            return new static_team($row->id, $this->get_department_name($row->id));
+        }, $this->db->get_records_sql($sql, $params));
     }
 
     /**

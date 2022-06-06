@@ -36,6 +36,12 @@ defined('MOODLE_INTERNAL') || die();
  */
 class ladder_controller extends \block_xp\local\controller\ladder_controller {
 
+    protected function define_optional_params() {
+        $params = parent::define_optional_params();
+        $params[] = ['download', '', PARAM_ALPHA, false];
+        return $params;
+    }
+
     protected function pre_content() {
         $iomad = \block_xp\di::get('iomad_facade');
         if ($iomad->exists()) {
@@ -43,6 +49,47 @@ class ladder_controller extends \block_xp\local\controller\ladder_controller {
             $iomad->redirect_for_company_if_needed();
         }
         parent::pre_content();
+
+        // We must send the table before the output starts.
+        $table = $this->get_table();
+        if ($table->is_downloading()) {
+            \core\session\manager::write_close();
+            $table->out(0, false);   // Page size is irrelevant when downloading.
+            die();
+        }
+    }
+
+    /**
+     * Get the table.
+     *
+     * @return flexible_table
+     */
+    protected function get_table() {
+        global $USER;
+
+        $table = new \local_xp\output\leaderboard_table(
+            $this->get_leaderboard(),
+            $this->get_renderer(),
+            [
+                'context' => $this->world->get_context(),
+                'identitymode' => $this->world->get_config()->get('identitymode'),
+                'rankmode' => $this->world->get_config()->get('rankmode'),
+            ],
+            $USER->id
+        );
+        $table->show_pagesize_selector(true);
+        $table->define_baseurl($this->pageurl->get_compatible_url());
+
+        // Managers can download the table.
+        $canmanage = $this->world->get_access_permissions()->can_manage();
+        if ($canmanage) {
+            $table->is_downloadable(true);
+            $table->is_downloading($this->get_param('download'), 'xp_ladder_' . $this->world->get_courseid()
+                . '_' . $this->get_groupid());
+            $table->show_download_buttons_at([TABLE_P_BOTTOM]);
+        }
+
+        return $table;
     }
 
 }

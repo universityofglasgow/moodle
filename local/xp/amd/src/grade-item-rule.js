@@ -16,7 +16,6 @@
 /**
  * Grade item rule.
  *
- * @package    block_xp
  * @author     Frédéric Massart <fred@branchup.tech>
  * @copyright  2019 Frédéric Massart
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later

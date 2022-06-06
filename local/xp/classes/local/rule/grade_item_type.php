@@ -83,7 +83,7 @@ class grade_item_type extends block_xp_rule_base {
      * @return string
      */
     public function get_form($basename) {
-        $output = \block_xp\di::get('renderer');
+        $output = $this->get_renderer();
         $o = parent::get_form($basename);
 
         $plugmanager = core_plugin_manager::instance();

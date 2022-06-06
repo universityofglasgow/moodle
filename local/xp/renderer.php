@@ -27,6 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot . '/blocks/xp/renderer.php');
 
 use local_xp\local\factory\course_currency_factory;
+use local_xp\local\drop\drop;
 use local_xp\local\currency\currency;
 
 /**
@@ -48,15 +49,29 @@ class local_xp_renderer extends block_xp_renderer {
 
         if ($signurl = $currency->get_sign_url()) {
             $classes .= ' sign-img';
-            $sign = html_writer::empty_tag('img', ['src' => $signurl, 'alt' => '']);
+            $sign = html_writer::empty_tag('img', ['src' => $signurl, 'alt' => $sign]);
 
         } else if ($currency->use_sign_as_superscript()) {
             $classes .= ' sign-sup';
         }
 
         $o = '';
-        $o .= html_writer::div($sign, $classes);
+        $o .= html_writer::tag('span', $sign, ['class' => $classes]);
         return $o;
+    }
+
+    /**
+     * Renders a drop.
+     *
+     * @param drop $drop The drop.
+     */
+    public function drop(drop $drop) {
+        $context = [
+            "secret" => $drop->get_secret(),
+            "courseid" => $drop->get_courseid(),
+            "id" => $drop->get_id(),
+        ];
+        return $this->render_from_template("local_xp/drop", $context);
     }
 
     /**
@@ -130,7 +145,7 @@ class local_xp_renderer extends block_xp_renderer {
         $o .= html_writer::start_tag('li', array('class' => 'filter', 'data-basename' => $basename));
 
         $content = '';
-        $content .= 'Students earn points for grades when:';
+        $content .= get_string('studentsearnpointsforgradeswhen', 'local_xp');
 
         $o .= html_writer::tag('p', $content);
         $o .= html_writer::empty_tag('input', array(
@@ -167,12 +182,14 @@ class local_xp_renderer extends block_xp_renderer {
             'rules' => array_reduce($widget->rules, function($carry, $rule) {
                 $carry[] = [
                     'name' => $rule->name,
+                    'info' => !empty($rule->info) ? $rule->info : null,
                     'template' => $this->render($rule->rule, ['iseditable' => true, 'basename' => 'XXXXX'])
                 ];
                 return $carry;
             }, [])
         ]]);
-        $this->page->requires->strings_for_js(array('pickaconditiontype'), 'block_xp');
+        $this->page->requires->strings_for_js(['pickaconditiontype', 'deleterule', 'deletecondition'], 'block_xp');
+        $this->page->requires->strings_for_js(['areyousure'], 'core');
 
         echo html_writer::start_div('block-xp-filters-wrapper block-xp-grade-filters-wrapper', ['id' => $containerid]);
         echo html_writer::start_tag('ul', ['class' => 'filters-list filters-editable']);
@@ -195,10 +212,10 @@ class local_xp_renderer extends block_xp_renderer {
             $currency = $this->get_course_currency_factory()->get_currency($courseid);
         }
         $o = '';
-        $o .= html_writer::start_div('block_xp-xp');
-        $o .= html_writer::div($this->xp_amount($points), 'pts');
+        $o .= html_writer::start_tag('span', ['class' => 'block_xp-xp']);
+        $o .= html_writer::tag('span', $this->xp_amount($points), ['class' => 'pts']);
         $o .= $this->currency($currency);
-        $o .= html_writer::end_div();
+        $o .= html_writer::end_tag('span');
         return $o;
     }
 

@@ -43,8 +43,10 @@ class visuals extends moodleform {
     public function definition() {
         $mform = $this->_form;
         $renderer = \block_xp\di::get('renderer');
+        $updater = \block_xp\di::get('theme_updater');
         $repository = \block_xp\di::get('theme_repository');
 
+        $updater->update_themes_if_required();
         $themes = array_reduce($repository->get_themes(), function($carry, $theme) {
             $carry[$theme->code] = $theme->name;
             return $carry;

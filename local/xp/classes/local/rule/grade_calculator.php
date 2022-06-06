@@ -125,7 +125,7 @@ class grade_calculator implements result_calculator {
         }
 
         // Whether to ignore the grade items when they are hidden. We do not support this yet,
-        // it is up to the person that manages Level up! to ensure that hidden grades are not leaked.
+        // it is up to the person that manages Level Up XP to ensure that hidden grades are not leaked.
         $ignoreifhidden = false;
         if ($ignoreifhidden) {
             if ($gradeobject->hidden) {
@@ -140,7 +140,7 @@ class grade_calculator implements result_calculator {
         }
 
         // We should be good now, return the grade as final result.
-        $points = $gradeobject->finalgrade !== null ? max(0, (int) $gradeobject->finalgrade) : null;
+        $points = $gradeobject->finalgrade !== null ? max(0, round($gradeobject->finalgrade)) : null;
         return new static_result($points, true);
     }
 

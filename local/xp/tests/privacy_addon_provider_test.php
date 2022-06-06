@@ -47,7 +47,7 @@ use local_xp\privacy\provider;
  */
 class local_xp_privacy_addon_provider_testcase extends local_xp_base_testcase {
 
-    public function setUp() {
+    public function setUp(): void {
         global $CFG;
         if (!class_exists('core_privacy\manager')) {
             $this->markTestSkipped('Moodle versions does not support privacy subsystem.');

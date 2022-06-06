@@ -1,6 +1,121 @@
 Changelog
 =========
 
+v1.12.1
+-------
+
+New features
+
+- Drops can be deleted (Pro, Multi)
+
+v1.12.0
+-------
+
+New features
+
+- Drops: award points by placing code snippets anywhere (Pro, Multi)
+- Anonymise leaderboard by first name and initial (Pro, Multi)
+- User leaderboard can be downloaded to CSV, XLS, etc. (Pro, Multi)
+- Team leaderboard can be downloaded to CSV, XLS, etc. (Pro, Multi)
+
+Quality of life
+
+- Team names are displayed in the report (Pro, Multi)
+- Updated Chinese language strings
+
+Bug fixes
+
+- Minor bug fixes and improvements
+
+Technical changes
+
+- Raised minimum required version to Moodle 3.3
+- Compatibility with Moodle 4.0
+- Compatibility with PHP 8
+- Support for optional activation of Level Up XP+ for shared hosting (beta)
+
+Additional notes
+
+- Level Up Plus is renamed Level Up XP+.
+
+v1.11.2
+-------
+
+Bug fixes
+
+- Adapt mobile styling for compatibility with latest Moodle app
+- Group selector was not always usable in Moodle app
+- Fix hardcoded language string in Moodle app
+
+v1.11.1
+-------
+
+Quality of life
+
+- Updated French language strings
+
+Bug fixes
+
+- Included missing language string for course rule
+- Converted hardcoded string to translatable string
+- Log could cause fatal errors when invalid reasons were used
+
+v1.11.0
+-------
+
+New features
+
+- New rule to target an activity by its name
+- The logs can be downloaded to CSV, XLS, etc.
+
+Quality of life
+
+- Updated French language strings
+
+Bug fixes
+
+- Points based on a grade could be 1 point off due to rounding errors
+- Restoring backups with missing grade items resulted in a fatal error
+- The filters on the log table could not be removed when empty
+
+Technical changes
+
+- Compatibility with Moodle 3.11
+
+v1.10.4
+-------
+
+Bug fixes
+
+- Team leaderboard was inaccessible in Moodle 3.1
+
+v1.10.3
+-------
+
+Bug fixes
+
+- Log retention setting incorrectly used default value of 3 months
+
+v1.10.2
+-------
+
+Quality of life
+
+- Additional options for log retention duration
+- Added Chinese language strings
+- Updated French language strings
+
+Bug fixes
+
+- Prevent rules from displaying debug notices when instantiated
+
+v1.10.1
+-------
+
+Bug fixes
+
+- Team leaderboard using cohorts raised exceptions for Moodle 3.4 and older
+
 v1.10.0
 -------
 

@@ -30,18 +30,19 @@ use lang_string;
 use moodle_database;
 use renderer_base;
 use block_xp\local\course_world;
-use block_xp\local\config\config;
 use block_xp\local\config\course_world_config;
-use block_xp\local\leaderboard\anonymised_leaderboard;
+use block_xp\local\leaderboard\anonymisable_leaderboard;
 use block_xp\local\leaderboard\empty_leaderboard;
 use block_xp\local\leaderboard\leaderboard;
+use block_xp\local\xp\full_anonymiser;
+use coding_exception;
 use local_xp\local\config\default_course_world_config;
 use local_xp\local\iomad\company_leaderboard;
 use local_xp\local\iomad\department_leaderboard;
 use local_xp\local\iomad\facade as iomadfacade;
 use local_xp\local\leaderboard\cohort_leaderboard;
 use local_xp\local\leaderboard\course_group_leaderboard;
-
+use local_xp\local\team\team_membership_resolver;
 
 /**
  * Default course world grouped leaderboard factory.
@@ -51,7 +52,9 @@ use local_xp\local\leaderboard\course_group_leaderboard;
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class default_course_world_grouped_leaderboard_factory implements course_world_grouped_leaderboard_factory {
+class default_course_world_grouped_leaderboard_factory implements
+        course_world_grouped_leaderboard_factory,
+        course_world_team_membership_resolver_factory {
 
     /** @var moodle_database The DB. */
     protected $db;
@@ -86,8 +89,6 @@ class default_course_world_grouped_leaderboard_factory implements course_world_g
     public function get_course_grouped_leaderboard(course_world $world) {
         global $USER;
 
-        $config = $world->get_config();
-
         // Find out what columns to use.
         $columns = $this->get_columns($world);
 
@@ -97,6 +98,20 @@ class default_course_world_grouped_leaderboard_factory implements course_world_g
         // Wrap?
         $leaderboard = $this->wrap_leaderboard($world, $leaderboard);
 
+        return $leaderboard;
+    }
+
+    /**
+     * Get the membership resolver.
+     *
+     * @param course_world $world The world.
+     * @return team_membership_resolver
+     */
+    public function get_course_team_membership_resolver(course_world $world) {
+        $leaderboard = $this->get_leaderboard_instance($world, $this->get_columns($world));
+        if (!$leaderboard instanceof team_membership_resolver) {
+            throw new coding_exception('Team leaderboard is expected to implement team_membership_resolver');
+        }
         return $leaderboard;
     }
 
@@ -175,13 +190,12 @@ class default_course_world_grouped_leaderboard_factory implements course_world_g
 
         // Is the leaderboard anonymous?
         if ($config->get('groupidentitymode') == course_world_config::IDENTITY_OFF) {
-            $leaderboard = new anonymised_leaderboard(
-                $leaderboard,
-                $world->get_levels_info(),
+            $anonymiser = new full_anonymiser(
                 guest_user(),
                 $this->helper->get_user_group_ids($USER, $world),
                 $this->helper->get_anonymous_group_name($world)
             );
+            $leaderboard = new anonymisable_leaderboard($leaderboard, $anonymiser);
         }
 
         return $leaderboard;

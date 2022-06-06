@@ -52,13 +52,6 @@ class activity_completion extends block_xp_rule {
     protected $output;
 
     /**
-     * Constructor.
-     */
-    public function __construct() {
-        $this->output = \block_xp\di::get('renderer');
-    }
-
-    /**
      * Export the properties and their values.
      *
      * @return array Keys are properties, values are the values.
@@ -89,7 +82,7 @@ class activity_completion extends block_xp_rule {
         $o = parent::get_form($basename);
         $o .= html_writer::empty_tag('input', ['type' => 'hidden', 'value' => $success, 'name' => $basename . '[mode]']);
         $o .= get_string('ruleactivitycompletiondesc', 'local_xp');
-        $o .= $this->output->help_icon('ruleactivitycompletion', 'local_xp');
+        $o .= $this->get_renderer()->help_icon('ruleactivitycompletion', 'local_xp');
         return $o;
     }
 

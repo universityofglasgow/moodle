@@ -16,18 +16,11 @@
 /**
  * Course rule.
  *
- * @package    local_xp
  * @author     Frédéric Massart <fred@branchup.tech>
  * @copyright  2018 Frédéric Massart
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-define(['jquery', 'core/templates', 'core/ajax', 'core/str', 'block_xp/dialogue-base'], function(
-    $,
-    Templates,
-    Ajax,
-    Str,
-    DialogueBase
-) {
+define(['jquery', 'core/templates', 'core/str', 'block_xp/dialogue-base'], function($, Templates, Str, DialogueBase) {
     var SELECTOR_WRAPPER = '.block-xp-filters';
     var SELECTOR_WIDGET = '.local_xp-course-rule-widget';
     var SELECTOR_WIDGET_TRIGGER = '.local_xp-course-rule-widget button';
@@ -91,6 +84,6 @@ define(['jquery', 'core/templates', 'core/ajax', 'core/str', 'block_xp/dialogue-
     }
 
     return {
-        init: init
+        init: init,
     };
 });

@@ -6,7 +6,7 @@
     height: 18px;
     margin: 0 3px;
     padding: 0;
-    vertical-align: top;
+    vertical-align: middle;
 }
 .block_xp-level-progress .sign-img img {
     margin-top: 1px;
@@ -26,7 +26,7 @@
  */
 .block-xp-grade-filters-wrapper .filter-rules,
 .block-xp-grade-filters-wrapper .filters-list .filter > p {
-    margin-left: .5em;
+    margin-left: 0.5em;
 }
 
 /**

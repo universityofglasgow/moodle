@@ -31,8 +31,12 @@ defined('MOODLE_INTERNAL') || die();
 // string with 'local_xp', which leads to 'block_xp' lacking the required strings.
 // When the filter will allow this form of subclassing, we will update this file.
 $shortcodes = [
+    'xpdrop' => [
+        'callback' => 'local_xp\local\shortcode\handler::xpdrop',
+        'description' => 'shortcode:xpdrop'
+    ],
     'xpteamladder' => [
         'callback' => 'local_xp\local\shortcode\handler::xpteamladder',
         'description' => 'shortcode:xpteamladder'
-    ]
+    ],
 ];

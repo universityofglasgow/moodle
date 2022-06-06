@@ -48,15 +48,6 @@ class user_graded extends block_xp_rule {
 
     /** @var int The mode chosen. */
     protected $mode = 0;
-    /** @var renderer_base The renderer. */
-    protected $output;
-
-    /**
-     * Constructor.
-     */
-    public function __construct() {
-        $this->output = \block_xp\di::get('renderer');
-    }
 
     /**
      * Export the properties and their values.
@@ -89,7 +80,7 @@ class user_graded extends block_xp_rule {
         $o = parent::get_form($basename);
         $o .= html_writer::empty_tag('input', ['type' => 'hidden', 'value' => $success, 'name' => $basename . '[mode]']);
         $o .= $this->get_description();
-        $o .= $this->output->help_icon('ruleusergraded', 'local_xp');
+        $o .= $this->get_renderer()->help_icon('ruleusergraded', 'local_xp');
         return $o;
     }
 

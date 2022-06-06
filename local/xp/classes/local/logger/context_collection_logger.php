@@ -138,7 +138,6 @@ class context_collection_logger implements
 
         return array_map(function($row) {
             $reason = $this->reasonmaker->make_from_type_and_signature($row->type, $row->signature);
-
             $desc = '';
             if ($reason instanceof reason_with_short_description) {
                 $desc = $reason->get_short_description();

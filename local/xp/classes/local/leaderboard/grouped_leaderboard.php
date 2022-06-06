@@ -29,6 +29,7 @@ defined('MOODLE_INTERNAL') || die();
 use moodle_database;
 use stdClass;
 use block_xp\local\sql\limit;
+use block_xp\local\xp\state;
 use block_xp\local\xp\state_rank;
 use local_xp\local\config\default_course_world_config;
 
@@ -45,7 +46,9 @@ use local_xp\local\config\default_course_world_config;
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-abstract class grouped_leaderboard implements \block_xp\local\leaderboard\leaderboard {
+abstract class grouped_leaderboard implements
+        \block_xp\local\leaderboard\leaderboard,
+        \local_xp\local\team\team_membership_resolver {
 
     /** Order by points. */
     const ORDER_BY_POINTS = default_course_world_config::GROUP_ORDER_BY_POINTS;
@@ -520,7 +523,7 @@ abstract class grouped_leaderboard implements \block_xp\local\leaderboard\leader
      *
      * By convension the team table should be prefixed 't'.
      *
-     * @return \core\dml\sql_join
+     * @return \local_xp\local\sql\join
      */
     abstract protected function get_team_join();
 

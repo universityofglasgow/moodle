@@ -40,15 +40,11 @@ use html_writer;
  */
 class course_completion extends block_xp_rule_property {
 
-    /** @var renderer_base The renderer. */
-    protected $output;
-
     /**
      * Constructor.
      */
     public function __construct() {
         parent::__construct(self::EQ, '\core\event\course_completed', 'eventname');
-        $this->output = \block_xp\di::get('renderer');
     }
 
     /**
@@ -73,7 +69,7 @@ class course_completion extends block_xp_rule_property {
     public function get_form($basename) {
         $o = block_xp_rule::get_form($basename);
         $o .= $this->get_description();
-        $o .= $this->output->help_icon('rulecoursecompletion', 'local_xp');
+        $o .= $this->get_renderer()->help_icon('rulecoursecompletion', 'local_xp');
         return $o;
     }
 

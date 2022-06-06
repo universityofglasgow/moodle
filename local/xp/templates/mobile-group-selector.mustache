@@ -6,7 +6,7 @@
             <%^canswitch%>
                 <%#usesvisiblegroups%>{{ 'core.groupsvisible' | translate }}<%/usesvisiblegroups%>
                 <%#usesseparategroups%>{{ 'core.groupsseparate' | translate  }}<%/usesseparategroups%>
-                <ion-note item-end><% groupname %></ion-note>
+                <ion-note slot="end" style="font-size: initial;"><% groupname %></ion-note>
             <%/canswitch%>
             <%#canswitch%>
                 <ion-label>
@@ -15,15 +15,15 @@
                 </ion-label>
                 <ion-select [(ngModel)]="CONTENT_OTHERDATA.groupid" (ionChange)="updateContent({courseid: <% courseid %>, groupid: CONTENT_OTHERDATA.groupid})">
                     <%#canseeallparticipants%>
-                        <ion-option value="0">{{ 'core.allparticipants' | translate }}</ion-option>
+                        <ion-select-option value="0">{{ 'core.allparticipants' | translate }}</ion-select-option>
                     <%/canseeallparticipants%>
-                    <%#_firstseparator%><ion-option disabled>-</ion-option><%/_firstseparator%>
+                    <%#_firstseparator%><ion-select-option disabled>-</ion-select-option><%/_firstseparator%>
                     <%#mygroups%>
-                        <ion-option value="<% id %>"><% name %></ion-option>
+                        <ion-select-option value="<% id %>"><% name %></ion-select-option>
                     <%/mygroups%>
-                    <%#_secondseparator%><ion-option disabled>-</ion-option><%/_secondseparator%>
+                    <%#_secondseparator%><ion-select-option disabled>-</ion-select-option><%/_secondseparator%>
                     <%#othergroups%>
-                        <ion-option value="<% id %>"><% name %></ion-option>
+                        <ion-select-option value="<% id %>"><% name %></ion-select-option>
                     <%/othergroups%>
                 </ion-select>
             <%/canswitch%>

@@ -27,10 +27,10 @@ namespace local_xp\local\controller;
 defined('MOODLE_INTERNAL') || die();
 
 use core_user;
-use moodle_url;
 use single_button;
 use block_xp\di;
 use block_xp\local\routing\url;
+use local_xp\local\config\default_course_world_config;
 
 /**
  * Report controller class.
@@ -69,13 +69,20 @@ class report_controller extends \block_xp\local\controller\report_controller {
 
     protected function get_table() {
         if (!$this->table) {
+            $teamresolver = null;
+            $withteams = $this->world->get_config()->get('enablegroupladder') != default_course_world_config::GROUP_LADDER_NONE;
+            if ($withteams) {
+                $teamresolverfactory = \block_xp\di::get('team_membership_resolver_factory');
+                $teamresolver = $teamresolverfactory->get_course_team_membership_resolver($this->world);
+            }
             $this->table = new \local_xp\output\report_table(
                 \block_xp\di::get('db'),
                 $this->world,
                 $this->get_renderer(),
                 $this->world->get_store(),
                 $this->get_groupid(),
-                $this->get_param('download')
+                $this->get_param('download'),
+                $teamresolver
             );
             // We must use a compatible URL for the download button to work.
             $this->table->define_baseurl($this->pageurl->get_compatible_url());
@@ -86,10 +93,12 @@ class report_controller extends \block_xp\local\controller\report_controller {
     protected function pre_content() {
         global $USER;
 
+        $canmanage = $this->world->get_access_permissions()->can_manage();
+
         // Check for our actions.
         $userid = $this->get_param('userid');
         $action = $this->get_param('action');
-        if ($action === 'add' && !empty($userid)) {
+        if ($canmanage && $action === 'add' && !empty($userid)) {
             $form = $this->get_add_form($userid);
             $nexturl = new url($this->pageurl, ['userid' => null]);
             if ($data = $form->get_data()) {
@@ -133,10 +142,11 @@ class report_controller extends \block_xp\local\controller\report_controller {
     }
 
     protected function page_content() {
+        $canmanage = $this->world->get_access_permissions()->can_manage();
         $output = $this->get_renderer();
 
         // Add points form.
-        if (!empty($this->addform)) {
+        if ($canmanage && !empty($this->addform)) {
             $user = core_user::get_user($this->get_param('userid'));
             echo $output->heading(fullname($user), 3);
             $this->addform->display();

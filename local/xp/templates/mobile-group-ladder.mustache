@@ -3,12 +3,14 @@
 <%> local_xp/mobile-css %>
 
 <style>
-.mma-xp-ladder .mma-xp-item-ladder.is-mine {
-    border-left: 5px solid #41c2ff;
-    padding-left: 11px;
+.mma-xp-ladder .mma-xp-item-ladder {
+    border-left: 5px solid transparent;
 }
-.mma-xp-item-ladder [item-end] + [item-end] {
-    margin-left: 5px;
+.mma-xp-ladder .mma-xp-item-ladder.is-mine {
+    border-color: #41c2ff;
+}
+.mma-xp-item-ladder [slot=end] + [slot=end] {
+    margin-left: 16px;
 }
 </style>
 
@@ -17,22 +19,22 @@
 <%/tabs%>
 
 <%#ladder%>
-<div class="mma-xp-ladder" margin-bottom>
+<div class="mma-xp-ladder ion-margin-bottom">
     <ion-list>
         <%#hasbefore%>
             <ion-item>
-                <button ion-button clear block core-site-plugins-new-content component="local_xp" method="group_ladder_page" samePage="true" [args]="{courseid: <% courseid %>, page: <% prevpage %>}"><%#str%>previous, core<%/str%></button>
+                <ion-button class="prev-page ion-no-margin" fill="clear" expand="full" core-site-plugins-new-content component="local_xp" method="group_ladder_page" samePage="true" [args]="{courseid: <% courseid %>, page: <% prevpage %>}"><%#str%>previous, core<%/str%></ion-button>
             </ion-item>
         <%/hasbefore%>
 
         <%#ranking%>
             <ion-item class="mma-xp-item-ladder <%#state.subject.ismine%>is-mine<%/state.subject.ismine%>">
 
-                <div class="rank" item-start><% rank %>.</div>
+                <div class="rank" slot="start"><% rank %>.</div>
 
                 <%#state.subject%>
                     <%#imageurl%>
-                    <ion-avatar item-start>
+                    <ion-avatar slot="start">
                         <img src="<% imageurl %>" core-external-content alt="">
                     </ion-avatar>
                     <%/imageurl%>
@@ -40,7 +42,7 @@
                 <%/state.subject%>
 
                 <%#showpoints%>
-                <div item-end>
+                <div slot="end">
                     <%#state.xp%>
                         <%> local_xp/mobile-xp %>
                     <%/state.xp%>
@@ -51,7 +53,7 @@
                 <%/showpoints%>
 
                 <%#showprogress%>
-                <div item-end style="min-width: 90px; max-width: 20%">
+                <div slot="end" style="min-width: 90px; max-width: 20%">
                     <%> local_xp/mobile-progress %>
                 </div>
                 <%/showprogress%>
@@ -61,7 +63,7 @@
 
         <%#hasmore%>
             <ion-item>
-                <button ion-button clear block core-site-plugins-new-content component="local_xp" method="group_ladder_page" samePage="true" [args]="{courseid: <% courseid %>, page: <% nextpage %>}"><%#str%>next, core<%/str%></button>
+                <ion-button class="next-page ion-no-margin" fill="clear" expand="full" core-site-plugins-new-content component="local_xp" method="group_ladder_page" samePage="true" [args]="{courseid: <% courseid %>, page: <% nextpage %>}"><%#str%>next, core<%/str%></ion-button>
             </ion-item>
         <%/hasmore%>
     </ion-list>

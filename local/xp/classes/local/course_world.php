@@ -26,12 +26,12 @@
 namespace local_xp\local;
 defined('MOODLE_INTERNAL') || die();
 
-use context;
 use moodle_database;
 use block_xp\local\config\config;
 use block_xp\local\factory\badge_url_resolver_course_world_factory;
+use block_xp\local\logger\collection_logger;
 use local_xp\local\config\default_course_world_config;
-use local_xp\local\strategy\course_world_collection_strategy;
+use local_xp\local\logger\context_collection_logger;
 use local_xp\local\strategy\collection_target_resolver_from_event;
 use local_xp\local\xp\user_global_state;
 
@@ -95,7 +95,7 @@ class course_world extends \block_xp\local\course_world {
     /**
      * Get the state store.
      *
-     * @return state_store
+     * @return xp\course_user_state_store
      */
     public function get_store() {
         if (!$this->store) {
@@ -115,23 +115,24 @@ class course_world extends \block_xp\local\course_world {
                 $this->get_courseid(),
                 $this->get_collection_logger(),
                 $userstatefactory,
-                $this->get_level_up_state_store_observer()
+                $this->get_level_up_state_store_observer(),
+                $this->get_points_increased_state_store_observer()
             );
         }
         return $this->store;
     }
 
+    /**
+     * Get the collection logger.
+     *
+     * @return object
+     */
     private function get_collection_logger() {
-        if (!$this->logger) {
-            $this->logger = new \local_xp\local\logger\context_collection_logger(
-                $this->db,
-                $this->get_context(),
-                new \local_xp\local\reason\maker_from_type_and_signature()
-            );
+        if (empty($this->logger)) {
+            throw new \coding_exception('The collection logger was not set, call set_collection_logger first.');
         }
         return $this->logger;
     }
-
 
     /**
      * Get the user recent activity repository.
@@ -142,4 +143,20 @@ class course_world extends \block_xp\local\course_world {
         return $this->get_collection_logger();
     }
 
+    /**
+     * Set the collection logger.
+     *
+     * @param collection_logger $logger The logger.
+     * @return object;
+     */
+    public function set_collection_logger(collection_logger $logger) {
+        if (!$logger instanceof context_collection_logger) {
+            // Why are we doing this? Well, this implementation knows that its logger should be implementing
+            // a ton of interfaces. So instead of making it overengineered and use a ton of factories for each
+            // of the possible interfaces we needed here, we simply hardcode that we're expecting this logger
+            // for now. Note the get_collection_strategy method and related class to identify all the interfaces needed.
+            throw new \coding_exception('Unexpected collection logger received.');
+        }
+        $this->logger = $logger;
+    }
 }

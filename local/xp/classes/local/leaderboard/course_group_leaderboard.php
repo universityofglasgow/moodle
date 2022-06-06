@@ -29,7 +29,11 @@ defined('MOODLE_INTERNAL') || die();
 use moodle_database;
 use stdClass;
 use block_xp\local\xp\levels_info;
+use context_course;
+use local_xp\local\team\static_team;
 use local_xp\local\xp\levelless_group_state;
+
+require_once($CFG->libdir . '/externallib.php');
 
 /**
  * Course group leaderboard.
@@ -95,7 +99,7 @@ class course_group_leaderboard extends grouped_leaderboard {
     /**
      * Get group IDs.
      *
-     * @return arrau
+     * @return array
      */
     protected function get_group_ids() {
         $groups = $this->get_groups();
@@ -105,7 +109,7 @@ class course_group_leaderboard extends grouped_leaderboard {
     /**
      * Get groups.
      *
-     * @return arrau
+     * @return array
      */
     protected function get_groups() {
         if ($this->groupcache === null) {
@@ -117,7 +121,7 @@ class course_group_leaderboard extends grouped_leaderboard {
     /**
      * Get the team join.
      *
-     * @return \core\dml\sql_join
+     * @return \local_xp\local\sql\join
      */
     protected function get_team_join() {
         $joins = "JOIN {groups} t
@@ -125,7 +129,7 @@ class course_group_leaderboard extends grouped_leaderboard {
                   JOIN {groups_members} tm
                     ON tm.userid = x.userid
                    AND tm.groupid = t.id";
-        return new \core\dml\sql_join($joins);
+        return new \local_xp\local\sql\join($joins);
     }
 
     /**
@@ -135,6 +139,40 @@ class course_group_leaderboard extends grouped_leaderboard {
      */
     protected function get_team_table() {
         return 'groups';
+    }
+
+    /**
+     * Get the teams of a member.
+     *
+     * @param int $memberid The member ID.
+     * @return \local_xp\local\team\team[] The teams.
+     */
+    public function get_teams_of_member($memberid) {
+        $groupids = [];
+        if (!empty($this->groupingid)) {
+            $groupids = $this->get_group_ids();
+        }
+
+        $insql = ' != 0';
+        $inparams = [];
+        if (!empty($groupids)) {
+            list($insql, $inparams) = $this->db->get_in_or_equal($groupids, SQL_PARAMS_NAMED);
+        }
+
+        $sql = "SELECT t.*
+                  FROM {groups} t
+                  JOIN {groups_members} tm
+                    ON t.id = tm.groupid
+                 WHERE t.courseid = :courseid
+                   AND tm.userid = :userid
+                   AND t.id $insql
+              ORDER BY t.name";
+        $params = array_merge(['courseid' => $this->courseid, 'userid' => $memberid], $inparams);
+
+        return array_map(function($group) {
+            $context = context_course::instance($group->courseid);
+            return new static_team($group->id, external_format_string($group->name, $context->id));
+        }, $this->db->get_records_sql($sql, $params));
     }
 
     /**

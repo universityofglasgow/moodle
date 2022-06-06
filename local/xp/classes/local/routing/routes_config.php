@@ -49,6 +49,15 @@ class routes_config implements routes_config_interface {
      */
     public function __construct(routes_config_interface $altconfig) {
         $this->routes = [
+            'drops' => new route_definition(
+                'drops',
+                '/drops/:courseid',
+                '~^/drops/(\d+)$~',
+                'drops',
+                [
+                    1 => 'courseid'
+                ]
+            ),
             'group_ladder' => new route_definition(
                 'group_ladder',
                 '/group/ladder/:courseid',

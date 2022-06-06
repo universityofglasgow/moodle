@@ -31,6 +31,7 @@ use stdClass;
 use block_xp\local\xp\levels_info;
 use local_xp\local\xp\levelless_state;
 use local_xp\local\leaderboard\grouped_leaderboard;
+use local_xp\local\team\static_team;
 
 /**
  * Company leaderboard.
@@ -80,14 +81,14 @@ class company_leaderboard extends grouped_leaderboard {
     /**
      * Get the team join.
      *
-     * @return \core\dml\sql_join
+     * @return \local_xp\local\sql\join
      */
     protected function get_team_join() {
         $joins = "JOIN {company_users} cu
                     ON cu.userid = x.userid
                   JOIN {company} t
                     ON t.id = cu.companyid";
-        return new \core\dml\sql_join($joins);
+        return new \local_xp\local\sql\join($joins);
     }
 
     /**
@@ -97,6 +98,24 @@ class company_leaderboard extends grouped_leaderboard {
      */
     protected function get_team_table() {
         return 'company';
+    }
+
+    /**
+     * Get the teams of a member.
+     *
+     * @param int $memberid The member ID.
+     * @return \local_xp\local\team\team[] The teams.
+     */
+    public function get_teams_of_member($memberid) {
+        $sql = "SELECT DISTINCT t.id
+                  FROM {company} t
+                  JOIN {company_users} cu
+                    ON t.id = cu.companyid
+                 WHERE cu.userid = :userid";
+        $params = ['userid' => $memberid];
+        return array_map(function($row) {
+            return new static_team($row->id, $this->get_company_name($row->id));
+        }, $this->db->get_records_sql($sql, $params));
     }
 
     /**

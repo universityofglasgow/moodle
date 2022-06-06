@@ -47,8 +47,14 @@ class maker_from_type_and_signature {
      * @return event_reason
      */
     public function make_from_type_and_signature($type, $signature) {
-        // Autoload, and check whether the class is valid.
-        if (is_subclass_of($type, 'block_xp\local\reason\reason')) {
+        try {
+            $reflector = new \ReflectionClass($type);
+        } catch (\ReflectionException $e) {
+            return new unknown_reason();
+        }
+
+        // Validate the reason that we obtained.
+        if ($reflector->isSubclassOf('block_xp\local\reason\reason') && $reflector->isInstantiable()) {
             try {
                 return $type::from_signature($signature);
             } catch (\Exception $e) {
@@ -56,6 +62,7 @@ class maker_from_type_and_signature {
                 return new unknown_reason();
             }
         }
+
         return new unknown_reason();
     }
 

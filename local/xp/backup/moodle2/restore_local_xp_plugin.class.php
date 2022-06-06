@@ -45,6 +45,8 @@ class restore_local_xp_plugin extends restore_local_plugin {
         // Define each path.
         $paths[] = new restore_path_element($this->get_namefor('config'), $this->get_pathfor('/xp_config'));
 
+        $paths[] = new restore_path_element($this->get_namefor('drop'), $this->get_pathfor('/xp_drops/xp_drop'));
+
         // This path is a legacy one to ensure that older backups still work. We had to change the name of the
         // key where the config was stored because Moodle requires keys to be unique across plugins, hence the
         // new name 'xp_config'. The previous key structure is identical, and as such we should always send it
@@ -75,10 +77,37 @@ class restore_local_xp_plugin extends restore_local_plugin {
         global $DB;
         $data['courseid'] = $this->task->get_courseid();
         if ($DB->record_exists('local_xp_config', ['courseid' => $data['courseid']])) {
-            $this->log('local_xp: config not restored, existing config was found', backup::LOG_DEBUG);
+            $this->task->log('local_xp: config not restored, existing config was found', backup::LOG_DEBUG);
             return;
         }
         $DB->insert_record('local_xp_config', $data);
+    }
+
+    /**
+     * Process drop.
+     *
+     * @param array $data Data.
+     * @return void
+     */
+    public function process_local_xp_drop($data) {
+        global $DB;
+
+        $oldid = $data['id'];
+        unset($oldid);
+        $data['courseid'] = $this->task->get_courseid();
+
+        // When the secret is already found, we cannot proceed with the restore. It usually means that
+        // the secret is being restored in the same site as the original, either by duplicating the course
+        // or by merge. This is not a perfect solution as the content will still be restored, which would
+        // render another drop.
+        if ($DB->record_exists('local_xp_drops', ['secret' => $data['secret']])) {
+            $this->task->log("local_xp: drop '{$data['name']}' ({$data['id']}) not restored, " .
+                "secret already used", backup::LOG_INFO);
+            return;
+        }
+
+        $newid = $DB->insert_record('local_xp_drops', $data);
+        $this->set_mapping('local_xp_drop', $oldid, $newid);
     }
 
     /**
@@ -90,4 +119,12 @@ class restore_local_xp_plugin extends restore_local_plugin {
         $this->add_related_files('local_xp', 'currency', null, $this->task->get_old_contextid());
     }
 
+    /**
+     * Define decode contents.
+     *
+     * @return array
+     */
+    public static function define_decode_contents() {
+        return [];
+    }
 }

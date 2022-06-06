@@ -1,12 +1,12 @@
-Level up! Plus (local_xp)
+Level Up XP+ (local_xp)
 =========================
 
-_Level up! Plus_ is an add-on for _[Level up!](https://github.com/FMCorz/moodle-block_xp)_.
+_Level Up XP+_ is an add-on for _[Level Up XP](https://github.com/FMCorz/moodle-block_xp)_.
 
 Requirements
 ------------
 
-- Level up! 3.x
+- Level Up XP 3.x
 - Moodle 3.1 or greater
 
 Installation

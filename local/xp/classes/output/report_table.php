@@ -34,6 +34,7 @@ use pix_icon;
 use renderer_base;
 use block_xp\local\course_world;
 use block_xp\local\xp\course_state_store;
+use local_xp\local\team\team_membership_resolver;
 
 /**
  * Local XP report table class.
@@ -47,6 +48,8 @@ class report_table extends \block_xp\output\report_table {
 
     /** @var string Download format. */
     private $downloadformat;
+    /** @var team_membership_resolver Team resolver. */
+    protected $teamresolver;
 
     /**
      * Constructor.
@@ -56,6 +59,7 @@ class report_table extends \block_xp\output\report_table {
      * @param renderer_base $renderer The renderer.
      * @param course_state_store $store The store.
      * @param int $groupid The group ID.
+     * @param string $downloadformat The download format.
      */
     public function __construct(
             moodle_database $db,
@@ -63,10 +67,12 @@ class report_table extends \block_xp\output\report_table {
             renderer_base $renderer,
             course_state_store $store,
             $groupid,
-            $downloadformat = null
+            $downloadformat = null,
+            team_membership_resolver $teamresolver = null
         ) {
 
         $this->downloadformat = $downloadformat;
+        $this->teamresolver = $teamresolver;
         parent::__construct($db, $world, $renderer, $store, $groupid);
     }
 
@@ -78,43 +84,38 @@ class report_table extends \block_xp\output\report_table {
     protected function init() {
         $this->is_downloading($this->downloadformat, 'xp_report_' . $this->world->get_courseid());
         parent::init();
+        $this->no_sorting('team');
         $this->is_downloadable(true);
         $this->show_download_buttons_at([TABLE_P_BOTTOM]);
     }
 
-
     /**
-     * Get the columns.
+     * Generate the columns definition.
      *
      * @return array
      */
-    protected function get_columns() {
+    protected function generate_columns_definition() {
+        $cols = parent::generate_columns_definition();
         if ($this->is_downloading()) {
-            return [
-                'fullname',
-                'lvl',
-                'xp',
-                'progress',
-            ];
+            $cols = array_intersect_key($cols, [
+                'fullname' => true,
+                'lvl' => true,
+                'xp' => true,
+                'progress' => true,
+            ]);
         }
-        return parent::get_columns();
-    }
 
-    /**
-     * Get the headers.
-     *
-     * @return void
-     */
-    protected function get_headers() {
-        if ($this->is_downloading()) {
-            return [
-                get_string('fullname'),
-                get_string('level', 'block_xp'),
-                get_string('total', 'block_xp'),
-                get_string('progress', 'block_xp'),
-            ];
+        if (!$this->teamresolver) {
+            return $cols;
         }
-        return parent::get_headers();
+
+        return array_reduce(array_keys($cols), function($carry, $col) use ($cols) {
+            $header = $cols[$col];
+            if ($col === 'lvl') {
+                $carry['team'] = get_string('team', 'local_xp');
+            }
+            return array_merge($carry, [$col => $header]);
+        }, []);
     }
 
     /**
@@ -158,6 +159,21 @@ class report_table extends \block_xp\output\report_table {
             return sprintf("%d / %d", $state->get_xp_in_level(), $state->get_total_xp_in_level());
         }
         return parent::col_progress($row);
+    }
+
+    /**
+     * Formats the column.
+     *
+     * @param stdClass $row Table row.
+     * @return string Output produced.
+     */
+    protected function col_team($row) {
+        if (!$this->teamresolver) {
+            return '';
+        }
+        return implode(', ', array_map(function($team) {
+            return $team->get_name();
+        }, $this->teamresolver->get_teams_of_member($row->id)));
     }
 
     /**

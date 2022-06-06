@@ -36,13 +36,37 @@ defined('MOODLE_INTERNAL') || die();
  */
 class log_controller extends \block_xp\local\controller\log_controller {
 
+    /** @var log_table The log table. */
+    protected $table;
+
+    protected function define_optional_params() {
+        $params = parent::define_optional_params();
+        $params[] = ['download', '', PARAM_ALPHA, false];
+        return $params;
+    }
+
     protected function get_table() {
-        $table = new \local_xp\output\log_table(
-            $this->world->get_context(),
-            $this->get_groupid()
-        );
-        $table->define_baseurl($this->pageurl);
-        return $table;
+        if (!$this->table) {
+            $table = new \local_xp\output\log_table(
+                $this->world->get_context(),
+                $this->get_groupid(),
+                $this->get_param('download')
+            );
+            $table->define_baseurl($this->pageurl->get_compatible_url());
+            $this->table = $table;
+        }
+        return $this->table;
+    }
+
+    protected function pre_content() {
+
+        // We must send the table before the output starts.
+        $table = $this->get_table();
+        if ($table->is_downloading()) {
+            $table->send_file();
+        }
+
+        parent::pre_content();
     }
 
 }

@@ -29,7 +29,10 @@ defined('MOODLE_INTERNAL') || die();
 use moodle_database;
 use stdClass;
 use block_xp\local\xp\levels_info;
+use local_xp\local\team\static_team;
 use local_xp\local\xp\levelless_cohort_state;
+
+require_once($CFG->libdir . '/externallib.php');
 
 /**
  * Cohort leaderboard.
@@ -84,14 +87,14 @@ class cohort_leaderboard extends grouped_leaderboard {
     /**
      * Get the team join.
      *
-     * @return \core\dml\sql_join
+     * @return \local_xp\local\sql\join
      */
     protected function get_team_join() {
         $joins = "JOIN {cohort_members} tm
                     ON tm.userid = x.userid
                   JOIN {cohort} t
                     ON t.id = tm.cohortid";
-        return new \core\dml\sql_join($joins, 't.visible = 1');
+        return new \local_xp\local\sql\join($joins, 't.visible = 1');
     }
 
     /**
@@ -101,6 +104,24 @@ class cohort_leaderboard extends grouped_leaderboard {
      */
     protected function get_team_table() {
         return 'cohort';
+    }
+
+    /**
+     * Get the teams of a member.
+     *
+     * @param int $memberid The member ID.
+     * @return \local_xp\local\team\team[] The teams.
+     */
+    public function get_teams_of_member($memberid) {
+        $sql = "SELECT t.*
+                  FROM {cohort} t
+                  JOIN {cohort_members} tm
+                    ON t.id = tm.cohortid
+                 WHERE tm.userid = :userid";
+        $params = ['userid' => $memberid];
+        return array_map(function($cohort) {
+            return new static_team($cohort->id, external_format_string($cohort->name, $cohort->contextid));
+        }, $this->db->get_records_sql($sql, $params));
     }
 
     /**

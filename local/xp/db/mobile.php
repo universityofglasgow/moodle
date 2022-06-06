@@ -31,7 +31,7 @@ $addons = [
             'mainmenu' => [
                 'displaydata' => [
                     'name' => 'main',
-                    'icon' => 'ios-game-controller-b',
+                    'icon' => 'game-controller',
                     'title' => 'levelup',
                     'class' => 'mma-xp-handler'
                 ],
@@ -42,7 +42,7 @@ $addons = [
             'courseoptions' => [
                 'displaydata' => [
                     'name' => 'main',
-                    'icon' => 'ios-game-controller-b',
+                    'icon' => 'game-controller',
                     'title' => 'levelup',
                     'class' => 'mma-xp-handler'
                 ],

@@ -29,8 +29,8 @@ defined('MOODLE_INTERNAL') || die();
 use context_helper;
 use moodle_database;
 use stdClass;
-use user_picture;
 use block_xp\local\leaderboard\ranker;
+use block_xp\local\utils\user_utils;
 use block_xp\local\xp\levels_info;
 
 /**
@@ -79,7 +79,7 @@ class course_user_leaderboard extends \block_xp\local\leaderboard\course_user_le
      */
     protected function make_state_from_record(stdClass $record, $useridfield = 'userid') {
         if (!empty($this->userstatefactory)) {
-            $user = user_picture::unalias($record, null, $useridfield);
+            $user = user_utils::unalias_picture_fields($record, $useridfield);
             context_helper::preload_from_record($record);
             $xp = !empty($record->xp) ? $record->xp : 0;
             $cb = $this->userstatefactory;

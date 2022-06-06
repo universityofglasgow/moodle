@@ -28,7 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 
 use core_user;
 use moodle_database;
-use user_picture;
+use block_xp\local\utils\user_utils;
 
 /**
  * User resolver.
@@ -55,7 +55,7 @@ class user_resolver {
      */
     public function __construct(moodle_database $db) {
         $this->db = $db;
-        $this->fields = user_picture::fields();
+        $this->fields = user_utils::picture_fields();
     }
 
     /**

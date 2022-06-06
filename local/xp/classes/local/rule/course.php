@@ -41,15 +41,11 @@ use html_writer;
  */
 class course extends block_xp_rule_property {
 
-    /** @var renderer_base The renderer. */
-    protected $output;
-
     /**
      * Constructor.
      */
     public function __construct() {
         parent::__construct(self::EQ, null, 'courseid');
-        $this->output = \block_xp\di::get('renderer');
     }
 
     /**
@@ -121,7 +117,7 @@ class course extends block_xp_rule_property {
         $o .= get_string('rulecoursedesc', 'local_xp', $coursename);
         $o .= html_writer::end_tag('span');
 
-        $o .= $this->output->help_icon('rulecourse', 'local_xp');
+        $o .= $this->get_renderer()->help_icon('rulecourse', 'local_xp');
         $o .= html_writer::end_tag('span');
         return $o;
     }

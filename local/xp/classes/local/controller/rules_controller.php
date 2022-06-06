@@ -55,11 +55,19 @@ class rules_controller extends \block_xp\local\controller\rules_controller {
             $rules[] = $rule;
 
             // Include the course rule.
-            if (get_class($rule->rule) == 'block_xp_rule_cm' && $isforwholesite) {
+            if (get_class($rule->rule) == 'block_xp_rule_cm') {
                 $rules[] = (object) [
-                    'name' => get_string('rulecourse', 'local_xp'),
-                    'rule' => new \local_xp\local\rule\course(),
+                    'name' => get_string('rulecmname', 'local_xp'),
+                    'info' => get_string('rulecmnameinfo', 'local_xp'),
+                    'rule' => new \local_xp\local\rule\cm_name(),
                 ];
+                if ($isforwholesite) {
+                    $rules[] = (object) [
+                        'name' => get_string('rulecourse', 'local_xp'),
+                        'info' => get_string('rulecourseinfo', 'local_xp'),
+                        'rule' => new \local_xp\local\rule\course(),
+                    ];
+                }
             }
 
             // We want to inject the completion rules right before this one. Note that we
@@ -67,11 +75,13 @@ class rules_controller extends \block_xp\local\controller\rules_controller {
             if (get_class($rule->rule) == 'block_xp_rule_property') {
                 array_splice($rules, -1, 0, [
                     (object) [
-                        'name' => get_string('activitycompletion', 'completion'),
+                        'name' => get_string('ruleactivitycompletion', 'local_xp'),
+                        'info' => get_string('ruleactivitycompletioninfo', 'local_xp'),
                         'rule' => new \local_xp\local\rule\activity_completion(),
                     ],
                     (object) [
-                        'name' => get_string('coursecompletion', 'completion'),
+                        'name' => get_string('rulecoursecompletion', 'local_xp'),
+                        'info' => get_string('rulecoursecompletioninfo', 'local_xp'),
                         'rule' => new \local_xp\local\rule\course_completion(),
                     ]
                 ]);
@@ -98,18 +108,22 @@ class rules_controller extends \block_xp\local\controller\rules_controller {
         $rules = array_filter([
             (object) [
                 'name' => get_string('rulegradeitem', 'local_xp'),
+                'info' => get_string('rulegradeiteminfo', 'local_xp'),
                 'rule' => new \local_xp\local\rule\grade_item($this->courseid),
             ],
             (object) [
                 'name' => get_string('rulegradeitemtype', 'local_xp'),
+                'info' => get_string('rulegradeitemtypeinfo', 'local_xp'),
                 'rule' => new \local_xp\local\rule\grade_item_type(),
             ],
             $isforwholesite ? (object) [
                 'name' => get_string('rulecourse', 'local_xp'),
+                'info' => get_string('rulecourseinfo', 'local_xp'),
                 'rule' => new \local_xp\local\rule\course(),
             ] : null,
             (object) [
                 'name' => get_string('ruleset', 'block_xp'),
+                'info' => get_string('rulesetinfo', 'block_xp'),
                 'rule' => new \block_xp_ruleset(),
             ]
         ]);

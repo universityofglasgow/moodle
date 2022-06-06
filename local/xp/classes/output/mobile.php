@@ -53,6 +53,8 @@ class mobile {
     public static function init_course_options() {
         global $USER;
 
+        di::get('addon')->require_activated();
+
         $config = di::get('config');
         if ($config->get('context') != CONTEXT_COURSE) {
             throw new \moodle_exception('Not accessible per course.');
@@ -81,6 +83,8 @@ class mobile {
      */
     public static function init_mainmenu() {
         global $USER;
+
+        di::get('addon')->require_activated();
 
         $config = di::get('config');
         if ($config->get('context') != CONTEXT_SYSTEM) {
@@ -220,6 +224,9 @@ class mobile {
      */
     public static function group_ladder_page(array $args) {
         global $USER;
+
+        di::get('addon')->require_activated();
+
         $courseid = isset($args['courseid']) ? $args['courseid'] : SITEID;
         $page = isset($args['page']) ? $args['page'] : 0;
         $perpage = 50;
@@ -272,6 +279,8 @@ class mobile {
      * @return array
      */
     public static function info_page(array $args) {
+        di::get('addon')->require_activated();
+
         $courseid = isset($args['courseid']) ? $args['courseid'] : 0;
 
         $worldfactory = di::get('course_world_factory');
@@ -328,6 +337,9 @@ class mobile {
      */
     public static function ladder_page(array $args) {
         global $USER;
+
+        di::get('addon')->require_activated();
+
         $courseid = isset($args['courseid']) ? $args['courseid'] : SITEID;
         $groupid = isset($args['groupid']) ? $args['groupid'] : -1;
         $page = isset($args['page']) ? $args['page'] : 0;
@@ -351,14 +363,9 @@ class mobile {
         $ladder['showrank'] = $ladder['rankmode'] == course_world_config::RANK_ON;
         $ladder['showrelrank'] = $ladder['rankmode'] == course_world_config::RANK_REL;
         $ladder['showtotal'] = in_array('xp', $ladder['columns']);
-        $ladder['ranking'] = array_map(function($entry) use ($userid) {
+        $ladder['ranking'] = array_map(function($entry) {
             return array_merge($entry, [
                 'rankpositive' => $entry['rank'] > 0,
-                'state' => array_merge($entry['state'], [
-                    'user' => array_merge($entry['state']['user'], [
-                        'isme' => $entry['state']['user']['id'] == $userid
-                    ])
-                ])
             ]);
         }, $ladder['ranking']);
 
@@ -399,6 +406,9 @@ class mobile {
      */
     public static function state_page(array $args) {
         global $USER;
+
+        di::get('addon')->require_activated();
+
         $courseid = isset($args['courseid']) ? $args['courseid'] : 0;
         $userid = $USER->id;
 

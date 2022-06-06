@@ -37,7 +37,7 @@ global $CFG;
  */
 abstract class local_xp_base_testcase extends advanced_testcase {
 
-    public function setUp() {
+    public function setUp(): void {
         $this->resetAfterTest();
         $this->reset_container();
     }

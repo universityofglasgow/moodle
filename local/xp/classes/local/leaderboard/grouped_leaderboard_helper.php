@@ -98,8 +98,7 @@ class grouped_leaderboard_helper {
             return groups_get_user_groups($world->get_courseid(), $user->id)[0];
 
         } else if ($source == default_course_world_config::GROUP_LADDER_COHORTS) {
-            require_once($CFG->dirroot . '/cohort/lib.php');
-            return array_keys(cohort_get_user_cohorts($user->id));
+            return $this->get_user_cohort_ids($user->id);
 
         } else if ($source == default_course_world_config::GROUP_LADDER_IOMAD_COMPANIES) {
             return $this->iomad->exists() ? $this->iomad->get_user_company_ids($user) : [];
@@ -109,5 +108,22 @@ class grouped_leaderboard_helper {
         }
 
         return [];
+    }
+
+    /**
+     * Get a user's cohort IDs.
+     *
+     * @param int $userid The user ID.
+     * @return array
+     */
+    protected function get_user_cohort_ids($userid) {
+        global $DB;
+        $sql = 'SELECT c.id
+                  FROM {cohort} c
+                  JOIN {cohort_members} cm
+                    ON c.id = cm.cohortid
+                 WHERE cm.userid = ?
+                   AND c.visible = 1';
+        return $DB->get_fieldset_sql($sql, [$userid]);
     }
 }

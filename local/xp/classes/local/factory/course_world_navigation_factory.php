@@ -48,6 +48,8 @@ class course_world_navigation_factory implements course_world_navigation_factory
     protected $parentfactory;
     /** @var url_resolver The URL resolver. */
     protected $resolver;
+    /** @var array The navigation cache. */
+    protected $navcache = [];
 
     /**
      * Constructor.
@@ -72,9 +74,19 @@ class course_world_navigation_factory implements course_world_navigation_factory
      * @return array
      */
     public function get_course_navigation(course_world $world) {
-        global $USER;
+        if (!isset($this->navcache[$world->get_courseid()])) {
+            $this->navcache[$world->get_courseid()] = $this->make_course_navigation($world);
+        }
+        return $this->navcache[$world->get_courseid()];
+    }
 
-        $forwholesite = $this->adminconfig->get('context') == CONTEXT_SYSTEM;
+    /**
+     * Make course navigation.
+     *
+     * @param course_world $world The world.
+     * @return array
+     */
+    protected function make_course_navigation(course_world $world) {
         $parentlinks = $this->parentfactory->get_course_navigation($world);
         $courseid = $world->get_courseid();
         $urlresolver = $this->resolver;
@@ -93,12 +105,47 @@ class course_world_navigation_factory implements course_world_navigation_factory
             ];
         }
 
+        if ($world->get_access_permissions()->can_manage()) {
+            $toadd[] = [
+                'in' => ['rules'],
+                'after' => [],
+                'link' => [
+                    'id' => 'drops',
+                    'url' => $urlresolver->reverse('drops', ['courseid' => $courseid]),
+                    'text' => get_string('navdrops', 'local_xp')
+                ]
+            ];
+        }
+
         $links = $parentlinks;
         while ($add = array_shift($toadd)) {
             $candidates = $links;
-
             $added = false;
+
+            // Add in a certain node.
+            $incandidates = !empty($add['in']) ? $add['in'] : [];
+            foreach ($incandidates as $in) {
+                if ($added) {
+                    break;
+                }
+                $candidates = [];
+                foreach ($links as $link) {
+                    if (!$added && $link['id'] == $in) {
+                        if (!isset($link['children'])) {
+                            continue;
+                        }
+                        $link['children'][] = $add['link'];
+                        $added = true;
+                    }
+                    $candidates[] = $link;
+                }
+            }
+
+            // Add after a top-level node.
             foreach ($add['after'] as $after) {
+                if ($added) {
+                    break;
+                }
                 $candidates = [];
                 foreach ($links as $link) {
                     $candidates[] = $link;
@@ -106,9 +153,6 @@ class course_world_navigation_factory implements course_world_navigation_factory
                         $candidates[] = $add['link'];
                         $added = true;
                     }
-                }
-                if ($added) {
-                    break;
                 }
             }
 
@@ -120,5 +164,4 @@ class course_world_navigation_factory implements course_world_navigation_factory
 
         return $links;
     }
-
 }

@@ -19,6 +19,10 @@
 .mma-xp-item-level .name {
     font-weight: bold;
 }
+.mma-xp-item-level .badge {
+    width: 70px;
+    height: 70px;
+}
 </style>
 
 <%#tabs%>
@@ -27,20 +31,22 @@
 
 <%#instructions%>
 <ion-card>
-    <ion-item text-wrap><%{.}%></ion-item>
+    <ion-card-content class="ion-text-wrap">
+            <%{.}%>
+    </ion-card-content>
 </ion-card>
 <%/instructions%>
 
-<ion-list class="mma-xp-list" margin-bottom>
+<ion-list class="mma-xp-list ion-margin-bottom">
     <%#levelsinfo.levels%>
     <ion-card>
-    <ion-item class="mma-xp-item-level" text-wrap>
-        <ion-thumbnail item-start>
+    <ion-item class="mma-xp-item-level ion-text-wrap">
+        <ion-thumbnail slot="start" class="badge">
             <%> local_xp/mobile-level-small %>
         </ion-thumbnail>
         <ion-label class="mma-xp-item-content">
             <%#name%><p class="name"><% . %></p><%/name%>
-            <%#xprequired%><p>Requires: <%> local_xp/mobile-xp %></p><%/xprequired%>
+            <%#xprequired%><p><%#str%>requires, block_xp<%/str%> <%> local_xp/mobile-xp %></p><%/xprequired%>
             <p class="desc"><% description %>&nbsp;</p>
         </ion-label>
     </ion-item>

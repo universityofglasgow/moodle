@@ -26,8 +26,6 @@
 namespace local_xp\local\factory;
 defined('MOODLE_INTERNAL') || die();
 
-use context_course;
-use context_system;
 use moodle_database;
 use block_xp\local\factory\badge_url_resolver_course_world_factory;
 use local_xp\local\strategy\collection_target_resolver_from_event;
@@ -52,6 +50,8 @@ class course_world_factory implements \block_xp\local\factory\course_world_facto
     protected $usercolletiontargetresolver;
     /** @var badge_url_resolver_course_world_factory The admin resolver. */
     protected $urlresolverfactory;
+    /** @var course_collection_logger_factory The course collection logger factory. */
+    protected $collectionloggerfactory;
 
     /**
      * Constructor.
@@ -62,11 +62,13 @@ class course_world_factory implements \block_xp\local\factory\course_world_facto
      */
     public function __construct($contextmode, moodle_database $db, course_config_factory $configfactory,
             collection_target_resolver_from_event $usercolletiontargetresolver,
-            badge_url_resolver_course_world_factory $urlresolverfactory) {
+            badge_url_resolver_course_world_factory $urlresolverfactory,
+            course_collection_logger_factory $collectionloggerfactory) {
         $this->db = $db;
         $this->configfactory = $configfactory;
         $this->usercolletiontargetresolver = $usercolletiontargetresolver;
         $this->urlresolverfactory = $urlresolverfactory;
+        $this->collectionloggerfactory = $collectionloggerfactory;
         if ($contextmode == CONTEXT_SYSTEM) {
             $this->forwholesite = true;
         }
@@ -90,13 +92,15 @@ class course_world_factory implements \block_xp\local\factory\course_world_facto
         $courseid = intval($courseid);
         if (!isset($this->worlds[$courseid])) {
             $config = $this->configfactory->get_config($courseid);
-            $this->worlds[$courseid] = new \local_xp\local\course_world(
+            $world = new \local_xp\local\course_world(
                 $config,
                 $this->db,
                 $courseid,
                 $this->usercolletiontargetresolver,
                 $this->urlresolverfactory
             );
+            $world->set_collection_logger($this->collectionloggerfactory->get_collection_logger($courseid));
+            $this->worlds[$courseid] = $world;
         }
         return $this->worlds[$courseid];
     }

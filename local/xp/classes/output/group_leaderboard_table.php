@@ -176,6 +176,10 @@ class group_leaderboard_table extends flexible_table {
      * @return string Output produced.
      */
     public function col_progress($row) {
+        if ($this->is_downloading()) {
+            $state = $row->state;
+            return sprintf("%d / %d", $state->get_xp_in_level(), $state->get_total_xp_in_level());
+        }
         return $this->xpoutput->progress_bar($row->state);
     }
 
@@ -185,6 +189,9 @@ class group_leaderboard_table extends flexible_table {
      * @return string Output produced.
      */
     public function col_rank($row) {
+        if ($this->is_downloading()) {
+            return $row->rank;
+        }
         return $row->rank;
     }
 
@@ -194,6 +201,9 @@ class group_leaderboard_table extends flexible_table {
      * @return string Output produced.
      */
     public function col_xp($row) {
+        if ($this->is_downloading()) {
+            return $row->state->get_xp();
+        }
         return $this->xpoutput->xp($row->state->get_xp());
     }
 
@@ -204,8 +214,11 @@ class group_leaderboard_table extends flexible_table {
      * @return string Output produced.
      */
     public function col_grouppic($row) {
-        $pic = null;
+        if ($this->is_downloading()) {
+            return '';
+        }
 
+        $pic = null;
         if ($row->state instanceof state_with_subject) {
             $pic = $row->state->get_picture();
             $pic = $pic ? $this->xpoutput->team_picture($pic) : null;

@@ -38,19 +38,24 @@ class container implements \block_xp\local\container {
 
     /** @var array The objects supported by this container. */
     protected static $supports = [
+        'addon' => true,
         'badge_url_resolver' => true,
         'block_class' => true,
         'collection_logger' => true,
         'collection_strategy' => true,
         'config' => true,
         'config_locked' => true,
+        'course_collection_logger_factory' => true,
         'course_currency_factory' => true,
+        'coruse_world_drop_collection_strategy_factory' => true,
         'course_world_factory' => true,
         'course_world_grouped_leaderboard_factory' => true,
         'course_world_leaderboard_factory' => true,
+        'course_world_leaderboard_factory_with_config' => true,
         'course_world_navigation_factory' => true,
         'currency' => true,
         'file_server' => true,
+        'drop_repository' => true,
         'grouped_leaderboard_helper' => true,
         'iomad_facade' => true,
         'renderer' => true,
@@ -59,6 +64,7 @@ class container implements \block_xp\local\container {
         'rule_event_lister' => true,
         'settings_maker' => true,
         'tasks_definition_maker' => true,
+        'team_membership_resolver_factory' => true,
         'theme_repository' => true,
         'theme_updater' => true,
         'url_resolver' => true,
@@ -100,6 +106,15 @@ class container implements \block_xp\local\container {
         }
 
         return $this->instances[$id];
+    }
+
+    /**
+     * Get the addon.
+     *
+     * @return plugin\addon
+     */
+    protected function get_addon() {
+        return new plugin\addon();
     }
 
     /**
@@ -158,7 +173,14 @@ class container implements \block_xp\local\container {
         return new \block_xp\local\config\config_stack([
             new \block_xp\local\config\mdl_config(
                 'local_xp',
-                new \local_xp\local\config\default_admin_config()
+                // We must filter the defaults that are stored in the parent's config
+                // object, just as keeplogs. The reason why keeplogs is in local_xp's defaults
+                // is to change the recommended, not to prevail over the saved value.
+                new \block_xp\local\config\filtered_config(
+                    new \local_xp\local\config\default_admin_config(),
+                    null,
+                    ['keeplogs']
+                )
             ),
             $this->subcontainer->get('config')
         ]);
@@ -181,7 +203,7 @@ class container implements \block_xp\local\container {
     /**
      * Get the course config factory.
      *
-     * @return course_config_factory
+     * @return factory\course_config_factory
      */
     private function get_course_config_factory() {
         if (!$this->courseconfigfactory) {
@@ -189,6 +211,18 @@ class container implements \block_xp\local\container {
                 $this->get('config'), $this->get('db'), $this->get('config_locked'));
         }
         return $this->courseconfigfactory;
+    }
+
+    /**
+     * Get the course collection logger factory.
+     *
+     * @return factory\course_collection_logger_factory
+     */
+    protected function get_course_collection_logger_factory() {
+        return new factory\course_collection_logger_factory(
+            $this->get('config'),
+            $this->get('db')
+        );
     }
 
     /**
@@ -201,6 +235,15 @@ class container implements \block_xp\local\container {
             $this->get('course_world_factory'),
             $this->get('currency')
         );
+    }
+
+    /**
+     * Get the drop collection strategy factory.
+     *
+     * @return factory\course_world_drop_collection_strategy_factory
+     */
+    protected function get_course_world_drop_collection_strategy_factory() {
+        return new factory\default_course_world_drop_collection_strategy_factory();
     }
 
     /**
@@ -220,9 +263,18 @@ class container implements \block_xp\local\container {
     /**
      * Get the course world leaderboard factory.
      *
-     * @return course_world_leaderboard_factory
+     * @return \block_xp\local\factory\course_world_leaderboard_factory
      */
     protected function get_course_world_leaderboard_factory() {
+        return $this->get('course_world_leaderboard_factory_with_config');
+    }
+
+    /**
+     * Get the course world leaderboard factory with config.
+     *
+     * @return \block_xp\local\factory\course_world_leaderboard_factory_with_config
+     */
+    protected function get_course_world_leaderboard_factory_with_config() {
         return new \local_xp\local\factory\course_world_leaderboard_factory(
             $this->get('db'),
             $this->get('iomad_facade')
@@ -232,7 +284,7 @@ class container implements \block_xp\local\container {
     /**
      * Course world factory.
      *
-     * @return course_world_factory
+     * @return factory\course_world_factory
      */
     protected function get_course_world_factory() {
         $db = $this->get('db');
@@ -245,14 +297,15 @@ class container implements \block_xp\local\container {
             new \local_xp\local\factory\badge_url_resolver_course_world_factory(
                 $this->get('badge_url_resolver'),
                 $this->get('theme_repository')
-            )
+            ),
+            $this->get('course_collection_logger_factory')
         );
     }
 
     /**
      * Get the course world navigation factory.
      *
-     * @return course_world_navigation_factory
+     * @return factory\course_world_navigation_factory
      */
     protected function get_course_world_navigation_factory() {
         return new \local_xp\local\factory\course_world_navigation_factory(
@@ -275,6 +328,15 @@ class container implements \block_xp\local\container {
         return new \local_xp\local\currency\default_currency(
             new \local_xp\local\currency\admin_sign_url_resolver()
         );
+    }
+
+    /**
+     * Get the drop repository.
+     *
+     * @return drop\drop_repository
+     */
+    protected function get_drop_repository() {
+        return new drop\db_drop_repository($this->get('db'));
     }
 
     /**
@@ -388,6 +450,15 @@ class container implements \block_xp\local\container {
     }
 
     /**
+     * Get the team membership resolver factory.
+     *
+     * @return factory\course_world_team_membership_resolver_factory
+     */
+    protected function get_team_membership_resolver_factory() {
+        return $this->get('course_world_grouped_leaderboard_factory');
+    }
+
+    /**
      * Get the theme repository.
      *
      * @return theme\theme_repository
@@ -422,7 +493,7 @@ class container implements \block_xp\local\container {
     /**
      * Get user collection target resolver.
      *
-     * @return collection_target_resolver
+     * @return strategy\collection_target_resolver_from_event
      */
     private function get_user_collection_target_resolver() {
         if (!$this->usercollectiontargetresolver) {

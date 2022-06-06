@@ -32,6 +32,7 @@ use context;
 use html_writer;
 use stdClass;
 use table_sql;
+use block_xp\local\utils\user_utils;
 
 /**
  * Log table class.
@@ -58,28 +59,22 @@ class log_table extends table_sql {
      *
      * @param context $context The context.
      * @param int $groupid The group ID.
+     * @param string $downloadformat The download format.
      */
-    public function __construct(context $context, $groupid) {
+    public function __construct(context $context, $groupid, $downloadformat = null) {
         parent::__construct('block_xp_log');
         $this->context = $context;
         $this->renderer = \block_xp\di::get('renderer');
         $this->reasonmaker = new \local_xp\local\reason\maker_from_type_and_signature();
 
+        // Downloadable things.
+        $this->is_downloading($downloadformat, 'xp_log_' . $context->id);
+        $this->is_downloadable(true);
+        $this->show_download_buttons_at([TABLE_P_BOTTOM]);
+
         // Define columns.
-        $this->define_columns(array(
-            'time',
-            'fullname',
-            'points',
-            'reason',
-            'location'
-        ));
-        $this->define_headers(array(
-            get_string('eventtime', 'block_xp'),
-            get_string('fullname'),
-            get_string('reward', 'block_xp'),
-            '',
-            ''
-        ));
+        $this->define_columns($this->get_columns());
+        $this->define_headers($this->get_headers());
 
         // Define SQL.
         $sqlfrom = '';
@@ -100,7 +95,7 @@ class log_table extends table_sql {
 
         // Define SQL.
         $this->sql = new stdClass();
-        $this->sql->fields = 'x.*, ' . get_all_user_name_fields(true, 'u');
+        $this->sql->fields = 'x.*, ' . user_utils::name_fields('u');
         $this->sql->from = $sqlfrom;
         $this->sql->where = 'contextid = :contextid';
         $this->sql->params = array_merge(['contextid' => $context->id], $sqlparams);
@@ -108,6 +103,44 @@ class log_table extends table_sql {
         // Define various table settings.
         $this->sortable(true, 'time', SORT_DESC);
         $this->collapsible(false);
+    }
+
+    /**
+     * Get the columns.
+     *
+     * @return array
+     */
+    protected function get_columns() {
+        $cols = [
+            'time',
+            'fullname',
+            'points',
+            'reason',
+            'location'
+        ];
+        if ($this->is_downloading()) {
+            $cols[] = 'location_url';
+        }
+        return $cols;
+    }
+
+    /**
+     * Get the headers.
+     *
+     * @return void
+     */
+    protected function get_headers() {
+        $cols = [
+            get_string('eventtime', 'block_xp'),
+            get_string('fullname'),
+            get_string('reward', 'block_xp'),
+            '',
+            ''
+        ];
+        if ($this->is_downloading()) {
+            $cols[] = '';
+        }
+        return $cols;
     }
 
     /**
@@ -138,10 +171,25 @@ class log_table extends table_sql {
             if (!$name) {
                 return '';
             }
-            if ($url) {
+            if ($url && !$this->is_downloading()) {
                 return html_writer::link($url, $name);
             }
             return $name;
+        }
+        return '';
+    }
+
+    /**
+     * Reason location URL.
+     *
+     * @param stdClass $row The row.
+     * @return string
+     */
+    protected function col_location_url($row) {
+        $reason = $row->reason;
+        if ($reason instanceof \local_xp\local\reason\reason_with_location) {
+            $url = $reason->get_location_url();
+            return $url ? $url->out(false) : '';
         }
         return '';
     }
@@ -158,6 +206,9 @@ class log_table extends table_sql {
             $desc = $reason->get_short_description();
         } else {
             $desc = '';
+        }
+        if ($this->is_downloading()) {
+            return $desc;
         }
         return \html_writer::tag('span', $desc);
     }
@@ -179,6 +230,9 @@ class log_table extends table_sql {
      * @return string
      */
     protected function col_points($row) {
+        if ($this->is_downloading()) {
+            return $row->points;
+        }
         return $this->renderer->xp($row->points);
     }
 
@@ -188,13 +242,48 @@ class log_table extends table_sql {
      * @return void
      */
     public function print_nothing_to_display() {
+        $hasfilters = false;
+        $showfilters = false;
+
+        if ($this->can_be_reset()) {
+            $hasfilters = true;
+            $showfilters = true;
+        }
+
+        // Render button to allow user to reset table preferences, and the initial bars if some filters
+        // are used. If none of the filters are used and there is nothing to display it just means that
+        // the course is empty and thus we do not show anything but a message.
+        echo $this->render_reset_button();
+        if ($showfilters) {
+            $this->print_initials_bar();
+        }
+
+        $message = get_string('nologsrecordedyet', 'block_xp');
+        if ($hasfilters) {
+            $message = get_string('nothingtodisplay', 'core');
+        }
+
         echo \html_writer::div(
-            \block_xp\di::get('renderer')->notification_without_close(
-                get_string('nologsrecordedyet', 'block_xp'),
-                'info'
-            ),
+            \block_xp\di::get('renderer')->notification_without_close($message, 'info'),
             '',
             ['style' => 'margin: 1em 0']
         );
+    }
+
+    /**
+     * Own method to send the file.
+     *
+     * The out() method is kinda disgusting, so we just made this one to
+     * hide the ugliness into a more descriptive method.
+     *
+     * @return void
+     */
+    public function send_file() {
+        if (!$this->is_downloading()) {
+            throw new coding_exception('What are you doing?');
+        }
+        \core\session\manager::write_close();
+        $this->out(-1337, false);   // Page size is irrelevant when downloading.
+        die();
     }
 }

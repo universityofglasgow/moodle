@@ -26,6 +26,8 @@
 namespace local_xp\local\theme;
 defined('MOODLE_INTERNAL') || die();
 
+use cache;
+use cache_store;
 use moodle_database;
 
 /**
@@ -54,6 +56,34 @@ class theme_updater {   // No interface for now.
     public function __construct(moodle_database $db, \DirectoryIterator $dir) {
         $this->db = $db;
         $this->dir = $dir;
+        $this->cache = cache::make_from_params(cache_store::MODE_APPLICATION, 'local_xp', 'theme_updater', [], [
+            'simplekeys' => true,
+            'simpledata' => true,
+        ]);
+    }
+
+    /**
+     * Whether we require an update.
+     *
+     * As we cannot directly call the theme_updater during installation since the deferred
+     * activation of local_xp, we do a simple cache check to see whether we should be updating
+     * the themes. Caches are reset upon installation or upgrades, so that's good enough to
+     * detect resets.
+     *
+     * @return bool
+     */
+    public function requires_update() {
+        return $this->cache->get('updated_at') === false;
+    }
+
+    /**
+     * Update the themes if required.
+     */
+    public function update_themes_if_required() {
+        if (!$this->requires_update()) {
+            return;
+        }
+        $this->update_themes();
     }
 
     /**
@@ -91,6 +121,9 @@ class theme_updater {   // No interface for now.
         } else {
             $this->db->delete_records($this->table);
         }
+
+        // Flag as updated.
+        $this->cache->set('updated_at', time());
     }
 
     /**

@@ -15,19 +15,19 @@
     <%> local_xp/mobile-tabs %>
 <%/tabs%>
 
-<div class="mma-xp-state" margin-bottom>
+<div class="mma-xp-state ion-margin-bottom">
     <ion-card>
-        <ion-item>
+        <ion-card-content>
             <div class="mma-xp-level-and-progress">
                 <%#state.level%>
                     <%> local_xp/mobile-level %>
                 <%/state.level%>
 
                 <%#state.level.name%>
-                    <div padding class="mma-xp-level-name"><% . %></div>
+                    <div class="ion-padding-top mma-xp-level-name"><% . %></div>
                 <%/state.level.name%>
 
-                <div padding>
+                <div class="ion-padding">
                     <%#state.xp%>
                         <%> local_xp/mobile-xp %>
                     <%/state.xp%>
@@ -47,12 +47,12 @@
                 </div>
 
             </div>
-        </ion-item>
+        </ion-card-content>
     </ion-card>
 
     <%#setup.block.description%>
     <ion-card>
-        <ion-item text-wrap>
+        <ion-item class="ion-text-wrap">
             <p><% . %></p>
         </ion-item>
     </ion-card>
@@ -64,13 +64,13 @@
 
         <%#activity%>
             <ion-item class="mma-xp-item-activity">
-                <div item-start>
+                <div slot="start">
                     <%#xp%>
                         <%> local_xp/mobile-xp %>
                     <%/xp%>
                 </div>
                 <p><% desc %></p>
-                <ion-note item-end><% timeago %></ion-note>
+                <ion-note slot="end"><% timeago %></ion-note>
             </ion-item>
         <%/activity%>
 
