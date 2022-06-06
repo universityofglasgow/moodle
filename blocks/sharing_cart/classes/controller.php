@@ -193,7 +193,14 @@ class controller {
      * @global \moodle_database $DB
      * @global object $USER
      */
-    public function backup(int $cmid, bool $has_userdata, int $course, int $section = 0): int {
+    public function backup(
+        int $cmid,
+        bool $has_userdata,
+        int $course,
+        int $section = 0,
+        bool $include_badges = false
+    ): int {
+
         global $USER, $CFG; //$CFG IS USED, DO NOT REMOVE IT
 
         if (module::has_backup($cmid, $course) === false) {
@@ -232,7 +239,8 @@ class controller {
                 'logs' => false,
                 'grade_histories' => false,
                 'users' => false,
-                'anonymize' => false
+                'anonymize' => false,
+                'badges' => $include_badges
         ];
         if ($has_userdata && \has_capability('moodle/backup:userinfo', $context)) {
             $settings['users'] = true;
@@ -394,12 +402,13 @@ class controller {
                             || module::has_backup((int)$module->id) === false) {
                         continue;
                     }
-    
-                    if ($userdata && $this->is_userdata_copyable((int)$module->id)) {
-                        $itemids[] = $this->backup((int)$module->id, true, $course, $sc_section_id);
-                    } else {
-                        $itemids[] = $this->backup((int)$module->id, false, $course, $sc_section_id);
-                    }
+
+                    $itemids[] = $this->backup(
+                        (int)$module->id,
+                        $userdata && $this->is_userdata_copyable((int)$module->id),
+                        $course,
+                        $sc_section_id
+                    );
                 }
             } else {
                 $itemids[] = $this->backup_emptysection($course, $sc_section_id);
@@ -542,6 +551,9 @@ class controller {
                 $cmid = $task->get_moduleid();
                 $cm = \get_coursemodule_from_id(null, $cmid, 0, false, MUST_EXIST);
                 \moveto_module($cm, $section);
+                // Fire event.
+                $event = \core\event\course_module_created::create_from_cm($cm);
+                $event->trigger();
             }
         }
         \rebuild_course_cache($course->id);

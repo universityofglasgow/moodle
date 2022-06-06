@@ -21,8 +21,9 @@ Feature: Create, preview, test, tidy and edit STACK questions
 
   @javascript
   Scenario: Create, preview, test, tidy and edit STACK questions
+    And I am on the "Course 1" "core_question > course question bank" page logged in as "teacher"
     # Create a new question.
-    When I add a "STACK" question filling the form with:
+    And I add a "STACK" question filling the form with:
       | Question name      | Test STACK question                                                           |
       | Question variables | p : (x-1)^3;                                                                  |
       | Question text      | Differentiate {@p@} with respect to \(x\). [[input:ans1]] [[validation:ans1]] |
@@ -32,8 +33,7 @@ Feature: Create, preview, test, tidy and edit STACK questions
     Then I should see "Test STACK question"
 
     # Preview it.
-    When I choose "Preview" action for "Test STACK question" in the question bank
-    And I switch to "questionpreview" window
+    When I am on the "Test STACK question" "core_question > preview" page logged in as teacher
     And I set the following fields to these values:
       | How questions behave | Adaptive          |
       | Marks                | Show mark and max |
@@ -58,7 +58,7 @@ Feature: Create, preview, test, tidy and edit STACK questions
     And I should see "Marks for this submission: 1.00/1.00. Accounting for previous tries, this gives 0.90/1.00."
 
     # Create a question test.
-    When I follow "Question tests & deployed variants"
+    When I follow "Question is missing tests or variants"
     Then I should see "This question does not use randomisation."
     When I press "Add a test case..."
     And I set the following fields to these values:
@@ -84,10 +84,9 @@ Feature: Create, preview, test, tidy and edit STACK questions
     And I follow "Question tests & deployed variants"
     Then I should see "All tests passed!"
     When I follow "Preview"
-    And I switch to the main window
 
     # Edit the question, verify the form field contents, then change some.
-    When I choose "Edit question" action for "Test STACK question" in the question bank
+    When I am on the "Test STACK question" "core_question > edit" page
     Then the following fields match these values:
       | Question name      | Test STACK question                                                         |
       | Question variables | p : (x-1)^3;                                                                |
