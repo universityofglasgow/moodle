@@ -22,6 +22,7 @@
  * @author     Franco Louie Magpusao, Jose Maria Abreu
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+$string['assessment'] = 'Assessment';
 $string['assessments'] = 'Assessments';
 $string['class_default'] = 'status-item';
 $string['class_graded'] = ' status-graded';
