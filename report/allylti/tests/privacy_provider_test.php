@@ -21,13 +21,11 @@
  * @copyright Copyright (c) 2018 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
+namespace report_allylti;
 use core_privacy\local\metadata\collection;
 use core_privacy\local\metadata\types\external_location;
 use core_privacy\tests\provider_testcase;
 use report_allylti\privacy\provider;
-
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Test case for privacy implementation.
@@ -36,7 +34,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright Copyright (c) 2018 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class report_allylti_privacy_provider_testcase extends provider_testcase {
+class privacy_provider_test extends provider_testcase {
     /**
      * Test for provider::get_metadata().
      */

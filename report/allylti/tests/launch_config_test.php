@@ -22,8 +22,8 @@
  * @copyright  Copyright (c) 2016 Open LMS (https://www.openlms.net)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+namespace report_allylti;
 use report_allylti\local\launch_config;
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Launch config test case.
@@ -32,7 +32,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  Copyright (c) 2016 Open LMS (https://www.openlms.net)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class report_allylti_launch_config_testcase extends basic_testcase {
+class launch_config_test extends \basic_testcase {
 
     public function setUp(): void {
         global $CFG;
@@ -49,7 +49,7 @@ class report_allylti_launch_config_testcase extends basic_testcase {
             'adminurl' => 'http://localdev.dev',
             'key' => 'key',
         ];
-        $cfg = new stdClass();
+        $cfg = new \stdClass();
         $this->expectException('\moodle_exception');
         new launch_config($config, 'admin', $cfg);
     }
@@ -59,7 +59,7 @@ class report_allylti_launch_config_testcase extends basic_testcase {
             'adminurl' => 'http://localdev.dev',
             'secret' => 'secret',
         ];
-        $cfg = new stdClass();
+        $cfg = new \stdClass();
         $this->expectException('\moodle_exception');
         new launch_config($config, 'admin', $cfg);
     }
@@ -69,7 +69,7 @@ class report_allylti_launch_config_testcase extends basic_testcase {
             'key' => 'key',
             'secret' => 'secret',
         ];
-        $cfg = new stdClass();
+        $cfg = new \stdClass();
         $this->expectException('\moodle_exception');
         new launch_config($config, 'admin', $cfg);
     }
@@ -81,7 +81,7 @@ class report_allylti_launch_config_testcase extends basic_testcase {
             'secret' => 'secret',
         ];
         // First test the default.
-        $cfg = new stdClass();
+        $cfg = new \stdClass();
         $launchconfig = new launch_config($config, 'admin', $cfg);
         $this->assertEquals(LTI_LAUNCH_CONTAINER_EMBED, $launchconfig->get_launchcontainer());
 
@@ -98,7 +98,7 @@ class report_allylti_launch_config_testcase extends basic_testcase {
             'secret' => 'secret',
         ];
 
-        $cfg = new stdClass();
+        $cfg = new \stdClass();
         $launchconfig = new launch_config($config, 'admin', $cfg);
         $url = $launchconfig->get_url();
         $this->assertInstanceOf('\moodle_url', $url);
@@ -116,7 +116,7 @@ class report_allylti_launch_config_testcase extends basic_testcase {
 
         $_GET['reporttype'] = 'course';
 
-        $cfg = new stdClass();
+        $cfg = new \stdClass();
         $launchconfig = new launch_config($config, 'course', $cfg);
         $url = $launchconfig->get_url();
         $this->assertEquals('http://localdev.dev/lti/instructor', $url);
