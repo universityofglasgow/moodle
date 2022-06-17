@@ -9935,7 +9935,7 @@ a.dimmed_text:visited,
 .dimmed_category a {
   color: #6a737b; }
 
-.aalink.focus, .aalink:focus,
+.aalink.focus, a.focus.autolink, .aalink:focus, a.autolink:focus,
 #page-footer a:not([class]).focus,
 #page-footer a:not([class]):focus,
 .arrow_link.focus,
@@ -9949,7 +9949,7 @@ a:not([class]):focus,
   background-color: #d2e8fb;
   box-shadow: 0 -0.2rem #d2e8fb, 0 0.2rem #343a40; }
 
-.aalink:focus:hover,
+.aalink:focus:hover, a.autolink:focus:hover,
 #page-footer a:not([class]):focus:hover,
 .arrow_link:focus:hover,
 a:not([class]):focus:hover,
@@ -14368,11 +14368,6 @@ span.editinstructions {
   font-weight: normal;
   padding: 2px 18px; }
 
-/* rtl:raw:
-.course_category_tree .category > .info > .categoryname {
-    background-image:url([[pix:moodle|t/collapsed_empty_rtl]]);
-}
- */
 .course_category_tree .category.with_children > .info > .categoryname {
   background-image: url([[pix:moodle|t/expanded]]);
   background-repeat: no-repeat;
@@ -18058,8 +18053,6 @@ select {
 .filter-dates-popover {
   width: 100%;
   max-width: 41.5em; }
-  .filter-dates-popover .mform {
-    margin-left: -3em; }
 
 /* stylelint-disable-line max-line-length */
 @keyframes expandSearchButton {
@@ -19859,6 +19852,12 @@ body.behat-site.path-grade-report-grader .gradeparent tr.heading {
 .phpinfo .h {
   background-color: #99c;
   font-weight: bold; }
+
+body > .debuggingmessage {
+  margin-top: 50px; }
+
+body > .debuggingmessage ~ .debuggingmessage {
+  margin-top: .5rem; }
 
 /**
  * This file contains the styles required to make the footer sticky.

@@ -1215,21 +1215,19 @@ class core_renderer extends renderer_base {
 
         if (isset($SESSION->justloggedin)) {
             unset($SESSION->justloggedin);
-            if (!empty($CFG->displayloginfailures)) {
-                if (!isguestuser()) {
-                    // Include this file only when required.
-                    require_once($CFG->dirroot . '/user/lib.php');
-                    if ($count = user_count_login_failures($USER)) {
-                        $loggedinas .= '<div class="loginfailures">';
-                        $a = new stdClass();
-                        $a->attempts = $count;
-                        $loggedinas .= get_string('failedloginattempts', '', $a);
-                        if (file_exists("$CFG->dirroot/report/log/index.php") and has_capability('report/log:view', context_system::instance())) {
-                            $loggedinas .= ' ('.html_writer::link(new moodle_url('/report/log/index.php', array('chooselog' => 1,
-                                    'id' => 0 , 'modid' => 'site_errors')), get_string('logs')).')';
-                        }
-                        $loggedinas .= '</div>';
+            if (!isguestuser()) {
+                // Include this file only when required.
+                require_once($CFG->dirroot . '/user/lib.php');
+                if (($count = user_count_login_failures($USER)) && !empty($CFG->displayloginfailures)) {
+                    $loggedinas .= '<div class="loginfailures">';
+                    $a = new stdClass();
+                    $a->attempts = $count;
+                    $loggedinas .= get_string('failedloginattempts', '', $a);
+                    if (file_exists("$CFG->dirroot/report/log/index.php") and has_capability('report/log:view', context_system::instance())) {
+                        $loggedinas .= ' ('.html_writer::link(new moodle_url('/report/log/index.php', array('chooselog' => 1,
+                                'id' => 0 , 'modid' => 'site_errors')), get_string('logs')).')';
                     }
+                    $loggedinas .= '</div>';
                 }
             }
         }
@@ -2821,9 +2819,10 @@ EOD;
      * Returns HTML to display a "Turn editing on/off" button in a form.
      *
      * @param moodle_url $url The URL + params to send through when clicking the button
+     * @param string $method
      * @return string HTML the button
      */
-    public function edit_button(moodle_url $url) {
+    public function edit_button(moodle_url $url, string $method = 'post') {
 
         if ($this->page->theme->haseditswitch == true) {
             return;
@@ -2837,7 +2836,7 @@ EOD;
             $editstring = get_string('turneditingon');
         }
 
-        return $this->single_button($url, $editstring);
+        return $this->single_button($url, $editstring, $method);
     }
 
     /**
@@ -4179,12 +4178,12 @@ EOD;
         global $CFG;
 
         $label = get_string('contactsitesupport', 'admin');
-        $icon = $this->pix_icon('t/email', '', 'moodle', ['class' => 'iconhelp icon-pre']);
+        $icon = $this->pix_icon('t/email', '');
         $content = $icon . $label;
 
         if (!empty($CFG->supportpage)) {
             $attributes = ['href' => $CFG->supportpage, 'target' => 'blank'];
-            $content .= $this->pix_icon('i/externallink', '', 'moodle', ['class' => 'iconhelp icon-pre']);
+            $content .= $this->pix_icon('i/externallink', '', 'moodle', ['class' => 'ml-1']);
         } else {
             $attributes = ['href' => $CFG->wwwroot . '/user/contactsitesupport.php'];
         }
@@ -4209,8 +4208,7 @@ EOD;
         }
 
         $liferingicon = $this->pix_icon('t/life-ring', '', 'moodle', ['class' => 'fa fa-life-ring']);
-        $newwindowicon = $this->pix_icon('i/externallink', get_string('opensinnewwindow'), 'moodle',
-            ['class' => 'fa fa-externallink fa-fw']);
+        $newwindowicon = $this->pix_icon('i/externallink', get_string('opensinnewwindow'), 'moodle', ['class' => 'ml-1']);
         $link = 'https://moodle.com/help/?utm_source=CTA-banner&utm_medium=platform&utm_campaign=name~Moodle4+cat~lms+mp~no';
         $content = $liferingicon . get_string('moodleservicesandsupport') . $newwindowicon;
 
