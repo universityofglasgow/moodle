@@ -395,6 +395,12 @@ class api {
             return;
         }
 
+        // Is the plugin enabled
+        if (!$corehr->enabled) {
+            self::mtrace('local_corehr: plugin is configured but disabled for courseid = ' . $courseid . ', completing userid = ' . $userid);
+            return;
+        }
+
         // Get the course code
         $coursecode = $corehr->coursecode;
         self::mtrace("local_corehr: Processing completion for user=$userid, course=$courseid, coursecode=$coursecode");
@@ -508,9 +514,10 @@ class api {
      * @param int $courseid Moodle course id
      * @param int $enrolallstaff 
      * @param int $recompletion
+     * @param int $enable
      * @param string $coursecode CoreHR course identifier (or empty)
      */
-    public static function savecoursecode($courseid, $coursecode, $enrolallstaff, $recompletion) {
+    public static function savecoursecode($courseid, $coursecode, $enrolallstaff, $recompletion, $enable) {
         global $DB;
 
         // find existing record
@@ -532,6 +539,7 @@ class api {
             $corehr->coursecode = $coursecode;
             $corehr->enrolallstaff = $enrolallstaff;
             $corehr->recompletion = $recompletion;
+            $corehr->enable = $enable;
             $DB->update_record('local_corehr', $corehr);
         } else {
             $corehr = new stdClass;
@@ -539,6 +547,7 @@ class api {
             $corehr->coursecode = $coursecode;
             $corehr->enrolallstaff = $enrolallstaff;
             $corehr->recompletion = $recompletion;
+            $corehr->enable = $enable;
             $DB->insert_record('local_corehr', $corehr);
         }
 

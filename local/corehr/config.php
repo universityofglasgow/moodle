@@ -42,10 +42,12 @@ if ($corehr = $DB->get_record('local_corehr', array('courseid' => $courseid))) {
     $coursecode = $corehr->coursecode;
     $enrolallstaff = $corehr->enrolallstaff;
     $recompletion = $corehr->recompletion;
+    $enable = $corehr->enable;
 } else {
     $coursecode = '';
     $enrolallstaff = 0;
     $recompletion = 0;
+    $enable = 1;
 }
 
 // Form stuffs
@@ -54,7 +56,8 @@ $mform->set_data(array(
     'id' => $courseid,
     'coursecode' => $coursecode,
     'enrolallstaff' => $enrolallstaff,
-    'recompletion' => $recompletion
+    'recompletion' => $recompletion,
+    'enable' => $enable,
 ));
 if ($mform->is_cancelled()) {
     redirect(new moodle_url('/course/view.php', array('id' => $courseid)));
@@ -62,7 +65,8 @@ if ($mform->is_cancelled()) {
     $coursecode = $data->coursecode;
     $enrolallstaff = $data->enrolallstaff;
     $recompletion = $data->recompletion;
-    \local_corehr\api::savecoursecode($courseid, $coursecode, $enrolallstaff, $recompletion);
+    $enable = $data->enable;
+    \local_corehr\api::savecoursecode($courseid, $coursecode, $enrolallstaff, $recompletion, $enable);
 
     redirect(new moodle_url('/course/view.php', array('id' => $courseid)));
 }

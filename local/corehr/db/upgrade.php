@@ -121,5 +121,20 @@ function xmldb_local_corehr_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2022052500, 'local', 'corehr');
     }
 
+    if ($oldversion < 2022062000) {
+
+        // Define field enable to be added to local_corehr.
+        $table = new xmldb_table('local_corehr');
+        $field = new xmldb_field('enable', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1', 'recompletion');
+
+        // Conditionally launch add field enable.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Corehr savepoint reached.
+        upgrade_plugin_savepoint(true, 2022062000, 'local', 'corehr');
+    }
+
     return true; //have to be in else get an unknown error
 }

@@ -38,6 +38,9 @@ class config extends \moodleform {
         $mform->addElement('hidden', 'id');
         $mform->setType('id', PARAM_INT);
 
+        $mform->addElement('advcheckbox', 'enable', get_string('enable', 'local_corehr'));
+        $mform->addHelpButton('enable', 'enable', 'local_corehr');        
+
         $mform->addElement('text', 'coursecode', get_string('coursecode', 'local_corehr'));
         $mform->setType('coursecode', PARAM_TEXT);
         $mform->addHelpButton('coursecode', 'coursecode', 'local_corehr');
