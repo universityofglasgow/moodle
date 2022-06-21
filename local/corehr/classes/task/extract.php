@@ -42,6 +42,7 @@ class extract extends \core\task\adhoc_task {
             $fullextract = \local_corehr\api::extract($guid);
             if ($fullextract) {
                 $extract = \local_corehr\api::store_extract($user->id, $fullextract);
+                \local_corehr\api::write_profile($user->id, $fullextract);
             }
         }
     }

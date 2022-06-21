@@ -266,6 +266,61 @@ class api {
     }
 
     /**
+     * Write record to user_info
+     * @param int $userid
+     * @param string $fieldname
+     * @param string $data
+     */
+    private static function write_user_info($userid, $fieldname, $data) {
+        global $CFG, $DB;
+
+        $sql = "SELECT * from {user_info_field} WHERE " . $DB->sql_compare_text('name') . " = ?";
+        if (!$field = $DB->get_record_sql($sql, ['name' => $fieldname])) {
+            return;
+        }
+        if ($userinfo = $DB->get_record('user_info_data', ['userid' => $userid, 'fieldid' => $field->id])) {
+            $userinfo->data = $data;
+            $DB->update_record('user_info_data', $userinfo);
+        } else {
+            $userinfo = new stdClass();
+            $userinfo->userid = $userid;
+            $userinfo->fieldid = $field->id;
+            $userinfo->data = $data;
+            $userinfo->dataformat = 0;
+            $DB->insert_record('user_info_data', $userinfo);
+        }
+    }
+
+    /**
+     * Write School info to custom profile fields
+     * @param int $userid
+     * @param object $extract
+     */
+    public static function write_profile($userid, $extract) {
+        self::write_user_info($userid, 'school', $extract->schoolDesc);
+        self::write_user_info($userid, 'costcode', !is_numeric($extract->school) ? 0 : $extract->school);
+        self::write_user_info($userid, 'program', $extract->collegeDesc);
+    }
+
+    /**
+     * Extract for all staff in course
+     * @param int $courseid
+     */
+    public static function extract_course_staff($courseid) {
+        $context = \context_course::instance($courseid);
+        $users = get_enrolled_users($context);
+        foreach ($users as $user) {
+            if (strpos($user->email, 'student') === false) {
+                $extract = self::extract($user->username);
+                if ($extract) {
+                    self::store_extract($user->id, $extract);
+                    self::write_profile($user->id, $extract);
+                }
+            }
+        }
+    }
+
+    /**
      * Convenience function, store extract for GUID
      * @param string guid (username)
      * @param object $extract
