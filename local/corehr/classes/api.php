@@ -300,6 +300,7 @@ class api {
         self::write_user_info($userid, 'school', $extract->schoolDesc);
         self::write_user_info($userid, 'costcode', !is_numeric($extract->school) ? 0 : $extract->school);
         self::write_user_info($userid, 'program', $extract->collegeDesc);
+        self::write_user_info($userid, 'ugpg', 'staff');
     }
 
     /**
