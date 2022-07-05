@@ -369,7 +369,7 @@ class mod_attendance_external extends external_api {
                          'lasttaken' => new external_value(PARAM_INT, 'Session last taken time.'),
                          'lasttakenby' => new external_value(PARAM_INT, 'ID of the last user that took this session.'),
                          'timemodified' => new external_value(PARAM_INT, 'Time modified.'),
-                         'description' => new external_value(PARAM_TEXT, 'Session description.'),
+                         'description' => new external_value(PARAM_RAW, 'Session description.'),
                          'descriptionformat' => new external_value(PARAM_INT, 'Session description format.'),
                          'studentscanmark' => new external_value(PARAM_INT, 'Students can mark their own presence.'),
                          'absenteereport' => new external_value(PARAM_INT, 'Session included in absetee reports.'),
@@ -452,7 +452,7 @@ class mod_attendance_external extends external_api {
         $statuses = array('id' => new external_value(PARAM_INT, 'Status id.'),
                           'attendanceid' => new external_value(PARAM_INT, 'Attendance id.'),
                           'acronym' => new external_value(PARAM_TEXT, 'Status acronym.'),
-                          'description' => new external_value(PARAM_TEXT, 'Status description.'),
+                          'description' => new external_value(PARAM_RAW, 'Status description.'),
                           'grade' => new external_value(PARAM_FLOAT, 'Status grade.'),
                           'visible' => new external_value(PARAM_INT, 'Status visibility.'),
                           'deleted' => new external_value(PARAM_INT, 'informs if this session was deleted.'),
@@ -542,5 +542,42 @@ class mod_attendance_external extends external_api {
      */
     public static function update_user_status_returns() {
         return new external_value(PARAM_TEXT, 'Http code');
+    }
+
+    /**
+     * Get sessions params.
+     *
+     * @return external_function_parameters
+     */
+    public static function get_sessions_parameters() {
+        return new external_function_parameters(
+                    array(
+                        'attendanceid' => new external_value(PARAM_INT, 'Attendance id.', VALUE_REQUIRED),
+                    )
+                );
+    }
+
+    /**
+     * Describes get_sessions return values.
+     *
+     * @return external_multiple_structure
+     */
+    public static function get_sessions_returns() {
+        return new external_multiple_structure(self::get_session_returns());
+    }
+
+    /**
+     * Get sessions.
+     *
+     * @param int $attendanceid
+     */
+    public static function get_sessions($attendanceid) {
+        global $DB;
+
+         $params = self::validate_parameters(self::get_sessions_parameters(), array(
+            'attendanceid' => $attendanceid,
+         ));
+
+        return attendance_handler::get_sessions($params['attendanceid']);
     }
 }

@@ -65,11 +65,11 @@ class attendance_handler {
                 $cm->id = $attendance->coursemodule;
 
                 $att = new mod_attendance_structure($att, $cm, $course, $context);
-                $course->attendance_instance[$att->id] = array();
-                $course->attendance_instance[$att->id]['name'] = $att->name;
                 $todaysessions = $att->get_today_sessions();
 
                 if (!empty($todaysessions)) {
+                    $course->attendance_instance[$att->id] = array();
+                    $course->attendance_instance[$att->id]['name'] = $att->name;
                     $course->attendance_instance[$att->id]['today_sessions'] = $todaysessions;
                     $coursessessions[$course->id] = $course;
                 }
@@ -157,5 +157,25 @@ class attendance_handler {
 
             $DB->update_record('attendance_sessions', $attendancesession);
         }
+    }
+
+    /**
+     * For this attendance instance, returns all sessions.
+     *
+     * @param int $attendanceid
+     * @return mixed
+     */
+    public static function get_sessions($attendanceid) {
+        global $DB;
+
+        $sessions = $DB->get_records('attendance_sessions', array('attendanceid' => $attendanceid), 'id ASC');
+
+        $sessionsinfo = array();
+
+        foreach ($sessions as $session) {
+            $sessionsinfo[$session->id] = self::get_session($session->id);
+        }
+
+        return $sessionsinfo;
     }
 }

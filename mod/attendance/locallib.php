@@ -847,7 +847,13 @@ function attendance_construct_sessions_data_for_add($formdata, mod_attendance_st
         }
     } else {
         $sess = new stdClass();
-        $sess->sessdate = $sessiondate;
+        $sess->sessdate = make_timestamp(
+            date("Y", $formdata->sessiondate),
+            date("m", $formdata->sessiondate),
+            date("d", $formdata->sessiondate),
+            $formdata->sestime['starthour'],
+            $formdata->sestime['startminute']
+        );
         $sess->duration = $duration;
         $sess->descriptionitemid = $formdata->sdescription['itemid'];
         $sess->description = $formdata->sdescription['text'];
@@ -1038,6 +1044,7 @@ function attendance_get_users_to_notify($courseids = array(), $orderby = '', $al
     }
 
     $idfield = $DB->sql_concat('cm.id', 'atl.studentid', 'n.id');
+    $params['yesterday'] = time() - DAYSECS;
     $sql = "SELECT {$idfield} as uniqueid, a.id as aid, {$unames2} a.name as aname, cm.id as cmid, c.id as courseid,
                     c.fullname as coursename, atl.studentid AS userid, n.id as notifyid, n.warningpercent, n.emailsubject,
                     n.emailcontent, n.emailcontentformat, n.emailuser, n.thirdpartyemails, n.warnafter, n.maxwarn,
@@ -1061,7 +1068,10 @@ function attendance_get_users_to_notify($courseids = array(), $orderby = '', $al
                          GROUP BY attendanceid, setnumber) stm
                      ON (stm.setnumber = ats.statusset AND stm.attendanceid = ats.attendanceid)
                   {$joingroup}
-                  WHERE ats.absenteereport = 1 {$where}
+                  WHERE ats.absenteereport = 1 AND ats.attendanceid IN (SELECT distinct attendanceid
+                                                                          FROM {attendance_sessions}
+                                                                         WHERE sessdate > :yesterday)
+                  {$where}
                 GROUP BY uniqueid, a.id, a.name, a.course, c.fullname, atl.studentid, n.id, n.warningpercent,
                          n.emailsubject, n.emailcontent, n.emailcontentformat, n.warnafter, n.maxwarn,
                          n.emailuser, n.thirdpartyemails, cm.id, c.id, {$unames2} ns.userid

@@ -56,9 +56,13 @@ class auto_mark extends \core\task\scheduled_task {
         $cacheatt = array();
         $cachecourse = array();
         $now = time(); // Store current time to use in queries so they all match nicely.
+        $sql = "SELECT se.*, ss.id as setunmarked
+                  FROM {attendance_sessions} se
+             LEFT JOIN {attendance_statuses} ss ON ss.attendanceid = se.attendanceid
+                       AND ss.setunmarked = 1 AND ss.deleted = 0 AND ss.setnumber = se.statusset
+             WHERE se.automark > 0 AND se.automarkcompleted < 2 AND se.sessdate < ?";
 
-        $sessions = $DB->get_recordset_select('attendance_sessions',
-            'automark > 0 AND automarkcompleted < 2 AND sessdate < ? ', array($now));
+        $sessions = $DB->get_recordset_sql($sql, [$now]);
 
         foreach ($sessions as $session) {
             if ($session->sessdate + $session->duration < $now || // If session is over.
@@ -73,13 +77,8 @@ class auto_mark extends \core\task\scheduled_task {
                 }
 
                 // Store cm/att/course in cachefields so we don't make unnecessary db calls.
-                // Would probably be nice to grab this stuff outside of the loop.
-                // Make sure this status set has something to setunmarked.
-                $setunmarked = $DB->get_field('attendance_statuses', 'id',
-                    array('attendanceid' => $session->attendanceid, 'setnumber' => $session->statusset,
-                          'setunmarked' => 1, 'deleted' => 0));
 
-                if (empty($setunmarked)) {
+                if (empty($session->setunmarked)) {
                     $coursemodule = get_coursemodule_from_instance('attendance', $session->attendanceid);
                     $url = $CFG->wwwroot.'/mod/attendance/preferences.php?id='.$coursemodule->id;
                     mtrace("No unmarked status configured for session id: ".$session->id. " to fix, go to: ".$url);
@@ -150,6 +149,7 @@ class auto_mark extends \core\task\scheduled_task {
                     $existinglog = $DB->get_records_menu('attendance_log',
                         ['sessionid' => $session->id], '', 'studentid, statusid');
 
+                    $newlogs = [];
                     $newlog = new \stdClass();
                     $newlog->timetaken = $now;
                     $newlog->takenby = 0;
@@ -182,8 +182,11 @@ class auto_mark extends \core\task\scheduled_task {
                         $newlog->studentid = $completionuser->userid;
                         $newlog->statusid = $att->get_automark_status($completionuser->timemodified, $session->id);
                         if (!empty($newlog->statusid)) {
-                            $DB->insert_record('attendance_log', $newlog);
+                            $newlogs[] = $newlog;
                         }
+                    }
+                    if (!empty($newlogs)) {
+                        $DB->insert_records('attendance_log', $newlogs);
                     }
                 }
 
@@ -198,7 +201,7 @@ class auto_mark extends \core\task\scheduled_task {
                         if ($sessionover || !empty($userfirstaccess[$log->studentid])) {
                             // Status needs updating.
                             if ($sessionover) {
-                                $log->statusid = $setunmarked;
+                                $log->statusid = $session->setunmarked;
                             } else if (!empty($userfirstaccess[$log->studentid])) {
                                 $log->statusid = $att->get_automark_status($userfirstaccess[$log->studentid], $session->id);
                             }
@@ -218,6 +221,7 @@ class auto_mark extends \core\task\scheduled_task {
                 $existinglog->close();
                 mtrace($updated . " session status updated");
 
+                $newlogs = [];
                 $newlog = new \stdClass();
                 $newlog->timetaken = $now;
                 $newlog->takenby = 0;
@@ -229,17 +233,20 @@ class auto_mark extends \core\task\scheduled_task {
                 foreach ($users as $user) {
                     if ($sessionover || !empty($userfirstaccess[$user->id])) {
                         if ($sessionover) {
-                            $newlog->statusid = $setunmarked;
+                            $newlog->statusid = $session->setunmarked;
                         } else if (!empty($userfirstaccess[$user->id])) {
                             $newlog->statusid = $att->get_automark_status($userfirstaccess[$user->id], $session->id);
                         }
                         if (!empty($newlog->statusid)) {
                             $newlog->studentid = $user->id;
-                            $DB->insert_record('attendance_log', $newlog);
+                            $newlogs[] = $newlog;
                             $added++;
-                            $donesomething = true;
                         }
                     }
+                }
+                if (!empty($newlogs)) {
+                    $DB->insert_records('attendance_log', $newlogs);
+                    $donesomething = true;
                 }
                 mtrace($added . " session status inserted");
 
