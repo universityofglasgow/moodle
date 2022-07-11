@@ -157,6 +157,8 @@ if ($mform->is_cancelled()) {
             // If they don't already exist then find in LDAP.
             if ($firstcolumn == 'guid') {
                 $ldap = report_guid\lib::filter($output, '', '', $usermatch, '', '');
+            } else if ($firstcolumn == 'email') {
+                $ldap = report_guid\lib::filter($output, '', '', '', $usermatch, '');
             } else {
                 $ldap = report_guid\lib::filter($output, '', '', '', '', $usermatch);
             }

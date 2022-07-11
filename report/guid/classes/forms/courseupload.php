@@ -44,6 +44,7 @@ class courseupload extends moodleform {
         $firstcoloptions = array(
             'guid' => get_string('guidusername', 'report_guid'),
             'idnumber' => get_string('idnumber', 'report_guid'),
+            'email' => get_string('email', 'report_guid'),
         );
         $actions = [
             'enrol' => get_string('enrol', 'report_guid'),
