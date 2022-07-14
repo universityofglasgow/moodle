@@ -452,7 +452,7 @@ class api {
         }
 
         // Is the plugin enabled
-        if (!$corehr->enabled) {
+        if (!$corehr->enable) {
             self::mtrace('local_corehr: plugin is configured but disabled for courseid = ' . $courseid . ', completing userid = ' . $userid);
             return;
         }
