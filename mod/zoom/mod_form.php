@@ -40,8 +40,9 @@ class mod_zoom_mod_form extends moodleform_mod {
      * Defines forms elements
      */
     public function definition() {
-        global $PAGE, $USER;
+        global $PAGE, $USER, $OUTPUT;
         $config = get_config('zoom');
+        $PAGE->requires->css(new moodle_url('/mod/zoom/styles.css'));
         $PAGE->requires->js_call_amd("mod_zoom/form", 'init');
         $zoomapiidentifier = zoom_get_api_identifier($USER);
 
@@ -337,6 +338,53 @@ class mod_zoom_mod_form extends moodleform_mod {
                 get_string('showscheduleonview', 'zoom'));
         $mform->setDefault('show_schedule', $config->defaultshowschedule);
         $mform->addHelpButton('show_schedule', 'showschedule', 'zoom');
+
+        // Adding the "breakout rooms" fieldset.
+        $mform->addElement('header', 'breakoutrooms', get_string('breakoutrooms', 'mod_zoom'));
+        $mform->setExpanded('breakoutrooms');
+
+        $courseid = $this->current->course;
+        $context = context_course::instance($courseid);
+
+        $groups = groups_get_all_groups($courseid);
+        $participants = get_enrolled_users($context);
+
+        // Getting Course participants.
+        $courseparticipants = [];
+        foreach ($participants as $participant) {
+            $courseparticipants[] = array('participantid' => $participant->id, 'participantemail' => $participant->email);
+        }
+
+        // Getting Course groups.
+        $coursegroups = [];
+        foreach ($groups as $group) {
+            $coursegroups[] = array('groupid' => $group->id, 'groupname' => $group->name);
+        }
+
+        // Building meeting breakout rooms template data.
+        $templatedata  = array('rooms' => array(), 'roomscount' => 0,
+            'roomtoclone' => array('toclone' => 'toclone', 'courseparticipants' => $courseparticipants,
+                'coursegroups' => $coursegroups));
+
+        $currentinstance = $this->current->instance;
+        if ($currentinstance) {
+            $rooms = zoom_build_instance_breakout_rooms_array_for_view($currentinstance,
+                $courseparticipants, $coursegroups);
+
+            $templatedata['rooms'] = $rooms;
+            $templatedata['roomscount'] = count($rooms);
+        }
+
+        $mform->addElement('html', $OUTPUT->render_from_template('zoom/breakoutrooms/rooms', $templatedata));
+
+        $mform->addElement('hidden', 'rooms', '');
+        $mform->setType('rooms', PARAM_RAW);
+
+        $mform->addElement('hidden', 'roomsparticipants', '');
+        $mform->setType('roomsparticipants', PARAM_RAW);
+
+        $mform->addElement('hidden', 'roomsgroups', '');
+        $mform->setType('roomsgroups', PARAM_RAW);
 
         // Adding the "security" fieldset, where all settings relating to securing and protecting the meeting are shown.
         $mform->addElement('header', 'general', get_string('security', 'mod_zoom'));
@@ -716,8 +764,20 @@ class mod_zoom_mod_form extends moodleform_mod {
         // Only check for scheduled meetings.
         if (empty($data['recurring'])) {
             // Make sure start date is in the future.
-            if ($data['start_time'] < strtotime('today')) {
+            if ($data['start_time'] < time()) {
                 $errors['start_time'] = get_string('err_start_time_past', 'zoom');
+            }
+
+            // Make sure duration is positive and no more than 150 hours.
+            if ($data['duration'] <= 0) {
+                $errors['duration'] = get_string('err_duration_nonpositive', 'zoom');
+            } else if ($data['duration'] > 150 * 60 * 60) {
+                $errors['duration'] = get_string('err_duration_too_long', 'zoom');
+            }
+        } else if ($data['recurring'] == 1 && $data['recurrence_type'] != ZOOM_RECURRINGTYPE_NOTIME) {
+            // Make sure start date time (first potential date of next meeting) is in the future.
+            if ($data['start_time'] < time()) {
+                $errors['start_time'] = get_string('err_start_time_past_recurring', 'zoom');
             }
 
             // Make sure duration is positive and no more than 150 hours.
