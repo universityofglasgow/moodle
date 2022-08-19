@@ -23,7 +23,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-function isnodenotempty(navigation_node $node) {
+function isgcatnodenotempty(navigation_node $node) {
     return $node !== false && $node->has_children();
 }
 
@@ -80,13 +80,13 @@ function local_gugcat_extend_navigation($navigation) {
     $linkurl = new moodle_url('/local/gugcat/index.php', array('id' => $coursecontext->instanceid));
     $icon = new pix_icon('hillhead/gcatdashboard', '');
     $currentcoursenode = $navigation->find('currentcourse', $navigation::TYPE_ROOTNODE);
-    if (isnodenotempty($currentcoursenode)) {
+    if (isgcatnodenotempty($currentcoursenode)) {
         // We have a 'current course' node, add the link to it.
         $currentcoursenode->add($gugcatlinkname, $linkurl, navigation_node::NODETYPE_LEAF, $gugcatlinkname, 'gugcat', $icon);
     }
 
     $mycoursesnode = $navigation->find('mycourses', $navigation::TYPE_ROOTNODE);
-    if (isnodenotempty($mycoursesnode)) {
+    if (isgcatnodenotempty($mycoursesnode)) {
         $currentcourseinmycourses = $mycoursesnode->find($coursecontext->instanceid, navigation_node::TYPE_COURSE);
         if ($currentcourseinmycourses) {
             // We found the current course in 'my courses' node, add the link to it.
@@ -96,7 +96,7 @@ function local_gugcat_extend_navigation($navigation) {
     }
 
     $coursesnode = $navigation->find('courses', $navigation::TYPE_ROOTNODE);
-    if (isnodenotempty($coursesnode)) {
+    if (isgcatnodenotempty($coursesnode)) {
         $currentcourseincourses = $coursesnode->find($coursecontext->instanceid, navigation_node::TYPE_COURSE);
         if ($currentcourseincourses) {
             // We found the current course in the 'courses' node, add the link to it.

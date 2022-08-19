@@ -171,7 +171,7 @@ class assessments_details {
                 // Course title.
                 if (!$issubcategory) {
                         $html .= html_writer::start_tag('td', array('class' => 'td20'));
-                        $html .= html_writer::tag('a', $assessment->coursetitle,
+                        $html .= html_writer::tag('a', $assessment->shortname,
                                                 array('href' => $assessment->courseurl));
                         $html .= html_writer::end_tag('td');
                 }
@@ -200,7 +200,8 @@ class assessments_details {
                                 'class' => 'subcategory-row',
                                 'data-id' => $assessment->id,
                                 'data-name' => $assessment->assessmentname,
-                                'data-course' => $assessment->coursetitle,
+                                //'data-course' => $assessment->coursetitle,
+                                'data-course' => $assessment->shortname,
                                 'data-grade' => $assessment->grading->gradetext,
                                 'data-weight' => $assessment->weight));
                     } else {
@@ -240,7 +241,8 @@ class assessments_details {
                                                             'class' => 'subcategory-row',
                                                             'data-id' => $assessment->id,
                                                             'data-name' => $assessment->assessmentname,
-                                                            'data-course' => $assessment->coursetitle,
+                                                            //'data-course' => $assessment->coursetitle,
+                                                            'data-course' => $assessment->shortname,
                                                             'data-grade' => $assessment->grading->gradetext,
                                                             'data-weight' => $assessment->weight));
                     } else {
@@ -694,7 +696,7 @@ class assessments_details {
             $records = null;
         }
 
-        $items = ($records) ? self::sanitize_records($records, $subcategoryparent) : array();
+        $items = ($records) ? self::sanitize_records($records, $subcategoryparent, $userid) : array();
 
         return $items;
     }
@@ -734,20 +736,40 @@ class assessments_details {
     }
 
     /**
+     * Get course short and full names
+     * @param int $courseid
+     * @return array(shortname, fullname)
+     */
+    private static function get_coursenames($courseid) {
+        global $DB;
+
+        if ($course = $DB->get_record('course', ['id' => $courseid])) {
+            $shortname = $course->shortname;
+            $fullname = $course->fullname;
+        } else {
+            $shortname = '';
+            $fullname = '';
+        }
+
+        return [$shortname, $fullname];
+    }
+
+    /**
      * Returns sanitized data based from query results
      *
      * @param array $records
      * @param grade_category $subcategoryparent
+     * @param int $userid (0 implies current user)
      * @return array $items
      */
-    public static function sanitize_records($records, $subcategoryparent) {
+    public static function sanitize_records($records, $subcategoryparent, $userid = 0) {
         global $DB;
         $items = array();
 
         if ($records) {
             $recordsarray = (array) $records;
             foreach ($recordsarray as $record) {
-                $modinfo = get_fast_modinfo($record->courseid);
+                $modinfo = get_fast_modinfo($record->courseid, $userid);
                 $cm = ($record->status != 'category') ? $modinfo->get_cm($record->id) : null;
                 // Check if course module is visible to the user.
                 $iscmvisible = ($record->status != 'category') ? $cm->uservisible : true;
@@ -772,6 +794,8 @@ class assessments_details {
                         $item->id = $record->id;
                         $item->coursetitle = $record->coursetitle;
                         $item->courseurl = self::return_courseurl($record->courseid);
+                        list($item->shortname, $item->moodlecourse) = self::get_coursenames($record->courseid);
+                        $item->courseid = $record->courseid;
                         $item->assessmenturl = self::return_assessmenturl($record->id, $record->modname);
                         $item->assessmentname = $record->activityname;
                         $item->assessmenttype = self::return_assessmenttype($record->gradecategoryname, $record->aggregationcoef);
@@ -1434,7 +1458,13 @@ class assessments_details {
             $recordsarray = (array) $records;
             foreach ($recordsarray as $record) {
                 $modinfo = get_fast_modinfo($record->courseid);
-                $cm = $modinfo->get_cm($record->id);
+                $cms = $modinfo->get_cms();
+                //$cm = $modinfo->get_cm($record->id);
+                // Added this check because sometimes it doesn't exist - MOOD-165
+                if (!array_key_exists($record->id, $cms)) {
+                    continue;
+                }
+                $cm = $cms[$record->id];
                 // Check if course module is visible to the user.
                 $iscmvisible = $cm->uservisible;
 
