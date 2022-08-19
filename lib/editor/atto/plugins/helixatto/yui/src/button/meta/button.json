@@ -1,7 +1,0 @@
-{
-    "moodle-atto_helixatto-button": {
-        "requires": [
-            "moodle-editor_atto-plugin"
-        ]
-    }
-}

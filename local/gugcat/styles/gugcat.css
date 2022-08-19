@@ -1,0 +1,258 @@
+@import url("table-tabs.css");
+@import url("mform-styles.css");
+@import url("custom-select.css");
+@import url("modal.css");
+
+#region-main {
+    overflow-x: visible;
+    min-width: 100%;
+    width: auto;
+    display: inline-flex;
+    flex-direction: column;
+}
+
+.gcat-title{
+    font-weight: 700;
+    line-height: 32px;
+    letter-spacing: 0em;
+}
+
+.gcat-header{
+    margin: 15px 0;
+    display: flex;
+}
+
+#gcat-cog{
+    color: #005c8a;
+    font-size: 36px;
+    cursor: pointer;
+}
+
+/* Icons style */
+td > i, th > i {
+    color: #8c8c8c;
+    cursor: pointer;
+}
+
+.fa-check-circle{
+    font-size: 20px;
+    color: #005c8a;
+}
+
+.fa-times-circle, .fa-circle{
+    font-size: 20px;
+    color: #949494;
+}
+
+.fa-ellipsis-h{
+    font-size: 13px;
+    margin-left: 2px;
+    cursor: pointer;
+}
+
+th .fa-search, th .fa-ellipsis-h{
+    margin-left: 3px;
+    color: white;
+    transition: transform .2s; /* Animation */
+}
+
+th .fa-search:hover{
+    transform: scale(1.3);
+    margin-left: 5px;
+}
+
+button .fa-caret-down{
+    margin-left: 5px;
+}
+
+.zero-resit-weight{
+    color: #b30c00;
+}
+
+.zero-resit-weight:before{
+    content: '\f111';
+    font: normal normal normal 8px/1 FontAwesome;
+    color: #b30c00;
+    padding-right: 1em;
+}
+/* Buttons style */
+.btn-default, .btn-form-default, input[name='userfilechoose'], #id_cancel, #id_revertbutton{
+    background-color: transparent;
+    border: 1px solid #005c8a;
+    color: #005c8a;
+    border-radius: 8px;
+    white-space: nowrap;
+    line-height: 21px;
+    letter-spacing: 0em;
+    text-align: center;
+}
+
+.btn-default:hover, .btn-form-default:hover, input[name='userfilechoose']:hover, #id_cancel:hover,
+#id_revertbutton:hover {
+    background-color: #005c8a;
+    color: white;
+}
+
+/* Choose file button in file picker */
+input[name='userfilechoose']{
+    border-radius: 8px 8px 0 0;
+}
+
+/* Green buttons */
+.btn-release {
+    border: 1px solid #006630;
+    background-color: white;
+    color: #006630;
+}
+
+.btn-release:hover {
+    background-color: #006630;
+    color: white;
+}
+
+.btn-default, .btn-release,
+.tabcontent-header >.selectdiv select {
+    height: 40px;
+}
+
+#btn-release, #btn-saveadd, .togglemultigrd, .addnewgrade{
+    display: none;
+}
+
+.tabcontent-header >.selectdiv, #btn-blkimport{
+    float: left;
+}
+/* Specific select style*/
+
+.select-category, .select-category > select{
+    height: 40px;
+    margin: 0 5px 0 0;
+}
+
+.multi-select-reason{
+    display: none;
+}
+
+.input-reason, .input-search, .input-gradept{
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    height: 32px;
+    margin: auto;
+    margin-top: 5px;
+    padding: 0px 10px;
+    line-height: 1.75;
+    color: #333;
+    background-color: #ffffff;
+    background-image: none;
+    border-radius: 10px;
+    border: 1px solid #C4C4C4;
+    -ms-word-break: normal;
+    word-break: normal;
+}
+
+.input-reason, .input-search{
+    display: none;
+    width: auto;
+}
+
+.input-gradept{
+    height: 40px;
+    margin-top: 0;
+}
+
+.input-scale-pt{
+    margin-left: -10%;
+    margin-right: 10%;
+}
+
+.addnewgrade{
+    margin: auto;
+}
+
+/* display only the first select reason dropdown */
+tbody > tr:first-child > td > .multi-select-reason {
+    display: block;
+}
+
+/* Grade discrepancy style */
+.grade-discrepancy, .highlighted{
+    background-color: rgba(179, 12, 0, 0.49);
+    border-radius: 8px;
+    pointer-events: inherit;
+    width: fit-content;
+    margin: auto;
+    padding: 5px;
+}
+
+.btn.grade-discrepancy{
+    width: 110px;
+    height: 40px;
+    max-width: 124px;
+    font-size: 11px;
+    word-break: break-word;
+    display: none;
+    line-height: 11px;
+}
+
+/* Context-action style */
+.dropdown-menu {
+    font-size: 12px;
+    padding: .2rem 0;
+}
+
+.dropdown-item {
+    padding: .2rem;
+    cursor: pointer;
+}
+
+.dropdown-item.active, .dropdown-item:active {
+    background-color: #005c8a;
+}
+
+td a:hover, .dropdown-item a:hover {
+    text-decoration: none;
+}
+
+/* Hide submit buttons */
+#release-submit, #importgrades-submit,
+#finalrelease-submit, #downloadcsv-submit,
+#multiadd-submit, #search-submit, #bulk-submit,
+#coursegradeform-submit, .hide-show-grade,
+.hide-names, .hidden {
+    display: none;
+}
+
+.visible{
+    display: block;
+}
+
+.child-select{
+    clear: both;
+}
+
+.child-select, #btn-blkimport{
+    margin: 5px 0 1.5em 0;
+}
+
+/* Tooltip styles */
+.tooltip.bs-tooltip-top > .arrow::before {
+    border-top-color: #8c8c8c;
+}
+
+.tooltip.bs-tooltip-right > .arrow::before {
+    border-right-color: #8c8c8c;
+}
+
+.tooltip > .tooltip-inner {
+    text-align: left;
+    color: black;
+    background-color: white;
+    font-size: smaller;
+    border-radius: 10px;
+    border: 1px solid #8c8c8c;
+}
+
+.path-local-gugcat .tablink {
+	display: inline-block;
+}

@@ -199,19 +199,30 @@ function game_showanswers_appendselect( $game) {
  * @param stdClass $context
  */
 function game_showanswers_question( $game, $context) {
-    global $DB;
+    global $CFG, $DB;
+
+    $table = '{question} q';
 
     if ($game->gamekind != 'bookquiz') {
-        $select = ' category='.$game->questioncategoryid;
-
-        if ($game->subcategories) {
-            $cats = question_categorylist( $game->questioncategoryid);
-            if (is_array( $cats)) {
-                $select = ' category in ('.implode( ',', $cats).')';
-            } else if (strpos( $cats, ',') > 0) {
-                $select = ' category in ('.$cats.')';
+        if (game_get_moodle_version() >= '04.00') {
+            $table .= ",{$CFG->prefix}question_bank_entries qbe ";
+            $select = 'qbe.id=q.id AND qbe.questioncategoryid='.$game->questioncategoryid;
+            if ($game->subcategories) {
+                $cats = question_categorylist( $game->questioncategoryid);
+                if (count( $cats) > 0) {
+                    $s = implode( ',', $cats);
+                    $select = 'qbe.questioncategoryid in ('.$s.')';
+                }
             }
-        }
+        } else {
+            $select = 'category='.$game->questioncategoryid;
+            if ($game->subcategories) {
+                $cats = question_categorylist( $game->questioncategoryid);
+                if (count( $cats) > 0) {
+                    $select = 'category in ('.implode( ',', $cats).')';
+                }
+            }
+        }       
     } else {
         $context2 = get_context_instance(50, $COURSE->id);
         $select = " contextid in ($context2->id)";
@@ -221,16 +232,23 @@ function game_showanswers_question( $game, $context) {
                 $select2 .= ','.$rec->id;
             }
         }
-        $select = ' AND category IN ('.substr( $select2, 1).')';
+        
+        if (game_get_moodle_version() >= '04.00') {
+            $table .= ",{$CFG->prefix}question_bank_entries qbe ";
+            $select = 'qbe.id=q.id AND qbe.questioncategoryid IN ('.substr( $select2, 1).')';
+        } else {       
+            $select = ' AND category IN ('.substr( $select2, 1).')';
+        }
     }
 
-    $select .= ' AND hidden = 0 ';
+    if (game_get_moodle_version() < '04.00') {
+        $select .= ' AND hidden = 0 ';
+    }
     $select .= game_showanswers_appendselect( $game);
 
     $gamekind = $game->gamekind;
     $showcategories = ($gamekind == 'bookquiz');
     $order = ($showcategories ? 'category,questiontext' : 'questiontext');
-    $table = '{question} q';
     if ($gamekind == 'millionaire') {
         if (game_get_moodle_version() < '02.06') {
             $table .= ',{question_multichoice} qmo';
@@ -252,21 +270,44 @@ function game_showanswers_question( $game, $context) {
  * @param stdClass $context
  */
 function game_showanswers_quiz( $game, $context) {
-    global $CFG;
+    global $CFG, $DB;
 
+    $sort = 'category,questiontext';
+    
     if (game_get_moodle_version() < '02.07') {
         $select = "quiz='$game->quizid' ".
             ' AND qqi.question=q.id'.
             ' AND q.hidden=0'.
             game_showanswers_appendselect( $game);
         $table = '{question} q,{quiz_question_instances} qqi';
+    } else if (game_get_moodle_version() >= '04.00') {
+        $select = "qs.quizid='$game->quizid' AND qs.id=qr.id ";
+        $table = "{quiz_slots} qs,{$CFG->prefix}question_references qr";
+        $sql = "SELECT qr.questionbankentryid FROM $table WHERE $select";
+        $recs = $DB->get_records_sql( $sql);
+        $ret = array();
+        $sql = "SELECT q.* FROM {$CFG->prefix}question_versions qv, {$CFG->prefix}question q ".
+            ' WHERE qv.questionid=q.id AND qv.questionbankentryid=? '.game_showanswers_appendselect( $game).' ORDER BY version DESC';
+        foreach( $recs as $rec) {
+            $recsq = $DB->get_records_sql( $sql, array( $rec->questionbankentryid), 0, 1);
+            foreach( $recsq as $recq) {
+                $a[] = $recq->id;
+            }
+        }
+        $table = '{question} q';
+        if( count( $a) == 0) {
+            $select = 'q.id IN (0)';
+        } else {
+            $select = 'q.id IN ('.implode( ',', $a).')';
+        }
+        $sort = 'questiontext';
     } else {
         $select = "qs.quizid='$game->quizid' ".
             " AND qs.questionid=q.id ".game_showanswers_appendselect( $game);
         $table = "{question} q,{quiz_slots} qs";
     }
 
-    game_showanswers_question_select( $game, $table, $select, 'q.*', 'category,questiontext', false, $game->course, $context);
+    game_showanswers_question_select( $game, $table, $select, 'q.*', $sort, false, $game->course, $context);
 }
 
 /**
@@ -347,9 +388,14 @@ function game_showanswers_question_select( $game, $table, $select, $fields, $ord
             echo '</td>';
         }
 
+        if (game_get_moodle_version() >= '04.00') {
+            $href = "{$CFG->wwwroot}/question/bank/editquestion/question.php?id={$question->id}&courseid={$courseid}";
+        } else {
+            $href = "{$CFG->wwwroot}/question/question.php?inpopup=1&amp;id=$question->id&courseid=$courseid";
+        }
         echo '<td>';
         echo "<a title=\"Edit\" ".
-            "href=\"{$CFG->wwwroot}/question/question.php?inpopup=1&amp;id=$question->id&courseid=$courseid\" target=\"_blank\">";
+            "href=\"{$href}\" target=\"_blank\">";
         echo "<img src=\"".game_pix_url('t/edit')."\" alt=\"Edit\" /></a> ";
 
         echo game_filterquestion(str_replace( array( "\'", '\"'), array( "'", '"'),
