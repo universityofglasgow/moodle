@@ -289,7 +289,8 @@ class mod_zoom_mod_form extends moodleform_mod {
             // If we are creating a new instance.
             if ($isnew) {
                 // Check if the user has a webinar license.
-                $haswebinarlicense = $service->get_user_settings($zoomuser->id)->feature->webinar;
+                $userfeatures = $service->get_user_settings($zoomuser->id)->feature;
+                $haswebinarlicense = !empty($userfeatures->webinar) || !empty($userfeatures->zoom_events);
 
                 // Only show if the admin always wants to show this widget or
                 // if the admin wants to show this widget conditionally and the user has a valid license.
@@ -375,7 +376,7 @@ class mod_zoom_mod_form extends moodleform_mod {
             $templatedata['roomscount'] = count($rooms);
         }
 
-        $mform->addElement('html', $OUTPUT->render_from_template('zoom/breakoutrooms/rooms', $templatedata));
+        $mform->addElement('html', $OUTPUT->render_from_template('zoom/breakoutrooms_rooms', $templatedata));
 
         $mform->addElement('hidden', 'rooms', '');
         $mform->setType('rooms', PARAM_RAW);
