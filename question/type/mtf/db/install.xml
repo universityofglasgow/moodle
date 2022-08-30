@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="question/type/mtf/db" VERSION="20140924"
+	COMMENT="XMLDB file for Moodle question/type/mtf" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="../../../../lib/xmldb/xmldb.xsd">
+	<TABLES>
+		<TABLE NAME="qtype_mtf_options" COMMENT="Contains info about ETHz MTF questions">
+			<FIELDS>
+				<FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true"
+					SEQUENCE="true" />
+				<FIELD NAME="questionid" TYPE="int" LENGTH="10" NOTNULL="true"
+					SEQUENCE="false" COMMENT="FK to question table" />
+				<FIELD NAME="scoringmethod" TYPE="char" LENGTH="200" NOTNULL="true"
+					SEQUENCE="false"
+					COMMENT="The scoring method used in the MTF question ('mtfonezero' or 'subpoints')." />
+				<FIELD NAME="shuffleanswers" TYPE="int" LENGTH="4" NOTNULL="true"
+					DEFAULT="1" SEQUENCE="false"
+					COMMENT="Whether the options should be shuffled with each attempt." />
+				<FIELD NAME="numberofrows" TYPE="int" LENGTH="4" NOTNULL="true"
+					DEFAULT="4" SEQUENCE="false" COMMENT="The number options used by MTF questions." />
+				<FIELD NAME="numberofcolumns" TYPE="int" LENGTH="4" NOTNULL="true"
+					DEFAULT="2" SEQUENCE="false" COMMENT="The number of responses of MTF questions." />
+				<FIELD NAME="answernumbering" TYPE="char" LENGTH="10" NOTNULL="true"
+					DEFAULT="none" SEQUENCE="false"
+					COMMENT="Indicates how and whether the choices should be numbered." />
+			</FIELDS>
+			<KEYS>
+				<KEY NAME="primary" TYPE="primary" FIELDS="id" />
+				<KEY NAME="questionidfk" TYPE="foreign" FIELDS="questionid"
+					REFTABLE="question" REFFIELDS="id" COMMENT="fk to question table" />
+			</KEYS>
+		</TABLE>
+		<TABLE NAME="qtype_mtf_rows" COMMENT="The options of MTF questions">
+			<FIELDS>
+				<FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true"
+					SEQUENCE="true" />
+				<FIELD NAME="questionid" TYPE="int" LENGTH="10" NOTNULL="true"
+					SEQUENCE="false" COMMENT="FK to question table" />
+				<FIELD NAME="number" TYPE="int" LENGTH="4" NOTNULL="true"
+					SEQUENCE="false" />
+				<FIELD NAME="optiontext" TYPE="text" NOTNULL="true" SEQUENCE="false"
+					COMMENT="The text of the option" />
+				<FIELD NAME="optiontextformat" TYPE="int" LENGTH="2" NOTNULL="true"
+					DEFAULT="0" SEQUENCE="false"
+					COMMENT="The format of the option text (default FORMAT_MOODLE==0)." />
+				<FIELD NAME="optionfeedback" TYPE="text" NOTNULL="false"
+					SEQUENCE="false" COMMENT="The feedback of the option." />
+				<FIELD NAME="optionfeedbackformat" TYPE="int" LENGTH="2"
+					NOTNULL="true" DEFAULT="0" SEQUENCE="false"
+					COMMENT="The format of the option feedback (default FORMAT_MOODLE)." />
+			</FIELDS>
+			<KEYS>
+				<KEY NAME="primary" TYPE="primary" FIELDS="id" />
+			</KEYS>
+			<INDEXES>
+				<INDEX NAME="mtfid_idx" UNIQUE="false" FIELDS="questionid" />
+			</INDEXES>
+		</TABLE>
+		<TABLE NAME="qtype_mtf_columns" COMMENT="The responses of MTF questions">
+			<FIELDS>
+				<FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true"
+					SEQUENCE="true" />
+				<FIELD NAME="questionid" TYPE="int" LENGTH="10" NOTNULL="true"
+					SEQUENCE="false" COMMENT="FK to question table" />
+				<FIELD NAME="number" TYPE="int" LENGTH="4" NOTNULL="true"
+					SEQUENCE="false" COMMENT="The sequential number of the response." />
+				<FIELD NAME="responsetext" TYPE="text" NOTNULL="true"
+					SEQUENCE="false" COMMENT="The responsetext." />
+				<FIELD NAME="responsetextformat" TYPE="int" LENGTH="2"
+					NOTNULL="true" DEFAULT="0" SEQUENCE="false"
+					COMMENT="The format of the response text (default FORMAT_MOODLE==0)." />
+			</FIELDS>
+			<KEYS>
+				<KEY NAME="primary" TYPE="primary" FIELDS="id" />
+			</KEYS>
+			<INDEXES>
+				<INDEX NAME="mtfid_idx" UNIQUE="false" FIELDS="questionid" />
+			</INDEXES>
+		</TABLE>
+		<TABLE NAME="qtype_mtf_weights"
+			COMMENT="The weights of the row-column combinations, i.e. 1.0 (correct) or 0.0 (incorrect).">
+			<FIELDS>
+				<FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true"
+					SEQUENCE="true" />
+				<FIELD NAME="questionid" TYPE="int" LENGTH="10" NOTNULL="true"
+					SEQUENCE="false" COMMENT="The reference to the question." />
+				<FIELD NAME="rownumber" TYPE="int" LENGTH="4" NOTNULL="true"
+					SEQUENCE="false" COMMENT="The row of the row-column combination." />
+				<FIELD NAME="columnnumber" TYPE="int" LENGTH="4" NOTNULL="true"
+					SEQUENCE="false" />
+				<FIELD NAME="weight" TYPE="number" LENGTH="4" NOTNULL="true"
+					DEFAULT="0" SEQUENCE="false" DECIMALS="3" />
+			</FIELDS>
+			<KEYS>
+				<KEY NAME="primary" TYPE="primary" FIELDS="id" />
+				<KEY NAME="questionidfk" TYPE="foreign" FIELDS="questionid"
+					REFTABLE="question" REFFIELDS="id" />
+			</KEYS>
+		</TABLE>
+	</TABLES>
+</XMLDB>
