@@ -30,6 +30,10 @@ $string['accountexists'] = 'Account not created, {$a} already exists';
 $string['allowmultiple'] = 'Allow multiple enrolment methods';
 $string['allowmultiple_help'] = 'If \'Yes\' user can be enrolled with more than one enrolment method. If \'No\' they are skipped if already enrolled. If in doubt, leave at \'No\'';
 $string['attempt'] = 'Attempt';
+$string['categoryupload'] = 'Upload users to category';
+$string['categoryuploadinstructions'] = 'Upload your CSV file. First column is either GUID, ID number (matric number for students) or email as selected below.
+    Users will be created and added to the Course Catory with the selected role.
+    <b>NOTE:</b> First line is for headers and is always ignored.';
 $string['changeuserdesc'] = 'Change username for \'{$a}\'. Take care - mistakes will stop them logging in';
 $string['changeusername'] = '<i class="fa fa-wrench"></i> Update';
 $string['corehrresults'] = 'CoreHR extract';
@@ -38,7 +42,7 @@ $string['countexistingaccounts'] = '{$a} accounts already existed';
 $string['countnewaccounts'] = '{$a} new accounts created';
 $string['countunenrol'] = '{$a} users unenrolled';
 $string['courseupload'] = 'Upload users and groups to course';
-$string['courseuploadinstructions'] = 'Upload your CSV file. First column is either GUID or ID number (= matric number for students) as selected below. 
+$string['courseuploadinstructions'] = 'Upload your CSV file. First column is either GUID, ID number (= matric number for students) or email as selected below. 
     Remaining columns (if present) contain the names of groups those students should be added to. 
     Users will be created, enrolled on the course and added to groups as required<br /><br />
     <b>NOTE:</b> First line is for headers and is always ignored.';
@@ -87,6 +91,7 @@ $string['lastname'] = 'Last name';
 $string['ldapnotloaded'] = 'LDAP drivers are not loaded';
 $string['ldapresults'] = 'LDAP results';
 $string['ldapsearcherror'] = 'LDAP search failed (perhaps try with debugging on)';
+$string['missingparams'] = 'A required parameter is missing (id or contextid)';
 $string['module'] = 'Module';
 $string['more'] = '<i class="fa fa-info-circle"></i> More...';
 $string['moreresults'] = 'There are more results (not shown). Please give more specific search criteria';

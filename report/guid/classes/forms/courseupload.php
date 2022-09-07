@@ -37,9 +37,11 @@ class courseupload extends moodleform {
         $mform =& $this->_form;
 
         // Parameters.
+        $mode = $this->_customdata['mode'];
         $roles = $this->_customdata['roles'];
         $studentroleid = $this->_customdata['studentroleid'];
         $courseid = $this->_customdata['id'];
+        $contextid = $this->_customdata['contextid'];
         $downloadlink = $this->_customdata['downloadlink'];
         $firstcoloptions = array(
             'guid' => get_string('guidusername', 'report_guid'),
@@ -52,9 +54,11 @@ class courseupload extends moodleform {
         ];
 
         // File download
-        $mform->addElement('header', 'guidenroldownload', get_string('enroldownloadheader', 'report_guid'));
-        $mform->addElement('html', '<div>' . get_string('enroldownloadinstructions', 'report_guid') . '</div>');
-        $mform->addElement('html', '<a class="btn btn-primary mb-3 mt-3" href="' . $downloadlink . '">' . get_string('downloadcsv', 'report_guid') . '</a>');
+        if ($mode == UPLOAD_COURSE) {
+            $mform->addElement('header', 'guidenroldownload', get_string('enroldownloadheader', 'report_guid'));
+            $mform->addElement('html', '<div>' . get_string('enroldownloadinstructions', 'report_guid') . '</div>');
+            $mform->addElement('html', '<a class="btn btn-primary mb-3 mt-3" href="' . $downloadlink . '">' . get_string('downloadcsv', 'report_guid') . '</a>');
+        }
 
         // File upload.
         $mform->addElement('header', 'guidcourseupload', get_string('uploadheader', 'report_guid' ) );
@@ -71,8 +75,10 @@ class courseupload extends moodleform {
         $mform->addHelpButton('firstcolumn', 'firstcolumn', 'report_guid');
 
         // Add groups.
-        $mform->addElement('selectyesno', 'addgroups', get_string('addgroups', 'report_guid'), 0);
-        $mform->addHelpButton('addgroups', 'addgroups', 'report_guid');
+        if ($mode == UPLOAD_COURSE) {
+            $mform->addElement('selectyesno', 'addgroups', get_string('addgroups', 'report_guid'), 0);
+            $mform->addHelpButton('addgroups', 'addgroups', 'report_guid');
+        }
 
         // Unenrol
         $mform->addElement('html', '<div class="alert alert-danger">' . get_string('unenrolwarn', 'report_guid') . '</div>');
@@ -90,6 +96,8 @@ class courseupload extends moodleform {
         // Hidden.
         $mform->addElement('hidden', 'id', $courseid);
         $mform->setType('id', PARAM_INT);
+        $mform->addElement('hidden', 'contextid', $contextid);
+        $mform->setType('contextid', PARAM_INT);        
     }
 
 }

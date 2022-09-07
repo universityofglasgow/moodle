@@ -44,6 +44,35 @@ function report_guid_extend_navigation_course($navigation, $course, $context) {
 }
 
 /**
+ * Adds an upload link to the course admin menu.
+ *
+ * @param navigation_node $navigation The navigation node to extend
+ * @param context $context The context of the course
+ * @return void|null return null if we don't want to display the node.
+ */
+function report_guid_extend_navigation_category_settings($navigation, $context) {
+    global $CFG, $PAGE;
+
+    if (has_capability('report/guid:courseupload', $context)) {
+        $url = new moodle_url('/report/guid/courseupload.php', ['contextid' => $context->id]); 
+        $node = navigation_node::create(
+            get_string('categoryupload', 'report_guid'),
+            $url,
+            navigation_node::NODETYPE_LEAF,
+            'report_guid',
+            'report_guid',
+            new pix_icon('i/report', '')
+        );
+
+        if ($PAGE->url->compare($url, URL_MATCH_BASE)) {
+            $node->make_active();
+        }
+    
+        $navigation->add_node($node);
+    }
+}
+
+/**
  * Return a list of page types
  * @param string $pagetype current page type
  * @param stdClass $parentcontext Block's parent context
