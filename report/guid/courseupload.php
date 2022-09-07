@@ -22,6 +22,9 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+define('UPLOAD_COURSE', 1);
+define('UPLOAD_CATEGORY', 2);
+
 require_once(dirname(__FILE__) . '/../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 require_once($CFG->libdir . '/formslib.php');
@@ -32,26 +35,42 @@ require_once($CFG->dirroot . '/group/lib.php');
 $config = report_guid\lib::settings();
 
 // Parameters.
-$courseid = required_param('id', PARAM_INT);
+// id => called in course, contextid => called from course category
+$courseid = optional_param('id', 0, PARAM_INT);
+$contextid = optional_param('contextid', 0, PARAM_INT);
 
 // Security.
-$course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
-$context = context_course::instance($courseid);
-require_login($course);
+if ($courseid) {
+    $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
+    $context = context_course::instance($courseid);
+    $PAGE->set_context($context);
+    require_login($course);
+    $url = new moodle_url('/report/guid/courseupload.php', ['id' => $courseid]);
+    $PAGE->set_title($course->shortname .': '. get_string('courseupload', 'report_guid'));
+    $PAGE->set_heading($course->fullname);
+    $mode = UPLOAD_COURSE;
+} else if ($contextid) {
+     $context = context::instance_by_id($contextid, MUST_EXIST);
+     $PAGE->set_context($context);
+     require_login();
+     $url = new moodle_url('/report/guid/courseupload.php', ['contextid' => $contextid]);
+     $PAGE->set_title(get_string('categoryupload', 'report_guid'));
+     $mode = UPLOAD_CATEGORY;
+} else {
+    $PAGE->set_context(context_system::instance());
+    $PAGE->set_url(new moodle_url('/report/guid/courseupload.php'));
+    notice(get_string('missingparams', 'report_guid'));
+    die;
+}
+$PAGE->set_url($url);
 require_capability('report/guid:courseupload', $context);
 
 // Renderer.
-$PAGE->set_context($context);
 $output = $PAGE->get_renderer('report_guid');
 $output->set_guid_config($config);
-$url = new moodle_url('/report/guid/courseupload.php', ['id' => $courseid]);
-$PAGE->set_url($url);
 
 // Start the page.
-$PAGE->set_title($course->shortname .': '. get_string('courseupload', 'report_guid'));
-$PAGE->set_heading($course->fullname);
 echo $output->header();
-
 echo $output->heading(get_string('headingcourseupload', 'report_guid'));
 
 // Get the list of roles current user may assign.
@@ -60,9 +79,12 @@ $studentrole = report_guid\lib::getstudentrole();
 
 // Form definition.
 $mform = new report_guid\forms\courseupload(null, [
+    'mode' => $mode,
     'id' => $courseid,
+    'contextid' => $contextid,
     'roles' => $roles,
     'studentroleid' => $studentrole ? $studentrole->id : 1,
+    'downloadlink' => new moodle_url('/report/guid/enroldownload.php', ['id' => $courseid]),
 ]);
 if ($mform->is_cancelled()) {
     redirect($url);
@@ -72,8 +94,9 @@ if ($mform->is_cancelled()) {
     // Upload settings.
     $roleid = $data->role;
     $firstcolumn = $data->firstcolumn;
-    $addgroups = $data->addgroups;
+    isset($data->addgroups) ? $data->addgroups : 0;
     $action = $data->action;
+    $allowmultiple = $data->allowmultiple;
 
     // Get the data from the file.
     $filedata = $mform->get_file_content('csvfile');
@@ -135,10 +158,14 @@ if ($mform->is_cancelled()) {
         // If action=unenrol then we'll remove them if they exist
         if ($action == 'unenrol') {
             if ($user) {
-                $instances = $DB->get_records('enrol', ['courseid' => $courseid]);
-                foreach ($instances as $instance) {
-                    $plugin = enrol_get_plugin($instance->enrol);
-                    $plugin->unenrol_user($instance, $user->id);
+                if ($mode == UPLOAD_CATEGORY) {
+                    role_unassign($roleid, $user->id, $context->id);
+                } else {
+                    $instances = $DB->get_records('enrol', ['courseid' => $courseid]);
+                    foreach ($instances as $instance) {
+                        $plugin = enrol_get_plugin($instance->enrol);
+                        $plugin->unenrol_user($instance, $user->id);
+                    }
                 }
                 $output->courseuploadnote('unenrolled', 'info', true);
                 $unenrolcount++;
@@ -155,6 +182,8 @@ if ($mform->is_cancelled()) {
             // If they don't already exist then find in LDAP.
             if ($firstcolumn == 'guid') {
                 $ldap = report_guid\lib::filter($output, '', '', $usermatch, '', '');
+            } else if ($firstcolumn == 'email') {
+                $ldap = report_guid\lib::filter($output, '', '', '', $usermatch, '');
             } else {
                 $ldap = report_guid\lib::filter($output, '', '', '', '', $usermatch);
             }
@@ -185,24 +214,31 @@ if ($mform->is_cancelled()) {
 
         // Enrol the user in the course (with the specified role)
         // Check user is permitted to assign this role too!
-        $roleid = $data->role;
-        if (array_key_exists($roleid, $roles)) {
-            if (enrol_try_internal_enrol($courseid, $user->id, $roleid)) {
-                $output->courseuploadnote('userenrolled', 'success');
-            } else {
-                $output->courseuploadnote('usernotenrolled', 'warning');
-                continue;
+        if ($mode == UPLOAD_CATEGORY) {
+            role_assign($roleid, $user->id, $context->id);
+            $output->courseuploadnote('userenrolled', 'success');
+        } else {
+            if ($allowmultiple || !is_enrolled($context, $user)) {
+                $roleid = $data->role;
+                if (array_key_exists($roleid, $roles)) {
+                    if (enrol_try_internal_enrol($courseid, $user->id, $roleid)) {
+                        $output->courseuploadnote('userenrolled', 'success');
+                    } else {
+                        $output->courseuploadnote('usernotenrolled', 'warning');
+                        continue;
+                    }
+                }
             }
-        }
 
-        // Any remaining items on the line will be groups (if enabled).
-        if ($groups && $addgroups) {
-            foreach ($groups as $groupname) {
-                $groupid = report_guid\lib::create_group($groupname, $courseid);
-                if (groups_add_member($groupid, $user->id)) {
-                    $output->courseuploadnote('groupadded', 'info', false, $groupname);
-                } else {
-                    $output->courseuploadnote('groupnotadded', 'warning', false, $groupname);
+            // Any remaining items on the line will be groups (if enabled).
+            if ($groups && $addgroups) {
+                foreach ($groups as $groupname) {
+                    $groupid = report_guid\lib::create_group($groupname, $courseid);
+                    if (groups_add_member($groupid, $user->id)) {
+                        $output->courseuploadnote('groupadded', 'info', false, $groupname);
+                    } else {
+                        $output->courseuploadnote('groupnotadded', 'warning', false, $groupname);
+                    }
                 }
             }
         }
@@ -218,7 +254,11 @@ if ($mform->is_cancelled()) {
     }
     echo "</ul>";
 
-    $link = new moodle_url('/course/view.php', ['id' => $courseid]);
+    if ($mode == UPLOAD_CATEGORY) {
+        $link = $context->get_url();
+    } else {
+        $link = new moodle_url('/course/view.php', ['id' => $courseid]);
+    }
     echo $output->continue_button($link);
 } else {
     $mform->display();

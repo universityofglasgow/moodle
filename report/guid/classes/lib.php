@@ -616,7 +616,7 @@ class lib {
         if ($tiifiles = $DB->get_records('plagiarism_turnitin_files', ['userid' => $userid])) {
             foreach ($tiifiles as $tiifile) {
                 $tiifile->formattedexternalid = !empty($tiifile->externalid) ? $tiifile->externalid : '-';
-                $tiifile->formattedsimilarityscore = !empty($tiifile->similarityscore) ? $tiifile->similarityscore : '-';
+                $tiifile->formattedsimilarityscore = $tiifile->similarityscore !== null ? $tiifile->similarityscore : '-';
                 $tiifile->formattedlastmodified = userdate($tiifile->lastmodified);
                 $tiifile->errortext = !empty($tiifile->errorcode) ? get_string('errorcode' . $tiifile->errorcode, 'plagiarism_turnitin') : ' ';
                 $tiifile->oktoresend = $tiifile->statuscode != 'queued';
@@ -646,6 +646,88 @@ class lib {
         $plagiarismfile->errorcode = null;
         $plagiarismfile->errormsg = null;
         $DB->update_record('plagiarism_turnitin_files', $plagiarismfile);
+    }
+
+    /**
+     * Get plan for individual user
+     * @param object $user
+     */
+    public static function get_plan_for_user($user) {
+        $gudatabase = enrol_get_plugin('gudatabase');
+        $gudatabase->external_programdata($user);
+    }
+
+    /**
+     * Populate user plan data
+     */
+    public static function populate_user_plan() {
+        global $CFG, $DB;
+
+        $gudatabase = enrol_get_plugin('gudatabase');
+
+        // Get all users logged in within previous 12 months
+        $lasttime = time() - (365 * 24 * 3600);
+        $select = "lastlogin > " . $lasttime;
+        $users = $DB->get_recordset_select('user', $select);
+        foreach ($users as $user) {
+            $gudatabase->external_programdata($user);
+        }
+
+        $users->close();
+    }
+
+    /**
+     * Check add user profile field categories and fields
+     */
+    public static function check_create_userprofile() {
+        global $CFG, $DB;
+
+        require_once($CFG->dirroot.'/user/profile/definelib.php');
+
+        // Category.
+        $categoryname = 'Student Plan';
+
+        // Fields.
+        $fields = [
+            'program' => 'program name',
+            'year' => 'year of study',
+            'school' => 'school code',
+            'costcode' => 'Cost centre code',
+            'ugpg' => 'Undergrad, Postgrad etc.',
+            'method' => 'Method of study',
+            'attendance' => 'Attendance',
+            'finalyear' => 'Final year flag',
+        ];
+
+        // Category for student plan fields
+        if (!$category = $DB->get_record('user_info_category', ['name' => $categoryname])) {
+            $category = new \stdClass;
+            $category->name = $categoryname;
+            \profile_save_category($category);
+            var_dump($category);
+        }
+
+        // Fields to check
+        foreach ($fields as $name => $description) {
+            if (!$field = $DB->get_record('user_info_field', ['shortname' => $name])) {
+                $field = new \stdClass;
+                $field->shortname = $name;
+                $field->name = $name;
+                $field->datatype = 'text';
+                $field->description['text'] = $description;
+                $field->description['format'] = 1;
+                $field->categoryid = $category->id;
+                $field->sortorder = 1;
+                $field->required = 0;
+                $field->locked = 1;
+                $field->visible = 3;
+                $field->forceunique = 0;
+                $field->signup = 0;
+                $field->defaultdata = 0;
+                $field->defaultdataformat = 0;
+                \profile_save_field($field, []);
+            }
+        }
     }
 
 }

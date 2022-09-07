@@ -15,21 +15,20 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version details.
+ * CLI to populate additional student data
  *
- * @package    report
- * @subpackage guid
- * @copyright  2012 Howard Miller
+ * @package    report_guid
+ * @copyright  2022 Howard Miller
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die;
+define('CLI_SCRIPT', true);
 
-$plugin->version   = 2022060601;
-$plugin->requires  = 2014111000;
-$plugin->component = 'report_guid';
-$plugin->dependencies = array(
-    'enrol_gudatabase' => 2020120400,
-    'auth_guid' => ANY_VERSION,
-    'local_gusync' => ANY_VERSION,
-);
+require_once(dirname(__FILE__) . '/../../../config.php');
+require_once($CFG->dirroot.'/user/profile/definelib.php');
+
+// check Categories and fields exist.
+report_guid\lib::check_create_userprofile();
+
+// get all students from last year
+report_guid\lib::populate_user_plan();

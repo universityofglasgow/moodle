@@ -119,6 +119,7 @@
                         <th>{{# str }}tiistatus, report_guid{{/ str }}</th>
                         <th>{{# str }}tiiscore, report_guid{{/ str }}</th>
                         <th>{{# str }}tiierror, report_guid{{/ str }}</th>
+                        <th>{{# str }}attempt, report_guid{{/ str }}</th>
                         <th>{{# str }}tiitime, report_guid{{/ str }}<th>
                         <th>&nbsp;</th>
                     </tr>
@@ -131,6 +132,7 @@
                             <td>{{ statuscode }}</th>
                             <td>{{ formattedsimilarityscore }}</th>
                             <td>{{ errorcode }}</td>
+                            <td>{{ attempt }}</td>
                             <td>{{ formattedlastmodified }}</td>
                             <td>
                                 {{# oktoresend }}

@@ -15,21 +15,34 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version details.
+ * Database enrolment plugin upgrade.
  *
- * @package    report
- * @subpackage guid
- * @copyright  2012 Howard Miller
+ * @package    enrol
+ * @subpackage gudatabase
+ * @copyright  2022 Howard Miller
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die;
+defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2022060601;
-$plugin->requires  = 2014111000;
-$plugin->component = 'report_guid';
-$plugin->dependencies = array(
-    'enrol_gudatabase' => 2020120400,
-    'auth_guid' => ANY_VERSION,
-    'local_gusync' => ANY_VERSION,
-);
+function xmldb_report_guid_upgrade($oldversion) {
+    global $CFG, $DB;
+
+    $dbman = $DB->get_manager();
+
+    if ($oldversion < 2022060100) {
+        report_guid\lib::check_create_userprofile();
+
+        // Gudatabase savepoint reached.
+        upgrade_plugin_savepoint(true, 2022060100, 'report', 'guid');
+    }
+
+    if ($oldversion < 2022060601) {
+        report_guid\lib::check_create_userprofile();
+
+        // Gudatabase savepoint reached.
+        upgrade_plugin_savepoint(true, 2022060601, 'report', 'guid');
+    }
+
+    return true;
+}
