@@ -157,7 +157,7 @@ function attendance_get_user_sessions_log_full($userid, $pageparams) {
     // al.id not null => get all marked sessions whether or not user currently still in group.
     $sql = "SELECT ats.id, ats.groupid, ats.sessdate, ats.duration, ats.description, ats.statusset,
                    al.statusid, al.remarks, ats.studentscanmark, ats.autoassignstatus,
-                   ats.preventsharedip, ats.preventsharediptime,
+                   ats.preventsharedip, ats.preventsharediptime, ats.studentsearlyopentime,
                    ats.attendanceid, att.name AS attname, att.course AS courseid, c.fullname AS cname
               FROM {attendance_sessions} ats
               JOIN {attendance} att
@@ -589,7 +589,11 @@ function attendance_can_student_mark($sess, $log = true) {
             if (empty($duration)) {
                 $duration = $attconfig->studentscanmarksessiontimeend * 60;
             }
-            if ($sess->sessdate < time() && time() < ($sess->sessdate + $duration)) {
+            if (!isset($sess->studentsearlyopentime)) {
+                // Sanity check just in case not set in this session.
+                $sess->studentsearlyopentime = 0;
+            }
+            if (($sess->sessdate - $sess->studentsearlyopentime) < time() && time() < ($sess->sessdate + $duration)) {
                 $canmark = true;
                 $reason = '';
             }
@@ -765,7 +769,7 @@ function attendance_construct_sessions_data_for_add($formdata, mod_attendance_st
         $wdaydesc = array(0 => 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat');
 
         while ($sdate < $enddate) {
-            if ($sdate < $startweek + WEEKSECS) {
+            if ($sdate < strtotime('+1 week', $startweek)) {
                 $dinfo = usergetdate($sdate);
                 if (isset($formdata->sdays) && array_key_exists($wdaydesc[$dinfo['wday']], $formdata->sdays)) {
                     $sess = new stdClass();
@@ -803,6 +807,9 @@ function attendance_construct_sessions_data_for_add($formdata, mod_attendance_st
                         if (isset($formdata->autoassignstatus)) {
                             $sess->autoassignstatus = 1;
                         }
+                        if (isset($formdata->studentsearlyopentime)) {
+                            $sess->studentsearlyopentime = $formdata->studentsearlyopentime;
+                        }
 
                         if (!empty($formdata->randompassword)) {
                             $sess->studentpassword = attendance_random_string();
@@ -834,9 +841,10 @@ function attendance_construct_sessions_data_for_add($formdata, mod_attendance_st
 
                     attendance_fill_groupid($formdata, $sessions, $sess);
                 }
-                $sdate += DAYSECS;
+
+                $sdate = strtotime("+1 day", $sdate); // Set start to tomorrow.
             } else {
-                $startweek += WEEKSECS * $formdata->period;
+                $startweek = strtotime("+".$formdata->period.' weeks', $startweek);
                 $sdate = $startweek;
             }
         }
@@ -882,6 +890,9 @@ function attendance_construct_sessions_data_for_add($formdata, mod_attendance_st
         if (!empty($formdata->automark)) {
             $sess->automark = $formdata->automark;
         }
+        if (!empty($formdata->automark)) {
+            $sess->automark = $formdata->automark;
+        }
         if (!empty($formdata->preventsharedip)) {
             $sess->preventsharedip = $formdata->preventsharedip;
         }
@@ -920,8 +931,8 @@ function attendance_construct_sessions_data_for_add($formdata, mod_attendance_st
             if (!empty($formdata->preventsharedip)) {
                 $sess->preventsharedip = $formdata->preventsharedip;
             }
-            if (!empty($formdata->preventsharediptime)) {
-                $sess->preventsharediptime = $formdata->preventsharediptime;
+            if (!empty($formdata->studentsearlyopentime)) {
+                $sess->studentsearlyopentime = $formdata->studentsearlyopentime;
             }
         }
         $sess->statusset = $formdata->statusset;
@@ -1108,7 +1119,7 @@ function attendance_template_variables($record) {
         '/%numtakensessions%/' => $record->numtakensessions,
         '/%points%/' => $record->points,
         '/%maxpoints%/' => $record->maxpoints,
-        '/%percent%/' => $record->percent,
+        '/%percent%/' => round($record->percent * 100),
     );
     $extrauserfields = \core_user\fields::get_name_fields();
     foreach ($extrauserfields as $extra) {
@@ -1299,16 +1310,6 @@ function construct_session_full_date_time($datetime, $duration) {
 }
 
 /**
- * Render the session password.
- *
- * @param stdClass $session
- */
-function attendance_renderpassword($session) {
-    echo html_writer::tag('h2', get_string('passwordgrp', 'attendance'));
-    echo html_writer::span($session->studentpassword, 'student-password');
-}
-
-/**
  * Render the session QR code.
  *
  * @param stdClass $session
@@ -1322,8 +1323,6 @@ function attendance_renderqrcode($session) {
     } else {
         $qrcodeurl = $CFG->wwwroot . '/mod/attendance/attendance.php?sessid=' . $session->id;
     }
-
-    echo html_writer::tag('h3', get_string('qrcode', 'attendance'));
 
     $barcode = new TCPDF2DBarcode($qrcodeurl, 'QRCODE');
     $image = $barcode->getBarcodePngData(15, 15);
@@ -1367,17 +1366,15 @@ function attendance_renderqrcoderotate($session) {
             'type' => 'text/javascript'
         ]
     );
-    echo html_writer::tag('div', '', ['id' => 'rotate-time']); // Div to display timer.
-    echo html_writer::tag('h3', get_string('passwordgrp', 'attendance'));
-    echo html_writer::tag('div', '', ['id' => 'text-password']); // Div to display password.
-    echo html_writer::tag('h3', get_string('qrcode', 'attendance'));
-    echo html_writer::tag('div', '', ['id' => 'qrcode']); // Div to display qr code.
+    echo html_writer::div('', '', ['id' => 'qrcode']); // Div to display qr code.
+    echo html_writer::div(get_string('qrcodevalidbefore', 'attendance').' '.
+                          html_writer::span('0', '', ['id' => 'rotate-time']).' '
+                          .get_string('qrcodevalidafter', 'attendance'), 'qrcodevalid'); // Div to display timer.
     // Js to start the password manager.
     echo '
     <script type="text/javascript">
         let qrCodeRotate = new attendance_QRCodeRotate();
-        qrCodeRotate.start(' . $session->id . ', document.getElementById("qrcode"), document.getElementById("text-password"),
-        document.getElementById("rotate-time"));
+        qrCodeRotate.start(' . $session->id . ', document.getElementById("qrcode"), document.getElementById("rotate-time"));
     </script>';
 }
 

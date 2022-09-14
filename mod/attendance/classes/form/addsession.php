@@ -83,8 +83,8 @@ class addsession extends moodleform {
                 $mform->setDefault('sessiontype', mod_attendance_structure::SESSION_COMMON);
                 break;
         }
-        if ($groupmode == SEPARATEGROUPS or $groupmode == VISIBLEGROUPS) {
-            if ($groupmode == SEPARATEGROUPS and !has_capability('moodle/site:accessallgroups', $modcontext)) {
+        if ($groupmode == SEPARATEGROUPS || $groupmode == VISIBLEGROUPS) {
+            if ($groupmode == SEPARATEGROUPS && !has_capability('moodle/site:accessallgroups', $modcontext)) {
                 $groups = groups_get_all_groups ($course->id, $USER->id, $cm->groupingid);
             } else {
                 $groups = groups_get_all_groups($course->id, 0, $cm->groupingid);
@@ -201,9 +201,18 @@ class addsession extends moodleform {
         if (!empty($studentscanmark)) {
             $mform->addElement('checkbox', 'studentscanmark', '', get_string('studentscanmark', 'attendance'));
             $mform->addHelpButton('studentscanmark', 'studentscanmark', 'attendance');
+
+            $mform->addElement('duration', 'studentsearlyopentime', get_string('studentsearlyopentime', 'attendance'));
+            $mform->addHelpButton('studentsearlyopentime', 'studentsearlyopentime', 'attendance');
+            if (isset($pluginconfig->studentsearlyopentime)) {
+                $mform->setDefault('studentsearlyopentime', $pluginconfig->studentsearlyopentime);
+            }
+            $mform->hideif('studentsearlyopentime', 'studentscanmark', 'notchecked');
         } else {
             $mform->addElement('hidden', 'studentscanmark', '0');
             $mform->settype('studentscanmark', PARAM_INT);
+            $mform->addElement('hidden', 'studentsearlyopentime', '0');
+            $mform->settype('studentsearlyopentime', PARAM_INT);
         }
         if ($DB->record_exists('attendance_statuses', ['attendanceid' => $this->_customdata['att']->id, 'setunmarked' => 1])) {
             $options = attendance_get_automarkoptions();
@@ -301,6 +310,10 @@ class addsession extends moodleform {
             $mform->setDefault('preventsharediptime', $pluginconfig->preventsharediptime);
         }
 
+        $handler = \mod_attendance\customfield\session_handler::create();
+        $id = 0; // This is the initial add form, we don't have an id number yet.
+        $handler->instance_form_definition($mform, $id);
+
         $this->add_action_buttons(true, get_string('add', 'attendance'));
     }
 
@@ -324,7 +337,7 @@ class addsession extends moodleform {
             $errors['sessionenddate'] = get_string('invalidsessionenddate', 'attendance');
         }
 
-        if ($data['sessiontype'] == mod_attendance_structure::SESSION_GROUP and empty($data['groups'])) {
+        if ($data['sessiontype'] == mod_attendance_structure::SESSION_GROUP && empty($data['groups'])) {
             $errors['groups'] = get_string('errorgroupsnotselected', 'attendance');
         }
 

@@ -119,6 +119,7 @@ class sessions {
         $headers[] = get_string('calendarevent', 'attendance');
         $headers[] = get_string('includeqrcode', 'attendance');
         $headers[] = get_string('rotateqrcode', 'attendance');
+        $headers[] = get_string('studentsearlyopentime', 'attendance');
 
         return $headers;
     }
@@ -165,6 +166,7 @@ class sessions {
         $headerkeys[] = 'calendarevent';
         $headerkeys[] = 'includeqrcode';
         $headerkeys[] = 'rotateqrcode';
+        $headerkeys[] = 'studentsearlyopentime';
 
         // Subtract 1 for 0 indexed arrays.
         $valuecount = count($headerkeys) - 1;
@@ -394,6 +396,13 @@ class sessions {
                 $session->includeqrcode = 0;
             }
 
+            $studentsearlyopentime = $this->get_column_data($row, $mapping['studentsearlyopentime']);
+            if ($studentsearlyopentime == -1) {
+                $session->studentsearlyopentime = $pluginconfig->studentsearlyopentime;
+            } else {
+                $session->studentsearlyopentime = $studentsearlyopentime;
+            }
+
             // Reapeating session settings.
             if (empty($mapping['repeaton'])) {
                 $session->sdays = [];
@@ -416,7 +425,8 @@ class sessions {
             if ($course) {
                 $session->coursestartdate = $course;
             }
-            if (!empty($session->sdays) && !empty($session->period) && !empty($session->sessionenddate) && !empty($session->coursestartdate)) {
+            if (!empty($session->sdays) && !empty($session->period) &&
+                !empty($session->sessionenddate) && !empty($session->coursestartdate)) {
                 $session->addmultiply = 1;
             }
 

@@ -60,7 +60,6 @@ $PAGE->force_settings_menu(true);
 $PAGE->set_cacheable(true);
 $PAGE->navbar->add($att->name);
 
-$currenttab = mod_attendance\output\tabs::TAB_ADD;
 $formparams = array('course' => $course, 'cm' => $cm, 'modcontext' => $context, 'att' => $att);
 switch ($att->pageparams->action) {
     case mod_attendance_sessions_page_params::ACTION_ADD:
@@ -74,6 +73,8 @@ switch ($att->pageparams->action) {
         if ($formdata = $mform->get_data()) {
             $sessions = attendance_construct_sessions_data_for_add($formdata, $att);
             $att->add_sessions($sessions);
+            $att->save_customfields($sessions, $formdata);
+
             if (count($sessions) == 1) {
                 $message = get_string('sessiongenerated', 'attendance');
             } else {
@@ -106,7 +107,6 @@ switch ($att->pageparams->action) {
             mod_attendance_notifyqueue::notify_success(get_string('sessionupdated', 'attendance'));
             redirect($att->url_manage());
         }
-        $currenttab = mod_attendance\output\tabs::TAB_UPDATE;
         break;
     case mod_attendance_sessions_page_params::ACTION_DELETE:
         $sessionid = required_param('sessionid', PARAM_INT);
@@ -214,9 +214,7 @@ switch ($att->pageparams->action) {
 }
 
 $output = $PAGE->get_renderer('mod_attendance');
-$tabs = new mod_attendance\output\tabs($att, $currenttab);
 echo $output->header();
-echo $output->render($tabs);
 
 $mform->display();
 

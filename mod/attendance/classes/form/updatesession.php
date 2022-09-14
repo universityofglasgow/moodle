@@ -78,7 +78,8 @@ class updatesession extends \moodleform {
             'preventsharediptime' => $sess->preventsharediptime,
             'includeqrcode' => $sess->includeqrcode,
             'rotateqrcode' => $sess->rotateqrcode,
-            'automarkcmid' => $sess->automarkcmid
+            'automarkcmid' => $sess->automarkcmid,
+            'studentsearlyopentime' => $sess->studentsearlyopentime
         );
         if ($sess->subnet == $attendancesubnet) {
             $data['usedefaultsubnet'] = 1;
@@ -136,9 +137,15 @@ class updatesession extends \moodleform {
         if (!empty($studentscanmark)) {
             $mform->addElement('checkbox', 'studentscanmark', '', get_string('studentscanmark', 'attendance'));
             $mform->addHelpButton('studentscanmark', 'studentscanmark', 'attendance');
+
+            $mform->addElement('duration', 'studentsearlyopentime', get_string('studentsearlyopentime', 'attendance'));
+            $mform->addHelpButton('studentsearlyopentime', 'studentsearlyopentime', 'attendance');
+            $mform->hideif('studentsearlyopentime', 'studentscanmark', 'notchecked');
         } else {
             $mform->addElement('hidden', 'studentscanmark', '0');
             $mform->settype('studentscanmark', PARAM_INT);
+            $mform->addElement('hidden', 'studentsearlyopentime', '0');
+            $mform->settype('studentsearlyopentime', PARAM_INT);
         }
 
         if ($DB->record_exists('attendance_statuses', ['attendanceid' => $this->_customdata['att']->id, 'setunmarked' => 1])) {
@@ -201,6 +208,12 @@ class updatesession extends \moodleform {
         $mform->addHelpButton('preventsharedgroup', 'preventsharedip', 'attendance');
         $mform->setAdvanced('preventsharedgroup');
         $mform->setType('preventsharediptime', PARAM_INT);
+
+        // Add custom field data to form.
+        $handler = \mod_attendance\customfield\session_handler::create();
+        $handler->instance_form_definition($mform, $sess->id);
+        $data['id'] = $sess->id;
+        $data = $handler->instance_form_before_set_data_array($data);
 
         $mform->setDefaults($data);
         $this->add_action_buttons(true);

@@ -23,6 +23,16 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+
+namespace mod_attendance\external;
+
+use externallib_advanced_testcase;
+use mod_attendance_structure;
+use stdClass;
+use attendance_handler;
+use external_api;
+use mod_attendance_external;
+
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
@@ -41,7 +51,7 @@ require_once($CFG->dirroot . '/mod/attendance/externallib.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @group      mod_attendance
  */
-class mod_attendance_external_testcase extends externallib_advanced_testcase {
+class external_test extends externallib_advanced_testcase {
     /** @var core_course_category */
     protected $category;
     /** @var stdClass */
@@ -99,6 +109,7 @@ class mod_attendance_external_testcase extends externallib_advanced_testcase {
         $this->teacher = $this->getDataGenerator()->create_and_enrol($this->course, 'editingteacher');
     }
 
+    /** test attendance_handler::get_courses_with_today_sessions */
     public function test_get_courses_with_today_sessions() {
         $this->resetAfterTest(true);
 
@@ -117,6 +128,7 @@ class mod_attendance_external_testcase extends externallib_advanced_testcase {
         $this->assertEquals(count($attendanceinstance['today_sessions']), 2);
     }
 
+    /** test attendance_handler::get_courses_with_today_sessions multiple */
     public function test_get_courses_with_today_sessions_multiple_instances() {
         global $DB;
         $this->resetAfterTest(true);
@@ -142,6 +154,7 @@ class mod_attendance_external_testcase extends externallib_advanced_testcase {
         $this->assertEquals(count($course['attendance_instances']), 2);
     }
 
+    /** test attendance_handler::get_session */
     public function test_get_session() {
         $this->resetAfterTest(true);
 
@@ -162,6 +175,7 @@ class mod_attendance_external_testcase extends externallib_advanced_testcase {
         $this->assertEquals(count($sessioninfo['users']), 10);
     }
 
+    /** test get session with group */
     public function test_get_session_with_group() {
         $this->resetAfterTest(true);
 
@@ -208,6 +222,7 @@ class mod_attendance_external_testcase extends externallib_advanced_testcase {
         $this->assertEquals(count($sessioninfo['users']), 5);
     }
 
+    /** test update user status */
     public function test_update_user_status() {
         $this->resetAfterTest(true);
 
@@ -240,6 +255,7 @@ class mod_attendance_external_testcase extends externallib_advanced_testcase {
         $this->assertEquals($status['id'], $log['statusid']);
     }
 
+    /** Test adding new attendance record via ws. */
     public function test_add_attendance() {
         global $DB;
         $this->resetAfterTest(true);
@@ -288,6 +304,7 @@ class mod_attendance_external_testcase extends externallib_advanced_testcase {
         $result = mod_attendance_external::add_attendance($course->id, 'test1', 'test1', 100);
     }
 
+    /** Test remove attendance va ws. */
     public function test_remove_attendance() {
         global $DB;
         $this->resetAfterTest(true);
@@ -311,6 +328,7 @@ class mod_attendance_external_testcase extends externallib_advanced_testcase {
         $this->assertCount(0, $DB->get_records('attendance_sessions', ['attendanceid' => $this->attendance->id]));
     }
 
+    /** Test add session to existing attendnace via ws. */
     public function test_add_session() {
         global $DB;
         $this->resetAfterTest(true);
@@ -353,7 +371,7 @@ class mod_attendance_external_testcase extends externallib_advanced_testcase {
         mod_attendance_external::add_session($attendancesepgroups['attendanceid'], 'test', time(), 3600, 0, false);
     }
 
-
+    /** Test add session group in no group - error. */
     public function test_add_session_group_in_no_group_exception() {
         global $DB;
         $this->resetAfterTest(true);
@@ -381,6 +399,7 @@ class mod_attendance_external_testcase extends externallib_advanced_testcase {
         mod_attendance_external::add_session($attendancenogroups['attendanceid'], 'test', time(), 3600, $group->id, false);
     }
 
+    /** Test add sesssion to invalid group. */
     public function test_add_session_invalid_group_exception() {
         global $DB;
         $this->resetAfterTest(true);
@@ -407,6 +426,7 @@ class mod_attendance_external_testcase extends externallib_advanced_testcase {
         mod_attendance_external::add_session($attendancevisgroups['attendanceid'], 'test', time(), 3600, $group->id + 100, false);
     }
 
+    /** Test remove session via ws. */
     public function test_remove_session() {
         global $DB;
         $this->resetAfterTest(true);
@@ -434,6 +454,7 @@ class mod_attendance_external_testcase extends externallib_advanced_testcase {
         $this->assertCount(0, $DB->get_records('attendance_sessions', ['attendanceid' => $attendance['attendanceid']]));
     }
 
+    /** Test session creates cal event. */
     public function test_add_session_creates_calendar_event() {
         global $DB;
         $this->resetAfterTest(true);
@@ -471,6 +492,7 @@ class mod_attendance_external_testcase extends externallib_advanced_testcase {
         $this->assertInstanceOf('\mod_attendance\event\session_added', $events[1]);
     }
 
+    /** Test get sessions. */
     public function test_get_sessions() {
         $this->resetAfterTest(true);
 

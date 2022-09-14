@@ -23,12 +23,13 @@ Feature: Visiting reports
       | idnumber | 00001                 |
       | name     | Attendance    |
     And I am on the "Attendance" "mod_attendance > View" page logged in as "teacher1"
-    And I follow "Add session"
+    And I click on "Add session" "button"
     And I set the following fields to these values:
       | id_sestime_starthour | 01 |
       | id_sestime_endhour   | 02 |
     And I click on "id_submitbutton" "button"
-    And I follow "Warnings set"
+    And I click on "More" "link" in the ".secondary-navigation" "css_element"
+    And I select "Warnings set" from secondary navigation
     And I press "Add warning"
     And I set the following fields to these values:
       | id_warningpercent | 84 |
@@ -56,7 +57,7 @@ Feature: Visiting reports
     Then I click on "Take attendance" "link" in the "1AM - 2AM" "table_row"
     # Late
     And I click on "td.cell.c4 input" "css_element" in the "Student 1" "table_row"
-    And I press "Save attendance"
+    And I press "Save and show next page"
 
     And I am on the "Attendance" "mod_attendance > Report" page
     Then "1 / 2" "text" should exist in the "Student 1" "table_row"
@@ -86,9 +87,9 @@ Feature: Visiting reports
     Then I click on "Take attendance" "link" in the "1AM - 2AM" "table_row"
     # Excused
     And I click on "td.cell.c4 input" "css_element" in the "Student 1" "table_row"
-    And I press "Save attendance"
+    And I press "Save and show next page"
 
-    When I follow "Add session"
+    When I click on "Add session" "button"
     And I set the following fields to these values:
       | id_sestime_starthour | 03 |
       | id_sestime_endhour   | 04 |
@@ -100,8 +101,8 @@ Feature: Visiting reports
 
     When I click on "Take attendance" "link" in the "3AM - 4AM" "table_row"
     # Present
-    And I click on "td.cell.c3 input" "css_element" in the "Student 1" "table_row"
-    And I press "Save attendance"
+    And I click on "td.cell.c2 input" "css_element" in the "Student 1" "table_row"
+    And I press "Save and show next page"
 
     And I am on the "Attendance" "mod_attendance > Report" page
     Then "3 / 4" "text" should exist in the "Student 1" "table_row"
@@ -123,10 +124,10 @@ Feature: Visiting reports
     And I am on the "Attendance" "mod_attendance > View" page
     When I click on "Take attendance" "link" in the "1AM - 2AM" "table_row"
     # Late
-    And I click on "td.cell.c4 input" "css_element" in the "Student 1" "table_row"
-    And I press "Save attendance"
+    And I click on "td.cell.c3 input" "css_element" in the "Student 1" "table_row"
+    And I press "Save and show next page"
 
-    When I follow "Add session"
+    When I click on "Add session" "button"
     And I set the following fields to these values:
       | id_sestime_starthour | 03 |
       | id_sestime_endhour   | 04 |
@@ -135,10 +136,10 @@ Feature: Visiting reports
 
     When I click on "Take attendance" "link" in the "3AM - 4AM" "table_row"
     # Present
-    And I click on "td.cell.c3 input" "css_element" in the "Student 1" "table_row"
-    And I press "Save attendance"
+    And I click on "td.cell.c2 input" "css_element" in the "Student 1" "table_row"
+    And I press "Save and show next page"
 
-    When I follow "Add session"
+    When I click on "Add session" "button"
     And I set the following fields to these values:
       | id_sestime_starthour | 05 |
       | id_sestime_endhour   | 06 |
@@ -153,7 +154,8 @@ Feature: Visiting reports
     And "5 / 6" "text" should exist in the "Student 1" "table_row"
     And "83.3%" "text" should exist in the "Student 1" "table_row"
 
-    And I follow "Absentee report"
+    And I click on "More" "link" in the ".secondary-navigation" "css_element"
+    And I select "Absentee report" from secondary navigation
     And I should see "Student 1"
 
     And I log out
@@ -168,10 +170,10 @@ Feature: Visiting reports
 
     When I click on "Take attendance" "link" in the "1AM - 2AM" "table_row"
     # Late
-    And I click on "td.cell.c4 input" "css_element" in the "Student 1" "table_row"
-    And I press "Save attendance"
+    And I click on "td.cell.c3 input" "css_element" in the "Student 1" "table_row"
+    And I press "Save and show next page"
 
-    When I follow "Add session"
+    When I click on "Add session" "button"
     And I set the following fields to these values:
       | id_sestime_starthour | 03 |
       | id_sestime_endhour   | 04 |
@@ -179,10 +181,10 @@ Feature: Visiting reports
 
     When I click on "Take attendance" "link" in the "3AM - 4AM" "table_row"
     # Present
-    And I click on "td.cell.c3 input" "css_element" in the "Student 1" "table_row"
-    And I press "Save attendance"
+    And I click on "td.cell.c2 input" "css_element" in the "Student 1" "table_row"
+    And I press "Save and show next page"
 
-    When I follow "Add session"
+    When I click on "Add session" "button"
     And I set the following fields to these values:
       | id_sestime_starthour | 05 |
       | id_sestime_endhour   | 06 |

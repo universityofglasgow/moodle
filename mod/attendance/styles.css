@@ -300,3 +300,12 @@
 .attendancereporttable img.icon {
     padding-left: 5px;
 }
+#page-mod-attendance-password .qrcodevalid,
+#page-mod-attendance-password .qrcodeheader {
+    font-size: larger;
+}
+
+#page-mod-attendance-manage .addsession {
+    display: inline-block;
+    padding-left: 1em;
+}

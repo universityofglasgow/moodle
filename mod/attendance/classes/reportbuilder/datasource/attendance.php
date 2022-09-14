@@ -54,7 +54,9 @@ class attendance extends datasource {
         $attendancelogalias = $attendanceentity->get_table_alias('attendance_log');
         $this->set_main_table('attendance_log', $attendancelogalias);
         $this->add_entity($attendanceentity);
-        $this->add_join($attendanceentity->attendancejoin()); // Force the join to be added so that course fields can be added first.
+
+        // Force the join to be added so that course fields can be added first.
+        $this->add_join($attendanceentity->attendancejoin());
 
         // Add core user join.
         $userentity = new user();
@@ -67,7 +69,18 @@ class attendance extends datasource {
         $coursejoin = "JOIN {course} {$coursealias} ON {$coursealias}.id = {$attendancealias}.course";
         $this->add_entity($coursentity->add_join($coursejoin));
 
-        $this->add_all_from_entities();
+        $this->add_columns_from_entity($attendanceentity->get_entity_name());
+        $this->add_filters_from_entity($attendanceentity->get_entity_name());
+        $this->add_conditions_from_entity($attendanceentity->get_entity_name());
+
+        $this->add_columns_from_entity($userentity->get_entity_name());
+        $this->add_filters_from_entity($userentity->get_entity_name());
+        $this->add_conditions_from_entity($userentity->get_entity_name());
+
+        $this->add_columns_from_entity($coursentity->get_entity_name());
+        $this->add_filters_from_entity($coursentity->get_entity_name());
+        $this->add_conditions_from_entity($coursentity->get_entity_name());
+
     }
 
     /**

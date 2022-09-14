@@ -50,6 +50,11 @@ if (!empty($attforsession->groupid)) {
     }
 }
 
+if ($DB->record_exists('attendance_log', ['sessionid' => $id, 'studentid' => $USER->id])) {
+    $url = new moodle_url('/mod/attendance/view.php', ['id' => $cm->id]);
+    throw new moodle_exception('attendance_already_submitted', 'mod_attendance', $url);
+}
+
 $qrpassflag = false;
 
 // If the randomised code is on grab it.
@@ -82,6 +87,18 @@ if ($attforsession->rotateqrcode == 1) {
             setcookie($cookiename, $secrethash, time() + (60 * 5), "/");
         } else {
             // Flag error.
+            if (debugging('', DEBUG_DEVELOPER)) {
+                // Get qr code record.
+                $rec = $DB->get_record('attendance_rotate_passwords', ['attendanceid' => $id, 'password' => $qrpass]);
+                if (empty($rec)) {
+                     debugging('QR password not found');
+                } else {
+                    $format = get_string('strftimedatetimeaccurate', 'core_langconfig');
+                    $message = "The current server time is: " . userdate(time(), $format). " and this QR Code expired at: ".
+                               userdate($rec->expirytime + $attconfig->rotateqrcodeexpirymargin, $format);
+                    debugging($message);
+                }
+            }
             throw new moodle_exception('qr_pass_wrong', 'mod_attendance', $url);
         }
     }
