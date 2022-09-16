@@ -59,13 +59,14 @@ function local_gumenu_extend_settings_navigation(settings_navigation $nav, conte
 
     // Add a category
     // (See constructor for navigation_node class in navigationlib.php)
-    $props = array(
-        'text' => get_string('uofg', 'local_gumenu'),
-        'shorttext' => 'uofg',
-        'type' => navigation_node::TYPE_CATEGORY,
-        'key' => 'uofg',
-    );
-    $uofgnode = $courseadminnode->add_node(new navigation_node($props));
+    //$props = array(
+    //    'text' => get_string('uofg', 'local_gumenu'),
+    //    'shorttext' => 'uofg',
+    //    'type' => navigation_node::TYPE_CATEGORY,
+    //    'key' => 'uofg',
+    //);
+    //$uofgnode = $courseadminnode->add_node(new navigation_node($props));
+    $uofgnode = $courseadminnode;
 
     // Add a link to anonymous report
     if (has_capability('report/assign:view', $context)) {
