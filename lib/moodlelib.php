@@ -206,7 +206,10 @@ define('PARAM_RAW_TRIMMED', 'raw_trimmed');
 define('PARAM_SAFEDIR',  'safedir');
 
 /**
- * PARAM_SAFEPATH - several PARAM_SAFEDIR joined by "/", suitable for include() and require(), plugin paths, etc.
+ * PARAM_SAFEPATH - several PARAM_SAFEDIR joined by "/", suitable for include() and require(), plugin paths
+ * and other references to Moodle code files.
+ *
+ * This is NOT intended to be used for absolute paths or any user uploaded files.
  */
 define('PARAM_SAFEPATH',  'safepath');
 
@@ -762,13 +765,13 @@ function validate_param($param, $type, $allownull=NULL_NOT_ALLOWED, $debuginfo='
  * $options = clean_param($options, PARAM_INT);
  * </code>
  *
- * @param array $param the variable array we are cleaning
+ * @param array|null $param the variable array we are cleaning
  * @param string $type expected format of param after cleaning.
  * @param bool $recursive clean recursive arrays
  * @return array
  * @throws coding_exception
  */
-function clean_param_array(array $param = null, $type, $recursive = false) {
+function clean_param_array(?array $param, $type, $recursive = false) {
     // Convert null to empty array.
     $param = (array)$param;
     foreach ($param as $key => $value) {
@@ -983,18 +986,8 @@ function clean_param($param, $type) {
             return preg_replace('/[^a-zA-Z0-9_-]/i', '', $param);
 
         case PARAM_SAFEPATH:
-            // Replace MS \ separators.
-            $param = str_replace('\\', '/', $param);
-            // Remove any number of ../ to prevent path traversal.
-            $param = preg_replace('/\.\.+\//', '', $param);
-            // Remove everything not a-zA-Z0-9/:_- .
-            $param = preg_replace('/[^a-zA-Z0-9\/:_-]/i', '', $param);
-            // Remove leading slash.
-            $param = ltrim($param, '/');
-            if ($param === '.') {
-                $param = '';
-            }
-            return $param;
+            // Remove everything not a-zA-Z0-9/_- .
+            return preg_replace('/[^a-zA-Z0-9\/_-]/i', '', $param);
 
         case PARAM_FILE:
             // Strip all suspicious characters from filename.
