@@ -28,7 +28,8 @@ class stack_matrix_input extends stack_input {
         'nounits' => false,
         'simp' => false,
         'allowempty' => false,
-        'consolidatesubscripts' => false
+        'consolidatesubscripts' => false,
+        'checkvars' => 0
     );
 
     public function adapt_to_model_answer($teacheranswer) {
@@ -78,7 +79,7 @@ class stack_matrix_input extends stack_input {
         $allblank = true;
         foreach ($contents as $row) {
             foreach ($row as $val) {
-                if (!('' == trim($val) or '?' == $val or 'null' == $val)) {
+                if (!('' == trim($val) || '?' == $val || 'null' == $val)) {
                     $allblank = false;
                 }
             }

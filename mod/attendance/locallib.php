@@ -261,7 +261,7 @@ function attendance_form_sessiondate_selector (MoodleQuickForm $mform) {
     for ($i = 0; $i <= 23; $i++) {
         $hours[$i] = sprintf("%02d", $i);
     }
-    for ($i = 0; $i < 60; $i += 5) {
+    for ($i = 0; $i < 60; $i++) {
         $minutes[$i] = sprintf("%02d", $i);
     }
 
@@ -782,19 +782,14 @@ function attendance_construct_sessions_data_for_add($formdata, mod_attendance_st
                     $sess->includeqrcode = 0;
                     $sess->rotateqrcode = 0;
                     $sess->rotateqrcodesecret = '';
+                    $sess->automark = !empty($formdata->automark) ? $formdata->automark : 0;
+                    $sess->automarkcmid = !empty($formdata->automarkcmid) ? $formdata->automarkcmid : 0;
+                    $sess->automarkcompleted = 0;
 
                     if (!empty($formdata->usedefaultsubnet)) {
                         $sess->subnet = $att->subnet;
                     } else {
                         $sess->subnet = $formdata->subnet;
-                    }
-                    $sess->automark = $formdata->automark;
-                    $sess->automarkcompleted = 0;
-
-                    if (!empty($formdata->automarkcmid)) {
-                        $sess->automarkcmid = $formdata->automarkcmid;
-                    } else {
-                        $sess->automarkcmid = 0;
                     }
                     if (!empty($formdata->preventsharedip)) {
                         $sess->preventsharedip = $formdata->preventsharedip;
@@ -999,6 +994,7 @@ SELECT a.id, a.course as courseid, c.fullname as coursename, atl.studentid AS us
                   {$joingroup}
                   WHERE ats.sessdate >= c.startdate
                     AND ats.lasttaken != 0
+                    AND stm.maxgrade > 0
                     {$where}
                 GROUP BY a.id, a.course, c.fullname, atl.studentid
                 ) p GROUP by courseid, coursename {$orderby}";
@@ -1112,7 +1108,7 @@ function attendance_template_variables($record) {
         '/%numtakensessions%/' => $record->numtakensessions,
         '/%points%/' => $record->points,
         '/%maxpoints%/' => $record->maxpoints,
-        '/%percent%/' => $record->percent,
+        '/%percent%/' => round($record->percent * 100),
     );
     $extrauserfields = \core_user\fields::get_name_fields();
     foreach ($extrauserfields as $extra) {
@@ -1240,6 +1236,16 @@ function attendance_strftimehm($time) {
     }
 
     $userdate = userdate($time, $format);
+    if (stripos($format, '%p') && empty($userdate)) {
+        // Failover - if %p is in use, but resulting time is empty (windows server), make sure a time is still returned.
+        $userdate = userdate($time, "%I:%M");
+        if (userdate($time, '%H') > 11) {
+            $userdate .= 'pm';
+        } else {
+            $userdate .= 'am';
+        }
+        return $userdate;
+    }
 
     // Some Lang packs use %p to suffix with AM/PM but not all strftime support this.
     // Check if %p is in use and make sure it's being respected.

@@ -32,6 +32,23 @@ server is properly synchronized with the time servers.
 
 ## Changelog
 
+v4.6.2
+
+- Regression: Rename mustache templates for backward compatibility #398 (thanks @PhilipBeacon)
+  - Introduced in v4.6.0 by new mustache templates in sub-directories (a Moodle 3.8 feature).
+- Bugfix: Recognize the Webinar capabilities of a Zoom Events license #338 (thanks @dottbarbieri)
+- Bugfix: Avoid PHP Warning when restoring Zoom activities without breakout room data #399
+
+v4.6.1
+
+- Bugfix: Avoid JavaScript error when 'Show More' button does not exist #392 (thanks @mwithheld)
+- Bugfix: Add missing privacy coverage for breakout rooms; fix privacy data deletion #395 (thanks @hdagheda)
+
+v4.6.0
+
+- Feature: Pre-assign Breakout Rooms #371 (thanks @annouarf, @levemar, University of Montreal, @mhughes2k)
+- Bugfix: Validate start times and duration for timed recurring meetings #389 (thanks @nchan31, @jwalits)
+
 v4.5.3
 
 - Bugfix: Allow plugin settings to update without a configuration exception #386 (thanks @acquaalta)

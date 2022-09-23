@@ -1,7 +1,6 @@
 /**
  * Javascript controller for launching the EULA modal.
  *
- * @package   turnitin
  * @copyright Turnitin
  * @author 2019 David Winn <dwinn@turnitin.com>
  * @module plagiarism_turnitin/eulaLaunch
@@ -18,6 +17,12 @@ define(['jquery',
             eulaLaunch: function() {
                 var turnitinEulaClass = $(".pp_turnitin_eula");
                 turnitinEulaClass.show();
+
+                // Show the 'accept EULA' prompt for new in-page forum replies.
+                $(document).on('mod_forum-post-created', '.forum-post-container', function (event, newid) {
+                    var turnitinEulaClass = $("#post-content-" + newid + " .pp_turnitin_eula");
+                    turnitinEulaClass.show();
+                });
 
                 $(document).on('click', '.pp_turnitin_eula_link', function() {
                     ModalFactory.create({

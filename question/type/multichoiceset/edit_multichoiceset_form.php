@@ -90,7 +90,7 @@ class qtype_multichoiceset_edit_form extends question_edit_form {
         $repeated[] = $mform->createElement('editor', 'answer',
                 $label, array('rows' => 1), $this->editoroptions);
         $repeated[] = $mform->createElement('checkbox', 'correctanswer',
-                get_string('correctanswer', 'qtype_multichoiceset'));
+                get_string('correctanswer', 'qtype_multichoiceset'), '', 'class = "correctanswer"');
         $repeated[] = $mform->createElement('editor', 'feedback',
                 get_string('feedback', 'question'), array('rows' => 1), $this->editoroptions);
 

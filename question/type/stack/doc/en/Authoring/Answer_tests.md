@@ -9,7 +9,7 @@ prototype test is to establish if they are _algebraically equivalent_.  Answer t
 4. [Scientific](../Authoring/Units.md), e.g. for dealing with dimensional numerical quantities.
 5. Specific subject tests, e.g. sets, logical expressions, calculus (where tests provide feedback automatically in common situations such as a missing constant of integration).
 
-We also provide string match tests.  However, the whole point of STACK is that teachers should seek to establish mathematical properties and the string match tests are provided for completeness (and because they are trivial to implement).  Experienced question authors almost never use the string match tests.  If you find yourself needing to use the string match tests for something mathematical please contact the developers.
+We also provide (string match tests)[Strings.md].
 
 ## Introduction ##
 
@@ -103,6 +103,16 @@ There are also some cases which Maxima can't establish as being equivalent.  For
     (sqrt(108)+10)^(1/3)-(sqrt(108)-10)^(1/3)
 
 This is Cardano's example from Ars Magna, but currently the AlgEquiv test cannot establish these are equivalent.  There are some other examples in the test suite which fail for mathematical reasons.  In cases like this, where you know you have a number, you may need to supplement the AlgEquiv test with another numerical test.
+
+We recommend you do _not_ use algebraic equivalence testing for floating point numbers.  Instead use one of the [numerical tests](Answer_tests_numerical.md).  Internally Maxima represents floats in binary, and so even simple calculations which would be exact in base ten (e.g. adding 0.16 to 0.12) might end up in a recurring decimal float which is not exactly equal to the result you would type in directly.  As an example
+
+    p1:0.29;
+    p2:0.18;
+    p3:0.35;
+    v0:1-(p1+p2+p3);
+    v1:0.18;
+
+Then Maxima returns `0.18` for `v0`, (as expected) but `v0-v1` equals \(5.551115123125783*10^-17\) and so `ATAlgEquiv(v0,v1)` will give false.  Please always use a [numerical test](Answer_tests_numerical.md) when testing floats.
 
 ### EqualComAss ###
 
@@ -308,34 +318,6 @@ In many cases simply differentiating the teacher's answer is fine, in which case
     [x, x*exp(5*x+7)]
 
 The test cannot cope with some situations.  Please contact the developers when you find some of these.  This test is already rather overloaded, so please don't expect every request to be accommodated! 
-
-# String match #
-
-`String` This is a string match, ignoring leading and trailing white space which are stripped from all answers, using PHP's trim() function.
-
-`StringSloppy` This function first converts both inputs to lower case, then removes all white space from the string and finally performs a strict string comparison.
-
-### SRegExp ###
-
-This test uses Maxima's `regex_match` function.
-
-* Both arguments to the test must be Maxima strings.  If you have a general expression, turn it into a string in the feedback variables with Maxima's `string` function.
-* The first argument should be the string, and the second argument should be the pattern to match.
-* It yields true if the pattern is matched anywhere within the student answer and false otherwise. Testing for full equality of the answer string can be achieved via regex anchoring by use of `^` or `$`.
-* Don't forget to escape within the pattern strings as needed. Note that there is a function `string_to_regex()` that will handle escaping of characters that would otherwise have meaning in the pattern. Also remember that you need to escape the backslashes like normal in Maxima-strings.
-* One can read more about the patterns posible from [here](http://ds26gte.github.io/pregexp/index.html). Case-insensitivity may be something worth noting there.
-
-STACK also provides a helper function `regex_match_exactp(regex, str)` to check if the string equals the pattern matched by the regular expression.
-
-    Regex           String      Result
-    (aaa)*(b|d)c    aaaaaabc    true
-    (aaa)*(b|d)c    dc          true
-    (aaa)*(b|d)c    aaaaaaabc   false
-    (aaa)*(b|d)c    cca         false
-
-Currently this is not provided as a separate answer test so you will need to use this predicate in the question variables and check the result against the expected value, or supply the predicate as an argument to an answer test.
-
-`(RegExp)` **NOTE:** this test was removed in STACK version 4.3.
 
 # See also
 

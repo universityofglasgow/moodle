@@ -44,8 +44,8 @@ class form_utils {
      * @return array
      */
     public static function validate_synonyms($data, $fieldname = 'synonymsdata') {
-        $errors = array();
-        $wordssofar = array();
+        $errors = [];
+        $wordssofar = [];
         foreach ($data['synonymsdata'] as $key => $synonym) {
             $trimmedword = trim($synonym['word']);
             $trimmedsynonyms = trim($synonym['synonyms']);
@@ -112,14 +112,53 @@ class form_utils {
     }
 
     /**
+     * Make a pmatch_options object from raw form data.
+     *
+     * Used when validating forms.
+     *
+     * @param array $data the form data.
+     * @return \pmatch_options the options set in the form.
+     */
+    public static function options_from_form_data(array $data): \pmatch_options {
+        // Get the relevant options from the rest of the form.
+        $pmatchoptions = new \pmatch_options();
+        $pmatchoptions->ignorecase = empty($data['usecase']);
+        if (isset($data['sentencedividers'])) {
+            $pmatchoptions->sentencedividers = $data['sentencedividers'];
+        }
+        if (isset($data['sentencedividers'])) {
+            $pmatchoptions->converttospace = $data['converttospace'];
+        }
+
+        // Including the synonyms.
+        $synonyms = [];
+        foreach ($data['synonymsdata'] as $key => $synonym) {
+            $trimmedword = trim($synonym['word']);
+            $trimmedsynonyms = trim($synonym['synonyms']);
+            if ($trimmedword == '' && $trimmedsynonyms == '') {
+                continue;
+            }
+
+            $synonym = new \stdClass();
+            $synonym->word = $trimmedword;
+            $synonym->synonyms = $trimmedsynonyms;
+            $synonyms[] = $synonym;
+        }
+        $pmatchoptions->set_synonyms($synonyms);
+
+        return $pmatchoptions;
+    }
+
+    /**
      * Check validity of the modelanswer if it is given and return the string, otherwise retun null
      *
-     * @param $answers
-     * @param $grades
-     * @param $modelanswer
+     * @param array $answers
+     * @param array $grades
+     * @param string $modelanswer
+     * @param \pmatch_options|null $options
      * @return bool
      */
-    public static function validate_modelanswer($answers, $grades, $modelanswer) {
+    public static function validate_modelanswer($answers, $grades, $modelanswer, $options = null) {
         // If there is no modelanswer there is no need for validation.
         if ($modelanswer === '') {
             return true;
@@ -130,7 +169,7 @@ class form_utils {
                 // Not an answer, just part of the form that was left blank.
                 continue;
             }
-            $expression = new \pmatch_expression($trimmedanswer);
+            $expression = new \pmatch_expression($trimmedanswer, $options);
             if (\qtype_pmatch_question::compare_string_with_pmatch_expression(
                     $modelanswer, $trimmedanswer, $expression->get_options())) {
                 // This answer matches. Is the grade right?
@@ -159,11 +198,11 @@ class form_utils {
         }
         $mform->addElement('static', 'synonymsdescription', '',
                 get_string('synonymsheader', 'qtype_pmatch'));
-        $textboxgroup = array();
+        $textboxgroup = [];
         $textboxgroup[] = $mform->createElement('group', $elementname,
                 get_string('synonymsno', 'qtype_pmatch', '{no}'), self::add_synonym($mform));
-        $repeatedoptions = array('synonymsdata[word]' => array('type' => PARAM_RAW),
-                'synonymsdata[synonyms]' => array('type' => PARAM_RAW));
+        $repeatedoptions = ['synonymsdata[word]' => ['type' => PARAM_RAW],
+                'synonymsdata[synonyms]' => ['type' => PARAM_RAW]];
 
         if (isset($question->options)) {
             $countsynonyms = count($question->options->synonyms);
@@ -186,11 +225,11 @@ class form_utils {
      * @return array
      */
     public static function add_synonym($mquickform) {
-        $grouparray = array();
+        $grouparray = [];
         $grouparray[] = $mquickform->createElement('text', 'word',
-                get_string('wordwithsynonym', 'qtype_pmatch'), array('size' => 15));
+                get_string('wordwithsynonym', 'qtype_pmatch'), ['size' => 15]);
         $grouparray[] = $mquickform->createElement('text', 'synonyms',
-                get_string('synonym', 'qtype_pmatch'), array('size' => 50));
+                get_string('synonym', 'qtype_pmatch'), ['size' => 50]);
         return $grouparray;
     }
 }

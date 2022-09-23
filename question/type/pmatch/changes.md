@@ -1,5 +1,25 @@
 # Change log for the pattern-match question type
 
+## Changes in 3.2
+
+* Upgrade to work with Moodle 4.0 and 3.11. In particular, the question testing tool needed to
+  be upgraded to work with Moodle 4.0 question versioning 
+* Fix the question testing tool, so it can handle responses including &lt;sup> and &lt;sub> tags.
+* Improve the UI for the options form at the top of the question testing tool.
+* Improve other controls the question testing tool, e.g. the select all/none behaviour.
+* When creating new questions, for some key settings, the option used for the next
+  question you create will be the same as the options you just used.
+* Improve styling of the edit question form.
+* Fix compatibility with PHP 8
+
+
+## Changes in 3.1
+
+* Tweak layout in Moodle 3.9+
+* Correct validation of the model answer.
+* Fix for a bug that only happens with the quiz_answersheets plugin.
+
+
 ## Changes in 3.0
 
 * Fix spell-checking of proper nouns.

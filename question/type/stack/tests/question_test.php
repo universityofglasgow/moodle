@@ -14,6 +14,16 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace qtype_stack;
+
+use qtype_stack_question;
+use qtype_stack_testcase;
+use test_question_maker;
+use question_attempt_step;
+use question_state;
+use qbehaviour_adaptivemultipart_part_result;
+use question_classified_response;
+
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
@@ -26,6 +36,7 @@ require_once(__DIR__ . '/fixtures/test_base.php');
 
 /**
  * @group qtype_stack
+ * @covers \qtype_stack_question
  */
 class question_test extends qtype_stack_testcase {
     /**
@@ -153,8 +164,11 @@ class question_test extends qtype_stack_testcase {
         $q = $this->get_test_stack_question('test3');
         $q->start_attempt(new question_attempt_step(), 1);
 
-        $this->assertEquals(array(2.5 / 4, question_state::$gradedpartial),
-                $q->grade_response(array('ans1' => 'x^3', 'ans2' => 'x^2', 'ans3' => 'x', 'ans4' => 'false')));
+        $result = $q->grade_response(array('ans1' => 'x^3', 'ans2' => 'x^2', 'ans3' => 'x^2', 'ans4' => 'false'));
+        $this->assertEquals(array(2.5 / 4, question_state::$gradedpartial), $result);
+
+        $result = $q->grade_response(array('ans1' => 'x^3', 'ans2' => 'x^2', 'ans3' => 'x', 'ans4' => 'false'));
+        $this->assertEquals(array(2.5 / 4, question_state::$gradedpartial), $result);
     }
 
     public function test_grade_response_test3_incomplete() {
