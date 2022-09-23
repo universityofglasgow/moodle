@@ -62,7 +62,11 @@ class courseupload extends moodleform {
 
         // File upload.
         $mform->addElement('header', 'guidcourseupload', get_string('uploadheader', 'report_guid' ) );
-        $mform->addElement('html', '<div class="alert">'.get_string('courseuploadinstructions', 'report_guid' ).'</div>' );
+        if ($mode == UPLOAD_COURSE) {
+            $mform->addElement('html', '<div class="alert">'.get_string('courseuploadinstructions', 'report_guid' ).'</div>' );
+        } else {
+            $mform->addElement('html', '<div class="alert">'.get_string('categoryuploadinstructions', 'report_guid' ).'</div>' );
+        }
         $mform->addElement('filepicker', 'csvfile', get_string('csvfile', 'report_guid' ) );
 
         // Role to assign.
