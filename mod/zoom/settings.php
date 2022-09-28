@@ -28,8 +28,6 @@ require_once($CFG->dirroot.'/mod/zoom/locallib.php');
 require_once($CFG->libdir . '/environmentlib.php');
 
 if ($ADMIN->fulltree) {
-    require_once($CFG->dirroot.'/mod/zoom/locallib.php');
-    require_once($CFG->dirroot.'/mod/zoom/classes/webservice.php');
     require_once($CFG->dirroot . '/mod/zoom/classes/invitation.php');
 
     $moodlehashideif = version_compare(normalize_version($CFG->release), '3.7.0', '>=');
@@ -42,8 +40,7 @@ if ($ADMIN->fulltree) {
         $notifyclass = 'notifysuccess';
         $errormessage = '';
         try {
-            $service = new mod_zoom_webservice();
-            $service->get_user(zoom_get_api_identifier($USER));
+            zoom_get_user(zoom_get_api_identifier($USER));
         } catch (moodle_exception $error) {
             $notifyclass = 'notifyproblem';
             $status = 'connectionfailed';
@@ -312,6 +309,24 @@ if ($ADMIN->fulltree) {
             get_string('option_mute_upon_entry_help', 'mod_zoom'),
             1, 1, 0);
     $settings->add($defaultmuteuponentryoption);
+
+    $autorecordingchoices = array(
+        ZOOM_AUTORECORDING_NONE => get_string('autorecording_none', 'mod_zoom'),
+        ZOOM_AUTORECORDING_USERDEFAULT => get_string('autorecording_userdefault', 'mod_zoom'),
+        ZOOM_AUTORECORDING_LOCAL => get_string('autorecording_local', 'mod_zoom'),
+        ZOOM_AUTORECORDING_CLOUD => get_string('autorecording_cloud', 'mod_zoom'),
+    );
+    $recordingoption = new admin_setting_configselect('zoom/recordingoption',
+        get_string('option_auto_recording', 'mod_zoom'),
+        get_string('option_auto_recording_help', 'mod_zoom'),
+        ZOOM_AUTORECORDING_NONE, $autorecordingchoices);
+    $settings->add($recordingoption);
+
+    $allowrecordingchangeoption = new admin_setting_configcheckbox('zoom/allowrecordingchangeoption',
+        get_string('option_allow_recording_change', 'mod_zoom'),
+        get_string('option_allow_recording_change_help', 'mod_zoom'),
+        1, 1, 0);
+    $settings->add($allowrecordingchangeoption);
 
     $defaultshowmedia = new admin_setting_configcheckbox('zoom/defaultshowmedia',
             get_string('showmedia', 'mod_zoom'),

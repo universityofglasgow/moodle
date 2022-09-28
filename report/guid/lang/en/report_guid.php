@@ -31,7 +31,7 @@ $string['allowmultiple'] = 'Allow multiple enrolment methods';
 $string['allowmultiple_help'] = 'If \'Yes\' user can be enrolled with more than one enrolment method. If \'No\' they are skipped if already enrolled. If in doubt, leave at \'No\'';
 $string['attempt'] = 'Attempt';
 $string['categoryupload'] = 'Upload users to category';
-$string['categoryuploadinstructions'] = 'Upload your CSV file. First column is either GUID, ID number (matric number for students) or email as selected below.
+$string['categoryuploadinstructions'] = 'Upload your CSV file. First column is either GUID, ID number (staff number or matric number) or email as selected below.
     Users will be created and added to the Course Catory with the selected role.
     <b>NOTE:</b> First line is for headers and is always ignored.';
 $string['changeuserdesc'] = 'Change username for \'{$a}\'. Take care - mistakes will stop them logging in';
@@ -81,7 +81,8 @@ $string['guidform'] = 'GUID';
 $string['guidnomatch'] = 'GUID does not match in data (name changed?)';
 $string['guidusername'] = 'GUID/Username';
 $string['heading'] = 'GUID Search';
-$string['headingcourseupload'] = 'GUID - Upload users & groups to course';
+$string['headingcategoryupload'] = 'Upload users to a Course Category';
+$string['headingcourseupload'] = 'Upload users & groups to course';
 $string['headingsync'] = 'GUID - Sync user';
 $string['headingupdate'] = 'GUID - Update username';
 $string['hidden'] = 'Hidden';

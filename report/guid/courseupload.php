@@ -49,6 +49,7 @@ if ($courseid) {
     $PAGE->set_title($course->shortname .': '. get_string('courseupload', 'report_guid'));
     $PAGE->set_heading($course->fullname);
     $mode = UPLOAD_COURSE;
+    $heading = 'headingcourseupload';
 } else if ($contextid) {
      $context = context::instance_by_id($contextid, MUST_EXIST);
      $PAGE->set_context($context);
@@ -56,6 +57,7 @@ if ($courseid) {
      $url = new moodle_url('/report/guid/courseupload.php', ['contextid' => $contextid]);
      $PAGE->set_title(get_string('categoryupload', 'report_guid'));
      $mode = UPLOAD_CATEGORY;
+     $heading = 'headingcategoryupload';
 } else {
     $PAGE->set_context(context_system::instance());
     $PAGE->set_url(new moodle_url('/report/guid/courseupload.php'));
@@ -71,7 +73,7 @@ $output->set_guid_config($config);
 
 // Start the page.
 echo $output->header();
-echo $output->heading(get_string('headingcourseupload', 'report_guid'));
+echo $output->heading(get_string($heading, 'report_guid'));
 
 // Get the list of roles current user may assign.
 $roles = get_assignable_roles($context);
