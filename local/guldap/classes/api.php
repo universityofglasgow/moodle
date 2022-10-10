@@ -44,7 +44,7 @@ class api {
         if (!$field = $DB->get_record('user_info_field', ['shortname' => $field, 'categoryid' => $category->id])) {
             return '';
         }
-        if (!$data = $DB->get_record('user_info_data', ['fieldid' => $fieldid, 'userid' => $userid])) {
+        if (!$data = $DB->get_record('user_info_data', ['fieldid' => $field->id, 'userid' => $userid])) {
             return '';
         }
         return $data->data;
