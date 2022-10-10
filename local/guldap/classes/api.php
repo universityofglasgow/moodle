@@ -61,7 +61,14 @@ class api {
 
         // Do they have a valid email address
         if (!$user->email) {
-            echo "NO EMAIL"; die;
+            $homeemail = self::get_profile_field('UofG', 'homeemailaddress', $userid);
+            if ($homeemail) {
+                $user->email = $homeemail;
+            } else {
+                notice(get_string('noemail', 'local_guldap'));
+            }
         }
+
+        $DB->update_record('user', $user);
     }
 }

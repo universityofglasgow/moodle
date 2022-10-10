@@ -20,5 +20,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+$string['noemail'] = 'You cannot log into Moodle as you do not have an email address. Please contact the Help Desk and ask for an email to be added to your GUID.';
 $string['pluginname'] = 'UofG LDAP API';
 
