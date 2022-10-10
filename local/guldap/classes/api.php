@@ -55,7 +55,7 @@ class api {
      * @param int $userid
      */
     public static function normalise_user($userid) {
-        global $DB;
+        global $DB, $PAGE;
 
         $user = $DB->get_record('user', ['id' => $userid], '*', MUST_EXIST);
 
@@ -65,6 +65,7 @@ class api {
             if ($homeemail) {
                 $user->email = $homeemail;
             } else {
+                $PAGE->set_context(\context_system::instance());
                 notice(get_string('noemail', 'local_guldap'));
             }
         }
