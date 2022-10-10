@@ -58,5 +58,10 @@ class api {
         global $DB;
 
         $user = $DB->get_record('user', ['id' => $userid], '*', MUST_EXIST);
+
+        // Do they have a valid email address
+        if (!$user->email) {
+            echo "NO EMAIL"; die;
+        }
     }
 }
