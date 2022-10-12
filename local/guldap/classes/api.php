@@ -53,23 +53,72 @@ class api {
     /**
      * Process user account to put stuff "in the right place"
      * @param int $userid
+     * @return object $user
      */
     public static function normalise_user($userid) {
-        global $DB, $PAGE;
+        global $DB, $PAGE, $CFG;
 
         $user = $DB->get_record('user', ['id' => $userid], '*', MUST_EXIST);
 
         // Do they have a valid email address
         if (!$user->email) {
+
+            // If they didn't have email set then this is the first time
+            // so make the email private (they can unset this if they want).
+            $DB->set_field('user', 'maildisplay', 0, ['id' => $user->id]);
+
+            // Copy home email to primary email (if there is one).
             $homeemail = self::get_profile_field('UofG', 'homeemailaddress', $userid);
             if ($homeemail) {
+                $DB->set_field('user', 'email', $homeemail, ['id' => $userid]);
                 $user->email = $homeemail;
             } else {
                 $PAGE->set_context(\context_system::instance());
-                notice(get_string('noemail', 'local_guldap'));
+                notice(get_string('noemail', 'local_guldap'), $CFG->wwwroot);
             }
         }
 
-        $DB->update_record('user', $user);
+        // Check city.
+        if (empty($user->city)) {
+            $DB->set_field('user', 'city', 'Glasgow', ['id' => $userid]);
+            $user->city = 'Glasgow';
+        }
+
+        // Check country.
+        if (empty($user->country)) {
+            $DB->set_field('user', 'country', 'GB', ['id' => $userid]);
+            $user->country = 'GB';
+        }
+
+        return $user;
+    }
+
+    /**
+     * Login actions - stuff we kick off when somebody logs in.
+     * @param object $user
+     */
+    public static function login_actions($user) {
+        global $CFG, $DB;
+
+        // Get CoreHR data and check for 'known as' name.
+        // only if not a student
+        $isstudent = preg_match("/\d{7}[a-z]/i", $user->username);
+        if (!$isstudent) {
+            $corehr = \local_corehr\api::get_extract($user->username);
+            if ($corehr) {
+                $firstname = $corehr->knownas;
+                if (trim($firstname)) {
+                    $user->firstname = $firstname;
+                }
+
+                $user->institution = $corehr->collegedesc;
+                $user->department = $corehr->schooldesc;
+                $DB->update_record('user', $user);
+
+                // If they exist in CoreHR then we can safely apply
+                // training course auto-enrol.
+                \local_corehr\api::auto_enrol($user->name);
+            }
+        }
     }
 }

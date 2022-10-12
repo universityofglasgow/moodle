@@ -15,17 +15,36 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * LDAP API for student data
+ * Admin settings and defaults.
  *
- * @package    local_guldap
+ * @package local_guldap
  * @copyright  2022 Howard Miller
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$plugin->version = 2022093000;
-$plugin->requires = 2021051700; // 3.11.0
-$plugin->component = 'local_guldap';
-$plugin->description = 'UofG LDAP API';
-$plugin->dependencies = array(
-    'auth_ldap' => ANY_VERSION,
-);
+require_once(dirname(__FILE__) . '/../../config.php');
+
+// Security
+require_login();
+$context = context_system::instance();
+require_capability('moodle/site:config', $context);
+
+// Page setup
+$url = new moodle_url('/local/guldap/ldaptest.php');
+$PAGE->set_url($url);
+$PAGE->set_context($context);
+$PAGE->set_title(get_string('pluginname', 'local_guldap'));
+
+echo $OUTPUT->header();
+echo $OUTPUT->heading(get_string('pluginname', 'local_guldap'));
+
+echo "<pre>";
+
+// Connect to LDAP
+$ldap = new \local_guldap\ldap();
+$resource = $ldap->ldap_connect();
+
+echo "</pre>";
+
+echo $OUTPUT->footer();
+

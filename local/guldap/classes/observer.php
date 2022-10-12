@@ -33,6 +33,7 @@ class observer {
      */
     public static function user_loggedin(\core\event\user_loggedin $event) {
         $userid = $event->userid;
-        \local_guldap\api::normalise_user($userid);
+        $user = \local_guldap\api::normalise_user($userid);
+        \local_guldap\api::login_actions($user);
     }
 }
