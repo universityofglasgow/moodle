@@ -66,7 +66,14 @@ class ldaplist implements renderable, templatable {
 
         $formatted = [];
         foreach ($results as $cn => $result) {
-            $guid = $result[$this->config->user_attribute];
+            $ua = $this->config->user_attribute;
+
+            // If it doesn't have a uid field then it doesn't have a GUID.
+            if (!isset($result[$ua])) {
+                continue;
+            }
+            
+            $guid = $result[$ua];
 
             // Check that this isn't an array (it shouldn't be).
             if (is_array($guid)) {
@@ -96,8 +103,8 @@ class ldaplist implements renderable, templatable {
                 }
                 $formatted[] = (object)[
                     'username' => $username,
-                    'firstname' => $result[$this->config->field_map_firstname],
-                    'lastname' => $result[$this->config->field_map_lastname],
+                    'firstname' => $result[$this->config->map_firstname],
+                    'lastname' => $result[$this->config->map_lastname],
                     'mail' => $mail,
                     'buttons' => $createbutton,
                 ];

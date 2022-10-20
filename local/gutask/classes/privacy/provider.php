@@ -27,7 +27,7 @@ namespace local_gutask\privacy;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Privacy Subsystem for local_gusync implementing null_provider.
+ * Privacy Subsystem for local_gutask implementing null_provider.
  *
  * @copyright  2020 Howard Miller
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later

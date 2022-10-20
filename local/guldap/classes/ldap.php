@@ -66,7 +66,7 @@ class ldap {
      *
      * @return resource A valid LDAP connection (or dies if it can't connect)
      */
-    function ldap_connect() {
+    function connect() {
         // Cache ldap connections. They are expensive to set up
         // and can drain the TCP/IP ressources on the server if we
         // are syncing a lot of users (as we try to open a new connection
@@ -87,6 +87,7 @@ class ldap {
         }
 
         print_error('auth_ldap_noconnect_all', 'auth_ldap', '', $debuginfo);
+        return false;
     }
 
     /**
@@ -96,12 +97,96 @@ class ldap {
      *                      cached connections. This is needed when we've used paged results
      *                      and want to use normal results again.
      */
-    function ldap_close($force=false) {
+    function close($force=false) {
         $this->ldapconns--;
         if (($this->ldapconns == 0) || ($force)) {
             $this->ldapconns = 0;
             @ldap_close($this->ldapconnection);
             unset($this->ldapconnection);
         }
-    }    
+    }
+
+    /**
+     * Process weirdly formatted LDAP results into something
+     * We can display. 
+     * @param array $entries
+     */
+    private function format_ldap($entries) {
+    
+        // First entry is the count, don't need it
+        array_shift($entries);
+
+        $formattedldap = [];
+
+        foreach ($entries as $entry) {
+            $newentry = [];
+            foreach ($entry as $name => $value) {
+
+                // Numeric fields don't contain data
+                // plus check really is an array
+                if (!is_array($value)) {
+                    continue;
+                }
+
+                // First element is spurious count
+                array_shift($value);
+
+                // Either store the single data value
+                // Or the array of data. 
+                if (count($value) == 1) {
+                    $newentry[$name] = $value[0];
+                } else {
+                    $newentry[$name] = $value;
+                }
+            }
+
+            // Add dn value, which doesn't look like other data. 
+            $newentry['dn'] = $entry['dn'];
+
+            $formattedldap[] = $newentry;
+        }
+
+        return $formattedldap;
+    }
+
+    /**
+     * LDAP Search
+     * @param ldap connection
+     * @param string search filter
+     * @return array
+     */
+    public function search($dv, $filter) {
+
+        // Search.
+        if (!$search = @ldap_search($dv, $this->config->contexts, $filter)) {
+            debugging('ldap search failed for filter "' . $filter . '" ' . ldap_error( $dv ));
+            return false;
+        }
+
+        // Check for errors returned.
+        // (particularly partial results as GUID is limited to 100).
+        $errorcode = ldap_errno($dv);
+        $errorstring = ldap_error($dv);
+
+        // If error returned then...
+        // Need to check for string.
+        if ($errorcode != 0) {
+            return $errorstring;
+        }
+
+        // Check if we got any results.
+        if (ldap_count_entries($dv, $search) < 1) {
+            return [];
+        }
+
+        // Get results.
+        if (!$results = ldap_get_entries($dv, $search)) {
+            debugging( 'Failed to extract ldap results '.ldap_error($dv));
+            return false;
+        }
+
+        $results = $this->format_ldap($results);
+
+        return $results;
+    }
 }

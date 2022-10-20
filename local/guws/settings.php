@@ -30,8 +30,6 @@ if ($hassiteconfig) {
             'local_guws', get_string('pluginname', 'local_guws'));
     $ADMIN->add('localplugins', $settings);
 
-    $average = get_config('local_gusync', 'average');
-    $average = empty($average) ? '-' : $average;
     $settings->add(new admin_setting_heading('guws_alarmbellsettings', '',
             get_string('alarmbellsettings', 'local_guws')));
 

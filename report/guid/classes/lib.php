@@ -32,197 +32,13 @@ class lib {
      * Get all the settings from the GUID auth plugin
      */
     public static function settings() {
-        $auth = get_auth_plugin('guid');
-        $config = $auth->config;
-        if (empty($config->host_url) || empty($config->contexts)) {
-            throw new \Exception('host_url and contexts must be defined in auth_guid settings');
+        //$auth = get_auth_plugin('guid');
+        $config = get_config('local_guldap');
+        if (!\local_guldap\api::isenabled()) {
+            throw new \Exception('host_url and contexts must be defined in local_guldap settings');
         }
-        if (empty($config->field_map_firstname)) {
-            $config->field_map_firstname = 'givenName';
-        }
-        if (empty($config->field_map_lastname)) {
-            $config->field_map_lastname = 'sn';
-        }
-        if (empty($config->field_map_email)) {
-            $config->field_map_email = 'mail';
-        }
-        if (empty($config->user_attribute)) {
-            $config->user_attribute = 'cn';
-        }
-        $config->field_map_firstname = strtolower($config->field_map_firstname);
-        $config->field_map_lastname = strtolower($config->field_map_lastname);
-        $config->field_map_email = strtolower($config->field_map_email);
 
         return $config;
-    }
-
-    public static function build_filter($firstname, $lastname, $guid, $email, $idnumber) {
-        $config = self::settings();
-
-        // LDAP filter doesn't like escaped characters.
-        $lastname = stripslashes( $lastname );
-        $firstname = stripslashes( $firstname );
-
-        // If the GUID is supplied then we don't care about anything else.
-        if (!empty($guid)) {
-            return $config->user_attribute . "=$guid";
-        }
-
-        // If the idnumber is supplied then we'll go for that.
-        if (!empty($idnumber) & is_numeric($idnumber)) {
-            return $config->field_map_idnumber . "=$idnumber";
-        }
-
-        // If the email is supplied then we don't care about name.
-        if (!empty($email)) {
-            return $config->field_map_email . "=$email";
-        }
-
-        // Otherwise we'll take the name.
-        if (empty($firstname) and !empty($lastname)) {
-            return $config->field_map_lastname . "=$lastname";
-        }
-        if (!empty($firstname) and empty($lastname)) {
-            return $config->field_map_firstname . "=$firstname";
-        }
-        if (!empty($firstname) and !empty($lastname)) {
-            return "(&({$config->field_map_lastname}=$lastname)({$config->field_map_firstname}=$firstname))";
-        }
-
-        // Everything must have been empty.
-        return false;
-    }
-
-    /**
-     * Build filter and search
-     * @param object $output renderer
-     * @param string $firstname
-     * @param string $lastname
-     * @param string $guid
-     * @param string $email
-     * @param string $idnumber
-     * @return mixed
-     */
-    public static function filter($output, $firstname, $lastname, $guid, $email, $idnumber) {
-        if (!$filter = self::build_filter($firstname, $lastname, $guid, $email, $idnumber)) {
-            $output->ldap_error(get_string('filtererror', 'report_guid'));
-            die;
-        }
-        $config = self::settings();
-        $result = self::ldapsearch($config, $filter);
-        if (is_string( $result )) {
-            $output->ldap_error(get_string('searcherror', 'report_guid', $result));
-            die;
-        }
-        if ($result === false) {
-            $output->error(get_string('ldapsearcherror', 'report_guid'));
-            die;
-        }
-
-        return $result;
-    }
-
-    public static function ldapsearch($config, $filter) {
-
-        // Connect to host.
-        if (!$dv = ldap_connect( $config->host_url )) {
-            debugging( 'Failed to connect to ldap host ' );
-            return false;
-        }
-
-        // Bind.
-        if (empty($config->bind_dn)) {
-            if (!ldap_bind( $dv )) {
-                debugging( 'Failed anonymous bind to ldap host '.ldap_error( $dv ) );
-                return false;
-            }
-        } else {
-            if (!ldap_bind( $dv, trim($config->bind_dn), trim($config->bind_pw ))) {
-                debugging( 'Failed bind to ldap host '.ldap_error( $dv ) );
-                return false;
-            }
-        }
-
-        // Search.
-        if (!$search = @ldap_search($dv, $config->contexts, $filter)) {
-            debugging( 'ldap search failed for filter "'.$filter.'" '.ldap_error( $dv ) );
-            return false;
-        }
-
-        // Check for errors returned.
-        // (particularly partial results as GUID is limited to 100).
-        $errorcode = ldap_errno( $dv );
-        $errorstring = ldap_error( $dv );
-
-        // If error returned then...
-        // Need to check for string.
-        if ($errorcode != 0) {
-            return $errorstring;
-        }
-
-        // Check if we got any results.
-        if (ldap_count_entries($dv, $search) < 1) {
-            return array();
-        }
-
-        // Get results.
-        if (!$results = ldap_get_entries($dv, $search)) {
-            debugging( 'Failed to extract ldap results '.ldap_error( $dv ) );
-            return false;
-        }
-
-        //echo "<pre>"; var_dump($results); die;
-
-        // Unravel results.
-        //$results = array_map(function($entry) use ($dv) {
-        //    return $entry->dn = ldap_get_dn($dv, $entry);
-        //}, $results);
-        $results = self::format_ldap( $results );
-
-        return $results;
-    }
-
-    /**
-     * Process weirdly formatted LDAP results into something
-     * We can display. 
-     * @param array $entries
-     */
-    public static function format_ldap($entries) {
-    
-        // First entry is the count, don't need it
-        array_shift($entries);
-
-        $formattedldap = [];
-
-        foreach ($entries as $entry) {
-            $newentry = [];
-            foreach ($entry as $name => $value) {
-
-                // Numeric fields don't contain data
-                // plus check really is an array
-                if (!is_array($value)) {
-                    continue;
-                }
-
-                // First element is spurious count
-                array_shift($value);
-
-                // Either store the single data value
-                // Or the array of data. 
-                if (count($value) == 1) {
-                    $newentry[$name] = $value[0];
-                } else {
-                    $newentry[$name] = $value;
-                }
-            }
-
-            // Add dn value, which doesn't look like other data. 
-            $newentry['dn'] = $entry['dn'];
-
-            $formattedldap[] = $newentry;
-        }
-
-        return $formattedldap;
     }
 
     /**
@@ -248,15 +64,16 @@ class lib {
         return $chosenguid;
     }
 
-
     public static function get_email($result) {
+
+        $config = self::settings();
 
         // Try to find an email address to use.
         if (!empty($result['mail'])) {
             return array( 'primary' => true, 'mail' => $result['mail'] );
         }
-        if (!empty($result['homeemailaddress'])) {
-            $mail = $result['homeemailaddress'];
+        if (!empty($result[$config->map_homeemailaddress])) {
+            $mail = $result[$config->map_homeemailaddress];
             return array( 'primary' => false, 'mail' => $mail );
         }
         return array( 'primary' => true, 'mail' => '' );
@@ -277,7 +94,6 @@ class lib {
         if (!$courses) {
             return [];
         } else {
-    //echo "<pre>"; var_dump($courses); die;
             return $courses;
         }
     }
@@ -400,10 +216,10 @@ class lib {
         }
 
         $user = create_user_record( strtolower($guid), 'not cached', 'guid' );
-        $user->firstname = $result[$config->field_map_firstname];
-        $user->lastname = $result[$config->field_map_lastname];
-        if (!empty($result['workforceid']) && !empty($config->field_map_idnumber)) {
-            $user->idnumber = $result[$config->field_map_idnumber];
+        $user->firstname = $result[$config->map_firstname];
+        $user->lastname = $result[$config->map_lastname];
+        if (!empty($result['workforceid']) && !empty($config->map_idnumber)) {
+            $user->idnumber = $result[$config->map_idnumber];
         } else {
             $user->idnumber = '';
         }

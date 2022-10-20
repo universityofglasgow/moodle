@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Privacy Subsystem implementation for local_rollover
+ * Privacy Subsystem implementation for local_backupcleaner
  *
- * @package    local_gusync
+ * @package    local_backupcleaner
  * @copyright  2018 Howard Miller
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -27,7 +27,7 @@ namespace local_backupcleaner\privacy;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Privacy Subsystem for local_gusync implementing null_provider.
+ * Privacy Subsystem for local_backupcleaner implementing null_provider.
  *
  * @copyright  2018 Howard Miller
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later

@@ -69,7 +69,8 @@ class single implements renderable, templatable {
 
         // Do they have a moodle account?
         $createlink = '';
-        $username = $result[$this->config->user_attribute];
+        $ua = $this->config->user_attribute;
+        $username = $result[$ua];
         if (is_array($username)) {
             $username = \report_guid\lib::array_to_guid($username);
         }
@@ -104,9 +105,14 @@ class single implements renderable, templatable {
         }
 
         // Check for entries in enrollments.
-        $enrolments = \report_guid\lib::get_all_enrolments($user);
-        $noenrolments = empty($enrolments);
-        $formattedenrolments = \report_guid\lib::format_enrolments($user->id, $enrolments);
+        if ($user) {
+            $enrolments = \report_guid\lib::get_all_enrolments($user);
+            $noenrolments = empty($enrolments);
+            $formattedenrolments = \report_guid\lib::format_enrolments($user->id, $enrolments);
+        } else {
+            $formattedenrolments = [];
+            $noenrolments = true;
+        }
 
         // Find mycampus enrolment data.
         if (!$gudatabaseerror) {
@@ -115,7 +121,6 @@ class single implements renderable, templatable {
         } else {
             $formattedcourses = [];
         }
-        //echo "<pre>"; var_dump($enrolments); var_dump($formattedcourses); die;
 
         // Find CoreHR data.
         if (!$isstudent) {
@@ -132,7 +137,18 @@ class single implements renderable, templatable {
         }
 
         // Get turnitin results
-        $tiifiles = \report_guid\lib::get_turnitin($user->id, $user->username);
+        if ($user) {
+            $tiifiles = \report_guid\lib::get_turnitin($user->id, $user->username);
+        } else {
+            $tiifiles = [];
+        }
+
+        // TII Eula.
+        if ($user) {
+            $tiieula = \report_guid\lib::get_tii_eula($user->id);
+        } else {
+            $tiieula = false;
+        }
 
         return [
             'fullname' => $fullname,
@@ -151,7 +167,7 @@ class single implements renderable, templatable {
             'corehr' => \report_guid\lib::array_prettyprint((array)$corehr),
             'notiifiles' => empty($tiifiles),
             'tiifiles' => $tiifiles,
-            'tiieula' => \report_guid\lib::get_tii_eula($user->id),
+            'tiieula' => $tiieula,
             'backlink' => new \moodle_url('/report/guid'),
         ];
     }

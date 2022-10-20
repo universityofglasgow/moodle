@@ -649,6 +649,8 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         return $courses;
     }
 
+
+
     /**
      * Creates a bare-bones user record
      * Copied (and modified) from moodlelib.php
@@ -663,18 +665,15 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         // Just in case check text case.
         $username = trim(core_text::strtolower($username));
 
-        // We will be using 'guid' ldap plugin only.
-        $authplugin = get_auth_plugin('guid');
-
         // Build up new user object.
         $newuser = new stdClass();
 
-        // Get user info from guid auth plugin.
-        if ($newinfo = $authplugin->get_userinfo($username, $matricid)) {
+        // Get user info from ldap (as Moodle fields)
+        if ($newinfo = \local_guldap\api::find_user($username, $matricid)) {
+
+            // Truncate any fields in the object which are too long for the DB.
             $newinfo = truncate_userinfo($newinfo);
-            foreach ($newinfo as $key => $value) {
-                $newuser->$key = $value;
-            }
+            $newuser = (object)$newinfo;
         } else {
 
             // We didn't find the user in LDAP so there's not much else we can do.
@@ -716,7 +715,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         }
 
         // Basic settings.
-        $newuser->auth = 'guid';
+        $newuser->auth = $this->get_config('newuserauth');
         $newuser->username = $username;
         $newuser->confirmed = 1;
         $newuser->lastip = getremoteaddr();

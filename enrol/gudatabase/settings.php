@@ -187,4 +187,16 @@ if ($ADMIN->fulltree) {
 
     $settings->add(new admin_setting_configtextarea('enrol_gudatabase/schoolsjson',
         get_string('schoolsjson', 'enrol_gudatabase'), get_string('schoolsjson_desc', 'enrol_gudatabase'), ''));
+
+    $settings->add(new admin_setting_heading('enrol_gudatabase_newaccountheader',
+        get_string('settingsnewuser', 'enrol_gudatabase'), ''));
+        
+    $plugins = core_component::get_plugin_list('auth');
+    $pluginselect = [];
+    foreach ($plugins as $pluginname => $pluginpath) {
+        $pluginselect[$pluginname] = $pluginname;
+    }
+    $settings->add(new admin_setting_configselect('enrol_gudatabase/newuserauth',
+    get_string('newuserauth', 'enrol_gudatabase'), get_string('newuserauth_help', 'enrol_gudatabase'),
+    'guid', $pluginselect));
 }

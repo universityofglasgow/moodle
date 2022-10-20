@@ -38,13 +38,29 @@ $PAGE->set_title(get_string('pluginname', 'local_guldap'));
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('pluginname', 'local_guldap'));
 
-echo "<pre>";
+echo "<pre><ul>";
+
+ldap_set_option(NULL, LDAP_OPT_DEBUG_LEVEL, 7);
 
 // Connect to LDAP
 $ldap = new \local_guldap\ldap();
-$resource = $ldap->ldap_connect();
+if ($resource = $ldap->connect()) {
+    echo '<li>' . get_string('connected', 'local_guldap') . '</li>';
+} else {
+    echo "</li></pre>";
+    echo $OUTPUT->footer();
+    die;
+}
 
-echo "</pre>";
+// Search
+$results = $ldap->search($resource, 'sn=smith');
+echo '<li>' . get_string('numberofresults', 'local_guldap', count($results)) . '</li>';
+
+// Close connection
+$ldap->close();
+echo '<li>' . get_string('closed', 'local_guldap') . '</li>';
+
+echo "</ul></pre>";
 
 echo $OUTPUT->footer();
 

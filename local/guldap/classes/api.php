@@ -29,6 +29,22 @@ defined('MOODLE_INTERNAL') || die;
 class api {
 
     /**
+     * Check if ldap is installed and configured
+     * @return boolean
+     */
+    public static function isenabled() {
+        $config = get_config('local_guldap');
+        if (!function_exists('ldap_connect')) {
+            return false;
+        }
+        if (!$config->host_url) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Get user profile field
      * @param string $category
      * @param string $field
@@ -120,5 +136,129 @@ class api {
                 \local_corehr\api::auto_enrol($user->name);
             }
         }
+    }
+
+    /**
+     * Search for ldap_users
+     * @param string $filter
+     * @return array
+     */
+    public static function ldap_search($filter) {
+        $ldap = new ldap();
+        $dv = $ldap->connect();
+        $results = $ldap->search($dv, $filter);
+        $ldap->close($dv);
+
+        return $results;
+    }
+
+    /**
+     * Create LDAP filter
+     * @param string $firstname
+     * @param string $lastname
+     * @param string $guid
+     * @param string $idnumber
+     * @return array
+     */
+    public static function build_filter($firstname, $lastname, $guid, $email, $idnumber) {
+        $config = get_config('local_guldap');
+
+        // LDAP filter doesn't like escaped characters.
+        $lastname = stripslashes($lastname);
+        $firstname = stripslashes($firstname);
+
+        // If the GUID is supplied then we don't care about anything else.
+        if (!empty($guid)) {
+            return $config->user_attribute . "=$guid";
+        }
+
+        // If the idnumber is supplied then we'll go for that.
+        if (!empty($idnumber) & is_numeric($idnumber)) {
+            return $config->map_idnumber . "=$idnumber";
+        }
+
+        // If the email is supplied then we don't care about name.
+        if (!empty($email)) {
+            return $config->map_email . "=$email";
+        }
+
+        // Otherwise we'll take the name.
+        if (empty($firstname) and !empty($lastname)) {
+            return $config->map_lastname . "=$lastname";
+        }
+        if (!empty($firstname) and empty($lastname)) {
+            return $config->map_firstname . "=$firstname";
+        }
+        if (!empty($firstname) and !empty($lastname)) {
+            return "(&({$config->map_lastname}=$lastname)({$config->map_firstname}=$firstname))";
+        }
+
+        // Everything must have been empty.
+        return false;
+    }
+
+    /**
+     * Build filter and search
+     * @param string $firstname
+     * @param string $lastname
+     * @param string $guid
+     * @param string $email
+     * @param string $idnumber
+     * @return [array, string]
+     */
+    public static function filter($firstname, $lastname, $guid, $email, $idnumber) {
+
+        $result = [];
+        $errormessage = '';
+
+        if (!$filter = self::build_filter($firstname, $lastname, $guid, $email, $idnumber)) {
+            $errormessage = get_string('filtererror', 'report_guid');
+        }
+
+        $result = self::ldap_search($filter);
+        if (is_string( $result )) {
+            $errormessage = get_string('searcherror', 'report_guid', $result);
+        }
+        if ($result === false) {
+            $errormessage =  get_string('ldapsearcherror', 'report_guid');
+        }
+
+        return [$result, $errormessage];
+    }
+
+    /**
+     * Find a user account using searching both username and idnumber
+     * @param string $username
+     * @param sting $idnumber
+     * @return object
+     */
+    public static function find_user($username, $idnumber) {
+        $config = get_config('local_guldap');
+
+        // fields we want to (try to) extract - moodle => map
+        $moodlefields = [
+            'firstname' => 'map_firstname',
+            'lastname' => 'map_lastname',
+            'email' => 'map_email',
+            'idnumber' => 'map_idnumber',
+            'homeemailaddress' => 'map_homeemailaddress',
+        ];
+
+        list($results, $errormessage) = self::filter('', '', $username, '', '');
+        $result = array_shift($results);
+        if (!$result && !$errormessage) {
+            list($results, $errormessage) = self::filter('', '', '', '', $idnumber);
+            $result = array_shift($results);
+        }
+
+        // If we have a result, then lookup the field mappings
+        $newuser = [];
+        if ($result) {
+            foreach ($moodlefields as $field => $mapping) {
+                $newuser[$field] = isset($result[$config->$mapping]) ? $result[$config->$mapping] : '';
+            }
+        }
+
+        return $newuser;
     }
 }

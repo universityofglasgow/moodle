@@ -17,7 +17,7 @@
 /**
  * Sychronise enrolment data for Sharepoint feed
  *
- * @package    local_gusync
+ * @package    local_backupcleaner
  * @copyright  2013 Howard Miller
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

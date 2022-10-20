@@ -209,7 +209,8 @@ function ldap_connect_moodle($host_url, $ldap_version, $user_type, $bind_dn, $bi
         }
 
         if ($start_tls && (!ldap_start_tls($connresult))) {
-            $debuginfo .= "Server: '$server', Connection: '$connresult', STARTTLS failed.\n";
+		$debuginfo .= "Server: '$server', Connection: '$connresult', STARTTLS failed.\n";
+		echo ldap_error($connresult);
             continue;
         }
 

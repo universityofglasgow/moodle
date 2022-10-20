@@ -35,6 +35,19 @@ if ($hassiteconfig) {
         'local_guldap', new lang_string('pluginname', 'local_guldap'));
     $ADMIN->add('localplugins', $settings);
 
+    // Login settings
+    $settings->add(new admin_setting_heading('local_guldap/ldaploginsettings',
+        new lang_string('loginsettings', 'local_guldap'), ''));
+
+    // Enable login hook.
+    $yesno = [
+        new lang_string('no'),
+        new lang_string('yes'),
+    ];
+    $settings->add(new admin_setting_configselect('local_guldap/loginhook',
+            new lang_string('loginhook', 'local_guldap'),
+            new lang_string('loginhook_help', 'local_guldap'), 0 , $yesno));        
+
     // LDAP server settings.
     $settings->add(new admin_setting_heading('local_guldap/ldapserversettings',
         new lang_string('serversettings', 'local_guldap'), ''));
@@ -118,4 +131,33 @@ if ($hassiteconfig) {
     $settings->add(new auth_ldap_admin_setting_special_lowercase_configtext('local_guldap/user_attribute',
             get_string('userattribute', 'local_guldap'),
             get_string('userattribute_help', 'local_guldap'), '', PARAM_RAW));
+
+    // Mappings.
+    $settings->add(new admin_setting_heading('local_guldap/ldapmappings',
+            new lang_string('mappings', 'local_guldap'), ''));
+
+    // Firstname
+    $settings->add(new admin_setting_configtext('local_guldap/map_firstname',
+            new lang_string('firstname', 'local_guldap'),
+            new lang_string('firstname_help', 'local_guldap'), '', PARAM_RAW_TRIMMED));    
+
+    // Lastname
+    $settings->add(new admin_setting_configtext('local_guldap/map_lastname',
+            new lang_string('lastname', 'local_guldap'),
+            new lang_string('lastname_help', 'local_guldap'), '', PARAM_RAW_TRIMMED));         
+            
+    // Email
+    $settings->add(new admin_setting_configtext('local_guldap/map_email',
+            new lang_string('email', 'local_guldap'),
+            new lang_string('email_help', 'local_guldap'), '', PARAM_RAW_TRIMMED));           
+            
+    // IDNumber
+    $settings->add(new admin_setting_configtext('local_guldap/map_idnumber',
+        new lang_string('idnumber', 'local_guldap'),
+        new lang_string('idnumber_help', 'local_guldap'), '', PARAM_RAW_TRIMMED));    
+        
+    // HomeEmailAddress
+    $settings->add(new admin_setting_configtext('local_guldap/map_homeemailaddress',
+        new lang_string('homeemailaddress', 'local_guldap'),
+        new lang_string('homeemailaddress_help', 'local_guldap'), '', PARAM_RAW_TRIMMED));         
 }

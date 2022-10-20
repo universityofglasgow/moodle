@@ -39,10 +39,6 @@ $PAGE->set_context($context);
 $output = $PAGE->get_renderer('report_guid');
 $output->set_guid_config($config);
 
-// Configuration.
-$ldaphost = $config->host_url;
-$dn = $config->contexts;
-
 // Get paramters.
 $firstname = optional_param('firstname', '', PARAM_TEXT);
 $lastname = optional_param('lastname', '', PARAM_TEXT);
@@ -77,14 +73,18 @@ echo $output->header();
 echo $output->heading(get_string('heading', 'report_guid'));
 
 // Check we have ldap.
-if (!function_exists( 'ldap_connect' )) {
+if (!\local_guldap\api::isenabled()) {
     print_error(get_string('ldapnotloaded', 'report_guid'));
 }
 
 // Check for user create.
 if (($action == 'create') && confirm_sesskey()) {
     if ($guid) {
-        $results = report_guid\lib::filter($output, '', '', $guid, '', '');
+        list($results, $errormessage) = \local_guldap\api::filter('', '', $guid, '', '');
+        if ($errormessage) {
+            $output->ldap_error($errormessage);
+            die;
+        }
         $result = array_shift($results);
         $user = report_guid\lib::create_user_from_ldap($result);
         $link = new moodle_url('/report/guid/index.php', ['guid' => $guid, 'action' => 'more']);
@@ -114,7 +114,11 @@ if ($delete) {
 
 // Was 'more' button pressed?
 if ($guid && ($action == 'more')) {
-    $results = report_guid\lib::filter($output, '', '', $guid, '', '');
+    list($results, $errormessage) = \local_guldap\api::filter('', '', $guid, '', '');
+    if ($errormessage) {
+        $output->ldap_error($errormessage);
+        die;
+    }
     $result = array_shift($results);
     $single = new report_guid\output\single($config, $result);
     echo $output->render_single($single);
@@ -136,7 +140,11 @@ $output->mainlinks();
 if ($mform->is_cancelled()) {
     redirect( "index.php" );
 } else if ($data = $mform->get_data()) {
-    $result = report_guid\lib::filter($output, $data->firstname, $data->lastname, $data->guid, $data->email, $data->idnumber);
+    list($result, $errormessage) = \local_guldap\api::filter($data->firstname, $data->lastname, $data->guid, $data->email, $data->idnumber);
+    if ($errormessage) {
+        $output->ldap_error($errormessage);
+        die;
+    }
     $users = report_guid\lib::user_search($data->firstname, $data->lastname, $data->guid, $data->email, $data->idnumber);
 
     // Add profile data
