@@ -58,3 +58,4 @@ moodle-plugin-ci.phar
 
 # During development of local_gugrades
 /local/gugrades
+jsconfig.json

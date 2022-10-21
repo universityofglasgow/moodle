@@ -1776,7 +1776,17 @@ EOF;
      * @param   string $keys The key, or list of keys, to type
      */
     public function i_type(string $keys): void {
-        behat_base::type_keys($this->getSession(), str_split($keys));
+        // Certain keys, such as the newline character, must be converted to the appropriate character code.
+        // Without this, keys will behave differently depending on the browser.
+        $keylist = array_map(function($key): string {
+            switch ($key) {
+                case "\n":
+                    return behat_keys::ENTER;
+                default:
+                    return $key;
+            }
+        }, str_split($keys));
+        behat_base::type_keys($this->getSession(), $keylist);
     }
 
     /**
@@ -2189,5 +2199,34 @@ EOF;
     public function i_enable_plugin($plugin, $plugintype) {
         $class = core_plugin_manager::resolve_plugininfo_class($plugintype);
         $class::enable_plugin($plugin, true);
+    }
+
+    /**
+     * Set the default text editor to the named text editor.
+     *
+     * @Given the default editor is set to :editor
+     * @param string $editor
+     * @throws ExpectationException If the specified editor is not available.
+     */
+    public function the_default_editor_is_set_to(string $editor): void {
+        global $CFG;
+
+        // Check if the provided editor is available.
+        if (!array_key_exists($editor, editors_get_available())) {
+            throw new ExpectationException(
+                "Unable to set the editor to {$editor} as it is not installed. The available editors are: " .
+                    implode(', ', array_keys(editors_get_available())),
+                $this->getSession()
+            );
+        }
+
+        // Make the provided editor the default one in $CFG->texteditors by
+        // moving it to the first [editor],atto,tiny,tinymce,textarea on the list.
+        $list = explode(',', $CFG->texteditors);
+        array_unshift($list, $editor);
+        $list = array_unique($list);
+
+        // Set the list new list of editors.
+        set_config('texteditors', implode(',', $list));
     }
 }
