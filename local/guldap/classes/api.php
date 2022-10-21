@@ -110,6 +110,37 @@ class api {
     }
 
     /**
+     * Modified version of core_login_get_return_url
+     * Avoid going to /user/edit.php
+     */
+    private static function get_return_url() {
+        global $CFG, $SESSION, $USER;
+
+        // Prepare redirection.
+        if (isset($SESSION->wantsurl) and (strpos($SESSION->wantsurl, $CFG->wwwroot) === 0
+                or strpos($SESSION->wantsurl, str_replace('http://', 'https://', $CFG->wwwroot)) === 0)) {
+            $urltogo = $SESSION->wantsurl;    // Because it's an address in this site.
+            unset($SESSION->wantsurl);
+        } else {
+            // No wantsurl stored or external - go to homepage.
+            $urltogo = $CFG->wwwroot.'/';
+            unset($SESSION->wantsurl);
+        }
+    
+        // If the url to go to is the same as the site page, check for default homepage.
+        if ($urltogo == ($CFG->wwwroot . '/')) {
+            $homepage = get_home_page();
+            // Go to my-moodle page instead of site homepage if defaulthomepage set to homepage_my.
+            if ($homepage === HOMEPAGE_MY && !isguestuser()) {
+                if ($urltogo == $CFG->wwwroot or $urltogo == $CFG->wwwroot.'/' or $urltogo == $CFG->wwwroot.'/index.php') {
+                    $urltogo = $CFG->wwwroot.'/my/';
+                }
+            }
+        }
+        return $urltogo;
+    }
+
+    /**
      * Login actions - stuff we kick off when somebody logs in.
      * @param object $user
      */
@@ -136,6 +167,10 @@ class api {
                 \local_corehr\api::auto_enrol($user->name);
             }
         }
+
+        // Redirect to correct home page (rather that potentially putting up profile page).
+        $urltogo = self::get_return_url();
+        redirect($urltogo);
     }
 
     /**
