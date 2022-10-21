@@ -164,7 +164,7 @@ class api {
 
                 // If they exist in CoreHR then we can safely apply
                 // training course auto-enrol.
-                \local_corehr\api::auto_enrol($user->name);
+                \local_corehr\api::auto_enrol($user->username);
             }
         }
 
