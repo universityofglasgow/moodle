@@ -27,7 +27,10 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace qtype_kprime;
+
 defined('MOODLE_INTERNAL') || die();
+
 global $CFG;
 require_once($CFG->dirroot . '/question/engine/tests/helpers.php');
 require_once($CFG->dirroot . '/question/type/kprime/questiontype.php');
@@ -41,19 +44,24 @@ require_once($CFG->dirroot . '/question/type/kprime/edit_kprime_form.php');
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @group       qtype_kprime
  */
-class qtype_kprime_test extends advanced_testcase {
+class questiontype_test extends \advanced_testcase {
 
     /** @var object qtype */
     protected $qtype;
 
     protected function setUp(): void {
-        $this->qtype = new qtype_kprime();
+        $this->qtype = new \qtype_kprime();
     }
 
     protected function tearDown(): void {
         $this->qtype = null;
     }
 
+    /**
+     * Test get_name
+     *
+     * @covers ::get_name()
+     */
     public function test_name() {
         $this->assertEquals($this->qtype->name(), 'kprime');
     }
@@ -61,12 +69,11 @@ class qtype_kprime_test extends advanced_testcase {
     /**
      * Get some test question data.
      * @return object the data to construct a question like
-     * {@see test_question_maker::make_question($questiondata)}.
+     * {@see \test_question_maker::make_question($questiondata)}.
      */
     protected function get_test_question_data() {
-        $qdata = new stdClass();
+        $qdata = new \stdClass();
         $qdata->id = 1;
-        $qdata->idnumber = 1;
         $qdata->category = 1;
         $qdata->contextid = 1;
         $qdata->parent = 0;
@@ -81,12 +88,11 @@ class qtype_kprime_test extends advanced_testcase {
         $qdata->penalty = 0;
         $qdata->stamp = "127.0.0.1+1552376610+76EZEc";
         $qdata->version = "127.0.0.1+155237661076EZEc";
-        $qdata->hidden = 0;
         $qdata->timecreated = "1552376610";
         $qdata->timemodified = "1552376610";
         $qdata->createdby = 0;
         $qdata->modifiedby = 0;
-        $qdata->options = new stdClass();
+        $qdata->options = new \stdClass();
         $qdata->options->scoringmethod = "subpoints";
         $qdata->options->shuffleanswers = 0;
         $qdata->options->numberofrows = 4;
@@ -156,6 +162,8 @@ class qtype_kprime_test extends advanced_testcase {
 
     /**
      * Test can_analyse_responses
+     *
+     * @covers ::can_analyse_responses()
      */
     public function test_can_analyse_responses() {
         $this->assertTrue($this->qtype->can_analyse_responses());
@@ -163,6 +171,8 @@ class qtype_kprime_test extends advanced_testcase {
 
     /**
      * Test get_random_guess_score_kprime
+     *
+     * @covers ::get_random_guess_score()
      */
     public function test_get_random_guess_score_kprime() {
         $question = $this->get_test_question_data();
@@ -172,6 +182,8 @@ class qtype_kprime_test extends advanced_testcase {
 
     /**
      * Test get_random_guess_score_kprimeonezero
+     *
+     * @covers ::get_random_guess_score()
      */
     public function test_get_random_guess_score_kprimeonezero() {
         $question = $this->get_test_question_data();
@@ -181,6 +193,8 @@ class qtype_kprime_test extends advanced_testcase {
 
     /**
      * Test get_random_guess_score_subpoints
+     *
+     * @covers ::get_random_guess_score()
      */
     public function test_get_random_guess_score_subpoints() {
         $question = $this->get_test_question_data();
@@ -189,30 +203,32 @@ class qtype_kprime_test extends advanced_testcase {
 
     /**
      * Test get_possible_responses_subpoints
+     *
+     * @covers ::get_possible_responses()
      */
     public function test_get_possible_responses_subpoints() {
         $question = $this->get_test_question_data();
         $responses = $this->qtype->get_possible_responses($question);
         $this->assertEquals(array(
             1 => array(
-                1 => new question_possible_response('option text 1: True (Correct Response)', 0.25),
-                2 => new question_possible_response('option text 1: False', 0.0),
-                null => question_possible_response::no_response()
+                1 => new \question_possible_response('option text 1: True (Correct Response)', 0.25),
+                2 => new \question_possible_response('option text 1: False', 0.0),
+                null => \question_possible_response::no_response()
             ),
             2 => array (
-                1 => new question_possible_response('option text 2: True (Correct Response)', 0.25),
-                2 => new question_possible_response('option text 2: False', 0.0),
-                null => question_possible_response::no_response()
+                1 => new \question_possible_response('option text 2: True (Correct Response)', 0.25),
+                2 => new \question_possible_response('option text 2: False', 0.0),
+                null => \question_possible_response::no_response()
             ),
             3 => array(
-                1 => new question_possible_response('option text 3: True', 0.0),
-                2 => new question_possible_response('option text 3: False (Correct Response)', 0.25),
-                null => question_possible_response::no_response()
+                1 => new \question_possible_response('option text 3: True', 0.0),
+                2 => new \question_possible_response('option text 3: False (Correct Response)', 0.25),
+                null => \question_possible_response::no_response()
             ),
             4 => array (
-                1 => new question_possible_response('option text 4: True', 0.0),
-                2 => new question_possible_response('option text 4: False (Correct Response)', 0.25),
-                null => question_possible_response::no_response()
+                1 => new \question_possible_response('option text 4: True', 0.0),
+                2 => new \question_possible_response('option text 4: False (Correct Response)', 0.25),
+                null => \question_possible_response::no_response()
             )
         ), $this->qtype->get_possible_responses($question));
     }
@@ -228,17 +244,19 @@ class qtype_kprime_test extends advanced_testcase {
      * Test question saving
      * @dataProvider get_question_saving_which
      * @param string $which
+     *
+     * @covers ::save_question()
      */
     public function test_question_saving_question_one($which) {
         $this->resetAfterTest(true);
         $this->setAdminUser();
-        $questiondata = test_question_maker::get_question_data('kprime', $which);
-        $formdata = test_question_maker::get_question_form_data('kprime', $which);
+        $questiondata = \test_question_maker::get_question_data('kprime', $which);
+        $formdata = \test_question_maker::get_question_form_data('kprime', $which);
         $generator = $this->getDataGenerator()->get_plugin_generator('core_question');
         $cat = $generator->create_question_category(array());
         $formdata->category = "{$cat->id},{$cat->contextid}";
-        qtype_kprime_edit_form::mock_submit((array)$formdata);
-        $form = qtype_kprime_test_helper::get_question_editing_form($cat, $questiondata);
+        \qtype_kprime_edit_form::mock_submit((array)$formdata);
+        $form = \qtype_kprime_test_helper::get_question_editing_form($cat, $questiondata);
         $this->assertTrue($form->is_validated());
         $fromform = $form->get_data();
         $returnedfromsave = $this->qtype->save_question($questiondata, $fromform);
@@ -246,7 +264,7 @@ class qtype_kprime_test extends advanced_testcase {
         $actualquestiondata = end($actualquestionsdata);
 
         foreach ($questiondata as $property => $value) {
-            if (!in_array($property, array('id', 'version', 'timemodified', 'timecreated', 'options', 'hints', 'stamp'))) {
+            if (!in_array($property, array('id', 'version', 'timemodified', 'timecreated', 'options', 'hints', 'stamp', 'idnumber', 'hidden'))) {
                 $this->assertEquals($value, $actualquestiondata->$property);
             }
         }
@@ -293,18 +311,20 @@ class qtype_kprime_test extends advanced_testcase {
 
     /**
      * Test get_question_options.
+     *
+     * @covers ::get_question_options()
      */
     public function test_get_question_options() {
         global $DB;
         $this->resetAfterTest(true);
         $this->setAdminUser();
-        $questiondata = test_question_maker::get_question_data('kprime', 'question_one');
-        $formdata = test_question_maker::get_question_form_data('kprime', 'question_two');
+        $questiondata = \test_question_maker::get_question_data('kprime', 'question_one');
+        $formdata = \test_question_maker::get_question_form_data('kprime', 'question_two');
         $generator = $this->getDataGenerator()->get_plugin_generator('core_question');
         $cat = $generator->create_question_category(array());
         $formdata->category = "{$cat->id},{$cat->contextid}";
-        qtype_kprime_edit_form::mock_submit((array)$formdata);
-        $form = qtype_kprime_test_helper::get_question_editing_form($cat, $questiondata);
+        \qtype_kprime_edit_form::mock_submit((array)$formdata);
+        $form = \qtype_kprime_test_helper::get_question_editing_form($cat, $questiondata);
         $this->assertTrue($form->is_validated());
         $fromform = $form->get_data();
         $returnedfromsave = $this->qtype->save_question($questiondata, $fromform);

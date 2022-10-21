@@ -8,7 +8,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:9.6
+        image: postgres:10.0
         env:
           POSTGRES_USER: 'postgres'
           POSTGRES_HOST_AUTH_METHOD: 'trust'
@@ -28,7 +28,7 @@ jobs:
       fail-fast: false
       matrix:
         php: ['7.4']
-        moodle-branch: ['MOODLE_311_STABLE']
+        moodle-branch: ['MOODLE_400_STABLE']
         database: [pgsql, mariadb]
 
     steps:
@@ -74,10 +74,6 @@ jobs:
       - name: Moodle Code Checker
         if: ${{ always() }}
         run: moodle-plugin-ci codechecker --max-warnings 10000
-
-      - name: Moodle PHPDoc Checker
-        if: ${{ always() }}
-        run: moodle-plugin-ci phpdoc
 
       - name: Validating
         if: ${{ always() }}

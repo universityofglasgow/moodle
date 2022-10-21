@@ -54,7 +54,6 @@ class qtype_kprime_test_helper extends question_test_helper {
     public static function get_kprime_question_data_question_one() {
         global $USER;
         $qdata = new stdClass();
-        $qdata->idnumber = 1;
         $qdata->category = 1;
         $qdata->contextid = 1;
         $qdata->parent = 0;
@@ -70,7 +69,6 @@ class qtype_kprime_test_helper extends question_test_helper {
         $qdata->penalty = 0.3333333;
         $qdata->stamp = "127.0.0.1+1552376610+76EZEc";
         $qdata->version = "127.0.0.1+155237661076EZEc";
-        $qdata->hidden = 0;
         $qdata->timecreated = "1552376610";
         $qdata->timemodified = "1552376610";
         $qdata->createdby = 0;
@@ -191,7 +189,6 @@ class qtype_kprime_test_helper extends question_test_helper {
         $qdata->defaultmark = 1;
         $qdata->length = 1;
         $qdata->penalty = 0.3333333;
-        $qdata->hidden = 0;
         $qdata->scoringmethod = 'subpoints';
         $qdata->shuffleanswers = 0;
         $qdata->numberofrows = 4;
@@ -269,7 +266,6 @@ class qtype_kprime_test_helper extends question_test_helper {
     public static function get_kprime_question_data_question_two() {
         global $USER;
         $qdata = new stdClass();
-        $qdata->idnumber = 2;
         $qdata->category = 1;
         $qdata->contextid = 1;
         $qdata->parent = 0;
@@ -285,7 +281,6 @@ class qtype_kprime_test_helper extends question_test_helper {
         $qdata->penalty = 0.3333333;
         $qdata->stamp = "127.0.0.1+1552376610+76EZEc";
         $qdata->version = "127.0.0.1+155237661076EZEc";
-        $qdata->hidden = 0;
         $qdata->timecreated = "1552376610";
         $qdata->timemodified = "1552376610";
         $qdata->createdby = 0;
@@ -407,7 +402,6 @@ class qtype_kprime_test_helper extends question_test_helper {
         $qdata->defaultmark = 1;
         $qdata->length = 1;
         $qdata->penalty = 0.3333333;
-        $qdata->hidden = 0;
         $qdata->scoringmethod = 'subpoints';
         $qdata->shuffleanswers = 0;
         $qdata->numberofrows = 4;
@@ -507,7 +501,6 @@ class qtype_kprime_test_helper extends question_test_helper {
         $qdata->defaultmark = 1;
         $qdata->length = 1;
         $qdata->penalty = 0.3333333;
-        $qdata->hidden = 0;
         $qdata->scoringmethod = 'subpoints';
         $qdata->shuffleanswers = 1;
         $qdata->numberofrows = 4;
@@ -601,7 +594,6 @@ class qtype_kprime_test_helper extends question_test_helper {
         $qdata->defaultmark = 1;
         $qdata->length = 1;
         $qdata->penalty = 0.3333333;
-        $qdata->hidden = 0;
         $qdata->scoringmethod = 'subpoints';
         $qdata->shuffleanswers = 0;
         $qdata->numberofrows = 4;

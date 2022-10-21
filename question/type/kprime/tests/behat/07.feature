@@ -18,16 +18,14 @@ Feature: Step 7
       | questioncategory | qtype  | name              | template       |
       | Default for c1   | kprime | Kprime Question 3 | question_three |
     Given I log in as "admin"
-
     And I navigate to "Plugins > Question types > Kprime (ETH)" in site administration
     And I should see "Default values for kprime questions."
     And I set the field "id_s_qtype_kprime_showscoringmethod" to "1"
     And I press "Save changes"
-
     And I am on "Course 1" course homepage
     And I navigate to "Question bank" in current page administration
 
-  @javascript @_switch_window
+  @javascript @_switch_window @qtype_kprime_scenario_14_1
   Scenario: Testcase 14 - Part 1
 
   # Change scoring Method to KPrime1/0 and test evaluation.
@@ -42,6 +40,7 @@ Feature: Step 7
     And I switch to "questionpreview" window
     Then I should see "Questiontext for Question 1"
     And I should see "Scoring method: Kprime1/0"
+    And I click on "Preview options" "link"
     And I set the field "How questions behave" to "Immediate feedback"
     And I press "Start again with these options"
     And I click on "tr:contains('option text 1') input[value=1]" "css_element"
@@ -74,6 +73,7 @@ Feature: Step 7
     And I switch to "questionpreview" window
     Then I should see "Questiontext for Question 1"
     And I should see "Scoring method: Subpoints"
+    And I click on "Preview options" "link"
     And I set the field "How questions behave" to "Immediate feedback"
     And I press "Start again with these options"
     And I click on "tr:contains('option text 1') input[value=1]" "css_element"
@@ -117,6 +117,7 @@ Feature: Step 7
     And I switch to "questionpreview" window
     Then I should see "Questiontext for Question 1"
     And I should see "Scoring method: Kprime"
+    And I click on "Preview options" "link"
     And I set the field "How questions behave" to "Immediate feedback"
     And I press "Start again with these options"
     And I click on "tr:contains('option text 1') input[value=1]" "css_element"
@@ -141,10 +142,10 @@ Feature: Step 7
     Then I should see "Mark 0.00 out of 1.00"
 
   @javascript @_switch_window
-  Scenario: Testcase 14
+  Scenario: Testcase 14 - Part 4
 
   # Edit true and false fields.
-  # They sould be editable and the values
+  # They should be editable and the values
   # get actualised in the answer options
 
     When I choose "Edit question" action for "Kprime Question 3" in the question bank

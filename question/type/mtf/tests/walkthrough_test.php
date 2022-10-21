@@ -65,6 +65,7 @@ class qtype_mtf_walkthrough_test extends qbehaviour_walkthrough_test_base {
         $mtf->qtype = question_bank::get_qtype('mtf');
         $mtf->name = "MTF Question";
         $mtf->idnumber = 1;
+        $mtf->status = \core_question\local\bank\question_version_status::QUESTION_STATUS_READY;
         $mtf->questiontext = 'the right choices are option 1 and option 2';
         $mtf->generalfeedback = 'You should do this and that';
         $mtf->answernumbering = 'abc';

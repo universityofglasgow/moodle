@@ -66,7 +66,32 @@ class qtype_mtf_question extends question_graded_automatically_with_countback {
         }
         $step->set_qt_var('_order', implode(',', $this->order));
     }
+    public function validate_can_regrade_with_other_version(question_definition $otherversion): ?string {
+        $basemessage = parent::validate_can_regrade_with_other_version($otherversion);
+        if ($basemessage) {
+            return $basemessage;
+        }
+        if (count($this->rows) != count($otherversion->rows)) {
+            return get_string('numberchoicehaschanged', 'qtype_mtf');
+        }
+        return null;
+    }
 
+    public function update_attempt_state_data_for_new_version(
+                    question_attempt_step $oldstep, question_definition $otherversion) {
+
+        $startdata = parent::update_attempt_state_data_for_new_version($oldstep, $otherversion);
+
+        $mapping = array_combine(array_keys($otherversion->rows), array_keys($this->rows));
+
+        $oldorder = explode(',', $oldstep->get_qt_var('_order'));
+        $neworder = [];
+        foreach ($oldorder as $oldid) {
+            $neworder[] = $mapping[$oldid] ?? $oldid;
+        }
+        $startdata['_order'] = implode(',', $neworder);
+        return $startdata;
+    }
     /**
      * (non-PHPdoc).
      * @see question_definition::apply_attempt_state()
@@ -74,26 +99,7 @@ class qtype_mtf_question extends question_graded_automatically_with_countback {
      */
     public function apply_attempt_state(question_attempt_step $step) {
         $this->order = explode(',', $step->get_qt_var('_order'));
-
-        // Add any missing answers. Sometimes people edit questions after they
-        // have been attempted which breaks things.
-        // Retrieve the question rows (mtf options).
-        for ($i = 0; $i < count($this->order); $i++) {
-            if (isset($this->rows[$this->order[$i]])) {
-                continue;
-            }
-
-            $a = new stdClass();
-            $a->id = 0;
-            $a->questionid = $this->id;
-            $a->number = -1;
-            $a->optiontext = html_writer::span(get_string('deletedchoice', 'qtype_mtf'), 'notifyproblem');
-            $a->optiontextformat = FORMAT_HTML;
-            $a->optionfeedback = "";
-            $a->optionfeedbackformat = FORMAT_HTML;
-            $this->rows[$this->order[$i]] = $a;
-            $this->editedquestion = 1;
-        }
+        parent::apply_attempt_state($step);
     }
 
     /**

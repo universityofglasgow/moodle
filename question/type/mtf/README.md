@@ -3,7 +3,7 @@
 ![](https://github.com/ethz-let/qtype_mtf/actions/workflows/moodle-ci.yml/badge.svg)
 
 ## What it is:
-Multi True false in one stem (question). Brief: The MC question type as it exists in Moodle is not very ideal, since you can only configure questions which are not very well designed regarding best practices of MC questions. Teachers can have more than one true/false question in same stem. This saves creating new questions for each stem, especially when it comes to an essay followed by many questions.
+Multi True false in one stem (question). Brief: The MC question type as it exists in Moodle is not very ideal, since you can only configure questions which are not very well designed regarding best practices of MC questions. Teachers can have more than one true/false question in the same stem. This saves creating new questions for each stem, especially when it comes to an essay followed by many questions.
 
 ## Installation:
 1. Extract the contents of the downloaded zip to `question/type/`.

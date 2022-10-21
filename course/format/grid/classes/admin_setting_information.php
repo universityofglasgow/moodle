@@ -92,7 +92,7 @@ class admin_setting_information extends \admin_setting {
     public function output_html($data, $query='') {
         global $CFG, $OUTPUT;
 
-        $formats = \core_plugin_manager::instance()->get_present_plugins('formats');
+        $formats = \core_plugin_manager::instance()->get_present_plugins('format');
         if (!empty($formats['grid'])) {
             $plugininfo = $formats['grid'];
         } else {

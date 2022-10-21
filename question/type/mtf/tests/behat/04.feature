@@ -14,8 +14,8 @@ Feature: Step 4
       | teacher1 | c1     | editingteacher |
       | student2 | c1     | student        |
     And the following "activities" exist:
-      | activity | name   | intro              | course | idnumber |
-      | quiz     | Quiz 1 | Quiz 1 for testing | c1     | quiz1    |
+      | activity | name   | intro              | course |
+      | quiz     | Quiz 1 | Quiz 1 for testing | c1     |
     And the following "question categories" exist:
       | contextlevel | reference | name           |
       | Course       | c1        | Default for c1 |
@@ -40,7 +40,7 @@ Feature: Step 4
   # Login as admin and set Question behavior to "Deferred feedback"
     When I am on "Course 1" course homepage
     And I follow "Quiz 1"
-    And I navigate to "Edit settings" in current page administration
+    And I navigate to "Settings" in current page administration
     And I click on "Question behaviour" "link"
     And I set the field "How questions behave" to "Deferred feedback"
     And I press "Save and return to course"
@@ -51,7 +51,7 @@ Feature: Step 4
     And I am on "Course 1" course homepage
     And I follow "Quiz 1"
     Then I should see "Quiz 1"
-    When I press "Attempt quiz now"
+    When I press "Attempt quiz"
 
   # No option selected
     When I click on "quiznavbutton2" "link"

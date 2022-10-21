@@ -27,8 +27,6 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Represents a qtype_kprime question.
  *
@@ -97,7 +95,33 @@ class qtype_kprime_question extends question_graded_automatically_with_countback
             $this->editedquestion = 1;
         }
     }
+    public function validate_can_regrade_with_other_version(question_definition $otherversion): ?string {
+        $basemessage = parent::validate_can_regrade_with_other_version($otherversion);
+        if ($basemessage) {
+            return $basemessage;
+        }
+        if (count($this->rows) != count($otherversion->rows)) {
+            return get_string('numberchoicehaschanged', 'qtype_kprime');
+        }
+        return null;
+    }
 
+    public function update_attempt_state_data_for_new_version(
+                    question_attempt_step $oldstep, question_definition $otherversion) {
+
+        $startdata = parent::update_attempt_state_data_for_new_version($oldstep, $otherversion);
+
+        $mapping = array_combine(array_keys($otherversion->rows), array_keys($this->rows));
+
+        $oldorder = explode(',', $oldstep->get_qt_var('_order'));
+        $neworder = [];
+        foreach ($oldorder as $oldid) {
+            $neworder[] = $mapping[$oldid] ?? $oldid;
+        }
+
+        $startdata['_order'] = implode(',', $neworder);
+        return $startdata;
+    }
     /**
      * get the question order
      * @param question_attempt $qa

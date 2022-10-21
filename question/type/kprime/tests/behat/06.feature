@@ -28,8 +28,8 @@ Feature: Step 6
       | student7 | c1     | student        |
       | student8 | c1     | student        |
     And the following "activities" exist:
-      | activity | name   | intro              | course | idnumber |
-      | quiz     | Quiz 1 | Quiz 1 for testing | c1     | quiz1    |
+      | activity | name   | intro              | course |
+      | quiz     | Quiz 1 | Quiz 1 for testing | c1     |
     And the following "question categories" exist:
       | contextlevel | reference | name           |
       | Course       | c1        | Default for c1 |
@@ -40,7 +40,7 @@ Feature: Step 6
       | question          | page |
       | Kprime Question 4 | 1    |
 
-  @javascript
+  @javascript @qtype_kprime_scenario_2
   Scenario: Testcase 2
   # Test if the Scoring Method information is correctly displayed within quiz attempts
 
@@ -48,7 +48,7 @@ Feature: Step 6
     When I log in as "student1"
     And I am on "Course 1" course homepage
     And I follow "Quiz 1"
-    And I press "Attempt quiz now"
+    And I press "Attempt quiz"
     Then I should not see "Scoring method: Subpoints"
     And I log out
 
@@ -60,11 +60,11 @@ Feature: Step 6
     Then I press "Save changes"
     And I log out
 
-  # The scoring method information should be disabled now
-    When I log in as "student1"
+  # The scoring method information should be enabled now
+    When I log in as "student2"
     And I am on "Course 1" course homepage
     And I follow "Quiz 1"
-    And I press "Continue the last attempt"
+    And I press "Attempt quiz"
     Then I should see "Scoring method: Subpoints"
     And I log out
 
@@ -72,18 +72,18 @@ Feature: Step 6
     When I log in as "admin"
     And I am on "Course 1" course homepage
     And I follow "Quiz 1"
-    And I navigate to "Edit quiz" in current page administration
+    And I navigate to "Questions" in current page administration
     And I click on "Edit question Kprime Question 4" "link" in the "Kprime Question 4" "list_item"
     And I click on "Scoring method" "link"
     And I click on "id_scoringmethod_kprimeonezero" "radio"
     Then I press "id_updatebutton"
     And I log out
 
-  # The scoring method information should be disabled now as Kprime 1/0
-    When I log in as "student1"
+  # The scoring method information should be displayed now as Kprime 1/0
+    When I log in as "student3"
     And I am on "Course 1" course homepage
     And I follow "Quiz 1"
-    And I press "Continue the last attempt"
+    And I press "Attempt quiz"
     Then I should see "Scoring method: Kprime1/0"
     And I log out
 
@@ -91,18 +91,18 @@ Feature: Step 6
     When I log in as "admin"
     And I am on "Course 1" course homepage
     And I follow "Quiz 1"
-    And I navigate to "Edit quiz" in current page administration
+    And I navigate to "Questions" in current page administration
     And I click on "Edit question Kprime Question 4" "link" in the "Kprime Question 4" "list_item"
     And I click on "Scoring method" "link"
     And I click on "id_scoringmethod_kprime" "radio"
     Then I press "id_updatebutton"
     And I log out
 
-  # The scoring method information should be disabled now as Kprime
-    When I log in as "student1"
+  # The scoring method information should be displayed now as Kprime
+    When I log in as "student4"
     And I am on "Course 1" course homepage
     And I follow "Quiz 1"
-    And I press "Continue the last attempt"
+    And I press "Attempt quiz"
     Then I should see "Scoring method: Kprime"
     And I log out
 
@@ -118,7 +118,7 @@ Feature: Step 6
     Given I log in as "teacher"
     And I am on "Course 1" course homepage
     And I follow "Quiz 1"
-    And I navigate to "Edit quiz" in current page administration
+    And I navigate to "Questions" in current page administration
     And I click on "Edit question Kprime Question 4" "link" in the "Kprime Question 4" "list_item"
     And I click on "Scoring method" "link"
     And I click on "id_scoringmethod_subpoints" "radio"
@@ -129,7 +129,7 @@ Feature: Step 6
     When I log in as "student1"
     And I am on "Course 1" course homepage
     And I follow "Quiz 1"
-    And I press "Attempt quiz now"
+    And I press "Attempt quiz"
     And I click on "tr:contains('option text 1') input[value=1]" "css_element"
     And I click on "tr:contains('option text 2') input[value=1]" "css_element"
     And I click on "tr:contains('option text 3') input[value=2]" "css_element"
@@ -143,7 +143,7 @@ Feature: Step 6
     When I log in as "student2"
     And I am on "Course 1" course homepage
     And I follow "Quiz 1"
-    And I press "Attempt quiz now"
+    And I press "Attempt quiz"
     And I click on "tr:contains('option text 1') input[value=1]" "css_element"
     And I click on "tr:contains('option text 2') input[value=1]" "css_element"
     And I click on "tr:contains('option text 3') input[value=1]" "css_element"
@@ -157,7 +157,7 @@ Feature: Step 6
     When I log in as "student3"
     And I am on "Course 1" course homepage
     And I follow "Quiz 1"
-    And I press "Attempt quiz now"
+    And I press "Attempt quiz"
     And I click on "tr:contains('option text 1') input[value=2]" "css_element"
     And I click on "tr:contains('option text 2') input[value=2]" "css_element"
     And I click on "tr:contains('option text 3') input[value=1]" "css_element"
@@ -170,8 +170,8 @@ Feature: Step 6
   # Check results for Subpoints
     When I log in as "teacher"
     And I am on "Course 1" course homepage
-    And I follow "Quiz 1"
-    And I navigate to "Responses" in current page administration
+    And I am on the "Quiz 1" "quiz activity" page
+    And I navigate to "Results" in current page administration
     And I click on "tr:contains('student1@moodle.com') a:contains('Review attempt')" "css_element"
     Then ".state:contains('Correct')" "css_element" should exist
     And ".grade:contains('Mark 1.00 out of 1.00')" "css_element" should exist
@@ -179,8 +179,7 @@ Feature: Step 6
     And "tr:contains('option text 2') input[value='1'][checked='checked']" "css_element" should exist
     And "tr:contains('option text 3') input[value='2'][checked='checked']" "css_element" should exist
     And "tr:contains('option text 4') input[value='2'][checked='checked']" "css_element" should exist
-    And I follow "Quiz 1"
-    And I navigate to "Responses" in current page administration
+    And I navigate to "Results" in current page administration
     And I click on "tr:contains('student2@moodle.com') a:contains('Review attempt')" "css_element"
     Then ".state:contains('Partially correct')" "css_element" should exist
     And ".grade:contains('Mark 0.50 out of 1.00')" "css_element" should exist
@@ -188,8 +187,7 @@ Feature: Step 6
     And "tr:contains('option text 2') input[value='1'][checked='checked']" "css_element" should exist
     And "tr:contains('option text 3') input[value='1'][checked='checked']" "css_element" should exist
     And "tr:contains('option text 4') input[value='1'][checked='checked']" "css_element" should exist
-    And I follow "Quiz 1"
-    And I navigate to "Responses" in current page administration
+    And I navigate to "Results" in current page administration
     And I click on "tr:contains('student3@moodle.com') a:contains('Review attempt')" "css_element"
     Then ".state:contains('Incorrect')" "css_element" should exist
     And ".grade:contains('Mark 0.00 out of 1.00')" "css_element" should exist
@@ -200,8 +198,8 @@ Feature: Step 6
 
   # Set Scoring Method to Kprime 1/0
     And I am on "Course 1" course homepage
-    And I follow "Quiz 1"
-    And I navigate to "Edit quiz" in current page administration
+    And I am on the "Quiz 1" "quiz activity" page
+    And I navigate to "Questions" in current page administration
     And I click on "Edit question Kprime Question 4" "link" in the "Kprime Question 4" "list_item"
     And I click on "Scoring method" "link"
     And I click on "id_scoringmethod_kprimeonezero" "radio"
@@ -211,8 +209,8 @@ Feature: Step 6
   # Solving quiz as student4: 100% correct options (KPrime1/0 is activated)
     When I log in as "student4"
     And I am on "Course 1" course homepage
-    And I follow "Quiz 1"
-    And I press "Attempt quiz now"
+    And I am on the "Quiz 1" "quiz activity" page
+    And I press "Attempt quiz"
     And I click on "tr:contains('option text 1') input[value=1]" "css_element"
     And I click on "tr:contains('option text 2') input[value=1]" "css_element"
     And I click on "tr:contains('option text 3') input[value=2]" "css_element"
@@ -226,7 +224,7 @@ Feature: Step 6
     When I log in as "student5"
     And I am on "Course 1" course homepage
     And I follow "Quiz 1"
-    And I press "Attempt quiz now"
+    And I press "Attempt quiz"
     And I click on "tr:contains('option text 1') input[value=1]" "css_element"
     And I click on "tr:contains('option text 2') input[value=1]" "css_element"
     And I click on "tr:contains('option text 3') input[value=1]" "css_element"
@@ -239,8 +237,8 @@ Feature: Step 6
   # Check results for Kprime1/0
     When I log in as "teacher"
     And I am on "Course 1" course homepage
-    And I follow "Quiz 1"
-    And I navigate to "Responses" in current page administration
+    And I am on the "Quiz 1" "quiz activity" page
+    And I navigate to "Results" in current page administration
     And I click on "tr:contains('student4@moodle.com') a:contains('Review attempt')" "css_element"
     Then ".state:contains('Correct')" "css_element" should exist
     And ".grade:contains('Mark 1.00 out of 1.00')" "css_element" should exist
@@ -248,8 +246,7 @@ Feature: Step 6
     And "tr:contains('option text 2') input[value='1'][checked='checked']" "css_element" should exist
     And "tr:contains('option text 3') input[value='2'][checked='checked']" "css_element" should exist
     And "tr:contains('option text 4') input[value='2'][checked='checked']" "css_element" should exist
-    And I follow "Quiz 1"
-    And I navigate to "Responses" in current page administration
+    And I navigate to "Results" in current page administration
     And I click on "tr:contains('student5@moodle.com') a:contains('Review attempt')" "css_element"
     Then ".state:contains('Incorrect')" "css_element" should exist
     And ".grade:contains('Mark 0.00 out of 1.00')" "css_element" should exist
@@ -260,8 +257,8 @@ Feature: Step 6
 
   # Set Scoring Method to Kprime
     And I am on "Course 1" course homepage
-    And I follow "Quiz 1"
-    And I navigate to "Edit quiz" in current page administration
+    And I am on the "Quiz 1" "quiz activity" page
+    And I navigate to "Questions" in current page administration
     And I click on "Edit question Kprime Question 4" "link" in the "Kprime Question 4" "list_item"
     And I click on "Scoring method" "link"
     And I click on "id_scoringmethod_kprime" "radio"
@@ -272,7 +269,7 @@ Feature: Step 6
     When I log in as "student6"
     And I am on "Course 1" course homepage
     And I follow "Quiz 1"
-    And I press "Attempt quiz now"
+    And I press "Attempt quiz"
     And I click on "tr:contains('option text 1') input[value=1]" "css_element"
     And I click on "tr:contains('option text 2') input[value=1]" "css_element"
     And I click on "tr:contains('option text 3') input[value=2]" "css_element"
@@ -286,7 +283,7 @@ Feature: Step 6
     When I log in as "student7"
     And I am on "Course 1" course homepage
     And I follow "Quiz 1"
-    And I press "Attempt quiz now"
+    And I press "Attempt quiz"
     And I click on "tr:contains('option text 1') input[value=1]" "css_element"
     And I click on "tr:contains('option text 2') input[value=1]" "css_element"
     And I click on "tr:contains('option text 3') input[value=2]" "css_element"
@@ -300,7 +297,7 @@ Feature: Step 6
     When I log in as "student8"
     And I am on "Course 1" course homepage
     And I follow "Quiz 1"
-    And I press "Attempt quiz now"
+    And I press "Attempt quiz"
     And I click on "tr:contains('option text 1') input[value=1]" "css_element"
     And I click on "tr:contains('option text 2') input[value=1]" "css_element"
     And I click on "tr:contains('option text 3') input[value=1]" "css_element"
@@ -313,8 +310,8 @@ Feature: Step 6
 # Check results for Kprime
     When I log in as "teacher"
     And I am on "Course 1" course homepage
-    And I follow "Quiz 1"
-    And I navigate to "Responses" in current page administration
+    And I am on the "Quiz 1" "quiz activity" page
+    And I navigate to "Results" in current page administration
     And I click on "tr:contains('student6@moodle.com') a:contains('Review attempt')" "css_element"
     Then ".state:contains('Correct')" "css_element" should exist
     And ".grade:contains('Mark 1.00 out of 1.00')" "css_element" should exist
@@ -322,8 +319,7 @@ Feature: Step 6
     And "tr:contains('option text 2') input[value='1'][checked='checked']" "css_element" should exist
     And "tr:contains('option text 3') input[value='2'][checked='checked']" "css_element" should exist
     And "tr:contains('option text 4') input[value='2'][checked='checked']" "css_element" should exist
-    And I follow "Quiz 1"
-    And I navigate to "Responses" in current page administration
+    And I navigate to "Results" in current page administration
     And I click on "tr:contains('student7@moodle.com') a:contains('Review attempt')" "css_element"
     Then ".state:contains('Partially correct')" "css_element" should exist
     And ".grade:contains('Mark 0.50 out of 1.00')" "css_element" should exist
@@ -331,8 +327,7 @@ Feature: Step 6
     And "tr:contains('option text 2') input[value='1'][checked='checked']" "css_element" should exist
     And "tr:contains('option text 3') input[value='2'][checked='checked']" "css_element" should exist
     And "tr:contains('option text 4') input[value='1'][checked='checked']" "css_element" should exist
-    And I follow "Quiz 1"
-    And I navigate to "Responses" in current page administration
+    And I navigate to "Results" in current page administration
     And I click on "tr:contains('student8@moodle.com') a:contains('Review attempt')" "css_element"
     Then ".state:contains('Incorrect')" "css_element" should exist
     And ".grade:contains('Mark 0.00 out of 1.00')" "css_element" should exist

@@ -14,74 +14,101 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * JavaScript for handling JSME initialisation in pmatchjme forms.
+ * JavaScript for handling the JSME.
  *
- * @package    qtype
- * @subpackage pmatchjme
+ * @module     qtype_pmatchjme
+ * @class      jsme
  * @copyright  2018 The Open University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-/*global JSApplet*/
+"use strict";
 
-define(['jquery'], function($) {
+/**
+ * Start the load of the JSME code.
+ */
+const loadJsmeCode = () => {
+    // Alternatively, we need to add a script tag to the page.
+    // I think that if Moodle was using standard JS modules
+    // (instead of require_js, then we could just us import().
+    const scriptTag = document.createElement('script');
+    scriptTag.src = M.cfg.wwwroot + '/question/type/pmatchjme/jsme/jsme.nocache.js';
+    scriptTag.async = true;
+    document.body.append(scriptTag);
+};
 
-    "use strict";
+/**
+ * Initialise a question by stating the JSME editor.
+ *
+ * @param {string} containerId Id of the div to put the JSME in.
+ * @param {string} questionDivId Id of the outer question div.
+ * @param {string} feedbackImageHtml HTML of the feedback icon to show, if any.
+ * @param {boolean} readonly boolean, whether the display should be read-only.
+ * @param {boolean} nostereo JSME option.
+ * @param {boolean} autoez JSME option.
+ */
+const insertApplet = (containerId, questionDivId, feedbackImageHtml, readonly, nostereo, autoez) => {
+    const pendingToken = {};
+    M.util.js_pending(pendingToken);
 
-    /**
-     * @alias qtype_pmatchjme/jsme
-     */
-    var t = {
-        max_loading_waits: 10,
+    const jmeoptions = [];
+    if (nostereo) {
+        jmeoptions.push("nostereo");
+    }
+    if (autoez) {
+        jmeoptions.push("autoez");
+    }
+    if (readonly) {
+        jmeoptions.push("depict");
+    }
 
-        insert_applet: function (containerid, topselector, feedback, readonly, nostereo, autoez) {
-            var jmeoptions = [];
-            if (nostereo) {
-                jmeoptions.push("nostereo");
-            }
-            if (autoez) {
-                jmeoptions.push("autoez");
-            }
-            if (readonly) {
-                jmeoptions.push("depict");
-            }
-            t.show_jsme(topselector, containerid, jmeoptions, t.max_loading_waits);
-        },
+    // Function to run once JSME library code has loaded.
+    const displayJsme = () => {
+        // Hide the loading message.
+        const containerElement = document.getElementById(containerId);
+        containerElement.innerHTML = '';
+        containerElement.classList.remove('qtype_pmatchjme-applet-warning');
 
-        show_jsme: function (topselector, containerid, jmeoptions, remainingloadingwaits) {
-            var topnode = $(topselector),
-                jme = false,
-                jsmeApplet = false;
+        // Instantiate a new JSME.
+        const jsmeApplet = new window.JSApplet.JSME(containerId, '368px', '312px', {"options": jmeoptions.join(',')});
+        jsmeApplet.name = containerId;
 
-            // Ensure the JSME code is loaded properly. IE 8 struggles.
-            if (typeof JSApplet !== 'object' && remainingloadingwaits > 0) {
-                setTimeout(function () {
-                    t.show_jsme(topselector, containerid, jmeoptions, remainingloadingwaits - 1);
-                }, 100);
-                return;
-            }
-
-            // Hide the loading message.
-            $('#' + containerid).html('');
-            $('#' + containerid).removeClass('qtype_pmatchjme-applet-warning');
-
-            // Instantiate a new JSME.
-            jsmeApplet = new JSApplet.JSME(containerid, '368px', '312px', {"options": jmeoptions.join(',')});
-            jsmeApplet.name = containerid;
-
-            // If molecule data is supplied display it.
-            jme = topnode.find('input.jme').val();
-            if (jme) {
-                jsmeApplet.readMolecule(jme);
-            }
-
-            // Add event handler to save the values on form submit.
-            topnode.parents('form').on('submit', function () {
-                topnode.find('input.answer').val(jsmeApplet.smiles());
-                topnode.find('input.jme').val(jsmeApplet.jmeFile());
-                topnode.find('input.mol').val(jsmeApplet.molFile());
-            });
+        // If molecule data is supplied display it.
+        const questionDiv = document.getElementById(questionDivId);
+        const initalJmeContent = questionDiv.querySelector('input.jme').value;
+        if (initalJmeContent) {
+            jsmeApplet.readMolecule(initalJmeContent);
         }
+
+        // Add event handler to save the values on form submit.
+        questionDiv.closest('form').addEventListener('submit', () => {
+            questionDiv.querySelector('input.answer').value = jsmeApplet.smiles();
+            questionDiv.querySelector('input.jme').value = jsmeApplet.jmeFile();
+            questionDiv.querySelector('input.mol').value = jsmeApplet.molFile();
+        });
+
+        M.util.js_complete(pendingToken);
     };
-    return t;
-});
+
+    if (window.hasOwnProperty('JSApplet')) {
+        // Already loaded, e.g. by another question on the same page.
+        displayJsme();
+    } else {
+        if (window.hasOwnProperty('jsmeOnLoad')) {
+            const oldJsmeOnLoad = window.jsmeOnLoad;
+            window.jsmeOnLoad = () => {
+                oldJsmeOnLoad();
+                displayJsme();
+            };
+        } else {
+            window.jsmeOnLoad = () => {
+                displayJsme();
+            };
+        }
+        loadJsmeCode();
+    }
+};
+
+export {
+    insertApplet
+};

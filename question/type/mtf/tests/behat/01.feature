@@ -8,6 +8,9 @@ Feature: Step 1
     And the following "courses" exist:
       | fullname | shortname | category |
       | Course 1 | C1        | 0        |
+    And the following "course enrolments" exist:
+      | user      | course | role           |
+      | teacher1  | C1     | editingteacher |
     And the following "question categories" exist:
       | contextlevel | reference | name           |
       | Course       | C1        | Test questions |
@@ -17,15 +20,19 @@ Feature: Step 1
       | Test questions   | mtf   | MTF Question 2 | question_one |
     And I log in as "admin"
 
-  @javascript
+  @javascript @qtype_mtf_1_sc_34
   Scenario: Testcase 34
 
-  # Check if the shuffleanswers option is checked per default and
+    # esp 02
+  # Check if the shuffle answers option is checked per default and
   # check if it is set in the plugin administration it also should be checked in newly created questions
     When I navigate to "Plugins > Question types > Multiple True False (ETH)" in site administration
     And I should see "Default values for Multiple True/False questions."
     And the following fields match these values:
       | id_s_qtype_mtf_shuffleanswers | checked |
+    And I log out
+  # check that shuffle answers is set as default when creating new mtf question
+    And I log in as "teacher1"
     And I am on "Course 1" course homepage
     And I navigate to "Question bank" in current page administration
     And I press "Create a new question ..."
@@ -34,10 +41,12 @@ Feature: Step 1
     Then I should see "Adding a Multiple True/False question"
     And the following fields match these values:
       | id_shuffleanswers | checked |
+    And I log out
 
   # Check if the shuffleanswers option is NOT checked in the plugin administration
   # it also should NOT be checked in newly created questions
-    When I navigate to "Plugins > Question types > Multiple True False (ETH)" in site administration
+    And I log in as "admin"
+    And I navigate to "Plugins > Question types > Multiple True False (ETH)" in site administration
     And I should see "Default values for Multiple True/False questions."
     And I set the following fields to these values:
       | id_s_qtype_mtf_shuffleanswers | |
@@ -363,7 +372,7 @@ Feature: Step 1
     And I click on "Scoring method" "link"
     Then "#id_scoringmethod_mtfonezero[checked]" "css_element" should exist
 
-  @javascript
+  @javascript @qtype_mtf_scenario13
   Scenario: Testcase 13
 
   # Install the german language pack
@@ -383,8 +392,9 @@ Feature: Step 1
 
   # Change language
     And I press "id_cancel"
-    And I click on "English ‎(en)‎" "link"
-    And I click on "Deutsch ‎(de)" "link"
+    And I follow "Language" in the user menu
+    # select "Deutsch (de)":
+    And I click on "//a[contains(@href, 'lang=de')]" "xpath"
 
   # Create a question and check german language strings
     When I press "Neue Frage erstellen..."
@@ -393,7 +403,7 @@ Feature: Step 1
     Then "#id_responsetext_1[value='Wahr']" "css_element" should exist
     And "#id_responsetext_2[value='Falsch']" "css_element" should exist
 
-  @javascript
+  @javascript @qtype_mtf_scenario_5_6
   Scenario: Testcase 5, 6
 
     When I am on "Course 1" course homepage
@@ -437,23 +447,27 @@ Feature: Step 1
     When I choose "Edit question" action for "MTF Question (copy)" in the question bank
     And I click on "Multiple tries" "link"
     Then the following fields match these values:
-      | id_hint_0 | 1th hinttext |
-      | id_hint_1 | 2nd hinttext |
-    And I press "submitbutton"
+      | id_hint_0                | 1th hinttext |
+      | id_hint_1                | 2nd hinttext |
+    And I press "cancel"
     Then I should see "Question bank"
     And I should see "MTF Question"
+    And I should see "MTF Question (copy)"
 
   # Move the question to another category
-    When I click on "MTF Question" "checkbox" in the "MTF Question" "table_row"
+    When I click on "MTF Question (copy)" "checkbox" in the "MTF Question (copy)" "table_row"
+    And I press "With selected"
+    And I click on question bulk action "move"
     And I set the field "Question category" to "AnotherCat"
-    And I press "Move to >>"
+    And I press "Move to"
     Then I should see "Question bank"
     And I should see "AnotherCat"
-    And I should see "MTF Question"
+    And I should see "MTF Question (copy)"
 
   # Delete the question
-    When I choose "Delete" action for "MTF Question" in the question bank
+    When I choose "Delete" action for "MTF Question (copy)" in the question bank
     And I press "Delete"
+  #  And I wait "300" seconds
     Then I should not see "MTF Question"
 
   @javascript

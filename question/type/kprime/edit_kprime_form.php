@@ -8,11 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * qtype_skprimeediting form.
@@ -28,9 +28,9 @@
  */
 defined('MOODLE_INTERNAL') || die();
 
-require_once ($CFG->dirroot . '/question/type/edit_question_form.php');
-require_once ($CFG->dirroot . '/question/type/kprime/lib.php');
-require_once ($CFG->dirroot . '/question/engine/bank.php');
+require_once($CFG->dirroot . '/question/type/edit_question_form.php');
+require_once($CFG->dirroot . '/question/type/kprime/lib.php');
+require_once($CFG->dirroot . '/question/engine/bank.php');
 
 /**
  * qtype_kprime editing form definition.
@@ -113,7 +113,8 @@ class qtype_kprime_edit_form extends question_edit_form {
             }
         }
 
-        if (class_exists('qbank_editquestion\\editquestion_helper') && !empty($this->question->id) && !$this->question->beingcopied) {
+        if (class_exists('qbank_editquestion\\editquestion_helper') &&
+            !empty($this->question->id) && !$this->question->beingcopied) {
             // Add extra information from plugins when editing a question (e.g.: Authors, version control and usage).
             $functionname = 'edit_form_display';
             $questiondata = [];
@@ -155,6 +156,7 @@ class qtype_kprime_edit_form extends question_edit_form {
 
         // Any questiontype specific fields.
         $this->definition_inner($mform);
+        $this->add_interactive_settings();
 
         if (core_tag_tag::is_enabled('core_question', 'question') && class_exists('qbank_tagquestion\\tags_action_column') &&
              \core\plugininfo\qbank::is_plugin_enabled('qbank_tagquestion')) {
@@ -185,6 +187,9 @@ class qtype_kprime_edit_form extends question_edit_form {
                                                                                                     $this->context, true);
                     $buttonarray[] = $mform->createElement('static', 'previewlink', '', $previewlink);
                 }
+            } else {
+                $previewlink = $PAGE->get_renderer('core_question')->question_preview_link($this->question->id, $this->context, true);
+                $buttonarray[] = $mform->createElement('static', 'previewlink', '', $previewlink);
             }
         }
 
@@ -193,7 +198,8 @@ class qtype_kprime_edit_form extends question_edit_form {
 
         $this->add_action_buttons(true, get_string('savechanges'));
 
-        if ((!empty($this->question->id)) && (!($this->question->formoptions->canedit || $this->question->formoptions->cansaveasnew))) {
+        if ((!empty($this->question->id)) && (!($this->question->formoptions->canedit ||
+            $this->question->formoptions->cansaveasnew))) {
             $mform->hardFreezeAllVisibleExcept(array('categorymoveto', 'buttonar', 'currentgrp'));
         }
     }
@@ -231,16 +237,17 @@ class qtype_kprime_edit_form extends question_edit_form {
         $attributes = array();
         $scoringbuttons = array();
 
-        $scoringbuttons[] = &$mform->createElement('radio', 'scoringmethod', '', get_string('scoringkprime', 'qtype_kprime'),
-                                                'kprime', $attributes);
+        $scoringbuttons[] = &$mform->createElement('radio', 'scoringmethod', '',
+            get_string('scoringkprime', 'qtype_kprime'), 'kprime', $attributes);
 
-        $scoringbuttons[] = &$mform->createElement('radio', 'scoringmethod', '', get_string('scoringkprimeonezero', 'qtype_kprime'),
-                                                'kprimeonezero', $attributes);
+        $scoringbuttons[] = &$mform->createElement('radio', 'scoringmethod', '',
+            get_string('scoringkprimeonezero', 'qtype_kprime'), 'kprimeonezero', $attributes);
 
-        $scoringbuttons[] = &$mform->createElement('radio', 'scoringmethod', '', get_string('scoringsubpoints', 'qtype_kprime'),
-                                                'subpoints', $attributes);
+        $scoringbuttons[] = &$mform->createElement('radio', 'scoringmethod', '',
+            get_string('scoringsubpoints', 'qtype_kprime'), 'subpoints', $attributes);
 
-        $mform->addGroup($scoringbuttons, 'radiogroupscoring', get_string('scoringmethod', 'qtype_kprime'), array(' <br/> '), false);
+        $mform->addGroup($scoringbuttons, 'radiogroupscoring', get_string('scoringmethod', 'qtype_kprime'), array(' <br/> '),
+            false);
 
         $mform->addHelpButton('radiogroupscoring', 'scoringmethod', 'qtype_kprime');
         $mform->setDefault('scoringmethod', 'kprime');

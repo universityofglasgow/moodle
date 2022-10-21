@@ -19,12 +19,10 @@ Feature: Step 7
       | Default for c1   | mtf   | MTF-Question-001 | question_one |
     Given I log in as "teacher1"
     And I am on "Course 1" course homepage
-    And I click on "Actions menu" "link"
-    And I click on "More..." "link"
-    And I click on "Question bank" "link"
+    And I navigate to "Question bank" in current page administration
 
   @javascript
-  Scenario: Testcase 10, 11
+  Scenario: Testcase 10, 11 A
   # Change scoring Method to MTF1/0 and test evaluation.
 
     When I choose "Edit question" action for "MTF-Question-001" in the question bank
@@ -33,6 +31,7 @@ Feature: Step 7
     And I press "id_updatebutton"
     And I click on "Preview" "link"
     And I switch to "questionpreview" window
+    And I click on "Preview options" "link"
     And I set the field "How questions behave" to "Immediate feedback"
     And I press "Start again with these options"
     And I click on ".qtype_mtf_row:contains('option text 1') input[value=1]" "css_element"
@@ -46,7 +45,7 @@ Feature: Step 7
     Then I should see "Mark 0.00 out of 1.00"
 
   @javascript
-  Scenario: Testcase 10, 11
+  Scenario: Testcase 10, 11 B
   # Change scoring Method to Subpoints and test evaluation.
 
     When I choose "Edit question" action for "MTF-Question-001" in the question bank
@@ -55,6 +54,7 @@ Feature: Step 7
     And I press "id_updatebutton"
     And I click on "Preview" "link"
     And I switch to "questionpreview" window
+    And I click on "Preview options" "link"
     And I set the field "How questions behave" to "Immediate feedback"
     And I press "Start again with these options"
     And I click on ".qtype_mtf_row:contains('option text 1') input[value=1]" "css_element"

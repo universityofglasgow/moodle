@@ -85,3 +85,4 @@ $string['numberofrows_help'] = 'Specify the number of options.  When changing to
 $string['deleterawswarning'] = 'When lowering the number of options surplus options will be deleted. Are you sure you want to proceed?';
 $string['mustdeleteextrarows'] = 'Max allowed options in MTF are 5 options. {$a} option(s) will be deleted. If you cancel editing without saving, the surplus options will remain.';
 $string['notenoughanswers'] = 'This type of question requires at least {$a} option';
+$string['numberchoicehaschanged'] = 'Number of options has changed. Can not regrade the question attempt.';

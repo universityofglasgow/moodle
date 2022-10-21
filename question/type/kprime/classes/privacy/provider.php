@@ -29,8 +29,6 @@
 
 namespace qtype_kprime\privacy;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Privacy Subsystem for qtype_kprime implementing null_provider.
  *
