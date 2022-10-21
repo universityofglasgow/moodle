@@ -18,7 +18,7 @@
  * GUID report
  *
  * @package    report_guid
- * @copyright  2017-19 Howard Miller
+ * @copyright  2017-22 Howard Miller
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -183,11 +183,16 @@ if ($mform->is_cancelled()) {
 
             // If they don't already exist then find in LDAP.
             if ($firstcolumn == 'guid') {
-                $ldap = report_guid\lib::filter($output, '', '', $usermatch, '', '');
+                list($ldap, $errormessage) = \local_guldap\api::filter('', '', $usermatch, '', '');
             } else if ($firstcolumn == 'email') {
-                $ldap = report_guid\lib::filter($output, '', '', '', $usermatch, '');
+                list($ldap, $errormessage) = \local_guldap\api::filter('', '', '', $usermatch, '');
             } else {
-                $ldap = report_guid\lib::filter($output, '', '', '', '', $usermatch);
+                list($ldap, $errormessage) = \local_guldap\api::filter('', '', '', '', $usermatch);
+            }
+
+            if ($errormessage) {
+                $output->ldap_error($errormessage);
+                die;
             }
 
             if (!$ldap) {

@@ -25,7 +25,7 @@
 define('NO_OUTPUT_BUFFERING', true);
 
 require(dirname(__FILE__) . '/../../config.php');
-require_once($CFG->dirroot . '/local/gusync/lib.php');
+//require_once($CFG->dirroot . '/local/gusync/lib.php');
 
 $courseid = required_param('courseid', PARAM_INT);
 
@@ -58,9 +58,6 @@ if ($instances = $DB->get_records('enrol', array('courseid' => $courseid, 'enrol
 }
 cache_helper::invalidate_by_definition('core', 'groupdata', array(), array($course->id));
 
-// Export enrolments to 'Sharepoint' database.
-echo get_string('syncexport', 'enrol_gudatabase') . "\n";
-local_gusync_sync_one($course->id);
 echo "</pre>";
 
 $conurl = new moodle_url('/course/view.php', array('id' => $course->id));

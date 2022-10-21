@@ -437,6 +437,133 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
     }
 
     /**
+     * Write record to user_info
+     * @param int $userid
+     * @param string $fieldname
+     * @param string $data
+     */
+    private function write_user_info($userid, $fieldname, $data) {
+        global $CFG, $DB;
+
+        $sql = "SELECT * from {user_info_field} WHERE " . $DB->sql_compare_text('name') . " = ?";
+        if (!$field = $DB->get_record_sql($sql, ['name' => $fieldname])) {
+            return;
+        }
+        if ($userinfo = $DB->get_record('user_info_data', ['userid' => $userid, 'fieldid' => $field->id])) {
+            $userinfo->data = $data;
+            $DB->update_record('user_info_data', $userinfo);
+        } else {
+            $userinfo = new stdClass();
+            $userinfo->userid = $userid;
+            $userinfo->fieldid = $field->id;
+            $userinfo->data = $data;
+            $userinfo->dataformat = 0;
+            $DB->insert_record('user_info_data', $userinfo);
+        }
+    }
+
+    /**
+     * Get external program data
+     * @param object $user
+     * @return object
+     */
+    public function external_programdata($user) {
+        global $CFG, $DB;
+
+        // stuff we need to translate date
+        $schoolsjson = $this->get_config('schoolsjson');
+        $schools = json_decode($schoolsjson);
+        $ugpg = [
+            'PGT' => 'Postgraduate Taught',
+            'LLL' => 'Lifelong Learning',
+            'UG' => 'Undergraduate',
+            'PGR' => 'Postgraduate Research',
+            'EXTN' => 'External',
+        ];
+        $method = [
+            'F' => 'Full-time',
+            'P' => 'Part-time',
+            'T' => 'Part-time full fee',
+        ];
+        $attendance = [
+            'DIST' => 'Distance',
+            'ENRL' => 'Class enrolment',
+            'ERAO' => 'Erasmus outgoing',
+            'ERIN' => 'Erasmus in',
+            'EXCO' => 'Exchange out',
+            'EXIN' => 'Exchange in',
+            'EXON' => 'Exams only',
+            'LANG' => 'Language year out',
+            'RSCH' => 'Research',
+            'SABB' => 'Sabbatical',
+            'VIST' => 'Visiting',
+            'WRKP' => 'Work replacement',
+        ];
+
+        // if no idnumber then we can't help
+        if (!$user->idnumber) {
+            return false;
+        }
+
+        // Get connection details.
+        $table = $this->get_config('programtable');   
+        if (!$table) {
+            return false;
+        }
+
+        // Connect to external db.
+        if (!$extdb = $this->db_init()) {
+            $this->error('Error while communicating with external enrolment database');
+            return false;
+        }
+
+        // Get data
+        $sql = "select * from $table where stdnt_nbr = '" . $this->db_addslashes($user->idnumber) . "'";
+        $data = array();
+        if ($rs = $extdb->Execute($sql)) {
+            while (!$rs->EOF) {
+                $row = $rs->FetchRow();
+                $data[] = (object)$row;
+            }
+            $rs->Close();
+        }
+        if (count($data) == 0) {
+            return false;
+        }
+
+        // Horrid bodge
+        $data = reset($data);
+
+        // Munge bits of data
+        $this->write_user_info($user->id, 'program', $data->prog_descr);
+        $this->write_user_info($user->id, 'year', $data->crrnt_yr_of_crse);
+        $this->write_user_info($user->id, 'costcode', $data->school);
+        if ($school = array_column($schools, null, 'costcode')[$data->school] ?? false) {
+            $this->write_user_info($user->id, 'school', $school->school);
+        } else {
+            $this->write_user_info($user->id, 'school', $data->school);
+        }
+        if (!empty($ugpg[$data->ug_pg_ind])) {
+            $this->write_user_info($user->id, 'ugpg', $ugpg[$data->ug_pg_ind]);
+        } else {
+            $this->write_user_info($user->id, 'ugpg', $data->ug_pg_ind);
+        }
+        if (!empty($method[$data->mthd_study_cd])) {
+            $this->write_user_info($user->id, 'method', $method[$data->mthd_study_cd]);
+        } else {
+            $this->write_user_info($user->id, 'method', $data->mthd_study_cd);
+        }
+        if (!empty($attendance[$data->attndnc_stts_cd])) {
+            $this->write_user_info($user->id, 'attendance', $attendance[$data->attndnc_stts_cd]);
+        } else {
+            $this->write_user_info($user->id, 'attendance', $data->attndnc_stts_cd);
+        }
+        $this->write_user_info($user->id, 'finalyear', $data->final_yr_flag);
+
+        $extdb->Close();
+    }
+
+    /**
      * get course information from
      * external database by user
      * @param string $user user object
@@ -522,6 +649,8 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         return $courses;
     }
 
+
+
     /**
      * Creates a bare-bones user record
      * Copied (and modified) from moodlelib.php
@@ -536,18 +665,15 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         // Just in case check text case.
         $username = trim(core_text::strtolower($username));
 
-        // We will be using 'guid' ldap plugin only.
-        $authplugin = get_auth_plugin('guid');
-
         // Build up new user object.
         $newuser = new stdClass();
 
-        // Get user info from guid auth plugin.
-        if ($newinfo = $authplugin->get_userinfo($username, $matricid)) {
+        // Get user info from ldap (as Moodle fields)
+        if ($newinfo = \local_guldap\api::find_user($username, $matricid)) {
+
+            // Truncate any fields in the object which are too long for the DB.
             $newinfo = truncate_userinfo($newinfo);
-            foreach ($newinfo as $key => $value) {
-                $newuser->$key = $value;
-            }
+            $newuser = (object)$newinfo;
         } else {
 
             // We didn't find the user in LDAP so there's not much else we can do.
@@ -589,7 +715,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         }
 
         // Basic settings.
-        $newuser->auth = 'guid';
+        $newuser->auth = $this->get_config('newuserauth');
         $newuser->username = $username;
         $newuser->confirmed = 1;
         $newuser->lastip = getremoteaddr();
@@ -914,6 +1040,9 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
 
             // Cache enrolment.
             $this->cache_user_enrolment( $course, $user, $enrolment->courses );
+
+            // Get Program data for user
+            $this->external_programdata($user);
         }
 
         // If required unenrol remaining users.
@@ -1267,10 +1396,13 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
                     }
 
                     // Get enrolments.
+                    // Multiple IDNumbers are possible. Just enrol all of them
                     $enrolments = $this->external_enrolments(array($code));
                     foreach ($enrolments as $enrolment) {
-                        if ($user = $DB->get_record('user', array('idnumber' => $enrolment->matric_no))) {
-                            groups_add_member($group, $user);
+                        if ($users = $DB->get_records('user', ['idnumber' => $enrolment->matric_no, 'deleted' => 0])) {
+                            foreach ($users as $user) {
+                                groups_add_member($group, $user);
+                            }
                         }
                     }
                 }
@@ -1312,7 +1444,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
 
                             // Remove group members no longer in classgroup.
                             // There MUST be an end date
-                            $enrolguard = $config->enrolguard;
+                            $unenrolguard = $config->unenrolguard;
                             if (!empty($instance->customint5) && $this->get_config('allowunenrol') && !empty($course->enddate)) {
                                 if ($members = $DB->get_records('groups_members', array('groupid' => $groupid))) {
                                     foreach ($members as $member) {
@@ -1371,8 +1503,8 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
                 }
 
                 // Code is not in use so find associated groups.
-                $sql = "select distinct groupid from {enrol_gudatabase_groups} where substring_index(originalname, ' ', 1) = :code";
-                if ($groupids = $DB->get_records_sql($sql, ['code' => $code])) {
+                $sql = "select distinct groupid from {enrol_gudatabase_groups} where substring_index(originalname, ' ', 1) = :code and courseid=:courseid";
+                if ($groupids = $DB->get_records_sql($sql, ['code' => $code, 'courseid' => $course->id])) {
                     foreach ($groupids as $groupid => $morejunk) {
                         groups_delete_group($groupid);
                         $DB->delete_records('enrol_gudatabase_groups', ['groupid' => $groupid]);
@@ -1573,6 +1705,9 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
                 }
             }
         }
+
+        // Add program data
+        $this->external_programdata($user);
 
         return true;
     }

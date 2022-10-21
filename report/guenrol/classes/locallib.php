@@ -25,8 +25,6 @@ namespace report_guenrol;
 
 defined('MOODLE_INTERNAL') || die;
 
-require_once($CFG->dirroot . '/local/gusync/lib.php');
-
 class locallib {
 
     protected $courseid;
@@ -289,9 +287,6 @@ class locallib {
         }
         \cache_helper::invalidate_by_definition('core', 'groupdata', array(), array($course->id));
 
-        // Export enrolments to 'Sharepoint' database.
-        mtrace(get_string('syncexport', 'enrol_gudatabase'));
-        local_gusync_sync_one($course->id);
         echo "</pre>";
         echo $output->continue_button(new \moodle_url('/report/guenrol/index.php', ['id' => $course->id]));
     }

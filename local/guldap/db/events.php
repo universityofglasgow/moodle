@@ -15,23 +15,18 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * GUID Enrolment sync
+ * UofG LDAP / login operations
  *
- * @package    local_gusync
- * @copyright  2017 Howard miller
+ * @package    local_guladp
+ * @copyright  2022 Howard miller
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die;
 
-$tasks = array(
-    array(
-        'classname' => 'local_gusync\task\sync',
-        'blocking' => 0,
-        'minute' => '*',
-        'hour' => '*',
-        'day' => '*',
-        'dayofweek' => '*',
-        'month' => '*'
-    )
-);
+$observers = [
+    [
+        'eventname' => '\core\event\user_loggedin',
+        'callback' => 'local_guldap\observer::user_loggedin',
+    ],
+];
