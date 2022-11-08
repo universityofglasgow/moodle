@@ -6,7 +6,7 @@
     
     $footerLinks['Moodle Mobile App'] = tool_mobile_create_app_download_url();
     
-    $footerLinks['Moodle Inspector'] = 'https://moodleinspector.gla.ac.uk';
+    //$footerLinks['Moodle Inspector'] = 'https://moodleinspector.gla.ac.uk';
     
     $footerLinks['Accessibility'] = 'https://www.gla.ac.uk/legal/accessibility/statements/moodle';
     
