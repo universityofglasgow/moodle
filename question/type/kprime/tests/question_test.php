@@ -27,7 +27,10 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace qtype_kprime;
+
 defined('MOODLE_INTERNAL') || die();
+
 global $CFG;
 require_once($CFG->dirroot . '/question/engine/tests/helpers.php');
 
@@ -38,23 +41,22 @@ require_once($CFG->dirroot . '/question/engine/tests/helpers.php');
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @group       qtype_kprime
  */
-class qtype_kprime_question_test extends advanced_testcase {
+class question_test extends \advanced_testcase {
 
     /**
      * Makes a qtype_sc question.
      * @return qtype_kprime
      */
     public function make_a_kprime_question() {
-        question_bank::load_question_definition_classes('kprime');
-        $kprime = new qtype_kprime_question();
-        test_question_maker::initialise_a_question($kprime);
+        \question_bank::load_question_definition_classes('kprime');
+        $kprime = new \qtype_kprime_question();
+        \test_question_maker::initialise_a_question($kprime);
         $kprime->name = 'Kprime Question';
-        $kprime->idnumber = 1;
         $kprime->questiontext = 'the right choices are option 1 and option 2';
         $kprime->generalfeedback = 'You should do this and that';
-        $kprime->qtype = question_bank::get_qtype('kprime');
+        $kprime->qtype = \question_bank::get_qtype('kprime');
         $kprime->status = \core_question\local\bank\question_version_status::QUESTION_STATUS_READY;
-        $kprime->options = new stdClass();
+        $kprime->options = new \stdClass();
         $kprime->shuffleanswers = 0;
         $kprime->answernumbering = 'abc';
         $kprime->scoringmethod = "subpoints";
@@ -140,6 +142,8 @@ class qtype_kprime_question_test extends advanced_testcase {
 
     /**
      * Test get_expected_data
+     *
+     * @covers ::get_expected_data
      */
     public function test_get_expected_data() {
         $question = $this->make_a_kprime_question();
@@ -150,6 +154,8 @@ class qtype_kprime_question_test extends advanced_testcase {
 
     /**
      * Test is_complete_response
+     *
+     * @covers ::is_complete_response
      */
     public function test_is_complete_response() {
         $question = $this->make_a_kprime_question();
@@ -168,6 +174,8 @@ class qtype_kprime_question_test extends advanced_testcase {
 
     /**
      * Test is_gradable_response
+     *
+     * @covers ::is_gradable_response
      */
     public function test_is_gradable_response() {
         $question = $this->make_a_kprime_question();
@@ -208,20 +216,25 @@ class qtype_kprime_question_test extends advanced_testcase {
 
     /**
      * Test get_order
+     *
+     * @covers ::get_order
      */
     public function test_get_order() {
         $question = $this->make_a_kprime_question();
         $question->shuffleanswers = 1;
-        $question->start_attempt(new question_attempt_step(), 1);
-        $this->assertEquals( $question->order, $question->get_order(test_question_maker::get_a_qa($question)));
+        $question->start_attempt(new \question_attempt_step(), 1);
+        $this->assertEquals( $question->order, $question->get_order(\test_question_maker::get_a_qa($question)));
         unset($question);
         $question = $this->make_a_kprime_question();
-        $question->start_attempt(new question_attempt_step(), 1);
-        $this->assertEquals( array(0 => 1, 1 => 2, 2 => 3, 3 => 4), $question->get_order(test_question_maker::get_a_qa($question)));
+        $question->start_attempt(new \question_attempt_step(), 1);
+        $this->assertEquals( array(0 => 1, 1 => 2, 2 => 3, 3 => 4),
+            $question->get_order(\test_question_maker::get_a_qa($question)));
     }
 
     /**
      * Test is_correct
+     *
+     * @covers ::is_correct
      */
     public function test_is_correct() {
         $question = $this->make_a_kprime_question();
@@ -237,10 +250,12 @@ class qtype_kprime_question_test extends advanced_testcase {
 
     /**
      * Test is_same_response
+     *
+     * @covers ::is_same_response
      */
     public function test_is_same_response() {
         $question = $this->make_a_kprime_question();
-        $question->start_attempt(new question_attempt_step(), 1);
+        $question->start_attempt(new \question_attempt_step(), 1);
         $this->assertTrue($question->is_same_response(
             array(),
             array()));
@@ -272,46 +287,54 @@ class qtype_kprime_question_test extends advanced_testcase {
 
     /**
      * Test grading
+     *
+     * @covers ::get_correct_response
      */
     public function test_grading() {
         $question = $this->make_a_kprime_question();
-        $question->start_attempt(new question_attempt_step(), 1);
+        $question->start_attempt(new \question_attempt_step(), 1);
         $this->assertEquals(array('option0' => '1', 'option1' => '1', 'option2' => '2', 'option3' => '2'),
         $question->get_correct_response());
     }
 
     /**
      * Test summarise_response
+     *
+     * @covers ::summarise_response
      */
     public function test_summarise_response() {
         $question = $this->make_a_kprime_question();
-        $question->start_attempt(new question_attempt_step(), 1);
+        $question->start_attempt(new \question_attempt_step(), 1);
         $summary = $question->summarise_response(array('option0' => '1', 'option1' => '1', 'option2' => '2', 'option3' => '2'),
-        test_question_maker::get_a_qa($question));
+        \test_question_maker::get_a_qa($question));
         $this->assertEquals('option text 1: True; option text 2: True; option text 3: False; option text 4: False', $summary);
     }
 
     /**
      * Test classify_response
+     *
+     * @covers ::classify_response
      */
     public function test_classify_response() {
         $question = $this->make_a_kprime_question();
-        $question->start_attempt(new question_attempt_step(), 1);
+        $question->start_attempt(new \question_attempt_step(), 1);
 
-        $this->assertEquals(array('1' => new question_classified_response(1, 'True', 0.25),
-            '2' => new question_classified_response(1, 'True', 0.25),
-            '3' => new question_classified_response(2, 'False', 0.25),
-            '4' => new question_classified_response(2, 'False', 0.25)),
+        $this->assertEquals(array('1' => new \question_classified_response(1, 'True', 0.25),
+            '2' => new \question_classified_response(1, 'True', 0.25),
+            '3' => new \question_classified_response(2, 'False', 0.25),
+            '4' => new \question_classified_response(2, 'False', 0.25)),
             $question->classify_response(array('option0' => '1', 'option1' => '1', 'option2' => '2', 'option3' => '2')));
-        $this->assertEquals(array('1' => question_classified_response::no_response(),
-            '2' => question_classified_response::no_response(),
-            '3' => question_classified_response::no_response(),
-            '4' => question_classified_response::no_response()),
+        $this->assertEquals(array('1' => \question_classified_response::no_response(),
+            '2' => \question_classified_response::no_response(),
+            '3' => \question_classified_response::no_response(),
+            '4' => \question_classified_response::no_response()),
             $question->classify_response(array()));
     }
 
     /**
      * Test make_html_inline
+     *
+     * @covers ::make_html_inline
      */
     public function test_make_html_inline() {
         $question = $this->make_a_kprime_question();
@@ -327,20 +350,24 @@ class qtype_kprime_question_test extends advanced_testcase {
 
     /**
      * Test get_hint
+     *
+     * @covers ::get_hint
      */
     public function test_get_hint() {
         $question = $this->make_a_kprime_question();
-        $question->start_attempt(new question_attempt_step(), 1);
-        $this->assertEquals('Hint 1', $question->get_hint(0, test_question_maker::get_a_qa($question))->hint);
-        $this->assertEquals('Hint 2', $question->get_hint(1, test_question_maker::get_a_qa($question))->hint);
+        $question->start_attempt(new \question_attempt_step(), 1);
+        $this->assertEquals('Hint 1', $question->get_hint(0, \test_question_maker::get_a_qa($question))->hint);
+        $this->assertEquals('Hint 2', $question->get_hint(1, \test_question_maker::get_a_qa($question))->hint);
     }
 
     /**
      * Test compute_final_grade (subpoints)
+     *
+     * @covers ::compute_final_grade
      */
     public function test_compute_final_grade_subpoints() {
         $question = $this->make_a_kprime_question();
-        $question->start_attempt(new question_attempt_step(), 1);
+        $question->start_attempt(new \question_attempt_step(), 1);
         $this->assertEquals('1.0', $question->compute_final_grade(array(
             0 => array('option0' => '1', 'option1' => '1', 'option2' => '2', 'option3' => '2')),
             1));
@@ -370,11 +397,13 @@ class qtype_kprime_question_test extends advanced_testcase {
 
     /**
      * Test compute_final_grade (kprime)
+     *
+     * @covers ::compute_final_grade
      */
     public function test_compute_final_grade_kprime() {
         $question = $this->make_a_kprime_question();
         $question->scoringmethod = 'kprime';
-        $question->start_attempt(new question_attempt_step(), 1);
+        $question->start_attempt(new \question_attempt_step(), 1);
         $this->assertEquals('1.0', $question->compute_final_grade(array(
             0 => array('option0' => '1', 'option1' => '1', 'option2' => '2', 'option3' => '2')),
             1));
@@ -428,11 +457,13 @@ class qtype_kprime_question_test extends advanced_testcase {
 
     /**
      * Test compute_final_grade (kprimeonezero)
+     *
+     * @covers ::compute_final_grade
      */
     public function test_compute_final_grade_kprimeonezero() {
         $question = $this->make_a_kprime_question();
         $question->scoringmethod = 'kprimeonezero';
-        $question->start_attempt(new question_attempt_step(), 1);
+        $question->start_attempt(new \question_attempt_step(), 1);
         $this->assertEquals('1.0', $question->compute_final_grade(array(
             0 => array('option0' => '1', 'option1' => '1', 'option2' => '2', 'option3' => '2')),
             1));
@@ -462,10 +493,12 @@ class qtype_kprime_question_test extends advanced_testcase {
 
     /**
      * Test grade_response (subpoints)
+     *
+     * @covers ::grade_response
      */
     public function test_grade_response_subpoints() {
         $question = $this->make_a_kprime_question();
-        $question->start_attempt(new question_attempt_step(), 1);
+        $question->start_attempt(new \question_attempt_step(), 1);
         $this->assertEquals(
             "1.0", $question->grade_response(array('option0' => '1', 'option1' => '1', 'option2' => '2', 'option3' => '2'))[0]);
         $this->assertEquals(
@@ -478,11 +511,13 @@ class qtype_kprime_question_test extends advanced_testcase {
 
     /**
      * Test grade_response (kprime)
+     *
+     * @covers ::grade_response
      */
     public function test_grade_response_kprime() {
         $question = $this->make_a_kprime_question();
         $question->scoringmethod = 'kprime';
-        $question->start_attempt(new question_attempt_step(), 1);
+        $question->start_attempt(new \question_attempt_step(), 1);
         $this->assertEquals(
             "1.0", $question->grade_response(array('option0' => '1', 'option1' => '1', 'option2' => '2', 'option3' => '2'))[0]);
         $this->assertEquals(
@@ -497,11 +532,13 @@ class qtype_kprime_question_test extends advanced_testcase {
 
     /**
      * Test grade_response (kprimeonezero)
+     *
+     * @covers ::grade_response
      */
     public function test_grade_response_kprimeonezero() {
         $question = $this->make_a_kprime_question();
         $question->scoringmethod = 'kprimeonezero';
-        $question->start_attempt(new question_attempt_step(), 1);
+        $question->start_attempt(new \question_attempt_step(), 1);
         $this->assertEquals(
             "1.0", $question->grade_response(array('option0' => '1', 'option1' => '1', 'option2' => '2', 'option3' => '2'))[0]);
         $this->assertEquals(

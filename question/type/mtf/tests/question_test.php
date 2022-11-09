@@ -48,6 +48,7 @@ class qtype_mtf_question_test extends advanced_testcase {
         test_question_maker::initialise_a_question($mtf);
         $mtf->name = "MTF Question";
         $mtf->idnumber = 1;
+        $mtf->status = \core_question\local\bank\question_version_status::QUESTION_STATUS_READY;
         $mtf->questiontext = 'the right choices are option 1 and option 2';
         $mtf->generalfeedback = 'You should do this and that';
         $mtf->qtype = question_bank::get_qtype('mtf');

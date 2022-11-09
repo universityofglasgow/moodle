@@ -16,8 +16,8 @@ Feature: Step 5
       | student1 | c1     | student        |
       | student2 | c1     | student        |
     And the following "activities" exist:
-      | activity | name   | intro              | course | idnumber |
-      | quiz     | Quiz 1 | Quiz 1 for testing | c1     | quiz1    |
+      | activity | name   | intro              | course |
+      | quiz     | Quiz 1 | Quiz 1 for testing | c1     |
     And the following "question categories" exist:
       | contextlevel | reference | name           |
       | Course       | c1        | Default for c1 |
@@ -27,8 +27,9 @@ Feature: Step 5
     And quiz "Quiz 1" contains the following questions:
       | question       | page |
       | MTF Question 2 | 1    |
+    And I change window size to "large"
 
-  @javascript
+  @javascript @qtype_mtf_scenario_22
   Scenario: Testcase 22
   # Check manual grading override
 
@@ -36,7 +37,7 @@ Feature: Step 5
     When I log in as "student1"
     And I am on "Course 1" course homepage
     And I follow "Quiz 1"
-    And I press "Attempt quiz now"
+    And I press "Attempt quiz"
     And I click on ".qtype_mtf_row:contains('option text 1') input[value=1]" "css_element"
     And I click on ".qtype_mtf_row:contains('option text 2') input[value=1]" "css_element"
     And I click on ".qtype_mtf_row:contains('option text 3') input[value=1]" "css_element"
@@ -54,7 +55,7 @@ Feature: Step 5
     When I log in as "student2"
     And I am on "Course 1" course homepage
     And I follow "Quiz 1"
-    And I press "Attempt quiz now"
+    And I press "Attempt quiz"
     And I click on ".qtype_mtf_row:contains('option text 1') input[value=1]" "css_element"
     And I click on ".qtype_mtf_row:contains('option text 2') input[value=1]" "css_element"
     And I click on ".qtype_mtf_row:contains('option text 3') input[value=1]" "css_element"
@@ -73,7 +74,9 @@ Feature: Step 5
     When I log in as "teacher1"
     And I am on "Course 1" course homepage
     And I follow "Quiz 1"
-    And I navigate to "Manual grading" in current page administration
+    And I navigate to "Results" in current page administration
+    And I click on "Grades" "option"
+    And I click on "Manual grading" "option"
     Then I should see "Nothing to display"
     When I click on "Also show questions that have been graded automatically" "link"
     And I click on "grade all" "link"
@@ -91,7 +94,7 @@ Feature: Step 5
     Then "tr[class='gradedattempt']:contains('66.00')" "css_element" should exist
     And "tr[class='gradedattempt']:contains('33.00')" "css_element" should exist
 
-  @javascript @_switch_window
+  @javascript @_switch_window @qtype_mtf_scenario_22_23
   Scenario: Testcase 22, 23
   # Change scoringmethod after test has been submitted
   # Check grades. Manual applied grades should not be overwritten
@@ -100,7 +103,7 @@ Feature: Step 5
     When I log in as "student1"
     And I am on "Course 1" course homepage
     And I follow "Quiz 1"
-    And I press "Attempt quiz now"
+    And I press "Attempt quiz"
     And I click on ".qtype_mtf_row:contains('option text 1') input[value=1]" "css_element"
     And I click on ".qtype_mtf_row:contains('option text 2') input[value=1]" "css_element"
     And I click on ".qtype_mtf_row:contains('option text 3') input[value=1]" "css_element"
@@ -118,7 +121,7 @@ Feature: Step 5
     When I log in as "student2"
     And I am on "Course 1" course homepage
     And I follow "Quiz 1"
-    And I press "Attempt quiz now"
+    And I press "Attempt quiz"
     And I click on ".qtype_mtf_row:contains('option text 1') input[value=1]" "css_element"
     And I click on ".qtype_mtf_row:contains('option text 2') input[value=1]" "css_element"
     And I click on ".qtype_mtf_row:contains('option text 3') input[value=1]" "css_element"
@@ -136,15 +139,17 @@ Feature: Step 5
     When I log in as "teacher1"
     And I am on "Course 1" course homepage
     And I follow "Quiz 1"
-    And I navigate to "Responses" in current page administration
+    And I navigate to "Results" in current page administration
     And I click on "tr:contains('student1@moodle.com') a:contains('Review attempt')" "css_element"
     And I click on "Make comment or override mark" "link"
     And I switch to "commentquestion" window
     And I set the field "Mark" to "0.86"
-    And I press "Save" and switch to main window
+    And I press "Save"
+    And I switch to the main window
 
   # Set Scoring Method to MTF1/0
-    And I navigate to "Edit quiz" in current page administration
+    And I follow "Quiz 1"
+    And I navigate to "Questions" in current page administration
     And I click on "Edit question MTF Question 2" "link" in the "MTF Question 2" "list_item"
     And I click on "Scoring method" "link"
     And I click on "id_scoringmethod_mtfonezero" "radio"
@@ -161,7 +166,7 @@ Feature: Step 5
     Then ".gradedattempt:contains('student1@moodle.com'):contains('86.00')" "css_element" should exist
     And ".gradedattempt:contains('student2@moodle.com'):contains('0.00')" "css_element" should exist
 
-  @javascript @_switch_window
+  @javascript @_switch_window @qtype_mtf_5_sc_22
   Scenario: Testcase 22
   # Change correct answer after test has been submitted.
   # Regrade the test and check the results
@@ -170,7 +175,7 @@ Feature: Step 5
     When I log in as "student1"
     And I am on "Course 1" course homepage
     And I follow "Quiz 1"
-    And I press "Attempt quiz now"
+    And I press "Attempt quiz"
     And I click on ".qtype_mtf_row:contains('option text 1') input[value=1]" "css_element"
     And I click on ".qtype_mtf_row:contains('option text 2') input[value=1]" "css_element"
     And I click on ".qtype_mtf_row:contains('option text 3') input[value=1]" "css_element"
@@ -188,7 +193,7 @@ Feature: Step 5
     When I log in as "student2"
     And I am on "Course 1" course homepage
     And I follow "Quiz 1"
-    And I press "Attempt quiz now"
+    And I press "Attempt quiz"
     And I click on ".qtype_mtf_row:contains('option text 1') input[value=1]" "css_element"
     And I click on ".qtype_mtf_row:contains('option text 2') input[value=1]" "css_element"
     And I click on ".qtype_mtf_row:contains('option text 3') input[value=1]" "css_element"
@@ -206,7 +211,7 @@ Feature: Step 5
     When I log in as "teacher1"
     And I am on "Course 1" course homepage
     And I follow "Quiz 1"
-    And I navigate to "Edit quiz" in current page administration
+    And I navigate to "Questions" in current page administration
     And I click on "Edit question MTF Question 2" "link" in the "MTF Question 2" "list_item"
     And I set the following fields to these values:
       | id_weightbutton_0_1 | checked |

@@ -16,7 +16,7 @@
  *
  * Main library.
  *
- * @package   filter_ally
+ * @package
  * @author    Guy Thomas
  * @copyright Copyright (c) 2016 Open LMS
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -36,7 +36,7 @@ function($, Templates, Strings, Ally, ImageCover, Util) {
 
         /**
          * Get nodes by xpath.
-         * @param xpath
+         * @param {string} xpath
          * @returns {Array}
          */
         var getNodesByXpath = function(xpath) {
@@ -52,7 +52,7 @@ function($, Templates, Strings, Ally, ImageCover, Util) {
 
         /**
          * Get single node by xpath.
-         * @param xpath
+         * @param {string} xpath
          * @returns {Node}
          */
         var getNodeByXpath = function(xpath) {
@@ -63,6 +63,9 @@ function($, Templates, Strings, Ally, ImageCover, Util) {
 
         /**
          * Render template and insert result in appropriate place.
+         * @param {object} data
+         * @param {string} pathHash
+         * @param {node} targetEl
          * @return {promise}
          */
         var renderTemplate = function(data, pathHash, targetEl) {
@@ -186,7 +189,7 @@ function($, Templates, Strings, Ally, ImageCover, Util) {
 
         /**
          * Add place holders for forum module image attachments (note, regular files are covered by php).
-         * @param {array}
+         * @param {array} forumFileMapping
          * @return {promise}
          */
         var placeHoldForumModule = function(forumFileMapping) {
@@ -201,7 +204,7 @@ function($, Templates, Strings, Ally, ImageCover, Util) {
 
         /**
          * Add place holders for assign module additional files.
-         * @param {array}
+         * @param {array} assignFileMapping
          * @return {promise}
          */
         var placeHoldAssignModule = function(assignFileMapping) {
@@ -218,7 +221,7 @@ function($, Templates, Strings, Ally, ImageCover, Util) {
 
         /**
          * Add place holders for folder module files.
-         * @param {array}
+         * @param {array} folderFileMapping
          * @return {promise}
          */
         var placeHoldFolderModule = function(folderFileMapping) {
@@ -238,7 +241,7 @@ function($, Templates, Strings, Ally, ImageCover, Util) {
 
         /**
          * Add place holders for glossary module files.
-         * @param {array}
+         * @param {array} glossaryFileMapping
          * @return {promise}
          */
         var placeHoldGlossaryModule = function(glossaryFileMapping) {
@@ -267,7 +270,7 @@ function($, Templates, Strings, Ally, ImageCover, Util) {
 
         /**
          * Encode a file path so that it can be used to find things by uri.
-         * @param filePath
+         * @param {string} filePath
          * @returns {string}
          */
         var urlEncodeFilePath = function(filePath) {
@@ -281,8 +284,8 @@ function($, Templates, Strings, Ally, ImageCover, Util) {
 
         /**
          * General function for finding lesson component file elements and then add mapping.
-         * @param array map
-         * @param string selectorPrefix
+         * @param {array} map
+         * @param {string} selectorPrefix
          * @return promise
          */
         var placeHoldLessonGeneral = function(map, selectorPrefix) {
@@ -303,7 +306,7 @@ function($, Templates, Strings, Ally, ImageCover, Util) {
 
         /**
          * Placehold lesson page contents.
-         * @param array pageContentsMap
+         * @param {array} pageContentsMap
          * @returns promise
          */
         var placeHoldLessonPageContents = function(pageContentsMap) {
@@ -312,7 +315,7 @@ function($, Templates, Strings, Ally, ImageCover, Util) {
 
         /**
          * Placehold lesson answers.
-         * @param array pageContentsMap
+         * @param {array} pageAnswersMap
          * @returns promise
          */
         var placeHoldLessonAnswersContent = function(pageAnswersMap) {
@@ -322,7 +325,7 @@ function($, Templates, Strings, Ally, ImageCover, Util) {
 
         /**
          * Placehold lesson responses.
-         * @param array pageResponsesMap
+         * @param {array} pageResponsesMap
          * @returns promise
          */
         var placeHoldLessonResponsesContent = function(pageResponsesMap) {
@@ -332,7 +335,7 @@ function($, Templates, Strings, Ally, ImageCover, Util) {
 
         /**
          * Add place holders for lesson module files.
-         * @param {array}
+         * @param {array} lessonFileMapping
          * @return {promise}
          */
         var placeHoldLessonModule = function(lessonFileMapping) {
@@ -357,7 +360,7 @@ function($, Templates, Strings, Ally, ImageCover, Util) {
 
         /**
          * Add place holders for resource module.
-         * @param moduleFileMapping
+         * @param {object} moduleFileMapping
          * @return {promise}
          */
         var placeHoldResourceModule = function(moduleFileMapping) {
@@ -374,14 +377,17 @@ function($, Templates, Strings, Ally, ImageCover, Util) {
                     dfd.resolve();
                 }
             };
-
             for (var moduleId in moduleFileMapping) {
                 var pathHash = moduleFileMapping[moduleId]['content'];
-                if ($('body').hasClass('theme-snap')) {
+                if ($('body').hasClass('theme-snap') && !$('body').hasClass('format-tiles')) {
                     var moduleEl = $('#module-' + moduleId + ':not(.snap-native) .activityinstance ' +
-                        '.snap-asset-link a:first-of-type');
+                        '.snap-asset-link a:first-of-type:not(.clickable-region)');
+                } else if ($('body').hasClass('format-tiles')) {
+                    var moduleEl = $('#module-' + moduleId + ' .activityinstance ' +
+                        'a:first-of-type:not(.clickable-region,.editing_move)');
                 } else {
-                    var moduleEl = $('#module-' + moduleId + ' .activityinstance a:first-of-type');
+                    var moduleEl = $('#module-' + moduleId + ' .activity-instance ' +
+                        'a:first-of-type:not(.clickable-region,.editing_move)');
                 }
                 var processed = moduleEl.find('.filter-ally-wrapper');
                 if (processed.length > 0) {
@@ -405,6 +411,7 @@ function($, Templates, Strings, Ally, ImageCover, Util) {
 
         /**
          * Add annotations to sections content.
+         * @param {array} sectionMapping
          */
         var annotateSections = function(sectionMapping) {
             var dfd = $.Deferred();
@@ -427,9 +434,9 @@ function($, Templates, Strings, Ally, ImageCover, Util) {
 
         /**
          * Annotate module introductions.
-         * @param array introMapping
-         * @param string
-         * @param array additionalSelectors
+         * @param {array} introMapping
+         * @param {string} module
+         * @param {array} additionalSelectors
          */
         var annotateModuleIntros = function(introMapping, module, additionalSelectors) {
             for (var i in introMapping) {
@@ -451,10 +458,9 @@ function($, Templates, Strings, Ally, ImageCover, Util) {
 
         /**
          * Add annotations to forums.
-         * @param array forumMapping.
+         * @param {array} forumMapping
          */
         var annotateForums = function(forumMapping) {
-
             // Annotate introductions.
             var intros = forumMapping['intros'];
             annotateModuleIntros(intros, 'forum');
@@ -464,17 +470,17 @@ function($, Templates, Strings, Ally, ImageCover, Util) {
             for (var d in discussions) {
                 var post = 'p' + d;
                 var annotation = discussions[d];
-                var postSelector = "#page-mod-forum-discuss a#" + post +
-                    ' + div.firstpost div.posting.fullpost';
-                var contentSelector = postSelector + ' > *:not(.attachedimages):not([data-ally-richcontent])';
-                $(postSelector).prepend("<div data-ally-richcontent='" + annotation + "'></div>");
-                $(contentSelector).detach().appendTo(postSelector + ' > div[data-ally-richcontent]');
+                var selectors = [
+                    "#page-mod-forum-discuss #" + post +
+                    ' div.forumpost div.no-overflow'
+                ];
+                $(selectors.join(',')).attr('data-ally-richcontent', annotation);
             }
         };
 
         /**
          * Add annotations to Open Forums.
-         * @param array forumMapping
+         * @param {array} forumMapping
          */
         var annotateMRForums = function(forumMapping) {
 
@@ -492,7 +498,7 @@ function($, Templates, Strings, Ally, ImageCover, Util) {
 
         /**
          * Add annotations to glossary.
-         * @param array mapping
+         * @param {array} mapping
          */
         var annotateGlossary = function(mapping) {
             // Annotate introductions.
@@ -511,7 +517,7 @@ function($, Templates, Strings, Ally, ImageCover, Util) {
 
         /**
          * Add annotations to page.
-         * @param array mapping
+         * @param {array} mapping
          */
         var annotatePage = function(mapping) {
             var intros = mapping['intros'];
@@ -565,7 +571,7 @@ function($, Templates, Strings, Ally, ImageCover, Util) {
 
         /**
          * Add annotations to lesson.
-         * @param array mapping
+         * @param {array} mapping
          */
         var annotateLesson = function(mapping) {
             var intros = mapping['intros'];
@@ -695,7 +701,7 @@ function($, Templates, Strings, Ally, ImageCover, Util) {
 
         /**
          * Annotate supported modules
-         * @param moduleMapping
+         * @param {array} moduleMapping
          */
         var annotateModules = function(moduleMapping) {
             var dfd = $.Deferred();
@@ -723,7 +729,7 @@ function($, Templates, Strings, Ally, ImageCover, Util) {
 
         /**
          * Annotates course summary if found on footer.
-         * @param mapping
+         * @param {object} mapping
          */
         var annotateSnapCourseSummary = function(mapping) {
             var dfd = $.Deferred();
@@ -738,7 +744,7 @@ function($, Templates, Strings, Ally, ImageCover, Util) {
 
         /**
          * Annotate html block.
-         * @param mapping
+         * @param {object} mapping
          */
         var annotateHtmlBlock = function(mapping) {
             var dfd = $.Deferred();
@@ -845,7 +851,7 @@ function($, Templates, Strings, Ally, ImageCover, Util) {
 
         /**
          * Initialise JS stage two.
-         * @param jwt
+         * @param {string} jwt
          * @param {object} config
          */
         this.initStageTwo = function(jwt, config) {
@@ -888,12 +894,12 @@ function($, Templates, Strings, Ally, ImageCover, Util) {
 
         /**
          * Init function.
-         * @param jwt
+         * @param {string} jwt
          * @param {object} config
          * @param {boolean} canViewFeedback
          * @param {boolean} canDownload
          * @param {int} courseId
-         * @param {object} general params
+         * @param {object} params
          */
         this.init = function(jwt, config, canViewFeedback, canDownload, courseId, params) {
 

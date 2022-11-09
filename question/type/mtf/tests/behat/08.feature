@@ -23,13 +23,13 @@ Feature: Step 8
       | Default for c1   | mtf   | MTF Question 001 | question_one |
       | Default for c1   | mtf   | MTF Question 002 | question_one |
     And the following "activities" exist:
-      | activity | name   | intro           | course | idnumber |
-      | quiz     | Quiz 1 | This is a  quiz | c1     | quiz1    |
+      | activity | name   | intro           | course |
+      | quiz     | Quiz 1 | This is a  quiz | c1     |
     And quiz "Quiz 1" contains the following questions:
       | MTF Question 001 | 1 |
       | MTF Question 002 | 2 |
 
-  @javascript
+  @javascript @qtype_mtf_scenario_26
   Scenario: Testcase 26
   # Backing up course with already answered quiz.
   # Checking in restore if the quiz has been restored successfully.
@@ -37,9 +37,8 @@ Feature: Step 8
   # Solving the exam as students
   # Student 1 (100% correct)
     Given I log in as "student1"
-    And I am on "Course 1" course homepage
-    And I follow "Quiz 1"
-    And I press "Attempt quiz now"
+    And I am on the "Quiz 1" "quiz activity" page
+    And I press "Attempt quiz"
     And I click on ".qtype_mtf_row:contains('option text 1') input[value=1]" "css_element"
     And I click on ".qtype_mtf_row:contains('option text 2') input[value=2]" "css_element"
     And I press "Next page"
@@ -53,9 +52,8 @@ Feature: Step 8
   # Solving the exam as students
   # Student 1 (50% correct)
     Given I log in as "student2"
-    And I am on "Course 1" course homepage
-    And I follow "Quiz 1"
-    And I press "Attempt quiz now"
+    And I am on the "Quiz 1" "quiz activity" page
+    And I press "Attempt quiz"
     And I click on ".qtype_mtf_row:contains('option text 1') input[value=1]" "css_element"
     And I click on ".qtype_mtf_row:contains('option text 2') input[value=2]" "css_element"
     And I press "Next page"
@@ -66,8 +64,8 @@ Feature: Step 8
     And I click on "Submit all and finish" "button" in the "Confirmation" "dialogue"
     And I log out
 
-  #Backup course including SC question
-    When I log in as "admin"
+  #Backup course including MTF question
+    Given I log in as "admin"
     And I backup "Course 1" course using this options:
       | Confirmation | Filename | test_backup.mbz |
     Then I should see "Restore"
@@ -84,9 +82,11 @@ Feature: Step 8
     And I press "Continue"
     Then I should see "Course 1 copy 1"
 
-  # Take a look at the SC question
-    When I follow "Quiz 1"
-    And I navigate to "Edit quiz" in current page administration
+  # Take a look at the MTF question
+    When I am on "Course 1 copy 1" course homepage
+    And I follow "Quiz 1"
+    # And I am on the "Quiz 1" "quiz activity" page
+    And I navigate to "Questions" in current page administration
     Then I should see "MTF Question 001" on quiz page "1"
     And I should see "MTF Question 002" on quiz page "2"
     When I click on "Edit question MTF Question 001" "link" in the "MTF Question 001" "list_item"
@@ -105,21 +105,18 @@ Feature: Step 8
       | id_hint_1                | This is the 2nd hint        |
 
   # Check Results
-    When I am on "Course 1" course homepage
-    And I follow "Quiz 1"
     And I navigate to "Results" in current page administration
     Then "tr:contains('student1@moodle.com') .c8:contains('100.00')" "css_element" should exist
     And "tr:contains('student2@moodle.com') .c8:contains('50.00')" "css_element" should exist
 
-  @javascript
+  @javascript @qtype_mtf_scenario_26_27_28
   Scenario: Testcase 26, 27, 28
 
   # Solving the exam as students
   # Student 1: 100% correct - Post 75%
     Given I log in as "student1"
-    And I am on "Course 1" course homepage
-    And I follow "Quiz 1"
-    And I press "Attempt quiz now"
+    And I am on the "Quiz 1" "quiz activity" page
+    And I press "Attempt quiz"
     And I click on ".qtype_mtf_row:contains('option text 1') input[value=1]" "css_element"
     And I click on ".qtype_mtf_row:contains('option text 2') input[value=2]" "css_element"
     And I press "Next page"
@@ -133,9 +130,8 @@ Feature: Step 8
   # Solving the exam as students
   # Student 1: 50% correct - Post 75%
     Given I log in as "student2"
-    And I am on "Course 1" course homepage
-    And I follow "Quiz 1"
-    And I press "Attempt quiz now"
+    And I am on the "Quiz 1" "quiz activity" page
+    And I press "Attempt quiz"
     And I click on ".qtype_mtf_row:contains('option text 1') input[value=1]" "css_element"
     And I click on ".qtype_mtf_row:contains('option text 2') input[value=1]" "css_element"
     And I press "Next page"
@@ -148,8 +144,7 @@ Feature: Step 8
 
   # Backup Exam as admin
     Given I log in as "admin"
-    And I am on "Course 1" course homepage
-    And I follow "Quiz 1"
+    And I am on the "Quiz 1" "quiz activity" page
     And I navigate to "Backup" in current page administration
     And I click on "input[id='id_setting_root_grade_histories']" "css_element"
     And I press "Next"
@@ -161,8 +156,9 @@ Feature: Step 8
 
   # Testcase 26, 27, 28
   # change correct answers
-    And I follow "Quiz 1"
-    And I navigate to "Edit quiz" in current page administration
+    # And I follow "Quiz 1"
+    And I am on the "Quiz 1" "quiz activity" page
+    And I navigate to "Questions" in current page administration
     And I click on "Edit question MTF Question 001" "link" in the "MTF Question 001" "list_item"
     And I set the following fields to these values:
       | id_weightbutton_0_1 | checked |
@@ -170,7 +166,8 @@ Feature: Step 8
     And I press "id_submitbutton"
 
   # Regrade first exam
-    And I follow "Quiz 1"
+    # And I follow "Quiz 1"
+    And I am on the "Quiz 1" "quiz activity" page
     And I navigate to "Results" in current page administration
     And I click on "#mod-quiz-report-overview-report-selectall-attempts" "css_element"
     And I press "Regrade selected attempts"
@@ -179,9 +176,8 @@ Feature: Step 8
 
   # Change first exam Question content
     When I log in as "teacher"
-    And I am on "Course 1" course homepage
-    And I follow "Quiz 1"
-    And I navigate to "Edit quiz" in current page administration
+    And I am on the "Quiz 1" "quiz activity" page
+    And I navigate to "Questions" in current page administration
     And I click on "Edit question MTF Question 001" "link" in the "MTF Question 001" "list_item"
     And I set the following fields to these values:
       | id_questiontext | Edited MTF Questiontext |
@@ -190,16 +186,16 @@ Feature: Step 8
 
   # Change quiz title of original quiz
     When I log in as "admin"
-    And I am on "Course 1" course homepage
-    And I follow "Quiz 1"
-    And I navigate to "Edit settings" in current page administration
+    And I am on the "Quiz 1" "quiz activity" page
+    And I navigate to "Settings" in current page administration
     And I set the following fields to these values:
       | id_name | Quiz_original |
     And I press "id_submitbutton"
 
   # Testcase 26, 27, 28
   # 1st Restore
-    When I follow "Quiz_original"
+    # When I follow "Quiz_original"
+    When I am on the "Quiz_original" "quiz activity" page
     And I navigate to "Restore" in current page administration
     And I restore "test_backup.mbz" backup into "Course 1" course using this options:
     Then I should see "Course 1"
@@ -211,35 +207,28 @@ Feature: Step 8
     And I navigate to "Results" in current page administration
     Then "tr:contains('student1@moodle.com') .c8:contains('75.00')" "css_element" should exist
     And "tr:contains('student2@moodle.com') .c8:contains('75.00')" "css_element" should exist
-    When I am on "Course 1" course homepage
-    And I follow "Quiz 1"
+  #  When I am on "Course 1" course homepage
+  #  And I follow "Quiz 1"
     And I navigate to "Results" in current page administration
     Then "tr:contains('student1@moodle.com') .c8:contains('100.00')" "css_element" should exist
     And "tr:contains('student2@moodle.com') .c8:contains('50.00')" "css_element" should exist
-
-  # Check if the altered MTF Question 001 exists twice in the question bank
-    When I am on "Course 1" course homepage
-    And I follow "Quiz_original"
-    And I navigate to "Question bank" in current page administration
-    Then "tr:contains('MTF Question 001') td[class='modifiername']:contains('Admin User')" "css_element" should exist
-    And "tr:contains('MTF Question 001') td[class='modifiername']:contains('T1 teacher')" "css_element" should exist
-    And "tr:contains('MTF Question 002')" "css_element" should exist
+    And I log out
 
   # Change quiz title of restored quiz
-    When I am on "Course 1" course homepage
-    And I turn editing mode on
-    And I open "Quiz 1" actions menu
-    And I click on "Edit settings" "link" in the "Quiz 1" activity
-    Then I should see "Updating: Quiz"
+    When I log in as "teacher"
+    And I am on "Course 1" course homepage
+    And I follow "Quiz 1"
+    And I navigate to "Settings" in current page administration
     And I set the following fields to these values:
       | id_name | Quiz_restored |
-    And I press "id_submitbutton2"
+    And I press "id_submitbutton"
     Then I should see "Quiz_restored"
-    And I turn editing mode off
+    And I log out
 
   # Testcase 26, 27, 28
   # 2nd Restore
-    When I follow "Quiz_original"
+    When I log in as "admin"
+    And I follow "Quiz_original"
     And I navigate to "Restore" in current page administration
     And I restore "test_backup.mbz" backup into "Course 1" course using this options:
     Then I should see "Course 1"
@@ -257,7 +246,7 @@ Feature: Step 8
   # Testcase 26, 27, 28
     When I am on "Course 1" course homepage
     And I follow "Quiz 1"
-    And I navigate to "Edit quiz" in current page administration
+    And I navigate to "Questions" in current page administration
     And I click on "Edit question MTF Question 001" "link" in the "MTF Question 001" "list_item"
     And I set the following fields to these values:
       | id_questiontext | Edited MTF Questiontext |

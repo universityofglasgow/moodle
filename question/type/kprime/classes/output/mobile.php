@@ -29,8 +29,6 @@
 
 namespace qtype_kprime\output;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Mock class for get_content.
  *

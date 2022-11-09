@@ -66,8 +66,6 @@ use mod_lesson\event\page_created;
 use mod_lesson\event\page_updated;
 use mod_lesson\event\page_deleted;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * File processor for Ally.
  * Can be used to process individual or groups of files.
@@ -85,6 +83,7 @@ class event_handlers {
     const API_COURSE_UPDATED = 'course_updated';
     const API_COURSE_DELETED = 'course_deleted';
     const API_COURSE_COPIED = 'course_copied';
+    const API_COURSE_IMPORTED = 'course_imported';
 
     /**
      * @param course_created $event
@@ -142,6 +141,15 @@ class event_handlers {
         if ($mode === backup::MODE_COPY && $target === backup::TARGET_NEW_COURSE && $sourcecourseid) {
             course_processor::push_course_event(
                 self::API_COURSE_COPIED,
+                $event->timecreated,
+                $destcourseid,
+                $sourcecourseid);
+        }
+
+        // Specifically catch course import events.
+        if ($mode === backup::MODE_IMPORT && $sourcecourseid) {
+            course_processor::push_course_event(
+                self::API_COURSE_IMPORTED,
                 $event->timecreated,
                 $destcourseid,
                 $sourcecourseid);

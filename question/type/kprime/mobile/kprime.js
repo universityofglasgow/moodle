@@ -52,7 +52,7 @@ var result = {
         var options = [];
         var divs = answeroptions.querySelectorAll('tr');
 
-        divs.forEach(function(d, i) {
+        divs.forEach(function(d) {
 
             var text = d.querySelector('span.optiontext');
             text = (text !== null) ? text.innerHTML : null;
@@ -63,7 +63,7 @@ var result = {
             var disabled = d.querySelector('input');
             disabled = (disabled !== null) ? (disabled.hasAttribute('disabled') ? true : false) : false;
 
-            var feedback = d.querySelector('div')
+            var feedback = d.querySelector('div');
             feedback = feedback !== null ? feedback.innerHTML : '';
 
             var qclass = d.getAttribute('class');

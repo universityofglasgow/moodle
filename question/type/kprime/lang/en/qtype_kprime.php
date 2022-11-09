@@ -77,3 +77,4 @@ $string['tasktitle'] = 'Task title';
 $string['true'] = 'True';
 $string['optionsandfeedback'] = 'Options and Feedback';
 $string['correctresponse'] = 'Correct Response';
+$string['numberchoicehaschanged'] = 'Number of options has changed. Can not regrade the question attempt.';

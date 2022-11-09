@@ -68,6 +68,7 @@ class qtype_mtf_test extends advanced_testcase {
         $qdata->idnumber = 5;
         $qdata->category = 1;
         $qdata->contextid = 1;
+        $qdata->status = \core_question\local\bank\question_version_status::QUESTION_STATUS_READY;
         $qdata->parent = 0;
         $qdata->createdby = 0;
         $qdata->modifiedby = 0;
@@ -259,7 +260,7 @@ class qtype_mtf_test extends advanced_testcase {
         $actualquestiondata = end($actualquestionsdata);
 
         foreach ($questiondata as $property => $value) {
-            if (!in_array($property, array('id', 'version', 'timemodified', 'timecreated', 'options', 'hints', 'stamp'))) {
+            if (!in_array($property, array('id', 'version', 'timemodified', 'timecreated', 'options', 'hints', 'stamp', 'idnumber', 'hidden'))) {
                 $this->assertEquals($value, $actualquestiondata->$property);
             }
         }

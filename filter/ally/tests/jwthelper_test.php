@@ -13,10 +13,11 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+namespace filter_ally;
 
-defined('MOODLE_INTERNAL') || die();
+use Firebase\JWT\Key;
 
-class filter_ally_jwthelper_testcase extends advanced_testcase {
+class jwthelper_test extends \advanced_testcase {
 
     protected function config_set_ok() {
         set_config('secret', 'WAzk9ohDeK', 'tool_ally');
@@ -47,7 +48,8 @@ class filter_ally_jwthelper_testcase extends advanced_testcase {
         $secret = get_config('tool_ally', 'secret');
 
         /* @noinspection PhpUnnecessaryFullyQualifiedNameInspection */
-        $payload = \Firebase\JWT\JWT::decode($token, $secret, ['HS256']);
+
+        $payload = \Firebase\JWT\JWT::decode($token, new Key($secret, 'HS256'));
 
         $this->assertObjectHasAttribute('return_url', $payload);
         $this->assertObjectHasAttribute('iat', $payload);

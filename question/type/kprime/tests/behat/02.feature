@@ -24,7 +24,9 @@ Feature: Step 2
   Scenario: Testcase 9
 
   #Export question
-    When I navigate to "Question bank > Export" in current page administration
+    When I navigate to "Question bank" in current page administration
+    And I click on "Question" "select"
+    And I click on "Export" "option"
     And I set the field "id_format_xml" to "1"
     And I press "Export questions to file"
     And following "click here" should download between "2500" and "3500" bytes
@@ -36,7 +38,8 @@ Feature: Step 2
   # Import question
 
     And I navigate to "Question bank" in current page administration
-    And I click on "Import" "link"
+    And I click on "Question" "select"
+    And I click on "Import" "option"
     And I set the field "id_format_xml" to "1"
     And I upload "question/type/kprime/tests/fixtures/testquestion.moodle.xml" file to "Import" filemanager
     And I press "id_submitbutton"
@@ -46,13 +49,13 @@ Feature: Step 2
 
     And I should see "KPrime-Question-001"
     And I choose "Preview" action for "KPrime-Question-001" in the question bank
-    And I switch to "questionpreview" window
     Then "[alt='testimage1AltDescription']" "css_element" should exist
     And I should not see "testimage1AltDescription"
     And "[alt='testimage2AltDescription']" "css_element" should exist
     And I should not see "testimage2AltDescription"
     And I should see "option text 1"
     And I should see "option text 2"
+    And I click on "Preview options" "link"
     When I set the field "How questions behave" to "Immediate feedback"
     And I press "Start again with these options"
     And I click on "tr:contains('option text 1') input[value=1]" "css_element"

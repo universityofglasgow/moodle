@@ -31,7 +31,7 @@ require_once($CFG->dirroot . '/mod/lti/locallib.php');
 
 $undertest = defined('BEHAT_SITE_RUNNING') || PHPUNIT_TEST;
 if (!$undertest and is_callable('mr_off') and mr_off('report_allylti', '_MR_MISC')) {
-    print_error('notenabled', 'report_allylti');
+    new moodle_exception('notenabled', 'report_allylti');
 }
 
 $PAGE->set_context(context_system::instance());

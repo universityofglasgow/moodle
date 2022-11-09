@@ -27,7 +27,10 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace qtype_kprime;
+
 defined('MOODLE_INTERNAL') || die();
+
 global $CFG;
 require_once($CFG->dirroot . '/question/engine/lib.php');
 require_once($CFG->dirroot . '/question/type/kprime/tests/helper.php');
@@ -40,7 +43,7 @@ require_once($CFG->dirroot . '/question/engine/tests/helpers.php');
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @group       qtype_kprime
  */
-class qtype_kprime_walkthrough_test extends qbehaviour_walkthrough_test_base {
+class walkthrough_test extends \qbehaviour_walkthrough_test_base {
 
     /**
      * (non-PHPdoc)
@@ -62,15 +65,14 @@ class qtype_kprime_walkthrough_test extends qbehaviour_walkthrough_test_base {
      * @return qtype_kprime
      */
     public function make_a_kprime_question() {
-        question_bank::load_question_definition_classes('kprime');
-        $kprime = new qtype_kprime_question();
-        test_question_maker::initialise_a_question($kprime);
+        \question_bank::load_question_definition_classes('kprime');
+        $kprime = new \qtype_kprime_question();
+        \test_question_maker::initialise_a_question($kprime);
         $kprime->name = 'Kprime Question';
-        $kprime->idnumber = 1;
         $kprime->questiontext = 'the right choices are option 1 and option 2';
         $kprime->generalfeedback = 'You should do this and that';
-        $kprime->qtype = question_bank::get_qtype('kprime');
-        $kprime->options = new stdClass();
+        $kprime->qtype = \question_bank::get_qtype('kprime');
+        $kprime->options = new \stdClass();
         $kprime->options->shuffleanswers = 1;
         $kprime->status = \core_question\local\bank\question_version_status::QUESTION_STATUS_READY;
         $kprime->answernumbering = 'abc';
@@ -140,12 +142,14 @@ class qtype_kprime_walkthrough_test extends qbehaviour_walkthrough_test_base {
 
     /**
      * Test deferredfeedback_feedback_kprime
+     *
+     * @covers ::question_behaviours
      */
     public function test_deferredfeedback_feedback_kprime() {
         $kprime = $this->make_a_kprime_question();
         $this->start_attempt_at_question($kprime, 'deferredfeedback', 1);
         $this->process_submission(array("option0" => 1, "option1" => 1, "option2" => 2, "option3" => 2));
-        $this->check_current_state(question_state::$complete);
+        $this->check_current_state(\question_state::$complete);
         $this->check_current_mark(null);
         $this->check_current_output(
             $this->get_contains_kprime_radio_expectation(0, 1, true, true),
@@ -159,7 +163,7 @@ class qtype_kprime_walkthrough_test extends qbehaviour_walkthrough_test_base {
             $this->get_does_not_contain_correctness_expectation(),
             $this->get_does_not_contain_feedback_expectation());
         $this->quba->finish_all_questions();
-        $this->check_current_state(question_state::$gradedright);
+        $this->check_current_state(\question_state::$gradedright);
         $this->check_current_mark(1);
         $this->check_current_output(
             $this->get_contains_kprime_radio_expectation(0, 1, false, true),
@@ -167,10 +171,10 @@ class qtype_kprime_walkthrough_test extends qbehaviour_walkthrough_test_base {
             $this->get_contains_kprime_radio_expectation(2, 2, false, true),
             $this->get_contains_kprime_radio_expectation(3, 2, false, true),
             $this->get_contains_correct_expectation(),
-            new question_pattern_expectation('/name=\".*1_option0\".*value=\"1\".*checked=\"checked\"/'),
-            new question_pattern_expectation('/name=\".*1_option1\".*value=\"1\".*checked=\"checked\"/'),
-            new question_pattern_expectation('/name=\".*1_option2\".*value=\"2\".*checked=\"checked\"/'),
-            new question_pattern_expectation('/name=\".*1_option3\".*value=\"2\".*checked=\"checked\"/')
+            new \question_pattern_expectation('/name=\".*1_option0\".*value=\"1\".*checked=\"checked\"/'),
+            new \question_pattern_expectation('/name=\".*1_option1\".*value=\"1\".*checked=\"checked\"/'),
+            new \question_pattern_expectation('/name=\".*1_option2\".*value=\"2\".*checked=\"checked\"/'),
+            new \question_pattern_expectation('/name=\".*1_option3\".*value=\"2\".*checked=\"checked\"/')
         );
     }
 }

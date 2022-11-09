@@ -30,6 +30,7 @@ use mod_checklist\privacy\provider;
 
 /**
  * Class mod_checklist_privacy_provider_testcase
+ * @covers \mod_checklist\privacy\provider
  */
 class privacy_provider_test extends \core_privacy\tests\provider_testcase {
     /** @var \stdClass The student object. */
@@ -122,7 +123,7 @@ class privacy_provider_test extends \core_privacy\tests\provider_testcase {
         $collection = new collection('mod_checklist');
         $newcollection = provider::get_metadata($collection);
         $itemcollection = $newcollection->get_collection();
-        $this->assertCount(4, $itemcollection);
+        $this->assertCount(5, $itemcollection);
 
         $table = array_shift($itemcollection);
         $this->assertEquals('checklist_item', $table->get_name());

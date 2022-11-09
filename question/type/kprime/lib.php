@@ -27,8 +27,6 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
 define('QTYPE_KPRIME_NUMBER_OF_OPTIONS', 4);
 define('QTYPE_KPRIME_NUMBER_OF_RESPONSES', 2);
 

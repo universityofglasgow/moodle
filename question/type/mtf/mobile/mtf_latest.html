@@ -1,12 +1,14 @@
-<section ion-list *ngIf="question.text || question.text === ''" class="qtype-mtf">
-    <ion-item class="ion-text-wrap">
+<section class="list qtype-mtf-container qtype-mtf" *ngIf="question.text || question.text === ''" class="qtype-mtf">
+    <ion-item class="addon-qtype-mtf-container qtext ion-text-wrap ">
         <ion-label>
             <p>
-                <core-format-text [component]="component" [componentId]="componentId" [text]="question.text">
+                <core-format-text [component]="component" [componentId]="componentId" [text]="question.text"
+                [contextLevel]="contextLevel" [contextInstanceId]="contextInstanceId" [courseId]="courseId">
                 </core-format-text>
             </p>
             <p *ngIf="question.prompt">
-                <core-format-text [component]="component" [componentId]="componentId" [text]="question.prompt">
+                <core-format-text [component]="component" [componentId]="componentId" [text]="question.prompt"
+                [contextLevel]="contextLevel" [contextInstanceId]="contextInstanceId" [courseId]="courseId">
                 </core-format-text>
             </p>
         </ion-label>
@@ -32,11 +34,13 @@
                 [name]="option.name" [(ngModel)]="option.selection" class="{{option.qclass}}">
                 <ion-row>
                     <ion-col>
-                        <ion-label>
-                            <core-format-text [component]="component" [componentId]="componentId" [text]="option.text">
+                        <ion-label class="addon-qtype-mtf-container qtext ion-text-wrap ">
+                            <core-format-text [component]="component" [componentId]="componentId" [text]="option.text"
+                            [contextLevel]="contextLevel" [contextInstanceId]="contextInstanceId" [courseId]="courseId">
                             </core-format-text>
                             <div *ngIf="option.feedback" class="mtfspecificfeedback ng-star-inserted">
-                                <core-format-text [text]="option.feedback"></core-format-text>
+                                <core-format-text [component]="component" [componentId]="componentId"
+                                [contextLevel]="contextLevel" [contextInstanceId]="contextInstanceId" [courseId]="courseId" [text]="option.feedback"></core-format-text>
                             </div>
                         </ion-label>
                     </ion-col>

@@ -12,8 +12,8 @@ Feature: Step 3
       | user     | course | role           |
       | teacher1 | c1     | editingteacher |
     And the following "activities" exist:
-      | activity | name   | intro              | course | idnumber |
-      | quiz     | Quiz 1 | Quiz 1 for testing | c1     | quiz1    |
+      | activity | name   | intro              | course |
+      | quiz     | Quiz 1 | Quiz 1 for testing | c1     |
     And the following "question categories" exist:
       | contextlevel | reference | name           |
       | Course       | c1        | Default for c1 |
@@ -31,7 +31,7 @@ Feature: Step 3
     And I log in as "teacher1"
     And I am on "Course 1" course homepage
     And I follow "Quiz 1"
-    And I navigate to "Edit quiz" in current page administration
+    And I navigate to "Questions" in current page administration
 
   @javascript
   Scenario: Testcase 16
@@ -68,18 +68,18 @@ Feature: Step 3
       | id_weightbutton_2_2      | checked                   |
       | id_weightbutton_3_2      | checked                   |
     And I press "id_submitbutton"
-    Then I should see "Editing quiz: Quiz 1"
+    Then I should see "Questions"
     And I should see "MTF Question 4"
 
   # Add a question from the question bank to the quiz
     When I click on "li:contains('Page 2') .add-menu-outer" "css_element"
     And I click on ".menu-action-text:contains('from question bank')" "css_element"
     And I click on "Add to quiz" "link" in the "MTF Question 5" "table_row"
-    Then I should see "Editing quiz: Quiz 1"
+    Then I should see "Questions"
     And I should see "MTF Question 5"
 
   # Delete a question from a quiz
     When I click on "Delete" "link" in the "MTF Question 4" "list_item"
     And I click on "Yes" "button" in the ".moodle-dialogue-wrap" "css_element"
-    Then I should see "Editing quiz: Quiz 1"
+    Then I should see "Questions"
     And I should not see "MTF Question 4"

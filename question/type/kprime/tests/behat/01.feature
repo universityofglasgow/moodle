@@ -211,8 +211,8 @@ Feature: Step 1
 
   # Change language
     And I press "id_cancel"
-    And I click on "English ‎(en)‎" "link"
-    And I click on "Deutsch ‎(de)" "link"
+    And I follow "Language" in the user menu
+    And I click on "//a[contains(@href, 'lang=de')]" "xpath"
     And I wait "3" seconds
 
   # Create a question and check german language strings
@@ -254,8 +254,10 @@ Feature: Step 1
 
   # Move the question to another category
     When I click on "Kprime Question" "checkbox" in the "Kprime Question" "table_row"
+    And I press "With selected"
+    And I click on question bulk action "move"
     And I set the field "Question category" to "AnotherCat"
-    And I press "Move to >>"
+    And I press "Move to"
     Then I should see "Question bank"
     And I should see "AnotherCat"
     And I should see "Kprime Question"

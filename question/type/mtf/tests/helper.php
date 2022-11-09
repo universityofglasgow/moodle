@@ -59,6 +59,7 @@ class qtype_mtf_test_helper extends question_test_helper {
         $qdata->category = 1;
         $qdata->contextid = 1;
         $qdata->parent = 0;
+        $qdata->status = \core_question\local\bank\question_version_status::QUESTION_STATUS_READY;
         $qdata->createdby = $USER->id;
         $qdata->modifiedby = $USER->id;
         $qdata->length = 1;
@@ -185,6 +186,7 @@ class qtype_mtf_test_helper extends question_test_helper {
         $qdata->modifiedby = $USER->id;
         $qdata->qtype = 'mtf';
         $qdata->name = 'MTF-Question-001';
+        $qdata->status = \core_question\local\bank\question_version_status::QUESTION_STATUS_READY;
         $qdata->questiontext = array(
             "text" => 'Questiontext for Question 1',
             'format' => FORMAT_HTML
@@ -265,6 +267,7 @@ class qtype_mtf_test_helper extends question_test_helper {
         $qdata->idnumber = 5;
         $qdata->category = 1;
         $qdata->contextid = 1;
+        $qdata->status = \core_question\local\bank\question_version_status::QUESTION_STATUS_READY;
         $qdata->parent = 0;
         $qdata->createdby = $USER->id;
         $qdata->modifiedby = $USER->id;
@@ -546,6 +549,7 @@ class qtype_mtf_test_helper extends question_test_helper {
         $qdata = new stdClass();
         $qdata->createdby = $USER->id;
         $qdata->modifiedby = $USER->id;
+        $qdata->status = \core_question\local\bank\question_version_status::QUESTION_STATUS_READY;
         $qdata->qtype = 'mtf';
         $qdata->name = 'MTF-Question-002';
         $qdata->questiontext = array(
@@ -689,6 +693,7 @@ class qtype_mtf_test_helper extends question_test_helper {
         $qdata = new stdClass();
         $qdata->createdby = $USER->id;
         $qdata->modifiedby = $USER->id;
+        $qdata->status = \core_question\local\bank\question_version_status::QUESTION_STATUS_READY;
         $qdata->qtype = 'mtf';
         $qdata->name = 'MTF-Question-003';
         $qdata->questiontext = array(
@@ -816,6 +821,7 @@ class qtype_mtf_test_helper extends question_test_helper {
         $qdata = new stdClass();
         $qdata->createdby = $USER->id;
         $qdata->modifiedby = $USER->id;
+        $qdata->status = \core_question\local\bank\question_version_status::QUESTION_STATUS_READY;
         $qdata->qtype = 'mtf';
         $qdata->name = 'MTF-Question-004';
         $qdata->questiontext = array(

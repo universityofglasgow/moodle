@@ -47,7 +47,6 @@ require_login();
 require_capability('mod/customcert:manage', $context);
 
 $title = $SITE->fullname;
-$heading = $title;
 
 // Set up the page.
 $pageurl = new moodle_url('/mod/customcert/manage_templates.php');
@@ -80,7 +79,6 @@ if ($tid) {
                 $PAGE->navbar->add(get_string('deleteconfirm', 'customcert'));
                 $message = get_string('deletetemplateconfirm', 'customcert');
                 echo $OUTPUT->header();
-                echo $OUTPUT->heading($heading);
                 echo $OUTPUT->confirm($message, $yesurl, $nourl);
                 echo $OUTPUT->footer();
                 exit();
@@ -97,7 +95,6 @@ if ($tid) {
                 $PAGE->navbar->add(get_string('duplicateconfirm', 'customcert'));
                 $message = get_string('duplicatetemplateconfirm', 'customcert');
                 echo $OUTPUT->header();
-                echo $OUTPUT->heading($heading);
                 echo $OUTPUT->confirm($message, $yesurl, $nourl);
                 echo $OUTPUT->footer();
                 exit();
@@ -124,7 +121,6 @@ $table = new \mod_customcert\manage_templates_table($context);
 $table->define_baseurl($pageurl);
 
 echo $OUTPUT->header();
-echo $OUTPUT->heading($heading);
 $table->out($perpage, false);
 $url = new moodle_url('/mod/customcert/edit.php?contextid=' . $contextid);
 echo $OUTPUT->single_button($url, get_string('createtemplate', 'customcert'), 'get');

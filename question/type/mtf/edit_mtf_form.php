@@ -8,27 +8,26 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * qtype_mtf editing form.
  *
- * @package     qtype_mtf
- * @author      Amr Hourani (amr.hourani@id.ethz.ch)
- * @author      Martin Hanusch (martin.hanusch@let.ethz.ch)
- * @copyright   2016 ETHZ {@link http://ethz.ch/}
- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package qtype_mtf
+ * @author Amr Hourani (amr.hourani@id.ethz.ch)
+ * @author Martin Hanusch (martin.hanusch@let.ethz.ch)
+ * @copyright 2016 ETHZ {@link http://ethz.ch/}
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot . '/question/type/edit_question_form.php');
-require_once($CFG->dirroot . '/question/type/mtf/lib.php');
-require_once($CFG->dirroot . '/question/engine/bank.php');
+require_once ($CFG->dirroot . '/question/type/edit_question_form.php');
+require_once ($CFG->dirroot . '/question/type/mtf/lib.php');
+require_once ($CFG->dirroot . '/question/engine/bank.php');
 
 /**
  * qtype_mtf editing form definition.
@@ -45,6 +44,7 @@ class qtype_mtf_edit_form extends question_edit_form {
 
     /**
      * (non-PHPdoc).
+     *
      * @see myquestion_edit_form::qtype()
      */
     public function qtype() {
@@ -58,14 +58,12 @@ class qtype_mtf_edit_form extends question_edit_form {
      * override this method and remove the ones you don't want with $mform->removeElement().
      */
     protected function definition() {
-        global $COURSE, $CFG, $DB;
-
-        $qtype = $this->qtype();
-        $langfile = "qtype_$qtype";
+        global $DB, $PAGE;
 
         $mform = $this->_form;
 
-        $mform->addElement('header', 'categoryheader', get_string('category', 'question'));
+        // Standard fields at the start of the form.
+        $mform->addElement('header', 'generalheader', get_string("general", 'form'));
 
         if (!isset($this->question->id)) {
             if (!empty($this->question->formoptions->mustbeusable)) {
@@ -75,56 +73,64 @@ class qtype_mtf_edit_form extends question_edit_form {
             }
 
             // Adding question.
-            $mform->addElement('questioncategory', 'category', get_string('category', 'question'),
-                    array('contexts' => $contexts));
+            $mform->addElement('questioncategory', 'category', get_string('category', 'question'), array('contexts' => $contexts));
         } else if (!($this->question->formoptions->canmove || $this->question->formoptions->cansaveasnew)) {
-
             // Editing question with no permission to move from category.
             $mform->addElement('questioncategory', 'category', get_string('category', 'question'),
-                    array('contexts' => array($this->categorycontext)));
-            $mform->addElement('hidden', 'usecurrentcat', 1);
-            $mform->setType('usecurrentcat', PARAM_BOOL);
-            $mform->setConstant('usecurrentcat', 1);
-        } else if (isset($this->question->formoptions->movecontext)) {
-
-            // Moving question to another context.
-            $mform->addElement('questioncategory', 'categorymoveto', get_string('category', 'question'),
-                    array('contexts' => $this->contexts->having_cap('moodle/question:add')));
+                            array('contexts' => array($this->categorycontext)));
             $mform->addElement('hidden', 'usecurrentcat', 1);
             $mform->setType('usecurrentcat', PARAM_BOOL);
             $mform->setConstant('usecurrentcat', 1);
         } else {
-
             // Editing question with permission to move from category or save as new q.
             $currentgrp = array();
             $currentgrp[0] = $mform->createElement('questioncategory', 'category', get_string('categorycurrent', 'question'),
-                    array('contexts' => array($this->categorycontext)));
-            if ($this->question->formoptions->canedit || $this->question->formoptions->cansaveasnew) {
+                                                array('contexts' => array($this->categorycontext)));
+            // Validate if the question is being duplicated.
+            $beingcopied = false;
+            if (isset($this->question->beingcopied)) {
+                $beingcopied = $this->question->beingcopied;
+            }
+            if (($this->question->formoptions->canedit || $this->question->formoptions->cansaveasnew) && ($beingcopied)) {
                 // Not move only form.
                 $currentgrp[1] = $mform->createElement('checkbox', 'usecurrentcat', '',
-                    get_string('categorycurrentuse', 'question'));
+                                                    get_string('categorycurrentuse', 'question'));
                 $mform->setDefault('usecurrentcat', 1);
             }
             $currentgrp[0]->freeze();
             $currentgrp[0]->setPersistantFreeze(false);
             $mform->addGroup($currentgrp, 'currentgrp', get_string('categorycurrent', 'question'), null, false);
 
-            $mform->addElement('questioncategory', 'categorymoveto', get_string('categorymoveto', 'question'),
-                    array('contexts' => array($this->categorycontext)));
-            if ($this->question->formoptions->canedit || $this->question->formoptions->cansaveasnew) {
-                // Not move only form.
-                $mform->disabledIf('categorymoveto', 'usecurrentcat', 'checked');
+            if (($beingcopied)) {
+                $mform->addElement('questioncategory', 'categorymoveto', get_string('categorymoveto', 'question'),
+                                array('contexts' => array($this->categorycontext)));
+                if ($this->question->formoptions->canedit || $this->question->formoptions->cansaveasnew) {
+                    // Not move only form.
+                    $mform->disabledIf('categorymoveto', 'usecurrentcat', 'checked');
+                }
             }
         }
 
-        $mform->addElement('header', 'generalheader', get_string('general', 'form'));
+        if (class_exists('qbank_editquestion\\editquestion_helper') && !empty($this->question->id) && !$this->question->beingcopied) {
+            // Add extra information from plugins when editing a question (e.g.: Authors, version control and usage).
+            $functionname = 'edit_form_display';
+            $questiondata = [];
+            $plugins = get_plugin_list_with_function('qbank', $functionname);
+            foreach ($plugins as $componentname => $plugin) {
+                $element = new StdClass();
+                $element->pluginhtml = component_callback($componentname, $functionname, [$this->question]);
+                $questiondata['editelements'][] = $element;
+            }
+            $mform->addElement('static', 'versioninfo', get_string('versioninfo', 'qbank_editquestion'),
+                            $PAGE->get_renderer('qbank_editquestion')->render_question_info($questiondata));
+        }
+
         $mform->addElement('text', 'name', get_string('tasktitle', 'qtype_mtf'), array('size' => 50, 'maxlength' => 255));
         $mform->setType('name', PARAM_TEXT);
         $mform->addRule('name', null, 'required', null, 'client');
 
-        $mform->addElement('text', 'defaultmark', get_string('maxpoints', 'qtype_mtf'), array('size' => 7));
-        $mform->setType('defaultmark', PARAM_FLOAT);
-        $mform->setDefault('defaultmark', 1);
+        $mform->addElement('float', 'defaultmark', get_string('maxpoints', 'qtype_mtf'), array('size' => 7));
+        $mform->setDefault('defaultmark', $this->get_default_value('defaultmark', 1));
         $mform->addRule('defaultmark', null, 'required', null, 'client');
 
         $mform->addElement('editor', 'questiontext', get_string('stem', 'qtype_mtf'), array('rows' => 15), $this->editoroptions);
@@ -132,79 +138,79 @@ class qtype_mtf_edit_form extends question_edit_form {
         $mform->addRule('questiontext', null, 'required', null, 'client');
         $mform->setDefault('questiontext', array('text' => get_string('enterstemhere', 'qtype_mtf')));
 
-        $mform->addElement('editor', 'generalfeedback', get_string('generalfeedback', 'question'),
-                array('rows' => 10), $this->editoroptions);
+        if (class_exists('qbank_editquestion\\editquestion_helper')) {
+            $mform->addElement('select', 'status', get_string('status', 'qbank_editquestion'),
+                            \qbank_editquestion\editquestion_helper::get_question_status_list());
+        }
+        $mform->addElement('editor', 'generalfeedback', get_string('generalfeedback', 'question'), array('rows' => 10),
+                        $this->editoroptions);
         $mform->setType('generalfeedback', PARAM_RAW);
-        $mform->addHelpButton('generalfeedback', 'generalfeedback', 'qtype_mtf');
+        $mform->addHelpButton('generalfeedback', 'generalfeedback', 'question');
         $mform->addElement('select', 'answernumbering', get_string('answernumbering', 'qtype_mtf'),
-                qtype_mtf::get_numbering_styles());
-
+                        qtype_mtf::get_numbering_styles());
         if (!empty($this->question->options->answernumbering)) {
             $mform->setDefault('answernumbering', array($this->question->options->answernumbering));
+        } else {
+            $mform->setDefault('answernumbering', 'answernumberingnone');
         }
-
         $mform->addElement('text', 'idnumber', get_string('idnumber', 'question'), 'maxlength="100"  size="10"');
         $mform->addHelpButton('idnumber', 'idnumber', 'question');
         $mform->setType('idnumber', PARAM_RAW);
 
+        // Any questiontype specific fields.
         $this->definition_inner($mform);
+        $this->add_interactive_settings();
 
-        if (class_exists('core_tag_tag')) {
-            if (core_tag_tag::is_enabled('core_question', 'question')) {
-                $mform->addElement('header', 'tagshdr', get_string('tags', 'tag'));
-                $mform->addElement('tags', 'tags', get_string('tags'),
-                        array('itemtype' => 'question', 'component' => 'core_question'));
-            }
-        }
-        $this->add_interactive_settings(true, true);
-
-        if (!empty($this->question->id)) {
-            $mform->addElement('header', 'createdmodifiedheader',
-                    get_string('createdmodifiedheader', 'question'));
-            $a = new stdClass();
-
-            if (!empty($this->question->createdby)) {
-                $a->time = userdate($this->question->timecreated);
-                $a->user = fullname($DB->get_record('user', array('id' => $this->question->createdby)));
-            } else {
-                $a->time = get_string('unknown', 'question');
-                $a->user = get_string('unknown', 'question');
-            }
-            $mform->addElement('static', 'created', get_string('created', 'question'), get_string('byandon', 'question', $a));
-
-            if (!empty($this->question->modifiedby)) {
-                $a = new stdClass();
-                $a->time = userdate($this->question->timemodified);
-                $a->user = fullname($DB->get_record('user', array('id' => $this->question->modifiedby)));
-                $mform->addElement('static', 'modified', get_string('modified', 'question'),
-                        get_string('byandon', 'question', $a));
-            }
+        if (core_tag_tag::is_enabled('core_question', 'question') && class_exists('qbank_tagquestion\\tags_action_column') &&
+             \core\plugininfo\qbank::is_plugin_enabled('qbank_tagquestion')) {
+            $this->add_tag_fields($mform);
         }
 
-        global $PAGE;
+        if (!empty($this->customfieldpluginenabled) && $this->customfieldpluginenabled) {
+            // Add custom fields to the form.
+            $this->customfieldhandler = qbank_customfields\customfield\question_handler::create();
+            $this->customfieldhandler->set_parent_context($this->categorycontext); // For question handler only.
+            $this->customfieldhandler->instance_form_definition($mform, empty($this->question->id) ? 0 : $this->question->id);
+        }
+
+        $this->add_hidden_fields();
+
+        $mform->addElement('hidden', 'qtype');
+        $mform->setType('qtype', PARAM_ALPHA);
+
+        $mform->addElement('hidden', 'makecopy');
+        $mform->setType('makecopy', PARAM_INT);
+
         $buttonarray = array();
         $buttonarray[] = $mform->createElement('submit', 'updatebutton', get_string('savechangesandcontinueediting', 'question'));
-
         if ($this->can_preview()) {
-            $previewlink = $PAGE->get_renderer('core_question')->question_preview_link($this->question->id, $this->context, true);
-            $buttonarray[] = $mform->createElement('static', 'previewlink', '', $previewlink);
+            if (class_exists('qbank_editquestion\\editquestion_helper')) {
+                if (\core\plugininfo\qbank::is_plugin_enabled('qbank_previewquestion')) {
+                    $previewlink = $PAGE->get_renderer('qbank_previewquestion')->question_preview_link($this->question->id,
+                                                                                                    $this->context, true);
+                    $buttonarray[] = $mform->createElement('static', 'previewlink', '', $previewlink);
+                }
+            } else {
+                $previewlink = $PAGE->get_renderer('core_question')->question_preview_link($this->question->id, $this->context, true);
+                $buttonarray[] = $mform->createElement('static', 'previewlink', '', $previewlink);
+            }
         }
 
         $mform->addGroup($buttonarray, 'updatebuttonar', '', array(' '), false);
         $mform->closeHeaderBefore('updatebuttonar');
 
-        if ((!empty($this->question->id))
-        && (!($this->question->formoptions->canedit || $this->question->formoptions->cansaveasnew))) {
+        $this->add_action_buttons(true, get_string('savechanges'));
+
+        if ((!empty($this->question->id)) && (!($this->question->formoptions->canedit || $this->question->formoptions->cansaveasnew))) {
             $mform->hardFreezeAllVisibleExcept(array('categorymoveto', 'buttonar', 'currentgrp'));
         }
-
-        $this->add_hidden_fields();
-        $this->add_action_buttons();
     }
 
     /**
      * Adds question-type specific form fields.
-     * @param object $mform the form being built.
+     *
+     * @param object $mform
+     *        the form being built.
      */
     protected function definition_inner($mform) {
         $mtfconfig = get_config('qtype_mtf');
@@ -236,13 +242,12 @@ class qtype_mtf_edit_form extends question_edit_form {
         $attributes = array();
         $scoringbuttons = array();
 
-        $scoringbuttons[] = &$mform->createElement('radio', 'scoringmethod', '',
-                get_string('scoringsubpoints', 'qtype_mtf'), 'subpoints', $attributes);
-        $scoringbuttons[] = &$mform->createElement('radio', 'scoringmethod', '',
-                get_string('scoringmtfonezero', 'qtype_mtf'), 'mtfonezero', $attributes);
+        $scoringbuttons[] = &$mform->createElement('radio', 'scoringmethod', '', get_string('scoringsubpoints', 'qtype_mtf'),
+                                                'subpoints', $attributes);
+        $scoringbuttons[] = &$mform->createElement('radio', 'scoringmethod', '', get_string('scoringmtfonezero', 'qtype_mtf'),
+                                                'mtfonezero', $attributes);
 
-        $mform->addGroup($scoringbuttons, 'radiogroupscoring',
-                get_string('scoringmethod', 'qtype_mtf'), array(' <br/> '), false);
+        $mform->addGroup($scoringbuttons, 'radiogroupscoring', get_string('scoringmethod', 'qtype_mtf'), array(' <br/> '), false);
         $mform->addHelpButton('radiogroupscoring', 'scoringmethod', 'qtype_mtf');
         $mform->setDefault('scoringmethod', 'subpoints');
         $mform->addElement('advcheckbox', 'shuffleanswers', get_string('shuffleanswers', 'qtype_mtf'), null, null, array(0, 1));
@@ -286,17 +291,12 @@ class qtype_mtf_edit_form extends question_edit_form {
         }
 
         $this->add_per_answer_fields($mform, get_string('optionno', 'qtype_mtf', '{no}'), 0, $this->numberofrows, 3);
-        $mform->addElement('hidden', 'qtype');
-        $mform->setType('qtype', PARAM_ALPHA);
 
         // Keep state of number of options to warn user if they go lower.
         $mform->addElement('hidden', 'qtype_mtf_lastnumberofcols');
         $mform->setType('qtype_mtf_lastnumberofcols', PARAM_INT);
         $mform->setDefault('qtype_mtf_lastnumberofcols', $this->numberofrows);
-        $mform->addElement('hidden', 'makecopy');
-        $mform->setType('makecopy', PARAM_ALPHA);
 
-        $this->add_hidden_fields();
     }
 
     /**
@@ -315,14 +315,19 @@ class qtype_mtf_edit_form extends question_edit_form {
     /**
      * Add a set of form fields, obtained from get_per_answer_fields, to the form,
      * one for each existing answer, with some blanks for some new ones.
-     * @param object $mform the form being built.
-     * @param string $label the label to use for each option.
-     * @param array $gradeoptions the possible grades for each answer.
-     * @param int $minoptions the minimum number of answer blanks to display. Default QUESTION_NUMANS_START.
-     * @param int $addoptions the number of answer blanks to add. Default QUESTION_NUMANS_ADD.
+     *
+     * @param object $mform
+     *        the form being built.
+     * @param string $label
+     *        the label to use for each option.
+     * @param array $gradeoptions
+     *        the possible grades for each answer.
+     * @param int $minoptions
+     *        the minimum number of answer blanks to display. Default QUESTION_NUMANS_START.
+     * @param int $addoptions
+     *        the number of answer blanks to add. Default QUESTION_NUMANS_ADD.
      */
-    protected function add_per_answer_fields(&$mform, $label, $gradeoptions,
-            $minoptions = QUESTION_NUMANS_START, $addoptions = QUESTION_NUMANS_ADD) {
+    protected function add_per_answer_fields(&$mform, $label, $gradeoptions, $minoptions = QUESTION_NUMANS_START, $addoptions = QUESTION_NUMANS_ADD) {
         $answersoption = '';
         $repeatedoptions = array();
         $repeated = $this->get_per_answer_fields($mform, $label, $gradeoptions, $repeatedoptions, $answersoption);
@@ -333,17 +338,23 @@ class qtype_mtf_edit_form extends question_edit_form {
             $repeatsatstart = $minoptions;
         }
 
-        $this->repeat_elements($repeated, $repeatsatstart, $repeatedoptions, 'numberofrows',
-                'addanswers', $addoptions, $this->get_more_choices_string(), true);
+        $this->repeat_elements($repeated, $repeatsatstart, $repeatedoptions, 'numberofrows', 'addanswers', $addoptions,
+                            $this->get_more_choices_string(), true);
     }
 
     /**
      * Get the list of form elements to repeat, one for each answer.
-     * @param object $mform the form being built.
-     * @param string $label the label to use for each option.
-     * @param array $gradeoptions the possible grades for each answer.
-     * @param array $repeatedoptions reference to array of repeated options to fill
-     * @param string $answersoption reference to return the name of $question->options field holding an array of answers
+     *
+     * @param object $mform
+     *        the form being built.
+     * @param string $label
+     *        the label to use for each option.
+     * @param array $gradeoptions
+     *        the possible grades for each answer.
+     * @param array $repeatedoptions
+     *        reference to array of repeated options to fill
+     * @param string $answersoption
+     *        reference to return the name of $question->options field holding an array of answers
      * @return array of form fields.
      */
     protected function get_per_answer_fields($mform, $label, $gradeoptions, &$repeatedoptions, &$answersoption) {
@@ -374,9 +385,8 @@ class qtype_mtf_edit_form extends question_edit_form {
 
         // Add the feedback text editor in a new line.
         $responses[] = $mform->createElement('html', '<div class="feedbacktext">');
-        $responses[] = $mform->createElement('editor', 'feedback',
-                get_string('feedbackforoption', 'qtype_mtf') . ' ' . $label,
-                array('rows' => 1, 'placeholder' => ''), $this->editoroptions);
+        $responses[] = $mform->createElement('editor', 'feedback', get_string('feedbackforoption', 'qtype_mtf') . ' ' . $label,
+                                            array('rows' => 1, 'placeholder' => ''), $this->editoroptions);
         $responses[] = $mform->createElement('html', '</div>');
         $responses[] = $mform->createElement('html', '</div>');
         $responses[] = $mform->createElement('html', '<div class="option_answer">');
@@ -394,12 +404,11 @@ class qtype_mtf_edit_form extends question_edit_form {
             }
             $attributes = array('data-colmtf' => $negativeorpositive);
 
-            if (property_exists((object) $this->responsetexts, $j - 1)) {
-                $radiobuttons[] = &$mform->createElement(
-                    'radio', $radiobuttonname, '', $this->responsetexts[$j - 1], $j, $attributes);
+            if (property_exists((object)$this->responsetexts, $j - 1)) {
+                $radiobuttons[] = &$mform->createElement('radio', $radiobuttonname, '', $this->responsetexts[$j - 1], $j,
+                                                        $attributes);
             } else {
-                $radiobuttons[] = &$mform->createElement(
-                    'radio', $radiobuttonname, '', '', $j, $attributes);
+                $radiobuttons[] = &$mform->createElement('radio', $radiobuttonname, '', '', $j, $attributes);
             }
         }
 
@@ -419,8 +428,11 @@ class qtype_mtf_edit_form extends question_edit_form {
 
     /**
      * Create the form elements required by one hint.
-     * @param string $withclearwrong whether this quesiton type uses the 'Clear wrong' option on hints.
-     * @param string $withshownumpartscorrect whether this quesiton type uses the 'Show num parts correct' option on hints.
+     *
+     * @param string $withclearwrong
+     *        whether this quesiton type uses the 'Clear wrong' option on hints.
+     * @param string $withshownumpartscorrect
+     *        whether this quesiton type uses the 'Show num parts correct' option on hints.
      * @return array form field elements for one hint.
      */
     protected function get_hint_fields($withclearwrong = false, $withshownumpartscorrect = false) {
@@ -431,6 +443,7 @@ class qtype_mtf_edit_form extends question_edit_form {
     /**
      * Perform an preprocessing needed on the data passed to set_data()
      * before it is used to initialise the form.
+     *
      * @param object $question
      * @return object $question
      */
@@ -454,20 +467,18 @@ class qtype_mtf_edit_form extends question_edit_form {
 
                 // Restore all images in the option text.
                 $draftid = file_get_submitted_draft_itemid("option[$key]");
-                $question->{"option[$key]"}['text'] = file_prepare_draft_area($draftid,
-                        $this->context->id, 'qtype_mtf', 'optiontext',
-                        !empty($row->id) ? (int) $row->id : null, $this->fileoptions,
-                        $row->optiontext);
+                $question->{"option[$key]"}['text'] = file_prepare_draft_area($draftid, $this->context->id, 'qtype_mtf',
+                                                                            'optiontext', !empty($row->id) ? (int)$row->id : null,
+                                                                            $this->fileoptions, $row->optiontext);
                 $question->{"option[$key]"}['itemid'] = $draftid;
 
                 unset($this->_form->_defaultValues["weightbutton[{$key}]"]);
 
                 // Now do the same for the feedback text.
                 $draftid = file_get_submitted_draft_itemid("feedback[$key]");
-                $question->{"feedback[$key]"}['text'] = file_prepare_draft_area($draftid,
-                        $this->context->id, 'qtype_mtf', 'feedbacktext',
-                        !empty($row->id) ? (int) $row->id : null, $this->fileoptions,
-                        $row->optionfeedback);
+                $question->{"feedback[$key]"}['text'] = file_prepare_draft_area($draftid, $this->context->id, 'qtype_mtf',
+                                                                            'feedbacktext', !empty($row->id) ? (int)$row->id : null,
+                                                                            $this->fileoptions, $row->optionfeedback);
                 $question->{"feedback[$key]"}['itemid'] = $draftid;
 
                 ++$key;
@@ -479,6 +490,7 @@ class qtype_mtf_edit_form extends question_edit_form {
 
     /**
      * Validates the form.
+     *
      * @param array $data
      * @param array $files
      * @return array
@@ -525,7 +537,7 @@ class qtype_mtf_edit_form extends question_edit_form {
             $category = $data['category'];
         }
 
-        if (isset($data['idnumber']) && ((string) $data['idnumber'] !== '')) {
+        if (isset($data['idnumber']) && ((string)$data['idnumber'] !== '')) {
             if (empty($data['usecurrentcat']) && !empty($data['categorymoveto'])) {
                 $categoryinfo = $data['categorymoveto'];
             } else {

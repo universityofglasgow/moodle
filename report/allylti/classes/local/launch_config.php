@@ -24,8 +24,6 @@
  */
 namespace report_allylti\local;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Ally report LTI launch configuration.
  *
