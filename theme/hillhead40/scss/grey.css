@@ -1,0 +1,52 @@
+body#page-login-index {
+  background-image: none !important;
+  background-color: #4f5961 !important;
+}
+
+nav.navbar.fixed-top {
+  background-color: #4f5961 !important;
+  border-color: #383f45;
+}
+
+nav.navbar button.navbar-toggler {
+  background-color: #383f45;
+  border-color: #383f45;
+}
+
+#searchform-navbar {
+  background-color: #4f5961;
+}
+
+.primary-navigation .moremenu .nav-link.active, .primary-navigation .moremenu .nav-link:hover {
+  background-color: #66737d;
+  border-bottom-color: #383f45;
+}
+
+.courseindex .courseindex-item.pageitem {
+  background-color: #66737d;
+}
+
+.courseindex .courseindex-item.pageitem:hover {
+  background-color: #383f45;
+}
+
+.gu-login .rememberpass {
+  border-top-color: #e2e5e7 !important;
+}
+
+.btn-primary {
+  background-color: #4f5961 !important;
+  border-color: #383f45 !important;
+}
+
+.btn-primary:hover {
+  background-color: #66737d !important;
+  border-color: #383f45 !important;
+}
+
+.btn-primary:active {
+  background-color: #4f5961 !important;
+  border-color: #383f45 !important;
+}
+
+/*# sourceMappingURL=grey.css.map */
