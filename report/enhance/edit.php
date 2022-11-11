@@ -77,6 +77,7 @@ if ($form->is_cancelled()) {
         $request = new stdClass();
         $request->timecreated = time();
         $request->status = ENHANCE_STATUS_NEW;
+        $request->assignedto = ENHANCE_ASSIGNED_UNASSIGNED;
         $request->userid = $USER->id;
     }
     $request->service = $data->service;

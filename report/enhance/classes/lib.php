@@ -37,6 +37,7 @@ define('ENHANCE_AUDIENCE_OTHER', 9);
 define('ENHANCE_ASSIGNED_LTEC', 1);
 define('ENHANCE_ASSIGNED_ITS', 2);
 define('ENHANCE_ASSIGNED_REQUESTER', 3);
+define('ENHANCE_ASSIGNED_UNASSIGNED', 8);
 define('ENHANCE_ASSIGNED_OTHER', 9);
 
 class lib {
@@ -105,7 +106,8 @@ class lib {
      * @return array
      */
     public static function getassignedoptions() {
-        return [
+	return [
+            ENHANCE_ASSIGNED_UNASSIGNED => get_string('unassigned', 'report_enhance'),
             ENHANCE_ASSIGNED_LTEC => get_string('ltec', 'report_enhance'),
             ENHANCE_ASSIGNED_ITS => get_string('its', 'report_enhance'),
             ENHANCE_ASSIGNED_REQUESTER => get_string('requester', 'report_enhance'),

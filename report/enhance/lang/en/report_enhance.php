@@ -137,6 +137,7 @@ $string['sustainability'] = 'Sustainability';
 $string['sustainability_help'] = 'If something is proposed (eg plugin): is it compatible with our current (and any proposed) version of Moodle, is it up to date, is it being maintained?';
 $string['transferability'] = 'Transferability';
 $string['transferability_help'] = 'Is this request very specific to a requirement within your own College/School or could this add value across the University?';
+$string['unassigned'] = 'Unassigned';
 $string['uniqueness'] = 'Uniqueness';
 $string['uniqueness_help'] = 'If a feature is suggested: is it the only way to fix it or are there better solutions?';
 $string['underreview'] = 'Under Review';

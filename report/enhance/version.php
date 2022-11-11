@@ -23,6 +23,6 @@
 
 defined('MOODLE_INTERNAL') || die;
 
-$plugin->version   = 2021071100;
+$plugin->version   = 2022111100;
 $plugin->requires  = 2019111800;
 $plugin->component = 'report_enhance';
