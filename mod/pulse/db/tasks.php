@@ -15,22 +15,33 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version information
+ * List of scheduled tasks to send pulses in background.
  *
- * @package    mod
- * @subpackage choicegroup
- * @copyright  2013-2015 Université de Lausanne
- * @author     Nicolas Dunand <Nicolas.Dunand@unil.ch>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package   mod_pulse
+ * @copyright 2021, bdecent gmbh bdecent.de
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+defined('MOODLE_INTERNAL') || die('No direct access !');
 
-$plugin->version  = 2022092201;
-$plugin->requires  = 2020061500; // Moodle 3.9
-$plugin->maturity  = MATURITY_STABLE;
-$plugin->release = '1.37 for Moodle 3.9-4.0 (Build: 2022092201)';
+$tasks = [
+    [
+        'classname' => 'mod_pulse\task\notify_users',
+        'blocking' => 0,
+        'minute' => '*',
+        'hour' => '*',
+        'day' => '*',
+        'month' => '*',
+        'dayofweek' => '*',
+    ],
 
-$plugin->component = 'mod_choicegroup';
-$plugin->cron = 0;
-
+    [
+        'classname' => 'mod_pulse\task\update_completion',
+        'blocking' => 0,
+        'minute' => '*',
+        'hour' => '*',
+        'day' => '*',
+        'month' => '*',
+        'dayofweek' => '*',
+    ],
+];

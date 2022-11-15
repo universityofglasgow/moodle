@@ -15,22 +15,27 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version information
+ * Define event observers.
  *
- * @package    mod
- * @subpackage choicegroup
- * @copyright  2013-2015 Université de Lausanne
- * @author     Nicolas Dunand <Nicolas.Dunand@unil.ch>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package   mod_pulse
+ * @copyright 2021, bdecent gmbh bdecent.de
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+/**
+ * Need to define list of events that plugin will go to observe.
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version  = 2022092201;
-$plugin->requires  = 2020061500; // Moodle 3.9
-$plugin->maturity  = MATURITY_STABLE;
-$plugin->release = '1.37 for Moodle 3.9-4.0 (Build: 2022092201)';
+$observers = [
+    array(
+        'eventname' => 'core\event\course_module_deleted',
+        'callback' => '\mod_pulse\eventobserver::course_module_deleted',
+    ),
 
-$plugin->component = 'mod_choicegroup';
-$plugin->cron = 0;
-
+    array(
+        'eventname' => 'core\event\user_enrolment_deleted',
+        'callback' => '\mod_pulse\eventobserver::user_enrolment_deleted',
+    ),
+];

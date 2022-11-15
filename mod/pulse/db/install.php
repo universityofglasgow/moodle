@@ -15,22 +15,29 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version information
+ * Pulse module install steps.
  *
- * @package    mod
- * @subpackage choicegroup
- * @copyright  2013-2015 Université de Lausanne
- * @author     Nicolas Dunand <Nicolas.Dunand@unil.ch>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package   mod_pulse
+ * @copyright 2021, bdecent gmbh bdecent.de
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+defined('MOODLE_INTERNAL') || die;
 
-$plugin->version  = 2022092201;
-$plugin->requires  = 2020061500; // Moodle 3.9
-$plugin->maturity  = MATURITY_STABLE;
-$plugin->release = '1.37 for Moodle 3.9-4.0 (Build: 2022092201)';
+/**
+ * Pulse module install steps.
+ *
+ * @return bool
+ */
+function xmldb_pulse_install() {
+    global $CFG;
+    require_once($CFG->dirroot.'/mod/pulse/lib.php');
+    if (method_exists('core_plugin_manager', 'reset_caches')) {
+        core_plugin_manager::reset_caches();
+    }
+    // Inital plugin release - v1.0.
 
-$plugin->component = 'mod_choicegroup';
-$plugin->cron = 0;
-
+    // Plugin release - v1.1.
+    pulse_create_presets();
+    return true;
+}

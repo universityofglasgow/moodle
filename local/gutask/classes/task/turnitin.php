@@ -46,7 +46,8 @@ class turnitin extends \core\task\scheduled_task {
             WHERE identifier NOT IN (
                 SELECT pathnamehash FROM {files}
             )
-            AND statuscode="queued"';
+            AND statuscode="queued"
+            AND submissiontype="file"';
         $DB->execute($sql, [
             'errormessage' => $errormessage,
             'lastmodified' => $lastmodified,
