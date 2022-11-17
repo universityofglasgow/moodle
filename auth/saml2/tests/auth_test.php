@@ -82,7 +82,6 @@ class auth_saml2_test extends \advanced_testcase {
      *
      * @return auth_saml2_generator|auth_saml2\testing\generator
      */
-
     protected function get_generator() {
         if (class_exists('\core\testing\component_generator')) { // Required for Totara 15 support
             return $generator = \auth_saml2\testing\generator::instance();
@@ -673,9 +672,12 @@ class auth_saml2_test extends \advanced_testcase {
 
         // Checking that the events contain the expected values.
         $events = $sink->get_events();
-        $this->assertCount(2, $events);
+        $this->assertCount(3, $events);
         $event = array_pop($events);
         $this->assertInstanceOf('\core\event\user_loggedin', $event);
+        $this->assertEquals($USER->id, $event->get_data()['objectid']);
+        $event = array_pop($events);
+        $this->assertInstanceOf('\core\event\user_updated', $event);
         $this->assertEquals($USER->id, $event->get_data()['objectid']);
         $event = array_pop($events);
         $this->assertInstanceOf('\core\event\user_created', $event);
@@ -997,7 +999,7 @@ class auth_saml2_test extends \advanced_testcase {
      * Test access allowed if required attributes are not configured.
      *
      * @dataProvider provider_is_access_allowed
-     * @param $attributes
+     * @param array $attributes
      */
     public function test_is_access_allowed_for_member_not_configured($attributes): void {
         set_config('idpattr', 'uid', 'auth_saml2');
@@ -1031,7 +1033,7 @@ class auth_saml2_test extends \advanced_testcase {
      * Test access allowed if configured, but restricted groups attribute is set to empty.
      *
      * @dataProvider provider_is_access_allowed
-     * @param $attributes
+     * @param array $attributes
      */
     public function test_is_access_allowed_for_member_blocked_empty($attributes): void {
         set_config('idpattr', 'uid', 'auth_saml2');
@@ -1062,7 +1064,7 @@ class auth_saml2_test extends \advanced_testcase {
      * Test access allowed if configured, but allowed groups attribute is set to empty.
      *
      * @dataProvider provider_is_access_allowed
-     * @param $attributes
+     * @param array $attributes
      */
     public function test_is_access_allowed_for_member_allowed_empty($attributes): void {
         set_config('idpattr', 'uid', 'auth_saml2');
@@ -1092,7 +1094,7 @@ class auth_saml2_test extends \advanced_testcase {
      * Test access allowed if fully configured.
      *
      * @dataProvider provider_is_access_allowed
-     * @param $attributes
+     * @param array $attributes
      */
     public function test_is_access_allowed_for_member_allowed_and_blocked($attributes): void {
         set_config('idpattr', 'uid', 'auth_saml2');
@@ -1123,7 +1125,7 @@ class auth_saml2_test extends \advanced_testcase {
      * Test access allowed if fully configured and allowed priority is set to yes.
      *
      * @dataProvider provider_is_access_allowed
-     * @param $attributes
+     * @param array $attributes
      */
     public function test_is_access_allowed_for_member_allowed_and_blocked_with_allowed_priority($attributes): void {
         set_config('idpattr', 'uid', 'auth_saml2');
@@ -1154,6 +1156,7 @@ class auth_saml2_test extends \advanced_testcase {
      * Test test_update_custom_user_profile_fields
      *
      * @dataProvider provider_update_custom_user_profile_fields
+     * @param array $attributes
      */
     public function test_update_custom_user_profile_fields($attributes): void {
         global $CFG, $DB;
@@ -1215,6 +1218,7 @@ class auth_saml2_test extends \advanced_testcase {
      * The custom profile field does not exist, but IdP attribute data is mapped.
      *
      * @dataProvider provider_missing_user_custom_profile_fields
+     * @param array $attributes
      */
     public function test_missing_user_custom_profile_fields($attributes): void {
         global $CFG;
@@ -1260,6 +1264,8 @@ class auth_saml2_test extends \advanced_testcase {
      * Test test_invalid_map_user_profile_fields
      *
      * @dataProvider provider_invalid_map_user_profile_fields
+     * @param array $mapping
+     * @param array $attributes
      */
     public function test_invalid_map_user_profile_fields($mapping, $attributes): void {
         global $CFG;

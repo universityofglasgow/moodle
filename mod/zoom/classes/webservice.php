@@ -450,20 +450,21 @@ class mod_zoom_webservice {
      *
      * @param string $userid The user's ID.
      * @return stdClass The call's result in JSON format.
-     * @link https://zoom.github.io/api/#retrieve-a-users-settings
+     * @link https://marketplace.zoom.us/docs/api-reference/zoom-api/methods/#operation/userSettings
      */
     public function get_user_settings($userid) {
         return $this->make_call('users/' . $userid . '/settings');
     }
 
     /**
-     * Gets the user's master account meeting security settings, including password requirements.
+     * Gets the user's meeting security settings, including password requirements.
      *
+     * @param string $userid The user's ID.
      * @return stdClass The call's result in JSON format.
-     * @link https://marketplace.zoom.us/docs/api-reference/zoom-api/accounts/accountsettings.
+     * @link https://marketplace.zoom.us/docs/api-reference/zoom-api/methods/#operation/userSettings
      */
-    public function get_account_meeting_security_settings() {
-        $url = 'accounts/me/settings?option=meeting_security';
+    public function get_account_meeting_security_settings($userid) {
+        $url = 'users/' . $userid . '/settings?option=meeting_security';
         try {
             $response = $this->make_call($url);
             $meetingsecurity = $response->meeting_security;
@@ -579,6 +580,9 @@ class mod_zoom_webservice {
         }
         if (isset($zoom->option_authenticated_users)) {
             $data['settings']['meeting_authentication'] = (bool) $zoom->option_authenticated_users;
+        }
+        if (isset($zoom->registration)) {
+            $data['settings']['approval_type'] = $zoom->registration;
         }
 
         if (!empty($zoom->webinar)) {
@@ -983,6 +987,11 @@ class mod_zoom_webservice {
         $curl->setHeader('Authorization: Basic ' . base64_encode($this->clientid . ':' . $this->clientsecret));
         $curl->setHeader('Content-Type: application/json');
 
+        // Force HTTP/1.1 to avoid HTTP/2 "stream not closed" issue.
+        $curl->setopt(array(
+            'CURLOPT_HTTP_VERSION' => CURL_HTTP_VERSION_1_1,
+        ));
+
         $timecalled = time();
         $response = $this->make_curl_call($curl, 'post',
             'https://zoom.us/oauth/token?grant_type=account_credentials&account_id=' . $this->accountid, array());
@@ -1007,5 +1016,18 @@ class mod_zoom_webservice {
         } else {
             throw new moodle_exception('errorwebservice', 'mod_zoom', '', get_string('zoomerr_no_access_token', 'zoom'));
         }
+    }
+
+    /**
+     * List the meeting or webinar registrants from Zoom.
+     *
+     * @param int $id The meeting_id or webinar_id of the meeting or webinar to retrieve.
+     * @param bool $webinar Whether the meeting or webinar whose information you want is a webinar.
+     * @return stdClass The meeting's or webinar's information.
+     */
+    public function get_meeting_registrants($id, $webinar) {
+        $url = ($webinar ? 'webinars/' : 'meetings/') . $id . '/registrants';
+        $response = $this->make_call($url);
+        return $response;
     }
 }
