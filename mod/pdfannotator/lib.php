@@ -21,6 +21,8 @@
  */
 defined('MOODLE_INTERNAL') || die;
 
+require_once($CFG->dirroot . '/mod/pdfannotator/locallib.php');
+
 /**
  * List of features supported in pdfannotator module
  * @param string $feature FEATURE_xx constant for requested feature
@@ -290,6 +292,7 @@ function pdfannotator_cm_info_view(cm_info $cm) {
 function pdfannotator_get_file_areas($course, $cm, $context) {
     $areas = array();
     $areas['content'] = get_string('pdfannotatorcontent', 'pdfannotator');
+    $areas['post'] = get_string('pdfannotatorpost', 'pdfannotator');
     return $areas;
 }
 
@@ -368,47 +371,75 @@ function pdfannotator_pluginfile($course, $cm, $context, $filearea, $args, $forc
         return false;
     }
 
-    if ($filearea !== 'content') {
+    if ($filearea !== 'content' && $filearea !== 'post') {
         // Intro is handled automatically in pluginfile.php.
         return false;
     }
 
+    $commentid = 0;
+    foreach ($args as $param) {
+        if ($DB->record_exists('pdfannotator_comments', ['id' => $param])) {
+            $commentid = $param;
+            break;
+        }
+    }
     array_shift($args); // Ignore revision - designed to prevent caching problems only.
 
     $fs = get_file_storage();
-    $relativepath = urldecode(implode('/', $args));
-    $fullpath = rtrim("/$context->id/mod_pdfannotator/$filearea/0/$relativepath", '/');
-    do {
-        if (!$file = $fs->get_file_by_hash(sha1($fullpath))) {
-            if ($fs->get_file_by_hash(sha1("$fullpath/."))) {
-                if ($file = $fs->get_file_by_hash(sha1("$fullpath/index.htm"))) {
-                    break;
+    $relativepath = implode('/', $args);
+    if ($filearea === 'content') {
+        $fullpath = rtrim("/$context->id/mod_pdfannotator/$filearea/0/$relativepath", '/');
+        do {
+            if (!$file = $fs->get_file_by_hash(sha1($fullpath))) {
+                if ($fs->get_file_by_hash(sha1("$fullpath/."))) {
+                    if ($file = $fs->get_file_by_hash(sha1("$fullpath/index.htm"))) {
+                        break;
+                    }
+                    if ($file = $fs->get_file_by_hash(sha1("$fullpath/index.html"))) {
+                        break;
+                    }
+                    if ($file = $fs->get_file_by_hash(sha1("$fullpath/Default.htm"))) {
+                        break;
+                    }
                 }
-                if ($file = $fs->get_file_by_hash(sha1("$fullpath/index.html"))) {
-                    break;
+                $pdfannotator = $DB->get_record('pdfannotator', array('id' => $cm->instance), 'id, legacyfiles', MUST_EXIST);
+                if ($pdfannotator->legacyfiles != RESOURCELIB_LEGACYFILES_ACTIVE) {
+                    return false;
                 }
-                if ($file = $fs->get_file_by_hash(sha1("$fullpath/Default.htm"))) {
-                    break;
+                if (!$file = resourcelib_try_file_migration('/' . $relativepath, $cm->id, $cm->course, 'mod_pdfannotator', 'content', 0)) {
+                    return false;
                 }
+                // File migrate - update flag.
+                $pdfannotator->legacyfileslast = time();
+                $DB->update_record('pdfannotator', $pdfannotator);
             }
-            $pdfannotator = $DB->get_record('pdfannotator', array('id' => $cm->instance), 'id, legacyfiles', MUST_EXIST);
-            if ($pdfannotator->legacyfiles != RESOURCELIB_LEGACYFILES_ACTIVE) {
-                return false;
-            }
-            if (!$file = resourcelib_try_file_migration('/' . $relativepath, $cm->id, $cm->course, 'mod_pdfannotator', 'content', 0)) {
-                return false;
-            }
-            // File migrate - update flag.
-            $pdfannotator->legacyfileslast = time();
-            $DB->update_record('pdfannotator', $pdfannotator);
-        }
-    } while (false);
+        } while (false);
+    
+        // Should we apply filters?
+        // $mimetype = $file->get_mimetype();
+        $filter = 0;
+        // Finally send the file.
+        send_stored_file($file, null, $filter, $forcedownload, $options);
+    }
 
-    // Should we apply filters?
-    // $mimetype = $file->get_mimetype();
-    $filter = 0;
-    // Finally send the file.
-    send_stored_file($file, null, $filter, $forcedownload, $options);
+    if ($filearea === 'post') {
+        $fullpath = rtrim("/$context->id/mod_pdfannotator/$filearea/$commentid/$relativepath", '/');
+        if (!$file = $fs->get_file_by_hash(sha1($fullpath)) or $file->is_directory()) {
+            //Annotations from other documents might have another contextid.
+            $pdfid = $DB->get_record('pdfannotator_comments', ['id' => $commentid], 'pdfannotatorid');
+            if ($pdfid) {
+                $pdfannotator = $DB->get_record('pdfannotator', ['id' => $pdfid->pdfannotatorid], '*', MUST_EXIST);
+                $cm = get_coursemodule_from_instance('pdfannotator', $pdfid->pdfannotatorid, $pdfannotator->course, false, MUST_EXIST);
+                $context2 = context_module::instance($cm->id);
+                $fullpath = rtrim("/$context2->id/mod_pdfannotator/$filearea/$commentid/$relativepath", '/');
+                if (!$file = $fs->get_file_by_hash(sha1($fullpath)) or $file->is_directory()) {
+                    return false;
+                }
+                send_stored_file($file, null, 0, true, $options);
+            }
+        }
+        send_stored_file($file, null, 0, true, $options);
+    }
 }
 
 /**
@@ -731,4 +762,49 @@ function pdfannotator_print_recent_mod_activity($activity, $courseid, $detail, $
     $output .= html_writer::end_tag('table');
 
     echo $output;
+}
+
+/**
+ * Initialize the editor for editing a comment.
+ * @param type $args
+ * @return string
+ */
+function mod_pdfannotator_output_fragment_open_edit_comment_editor($args) {
+    global $DB;
+
+    $context = context_module::instance($args['cmid']);
+
+    $data = pdfannotator_data_preprocessing($context, 'editarea' . $args['uuid'], 0);
+    $comment = $DB->get_record('pdfannotator_comments', ['id' => $args['uuid']]);
+    $displaycontent = pdfannotator_file_prepare_draft_area($data['draftItemId'], $context->id, 'mod_pdfannotator', 'post',
+    $args['uuid'], pdfannotator_get_editor_options($context), $comment->content);
+
+    /* $params = ['draftitemid' => $data['draftItemId'], 'editorformat' => $data['editorFormat'], $args['action'], 'targetId' => 'editor-editcomment-inputs-' . $args['uuid'], $args['uuid']];
+    $PAGE->requires->js_init_call('loadEditorInputFields', $params); */
+
+    // Input fields.
+    $out = '';
+    $out .= html_writer::empty_tag('input', ['type' => 'hidden', 'class' => 'pdfannotator_' . $args['action'] . 'comment' . '_editoritemid', 'name' => 'input_value_editor', 'value' => $data['draftItemId']]);
+    $out .= html_writer::empty_tag('input', ['type' => 'hidden', 'class' => 'pdfannotator_' . $args['action'] . 'comment' . '_editorformat', 'name' => 'input_value_editor', 'value' => $data['editorFormat']]);
+    $out .= 'displaycontent:' . $displaycontent;
+    
+    return $out;
+}
+
+/**
+ * Initialize the editor for adding a comment.
+ * @param type $args
+ * @return string
+ */
+function mod_pdfannotator_output_fragment_open_add_comment_editor($args) {
+    $context = context_module::instance($args['cmid']);
+
+    $data = pdfannotator_data_preprocessing($context, 'id_pdfannotator_content', 0);
+    $text = file_prepare_draft_area($data['draftItemId'], $context->id, 'mod_pdfannotator', 'post', 0, pdfannotator_get_editor_options($context));
+    
+    $out = '';
+    $out = html_writer::empty_tag('input', ['type' => 'hidden', 'class' => 'pdfannotator_' . $args['action'] . 'comment' . '_editoritemid', 'name' => 'input_value_editor', 'value' => $data['draftItemId']]);
+    $out .= html_writer::empty_tag('input', ['type' => 'hidden', 'class' => 'pdfannotator_' . $args['action'] . 'comment' . '_editorformat', 'name' => 'input_value_editor', 'value' => $data['editorFormat']]);
+
+    return $out;
 }

@@ -337,12 +337,14 @@ if ($action === 'addComment') {
 
     // Get the comment data.
     $content = required_param('content', PARAM_RAW);
+    $regex = "/?time=[0-9]*/";
+    $extracted_content = str_replace($regex, "", $content);
+
     $visibility = required_param('visibility', PARAM_ALPHA);
     $isquestion = required_param('isquestion', PARAM_INT);
 
     // Insert the comment into the mdl_pdfannotator_comments table and get its record id.
-    $comment = pdfannotator_comment::create($documentid, $annotationid, $content, $visibility, $isquestion, $cm, $context);
-    $commentid = $comment->uuid;
+    $comment = pdfannotator_comment::create($documentid, $annotationid, $extracted_content, $visibility, $isquestion, $cm, $context);
 
     // If successful, create a comment array and return it as json.
     if ($comment) {
@@ -352,12 +354,9 @@ if ($action === 'addComment') {
 
         echo json_encode($data);
     } else {
-        if ($commentid == -1) {
-            echo json_encode(['status' => '-1']);
-        } else {
-            echo json_encode(['status' => 'error']);
-        }
+        echo json_encode(['status' => '-1']);
     }
+
 }
 
 /* * ******************************* Retrieve information about a specific annotation from db ******************************* */
@@ -394,22 +393,6 @@ if ($action === 'getComments') {
     $data = $templatable->export_for_template($myrenderer);
 
     echo json_encode($data);
-}
-
-/* * ********************************* Retrieve content of a specific comment from db ********************************* */
-
-if ($action === 'getCommentContent') {
-    global $DB;
-    $commentid = required_param('commentId', PARAM_INT);
-
-    $content = $DB->get_field('pdfannotator_comments', 'content', ['id' => $commentid]);
-
-    $comment = $DB->get_record('pdfannotator_comments', ['id' => $commentid]);
-    if (pdfannotator_can_see_comment($comment, $context)) {
-        echo json_encode($comment->content);
-    } else {
-        echo json_encode("false");
-    }
 }
 
 /* * ****************************************** Hide a comment for participants ****************************************** */
@@ -453,8 +436,10 @@ if ($action === 'editComment') {
 
     $commentid = required_param('commentId', PARAM_INT);
     $content = required_param('content', PARAM_RAW);
+    $regex = "/?time=[0-9]*/";
+    $extracted_content = str_replace($regex, "", $content);
 
-    $data = pdfannotator_comment::update($commentid, $content, $editanypost);
+    $data = pdfannotator_comment::update($commentid, $extracted_content, $editanypost, $context);
     echo json_encode($data);
 }
 
@@ -630,6 +615,7 @@ if ($action === 'getCommentsToPrint') {
         foreach ($conversations as $conversation) {
             $post = new stdClass();
             $post->answeredquestion = pdfannotator_handle_latex($context, $conversation->answeredquestion);
+            $post->answeredquestion = pdfannotator_extract_images($post->answeredquestion, $conversation->id, $context);
             $post->page = $conversation->page;
             $post->annotationtypeid = $conversation->annotationtypeid;
             $post->author = $conversation->author;
@@ -640,6 +626,7 @@ if ($action === 'getCommentsToPrint') {
             foreach ($conversation->answers as $ca) {
                 $answer = new stdClass();
                 $answer->answer = pdfannotator_handle_latex($context, $ca->answer);
+                $answer->answer = pdfannotator_extract_images($answer->answer, $ca->id, $context);
                 $answer->author = $ca->author;
                 $answer->timemodified = $ca->timemodified;
                 $post->answers[$answercount] = $answer;
@@ -655,7 +642,6 @@ if ($action === 'getCommentsToPrint') {
         $newdata = $templatable->export_for_template($myrenderer);// Viewcontroller takes model's data and arranges it for display.
 
         echo json_encode(['status' => 'success', 'pdfannotatorid' => $documentid, 'newdata' => $newdata]);
-
     }
 
 }

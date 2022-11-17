@@ -50,7 +50,7 @@ class backup_pdfannotator_activity_structure_step extends backup_activity_struct
     protected function define_structure() {
 
         // 1. To know if we are including userinfo.
-        $userinfo = $this->get_setting_value('userinfo'); // This variable is always 0.
+        $userinfo = $this->get_setting_value('userinfo');
 
         // 2. Define each element separately.
         $pdfannotator = new backup_nested_element('pdfannotator', array('id'), array(
@@ -96,8 +96,7 @@ class backup_pdfannotator_activity_structure_step extends backup_activity_struct
         // backup::VAR_ACTIVITYID is the 'course module id'.
         $pdfannotator->set_source_table('pdfannotator', array('id' => backup::VAR_ACTIVITYID));
 
-        // ... if ($userinfo) {?
-
+        if ($userinfo) {
             // Add all annotations specific to this annotator instance.
             $annotation->set_source_sql('SELECT a.* FROM {pdfannotator_annotations} a '
                                         . 'JOIN {pdfannotator_comments} c ON a.id = c.annotationid '
@@ -116,8 +115,7 @@ class backup_pdfannotator_activity_structure_step extends backup_activity_struct
 
                     // Add any reports of this comment.
                     $report->set_source_table('pdfannotator_reports', array('commentid' => backup::VAR_PARENTID));
-
-        // ...      }?
+        }
 
         // 5. Define id annotations (some attributes are foreign keys).
         $annotation->annotate_ids('user', 'userid');
@@ -131,6 +129,7 @@ class backup_pdfannotator_activity_structure_step extends backup_activity_struct
         // 6. Define file annotations (vgl. resource activity).
         $pdfannotator->annotate_files('mod_pdfannotator', 'intro', null); // This file area does not have an itemid.
         $pdfannotator->annotate_files('mod_pdfannotator', 'content', null); // See above.
+        $comment->annotate_files('mod_pdfannotator', 'post', 'id');
 
         // 7. Return the root element (pdfannotator), wrapped into standard activity structure.
         return $this->prepare_activity_structure($pdfannotator);
