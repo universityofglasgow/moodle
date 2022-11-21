@@ -34,7 +34,8 @@ define(['jquery', 'core/templates', 'core/ajax', 'core/notification'], function(
                 } else {
                     $(".bottom-button").show();
                 }
-                $('.active').removeClass("active");
+                // $('.active') removed *all* active classes on the page, breaking "user menu" along the way
+                $('.filter-list .nav-link.active').removeClass("active");
                 $("[data-filter='" + filter + "']").addClass("active");
             } catch (error) {
                 return false;
