@@ -67,7 +67,6 @@ class submission_created extends \mod_assign\event\submission_created {
      *
      * @return The object mapping
      */
-
     public static function get_objectid_mapping() {
         // No mapping available for 'assignsubmission_helixassign'.
         return array('db' => 'assignsubmission_helixassign', 'restore' => \core\event\base::NOT_MAPPED);

@@ -32,7 +32,6 @@ global $CFG;
 require_once($CFG->dirroot . '/question/engine/tests/helpers.php');
 require_once($CFG->dirroot . '/question/type/formulas/variables.php');
 
-
 /**
  * Unit tests for various functions
  *
@@ -41,6 +40,7 @@ require_once($CFG->dirroot . '/question/type/formulas/variables.php');
  */
 
 class functions_test extends \advanced_testcase {
+
     /**
      * Test 1: ncr() test.
      */
@@ -530,4 +530,535 @@ class functions_test extends \advanced_testcase {
             $this->assertEqualsWithDelta($case[1], $case[0], .00001);
         }
     }
+
+    /**
+     * Test number conversion functions decbin(), decoct(), octdec() and bindec()
+     */
+    public function test_number_conversions() {
+        // Check valid invocations.
+        $testcases = array(
+            array('a=decbin(1);', array('a' => (object) array('type' => 'n', 'value' => 1))),
+            array('a=decbin(0);', array('a' => (object) array('type' => 'n', 'value' => 0))),
+            array('a=decbin(3);', array('a' => (object) array('type' => 'n', 'value' => 11))),
+            array('a=decbin(10);', array('a' => (object) array('type' => 'n', 'value' => 1010))),
+            array('a=decbin(15);', array('a' => (object) array('type' => 'n', 'value' => 1111))),
+            array('a=decoct(1);', array('a' => (object) array('type' => 'n', 'value' => 1))),
+            array('a=decoct(0);', array('a' => (object) array('type' => 'n', 'value' => 0))),
+            array('a=decoct(3);', array('a' => (object) array('type' => 'n', 'value' => 3))),
+            array('a=decoct(10);', array('a' => (object) array('type' => 'n', 'value' => 12))),
+            array('a=decoct(15);', array('a' => (object) array('type' => 'n', 'value' => 17))),
+            array('a=octdec(1);', array('a' => (object) array('type' => 'n', 'value' => 1))),
+            array('a=octdec(0);', array('a' => (object) array('type' => 'n', 'value' => 0))),
+            array('a=octdec(3);', array('a' => (object) array('type' => 'n', 'value' => 3))),
+            array('a=octdec(12);', array('a' => (object) array('type' => 'n', 'value' => 10))),
+            array('a=octdec(17);', array('a' => (object) array('type' => 'n', 'value' => 15))),
+            array('a=bindec(1);', array('a' => (object) array('type' => 'n', 'value' => 1))),
+            array('a=bindec(0);', array('a' => (object) array('type' => 'n', 'value' => 0))),
+            array('a=bindec(11);', array('a' => (object) array('type' => 'n', 'value' => 3))),
+            array('a=bindec(1010);', array('a' => (object) array('type' => 'n', 'value' => 10))),
+            array('a=bindec(1111);', array('a' => (object) array('type' => 'n', 'value' => 15)))
+        );
+        foreach ($testcases as $case) {
+            $qv = new variables;
+            $errmsg = null;
+            try {
+                $v = $qv->vstack_create();
+                $result = $qv->evaluate_assignments($v, $case[0]);
+            } catch (Exception $e) {
+                $errmsg = $e->getMessage();
+            }
+            $this->assertNull($errmsg);
+            $this->assertEquals($case[1], $result->all);
+        }
+        // Check invalid invocations.
+        $testcases = array(
+            array('a=decbin();'),
+            array('a=decbin(1, 2);'),
+            array('a=decbin("3");'),
+            array('a=decbin("a");'),
+            array('a=decoct();'),
+            array('a=decoct(1, 2);'),
+            array('a=decoct("3");'),
+            array('a=decoct("a");'),
+            array('a=octdec();'),
+            array('a=octdec(1, 2);'),
+            array('a=octdec("3");'),
+            array('a=octdec("a");'),
+            array('a=bindec();'),
+            array('a=bindec(1, 2);'),
+            array('a=bindec("3");'),
+            array('a=bindec("a");')
+        );
+        foreach ($testcases as $case) {
+            $qv = new variables;
+            $errmsg = null;
+            try {
+                $v = $qv->vstack_create();
+                $result = $qv->evaluate_assignments($v, $case[0]);
+            } catch (Exception $e) {
+                $errmsg = $e->getMessage();
+            }
+            $this->assertNotNull($errmsg);
+        }
+    }
+
+    /**
+     * Test: incovation of all documented trigonometric / hyberbolic functions
+     */
+    public function test_invocation_trigonometric() {
+        $testcases = array(
+            array(true, 'a=acos(0.5);'),
+            array(false, 'a=acos();'),
+            array(false, 'a=acos(1, 2);'),
+            array(true, 'a=asin(0.5);'),
+            array(false, 'a=asin();'),
+            array(false, 'a=asin(1, 2);'),
+            array(true, 'a=atan(0.5);'),
+            array(false, 'a=atan();'),
+            array(false, 'a=atan(1, 2);'),
+            array(true, 'a=atan2(1, 2);'),
+            array(false, 'a=atan2(1, 2, 3);'),
+            array(false, 'a=atan2(1);'),
+            array(false, 'a=atan2();'),
+            array(true, 'a=cos(0.5);'),
+            array(false, 'a=cos();'),
+            array(false, 'a=cos(1, 2);'),
+            array(true, 'a=sin(0.5);'),
+            array(false, 'a=sin();'),
+            array(false, 'a=sin(1, 2);'),
+            array(true, 'a=tan(0.5);'),
+            array(false, 'a=tan();'),
+            array(false, 'a=tan(1, 2);'),
+            array(true, 'a=acosh(0.5);'),
+            array(false, 'a=acosh();'),
+            array(false, 'a=acosh(1, 2);'),
+            array(true, 'a=asinh(0.5);'),
+            array(false, 'a=asinh();'),
+            array(false, 'a=asinh(1, 2);'),
+            array(true, 'a=atanh(0.5);'),
+            array(false, 'a=atanh();'),
+            array(false, 'a=atanh(1, 2);'),
+            array(true, 'a=cosh(0.5);'),
+            array(false, 'a=cosh();'),
+            array(false, 'a=cosh(1, 2);'),
+            array(true, 'a=sinh(0.5);'),
+            array(false, 'a=sinh();'),
+            array(false, 'a=sinh(1, 2);'),
+            array(true, 'a=tanh(0.5);'),
+            array(false, 'a=tanh();'),
+            array(false, 'a=tanh(1, 2);'),
+        );
+        $qv = new variables;
+        foreach ($testcases as $case) {
+            $errmsg = null;
+            try {
+                $v = $qv->vstack_create();
+                $qv->evaluate_assignments($v, $case[1]);
+            } catch (Exception $e) {
+                $errmsg = $e->getMessage();
+            }
+            if ($case[0]) {
+                $this->assertNull($errmsg);
+            } else {
+                $this->assertNotNull($errmsg);
+            }
+        }
+    }
+
+    /**
+     * Test: incovation of all documented combinatorial functions
+     */
+    public function test_invocation_combinatorial() {
+        $testcases = array(
+            array(true, 'a=inv([0, 1, 2, 3]);'),
+            array(false, 'a=inv();'),
+            array(false, 'a=inv(1);'),
+            array(false, 'a=inv(1, 2);'),
+            array(false, 'a=inv([1, 4, 0]);'), // Not consecutive.
+            array(false, 'a=inv([1, 2, 3]);'), // Lowest is not zero.
+            array(false, 'a=inv([1, 2], 1);'),
+            array(false, 'a=inv([1, 2], [3, 4]);'),
+            array(true, 'a=ncr(5, 2);'),
+            array(false, 'a=ncr();'),
+            array(false, 'a=ncr(2);'),
+            array(false, 'a=ncr(5, 2, 3);'),
+            array(true, 'a=npr(5, 2);'),
+            array(false, 'a=npr();'),
+            array(false, 'a=npr(2);'),
+            array(false, 'a=npr(5, 2, 3);'),
+        );
+        $qv = new variables;
+        foreach ($testcases as $case) {
+            $errmsg = null;
+            try {
+                $v = $qv->vstack_create();
+                $qv->evaluate_assignments($v, $case[1]);
+            } catch (Exception $e) {
+                $errmsg = $e->getMessage();
+            }
+            if ($case[0]) {
+                $this->assertNull($errmsg);
+            } else {
+                $this->assertNotNull($errmsg);
+            }
+        }
+    }
+
+    /**
+     * Test: incovation of all documented algebraic / other numerical functions
+     */
+    public function test_invocation_algebraic() {
+        $testcases = array(
+            array(true, 'a=abs(-3);'),
+            array(false, 'a=abs();'),
+            array(false, 'a=abs(1, 2);'),
+            array(true, 'a=ceil(0.5);'),
+            array(false, 'a=ceil();'),
+            array(false, 'a=ceil(1, 2);'),
+            array(true, 'a=deg2rad(0.5);'),
+            array(false, 'a=deg2rad();'),
+            array(false, 'a=deg2rad(1, 2);'),
+            array(true, 'a=exp(0.5);'),
+            array(false, 'a=exp();'),
+            array(false, 'a=exp(1, 2);'),
+            array(true, 'a=expm1(0.5);'),
+            array(false, 'a=expm1();'),
+            array(false, 'a=expm1(1, 2);'),
+            array(true, 'a=fact(3);'),
+            array(false, 'a=fact();'),
+            array(false, 'a=fact(1, 2);'),
+            array(true, 'a=floor(0.5);'),
+            array(false, 'a=floor();'),
+            array(false, 'a=floor(1, 2);'),
+            array(true, 'a=fmod(3, 2);'),
+            array(false, 'a=fmod();'),
+            array(false, 'a=fmod(0.5);'),
+            array(false, 'a=fmod(1, 2, 3);'),
+            array(true, 'a=gcd(3, 2);'),
+            array(false, 'a=gcd();'),
+            array(false, 'a=gcd(0.5);'),
+            array(false, 'a=gcd(1, 2, 3);'),
+            array(true, 'a=is_finite(0.5);'),
+            array(false, 'a=is_finite();'),
+            array(false, 'a=is_finite(1, 2);'),
+            array(true, 'a=is_infinite(0.5);'),
+            array(false, 'a=is_infinite();'),
+            array(false, 'a=is_infinite(1, 2);'),
+            array(true, 'a=is_nan(0.5);'),
+            array(false, 'a=is_nan();'),
+            array(false, 'a=is_nan(1, 2);'),
+            array(true, 'a=lcm(3, 2);'),
+            array(false, 'a=lcm();'),
+            array(false, 'a=lcm(0.5);'),
+            array(false, 'a=lcm(1, 2, 3);'),
+            array(true, 'a=log(0.5, 2);'),
+            array(true, 'a=log(0.5);'),
+            array(false, 'a=log();'),
+            array(false, 'a=log(0.5, 2, 3);'),
+            array(true, 'a=log10(0.5);'),
+            array(false, 'a=log10();'),
+            array(false, 'a=log10(1, 2);'),
+            array(true, 'a=log1p(0.5);'),
+            array(false, 'a=log1p();'),
+            array(false, 'a=log1p(1, 2);'),
+            array(true, 'a=max(1, 2);'),
+            array(true, 'a=max(1, 2, 3);'),
+            array(true, 'a=max(1, 2, 3, 4);'),
+            array(true, 'a=max(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);'),
+            array(false, 'a=max();'),
+            array(false, 'a=max(1);'),
+            array(true, 'a=min(1, 2);'),
+            array(true, 'a=min(1, 2, 3);'),
+            array(true, 'a=min(1, 2, 3, 4);'),
+            array(true, 'a=min(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);'),
+            array(false, 'a=min();'),
+            array(false, 'a=min(1);'),
+            array(true, 'a=modpow(1, 2, 3);'),
+            array(false, 'a=modpow();'),
+            array(false, 'a=modpow(1);'),
+            array(false, 'a=modpow(1, 2);'),
+            array(false, 'a=modpow(1, 2, 3, 4);'),
+            array(true, 'a=pi();'),
+            array(false, 'a=pi(1);'),
+            array(true, 'a=poly("x", [1]);'),
+            array(true, 'a=poly("x", [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);'),
+            array(true, 'a=poly("x", 1);'),
+            array(false, 'a=poly("x", 1, 2);'),
+            array(false, 'a=poly("x");'),
+            array(false, 'a=poly();'),
+            array(true, 'a=pow(1, 2);'),
+            array(false, 'a=pow();'),
+            array(false, 'a=pow(1);'),
+            array(false, 'a=pow(1, 2, 3);'),
+            array(true, 'a=rad2deg(0.5);'),
+            array(false, 'a=rad2deg();'),
+            array(false, 'a=rad2deg(1, 2);'),
+            array(true, 'a=round(0.123, 2);'),
+            array(true, 'a=round(0.123);'),
+            array(false, 'a=round();'),
+            array(false, 'a=round(0.123, 2, 3);'),
+            array(true, 'a=sigfig(0.5, 1);'),
+            array(false, 'a=sigfig();'),
+            array(false, 'a=sigfig(1);'),
+            array(false, 'a=sigfig(1, 2, 3);'),
+            array(true, 'a=sqrt(0.5);'),
+            array(false, 'a=sqrt();'),
+            array(false, 'a=sqrt(1, 2);'),
+            array(false, 'a=sqrt(1, 2);'),
+        );
+        $qv = new variables;
+        foreach ($testcases as $case) {
+            $errmsg = null;
+            try {
+                $v = $qv->vstack_create();
+                $qv->evaluate_assignments($v, $case[1]);
+            } catch (Exception $e) {
+                $errmsg = $e->getMessage();
+            }
+            if ($case[0]) {
+                $this->assertNull($errmsg);
+            } else {
+                $this->assertNotNull($errmsg);
+            }
+        }
+    }
+
+    /**
+     * Test: incovation of all documented string/array functions
+     */
+    public function test_invocation_string_array() {
+        $testcases = array(
+            array(true, 'a=concat([1, 2], [2, 4]);'),
+            array(true, 'a=concat([1, 2], [2, 4], [3, 5], [5, 6]);'),
+            array(true, 'a=concat([1], [2], [3], [4], [5], [6]);'),
+            array(true, 'a=concat(["1"], ["2"], ["3"], ["4"], ["5"], ["6"]);'),
+            array(false, 'a=concat();'),
+            array(false, 'a=concat([1, 2]);'),
+            array(false, 'a=concat(1);'),
+            array(false, 'a=concat(1, 2);'),
+            array(true, 'a=diff([1, 2], [2, 4]);'),
+            array(false, 'a=diff();'),
+            array(false, 'a=diff([1, 2]);'),
+            array(false, 'a=diff([1, 2], [2, 4], [3, 5]);'),
+            array(false, 'a=diff(1);'),
+            array(false, 'a=diff(1, 2);'),
+            array(true, 'a=fill(3, "x");'),
+            array(true, 'a=fill(3, 0);'),
+            array(false, 'a=fill(0);'),
+            array(false, 'a=fill(3, 3, 3);'),
+            array(true, 'a=join(" ", ["a", "b"]);'),
+            array(true, 'a=join(" ", ["a", 1]);'),
+            array(true, 'a=join(" ", "a", "b", "c");'),
+            array(true, 'a=join(" ", 1, 2, 3, 4);'),
+            array(false, 'a=join();'),
+            array(false, 'a=join(3);'),
+            array(false, 'a=join(["a", "b"]);'),
+            array(true, 'a=len([1, 2, 3]);'),
+            array(true, 'a=len(["1", "2", "3"]);'),
+            array(true, 'a=len(["1", 2, "3"]);'),
+            array(false, 'a=len();'),
+            array(false, 'a=len(1);'),
+            array(true, 'a=map("+", [1, 2], [3, 4]);'),
+            array(true, 'a=map("abs", [-1, -2]);'),
+            array(false, 'a=map("+", [1, 2]);'), // Binary operator needs two lists.
+            array(false, 'a=map("abs", [-1, -2], [3, 4]);'),
+            array(false, 'a=map("x", [-1, -2]);'),
+            array(false, 'a=map();'),
+            array(false, 'a=map("+");'),
+            array(false, 'a=map("abs");'),
+            array(false, 'a=map([1, 2, 3]);'),
+            array(true, 'a=sort([1, 2, 3]);'),
+            array(true, 'a=sort(["1", "2", "3"]);'),
+            array(true, 'a=sort(["1", 2, "3"]);'),
+            array(false, 'a=sort();'),
+            array(false, 'a=sort(1);'),
+            array(false, 'a=sort(1, 2);'),
+            array(true, 'a=str(1);'),
+            array(false, 'a=str();'),
+            array(false, 'a=str("1");'),
+            array(false, 'a=str(1, 2);'),
+            array(false, 'a=str([1, 2]);'),
+            array(true, 'a=sublist([1, 2, 3], [1, 1, 1, 1]);'),
+            array(false, 'a=sublist();'),
+            array(false, 'a=sublist(1);'),
+            array(false, 'a=sublist(1, 2);'),
+            array(false, 'a=sublist(1, 2, 3);'),
+            array(false, 'a=sublist([1, 2, 3]);'),
+            array(false, 'a=sublist([1, 2, 3], [5]);'), // Index is out of range.
+            array(false, 'a=sublist([1, 2, 3], [1, 1, 1, 1], [1, 2, 3]);'),
+            array(true, 'a=sum([1, 2, 3]);'),
+            array(false, 'a=sum(["1", "2", "3"]);'),
+            array(false, 'a=sum();'),
+            array(false, 'a=sum(1);'),
+            array(false, 'a=sum(1, 2);'),
+            array(false, 'a=sum([1, 2, 3], [1, 2, 3]);'),
+        );
+        $qv = new variables;
+        foreach ($testcases as $case) {
+            $errmsg = null;
+            try {
+                $v = $qv->vstack_create();
+                $qv->evaluate_assignments($v, $case[1]);
+            } catch (Exception $e) {
+                $errmsg = $e->getMessage();
+            }
+            if ($case[0]) {
+                $this->assertNull($errmsg);
+            } else {
+                $this->assertNotNull($errmsg);
+            }
+        }
+    }
+
+    /**
+     * Test poly() function
+     */
+    public function test_poly() {
+        $testcases = array(
+            // With just a number...
+            array('p=poly(5);', '+5'),
+            array('p=poly(1.5);', '+1.5'),
+            array('p=poly(0);', '0'),
+            array('p=poly(-1.5);', '-1.5'),
+            array('p=poly(-5);', '-5'),
+            // With one variable (or arbitrary string) and a number...
+            array('p=poly("x", -5);', '-5x'),
+            array('p=poly("x", 3);', '3x'),
+            array('p=poly("x", 3.7);', '3.7x'),
+            array('p=poly("x", 1);', 'x'),
+            array('p=poly("x", -1);', '-x'),
+            array('p=poly("x", -1.8);', '-1.8x'),
+            array('p=poly("x", 3, "+");', '+3x'),
+            array('p=poly("x^5", 3, "+");', '+3x^5'),
+            array('p=poly("x", 0);', '0'),
+            // Usage of other variables as coefficients...
+            array('a=5; b=2; p=poly([a,b]);', '5x+2'),
+            array('a=5; b=2; p=poly(a*b);', '+10'),
+            // Usage of other functions in the list of coefficients...
+            array('p=poly("x", [1, sqrt(3**2), 1]);', 'x^{2}+3x+1'),
+            // With a variable and a list of numbers, with or without a separator...
+            array('p=poly("x", [1, 1, 1]);', 'x^{2}+x+1'),
+            array(
+                'p=poly("x", [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]);',
+                'x^{19}+2x^{18}+3x^{17}+4x^{16}+5x^{15}+6x^{14}+7x^{13}+8x^{12}+9x^{11}+10x^{10}+11x^{9}'
+                .'+12x^{8}+13x^{7}+14x^{6}+15x^{5}+16x^{4}+17x^{3}+18x^{2}+19x+20'
+            ),
+            array('p=poly("x", [1.3, 1.5, 1.9]);', '1.3x^{2}+1.5x+1.9'),
+            array('p=poly("x", [0, 0, 1]);', '1'),
+            array('p=poly("y", [0, 0, 1]);', '1'),
+            array('p=poly("x", [0, -1]);', '-1'),
+            array('p=poly("y", [0, -1]);', '-1'),
+            array('p=poly("y", [0, -2.8]);', '-2.8'),
+            array('p=poly("x", [1, 0, 1]);', 'x^{2}+1'),
+            array('p=poly("y", [1, 0, 1]);', 'y^{2}+1'),
+            array('p=poly("x", [1, 2, 3]);', 'x^{2}+2x+3'),
+            array('p=poly("x", [-1, -2, -3]);', '-x^{2}-2x-3'),
+            array('p=poly("y", [-1, -2, -3]);', '-y^{2}-2y-3'),
+            array('p=poly("y", [1, 1, 1]);', 'y^{2}+y+1'),
+            array('p=poly("y", [1, 2, 3]);', 'y^{2}+2y+3'),
+            array('p=poly("y", [2, -1], "&");', '2y&-1'),
+            array('p=poly("z", [1, 1, 1], "&");', 'z^{2}&+z&+1'),
+            array('p=poly("y", [-1, -2, -3], "&");', '-y^{2}&-2y&-3'),
+            array('p=poly("x", [0, 0, 0]);', '0'),
+            array('p=poly("x", [0, 0, 0], "&");', '&&0'),
+            // With multiple variables and coefficients plus a separator...
+            array('p=poly(["x","y","z"], [1, 1, 1], "&");', 'x&+y&+z'),
+            array('p=poly(["x","y","z"], [2, 3, 4], "&");', '2x&+3y&+4z'),
+            array('p=poly(["x","y","z"], [-2, -3, -4], "&");', '-2x&-3y&-4z'),
+            array('p=poly(["x","y","z"], [-2.4, -3.1, -4.0], "&");', '-2.4x&-3.1y&-4z'),
+            array('p=poly(["x","y","z"], [-1, -1, -1], "&");', '-x&-y&-z'),
+            array('p=poly(["x","y","z"], [0, 0, 0], "&");', '&&0'),
+            array('p=poly(["x","y","z"], [0, 0, 0]);', '0'),
+            // With the default variable x, with or without a separator...
+            array('p=poly([1, 1, 1]);', 'x^{2}+x+1'),
+            array('p=poly([-1, -1, -1]);', '-x^{2}-x-1'),
+            array('p=poly([0, 0, 1]);', '1'),
+            array('p=poly([0, 0, 0]);', '0'),
+            array('p=poly([0, -1]);', '-1'),
+            array('p=poly([1, 0, 1]);', 'x^{2}+1'),
+            array('p=poly([1, 2, 3]);', 'x^{2}+2x+3'),
+            array('p=poly([-1, -2, -3]);', '-x^{2}-2x-3'),
+            array('p=poly([-1, -2, -3], "&");', '-x^{2}&-2x&-3'),
+            array('p=poly([0, 1], "&");', '&1'),
+            array('p=poly([1, 0, 1], "&");', 'x^{2}&&+1'),
+            array('p=poly([1, 0, 0, 1], "&");', 'x^{3}&&&+1'),
+            // With a list of variables and coefficients...
+            array('p=poly(["x", "y", "xy"], [-1, -2, -3]);', '-x-2y-3xy'),
+            array('p=poly(["x", "y", "xy"], [1, 0, -3]);', 'x-3xy'),
+            array('p=poly(["x", "y"], [1, 0, -3]);', 'x-3x'),
+            array('p=poly(["x", "y"], [1, 1, 1, 1]);', 'x+y+x+y'),
+            array('p=poly(["x", "y"], [1, 1, 1, 1], "&");', 'x&+y&+x&+y'),
+            // With an empty string and a separator, we build a matrix row...
+            array('p=poly("", [1, 1, 1, 1], "&");', '1&1&1&1'),
+            array('p=poly("", [-1, 1, -1, 1], "&");', '-1&1&-1&1'),
+            array('p=poly("", [1, -1, 1, -1], "&");', '1&-1&1&-1'),
+            array('p=poly("", [0, 0, 0, 0], "&");', '0&0&0&0'),
+            array('p=poly("", [1, 0, 2, 3], "&");', '1&0&2&3'),
+            array('p=poly("", [0, 1, 0, -1], "&");', '0&1&0&-1'),
+            // With double separators for e.g. equation systems...
+            array('p=poly(["x", "y", "z"], [1, 1, 1], "&&");', 'x&+&y&+&z'),
+            array('p=poly(["x", "y", "z"], [1, 2, 3], "&&");', 'x&+&2y&+&3z'),
+            array('p=poly(["x", "y", "z"], [-1, -1, -1], "&&");', '-x&-&y&-&z'),
+            array('p=poly(["x", "y", "z"], [-1, -2, -3], "&&");', '-x&-&2y&-&3z'),
+            array('p=poly(["x", "y", "z"], [0, 1, 1], "&&");', '&&y&+&z'),
+            array('p=poly(["x", "y", "z"], [1, 0, 1], "&&");', 'x&&&+&z'),
+            array('p=poly(["x", "y", "z"], [1, 1, 0], "&&");', 'x&+&y&&'),
+            array('p=poly(["x", "y", "z"], [0, 0, 1], "&&");', '&&&&z'),
+            array('p=poly(["x", "y", "z"], [0, 0, -1], "&&");', '&&&-&z'),
+            array('p=poly(["x", "y", "z"], [0, 0, 0], "&&");', '&&&&0'),
+            // Separator with even length, but not doubled; no practical use...
+            array('p=poly(["x", "y", "z"], [1, -2, 3], "&#");', 'x&#-2y&#+3z'),
+            // Artificially making the lengh odd; no practical use...
+            array('p=poly(["x", "y", "z"], [1, -2, 3], "&& ");', 'x&& -2y&& +3z'),
+        );
+        foreach ($testcases as $case) {
+            $qv = new variables;
+            $errmsg = null;
+            try {
+                $v = $qv->vstack_create();
+                $result = $qv->evaluate_assignments($v, $case[0]);
+            } catch (Exception $e) {
+                $errmsg = $e->getMessage();
+            }
+            $this->assertNull($errmsg);
+            $this->assertEquals($case[1], $result->all['p']->value);
+        }
+        $testcases = array(
+            array('p=poly();', '1: A subexpression is empty.'),
+            array('p=poly("x");', '1: Wrong number or wrong type of parameters'),
+            array('p=poly("x", "x");', '1: Wrong number or wrong type of parameters'),
+            array('p=poly(["x", "y"]);', '1: Wrong number or wrong type of parameters'),
+            array('p=poly(["x", "y"], 1);', '1: Wrong number or wrong type of parameters'),
+
+        );
+        foreach ($testcases as $case) {
+            $qv = new variables;
+            $errmsg = null;
+            try {
+                $v = $qv->vstack_create();
+                $result = $qv->evaluate_assignments($v, $case[0]);
+            } catch (Exception $e) {
+                $errmsg = $e->getMessage();
+            }
+            $this->assertStringStartsWith($case[1], $errmsg);
+        }
+    }
+
+    /**
+     * Test fqversionnumber() function
+     */
+    public function test_fqversionnumber() {
+        $qv = new variables();
+        $errmsg = null;
+        try {
+            $v = $qv->vstack_create();
+            $result = $qv->evaluate_assignments($v, 'a=fqversionnumber();');
+        } catch (Exception $e) {
+            $errmsg = $e->getMessage();
+        }
+        $this->assertNull($errmsg);
+        $this->assertEquals(get_config('qtype_formulas')->version, $result->all['a']->value);
+    }
+
+
 }

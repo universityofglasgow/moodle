@@ -27,6 +27,7 @@ namespace block_xp\output;
 defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir . '/tablelib.php');
 
+use action_menu_link;
 use context_course;
 use context_helper;
 use moodle_database;
@@ -37,8 +38,10 @@ use stdClass;
 use table_sql;
 use block_xp\di;
 use block_xp\local\course_world;
-use block_xp\local\xp\course_user_state_store;
+use block_xp\local\permission\access_logs_permissions;
+use block_xp\local\routing\url_resolver;
 use block_xp\local\utils\user_utils;
+use block_xp\local\xp\course_user_state_store;
 use block_xp\local\xp\state_with_subject;
 
 /**
@@ -56,8 +59,12 @@ class report_table extends table_sql {
     protected $world = null;
     /** @var \block_xp\local\xp\course_user_state_store The store. */
     protected $store = null;
+    /** @var access_logs_permissions|null The log access permissions. */
+    protected $logaccessperms = null;
     /** @var renderer_base The renderer. */
     protected $renderer = null;
+    /** @var url_resolver The URL resolver. */
+    protected $urlresolver;
     /** @var int The groupd ID. */
     protected $groupid = null;
     /** @var array The columns definition where keys are IDs, values are lang strings. */
@@ -87,6 +94,12 @@ class report_table extends table_sql {
         $this->world = $world;
         $this->renderer = $renderer;
         $this->store = $store;
+        $this->urlresolver = di::get('url_resolver');
+
+        $accessperms = $this->world->get_access_permissions();
+        if ($accessperms instanceof access_logs_permissions) {
+            $this->logaccessperms = $accessperms;
+        }
 
         // Init the stuff.
         $this->init();
@@ -152,7 +165,8 @@ class report_table extends table_sql {
 
         // Define SQL.
         $this->sql = new stdClass();
-        $this->sql->fields = user_utils::picture_fields('u') . ', COALESCE(x.lvl, 1) AS lvl, x.xp, ' .
+        $this->sql->fields = user_utils::picture_fields('u') . ', u.idnumber, u.email, u.username, ' .
+            'COALESCE(x.lvl, 1) AS lvl, x.xp, ' .
             context_helper::get_preload_record_columns_sql('ctx');
         $this->sql->from = "{user} u
                        JOIN {context} ctx
@@ -241,23 +255,45 @@ class report_table extends table_sql {
     }
 
     /**
+     * Get the actions for row.
+     *
+     * @param stdClass $row Table row.
+     * @return action_menu_link[] List of actions.
+     */
+    protected function get_row_actions($row) {
+        $actions = [];
+
+        $url = new moodle_url($this->baseurl, ['action' => 'edit', 'userid' => $row->id]);
+        $actions[] = new action_menu_link($url, new pix_icon('t/edit', get_string('edit', 'core')), get_string('edit', 'core'));
+
+        if ($this->logaccessperms && $this->logaccessperms->can_access_logs()) {
+            $url = $this->urlresolver->reverse('log', ['courseid' => $this->world->get_courseid()]);
+            $url->param('userid', $row->id);
+            $actions[] = new action_menu_link($url, new pix_icon('t/log', get_string('logs', 'core')),
+                get_string('viewlogs', 'block_xp'));
+        }
+
+        if (isset($row->xp)) {
+            $url = new moodle_url($this->baseurl, ['action' => '', 'delete' => 1, 'userid' => $row->id]);
+            $actions[] = new action_menu_link($url, new pix_icon('t/delete', get_string('delete', 'core')),
+                get_string('delete', 'core'));
+        }
+
+        return $actions;
+    }
+
+    /**
      * Formats the column actions.
      *
      * @param stdClass $row Table row.
      * @return string Output produced.
      */
     protected function col_actions($row) {
-        $actions = [];
-
-        $url = new moodle_url($this->baseurl, ['action' => 'edit', 'userid' => $row->id]);
-        $actions[] = $this->renderer->action_icon($url, new pix_icon('t/edit', get_string('edit')));
-
-        if (isset($row->xp)) {
-            $url = new moodle_url($this->baseurl, ['action' => '', 'delete' => 1, 'userid' => $row->id]);
-            $actions[] = $this->renderer->action_icon($url, new pix_icon('t/delete', get_string('delete')));
+        $actions = $this->get_row_actions($row);
+        if (empty($actions)) {
+            return '';
         }
-
-        return implode(' ', $actions);
+        return $this->renderer->control_menu($this->get_row_actions($row));
     }
 
     /**

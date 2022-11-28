@@ -29,6 +29,7 @@ defined('MOODLE_INTERNAL') || die();
 use admin_category;
 use admin_settingpage;
 use admin_externalpage;
+use admin_setting;
 use admin_setting_flag;
 use admin_setting_heading;
 use admin_setting_configcheckbox;
@@ -36,6 +37,7 @@ use admin_setting_configmultiselect;
 use admin_setting_configselect;
 use admin_setting_configtext;
 use admin_setting_configtextarea;
+use block_xp\di;
 use block_xp\local\config\config;
 use block_xp\local\config\course_world_config;
 use block_xp\local\routing\url_resolver;
@@ -144,6 +146,9 @@ class default_settings_maker implements settings_maker {
      */
     protected function get_general_settings() {
         $settings = [];
+
+        // Display a list of recommended plugins.
+        $settings[] = new recommended_plugins_setting();
 
         // Context in which the block is enabled.
         $settings[] = (new admin_setting_configselect(
@@ -299,6 +304,14 @@ class default_settings_maker implements settings_maker {
         $settings[] = (new admin_setting_configtextarea('block_xp/blockdescription',
             get_string('configdescription', 'block_xp'), get_string('configdescription_help', 'block_xp'),
             $defaults['blockdescription'], PARAM_TEXT));
+
+        // Block ranking snapshot.
+        $settings[] = (new admin_setting_configselect('block_xp/blockrankingsnapshot',
+            get_string('configblockrankingsnapshot', 'block_xp'), get_string('configblockrankingsnapshot_help', 'block_xp'),
+            $defaults['blockrankingsnapshot'], [
+                0 => get_string('no'),
+                1 => get_string('yes')
+            ]));
 
         // Block recent activity.
         $settings[] = (new admin_setting_configselect('block_xp/blockrecentactivity',

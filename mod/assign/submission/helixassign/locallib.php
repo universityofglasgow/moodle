@@ -150,7 +150,7 @@ class assign_submission_helixassign extends assign_submission_plugin {
         }
 
         $output = $PAGE->get_renderer('mod_helixmedia');
-        $disp = new \mod_helixmedia\output\modal($preid, $thumbparams, $params, "moodle-lti-upload-btn.png");
+        $disp = new \mod_helixmedia\output\modal($preid, $thumbparams, $params, true);
         $html = $output->render($disp);
 
         $PAGE->requires->js_call_amd('assignsubmission_helixassign/cancel', 'init', array($preid, $USER->id, helixmedia_get_status_url()));
@@ -304,7 +304,7 @@ class assign_submission_helixassign extends assign_submission_plugin {
             }
 
             $output = $PAGE->get_renderer('mod_helixmedia');
-            $disp = new \mod_helixmedia\output\modal($helixassignsubmission->preid, $thumbparams, $params, "moodle-lti-viewsub-btn.png",
+            $disp = new \mod_helixmedia\output\modal($helixassignsubmission->preid, $thumbparams, $params, "magnifier",
                 get_string('view_submission', 'assignsubmission_helixassign'), false, false, $align);
             return $output->render($disp);
         }
@@ -387,6 +387,48 @@ class assign_submission_helixassign extends assign_submission_plugin {
             return helixmedia_is_preid_empty($helixassignsubmission->preid, $this, $submission->userid);
         }
 
+        return true;
+    }
+
+    /**
+     * Determine if a submission is empty
+     *
+     * This is distinct from is_empty in that it is intended to be used to
+     * determine if a submission made before saving is empty.
+     *
+     * @param stdClass $data The submission data
+     * @return bool
+     */
+    public function submission_is_empty(stdClass $data) {
+        $status = helixmedia_get_media_status($data->helixassign_preid, $data->userid);
+
+        // This will give the date the media was linked to the resource link id for MEDIAL 8.0.008 and better. Earlier versions will just be true or false
+        if (is_bool($status)) {
+            // Need to invert the status, the method will return true if there is something present, but we need to return true for empty.
+            return !$status;
+        }
+
+        // If we are here, then we must have a date. Check it is more recent that then last sub date.
+        if ($data->lastmodified > $status) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Remove a submission.
+     *
+     * @param stdClass $submission The submission
+     * @return boolean
+     */
+    public function remove(stdClass $submission) {
+        global $DB;
+
+        $submissionid = $submission ? $submission->id : 0;
+        if ($submissionid) {
+            $DB->delete_records('assignsubmission_helixassign', array('submission' => $submissionid));
+        }
         return true;
     }
 }
