@@ -1,10 +1,9 @@
 const plugin = require('tailwindcss/plugin');
 
 module.exports = {
-    mode: 'jit',
     prefix: 'xp-',
     important: '.block_xp',
-    purge: [
+    content: [
         './renderer.php',
         './templates/**/*.mustache',
         './classes/form/**/*.php',
@@ -13,14 +12,25 @@ module.exports = {
         './css/safelist.txt',
         './ui/src/**/*.{js,ts,tsx}',
     ],
-    darkMode: false,
     theme: {
-        extend: {},
-    },
-    variants: {
-        extend: {},
+        extend: {
+            flex: {
+                '2': '2 2 0%',
+            },
+            fontSize: {
+                xxs: '0.6875rem' // 11px.
+            }
+        },
     },
     corePlugins: {
+        // Older versions of Moodle do not understand rgb(... / opacity).
+        backgroundOpacity: false,
+        borderOpacity: false,
+        ringOpacity: false,
+        textOpacity: false,
+        // Removes the @base.
+        preflight: false,
+        // Space breaks compatibility with older Moodles.
         space: false,
     },
     plugins: [

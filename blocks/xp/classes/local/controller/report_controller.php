@@ -201,7 +201,7 @@ class report_controller extends page_controller {
         // Confirming delete data.
         if ($canmanage && $this->get_param('delete')) {
             echo $this->get_renderer()->confirm(
-                markdown_to_html(get_string('reallydeleteuserstate', 'block_xp')),
+                markdown_to_html(get_string('reallydeleteuserstateandlogs', 'block_xp')),
                 new url($this->pageurl->get_compatible_url(), ['delete' => 1, 'confirm' => 1, 'sesskey' => sesskey()]),
                 new url($this->pageurl->get_compatible_url(), ['userid' => null])
             );
@@ -217,7 +217,9 @@ class report_controller extends page_controller {
 
         // Displaying the report.
         $this->print_group_menu();
+        echo html_writer::start_div('xp-cancel-overflow'); // Else dropdown menu is cropped on some versions.
         echo $this->get_table()->out(20, true);
+        echo html_writer::end_div();
 
         // Output the bottom actions.
         $actions = !$canmanage ? [] : $this->get_bottom_action_buttons();
