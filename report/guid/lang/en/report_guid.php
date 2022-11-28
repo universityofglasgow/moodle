@@ -32,7 +32,7 @@ $string['allowmultiple_help'] = 'If \'Yes\' user can be enrolled with more than 
 $string['attempt'] = 'Attempt';
 $string['categoryupload'] = 'Upload users to category';
 $string['categoryuploadinstructions'] = 'Upload your CSV file. First column is either GUID, ID number (staff number or matric number) or email as selected below.
-    Users will be created and added to the Course Catory with the selected role.
+    Users will be created and added to the Course Category with the selected role.
     <b>NOTE:</b> First line is for headers and is always ignored.';
 $string['changeuserdesc'] = 'Change username for \'{$a}\'. Take care - mistakes will stop them logging in';
 $string['changeusername'] = '<i class="fa fa-wrench"></i> Update';
@@ -118,7 +118,7 @@ $string['privacy:metadata'] = 'The GUID report does not store any personal data'
 $string['reset'] = 'Reset form';
 $string['resultfor'] = 'LDAP record for user {$a}';
 $string['roletoassign'] = 'Assign role';
-$string['roletoassign_help'] = 'New users to this course will be enrolled with this role. Existing users are ignored';
+$string['roletoassign_help'] = 'New users will be enrolled with this role. Existing users are ignored';
 $string['search'] = 'Search';
 $string['searcherror'] = 'Error returned by search (possibly too many results). Please refine your search and try again ({$a})';
 $string['submitfile'] = 'Upload CSV file';
@@ -139,7 +139,7 @@ $string['unenrolled'] = 'Unenrolled';
 $string['unenrolwarn'] = 'WARNING: selecting unenrol below may cause data loss';
 $string['updatesuccess'] = 'Profile of \'{$a}\' has been updated';
 $string['uploadaction'] = 'Enrol or unenrol';
-$string['uploadaction_help'] = 'Normally this form is used to enrol students. If you select unenrol they will be removed from your course instead. All other options are ignored. WARNING: removing students is likely to result in irreversible data loss.';
+$string['uploadaction_help'] = 'Normally this form is used to enrol/add users. If you select unenrol they will be removed instead. All other options are ignored. WARNING: removing users may result in irreversible data loss.';
 $string['uploadfile'] = 'CSV file';
 $string['uploadheader'] = 'Upload csv file';
 $string['uploadinstructions'] = 'Upload a csv file. First column must contain the GUID of the users. Subsequent columns (if present) are completely ignored. The first line (headings) is also ignored';
