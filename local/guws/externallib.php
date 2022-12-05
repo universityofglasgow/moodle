@@ -480,9 +480,10 @@ class local_guws_external extends external_api {
             if ($log->courseid == 0) {
                 $filteredlogs[] = $log;
             } else {
-                $context = context_course::instance($log->courseid);
-                if (has_capability('report/log:view', $context)) {
-                    $filteredlogs[] = $log;
+                if ($context = context_course::instance($log->courseid, IGNORE_MISSING)) {
+                    if (has_capability('report/log:view', $context)) {
+                        $filteredlogs[] = $log;
+                    }
                 }
             }
         }
