@@ -91,9 +91,13 @@ class logsdownload {
         $detail = '';
         $moduletype = '';
         if ($log->contextlevel == CONTEXT_MODULE) {
-            $cm = $this->modinfo->get_cm($log->contextinstanceid);
-            $detail = $cm->get_formatted_name();
-            $moduletype = $cm->get_module_type_name();
+            $cms = $this->modinfo->get_cms();
+            if (isset($cms[$log->contextinstanceid])) {
+                $cm = $cms[$log->contextinstanceid];
+                //$cm = $this->modinfo->get_cm($log->contextinstanceid);
+                $detail = $cm->get_formatted_name();
+                $moduletype = $cm->get_module_type_name();
+            }
         }
 
         return [$context, $detail, $moduletype];
