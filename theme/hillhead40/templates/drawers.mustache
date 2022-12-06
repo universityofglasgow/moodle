@@ -126,6 +126,7 @@
                     </div>
                 {{/hasblocks}}
             </div>
+            {{{ accessibilityText }}}
             {{{ notifications }}}
             {{{ output.full_header }}}
             {{#secondarymoremenu}}
@@ -168,8 +169,8 @@
     </div>
     {{{ output.standard_after_main_region_html }}}
 </div>
-
 </body>
+{{{ extrascripts }}}
 </html>
 {{#js}}
 M.util.js_pending('theme_boost/loader');

@@ -15,9 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Brief Description
- *
- * More indepth description.
+ * Renderer for UofG Hillhead 4.0 theme features
  *
  * @package
  * @copyright  2022 Greg Pedder <greg.pedder@glasgow.ac.uk>
@@ -32,19 +30,19 @@ class theme_hillhead40_core_renderer extends core_renderer {
      */
     protected function render_custom_menu(custom_menu $menu) {
         if (isloggedin()) {
-            $usesAccessibilityTools=get_user_preferences('theme_hillhead40_accessibility', false);
-            $vArg = 'clear';
-            $spanText = 'Hide';
-            if($usesAccessibilityTools === false) {
-                $vArg = 'on';
-                $spanText = 'Show';
+            $usesaccessibilitytools = get_user_preferences('theme_hillhead40_accessibility', false);
+            $varg = 'clear';
+            $spantext = 'Hide';
+            if ($usesaccessibilitytools === false) {
+                $varg = 'on';
+                $spantext = 'Show';
             }
-            $branchlabel = $spanText . ' Accessibility Tools';
-            $branchurl   = new moodle_url($CFG->wwwroot.'/theme/hillhead40/accessibility.php?o=theme_hillhead_accessibility&v=' . $vArg);
+            $branchlabel = $spantext . ' Accessibility Tools';
+            $script = '/theme/hillhead40/accessibility.php';
+            $args = '?o=theme_hillhead_accessibility&v=' . $varg;
+            $branchurl = new moodle_url($CFG->wwwroot . $script . $args);
             $branchtitle = $branchlabel;
             $branchsort  = 10000;
-            //$accessibilityButton = '<a href="'.$CFG->wwwroot.'/theme/hillhead40/accessibility.php?o=theme_hillhead_accessibility&v=' . $vArg . '"><span class="media-left"><i class="fa fa-universal-access"></i></span><span class="media-body">' . $spanText . ' Accessibility Tools</span></a>';
-
             $menu->add($branchlabel, $branchurl, $branchtitle, $branchsort);
         }
 
@@ -54,6 +52,7 @@ class theme_hillhead40_core_renderer extends core_renderer {
     /**
      * @return bool
      */
-    public function firstview_fakeblocks() {}
+    public function firstview_fakeblocks() {
+    }
 
 }

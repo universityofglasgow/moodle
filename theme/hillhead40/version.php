@@ -15,9 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Brief Description
- *
- * More indepth description.
+ * UofG version file for the plugin.
  *
  * @package    theme_hillhead40
  * @copyright  2022 Greg Pedder <greg.pedder@glasgow.ac.uk>
@@ -26,7 +24,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2022092600;
+$plugin->version   = 2022092601;
 $plugin->requires  = 2022041200;         // Requires Moodle version 4.0 or greater.
 $plugin->component = 'theme_hillhead40';
 $plugin->dependencies = [

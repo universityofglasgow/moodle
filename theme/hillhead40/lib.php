@@ -22,8 +22,6 @@
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
 function theme_hillhead40_get_main_scss_content($theme) {
 
     global $CFG;
@@ -31,7 +29,7 @@ function theme_hillhead40_get_main_scss_content($theme) {
     $sheets = ['config'];
 
     // These scss files should declare default values for "variables" that will be used by Moodle...
-    foreach($sheets as $sheet) {
+    foreach ($sheets as $sheet) {
         $scss .= file_get_contents($CFG->dirroot . '/theme/hillhead40/scss/'.$sheet.'.scss');
     }
 
@@ -41,7 +39,7 @@ function theme_hillhead40_get_main_scss_content($theme) {
     $sheets = ['hillhead40', 'accessibility', 'login'];
 
     // ...these scss files should declare more specific css "rules"...
-    foreach($sheets as $sheet) {
+    foreach ($sheets as $sheet) {
         $scss .= file_get_contents($CFG->dirroot . '/theme/hillhead40/scss/'.$sheet.'.scss');
     }
 
@@ -103,7 +101,8 @@ function theme_hillhead40_update_settings_images($settingname) {
 
 /**
  * Serves any files associated with the theme settings.
- * This ^crucial^ bit is helpfully missed out in the tutorial https://docs.moodle.org/dev/Creating_a_theme_based_on_boost#How_do_we_refer_to_an_image_in_SCSS_.3F
+ * This ^crucial^ bit is helpfully missed out in the tutorial
+ * https://docs.moodle.org/dev/Creating_a_theme_based_on_boost#How_do_we_refer_to_an_image_in_SCSS_.3F
  *
  * @param stdClass $course
  * @param stdClass $cm

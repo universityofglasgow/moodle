@@ -15,27 +15,28 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Brief Description
+ * Links for the footer template.
  *
- * More indepth description.
+ * Provide a list of links that need to appear in the footer template.
  *
- * @package
+ * @package    theme_hillhead40
  * @copyright  2022 Greg Pedder <greg.pedder@glasgow.ac.uk>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$footerLinks = [
+defined('MOODLE_INTERNAL') || die();
+
+$footerlinks = [
     'University Website' => 'https://www.gla.ac.uk',
     'Moodle Mobile App' => tool_mobile_create_app_download_url(),
-    'Moodle Inspector' => 'https://moodleinspector.gla.ac.uk',
     'Accessibility' => 'https://www.gla.ac.uk/legal/accessibility/statements/moodle',
     'Privacy and Cookies' => 'https://www.gla.ac.uk/legal/privacy/',
 ];
 
-$footerLinkText = '';
+$footerlinktext = '';
 
-foreach ($footerLinks as $name=>$link) {
-    $footerLinkText .= '<li><a href="'.$link.'">'.$name.'</a></li>';
+foreach ($footerlinks as $name => $link) {
+    $footerlinktext .= '<li><a href="'.$link.'">'.$name.'</a></li>';
 }
 
-$footerLinkText.= '<li class="tool_usertours-resettourcontainer"></li><li>'.page_doc_link('Help with this page').'</li>';
+$footerlinktext .= '<li class="tool_usertours-resettourcontainer"></li><li>' . page_doc_link('Help with this page') . '</li>';

@@ -2,6 +2,7 @@ $hillhead-blue: #005398;
 $hillhead-dark: darken($hillhead-blue, 10%);
 $hillhead-light: lighten($hillhead-blue, 10%);
 $hillhead-main: #003865;
+$hillhead-footer-color: #005e8d;
 $primary: $hillhead-blue;
 $hover-background: $hillhead-light;
 $hover-border: $hillhead-dark;
@@ -60,6 +61,11 @@ nav.navbar a.navbar-brand {
   font-size: 0;
 }
 
+// @see https://moodle.org/mod/forum/discuss.php?d=434018 for why it's done this way.
+.primary-navigation li[data-key="mycourses"] {
+  display: none;
+}
+
 #searchform-navbar {
   background-color: $hillhead-blue;
 }
@@ -84,7 +90,6 @@ nav.navbar a.navbar-brand {
 }
 
 #page-footer {
-  //border-top: 1px solid $hillhead-side-br;
   margin: 20px;
   color: #577492;
   text-align: center;
