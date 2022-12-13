@@ -1,6 +1,25 @@
 Changelog
 =========
 
+v3.13.2
+-------
+
+Bug fixes
+
+- Some JS files were not loaded in development mode
+
+v3.13.1
+-------
+
+Bug fixes
+
+- The block's ranking snapshot of a neighboured leaderboard was not always correct
+
+Technical changes
+
+- Neighboured leaderboard get_ranking, get_count and get_position behaviours changed
+- More suppression of developer notices about early renderer instantiation
+
 v3.13.0
 -------
 
