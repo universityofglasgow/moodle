@@ -37,12 +37,6 @@ class observer {
             $userid = $event->userid;
             $user = \local_guldap\api::normalise_user($userid);
             \local_guldap\api::login_actions($user);
-
-            // URLTOGO processing to support original MyGlasgow hook
-            $urltogo = optional_param('urltogo', '', PARAM_URL);
-            if ($urltogo) {
-                redirect($urltogo);
-            }
         }
     }
 }
