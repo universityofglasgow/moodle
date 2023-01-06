@@ -96,7 +96,7 @@ if ($mform->is_cancelled()) {
     // Upload settings.
     $roleid = $data->role;
     $firstcolumn = $data->firstcolumn;
-    isset($data->addgroups) ? $data->addgroups : 0;
+    $addgroups = isset($data->addgroups) ? $data->addgroups : 0;
     $action = $data->action;
     $allowmultiple = $data->allowmultiple;
 
