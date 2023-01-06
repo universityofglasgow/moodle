@@ -215,7 +215,7 @@ class lib {
             return $user;
         }
 
-        $user = create_user_record( strtolower($guid), 'not cached', 'guid' );
+        $user = create_user_record( strtolower($guid), 'not cached', 'saml2' );
         $user->firstname = $result[$config->map_firstname];
         $user->lastname = $result[$config->map_lastname];
         if (!empty($result['workforceid']) && !empty($config->map_idnumber)) {
