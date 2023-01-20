@@ -1,0 +1,116 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template block_massaction/block_massaction
+    Primary block template.
+    Classes required for JS:
+    * none
+    Data attributes required for JS:
+    * none
+    Context variables required for this template:
+    * actions, sectionselecthelpicon, show_moveto_select, show_duplicateto_select
+    Example context (json):
+    {
+        "actions": [{
+            "action": "delete",
+            "icon": "test.gif",
+            "actiontext": "Test"
+        }],
+        "show_moveto_select": false,
+        "show_duplicateto_select": false,
+        "formaction": "doSomething.php",
+        "instanceid": "1",
+        "requesturl": "doSomething.php",
+        "helpicon": "help.gif"
+    }
+}}
+<div id="block-massaction" class="block-massaction" aria-label="{{#str}} pluginname, block_massaction {{/str}}">
+    {{! Only display, if there are any actions available or if we at least can move items }}
+    {{#actions.0.action}}
+        <button class="btn btn-link btn-sm" id="block-massaction-control-selectall">
+            {{#str}} selectall, block_massaction {{/str}}
+        </button>
+        <br/>
+        <div class="d-flex flex-row">
+            <div class="block-massaction-select-containing-div flex-grow-1">
+                {{> block_massaction/section_select}}
+            </div>
+            <div class="block-massaction-section-select-help-icon">
+                {{{sectionselecthelpicon}}}
+            </div>
+        </div>
+        <button class="btn btn-link btn-sm" id="block-massaction-control-deselectall">
+            {{#str}} deselectall, block_massaction {{/str}}
+        </button><br/><br/>
+
+        {{#str}} withselected, block_massaction {{/str}}:
+    {{/actions.0.action}}
+
+    {{^actions}}
+        {{^show_moveto_select}}
+            {{#str}} noactionsavailable, block_massaction {{/str}}
+        {{/show_moveto_select}}
+    {{/actions}}
+
+    {{^actions}}
+        {{^show_duplicateto_select}}
+            {{#str}} noactionsavailable, block_massaction {{/str}}
+        {{/show_duplicateto_select}}
+    {{/actions}}
+
+    <div class="block-massaction-action">
+        {{#actions}}
+            <div id="block-massaction-action-{{action}}">
+                <button class="btn btn-link btn-sm text-left">
+                    {{#pix}} {{icon}}, moodle, {{actiontext}} {{/pix}}&nbsp;{{actiontext}}
+                </button>
+            </div>
+        {{/actions}}
+
+        {{#show_moveto_select}}
+            <div class="d-flex flex-row">
+                <div class="block-massaction-select-containing-div flex-grow-1">
+                    {{> block_massaction/moveto_select}}
+                </div>
+                <div>
+                    <button class="btn btn-link btn-sm" id="block-massaction-action-moveto"
+                        name="move_to_section">
+                        {{#pix}} t/right, moodle, {{#str}} action_movetosection, block_massaction{{/str}}{{/pix}}
+                    </button>
+                </div>
+            </div>
+        {{/show_moveto_select}}
+
+       {{#show_duplicateto_select}}
+            <div class="d-flex flex-row">
+                <div class="block-massaction-select-containing-div flex-grow-1">
+                    {{> block_massaction/duplicateto_select}}
+                </div>
+                <div>
+                    <button class="btn btn-link btn-sm" id="block-massaction-action-duplicateto"
+                        name="duplicate_to_section">
+                        {{#pix}} t/right, moodle, {{#str}} action_duplicatetosection, block_massaction{{/str}}{{/pix}}
+                    </button>
+                </div>
+            </div>
+        {{/show_duplicateto_select}}
+    </div>
+
+    <form id="block-massaction-control-form" name="block-massaction-control-form" action="{{formaction}}" method="POST">
+        <input type="hidden" id="block-massaction-control-request" name="request" value="">
+        <input type="hidden" id="block-massaction-instance_id" name="instance_id" value="{{instanceid}}">
+        <input type="hidden" id="block-massaction-return_url" name="return_url" value="{{requesturi}}">
+    </form>
+    <div id="block-massaction-help-icon">{{{helpicon}}}</div>
+</div>

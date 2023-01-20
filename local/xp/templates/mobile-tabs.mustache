@@ -1,0 +1,35 @@
+{{=<% %>=}}
+<%#enabled%>
+<div class="mma-xp-tabs-bar header-md" margin-bottom>
+    <ion-grid class="ion-no-padding">
+        <ion-row>
+            <ion-col class="ion-no-padding">
+                <ion-button class="ion-no-padding ion-no-margin" fill="clear" expand="full" core-site-plugins-new-content component="local_xp" method="state_page" samePage="true" [args]="{courseid: <% courseid %>}" <%#stateactive%>active<%/stateactive%>>
+                    <ion-icon slot="start" name="person"></ion-icon><%#str%>mylevel, local_xp<%/str%>
+                </ion-button>
+            </ion-col>
+            <%#hasinfo%>
+            <ion-col class="ion-no-padding">
+                <ion-button class="ion-no-padding ion-no-margin" fill="clear" expand="full" core-site-plugins-new-content component="local_xp" method="info_page" samePage="true" [args]="{courseid: <% courseid %>}" <%#infoactive%>active<%/infoactive%>>
+                    <ion-icon slot="start" name="information-circle-outline"></ion-icon><%#str%>navinfos, block_xp<%/str%>
+                </ion-button>
+            </ion-col>
+            <%/hasinfo%>
+            <%#hasladder%>
+            <ion-col class="ion-no-padding">
+                <ion-button class="ion-no-padding ion-no-margin" fill="clear" expand="full" core-site-plugins-new-content component="local_xp" method="ladder_page" samePage="true" [args]="{courseid: <% courseid %>}" <%#ladderactive%>active<%/ladderactive%>>
+                    <ion-icon slot="start" name="trophy"></ion-icon><%#str%>ladder, block_xp<%/str%>
+                </ion-button>
+            </ion-col>
+            <%/hasladder%>
+            <%#hasgroupladder%>
+            <ion-col class="ion-no-padding">
+                <ion-button class="ion-no-padding ion-no-margin" fill="clear" expand="full" core-site-plugins-new-content component="local_xp" method="group_ladder_page" samePage="true" [args]="{courseid: <% courseid %>}" <%#groupladderactive%>active<%/groupladderactive%>>
+                    <ion-icon slot="start" name="trophy"></ion-icon><%#str%>navgroupladder, local_xp<%/str%>
+                </ion-button>
+            </ion-col>
+            <%/hasgroupladder%>
+        </ion-row>
+    </ion-grid>
+</div>
+<%/enabled%>
