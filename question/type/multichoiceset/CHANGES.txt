@@ -1,0 +1,18 @@
+Release notes
+-------------
+
+Date          Version   Comment
+2022/08/11    1.10.1    Merge fixes from Joseph Rézeau, Alastair Spark and almadog to fix unit tests, version number, and presentation. 
+2021/07/09    1.10.0    Fix 3.10 answer alignment (provided by Joseph Rézeau & David Foord).
+2021/07/12    1.9.1     Support Ionic 5, and fix 3.9 mobile app answer display (contributed by Dani Palou).
+2021/07/08    1.9.0     Add support for new Moodle 3.9 standard instruction flag.
+2021/04/25    1.8.0     Fix Behat tests for new 3.8 question interface (provided by Fabian Batioja), clean up code.
+2021/04/25    1.7.6     Clean up 3.7 code, use 1.7.x for Moodle 3.7 releases.
+2020/11/16    1.6.7     Fix 3.9 answer vertical alignment issue by copying CSS from standard multichoice question.
+2020/07/10    1.6.6     Fix 3.9 presentation issue (solution provided by James Garrett).
+2019/05/08    1.6.5     Add support for combinable question type, improve error recovery and testing (provided by J-M Vedrine)
+2019/04/05    1.6.4     Add support for Spanish (International) (provided by Carlos Pasqualini)
+2019/01/29    1.6.3     Add support for mobile app 3.6 (provided by Zvonko Martinovic)
+2019/01/08    1.6.2     Fix handling of default numbering style
+2018/02/05    1.6.1     Fix presentation of answers in Boost theme, fix some PHPDocs warnings
+2018/01/31    1.6       Support Moodle mobile app

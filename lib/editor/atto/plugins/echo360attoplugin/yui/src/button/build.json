@@ -1,0 +1,10 @@
+{
+    "name": "moodle-atto_echo360attoplugin-button",
+    "builds": {
+        "moodle-atto_echo360attoplugin-button": {
+            "jsfiles": [
+                "button.js"
+            ]
+        }
+    }
+}

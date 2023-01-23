@@ -1,0 +1,9 @@
+{
+  "moodle-qtype_musictheory-musictheorykeyboardui": {
+    "requires": [
+        "base",
+        "node",
+        "datatype"
+    ]
+  }
+}
