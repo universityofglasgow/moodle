@@ -1,0 +1,18 @@
+{{#hastilephoto}}
+    {{#showprogressphototiles}}
+        {{#progress}}
+            <div class="progress-complete-alt pull-right completioncheckbox complete tileallcomplete" id="tileallcomplete-{{tileid}}" data-numcomplete="{{numComplete}}"
+                 data-numoutof="{{numOutOf}}" title="{{#str}}allcomplete, format_tiles{{/str}}"{{#usetooltips}} data-toggle="tooltip"{{/usetooltips}}>
+                {{#pix}}completion-check, format_tiles, {{#str}}allcomplete, format_tiles{{/str}}{{/pix}}
+            </div>
+        {{/progress}}
+    {{/showprogressphototiles}}
+{{/hastilephoto}}
+{{^hastilephoto}}
+    {{#progress}}
+        <div class="progress-complete-alt pull-right completioncheckbox complete tileallcomplete" id="tileallcomplete-{{tileid}}" data-numcomplete="{{numComplete}}"
+             data-numoutof="{{numOutOf}}" title="{{#str}}allcomplete, format_tiles{{/str}}"{{#usetooltips}} data-toggle="tooltip"{{/usetooltips}}>
+            {{#pix}}completion-check, format_tiles, {{#str}}allcomplete, format_tiles{{/str}}{{/pix}}
+        </div>
+    {{/progress}}
+{{/hastilephoto}}
