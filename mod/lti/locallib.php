@@ -1388,8 +1388,12 @@ function lti_verify_with_keyset($jwtparam, $keyseturl, $clientid) {
         $jwt = JWT::decode($jwtparam, $keys);
     } catch (Exception $e) {
         // Something went wrong, so attempt to update cached keyset and then try again.
-        $keyset = file_get_contents($keyseturl);
+        $keyset = download_file_content($keyseturl);
         $keysetarr = json_decode($keyset, true);
+
+        // Fix for firebase/php-jwt's dependency on the optional 'alg' property in the JWK.
+        $keysetarr = jwks_helper::fix_jwks_alg($keysetarr, $jwtparam);
+
         // JWK::parseKeySet uses RS256 algorithm by default.
         $keys = JWK::parseKeySet($keysetarr);
         $jwt = JWT::decode($jwtparam, $keys);
@@ -2437,7 +2441,7 @@ function lti_get_configured_types($courseid, $sectionreturn = 0) {
         $type->name     = 'lti_type_' . $ltitype->id;
         // Clean the name. We don't want tags here.
         $type->title    = clean_param($ltitype->name, PARAM_NOTAGS);
-        $trimmeddescription = trim($ltitype->description);
+        $trimmeddescription = trim($ltitype->description ?? '');
         if ($trimmeddescription != '') {
             // Clean the description. We don't want tags here.
             $type->help     = clean_param($trimmeddescription, PARAM_NOTAGS);
@@ -2454,7 +2458,7 @@ function lti_get_configured_types($courseid, $sectionreturn = 0) {
 function lti_get_domain_from_url($url) {
     $matches = array();
 
-    if (preg_match(LTI_URL_DOMAIN_REGEX, $url, $matches)) {
+    if (preg_match(LTI_URL_DOMAIN_REGEX, $url ?? '', $matches)) {
         return $matches[1];
     }
 }
