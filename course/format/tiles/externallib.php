@@ -47,7 +47,7 @@ class format_tiles_external extends external_api {
      * @param string $imagetype whether it's a tile icon or a background photo.
      * @param int $sourcecontextid the context id of the source photo or icon.
      * @param int $sourceitemid the item id of the course photo or icon.
-     * @return [] status and image URL if applicable.
+     * @return array status and image URL if applicable.
      * @throws dml_exception
      * @throws invalid_parameter_exception
      * @throws moodle_exception
@@ -254,7 +254,7 @@ class format_tiles_external extends external_api {
             $tilephoto->clear();
         }
         return  array(
-            'status' => $result ? true : false,
+            'status' => (bool)$result,
             'imageurl' => ''
         );
     }
@@ -337,7 +337,8 @@ class format_tiles_external extends external_api {
         $data['showsinglesectionlegacynav'] = !$setjsusedsession;
         $template = $params['sectionid'] == 0 ? 'format_tiles/section_zero' : 'format_tiles/single_section';
         $result = array(
-            'html' => $renderer->render_from_template($template, $data)
+            'html' => $renderer->render_from_template($template, $data),
+            'js' => $data['jsfooter']
         );
         // This session var is used later, when user revisits main course page, or a single section, for a course using this format.
         // If set to true, the page can safely be rendered from PHP in the javascript friendly format.
@@ -380,7 +381,8 @@ class format_tiles_external extends external_api {
     public static function get_single_section_page_html_returns () {
         return new external_single_structure(
             array(
-                'html' => new external_value(PARAM_RAW, 'HTML for the single section (tile contents)')
+                'html' => new external_value(PARAM_RAW, 'HTML for the single section (tile contents)'),
+                'js' => new external_value(PARAM_RAW, 'JS for the single section (tile)')
             )
         );
     }
@@ -394,7 +396,7 @@ class format_tiles_external extends external_api {
      * @throws moodle_exception
      */
     public static function get_mod_page_html($courseid, $cmid) {
-        global $DB, $PAGE;
+        global $DB;
         $params = self::validate_parameters(
             self::get_mod_page_html_parameters(),
             array('courseid' => $courseid, 'cmid' => $cmid)
@@ -407,7 +409,7 @@ class format_tiles_external extends external_api {
         $mod = get_fast_modinfo($params['courseid'])->get_cm($params['cmid']);
         require_capability('mod/' . $mod->modname . ':view', $modcontext);
         if ($mod && $mod->uservisible) {
-            if (array_search($mod->modname, explode(",", get_config('format_tiles', 'modalmodules'))) === false) {
+            if (!in_array($mod->modname, explode(",", get_config('format_tiles', 'modalmodules')))) {
                 throw new invalid_parameter_exception('Not allowed to call this mod type - disabled by site admin');
             }
             if ($mod->modname == 'page') {
@@ -578,7 +580,7 @@ class format_tiles_external extends external_api {
         require_capability('mod/' . $cm->modname . ':view', $context);
 
         $allowedmodalmodules  = format_tiles_allowed_modal_modules();
-        if (array_search($cm->modname, $allowedmodalmodules['modules']) === false
+        if (!in_array($cm->modname, $allowedmodalmodules['modules'])
             && count($allowedmodalmodules['resources']) == 0) {
             throw new invalid_parameter_exception(
                 'Not allowed to log views of this mod type - disabled by site admin or incorrect device type.'

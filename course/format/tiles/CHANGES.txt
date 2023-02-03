@@ -326,7 +326,7 @@ Other
 
 4.0.0.5 BETA (2022091501)
 =========================
-- Fix empty activities caused by core change MDL-74800 (Moodle core commit #68b3f1, merged in core version 4.0.2+ (Build: 20220805)).
+- Fix empty activities caused by core change MDL-74800 (Core commit #68b3f1, core version 4.0.2+ (Build: 20220805)).
 - Update format.js to follow current core version.
 - Typos and comments.
 
@@ -338,3 +338,11 @@ Other
 4.0.0.8 BETA (2022091700)
 =========================
 - Remove unnecessary override of core_courseformat\output\local\content\sectionselector (constructor mismatch).
+
+4.0.0.9 RC (2023013000)
+=======================
+- Fix manual completion button ("Mark as done") on labels in non-subtiles mode (issue 137)
+- Reinstate tile highlight feature (issue 140)
+- Fix JS loading for no view page course modules (e.g. mod_unilabel) (issue 123)
+- Avoid issue with missing grid format table (issue 141)
+- Improve handling of URL params in embedded YouTube and Vimeo URLs (issue 28 and 143)

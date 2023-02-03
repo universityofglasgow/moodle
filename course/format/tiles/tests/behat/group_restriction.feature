@@ -1,4 +1,4 @@
-@format @format_tiles @group_restriction @javascript
+@format @format_tiles @format_tiles_group_restriction @javascript
 Feature: Teacher can restrict course modules to groups
 
   Background:
@@ -14,6 +14,7 @@ Feature: Teacher can restrict course modules to groups
       | activity | name            | intro                      | course | idnumber | section | visible |
       | page     | Visible page    | Test page description      | C1     | page2    | 1       | 1       |
       | label    | Visible label   | I am an unrestricted label | C1     | label1   | 1       | 1       |
+      | label    | Restricted label| I am a restricted label    | C1     | label2   | 1       | 1       |
     And the following "course enrolments" exist:
       | user     | course | role           |
       | studenta | C1     | student        |
@@ -61,11 +62,9 @@ Feature: Teacher can restrict course modules to groups
     And I wait until the page is ready
     And I follow "Collapse all"
     And I expand section "1" for edit
-    And I add a "Label" to section "1"
-    And I wait "2" seconds
-    And I wait until the page is ready
-    And I set the following fields to these values:
-      | Label text | I am a restricted label |
+
+    And I open "I am a restricted label" actions menu
+    And I click on "Edit settings" "link" in the "I am a restricted label" activity
     And I expand all fieldsets
     And I click on "Add restriction..." "button"
     And I wait until the page is ready

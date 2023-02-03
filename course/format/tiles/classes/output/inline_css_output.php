@@ -76,7 +76,7 @@ class inline_css_output implements \renderable, \templatable {
      * Export the data for the mustache template.
      * @see format_tiles_width_template_data()
      * @param \renderer_base $output
-     * @return array|\stdClass
+     * @return array
      * @throws \dml_exception
      * @throws \moodle_exception
      */

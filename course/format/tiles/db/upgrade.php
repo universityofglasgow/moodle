@@ -152,7 +152,7 @@ function xmldb_format_tiles_upgrade($oldversion) {
             $filerecord['filepath'],
             $filerecord['filename']
         );
-        if ($existingfile == false) {
+        if (!$existingfile) {
             $fs->create_file_from_pathname($filerecord, $path . $filerecord['filename']);
         }
 

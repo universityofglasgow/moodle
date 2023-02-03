@@ -411,6 +411,9 @@
 .format-tiles .tile .completioncheckbox .icon {
     margin-top: 3px;
 }
+.format-tiles li.section.current:not(#section-0) .course-section-header {
+    border-top-color: red;
+}
 .format-tiles.theme_adaptable .subtile .completioncheckbox .icon {
     height: 19px;
     margin-top: 3px;
@@ -1130,6 +1133,11 @@ allow tiles to be taller and thinner so can fit two side by side in portrait on 
     color: #fff;
     min-height: 23px;
 }
+.format-tiles .embed_cm_modal button[data-action="toggle-manual-completion"] {
+    color: #fff;
+    border-color: #fff;
+    padding: 2px 5px 0 5px;
+}
 .format-tiles .modal-container .modal .modal-header.embed_cm_modal h3 {
     color: #fff;
 }
@@ -1143,7 +1151,7 @@ allow tiles to be taller and thinner so can fit two side by side in portrait on 
 .format-tiles .embed_cm_modal .modal-footer {
     display: none;
 }
-.format-tiles .embed_cm_modal i {
+.format-tiles .embed_cm_modal a i {
     width: 20px;
     height: 20px;
     font-size: 0.9em;
@@ -1408,7 +1416,7 @@ allow tiles to be taller and thinner so can fit two side by side in portrait on 
     /* stylelint-disable-next-line declaration-no-important */
     background-color: inherit !important;
 }
-.format-tiles li.activity button[data-action="change-completion-status"]:hover {
+.format-tiles u.subtiles li.activity button[data-action="toggle-manual-completion"]:hover {
     border: 3px solid orange;
     border-radius: 50%;
     transition: border 300ms ease-in-out;
@@ -1844,6 +1852,10 @@ allow tiles to be taller and thinner so can fit two side by side in portrait on 
     display: block;
     top: inherit;
     width: 100%;
+}
+.format-tiles li.activity.subtile .instancename.opaque-bg {
+    background-color: rgba(249, 249, 249, 0.8);
+    transition: background-color 200ms ease-in-out;
 }
 .format-tiles li.activity.subtile.hasphoto.altstyle .instancename {
     display: block;

@@ -100,7 +100,7 @@ define(["jquery", "format_tiles/browser_storage_set_up"], function ($, storageSe
      */
     var setLastSection = function(sectionNum) {
         if (!sectionNum) {
-            localStorage.clear(lastSectionStorageKey());
+            localStorage.clear();
         } else if (sectionNum !== lastInteractedSection && storageSetUp.storageAllowed) {
             lastInteractedSection = sectionNum;
             localStorage.setItem(lastSectionStorageKey(), sectionNum.toString());

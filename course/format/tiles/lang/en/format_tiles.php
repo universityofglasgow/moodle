@@ -124,7 +124,6 @@ $string['folderdisplayerror'] = 'Folders set to display content inline are not c
 $string['guidance'] = 'Guidance';
 $string['hide'] = 'Hide';
 $string['hidefromothers'] = 'Hide tile';
-$string['highlightoff'] = 'De-highlight';
 $string['home'] = 'Course home';
 $string['icontitle-address-book-o'] = 'Address book';
 $string['icontitle-assessment_graded'] = 'Assessment A+';

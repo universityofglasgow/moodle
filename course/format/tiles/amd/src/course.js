@@ -28,7 +28,7 @@
 
 define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
         "core/notification", "core/str", "format_tiles/tile_fitter"],
-    function ($, Templates, ajax, browserStorage, Notification, str, tileFitter) {
+    function ($, Templates, ajax, browserStorage, Notification, str, tileFitter, ) {
         "use strict";
 
         var isMobile;
@@ -58,6 +58,8 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
             TILE_CLICKABLE: ".tile-clickable",
             TILES: "ul.tiles",
             ACTIVITY: ".activity",
+            ACTIVITY_NAME: ".activityname",
+            INSTANCE_NAME: ".instancename",
             SPACER: ".spacer",
             SECTION_MOVEABLE: ".moveablesection",
             SECTION_ID: "#section-",
@@ -184,9 +186,10 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
          * Set the HTML for a course section to the correct div in the page
          * @param {Object} contentArea the jquery object for the content area
          * @param {String} content the HTML
+         * @param {String} js Any additional JS for the new HTML.
          * @returns {boolean} success
          */
-        var setCourseContentHTML = function (contentArea, content) {
+        var setCourseContentHTML = function (contentArea, content, js) {
             if (content) {
                 contentArea.html(content);
                 $(Selector.TILE_LOADING_ICON).fadeOut(300, function () {
@@ -268,6 +271,25 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                         videoJS.setUp();
                     });
                 }
+
+                // Some modules e.g. mod_unilabel need JS initialising when added to the page.
+                if (js && js.length) {
+                    contentArea.append(js);
+                }
+
+                setTimeout(() => {
+                    // If subtile title is long, it overlaps background image.
+                    // Check heights to see if any subtile backgrounds need dimming.
+                    // Allow short delay for content to be added first.
+                    const MAX_HEIGHT = 110;
+                    contentArea.find(
+                        Selector.ACTIVITY_NAME).each((i, el) => {
+                        el = $(el);
+                        if (el.height() > MAX_HEIGHT) {
+                            el.closest(Selector.INSTANCE_NAME).addClass('opaque-bg');
+                        }
+                    });
+                }, 100);
 
                 applyMathJax(contentArea);
                 return true;
@@ -467,7 +489,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
             } else {
                 // It looks like we may not have a connection so we can't launch notifications.
                 // We can warn the user like this instead.
-                setCourseContentHTML(contentArea, "<p>" + stringStore.noconnectionerror + "</p>");
+                setCourseContentHTML(contentArea, "<p>" + stringStore.noconnectionerror + "</p>", '');
                 setTimeout(function () {
                     expandSection(contentArea, sectionNum);
                 }, 500);
@@ -550,13 +572,13 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
 
                 // Still contact the server in case content has changed (e.g. restrictions now satisfied).
                 getSectionContentFromServer(courseId, dataSection).done(function (response) {
-                    setCourseContentHTML(relatedContentArea, $(response.html).html());
+                    setCourseContentHTML(relatedContentArea, $(response.html).html(), response.js);
                 });
             } else {
                 relatedContentArea.html(loadingIconHtml);
                 // Get from server.
                 getSectionContentFromServer(courseId, dataSection).done(function (response) {
-                    setCourseContentHTML(relatedContentArea, $(response.html).html());
+                    setCourseContentHTML(relatedContentArea, $(response.html).html(), response.js);
                     expandSection(relatedContentArea, dataSection);
                 }).fail(function (failResult) {
                     failedLoadSectionNotify(dataSection, failResult, relatedContentArea);
@@ -645,18 +667,6 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                                 overlay.fadeOut(300);
                             } else {
                                 populateAndExpandSection(courseId, thisTile, dataSection);
-                            }
-                            // Silently set the *next* section's content to if it exists and if user is not on mobile.
-                            // short delay as more important to get current section content first (above).
-                            var nextSecIfExists = $(Selector.SECTION_ID + (dataSection + 1));
-                            const usingH5pFilter = $('.filters-config[data-filter="h5p"]').length === 1;
-                            if (!isMobile && !usingH5pFilter && nextSecIfExists.length && dataSection > 0) {
-                                getSectionContentFromServer(courseId, dataSection + 1).done(function(response) {
-                                    setCourseContentHTML(
-                                        nextSecIfExists,
-                                        $(response.html).html()
-                                    );
-                                });
                             }
                         });
 
@@ -747,7 +757,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                         ]);
                         requests[0]
                             .done((response) => {
-                                setCourseContentHTML($(Selector.SECTION_ID + data.section), $(response.html).html());
+                                setCourseContentHTML($(Selector.SECTION_ID + data.section), $(response.html).html(), response.js);
                             })
                             .catch(err => {
                                 require(["core/log"], function(log) {
@@ -774,10 +784,15 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                         // We use pageContent for listener here, as completion button is replaced by core JS when it's clicked.
                         // We wait half a second to enable the completion change to be registered first.
                         pageContent.on(Event.CLICK, Selector.MANUAL_COMPLETION, function(e) {
-                            const sectionNum = $(e.currentTarget).closest(Selector.SECTION_MAIN).attr("data-section");
+                            const currentTarget = $(e.currentTarget);
+                            const sectionNum = currentTarget.closest(Selector.SECTION_MAIN).attr("data-section");
+                            const cmid = currentTarget.attr("data-cmid");
                             require(["format_tiles/completion"], function (completion) {
                                 setTimeout(() => {
-                                    completion.triggerCompletionChangedEvent(sectionNum);
+                                    completion.triggerCompletionChangedEvent(
+                                        sectionNum ? parseInt(sectionNum) : 0,
+                                        cmid ? parseInt(cmid) : 0
+                                    );
                                 }, 500);
                             });
                         });
@@ -891,21 +906,6 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
 
                         // Move focus to the first tile in the course (not sec zero contents if present).
                         // $("ul.tiles .tile").first().focus();
-                    }
-
-                    const mathJaxConfigDiv = $('.filters-config[data-filter="mathjaxloader"]');
-                    if (mathJaxConfigDiv.length) {
-                        if (typeof window.MathJax === 'undefined') {
-                            // If mathjax is in use and undefined, we try to initialise it.
-                            const script = $('<script/>');
-                            script.attr('src', mathJaxConfigDiv.attr('data-url'))
-                                .attr('type', 'text/javascript')
-                                .html(mathJaxConfigDiv.attr('data-config'));
-                            $('head').append(script);
-                            setTimeout(() => {
-                                applyMathJax($('#multi_section_tiles'));
-                            }, 2000);
-                        }
                     }
                 });
             }

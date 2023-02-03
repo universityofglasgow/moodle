@@ -102,7 +102,8 @@ class behat_format_tiles extends behat_base {
     /**
      * For a given page, check that its progress indicator shows a certain value (i.e. complete or not).
      *
-     * @Then /^format_tiles progress for "(?P<activitytitle_string>(?:[^"]|\\")*)" in "(?P<coursefullname_string>(?:[^"]|\\")*)" is "(?P<value>\d+)" in the database$/
+     * @Then /^format_tiles progress for "(?P<modtype_string>(?:[^"]|\\")*)" called "(?P<activitytitle_string>(?:[^"]|\\")*)" in "(?P<coursefullname_string>(?:[^"]|\\")*)" is "(?P<value>\d+)" in the database$/
+     * @param string $modtype
      * @param string $activitytitle
      * @param string $coursefullname
      * @param int $value
@@ -110,24 +111,31 @@ class behat_format_tiles extends behat_base {
      * @throws dml_exception
      * @throws moodle_exception
      */
-    public function progress_indicator_for_page_in_is_set_to($activitytitle, $coursefullname, $value) {
+    public function progress_indicator_for_page_in_is_set_to($modtype, $activitytitle, $coursefullname, $value) {
         // @codingStandardsIgnoreEnd.
         global $DB;
         $user = $this->get_session_user();
         $courseid = $DB->get_field('course', 'id', array('fullname' => $coursefullname), MUST_EXIST);
         $modinfo = get_fast_modinfo($courseid);
-        $cminfos = $modinfo->get_instances_of('page');
-        $pagecms = [];
+        $cminfos = $modinfo->get_instances_of($modtype);
+        $cms = [];
         foreach ($cminfos as $cminfo) {
-            $pagecms[$cminfo->name] = $cminfo->id;
+            $cms[$cminfo->name] = $cminfo->id;
         }
         $this->wait_for_pending_js(); // Wait for AJAX request to complete.
         $this->getSession()->wait(1000);
+        if (!isset($cms[$activitytitle])) {
+            throw new \Behat\Mink\Exception\ExpectationException(
+            "Activity type '$modtype' title '$activitytitle' not found in $coursefullname."
+                        . "Available cms ". json_encode(array_keys($cms)),
+                $this->getSession()
+            );
+        }
         $completionstate = $DB->get_field(
             'course_modules_completion',
             'completionstate',
             array(
-                'coursemoduleid' => $pagecms[$activitytitle],
+                'coursemoduleid' => $cms[$activitytitle],
                 'userid' => $user->id
             )
         );
@@ -135,14 +143,14 @@ class behat_format_tiles extends behat_base {
             return;
         } else if ($completionstate === false) {
             throw new \Behat\Mink\Exception\ExpectationException(
-                "Completion state should be $value but no record found for cmid $pagecms[$activitytitle] title $activitytitle",
+                "Completion state should be $value but no record found for cmid $cms[$activitytitle] title $activitytitle",
                 $this->getSession()
             );
         } else {
             throw new \Behat\Mink\Exception\ExpectationException(
                 "Completion state should be " . $value
                 . " but found '" . $completionstate
-                . "' for " . $activitytitle . ' cmid ' . $pagecms[$activitytitle],
+                . "' for cm type " . $modtype . ' title ' . $activitytitle . ' cmid ' . $cms[$activitytitle],
                 $this->getSession()
             );
         }
@@ -277,7 +285,7 @@ class behat_format_tiles extends behat_base {
      * @throws Exception
      */
     public function i_click_progress_indicator_for($activitytitle) {
-        $selector = "button[data-action=change-completion-status][data-activityname='{$activitytitle}']";
+        $selector = "button[data-action=toggle-manual-completion][data-activityname='{$activitytitle}']";
         $this->execute("behat_general::i_click_on", [$selector, "css_element"]);
         $this->execute('behat_general::wait_until_the_page_is_ready');
         $this->wait_for_pending_js();  // Important to wait for pending JS here so as await AJAX response.

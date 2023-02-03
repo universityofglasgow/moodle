@@ -57,7 +57,9 @@
         </a>
     {{/showDownload}}
     {{#hascompletion}}
-        <span class="ml-2">{{>format_tiles/completion_button}}</span>
+        {{#completionIsManual}}
+            <span class="ml-2">{{>core_course/completion_manual}}</span>
+        {{/completionIsManual}}
     {{/hascompletion}}
     <button type="button" class="close ml-2" data-action="hide" aria-label="Close">
         <span aria-hidden="true">×</span>

@@ -140,7 +140,7 @@ class course_output implements \renderable, \templatable {
         }
         $this->devicetype = \core_useragent::get_device_type();
         $this->usemodalsforcoursemodules = format_tiles_allowed_modal_modules();
-        $this->format = course_get_format($course);
+        $this->format = course_get_format($this->course);
         $this->modinfo = get_fast_modinfo($this->course);
 
         // TODO this class is no longer used if the user is editing.  To be removed.
@@ -164,8 +164,20 @@ class course_output implements \renderable, \templatable {
      * @throws \moodle_exception
      */
     public function export_for_template(\renderer_base $output) {
+        global $PAGE;
         if (!$this->courserenderer) {
             $this->courserenderer = $output;
+        }
+        if ($this->fromajax) {
+            try {
+                // Set current URL and force bootstrap_renderer to initiate moodle page.
+                $PAGE->set_url(new \moodle_url('/course/view.php', ['id' => $this->course->id]));
+                $output->header();
+                $PAGE->start_collecting_javascript_requirements();
+            } catch (\Exception $e) {
+                debugging('Could not start collecing JS requirements');
+            }
+
         }
         $data = $this->get_basic_data();
         $data = $this->append_section_zero_data($data, $output);
@@ -192,12 +204,13 @@ class course_output implements \renderable, \templatable {
      * @throws \dml_exception
      */
     private function get_basic_data() {
-        global $SESSION;
+        global $SESSION, $USER;
         $data = [];
         $data['canedit'] = has_capability('moodle/course:update', $this->coursecontext);
         $data['canviewhidden'] = $this->canviewhidden;
         $data['courseid'] = $this->course->id;
         $data['completionenabled'] = $this->completionenabled;
+        $data['istrackeduser'] = $this->completionenabled && $this->completioninfo->is_tracked_user($USER->id);
         $data['from_ajax'] = $this->fromajax;
         $data['ismobile'] = $this->devicetype == \core_useragent::DEVICETYPE_MOBILE;
         if (isset($SESSION->format_tiles_jssuccessfullyused)) {
@@ -242,13 +255,13 @@ class course_output implements \renderable, \templatable {
     /**
      * Temporary function for Moodle 4.0 upgrade - todo to be replaced.
      * @param object $section
-     * @return void
+     * @return string|bool
      * @throws \coding_exception
      */
     private function temp_section_activity_summary($section) {
         $widgetclass = $this->format->get_output_classname('content\\section\\cmsummary');
         $widget = new $widgetclass($this->format, $section);
-        $this->courserenderer->render($widget);
+        return $this->courserenderer->render($widget);
     }
 
     /**
@@ -283,15 +296,17 @@ class course_output implements \renderable, \templatable {
      * Append the data we need to render section zero.
      * @param [] $data
      * @param \renderer_base $output
-     * @return mixed
+     * @return array
      * @throws \coding_exception
      * @throws \dml_exception
      * @throws \moodle_exception
      */
     private function append_section_zero_data($data, $output) {
         $seczero = $this->modinfo->get_section_info(0);
+        $coursemods = $this->section_course_mods($seczero, $output);
         $data['section_zero']['summary'] = self::temp_format_summary_text($seczero);
-        $data['section_zero']['content']['course_modules'] = $this->section_course_mods($seczero, $output);
+        $data['section_zero']['content']['course_modules'] = $coursemods->mods;
+        $data['section_zero']['jsfooter'] = $coursemods->jsfooter;
         $data['section_zero']['secid'] = $this->modinfo->get_section_info(0)->id;
         $data['section_zero']['is_section_zero'] = true;
         $data['section_zero']['tileid'] = 0;
@@ -340,6 +355,7 @@ class course_output implements \renderable, \templatable {
         }
         return $data;
     }
+
     /**
      * Take the "common data" supplied as the $data argument, and build on it
      * with data which is specific to single section pages, then return
@@ -395,7 +411,9 @@ class course_output implements \renderable, \templatable {
         }
 
         // The list of activities on the page (HTML).
-        $data['course_modules'] = $this->section_course_mods($thissection, $output);
+        $coursemods = $this->section_course_mods($thissection, $output);
+        $data['course_modules'] = $coursemods->mods;
+        $data['jsfooter'] = $coursemods->jsfooter;
 
         // If lots of content in this section, we include nav arrows again at bottom of page.
         // But otherwise not as looks odd when no content.
@@ -482,7 +500,7 @@ class course_output implements \renderable, \templatable {
                 }
             }
 
-            $isphototile = $allowedphototiles && array_search($section->id, $phototileids) !== false;
+            $isphototile = $allowedphototiles && in_array($section->id, $phototileids);
             $showsection = $section->uservisible ||
                 ($section->visible && !$section->available && !empty($section->availableinfo));
             if ($sectionnum != 0 && $showsection) {
@@ -541,7 +559,7 @@ class course_output implements \renderable, \templatable {
                         // We only add the tile values to the individual tile if courseshowtileprogress is true.
                         // (Otherwise we only retain overall completion as above, not for each tile).
                         if ($this->courseformatoptions['courseshowtileprogress']) {
-                            $showaspercent = $this->courseformatoptions['courseshowtileprogress'] == 2 ? true : false;
+                            $showaspercent = $this->courseformatoptions['courseshowtileprogress'] == 2;
                             $newtile['progress'] = $this->completion_indicator(
                                 $completionthistile['completed'],
                                 $completionthistile['outof'],
@@ -619,7 +637,6 @@ class course_output implements \renderable, \templatable {
                 $data['overall_progress_indicator']['tileid'] = 0;
             }
         }
-        $data['moodlefiltersconfig'] = $this->get_filters_config();
         return $data;
     }
 
@@ -718,7 +735,7 @@ class course_output implements \renderable, \templatable {
      * @param array $outcomenames the course outcome names to display
      * @param int $firstbuttonid first button id so it follows on from last one
      * @see get_filter_numbered_buttons()
-     * @return array|string the button details
+     * @return array the button details
      */
     private function get_filter_outcome_buttons_data($tiles, $outcomenames, $firstbuttonid = 1) {
         $outcomebuttons = [];
@@ -816,25 +833,28 @@ class course_output implements \renderable, \templatable {
      * @see \core_completion\manager::get_activities() which covers similar ground
      * @see \core_course_renderer::course_section_cm_completion() which covers similar ground
      * In the snap theme, course_renderer::course_section_cm_list_item() covers similar ground
-     * @return array
+     * @return object
      * @throws \coding_exception
      * @throws \dml_exception
      * @throws \moodle_exception
      */
-    private function section_course_mods($section, $output) {
+    private function section_course_mods($section, $output): object {
+        global $PAGE;
+        $result = (object)['mods' => [], 'jsfooter' => ''];
         if (!isset($section->section)) {
             debugging("section->section is not set", DEBUG_DEVELOPER);
         }
         if (!isset($this->modinfo->sections[$section->section]) || !$cmids = $this->modinfo->sections[$section->section]) {
             // There are no CMs for the section (i.e. section is empty) so we silently return.
-            return [];
+            return $result;
         }
         if (empty($cmids)) {
             // There are no CMs for the section (i.e. section is empty) so we silently return.
-            return [];
+            return $result;
         }
+
         $previouswaslabel = false;
-        $sectioncontent = [];
+        $includejsfooter = false; // See comment below.
         foreach ($cmids as $index => $cmid) {
             $mod = $this->modinfo->get_cm($cmid);
             if ($mod->deletioninprogress) {
@@ -849,12 +869,28 @@ class course_output implements \renderable, \templatable {
             );
 
             if (!empty($moduledata)) {
-                $sectioncontent[] = $moduledata;
+                $result->mods[] = $moduledata;
                 $previouswaslabel = $mod->has_custom_cmlist_item();
             }
-
+            if ($this->fromajax && $mod->has_custom_cmlist_item()) {
+                // If we are being called from a web service, JS may be added to the page as individual modules are rendered.
+                // E.g. mod_unilabel templates contain {{#js}} helper tags, processed by \core\output\mustache_javascript_helper.
+                // These need to be added to the page, so that content added to the DOM by JS works correctly.
+                // We only need to use this where the module displays inline i.e. $mod->has_custom_cmlist_item() == true.
+                // Using same approach as in \core_external::get_fragment().
+                $includejsfooter = true;
+            }
         }
-        return $sectioncontent;
+
+        // See comment above where $includejsfooter is defined.
+        if ($includejsfooter) {
+            try {
+                $result->jsfooter = $PAGE->requires->get_end_code();
+            } catch (\Exception $e) {
+                debugging('Could not get end code');
+            }
+        }
+        return $result;
     }
 
     /**
@@ -911,7 +947,7 @@ class course_output implements \renderable, \templatable {
         }
         $moduleobject['available'] = $mod->available;
         $moduleobject['cmid'] = $mod->id;
-        $moduleobject['modtitle'] = $mod->get_formatted_name();
+        $moduleobject['activityname'] = $mod->get_formatted_name();
         $moduleobject['modname'] = $mod->modname;
         $moduleobject['iconurl'] = $mod->get_icon_url()->out(true);
         $moduleobject['url'] = $mod->url;
@@ -942,7 +978,7 @@ class course_output implements \renderable, \templatable {
 
         // Specific handling for embedded resource items (e.g. PDFs)  as allowed by site admin.
         if ($mod->modname == 'resource') {
-            if (array_search($moduleobject['modResourceType'], $this->usemodalsforcoursemodules['resources']) !== false) {
+            if (in_array($moduleobject['modResourceType'], $this->usemodalsforcoursemodules['resources'])) {
                 $moduleobject['isEmbeddedResource'] = 1;
                 $moduleobject['launchtype'] = 'resource-modal';
                 $moduleobject['pluginfileUrl'] = $this->plugin_file_url($mod);
@@ -962,7 +998,7 @@ class course_output implements \renderable, \templatable {
         }
 
         // Specific handling for embedded course module items (e.g. page) as allowed by site admin.
-        if (array_search($mod->modname, $this->usemodalsforcoursemodules['modules']) !== false) {
+        if (in_array($mod->modname, $this->usemodalsforcoursemodules['modules'])) {
             $moduleobject['isEmbeddedModule'] = 1;
             $moduleobject['launchtype'] = 'module-modal';
         }
@@ -1014,7 +1050,7 @@ class course_output implements \renderable, \templatable {
 
         if ($mod->modname == 'url') {
             $url = $DB->get_record('url', array('id' => $mod->instance), '*', MUST_EXIST);
-            $usemodalsforurl = array_search('url', $this->usemodalsforcoursemodules['resources']) !== false;
+            $usemodalsforurl = in_array('url', $this->usemodalsforcoursemodules['resources']);
             $modifiedvideourl = $this->check_modify_embedded_url($url->externalurl);
             if ($url->display == RESOURCELIB_DISPLAY_POPUP || $url->display == RESOURCELIB_DISPLAY_NEW) {
                 if ($mod->onclick) {
@@ -1048,7 +1084,7 @@ class course_output implements \renderable, \templatable {
                     RESOURCELIB_DISPLAY_POPUP
                 ];
                 $displaytype = url_get_final_display_type($url);
-                if (array_search($displaytype, $treataspopup) !== false) {
+                if (in_array($displaytype, $treataspopup)) {
                     $moduleobject['pluginfileUrl'] = $url->externalurl;
                     $moduleobject['extraclasses'] .= ' urlpopup';
                 }
@@ -1259,65 +1295,8 @@ class course_output implements \renderable, \templatable {
             $progressdata['percentCircumf'] = $circumference;
             $progressdata['percentOffset'] = round(((100 - $percentcomplete) / 100) * $circumference, 0);
         }
-        $progressdata['isSingleDigit'] = $percentcomplete < 10 ? true : false; // Position single digit in centre of circle.
+        $progressdata['isSingleDigit'] = $percentcomplete < 10; // Position single digit in centre of circle.
         return $progressdata;
-    }
-
-    /**
-     * The menu to edit a course module is generated by
-     * @see \core_course_renderer::course_section_cm_edit_actions()
-     * but its format/content are not ideal for tiles
-     * So before we call here we adapt the menu items to make
-     * them more compatible with this format
-     * @param \cm_info $mod the course module object
-     * @param int $sectionnum the id of the section number we are in
-     * @return array the amended actions
-     * @throws \coding_exception
-     * @throws \dml_exception
-     * @throws \moodle_exception
-     */
-    private function tiles_get_cm_edit_actions($mod, $sectionnum) {
-        // First get the standard list of actions from course/lib.
-        // Only use the indent action if course is not using subtiles.
-        $indent = ! $this->courseformatoptions['courseusesubtiles'] ? $mod->indent : -1;
-        $actions = course_get_cm_edit_actions($mod, $indent, $sectionnum);
-
-        // Otherwise proceed to adapt the standard items to this format.
-        foreach ($actions as $actionname => $action) {
-            $actionstomodify = ['hide', 'show', 'duplicate', 'groupsseparate', 'groupsvisible', 'groupsnone', 'stealth'];
-            if (!$this->treat_as_label($mod) && array_search($actionname, $actionstomodify) !== false) {
-                // For non labels, we don't want core JS to be used to hide/show etc when these menu items are used.
-                // Core converts the cm HTML to the standard activity display format (not subtile).
-                // Instead we want to use our own JS to render the new cm adding 'tiles-' to the start of data-action.
-                // E.g. tiles-show will prevent core JS running and allow our custom JS to run instead.
-                // (The core JS is in core_course/actions::editModule (actions.js).
-                // Note 'stealth' action can only be available if site admin has allowed stealth activities.
-                $action->attributes['data-action'] = "tiles-" . $action->attributes['data-action'];
-                $action->attributes['data-cmid'] = $mod->id;
-            }
-            if (get_class($action) == 'action_menu_link_primary') {
-                // We don't want items to be displayed as "action_menu_link_primary" in this format.
-                // E.g. separate groups item would be if we left it as is.
-                // So make a secondary menu item instead and replace it for the primary one.
-                $action = new \action_menu_link_secondary(
-                    $action->url,
-                    $action->icon,
-                    $action->text,
-                    $action->attributes
-                );
-
-                // And we don't want clicking them to trigger core JS calls.
-                $action->attributes['data-action'] = "tiles-" . $action->attributes['data-action'];
-
-            }
-            // We want to truncate if too long for this format.
-            $containsbracketat = strpos($action->text, '(');
-            if ($containsbracketat !== false) {
-                // Not much room in the drop down so truncate after open bracket e.g. "Separate Groups (Click to change)".
-                $action->text = substr($action->text, 0, $containsbracketat - 1);
-            }
-        }
-        return $actions;
     }
 
     /**
@@ -1329,40 +1308,29 @@ class course_output implements \renderable, \templatable {
     private function check_modify_embedded_url(string $url) {
         // Youtube.
         $matches = null;
-        $pattern  = '/^(http(s)??\:\/\/)?(www\.)?((youtube\.com\/watch\?v=)|(youtu.be\/))([a-zA-Z0-9\-_]+)$/';
+        $pattern  = '/^(http(s)??\:\/\/)?(www\.)?((youtube\.com\/watch\?v=)|(youtu.be\/))([a-zA-Z0-9\-_]+)(\?t=[0-9]+)*$/';
         preg_match($pattern, $url, $matches);
         if ($matches && isset($matches[7])) {
-            return 'https://www.youtube.com/embed/' . $matches[7];
+            if (isset($matches[8])) {
+                $starttime = filter_var($matches[8], FILTER_SANITIZE_NUMBER_INT);
+                if ($starttime) {
+                    return "https://www.youtube.com/embed/{$matches[7]}?start=$starttime";
+                }
+            }
+            return "https://www.youtube.com/embed/{$matches[7]}";
         }
 
         // Vimeo.
         $matches = null;
-        $pattern  = '/^(https?:\/\/)?(www.)?(player.)?vimeo.com\/([a-z]*\/)*([0-9]{6,11})[?]?.*$/';
+        $pattern  = '/^(https?:\/\/)?(www.)?(player.)?vimeo.com\/([a-z]*\/)*([0-9]{6,11})([?]?.*)$/';
         preg_match($pattern, $url, $matches);
         if ($matches && isset($matches[5])) {
-            return 'https://player.vimeo.com/video/' . $matches[5];
+            if (isset($matches[6])) {
+                return "https://player.vimeo.com/video/{$matches[5]}{$matches[6]}";
+            }
+            return "https://player.vimeo.com/video/{$matches[5]}";
         }
 
         return false;
     }
-
-    /**
-     * MathJax does not always seem to load (issue #60) so we assemble data so we can load it ourselves.
-     * Also JS needs to know if "h5p" filter is being used, so we do that at the same time.
-     * @return array
-     */
-    private function get_filters_config() {
-        $activefilters = filter_get_active_in_context($this->coursecontext);
-        $result = [];
-        foreach ($activefilters as $filter => $v) {
-            if ($filter === 'h5p') {
-                // Need to know if we are using H5P filter as this may mean that we don't want to preload next sections.
-                // If we did, when section pre-loads, any H5P filter activities set to 'complete on view' are complete.
-                // This applies even if section is not ultimately viewed at all.
-                $result[] = ['filter' => $filter];
-            }
-        }
-        return $result;
-    }
-
 }

@@ -64,9 +64,15 @@ Feature: PDFs can be set to open in modal windows with subtiles off
     And I click format tiles activity "Test PDF"
     And I wait until the page is ready
     Then "Test PDF" "dialogue" should be visible
-#    todo toggle completion button removed from modal for now in Moodle 4.0 Beta, if subtiles are off.
-#    And I click on "Click to toggle completion status" "button" in the "Test PDF" "dialogue"
-#    And I click on "Click to toggle completion status" "button" in the "Test PDF" "dialogue"
+
+    And format_tiles progress for "resource" called "Test PDF" in "Course 1" is "0" in the database
+    And I click on "Mark as done" "button" in the "Test PDF" "dialogue"
+    And I wait until the page is ready
+    And format_tiles progress for "resource" called "Test PDF" in "Course 1" is "1" in the database
+    And I click on "Done" "button" in the "Test PDF" "dialogue"
+    And I wait until the page is ready
+    And format_tiles progress for "resource" called "Test PDF" in "Course 1" is "0" in the database
+
     And "Close" "button" should exist in the "Test PDF" "dialogue"
     And I click on "Close" "button" in the "Test PDF" "dialogue"
     And I wait until the page is ready
@@ -84,8 +90,15 @@ Feature: PDFs can be set to open in modal windows with subtiles off
     And I click format tiles activity "Test PDF"
     And I wait until the page is ready
     Then "Test PDF" "dialogue" should be visible
-    And I click on "Click to toggle completion status" "button" in the "Test PDF" "dialogue"
-    And I click on "Click to toggle completion status" "button" in the "Test PDF" "dialogue"
+
+    And format_tiles progress for "resource" called "Test PDF" in "Course 1" is "0" in the database
+    And I click on "Mark as done" "button" in the "Test PDF" "dialogue"
+    And I wait until the page is ready
+    And format_tiles progress for "resource" called "Test PDF" in "Course 1" is "1" in the database
+    And I click on "Done" "button" in the "Test PDF" "dialogue"
+    And I wait until the page is ready
+    And format_tiles progress for "resource" called "Test PDF" in "Course 1" is "0" in the database
+
     And "Close" "button" should exist in the "Test PDF" "dialogue"
     And I click on "Close" "button" in the "Test PDF" "dialogue"
     And I wait until the page is ready

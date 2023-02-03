@@ -196,7 +196,7 @@ define(["jquery", "core/ajax", "core/templates", "core/notification", "core/str"
             cmObject.find('a.editing_moveright').remove(); // We do not use this with subtiles (indent).
             var returnData = {
                 cmid: cmObject.attr("id").split("-").slice(-1)[0], // Last item.
-                modtitle: cmObject.find(Selector.INSTANCE_NAME).html().split("<")[0],
+                activityname: cmObject.find(Selector.INSTANCE_NAME).html().split("<")[0],
                 cmeditmenu: cmObject.find(Selector.SECTION_CM_EDIT_ACTIONS)[0].outerHTML.replace(/\n/g, ""),
                 cmmove: cmObject.find(Selector.EDITING_MOVE)[0].outerHTML,
                 modname: "resource",
@@ -248,7 +248,7 @@ define(["jquery", "core/ajax", "core/templates", "core/notification", "core/str"
                 var previousNonSpacer = addedCourseModule.prevAll(Selector.SUBTILE).not(Selector.SPACER).first();
                 addedCourseModule.prevUntil(previousNonSpacer, Selector.SPACER).hide();
 
-                // Get cmid, modtitle, modnameDisplay, cmeditmenu of ite just added to course by AJAX.
+                // Get cmid, activityname, modnameDisplay, cmeditmenu of ite just added to course by AJAX.
                 // Re-render it in the correct style for this format (as sub tile).
                 var modResourceType = legacyFileTypeFromIconURL(addedCourseModule.find(Selector.ACTIVITY_ICON).attr("src"));
                 if (modResourceType === undefined) {

@@ -33,7 +33,7 @@
         * cmid - course module id
         * modname - course module name (type)
         * modnameDisplay - module name to display to user on sub tile or course mod
-        * modtitle - title to display on this sub tile or course mod
+        * activityname - title to display on this sub tile or course mod
         * modtitle_inplaceeditable - in place editable version of the title
         * modResourceType - resource type e.g. pdf,
         * is_label - is this a label
@@ -62,7 +62,7 @@
         "cmid": 123456,
         "modname": "label",
         "modnameDisplay": "",
-        "modtitle": "",
+        "activityname": "",
         "modtitle_inplaceeditable": "",
         "modResourceType": "",
         "is_label": 1,
@@ -102,12 +102,13 @@
         {{#photourl}} style="background-image: url({{photourl}});" {{/photourl}}
         {{#pluginfileUrl}}data-url="{{{pluginfileUrl}}}" {{/pluginfileUrl}}
         {{#secondaryurl}}data-url-secondary="{{{secondaryurl}}}" {{/secondaryurl}}
-        data-title="{{{modtitle}}}"
+        data-title="{{{activityname}}}"
         {{#subtileicon}}
         style="background-image: none;"
         {{/subtileicon}}
+        {{#hascompletion}}data-completion-state="{{completionstate}}"{{/hascompletion}}
     >
-        <div class="subtile-bg"{{^subtileicon}}style="display: none;"{{/subtileicon}}>
+        <div class="subtile-bg" {{^subtileicon}}style="display: none;"{{/subtileicon}}>
             {{#subtileicon}}{{#pix}}tileicon/{{subtileicon}}, format_tiles{{/pix}}{{/subtileicon}}
         </div>
 
@@ -134,7 +135,7 @@
                 {{^editing}}
                     <a href="{{url}}" {{#isEmbeddedResource}} data-action="launch-tiles-resource-modal"{{/isEmbeddedResource}}{{#isEmbeddedModule}}
                        data-action="launch-tiles-module-modal"{{/isEmbeddedModule}}{{#onclick}} onclick="{{onclick}}"{{/onclick}}
-                       data-title="{{{modtitle}}}" class="instancename {{{extraclasses}}}"  data-action="launch-tiles-{{launchtype}}">
+                       data-title="{{{activityname}}}" class="instancename {{{extraclasses}}}"  data-action="launch-tiles-{{launchtype}}">
                         {{> format_tiles/course_module_subtile_inner}}
                     </a>
                 {{/editing}}

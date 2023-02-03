@@ -23,19 +23,20 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define(["jquery", "core/templates", "core/config", "core/ajax"],
-    function ($, Templates, config, ajax) {
+define(["jquery", "core/templates", "core/config", "core/ajax", "core/str", "core_course/manual_completion_toggle"],
+    function ($, Templates, config, ajax, str, coreManualCompletion) {
         "use strict";
 
         var courseId;
-        var dataKeys = {
+        const dataKeys = {
             cmid: "data-cmid",
             numberComplete: "data-numcomplete",
             numberOutOf: "data-numoutof",
             section: "data-section",
-            completionState: "data-state"
+            completionState: "data-toggletype"
         };
-        var Selector = {
+
+        const Selector = {
             launchModuleModal: '[data-action="launch-tiles-module-modal"]',
             launchResourceModal: '[data-action="launch-tiles-resource-modal"]',
             pageContent: "#page-content",
@@ -45,7 +46,7 @@ define(["jquery", "core/templates", "core/config", "core/ajax"],
             completeonview: ".completeonview",
             activity: "li.activity",
             section: "li.section.main",
-            togglecompletion: '[data-action="change-completion-status"]',
+            togglecompletion: '[data-action="toggle-manual-completion"]',
             tileId: "#tile-",
             progressIndicatorId: '#tileprogress-',
             tile: '.tile',
@@ -54,9 +55,11 @@ define(["jquery", "core/templates", "core/config", "core/ajax"],
             sectionId: '#section-'
         };
 
+        var isBlurred = false;
+
         /**
-         * When toggleCompletionTiles() makes an AJAX call it needs to send some data
-         * and this helps assemble the data
+         * When completion is changed it may be necessary to re-render a progress indicator.
+         * This helps assemble the data.
          * @param {number} tileId which tile is this for
          * @param {number} numComplete how many items has the user completed
          * @param {number} outOf how many items are there to complete
@@ -130,59 +133,16 @@ define(["jquery", "core/templates", "core/config", "core/ajax"],
                 $("#tileprogress-0").replaceWith(html).fadeOut(0).animate({opacity: 1}, 500);
             });
         };
-        /**
-         * When a user clicks a completion tracking checkbox in this format, pass the click through to core
-         * This is partly based on the core functionality in completion.js but is included here as otherwise clicks on
-         * check boxes added dynamically after page load are not detected
-         * @param {number} cmid the course module id
-         * @param {bool} completed the new completion status
-         */
-        var setCompletionState = function (cmid, completed) {
-            ajax.call([{
-                methodname: "format_tiles_update_activity_completion_status_manually",
-                args: {
-                    cmid: cmid,
-                    completed: completed
-                }
-            }])[0]
-                .done((res) => {
-                    if (res.status) {
-                        const section = $('#module-' + cmid).closest(Selector.section).attr(dataKeys.section);
-                        if (section) {
-                            triggerCompletionChangedEvent(section);
-                        }
-
-                        // Change the modal icon if appropriate.
-                        const checkBox = $(Selector.togglecompletion + '[data-cmid="' + cmid + '"]');
-
-                        if (checkBox) {
-                            checkBox.attr(dataKeys.completionState, completed ? "1" : "0");
-                            if (completed) {
-                                checkBox.addClass('complete');
-                            } else {
-                                checkBox.removeClass('complete');
-                            }
-                        }
-                    }
-                })
-                .fail((err) => {
-                    require(["core/log"], function(log) {
-                        log.debug("Failed to set completion state");
-                        log.debug(err);
-                    });
-                });
-        };
 
         /**
          * Trigger an event so that other JS modules can be notified to check completion status.
          * Used to refresh section contents when completion is checked.
          * Can also be used by other components e.g. blocks that show completion.
-         * @param {string} sectionNum the number of the section where completion changed.
+         * @param {number} sectionNum the number of the section where completion changed.
+         * @param {number} cmid the course module where completion changed.
          */
-        const triggerCompletionChangedEvent = function (sectionNum) {
-            $(document).trigger('format-tiles-completion-changed', {
-                section: parseInt(sectionNum)
-            });
+        const triggerCompletionChangedEvent = function (sectionNum, cmid) {
+            $(document).trigger('format-tiles-completion-changed', {section: sectionNum, cmid: cmid});
         };
 
         /**
@@ -276,16 +236,22 @@ define(["jquery", "core/templates", "core/config", "core/ajax"],
             init: function (courseIdInit) {
                 courseId = courseIdInit;
                 $(document).ready(function () {
-                    // Trigger toggle completion event if check box is clicked.
+                    var loadingString = '...';
+                    str.get_strings([{key: "loading", component: "format_tiles"}]).done(function (s) {
+                        loadingString = s[0] + '  ...';
+                    });
                     // Included like this so that later dynamically added boxes are covered.
                     $("body").on("click", Selector.togglecompletion, function (e) {
-                        // Send the toggle to the database and change the displayed icon.
-                        e.preventDefault();
-                        const target = $(e.currentTarget);
-                        setCompletionState(
-                            target.attr(dataKeys.cmid),
-                            target.attr(dataKeys.completionState) !== "1",
-                        );
+                        // If this is a subtile, replace button with a spinner pending reload of activities over JS.
+                        // Otherwise the core JS will replace with its own with different style.
+                        // See core_course/manual_completion_toggle.
+                        const currentTarget = $(e.currentTarget);
+                        if (currentTarget.closest('.section').hasClass('subtiles')) {
+                            currentTarget.replaceWith(
+                                '<div class="spinner-grow spinner-grow-sm text-secondary mt-2 mr-2 pull-right"'
+                                + ' role="status"><span class="sr-only">' + loadingString + '</span></div>'
+                            );
+                        }
                     });
 
                     var pageContent = $("#page-content");
@@ -297,20 +263,34 @@ define(["jquery", "core/templates", "core/config", "core/ajax"],
                         .on("click", Selector.launchModuleModal + ", " + Selector.launchResourceModal, function (e) {
                             var clickedActivity = $(e.currentTarget).closest(Selector.activity);
                             if (clickedActivity.hasClass("completeonview")) {
-                                triggerCompletionChangedEvent(clickedActivity.closest(Selector.section).attr(dataKeys.section));
+                                const sectionNum = clickedActivity.closest(Selector.section).attr(dataKeys.section);
+                                const cmid = clickedActivity.attr('data-cmid');
+                                triggerCompletionChangedEvent(
+                                    sectionNum ? parseInt(sectionNum) : 0, cmid ? parseInt(cmid) : 0
+                                );
                             }
                         });
 
                     // When the user returns to the main tab/window, refresh completion data.
                     // (Completion may have changed since the last focus, e.g. activity opened in new window).
                     $(window).on('focus', function() {
-                        const openSection = $('li.section.state-visible').attr('data-section');
-                        triggerCompletionChangedEvent(openSection);
+                        if (isBlurred) {
+                            // We are returning to current window.
+                            const openSection = $('li.section.state-visible').attr('data-section');
+                            isBlurred = false;
+                            triggerCompletionChangedEvent(openSection ? parseInt(openSection) : 0, 0);
+                        }
                     });
+                    $(window).on('blur', function() {
+                        isBlurred = true;
+                    });
+
+                    // When behat tests are running, for whatever reason core completion is not initialised, so we do it here.
+                    coreManualCompletion.init();
                 });
             },
-            triggerCompletionChangedEvent: function(sectionNum) {
-                triggerCompletionChangedEvent(sectionNum);
+            triggerCompletionChangedEvent: function(sectionNum, cmid) {
+                triggerCompletionChangedEvent(sectionNum, cmid);
             },
             updateTileInformation: function(sectionNumbers) {
                 try {

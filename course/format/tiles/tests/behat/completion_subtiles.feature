@@ -69,22 +69,22 @@ Feature: Progress indicators can be used to change progress status and changes a
     And I wait until the page is ready
 
     And I click format tiles progress indicator for "Test page 1a"
-    Then format_tiles progress for "Test page 1a" in "Course 1" is "1" in the database
+    Then format_tiles progress for "page" called "Test page 1a" in "Course 1" is "1" in the database
     And I wait until the page is ready
     And format_tiles progress indicator for tile "1" is "1" out of "2"
 
     And I click format tiles progress indicator for "Test page 1b"
-    Then format_tiles progress for "Test page 1b" in "Course 1" is "1" in the database
+    Then format_tiles progress for "page" called "Test page 1b" in "Course 1" is "1" in the database
     And I wait until the page is ready
     And format_tiles progress indicator for tile "1" is "2" out of "2"
 
     And I click format tiles progress indicator for "Test page 1a"
-    Then format_tiles progress for "Test page 1a" in "Course 1" is "0" in the database
+    Then format_tiles progress for "page" called "Test page 1a" in "Course 1" is "0" in the database
     And I wait until the page is ready
     And format_tiles progress indicator for tile "1" is "1" out of "2"
 
     And I click format tiles progress indicator for "Test page 1b"
-    Then format_tiles progress for "Test page 2b" in "Course 1" is "0" in the database
+    Then format_tiles progress for "page" called "Test page 2b" in "Course 1" is "0" in the database
     And I wait until the page is ready
     And format_tiles progress indicator for tile "1" is "0" out of "2"
 
@@ -99,19 +99,19 @@ Feature: Progress indicators can be used to change progress status and changes a
     And I wait until the page is ready
 
     And I click format tiles progress indicator for "Test page 1a"
-    Then format_tiles progress for "Test page 1a" in "Course 1" is "1" in the database
+    Then format_tiles progress for "page" called "Test page 1a" in "Course 1" is "1" in the database
     And format_tiles progress indicator for tile "1" is "1" out of "2"
 
     And I click format tiles progress indicator for "Test page 1b"
-    Then format_tiles progress for "Test page 1b" in "Course 1" is "1" in the database
+    Then format_tiles progress for "page" called "Test page 1b" in "Course 1" is "1" in the database
     And format_tiles progress indicator for tile "1" is "2" out of "2"
 
     And I click format tiles progress indicator for "Test page 1a"
-    Then format_tiles progress for "Test page 1a" in "Course 1" is "0" in the database
+    Then format_tiles progress for "page" called "Test page 1a" in "Course 1" is "0" in the database
     And format_tiles progress indicator for tile "1" is "1" out of "2"
 
     And I click format tiles progress indicator for "Test page 1b"
-    Then format_tiles progress for "Test page 1b" in "Course 1" is "0" in the database
+    Then format_tiles progress for "page" called "Test page 1b" in "Course 1" is "0" in the database
     And format_tiles progress indicator for tile "1" is "0" out of "2"
 
 #    TODO check that the completion values shown on the tile and overall are complete when these items change

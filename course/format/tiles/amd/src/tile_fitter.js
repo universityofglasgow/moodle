@@ -352,7 +352,7 @@ define(["jquery", "core/ajax"], function ($, ajax) {
             $(document).ready(function() {
                 setListeners();
                 if ($(Selector.TILES).css("opacity") === "1") {
-                    organiser.runReOrg().done(function() {
+                    organiser.runReOrg(false).done(function() {
                         if (sectionOpen !== 0) {
                             // Tiles are already visible so open the tile user was on previously (if any).
                             $(Selector.TILEID + sectionOpen).click();
@@ -364,7 +364,7 @@ define(["jquery", "core/ajax"], function ($, ajax) {
                 // Put them in the correct rows according to which row of tiles they relate to.
                 // Only then do we re-open the last section the user had open.
                 var organiseAndRevealTiles = function () {
-                    organiser.runReOrg().done(function() {
+                    organiser.runReOrg(false).done(function() {
                         if (sectionOpen !== 0 && $(Selector.OPEN_SECTION).length === 0) {
                             // Now open the tile user was on previously (if any).
                             $(Selector.TILEID + sectionOpen).click();

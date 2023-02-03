@@ -37,33 +37,6 @@ use format_tiles\tile_photo;
 class section extends section_base {
 
     /**
-     * Add the section editor attributes to the data structure.
-     *
-     * @param \stdClass $data the current cm data reference
-     * @param \renderer_base $output typically, the renderer that's calling this function
-     * @return bool if the cm has name data
-     */
-    protected function add_editor_data(\stdClass &$data, \renderer_base $output): bool {
-        if (!$this->format->show_editor()) {
-            return false;
-        }
-
-        $course = $this->format->get_course();
-        if (empty($this->hidecontrols)) {
-            $controlmenu = new $this->controlmenuclass($this->format, $this->section);
-            $data->controlmenu = $controlmenu->export_for_template($output);
-        }
-        if (!$this->isstealth) {
-            $data->cmcontrols = $output->course_section_add_cm_control(
-                $course,
-                $this->section->section,
-                $this->format->get_section_number()
-            );
-        }
-        return true;
-    }
-
-    /**
      * Export this data so it can be used as the context for a mustache template.
      *
      * @param \renderer_base $output typically, the renderer that's calling this function
@@ -112,32 +85,5 @@ class section extends section_base {
             $data->collapsemenu = true;
         }
         return $data;
-    }
-
-    /**
-     * Add the section header to the data structure.
-     *
-     * @param \stdClass $data the current cm data reference
-     * @param \renderer_base $output typically, the renderer that's calling this function
-     * @return bool if the cm has name data
-     */
-    protected function add_header_data(\stdClass &$data, \renderer_base $output): bool {
-        if (!empty($this->hidetitle)) {
-            return false;
-        }
-
-        $section = $this->section;
-        $format = $this->format;
-        $header = new $this->headerclass($format, $section);
-
-        $headerdata = $header->export_for_template($output);
-
-        // When a section is displayed alone the title goes over the section, not inside it.
-        if ($section->section != 0 && $section->section == $format->get_section_number()) {
-            $data->singleheader = $headerdata;
-        } else {
-            $data->header = $headerdata;
-        }
-        return true;
     }
 }

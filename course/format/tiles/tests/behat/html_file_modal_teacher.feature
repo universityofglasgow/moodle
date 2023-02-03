@@ -65,9 +65,15 @@ Feature: HTML file can be set to open in modal windows with subtiles off
     And I wait until the page is ready
     Then "Test HTML file" "dialogue" should be visible
 #    TODO test that we can see "Test HTML file content" too (is in embedded HTML document virtual element)?
-    #    todo toggle completion button removed from modal for now in Moodle 4.0 Beta, if subtiles are off.
-#    And I click on "Click to toggle completion status" "button" in the "Test HTML file" "dialogue"
-#    And I click on "Click to toggle completion status" "button" in the "Test HTML file" "dialogue"
+
+    And format_tiles progress for "resource" called "Test HTML file" in "Course 1" is "0" in the database
+    And I click on "Mark as done" "button" in the "Test HTML file" "dialogue"
+    And I wait until the page is ready
+    And format_tiles progress for "resource" called "Test HTML file" in "Course 1" is "1" in the database
+    And I click on "Done" "button" in the "Test HTML file" "dialogue"
+    And I wait until the page is ready
+    And format_tiles progress for "resource" called "Test HTML file" in "Course 1" is "0" in the database
+
     And "Close" "button" should exist in the "Test HTML file" "dialogue"
     And I click on "Close" "button" in the "Test HTML file" "dialogue"
     And I wait until the page is ready
@@ -87,8 +93,13 @@ Feature: HTML file can be set to open in modal windows with subtiles off
     And I wait until the page is ready
     Then "Test HTML file" "dialogue" should be visible
     #    TODO test that we can see "Test HTML file content" too (is in embedded HTML document virtual element)?
-    And I click on "Click to toggle completion status" "button" in the "Test HTML file" "dialogue"
-    And I click on "Click to toggle completion status" "button" in the "Test HTML file" "dialogue"
+    And format_tiles progress for "resource" called "Test HTML file" in "Course 1" is "0" in the database
+    And I click on "Mark as done" "button" in the "Test HTML file" "dialogue"
+    And I wait until the page is ready
+    And format_tiles progress for "resource" called "Test HTML file" in "Course 1" is "1" in the database
+    And I click on "Done" "button" in the "Test HTML file" "dialogue"
+    And I wait until the page is ready
+    And format_tiles progress for "resource" called "Test HTML file" in "Course 1" is "0" in the database
     And "Close" "button" should exist in the "Test HTML file" "dialogue"
     And I click on "Close" "button" in the "Test HTML file" "dialogue"
     And I wait until the page is ready

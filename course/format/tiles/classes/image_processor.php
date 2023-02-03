@@ -150,7 +150,7 @@ class image_processor {
                     127
                 ));
                 imagesavealpha($tempimage, true);
-            } else if (array_search($imageparams['function'], array('imagejpeg', 'imagewebp', 'imagegif')) !== false) {
+            } else if (in_array($imageparams['function'], array('imagejpeg', 'imagewebp', 'imagegif'))) {
                 imagealphablending($tempimage, false);
                 imagefill(
                     $tempimage,

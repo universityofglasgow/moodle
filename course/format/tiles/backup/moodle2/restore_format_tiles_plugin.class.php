@@ -23,10 +23,10 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define('FILTER_NONE', 0);
-define('FILTER_NUMBERS_ONLY', 1);
-define('FILTER_OUTCOMES_ONLY', 2);
-define('FILTER_OUTCOMES_AND_NUMBERS', 3);
+const FILTER_NONE = 0;
+const FILTER_NUMBERS_ONLY = 1;
+const FILTER_OUTCOMES_ONLY = 2;
+const FILTER_OUTCOMES_AND_NUMBERS = 3;
 
 /**
  * Specialised restore for format_tiles

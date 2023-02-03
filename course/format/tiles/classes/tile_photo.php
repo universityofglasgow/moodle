@@ -155,7 +155,7 @@ class tile_photo {
 
     /**
      * Get the image url associated with this tile_photo object.
-     * @return bool|\moodle_url
+     * @return bool|string
      */
     public function get_image_url () {
         $config = self::file_api_params();
@@ -432,7 +432,7 @@ class tile_photo {
      */
     public static function verify_file_type($file) {
         $mime = $file->get_mimetype();
-        if (array_search($mime, self::allowed_file_types()) === false) {
+        if (!in_array($mime, self::allowed_file_types())) {
             debugging("File type not allowed " . $mime);
             return false;
         } else {
