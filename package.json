@@ -53,6 +53,7 @@
     "node": ">=16.14.0 <17"
   },
   "dependencies": {
-    "@babel/eslint-parser": "^7.17.0"
+    "@babel/eslint-parser": "^7.17.0",
+    "grunt-cli": "^1.4.3"
   }
 }

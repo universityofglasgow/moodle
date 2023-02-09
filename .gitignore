@@ -56,5 +56,3 @@ moodle-plugin-ci.phar
 .hugo_build.lock
 phpcs.xml
 jsconfig.json
-
-/local/gugrades
