@@ -5,4 +5,8 @@ require_once($CFG->dirroot . '/grade/lib.php');
 
 $grades = new local_gugrades\grades(7);
 echo "<pre>";
-var_dump($grades->get_firstlevel());
+$categories = $grades->get_firstlevel();
+foreach ($categories as $category) {
+    var_dump($category);
+    die;
+}

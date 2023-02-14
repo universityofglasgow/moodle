@@ -17,11 +17,16 @@
 /**
  *
  * @package    local_gugrades
- * @copyright  2022
+ * @copyright  2023
  * @author     Howard Miller
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 $functions = [
-
+    'local_gugrades_get_levelonecategories' => [
+        'classname' => 'local_gugrades\external\get_levelonecategories',
+        'description' => 'Gets first level categories (should be summative, formative and so on)',
+        'type' => 'read',
+        'ajax' => true,
+    ],
 ];

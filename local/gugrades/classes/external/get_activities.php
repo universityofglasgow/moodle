@@ -15,19 +15,39 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version file.
  *
  * @package    local_gugrades
- * @copyright  2022
+ * @copyright  2023
  * @author     Howard Miller
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace local_gugrades\external;
+
+use external_function_parameters;
+use external_multiple_structure;
+use external_single_structure;
+use external_value;
+
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version      = 2023020900;
-$plugin->requires     = 2022041900; // Moodle 4.0
-$plugin->component    = 'local_gugrades';
+require_once($CFG->libdir . '/externallib.php');
 
-$plugin->maturity     = MATURITY_STABLE;
+class get_activities extends \external_api {
 
+    public static function execute_parameters() {
+        return new external_function_parameters([
+            'courseid' => new external_value(PARAM_INT, 'Course id'),
+            'categoryid' => new external_value(PARAM_INT, 'Grade category id'),
+        ]);
+    }
+
+    public static function execute($courseid, $categoryid) {
+
+        // Security.
+        $params = self::validate_parameters(self::execute_parameters(), ['courseid' => $courseid, 'categoryid' => $categoryid]);
+        $context = \context_course::instance($courseid);
+        self::validate_context($context);
+    }
+
+}
