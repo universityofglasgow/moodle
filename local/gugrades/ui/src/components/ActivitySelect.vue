@@ -23,13 +23,14 @@
         fetchMany([{
             methodname: 'local_gugrades_get_activities',
             args: {
-                courseid,
-                catid
+                courseid: courseid,
+                categoryid: catid
             }
         }])[0]
         .then((result) => {
-            activitytree.value = JSON.parse(result);
-            window.console.log(activitytree.value);
+            const tree = JSON.parse(result['activities']);
+            activitytree.value = tree;
+            window.console.log(tree);
         })
         .catch((error) => {
             window.console.log(error);

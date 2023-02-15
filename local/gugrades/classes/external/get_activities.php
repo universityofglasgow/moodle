@@ -53,15 +53,13 @@ class get_activities extends \external_api {
         $grades = new \local_gugrades\grades($courseid);
         $tree = $grades->get_activitytree($categoryid);
 
-        return json_encode($tree);
+        return ['activities' => json_encode($tree)];
     }
 
     public static function execute_returns() {
-        return new external_multiple_structure(
-            new external_single_structure([
-                'activities' => new external_value(PARAM_TEXT, 'List of activities/subcategories in JSON format'),
-            ])
-        );       
+        return new external_single_structure([
+            'activities' => new external_value(PARAM_TEXT, 'List of activities/subcategories in JSON format'),
+        ]);
     }
 
 }
