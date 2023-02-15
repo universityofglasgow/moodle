@@ -13,7 +13,7 @@
         <TabsNav @tabchange="tabChange"></TabsNav>
 
         <div v-if="currenttab == 'capture'">
-            <ActivitySelect></ActivitySelect>
+            <ActivitySelect v-if="showactivityselect" :categoryid="level1category"></ActivitySelect>
         </div>
     </div>
 </template>
@@ -26,12 +26,16 @@
     import ActivitySelect from '@/components/ActivitySelect.vue';
 
     const currenttab = ref('capture');
+    const level1category = ref(0);
+    const showactivityselect = ref(false);
 
     /**
      * Capture change to top level category dropdown
      * @param {*} level 
      */
     function levelOneChange(level) {
+        level1category.value = parseInt(level);
+        showactivityselect.value = true;
         window.console.log(level);
     }
 
@@ -41,6 +45,5 @@
      */
     function tabChange(tab) {
         currenttab.value = tab;
-        window.console.log(tab);
     }
 </script>

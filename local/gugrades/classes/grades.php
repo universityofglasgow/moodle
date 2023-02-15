@@ -35,31 +35,99 @@ class grades {
     // Course id
     private $courseid;
 
-    // Category tree structure
-    private $categorytree;
+    // Grade items
+    private $gradeitems;
+
+    // Grade categories
+    private $gradecategories;
 
     /**
      * Class constructor
      * @param int $courseid
      */
     function __construct($courseid) {
+        global $DB;
+
         $this->courseid = $courseid;
 
-        // Get category tree data structure
-        $this->categorytree = \grade_category::fetch_course_tree($courseid);
+        // Read all grade items (not hidden) for current course
+        $this->gradeitems = $DB->get_records('grade_items', [
+            'courseid' => $this->courseid,
+            'hidden' => 0,
+        ]);
+
+        // Read all grade categories (not hidden) for current course
+        $this->gradecategories = $DB->get_records('grade_categories', [
+            'courseid' => $this->courseid,
+            'hidden' => 0,
+        ]);
     }
 
     /**
      * Get first level categories (should be summative / formative and so on)
+     * Actually depth==2 in the database (1 == top level)
      */
     public function get_firstlevel() {
-        $coursecategory = $this->categorytree['object'];
+        global $DB;
 
-        return $coursecategory->get_children();
+        $cats = [];
+        foreach ($this->gradecategories as $category) {
+            if ($category->depth == 2) {
+                $cats[] = $category;
+            }
+        }
+
+        return $cats;
     }
 
-    public function get_categorytree() {
-        return $this->categorytree;
+    /**
+     * Get the category/item tree beneath the selected depth==2 category.
+     * @param int $categoryid
+     * @return object
+     */
+    public function get_activitytree($categoryid) {
+        $category = $this->gradecategories[$categoryid];  
+        $categorytree = $this->recurse_activitytree($category);
+        
+        return $categorytree;
     }
 
+    /**
+     * Recursive routine to build activity tree
+     * Tree consists of both sub-categories and grade items
+     * {
+     *     category -> current category
+     *     items -> array of grade items in this category
+     *     categories -> array of grade categories, children of this category (recursive)
+     * }
+     * @param object $category
+     * @return object 
+     */
+    private function recurse_activitytree($category) {
+        $tree = [];
+
+        // first find any grade items attached to the current category
+        $items = [];
+        foreach ($this->gradeitems as $item) {
+            if ($item->categoryid == $category->id) {
+                $items[$item->id] = $item;
+            }
+        }
+
+        // next find any sub-categories of this category
+        $categories = [];
+        foreach ($this->gradecategories as $gradecategory) {
+            if ($gradecategory->parent == $category->id) {
+                $categories[$gradecategory->id] = $this->recurse_activitytree($gradecategory);
+            }
+        }
+
+        // add this all up
+        $record = new \stdClass();
+        $record->category = $category;
+        $record->items = $items;
+        $record->categories = $categories;
+
+        return $record;
+    }
 }

@@ -48,6 +48,20 @@ class get_activities extends \external_api {
         $params = self::validate_parameters(self::execute_parameters(), ['courseid' => $courseid, 'categoryid' => $categoryid]);
         $context = \context_course::instance($courseid);
         self::validate_context($context);
+
+        // Get data
+        $grades = new \local_gugrades\grades($courseid);
+        $tree = $grades->get_activitytree($categoryid);
+
+        return json_encode($tree);
+    }
+
+    public static function execute_returns() {
+        return new external_multiple_structure(
+            new external_single_structure([
+                'activities' => new external_value(PARAM_TEXT, 'List of activities/subcategories in JSON format'),
+            ])
+        );       
     }
 
 }

@@ -29,4 +29,10 @@ $functions = [
         'type' => 'read',
         'ajax' => true,
     ],
+    'local_gugrades_get_activities' => [
+        'classname' => 'local_gugrades\external\get_activities',
+        'description' => 'Gets individual activities or nth level categories (sub - category grades)',
+        'type' => 'read',
+        'ajax' => true,
+    ],
 ];

@@ -53,10 +53,9 @@ class get_levelonecategories extends \external_api {
         $results = [];
         $categories = $grades->get_firstlevel();
         foreach ($categories as $category) {
-            $gradecat = $category["object"];
             $results[] = [
-                'id' => $gradecat->id,
-                'fullname' => $gradecat->get_name(),
+                'id' => $category->id,
+                'fullname' => $category->fullname,
             ];
         }
 
