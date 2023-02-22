@@ -346,3 +346,11 @@ Other
 - Fix JS loading for no view page course modules (e.g. mod_unilabel) (issue 123)
 - Avoid issue with missing grid format table (issue 141)
 - Improve handling of URL params in embedded YouTube and Vimeo URLs (issue 28 and 143)
+
+4.1.0.0 (2023021300)
+====================
+- Fix issue 133 (non-JS navigation bug) and improve non JS nav
+- Fix issue 136 (overlay clash with mod_offlinequiz)
+- Fix issue with section re-opening when user has disabled browser storage
+- Change release to "stable"
+- More comments

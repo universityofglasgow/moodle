@@ -43,5 +43,5 @@ Feature: Sections can be moved - adapted from core test of the same name.
     And I click on "Move" "link" in the "Section 2" "section"
     And I click on "Section 3" "link" in the ".modal-body" "css_element"
     And I turn editing mode off
-    Then "//img[contains(@src, 'Duckling.jpg')]" "xpath_element" should exist in the "#grid-section-3 .grid-image" "css_element"
-    And "//img[contains(@alt, 'Duckling')]" "xpath_element" should exist in the "#grid-section-3 .grid-image" "css_element"
+    Then "//img[contains(@src, 'Duckling.jpg')]" "xpath_element" should exist in the "#section-3 .grid-image" "css_element"
+    And "//img[contains(@alt, 'Duckling')]" "xpath_element" should exist in the "#section-3 .grid-image" "css_element"

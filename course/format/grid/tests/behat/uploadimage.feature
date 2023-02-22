@@ -22,5 +22,5 @@ Feature: Image upload
     And I set the field "Image alt text" to "Duckling"
     And I press "Save changes"
     And I turn editing mode off
-    Then "//img[contains(@src, 'Duckling.jpg')]" "xpath_element" should exist in the "#grid-section-2 .grid-image" "css_element"
-    And "//img[contains(@alt, 'Duckling')]" "xpath_element" should exist in the "#grid-section-2 .grid-image" "css_element"
+    Then "//img[contains(@src, 'Duckling.jpg')]" "xpath_element" should exist in the "#section-2 .grid-image" "css_element"
+    And "//img[contains(@alt, 'Duckling')]" "xpath_element" should exist in the "#section-2 .grid-image" "css_element"

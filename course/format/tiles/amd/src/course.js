@@ -28,7 +28,7 @@
 
 define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
         "core/notification", "core/str", "format_tiles/tile_fitter"],
-    function ($, Templates, ajax, browserStorage, Notification, str, tileFitter, ) {
+    function ($, Templates, ajax, browserStorage, Notification, str, tileFitter) {
         "use strict";
 
         var isMobile;
@@ -102,6 +102,8 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
             RETURN: 13
         };
 
+        const OVERLAY_ID = 'format_tiles_overlay';
+
         /**
          * If we have embedded video in section, stop it.
          * Runs when section is closed.
@@ -154,7 +156,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
             overlay.fadeOut(300);
         };
 
-        const overlay = $('#overlay');
+        const overlay = $('#' + OVERLAY_ID);
 
         /**
          * Used where the user clicks the window overlay but we want the active click to be behind the
@@ -164,7 +166,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
          */
         var clickItemBehind = function (e) {
             var clickedItem = $(e.currentTarget);
-            if (clickedItem.attr("id") === "overlay") {
+            if (clickedItem.attr("id") === OVERLAY_ID) {
                 // We need to know what is behind the modal, so hide it for an instant to find out.
                 clickedItem.hide();
                 var BottomElement = $(document.elementFromPoint(e.clientX, e.clientY));

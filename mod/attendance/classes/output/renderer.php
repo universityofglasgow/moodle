@@ -1351,8 +1351,15 @@ class renderer extends plugin_renderer_base {
             }
 
             if (!empty($sess->statusid)) {
+                $updatelink = '';
                 $status = $userdata->statuses[$sess->statusid];
-                $row->cells[] = $status->description;
+                list($canmark, $reason) = attendance_can_student_mark($sess, false);
+                if (attendance_check_allow_update($sess->id) && $canmark) {
+                    $url = new moodle_url('/mod/attendance/attendance.php',
+                                array('sessid' => $sess->id, 'sesskey' => sesskey()));
+                    $updatelink = "<br>".html_writer::link($url, get_string('updateattendance', 'attendance'));
+                }
+                $row->cells[] = $status->description.$updatelink;
                 $row->cells[] = format_float($status->grade, 1, true, true) . ' / ' .
                                     format_float($statussetmaxpoints[$status->setnumber], 1, true, true);
                 $row->cells[] = $sess->remarks;
@@ -1385,7 +1392,11 @@ class renderer extends plugin_renderer_base {
                         // URL to the page that lets the student modify their attendance.
                         $url = new moodle_url('/mod/attendance/attendance.php',
                                 array('sessid' => $sess->id, 'sesskey' => sesskey()));
-                        $cell = new html_table_cell(html_writer::link($url, get_string('submitattendance', 'attendance')));
+                        if (attendance_session_open_for_students($sess)) {
+                            $cell = new html_table_cell(html_writer::link($url, get_string('submitattendance', 'attendance')));
+                        } else {
+                            $cell = new html_table_cell(html_writer::link($url, get_string('submitattendancefuture', 'attendance')));
+                        }
                     }
                     $cell->colspan = 3;
                     $row->cells[] = $cell;
@@ -2017,7 +2028,11 @@ class renderer extends plugin_renderer_base {
 
                             $url = new moodle_url('/mod/attendance/attendance.php',
                             array('sessid' => $sess->id, 'sesskey' => sesskey()));
-                            $cell = new html_table_cell(html_writer::link($url, get_string('submitattendance', 'attendance')));
+                            if (attendance_session_open_for_students($sess)) {
+                                $cell = new html_table_cell(html_writer::link($url, get_string('submitattendance', 'attendance')));
+                            } else {
+                                $cell = new html_table_cell(html_writer::link($url, get_string('submitattendancefuture', 'attendance')));
+                            }
                             $cell->colspan = 3;
                             $row->cells[] = $cell;
                         } else { // Student cannot mark their own attendace.
@@ -2659,8 +2674,12 @@ class renderer extends plugin_renderer_base {
                              get_string('points', 'attendance'));
         $table->align = array('center', 'center', 'center', 'center', 'center', 'center');
 
-        $table->head[] = get_string('studentavailability', 'attendance').
-            $this->output->help_icon('studentavailability', 'attendance');
+        $table->head[] = get_string('availability', 'attendance').
+            $this->output->help_icon('availability', 'attendance');
+        $table->align[] = 'center';
+
+        $table->head[] = get_string('availablebeforesession', 'attendance').
+            $this->output->help_icon('availablebeforesession', 'attendance');
         $table->align[] = 'center';
 
         $table->head[] = get_string('setunmarked', 'attendance').
@@ -2687,11 +2706,16 @@ class renderer extends plugin_renderer_base {
             $cells[] = $this->construct_text_input('description['.$st->id.']', 30, 30, $st->description) .
                                  $emptydescription;
             $cells[] = $this->construct_text_input('grade['.$st->id.']', 4, 4, $st->grade);
+            $cells[] = $this->construct_studentavailability($st);
+            $checked = '';
+            if ($st->availablebeforesession) {
+                $checked = ' checked ';
+            }
+            $cells[] = '<input type="checkbox" name="availablebeforesession['.$st->id.']" '.$checked.'>';
             $checked = '';
             if ($st->setunmarked) {
                 $checked = ' checked ';
             }
-            $cells[] = $this->construct_text_input('studentavailability['.$st->id.']', 4, 5, $st->studentavailability);
             $cells[] = '<input type="radio" name="setunmarked" value="'.$st->id.'"'.$checked.'>';
 
             $cells[] = $this->construct_preferences_actions_icons($st, $prefdata);
@@ -2705,7 +2729,6 @@ class renderer extends plugin_renderer_base {
         $cells[] = $this->construct_text_input('newacronym', 2, 2);
         $cells[] = $this->construct_text_input('newdescription', 30, 30);
         $cells[] = $this->construct_text_input('newgrade', 4, 4);
-        $cells[] = $this->construct_text_input('newstudentavailability', 4, 5);
 
         $cells[] = $this->construct_preferences_button(get_string('add', 'attendance'),
             mod_attendance_preferences_page_params::ACTION_ADD);
@@ -2754,16 +2777,17 @@ class renderer extends plugin_renderer_base {
      * @param integer $size
      * @param integer $maxlength
      * @param string $value
+     * @param string $classname
      * @return string
      */
-    private function construct_text_input($name, $size, $maxlength, $value='') {
+    private function construct_text_input($name, $size, $maxlength, $value='', $classname='') {
         $attributes = array(
                 'type'      => 'text',
                 'name'      => $name,
                 'size'      => $size,
                 'maxlength' => $maxlength,
                 'value'     => $value,
-                'class' => 'form-control');
+                'class' => "form-control {$classname}");
         return html_writer::empty_tag('input', $attributes);
     }
 
@@ -2826,6 +2850,32 @@ class renderer extends plugin_renderer_base {
     private function construct_notice($text, $class = 'notifymessage') {
         $attributes = array('class' => $class);
         return html_writer::tag('p', $text, $attributes);
+    }
+
+    /**
+     * Construct studentavailablity form element.
+     * This creates a select dropdown for the availability option and a textbox to enter values for one of the options.
+     * @param stdClass $st
+     * @return string;
+     */
+    protected function construct_studentavailability($st) {
+        $default = '';
+        if ($st->studentavailability === '0') {
+            $default = '0';
+        } else if ($st->studentavailability) {
+            $default = $st->studentavailability;
+            if ($st->studentavailability > 1) {
+                $default = 1;
+            }
+        }
+
+        $options = array(0 => get_string('availabilityno', 'mod_attendance'),
+                         1 => get_string('availabilitylimitedtime', 'mod_attendance'));
+        $result = html_writer::select($options, 'availability['.$st->id.']', $default,
+        array('' => get_string('availabilityalways', 'mod_attendance')));
+        $result .= $this->construct_text_input('studentavailability['.$st->id.']', 4, 5, $st->studentavailability,
+                                                'studentavailability');
+        return $result;
     }
 
     /**

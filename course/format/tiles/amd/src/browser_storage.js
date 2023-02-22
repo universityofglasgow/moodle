@@ -144,6 +144,8 @@ define(["jquery", "format_tiles/browser_storage_set_up"], function ($, storageSe
             // Return object ("public") access to the "private" method above.
             if (storageSetUp.storageAllowed()) {
                 setLastVisitedSection(sectionNum);
+            } else {
+                setLastVisitedSection(null);
             }
         }
     };

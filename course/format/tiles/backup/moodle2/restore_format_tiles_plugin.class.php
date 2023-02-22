@@ -23,9 +23,24 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+/**
+ * Tiles filter bar course setting - show no filters.
+ */
 const FILTER_NONE = 0;
+
+/**
+ * Tiles filter bar course setting - show tile number filter buttons only.
+ */
 const FILTER_NUMBERS_ONLY = 1;
+
+/**
+ * Tiles filter bar course setting - show outcome filter buttons only.
+ */
 const FILTER_OUTCOMES_ONLY = 2;
+
+/**
+ * Tiles filter bar course setting - show filter buttons for tile numbers and outcomes.
+ */
 const FILTER_OUTCOMES_AND_NUMBERS = 3;
 
 /**

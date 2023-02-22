@@ -39,6 +39,10 @@ use stdClass;
  */
 class content extends content_base {
 
+    private $sectioncompletionpercentage = array();
+    private $sectioncompletionmarkup = array();
+    private $sectioncompletioncalculated = array();
+
     /**
      * @var bool Grid format does not add section after each topic.
      *
@@ -122,16 +126,30 @@ class content extends content_base {
                 }
             }
 
+            // Popup.
+            $coursesettings = $format->get_settings();
+            $data->popup = false;
+            if ((!empty($coursesettings['popup'])) && ($coursesettings['popup'] == 2)) {
+                $data->popup = true;
+                $data->popupsections = array();
+                $potentialpopupsections = array();
+                foreach ($sections as $section) {
+                    $potentialpopupsections[$section->id] = $section;
+                }
+            }
+
             // Suitable array.
             $sectionimages = array();
             foreach ($coursesectionimages as $coursesectionimage) {
                 $sectionimages[$coursesectionimage->sectionid] = $coursesectionimage;
             }
+
             // Now iterate over the sections.
             $data->gridsections = array();
-            $sectionsforgrid = $this->get_grid_sections($output);
+            $sectionsforgrid = $this->get_grid_sections($output, $coursesettings);
             $iswebp = (get_config('format_grid', 'defaultdisplayedimagefiletype') == 2);
 
+            $completionshown = false;
             foreach ($sectionsforgrid as $section) {
                 // Do we have an image?
                 if ((array_key_exists($section->id, $sectionimages)) && ($sectionimages[$section->id]->displayedimagestate >= 1)) {
@@ -176,15 +194,25 @@ class content extends content_base {
                     $sectionimages[$section->id]->currentsection = true;
                 }
 
+                // Completion?
+                if (!empty($section->sectioncompletionmarkup)) {
+                    $sectionimages[$section->id]->sectioncompletionmarkup = $section->sectioncompletionmarkup;
+                    $completionshown = true;
+                }
+
                 // For the template.
                 $data->gridsections[] = $sectionimages[$section->id];
+                if ($data->popup) {
+                    $data->popupsections[] = $potentialpopupsections[$section->id];
+                }
             }
+
             $data->hasgridsections = (!empty($data->gridsections)) ? true : false;
             if ($data->hasgridsections) {
-                $coursesettings = $format->get_settings();
-                $displayedimageinfo = $toolbox->get_displayed_image_container_properties($coursesettings);
-
-                $data->coursestyles = $displayedimageinfo;
+                $data->coursestyles = $toolbox->get_displayed_image_container_properties($coursesettings);
+                if ((!empty($coursesettings['showcompletion'])) && ($coursesettings['showcompletion'] == 2) && ($completionshown)) {
+                    $data->showcompletion = true;
+                }
             }
         }
 
@@ -199,10 +227,12 @@ class content extends content_base {
     /**
      * Export sections array data.
      *
-     * @param renderer_base $output typically, the renderer that's calling this function
+     * @param renderer_base $output typically, the renderer that's calling this method.
+     * @param array $settings The settings for the format.
+     *
      * @return array data context for a mustache template
      */
-    protected function get_grid_sections(\renderer_base $output): array {
+    protected function get_grid_sections(\renderer_base $output, $settings): array {
 
         $format = $this->format;
         $course = $format->get_course();
@@ -237,9 +267,93 @@ class content extends content_base {
             $section->id = $thissection->id;
             $section->num = $thissection->section;
             $section->name = $output->section_title_without_link($thissection, $course);
+            if ((!empty($settings['showcompletion'])) && ($settings['showcompletion'] == 2)) {
+                $this->calculate_section_activity_completion($thissection, $course, $modinfo, $output);
+                if (!empty($this->sectioncompletionmarkup[$thissection->section])) {
+                    $section->sectioncompletionmarkup = $this->sectioncompletionmarkup[$thissection->section];
+                }
+            }
             $sections[] = $section;
         }
 
         return $sections;
+    }
+
+    /**
+     * Calculate and generate the markup for completion of the activities in a section.
+     *
+     * @param stdClass $section The course_section.
+     * @param stdClass $course the course.
+     * @param stdClass $modinfo the course module information.
+     * @param renderer_base $output typically, the renderer that's calling this method.
+     */
+    protected function calculate_section_activity_completion($section, $course, $modinfo, \renderer_base $output) {
+        if (empty($this->sectioncompletioncalculated[$section->section])) {
+            $this->sectioncompletionmarkup[$section->section] = '';
+            if (empty($modinfo->sections[$section->section])) {
+                $this->sectioncompletioncalculated[$section->section] = true;
+                return;
+            }
+
+            // Generate array with count of activities in this section.
+            $total = 0;
+            $complete = 0;
+            $cancomplete = isloggedin() && !isguestuser();
+            $asectionisvisible = false;
+            if ($cancomplete) {
+                $completioninfo = new \completion_info($course);
+                foreach ($modinfo->sections[$section->section] as $cmid) {
+                    $thismod = $modinfo->cms[$cmid];
+
+                    if ($thismod->visible) {
+                        $asectionisvisible = true;
+                        if ($completioninfo->is_enabled($thismod) != COMPLETION_TRACKING_NONE) {
+                            $total++;
+                            $completiondata = $completioninfo->get_data($thismod, true);
+                            if ($completiondata->completionstate == COMPLETION_COMPLETE ||
+                                $completiondata->completionstate == COMPLETION_COMPLETE_PASS) {
+                                $complete++;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if ((!$asectionisvisible) || (!$cancomplete)) {
+                // No sections or no completion.
+                $this->sectioncompletioncalculated[$section->section] = true;
+                return;
+            }
+
+            // Output section completion data.
+            if ($total > 0) {
+                $percentage = round(($complete / $total) * 100);
+                $this->sectioncompletionpercentage[$section->section] = $percentage;
+
+                $data = new \stdClass();
+                $data->percentagevalue = $this->sectioncompletionpercentage[$section->section];
+                if ($data->percentagevalue < 11) {
+                    $data->percentagecolour = 'low';
+                } else if ($data->percentagevalue < 90) {
+                    $data->percentagecolour = 'middle';
+                } else {
+                    $data->percentagecolour = 'high';
+                }
+                if ($data->percentagevalue < 1) {
+                    $data->percentagequarter = 0;
+                } else if ($data->percentagevalue < 26) {
+                    $data->percentagequarter = 1;
+                } else if ($data->percentagevalue < 51) {
+                    $data->percentagequarter = 2;
+                } else if ($data->percentagevalue < 76) {
+                    $data->percentagequarter = 3;
+                } else {
+                    $data->percentagequarter = 4;
+                }
+                $this->sectioncompletionmarkup[$section->section] = $output->render_from_template('format_grid/grid_completion', $data);
+            }
+
+            $this->sectioncompletioncalculated[$section->section] = true;
+        }
     }
 }

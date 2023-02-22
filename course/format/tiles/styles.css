@@ -500,7 +500,7 @@
     -moz-outline-radius: 0;
 }
 
-.format-tiles .single-section  .navigation-arrow:hover {
+.format-tiles .single-section  .navigation-arrow:not(.dimmed):hover {
     -webkit-transition: all 0.2s ease-in-out;
     -moz-transition: all 0.2s ease-in-out;
     -o-transition: all 0.2s ease-in-out;
@@ -519,6 +519,9 @@
 }
 .format-tiles .single-section .navigation-arrow .icon {
     font-size: 35px;
+    height: 35px;
+    width: 35px;
+    padding: 2px 3px 2px 3px;
 }
 .format-tiles .single-section .navigation-arrow.dimmed {
     opacity: 0.5;

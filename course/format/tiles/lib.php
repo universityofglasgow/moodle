@@ -25,9 +25,23 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Tiles filter bar course setting - show no filters.
+ */
 const FORMAT_TILES_FILTERBAR_NONE = 0;
+/**
+ * Tiles filter bar course setting - show tile number filter buttons only.
+ */
 const FORMAT_TILES_FILTERBAR_NUMBERS = 1;
+
+/**
+ * Tiles filter bar course setting - show outcome filter buttons only.
+ */
 const FORMAT_TILES_FILTERBAR_OUTCOMES = 2;
+
+/**
+ * Tiles filter bar course setting - show filter buttons for tile numbers and outcomes.
+ */
 const FORMAT_TILES_FILTERBAR_BOTH = 3;
 
 require_once($CFG->dirroot . '/course/format/lib.php');
@@ -954,6 +968,7 @@ class format_tiles extends core_courseformat\base {
      * @throws moodle_exception
      */
     public function page_set_course(moodle_page $page) {
+        global $SESSION;
         if (get_config('format_tiles', 'usejavascriptnav')) {
             if (optional_param('stopjsnav', 0, PARAM_INT) == 1) {
                 // User is toggling JS nav setting.
@@ -969,6 +984,7 @@ class format_tiles extends core_courseformat\base {
                 if ($page->course->id) {
                     redirect(new moodle_url('/course/view.php', array('id' => $page->course->id)));
                 }
+                unset($SESSION->format_tiles_jssuccessfullyused);
             }
         }
     }

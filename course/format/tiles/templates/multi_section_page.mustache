@@ -68,7 +68,7 @@
         {{^jsSessionDisabled}}
             <div id="jswarning" class="alert alert-secondary">{{#str}}nojswarning, format_tiles{{/str}}
                 {{#showJScancelLink}}
-                    <a href="{{{config.wwwroot}}}/course/view.php?id={{courseid}}&canceljssession=1">{{#str}}refresh{{/str}}</a>
+                    <a href="{{{config.wwwroot}}}/course/view.php?id={{courseid}}&stopjsnav=1">{{#str}}refresh{{/str}}</a>
                 {{/showJScancelLink}}
                 <button type="button" class="close" data-dismiss="alert">
                     <span aria-hidden="true">&times;</span>
@@ -129,4 +129,4 @@
     {{{course_activity_clipboard}}}
 {{/editing}}
 
-<div id="overlay" style="position: fixed; top: 0; left: 0; background-color:rgba(0,0,0,0.5); width: 100vw; height: 100vh; display: none;"></div>
+<div id="format_tiles_overlay" style="position: fixed; top: 0; left: 0; background-color:rgba(0,0,0,0.5); width: 100vw; height: 100vh; display: none;"></div>

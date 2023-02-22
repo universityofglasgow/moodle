@@ -52,6 +52,13 @@ class format_grid extends core_courseformat\base {
             $courseid = $COURSE->id;  // Save lots of global $COURSE as we will never be the site course.
         }
         parent::__construct($format, $courseid);
+
+        $currentsettings = $this->get_settings();
+        if (!empty($currentsettings['popup'])) {
+            if ($currentsettings['popup'] == 2) {
+                $this->coursedisplay = COURSE_DISPLAY_SINGLEPAGE;
+            }
+        }
     }
 
     /**
@@ -316,6 +323,10 @@ class format_grid extends core_courseformat\base {
                     'default' => $courseconfig->hiddensections,
                     'type' => PARAM_INT
                 ),
+                'popup' => array(
+                    'default' => 0,
+                    'type' => PARAM_INT
+                ),
                 'imagecontainerwidth' => array(
                     'default' => 0,
                     'type' => PARAM_INT
@@ -328,13 +339,17 @@ class format_grid extends core_courseformat\base {
                     'default' => 0,
                     'type' => PARAM_INT
                 ),
+                'showcompletion' => array(
+                    'default' => 0,
+                    'type' => PARAM_INT
+                ),
                 'singlepagesummaryimage' => array(
                     'default' => 0,
                     'type' => PARAM_INT
                 )
             );
         }
-        if ($foreditform && !isset($courseformatoptions['coursedisplay']['label'])) {
+        if ($foreditform && !isset($courseformatoptions['numsections']['label'])) {
             if (is_null($courseconfig)) {
                 $courseconfig = get_config('moodlecourse');
             }
@@ -363,6 +378,22 @@ class format_grid extends core_courseformat\base {
             );
 
             // TODO - Use capabilities?
+            $popupvalues = $this->generate_default_entry(
+                'popup',
+                0,
+                array(
+                    1 => new lang_string('no'),
+                    2 => new lang_string('yes')
+                )
+            );
+            $courseformatoptionsedit['popup'] = array(
+                'label' => new lang_string('popup', 'format_grid'),
+                'help' => 'popup',
+                'help_component' => 'format_grid',
+                'element_type' => 'select',
+                'element_attributes' => array($popupvalues)
+            );
+
             $imagecontainerwidthvalues = $this->generate_default_entry(
                 'imagecontainerwidth',
                 0,
@@ -402,6 +433,22 @@ class format_grid extends core_courseformat\base {
                 'help_component' => 'format_grid',
                 'element_type' => 'select',
                 'element_attributes' => array($imageresizemethodvalues)
+            );
+
+            $showcompletionvalues = $this->generate_default_entry(
+                'showcompletion',
+                0,
+                array(
+                    1 => new lang_string('no'),
+                    2 => new lang_string('yes')
+                )
+            );
+            $courseformatoptionsedit['showcompletion'] = array(
+                'label' => new lang_string('showcompletion', 'format_grid'),
+                'help' => 'showcompletion',
+                'help_component' => 'format_grid',
+                'element_type' => 'select',
+                'element_attributes' => array($showcompletionvalues)
             );
 
             $singlepagesummaryimagevalues = $this->generate_default_entry(

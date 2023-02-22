@@ -60,9 +60,9 @@ $userstopjsnav = get_user_preferences('format_tiles_stopjsnav', 0);
 $usejsnav = !$userstopjsnav && get_config('format_tiles', 'usejavascriptnav') && !core_useragent::is_ie();
 
 // Inline CSS may be required if this course is using different tile colours to default - echo this first if so.
-$templateable = new \format_tiles\output\inline_css_output($course, $ismobile, $usejsnav, $allowphototiles);
-$data = $templateable->export_for_template($renderer);
-echo $renderer->render_from_template('format_tiles/inline-css', $data);
+$inlinecsstemplateable = new \format_tiles\output\inline_css_output($course, $ismobile, $usejsnav, $allowphototiles);
+$inlinecssdata = $inlinecsstemplateable->export_for_template($renderer);
+echo $renderer->render_from_template('format_tiles/inline-css', $inlinecssdata);
 
 if ($isediting) {
     // If user is editing, we render the page the new way.
@@ -109,7 +109,8 @@ $jsparams = array(
     'userId' => $USER->id,
     'fitTilesToWidth' => get_config('format_tiles', 'fittilestowidth')
         && !optional_param("skipcheck", 0, PARAM_INT)
-        && !isset($SESSION->format_tiles_skip_width_check),
+        && !isset($SESSION->format_tiles_skip_width_check)
+        && $usejsnav,
     'enablecompletion' => $course->enablecompletion
 );
 

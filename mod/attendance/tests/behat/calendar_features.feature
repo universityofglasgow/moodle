@@ -10,14 +10,14 @@ Feature: Test the calendar related features in the attendance module
       | teacher1 | Teacher   | 1        | teacher1@example.com |
       | student1 | Student   | 1        | student1@example.com |
     And the following "course enrolments" exist:
-      | course | user        | role           | timestart     |
-      | C1     | student1    | student        | ##yesterday## |
-      | C1     | teacher1    | editingteacher | ##yesterday## |
+      | course | user     | role           | timestart     |
+      | C1     | student1 | student        | ##yesterday## |
+      | C1     | teacher1 | editingteacher | ##yesterday## |
     And the following "activity" exists:
-      | activity | attendance            |
-      | course   | C1                    |
-      | idnumber | 00001                 |
-      | name     | Test attendance       |
+      | activity | attendance      |
+      | course   | C1              |
+      | idnumber | 00001           |
+      | name     | Test attendance |
     And I log in as "teacher1"
 
   @javascript

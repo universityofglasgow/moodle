@@ -58,6 +58,17 @@ if ($ADMIN->fulltree) {
     $page->add(new admin_setting_heading('format_grid_settings', '',
         format_text(get_string('settingssettingsdesc', 'format_grid'), FORMAT_MARKDOWN)));
 
+    // Popup.
+    $name = 'format_grid/defaultpopup';
+    $title = get_string('defaultpopup', 'format_grid');
+    $description = get_string('defaultpopup_desc', 'format_grid');
+    $default = 1;
+    $choices = array(
+        1 => new lang_string('no'),
+        2 => new lang_string('yes')
+    );
+    $page->add(new admin_setting_configselect($name, $title, $description, $default, $choices));
+
     // Icon width.
     $name = 'format_grid/defaultimagecontainerwidth';
     $title = get_string('defaultimagecontainerwidth', 'format_grid');
@@ -103,6 +114,17 @@ if ($ADMIN->fulltree) {
     $setting = new admin_setting_configselect($name, $title, $description, $default, $choices);
     $setting->set_updatedcallback('format_grid::update_displayed_images_callback');
     $page->add($setting);
+
+    // Completion.
+    $name = 'format_grid/defaultshowcompletion';
+    $title = get_string('defaultshowcompletion', 'format_grid');
+    $description = get_string('defaultshowcompletion_desc', 'format_grid');
+    $default = 1;
+    $choices = array(
+        1 => new lang_string('no'),
+        2 => new lang_string('yes')
+    );
+    $page->add(new admin_setting_configselect($name, $title, $description, $default, $choices));
 
     // Show the grid image in the section summary on a single page.
     $name = 'format_grid/defaultsinglepagesummaryimage';

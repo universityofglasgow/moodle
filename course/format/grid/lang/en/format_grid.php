@@ -107,6 +107,18 @@ $string['singlepagesummaryimage_help'] = "Show the grid image for that section i
 $string['defaultsinglepagesummaryimage'] = 'Show the grid image in the section summary';
 $string['defaultsinglepagesummaryimage_desc'] = "Show the grid image for that section in the section summary when there is a summary in the section.";
 
+// Modal.
+$string['popup'] = 'Use a popup';
+$string['popup_help'] = "Display the section in a popup instead of navigating to a single section page.";
+$string['defaultpopup'] = 'Use a popup';
+$string['defaultpopup_desc'] = "Default display the section in a popup instead of navigating to a single section page.";
+
+// Completion.
+$string['showcompletion'] = 'Show completion';
+$string['showcompletion_help'] = "Show the completion of the section on the grid.";
+$string['defaultshowcompletion'] = 'Show completion';
+$string['defaultshowcompletion_desc'] = "Default show the completion of the section on the grid.";
+
 // Other.
 $string['information'] = 'Information';
 $string['informationsettings'] = 'Information settings';

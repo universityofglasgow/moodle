@@ -46,7 +46,7 @@ class backup_attendance_activity_structure_step extends backup_activity_structur
 
         $statuses = new backup_nested_element('statuses');
         $status  = new backup_nested_element('status', array('id'), array(
-            'acronym', 'description', 'grade', 'studentavailability', 'setunmarked', 'visible', 'deleted', 'setnumber'));
+            'acronym', 'description', 'grade', 'studentavailability', 'availablebeforesession', 'setunmarked', 'visible', 'deleted', 'setnumber'));
 
         $warnings = new backup_nested_element('warnings');
         $warning  = new backup_nested_element('warning', array('id'), array('warningpercent', 'warnafter',
@@ -55,7 +55,7 @@ class backup_attendance_activity_structure_step extends backup_activity_structur
         $sessions = new backup_nested_element('sessions');
         $session  = new backup_nested_element('session', array('id'), array(
             'groupid', 'sessdate', 'duration', 'lasttaken', 'lasttakenby', 'timemodified',
-            'description', 'descriptionformat', 'studentscanmark', 'studentpassword', 'autoassignstatus',
+            'description', 'descriptionformat', 'studentscanmark', 'allowupdatestatus', 'studentpassword', 'autoassignstatus',
             'subnet', 'automark', 'automarkcompleted', 'statusset', 'absenteereport', 'preventsharedip',
             'preventsharediptime', 'caleventid', 'calendarevent', 'includeqrcode', 'automarkcmid',
             'studentsearlyopentime'));

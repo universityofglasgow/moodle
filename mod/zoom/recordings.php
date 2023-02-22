@@ -37,7 +37,7 @@ if (!get_config('zoom', 'viewrecordings')) {
 
 $context = context_module::instance($cm->id);
 // Set up the page.
-$params = array('id' => $cm->id);
+$params = ['id' => $cm->id];
 $url = new moodle_url('/mod/zoom/recordings.php', $params);
 $PAGE->set_url($url);
 
@@ -81,7 +81,7 @@ if (empty($recordings)) {
     $row = new html_table_row([$cell]);
     $table->data = [$row];
 } else {
-    foreach ($recordings as $timestart => $grouping) {
+    foreach ($recordings as $grouping) {
         // Output the related recordings into the same row.
         $recordingdate = '';
         $recordinghtml = '';
