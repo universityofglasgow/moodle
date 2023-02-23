@@ -592,7 +592,7 @@ function attendance_session_open_for_students($sess) {
 }
 
 /**
- * Does this session have a status with availablebeforesession enabled.
+ * Is the allowupdatestatus setting enabled for this session?
  *
  * @param int $sessionid the id in attendance_sessions.
  * @return boolean
@@ -606,13 +606,19 @@ function attendance_check_allow_update($sessionid) {
  * Check to see if this session have a status with availablebeforesession enabled.
  *
  * @param int $sessionid the id in attendance_sessions.
+ * @param int $statusid - optionally pass the status id to see if it is availablebefore session.
  * @return boolean
  */
-function attendance_is_status_availablebeforesession($sessionid) {
+function attendance_is_status_availablebeforesession($sessionid, $statusid = null) {
     global $DB;
     $attendanceid = $DB->get_field('attendance_sessions', 'attendanceid', array('id' => $sessionid));
-    return $DB->record_exists('attendance_statuses', ['deleted' => 0, 'visible' => 1, 'availablebeforesession' => 1,
-                                                      'attendanceid' => $attendanceid]);
+    $params = ['deleted' => 0, 'visible' => 1, 'availablebeforesession' => 1,
+               'attendanceid' => $attendanceid];
+
+    if (!empty($statusid)) {
+        $params['id'] = $statusid;
+    }
+    return $DB->record_exists('attendance_statuses', $params);
 }
 
 /**
