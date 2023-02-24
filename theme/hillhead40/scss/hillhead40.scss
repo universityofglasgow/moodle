@@ -61,11 +61,6 @@ nav.navbar a.navbar-brand {
   font-size: 0;
 }
 
-// @see https://moodle.org/mod/forum/discuss.php?d=434018 for why it's done this way.
-.primary-navigation li[data-key="mycourses"] {
-  display: none;
-}
-
 #searchform-navbar {
   background-color: $hillhead-blue;
 }

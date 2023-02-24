@@ -82,7 +82,7 @@ $primarymenu = $primary->export_for_template($renderer);
 
 // Because the navigation hook *_extend_navigation() no longer appears to
 // work in M4, we need to slot this in before Preferences, and it's divider.
-if (count($primarymenu['user']['items']) > 0) {
+if (isset($primarymenu['user']['items']) && count($primarymenu['user']['items']) > 0) {
     $usesaccessibilitytools = get_user_preferences('theme_hillhead40_accessibility', false);
     $varg = 'clear';
     $spantext = 'Hide';
@@ -98,7 +98,11 @@ if (count($primarymenu['user']['items']) > 0) {
     $accessibilityobj->itemtype = 'link';
     $accessibilityobj->title = $branchlabel;
     $accessibilityobj->titleidentifier = $branchtitle;
-    $accessibilityurl = new moodle_url('/theme/hillhead40/accessibility.php?o=theme_hillhead40_accessibility&v=' . $varg);
+    $args = [
+        'o' => 'theme_hillhead40_accessibility',
+        'v' => $varg
+    ];
+    $accessibilityurl = new moodle_url('/theme/hillhead40/accessibility.php', $args);
     $accessibilityobj->url = $accessibilityurl;
     $accessibilityobj->divider = false;
     $accessibilityobj->link = true;
