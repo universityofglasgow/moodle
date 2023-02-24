@@ -194,7 +194,10 @@ if ($mform->is_cancelled()) {
 } else if ($fromform = $mform->get_data()) {
     // Check if password required and if set correctly.
     if (!empty($attforsession->studentpassword) &&
-        $attforsession->studentpassword !== $fromform->studentpassword) {
+        // Session is not currently open, but this status is allowed to be set before the session, don't require password.
+        !(!attendance_session_open_for_students($attforsession) && attendance_is_status_availablebeforesession($attforsession->id, $fromform->status))
+        // Check if password being passed is valid.
+        && $attforsession->studentpassword !== $fromform->studentpassword) {
 
         $url = new moodle_url('/mod/attendance/attendance.php', array('sessid' => $id, 'sesskey' => sesskey()));
         redirect($url, get_string('incorrectpassword', 'mod_attendance'), null, \core\output\notification::NOTIFY_ERROR);
@@ -208,6 +211,10 @@ if ($mform->is_cancelled()) {
     }
 
     if (!empty($fromform->status)) {
+        [$statuses, $unused] = $att->get_student_statuses($attforsession);
+        if (!isset($statuses[$fromform->status])) {
+            throw new moodle_exception('attendance_status_not_allowed', 'mod_attendance', $url);
+        }
         $success = $att->take_from_student($fromform);
 
         $url = new moodle_url('/mod/attendance/view.php', array('id' => $cm->id));

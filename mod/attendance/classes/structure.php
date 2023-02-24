@@ -707,14 +707,16 @@ class mod_attendance_structure {
         $existingattendance = $DB->get_field('attendance_log', 'id',
                             array('sessionid' => $mformdata->sessid, 'studentid' => $USER->id));
 
-        if ($existingattendance && !attendance_check_allow_update($mformdata->sessid)) {
-            // Already recorded do not save.
-            return false;
-        } else if (attendance_check_allow_update($mformdata->sessid)) {
-            $record->id = $existingattendance;
-            $logid = $DB->update_record('attendance_log', $record, false);
+        if (!empty($existingattendance)) {
+            if (!attendance_check_allow_update($mformdata->sessid)) {
+                // Already recorded do not save.
+                return false;
+            } else {
+                $record->id = $existingattendance;
+                $DB->update_record('attendance_log', $record);
+            }
         } else {
-            $logid = $DB->insert_record('attendance_log', $record, false);
+            $logid = $DB->insert_record('attendance_log', $record);
             $record->id = $logid;
         }
 
@@ -1050,6 +1052,38 @@ class mod_attendance_structure {
             return $this->allstatuses;
         }
         return $this->statuses;
+    }
+
+    /**
+     * Helper function to return status values that a user can currently use in this session.
+     *
+     * @param stdclass $session
+     * @return array
+     */
+    public function get_student_statuses($session) {
+        $statuses = $this->get_statuses();
+        $disabledduetotime = false;
+        $sessionstarttime = empty($session->studentsearlyopentime) ?
+            $session->sessdate : $session->sessdate - $session->studentsearlyopentime;
+
+        if (time() < $sessionstarttime) {
+            foreach ($statuses as $status) {
+                if ($status->availablebeforesession == 0) {
+                    unset($statuses[$status->id]);
+                }
+            }
+        } else if (time() > $sessionstarttime) {
+            foreach ($statuses as $status) {
+                if ($status->studentavailability === '0') {
+                    unset($statuses[$status->id]);
+                } else if (!empty($status->studentavailability
+                    && time() > $session->sessdate + ($status->studentavailability * 60))) {
+                    unset($statuses[$status->id]);
+                    $disabledduetotime = true;
+                }
+            }
+        }
+        return [$statuses, $disabledduetotime];
     }
 
     /**
