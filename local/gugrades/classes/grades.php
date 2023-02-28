@@ -123,10 +123,11 @@ class grades {
         }
 
         // add this all up
+        // array_values() to prevent arrays beening encoded as objects in JSON
         $record = new \stdClass();
         $record->category = $category;
-        $record->items = $items;
-        $record->categories = $categories;
+        $record->items = array_values($items);
+        $record->categories = array_values($categories);
 
         return $record;
     }
