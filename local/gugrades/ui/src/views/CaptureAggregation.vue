@@ -36,7 +36,6 @@
     function levelOneChange(level) {
         level1category.value = parseInt(level);
         showactivityselect.value = true;
-        window.console.log(level);
     }
 
     /**
