@@ -850,8 +850,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                         {key: "noconnectionerror", component: "format_tiles"},
                         {key: "show"},
                         {key: "hide"},
-                        {key: "other", component: "format_tiles"},
-                        {key: "blockedpopuptitle", component: "format_tiles"}
+                        {key: "other", component: "format_tiles"}
                     ];
                     str.get_strings(stringKeys).done(function (s) {
                         s.forEach(function(str, index) {

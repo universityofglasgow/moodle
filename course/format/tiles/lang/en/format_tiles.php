@@ -37,8 +37,6 @@ $string['aspectratiotootallorwide'] = 'The uploaded image has been saved, but pl
 $string['aspercentagedial'] = 'Show as % in circle';
 $string['basecolour_help'] = 'Colour set here will be applied to all tiles in the course.  (The available colours are determined by your site administrator through the Tiles plugin settings page).';
 $string['basecolour'] = 'Colour for tiles';
-$string['blockedpopuptitle'] = 'Blocked pop up window';
-$string['blockedpopup'] = 'Your browser has blocked a pop up window.  Please allow popups from this site, or click the link below to visit the site in this window';
 $string['brandcolour'] = 'Brand colour';
 
 $string['changedcolour'] = 'Tile colour reset to default for course {$a}';

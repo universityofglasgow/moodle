@@ -1,52 +1,33 @@
 <template>
-    <div class="mt-4 border px-3" v-if="loaded">
-        <div v-html="treehtml"></div>
+    <div class="mt-4 border border-dark p-3 rounded" v-if="loaded">
+        <div v-if="collapsed" @click="open_selection" class="cursor-pointer row">
+            <div class="col">
+                Selected: {{ selectedactivity.itemname }}
+            </div>
+            <div class="col text-right">
+                <i class="fa fa-chevron-down" aria-hidden="true"></i>
+            </div>
+        </div>
+        <div v-else>
+            <b><i class="fa fa-list-alt" aria-hidden="true"></i> {{ categoryname }}</b>
+            <ActivityTree :nodes="activitytree" @activityselected="activity_selected"></ActivityTree>
+        </div>
     </div>
 </template>
 
 <script setup>
     import {ref, onMounted, defineProps, watch} from 'vue';
+    import ActivityTree from '@/components/ActivityTree.vue';
 
     const props = defineProps({
         categoryid: Number,
     });
 
     const activitytree = ref({});
-    const treehtml = ref('');
+    const categoryname = ref('');
+    const selectedactivity = ref({});
     const loaded = ref(false);
-
-    /**
-     * Build the tree
-     * @param object tree 
-     * @param int depth depth into tree
-     */
-    function build_tree(tree, depth=0) {
-
-        let html = '';
-
-        // name of this category
-        if (depth) {
-            html += '<a href="#"><b><i class="fa fa-list-alt" aria-hidden="true"></i> ' + tree.category.fullname + '</b></a><br />';
-        } else {
-            html += '<b><i class="fa fa-list-alt" aria-hidden="true"></i> ' + tree.category.fullname + '</b><br />';
-        }
-
-        // build activities bit
-        html += '<ul>';
-        tree.items.forEach((item) => {
-            html += '<li>' + item.itemname + '</li>';
-        });
-        html += '</ul>';
-
-        // build (sub) categories
-        html += '<ul>';
-        tree.categories.forEach((category) => {
-            html += build_tree(category, depth+1);
-        });
-        html += '</ul>';
-
-        return html;
-    }
+    const collapsed = ref(false);
 
     // Get the sub-category / activity
     function getActivity() {
@@ -67,12 +48,37 @@
             window.console.log(tree);
 
             activitytree.value = tree;
-            treehtml.value = build_tree(tree);
+            categoryname.value = tree.category.fullname;
             loaded.value = true;
         })
         .catch((error) => {
             window.console.log(error);
         })
+    }
+
+    // Get the selected avtivity
+    function activity_selected(activityid) {
+        const GU = window.GU;
+        const fetchMany = GU.fetchMany;
+        fetchMany([{
+            methodname: 'local_gugrades_get_grade_item',
+            args: {
+                itemid: activityid,
+            }
+        }])[0]
+        .then((result) => {
+            window.console.log(result);
+            selectedactivity.value = result;
+            collapsed.value = true;
+        })
+        .catch((error) => {
+            window.console.log(error);
+        })
+    }
+
+    // (Re-)open the selection
+    function open_selection() {
+        collapsed.value = false;
     }
 
     onMounted(() => {
@@ -83,3 +89,9 @@
         getActivity();
     })
 </script>
+
+<style scoped>
+    .cursor-pointer {
+        cursor: pointer;
+    }
+</style>

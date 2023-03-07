@@ -27,11 +27,11 @@ defined('MOODLE_INTERNAL') || die();
 
 $observers = array (
     array(
-    'eventname'     => '\core\event\course_deleted',
-    'callback'    => 'format_tiles_observer::course_deleted',
+    'eventname' => '\core\event\course_deleted',
+    'callback' => 'format_tiles\observer::course_deleted',
     ),
     array(
-        'eventname'     => '\core\event\course_section_deleted',
-        'callback'    => 'format_tiles_observer::course_section_deleted',
+        'eventname' => '\core\event\course_section_deleted',
+        'callback' => 'format_tiles\observer::course_section_deleted',
     ),
 );

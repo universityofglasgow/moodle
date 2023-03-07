@@ -20,8 +20,7 @@
  * @copyright  2018 David Watson {@link http://evolutioncode.uk}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-defined('MOODLE_INTERNAL') || die();
+namespace format_tiles;
 
 /**
  * Event observers supported by this format.
@@ -29,12 +28,12 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2018 David Watson {@link http://evolutioncode.uk}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class format_tiles_observer {
+class observer {
     /**
      * Observer for the event course_content_deleted.
      * Deletes the user preference entries for the given course upon course deletion.
      * @param \core\event\course_deleted $event
-     * @throws dml_exception
+     * @throws \dml_exception
      */
     public static function course_deleted(\core\event\course_deleted $event) {
         global $DB;

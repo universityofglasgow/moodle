@@ -68,12 +68,14 @@ class content extends content_base {
                 ];
             }
             // If completion tracking is on but nothing to track at activity level, display help to teacher.
-            $hasnotrackableactivities = $DB->record_exists('course_modules', ['course' => $course->id, 'visible' => 1])
+            $warneditorcompletion = $course->enablecompletion
+                && $DB->record_exists('course_modules', ['course' => $course->id, 'visible' => 1])
                 && !$DB->record_exists_sql(
                 "SELECT id FROM {course_modules} WHERE course = ? AND visible = 1 AND completion != 0",
                 [$course->id]
             );
-            if ($hasnotrackableactivities) {
+
+            if ($warneditorcompletion) {
                 $bulklink = \html_writer::link(
                   new \moodle_url('/course/bulkcompletion.php', array('id' => $course->id)),
                   get_string('completionwarning_changeinbulk', 'format_tiles')

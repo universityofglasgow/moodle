@@ -341,7 +341,7 @@ Other
 
 4.0.0.9 RC (2023013000)
 =======================
-- Fix manual completion button ("Mark as done") on labels in non-subtiles mode (issue 137)
+- Fix manual completion button ("Mark as done") on labels in non-subtiles mode (issue 128)
 - Reinstate tile highlight feature (issue 140)
 - Fix JS loading for no view page course modules (e.g. mod_unilabel) (issue 123)
 - Avoid issue with missing grid format table (issue 141)
@@ -354,3 +354,14 @@ Other
 - Fix issue with section re-opening when user has disabled browser storage
 - Change release to "stable"
 - More comments
+
+4.1.0.1 (2023022800)
+====================
+- Fix issue 144 Activity icons not centered in tiles format
+- Fix issue 148 completion warning
+- Fix issue 138 blocked pop up warning
+- Fix issue 134 avoid URL activity pop up warning when set to display "open"
+
+4.1.0.2 (2023030500)
+====================
+- Fix issue 145 Return to current tile after editing

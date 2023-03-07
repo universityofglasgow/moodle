@@ -1,19 +1,19 @@
 <template>
     <div>
         <h1><MString name="captureaggregation"></MString></h1>
+
+        <TabsNav @tabchange="tabChange"></TabsNav>
+
         <div class="row">
             <div class="col">
                 <LevelOneSelect  @levelchange="levelOneChange"></LevelOneSelect>
+                <div v-if="currenttab == 'capture'">
+                    <ActivitySelect v-if="showactivityselect" :categoryid="level1category"></ActivitySelect>
+                </div>
             </div>
             <div class="col">
                 <router-link to="/settings" class="btn btn-primary"><MString name="settings"></MString></router-link>
             </div>
-        </div>
-
-        <TabsNav @tabchange="tabChange"></TabsNav>
-
-        <div v-if="currenttab == 'capture'">
-            <ActivitySelect v-if="showactivityselect" :categoryid="level1category"></ActivitySelect>
         </div>
     </div>
 </template>

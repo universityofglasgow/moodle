@@ -35,4 +35,10 @@ $functions = [
         'type' => 'read',
         'ajax' => true,
     ],
-];
+    'local_gugrades_get_grade_item' => [
+        'classname' => 'local_gugrades\external\get_grade_item',
+        'description' => 'Gets the activity information for a given grade item id',
+        'type' => 'read',
+        'ajax' => true,
+    ],
+];    

@@ -1,5 +1,5 @@
 <template>
-    <ul class="nav nav-pills mt-4">
+    <ul class="nav nav-pills mb-4 border-bottom">
         <li class="nav-item">
             <a class="nav-link" :class="{active: isCapture}" @click="clickTab('capture')"><MString name="assessmentgradecapture"></MString></a>
         </li>

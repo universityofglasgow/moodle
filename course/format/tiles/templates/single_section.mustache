@@ -74,17 +74,17 @@
 {{! this has to be an li for drag and drop sections to work properly (or at all) }}
 <li id="section-{{tileid}}" data-section="{{tileid}}" class="section main clearfix" role="region"
     aria-label="{{title}}">
-    <div class="content">
+    <div class="format_tiles_section_content">
         {{#hidden_section}}
             {{#str}}notavailable{{/str}}
         {{/hidden_section}}
         <div class="left side"></div>
         <div class="right side"></div>
         {{^hidden_section}}
-            {{#showsinglesectionlegacynav}}
+            {{^usingjsnav}}
                 {{>format_tiles/single_section_nav}}
-            {{/showsinglesectionlegacynav}}
-            {{^showsinglesectionlegacynav}}
+            {{/usingjsnav}}
+            {{#usingjsnav}}
                 <div class="sectionbuttons">
                         <span class="sectionbutton closesectionbtn pull-right" id="closesectionbtn-{{tileid}}"
                               title="{{#str}}close, format_tiles{{/str}}" tabindex="3" data-section="{{tileid}}">
@@ -99,8 +99,7 @@
                         {{/editing}}
                     {{/canedit}}
                 </div>
-
-            {{/showsinglesectionlegacynav}}
+            {{/usingjsnav}}
             {{^hastilephoto}}
                 <div class="tileiconcontainer" id="tileicon_single_{{tileid}}"
                 {{#editing}}data-toggle="tooltip" data-placement="left"

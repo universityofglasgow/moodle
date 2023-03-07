@@ -187,7 +187,7 @@ class format_tiles extends core_courseformat\base {
             $sectionno = $section;
         }
         if ($sectionno !== null) {
-            if ($sr !== null) {
+            if ($sr) {
                 $sectionno = $sr;
             }
             if ($sectionno != 0) {

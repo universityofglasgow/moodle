@@ -80,7 +80,7 @@ class format_tiles_externallib_testcase extends externallib_advanced_testcase {
 
         $this->resetAfterTest(true);
 
-        $course  = self::getDataGenerator()->create_course($this->tilescourseformatoptions);
+        $course = self::getDataGenerator()->create_course($this->tilescourseformatoptions);
 
         // Teacher can do it.
         $teacher = self::getDataGenerator()->create_user();
@@ -146,7 +146,7 @@ class format_tiles_externallib_testcase extends externallib_advanced_testcase {
 
         $this->resetAfterTest(true);
 
-        $course  = self::getDataGenerator()->create_course($this->tilescourseformatoptions);
+        $course = self::getDataGenerator()->create_course($this->tilescourseformatoptions);
 
         // Teacher can do it.
         $teacher = self::getDataGenerator()->create_user();

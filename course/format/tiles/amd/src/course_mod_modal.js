@@ -79,8 +79,8 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
         };
 
         const COMPLETION_TOGGLE_TYPES = {
-            MANUAL_NOT_DONE : "manual:mark-done",
-            MANUAL_DONE : "manual:undo"
+            MANUAL_NOT_DONE: "manual:mark-done",
+            MANUAL_DONE: "manual:undo"
         };
 
         const TOGGLE_MANUAL_COMPLETION = 'toggle-manual-completion';
@@ -375,16 +375,13 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                     clickedCmObject.attr(
                         TOGGLE_MANUAL_COMPLETION,
                         templateData.overallcomplete
-                            ? COMPLETION_TOGGLE_TYPES.MANUAL_DONE :  COMPLETION_TOGGLE_TYPES.MANUAL_NOT_DONE
+                            ? COMPLETION_TOGGLE_TYPES.MANUAL_DONE : COMPLETION_TOGGLE_TYPES.MANUAL_NOT_DONE
                     );
                 } else {
-                    //todo get the current status as it may have changed when window launched.
                     // Auto completion has different vars for core template core_course/completion_automatic.
                     templateData.statuscomplete = templateData.overallcomplete;
                     templateData.statusincomplete = templateData.overallincomplete;
                 }
-                // templateData.completionstring = checkBox.attr('title');
-                // todo add completion string back
                 templateData.showDownload = showDownload !== undefined ? showDownload : 0;
                 templateData.showNewWindow = showNewWindow !== undefined ? showNewWindow : 0;
                 templateData.pluginfileUrl = pluginfileUrl;
@@ -498,30 +495,7 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                         );
                     });
                     // Then open the pop up.
-                    var newWin = window.open(clickedActivity.attr("data-url"));
-                    try {
-                        newWin.focus();
-                    } catch (e) {
-                        // Blocked pop-up?
-                        var popUpLink = '<div>'
-                            + '<a href="' + clickedActivity.attr("data-url") + '">'
-                            + clickedActivity.attr("data-url")
-                            + '</a></div>';
-                        require(['core/str', 'core/notification'], function(Str, Notification) {
-                            var stringKeys = [
-                                {key: "sectionerrortitle", component: "format_tiles"},
-                                {key: "blockedpopup", component: "format_tiles"},
-                                {key: "cancel", component: "moodle"}
-                            ];
-                            Str.get_strings(stringKeys).done(function (s) {
-                                Notification.alert(
-                                   s[0],
-                                    s[1] + popUpLink,
-                                    s[2]
-                                );
-                            });
-                        });
-                    }
+                    window.open(clickedActivity.attr("data-url"));
                 }).fail(Notification.exception);
             }
         };

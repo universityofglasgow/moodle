@@ -27,6 +27,7 @@
 $string['assessmentgradecapture'] = 'Assessment grade capture';
 $string['captureaggregation'] = 'Grade capture and aggregation';
 $string['coursegradeaggregation'] = 'Course grade aggregation';
+$string['notoplevel'] = 'Course has not been properly setup (no top-level Grade categories)';
 $string['pluginname'] = 'UofG Grade Tool';
 $string['selectgradecategory'] = 'Select grade category';
 $string['settings'] = 'Settings';

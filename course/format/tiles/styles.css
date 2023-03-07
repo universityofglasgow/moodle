@@ -32,11 +32,11 @@
 .format-tiles .modal-backdrop.fade.in {
     opacity: 0.2;
 }
-.format-tiles ul.tiles li.section .content {
+.format-tiles ul.tiles li.section .format_tiles_section_content {
     margin: 0 10px 0 0;
 }
 
-.format-tiles li.section .content.dimmed {
+.format-tiles li.section .format_tiles_section_content.dimmed {
     opacity: 0.6;
 }
 .format-tiles ul.tiles li.section .left {
@@ -546,8 +546,8 @@
     border-left: none !important;
 }
 
-.format-tiles  #section-0 .content .summary .no-overflow,
-.format-tiles #section-0 .content .summary .no-overflow p {
+.format-tiles  #section-0 .format_tiles_section_content .summary .no-overflow,
+.format-tiles #section-0 .format_tiles_section_content .summary .no-overflow p {
     margin-bottom: 0;
 }
 
@@ -555,11 +555,11 @@
     margin-bottom: 0;
 }
 
-.format-tiles ul.tiles li.section .content .modtype_label .no-overflow,
-.format-tiles #section-0 .content .summary .no-overflow {
+.format-tiles ul.tiles li.section .format_tiles_section_content .modtype_label .no-overflow,
+.format-tiles #section-0 .format_tiles_section_content .summary .no-overflow {
     margin-bottom: 5px;
 }
-.format-tiles ul.tiles li.section .content:not(.collapse) {
+.format-tiles ul.tiles li.section .format_tiles_section_content:not(.collapse) {
     /*For snap theme*/
     display: block;
 }
@@ -966,7 +966,7 @@ allow tiles to be taller and thinner so can fit two side by side in portrait on 
         margin-left: 0 !important;
         background-color: #fff;
     }
-    .format-tiles ul.tiles li.section .content {
+    .format-tiles ul.tiles li.section .format_tiles_section_content {
         /* stylelint-disable-next-line declaration-no-important */
         margin: 0 !important;
     }

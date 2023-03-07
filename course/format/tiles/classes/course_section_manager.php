@@ -23,8 +23,6 @@
 
 namespace format_tiles;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Course section manager class for format tiles.
  * @package    format_tiles
