@@ -35,8 +35,8 @@ class course_visibility_test implements \report_coursediagnostic\course_diagnost
     /** @var object The course object */
     public object $course;
 
-    /** @var bool $testresult whether the test has passed or failed. */
-    public bool $testresult;
+    /** @var array $testresult whether the test has passed or failed. */
+    public array $testresult;
 
     /**
      * @param $name
@@ -50,8 +50,17 @@ class course_visibility_test implements \report_coursediagnostic\course_diagnost
     /**
      * @return bool
      */
-    public function runtest(): bool {
-        $this->testresult = (bool) $this->course->visible;
+    public function runtest(): array {
+
+        $coursehidden = (bool) $this->course->visible;
+        $settingsurl = new \moodle_url('/course/edit.php', ['id' => $this->course->id]);
+        $settingslink = \html_writer::link($settingsurl, get_string('settings_link_text', 'report_coursediagnostic'));
+
+        $this->testresult = [
+            'testresult' => $coursehidden,
+            'settingslink' => $settingslink,
+        ];
+
         return $this->testresult;
     }
 }

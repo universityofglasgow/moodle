@@ -372,6 +372,7 @@ class coursediagnostic {
      */
     public static function diagnostic_notification($failedtests, $courseid): mixed {
 
+        global $CFG;
         $class = '';
         $messagetext = '';
         foreach (self::$alertranges as $classname => $range) {
@@ -381,8 +382,9 @@ class coursediagnostic {
                 break;
             }
         }
+
         $message = '<strong>' . $messagetext . '</strong> You can review what needs to be set <a class="alert-link" ';
-        $message .= 'href="/report/coursediagnostic/index.php?courseid='.$courseid.'">on the report page</a>.';
+        $message .= 'href="' . $CFG->wwwroot . '/report/coursediagnostic/index.php?courseid='.$courseid.'">on the report page</a>.';
 
         return \report_coursediagnostic\notification::$class($message);
     }

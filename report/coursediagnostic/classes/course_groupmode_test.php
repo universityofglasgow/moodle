@@ -36,8 +36,8 @@ class course_groupmode_test implements \report_coursediagnostic\course_diagnosti
     /** @var object The course object */
     public object $course;
 
-    /** @var bool $testresult whether the test has passed or failed. */
-    public bool $testresult;
+    /** @var array $testresult whether the test has passed or failed. */
+    public array $testresult;
 
     /**
      * @param $name
@@ -48,10 +48,12 @@ class course_groupmode_test implements \report_coursediagnostic\course_diagnosti
     }
 
     /**
-     * @return bool
+     * @return array
      */
     public function runtest() {
         $definedandpopulated = true;
+        $settingslink = '';
+        $groupsettingslink = '';
         if ($this->course->groupmode != NOGROUPS) {
             $groups = groups_get_all_groups($this->course->id);
             if (!empty($groups)) {
@@ -75,9 +77,21 @@ class course_groupmode_test implements \report_coursediagnostic\course_diagnosti
                 // Looks like the groups have no members...
                 $definedandpopulated = false;
             }
+
+            if ($definedandpopulated == false) {
+                $settingsurl = new \moodle_url('/course/edit.php', ['id' => $this->course->id]);
+                $settingslink = \html_writer::link($settingsurl, get_string('settings_link_text', 'report_coursediagnostic'));
+
+                $groupsettingsurl = new \moodle_url('/group/index.php', ['id' => $this->course->id]);
+                $groupsettingslink = \html_writer::link($groupsettingsurl, get_string('group_settings_link_text', 'report_coursediagnostic'));
+            }
         }
 
-        $this->testresult = $definedandpopulated;
+        $this->testresult = [
+            'testresult' => $definedandpopulated,
+            'settingslink' => $settingslink,
+            'groupsettingslink' => $groupsettingslink,
+        ];
 
         return $this->testresult;
     }

@@ -97,7 +97,7 @@ class course_courseaudio_test implements \report_coursediagnostic\course_diagnos
     }
 
     /**
-     * @return bool
+     * @return array
      */
     public function runtest() {
         global $DB, $CFG;

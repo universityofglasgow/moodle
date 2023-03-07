@@ -35,8 +35,8 @@ class course_startdate_test implements \report_coursediagnostic\course_diagnosti
     /** @var object The course object */
     public object $course;
 
-    /** @var bool $testresult whether the test has passed or failed. */
-    public bool $testresult;
+    /** @var array $testresult whether the test has passed or failed. */
+    public array $testresult;
 
     /**
      * @param $name
@@ -50,8 +50,17 @@ class course_startdate_test implements \report_coursediagnostic\course_diagnosti
     /**
      * @return bool
      */
-    public function runtest() {
-        $this->testresult = !($this->course->startdate > time());
+    public function runtest(): array {
+
+        $coursestartdate = !($this->course->startdate > time());
+        $settingsurl = new \moodle_url('/course/edit.php', ['id' => $this->course->id]);
+        $settingslink = \html_writer::link($settingsurl, get_string('settings_link_text', 'report_coursediagnostic'));
+
+        $this->testresult = [
+            'testresult' => $coursestartdate,
+            'settingslink' => $settingslink,
+        ];
+
         return $this->testresult;
     }
 }

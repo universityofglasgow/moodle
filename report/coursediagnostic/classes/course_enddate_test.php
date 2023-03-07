@@ -35,8 +35,8 @@ class course_enddate_test implements \report_coursediagnostic\course_diagnostic_
     /** @var object The course object */
     public object $course;
 
-    /** @var bool $testresult whether the test has passed or failed. */
-    public bool $testresult;
+    /** @var array $testresult whether the test has passed or failed. */
+    public array $testresult;
 
     /**
      * @param $name
@@ -48,14 +48,24 @@ class course_enddate_test implements \report_coursediagnostic\course_diagnostic_
     }
 
     /**
-     * @return bool
+     * @return array
      */
-    public function runtest() {
-        $this->testresult = false;
+    public function runtest(): array {
+
+        $courseenddate = true;
+        $settingslink = '';
+
         // The course end date is in the past...
         if (!empty($this->course->enddate)) {
-            $this->testresult = !(($this->course->enddate) < time());
+            $courseenddate = !(($this->course->enddate) < time());
+            $settingsurl = new \moodle_url('/course/edit.php', ['id' => $this->course->id]);
+            $settingslink = \html_writer::link($settingsurl, get_string('settings_link_text', 'report_coursediagnostic'));
         }
+
+        $this->testresult = [
+            'testresult' => $courseenddate,
+            'settingslink' => $settingslink,
+        ];
 
         return $this->testresult;
     }

@@ -54,42 +54,24 @@ class course_activitycompletion_test implements \report_coursediagnostic\course_
     public function runtest(): array {
         $coursecompletion = $this->course->enablecompletion;
         $activitycompletion = true;
-        $counter = 0;
-        $activitylinks = [];
-        $settingslink = '';
+        $activitycompletionlink = '';
 
         // If completion is currently not set in the course...
         if ($coursecompletion == 0) {
             // Get all activities associated with the course...
             $moduleinfo = get_fast_modinfo($this->course->id);
             $modules = $moduleinfo->get_used_module_names();
-            $settingsurl = new \moodle_url('/course/edit.php', ['id' => $this->course->id]);
-            $settingslink = \html_writer::link($settingsurl, get_string('settings_link_text', 'report_coursediagnostic'));
+            $activitycompletionurl = new \moodle_url('/report/progress/index.php', ['course' => $this->course->id]);
+            $activitycompletionlink = \html_writer::link($activitycompletionurl, get_string('activitycompletion_link_text', 'report_coursediagnostic'));
             foreach ($modules as $module) {
                 $cminfo = $moduleinfo->get_instances_of($module->get_component());
                 foreach ($cminfo as $moduledata) {
                     if ($moduledata->completion > 0) {
-                        $counter++;
-                        if ($moduledata->get_url() != null) {
-                            $url = new \moodle_url('/course/modedit.php',
-                                ['update' => $moduledata->url->param('id'), 'return' => 1]
-                            );
-                        } else {
-                            // So, mod type 'label' doesn't contain an easy way
-                            // to get the url to the edit page...
-                            $url = new \moodle_url('/course/mod.php',
-                                [
-                                    'sesskey' => sesskey(),
-                                    'sr' => $moduledata->sectionnum,
-                                    'update' => $moduledata->id
-                                ]
-                            );
-                        }
-                        $link = \html_writer::link($url, $moduledata->get_name());
-                        $activitylinks[] = $link;
                         // The 'Completion tracking' dropdown in the activity
                         // settings is something other than 'Show activity...'.
                         $activitycompletion = false;
+                        // No need to go any further.
+                        break;
                     }
                 }
             }
@@ -97,12 +79,7 @@ class course_activitycompletion_test implements \report_coursediagnostic\course_
 
         $this->testresult = [
             'testresult' => $activitycompletion,
-            'activitylinks' => $activitylinks,
-            'settingslink' => $settingslink,
-            'word1' => (($counter > 1) ? get_string('plural_3', 'report_coursediagnostic') :
-                get_string('singular_3', 'report_coursediagnostic')),
-            'word2' => (($counter > 1) ? get_string('plural_2', 'report_coursediagnostic') :
-                get_string('singular_2', 'report_coursediagnostic'))
+            'activitycompletionlink' => $activitycompletionlink,
         ];
 
         return $this->testresult;

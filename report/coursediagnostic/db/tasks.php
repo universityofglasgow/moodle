@@ -32,7 +32,7 @@ $tasks = [
     [
         'classname' => 'report_coursediagnostic\task\run_diagnostic_task',
         'blocking' => 0,
-        'minute' => '*',
+        'minute' => '5',
         'hour' => '*',
         'day' => '*',
         'dayofweek' => '*',

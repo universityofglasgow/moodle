@@ -56,17 +56,19 @@ class course_selfenrolmentkey_test implements \report_coursediagnostic\course_di
         global $PAGE, $CFG;
         require_once("$CFG->dirroot/enrol/locallib.php");
 
+        // We're only interested in the enabled Self enrolment methods,
+        // it saves us having to iterate through a large list otherwise.
         $courseenrolmentmgr = new \course_enrolment_manager($PAGE, $this->course);
-        // We're only interested in the enabled methods, it saves us iterating
-        // through a large list otherwise...
         $enrolmentplugins = $courseenrolmentmgr->get_enrolment_instances(true);
-
         $selfenrolmentresult = true;
+        $selfenrolmentmethodexists = false;
         $counter = 0;
         $enrolmentlinks = [];
+
         foreach ($enrolmentplugins as $enrolmentinstance) {
             switch ($enrolmentinstance->enrol) {
                 case 'self':
+                    $selfenrolmentmethodexists = true;
                     if ($enrolmentinstance->status == 0) {
                         if (empty($enrolmentinstance->password)) {
                             $counter++;
@@ -75,7 +77,22 @@ class course_selfenrolmentkey_test implements \report_coursediagnostic\course_di
                                 'courseid' => $enrolmentinstance->courseid,
                                 'type' => $enrolmentinstance->enrol
                             ]);
-                            $link = \html_writer::link($url, $enrolmentinstance->name);
+
+                            $class = "enrol_{$enrolmentinstance->enrol}_plugin";
+                            if (!class_exists($class)) {
+                                if (!file_exists("$CFG->dirroot/enrol/$enrolmentinstance->enrol/lib.php")) {
+                                    continue;
+                                }
+                                include_once("$CFG->dirroot/enrol/$enrolmentinstance->enrol/lib.php");
+                                if (!class_exists($class)) {
+                                    continue;
+                                }
+                            }
+
+                            $plugin = new $class();
+
+                            $displayname = $plugin->get_instance_name($enrolmentinstance);
+                            $link = \html_writer::link($url, $displayname);
                             $enrolmentlinks[] = $link;
                             $selfenrolmentresult = false;
                         }
@@ -84,13 +101,33 @@ class course_selfenrolmentkey_test implements \report_coursediagnostic\course_di
             }
         }
 
+        if ($selfenrolmentmethodexists == true) {
+            if ($selfenrolmentresult == true) {
+                $outcometext = get_string('selfenrolmentkey_success_text', 'report_coursediagnostic');
+            } else {
+                $options = [
+                    'enrolmentlinks' => implode('<br />', $enrolmentlinks),
+                    'word1' => (($counter > 1) ? get_string('plural_4', 'report_coursediagnostic') :
+                        get_string('singular_4', 'report_coursediagnostic')),
+                    'word2' => (($counter > 1) ? get_string('plural_5', 'report_coursediagnostic') :
+                        get_string('singular_5', 'report_coursediagnostic'))
+                ];
+                $outcometext = get_string('selfenrolmentkey_missing_key_text', 'report_coursediagnostic', $options);
+            }
+        } else {
+            $enrolmentpluginsurl = new \moodle_url('/enrol/instances.php', ['id' => $this->course->id]);
+            $enrolmentpluginslink = \html_writer::link($enrolmentpluginsurl,
+                get_string('enrolmentplugins_link_text', 'report_coursediagnostic'));
+            $options = [
+                'enrolmentmethodslink' => $enrolmentpluginslink
+            ];
+            $outcometext = get_string('selfenrolmentkey_not_enabled_text', 'report_coursediagnostic', $options);
+            $selfenrolmentresult = false;
+        }
+
         $this->testresult = [
             'testresult' => $selfenrolmentresult,
-            'enrolmentlinks' => $enrolmentlinks,
-            'word1' => (($counter > 1) ? get_string('plural_4', 'report_coursediagnostic') :
-                get_string('singular_4', 'report_coursediagnostic')),
-            'word2' => (($counter > 1) ? get_string('plural_5', 'report_coursediagnostic') :
-                get_string('singular_5', 'report_coursediagnostic'))
+            'outcometext' => $outcometext
         ];
 
         return $this->testresult;

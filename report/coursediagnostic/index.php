@@ -48,7 +48,6 @@ $pagetitle = $title;
 $PAGE->set_title($title);
 $PAGE->set_heading(get_string('pluginname', 'report_coursediagnostic'));
 
-$canviewreport = false;
 require_capability('report/coursediagnostic:view', $context);
 
 $output = $PAGE->get_renderer('report_coursediagnostic');
@@ -101,7 +100,8 @@ if ($cfgsettings) {
             $table->head = $tableheadings;
             $table->data = [];
             $automaticenrolmentsdisabled = false;
-
+            $counter = 1;
+            $numtests = count(get_object_vars($SESSION->report_coursediagnosticconfig));
             foreach ($SESSION->report_coursediagnosticconfig as $configkey => $configvalue) {
 
                 // ...@todo - refactor this - making use of some kind of table class
@@ -111,11 +111,14 @@ if ($cfgsettings) {
                 $cell1->attributes['class'] = 'rightalign ' . $configkey . 'cell';
                 $cell2 = new html_table_cell();
                 $cell2->attributes['class'] = 'leftalign ' . $configkey . 'cell';
+                $cell2->text = get_string('skipped_text', 'report_coursediagnostic');
                 $cell3 = new html_table_cell($configkey);
-                $cell3->text = "<span class='badge badge-secondary'>";
-                $cell3->text .= get_string('skipped', 'report_coursediagnostic');
-                $cell3->text .= "</span>";
-                $cell3->attributes['class'] = 'leftalign ' . $configkey . 'cell';
+                $cell3->style = 'border-left:1px solid #dee2e6;';
+                if ($numtests != $counter) {
+                    $cell3->style .= ' border-bottom:1px solid #dee2e6;';
+                }
+                $cell3->text = '<strong>' . get_string('skipped', 'report_coursediagnostic') . '<strong>';
+                $cell3->attributes['class'] = 'text-center ' . $configkey . 'cell';
                 $tablecells = [];
                 $tablecells[] = $cell1;
                 $tmptestresult = false;
@@ -150,31 +153,34 @@ if ($cfgsettings) {
 
                         $cell2->text = get_string($configkey . '_impact', 'report_coursediagnostic', $options);
                     } else {
-                        $cell2->text = get_string($configkey . '_notset_impact', 'report_coursediagnostic');
+                        $settingsurl = new \moodle_url('/course/edit.php', ['id' => $courseid]);
+                        $settingslink = \html_writer::link($settingsurl, get_string('settings_link_text', 'report_coursediagnostic'));
+                        $cell2->text = get_string($configkey . '_notset_impact', 'report_coursediagnostic', ['settingslink' => $settingslink]);
                     }
 
-                    $cell3->text = "<span class='badge badge-danger'>";
-                    $cell3->text .= get_string('failtext', 'report_coursediagnostic');
-                    $cell3->text .= "</span>";
+                    $cell3->text = '<strong>' . get_string('failtext', 'report_coursediagnostic') . '</strong>';
+                    $cell3->attributes['class'] = 'alert-danger text-center ' . $configkey . 'cell';
 
                     // If our test has instead passed, clear and overwrite...
                     if ((isset($cachedata[0][$configkey]) && !is_array($cachedata[0][$configkey]) && ($cachedata[0][$configkey]))
                         || (isset($tmptestresult) && $tmptestresult)) {
-                        $cell2->text = '';
-                        $cell3->text = "<span class='badge badge-success'>";
-                        $cell3->text .= get_string('passtext', 'report_coursediagnostic');
-                        $cell3->text .= "</span>";
+                        $cell2->text = get_string($configkey . '_success_text', 'report_coursediagnostic');
+                        $cell3->text = '<strong>' . get_string('passtext', 'report_coursediagnostic') . '</strong>';
+                        $cell3->attributes['class'] = 'alert-success text-center ' . $configkey . 'cell';
                     }
 
                 }
 
+                $counter++;
                 $tablecells[] = $cell2;
                 $tablecells[] = $cell3;
                 $row = new html_table_row($tablecells);
                 $table->data[] = $row;
             }
 
-            $diagnosticcontent = html_writer::table($table);
+            $reportinfo = html_writer::div(get_string('report_summary', 'report_coursediagnostic'));
+            $tabledata = html_writer::table($table);
+            $diagnosticcontent = $reportinfo . $tabledata;
 
         } else {
             $url = new moodle_url('/course/edit.php', ['id' => $courseid]);
