@@ -122,7 +122,6 @@ class course_selfenrolmentkey_test implements \report_coursediagnostic\course_di
                 'enrolmentmethodslink' => $enrolmentpluginslink
             ];
             $outcometext = get_string('selfenrolmentkey_not_enabled_text', 'report_coursediagnostic', $options);
-            $selfenrolmentresult = false;
         }
 
         $this->testresult = [

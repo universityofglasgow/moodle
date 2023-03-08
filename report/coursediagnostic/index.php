@@ -121,6 +121,7 @@ if ($cfgsettings) {
                 $cell3->attributes['class'] = 'text-center ' . $configkey . 'cell';
                 $tablecells = [];
                 $tablecells[] = $cell1;
+                $tmptext = '';
                 $tmptestresult = false;
 
                 // This test has been enabled...
@@ -154,17 +155,22 @@ if ($cfgsettings) {
                         $cell2->text = get_string($configkey . '_impact', 'report_coursediagnostic', $options);
                     } else {
                         $settingsurl = new \moodle_url('/course/edit.php', ['id' => $courseid]);
-                        $settingslink = \html_writer::link($settingsurl, get_string('settings_link_text', 'report_coursediagnostic'));
-                        $cell2->text = get_string($configkey . '_notset_impact', 'report_coursediagnostic', ['settingslink' => $settingslink]);
+                        $settingslink = \html_writer::link($settingsurl,
+                            get_string('settings_link_text', 'report_coursediagnostic'));
+                        $cell2->text = get_string($configkey . '_notset_impact', 'report_coursediagnostic',
+                            ['settingslink' => $settingslink]);
                     }
 
                     $cell3->text = '<strong>' . get_string('failtext', 'report_coursediagnostic') . '</strong>';
-                    $cell3->attributes['class'] = 'alert-danger text-center ' . $configkey . 'cell';
+                    $cell3->attributes['class'] = 'alert-warning text-center ' . $configkey . 'cell';
 
                     // If our test has instead passed, clear and overwrite...
                     if ((isset($cachedata[0][$configkey]) && !is_array($cachedata[0][$configkey]) && ($cachedata[0][$configkey]))
                         || (isset($tmptestresult) && $tmptestresult)) {
-                        $cell2->text = get_string($configkey . '_success_text', 'report_coursediagnostic');
+                        $tmptext = (!empty($cachedata[0][$configkey]['outcometext']) ?
+                            $cachedata[0][$configkey]['outcometext'] :
+                            get_string($configkey . '_success_text', 'report_coursediagnostic'));
+                        $cell2->text = $tmptext;
                         $cell3->text = '<strong>' . get_string('passtext', 'report_coursediagnostic') . '</strong>';
                         $cell3->attributes['class'] = 'alert-success text-center ' . $configkey . 'cell';
                     }
