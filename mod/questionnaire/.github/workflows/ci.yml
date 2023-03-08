@@ -4,40 +4,16 @@ on: [push, pull_request]
 jobs:
   test:
     runs-on: 'ubuntu-latest'
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - php: '8.0'
-            moodle-branch: 'MOODLE_400_STABLE'
-            database: 'mariadb'
-          - php: '8.0'
-            moodle-branch: 'MOODLE_311_STABLE'
-            database: 'pgsql'
-          - php: '7.4'
-            moodle-branch: 'MOODLE_311_STABLE'
-            database: 'mariadb'
-          - php: '7.3'
-            moodle-branch: 'MOODLE_310_STABLE'
-            database: 'pgsql'
-          - php: '7.2'
-            moodle-branch: 'MOODLE_39_STABLE'
-            database: 'pgsql'
 
     services:
       postgres:
-        image: postgres:10
+        image: postgres:13
         env:
           POSTGRES_USER: 'postgres'
           POSTGRES_HOST_AUTH_METHOD: 'trust'
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 3
         ports:
           - 5432:5432
-
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 3
       mariadb:
         image: mariadb:10
         env:
@@ -45,22 +21,38 @@ jobs:
           MYSQL_ALLOW_EMPTY_PASSWORD: "true"
           MYSQL_CHARACTER_SET_SERVER: "utf8mb4"
           MYSQL_COLLATION_SERVER: "utf8mb4_unicode_ci"
+
         ports:
           - 3306:3306
         options: --health-cmd="mysqladmin ping" --health-interval 10s --health-timeout 5s --health-retries 3
 
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - php: '8.0'
+            moodle-branch: 'MOODLE_401_STABLE'
+            database: 'pgsql'
+          - php: '8.0'
+            moodle-branch: 'MOODLE_400_STABLE'
+            database: 'pgsql'
+          - php: '7.4'
+            moodle-branch: 'MOODLE_400_STABLE'
+            database: 'mariadb'
+
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           path: plugin
 
-      - name: Setup PHP ${{ matrix.php }}
+      - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
           extensions: ${{ matrix.extensions }}
           ini-values: max_input_vars=5000
+          # none to use phpdbg fallback. Specify pcov (Moodle 3.10 and up) or xdebug to use them instead.
           coverage: none
 
       - name: Deploy moodle-plugin-ci
@@ -71,7 +63,6 @@ jobs:
           echo $(cd ci/vendor/bin; pwd) >> $GITHUB_PATH
           # PHPUnit depends on en_AU.UTF-8 locale
           sudo locale-gen en_AU.UTF-8
-          echo "NVM_DIR=$HOME/.nvm" >> $GITHUB_ENV
 
       - name: Install Moodle
         # Need explicit IP to stop mysql client fail on attempt to use unix socket.
@@ -117,7 +108,7 @@ jobs:
 
       - name: Grunt
         if: ${{ always() }}
-        run: moodle-plugin-ci grunt --max-lint-warnings 0
+        run: moodle-plugin-ci grunt
 
       - name: PHPUnit tests
         if: ${{ always() }}

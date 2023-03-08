@@ -22,8 +22,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * The module upgrade function.
  * @param int $oldversion
@@ -983,6 +981,20 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
 
         // Questionnaire savepoint reached.
         upgrade_mod_savepoint(true, 2020062301, 'questionnaire');
+    }
+
+    if ($oldversion < 2022092200) {
+        // Add new slider question type.
+        $exist = $DB->record_exists('questionnaire_question_type', ['typeid' => 11]);
+        if (!$exist) {
+            $questiontype = new stdClass();
+            $questiontype->typeid = 11;
+            $questiontype->type = 'Slider';
+            $questiontype->has_choices = 'n';
+            $questiontype->response_table = 'response_text';
+            $DB->insert_record('questionnaire_question_type', $questiontype);
+        }
+        upgrade_mod_savepoint(true, 2022092200, 'questionnaire');
     }
 
     return $result;

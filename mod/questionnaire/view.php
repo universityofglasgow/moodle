@@ -65,12 +65,7 @@ $PAGE->set_title(format_string($questionnaire->name));
 $PAGE->set_heading(format_string($course->fullname));
 
 echo $questionnaire->renderer->header();
-$questionnaire->page->add_to_page('questionnairename', format_string($questionnaire->name));
-
-// Print the main part of the page.
-if ($questionnaire->intro) {
-    $questionnaire->page->add_to_page('intro', format_module_intro('questionnaire', $questionnaire, $cm->id));
-}
+// No need to print out intro or name in Moodle 4 and above.
 
 $cm = $questionnaire->cm;
 $currentgroupid = groups_get_activity_group($cm);
@@ -137,13 +132,14 @@ if ($questionnaire->capabilities->readownresponses && ($usernumresp > 0)) {
         $argstr .= '&byresponse=1&action=vresp';
     }
     $questionnaire->page->add_to_page('yourresponse',
-        '<a href="'.$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/myreport.php?'.$argstr).'">'.$titletext.'</a>');
+        '<a href="' .$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/myreport.php?' . $argstr).
+        '" class="btn btn-primary">' . $titletext . '</a>');
 }
 
 if ($questionnaire->can_view_all_responses($usernumresp)) {
     $argstr = 'instance='.$questionnaire->id.'&group='.$currentgroupid;
     $questionnaire->page->add_to_page('allresponses',
-        '<a href="'.$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr).'">'.
+        '<a href="'.$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.$argstr).'" class="btn btn-primary">'.
         get_string('viewallresponses', 'questionnaire').'</a>');
 }
 

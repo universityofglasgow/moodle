@@ -41,6 +41,7 @@ define('QUESDROP', 6);
 define('QUESRATE', 8);
 define('QUESDATE', 9);
 define('QUESNUMERIC', 10);
+define('QUESSLIDER', 11);
 define('QUESPAGEBREAK', 99);
 define('QUESSECTIONTEXT', 100);
 
@@ -61,19 +62,19 @@ abstract class question {
 
     // Class Properties.
     /** @var int $id The database id of this question. */
-    public $id          = 0;
+    public $id = 0;
 
     /** @var int $surveyid The database id of the survey this question belongs to. */
-    public $surveyid   = 0;
+    public $surveyid = 0;
 
     /** @var string $name The name of this question. */
-    public $name        = '';
+    public $name = '';
 
     /** @var string $type The name of the question type. */
-    public $type        = '';
+    public $type = '';
 
     /** @var array $choices Array holding any choices for this question. */
-    public $choices     = [];
+    public $choices = [];
 
     /** @var array $dependencies Array holding any dependencies for this question. */
     public $dependencies = [];
@@ -82,25 +83,25 @@ abstract class question {
     public $responsetable = '';
 
     /** @var int $length The length field. */
-    public $length      = 0;
+    public $length = 0;
 
     /** @var int $precise The precision field. */
-    public $precise     = 0;
+    public $precise = 0;
 
     /** @var int $position Position in the questionnaire */
-    public $position    = 0;
+    public $position = 0;
 
     /** @var string $content The question's content. */
-    public $content     = '';
+    public $content = '';
 
     /** @var string $allchoices The list of all question's choices. */
-    public $allchoices  = '';
+    public $allchoices = '';
 
     /** @var boolean $required The required flag. */
-    public $required    = 'n';
+    public $required = 'n';
 
     /** @var boolean $deleted The deleted flag. */
-    public $deleted     = 'n';
+    public $deleted = 'n';
 
     /** @var mixed $extradata Any custom data for the question type. */
     public $extradata = '';
@@ -117,7 +118,8 @@ abstract class question {
         QUESDATE => 'date',
         QUESNUMERIC => 'numerical',
         QUESPAGEBREAK => 'pagebreak',
-        QUESSECTIONTEXT => 'sectiontext'
+        QUESSECTIONTEXT => 'sectiontext',
+        QUESSLIDER => 'slider',
     ];
 
     /** @var array $notifications Array of extra messages for display purposes. */
@@ -138,7 +140,7 @@ abstract class question {
 
         if ($qtypes === null) {
             $qtypes = $DB->get_records('questionnaire_question_type', [], 'typeid',
-                                       'typeid, type, has_choices, response_table');
+                                       'typeid, type, has_choices, response_table') ?? [];
         }
 
         if ($id) {
@@ -280,14 +282,15 @@ abstract class question {
         global $DB;
 
         $this->dependencies = [];
-        $dependencies = $DB->get_records('questionnaire_dependency',
-            ['questionid' => $this->id , 'surveyid' => $this->surveyid], 'id ASC');
-        foreach ($dependencies as $dependency) {
-            $this->dependencies[$dependency->id] = new \stdClass();
-            $this->dependencies[$dependency->id]->dependquestionid = $dependency->dependquestionid;
-            $this->dependencies[$dependency->id]->dependchoiceid = $dependency->dependchoiceid;
-            $this->dependencies[$dependency->id]->dependlogic = $dependency->dependlogic;
-            $this->dependencies[$dependency->id]->dependandor = $dependency->dependandor;
+        if ($dependencies = $DB->get_records('questionnaire_dependency',
+            ['questionid' => $this->id , 'surveyid' => $this->surveyid], 'id ASC')) {
+            foreach ($dependencies as $dependency) {
+                $this->dependencies[$dependency->id] = new \stdClass();
+                $this->dependencies[$dependency->id]->dependquestionid = $dependency->dependquestionid;
+                $this->dependencies[$dependency->id]->dependchoiceid = $dependency->dependchoiceid;
+                $this->dependencies[$dependency->id]->dependlogic = $dependency->dependlogic;
+                $this->dependencies[$dependency->id]->dependandor = $dependency->dependandor;
+            }
         }
     }
 
@@ -1300,8 +1303,8 @@ abstract class question {
 
             // Update existing question.
             // Handle any attachments in the content.
-            $formdata->itemid  = $formdata->content['itemid'];
-            $formdata->format  = $formdata->content['format'];
+            $formdata->itemid = $formdata->content['itemid'];
+            $formdata->format = $formdata->content['format'];
             $formdata->content = $formdata->content['text'];
             $formdata->content = file_save_draft_area_files($formdata->itemid, $questionnaire->context->id, 'mod_questionnaire',
                 'question', $formdata->qid, ['subdirs' => true], $formdata->content);
@@ -1336,10 +1339,10 @@ abstract class question {
             $this->add($questionrecord);
 
             // Handle any attachments in the content.
-            $formdata->itemid  = $formdata->content['itemid'];
-            $formdata->format  = $formdata->content['format'];
+            $formdata->itemid = $formdata->content['itemid'];
+            $formdata->format = $formdata->content['format'];
             $formdata->content = $formdata->content['text'];
-            $content           = file_save_draft_area_files($formdata->itemid, $questionnaire->context->id, 'mod_questionnaire',
+            $content = file_save_draft_area_files($formdata->itemid, $questionnaire->context->id, 'mod_questionnaire',
                 'question', $this->qid, ['subdirs' => true], $formdata->content);
             $DB->set_field('questionnaire_question', 'content', $content, ['id' => $this->qid]);
         }
@@ -1563,6 +1566,9 @@ abstract class question {
         ];
         $mobiledata->choices = $this->mobile_question_choices_display();
 
+        if ($this->mobile_question_extradata_display()) {
+            $mobiledata->extradata = json_decode($this->extradata);
+        }
         if ($autonum) {
             $mobiledata->content = $qnum . '. ' . $mobiledata->content;
             $mobiledata->content_stripped = $qnum . '. ' . $mobiledata->content_stripped;
@@ -1616,5 +1622,23 @@ abstract class question {
         }
 
         return $resultdata;
+    }
+
+    /**
+     * True if question need extradata for mobile app.
+     *
+     * @return bool
+     */
+    public function mobile_question_extradata_display() {
+        return false;
+    }
+
+    /**
+     * Return the otherdata to be used by the mobile app.
+     *
+     * @return array
+     */
+    public function mobile_otherdata() {
+        return [];
     }
 }
