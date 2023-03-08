@@ -35,6 +35,12 @@ $functions = [
         'type' => 'read',
         'ajax' => true,
     ],
+    'local_gugrades_get_capture_page' => [
+        'classname' => 'local_gugrades\external\get_capture_page',
+        'description' => 'Get grade capture table given activity, ',
+        'type' => 'read',
+        'ajax' => true,
+    ],    
     'local_gugrades_get_grade_item' => [
         'classname' => 'local_gugrades\external\get_grade_item',
         'description' => 'Gets the activity information for a given grade item id',

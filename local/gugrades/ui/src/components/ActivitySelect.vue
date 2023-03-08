@@ -16,12 +16,14 @@
 </template>
 
 <script setup>
-    import {ref, onMounted, defineProps, watch} from 'vue';
+    import {ref, onMounted, defineProps, defineEmits, watch} from 'vue';
     import ActivityTree from '@/components/ActivityTree.vue';
 
     const props = defineProps({
         categoryid: Number,
     });
+
+    const emit = defineEmits(['activityselected']);
 
     const activitytree = ref({});
     const categoryname = ref('');
@@ -45,7 +47,6 @@
         }])[0]
         .then((result) => {
             const tree = JSON.parse(result['activities']);
-            window.console.log(tree);
 
             activitytree.value = tree;
             categoryname.value = tree.category.fullname;
@@ -67,13 +68,15 @@
             }
         }])[0]
         .then((result) => {
-            window.console.log(result);
             selectedactivity.value = result;
             collapsed.value = true;
         })
         .catch((error) => {
             window.console.log(error);
-        })
+        });
+
+        // Emit id as well
+        emit('activityselected', activityid);
     }
 
     // (Re-)open the selection
@@ -85,7 +88,10 @@
         getActivity();
     });
 
+    // If the categoryid prop changes then we read new values
+    // and (re-)open the dialogue
     watch(() => props.categoryid, () => {
+        collapsed.value = false;
         getActivity();
     })
 </script>
