@@ -9,8 +9,6 @@
                 <LevelOneSelect  @levelchange="levelOneChange"></LevelOneSelect>
                 <div v-if="currenttab == 'capture'">
                     <ActivitySelect v-if="showactivityselect" :categoryid="level1category" @activityselected="activity_selected"></ActivitySelect>
-
-
                 </div>
             </div>
             <div class="col">
