@@ -53,51 +53,37 @@ class course_selfenrolmentkey_test implements \report_coursediagnostic\course_di
      * @return array
      */
     public function runtest(): array {
-        global $PAGE, $CFG;
+        global $CFG;
         require_once("$CFG->dirroot/enrol/locallib.php");
 
-        // We're only interested in the enabled Self enrolment methods,
-        // it saves us having to iterate through a large list otherwise.
-        $courseenrolmentmgr = new \course_enrolment_manager($PAGE, $this->course);
-        $enrolmentplugins = $courseenrolmentmgr->get_enrolment_instances(true);
+        // We're only interested in the enabled Self enrolment methods.
+        $enrolmentplugins = enrol_get_instances($this->course->id, true);
+        $plugin = enrol_get_plugin('self');
         $selfenrolmentresult = true;
         $selfenrolmentmethodexists = false;
         $counter = 0;
         $enrolmentlinks = [];
 
         foreach ($enrolmentplugins as $enrolmentinstance) {
-            switch ($enrolmentinstance->enrol) {
-                case 'self':
-                    $selfenrolmentmethodexists = true;
-                    if ($enrolmentinstance->status == 0) {
-                        if (empty($enrolmentinstance->password)) {
-                            $counter++;
-                            $url = new \moodle_url('/enrol/editinstance.php', [
-                                'id' => $enrolmentinstance->id,
-                                'courseid' => $enrolmentinstance->courseid,
-                                'type' => $enrolmentinstance->enrol
-                            ]);
+            if ($enrolmentinstance->enrol != 'self') {
+                continue;
+            }
 
-                            $class = "enrol_{$enrolmentinstance->enrol}_plugin";
-                            if (!class_exists($class)) {
-                                if (!file_exists("$CFG->dirroot/enrol/$enrolmentinstance->enrol/lib.php")) {
-                                    continue;
-                                }
-                                include_once("$CFG->dirroot/enrol/$enrolmentinstance->enrol/lib.php");
-                                if (!class_exists($class)) {
-                                    continue;
-                                }
-                            }
+            $selfenrolmentmethodexists = true;
+            if ($enrolmentinstance->status == 0) {
+                if (empty($enrolmentinstance->password)) {
+                    $counter++;
+                    $url = new \moodle_url('/enrol/editinstance.php', [
+                        'id' => $enrolmentinstance->id,
+                        'courseid' => $enrolmentinstance->courseid,
+                        'type' => $enrolmentinstance->enrol
+                    ]);
 
-                            $plugin = new $class();
-
-                            $displayname = $plugin->get_instance_name($enrolmentinstance);
-                            $link = \html_writer::link($url, $displayname);
-                            $enrolmentlinks[] = $link;
-                            $selfenrolmentresult = false;
-                        }
-                    }
-                    break;
+                    $displayname = $plugin->get_instance_name($enrolmentinstance);
+                    $link = \html_writer::link($url, $displayname);
+                    $enrolmentlinks[] = $link;
+                    $selfenrolmentresult = false;
+                }
             }
         }
 
