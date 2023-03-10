@@ -1,6 +1,7 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
+import { initialisestore } from '@/js/store.js';
 
 // This stuff makes sure that the window.GU variable
 // exists.
@@ -27,6 +28,7 @@ function ensureGUIsSet(timeout) {
 
 ensureGUIsSet(timeout)
 .then(() => {
+    initialisestore();
     createApp(App).use(router).mount('#app');
 });
 

@@ -16,7 +16,7 @@
             </div>
         </div>
 
-        <CaptureTable v-if="showtable && (currenttab == 'capture')" :users="users"></CaptureTable>
+        <CaptureTable v-if="showtable && (currenttab == 'capture')" :users="users" @filterchanged="filterchanged"></CaptureTable>
     </div>
 </template>
 
@@ -33,6 +33,9 @@
     const showactivityselect = ref(false);
     const showtable = ref(false);
     const users = ref([]);
+    const itemid = ref(0);
+    const firstname = ref('');
+    const lastname = ref('');
 
     /**
      * Capture change to top level category dropdown
@@ -48,9 +51,9 @@
     }
 
     /**
-     * Capture change to activity selection
+     * Get filtered/paged data
      */
-    function activity_selected(itemid) {
+    function get_page_data(itemid, firstname, lastname) {
         const GU = window.GU;
         const courseid = GU.courseid;
         const fetchMany = GU.fetchMany;        
@@ -62,6 +65,8 @@
                 gradeitemid: itemid,
                 pageno: 0,
                 pagelength: 0,
+                firstname: firstname,
+                lastname: lastname,
             }
         }])[0]
         .then((result) => {
@@ -71,7 +76,24 @@
         })
         .catch((error) => {
             window.console.log(error);
-        });
+        });        
+    }
+
+    /**
+     * Capture change to activity selection
+     */
+    function activity_selected(newitemid) {
+        itemid.value = newitemid;
+        get_page_data(itemid.value, firstname.value, lastname.value);
+    }
+
+    /**
+     * Capture change to firstname/lastname filter
+     */
+    function filterchanged(newfirstname, newlastname) {
+        firstname.value = newfirstname;
+        lastname.value = newlastname;
+        get_page_data(itemid.value, firstname.value, lastname.value);
     }
 
     /**

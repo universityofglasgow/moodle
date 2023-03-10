@@ -33,10 +33,25 @@ class users {
     /**
      * Get users who can "be graded". Usually students.
      * @param context $context
+     * @param string $firstname (first letter of first name)
+     * @param string $lastname (first letter of last name)
      * @return array
      */
-    public static function get_gradeable_users(\context $context) {
+    public static function get_gradeable_users(\context $context, $firstname, $lastname) {
         $users = get_enrolled_users($context, 'moodle/grade:view');
+
+        // filter
+        if ($firstname || $lastname) {
+            $users = array_filter($users, function($user) use ($firstname, $lastname) {
+                if ($firstname && (substr($user->firstname, 0, 1) != $firstname)) {
+                    return false;
+                }
+                if ($lastname && (substr($user->lastname, 0, 1) != $lastname)) {
+                    return false;
+                }
+                return true;
+            });
+        }
 
         return $users;
     }
@@ -45,15 +60,17 @@ class users {
      * Get available users for given activity
      * @param object $cmi (cm_info)
      * @param context $context
+     * @param string $firstname (first letter of first name)
+     * @param string $lastname (first letter of last name)
      * @return array
      */
-    public static function get_available_users_from_cm($cmi, $context) {
+    public static function get_available_users_from_cm($cmi, $context, $firstname, $lastname) {
         
         //See https://moodledev.io/docs/apis/subsystems/availability
         $info = new \core_availability\info_module($cmi);
 
         // Get all the possible users in this course
-        $users = self::get_gradeable_users($context);
+        $users = self::get_gradeable_users($context, $firstname, $lastname);
 
         // Filter using availability API.
         $filteredusers = $info->filter_user_list($users);

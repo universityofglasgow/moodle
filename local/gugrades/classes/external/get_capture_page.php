@@ -41,10 +41,12 @@ class get_capture_page extends \external_api {
             'gradeitemid' => new external_value(PARAM_INT, 'Grade item id number'),
             'pageno' => new external_value(PARAM_INT, 'Page number (starts at 0)'),
             'pagelength' => new external_value(PARAM_INT, 'Lines per page'),
+            'firstname' => new external_value(PARAM_ALPHA, 'Firstname filter - first letter or empty for all'),
+            'lastname' => new external_value(PARAM_ALPHA, 'Lastname filter - first letter or empty for all'),
         ]);
     }
 
-    public static function execute($courseid, $gradeitemid, $pageno, $pagelength) {
+    public static function execute($courseid, $gradeitemid, $pageno, $pagelength, $firstname, $lastname) {
         global $DB;
 
         // Security.
@@ -53,6 +55,8 @@ class get_capture_page extends \external_api {
             'gradeitemid' => $gradeitemid,
             'pageno' => $pageno,
             'pagelength' => $pagelength,
+            'firstname' => $firstname,
+            'lastname' => $lastname,
         ]);
 
         // Security
@@ -74,7 +78,7 @@ class get_capture_page extends \external_api {
             $cmi = $modinfo->get_cm($cm->id);
 
             // Get *available* users
-            $users = \local_gugrades\users::get_available_users_from_cm($cmi, $context);
+            $users = \local_gugrades\users::get_available_users_from_cm($cmi, $context, $firstname, $lastname);
         }
 
         return ['users' => json_encode($users)];

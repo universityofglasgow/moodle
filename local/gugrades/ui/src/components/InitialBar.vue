@@ -4,13 +4,13 @@
 
         <nav class="initialbargroups d-flex flex-wrap justify-content-center justify-content-md-start">
             <ul class="pagination pagination-sm">
-                <li class="initialbarall page-item active">
-                    <a data-initial="" class="page-link" href="#">All</a>
+                <li class="initialbarall page-item" :class="{active: is_active('all')}">
+                    <a data-initial="" class="page-link" href="#" @click="letterclicked('all', $event)"><MString name="all"></MString></a>
                 </li>
             </ul>
             <ul class="pagination pagination-sm">
-                <li v-for="letter in letters" :key="letter" class="page-item">
-                    <a class="page-link" href="#">{{letter}}</a>
+                <li v-for="letter in letters" :key="letter" class="page-item" :class="{active: is_active(letter)}">
+                    <a class="page-link" href="#" @click="letterclicked(letter, $event)">{{letter}}</a>
                 </li>
             </ul>
         </nav>
@@ -18,13 +18,28 @@
 </template>
 
 <script setup>
-    import {computed, defineProps} from '@vue/runtime-core';
+    import {ref, computed, defineProps, defineEmits} from '@vue/runtime-core';
+    import MString from '@/components/MString.vue';
 
     const props = defineProps({
         'label': String,
     });
 
+    const emit = defineEmits(['selected']);
+
+    const activeletter = ref('all');
+
     const letters = computed(() => {
         return Array.from("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
     });
+
+    function letterclicked(letter, event) {
+        event.preventDefault();
+        activeletter.value = letter;
+        emit('selected', letter);
+    }
+
+    function is_active(letter) {
+        return activeletter.value == letter;
+    }
 </script>

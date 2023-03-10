@@ -23,10 +23,13 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-
+$string['all'] = 'All';
 $string['assessmentgradecapture'] = 'Assessment grade capture';
+$string['awaitingcapture'] = 'Awaiting capture';
 $string['captureaggregation'] = 'Grade capture and aggregation';
 $string['coursegradeaggregation'] = 'Course grade aggregation';
+$string['firstnamelastname'] = 'Firstname / lastname';
+$string['idnumber'] = 'ID number';
 $string['notoplevel'] = 'Course has not been properly setup (no top-level Grade categories)';
 $string['pluginname'] = 'UofG Grade Tool';
 $string['selectgradecategory'] = 'Select grade category';
