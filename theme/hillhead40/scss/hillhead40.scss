@@ -4,8 +4,6 @@ $hillhead-light: lighten($hillhead-blue, 10%);
 $hillhead-main: #003865;
 $hillhead-footer-color: #005e8d;
 $primary: $hillhead-blue;
-$hover-background: $hillhead-light;
-$hover-border: $hillhead-dark;
 
 h1 {
   font-size: 1.5rem;
@@ -79,9 +77,9 @@ nav.navbar a.navbar-brand {
   padding: 0;
 }
 
-.primary-navigation .moremenu .nav-link.active, .primary-navigation .moremenu .nav-link:hover, .btn-primary:hover {
-  background-color: $hover-background;
-  border-bottom-color: $hover-border;
+.primary-navigation .moremenu .nav-link.active, .primary-navigation .moremenu .nav-link:hover, .primary-navigation .moremenu .nav-link:visited, .btn-primary:hover {
+  background-color: $hillhead-light;
+  border-bottom-color: $hillhead-dark;
 }
 
 #page-footer {
