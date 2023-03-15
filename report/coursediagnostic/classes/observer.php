@@ -205,7 +205,7 @@ class observer {
     /**
      * When a role is unassigned from a user, handle the session variables.
      * The config session variable needs to be removed in order to be re-gen'd.
-     * @param \core\event\role_assigned $event
+     * @param \core\event\role_unassigned $event
      * @return bool
      */
     public static function role_unassigned(\core\event\role_unassigned $event): bool {
