@@ -51,8 +51,8 @@ class course_mycampusenrolment_test implements \report_coursediagnostic\course_d
     /**
      * @return array
      */
-    public function runtest()
-    {
+    public function runtest(): array {
+
         global $CFG;
         require_once("$CFG->dirroot/enrol/locallib.php");
 

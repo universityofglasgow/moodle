@@ -97,12 +97,19 @@ class course_coursevideo_test implements \report_coursediagnostic\course_diagnos
     }
 
     /**
-     * @return bool
+     * @return array
      */
-    public function runtest() {
+    public function runtest(): array {
+
         global $DB, $CFG;
         require_once("$CFG->dirroot/report/coursediagnostic/lib.php");
 
+        $kalturaurl = new \moodle_url('https://www.gla.ac.uk/myglasgow/learningandteaching/video/kaltura/');
+        $kalturalink = \html_writer::link($kalturaurl, get_string('coursevideo_kaltura_text', 'report_coursediagnostic'), ['target' => 'blank']);
+        $echo360url = new \moodle_url('https://www.gla.ac.uk/myglasgow/learningandteaching/learningspacesupport/lecturerecording/#addingecho360recordingstomoodle');
+        $echo360link = \html_writer::link($echo360url, get_string('coursevideo_echo360_text', 'report_coursediagnostic'), ['target' => 'blank']);
+        $lisuurl = new \moodle_url('https://www.gla.ac.uk/myglasgow/learningandteaching/lisu/');
+        $lisulink = \html_writer::link($lisuurl, get_string('coursevideo_lisu_text', 'report_coursediagnostic'), ['target' => 'blank']);
         $filesizeoption = get_config('report_coursediagnostic', 'filesizelimit');
         $filesizelimit = self::$filesizeoptions[$filesizeoption];
         $context = \context_course::instance($this->course->id);
@@ -128,7 +135,10 @@ class course_coursevideo_test implements \report_coursediagnostic\course_diagnos
             'testresult' => $filesizewithinlimit,
             'totalfiles' => self::$totalfiles,
             'totalfilesize' => formatsize(self::$totalfilesize),
-            'filesizelimit' => formatsize($filesizelimit)
+            'filesizelimit' => formatsize($filesizelimit),
+            'kalturalink' => $kalturalink,
+            'echo360link' => $echo360link,
+            'lisulink' => $lisulink
         ];
 
         return $this->testresult;

@@ -44,17 +44,14 @@ class coursediagnostic {
         'info' => [
             'min' => 1,
             'max' => 34,
-            'messagetext' => 'The course has settings that need addressed.'
         ],
         'warning' => [
             'min' => 35,
             'max' => 69,
-            'messagetext' => 'The course settings require your attention.'
         ],
         'error' => [
             'min' => 70,
             'max' => 100,
-            'messagetext' => 'The course settings require <i>urgent</i> attention.'
         ]
     ];
 
@@ -374,15 +371,13 @@ class coursediagnostic {
 
         global $CFG;
         $class = '';
-        $messagetext = '';
         foreach (self::$alertranges as $classname => $range) {
             if ($failedtests >= $range['min'] && $failedtests <= $range['max']) {
                 $class = $classname;
-                $messagetext = $range['messagetext'];
                 break;
             }
         }
-
+        $messagetext = get_string('notification_text', 'report_coursediagnostic');
         $message = '<strong>' . $messagetext . '</strong> You can review what needs to be set <a class="alert-link" ';
         $message .= 'href="' . $CFG->wwwroot . '/report/coursediagnostic/index.php?courseid='.$courseid.'">on the report page</a>.';
 

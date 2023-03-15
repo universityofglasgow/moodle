@@ -50,7 +50,8 @@ class course_enddate_notset_test implements \report_coursediagnostic\course_diag
     /**
      * @return bool
      */
-    public function runtest() {
+    public function runtest(): bool {
+
         // Does the course have an end date set...
         $this->testresult = (!empty($this->course->enddate));
         return $this->testresult;

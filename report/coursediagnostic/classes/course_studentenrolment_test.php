@@ -50,6 +50,7 @@ class course_studentenrolment_test implements \report_coursediagnostic\course_di
      * @return array
      */
     public function runtest(): array {
+
         global $CFG, $PAGE;
         require_once("$CFG->libdir/accesslib.php");
 

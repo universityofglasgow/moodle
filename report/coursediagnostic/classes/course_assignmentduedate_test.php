@@ -51,7 +51,6 @@ class course_assignmentduedate_test implements \report_coursediagnostic\course_d
      * @return array
      */
     public function runtest(): array {
-        // Do any of the course assignments have a due date set...
 
         // Get all activities associated with the course...
         $moduleinfo = get_fast_modinfo($this->course->id);

@@ -54,6 +54,7 @@ class course_autoenrolment_studentdatadeletion_test implements \report_coursedia
      * @return array
      */
     public function runtest(): array {
+
         global $PAGE, $CFG;
         require_once("$CFG->dirroot/enrol/locallib.php");
 

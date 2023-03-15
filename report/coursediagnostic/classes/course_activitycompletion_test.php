@@ -52,6 +52,7 @@ class course_activitycompletion_test implements \report_coursediagnostic\course_
      * @return array
      */
     public function runtest(): array {
+
         $coursecompletion = $this->course->enablecompletion;
         $activitycompletion = true;
         $activitycompletionlink = '';

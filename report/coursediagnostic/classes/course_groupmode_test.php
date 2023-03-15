@@ -50,7 +50,8 @@ class course_groupmode_test implements \report_coursediagnostic\course_diagnosti
     /**
      * @return array
      */
-    public function runtest() {
+    public function runtest(): array {
+
         $definedandpopulated = true;
         $settingslink = '';
         $groupsettingslink = '';

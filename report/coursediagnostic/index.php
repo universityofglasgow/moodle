@@ -70,7 +70,7 @@ if ($cfgsettings) {
         $link = html_writer::link("mailto:{$supportemail}", get_string('system_administrator', 'report_coursediagnostic'));
         $phrase = get_string('no_tests_enabled', 'report_coursediagnostic', $link);
         if (has_capability('moodle/site:config', context_system::instance())) {
-            $url = new moodle_url('/admin/settings.php', ['section' => 'coursediagnosticsettings']);
+            $url = new moodle_url('/admin/settings.php', ['section' => 'course_diagnostic_settings']);
             $link = html_writer::link($url, get_string('admin_link_text', 'report_coursediagnostic'));
             $phrase = get_string('no_tests_enabled_admin', 'report_coursediagnostic', $link);
         }
@@ -92,6 +92,10 @@ if ($cfgsettings) {
             // Create our base table from the config settings...
             $table = new html_table();
             $table->id = 'course-diagnostic-report';
+            $table->caption = get_string('tablecaption', 'report_coursediagnostic');
+            $table->captionhide = true;
+            $table->attributes['role'] = 'presentation';
+            $table->attributes['aria-describedby'] = 'report_desc';
             $tableheadings = [
                 get_string('column1', 'report_coursediagnostic'),
                 get_string('column2', 'report_coursediagnostic'),
@@ -167,9 +171,26 @@ if ($cfgsettings) {
                     // If our test has instead passed, clear and overwrite...
                     if ((isset($cachedata[0][$configkey]) && !is_array($cachedata[0][$configkey]) && ($cachedata[0][$configkey]))
                         || (isset($tmptestresult) && $tmptestresult)) {
-                        $tmptext = (!empty($cachedata[0][$configkey]['outcometext']) ?
-                            $cachedata[0][$configkey]['outcometext'] :
-                            get_string($configkey . '_success_text', 'report_coursediagnostic'));
+
+                        if (!empty($cachedata[0][$configkey]['outcometext'])) {
+                            $tmptext = $cachedata[0][$configkey]['outcometext'];
+                        } else {
+                            // Rather than pollute our test data with more template text, lets see if we can find
+                            // if our 'success_text' contains any single variables. If so, extract, match and pass
+                            // back into the template again. We could refactor our code to maybe do this for
+                            // everything else.
+                            $tmptext = get_string($configkey . '_success_text', 'report_coursediagnostic');
+                            $pattern = '/\$a->\w*/';
+                            preg_match($pattern, $tmptext, $matches);
+                            if (count($matches) > 0) {
+                                $arg = substr($matches[0], 4);
+                                $options = [
+                                    $arg => $cachedata[0][$configkey][$arg]
+                                ];
+                                $tmptext = get_string($configkey . '_success_text', 'report_coursediagnostic', $options);
+                            }
+                        }
+
                         $cell2->text = $tmptext;
                         $cell3->text = '<strong>' . get_string('passtext', 'report_coursediagnostic') . '</strong>';
                         $cell3->attributes['class'] = 'alert-success text-center ' . $configkey . 'cell';
@@ -184,7 +205,7 @@ if ($cfgsettings) {
                 $table->data[] = $row;
             }
 
-            $reportinfo = html_writer::div(get_string('report_summary', 'report_coursediagnostic'));
+            $reportinfo = html_writer::div(get_string('report_summary', 'report_coursediagnostic'),'',['id' => 'report_desc']);
             $tabledata = html_writer::table($table);
             $diagnosticcontent = $reportinfo . $tabledata;
 
@@ -201,7 +222,7 @@ if ($cfgsettings) {
     $link = html_writer::link("mailto:{$supportemail}", get_string('system_administrator', 'report_coursediagnostic'));
     $phrase = get_string('not_enabled', 'report_coursediagnostic', $link);
     if (has_capability('moodle/site:config', context_system::instance())) {
-        $url = new moodle_url('/admin/settings.php', ['section' => 'coursediagnosticsettings']);
+        $url = new moodle_url('/admin/settings.php', ['section' => 'course_diagnostic_settings']);
         $link = html_writer::link($url, get_string('admin_link_text', 'report_coursediagnostic'));
         $phrase = get_string('not_enabled_admin', 'report_coursediagnostic', $link);
     }

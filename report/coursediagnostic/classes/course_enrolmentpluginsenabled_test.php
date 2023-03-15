@@ -53,6 +53,7 @@ class course_enrolmentpluginsenabled_test implements course_diagnostic_interface
      * @return array
      */
     public function runtest(): array {
+
         global $PAGE, $CFG;
         require_once("$CFG->dirroot/enrol/locallib.php");
 

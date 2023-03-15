@@ -53,6 +53,7 @@ class course_selfenrolmentkey_test implements \report_coursediagnostic\course_di
      * @return array
      */
     public function runtest(): array {
+
         global $CFG;
         require_once("$CFG->dirroot/enrol/locallib.php");
 

@@ -96,6 +96,7 @@ class diagnostic_factory {
      * @return mixed
      */
     public function create_diagnostic_test_from_config($name, $course) {
+
         $class = 'course_' . $name . '_test';
 
         require_once('interfaces.php');

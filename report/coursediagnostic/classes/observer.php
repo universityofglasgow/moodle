@@ -77,7 +77,7 @@ class observer {
                             get_string('system_administrator', 'report_coursediagnostic'));
                         $phrase = get_string('no_tests_enabled', 'report_coursediagnostic', $link);
                         if (has_capability('moodle/site:config', \context_system::instance())) {
-                            $url = new \moodle_url('/admin/settings.php', ['section' => 'coursediagnosticsettings']);
+                            $url = new \moodle_url('/admin/settings.php', ['section' => 'course_diagnostic_settings']);
                             $link = \html_writer::link($url, get_string('admin_link_text', 'report_coursediagnostic'));
                             $phrase = get_string('no_tests_enabled_admin', 'report_coursediagnostic', $link);
                         }
@@ -181,6 +181,35 @@ class observer {
         $studentyusers = count_role_users(5, $PAGE->context);
 
         if (!empty($event->relateduserid) && $studentyusers == 0) {
+            return self::delete_key_from_cache($event->courseid);
+        }
+
+        return false;
+    }
+
+
+    /**
+     * When a role is assigned to a user, handle the session variables.
+     * The config session variable needs to be removed in order to be re-gen'd.
+     * @param \core\event\role_assigned $event
+     * @return bool
+     */
+    public static function role_assigned(\core\event\role_assigned $event): bool {
+        if (!empty($event->relateduserid)) {
+            return self::delete_key_from_cache($event->courseid);
+        }
+
+        return false;
+    }
+
+    /**
+     * When a role is unassigned from a user, handle the session variables.
+     * The config session variable needs to be removed in order to be re-gen'd.
+     * @param \core\event\role_assigned $event
+     * @return bool
+     */
+    public static function role_unassigned(\core\event\role_unassigned $event): bool {
+        if (!empty($event->relateduserid)) {
             return self::delete_key_from_cache($event->courseid);
         }
 

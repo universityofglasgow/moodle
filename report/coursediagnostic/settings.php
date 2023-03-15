@@ -108,10 +108,20 @@ if ($hassiteconfig) {
     $setting->set_updatedcallback('report_coursediagnostic\coursediagnostic::flag_cache_for_deletion');
     $settings->add($setting);
 
-    $name = new lang_string('inactiveenrolment', 'report_coursediagnostic');
-    $desc = new lang_string('inactiveenrolment_desc', 'report_coursediagnostic');
+    $name = new lang_string('inactivestaffenrolment', 'report_coursediagnostic');
+    $desc = new lang_string('inactivestaffenrolment_desc', 'report_coursediagnostic');
     $default = 1;
-    $setting = new admin_setting_configcheckbox('report_coursediagnostic/inactiveenrolment',
+    $setting = new admin_setting_configcheckbox('report_coursediagnostic/inactivestaffenrolment',
+        $name,
+        $desc,
+        $default);
+    $setting->set_updatedcallback('report_coursediagnostic\coursediagnostic::flag_cache_for_deletion');
+    $settings->add($setting);
+
+    $name = new lang_string('inactivestudentenrolment', 'report_coursediagnostic');
+    $desc = new lang_string('inactivestudentenrolment_desc', 'report_coursediagnostic');
+    $default = 1;
+    $setting = new admin_setting_configcheckbox('report_coursediagnostic/inactivestudentenrolment',
         $name,
         $desc,
         $default);

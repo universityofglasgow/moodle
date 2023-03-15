@@ -59,6 +59,7 @@ class notification {
      * @throws \coding_exception
      */
     public static function add($message, $level = null) {
+
         global $PAGE, $SESSION;
 
         if ($PAGE && ($PAGE->state === \moodle_page::STATE_IN_BODY

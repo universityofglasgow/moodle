@@ -83,9 +83,10 @@ class course_coursefiles_test implements \report_coursediagnostic\course_diagnos
     }
 
     /**
-     * @return bool
+     * @return array
      */
-    public function runtest() {
+    public function runtest(): array {
+
         global $DB, $CFG;
         require_once("$CFG->dirroot/report/coursediagnostic/lib.php");
 

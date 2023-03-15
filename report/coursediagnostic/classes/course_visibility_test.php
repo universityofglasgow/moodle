@@ -48,7 +48,7 @@ class course_visibility_test implements \report_coursediagnostic\course_diagnost
     }
 
     /**
-     * @return bool
+     * @return array
      */
     public function runtest(): array {
 

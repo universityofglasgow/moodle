@@ -52,6 +52,14 @@ $observers = [
         'callback' => 'report_coursediagnostic\observer::user_enrolment_deleted'
     ],
     [
+        'eventname' => '\core\event\role_assigned',
+        'callback' => 'report_coursediagnostic\observer::role_assigned'
+    ],
+    [
+        'eventname' => '\core\event\role_unassigned',
+        'callback' => 'report_coursediagnostic\observer::role_unassigned'
+    ],
+    [
         'eventname' => '\core\event\enrol_instance_created',
         'callback' => 'report_coursediagnostic\observer::enrol_instance_created'
     ],
