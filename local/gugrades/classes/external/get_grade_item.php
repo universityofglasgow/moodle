@@ -48,7 +48,7 @@ class get_grade_item extends \external_api {
         global $DB;
 
         // Security.
-        $params = self::validate_parameters(self::execute_parameters(), ['itemid' => $courseid]);
+        $params = self::validate_parameters(self::execute_parameters(), ['itemid' => $itemid]);
 
         // Get item (if it exists)
         $item = $DB->get_record('grade_items', ['id' => $itemid], '*', MUST_EXIST);

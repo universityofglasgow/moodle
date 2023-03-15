@@ -86,7 +86,7 @@ class get_capture_page extends \external_api {
 
     public static function execute_returns() {
         return new external_single_structure([
-            'users' => new external_value(PARAM_TEXT, 'List of users (plus extras) for activity in JSON format'),
+            'users' => new external_value(PARAM_RAW, 'List of users (plus extras) for activity in JSON format'),
         ]);
     }
 

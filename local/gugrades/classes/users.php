@@ -43,10 +43,10 @@ class users {
         // filter
         if ($firstname || $lastname) {
             $users = array_filter($users, function($user) use ($firstname, $lastname) {
-                if ($firstname && (substr($user->firstname, 0, 1) != $firstname)) {
+                if ($firstname && (strcasecmp(substr($user->firstname, 0, 1), $firstname))) {
                     return false;
                 }
-                if ($lastname && (substr($user->lastname, 0, 1) != $lastname)) {
+                if ($lastname && (strcasecmp(substr($user->lastname, 0, 1), $lastname))) {
                     return false;
                 }
                 return true;
