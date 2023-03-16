@@ -2,16 +2,15 @@
  * Simple store for global data
  */
 
-// Store object
-export const store = {
-    
-    // Language strings
-    str: {},
-}
+import { defineStore } from 'pinia';
+import {ref} from "vue";
 
-/**
- * Initialise data in store
- */
-export function initialisestore() {
+export const useStringsStore = defineStore('stringstore', () => {
+    const mstrings = ref({});
 
-}
+    function addString(name, stringtext) {
+        mstrings.value[name] = stringtext;
+    }
+
+    return {mstrings, addString}
+})

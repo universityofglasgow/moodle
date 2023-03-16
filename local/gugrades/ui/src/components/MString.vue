@@ -6,6 +6,9 @@
 
 <script setup>
     import {ref, onMounted, defineProps} from 'vue';
+    import {useStringsStore} from '@/js/store.js';
+
+    const store = useStringsStore();
 
     const props = defineProps({
         name: String,
@@ -29,6 +32,7 @@
         GU.getStrings(strings)
         .then(result => {
             moodlestring.value = result[0];
+            store.addString(props.name, result[0]);
         });
     });
 </script>

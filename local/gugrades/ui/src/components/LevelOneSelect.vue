@@ -7,7 +7,7 @@
         <div v-if="notsetup" class="alert alert-warning">
             <MString name="notoplevel"></MString>
         </div>
-        <select v-else class="form-control" @change="levelOneChange($event)">
+        <select v-else class="form-control border-dark" @change="levelOneChange($event)">
             <option value="0"><MString name="selectgradecategory"></MString></option>
             <option v-for="category in level1categories" :key="category.id" :value="category.id">{{ category.fullname }}</option>
         </select>

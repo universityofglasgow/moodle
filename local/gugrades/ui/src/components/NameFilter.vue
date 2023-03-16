@@ -1,5 +1,5 @@
 <template>
-    <div class="mt-2">
+    <div class="mt-4">
         <InitialBar label="First name" @selected="first_selected"></InitialBar>
         <InitialBar label="Last name" @selected="last_selected"></InitialBar>
     </div>

@@ -37,8 +37,9 @@ class users {
      * @param string $lastname (first letter of last name)
      * @return array
      */
-    public static function get_gradeable_users(\context $context, $firstname, $lastname) {
-        $users = get_enrolled_users($context, 'moodle/grade:view');
+    public static function get_gradeable_users(\context $context, $firstname = '', $lastname = '') {
+        $fields = 'u.id, u.username, u.idnumber, u.firstname, u.lastname, u.email';
+        $users = get_enrolled_users($context, 'moodle/grade:view', 0, $fields);
 
         // filter
         if ($firstname || $lastname) {

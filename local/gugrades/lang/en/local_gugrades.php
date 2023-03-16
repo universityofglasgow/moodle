@@ -31,7 +31,9 @@ $string['coursegradeaggregation'] = 'Course grade aggregation';
 $string['firstnamelastname'] = 'Firstname / lastname';
 $string['idnumber'] = 'ID number';
 $string['notoplevel'] = 'Course has not been properly setup (no top-level Grade categories)';
+$string['nothingtodisplay'] = 'Nothing to display';
 $string['pluginname'] = 'UofG Grade Tool';
+$string['selected'] = 'Selected';
 $string['selectgradecategory'] = 'Select grade category';
 $string['settings'] = 'Settings';
 
