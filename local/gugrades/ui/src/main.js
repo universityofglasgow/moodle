@@ -1,9 +1,6 @@
 import { createApp } from 'vue'
-import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
-
-const pinia = createPinia();
 
 // This stuff makes sure that the window.GU variable
 // exists.
@@ -30,7 +27,7 @@ function ensureGUIsSet(timeout) {
 
 ensureGUIsSet(timeout)
 .then(() => {
-    createApp(App).use(router).use(pinia).mount('#app');
+    createApp(App).use(router).mount('#app');
 });
 
 
