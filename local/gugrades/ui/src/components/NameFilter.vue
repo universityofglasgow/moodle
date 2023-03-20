@@ -1,18 +1,27 @@
 <template>
-    <div class="mt-4">
-        <InitialBar label="First name" @selected="first_selected"></InitialBar>
-        <InitialBar label="Last name" @selected="last_selected"></InitialBar>
+    <div class="row mt-4">
+        <div class="col-5">
+            <div>
+                <InitialBar :selected="first" :label="strings.firstname" @selected="first_selected"></InitialBar>
+                <InitialBar :selected="last" :label="strings.lastname" @selected="last_selected"></InitialBar>
+            </div>
+        </div>
+        <div class="col-5">
+            <button class="btn btn-primary btn-small" @click="reset_filter">{{ strings.resetfilter }}</button>
+        </div>
     </div>
 </template>
 
 <script setup>
-    import {ref, defineEmits} from '@vue/runtime-core';
+    import {ref, defineEmits, onMounted} from '@vue/runtime-core';
     import InitialBar from '@/components/InitialBar.vue';
+    import { getstrings } from '@/js/getstrings.js';
 
     const emit = defineEmits(['selected']);
 
     const first = ref('all');
     const last = ref('all');
+    const strings = ref({});
 
     /**
      * Process letter selected in one of the bars
@@ -26,4 +35,25 @@
         last.value = letter;
         emit('selected', first.value, last.value);
     }
+
+    /**
+     * Reset filter back to all/all
+     */
+    function reset_filter() {
+        first.value = 'all';
+        last.value = 'all';
+    }
+
+    onMounted(() => {
+        const stringslist = [
+            'firstname',
+            'lastname',
+            'resetfilter'
+        ];
+
+        getstrings(stringslist)
+        .then(results => {
+            Object.keys(results).forEach((name) => {strings.value[name] = results[name]});
+        });
+    })
 </script>

@@ -63,13 +63,16 @@ class get_capture_page extends \external_api {
         $context = \context_course::instance($courseid);
         self::validate_context($context);
 
+        // Get start point for LIMIT
+        $pagingfrom = ($pageno - 1) * $pagelength;
+
         // Get grade item.
         $item = $DB->get_record('grade_items', ['id' => $gradeitemid], '*', MUST_EXIST);
 
         // Get list of users.
         // Will be everybody for 'manual' grades or filtered list for modules.
         if ($item->itemtype == 'manual') {
-            $users = \local_gugrades\users::get_gradeable_users($context);
+            $users = \local_gugrades\users::get_gradeable_users($context, $firstname, $lastname, $pagingfrom, $pagelength);
         } else {
 
             // Get course module.
@@ -78,7 +81,7 @@ class get_capture_page extends \external_api {
             $cmi = $modinfo->get_cm($cm->id);
 
             // Get *available* users
-            $users = \local_gugrades\users::get_available_users_from_cm($cmi, $context, $firstname, $lastname);
+            $users = \local_gugrades\users::get_available_users_from_cm($cmi, $context, $firstname, $lastname, $pagingfrom, $pagelength);
         }
 
         return ['users' => json_encode($users)];

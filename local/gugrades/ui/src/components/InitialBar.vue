@@ -18,11 +18,12 @@
 </template>
 
 <script setup>
-    import {ref, computed, defineProps, defineEmits} from '@vue/runtime-core';
+    import {ref, computed, defineProps, defineEmits, watch} from '@vue/runtime-core';
     import MString from '@/components/MString.vue';
 
     const props = defineProps({
         'label': String,
+        'selected': String
     });
 
     const emit = defineEmits(['selected']);
@@ -42,4 +43,9 @@
     function is_active(letter) {
         return activeletter.value == letter;
     }
+
+    watch(() => props.selected, (selected) => {
+        activeletter.value = selected;
+        emit('selected', activeletter.value);
+    })
 </script>

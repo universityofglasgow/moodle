@@ -1,6 +1,7 @@
 <template>
     <div>
         <NameFilter @selected="filter_selected"></NameFilter>
+        <PagingBar :totalrows="totalrows" :perpage="perpage" :currentpage="currentpage" @pagechange="pagechanged"></PagingBar>
         <div class="table-responsive">
             <table v-if="showtable" class="table table-striped table-sm mt-4 border rounded">
                 <thead class="thead-light">
@@ -10,7 +11,7 @@
                     <th> </th>
                 </thead>
                 <tbody>
-                    <tr v-for="user in users" :key="user.id">
+                    <tr v-for="user in pagedusers" :key="user.id">
                         <td>{{ user.firstname }} {{ user.lastname }}</td>
                         <td>{{ user.idnumber }}</td>
                         <td>{{ strings.awaitingcapture }}</td>
@@ -18,6 +19,7 @@
                     </tr>
                 </tbody>
             </table>
+            <PagingBar :totalrows="totalrows" :perpage="perpage" :currentpage="currentpage" @pagechange="pagechanged"></PagingBar>
         </div>
 
         <h2 v-if="!showtable">{{ strings.nothingtodisplay }}</h2>
@@ -27,17 +29,36 @@
 <script setup>
     import {ref, defineProps, computed, watch, onMounted} from '@vue/runtime-core';
     import NameFilter from '@/components/NameFilter.vue';
+    import PagingBar from '@/components/PagingBar.vue';
     import { getstrings } from '@/js/getstrings.js';
+
+    const PAGESIZE = 20;
 
     const props = defineProps({
         itemid: Number,
     });
 
     const users = ref([]);
+    const pagedusers = ref([]);
     const strings = ref({});
+    const totalrows = ref(0);
+    const perpage = ref(PAGESIZE);
+    const currentpage = ref(1);
 
     let firstname = '';
     let lastname = '';
+
+    /**
+     * filter out paged users
+     */
+    function get_pagedusers() {
+        const first = (currentpage.value - 1) * PAGESIZE;
+        const last = first + PAGESIZE - 1;
+        pagedusers.value = [];
+        for (let i=first; i<=last; i++) {
+            pagedusers.value.push(users.value[i]);
+        }
+    }
 
     /**
      * Get filtered/paged data
@@ -60,7 +81,8 @@
         }])[0]
         .then((result) => {
             users.value = JSON.parse(result['users']);
-            window.console.log(users.value);
+            totalrows.value = users.value.length;
+            get_pagedusers();
         })
         .catch((error) => {
             window.console.log(error);
@@ -84,6 +106,14 @@
         lastname = last;
         window.console.log('FILTER 2', firstname, lastname);
         get_page_data(props.itemid, first, last);
+    }
+
+    /**
+     * Page selected on paging bar
+     */
+    function pagechanged(page) {
+        currentpage.value = page;
+        get_pagedusers();
     }
 
     const showtable = computed(() => {
