@@ -1,13 +1,22 @@
 <template>
     <ul class="nav nav-pills mb-4 border-bottom">
         <li class="nav-item">
-            <a class="nav-link" :class="{active: activetab == 'capture'}" @click="clickTab('capture')"><MString name="assessmentgradecapture"></MString></a>
+            <a class="nav-link" :class="{active: activetab == 'capture'}" @click="clickTab('capture')">
+                <i class="fa fa-download" aria-hidden="true"></i>&nbsp;
+                <MString name="assessmentgradecapture"></MString>
+            </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" :class="{active: activetab == 'aggregate'}" @click="clickTab('aggregate')"><MString name="coursegradeaggregation"></MString></a>
+            <a class="nav-link" :class="{active: activetab == 'aggregate'}" @click="clickTab('aggregate')">
+                <i class="fa fa-compress" aria-hidden="true"></i>&nbsp;
+                <MString name="coursegradeaggregation"></MString>
+            </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" :class="{active: activetab == 'settings'}" @click="clickTab('settings')"><MString name="settings"></MString></a>
+            <a class="nav-link" :class="{active: activetab == 'settings'}" @click="clickTab('settings')">
+                <i class="fa fa-cog" aria-hidden="true"></i>&nbsp;
+                <MString name="settings"></MString>
+            </a>
         </li>        
     </ul> 
 </template>
