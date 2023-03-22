@@ -1,12 +1,12 @@
 <template>
-    <div class="row mt-4">
-        <div class="col-5">
+    <div class="mt-4">
+        <div>
             <div>
                 <InitialBar :selected="first" :label="strings.firstname" @selected="first_selected"></InitialBar>
                 <InitialBar :selected="last" :label="strings.lastname" @selected="last_selected"></InitialBar>
             </div>
         </div>
-        <div class="col-5">
+        <div v-if="showreset">
             <button class="btn btn-primary btn-small" @click="reset_filter">{{ strings.resetfilter }}</button>
         </div>
     </div>
@@ -22,17 +22,20 @@
     const first = ref('all');
     const last = ref('all');
     const strings = ref({});
+    const showreset = ref(false);
 
     /**
      * Process letter selected in one of the bars
      */
     function first_selected(letter) {
         first.value = letter;
+        showreset.value = (first.value != 'all') || (last.value != 'all');
         emit('selected', first.value, last.value);
     }
 
     function last_selected(letter) {
         last.value = letter;
+        showreset.value = (first.value != 'all') || (last.value != 'all');
         emit('selected', first.value, last.value);
     }
 

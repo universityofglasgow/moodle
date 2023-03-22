@@ -1,5 +1,5 @@
 <template>
-    <nav class="pagination pagination-centered justify-content-center">
+    <nav v-if="showbar" class="pagination pagination-centered justify-content-center">
         <ul class="mt-1 pagination ">
             <li v-if="show.previous" class="page-item">
                 <a class="page-link" @click="pageclick(show.previouspage)">
@@ -50,7 +50,6 @@
     const props = defineProps({
         totalrows: Number,
         perpage: Number,
-        currentpage: Number,
     });
 
     const emit = defineEmits(['pagechange']);
@@ -67,6 +66,7 @@
     const pages = ref([]);
     const activepage = ref(1);
     const pagecount = ref(0);
+    const showbar = ref(false);
 
     function is_active(page) {
         return page == activepage.value;
@@ -78,6 +78,7 @@
      */
     function get_pages() {
         pagecount.value = Math.ceil(props.totalrows / props.perpage);
+        showbar.value = pagecount.value > 1;
         let lower = activepage.value - PAGES_EITHERSIDE;
         if (lower < 1) {
             lower = 1;
@@ -104,17 +105,11 @@
      * Watch for number of rows changing (when data acquired)
      */
     watch(() => props.totalrows, () => {
+
+        // if the total number of pages change, revert to first page
+        activepage.value = 1;
         get_pages();
     });
-
-    /**
-     * Watch for current page change
-     *
-     */
-    watch(() => props.currentpage, () => {
-        activepage.value = props.currentpage;
-        get_pages();
-    })
 
     /**
      * Page number has been clicked

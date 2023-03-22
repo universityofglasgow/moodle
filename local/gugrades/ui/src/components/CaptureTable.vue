@@ -1,7 +1,7 @@
 <template>
     <div>
         <NameFilter @selected="filter_selected"></NameFilter>
-        <PagingBar :totalrows="totalrows" :perpage="perpage" :currentpage="currentpage" @pagechange="pagechanged"></PagingBar>
+        <PagingBar :totalrows="totalrows" :perpage="perpage" @pagechange="pagechanged"></PagingBar>
         <div class="table-responsive">
             <table v-if="showtable" class="table table-striped table-sm mt-4 border rounded">
                 <thead class="thead-light">
@@ -19,7 +19,6 @@
                     </tr>
                 </tbody>
             </table>
-            <PagingBar :totalrows="totalrows" :perpage="perpage" :currentpage="currentpage" @pagechange="pagechanged"></PagingBar>
         </div>
 
         <h2 v-if="!showtable">{{ strings.nothingtodisplay }}</h2>
@@ -56,7 +55,9 @@
         const last = first + PAGESIZE - 1;
         pagedusers.value = [];
         for (let i=first; i<=last; i++) {
-            pagedusers.value.push(users.value[i]);
+            if (users.value[i] != undefined) {
+                pagedusers.value.push(users.value[i]);
+            }
         }
     }
 
@@ -95,7 +96,6 @@
      * @param {*} last 
      */
     function filter_selected(first, last) {
-        window.console.log('FILTER ', first, last);
         if (first == 'all') {
             first = '';
         }
@@ -104,7 +104,9 @@
         }
         firstname = first;
         lastname = last;
-        window.console.log('FILTER 2', firstname, lastname);
+
+        // Reset page
+        currentpage.value = 1;
         get_page_data(props.itemid, first, last);
     }
 
@@ -138,6 +140,9 @@
         getstrings(stringslist)
         .then(results => {
             Object.keys(results).forEach((name) => {strings.value[name] = results[name]});
+        })
+        .catch((error) => {
+            window.console.log(error);
         });
 
         // Get the data for the table

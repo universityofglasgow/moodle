@@ -5,14 +5,14 @@
         <TabsNav @tabchange="tabChange"></TabsNav>
 
         <div class="row">
-            <div class="col">
+            <div class="col-12 col-lg-6">
                 <LevelOneSelect  @levelchange="levelOneChange"></LevelOneSelect>
                 <div v-if="currenttab == 'capture'">
                     <ActivitySelect v-if="showactivityselect" :categoryid="level1category" @activityselected="activity_selected"></ActivitySelect>
                 </div>
             </div>
-            <div class="col">
-                <router-link to="/settings" class="btn btn-primary"><MString name="settings"></MString></router-link>
+            <div class="col-12 col-lg-6">
+                &nbsp;
             </div>
         </div>
 
@@ -51,7 +51,7 @@
      * Capture change to activity selection
      */
     function activity_selected(newitemid) {
-        itemid.value = newitemid;
+        itemid.value = Number(newitemid);
     }
 
     /**
