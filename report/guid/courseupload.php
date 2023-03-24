@@ -106,7 +106,7 @@ if ($mform->is_cancelled()) {
 
     // Check for errors.
     if ($csv->error > 1) {
-        print_error('csverror', 'report_guid');
+        throw new moodle_exception('csverror', 'report_guid');
     }
 
     // Notify line count or error.

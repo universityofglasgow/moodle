@@ -28,7 +28,7 @@ require_once(dirname(__FILE__) . '/../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 require_once($CFG->libdir . '/formslib.php');
 
-require_login();
+admin_externalpage_setup('reportguid');
 
 // Get settings.
 $config = report_guid\lib::settings();
@@ -67,14 +67,13 @@ if (($action == 'tiiresend') && $tid) {
 }
 
 // Start the page.
-admin_externalpage_setup('reportguid', '', null, '', array('pagelayout' => 'report'));
 echo $output->header();
 
 echo $output->heading(get_string('heading', 'report_guid'));
 
 // Check we have ldap.
 if (!\local_guldap\api::isenabled()) {
-    print_error(get_string('ldapnotloaded', 'report_guid'));
+    throw new moodle_exception('ldapnotloaded', 'report_guid');
 }
 
 // Check for user create.

@@ -45,7 +45,7 @@ $PAGE->set_url($url);
 $PAGE->set_pagelayout('admin');
 
 if (!$course = $DB->get_record('course', array('id' => $id))) {
-    print_error('invalidcourse');
+    throw new moodle_exception('invalidcourse');
 }
 
 // Security.

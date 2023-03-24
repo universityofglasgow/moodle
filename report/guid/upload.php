@@ -45,7 +45,7 @@ echo $output->heading(get_string('heading', 'report_guid'));
 
 // Check we have ldap.
 if (!function_exists('ldap_connect')) {
-    print_error(get_string('ldapnotloaded', 'report_guid'));
+    throw new moodle_exception('ldapnotloaded', 'report_guid');
 }
 
 // Form definition.

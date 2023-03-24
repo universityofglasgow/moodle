@@ -52,7 +52,7 @@ if ($commentid) {
 
     // Do we have the right to edit this?
     if (!has_capability('report/enhance:editallcomments', $context) && ($USER->id != $comment->userid)) {
-        print_error('editcommenterror', 'report_enhance');
+        throw new moodle_exception('editcommenterror', 'report_enhance');
     }
 } else {
     $comment = null;
