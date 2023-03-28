@@ -52,7 +52,7 @@ class ldaplist implements renderable, templatable {
      * @param array $users existing Moodle users
      */
     public function __construct($ldapconfigured, $results, $users) {
-        $this->ladapenabled = $ldapconfigured;
+        $this->ldapconfigured = $ldapconfigured;
         $this->results = $results;
         $this->users = $users;
     }
