@@ -14,18 +14,26 @@
     <a class="btn btn-success" href="{{{ createlink }}}">{{# str }}create, report_guid, {{ fullname }}{{/ str }}</a>
 {{/ createlink }}
 
+{{# ldapconfigured }}
+    <div class="card m-t-2">
+        <div class="card-body">
+            <h5 class="card-title">{{# str }}ldapresults, report_guid{{/ str }}</h5>
+            <p class="card-text">{{{ formattedldap }}}</p>
+        </div>
+    </div>
+{{/ ldapconfigured }}
+
+{{^ ldapconfigured }}
+    <div class="alert alert-danger my-3">
+        {{# str }}ldapnotconfigured, report_guid{{/ str }}
+    </div>
+{{/ ldapconfigured }}
+
 {{# gudatabaseerror }}
     <div class="alert alert-danger my-3">
         {{# str }}nogudatabase, report_guid{{/ str }}
     </div>
 {{/ gudatabaseerror }}
-
-<div class="card m-t-2">
-  <div class="card-body">
-    <h5 class="card-title">{{# str }}ldapresults, report_guid{{/ str }}</h5>
-    <p class="card-text">{{{ formattedldap }}}</p>
-  </div>
-</div>
 
 <div class="card m-t-2">
   <div class="card-body">

@@ -40,12 +40,15 @@ use moodle_url;
  */
 class single implements renderable, templatable {
 
-    protected $config;
+    protected $ldapconfigured;
+
+    protected $username;
 
     protected $result;
 
-    public function __construct($config, $result) {
-        $this->config = $config;
+    public function __construct($ldapconfigured, $username, $result) {
+        $this->ldapconfigured = $ldapconfigured;
+        $this->username = $username;
         $this->result = $result;
     }
 
@@ -58,36 +61,50 @@ class single implements renderable, templatable {
         global $DB;
         global $USER;
 
-        $fullname = ucwords(strtolower($result['givenname'] . ' ' . $result['sn']));
+        if ($this->ldapconfigured) {
+            $config = report_guid\lib::settings();
 
-        // Student?
-        $dn = $result['dn'];
-        $isstudent = strpos($dn, 'ou=student') !== false;
+            $fullname = ucwords(strtolower($result['givenname'] . ' ' . $result['sn']));
 
-        // Do they have an email.
-        $mailinfo = \report_guid\lib::get_email($result);
+            // Student?
+            $dn = $result['dn'];
+            $isstudent = strpos($dn, 'ou=student') !== false;
 
-        // Do they have a moodle account?
-        $createlink = '';
-        $ua = $this->config->user_attribute;
-        $username = $result[$ua];
-        if (is_array($username)) {
-            $username = \report_guid\lib::array_to_guid($username);
-        }
-        if ($user = $DB->get_record('user', ['username' => strtolower($username)])) {
+            // Do they have an email.
+            $mailinfo = \report_guid\lib::get_email($result);
+            $noemail = empty($mailinfo['mail']);
+
+            // Do they have a moodle account?
+            $createlink = '';
+            $ua = $config->user_attribute;
+            $username = $result[$ua];
+            if (is_array($username)) {
+                $username = \report_guid\lib::array_to_guid($username);
+            }
+            if ($user = $DB->get_record('user', ['username' => strtolower($username)])) {
+                $userlink = new moodle_url('/user/view.php', ['id' => $user->id, 'course' => 1]);
+                $displayname = '<a href="' . $userlink . '">' . $fullname . '</a>';
+                $create = '';
+            } else {
+
+                // Set the link to create the user in Moodle.
+                $displayname = $fullname;
+                if (!empty( $mailinfo['mail'] )) {
+                    $createlink = new moodle_url('/report/guid/index.php', ['action' => 'create', 'guid' => $username, 'sesskey' => sesskey()]);
+                }
+
+                // Save the record in case we want to create the user.
+                $USER->report_guid_ldap = $result;
+            }
+        } else {
+            $user = $DB->get_record('user', ['username' => strtolower($this->username)], '*', MUST_EXIST);
+            $fullname = fullname($user);
             $userlink = new moodle_url('/user/view.php', ['id' => $user->id, 'course' => 1]);
             $displayname = '<a href="' . $userlink . '">' . $fullname . '</a>';
             $create = '';
-        } else {
-
-            // Set the link to create the user in Moodle.
-            $displayname = $fullname;
-            if (!empty( $mailinfo['mail'] )) {
-                $createlink = new moodle_url('/report/guid/index.php', ['action' => 'create', 'guid' => $username, 'sesskey' => sesskey()]);
-            }
-
-            // Save the record in case we want to create the user.
-            $USER->report_guid_ldap = $result;
+            $createlink = '';
+            $isstudent = strpos($user->email, 'student') !== false;
+            $noemail = false;
         }
 
         // Is there a user picture?
@@ -151,11 +168,12 @@ class single implements renderable, templatable {
         }
 
         return [
+            'ldapconfigured' => $this->ldapconfigured,
             'fullname' => $fullname,
             'displayname' => $displayname,
             'picture' => $picture,
             'createlink' => $createlink,
-            'noemail' => empty($mailinfo['mail']),
+            'noemail' => $noemail,
             'formattedldap' => \report_guid\lib::array_prettyprint($result),
             'gudatabaseerror' => $gudatabaseerror,
             'noenrolments' => $noenrolments,

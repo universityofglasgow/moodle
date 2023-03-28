@@ -31,13 +31,13 @@ require_once($CFG->libdir . '/formslib.php');
 admin_externalpage_setup('reportguid');
 
 // Get settings.
-$config = report_guid\lib::settings();
+//$config = report_guid\lib::settings();
 
 // Renderer.
 $context = context_system::instance();
 $PAGE->set_context($context);
 $output = $PAGE->get_renderer('report_guid');
-$output->set_guid_config($config);
+//$output->set_guid_config($config);
 
 // Get paramters.
 $firstname = optional_param('firstname', '', PARAM_TEXT);
@@ -70,11 +70,6 @@ if (($action == 'tiiresend') && $tid) {
 echo $output->header();
 
 echo $output->heading(get_string('heading', 'report_guid'));
-
-// Check we have ldap.
-if (!\local_guldap\api::isenabled()) {
-    throw new moodle_exception('ldapnotloaded', 'report_guid');
-}
 
 // Check for user create.
 if (($action == 'create') && confirm_sesskey()) {
@@ -111,15 +106,22 @@ if ($delete) {
     }
 }
 
+// Is LDAP configured at all?
+$ldapconfigured = \local_guldap\api::isenabled();
+
 // Was 'more' button pressed?
 if ($guid && ($action == 'more')) {
-    list($results, $errormessage) = \local_guldap\api::filter('', '', $guid, '', '');
-    if ($errormessage) {
-        $output->ldap_error($errormessage);
-        die;
+    if ($ldapconfigured) {
+        list($results, $errormessage) = \local_guldap\api::filter('', '', $guid, '', '');
+        if ($errormessage) {
+            $output->ldap_error($errormessage);
+            die;
+        }
+        $result = array_shift($results);
+    } else {
+        $result = null;
     }
-    $result = array_shift($results);
-    $single = new report_guid\output\single($config, $result);
+    $single = new report_guid\output\single($ldapconfigured, $guid, $result);
     echo $output->render_single($single);
 
     echo $output->footer();
@@ -139,10 +141,14 @@ $output->mainlinks();
 if ($mform->is_cancelled()) {
     redirect( "index.php" );
 } else if ($data = $mform->get_data()) {
-    list($result, $errormessage) = \local_guldap\api::filter($data->firstname, $data->lastname, $data->guid, $data->email, $data->idnumber);
-    if ($errormessage) {
-        $output->ldap_error($errormessage);
-        die;
+    if ($ldapconfigured) {
+        list($result, $errormessage) = \local_guldap\api::filter($data->firstname, $data->lastname, $data->guid, $data->email, $data->idnumber);
+        if ($errormessage) {
+            $output->ldap_error($errormessage);
+            die;
+        }
+    } else {
+        $result = [];
     }
     $users = report_guid\lib::user_search($data->firstname, $data->lastname, $data->guid, $data->email, $data->idnumber);
 
@@ -153,14 +159,13 @@ if ($mform->is_cancelled()) {
     
     report_guid\lib::add_enrol_counts($users);
 
-    // Display ldap search results.
+    // Display search results.
     if (($action == 'more') && (count($result) == 1)) {
         $result = array_shift($results);
         $output->single_ldap($result);
     } else {
-        //$output->ldap_results($result);
-        //$output->user_results($users);
-        $ldaplist = new report_guid\output\ldaplist($config, $result, $users);
+        
+        $ldaplist = new report_guid\output\ldaplist($ldapconfigured, $result, $users);
         echo $output->render_ldaplist($ldaplist);
     }
 }

@@ -39,19 +39,20 @@ use context_course;
  */
 class ldaplist implements renderable, templatable {
 
-    protected $config;
-
     protected $results;
 
     protected $users;
 
+    protected $ldapconfigured;
+
     /**
      * Constructor
+     * @param boolean $ldapconfigured
      * @param array $results ldap search results
      * @param array $users existing Moodle users
      */
-    public function __construct($config, $results, $users) {
-        $this->config = $config;
+    public function __construct($ldapconfigured, $results, $users) {
+        $this->ladapenabled = $ldapconfigured;
         $this->results = $results;
         $this->users = $users;
     }
@@ -64,6 +65,12 @@ class ldaplist implements renderable, templatable {
     protected function format_results($results) {
         global $DB;
 
+        // Nothing to do if ldap isn't enabled
+        if (!$this->ldapconfigured) {
+            return [];
+        }
+
+        $config = report_guid\lib::settings();
         $formatted = [];
         foreach ($results as $cn => $result) {
             $ua = $this->config->user_attribute;
@@ -140,7 +147,9 @@ class ldaplist implements renderable, templatable {
             $link = new \moodle_url('/report/guid/sync.php', ['userid' => $userid, 'sesskey' => sesskey()]);
             $buttons .= '<a class="btn btn-success" href="' .
                 $link . '">' . get_string('syncuser', 'report_guid') . '</a> ';
-
+            $morelink = new \moodle_url('/report/guid/index.php', ['guid' => $user->username, 'action' => 'more']);
+            $buttons .= '<a class="btn btn-primary" href="' . $morelink->out(true) . '">'.
+                    get_string('more', 'report_guid') . '</a>';
             $userlink = new \moodle_url('/user/view.php', ['id' => $user->id, 'course' => 1]);
             $username = '<a class="btn btn-success" href="' . $userlink . '">' . $user->username . '</a>';
             $formatted[] = (object)[
@@ -160,6 +169,7 @@ class ldaplist implements renderable, templatable {
 
     public function export_for_template(renderer_base $output) {
         return [
+            'ldapconfigured' => $this->ldapconfigured,
             'ldapresultsempty' => empty($this->results),
             'toomanyldapresults' => count($this->results) > MAXIMUM_RESULTS,
             'results' => $this->format_results($this->results),

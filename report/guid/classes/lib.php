@@ -182,6 +182,9 @@ class lib {
     }
 
     public static function array_prettyprint($rows) {
+        if (!$rows) {
+            return '';
+        }
         $html = '';
         $html .=  '<dl class="row" style="line-height: 0.8rem">';
         foreach ($rows as $name => $row) {
@@ -258,8 +261,6 @@ class lib {
      */
     public static function user_search($firstname, $lastname, $guid, $email, $idnumber) {
         global $DB;
-
-        $config = self::settings();
 
         // If the GUID is supplied then we don't care about anything else.
         if (!empty($guid)) {

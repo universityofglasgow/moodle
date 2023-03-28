@@ -22,6 +22,12 @@
 
 <h3>{{# str }}ldapresults, report_guid{{/ str }}</h3>
 
+{{^ ldapconfigured }}
+    <div class="alert alert-danger">
+        {{# str }}ldapnotconfigured, report_guid{{/ str }}
+    </div>
+{{/ ldapconfigured }}
+
 {{# ldapresultsempty }}
     <div class="alert alert-warning">
         {{# str }}noresults, report_guid{{/ str }}
