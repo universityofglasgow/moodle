@@ -62,7 +62,7 @@ class single implements renderable, templatable {
         global $USER;
 
         if ($this->ldapconfigured) {
-            $config = report_guid\lib::settings();
+            $config = \report_guid\lib::settings();
 
             $fullname = ucwords(strtolower($result['givenname'] . ' ' . $result['sn']));
 
@@ -167,6 +167,13 @@ class single implements renderable, templatable {
             $tiieula = false;
         }
 
+        // Get CoreHR completion
+        if ($user) {
+            $corehrcompletion = \report_guid\lib::get_corehr_completion($user->id);
+        } else {
+            $corehrcompletion = [];
+        }
+
         return [
             'ldapconfigured' => $this->ldapconfigured,
             'fullname' => $fullname,
@@ -186,6 +193,8 @@ class single implements renderable, templatable {
             'notiifiles' => empty($tiifiles),
             'tiifiles' => $tiifiles,
             'tiieula' => $tiieula,
+            'corehrcompletion' => $corehrcompletion,
+            'nocorehrcompletion' => empty($corehrcompletion),
             'backlink' => new \moodle_url('/report/guid'),
         ];
     }

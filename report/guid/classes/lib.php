@@ -547,4 +547,25 @@ class lib {
         }
     }
 
+    /**
+     * Get CoreHR - Get CoreHR completion records for user
+     * @param int userid
+     */
+    public static function get_corehr_completion($userid) {
+        global $DB;
+
+        $items = $DB->get_records('local_corehr_status', ['userid' => $userid]);
+        foreach ($items as $item) {
+            if ($course = $DB->get_record('course', ['id' => $item->courseid])) {
+                $item->coursename = $course->fullname;
+                $item->courselink = new moodle_url('/course/view.php', [id => $course->id]);
+            } else {
+                $item->coursename = '';
+                $item->courselink = '';
+            }
+        }
+
+        return array_values($items);
+    }
+
 }
