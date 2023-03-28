@@ -110,8 +110,8 @@ class ldaplist implements renderable, templatable {
                 }
                 $formatted[] = (object)[
                     'username' => $username,
-                    'firstname' => $result[strtolower($this->config->map_firstname)],
-                    'lastname' => $result[strtolower($this->config->map_lastname)],
+                    'firstname' => $result[strtolower($config->map_firstname)],
+                    'lastname' => $result[strtolower($config->map_lastname)],
                     'mail' => $mail,
                     'buttons' => $createbutton,
                 ];
