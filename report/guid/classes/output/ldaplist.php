@@ -73,7 +73,7 @@ class ldaplist implements renderable, templatable {
         $config = \report_guid\lib::settings();
         $formatted = [];
         foreach ($results as $cn => $result) {
-            $ua = $this->config->user_attribute;
+            $ua = $config->user_attribute;
 
             // If it doesn't have a uid field then it doesn't have a GUID.
             if (!isset($result[$ua])) {
