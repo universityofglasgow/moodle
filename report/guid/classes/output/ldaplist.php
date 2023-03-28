@@ -70,7 +70,7 @@ class ldaplist implements renderable, templatable {
             return [];
         }
 
-        $config = report_guid\lib::settings();
+        $config = \report_guid\lib::settings();
         $formatted = [];
         foreach ($results as $cn => $result) {
             $ua = $this->config->user_attribute;
