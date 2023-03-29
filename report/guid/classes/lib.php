@@ -558,11 +558,13 @@ class lib {
         foreach ($items as $item) {
             if ($course = $DB->get_record('course', ['id' => $item->courseid])) {
                 $item->coursename = $course->fullname;
-                $item->courselink = new moodle_url('/course/view.php', [id => $course->id]);
+                $item->courselink = new \moodle_url('/course/view.php', ['id' => $course->id]);
             } else {
                 $item->coursename = '';
                 $item->courselink = '';
             }
+
+            $item->formattedtime = userdate($item->lasttry);
         }
 
         return array_values($items);

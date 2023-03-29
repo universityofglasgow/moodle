@@ -1,4 +1,6 @@
-{{{ picture }}} 
+<div class="mb-2">
+    {{{ picture }}} 
+</div>
 
 <div class="alert alert-primary m-t-1">
     {{# str }}resultfor, report_guid, {{{ displayname }}}{{/ str }}
@@ -15,7 +17,7 @@
 {{/ createlink }}
 
 {{# ldapconfigured }}
-    <div class="card m-t-2">
+    <div class="card mt-2">
         <div class="card-body">
             <h5 class="card-title">{{# str }}ldapresults, report_guid{{/ str }}</h5>
             <p class="card-text">{{{ formattedldap }}}</p>
@@ -35,7 +37,7 @@
     </div>
 {{/ gudatabaseerror }}
 
-<div class="card m-t-2">
+<div class="card mt-2">
   <div class="card-body">
     <h5 class="card-title">{{# str }}enrolments, report_guid, {{ fullname }}{{/ str }}</h5>
     <p class="card-text">
@@ -65,7 +67,7 @@
   </div>
 </div>
 
-<div class="card m-t-2">
+<div class="card mt-2">
   <div class="card-body">
     <h5 class="card-title">{{# str }}mycampus, report_guid{{/ str }}</h5>
     <p class="card-text">
@@ -101,7 +103,7 @@
   </div>
 </div>
 
-<div class="card m-t-2">
+<div class="card mt-2">
   <div class="card-body">
     <h4 class="card-title">{{# str }}turnitin, report_guid{{/ str }}</h5>
     {{# tiieula }}
@@ -157,7 +159,7 @@
 </div>
 
 {{^ isstudent }}
-    <div class="card m-t-2">
+    <div class="card mt-2">
         <div class="card-body">
             <h5 class="card-title">{{# str }}corehrresults, report_guid{{/ str }}</h5>
             <p class="card-text">
@@ -173,15 +175,39 @@
 {{/ isstudent }}
 
 {{^ nocorehrcompletion }}
-    <div class="card m-t-2">
+    <div class="card mt-2">
         <div class="card-body">
             <h5 class="card-title">{{# str }}corehrcompletion, report_guid{{/ str }}</h5>
             <p class="card-text">
                 <table class="table table-striped">
+                    <thead>
+                        <th>{{# str }}hrcode, report_guid{{/ str }}</th>
+                        <th>{{# str }}coursename, report_guid{{/ str }}</th>
+                        <th>{{# str }}timesent, report_guid{{/ str }}</th>
+                        <th>{{# str }}retrycount, report_guid{{/ str }}</th>
+                        <th>{{# str }}status, report_guid{{/ str }}</th>
+                    </thead>
+                    <tbody>
+                        {{# corehrcompletion }}
+                            <tr>
+                                <td>{{ coursecode }}</td>
+                                <td>{{ coursename }}</td>
+                                <td>{{ formattedtime }}</td>
+                                <td>{{ retrycount }}</td>
+                                <td>{{ status }} {{ error }}</td>
+                            </tr>
+                        {{/ corehrcompletion }}                    
+                    </tbody>
                 </table>   
             </p>
         </div>
     </div>
 {{/ nocorehrcompletion}}
 
-<a class="m-t-2 btn btn-primary" href="{{{ backlink }}}">{{# str }}back{{/ str }}</a>
+{{# nocorehrcompletion }}
+        <div class="alert alert-warning">
+            {{# str }}nocorehrcompletion, report_guid{{/ str }}
+        </div>
+{{/ nocorehrcompletion }}
+
+<a class="mt-2 btn btn-primary" href="{{{ backlink }}}">{{# str }}back{{/ str }}</a>
