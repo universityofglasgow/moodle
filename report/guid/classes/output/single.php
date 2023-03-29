@@ -133,7 +133,7 @@ class single implements renderable, templatable {
 
         // Find mycampus enrolment data.
         if (!$gudatabaseerror) {
-            $courses = $gudatabase->get_user_courses($username);
+            $courses = $gudatabase->get_user_courses($user->username);
             $formattedcourses = \report_guid\lib::format_mycampus($courses, $username, $enrolments);
         } else {
             $formattedcourses = [];
@@ -141,7 +141,7 @@ class single implements renderable, templatable {
 
         // Find CoreHR data.
         if (!$isstudent) {
-            $corehr = \local_corehr\api::get_extract($username);
+            $corehr = \local_corehr\api::get_extract($user->username);
             $iscorehr = $corehr !== false;        
         } else {
             $corehr = null;
@@ -174,6 +174,13 @@ class single implements renderable, templatable {
             $corehrcompletion = [];
         }
 
+        // Portal courses
+        if ($user) {
+            $portalcourses = \report_guid\lib::get_portal_courses($user->username);
+        } else {
+            $portalcourses = [];
+        }
+
         return [
             'ldapconfigured' => $this->ldapconfigured,
             'fullname' => $fullname,
@@ -195,6 +202,8 @@ class single implements renderable, templatable {
             'tiieula' => $tiieula,
             'corehrcompletion' => $corehrcompletion,
             'nocorehrcompletion' => empty($corehrcompletion),
+            'portalcourses' => $portalcourses,
+            'noportalcourses' => empty($portalcourses),
             'backlink' => new \moodle_url('/report/guid'),
         ];
     }

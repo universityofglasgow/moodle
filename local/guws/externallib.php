@@ -530,66 +530,7 @@ class local_guws_external extends external_api {
          // Check params
         $params = self::validate_parameters(self::portal_courses_parameters(), ['guid' => $guid, 'maxresults' => $maxresults]);
 
-        // Find userid from GUID
-        if (!$user = $DB->get_record('user', ['username' => $guid, 'mnethostid' => $CFG->mnet_localhost_id])) {
-            return [];
-        }
-
-         // Get student's courses
-        $fields = ['id', 'fullname', 'shortname', 'visible'];
-        $courses = enrol_get_all_users_courses($user->id, true, $fields);
-        if (!$courses) {
-            return [];
-        }
-
-        // Get starred courses
-        $starorder = $DB->get_record('user_preferences', ['userid' => $user->id, 'name' => 'theme_hillhead_starorder']);
-        if ($starorder) {
-            $stars = explode(',', $starorder->value);
-        } else {
-            $stars = null;
-        }
-
-        // Build additional course data 
-        foreach ($courses as $course) {
-            if ($lastaccess = $DB->get_record('user_lastaccess', ['userid' => $user->id, 'courseid' => $course->id])) {
-                $course->lastaccess = $lastaccess->timeaccess;
-            } else {
-                $course->lastaccess = 0;
-            }
-
-            // ...because there's an index...
-            $context = context_course::instance($course->id);
-            if ($favourite = $DB->get_record('favourite', ['component' => 'core_course', 'itemtype' => 'courses', 'contextid' => $context->id, 'userid' => $user->id])) {
-                $course->starred = true;
-            } else {
-                $course->starred = false;
-            }
-        }
-
-        // sort by stars and lastaccess (in that order)
-        usort($courses, function($a, $b) use ($stars) {
-            if ($a->starred && !$b->starred) {
-                return -1;
-            }
-            if (!$a->starred && $b->starred) {
-                return 1;
-            }
-            if (!empty($stars)) {
-                $posA = array_search($a->id, $stars);
-                $posB = array_search($b->id, $stars);
-                $starsort = ($posA !== false) && ($posB !== false);
-            } else {
-                $starsort = false;
-            }
-            if ($starsort && $a->starred && $b->starred) {
-                return $posA - $posB;
-            }
-            return $b->lastaccess - $a->lastaccess;
-        });
-
-        // Get the first $maxresults
-        $courses = array_slice($courses, 0, $maxresults-1);
+        $courses = \local_guws\api::get_portal_courses($guid, $maxresults);
 
         // Convert to required format
         $results = [];

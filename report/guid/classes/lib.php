@@ -570,4 +570,12 @@ class lib {
         return array_values($items);
     }
 
+    /**
+     * Get list of portal courses
+     * @param string $guid
+     */
+    public static function get_portal_courses($guid) {
+        return \local_guws\api::get_portal_courses($guid);
+    }
+
 }

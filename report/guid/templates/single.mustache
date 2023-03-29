@@ -210,4 +210,32 @@
         </div>
 {{/ nocorehrcompletion }}
 
+{{^ noportalcourses }}
+    <div class="card mt-2">
+        <div class="card-body">
+            <h5 class="card-title">{{# str }}portalcourses, report_guid{{/ str }}</h5>
+            <p class="card-text">
+                <table class="table table-striped">
+                    <thead>
+                        <th>{{# str }}coursename, report_guid{{/ str }}</th>
+                        <th>{{# str }}starred, report_guid{{/ str }}</th>
+                        <th>{{# str }}visible, report_guid{{/ str }}</th>
+                        <th>{{# str }}lastvisit, report_guid{{/ str }}</th>
+                    </thead>
+                    <tbody>
+                        {{# portalcourses }}
+                            <tr>
+                                <td>{{ fullname }}</td>
+                                <td>{{# starred }}{{# str }}yes{{/ str }}{{/ starred }}{{^ starred }}{{# str }}no{{/ str }}{{/ starred }}</td>
+                                <td>{{# visible }}{{# str }}yes{{/ str }}{{/ visible }}{{^ visible }}{{# str }}no{{/ str }}{{/ visible }}</td>
+                                <td>{{ formattedlastaccess }}</td>
+                            </tr>
+                        {{/ portalcourses }}                    
+                    </tbody>
+                </table>   
+            </p>
+        </div>
+    </div>
+{{/ noportalcourses }}
+
 <a class="mt-2 btn btn-primary" href="{{{ backlink }}}">{{# str }}back{{/ str }}</a>
