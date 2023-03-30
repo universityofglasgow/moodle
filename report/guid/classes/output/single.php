@@ -98,6 +98,7 @@ class single implements renderable, templatable {
             }
         } else {
             $user = $DB->get_record('user', ['username' => strtolower($this->username)], '*', MUST_EXIST);
+            $username = $user->username;		
             $fullname = fullname($user);
             $userlink = new moodle_url('/user/view.php', ['id' => $user->id, 'course' => 1]);
             $displayname = '<a href="' . $userlink . '">' . $fullname . '</a>';
