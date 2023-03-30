@@ -61,7 +61,7 @@ class single implements renderable, templatable {
         global $DB;
         global $USER;
 
-        if ($this->ldapconfigured) {
+        if ($this->ldapconfigured && $result) {
             $config = \report_guid\lib::settings();
 
             $fullname = ucwords(strtolower($result['givenname'] . ' ' . $result['sn']));
