@@ -62,7 +62,7 @@ Feature: Launch to Ally reports
     And I am on "Course 1" course homepage
     And "a[href*=\"report/allylti/launch.php?reporttype=course\"]" "css_element" should exist
     And I navigate to the course accessibility report
-    And I click on "//div[@id='settingsnav']//ul//li//ul//li[@class='type_container depth_2 contains_branch'][2]//ul//li[@class='type_setting depth_3 item_with_icon'][1]//a" "xpath_element"
+    And I click on "Accessibility report" "link" in the "#settingsnav" "css_element"
     Given I switch to the new window
     And I should see "This represents a report launch"
     And I am on site homepage

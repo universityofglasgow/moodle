@@ -37,6 +37,7 @@ Feature: Accessibility report should not be available to users that don't have A
     And I press "Save changes"
     Then I should see "Changes saved"
     Then I am on "Course 1" course homepage
+    And I navigate to "Reports" in current page administration
     Then I should see "Accessibility report"
 
   Scenario: Administrator should not see Accessibility without Ally configured in the site.
