@@ -67,7 +67,9 @@
      function get_page_data(itemid, first, last) {
         const GU = window.GU;
         const courseid = GU.courseid;
-        const fetchMany = GU.fetchMany;        
+        const fetchMany = GU.fetchMany;      
+        
+        window.console.log('GET PAGE DATA');
 
         fetchMany([{
             methodname: 'local_gugrades_get_capture_page',
@@ -83,6 +85,7 @@
         .then((result) => {
             users.value = JSON.parse(result['users']);
             totalrows.value = users.value.length;
+            window.console.log(users.value);
             get_pagedusers();
         })
         .catch((error) => {

@@ -31,17 +31,58 @@ namespace local_gugrades;
 class users {
 
     /**
+     * Get course module from grade item
+     * @param int $itemid Grade item ID
+     * @param int $courseid 
+     * @return object
+     */
+    public static function get_cm_from_grade_item(int $itemid, int $courseid) {
+        global $DB;
+
+        $item = $DB->get_record('grade_items', ['id' => $itemid], '*', MUST_EXIST);
+
+        // Get course module.
+        $cm = get_coursemodule_from_instance($item->itemmodule, $item->iteminstance, $courseid, false, MUST_EXIST);
+        $modinfo = get_fast_modinfo($courseid);
+        return $modinfo->get_cm($cm->id);
+    }
+
+    /**
+     * Factory to get correct class for assignment type 
+     * These are found in local_gugrades/classes/activities 
+     * Pick manual for manual grades, xxx_activity for activity xxx (if exists) or default_activity
+     * for everything else
+     * @param int $gradeitemid
+     * @param int $courseid
+     * @return object
+     */
+    public static function activity_factory(int $gradeitemid, int $courseid) {
+        global $DB;
+
+        $item = $DB->get_record('grade_items', ['id' => $gradeitemid], '*', MUST_EXIST);
+        $module = $item->itemmodule;
+        if ($item->itemtype == 'manual') {
+            return new \local_gugrades\activities\manual($gradeitemid, $courseid);
+        } else {
+            $classname = '\\local_gugrades\\activities\\' . $module . '_activity';
+            if (class_exists($classname)) {
+                return new $classname($gradeitemid, $courseid);
+            } else {
+                return new \local_gugrades\activities\default_activity($gradeitemid, $courseid);
+            }
+        } 
+    }
+
+    /**
      * Get users who can "be graded". Usually students.
      * @param context $context
      * @param string $firstname (first letter of first name)
      * @param string $lastname (first letter of last name)
-     * @param int $from (for paging, 0 based)
-     * @param into $size (how many)
      * @return array
      */
-    public static function get_gradeable_users(\context $context, $firstname = '', $lastname = '', $from, $size) {
+    public static function get_gradeable_users(\context $context, $firstname = '', $lastname = '') {
         $fields = 'u.id, u.username, u.idnumber, u.firstname, u.lastname, u.email';
-        $users = get_enrolled_users($context, 'moodle/grade:view', 0, $fields, null, $from, $size);
+        $users = get_enrolled_users($context, 'moodle/grade:view', 0, $fields);
 
         // filter
         if ($firstname || $lastname) {
@@ -65,17 +106,15 @@ class users {
      * @param context $context
      * @param string $firstname (first letter of first name)
      * @param string $lastname (first letter of last name)
-     * @param int $from (for paging, 0 based)
-     * @param into $size (how many)
      * @return array
      */
-    public static function get_available_users_from_cm($cmi, $context, $firstname, $lastname, $from, $size) {
+    public static function get_available_users_from_cm($cmi, $context, $firstname, $lastname) {
         
         //See https://moodledev.io/docs/apis/subsystems/availability
         $info = new \core_availability\info_module($cmi);
 
         // Get all the possible users in this course
-        $users = self::get_gradeable_users($context, $firstname, $lastname, $from, $size);
+        $users = self::get_gradeable_users($context, $firstname, $lastname);
 
         // Filter using availability API.
         $filteredusers = $info->filter_user_list($users);

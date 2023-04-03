@@ -22,12 +22,31 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_gugrades\external;
+namespace local_gugrades\activities;
 
 /**
  * Access data in course activities
  * 
  */
 interface activity_interface {
+
+    /**
+     * Set (first letter of) firstname and last name for filtering
+     * @param string $firstnamefilter
+     * @param string $lastnamefilter
+     */
+    public function set_name_filter(string $firstnamefilter, string $lastnamefilter);
+
+    /**
+     * Get the list of users for this activity type
+     * Filtered by firstname, lastname (if possible)
+     */
+    public function get_users(); 
+
+    /**
+     * Should the student names be hidden to normal users?
+     * Probabl mostly applies to Assignment
+     */
+    public function is_names_hidden();
 
 }

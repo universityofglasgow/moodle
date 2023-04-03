@@ -28,7 +28,7 @@ namespace local_gugrades\activities;
  * Access data in course activities
  * This is the default. Override for anything that differs (e.g. Assignment)
  */
-class default_activity implements activity_interface {
+class manual implements activity_interface {
 
     private $gradeitemid; 
 
@@ -61,15 +61,12 @@ class default_activity implements activity_interface {
      * Implement get_users()
      */
     public function get_users() {
-        $cm = \local_gugrades\users::get_cm_from_grade_item($this->gradeitemid, $this->courseid);
-
-        // Get *available* users
         $context = \context_course::instance($this->courseid);
-        $users = \local_gugrades\users::get_available_users_from_cm($cm, $context, $this->firstnamefilter, $this->lastnamefilter);
+        $users = \local_gugrades\users::get_gradeable_users($context, $this->firstnamefilter, $this->lastnamefilter);
 
-        return $users;
-    }   
-    
+        return array_values($users);
+    }
+
     /**
      * Implement is_names_hidden()
      */

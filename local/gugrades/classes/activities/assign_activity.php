@@ -26,9 +26,9 @@ namespace local_gugrades\activities;
 
 /**
  * Access data in course activities
- * This is the default. Override for anything that differs (e.g. Assignment)
+ * Specific implementation for assignment
  */
-class default_activity implements activity_interface {
+class assign_activity implements activity_interface {
 
     private $gradeitemid; 
 
@@ -38,6 +38,7 @@ class default_activity implements activity_interface {
 
     private $lastnamefilter;
 
+    private $assign;
 
     /**
      * Constructor, set grade itemid
@@ -68,8 +69,8 @@ class default_activity implements activity_interface {
         $users = \local_gugrades\users::get_available_users_from_cm($cm, $context, $this->firstnamefilter, $this->lastnamefilter);
 
         return $users;
-    }   
-    
+    }
+
     /**
      * Implement is_names_hidden()
      */
