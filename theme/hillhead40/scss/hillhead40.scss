@@ -82,6 +82,14 @@ nav.navbar a.navbar-brand {
   border-bottom-color: $hillhead-dark;
 }
 
+.popover-region-header-text {
+  float: left;
+  margin: 0;
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 25px;
+}
+
 #page-footer {
   margin: 20px;
   color: #577492;
