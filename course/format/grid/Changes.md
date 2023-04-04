@@ -1,5 +1,10 @@
 History
 =============
+Version 401.1.0 - 01/04/2023
+----------------------------
+1. Fix 'Out of frame pictures in RTL language courses' - #173.
+2. Show the section image under the section title when editing.
+
 Version 401.0.3 - 16/02/2023
 ----------------------------
 1. Improve popup CSS.
@@ -121,21 +126,25 @@ Version 3.9.0.1 - 19/07/2020
    thanks to John (https://github.com/yao9394) for the patch.
 
 Version 3.8.0.2 - TDB
+---------------------
 1. Fix 'Same color setting for "set or change img" as currentselectedimagecontainertextcolor in editing on' - #106.
 2. Fix scroll bar in main region when editing in Boost.
 3. Remove redundant 'defaultcoursedisplay' setting - #119.
 4. Tidy up old strings.
 
 Version 3.8.0.1 - 17/11/2019
+----------------------------
 1. Fix section one not shown - #105.
 2. Moodle 3.8 version based on V3.7.1.1.
 
 Version 3.7.1.0
+---------------
 1. Reduced size of Tooltip JS - #94.
 2. Attempted fix for "found more than one record" for format_grid_summary table - #97.
 3. Use a shown section count for the number of grid boxes.
 
 Version 3.7.0.2
+---------------
 1. Remove old redundant tests.
 2. Add missing Moodle defined.
 3. Styles tidy up.
@@ -144,9 +153,11 @@ Version 3.7.0.2
 6. Fix 2-3 image ratio.
 
 Version 3.7.0.1
+---------------
 1. Beta version for Moodle 3.7 based on 3.6.0.5.
 
 Version 3.6.0.5
+---------------
 1. Apply MDL-64819 - #91.
 2. Fix "Editing section summary and changing summary text breaks grid image" - #92.
 3. Fix summary tooltip opacity and not hiding when inside the grid box.
@@ -154,26 +165,33 @@ Version 3.6.0.5
 5. Fix section name box does not fill image container when inside with the Boost and Foundation themes.
 
 Version 3.6.0.4.1
+-----------------
 1. Fix existing courses have an incorrect number of courses when upgrading to 3.6.0.4 - #90.
    Note: If on a version prior to 3.6.0.4 then bypass and install 3.6.0.4.1 or above.
 
 Version 3.6.0.4
+---------------
 1. Put back 'numsections'.  Thanks to "King's College London" for funding this enhancement.
 
 Version 3.6.0.3
+---------------
 1. New: WebP displayed image support.
 
 Version 3.6.0.2
+---------------
 1. Cope with 'sectionid' url parameter.
 
 Version 3.6.0.1
+---------------
 1. Beta version for Moodle 3.6.
 
 Version 3.5.0.3
+---------------
 1. New: French 'New activity image', thanks to Momar -> https://github.com/Momardiakhate.
 2. Fix PHPUnit test with 'defaultsectiontitlesummarybackgroundopacity' failure.
 
 Version 3.5.0.2
+---------------
 1. Fix CONTRIB-7270 - Popovers not working as expected in Grid reset options section of settings - Boost theme.
 2. Foundation theme support.
 3. Fix: Boost theme shadebox adjustment.
@@ -181,21 +199,26 @@ Version 3.5.0.2
 5. Fix: Cope with non-sequential section numbers.
 
 Version 3.5.0.1
+---------------
 1. M3.5 version based on V3.4.0.4
 
 Version 3.4.0.4
+---------------
 1. Fix incorrect help for 'sectiontitleboxinsideposition' setting.
 2. Fix for grey out issue - https://moodle.org/mod/forum/discuss.php?d=364153#p1492053.
 3. Implement Privacy API.
 
 Version 3.4.0.3
+---------------
 1. Fix double entry for a course in the format_grid_summary when restoring.
 2. Fix logic of showing grid boxes depending on if it is visible against the grey out setting and course 'Hidden sections' option.
 
 Version 3.4.0.2
+---------------
 1. Add the ability to 'Open in new tab' when the 'Course layout' is 'One section per page'.  Gratefully funded by Coventry University UK.
 
 Version 3.4.0.1
+---------------
 1. First beta version for M3.4.
 2. Fix 'No visual feedback of hidden sections' - #58.
 3. Another attempt at addressing #63 for tooltip accessibility - #60.
@@ -203,20 +226,24 @@ Version 3.4.0.1
 5. Add the ability to have section 0 on its own page when out of the grid and the 'Course layout' is 'One section per page'.  Gratefully funded by Coventry University UK.
 
 Version 3.3.0.2
+---------------
 1. Ensure overlay of navigation drawer in Boost.
 2. Fix "WCAG Changes and work to allow tooltip appearance on hover" - #63 - thanks to Pat for this.
 3. Fix colour popup form element not rendering correctly in Boost theme.
 
 Version 3.3.0.1
+---------------
 1. First version for Moodle 3.3.
 
 Version 3.2.1.3
+---------------
 1. Fix "Error when restoring course" - CONTRIB-6917.
 2. Fix not being able to tab to colour settings.
 3. Allow section navigation in flat navigation.
 4. Fix "gridcontainer alignment" - #54.
 
 Version 3.2.1.2
+---------------
 1. Fix unable to use cursor keys to edit section title when editing.
 2. Fix border colour spilling out of title.
 3. Add ability to have a zero sized border.
@@ -237,6 +264,7 @@ Version 3.2.1.2
 Changes 2-14 gratefully funded by Coventry University UK.
 
 Version 3.2.1.1
+---------------
 1. Fix '"bordercolour" is set to 0 when creating courses using the "Upload courses" tool' - CONTRIB-6655.
 2. Fix 'Arrows and cursors in M3.2 with RTL' - #41.
    Notes: Clean up CSS after MDL-57869 is fixed.
@@ -249,150 +277,184 @@ Version 3.2.1.1
 8. Changed overlay and shadebox z-index to 2 for the Essential theme.  If proven issues then will need to be somehow dynamic.
 
 Version 3.2.1.0
+---------------
 1. Fix 'Embedded videos still load in one section per page mode' - #39.
 2. Remove old 'format_grid_delete_course' function and replace with '\core\event\course_content_deleted' event.
 3. Cope with the Boost theme in relation to the shadebox.
 4. Cope with the Boost theme in relation to the grid area.
 
 Version 3.2.0.2
+---------------
 1. Improve deletion.
 2. Section title text format options.  Thanks to Murdoch University, Perth, WA for supporting this enhancement.
 
 Version 3.2.0.1
+---------------
 1. First beta for M3.2.
 
 Version 3.1.1.0
+---------------
 1. Changes for MDL-54557.
 2. Fix layout rendering issues when section name is empty by using the single space trick - #36.
 3. Fix truncate long section names in the grid - #33.
 4. Improve deletion.  Ref: https://moodle.org/mod/forum/discuss.php?d=334353#p1384895.
 
 Version 3.1.0.1
+---------------
 1. First 'beta' version for M3.1.
 2. Changes for MDL-51802.
 
 Version 3.0.1.1
+---------------
 1. Updated php4 constructor - #27 - thanks to Mark Sharp.
 2. Added the ability to grey out and unlink grid icons for unavailable sections - #30 - thanks to Justin Hunt.
 3. Travis CI fixes.
 4. Fixes for #30 in IE.
 
 Version 3.0.1
+-------------
 1. Implement MDL-26226.
 
 Version 3.0.0.4
+---------------
 1. Use custom user profile fields for accessibility - #23.
 2. Section 0 not shown on its own when in the Grid and 'Show one section per page' - #24.
 3. TravisCI - tidy up.
 
 Version 3.0.0.3
+---------------
 1. Change colour setting type from 'text' to 'colourtext - 'ftext' -> 'fcolourtext' for theme styling.
 2. Fix logic flaw with named anchor and editing is on.
 
 Version 3.0.0.2
+---------------
 1. Add Travis CI Support.
 2. Fix #22 - Grid sometimes loads with blocks misaligned.
 3. Show the correct shadebox section in response to a named anchor in the URL of the format:
    "#section-X" where 'X' is the section number.
 
 Version 3.0.0.1
+---------------
 1. First 'beta' version for M3.0.
 2. Apply MDL-10405, MDL-48947 and MDL-51610.
 
-Version 2.9.1.5.
+Version 2.9.1.5
+---------------
 1. Do not halt on missing icon error (see: https://moodle.org/mod/forum/discuss.php?d=316768) but just
    continue and allow errors to be stored in the php.log file.
 
-Version 2.9.1.4.
+Version 2.9.1.4
+---------------
 1. Improved RTL support thanks to Nadav Kavalerchik.
 2. Delete format_grid_icon record when a section is deleted.
 3. Update language string for 'cannotfinduploadedimage'.
 4. Improved accessibility control by finally completing CONTRIB-3240 to use tab / shift tab, enter / shift enter controls.
 
-Version 2.9.1.3.
+Version 2.9.1.3
+---------------
 1. Fix CONTRIB-5881 - Renaming of items not allowing spacebar.
 
-Version 2.9.1.2.
+Version 2.9.1.2
+---------------
 1. Fixed coding fault when restoring a course from backup file.
 2. Attempt self repair if grid image not in the files table.
 
-Version 2.9.1.1.
+Version 2.9.1.1
+---------------
 1. Add the 'space' key as a means of opening / closing the shade box for accessibility.
 2. Attempt to set focus on first activity.
 3. Add composer.json file - #17 - thanks to Daniel Neis Araujo.
 4. Update readme.
 5. Added debug code for: https://moodle.org/mod/forum/discuss.php?d=316768.
 
-Version 2.9.1.
+Version 2.9.1
+-------------
 1. First stable version for Moodle 2.9.
 
-Version 2.9.0.4.
+Version 2.9.0.4
+---------------
 1. Optimise styles.
 
-Version 2.9.0.3.
+Version 2.9.0.3
+---------------
 1. Fix 'showavailability', ref: https://moodle.org/mod/forum/discuss.php?d=315452.
 
-Version 2.9.0.2.
+Version 2.9.0.2
+---------------
 1. Added the capability to delete a section.
 2. Fixed 'Pointless try...catch block in setup_displayed_image() (lib.php)' - #15.
 3. Add option to fit content popup to window size - #16 - thanks to Anthony Kuske - https://github.com/antriver.
 4. Tidied up, added reset options and improved #16.
 5. Optimised 'absolute' positioning of shadebox in light of #16.
 
-Version 2.9.0.1.
+Version 2.9.0.1
+---------------
 1. First 'release candidate' version for Moodle 2.9.
 2. Note: Need to seriously think about using AMD and transitioning to using jQuery instead of YUI as AJAX is possible in jQuery,
          but almost certainly not in the first instance as YUI is still supported in core.  Modularisation is do-able in AMD
          with parameters required: https://docs.moodle.org/dev/Javascript_Modules.
 
 3rd April 2015 Version 2.8.2.2
+------------------------------
 1. Fixed 'importing of grid icons.' - #11 - patch gratefully received from Tim Lock.
 
 25th February 2015 Version 2.8.2.1
+----------------------------------
 1. Fixed 'Arrows still show when editing is on.' - #13.
 
 21st December 2014 Version 2.8.2
+--------------------------------
 1. Revamped the arrows such that they are always visible.
 2. Arrow and close image size responsive to screen size.
 3. Changed the arrow images to FontAwesome: http://fontawesome.io/license/ and extracted with: https://icomoon.io/app/#/select.
 4. Added change in cursor for the arrow areas.
 5. Fix CONTRIB-5511: Navigation arrows should be hidden when only one section.
 
-16th November 2014 Version 2.8.1 - Stable version for Moodle 2.8.
+16th November 2014 Version 2.8.1 - Stable version for Moodle 2.8
+----------------------------------------------------------------
 1. Always show shadebox arrows on Tablets and Mobiles with the latter being half size.
 
 10th November 2014 Version 2.8.0.1 - Release Candidate
+------------------------------------------------------
 1. Release candidate for Moodle 2.8 - NOT for production servers.
 
 5th November 2014 Version 2.7.1.4
+---------------------------------
 1. Fixed CONTRIB-5256.  Thanks to Marius Jugariu for reporting the problem.
 2. Made the arrows easier to find by placing them always 75px from the top.
 3. Added German 'New activity' image.  Thanks to Guido Hornig.
 4. Fixed section 0 editing drop down in Bootstrap v3 themes: https://github.com/gjb2048/moodle-format_grid/issues/9.
 
 18th August 2014 Version 2.7.1.3
+--------------------------------
 1. Fixed issue whereby the grid shade box is underneath certain theme components:
    https://moodle.org/mod/forum/discuss.php?d=266192#p1152232.
 
 9th August 2014 Version 2.7.1.2
+-------------------------------
 1. Fixed CONTRIB-5191.  This is a workaround that depends on MDL-43525 being implemented before it is reversed.
 
 12th June 2014 - Version 2.7.1.1
+--------------------------------
 1. Slight change to CSS for Bootstrap V3.
 2. Fixed CONTRIB-5106 - thanks to Hanna Edelman for this.
 
-20th May 2014 Version 2.7.1 - Stable.
+20th May 2014 Version 2.7.1 - Stable
+------------------------------------
 1. Stable release for M2.7.
 
 27th April 2014 Version 2.7.0.1 - BETA
+--------------------------------------
 1. First beta version for Moodle 2.7beta.
 
 23rd April 2014 Version 2.6.1.6
+-------------------------------
 Change by G J Barnard
 1. Fixed CONTRIB-5001 - Cannot use the same image in the section summary as well as the grid.
 2. Note: Julian has departed from Moodle work so I have taken over full responsibility for the format.
 
 28th March 2014 Version 2.6.1.5
+-------------------------------
 Change by G J Barnard
 1. Fix to RTL CSS thanks to Nadav Kavalerchik - https://github.com/gjb2048/moodle-courseformat_grid/pull/3 being:
    Right align "New activity" notification image in RTL mode.
@@ -411,6 +473,7 @@ Change by G J Barnard
 11. Fixed CONTRIB-4861 - Glossary pop-ups do not display correctly.
 
 18th December 2013 Version 2.6.1.4
+----------------------------------
 Change by G J Barnard
 1. Fixed path and message confusion issue with the M1.9 upgrade script.
 2. Fixed issue reported by Graham Woodsford whereby teachers could not create Collapsed Topics courses.  The code in the area
@@ -434,7 +497,8 @@ Change by G J Barnard
    presumed work-flow of a teacher where they create the course using the defaults, look at it and then decide what to change
    in the settings.  The fix as it stands will facilitate this.
 
-13th December 2013 Version 2.6.1.3 - Zombie release.
+13th December 2013 Version 2.6.1.3 - Zombie release
+---------------------------------------------------
 Change by G J Barnard
 1. Fixed shade box still being shown in editing mode when update capability is denied.  Historical
    issue that has not been spotted before.  Given http://docs.moodle.org/26/en/Capabilities/moodle/course:update
@@ -447,6 +511,7 @@ Change by G J Barnard
    means of replicating the issue.
 
 26th November 2013 Version 2.6.1.2
+----------------------------------
 Change by G J Barnard
 1. Fix automated backups including displayed images when they should not.
 2. Fix 'reset_grid_setting' in 'lib.php' not resetting a course if it's only on default options.
@@ -487,20 +552,24 @@ know with as much information as possible, like additional add-ons and when you 
 So, I have decided to release as is as the fixes above are important to distribute to the community.
 
 20th November 2013 Version 2.6.1.1
+----------------------------------
 Change by G J Barnard
 1. Fix incorrect detection of non-existent entry in format_grid_icon table.  Thanks to
    Llywelyn Morgan for reporting this.
 
 18th November 2013 Version 2.6.1
+--------------------------------
 Change by G J Barnard
 1. Stable release for Moodle 2.6.
 2. Fixed slight issue with lack of prefixing '#' for colour settings in default settings.
 
 14th November 2013 Version 2.6.0.1
+----------------------------------
 Change by G J Barnard
 1. Initial BETA code for Moodle 2.6.
 
 14th November 2013 Version 2.5.5
+--------------------------------
 Change by G J Barnard
 1. Fixed issue over prefixed '#' in colour picker.
 2. Added validation to HEX RGB colour codes.
@@ -512,6 +581,7 @@ Change by G J Barnard
    retrieved.  This then resulted in a method call on a non-existent method.
 
 4th November 2013 Version 2.5.5 - CONTRIB-4099 - BETA
+-----------------------------------------------------
 Improvement by G J Barnard
 1. Implemented CONTRIB-4099 to add image icon size and colour changes.
    Gratefully crowd funded by:
@@ -527,7 +597,8 @@ Improvement by G J Barnard
 4. Started implementing WAI-ARIA roles - http://www.w3.org/TR/wai-aria/roles.  If you have information to
    help with this, then please contact us.
 
-23rd October 2013 Version 2.5.4.4 - Stable.
+23rd October 2013 Version 2.5.4.4 - Stable
+------------------------------------------
 Change by G J Barnard
 1. Fix broken call to '_is_empty_text' as reported on CONTRIB-4589.
 2. Optimised fetching of icon data from database to one call instead of one call per shown section.
@@ -535,7 +606,8 @@ Change by G J Barnard
 4. Fixed shade box showing when pressing the 'Esc' key in 'Show one section per page' course layout - CONTRIB-4709.
 5. Fixed highlight this section text referring to 'topics'.
 
-2nd October 2013 Version 2.5.4.3 - Stable.
+2nd October 2013 Version 2.5.4.3 - Stable
+-----------------------------------------
 Change by G J Barnard
 1. Fixed sections not being shown when in 'Show one section per page' mode and editing.  Thanks to
    Zdravko Stoimenov for reporting this.
@@ -544,20 +616,23 @@ Change by G J Barnard
 3. Fixed section 0 content displaying when it's in the grid, you first load a page and click on another
    section.  Thanks to Llywelyn Morgan for reporting this.
 
-12th September 2013 Version 2.5.4.2 - Stable.
+12th September 2013 Version 2.5.4.2 - Stable
+--------------------------------------------
 Change by G J Barnard
 1. Changed 'JSON' code in 'module.js' to use the YUI library for JSON to support situations where the 'JSON'
    library is not built into the browser.  Thanks to Colin Taylor for providing information of a situation I
    could not have possibly tested.
 Note: If you have already installed V2.5.4 or V2.5.4.1 then this is not an essential upgrade.
 
-12th September 2013 Version 2.5.4.1 - Stable.
+12th September 2013 Version 2.5.4.1 - Stable
+--------------------------------------------
 Change by G J Barnard
 1. Commented out 'console.log' code in 'module.js'.
 2. Removed old 'gridkeys.js' from 'javascript' folder.
 Note: If you have already installed V2.5.4 then this is not an essential upgrade.
 
-10th September 2013 Version 2.5.4 - Stable.
+10th September 2013 Version 2.5.4 - Stable
+------------------------------------------
 Change by G J Barnard
 1. Partial implementation of CONTRIB-3240.  Thanks to Andrew Nicols for helping with the YUI module code
    on: https://moodle.org/mod/forum/discuss.php?d=237275.
@@ -577,6 +652,7 @@ Change by G J Barnard
 3. Added Pirate language.
 
 30th August 2013 Version 2.5.3.3 - Stable
+-----------------------------------------
 Change by G J Barnard
 1. Implemented CONTRIB-4580 - Highlight current section.
 2. Implemented CONTRIB-4579, thanks to all who helped on https://moodle.org/mod/forum/discuss.php?d=236075.
@@ -587,18 +663,21 @@ Change by G J Barnard
 6. Added 'Known Issues' above.
 
 22nd August 2013 Version 2.5.3.2 - Stable
+-----------------------------------------
 Change by G J Barnard
 1. Fixed icon container size relative to icon size.
 2. Added 'alt' image attribute information being that of the section name.
 3. Tidied up more styles such that to pre-empt conflicts.
 
 10th August 2013 Version 2.5.3.1 - Stable
+-----------------------------------------
 Change by G J Barnard
 1. Fixed CONTRIB-4216 - Error importing quizzes with grid course format.
 2. Fixed CONTRIB-4253 - mdl_log queried too often to generate New Activity tag.  This has been fixed by using the 'course_sections'
    table instead to spot when a new activity / resource has been added since last login.
 
 4th August 2013 Version 2.5.3 - Stable
+--------------------------------------
 Change by G J Barnard
 1. Fixed scroll to top when clicking on an icon.  Thanks to Javier Dorfsman for reporting this.
 2. Added in code developed by Nadav Kavalerchik to facilitate multi-lingual support for the 'new activity' icon.  Thank
@@ -606,6 +685,7 @@ Change by G J Barnard
 3. Adapted the width of the shade box such that it is dynamic against the size of the window.
 
 5th July 2013 Version 2.5.2 - Stable
+------------------------------------
 Change by G J Barnard
 1. Code refactoring to reduce and separate the format as a separate entity.
 2. Corrected as much as possible as detected by 'Code Checker' version 2013060600 release 2.2.7.
@@ -613,50 +693,61 @@ Change by G J Barnard
 4. Changed the order of the history so that the latest change is at the top.
 
 14th May 2013 Version 2.5.1 - Stable
+------------------------------------
 Change by G J Barnard
 1. First stable version for Moodle 2.5 stable.
 
 12th May 2013 - Version 2.5.0.2 - Beta
+--------------------------------------
 Change by G J Barnard
 1. Removed '.jumpmenu' from styles.css because of MDL-38907.
 2. Added automatic 'Purge all caches' when upgrading.  If this appears not to work by lack of display etc. then perform a
    manual 'Purge all caches' under 'Home -> Site administration -> Development -> Purge all caches'.
 3. Changes for MDL-39542.
 
-13th April 2013 - Version 2.5.0.1 - Beta version.
+13th April 2013 - Version 2.5.0.1 - Beta version
+------------------------------------------------
 Change by G J Barnard
 1. First 'Beta' release for Moodle 2.5 Beta.
 
-24th February 2013 - Version 2.4.1 - Stable version.
+24th February 2013 - Version 2.4.1 - Stable version
+---------------------------------------------------
 Change by G J Barnard
 1. Changes because of MDL-37901.
 2. Invisible section fix for Tim Wilde - https://moodle.org/mod/forum/discuss.php?d=218505#p959249.
 3. This version considered 'Stable' from feedback of Theo Konings on CONTRIB-3534.
 
-21st January 2013 - Version 2.4.0.2 - Alpha version, not for production servers.
+21st January 2013 - Version 2.4.0.2 - Alpha version, not for production servers
+-------------------------------------------------------------------------------
 Change by G J Barnard
 1. Changes to 'renderer.php' because of MDL-36095 hence requiring Moodle version 2012120301.02 release 2.4.1+ (Build: 20130118) and above.
 
-12th January 2013 - Version 2.5.0.1 - Alpha version, not for production servers.
+12th January 2013 - Version 2.5.0.1 - Alpha version, not for production servers
+-------------------------------------------------------------------------------
 1. Migrated code to Moodle 2.5 development version.
 
-9th January 2013 - Version 2.4.0.5 - Beta version, not for production servers.
+9th January 2013 - Version 2.4.0.5 - Beta version, not for production servers
+-----------------------------------------------------------------------------
 Change by G J Barnard
 1. Fixed issue in editimage.php where the GD library needs to be used for image conversion for transparent PNG's.
 2. Perform a 'Purge all caches' under 'Home -> Site administration -> Development -> Purge all caches' after this is installed.
 
-3rd January 2013 - Version 2.4.0.4 - Beta version, not for production servers.
+3rd January 2013 - Version 2.4.0.4 - Beta version, not for production servers
+-----------------------------------------------------------------------------
 Change by G J Barnard
 1. Fixed issue where the grid did not function in 'One section per page mode' on the course settings.
 
-21st December 2012 - Version 2.4.0.3 - Beta version, not for production servers.
+21st December 2012 - Version 2.4.0.3 - Beta version, not for production servers
+-------------------------------------------------------------------------------
 Change by G J Barnard
 1. Hopefully eliminated BOM issue (http://docs.moodle.org/24/en/UTF-8_and_BOM) that was causing the failure of the images to display.
 
-18th December 2012 - Version 2.4.0.2 - Alpha version, not for production servers.
+18th December 2012 - Version 2.4.0.2 - Alpha version, not for production servers
+--------------------------------------------------------------------------------
 Change by G J Barnard
 1. Second alpha release for Moodle 2.4
 
-18th December 2012 - Version 2.4.0.1 - Alpha version, not for production servers.
+18th December 2012 - Version 2.4.0.1 - Alpha version, not for production servers
+--------------------------------------------------------------------------------
 Change by G J Barnard
 1. First alpha release for Moodle 2.4

@@ -73,7 +73,9 @@ class MoodleQuickForm_sectionfilemanager extends MoodleQuickForm_filemanager imp
                 $indata = new stdClass();
                 $indata->sectionimage_filemanager = $value;
                 // The file manager deals with the files table when the image is deleted.
-                $outdata = file_postupdate_standard_filemanager($indata, 'sectionimage', self::$options, $coursecontext, 'format_grid', 'sectionimage', $sectionid);
+                $outdata = file_postupdate_standard_filemanager(
+                    $indata, 'sectionimage', self::$options, $coursecontext,
+                    'format_grid', 'sectionimage', $sectionid);
                 global $DB;
                 if ($outdata->sectionimage == '1') {
                     // We have draft file(s), however they could also be left over ones!
@@ -133,7 +135,7 @@ class MoodleQuickForm_sectionfilemanager extends MoodleQuickForm_filemanager imp
                     }
                     if (!$havefiles) {
                         // No section files - possible deletion of existing image.
-                        $this->delete_existing_image($coursecontext->id, $course->id, $sectionid, $fs, $lock);                    
+                        $this->delete_existing_image($coursecontext->id, $course->id, $sectionid, $fs, $lock);
                     }
                 } else {
                     // No draft files - possible deletion of existing image.
@@ -164,7 +166,7 @@ class MoodleQuickForm_sectionfilemanager extends MoodleQuickForm_filemanager imp
      */
     private function delete_existing_image($coursecontextid, $courseid, $sectionid, $fs, $lock) {
         global $DB;
-        
+
         try {
             $DB->delete_records('format_grid_image', array('courseid' => $courseid, 'sectionid' => $sectionid));
         } catch (\Exception $e) {
@@ -203,5 +205,5 @@ class MoodleQuickForm_sectionfilemanager extends MoodleQuickForm_filemanager imp
         $fmd = file_prepare_standard_filemanager(
             $course, 'sectionimage', self::$options, $coursecontext, 'format_grid', 'sectionimage', $sectionid);
         $this->setValue($fmd->sectionimage_filemanager);
-    }    
+    }
 }

@@ -54,7 +54,7 @@
                 "sectionurl": "https://mymoodle/course/view.php?id=4&section=2",
                 "sectionname": "The second section",
                 "imageuri": "https://mymoodle/pluginfile.php/358/format_grid/displayedsectionimage/42/1/ducking.jpg.webp",
-                "alttext": "Duckling",
+                "imagealttext": "Duckling",
                 "generatedimageuri": false,
                 "sectioncompletionmarkup": ""
             }
@@ -81,7 +81,7 @@
             <div class="card-header text-truncate">{{{sectionname}}}</div>
             {{#imageuri}}
             <div class="grid-image card-img-bottom text-center">
-                <img src="{{imageuri}}" alt="{{alttext}}">
+                <img src="{{imageuri}}" alt="{{imagealttext}}">
                 {{#sectioncompletionmarkup}}{{{sectioncompletionmarkup}}}{{/sectioncompletionmarkup}}
             </div>
             {{/imageuri}}

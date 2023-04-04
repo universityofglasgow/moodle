@@ -14,10 +14,11 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Course index main component.
+ * Grid format Course index main component.
  *
- * @module     core_courseformat/local/content
- * @class      core_courseformat/local/content
+ * @module     format_grid/local/content
+ * @class      format_grid/local/content
+ * @copyright  2023 G J Barnard based upon work done by:
  * @copyright  2020 Ferran Recio <ferran@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

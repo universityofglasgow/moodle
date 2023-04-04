@@ -44,10 +44,14 @@ if ($ADMIN->fulltree) {
         format_text(get_string('informationsettingsdesc', 'format_grid'), FORMAT_MARKDOWN)));
 
     // Information.
-    $page->add(new admin_setting_information('format_grid/formatinformation', '', '', 400));
+    $page->add(new admin_setting_information('format_grid/formatinformation', '', '', 401));
 
     // Support.md.
     $page->add(new admin_setting_markdown('format_grid/formatsupport', '', '', 'Support.md'));
+
+    // Changes.md.
+    $page->add(new admin_setting_markdown('format_grid/formatchanges',
+        get_string('informationchanges', 'format_grid'), '', 'Changes.md'));
 }
 $ADMIN->add('format_grid', $page);
 

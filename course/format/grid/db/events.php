@@ -33,11 +33,11 @@ defined('MOODLE_INTERNAL') || die();
 $observers = array(
 
     array(
-        'eventname'   => '\core\event\course_content_deleted',
-        'callback'    => 'format_grid_observer::course_content_deleted',
+        'eventname' => '\core\event\course_content_deleted',
+        'callback' => 'format_grid_observer::course_content_deleted',
     ),
     array(
-        'eventname'   => '\core\event\course_restored',
-        'callback'    => 'format_grid_observer::course_restored',
+        'eventname' => '\core\event\course_restored',
+        'callback' => 'format_grid_observer::course_restored',
     )
 );
