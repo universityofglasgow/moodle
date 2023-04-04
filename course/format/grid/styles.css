@@ -54,12 +54,14 @@
     height: 140px;
 }
 
+/*rtl:begin:ignore*/
 .format-grid .thegrid .grid-image img {
     left: 50%;
     position: absolute;
     top: 50%;
     transform: translate(-50%,-50%);
 }
+/*rtl:end:ignore*/
 
 .format-grid #gridPopup .modal-dialog {
     max-width: 100%;
@@ -128,4 +130,14 @@
 
 .format-grid .grid-completion .grid-percentage {
     font-size: 0.75em;
+}
+
+.format-grid .grid-image-preview {
+    max-height: 100%;
+    max-width: 100%;
+}
+
+.format-grid .grid-image-name {
+    font-size: 0.75rem;
+    text-align: center;
 }

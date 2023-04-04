@@ -165,6 +165,9 @@
     <a href="{{{maincoursepage}}}"><p class="text-right">{{#str}}maincoursepage{{/str}}</p></a>
     {{/hasnavigation}}
     {{{completionhelp}}}
+    {{#hasheaderimages}}
+        {{> format_grid/coursestyles }}
+    {{/hasheaderimages}}
     <ul class="{{format}}" data-for="course_sectionlist">
         {{#initialsection}}
             {{$ core_courseformat/local/content/section }}
@@ -173,7 +176,7 @@
         {{/initialsection}}
         {{#sections}}
             {{$ core_courseformat/local/content/section }}
-                {{> core_courseformat/local/content/section }}
+                {{> format_grid/local/content/section }}
             {{/ core_courseformat/local/content/section }}
         {{/sections}}
     </ul>

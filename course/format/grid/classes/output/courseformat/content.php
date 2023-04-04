@@ -87,7 +87,7 @@ class content extends content_base {
             if (!$singlesection) {
                 $data->initialsection = $initialsection;
             }
-            if (($editing) || ($singlesection)) {
+            if (($editing) || ($singlesection)) { // This triggers the display of the standard list of section(s).
                 $data->sections = $sections;
             }
             if (!empty($course->marker)) {
@@ -111,7 +111,8 @@ class content extends content_base {
             $data->singlesection = array_shift($data->sections);
             $data->sectionreturn = $singlesection;
             $data->maincoursepage = new \moodle_url('/course/view.php', array('id' => $course->id));
-        } else if (!$editing) {
+        } else {
+            $coursesettings = $format->get_settings();
             $toolbox = \format_grid\toolbox::get_instance();
             $coursesectionimages = $DB->get_records('format_grid_image', array('courseid' => $course->id));
             if (!empty($coursesectionimages)) {
@@ -127,14 +128,15 @@ class content extends content_base {
             }
 
             // Popup.
-            $coursesettings = $format->get_settings();
-            $data->popup = false;
-            if ((!empty($coursesettings['popup'])) && ($coursesettings['popup'] == 2)) {
-                $data->popup = true;
-                $data->popupsections = array();
-                $potentialpopupsections = array();
-                foreach ($sections as $section) {
-                    $potentialpopupsections[$section->id] = $section;
+            if (!$editing) {
+                $data->popup = false;
+                if ((!empty($coursesettings['popup'])) && ($coursesettings['popup'] == 2)) {
+                    $data->popup = true;
+                    $data->popupsections = array();
+                    $potentialpopupsections = array();
+                    foreach ($sections as $section) {
+                        $potentialpopupsections[$section->id] = $section;
+                    }
                 }
             }
 
@@ -150,6 +152,13 @@ class content extends content_base {
             $iswebp = (get_config('format_grid', 'defaultdisplayedimagefiletype') == 2);
 
             $completionshown = false;
+            $headerimages = false;
+            if ($editing) {
+                $datasectionmap = array();
+                foreach ($data->sections as $datasectionkey => $datasection) {
+                    $datasectionmap[$datasection->id] = $datasectionkey;
+                }
+            }
             foreach ($sectionsforgrid as $section) {
                 // Do we have an image?
                 if ((array_key_exists($section->id, $sectionimages)) && ($sectionimages[$section->id]->displayedimagestate >= 1)) {
@@ -165,45 +174,53 @@ class content extends content_base {
 
                 // Alt text.
                 $sectionformatoptions = $format->get_format_options($section);
-                $sectionimages[$section->id]->alttext = $sectionformatoptions['sectionimagealttext'];
-
-                // Section link.
-                $sectionimages[$section->id]->sectionurl = new \moodle_url(
-                    '/course/view.php',
-                    array('id' => $course->id, 'section' => $section->num)
-                );
-                $sectionimages[$section->id]->sectionurl = $sectionimages[$section->id]->sectionurl->out(false);
-
-                // Section name.
-                $sectionimages[$section->id]->sectionname = $section->name;
-
-                // Section break.
-                if ($sectionformatoptions['sectionbreak'] == 2) { // Yes.
-                    $sectionimages[$section->id]->sectionbreak = true;
-                    if (!empty ($sectionformatoptions['sectionbreakheading'])) {
-                        // Note:  As a PARAM_TEXT, then does need to be passed through 'format_string' for multi-lang or not?
-                        $sectionimages[$section->id]->sectionbreakheading = format_text(
-                            $sectionformatoptions['sectionbreakheading'],
-                            FORMAT_HTML
-                        );
-                    }
-                }
+                $sectionimages[$section->id]->imagealttext = $sectionformatoptions['sectionimagealttext'];
 
                 // Current section?
                 if ((!empty($currentsectionid)) && ($currentsectionid == $section->id)) {
                     $sectionimages[$section->id]->currentsection = true;
                 }
 
-                // Completion?
-                if (!empty($section->sectioncompletionmarkup)) {
-                    $sectionimages[$section->id]->sectioncompletionmarkup = $section->sectioncompletionmarkup;
-                    $completionshown = true;
-                }
+                if ($editing) {
+                    if (!empty($data->sections[$section->num])) {
+                        // Add the image to the section content.
+                        $data->sections[$datasectionmap[$section->id]]->gridimage = $sectionimages[$section->id];
+                        $headerimages = true;
+                    }
+                } else {
+                    // Section link.
+                    $sectionimages[$section->id]->sectionurl = new \moodle_url(
+                        '/course/view.php',
+                        array('id' => $course->id, 'section' => $section->num)
+                    );
+                    $sectionimages[$section->id]->sectionurl = $sectionimages[$section->id]->sectionurl->out(false);
 
-                // For the template.
-                $data->gridsections[] = $sectionimages[$section->id];
-                if ($data->popup) {
-                    $data->popupsections[] = $potentialpopupsections[$section->id];
+                    // Section name.
+                    $sectionimages[$section->id]->sectionname = $section->name;
+
+                    // Section break.
+                    if ($sectionformatoptions['sectionbreak'] == 2) { // Yes.
+                        $sectionimages[$section->id]->sectionbreak = true;
+                        if (!empty ($sectionformatoptions['sectionbreakheading'])) {
+                            // Note:  As a PARAM_TEXT, then does need to be passed through 'format_string' for multi-lang or not?
+                            $sectionimages[$section->id]->sectionbreakheading = format_text(
+                                $sectionformatoptions['sectionbreakheading'],
+                                FORMAT_HTML
+                            );
+                        }
+                    }
+
+                    // Completion?
+                    if (!empty($section->sectioncompletionmarkup)) {
+                        $sectionimages[$section->id]->sectioncompletionmarkup = $section->sectioncompletionmarkup;
+                        $completionshown = true;
+                    }
+
+                    // For the template.
+                    $data->gridsections[] = $sectionimages[$section->id];
+                    if ($data->popup) {
+                        $data->popupsections[] = $potentialpopupsections[$section->id];
+                    }
                 }
             }
 
@@ -213,6 +230,12 @@ class content extends content_base {
                 if ((!empty($coursesettings['showcompletion'])) && ($coursesettings['showcompletion'] == 2) && ($completionshown)) {
                     $data->showcompletion = true;
                 }
+            }
+
+            if ($headerimages) {
+                $data->hasheaderimages = true;
+                $coursesettings['imagecontainerwidth'] = 144;
+                $data->coursestyles = $toolbox->get_displayed_image_container_properties($coursesettings);
             }
         }
 

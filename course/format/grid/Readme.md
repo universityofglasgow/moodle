@@ -2,7 +2,7 @@ Grid course format
 ============================
 A topics based format that uses a grid of user selectable images to select a section.
 
-Required release  of Moodle
+Required release of Moodle
 ==========================
 This version works with Moodle 4.1 version 2022112800.00 (Build: 20221128) and above within the MOODLE_401_STABLE branch until the
 next release.
@@ -146,6 +146,11 @@ History
 =============
 Please see Changes.md
 
-Author
-------
-G J Barnard - Moodle profile: moodle.org/user/profile.php?id=442195 - Web profile: about.me/gjbarnard
+Developed and maintained by
+===========================
+G J Barnard MSc. BSc(Hons)(Sndw). MBCS. CEng. CITP. PGCE.
+
+- Moodle profile | [Moodle.org](https://moodle.org/user/profile.php?id=442195)
+- @gjbarnard     | [Twitter](https://twitter.com/gjbarnard)
+- Web profile    | [About.me](https://about.me/gjbarnard)
+- Website        | [Website](https://gjbarnard.co.uk)

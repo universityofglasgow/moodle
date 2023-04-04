@@ -35,7 +35,7 @@ namespace format_grid;
  */
 class admin_setting_information extends \admin_setting {
 
-    /** @var int The branch this Grid format is for. */
+    /** @var int The branch this is for. */
     protected $mbranch;
 
     /**
@@ -44,7 +44,7 @@ class admin_setting_information extends \admin_setting {
      * @param string $name Setting name.
      * @param string $visiblename Setting name on the device.
      * @param string $description Setting description on the device.
-     * @param string $mbranch The branch this Grid format is for.
+     * @param string $mbranch The branch this is for.
      */
     public function __construct($name, $visiblename, $description, $mbranch) {
         $this->nosave = true;
@@ -99,11 +99,19 @@ class admin_setting_information extends \admin_setting {
             $plugininfo->version = $plugininfo->versiondisk;
         }
 
+        $classes[] = 'fa fa-heart';
+        $attributes = array();
+        $attributes['aria-hidden'] = 'true';
+        $attributes['class'] = 'fa fa-heart';
+        $attributes['title'] = get_string('love', 'format_grid');
+        $content = \html_writer::tag('span', $attributes['title'], array('class' => 'sr-only'));
+        $content = \html_writer::tag('span', $content, $attributes);
         $context['versioninfo'] = get_string('versioninfo', 'format_grid',
             array(
                 'moodle' => $CFG->release,
                 'release' => $plugininfo->release,
-                'version' => $plugininfo->version
+                'version' => $plugininfo->version,
+                'love' => $content
             )
         );
 
