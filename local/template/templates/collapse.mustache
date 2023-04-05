@@ -1,0 +1,65 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_template/collapse
+
+    Moodle notification template.
+
+    The purpose of this template is to render a success notification.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Context variables required for this template:
+    * message A cleaned string (use clean_text()) to display.
+    * extraclasses Additional classes to apply to the notification.
+    * closebutton Whether a close button should be displayed to dismiss the message.
+    * icon Which icon should be displayed.
+    * level Which level this notification is (e.g. warning, success).
+
+    Example context (json):
+    { "message": "Your pants are on fire!", "icon": "fa-warning", "level": "alert-warning", "closebutton": 1, "extraclasses": "foo bar"}
+}}
+<div id="{{class}}">
+{{#rows}}
+    <div class="card">
+        <div class="card-header" id="heading-{{rowid}}">
+            <h5 class="mb-0">
+                <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapse-{{rowid}}" aria-expanded="true" aria-controls="collapse-{{rowid}}">
+                    <i class="fa fa-plus"></i> {{{identifier}}}
+                </button>
+            </h5>
+        </div>
+        <div id="collapse-{{rowid}}" class="collapse" aria-labelledby="heading-{{rowid}}" data-parent="#{{class}}">
+            <div class="card-body">
+                <div class="container-fluid table table-responsive table-striped">
+                    {{#cells}}
+                    <div class="row d-flex flex-wrap">
+                        <div class="col-sm-2 border-bottom d-flex flex-column bg-secondary">{{{heading}}}</div>
+                        <div class="col-sm-10 border-bottom d-flex flex-column text-{{alignment}}">{{{text}}}</div>
+                    </div>
+                    {{/cells}}
+                </div>
+            </div>
+        </div>
+    </div>
+{{/rows}}
+</div>
+

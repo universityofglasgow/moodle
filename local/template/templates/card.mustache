@@ -1,0 +1,56 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_template/stepper-footer
+
+    Moodle notification template.
+
+    The purpose of this template is to render a success notification.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Context variables required for this template:
+    * message A cleaned string (use clean_text()) to display.
+    * extraclasses Additional classes to apply to the notification.
+    * closebutton Whether a close button should be displayed to dismiss the message.
+    * icon Which icon should be displayed.
+    * level Which level this notification is (e.g. warning, success).
+
+    Example context (json):
+    {courseid, fullname, image, summary, url, format }
+}}
+<div class="card" data-toggle="modal" data-target="#course-modal-{{courseid}}">
+    <div class="card-header">
+        <img class="card-img-top w-100" alt="{{fullname}}" data-lazy="{{image}}">
+    </div>
+
+    <div class="card-body">
+        <h5 class="card-title">{{fullname}}</h5>
+        <p class="card-text">{{{summary}}}</p>
+    </div>
+    <div class="card-footer">
+        <a type="button" href="{{url}}" class="btn btn-success">Preview &nbsp;<i class="fa fa-search-plus"></i></a>
+        <button type="button" class="btn btn-success add-template" data-id="{{courseid}}">Use template &nbsp;<i class="fa fa-plus"></i></button><br>
+        <small class="text-muted">
+            <i class="fa fa-list"></i> {{format}}
+        </small>
+    </div>
+</div>

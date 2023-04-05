@@ -1,0 +1,102 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_template/stepper-footer
+
+    Moodle notification template.
+
+    The purpose of this template is to render a success notification.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Context variables required for this template:
+    * message A cleaned string (use clean_text()) to display.
+    * extraclasses Additional classes to apply to the notification.
+    * closebutton Whether a close button should be displayed to dismiss the message.
+    * icon Which icon should be displayed.
+    * level Which level this notification is (e.g. warning, success).
+
+    Example context (json):
+    {}
+}}
+<div class="container-fluid">
+    <div class="mb-5 p-4 shadow-sm">
+        <div id="templatestepper" class="bs-stepper">
+
+            <!-- vertical -->
+            <div class="bs-stepper-header" role="tablist">
+                <div class="step" data-target="#test-nl-1">
+                    <button type="button" class="step-trigger" role="tab" id="templatesteppertrigger1" aria-controls="test-nl-1">
+                        <span class="bs-stepper-circle">
+                            <span class="fa fa-home" aria-hidden="true"></span>
+                        </span>
+                        <span class="bs-stepper-label">{{#str}} introduction, local_template {{/str}}</span>
+                    </button>
+                </div>
+                <div class="bs-stepper-line"></div>
+                <div class="step" data-target="#test-nl-2">
+                    <button type="button" class="step-trigger" role="tab" id="templatesteppertrigger2" aria-controls="test-nl-2">
+                        <span class="bs-stepper-circle">
+                        <span class="fa fa-list" aria-hidden="true"></span>
+                        </span>
+                        <span class="bs-stepper-label">{{#str}} template, local_template {{/str}}</span>
+                    </button>
+                </div>
+                <div class="bs-stepper-line"></div>
+                <div class="step" data-target="#test-nl-3">
+                    <button type="button" class="step-trigger" role="tab" id="templatesteppertrigger3" aria-controls="test-nl-3">
+                        <span class="bs-stepper-circle">
+                        <span class="fa fa-info" aria-hidden="true"></span>
+                        </span>
+                        <span class="bs-stepper-label">{{#str}} coursedetails, local_template {{/str}}</span>
+                    </button>
+                </div>
+                <div class="bs-stepper-line"></div>
+                <div class="step" data-target="#test-nl-4">
+                    <button type="button" class="step-trigger" role="tab" id="templatesteppertrigger4" aria-controls="test-nl-4">
+                        <span class="bs-stepper-circle">
+                        <span class="fa fa-edit" aria-hidden="true"></span>
+                        </span>
+                        <span class="bs-stepper-label">{{#str}} description, local_template {{/str}}</span>
+                    </button>
+                </div>
+                <div class="bs-stepper-line"></div>
+                <div class="step" data-target="#test-nl-5">
+                    <button type="button" class="step-trigger" role="tab" id="templatesteppertrigger5" aria-controls="test-nl-5">
+                        <span class="bs-stepper-circle">
+                        <span class="fa fa-user-plus" aria-hidden="true"></span>
+                        </span>
+                        <span class="bs-stepper-label">{{#str}} enrolment, local_template {{/str}}</span>
+                    </button>
+                </div>
+                <div class="bs-stepper-line"></div>
+                <div class="step" data-target="#test-nl-6">
+                    <button type="button" class="step-trigger" role="tab" id="templatesteppertrigger6" aria-controls="test-nl-6">
+                        <span class="bs-stepper-circle">
+                        <span class="fa fa-copy" aria-hidden="true"></span>
+                        </span>
+                        <span class="bs-stepper-label">{{#str}} import, local_template {{/str}}</span>
+                    </button>
+                </div>
+            </div>
+
+
+            <div class="bs-stepper-content">

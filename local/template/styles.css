@@ -1,0 +1,267 @@
+.slick-prev:before,
+.slick-next:before {
+    color: blue;
+    opacity: .75;
+    font-size: 40px;
+}
+.slick-next:before {
+    content: '←';
+}
+.slick-next:before
+{
+    content: '→';
+}
+
+@keyframes fadein-scaleup {
+    0%   {opacity: 0.75; transform: scale(1);}
+    100% {opacity: 1; transform: scale(1.25);}
+}
+
+@keyframes fadeout-scaledown {
+    0%   {opacity: 1; transform: scale(1.25);}
+    100% {opacity: 0.75; transform: scale(1);}
+}
+
+@keyframes cutscene-in {
+    0%   {height: var(--thumb-height); width: var(--thumb-width); opacity: 1;}
+    100% {height: var(--cutscene-height); width: var(--cutscene-width); opacity: 0;}
+}
+
+@keyframes cutscene-out {
+    0% {height: var(--cutscene-height); width: var(--cutscene-width); opacity: 0;}
+    100% {height: var(--thumb-height); width: var(--thumb-width); opacity: 1;}
+}
+
+.section-container {
+    position: relative;
+    z-index: 0;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+
+    overflow: visible;
+}
+
+/* gap size: x, padding-right: x, padding-left: x */
+.slider-container {
+    position: relative;
+    z-index: 0;
+    top: 0px;
+    left: 0px;
+    padding-right: 40px;
+    padding-left: 40px;
+
+    /*
+    height: 300px;
+    max-height: 300px;
+    max-width: 100%;
+    */
+}
+
+/* Slider container must be brought forward on hover */
+.slider-container:hover {
+    position: relative;
+    z-index: 1;
+    top: 0px;
+    left: 0px;
+}
+
+.slider-container:not(:hover) {
+    position: relative;
+    z-index: 0;
+    top: 0px;
+    left: 0px;
+}
+
+.slider {
+    position: relative;
+    z-index: 0;
+    top: 0px;
+    left: 0px;
+
+    /* display: none; */
+
+
+    /*
+    max-height: 300px;
+    max-width: 100%;
+    */
+}
+
+.slider:hover {
+    position: relative;
+    z-index: 1;
+    top: -0px;
+    left: 0px;
+}
+
+.slider:not(:hover) {
+    position: relative;
+    z-index: 0;
+    top: 0px;
+    left: 0px;
+}
+
+.card-deck {
+    position: relative;
+    z-index: 0;
+    top: 0px;
+    left: 0px;
+
+    margin-right: 0px;
+    margin-left: 0px;
+}
+
+.card-deck:not(:hover) {
+    position: relative;
+    z-index: 1;
+    top: 0px;
+    left: 0px;
+}
+
+.card-deck:not(:hover) {
+    position: relative;
+    z-index: 0;
+    top: 0px;
+    left: 0px;
+}
+
+.slick-prev {
+    position: absolute;
+    z-index: 2; /* Must be greater than .section-container */
+    left: -40px;
+}
+
+.slick-next {
+    position: absolute;
+    z-index: 2; /* Must be greater than .section-container */
+    right: -20px;
+}
+
+.slick-list {
+    position: relative;
+    z-index: 0;
+    top: 0px;
+    left: 0px;
+
+    /* Don't try to show the complete horizontal list on the screen, obviously ;-) */
+    overflow: hidden;
+
+    /* gap size: x, margin-left: -x, margin-right: -x, padding-left: x/2, padding-right: x/2 */
+    margin-left: -40px;
+    margin-right: -40px;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+.slick-list:hover {
+    position: relative;
+    z-index: 1;
+    top: 0px;
+    left: 0px;
+
+    /* TODO: comment purpose of this */
+    overflow: unset;
+}
+
+.slick-list:not(:hover) {
+    position: relative;
+    z-index: 0;
+    top: 0px;
+    left: 0px;
+}
+
+.slick-track {
+    position: relative;
+    z-index: 0;
+    top: 0px;
+    left: 0px;
+
+    /* height: 300px; */
+    /*height: 0px;*/
+    /*overflow-y: hidden;*/
+}
+
+.slick-track:hover {
+    position: relative;
+    z-index: 1;
+    top: 0px;
+    left: 0px;
+}
+
+.slick-track:not(:hover) {
+    position: relative;
+    z-index: 0;
+    top: 0px;
+    left: 0px;
+}
+
+.slick-slide {
+    position: relative;
+    z-index: 0;
+    top: 0px;
+    left: 0px;
+
+    padding-left: 20px;
+    padding-right: 20px;
+
+    display: block;
+    margin: 0px 20px;
+
+    /* transition: all ease-in-out 4s; */
+    /* transform: scale(1); */
+
+    animation-duration: 1s;
+    animation-fill-mode: forwards;
+    -webkit-animation-fill-mode: forwards;
+}
+
+.slick-slide:hover {
+    position: relative;
+    z-index: 100;
+    top: 0px;
+    left: 0px;
+
+    /*opacity: 1; */
+}
+
+.slick-slide:not(:hover) {
+    position: relative;
+    z-index: 0;
+    top: 0px;
+    left: 0px;
+}
+
+.slick-slide:not(:hover)>div>.card>.card-body {
+    /* Too abrupt. Do this via javascript following animation instead */
+    /* display: none; */
+
+}
+
+.slick-slide:not(:hover)>div>.card>.card-footer {
+    /* Too abrupt. Do this via javascript following animation instead */
+    /* display: none; */
+}
+
+/* Bootstrap card-deck cards with left/right margins create problems with slick.js targetleft. */
+.card-deck .card {
+    margin-right: 0px;
+    margin-left: 0px;
+}
+
+/* Use Maximised image in card header */
+.card-header {
+    padding-top: 0px;
+    padding-right: 0px;
+    padding-bottom: 0px;
+    padding-left: 0px;
+
+    opacity: 1;
+}
+
+.slick-slide>div>.card>.card-header {
+    position: relative;
+    z-index: 1;
+    margin: 0px;
+    padding: 0px;
+}

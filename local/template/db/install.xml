@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="local/template/db" VERSION="20230210" COMMENT="XMLDB file for Moodle local/template"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
+>
+    <TABLES>
+      <TABLE NAME="local_template" COMMENT="To store information for the central course table, and to store foreign keys of the backup_controllers as they are used">
+        <FIELDS>
+          <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+
+          <FIELD NAME="templatecourseid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Foreign key link to the course table for the template course id"/>
+          <FIELD NAME="importcourseid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Foreign key link to the course table for the import course id"/>
+          <FIELD NAME="createdcourseid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Foreign key link to the course table for the created course id"/>
+
+          <FIELD NAME="copybackupid" TYPE="char" LENGTH="32" NOTNULL="false" SEQUENCE="false" COMMENT="Foreign key link to the backup_controllers table on candidate key backupid for the course copy backup object"/>
+          <FIELD NAME="copyrestoreid" TYPE="char" LENGTH="32" NOTNULL="false" SEQUENCE="false" COMMENT="Foreign key link to the backup_controllers table on candidate key backupid for the course copy restore object"/>
+          <FIELD NAME="importbackupid" TYPE="char" LENGTH="32" NOTNULL="false" SEQUENCE="false" COMMENT="Foreign key link to the backup_controllers table on candidate key backupid for the course import backup object"/>
+          <FIELD NAME="importrestoreid" TYPE="char" LENGTH="32" NOTNULL="false" SEQUENCE="false" COMMENT="Foreign key link to the backup_controllers table on candidate key backupid for the course import restore object"/>
+
+          <FIELD NAME="category" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Foreign key link to destination course category"/>
+          <FIELD NAME="fullname" TYPE="char" LENGTH="254" NOTNULL="true" SEQUENCE="false" COMMENT="Destination Course full name"/>
+          <FIELD NAME="shortname" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="Destination Course short name"/>
+          <FIELD NAME="idnumber" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" COMMENT="Destination Course idnumber"/>
+          <FIELD NAME="summary" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Desination course summary"/>
+          <FIELD NAME="summaryformat" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Desination course summary format"/>
+          <FIELD NAME="startdate" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Desination course start date"/>
+          <FIELD NAME="enddate" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Desination course end date"/>
+          <FIELD NAME="visible" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Desination course visible"/>
+
+          <FIELD NAME="gudbstatus" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="gudatabase status 0..9 are system constants, 0 means active enrolment, see ENROL_STATUS_* constants, plugins may define own status greater than 10"/>
+          <FIELD NAME="gudbsettingscodes" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Enable codes in course settings - When enabled also process any valid codes found in this courses shortname or idnumber fields. Only one enrolment method per course should have this set"/>
+          <FIELD NAME="gudballowhidden" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Allow hidden course - If enabled, automatic enrolment will function even if the course is hidden. By default hidden courses are ignored"/>
+          <FIELD NAME="gudbcodelist" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="More codes (one per line)"/>
+
+          <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Desination course time created"/>
+          <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Desination course time modified"/>
+          <FIELD NAME="usercreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Record user created"/>
+          <FIELD NAME="usermodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Record user modified"/>
+
+        </FIELDS>
+        <KEYS>
+          <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        </KEYS>
+        <INDEXES>
+          <INDEX NAME="category" UNIQUE="false" FIELDS="category"/>
+          <INDEX NAME="idnumber" UNIQUE="false" FIELDS="idnumber"/>
+          <INDEX NAME="shortname" UNIQUE="false" FIELDS="shortname"/>
+        </INDEXES>
+      </TABLE>
+    </TABLES>
+  </XMLDB>
