@@ -27,7 +27,24 @@
   // $('.add-template').bind('click', function() {
   debugger;
   $("#templatecourseid").val = $(this).attr("data-id");
-  templatestepper.next();
+
+  var value = $(this).attr("data-id");
+  var inputselector = '#fitem_id_templatecourseid .form-autocomplete-suggestions li[data-value="' + value + '"]';
+    templatestepper.next();
+  $(inputselector).trigger('click');
+
+  //$(inputselector).val(value).trigger('change');
+  //$('#fitem_id_templatecourseid input').trigger('click');
+
+    //var sortBySelect = document.querySelector(inputselector);
+    //sortBySelect.value = value;
+    //sortBySelect.dispatchEvent(new Event("change"));
+
+
+  //$('#myautocomplete').val('targetvalue');
+  //$('#thing_that_needs_clicking').trigger('click');
+    return false;
+
 });
 
 });

@@ -300,6 +300,13 @@ class template extends \core\persistent implements renderable, templatable {
         */
     }
 
+    public function redirect_coursepage() {
+        global $CFG;
+        $courseid = $this->get('createdcourseid');
+        $coursepage = new \moodle_url($CFG->wwwroot . '/course/view.php', ['id' => $courseid]);
+        redirect($coursepage->out(false));
+    }
+
     protected function get_timemodified() {
         $timemodified = userdate($this->raw_get('timemodified'), get_string('strftimedatefullshort', 'core_langconfig'));
         if (empty($timemodified)) {
@@ -753,13 +760,514 @@ class template extends \core\persistent implements renderable, templatable {
     public function process() {
 
         $notifications = new \local_template\local\notifications();
-        $this->save_controllers();
-        $this->process_controllers();
+
+        //$createdcourseid = $this->create_new_course();
+        //$this->backup($courseid, $createdcourseid);
+
+        // $notifications->add()
+        $this->process_copy();
+        $this->process_import();
         $this->process_enrolment();
+
+
+        //$this->backup();
+        //$this->save_controllers();
+        // $this->process_controllers();
+        //$this->process_enrolment();
     }
 
-    private function save_controllers() {
+    private function process_copy() {
+
+        $copybcprogress = new \core\progress\display();
+        $copybcprogress->set_display_names();
+
+        $copyrcprogress = new \core\progress\display();
+        $copyrcprogress->set_display_names();
+
         global $USER;
+        $copydata = $this->get_copydata();
+
+        // Create the initial backupcontoller.
+        $bc = new \backup_controller(\backup::TYPE_1COURSE, $copydata->courseid, \backup::FORMAT_MOODLE,
+            \backup::INTERACTIVE_NO, \backup::MODE_COPY, $USER->id, \backup::RELEASESESSION_NO);
+        $this->set('copybackupid', $bc->get_backupid());
+
+        // Create the initial restore contoller.
+        list($fullname, $shortname) = \restore_dbops::calculate_course_names(
+            0, get_string('copyingcourse', 'backup'), get_string('copyingcourseshortname', 'backup'));
+        $createdcourseid = \restore_dbops::create_new_course($fullname, $shortname, $copydata->category);
+        $rc = new \restore_controller($this->get('copybackupid'), $createdcourseid, \backup::INTERACTIVE_NO,
+            \backup::MODE_COPY, $USER->id, \backup::TARGET_NEW_COURSE, null,
+            \backup::RELEASESESSION_NO, $copydata);
+        $this->set('copyrestoreid', $rc->get_restoreid());
+
+        $bc->set_status(\backup::STATUS_AWAITING);
+        $bc->get_status();
+        $rc->save_controller();
+
+        // Clean up the controller.
+        $bc->destroy();
+
+        $this->set('createdcourseid', $createdcourseid);
+        $this->save();
+
+
+
+        global $CFG, $DB;
+        $started = time();
+
+        $backupid = $this->get('copybackupid');
+        $restoreid = $this->get('copyrestoreid');
+        $backuprecord = $DB->get_record('backup_controllers', array('backupid' => $backupid), 'id, itemid', MUST_EXIST);
+        $restorerecord = $DB->get_record('backup_controllers', array('backupid' => $restoreid), 'id, itemid', MUST_EXIST);
+
+        // First backup the course.
+        //mtrace('Course copy: Processing course copy for course id: ' . $backuprecord->itemid);
+        try {
+            $bc = \backup_controller::load_controller($backupid); // Get the backup controller by backup id.
+        } catch (\backup_dbops_exception $e) {
+            //mtrace('Course copy: Can not load backup controller for copy, marking job as failed');
+            delete_course($restorerecord->itemid, false); // Clean up partially created destination course.
+            return; // Return early as we can't continue.
+        }
+
+        $bc->set_progress($copybcprogress);
+
+
+        $rc = \restore_controller::load_controller($restoreid);  // Get the restore controller by restore id.
+        //$bc->set_progress(new \core\progress\db_updater($backuprecord->id, 'backup_controllers', 'progress'));
+        $rc->set_progress($copyrcprogress);
+
+        $copyinfo = $rc->get_copy();
+        $backupplan = $bc->get_plan();
+
+        $keepuserdata = (bool)$copyinfo->userdata;
+        $keptroles = $copyinfo->keptroles;
+
+        $bc->set_kept_roles($keptroles);
+
+        // If we are not keeping user data don't include users or data in the backup.
+        // In this case we'll add the user enrolments at the end.
+        // Also if we have no roles to keep don't backup users.
+        if (empty($keptroles) || !$keepuserdata) {
+            $backupplan->get_setting('users')->set_status(\backup_setting::NOT_LOCKED);
+            $backupplan->get_setting('users')->set_value('0');
+        } else {
+            $backupplan->get_setting('users')->set_value('1');
+        }
+
+        // Do some preflight checks on the backup.
+        $status = $bc->get_status();
+        $execution = $bc->get_execution();
+        // Check that the backup is in the correct status and
+        // that is set for asynchronous execution.
+        if ($status == \backup::STATUS_AWAITING && $execution == \backup::EXECUTION_DELAYED) {
+            // Execute the backup.
+            //mtrace('Course copy: Backing up course, id: ' . $backuprecord->itemid);
+            $bc->execute_plan();
+
+        } else {
+            // If status isn't 700, it means the process has failed.
+            // Retrying isn't going to fix it, so marked operation as failed.
+            //mtrace('Course copy: Bad backup controller status, is: ' . $status . ' should be 700, marking job as failed.');
+            $bc->set_status(\backup::STATUS_FINISHED_ERR);
+            delete_course($restorerecord->itemid, false); // Clean up partially created destination course.
+            $bc->destroy();
+            return; // Return early as we can't continue.
+
+        }
+
+        $results = $bc->get_results();
+        $backupbasepath = $backupplan->get_basepath();
+        $file = $results['backup_destination'];
+        $file->extract_to_pathname(get_file_packer('application/vnd.moodle.backup'), $backupbasepath);
+        // Start the restore process.
+        $rc->set_progress(new \core\progress\db_updater($restorerecord->id, 'backup_controllers', 'progress'));
+        $rc->prepare_copy();
+
+        // Set the course settings we can do now (the remaining settings will be done after restore completes).
+        $plan = $rc->get_plan();
+
+        $startdate = $plan->get_setting('course_startdate');
+        $startdate->set_value($copyinfo->startdate);
+        $fullname = $plan->get_setting('course_fullname');
+        $fullname->set_value($copyinfo->fullname);
+        $shortname = $plan->get_setting('course_shortname');
+        $shortname->set_value($copyinfo->shortname);
+
+        // Do some preflight checks on the restore.
+        $rc->execute_precheck();
+        $status = $rc->get_status();
+        $execution = $rc->get_execution();
+
+        // Check that the restore is in the correct status and
+        // that is set for asynchronous execution.
+        if ($status == \backup::STATUS_AWAITING && $execution == \backup::EXECUTION_DELAYED) {
+            // Execute the restore.
+            //mtrace('Course copy: Restoring into course, id: ' . $restorerecord->itemid);
+            $rc->execute_plan();
+
+        } else {
+            // If status isn't 700, it means the process has failed.
+            // Retrying isn't going to fix it, so marked operation as failed.
+            //mtrace('Course copy: Bad backup controller status, is: ' . $status . ' should be 700, marking job as failed.');
+            $rc->set_status(\backup::STATUS_FINISHED_ERR);
+            delete_course($restorerecord->itemid, false); // Clean up partially created destination course.
+            $file->delete();
+            if (empty($CFG->keeptempdirectoriesonbackup)) {
+                fulldelete($backupbasepath);
+            }
+            $rc->destroy();
+            return; // Return early as we can't continue.
+
+        }
+
+        // Copy user enrolments from source course to destination.
+        if (!empty($keptroles) && !$keepuserdata) {
+            //mtrace('Course copy: Creating user enrolments in destination course.');
+            $context = \context_course::instance($backuprecord->itemid);
+
+            $enrol = enrol_get_plugin('manual');
+            $instance = null;
+            $enrolinstances = enrol_get_instances($restorerecord->itemid, true);
+            foreach ($enrolinstances as $courseenrolinstance) {
+                if ($courseenrolinstance->enrol == 'manual') {
+                    $instance = $courseenrolinstance;
+                    break;
+                }
+            }
+
+            // Abort if there enrolment plugin problems.
+            if (empty($enrol) || empty($instance)) {
+                //mtrace('Course copy: Could not enrol users in course.');;
+                delete_course($restorerecord->itemid, false);
+                return;
+            }
+
+            // Enrol the users from the source course to the destination.
+            foreach ($keptroles as $roleid) {
+                $sourceusers = get_role_users($roleid, $context);
+                foreach ($sourceusers as $sourceuser) {
+                    $enrol->enrol_user($instance, $sourceuser->id, $roleid);
+                }
+            }
+        }
+
+        // Set up remaining course settings.
+        $course = $DB->get_record('course', array('id' => $restorerecord->itemid), '*', MUST_EXIST);
+        $course->visible = $copyinfo->visible;
+        $course->idnumber = $copyinfo->idnumber;
+        $course->enddate = $copyinfo->enddate;
+
+        $DB->update_record('course', $course);
+
+        // Send message to user if enabled.
+        $messageenabled = (bool)get_config('backup', 'backup_async_message_users');
+        if ($messageenabled && $rc->get_status() == \backup::STATUS_FINISHED_OK) {
+            mtrace('Course copy: Sending user notification.');
+            //$asynchelper = new async_helper('copy', $restoreid);
+            //$messageid = $asynchelper->send_message();
+            //mtrace('Course copy: Sent message: ' . $messageid);
+        }
+
+        // Cleanup.
+        $bc->destroy();
+        $rc->destroy();
+        $file->delete();
+        if (empty($CFG->keeptempdirectoriesonbackup)) {
+            fulldelete($backupbasepath);
+        }
+
+        $duration = time() - $started;
+        //mtrace('Course copy: Copy completed in: ' . $duration . ' seconds');
+    }
+
+
+    private function process_import() {
+        global $USER;
+
+        // Import backup controller. MODE_IMPORT DOESNT CREATE FILE. MODE_IMPORT / GENERAL
+        $importbc = new \backup_controller(\backup::TYPE_1COURSE, $this->get('importcourseid'), \backup::FORMAT_MOODLE,
+            \backup::INTERACTIVE_NO, \backup::MODE_IMPORT, $USER->id);
+        $this->set('importbackupid', $importbc->get_backupid());
+        $importbc->save_controller();
+
+        // Clean up the controller.
+        $importbc->destroy();
+
+        $this->save();
+
+        // Import restore controller. SAMESITE vs GENERAL
+        //$importrc = new \restore_controller($this->get('importbackupid'), $createdcourseid, \backup::INTERACTIVE_NO,
+        //    \backup::MODE_SAMESITE, $USER->id, \backup::TARGET_EXISTING_ADDING, null, \backup::RELEASESESSION_NO);
+        //$this->set('importrestoreid', $importrc->get_restoreid());
+        //$importrc->save_controller();
+
+        // Import backup controller.
+        $importbcprogress = new \core\progress\display();
+        $importbcprogress->set_display_names();
+        $importbc = \backup_controller::load_controller($this->get('importbackupid'));
+        $importbc->set_progress($importbcprogress);
+        $importbc->execute_plan();
+        $results = $importbc->get_results();
+        $backupid1 = $this->get('importbackupid');
+        $backupid2 = $importbc->get_backupid();
+
+        // Extract backup
+        //$backupbasepath = $importbc->get_plan()->get_basepath();
+        //$file = $results['backup_destination'];
+        //$file->extract_to_pathname(get_file_packer('application/vnd.moodle.backup'), $backupbasepath);
+
+        // Import restore controller.
+        $importrcprogress = new \core\progress\display();
+        $importrcprogress->set_display_names();
+
+        // $importrc = \restore_controller::load_controller($this->get('importrestoreid'));
+        global $USER;
+        $createdcourseid = $this->get('createdcourseid');
+        // Import restore controller. SAMESITE vs GENERAL
+        $importrc = new \restore_controller($this->get('importbackupid'), $createdcourseid, \backup::INTERACTIVE_NO,
+            \backup::MODE_SAMESITE, $USER->id, \backup::TARGET_EXISTING_ADDING, null, \backup::RELEASESESSION_NO);
+        $this->set('importrestoreid', $importrc->get_restoreid());
+        //$importrc->save_controller();
+        //$importrc->set_progress($importrcprogress);
+        $importrc->execute_precheck();
+        $importrc->execute_plan();
+
+        /*
+                $importrc->save_controller();
+                $importrc->set_progress($importrcprogress);
+                $importplan = $importrc->get_plan();
+                $importrc->execute_plan();
+                */
+
+        $importbc->destroy();
+        $importrc->destroy();
+        //$file->delete();
+        //if (empty($CFG->keeptempdirectoriesonbackup)) {
+        //fulldelete($backupbasepath);
+        //}
+    }
+
+
+    /**
+     * Run the adhoc task and preform the backup.
+     */
+    public function process_controllers3() {
+        global $CFG, $DB;
+        $started = time();
+
+        $backupid = $this->get('copybackupid');
+        $restoreid = $this->get('copyrestoreid');
+        $backuprecord = $DB->get_record('backup_controllers', array('backupid' => $backupid), 'id, itemid', MUST_EXIST);
+        $restorerecord = $DB->get_record('backup_controllers', array('backupid' => $restoreid), 'id, itemid', MUST_EXIST);
+
+        // First backup the course.
+        mtrace('Course copy: Processing course copy for course id: ' . $backuprecord->itemid);
+        try {
+            $bc = \backup_controller::load_controller($backupid); // Get the backup controller by backup id.
+        } catch (\backup_dbops_exception $e) {
+            mtrace('Course copy: Can not load backup controller for copy, marking job as failed');
+            delete_course($restorerecord->itemid, false); // Clean up partially created destination course.
+            return; // Return early as we can't continue.
+        }
+
+        $rc = \restore_controller::load_controller($restoreid);  // Get the restore controller by restore id.
+        $bc->set_progress(new \core\progress\db_updater($backuprecord->id, 'backup_controllers', 'progress'));
+        $copyinfo = $rc->get_copy();
+        $backupplan = $bc->get_plan();
+
+        $keepuserdata = (bool)$copyinfo->userdata;
+        $keptroles = $copyinfo->keptroles;
+
+        $bc->set_kept_roles($keptroles);
+
+        // If we are not keeping user data don't include users or data in the backup.
+        // In this case we'll add the user enrolments at the end.
+        // Also if we have no roles to keep don't backup users.
+        if (empty($keptroles) || !$keepuserdata) {
+            $backupplan->get_setting('users')->set_status(\backup_setting::NOT_LOCKED);
+            $backupplan->get_setting('users')->set_value('0');
+        } else {
+            $backupplan->get_setting('users')->set_value('1');
+        }
+
+        // Do some preflight checks on the backup.
+        $status = $bc->get_status();
+        $execution = $bc->get_execution();
+        // Check that the backup is in the correct status and
+        // that is set for asynchronous execution.
+        if ($status == \backup::STATUS_AWAITING && $execution == \backup::EXECUTION_DELAYED) {
+            // Execute the backup.
+            mtrace('Course copy: Backing up course, id: ' . $backuprecord->itemid);
+            $bc->execute_plan();
+
+        } else {
+            // If status isn't 700, it means the process has failed.
+            // Retrying isn't going to fix it, so marked operation as failed.
+            mtrace('Course copy: Bad backup controller status, is: ' . $status . ' should be 700, marking job as failed.');
+            $bc->set_status(\backup::STATUS_FINISHED_ERR);
+            delete_course($restorerecord->itemid, false); // Clean up partially created destination course.
+            $bc->destroy();
+            return; // Return early as we can't continue.
+
+        }
+
+        $results = $bc->get_results();
+        $backupbasepath = $backupplan->get_basepath();
+        $file = $results['backup_destination'];
+        $file->extract_to_pathname(get_file_packer('application/vnd.moodle.backup'), $backupbasepath);
+        // Start the restore process.
+        $rc->set_progress(new \core\progress\db_updater($restorerecord->id, 'backup_controllers', 'progress'));
+        $rc->prepare_copy();
+
+        // Set the course settings we can do now (the remaining settings will be done after restore completes).
+        $plan = $rc->get_plan();
+
+        $startdate = $plan->get_setting('course_startdate');
+        $startdate->set_value($copyinfo->startdate);
+        $fullname = $plan->get_setting('course_fullname');
+        $fullname->set_value($copyinfo->fullname);
+        $shortname = $plan->get_setting('course_shortname');
+        $shortname->set_value($copyinfo->shortname);
+
+        // Do some preflight checks on the restore.
+        $rc->execute_precheck();
+        $status = $rc->get_status();
+        $execution = $rc->get_execution();
+
+        // Check that the restore is in the correct status and
+        // that is set for asynchronous execution.
+        if ($status == \backup::STATUS_AWAITING && $execution == \backup::EXECUTION_DELAYED) {
+            // Execute the restore.
+            mtrace('Course copy: Restoring into course, id: ' . $restorerecord->itemid);
+            $rc->execute_plan();
+
+        } else {
+            // If status isn't 700, it means the process has failed.
+            // Retrying isn't going to fix it, so marked operation as failed.
+            mtrace('Course copy: Bad backup controller status, is: ' . $status . ' should be 700, marking job as failed.');
+            $rc->set_status(\backup::STATUS_FINISHED_ERR);
+            delete_course($restorerecord->itemid, false); // Clean up partially created destination course.
+            $file->delete();
+            if (empty($CFG->keeptempdirectoriesonbackup)) {
+                fulldelete($backupbasepath);
+            }
+            $rc->destroy();
+            return; // Return early as we can't continue.
+
+        }
+
+        // Copy user enrolments from source course to destination.
+        if (!empty($keptroles) && !$keepuserdata) {
+            mtrace('Course copy: Creating user enrolments in destination course.');
+            $context = \context_course::instance($backuprecord->itemid);
+
+            $enrol = enrol_get_plugin('manual');
+            $instance = null;
+            $enrolinstances = enrol_get_instances($restorerecord->itemid, true);
+            foreach ($enrolinstances as $courseenrolinstance) {
+                if ($courseenrolinstance->enrol == 'manual') {
+                    $instance = $courseenrolinstance;
+                    break;
+                }
+            }
+
+            // Abort if there enrolment plugin problems.
+            if (empty($enrol) || empty($instance)) {
+                mtrace('Course copy: Could not enrol users in course.');;
+                delete_course($restorerecord->itemid, false);
+                return;
+            }
+
+            // Enrol the users from the source course to the destination.
+            foreach ($keptroles as $roleid) {
+                $sourceusers = get_role_users($roleid, $context);
+                foreach ($sourceusers as $sourceuser) {
+                    $enrol->enrol_user($instance, $sourceuser->id, $roleid);
+                }
+            }
+        }
+
+        // Set up remaining course settings.
+        $course = $DB->get_record('course', array('id' => $restorerecord->itemid), '*', MUST_EXIST);
+        $course->visible = $copyinfo->visible;
+        $course->idnumber = $copyinfo->idnumber;
+        $course->enddate = $copyinfo->enddate;
+
+        $DB->update_record('course', $course);
+
+        // Send message to user if enabled.
+        $messageenabled = (bool)get_config('backup', 'backup_async_message_users');
+        if ($messageenabled && $rc->get_status() == \backup::STATUS_FINISHED_OK) {
+            mtrace('Course copy: Sending user notification.');
+            //$asynchelper = new async_helper('copy', $restoreid);
+            //$messageid = $asynchelper->send_message();
+            //mtrace('Course copy: Sent message: ' . $messageid);
+        }
+
+        // Cleanup.
+        $bc->destroy();
+        $rc->destroy();
+        $file->delete();
+        if (empty($CFG->keeptempdirectoriesonbackup)) {
+            fulldelete($backupbasepath);
+        }
+
+        $duration = time() - $started;
+        mtrace('Course copy: Copy completed in: ' . $duration . ' seconds');
+
+        // Import backup controller.
+        $importbcprogress = new \core\progress\display();
+        $importbcprogress->set_display_names();
+        $importbc = \backup_controller::load_controller($this->get('importbackupid'));
+        $importbc->set_progress($importbcprogress);
+        $importbc->execute_plan();
+        $results = $importbc->get_results();
+        $backupid1 = $this->get('importbackupid');
+        $backupid2 = $importbc->get_backupid();
+
+        // Extract backup
+        //$backupbasepath = $importbc->get_plan()->get_basepath();
+        //$file = $results['backup_destination'];
+        //$file->extract_to_pathname(get_file_packer('application/vnd.moodle.backup'), $backupbasepath);
+
+        // Import restore controller.
+        $importrcprogress = new \core\progress\display();
+        $importrcprogress->set_display_names();
+
+        // $importrc = \restore_controller::load_controller($this->get('importrestoreid'));
+        global $USER;
+        $createdcourseid = $this->get('createdcourseid');
+        // Import restore controller. SAMESITE vs GENERAL
+        $importrc = new \restore_controller($this->get('importbackupid'), $createdcourseid, \backup::INTERACTIVE_NO,
+            \backup::MODE_SAMESITE, $USER->id, \backup::TARGET_EXISTING_ADDING, null, \backup::RELEASESESSION_NO);
+        $this->set('importrestoreid', $importrc->get_restoreid());
+
+        $importrc->execute_precheck();
+        $importrc->execute_plan();
+        $importrc->destroy();
+
+/*
+        $importrc->save_controller();
+        $importrc->set_progress($importrcprogress);
+        $importplan = $importrc->get_plan();
+        $importrc->execute_plan();
+        */
+        $results = $importrc->get_results();
+
+        $importbc->destroy();
+        $importrc->destroy();
+        $file->delete();
+        if (empty($CFG->keeptempdirectoriesonbackup)) {
+            //fulldelete($backupbasepath);
+        }
+
+    }
+
+
+    private function save_controllers() {
+        global $USER, $CFG;
 
         // Prevent duplicate values on fullname and shortname
         list($fullname, $shortname) = \restore_dbops::calculate_course_names(0, $this->get('fullname'), $this->get('shortname'));
@@ -780,6 +1288,19 @@ class template extends \core\persistent implements renderable, templatable {
 
         $copybc->execute_plan();
         $results = $copybc->get_results();
+
+        $coursecontext = \context_course::instance($this->get('templatecourseid'));
+        // Get the backup file.
+        $fs = get_file_storage();
+        $files = $fs->get_area_files($coursecontext->id, 'backup', 'course', false, 'id ASC');
+        $backupfile = reset($files);
+
+        // Extract backup file.
+        $path = $CFG->tempdir . DIRECTORY_SEPARATOR . "backup" . DIRECTORY_SEPARATOR . $this->get('copybackupid');
+
+        $fp = get_file_packer('application/vnd.moodle.backup');
+        $files = $fp->extract_to_pathname($backupfile, $path);
+
 
 /*
         $copybcprogress = new \core\progress\display();
@@ -827,6 +1348,7 @@ class template extends \core\persistent implements renderable, templatable {
         $copyrc->destroy();
         */
 
+        /*
         // Import backup controller.
         $importbc = new \backup_controller(\backup::TYPE_1COURSE, $this->get('importcourseid'), \backup::FORMAT_MOODLE,
             \backup::INTERACTIVE_NO, \backup::MODE_GENERAL, $USER->id, \backup::RELEASESESSION_YES);
@@ -842,10 +1364,12 @@ class template extends \core\persistent implements renderable, templatable {
         $importrc->save_controller();
         // $importrc->destroy();
 
+        */
+
         $this->save();
     }
 
-    private function process_controllers() {
+    private function process_controllers2() {
 
 
         $importbcprogress = new \core\progress\display();
@@ -867,10 +1391,9 @@ class template extends \core\persistent implements renderable, templatable {
     }
 
     private function process_enrolment() {
-        $pluginname = 'gudatabase';
+        global $DB;
 
-        // Get the enrol plugin.
-        $plugin = enrol_get_plugin($pluginname);
+        $pluginname = 'gudatabase';
 
         $fields = [
             'status' => $this->get('gudbstatus'), // status - enable existing enrolments. bigint10
@@ -879,8 +1402,25 @@ class template extends \core\persistent implements renderable, templatable {
             'customtext1' => $this->get('gudbcodelist'), // codelist more codes customtext1 text
         ];
 
-        // Enable this enrol plugin for the course.
-        $plugin->add_instance($this->get_course(), $fields);
+        // Get the enrol plugin.
+        $plugin = enrol_get_plugin($pluginname);
+
+        // Get existing instances.
+        $instances  = enrol_get_instances($this->get('createdcourseid'), false);
+        foreach ($instances as $instance) {
+            if ($instance->enrol === $pluginname) {
+                break;
+            }
+        }
+        if ($instance->enrol === $pluginname) {
+            $instance->status = $fields['status'];
+            $instance->customint3 = $fields['customint3'];
+            $instance->customint3 = $fields['customint3'];
+            $instance->customtext1 = $fields['customtext1'];
+            $DB->update_record('enrol', $instance);
+        } else {
+            $plugin->add_instance($this->get_course(), $fields);
+        }
     }
 
     private function get_copydata() {
@@ -894,6 +1434,7 @@ class template extends \core\persistent implements renderable, templatable {
             'enddate' => $this->get('enddate'),
             'idnumber' => $this->get('idnumber'),
             'userdata' => 0,
+            'keptroles' => [],
         ];
 
     }
@@ -932,5 +1473,154 @@ class template extends \core\persistent implements renderable, templatable {
         $category->coursecount++;
         $DB->update_record('course_categories', $category);
         return $courseid;
+    }
+
+
+    /**
+     * Creates a course copy.
+     * Sets up relevant controllers and adhoc task.
+     *
+     * @param \stdClass $copydata Course copy data from process_formdata
+     * @return array $copyids The backup and restore controller ids
+     */
+    private function create_copy(\stdClass $copydata): array {
+        global $USER;
+        $copyids = [];
+
+        // Create the initial backupcontoller.
+        $bc = new \backup_controller(\backup::TYPE_1COURSE, $copydata->courseid, \backup::FORMAT_MOODLE,
+            \backup::INTERACTIVE_NO, \backup::MODE_COPY, $USER->id, \backup::RELEASESESSION_YES);
+        $copyids['backupid'] = $bc->get_backupid();
+
+        // Create the initial restore contoller.
+        list($fullname, $shortname) = \restore_dbops::calculate_course_names(
+            0, get_string('copyingcourse', 'backup'), get_string('copyingcourseshortname', 'backup'));
+        $newcourseid = \restore_dbops::create_new_course($fullname, $shortname, $copydata->category);
+        $rc = new \restore_controller($copyids['backupid'], $newcourseid, \backup::INTERACTIVE_NO,
+            \backup::MODE_COPY, $USER->id, \backup::TARGET_NEW_COURSE, null,
+            \backup::RELEASESESSION_NO, $copydata);
+        $copyids['restoreid'] = $rc->get_restoreid();
+
+        $bc->set_status(\backup::STATUS_AWAITING);
+        $bc->get_status();
+        $rc->save_controller();
+
+        // Create the ad-hoc task to perform the course copy.
+        //$asynctask = new \core\task\asynchronous_copy_task();
+        //$asynctask->set_blocking(false);
+        //$asynctask->set_custom_data($copyids);
+        //\core\task\manager::queue_adhoc_task($asynctask);
+
+        // Clean up the controller.
+        $bc->destroy();
+
+        return $copyids;
+    }
+
+
+    private function backup() {
+
+
+        list($fullname, $shortname) = \restore_dbops::calculate_course_names(0, $this->get('fullname'), $this->get('shortname'));
+        $this->set('fullname', $fullname);
+        $this->set('shortname', $shortname);
+        $createdcourseid = $this->create_new_course();
+        $this->set('createdcourseid', $createdcourseid);
+
+        //$coursecontext = \context_course::instance();
+
+        // Confirm course1 has the capability for the user.
+        //if (has_capability($this->capabilityname, $this->course1context, $this->user));
+
+        // Confirm course2 does not have the capability for the user.
+        //$this->assertFalse(has_capability($this->capabilityname, $this->course2context, $this->user));
+
+        // Perform backup and restore.
+        $backupid = $this->perform_backup($this->get('templatecourseid'));
+        $this->perform_restore($backupid, $this->get('createdcourseid'));
+
+        // Confirm course2 has the capability for the user.
+        //$this->assertTrue(has_capability($this->capabilityname, $this->course2context, $this->user));
+    }
+
+    /**
+     * Backup the course by general mode.
+     *
+     * @param  stdClass $course Course for backup.
+     * @return string Hash string ID from the backup.
+     * @throws \coding_exception
+     * @throws \moodle_exception
+     */
+    protected function perform_backup($courseid): string {
+        global $CFG, $USER;
+
+        $coursecontext = \context_course::instance($courseid);
+
+        // Start backup process.
+        $bc = new \backup_controller(\backup::TYPE_1COURSE, $courseid, \backup::FORMAT_MOODLE,
+            \backup::INTERACTIVE_NO, \backup::MODE_GENERAL, $USER->id);
+        $bc->execute_plan();
+        $backupid = $bc->get_backupid();
+        $bc->destroy();
+
+        // Get the backup file.
+        $fs = get_file_storage();
+
+        // Get most recent backupfile
+        $files = $fs->get_area_files($coursecontext->id, 'backup', 'course', false, 'id DESC');
+        $backupfile = reset($files);
+
+        // Extract backup file.
+        $path = $CFG->tempdir . DIRECTORY_SEPARATOR . "backup" . DIRECTORY_SEPARATOR . $backupid;
+
+        $fp = get_file_packer('application/vnd.moodle.backup');
+        $files = $fp->extract_to_pathname($backupfile, $path);
+
+        return $backupid;
+    }
+
+    /**
+     * Restore from backupid to course.
+     *
+     * @param  string   $backupid Hash string ID from backup.
+     * @param  stdClass $course Course which is restored for.
+     * @throws \restore_controller_exception
+     */
+    protected function perform_restore($backupid, $courseid): void {
+        global $USER;
+
+        // Set up restore.
+        $rc = new \restore_controller($backupid, $courseid,
+            \backup::INTERACTIVE_NO, \backup::MODE_GENERAL, $USER->id, \backup::TARGET_EXISTING_ADDING);
+        // Execute restore.
+        $rc->execute_precheck();
+        $rc->execute_plan();
+        $rc->destroy();
+    }
+
+    /**
+     * Import course from course1 to course2.
+     *
+     * @param stdClass $course1 Course to be backuped up.
+     * @param stdClass $course2 Course to be restored.
+     * @throws restore_controller_exception
+     */
+    protected function perform_import($course1, $course2): void {
+        global $USER;
+
+        // Start backup process.
+        $bc = new backup_controller(backup::TYPE_1COURSE, $course1->id, backup::FORMAT_MOODLE,
+            backup::INTERACTIVE_NO, backup::MODE_IMPORT, $USER->id);
+        $backupid = $bc->get_backupid();
+        $bc->execute_plan();
+        $bc->destroy();
+
+        // Set up restore.
+        $rc = new restore_controller($backupid, $course2->id,
+            backup::INTERACTIVE_NO, backup::MODE_SAMESITE, $USER->id, backup::TARGET_EXISTING_ADDING);
+        // Execute restore.
+        $rc->execute_precheck();
+        $rc->execute_plan();
+        $rc->destroy();
     }
 }

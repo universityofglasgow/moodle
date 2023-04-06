@@ -294,6 +294,9 @@ class template {
                     */
                // }
 
+                $template->process();
+                $template->redirect_coursepage();
+
             } catch (\Exception $e) {
                 notification::error($e->getMessage());
             }
@@ -311,7 +314,8 @@ class template {
             $template = new models\template($id);
             $result = $template->process();
             if (!$result) {
-                $template->notifications->output(true);
+                // TODO for notifications
+                // $template->notifications->output(true);
             } else {
                 if ($template->get('recordsinfo') > 0) {
                     notification::info($template->get('recordsinfo') . ' rows generated information');
@@ -328,6 +332,9 @@ class template {
             }
         }
         self::do_redirect();
+        //$template->redirect_coursepage();
+        //redirect(self::path());
+
     }
 
     public static function delete($id) {

@@ -73,6 +73,7 @@ $string['edittemplate'] = 'Edit template';
 
 $string['addnewtemplate'] = 'Add new template';
 
+$string['admin'] = 'Admin';
 $string['coursedetails'] = 'Course Details';
 $string['createdcourse'] = 'Created course';
 $string['description'] = 'Description';

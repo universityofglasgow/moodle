@@ -82,10 +82,12 @@ class template extends \core\form\persistent {
         $mform->setConstant('action', $this->_customdata['action']);
 
         $record = $this->get_persistent()->to_record();
-        if (!empty($record->id)) {
-            notification::success('Edit Mode');
-        } else {
-            notification::success('Add Mode');
+        if (is_template_admin()) {
+            if (!empty($record->id)) {
+                //notification::success('Edit Mode');
+            } else {
+                //notification::success('Add Mode');
+            }
         }
 
         //$course = $this->_customdata['course'];
@@ -416,6 +418,8 @@ class template extends \core\form\persistent {
         //$mform->addHelpButton('category', 'coursecategory');
         $mform->setDefault('importcourseid', 0);
 
+
+        $mform->addElement('header', 'admin', get_string('admin', 'local_template'));
         $mform->addElement('autocomplete', 'createdcourseid', get_string('createdcourse', 'local_template'), $importcourses);
         $mform->setDefault('createdcourseid', 0);
 
@@ -532,6 +536,30 @@ class template extends \core\form\persistent {
         $this->add_action_buttons(true);
         */
 
+    }
+
+    private function get_import() {
+
+        global $PAGE;
+
+        // Prepare the backup renderer
+        $renderer = $PAGE->get_renderer('core','backup');
+
+        // Check if we already have a import course id
+        if ($importcourseid === false || $searchcourses) {
+            // Obviously not... show the selector so one can be chosen
+            $url = new moodle_url('/backup/import.php', array('id'=>$courseid));
+            $search = new import_course_search(array('url'=>$url));
+
+            // show the course selector
+            echo $OUTPUT->header();
+            $backup = new import_ui(false, array());
+            echo $renderer->progress_bar($backup->get_progress_bar());
+            $html = $renderer->import_course_selector($url, $search);
+            echo $html;
+            echo $OUTPUT->footer();
+            die();
+        }
     }
 
     function definition_after_data() {
