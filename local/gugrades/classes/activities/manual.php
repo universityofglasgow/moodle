@@ -64,6 +64,11 @@ class manual implements activity_interface {
         $context = \context_course::instance($this->courseid);
         $users = \local_gugrades\users::get_gradeable_users($context, $this->firstnamefilter, $this->lastnamefilter);
 
+        // Displayname
+        foreach ($users as $user) {
+            $user->displayname = fullname($user);
+        }
+
         return array_values($users);
     }
 

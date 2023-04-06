@@ -36,6 +36,7 @@ $string['idnumber'] = 'ID number';
 $string['lastname'] = 'Last name';
 $string['notoplevel'] = 'Course has not been properly setup (no top-level Grade categories)';
 $string['nothingtodisplay'] = 'Nothing to display';
+$string['participantnumber'] = 'Participant {$a}';
 $string['pluginname'] = 'UofG Grade Tool';
 $string['resetfilter'] = 'Reset filter';
 $string['selected'] = 'Selected';

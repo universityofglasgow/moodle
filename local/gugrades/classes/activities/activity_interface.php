@@ -40,6 +40,7 @@ interface activity_interface {
     /**
      * Get the list of users for this activity type
      * Filtered by firstname, lastname (if possible)
+     * It should also return a field 'displayname' in each record. Whatever you want to show
      */
     public function get_users(); 
 

@@ -1,6 +1,6 @@
 <template>
     <div>
-        <NameFilter @selected="filter_selected"></NameFilter>
+        <NameFilter v-if="!usershidden" @selected="filter_selected" ref="namefilterref"></NameFilter>
         <PagingBar :totalrows="totalrows" :perpage="perpage" @pagechange="pagechanged"></PagingBar>
         <div class="table-responsive">
             <table v-if="showtable" class="table table-striped table-sm mt-4 border rounded">
@@ -12,7 +12,7 @@
                 </thead>
                 <tbody>
                     <tr v-for="user in pagedusers" :key="user.id">
-                        <td>{{ user.firstname }} {{ user.lastname }}</td>
+                        <td>{{ user.displayname }}</td>
                         <td>{{ user.idnumber }}</td>
                         <td>{{ strings.awaitingcapture }}</td>
                         <td><button type="button" class="btn btn-outline-primary btn-sm">{{ strings.addgrade }}</button></td>
@@ -43,6 +43,8 @@
     const totalrows = ref(0);
     const perpage = ref(PAGESIZE);
     const currentpage = ref(1);
+    const usershidden = ref(false);
+    const namefilterref = ref(null);
 
     let firstname = '';
     let lastname = '';
@@ -83,6 +85,7 @@
             }
         }])[0]
         .then((result) => {
+            usershidden.value = result['hidden'];
             users.value = JSON.parse(result['users']);
             totalrows.value = users.value.length;
             window.console.log(users.value);

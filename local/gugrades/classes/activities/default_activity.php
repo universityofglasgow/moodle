@@ -67,6 +67,11 @@ class default_activity implements activity_interface {
         $context = \context_course::instance($this->courseid);
         $users = \local_gugrades\users::get_available_users_from_cm($cm, $context, $this->firstnamefilter, $this->lastnamefilter);
 
+        // Displayname
+        foreach ($users as $user) {
+            $user->displayname = fullname($user);
+        }
+
         return $users;
     }   
     

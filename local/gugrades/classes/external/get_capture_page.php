@@ -74,23 +74,16 @@ class get_capture_page extends \external_api {
         // Will be everybody for 'manual' grades or filtered list for modules.
         $users = $activity->get_users();
 
-        /*
-        if ($item->itemtype == 'manual') {
-            $users = \local_gugrades\users::get_gradeable_users($context, $firstname, $lastname, $pagingfrom, $pagelength);
-        } else {
-            $cm = \local_gugrades\users::get_cm_from_grade_item($gradeitemid, $courseid);
-
-            // Get *available* users
-            $users = \local_gugrades\users::get_available_users_from_cm($cm, $context, $firstname, $lastname, $pagingfrom, $pagelength);
-        }
-        */
-
-        return ['users' => json_encode($users)];
+        return [
+            'users' => json_encode($users),
+            'hidden' => $activity->is_names_hidden(),
+        ];
     }
 
     public static function execute_returns() {
         return new external_single_structure([
             'users' => new external_value(PARAM_RAW, 'List of users (plus extras) for activity in JSON format'),
+            'hidden' => new external_value(PARAM_BOOL, 'True if student names are hidden'),
         ]);
     }
 
